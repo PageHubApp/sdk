@@ -2,7 +2,6 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import { createRoot } from "react-dom/client";
 import React from "react";
 
 export interface VariableNodeOptions {
@@ -121,9 +120,10 @@ export const VariableNode = Node.create<VariableNodeOptions>({
         }
       };
 
-      const showPopover = () => {
+      const showPopover = async () => {
         closePopover();
 
+        const { createRoot } = await import("react-dom/client");
         const { VariablePopover } = require("../chrome/Tools/VariablePopover");
 
         popoverContainer = document.createElement("div");
@@ -161,7 +161,7 @@ export const VariableNode = Node.create<VariableNodeOptions>({
       dom.addEventListener("dblclick", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        showPopover();
+        void showPopover();
       });
 
       return {

@@ -2,6 +2,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { AutoTextSize } from "auto-text-size";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { FaFont } from "react-icons/fa";
@@ -118,7 +119,9 @@ export const Text = (props: Partial<TextProps>) => {
 
   if (enabled) {
     prop.children = (
-      <React.Suspense fallback={<div dangerouslySetInnerHTML={{ __html: replaceVariables(text, query) }} />}>
+      <React.Suspense
+        fallback={<div dangerouslySetInnerHTML={{ __html: replaceVariables(text || "", query) }} />}
+      >
         <TextEditorMode
           props={props}
           id={id}
