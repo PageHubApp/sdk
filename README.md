@@ -10,6 +10,8 @@ A drag-and-drop page editor SDK built on [CraftJS](https://craft.js.org/). Inclu
 npm install @pagehub/sdk
 ```
 
+**Developing inside the `pagehub.dev` repo:** this package lives at **`packages/sdk`** and is linked with **`workspace:*`**. Use **pnpm from the repository root** only (`pnpm install`, `pnpm run build`). Do not run install only inside `packages/sdk/`. Every dependency imported from `src/` must be listed in this directory’s **`package.json`**. See root **`README.md`**, **`.cursorrules`**, and **`CLAUDE.md`**.
+
 ---
 
 ## Quick Start
