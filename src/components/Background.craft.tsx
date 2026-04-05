@@ -1,0 +1,51 @@
+/**
+ * Background — Component definition via defineComponent()
+ */
+import React from "react";
+import { defineComponent } from "../define";
+import { Background } from "./Background";
+import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
+
+const toHTML: ToHTMLFn = (props, children, ctx) => {
+  const bgCtx = { ...ctx, palette: props.pallet || ctx.palette };
+  return tag("main", {
+    class: staticClasses(props, bgCtx) || undefined,
+    style: getInlineStyle(props) || undefined,
+    ...ariaAttrs(props),
+  }, children);
+};
+import { BackgroundMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/BackgroundMainTab";
+import { NameNodeController, ToolNodeController, ContainerSettingsNodeTool } from "./editor-chrome";
+
+export const BackgroundDef = defineComponent({
+  name: "Background",
+  component: Background,
+  icon: "TbContainer",
+  category: "Layout",
+  canvas: true,
+  settings: BackgroundMainTab,
+  toHTML,
+  disable: [
+    "shadow", "border", "opacity", "radius", "hoverClick", "animations",
+  ],
+  rules: {
+    canDrag: () => false,
+    canMoveIn: (nodes) => nodes.every(node => node.data?.name === "Container"),
+  },
+  tools: () => [
+    <NameNodeController
+      key="name"
+      position="bottom"
+      align="end"
+      placement="start"
+    />,
+    <ToolNodeController
+      key="tool"
+      position="bottom"
+      align="start"
+      placement="start"
+    >
+      <ContainerSettingsNodeTool />
+    </ToolNodeController>,
+  ],
+}, { __internal: true });

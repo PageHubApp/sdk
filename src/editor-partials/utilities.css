@@ -1,0 +1,13 @@
+/* =============================================================================
+   SDK editor — toolbar form helpers (scoped under .pagehub-sdk-root)
+   ============================================================================= */
+
+@reference "./styles.css";
+
+.pagehub-sdk-root .input-hover {
+  @apply cursor-pointer border-border focus-within:border-ring hover:border-primary;
+}
+
+.pagehub-sdk-root .btn {
+  @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary text-base font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
+}

@@ -1,0 +1,49 @@
+/* =============================================================================
+   SDK editor — #viewport / [data-renderer] containment (scoped)
+   ============================================================================= */
+
+@reference "./styles.css";
+
+.pagehub-sdk-root #viewport .w-screen {
+  @apply w-full!;
+}
+
+.pagehub-sdk-root #viewport,
+.pagehub-sdk-root [data-container="true"] {
+  max-width: 100%;
+}
+
+.pagehub-sdk-root [data-renderer="true"] {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: visible !important;
+}
+
+.pagehub-sdk-root #viewport > * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.pagehub-sdk-root [data-isolated="true"] [data-renderer].h-screen {
+  @apply h-full!;
+}
+
+.pagehub-sdk-root [data-isolated="true"] [data-renderer].md\:h-screen {
+  @apply h-full!;
+}
+
+.pagehub-sdk-root [data-isolated="false"] [data-renderer].h-screen {
+  @apply h-full! justify-start!;
+}
+
+.pagehub-sdk-root [data-isolated="false"] [data-renderer].md\:h-screen {
+  @apply h-full! justify-start!;
+}
+
+.pagehub-sdk-root [data-renderer] .w-screen {
+  @apply w-full!;
+}
+
+.pagehub-sdk-root [data-renderer] .md\:w-screen {
+  @apply w-full!;
+}

@@ -1,0 +1,150 @@
+/* =============================================================================
+   SDK editor — shell typography + scrollbars (scoped under .pagehub-sdk-root)
+   ============================================================================= */
+
+@reference "./styles.css";
+
+.pagehub-sdk-root {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  @apply subpixel-antialiased;
+  min-width: 320px;
+  -webkit-text-size-adjust: none;
+  word-wrap: break-word;
+  scroll-behavior: smooth;
+}
+
+.pagehub-sdk-root [data-root="true"] {
+  scroll-behavior: smooth;
+}
+
+.pagehub-sdk-root button {
+  cursor: pointer;
+}
+
+.pagehub-sdk-root [contenteditable="true"] {
+  outline: none;
+}
+
+.pagehub-sdk-root .cursor-move {
+  cursor: move !important;
+}
+
+.pagehub-sdk-root .scrollbar::-webkit-scrollbar,
+.pagehub-sdk-root .scrollbar *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.pagehub-sdk-root .scrollbar::-webkit-scrollbar-track,
+.pagehub-sdk-root .scrollbar *::-webkit-scrollbar-track {
+  border-radius: 8px;
+  @apply bg-transparent;
+}
+
+.pagehub-sdk-root .scrollbar::-webkit-scrollbar-thumb,
+.pagehub-sdk-root .scrollbar *::-webkit-scrollbar-thumb {
+  @apply bg-muted;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.pagehub-sdk-root .scrollbar::-webkit-scrollbar-thumb:hover,
+.pagehub-sdk-root .scrollbar *::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted;
+}
+
+.pagehub-sdk-root .scrollbar-light::-webkit-scrollbar,
+.pagehub-sdk-root .scrollbar-light *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.pagehub-sdk-root .scrollbar-light::-webkit-scrollbar-track,
+.pagehub-sdk-root .scrollbar-light *::-webkit-scrollbar-track {
+  @apply bg-background;
+  border-radius: 8px;
+}
+
+.pagehub-sdk-root .scrollbar-light::-webkit-scrollbar-thumb,
+.pagehub-sdk-root .scrollbar-light *::-webkit-scrollbar-thumb {
+  @apply bg-border;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.pagehub-sdk-root .scrollbar-light::-webkit-scrollbar-thumb:hover,
+.pagehub-sdk-root .scrollbar-light *::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground;
+}
+
+.pagehub-sdk-root .scrollbar-dark::-webkit-scrollbar,
+.pagehub-sdk-root .scrollbar-dark *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.pagehub-sdk-root .scrollbar-dark::-webkit-scrollbar-track,
+.pagehub-sdk-root .scrollbar-dark *::-webkit-scrollbar-track {
+  border-radius: 8px;
+  @apply bg-transparent;
+}
+
+.pagehub-sdk-root .scrollbar-dark::-webkit-scrollbar-thumb,
+.pagehub-sdk-root .scrollbar-dark *::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  cursor: pointer;
+  @apply bg-muted-foreground/30;
+}
+
+.pagehub-sdk-root .scrollbar-dark::-webkit-scrollbar-thumb:hover,
+.pagehub-sdk-root .scrollbar-dark *::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+.pagehub-sdk-root [data-no-scrollbars="true"]::-webkit-scrollbar {
+  background: transparent; /* Chrome/Safari/Webkit */
+}
+
+.pagehub-sdk-root .scrollbar-hide {
+  @apply overflow-visible;
+}
+
+.pagehub-sdk-root .scrollbar-hide::-webkit-scrollbar {
+  background: transparent;
+  width: 8px;
+}
+
+.pagehub-sdk-root .scrollbar-hide::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.pagehub-sdk-root .scrollbar-hide::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pagehub-sdk-root [data-custom-scroll] {
+  scrollbar-width: none !important;
+  scrollbar-gutter: auto !important;
+}
+.pagehub-sdk-root [data-custom-scroll]::-webkit-scrollbar,
+.pagehub-sdk-root .scrollbar [data-custom-scroll]::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.pagehub-sdk-root input[type="range"]::-webkit-slider-thumb {
+  @apply h-3 w-3 bg-primary;
+}
+
+.pagehub-sdk-root input[type="range"]::-webkit-slider-thumb:hover {
+  @apply bg-primary;
+}
+
+.pagehub-sdk-root input[type="range"]::-moz-range-thumb {
+  @apply bg-primary;
+}
+.pagehub-sdk-root input[type="range"]::-ms-thumb {
+  @apply bg-primary;
+}

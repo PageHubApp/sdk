@@ -1,0 +1,43 @@
+/* =============================================================================
+   SDK editor — Google Material Symbols + mobile preview (scoped)
+   mobile-preview class is toggled on .pagehub-sdk-root in ViewportMeta.
+   ============================================================================= */
+
+.pagehub-sdk-root .google-icons {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga";
+  font-display: block;
+}
+
+.pagehub-sdk-root.mobile-preview .md\:hidden {
+  display: none !important;
+}
+
+.pagehub-sdk-root.mobile-preview .md\:flex {
+  display: none !important;
+}
+
+.pagehub-sdk-root.mobile-preview .md\:block {
+  display: none !important;
+}
+
+.pagehub-sdk-root.mobile-preview .block.md\:hidden {
+  display: block !important;
+}
+
+.pagehub-sdk-root.mobile-preview .flex.md\:hidden {
+  display: flex !important;
+}

@@ -1,0 +1,60 @@
+// @ts-nocheck
+import { ToolbarItem } from "../../ToolbarItem";
+import { ToolbarSection } from "../../ToolbarSection";
+import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+
+export const AudioMainTab = () =>
+  renderComponentSlots({
+    Content: (
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+        <ToolbarItem
+          propKey="audioUrl"
+          propType="component"
+          type="text"
+          label="URL"
+          labelHide={true}
+          placeholder="https://example.com/audio.mp3"
+        />
+      </ToolbarSection>
+    ),
+    Properties: (
+      <>
+        <ToolbarSection title="Playback Options">
+          <ToolbarItem
+            propKey="controls"
+            propType="component"
+            type="checkbox"
+            label="Show Controls"
+            labelWidth="w-full"
+            inputWidth="w-fit"
+          />
+          <ToolbarItem
+            propKey="autoplay"
+            propType="component"
+            type="checkbox"
+            label="Autoplay"
+            labelWidth="w-full"
+            inputWidth="w-fit"
+          />
+          <ToolbarItem
+            propKey="loop"
+            propType="component"
+            type="checkbox"
+            label="Loop"
+            labelWidth="w-full"
+            inputWidth="w-fit"
+          />
+        </ToolbarSection>
+
+        <ToolbarSection title="Accessibility">
+          <ToolbarItem
+            propKey="title"
+            propType="component"
+            type="text"
+            label="Title"
+            placeholder="Audio description"
+          />
+        </ToolbarSection>
+      </>
+    ),
+  });

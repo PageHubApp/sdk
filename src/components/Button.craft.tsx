@@ -1,0 +1,114 @@
+/**
+ * Button — Component definition via defineComponent()
+ */
+import { ButtonMainTab, ButtonMainTabAdvanced } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ButtonMainTab";
+import { defineComponent } from "../define";
+import { ariaAttrs, collectClasses, escapeAttr, escapeHTML, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
+import { Button } from "./Button";
+import { DeleteNodeController, HoverNodeController, SelectButtonListTool } from "./editor-chrome";
+
+const toHTML: ToHTMLFn = (props, _children, ctx) => {
+  let icon = props.icon;
+  if (typeof icon === "string") icon = { value: icon, position: "left", size: "w-6 h-6", gap: "gap-2" };
+  icon = { position: "left", size: "w-6 h-6", gap: "gap-2", ...icon };
+
+  const cls = staticClasses(props, ctx);
+
+  let extra = "";
+  if (icon?.value) {
+    const isVert = icon.position === "top" || icon.position === "bottom";
+    extra = [
+      "flex",
+      isVert ? "flex-col" : "flex-row",
+      "items-center",
+      "justify-center",
+      icon.gap || "gap-2",
+    ].join(" ");
+    collectClasses(extra, ctx);
+  }
+
+  const fullCls = [cls, extra].filter(Boolean).join(" ");
+  const t = props.url ? "a" : "button";
+
+  const attrs: Record<string, any> = { class: fullCls || undefined, ...ariaAttrs(props) };
+  if (t === "a") {
+    attrs.href = props.url;
+    if (/^https?:\/\//.test(props.url || "")) attrs.rel = "noopener noreferrer";
+  } else {
+    attrs.type = props.type || "button";
+  }
+  if (icon?.only && !attrs["aria-label"]) attrs["aria-label"] = props.text || "Button";
+
+  let iconHTML = "";
+  if (icon?.value) {
+    const isGoogle = icon.value.startsWith("ref-google:");
+    if (isGoogle) {
+      const name = icon.value.replace("ref-google:", "");
+      const ic = [icon.size, icon.color || "fill-current", "flex items-center justify-center google-icons"].filter(Boolean).join(" ");
+      collectClasses(ic, ctx);
+      iconHTML = `<span class="${escapeAttr(ic)}">${escapeHTML(name)}</span>`;
+    } else if (icon.value.startsWith("ref-")) {
+      const ic = [icon.size, icon.color || "fill-current", "flex items-center justify-center"].filter(Boolean).join(" ");
+      collectClasses(ic, ctx);
+      iconHTML = `<span class="${escapeAttr(ic)}"></span>`;
+    }
+  }
+
+  const textHTML = !icon?.only && props.text ? escapeHTML(props.text) : "";
+  const before = icon?.position === "left" || icon?.position === "top";
+  const inner = before ? iconHTML + textHTML : textHTML + iconHTML;
+
+  return tag(t, attrs, inner);
+};
+
+export const ButtonDef = defineComponent({
+  name: "Button",
+  component: Button,
+  icon: "RxButton",
+  category: "Basic",
+  settings: ButtonMainTab,
+  advancedSettings: ButtonMainTabAdvanced,
+  toHTML,
+  disable: ["opacity"],
+  hoverClickVariant: "button",
+  rules: {
+    canDrag: () => true,
+    canMoveIn: (nodes) => nodes.every(node => node.data?.name === "Button"),
+  },
+  tools: (props) => [
+    <HoverNodeController
+      key="buttonHoverController"
+      position="top"
+      align="end"
+      placement="end"
+      alt={{
+        position: "bottom",
+        align: "start",
+        placement: "start",
+      }}
+    />,
+    <SelectButtonListTool key="selectButtonList" />,
+    <DeleteNodeController key="buttonDelete" />,
+  ],
+  presets: [
+    {
+      label: "Button",
+      props: {
+        text: "Button",
+        className: "flex-row items-center justify-center gap-2 px-6 py-3 w-auto flex cursor-pointer border border-border rounded-lg",
+      },
+    },
+    {
+      label: "Icon",
+      icon: "LuImage",
+      props: {
+        text: "Icon",
+        icon: {
+          value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>`,
+          only: true,
+        },
+        className: "flex-row items-center justify-center gap-2 px-6 py-3 w-auto flex cursor-pointer",
+      },
+    },
+  ],
+}, { __internal: true });

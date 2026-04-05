@@ -1,0 +1,58 @@
+/* =============================================================================
+   SDK editor — HeadlessUI Listbox panels (ToolbarDropdown, VariablePopover)
+   ListboxOptions carries pagehub-sdk-root + ph-select-content for portaled UI.
+   ============================================================================= */
+
+@reference "./styles.css";
+
+.pagehub-sdk-root.ph-select-content {
+  @apply z-[9999] min-w-[8rem] rounded-lg border border-border bg-background p-1 text-foreground shadow-lg;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  outline: none !important;
+  overflow: visible !important;
+  max-height: none !important;
+  animation: ph-select-in 120ms ease-out;
+}
+.pagehub-sdk-root.ph-select-content .ph-select-scroll-area {
+  max-height: 264px;
+}
+.pagehub-sdk-root.ph-select-content * {
+  font-size: inherit !important;
+}
+.pagehub-sdk-root.ph-select-content[data-side="bottom"] { transform-origin: top; }
+.pagehub-sdk-root.ph-select-content[data-side="top"]    { transform-origin: bottom; }
+
+.pagehub-sdk-root.ph-select-content .ph-select-item {
+  @apply flex w-full cursor-pointer select-none items-center gap-1 rounded-sm py-1.5 pr-2 pl-1.5 text-left outline-none transition-colors;
+  font-size: 13px !important;
+  @apply hover:bg-accent hover:text-accent-foreground;
+  @apply focus:bg-accent focus:text-accent-foreground;
+  @apply data-[focus]:bg-accent data-[focus]:text-accent-foreground;
+  @apply data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
+  @apply data-[state=checked]:font-medium data-[selected]:font-medium;
+}
+
+.pagehub-sdk-root.ph-select-content .ph-select-scroll-indicator {
+  @apply sticky z-10 flex w-full cursor-default items-center justify-center;
+  height: 24px;
+  opacity: 0;
+  pointer-events: none;
+}
+.pagehub-sdk-root.ph-select-content .ph-select-scroll-indicator.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.pagehub-sdk-root.ph-select-content .ph-select-scroll-indicator.top {
+  top: 0;
+  background: linear-gradient(to bottom, var(--background) 40%, transparent);
+}
+.pagehub-sdk-root.ph-select-content .ph-select-scroll-indicator.bottom {
+  bottom: 0;
+  background: linear-gradient(to top, var(--background) 40%, transparent);
+}
+
+@keyframes ph-select-in {
+  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}

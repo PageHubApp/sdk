@@ -1,0 +1,116 @@
+/* =============================================================================
+   SDK editor — canvas: selection outlines, drag/drop, iframe, viewport handles
+   Scoped under .pagehub-sdk-root. data-* on nodes are stable protocol.
+   ============================================================================= */
+
+@reference "./styles.css";
+
+.pagehub-sdk-root {
+  --pagehub-editor-outline-offset: 1px;
+}
+
+.pagehub-sdk-root .drag-control {
+  @apply cursor-move border-0! bg-current!;
+}
+
+.pagehub-sdk-root [role="tooltip"] {
+  @apply pointer-events-none z-50 cursor-none;
+}
+
+.pagehub-sdk-root [data-selected="true"],
+.pagehub-sdk-root [data-hover="true"] {
+  @apply cursor-pointer;
+}
+
+.pagehub-sdk-root [data-selected="true"] iframe {
+  pointer-events: none;
+}
+.pagehub-sdk-root [data-selected="true"] a {
+  pointer-events: none;
+}
+
+.pagehub-sdk-root [data-lastpass-icon-root] {
+  display: none;
+}
+
+.pagehub-sdk-root .drop-zone-active {
+  border-width: 4px !important;
+  opacity: 0.8;
+}
+
+.pagehub-sdk-root [data-dragged-over="true"] {
+  border: 2px dashed currentColor;
+  min-height: 40px;
+  min-width: 40px;
+  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+.pagehub-sdk-root [data-enabled="true"][data-hover="true"] {
+  outline: 1px dashed currentColor !important;
+  outline-offset: var(--pagehub-editor-outline-offset, 1px);
+}
+
+.pagehub-sdk-root [data-enabled="true"][data-hover="true"]:not(:hover) {
+  outline: 1px dotted currentColor !important;
+  outline-offset: var(--pagehub-editor-outline-offset, 1px);
+}
+
+.pagehub-sdk-root [data-show-gridlines="true"] [data-enabled="true"][node-id]:not([data-selected="true"]) {
+  outline: 1px dashed currentColor !important;
+  outline-offset: var(--pagehub-editor-outline-offset, 1px);
+}
+
+.pagehub-sdk-root [data-enabled="true"][data-selected="true"] {
+  outline: 1px solid currentColor !important;
+  outline-offset: var(--pagehub-editor-outline-offset, 1px);
+}
+
+.pagehub-sdk-root [data-enabled="true"][data-ancestor="true"] {
+  outline: 1px dotted rgb(156 163 175) !important;
+  outline-offset: var(--pagehub-editor-outline-offset, 1px);
+}
+
+.pagehub-sdk-root img[data-enabled="true"][data-hover="true"] {
+  outline: 1px dashed currentColor !important;
+  outline-offset: var(--pagehub-editor-outline-offset, 1px);
+}
+
+.pagehub-sdk-root img[data-enabled="true"][data-selected="true"] {
+  outline: 2px solid currentColor !important;
+  outline-offset: var(--pagehub-editor-outline-offset, 1px);
+}
+
+.pagehub-sdk-root [data-show-hidden="true"] .hidden {
+  @apply flex! border border-dotted border-current;
+}
+
+.pagehub-sdk-root iframe {
+  border: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pagehub-sdk-root #viewport [data-active] {
+  @apply flex h-8 w-8 justify-center text-lg hover:text-2xl active:text-lg;
+}
+
+.pagehub-sdk-root #viewport [data-active][data-direction="flex-col"][data-position="before"] {
+  @apply rounded-lg border-2 border-b-0;
+}
+
+.pagehub-sdk-root #viewport [data-active][data-direction="flex-col"][data-position="after"] {
+  @apply rounded-lg border-2 border-t-0;
+}
+
+.pagehub-sdk-root #viewport [data-active][data-direction="flex-row"][data-position="before"] {
+  @apply rounded-lg border-2 border-r-0;
+}
+
+.pagehub-sdk-root #viewport [data-active][data-direction="flex-row"][data-position="after"] {
+  @apply rounded-lg border-2 border-l-0;
+}
+
+.pagehub-sdk-root .fontfamily-base {
+  font-family: var(--font-sans);
+}
