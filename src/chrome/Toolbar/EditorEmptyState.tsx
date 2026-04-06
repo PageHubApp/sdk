@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { TbBoxModel2, TbClick, TbLayoutGridAdd, TbPlus, TbPointer } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
@@ -54,6 +55,19 @@ export const EditorEmptyState = () => {
   const isAiEnabled = useAiEnabled();
   const renderEmptyAi = config.editorChromeSlots?.renderEmptyStateAiCard;
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isCompact, setIsCompact] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setIsCompact(entry.contentRect.height < 700);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const isComponentMode = viewMode === "component";
   const hasComponents = components.length > 0;
 
@@ -77,23 +91,25 @@ export const EditorEmptyState = () => {
   };
 
   return (
-    <div className="scrollbar z-20 flex h-screen w-auto grow basis-full flex-col items-center justify-center gap-8 overflow-auto bg-transparent p-4 pr-2 text-center text-muted-foreground">
+    <div ref={containerRef} className="scrollbar z-20 flex h-screen w-auto grow basis-full flex-col items-center justify-center gap-8 overflow-auto bg-transparent p-4 pr-2 text-center text-muted-foreground">
       {/* Icon */}
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{
-          duration: 0.5,
-          ease: [0.22, 1, 0.36, 1],
-        }}
-        className="flex size-24 items-center justify-center rounded-2xl bg-primary/10 text-primary"
-      >
-        {isComponentMode && !hasComponents ? (
-          <TbBoxModel2 className="size-12" />
-        ) : (
-          <TbPointer className="size-12 rotate-90" />
-        )}
-      </motion.div>
+      {!isCompact && (
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{
+            duration: 0.5,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          className="flex size-24 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+        >
+          {isComponentMode && !hasComponents ? (
+            <TbBoxModel2 className="size-12" />
+          ) : (
+            <TbPointer className="size-12 rotate-90" />
+          )}
+        </motion.div>
+      )}
 
       {/* Title */}
       <motion.div
@@ -106,13 +122,15 @@ export const EditorEmptyState = () => {
         }}
         className="space-y-3"
       >
-        <h2 className="text-xl font-semibold">
-          {isComponentMode && !hasComponents ? (
-            <>Create your first component</>
-          ) : (
-            <>Select something to edit</>
-          )}
-        </h2>
+        {!isCompact && (
+          <h2 className="text-xl font-semibold">
+            {isComponentMode && !hasComponents ? (
+              <>Create your first component</>
+            ) : (
+              <>Select something to edit</>
+            )}
+          </h2>
+        )}
 
         <div className="flex max-w-md flex-wrap items-center justify-center gap-1 text-sm">
           {isComponentMode ? (
@@ -137,16 +155,18 @@ export const EditorEmptyState = () => {
             )
           ) : (
             <div className="w-full space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-xs font-medium text-muted-foreground">or</span>
-                <div className="h-px flex-1 bg-border" />
-              </div>
+              {!isCompact && (
+                <div className="flex items-center gap-4">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs font-medium text-muted-foreground">or</span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-4">
                 <ActionCard
                   icon={<TbLayoutGridAdd className="size-6" />}
-                  title="Add Sections"
+                  title="Add Blocks"
                   description="Like heros, ctas, cards, and more..."
                   onClick={handleAddSectionClick}
                   delay={0.15}
