@@ -2,7 +2,7 @@
 import { Editor, Element, Frame } from "@craftjs/core";
 import React from "react";
 
-export const buildElementFromStructure = (structure: any, resolver: any, key?: string): any => {
+export const buildElementFromStructure = (structure: any, resolver: any, key?: string, isRoot: boolean = true): any => {
   // Guard against incomplete partial JSON structures
   if (!structure || !structure.type || !structure.props) return null;
 
@@ -40,21 +40,19 @@ export const buildElementFromStructure = (structure: any, resolver: any, key?: s
   // Filter out incomplete children from partial JSON
   const children = structure.children
     ?.map((child: any, index: number) =>
-      buildElementFromStructure(child, resolver, `${uniqueKey}-${index}`)
+      buildElementFromStructure(child, resolver, `${uniqueKey}-${index}`, false)
     )
     .filter(Boolean);
 
-  // Remove all padding for preview mode
+  // Only strip vertical padding from the root container to keep the preview compact.
+  // Leave child node padding intact so inner content spacing looks correct.
   let cleanedClassName = structure.props.className;
-  if (cleanedClassName) {
+  if (typeof cleanedClassName !== 'string') cleanedClassName = '';
+  if (cleanedClassName && isRoot) {
     cleanedClassName = cleanedClassName
-      .replace(/py-\d+/g, '')
-      .replace(/p-\d+/g, '')
+      .replace(/py-\d+/g, 'py-2')
       .replace(/pt-\d+/g, '')
       .replace(/pb-\d+/g, '')
-      .replace(/px-\d+/g, '')
-      .replace(/pl-\d+/g, '')
-      .replace(/pr-\d+/g, '')
       .replace(/\s+/g, ' ')
       .trim();
   }
@@ -62,7 +60,7 @@ export const buildElementFromStructure = (structure: any, resolver: any, key?: s
   const propsWithDefaults = {
     ...structure.props,
     canDelete: true,
-    className: cleanedClassName || undefined
+    ...(isRoot && cleanedClassName ? { className: cleanedClassName } : {}),
   };
 
   return (
@@ -111,7 +109,7 @@ interface ComponentPreviewProps {
   resolver: any;
 }
 
-export function ComponentPreview({ component, scale = 0.25, resolver }: ComponentPreviewProps) {
+export const ComponentPreview = React.memo(function ComponentPreview({ component, scale = 0.25, resolver }: ComponentPreviewProps) {
   if (!component) return null;
 
   try {
@@ -131,14 +129,10 @@ export function ComponentPreview({ component, scale = 0.25, resolver }: Componen
 
     return (
       <PreviewErrorBoundary>
-        <div className="rounded-lg bg-mute overflow-hidden p-3">
-          <div className="rounded-lg bg-(--background) text-(--text) overflow-hidden shadow-lg">
-            <div className="rounded-xl overflow-hidden border-2 border-border" style={{ zoom: '0.5', pointerEvents: 'none' }}>
-              <Editor resolver={resolver} enabled={false}>
-                <Frame>{element}</Frame>
-              </Editor>
-            </div>
-          </div>
+        <div className="overflow-hidden bg-(--background) text-(--text)" style={{ zoom: '0.5', pointerEvents: 'none' }}>
+          <Editor resolver={resolver} enabled={false}>
+            <Frame>{element}</Frame>
+          </Editor>
         </div>
       </PreviewErrorBoundary>
     );
@@ -150,6 +144,6 @@ export function ComponentPreview({ component, scale = 0.25, resolver }: Componen
       </div>
     );
   }
-}
+});
 
 export default ComponentPreview;
