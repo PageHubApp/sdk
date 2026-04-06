@@ -36,7 +36,7 @@ export const setClonedProps = (props: any, query: any, exclude: string[] = []) =
 
     if (props.relationType === "content") {
       const contentProps = [
-        "text", "url", "urlTarget", "image", "videoId",
+        "text", "url", "urlTarget", "action", "image", "videoId",
         "content", "buttonText", "placeholder", "value",
       ];
       const localContent: Record<string, any> = {};

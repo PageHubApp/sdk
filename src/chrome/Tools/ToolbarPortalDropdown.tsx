@@ -117,9 +117,8 @@ export const ToolbarPortalDropdown = ({
       setIsOpen(false);
     };
 
-    // Use mousedown so the close fires before any other click handlers
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside, true);
+    return () => document.removeEventListener("mousedown", handleClickOutside, true);
   }, [isOpen]);
 
   // Close on Escape

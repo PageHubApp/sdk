@@ -16,6 +16,7 @@ import {
   TbPalette,
   TbPhoto,
   TbSettings,
+  TbStack2,
   TbSun,
 } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
@@ -41,6 +42,7 @@ interface EditorNavigationProps {
   isDesignSystemSidebarOpen: boolean;
   setIsDesignSystemSidebarOpen: (value: boolean) => void;
   setIsSiteSettingsModalOpen: (value: boolean) => void;
+  setIsModifiersModalOpen: (value: boolean) => void;
   setIsImportExportDialogOpen: (value: boolean) => void;
   toggleTheme: () => void;
   isDarkMode: boolean;
@@ -84,6 +86,7 @@ export const EditorNavigation = ({
   isDesignSystemSidebarOpen,
   setIsDesignSystemSidebarOpen,
   setIsSiteSettingsModalOpen,
+  setIsModifiersModalOpen,
   setIsImportExportDialogOpen,
   toggleTheme,
   isDarkMode,
@@ -242,13 +245,26 @@ export const EditorNavigation = ({
                     setIsSiteSettingsModalOpen(true);
                     setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
                   }}
-                  className={editorNavRow("section")}
+                  className={editorNavRow("mid")}
                 >
                   <div className="text-base">
                     <TbSettings />
                   </div>
                   <div className="text-sm">Site Settings</div>
                   <Kbd>⌘,</Kbd>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsModifiersModalOpen(true);
+                    setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                  }}
+                  className={editorNavRow("section")}
+                >
+                  <div className="text-base">
+                    <TbStack2 />
+                  </div>
+                  <div className="text-sm">Modifiers</div>
                 </button>
 
                 <button

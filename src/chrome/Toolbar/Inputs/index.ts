@@ -61,13 +61,12 @@ export * from "./advanced/HoverClickInput";
 export * from "./advanced/PropertiesInput";
 export * from "./advanced/TailwindInput";
 
+// Action inputs
+export { default as ActionInput } from "./action/ActionInput";
+export * from "./action/useElementPicker";
+
 // Preset inputs
-export * from "./preset/ClickItem";
-export * from "./preset/LinkSettingsInput";
 export * from "./preset/ListItemPopover";
-export * from "./preset/PresetInput";
-export * from "./preset/PresetInputWithToggle";
-export * from "./preset/PresetRenderer";
 
 // Root inputs
 export * from "./AnchorInput";

@@ -25,13 +25,9 @@ const ROOT_KEPT = new Set([
   "patternSpacingX",
   "patternSpacingY",
   "patternAngle",
-  "preset",
-  "presetPadding",
-  "presetMaxWidth",
-  "presetLayout",
-  "presetSpacing",
   "layoutMode",
   "layoutColumns",
+  "activeModifiers",
 ]);
 
 function pickKeptRoot(root) {

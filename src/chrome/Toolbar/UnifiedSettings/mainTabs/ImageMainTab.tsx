@@ -1,9 +1,7 @@
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { MediaInput } from "../../Inputs/media/MediaInput";
-import { PresetGroupRenderer } from "../../Inputs/preset/PresetRenderer";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { selectorPresets } from "utils/design/selectorPresets";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 export const ImageMainTab = () =>
@@ -12,11 +10,6 @@ export const ImageMainTab = () =>
       <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Upload or link the image source.">
         <MediaInput propKey="videoId" typeKey="type" contentKey="content" title="" collapsible={false} />
         <SettingsAiSlot />
-      </ToolbarSection>
-    ),
-    Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply image styles.">
-        <PresetGroupRenderer presets={selectorPresets.image} />
       </ToolbarSection>
     ),
     Properties: (

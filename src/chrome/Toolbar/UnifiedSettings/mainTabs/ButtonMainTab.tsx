@@ -1,10 +1,8 @@
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { IconDialogInput } from "../../Inputs/media/IconDialogInput";
 import IconInput from "../../Inputs/media/IconInput";
-import { PresetGroupRenderer } from "../../Inputs/preset/PresetRenderer";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { selectorPresets } from "utils/design/selectorPresets";
 import { TailwindStyles } from "utils/tailwind";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
@@ -51,11 +49,6 @@ export const ButtonMainTab = () =>
           min={0}
           valueLabels={TailwindStyles.allWidths}
         />
-      </ToolbarSection>
-    ),
-    Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply button styles.">
-        <PresetGroupRenderer presets={selectorPresets.button} />
       </ToolbarSection>
     ),
     Type: (

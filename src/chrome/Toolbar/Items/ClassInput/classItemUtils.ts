@@ -60,24 +60,6 @@ export function parseClassNameIntoBreakpointBuckets(classNameStr: string, exclud
 
 // ─── View scope helpers ───
 
-const DEFAULT_CLASS_INPUT_VIEWS = VIEW_BREAKPOINT_SCOPE_KEYS.reduce((acc, k) => {
-  acc[k] = false;
-  return acc;
-}, {} as Record<string, boolean>);
-
-export function migrateClassInputSelectedViews(raw: unknown): Record<string, boolean> {
-  const next = { ...DEFAULT_CLASS_INPUT_VIEWS };
-  if (!raw || typeof raw !== "object") return next;
-  const o = raw as Record<string, boolean>;
-  for (const k of VIEW_BREAKPOINT_SCOPE_KEYS) {
-    if (typeof o[k] === "boolean") next[k] = o[k];
-  }
-  return next;
-}
-
-export function getDefaultClassInputViews() {
-  return { ...DEFAULT_CLASS_INPUT_VIEWS };
-}
 
 /** Single Tailwind layer for unprefixed class writes. */
 export function canvasViewToClassScopeKey(canvasView: string | undefined): string {

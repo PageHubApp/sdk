@@ -1,8 +1,6 @@
 import { useTiptapContext } from "../TiptapContext";
 import { ToolbarItem } from "../Toolbar/ToolbarItem";
 import { ColorInput } from "../Toolbar/Inputs/color/ColorInput";
-import { PresetInput } from "../Toolbar/Inputs/preset/PresetInput";
-import { textPresets } from "../../components/settings-stub";
 import { useState } from "react";
 import { AiOutlineAlignRight } from "react-icons/ai";
 import { TbAlignCenter, TbAlignLeft } from "react-icons/tb";
@@ -20,20 +18,6 @@ export function TextSettingsDropdown() {
         <span className="w-16 text-xs font-medium">Color</span>
         <div className="h-8 flex-1 overflow-hidden rounded-lg border border-border">
           <ColorInput propKey="color" label="" prefix="text" labelHide={true} />
-        </div>
-      </div>
-
-      {/* Preset Selector */}
-      <div className="flex items-center gap-2">
-        <span className="w-16 text-xs font-medium">Preset</span>
-        <div className="flex-1">
-          <PresetInput
-            presets={textPresets}
-            type="select"
-            label=""
-            labelHide={true}
-            wrap="control"
-          />
         </div>
       </div>
 

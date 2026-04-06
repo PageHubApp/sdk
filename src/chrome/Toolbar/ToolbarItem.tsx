@@ -238,7 +238,7 @@ const Input = (__props, ref) => {
     return (
       <BgWrap wrap={wrap}>
         <div
-          className={`flex items-center justify-center gap-3 p-1 ${
+          className={`flex items-center justify-center gap-3 ${
             !props.cols ? "flex-col" : "flex-row"
           }`}
         >
@@ -262,10 +262,10 @@ const Input = (__props, ref) => {
               />
               <label
                 htmlFor={`radio-${propKey}-${key}`}
-                className={`block cursor-pointer rounded-lg px-2 py-1 text-sm font-medium transition-[color,transform] active:scale-[0.98] ${
+                className={`block cursor-pointer text-sm font-medium transition-[color,transform] active:scale-[0.98] ${
                   checked
-                    ? "bg-primary font-semibold text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                    ? "text-foreground"
+                    : "text-muted-foreground"
                 }`}
               >
                 {_.label}

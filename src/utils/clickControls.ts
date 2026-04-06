@@ -1,159 +1,188 @@
+/**
+ * Runtime action handlers — attaches event listeners to component prop objects
+ * based on the unified NodeAction system.
+ */
+import type { NodeAction, ShowHideAction } from "./action";
+
+// ─── Legacy type (kept for migration period only) ──────────────────────
 export interface ClickControl {
   type: "click" | "hover";
   direction: "show" | "hide" | "toggle" | "tab";
-  value: string; // Element ID to target
-  method?: "class" | "style"; // Use CSS classes or inline styles (default: "class")
-  group?: string; // Tab group name — all elements with data-tab-group={group} are hidden, then value is shown
+  value: string;
+  method?: "class" | "style";
+  group?: string;
+}
+
+// ─── Visibility helpers ────────────────────────────────────────────────
+
+function showElement(el: HTMLElement, method: "class" | "style" = "class") {
+  if (method === "style") el.style.display = "block";
+  else el.classList.remove("hidden");
+}
+
+function hideElement(el: HTMLElement, method: "class" | "style" = "class") {
+  if (method === "style") el.style.display = "none";
+  else el.classList.add("hidden");
+}
+
+function toggleElement(el: HTMLElement, method: "class" | "style" = "class") {
+  if (method === "style") {
+    el.style.display = el.style.display === "none" ? "block" : "none";
+  } else {
+    el.classList.toggle("hidden");
+  }
+}
+
+// ─── Modal dispatch ────────────────────────────────────────────────────
+
+function dispatchModal(el: HTMLElement, modalAction: "open" | "close" | "toggle") {
+  el.dispatchEvent(
+    new CustomEvent("pagehub:modal", { detail: { action: modalAction }, bubbles: false })
+  );
+}
+
+// ─── Show/Hide + Tab logic ─────────────────────────────────────────────
+
+function applyShowHide(
+  action: ShowHideAction,
+  e?: any
+) {
+  const el = document.getElementById(action.target);
+  if (!el) return;
+
+  const method = action.method || "class";
+
+  // Modal intercept
+  if (el.hasAttribute("data-modal")) {
+    const ma =
+      action.direction === "show" ? "open" :
+      action.direction === "hide" ? "close" :
+      "toggle";
+    dispatchModal(el, ma);
+    return;
+  }
+
+  if (action.direction === "tab") {
+    const group = action.group || action.target;
+    document.querySelectorAll(`[data-tab-group="${group}"]`).forEach((panel) =>
+      hideElement(panel as HTMLElement, method)
+    );
+    showElement(el, method);
+
+    // Update active button states
+    const button = e?.currentTarget as HTMLElement | undefined;
+    const parent = button?.parentElement;
+    if (parent) {
+      parent.querySelectorAll("[data-tab-button]").forEach((btn) => {
+        (btn as HTMLElement).setAttribute("data-tab-active", "false");
+        (btn as HTMLElement).style.opacity = "0.6";
+      });
+      if (button) {
+        button.setAttribute("data-tab-active", "true");
+        button.style.opacity = "1";
+      }
+    }
+  } else if (action.direction === "show") {
+    showElement(el, method);
+  } else if (action.direction === "hide") {
+    hideElement(el, method);
+  } else {
+    toggleElement(el, method);
+  }
+}
+
+function revertShowHide(action: ShowHideAction) {
+  const el = document.getElementById(action.target);
+  if (!el) return;
+
+  if (el.hasAttribute("data-modal")) {
+    dispatchModal(el, "close");
+    return;
+  }
+
+  const method = action.method || "class";
+  if (action.direction === "show") hideElement(el, method);
+  else if (action.direction === "hide") showElement(el, method);
+  // toggle: no revert on hover leave
+}
+
+// ─── Public API ────────────────────────────────────────────────────────
+
+/**
+ * Attach runtime event handlers for actions that need JS (scroll-to, open-modal, show-hide).
+ * Link-type actions (link-url, link-page, email, phone) are handled via href — no JS needed.
+ */
+export function addActionHandlers(
+  prop: any,
+  action: NodeAction | null | undefined,
+  enabled: boolean
+) {
+  if (!action) return;
+
+  if (action.type === "scroll-to") {
+    prop.onClick = (e: any) => {
+      if (enabled) return;
+      e.preventDefault();
+      const el = document.getElementById(action.anchor);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    return;
+  }
+
+  if (action.type === "open-modal") {
+    prop.onClick = (e: any) => {
+      if (enabled) return;
+      e.preventDefault();
+      const el = document.getElementById(action.anchor);
+      if (el) dispatchModal(el, "toggle");
+    };
+    return;
+  }
+
+  if (action.type !== "show-hide") return;
+
+  if (!action.target) return;
+
+  const trigger = action.trigger || "click";
+
+  if (trigger === "hover") {
+    prop.onMouseEnter = () => {
+      if (enabled) return;
+      applyShowHide(action);
+    };
+    prop.onMouseLeave = () => {
+      if (enabled) return;
+      revertShowHide(action);
+    };
+  }
+
+  if (trigger === "click") {
+    prop.onClick = (e: any) => {
+      if (enabled) return;
+      applyShowHide(action, e);
+    };
+  }
 }
 
 /**
- * Adds click control functionality to a component prop object
- * Handles hover/click interactions to show/hide elements by ID
+ * Legacy wrapper — forwards old ClickControl to new system.
+ * Used during migration period; remove once all call sites are updated.
  */
 export function addClickControls(
   prop: any,
   click: ClickControl | undefined,
   enabled: boolean,
-  existingOnClick?: (e: any) => void
+  _existingOnClick?: (e: any) => void
 ) {
   if (!click?.type || !click?.value) return;
 
-  const method = click.method || "class";
-
-  // Helper function to show/hide element
-  const showElement = (element: HTMLElement) => {
-    if (method === "style") {
-      element.style.display = "block";
-    } else {
-      element.classList.remove("hidden");
-    }
+  const action: ShowHideAction = {
+    type: "show-hide",
+    target: click.value,
+    direction: click.direction || "toggle",
+    method: click.method,
+    group: click.group,
+    trigger: click.type,
   };
-
-  const hideElement = (element: HTMLElement) => {
-    if (method === "style") {
-      element.style.display = "none";
-    } else {
-      element.classList.add("hidden");
-    }
-  };
-
-  const toggleElement = (element: HTMLElement) => {
-    if (method === "style") {
-      element.style.display = element.style.display === "none" ? "block" : "none";
-    } else {
-      if (element.classList.contains("hidden")) {
-        element.classList.remove("hidden");
-      } else {
-        element.classList.add("hidden");
-      }
-    }
-  };
-
-  // Add hover functionality
-  if (click.type === "hover") {
-    prop.onMouseEnter = () => {
-      if (enabled) return;
-
-      const element = document.getElementById(click.value);
-      if (!element) return;
-
-      if (element.hasAttribute("data-modal")) {
-        element.dispatchEvent(new CustomEvent("pagehub:modal", {
-          detail: { action: "open" },
-          bubbles: false,
-        }));
-        return;
-      }
-
-      if (click.direction === "show") {
-        showElement(element);
-      } else if (click.direction === "hide") {
-        hideElement(element);
-      } else {
-        toggleElement(element);
-      }
-    };
-
-    prop.onMouseLeave = () => {
-      if (enabled) return;
-
-      const element = document.getElementById(click.value);
-      if (!element) return;
-
-      if (element.hasAttribute("data-modal")) {
-        element.dispatchEvent(new CustomEvent("pagehub:modal", {
-          detail: { action: "close" },
-          bubbles: false,
-        }));
-        return;
-      }
-
-      if (click.direction === "show") {
-        hideElement(element);
-      } else if (click.direction === "hide") {
-        showElement(element);
-      } else {
-        // For toggle, we don't revert on mouse leave
-      }
-    };
-  }
-
-  // Add click functionality
-  if (click.type === "click") {
-    prop.onClick = (e: any) => {
-      if (enabled) return;
-
-      // If there's an existing onClick (like for URL), call it first
-      if (existingOnClick) {
-        existingOnClick(e);
-      }
-
-      const element = document.getElementById(click.value);
-      if (!element) return;
-
-      // Modal intercept: dispatch event instead of toggling visibility
-      if (element.hasAttribute("data-modal")) {
-        const action = click.direction === "show" ? "open"
-          : click.direction === "hide" ? "close"
-          : "toggle";
-        element.dispatchEvent(new CustomEvent("pagehub:modal", {
-          detail: { action },
-          bubbles: false,
-        }));
-        return;
-      }
-
-      if (click.direction === "tab") {
-        // Tab behavior: hide all panels in the group, show the target, update active button state
-        const group = click.group || click.value;
-
-        // Hide all panels in this tab group
-        const panels = document.querySelectorAll(`[data-tab-group="${group}"]`);
-        panels.forEach((panel) => hideElement(panel as HTMLElement));
-
-        // Show the target panel
-        showElement(element);
-
-        // Update active state on sibling buttons: find the parent ButtonList and toggle active class
-        const button = e.currentTarget as HTMLElement;
-        const buttonParent = button?.parentElement;
-        if (buttonParent) {
-          // Remove active state from all sibling buttons
-          buttonParent.querySelectorAll("[data-tab-button]").forEach((btn) => {
-            (btn as HTMLElement).setAttribute("data-tab-active", "false");
-            (btn as HTMLElement).style.opacity = "0.6";
-          });
-          // Set active state on clicked button
-          button.setAttribute("data-tab-active", "true");
-          button.style.opacity = "1";
-        }
-      } else if (click.direction === "show") {
-        showElement(element);
-      } else if (click.direction === "hide") {
-        hideElement(element);
-      } else {
-        toggleElement(element);
-      }
-    };
-  }
+  addActionHandlers(prop, action, enabled);
 }

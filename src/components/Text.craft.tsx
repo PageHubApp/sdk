@@ -4,6 +4,7 @@
 import { TextMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/TextMainTab";
 import { defineComponent } from "../define";
 import { LoremIpsum } from "../utils/data/loremIpsum";
+import { migrateAction, actionToHref, actionTarget } from "../utils/action";
 import { ariaAttrs, getInlineStyle, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
 import { HoverNodeController } from "./editor-chrome";
 import { Text } from "./Text";
@@ -13,11 +14,15 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const style = getInlineStyle(props);
   const text = props.text || "";
 
-  if (props.url && typeof props.url === "string") {
+  const action = migrateAction(props);
+  const href = actionToHref(action);
+  const target = actionTarget(action);
+
+  if (href) {
     return tag("a", {
-      href: props.url,
-      target: props.urlTarget || undefined,
-      rel: /^https?:\/\//.test(props.url) ? "noopener noreferrer" : undefined,
+      href,
+      target: target || undefined,
+      rel: /^https?:\/\//.test(href) ? "noopener noreferrer" : undefined,
       class: cls || undefined,
       style: style || undefined,
       ...ariaAttrs(props),
@@ -90,5 +95,17 @@ export const TextDef = defineComponent({
         text: lorem.generateParagraphs(1),
       },
     },
+  ],
+  modifiers: [
+    { name: "text-xs", label: "Extra Small", category: "Size" },
+    { name: "text-sm", label: "Small", category: "Size" },
+    { name: "text-lg", label: "Large", category: "Size" },
+    { name: "text-2xl", label: "XL", category: "Size" },
+    { name: "text-4xl", label: "Display", category: "Size" },
+    { name: "font-bold", label: "Bold", category: "Weight" },
+    { name: "font-light", label: "Light", category: "Weight" },
+    { name: "text-center", label: "Center", category: "Alignment" },
+    { name: "text-right", label: "Right", category: "Alignment" },
+    { name: "uppercase", label: "Uppercase", category: "Style" },
   ],
 }, { __internal: true });

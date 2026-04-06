@@ -75,7 +75,7 @@ function buildModalChildren() {
       custom={{ displayName: "Open Modal" }}
       text="Open Modal"
       url=""
-      click={{ type: "click", direction: "show", value: "my-modal" }}
+      action={{ type: "show-hide", target: "my-modal", direction: "show", trigger: "click", method: "style" }}
       className="px-(--button-padding-x) py-(--button-padding-y) bg-(--primary) text-(--primary-foreground) rounded-(--radius)"
     />,
     // Backdrop
@@ -88,7 +88,7 @@ function buildModalChildren() {
       canDelete={false}
       canEditName={false}
       className="hidden fixed h-screen w-screen top-0 left-0 z-50 flex-col items-center justify-center px-4 py-4 md:hidden bg-black/50"
-      click={{ type: "click", direction: "hide", value: "my-modal" }}
+      action={{ type: "show-hide", target: "my-modal", direction: "hide", trigger: "click", method: "style" }}
     >
       {/* Content Panel */}
       <Element
@@ -99,7 +99,7 @@ function buildModalChildren() {
         canDelete={false}
         canEditName={false}
         className="flex flex-col gap-(--container-gap) px-(--container-padding-x) py-(--container-padding-y) w-full max-w-lg bg-(--background) rounded-(--radius) shadow-xl"
-        click={{ type: "click", direction: "toggle", value: "my-modal" }}
+        action={{ type: "show-hide", target: "my-modal", direction: "toggle", trigger: "click", method: "style" }}
       >
         <Element
           is={Text}

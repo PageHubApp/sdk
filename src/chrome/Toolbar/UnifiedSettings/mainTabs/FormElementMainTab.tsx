@@ -1,10 +1,8 @@
 import { useEditor } from "@craftjs/core";
 import { IpsumGenerator } from "../../Inputs/media/IpsumGenerator";
-import { PresetGroupRenderer } from "../../Inputs/preset/PresetRenderer";
 import { SelectOptionsItem } from "../../Items/SelectOptionsItem";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { selectorPresets } from "utils/design/selectorPresets";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 // Inlined to avoid circular dep (FormElement.tsx → UnifiedSettings → registry → this file)
@@ -47,11 +45,6 @@ export const FormElementMainTab = () => {
             <option key={_}>{_}</option>
           ))}
         </ToolbarItem>
-      </ToolbarSection>
-    ),
-    Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply input field styles.">
-        <PresetGroupRenderer presets={selectorPresets.formElement} />
       </ToolbarSection>
     ),
     Properties: (

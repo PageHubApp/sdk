@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Tooltip } from "components/layout/Tooltip";
-import { TbCheck, TbCopy, TbDeviceDesktop, TbDeviceMobile, TbLayersSubtract } from "react-icons/tb";
+import { TbCheck, TbChevronRight, TbCopy, TbDeviceDesktop, TbDeviceMobile, TbLayersSubtract, TbTrash } from "react-icons/tb";
 import { Card } from "../../ToolbarStyle";
 import { CLASS_BREAKPOINT_BUCKETS, CARD_BG_BY_BUCKET } from "./classItemUtils";
+
+// ─── Types ───
 
 interface BreakpointBucketsProps {
   bucketLists: Record<string, string[]>;
@@ -16,88 +18,163 @@ interface BreakpointBucketsProps {
   onDragStart: (e: React.DragEvent, data: any) => void;
   onDragEnd: () => void;
   onDelete: (cls: string, view: string, deleteLinked?: boolean) => void;
+  onClearBucket: (classes: string[]) => void;
+  onClearAll: () => void;
   draggedItem: any;
 }
 
-function BreakpointBucketIcon({ icon, label }: { icon: string; label: string }) {
+// ─── Shared sub-components ───
+
+function BucketIcon({ icon, label }: { icon: string; label: string }) {
   if (icon === "mobile") return <TbDeviceMobile className="size-3.5" />;
   if (icon === "desktop") return <TbDeviceDesktop className="size-3.5" />;
   return <span className="min-w-[1.25rem] text-center font-mono text-[10px] font-bold tracking-tight">{label}</span>;
 }
 
-function CopyButton({ classes, category, copiedCategory, onCopy }: {
-  classes: string[]; category: string; copiedCategory: string | null; onCopy: (classes: string[], category: string) => void;
+function ActionButton({ icon, tooltip, onClick, className }: {
+  icon: React.ReactNode; tooltip: string; onClick: () => void; className: string;
 }) {
-  if (!classes || classes.length === 0) return null;
   return (
-    <Tooltip content={copiedCategory === category ? "Copied!" : `Copy ${category} classes`} placement="top">
-      <button onClick={() => onCopy(classes, category)} className="ml-auto rounded p-1 text-muted-foreground transition-all hover:scale-110 hover:bg-accent/10 hover:text-foreground">
-        {copiedCategory === category ? <TbCheck className="size-3.5" /> : <TbCopy className="size-3.5" />}
+    <Tooltip content={tooltip} placement="top">
+      <button type="button" onClick={e => { e.stopPropagation(); onClick(); }} className={`rounded p-1 transition-all hover:scale-110 ${className}`}>
+        {icon}
       </button>
     </Tooltip>
   );
 }
 
+function DropZone({ id, classes, dragOverCategory, borderIdle, dropValid, dropInvalid, onDragOver, onDragLeave, onDrop, onDragStart, onDragEnd, onDelete }: {
+  id: string; classes: string[]; dragOverCategory: string | null;
+  borderIdle: string; dropValid: string; dropInvalid: string;
+  onDragOver: (e: React.DragEvent, category: string) => void;
+  onDragLeave: () => void; onDrop: (e: React.DragEvent, category: string) => void;
+  onDragStart: (e: React.DragEvent, data: any) => void; onDragEnd: () => void;
+  onDelete: (cls: string, view: string, deleteLinked?: boolean) => void;
+}) {
+  return (
+    <div
+      role="presentation"
+      className={`flex flex-wrap gap-1.5 rounded-lg border border-dashed p-2 transition-colors ${borderIdle} ${
+        dragOverCategory === id ? dropValid : dragOverCategory === `invalid-${id}` ? dropInvalid : ""
+      }`}
+      onDragOver={e => onDragOver(e, id)}
+      onDragLeave={onDragLeave}
+      onDrop={e => onDrop(e, id)}
+    >
+      {classes.map((cls, key) => (
+        <Card
+          key={`${id}-${cls}-${key}`}
+          value={cls}
+          onClick={(e: any, options: any) => onDelete(cls, id, options?.deleteLinked)}
+          bgColor={CARD_BG_BY_BUCKET[id] || "bg-muted text-foreground"}
+          onDragStart={(e: any, data: any) => onDragStart(e, { ...data, sourceCategory: id })}
+          onDragEnd={onDragEnd}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Main ───
+
 export function BreakpointBuckets({
   bucketLists, otherClasses, selectedViews, toggleView,
   dragOverCategory, onDragOver, onDragLeave, onDrop,
-  onDragStart, onDragEnd, onDelete, draggedItem,
+  onDragStart, onDragEnd, onDelete, onClearBucket, onClearAll, draggedItem,
 }: BreakpointBucketsProps) {
   const [copiedCategory, setCopiedCategory] = useState<string | null>(null);
+  const [manualOpen, setManualOpen] = useState<Record<string, boolean>>({});
 
-  const copyClasses = (classArray: string[], category: string) => {
+  const allClasses = [...Object.values(bucketLists).flat(), ...otherClasses];
+
+  const copyClasses = useCallback((classArray: string[], category: string) => {
     if (classArray.length === 0) return;
     navigator.clipboard.writeText(classArray.join(" "));
     setCopiedCategory(category);
     setTimeout(() => setCopiedCategory(null), 2000);
-  };
+  }, []);
+
+  const toggleManual = useCallback((id: string) => {
+    setManualOpen(prev => ({ ...prev, [id]: !prev[id] }));
+  }, []);
+
+  const isBucketOpen = (id: string, list: string[]) =>
+    id === "mobile" || list.length > 0 || manualOpen[id] || dragOverCategory === id || dragOverCategory === `invalid-${id}`;
+
+  const isDragging = !!draggedItem;
 
   return (
     <>
       {CLASS_BREAKPOINT_BUCKETS.map(row => {
         const list = bucketLists[row.id] || [];
         const isOn = selectedViews[row.id];
+        const open = isBucketOpen(row.id, list) || isDragging;
 
         return (
           <div key={row.id} className="space-y-2">
+            {/* Header row */}
             <div className="flex items-center gap-2">
+              {/* Collapse chevron + breakpoint toggle */}
+              {/* Chevron — toggles collapse */}
+              {row.id !== "mobile" && (
+                <button
+                  type="button"
+                  onClick={() => toggleManual(row.id)}
+                  className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <TbChevronRight className={`size-3 transition-transform ${open ? "rotate-90" : ""}`} />
+                </button>
+              )}
+
+              {/* Breakpoint label — toggles write scope */}
               <button
                 type="button"
                 onClick={() => toggleView(row.id)}
                 className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-colors ${isOn ? row.selectedBg : row.mutedHover}`}
               >
-                <BreakpointBucketIcon icon={row.icon} label={row.label} />
+                <BucketIcon icon={row.icon} label={row.label} />
                 <span className="flex flex-col items-start leading-tight">
                   <span>{row.label}</span>
                   <span className="text-[10px] font-normal opacity-80">{row.hint}</span>
                 </span>
+                {!open && list.length > 0 && (
+                  <span className="ml-1 rounded-full bg-foreground/10 px-1.5 text-[10px] font-semibold">{list.length}</span>
+                )}
               </button>
-              <CopyButton classes={list} category={row.id} copiedCategory={copiedCategory} onCopy={copyClasses} />
+
+              {/* Actions — right-aligned */}
+              {list.length > 0 && (
+                <div className="ml-auto flex items-center">
+                  <ActionButton
+                    icon={<TbTrash className="size-3.5" />}
+                    tooltip="Clear"
+                    onClick={() => onClearBucket(list)}
+                    className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  />
+                  <ActionButton
+                    icon={copiedCategory === row.id ? <TbCheck className="size-3.5" /> : <TbCopy className="size-3.5" />}
+                    tooltip={copiedCategory === row.id ? "Copied!" : `Copy ${row.id} classes`}
+                    onClick={() => copyClasses(list, row.id)}
+                    className="text-muted-foreground hover:bg-accent/10 hover:text-foreground"
+                  />
+                </div>
+              )}
             </div>
-            <div
-              role="presentation"
-              className={`flex flex-wrap gap-1.5 rounded-lg border border-dashed p-2 transition-colors ${row.borderIdle} ${
-                dragOverCategory === row.id ? row.dropValid : dragOverCategory === `invalid-${row.id}` ? row.dropInvalid : ""
-              }`}
-              onDragOver={e => onDragOver(e, row.id)}
-              onDragLeave={onDragLeave}
-              onDrop={e => onDrop(e, row.id)}
-            >
-              {list.map((cls, key) => (
-                <Card
-                  key={`${row.id}-${cls}-${key}`}
-                  value={cls}
-                  onClick={(e: any, options: any) => onDelete(cls, row.id, options?.deleteLinked)}
-                  bgColor={CARD_BG_BY_BUCKET[row.id]}
-                  onDragStart={(e: any, data: any) => onDragStart(e, { ...data, sourceCategory: row.id })}
-                  onDragEnd={onDragEnd}
-                />
-              ))}
-            </div>
+
+            {/* Drop zone — only when open */}
+            {open && (
+              <DropZone
+                id={row.id} classes={list} dragOverCategory={dragOverCategory}
+                borderIdle={row.borderIdle} dropValid={row.dropValid} dropInvalid={row.dropInvalid}
+                onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
+                onDragStart={onDragStart} onDragEnd={onDragEnd} onDelete={onDelete}
+              />
+            )}
           </div>
         );
       })}
 
+      {/* Other variants — only if populated */}
       {otherClasses.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -108,7 +185,20 @@ export function BreakpointBuckets({
                 <span className="text-[10px] font-normal opacity-80">hover, max-, etc.</span>
               </span>
             </div>
-            <CopyButton classes={otherClasses} category="other" copiedCategory={copiedCategory} onCopy={copyClasses} />
+            <div className="ml-auto flex items-center">
+              <ActionButton
+                icon={<TbTrash className="size-3.5" />}
+                tooltip="Clear"
+                onClick={() => onClearBucket(otherClasses)}
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              />
+              <ActionButton
+                icon={copiedCategory === "other" ? <TbCheck className="size-3.5" /> : <TbCopy className="size-3.5" />}
+                tooltip={copiedCategory === "other" ? "Copied!" : "Copy other classes"}
+                onClick={() => copyClasses(otherClasses, "other")}
+                className="text-muted-foreground hover:bg-accent/10 hover:text-foreground"
+              />
+            </div>
           </div>
           <div
             role="presentation"
@@ -131,7 +221,18 @@ export function BreakpointBuckets({
           </div>
         </div>
       )}
+
+      {/* Clear all */}
+      {allClasses.length > 0 && (
+        <button
+          type="button"
+          onClick={onClearAll}
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+        >
+          <TbTrash className="size-3.5" />
+          Clear All Styles
+        </button>
+      )}
     </>
   );
 }
-

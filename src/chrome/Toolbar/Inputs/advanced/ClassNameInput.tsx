@@ -13,6 +13,6 @@ export const ClassNameInput = () => (
       label=""
       labelHide={true}
     />
-    <CSSEditorInput inline />
+    <CSSEditorInput />
   </ToolbarSection>
 );

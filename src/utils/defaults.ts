@@ -38,7 +38,9 @@ export const DEFAULT_PALETTE = [
 // Default style guide values - single source of truth
 export const DEFAULT_STYLE_GUIDE = {
   // Spacing & Layout - using CSS values for CSS vars
-  borderRadius: "0.5rem", // rounded-lg = 0.5rem
+  borderRadius: "0.5rem", // → --radius (default UI corners)
+  /** Larger frames / media cards — `rounded-(--card-radius)` in className */
+  cardRadius: "1rem",
   buttonPadding: "1.5rem 0.75rem", // Large button padding (x y format)
   containerPadding: "2rem 2rem", // Large container padding (x y format)
   sectionGap: "4rem", // Large section gap

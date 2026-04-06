@@ -1,5 +1,5 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { useAtomValue } from "@zedux/react";
+import { useAtomState, useAtomValue } from "@zedux/react";
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { classNameToVar } from "utils/tailwind";
@@ -19,36 +19,23 @@ import {
   APPLY_SCOPE_DISPLAY,
   BREAKPOINT_PREFIXES,
   canvasViewToClassScopeKey,
-  getDefaultClassInputViews,
   isMappedOrValidTailwind,
   isBreakpointUtilityToken,
-  migrateClassInputSelectedViews,
   parseClassNameIntoBreakpointBuckets,
 } from "./ClassInput/classItemUtils";
 
 const Input = ({ value, changed, nodeProps, setProp, canvasView }: {
   value: any; changed: (v: any) => void; nodeProps: any; setProp: any; canvasView: string;
 }) => {
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const [selectedViews, setSelectedViews] = useAtomState(ViewSelectionAtom);
+  const classDark = selectedViews.dark ?? false;
   const classes = Array.isArray(value) ? value : [];
   const [classInput, setClassInput] = useState("");
   const [draggedItem, setDraggedItem] = useState<any>(null);
   const [dragOverCategory, setDragOverCategory] = useState<string | null>(null);
 
-  const [selectedViews, setSelectedViews] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("classNameInput-selectedViews");
-      if (saved) {
-        try { return migrateClassInputSelectedViews(JSON.parse(saved)); } catch { /* ignore */ }
-      }
-    }
-    return getDefaultClassInputViews();
-  });
-
   const toggleView = (view: string) => {
-    const next = { ...selectedViews, [view]: !selectedViews[view] };
-    setSelectedViews(next);
-    if (typeof window !== "undefined") localStorage.setItem("classNameInput-selectedViews", JSON.stringify(next));
+    setSelectedViews(prev => ({ ...prev, [view]: !prev[view] }));
   };
 
   const save = (input: string | null = null) => {
@@ -119,6 +106,24 @@ const Input = ({ value, changed, nodeProps, setProp, canvasView }: {
   const _nodeProps = nodeProps ? { ...nodeProps } : {};
   const { mobile, sm, desktop, lg, xl, "2xl": twoxl, other } = parseClassNameIntoBreakpointBuckets(_nodeProps.className || "", classes || []);
 
+  const clearBucket = (bucketClasses: string[]) => {
+    setProp((props: any) => {
+      if (!props.className) return;
+      const remaining = (props.className || "").split(/\s+/).filter(Boolean).filter((c: string) => !bucketClasses.includes(c));
+      props.className = remaining.join(" ");
+    }, 0);
+  };
+
+  const clearAll = () => {
+    const allBucketClasses = [mobile, sm, desktop, lg, xl, twoxl, other].flat();
+    setProp((props: any) => {
+      if (!props.className) return;
+      const remaining = (props.className || "").split(/\s+/).filter(Boolean).filter((c: string) => !allBucketClasses.includes(c));
+      props.className = remaining.join(" ");
+    }, 0);
+    changed([]);
+  };
+
   return (
     <div className="relative z-10 flex flex-col gap-6">
       <ClassSearchInput classes={classes} onSave={save} classInput={classInput} setClassInput={setClassInput} />
@@ -145,6 +150,8 @@ const Input = ({ value, changed, nodeProps, setProp, canvasView }: {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDelete={delNodeProp}
+        onClearBucket={clearBucket}
+        onClearAll={clearAll}
         draggedItem={draggedItem}
       />
     </div>

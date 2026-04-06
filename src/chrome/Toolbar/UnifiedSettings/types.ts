@@ -1,4 +1,5 @@
 import { ComponentType, ReactNode } from "react";
+import type { ComponentModifier } from "../../../define";
 
 /**
  * Toolbar config — lives on each component's .craft.toolbar.
@@ -10,7 +11,7 @@ export type DisableKey =
   | "textColor" | "bgColor" | "placeholderColor" | "font" | "background" | "pattern"
   | "border" | "shadow" | "radius" | "opacity" | "cursor" | "ringOutline"
   // Whole-tab disables
-  | "hoverClick" | "animations" | "effectsClass" | "accessibility"
+  | "hoverClick" | "animations" | "effectsClass" | "accessibility" | "modifiers"
   // Style granular
   | "typeInput" | "importExport";
 
@@ -31,6 +32,8 @@ export interface ToolbarConfig {
   layout?: ReactNode | "spacing" | "hidden";
   /** Extra JSX appended to Style tab */
   styleExtra?: ReactNode;
+  /** Composable className modifiers from defineComponent() */
+  modifiers?: ComponentModifier[];
 }
 
 // ─── Head Item (tab bar) ─────────────────────────────────────────────

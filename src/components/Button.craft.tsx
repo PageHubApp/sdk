@@ -3,6 +3,7 @@
  */
 import { ButtonMainTab, ButtonMainTabAdvanced } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ButtonMainTab";
 import { defineComponent } from "../define";
+import { migrateAction, actionToHref, actionTarget } from "../utils/action";
 import { ariaAttrs, collectClasses, escapeAttr, escapeHTML, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
 import { Button } from "./Button";
 import { DeleteNodeController, HoverNodeController, SelectButtonListTool } from "./editor-chrome";
@@ -28,12 +29,16 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
 
   const fullCls = [cls, extra].filter(Boolean).join(" ");
-  const t = props.url ? "a" : "button";
+  const action = migrateAction(props);
+  const href = actionToHref(action);
+  const target = actionTarget(action);
+  const t = href ? "a" : "button";
 
   const attrs: Record<string, any> = { class: fullCls || undefined, ...ariaAttrs(props) };
-  if (t === "a") {
-    attrs.href = props.url;
-    if (/^https?:\/\//.test(props.url || "")) attrs.rel = "noopener noreferrer";
+  if (t === "a" && href) {
+    attrs.href = href;
+    if (target) attrs.target = target;
+    if (/^https?:\/\//.test(href)) attrs.rel = "noopener noreferrer";
   } else {
     attrs.type = props.type || "button";
   }
@@ -110,5 +115,14 @@ export const ButtonDef = defineComponent({
         className: "flex-row items-center justify-center gap-2 px-6 py-3 w-auto flex cursor-pointer",
       },
     },
+  ],
+  modifiers: [
+    { name: "btn-outline", label: "Outline", category: "Style" },
+    { name: "btn-ghost", label: "Ghost", category: "Style" },
+    { name: "btn-sm", label: "Small", category: "Size" },
+    { name: "btn-lg", label: "Large", category: "Size" },
+    { name: "btn-pill", label: "Pill", category: "Shape" },
+    { name: "btn-wide", label: "Wide", category: "Size" },
+    { name: "btn-square", label: "Square", category: "Shape" },
   ],
 }, { __internal: true });

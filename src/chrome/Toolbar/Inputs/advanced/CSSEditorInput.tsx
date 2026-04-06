@@ -50,7 +50,7 @@ const cssLinter = linter(view => {
   return diagnostics;
 });
 
-export const CSSEditorInput = ({ inline = false }: { inline?: boolean }) => {
+export const CSSEditorInput = () => {
   const view = useAtomValue(ViewAtom);
   const { query, actions } = useEditor();
 
@@ -79,25 +79,20 @@ export const CSSEditorInput = ({ inline = false }: { inline?: boolean }) => {
   };
 
   const editor = (
-    <div className="w-full">
-      {!inline && <div className="mb-1 text-xs text-muted-foreground">Inline Style Tag</div>}
-      <CodeEditor
-        value={value}
-        onChange={handleChange}
-        language="css"
-        extensions={[cssLinter]}
-        height="150px"
-        lineNumbers={false}
-        theme="auto"
-        placeholder="color: tomato; border-style: dotted;"
-      />
-    </div>
+    <CodeEditor
+      value={value}
+      onChange={handleChange}
+      language="css"
+      extensions={[cssLinter]}
+      height="150px"
+      lineNumbers={false}
+      theme="auto"
+      placeholder="color: tomato; border-style: dotted;"
+    />
   );
 
-  if (inline) return editor;
-
   return (
-    <ToolbarSection title="Inline Style Tag" defaultOpen={false}>
+    <ToolbarSection title="Inline Style" nested collapsible defaultOpen={false} accordionPassive>
       {editor}
     </ToolbarSection>
   );

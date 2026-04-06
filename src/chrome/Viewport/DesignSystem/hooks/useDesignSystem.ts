@@ -1,5 +1,5 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtomState } from "@zedux/react";
 import { resolveColorForDisplay } from "utils/design/colorSystem";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "utils/defaults";
@@ -112,6 +112,11 @@ export function useDesignSystem(isOpen: boolean) {
     const rootNode = state.nodes[ROOT_NODE];
     return (rootNode?.data?.props || {}) as Record<string, unknown>;
   });
+
+  // Stable JSON keys for dependency tracking (avoids infinite loops from new object refs)
+  const rootPalletJson = useMemo(() => JSON.stringify(rootNodeData.pallet), [rootNodeData.pallet]);
+  const rootStyleGuideJson = useMemo(() => JSON.stringify(rootNodeData.styleGuide), [rootNodeData.styleGuide]);
+  const rootTypographyJson = useMemo(() => JSON.stringify(rootNodeData.typography), [rootNodeData.typography]);
 
   // ─── Style field updater ───
   const updateStyle = <K extends keyof StyleGuideState>(key: K, value: StyleGuideState[K]) => {
@@ -348,14 +353,22 @@ export function useDesignSystem(isOpen: boolean) {
 
   // Sync from external changes (undo/redo)
   useEffect(() => {
-    if (isOpen && !isSaving.current && lastSavedData.current) {
-      const dataChanged =
-        JSON.stringify(rootNodeData.pallet) !== JSON.stringify(lastSavedData.current.pallet) ||
-        JSON.stringify(rootNodeData.styleGuide) !== JSON.stringify(lastSavedData.current.styleGuide);
+    if (!isOpen || isSaving.current || !lastSavedData.current) return;
 
-      if (dataChanged) loadFromRootNode();
+    const dataChanged =
+      rootPalletJson !== JSON.stringify(lastSavedData.current.pallet) ||
+      rootStyleGuideJson !== JSON.stringify(lastSavedData.current.styleGuide);
+
+    if (dataChanged) {
+      // Update lastSavedData BEFORE setting state to prevent re-triggering
+      lastSavedData.current = {
+        pallet: rootNodeData.pallet,
+        styleGuide: rootNodeData.styleGuide,
+        typography: rootNodeData.typography,
+      };
+      loadFromRootNode();
     }
-  }, [rootNodeData]);
+  }, [rootPalletJson, rootStyleGuideJson, rootTypographyJson]);
 
   // Debounced auto-save
   useEffect(() => {

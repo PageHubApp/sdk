@@ -169,8 +169,10 @@ export interface PageHubAiMediaHandlers {
 export interface PageHubEditorChromeSlots {
   /** Toolbox tab strip — wand opens assistant (host typically uses `ClippyOpenAtom`). */
   renderToolboxAiButton?: () => ReactNode;
-  /** Rich-text floating toolbar — host owns prompt UI and text-improve API. */
-  renderTiptapAiToolbar?: (ctx: { editor: unknown; query: unknown }) => ReactNode;
+  /** Rich-text floating toolbar trigger button — host owns the wand icon. */
+  renderTiptapAiToolbar?: (ctx: { editor: unknown; query: unknown; activePanel: string | null; setActivePanel: (p: string | null) => void }) => ReactNode;
+  /** Rich-text AI panel content — rendered in the toolbar's panel slot when activePanel === "ai". */
+  renderTiptapAiPanel?: (ctx: { editor: unknown; query: unknown }) => ReactNode;
   /** Settings sidebar “Edit with AI” (per selected node). */
   renderSettingsAiButton?: (ctx: { nodeId: string }) => ReactNode;
   /** Container / add-section wand — opens assistant in create mode. */

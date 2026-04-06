@@ -6,9 +6,10 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { FaFont } from "react-icons/fa";
 import { Text as UiText } from "@pagehub/ui";
-import { addClickControls, ClickControl } from "../utils/clickControls";
+import { addActionHandlers } from "../utils/clickControls";
+import { migrateAction, actionToHref, actionTarget, isHandlerAction, type NodeAction } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
-import { motionIt, resolvePageRef } from "../utils/lib";
+import { motionIt } from "../utils/lib";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
@@ -23,7 +24,8 @@ export interface TextProps extends BaseSelectorProps {
   text?: string;
   tagName?: string;
   activeTab?: number;
-  click?: ClickControl;
+  action?: NodeAction;
+  click?: any; // Legacy — handled by migrateAction()
 }
 
 
@@ -40,16 +42,19 @@ const renderLiveMode = (props: any, query: any, router: any) => {
   const processedText = replaceVariables(props.text, query);
   let { tagName } = props;
 
-  if (props.url && typeof props.url === "string") {
-    const resolvedUrl = resolvePageRef(props.url, query, router?.asPath);
-    const isInternal = resolvedUrl && resolvedUrl.startsWith("/");
+  const action = migrateAction(props);
+  const resolvedUrl = actionToHref(action, query, router?.asPath);
+
+  if (resolvedUrl) {
+    const isInternal = resolvedUrl.startsWith("/");
     tagName = isInternal ? Link : ("a" as any);
+    const target = actionTarget(action);
     const linkProps: any = {
-      href: resolvedUrl || "#",
-      target: props.urlTarget,
+      href: resolvedUrl,
       dangerouslySetInnerHTML: { __html: processedText },
     };
-    if (/^https?:\/\//.test(resolvedUrl || "")) {
+    if (target) linkProps.target = target;
+    if (/^https?:\/\//.test(resolvedUrl)) {
       linkProps.rel = "noopener noreferrer";
     }
     return React.createElement(tagName, linkProps);
@@ -61,7 +66,7 @@ const renderLiveMode = (props: any, query: any, router: any) => {
         mode="oneline"
         maxFontSizePx={800}
         style={{ width: "100%" }}
-        as={props.url ? "a" : "div"}
+        as="div"
         dangerouslySetInnerHTML={{ __html: processedText }}
       />
     );
@@ -100,7 +105,10 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   };
 
   applyAriaProps(prop, props);
-  addClickControls(prop, props.click, enabled);
+  const action = migrateAction(props);
+  if (isHandlerAction(action) || action?.type === "scroll-to") {
+    addActionHandlers(prop, action, enabled);
+  }
 
   if (enabled) {
     if (!text) prop.children = <FaFont />;
@@ -131,7 +139,9 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   } else {
     const liveContent = renderLiveMode(props, query, router);
 
-    if (props.url && typeof props.url === "string") {
+    const liveAction = migrateAction(props);
+    const liveHref = actionToHref(liveAction, query, router?.asPath);
+    if (liveHref) {
       return liveContent;
     } else if (props.tagName === "Textfit") {
       prop.children = liveContent;

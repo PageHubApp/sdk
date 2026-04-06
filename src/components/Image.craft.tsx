@@ -3,6 +3,7 @@
  */
 import React from "react";
 import { defineComponent } from "../define";
+import { migrateAction, actionToHref } from "../utils/action";
 import { Image } from "./Image";
 import { staticClasses, tag, buildAttrs, getCdnUrl, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
 
@@ -48,9 +49,10 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
 
   const imgTag = `<img${buildAttrs(imgAttrs)} />`;
 
-  if (props.url) {
+  const href = actionToHref(migrateAction(props)) || props.url;
+  if (href) {
     return tag("a", {
-      href: props.url,
+      href,
       "aria-label": alt || title || "Image link",
     }, imgTag);
   }
@@ -89,5 +91,14 @@ export const ImageDef = defineComponent({
         className: "object-cover flex overflow-hidden md:h-auto",
       },
     },
+  ],
+  modifiers: [
+    { name: "img-rounded", label: "Rounded", category: "Shape" },
+    { name: "img-circle", label: "Circle", category: "Shape" },
+    { name: "img-cover", label: "Cover", category: "Fit" },
+    { name: "img-contain", label: "Contain", category: "Fit" },
+    { name: "aspect-square", label: "Square", category: "Aspect" },
+    { name: "aspect-video", label: "Video", category: "Aspect" },
+    { name: "aspect-4-3", label: "4:3", category: "Aspect" },
   ],
 }, { __internal: true });

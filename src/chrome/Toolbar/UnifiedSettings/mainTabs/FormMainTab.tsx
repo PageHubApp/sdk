@@ -1,11 +1,9 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
-import { PresetGroupRenderer } from "../../Inputs/preset/PresetRenderer";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useState } from "react";
 import { TbForms, TbLoader, TbCheck } from "react-icons/tb";
-import { selectorPresets } from "utils/design/selectorPresets";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 const VIEW_STATES = [
@@ -54,11 +52,6 @@ export const FormMainTab = () => {
           ))}
         </div>
         <SettingsAiSlot />
-      </ToolbarSection>
-    ),
-    Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply form layout presets.">
-        <PresetGroupRenderer presets={selectorPresets.form} />
       </ToolbarSection>
     ),
     Properties: (

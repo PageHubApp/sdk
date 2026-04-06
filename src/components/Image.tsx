@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { TbCheck, TbPhoto } from "react-icons/tb";
 import { Image as UiImage } from "@pagehub/ui";
 import { getCdnUrl } from "../utils/cdn";
+import { migrateAction, actionToHref } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { getResponsiveImageAttrs, motionIt } from "../utils/lib";
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
@@ -107,7 +108,7 @@ export const Image = (incomingProps: ImageProps) => {
       ref.current = r;
       connect(drag(r));
     },
-    href: props.url,
+    href: actionToHref(migrateAction(props)) || props.url,
     onClick: e => {
       enabled && e.preventDefault();
     },

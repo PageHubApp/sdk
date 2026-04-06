@@ -1,13 +1,11 @@
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { MediaInput } from "../../Inputs/media/MediaInput";
-import { PresetGroupRenderer } from "../../Inputs/preset/PresetRenderer";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { ListEditor } from "../../Inputs/preset/ListItemPopover";
 import { atom, useAtomState, useAtomInstance } from "@zedux/react";
 import { BatchOperationAtom } from "../../../../utils/atoms";
 import { TbEdit } from "react-icons/tb";
-import { selectorPresets } from "utils/design/selectorPresets";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 export const SelectedImageListItemAtom = atom("selectedimagelistitem_unified", null);
@@ -76,11 +74,6 @@ export const ImageListMainTab = () => {
             </NodeProvider>
           )}
         />
-      </ToolbarSection>
-    ),
-    Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} full={1} help="Quick-apply gallery layout presets.">
-        <PresetGroupRenderer presets={selectorPresets.container} keys={["layouts"]} />
       </ToolbarSection>
     ),
     Properties: (

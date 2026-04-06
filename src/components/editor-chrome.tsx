@@ -16,7 +16,9 @@ export { UniformPaddingNodeController } from "../chrome/NodeControllers/UniformP
 export { ToolboxMenu } from "../chrome/RenderNode";
 export { AddElementButton } from "../chrome/shared/AddElementButton";
 export { TiptapProvider } from "../chrome/TiptapContext";
-export { TiptapToolbar } from "../chrome/Tools/TiptapToolbar";
+export { InlineEditToolbar } from "../chrome/Tools/InlineEditToolbar/InlineEditToolbar";
+/** @deprecated Use InlineEditToolbar instead */
+export { InlineEditToolbar as TiptapToolbar } from "../chrome/Tools/InlineEditToolbar/InlineEditToolbar";
 export { ContainerSettingsTopNodeTool } from "../chrome/NodeControllers/Tools/ContainerSettingsTopNodeTool";
 export { ContainerSettingsNodeTool } from "../chrome/NodeControllers/Tools/ContainerSettingsNodeTool";
 export { SelectButtonListTool } from "../chrome/NodeControllers/Tools/SelectButtonListTool";

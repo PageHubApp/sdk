@@ -56,6 +56,15 @@ export interface ComponentPreset {
   children?: React.ReactNode | (() => React.ReactNode);
 }
 
+export interface ComponentModifier {
+  /** CSS class name added to the element, e.g. "btn-outline". This IS the class. */
+  name: string;
+  /** Display label in the editor UI, e.g. "Outline" */
+  label: string;
+  /** Optional grouping for the UI, e.g. "Style", "Size", "Shape" */
+  category?: string;
+}
+
 export interface PageHubComponentDef<P extends Record<string, any> = Record<string, any>> {
   /** Unique component type name. Must be PascalCase. */
   name: string;
@@ -121,6 +130,9 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
 
   /** Toolbox presets — each becomes a separate drag source in the sidebar. */
   presets?: ComponentPreset[];
+
+  /** Modifiers — composable className toggles shown in the Design tab. */
+  modifiers?: ComponentModifier[];
 }
 
 // ─── Resolved descriptor (internal) ────────────────────────────────────────
@@ -155,6 +167,7 @@ export interface ResolvedComponentDef<P = any> {
   readonly defaultProps: Record<string, any>;
   readonly craftProps: Record<string, any>;
   readonly presets: ComponentPreset[];
+  readonly modifiers: ComponentModifier[];
 }
 
 export function isComponentDef(value: any): value is ResolvedComponentDef {
@@ -297,6 +310,7 @@ export function defineComponent<P extends Record<string, any> = Record<string, a
     defaultProps: def.defaultProps || {},
     craftProps: def.craftProps || {},
     presets: def.presets || [],
+    modifiers: def.modifiers || [],
   };
 
   return Object.freeze(resolved);
@@ -436,6 +450,11 @@ export function attachCraft(
     craft.props.tools = def.tools;
   } else if (defaultTools) {
     craft.props.tools = defaultTools(def.canvas);
+  }
+
+  // Modifiers
+  if (def.modifiers.length > 0) {
+    craft.toolbar.modifiers = def.modifiers;
   }
 
   component.craft = craft;

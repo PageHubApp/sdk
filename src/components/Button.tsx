@@ -6,14 +6,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Button as UiButton } from "@pagehub/ui";
 
 import { GoogleFontLoadedAtom } from "../utils/atoms";
-import { addClickControls, ClickControl } from "../utils/clickControls";
+import { addActionHandlers } from "../utils/clickControls";
+import { migrateAction, actionToHref, actionTarget, isLinkAction, isHandlerAction, type NodeAction } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { resolveIcon } from "../utils/iconResolver";
 import {
   registerMaterialSymbolIconUsage,
   unregisterMaterialSymbolIconUsage,
 } from "../utils/materialSymbolsAutoLoad";
-import { motionIt, resolvePageRef } from "../utils/lib";
+import { motionIt } from "../utils/lib";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
@@ -36,7 +37,8 @@ export interface ButtonProps extends BaseSelectorProps {
   icon?: IconProps;
   url?: string;
   type?: string;
-  click?: ClickControl;
+  action?: NodeAction;
+  click?: any; // Legacy — handled by migrateAction()
 }
 
 const defaultIcon = {
@@ -119,24 +121,22 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     }
   }
 
-  // Resolve page references to actual URLs
-  const resolvedUrl =
-    props.url && typeof props.url === "string"
-      ? resolvePageRef(props.url, query, router?.asPath)
-      : props.url;
+  // Resolve action to href (handles link-url, link-page, email, phone, scroll-to)
+  const action = migrateAction(props);
+  const resolvedUrl = actionToHref(action, query, router?.asPath);
+  const target = actionTarget(action);
 
   const isInternalLink = resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
   let ele: any = resolvedUrl && typeof resolvedUrl === "string" ? "a" : "button";
 
   if (resolvedUrl && typeof resolvedUrl === "string") {
     prop.href = resolvedUrl;
-    prop["data-button-link"] = "true"; // Custom attribute to exclude from global link styles
-    // Add rel for external links (security + accessibility)
+    prop["data-button-link"] = "true";
+    if (target) prop.target = target;
     if (/^https?:\/\//.test(resolvedUrl)) {
       prop.rel = "noopener noreferrer";
     }
   } else if (ele === "button") {
-    // Set the button type attribute
     prop.type = props.type || "button";
   }
 
@@ -155,49 +155,25 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     prop.type = "button";
   }
 
-  // Handle click actions using reusable utility
-  const handleClick = () => {
-    if (enabled) {
-      // return;
-    }
-    // Click controls are handled by addClickControls utility
-  };
-
-  const handleDoubleClick = () => {
-    if (enabled && props.click?.type === "click") {
-      const element = document.getElementById(props.click.value);
-      if (element) {
-        if (props.click.direction === "show") {
-          element.style.display = "block";
-        } else if (props.click.direction === "hide") {
-          element.style.display = "none";
-        } else if (props.click.direction === "toggle") {
-          element.style.display = element.style.display === "none" ? "block" : "none";
-        }
-      }
-    }
-  };
-
   applyAriaProps(prop, props);
 
-  // Add click controls using reusable utility (with style method for Button)
-  addClickControls(
-    prop,
-    props.click ? { ...props.click, method: "style" } : undefined,
-    enabled,
-    handleClick
-  );
+  // Attach JS handlers for open-modal, show-hide, scroll-to
+  if (isHandlerAction(action)) {
+    // For show-hide on buttons, force style method
+    const actionForButton =
+      action.type === "show-hide" ? { ...action, method: "style" as const } : action;
+    addActionHandlers(prop, actionForButton, enabled);
+  } else if (action?.type === "scroll-to") {
+    addActionHandlers(prop, action, enabled);
+  }
 
   // Tab button: mark with data attribute for active state tracking
-  if (props.click?.direction === "tab") {
+  if (action?.type === "show-hide" && action.direction === "tab") {
     prop["data-tab-button"] = "true";
-    // First tab button in a group defaults to active
     if (!prop["data-tab-active"]) {
       prop["data-tab-active"] = "true";
     }
   }
-
-  prop.onDoubleClick = handleDoubleClick;
 
   if (enabled) {
     prop["data-bounding-box"] = enabled;

@@ -1,0 +1,273 @@
+import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
+import React, { useCallback, useEffect, useState } from "react";
+import { TbCheck, TbChevronDown, TbEdit, TbPlus, TbTrash } from "react-icons/tb";
+import { FloatingPanel } from "../FloatingPanel";
+
+interface Modifier {
+  name: string;
+  label: string;
+}
+
+interface ModifiersModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
+  const { actions, query } = useEditor();
+
+  const [modifiers, setModifiers] = useState<Record<string, Modifier[]>>({});
+  const [selectedType, setSelectedType] = useState("");
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editLabel, setEditLabel] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const [addType, setAddType] = useState("");
+
+  // Load from ROOT
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        const root = query.node(ROOT_NODE).get();
+        const m = root?.data?.props?.modifiers || {};
+        setModifiers(JSON.parse(JSON.stringify(m)));
+        const types = Object.keys(m);
+        if (!selectedType && types.length > 0) setSelectedType(types[0]);
+      } catch (e) {
+        console.error("Error loading modifiers:", e);
+      }
+    }
+  }, [isOpen, query]);
+
+  const currentList = modifiers[selectedType] || [];
+  const componentTypes = Object.keys(modifiers).sort();
+
+  const save = useCallback((updated: Record<string, Modifier[]>) => {
+    const clean: Record<string, Modifier[]> = {};
+    for (const [k, v] of Object.entries(updated)) {
+      if (v.length > 0) clean[k] = v;
+    }
+    setModifiers(clean);
+    actions.setProp(ROOT_NODE, (props: any) => {
+      props.modifiers = Object.keys(clean).length > 0 ? clean : undefined;
+    });
+  }, [actions]);
+
+  const handleDelete = (index: number) => {
+    const updated = { ...modifiers };
+    updated[selectedType] = currentList.filter((_, i) => i !== index);
+    if (updated[selectedType].length === 0) {
+      delete updated[selectedType];
+      const remaining = Object.keys(updated);
+      setSelectedType(remaining[0] || "");
+    }
+    save(updated);
+  };
+
+  const handleEdit = (index: number) => {
+    setEditingIndex(index);
+    setEditName(currentList[index].name);
+    setEditLabel(currentList[index].label);
+    setIsAdding(false);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editName.trim() || !editLabel.trim()) return;
+    const updated = { ...modifiers };
+    const list = [...currentList];
+    if (editingIndex !== null) {
+      list[editingIndex] = { name: editName.trim(), label: editLabel.trim() };
+    }
+    updated[selectedType] = list;
+    save(updated);
+    setEditingIndex(null);
+    setEditName("");
+    setEditLabel("");
+  };
+
+  const handleAdd = () => {
+    const typeName = addType.trim();
+    if (!editName.trim() || !editLabel.trim() || !typeName) return;
+    const name = editName.trim().toLowerCase().replace(/\s+/g, "-");
+    const updated = { ...modifiers };
+    if (!updated[typeName]) updated[typeName] = [];
+    if (updated[typeName].some(m => m.name === name)) return;
+    updated[typeName].push({ name, label: editLabel.trim() });
+    save(updated);
+    setSelectedType(typeName);
+    setIsAdding(false);
+    setEditName("");
+    setEditLabel("");
+    setAddType("");
+  };
+
+  const startAdding = () => {
+    setIsAdding(true);
+    setEditingIndex(null);
+    setEditName("");
+    setEditLabel("");
+    setAddType(selectedType);
+  };
+
+  const inputClass = "w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+
+  return (
+    <FloatingPanel
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Modifiers"
+      backdrop
+      storageKey="modifiers-manager"
+      defaultWidth={500}
+      defaultHeight={Math.round(typeof window !== "undefined" ? window.innerHeight - 120 : 600)}
+      minWidth={360}
+      maxWidth={700}
+      minHeight={300}
+      edges={["e", "s", "se", "w", "sw"]}
+    >
+      <div className="flex h-full flex-col">
+        {/* Type filter */}
+        {componentTypes.length > 0 && !isAdding && (
+          <div className="border-b border-border bg-muted px-4 py-2">
+            <Listbox value={selectedType} onChange={(v) => { setSelectedType(v); setEditingIndex(null); }}>
+              <div className="relative">
+                <ListboxButton className="flex w-full items-center justify-between rounded-lg border border-border bg-input px-4 py-2 text-left text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                  <span>{selectedType || "Select type"}</span>
+                  <TbChevronDown className="text-muted-foreground" />
+                </ListboxButton>
+                <ListboxOptions anchor="bottom start" className="pagehub-sdk-root ph-select-content" modal={false}>
+                  {componentTypes.map(t => (
+                    <ListboxOption key={t} value={t} className="ph-select-item">
+                      {({ selected }) => (
+                        <div className="flex items-center gap-2">
+                          <span className="flex w-4 shrink-0 items-center justify-center">
+                            {selected && <TbCheck size={14} />}
+                          </span>
+                          {t}
+                          <span className="ml-auto text-xs text-muted-foreground">{modifiers[t]?.length || 0}</span>
+                        </div>
+                      )}
+                    </ListboxOption>
+                  ))}
+                </ListboxOptions>
+              </div>
+            </Listbox>
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="scrollbar-light flex-1 overflow-y-auto bg-background p-4">
+          {/* Add modifier form */}
+          {isAdding && (
+            <div className="space-y-3 rounded-lg border border-border bg-muted/50 p-4">
+              <p className="text-sm font-medium">New Modifier</p>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">Component Type</label>
+                <input
+                  type="text"
+                  value={addType}
+                  onChange={e => setAddType(e.target.value)}
+                  placeholder="e.g. Button, Container"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">Label</label>
+                <input
+                  type="text"
+                  value={editLabel}
+                  onChange={e => setEditLabel(e.target.value)}
+                  placeholder="e.g. Outline, Rounded"
+                  className={inputClass}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">CSS Class</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  placeholder="e.g. btn-outline"
+                  className={inputClass}
+                  onKeyDown={e => { if (e.key === "Enter") handleAdd(); }}
+                />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleAdd} className="btn btn-primary flex-1">Add</button>
+                <button onClick={() => { setIsAdding(false); setEditName(""); setEditLabel(""); setAddType(""); }} className="btn btn-secondary flex-1">Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {/* Modifier list */}
+          {!isAdding && (
+            <>
+              {componentTypes.length === 0 && (
+                <p className="text-center text-sm text-muted-foreground">
+                  No modifiers yet. Click "Add Modifier" to create one.
+                </p>
+              )}
+
+              {selectedType && currentList.length === 0 && (
+                <p className="text-center text-sm text-muted-foreground">
+                  No modifiers for {selectedType}.
+                </p>
+              )}
+
+              <div className="space-y-1">
+                {currentList.map((mod, i) => (
+                  <div key={i}>
+                    {editingIndex === i ? (
+                      <div className="space-y-2 rounded-lg border border-border bg-muted/50 p-3">
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-muted-foreground">Label</label>
+                          <input value={editLabel} onChange={e => setEditLabel(e.target.value)} className={inputClass} autoFocus />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-muted-foreground">CSS Class</label>
+                          <input value={editName} onChange={e => setEditName(e.target.value)} className={inputClass} onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); }} />
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={handleSaveEdit} className="btn btn-primary flex-1">Save</button>
+                          <button onClick={() => setEditingIndex(null)} className="btn btn-secondary flex-1">Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted">
+                        <div className="flex-1">
+                          <span className="text-sm font-medium">{mod.label}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">.{mod.name}</span>
+                        </div>
+                        <button onClick={() => handleEdit(i)} className="text-muted-foreground hover:text-foreground" title="Edit">
+                          <TbEdit size={14} />
+                        </button>
+                        <button onClick={() => handleDelete(i)} className="text-muted-foreground hover:text-destructive" title="Delete">
+                          <TbTrash size={14} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex gap-3 border-t border-border bg-muted p-4">
+          {!isAdding && (
+            <button type="button" onClick={startAdding} className="btn btn-primary flex flex-1 items-center justify-center gap-1">
+              <TbPlus size={14} />
+              Add Modifier
+            </button>
+          )}
+          <button type="button" onClick={onClose} className="btn btn-secondary flex-1">
+            Done
+          </button>
+        </div>
+      </div>
+    </FloatingPanel>
+  );
+}

@@ -1,6 +1,6 @@
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { IconInput } from "../../Inputs/media/IconInput";
-import LinkSettingsInput from "../../Inputs/preset/LinkSettingsInput";
+import ActionInput from "../../Inputs/action/ActionInput";
 import { ListEditor } from "../../Inputs/preset/ListItemPopover";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -117,11 +117,7 @@ export const NavMainTab = () => {
           ]}
           renderPopover={(link) => (
             <NodeProvider id={link.id}>
-              <LinkSettingsInput
-                propKey="url"
-                showAnchor={false}
-                suggestedPageName={link.text}
-              />
+              <ActionInput />
               <IconInput
                 propKey="icon"
                 propType="component"

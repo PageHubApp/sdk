@@ -264,7 +264,7 @@ export { PageHubViewer, renderViewer } from "./viewer";
 
 // Component registration API
 export { defineComponent } from "./define";
-export type { ResolvedComponentDef, PropSchema, ComponentPreset } from "./define";
+export type { ResolvedComponentDef, PropSchema, ComponentPreset, ComponentModifier } from "./define";
 
 // Type exports
 export type {

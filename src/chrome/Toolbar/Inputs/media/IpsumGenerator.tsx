@@ -6,7 +6,9 @@ import { LoremIpsum } from "../../../../utils/data/loremIpsum";
 import { useAtomValue } from "@zedux/react";
 import { editorCanvasViewToClassPrefixKey } from "../../../../utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
-import { Wrap } from "../../ToolbarStyle";
+import { TbLetterA, TbMinus, TbAlignLeft } from "react-icons/tb";
+import { Tooltip as ReactTooltip } from "react-tooltip";
+import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -52,42 +54,30 @@ export const IpsumGenerator = ({ propKey, propType }) => {
     });
   };
 
+  const buttons = [
+    { icon: TbLetterA, label: "Word", generate: () => capitalizeFirstLetter(lorem.generateWords(1)) },
+    { icon: TbMinus, label: "Sentence", generate: () => lorem.generateSentences(1) },
+    { icon: TbAlignLeft, label: "Paragraph", generate: () => lorem.generateParagraphs(1) },
+  ];
+
   return (
-    <Wrap
-      props={{
-        ...propValues,
-        label: "Generate Text",
-        labelHide: true,
-      }}
-    >
-      <div className="flex flex-col gap-1.5">
-        <p className="text-xs text-muted-foreground">Fill with placeholder text</p>
-        <div className="flex gap-1.5">
+    <div className="flex items-center justify-between px-1">
+      <span className="text-xs text-muted-foreground">Lorem</span>
+      <div className="flex gap-0.5">
+        {buttons.map(({ icon: Icon, label, generate }) => (
           <button
+            key={label}
             type="button"
-            className="btn btn-secondary btn-sm flex-1"
-            onClick={() => save(capitalizeFirstLetter(lorem.generateWords(1)))}
+            data-tooltip-id="ipsum-tip"
+            data-tooltip-content={label}
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onClick={() => save(generate())}
           >
-            Word
+            <Icon className="size-3.5" />
           </button>
-
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm flex-1"
-            onClick={() => save(lorem.generateSentences(1))}
-          >
-            Sentence
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm flex-1"
-            onClick={() => save(lorem.generateParagraphs(1))}
-          >
-            Paragraph
-          </button>
-        </div>
+        ))}
       </div>
-    </Wrap>
+      <ReactTooltip id="ipsum-tip" variant="light" classNameArrow="hidden" className={REACT_TOOLTIP_SURFACE_CLASS} />
+    </div>
   );
 };

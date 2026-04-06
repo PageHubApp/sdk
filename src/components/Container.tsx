@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { TbContainer, TbNote } from "react-icons/tb";
 import { useIsolate, usePreview, useView } from "../store";
 import { mergeAccessibilityProps } from "../utils/accessibility";
-import { ClickControl, addClickControls } from "../utils/clickControls";
+import { addActionHandlers } from "../utils/clickControls";
+import { migrateAction, actionToHref, isHandlerAction, type NodeAction } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { Section, Box } from "@pagehub/ui";
 import {
@@ -31,7 +32,8 @@ export interface ContainerProps extends BaseSelectorProps {
   role?: string;
   "aria-label"?: string;
 
-  click?: ClickControl;
+  actionProp?: NodeAction;
+  click?: any; // Legacy — handled by migrateAction()
 }
 
 export const Container = (incomingProps: Partial<ContainerProps>) => {
@@ -193,18 +195,24 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     ),
   };
 
-  if (props.url) {
-    prop.onClick = e => {
-      e.preventDefault();
+  // Unified action system
+  const action = migrateAction(props);
+  const resolvedUrl = actionToHref(action, null, undefined);
 
+  if (resolvedUrl) {
+    prop.onClick = (e: any) => {
+      e.preventDefault();
       if (!enabled) {
-        window.open(props.url, props.urlTarget);
+        const target = action?.type === "link-url" || action?.type === "link-page"
+          ? (action as any).target : undefined;
+        window.open(resolvedUrl, target || "_self");
       }
     };
   }
 
-  // Add click control functionality (like buttons)
-  addClickControls(prop, props.click, enabled, prop.onClick);
+  if (isHandlerAction(action) || action?.type === "scroll-to") {
+    addActionHandlers(prop, action, enabled);
+  }
 
   if (props.type === "form") {
     prop.action = props.action || "";

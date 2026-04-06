@@ -1,6 +1,7 @@
 import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
 import { Tooltip } from "components/layout/Tooltip";
 import { useEffect, useState } from "react";
+import { TbChevronRight } from "react-icons/tb";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
 import { useAccordionContext } from "./AccordionContext";
 import { ToolbarLabel } from "./Label";
@@ -40,8 +41,6 @@ export const ToolbarSection = ({
     }
   }, [managed, title]);
 
-  if (title === "Presets") return null;
-
   const isOpen = managed ? accordionCtx.getIsOpen(title) : localIsOpen;
 
   const handleClick = (e: React.MouseEvent) => {
@@ -61,12 +60,12 @@ export const ToolbarSection = ({
   const containerClasses = `w-full`;
 
   const titleClasses = nested
-    ? `flex w-full items-center justify-between gap-1 ${collapsible ? "cursor-pointer border-b border-border/30 px-2 py-1.5" : "pb-2 pt-1"} text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground ${className}`
+    ? `flex w-full items-center justify-between gap-1 ${collapsible ? "cursor-pointer -mx-3 px-3 py-1.5" : "pb-2 pt-1"} text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground ${className}`
     : `flex w-full items-center justify-between gap-2 ${collapsible ? "cursor-pointer border-b border-border bg-sidebar px-3 py-2" : "pb-2 pt-1"} text-sm font-bold text-sidebar-foreground transition-colors ${className}`;
 
   // When scrollable, we remove padding from body and add it inside the scrollbar wrapper
   const bodyClasses = nested
-    ? `grid items-end gap-2 ${collapsible ? `border-b border-border/30 ${scrollable ? "" : "px-2 pb-2"}` : ""} ${bodyClassName}`
+    ? `grid items-end gap-2 ${collapsible ? `${scrollable ? "" : "-mx-3 px-3 pb-2"}` : ""} ${bodyClassName}`
     : `grid items-end gap-3 ${collapsible ? `border-b border-border bg-popover text-popover-foreground ${scrollable ? "" : "p-3 pt-2"}` : ""} ${bodyClassName}`;
 
   // Inner padding classes for when scrollable is enabled
@@ -77,7 +76,7 @@ export const ToolbarSection = ({
       {title && (() => {
         const btn = (
           <div id={title} role="button" tabIndex={0} className={titleClasses} onClick={handleClick} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(e as any); } }} aria-label={title} aria-expanded={isOpen}>
-            <div className={`flex items-center gap-1.5 ${disabled ? "opacity-40" : ""}`}>{icon && <span className="text-muted-foreground opacity-70">{icon}</span>}{title}</div>
+            <div className={`flex items-center gap-1.5 ${disabled ? "opacity-40" : ""}`}>{nested && collapsible && <TbChevronRight className={`size-3 transition-transform ${isOpen ? "rotate-90" : ""}`} />}{icon && <span className="text-muted-foreground opacity-70">{icon}</span>}{title}</div>
 
             {header && <div className="flex flex-1 items-center justify-end">{header}</div>}
 

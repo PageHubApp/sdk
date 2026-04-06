@@ -1,10 +1,8 @@
 import { useEffect, useRef } from "react";
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { IpsumGenerator } from "../../Inputs/media/IpsumGenerator";
-import { PresetGroupRenderer } from "../../Inputs/preset/PresetRenderer";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { selectorPresets } from "utils/design/selectorPresets";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 export const TextMainTab = () => {
@@ -36,11 +34,6 @@ export const TextMainTab = () => {
         />
         <SettingsAiSlot />
         <IpsumGenerator propKey="text" propType="component" />
-      </ToolbarSection>
-    ),
-    Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply text styles and layouts.">
-        <PresetGroupRenderer presets={selectorPresets.text} />
       </ToolbarSection>
     ),
   });

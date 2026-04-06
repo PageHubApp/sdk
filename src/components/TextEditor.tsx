@@ -21,7 +21,7 @@ import StarterKit from "@tiptap/starter-kit";
 
 import { changeProp } from "../chrome/Viewport/lib";
 import { TiptapProvider } from "../chrome/TiptapContext";
-import { TiptapToolbar } from "../chrome/Tools/TiptapToolbar";
+import { InlineEditToolbar } from "../chrome/Tools/InlineEditToolbar/InlineEditToolbar";
 import { VariableSuggestionPopup } from "../chrome/Tools/VariableSuggestion";
 
 import { replaceVariables, resolveVariable } from "../utils/design/variables";
@@ -206,7 +206,7 @@ function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
       </div>
       {enabled && isEditing && (
         <TiptapProvider editor={tiptapEditor}>
-          <TiptapToolbar editor={tiptapEditor} />
+          <InlineEditToolbar editor={tiptapEditor} />
         </TiptapProvider>
       )}
       {isEditing && <VariableSuggestionPopup suggestion={suggestion} />}

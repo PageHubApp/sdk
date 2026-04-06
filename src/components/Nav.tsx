@@ -74,7 +74,11 @@ export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
           if (n.data.props?.id === "mobile-menu") {
             actions.setProp(nid, (p) => { p.id = uniqueId; });
           }
-          // Fix click.value references
+          // Fix action.target references (new system)
+          if (n.data.props?.action?.target === "mobile-menu") {
+            actions.setProp(nid, (p) => { p.action = { ...p.action, target: uniqueId }; });
+          }
+          // Fix legacy click.value references
           if (n.data.props?.click?.value === "mobile-menu") {
             actions.setProp(nid, (p) => { p.click = { ...p.click, value: uniqueId }; });
           }

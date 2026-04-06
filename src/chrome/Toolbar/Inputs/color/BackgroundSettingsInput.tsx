@@ -1,13 +1,11 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { getBackgroundUrl } from "utils/lib";
-import { selectorPresets } from "utils/design/selectorPresets";
 import { TailwindStyles } from "utils/tailwind";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { BackgroundFocalPointPicker } from "./BackgroundFocalPointPicker";
 import { ColorInput } from "./ColorInput";
 import { MediaInput } from "../media/MediaInput";
-import { PresetRenderer } from "../preset/PresetRenderer";
 
 export const BackgroundSettingsInput = () => {
   const { query } = useEditor();
@@ -30,8 +28,6 @@ export const BackgroundSettingsInput = () => {
           <BackgroundFocalPointPicker imageUrl={getBackgroundUrl(props, query)} />
 
           <ToolbarSection title="Image Settings" subtitle={true}>
-            <PresetRenderer preset={selectorPresets.backgroundImage.styles} inline={true} />
-
             <ColorInput
               propKey="backgroundPlaceholder"
               label="Loading Color"

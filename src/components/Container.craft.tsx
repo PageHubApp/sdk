@@ -204,4 +204,16 @@ export const ContainerDef = defineComponent({
       props: { className: "w-full" },
     },
   ],
+  modifiers: [
+    { name: "pad-sm", label: "Small Padding", category: "Padding" },
+    { name: "pad-md", label: "Medium Padding", category: "Padding" },
+    { name: "pad-lg", label: "Large Padding", category: "Padding" },
+    { name: "w-half", label: "Half", category: "Width" },
+    { name: "w-third", label: "Third", category: "Width" },
+    { name: "w-two-thirds", label: "Two Thirds", category: "Width" },
+    { name: "h-screen", label: "Full Screen", category: "Height" },
+    { name: "h-half-screen", label: "Half Screen", category: "Height" },
+    { name: "centered", label: "Centered", category: "Layout" },
+    { name: "overflow-hidden", label: "Clip Overflow", category: "Layout" },
+  ],
 }, { __internal: true });

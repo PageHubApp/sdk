@@ -72,6 +72,7 @@ import { LayoutInput } from "../Inputs/layout/LayoutInput";
 import { RadiusInput } from "../Inputs/layout/RadiusInput";
 import { RingOutlineInput } from "../Inputs/layout/RingOutlineInput";
 import { SpacingInput } from "../Inputs/layout/SpacingInput";
+import { ModifiersInput } from "../Inputs/modifiers/ModifiersInput";
 import { FontInput } from "../Inputs/typography/FontInput";
 const ComponentImportExport = React.lazy(() => import("../Inputs/advanced/ComponentImportExport").then(m => ({ default: m.ComponentImportExport })));
 
@@ -201,6 +202,8 @@ export const UnifiedSettings = () => {
               </ToolbarSection>
             ) : renderNA("Colors")
           ).children}
+
+          {!off("modifiers") && <ModifiersInput />}
 
           {section("Typography",
             !off("font") ? <FontInput /> : renderNA("Typography")

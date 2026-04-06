@@ -1,6 +1,6 @@
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { IconInput } from "../../Inputs/media/IconInput";
-import LinkSettingsInput from "../../Inputs/preset/LinkSettingsInput";
+import ActionInput from "../../Inputs/action/ActionInput";
 import { ListEditor } from "../../Inputs/preset/ListItemPopover";
 import { ToolbarSection } from "../../ToolbarSection";
 import { atom, useAtomState, useAtomInstance } from "@zedux/react";
@@ -76,11 +76,7 @@ export const ButtonListMainTab = () => {
           ]}
           renderPopover={(button) => (
             <NodeProvider id={button.id}>
-              <LinkSettingsInput
-                propKey="url"
-                showAnchor={false}
-                suggestedPageName={button.text}
-              />
+              <ActionInput />
               <IconInput
                 propKey="icon"
                 propType="component"

@@ -1,9 +1,8 @@
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
 import { ViewAtom } from "../../../Viewport/atoms";
 import { changeProp, getPropFinalValue } from "../../../Viewport/lib";
-import { getRect } from "../../../Viewport/useRect";
-import { useMemo, useRef } from "react";
-import { useAtomState, useAtomValue } from "@zedux/react";
+import { useMemo, useRef, useState } from "react";
+import { useAtomValue } from "@zedux/react";
 import { usePalette } from "utils/design/PaletteContext";
 import {
   formatColorForStorage,
@@ -14,8 +13,7 @@ import {
 import { editorCanvasViewToClassPrefixKey } from "../../../../utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
-import { ColorPickerAtom } from "../../Tools/ColorPickerDialog";
-import { useDialog } from "../../Tools/lib";
+import { TokenPicker } from "./TokenPicker";
 
 export const ColorInput = (__props: any) => {
   const {
@@ -33,7 +31,7 @@ export const ColorInput = (__props: any) => {
     labelWidth = "",
   } = __props;
 
-  const [dialog, setDialog] = useAtomState(ColorPickerAtom);
+  const [isOpen, setIsOpen] = useState(false);
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
 
@@ -48,19 +46,12 @@ export const ColorInput = (__props: any) => {
     id: node.id,
   }));
 
-  // Match class writes (base on full-width canvas) — getProp(..., "desktop") would only see md: layer.
   const { value: resolved } = getPropFinalValue(__props, view, nodeProps, classDark);
   const value = resolved || "";
 
-  // Try to get palette from context first, fallback to ROOT_NODE
   const contextPalette = usePalette();
   const palette = useMemo(() => {
-    // Use context palette if available
-    if (contextPalette && contextPalette.length > 0) {
-      return contextPalette;
-    }
-
-    // Fallback to ROOT_NODE
+    if (contextPalette && contextPalette.length > 0) return contextPalette;
     try {
       const rootNode = query.node(ROOT_NODE).get();
       return rootNode?.data?.props?.pallet || [];
@@ -69,45 +60,26 @@ export const ColorInput = (__props: any) => {
     }
   }, [contextPalette, query]);
 
-  // Resolve palette references for display (handles backward compatibility)
   const displayValue = resolvePaletteReference(value, prefix);
   const [bg, cpVal] = parseColorValue(displayValue, prefix);
-
-  // Get the actual color value for inline style
   const finalStyle = resolveColorForDisplay(displayValue, prefix, palette);
 
   const classWriteView = propType === "class" ? editorCanvasViewToClassPrefixKey(view) : undefined;
 
-  const changed = data => {
+  const changed = (data: any) => {
     if (!data) return;
-
     const val = formatColorForStorage(data, prefix);
-
     changeProp({
-      propKey,
-      index,
-      propItemKey,
-      propType,
-      value: val,
-      setProp,
-      query,
-      actions,
-      nodeId: id,
+      propKey, index, propItemKey, propType, value: val, setProp, query, actions, nodeId: id,
       ...(propType === "class" && classWriteView != null ? { view: classWriteView, classDark } : {}),
     });
-
     onChange(cpVal, val);
   };
 
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  useDialog(dialog, setDialog, ref, propKey);
-
-  // For the color picker, pass the original value if it's a palette reference
-  // so the picker can highlight the selected palette color
   const pickerValue = value && value.includes("palette:") ? value : cpVal;
 
-  // Determine viewValue for the label
   let viewValue = view;
   if (propType === "component" || propType === "root") {
     viewValue = "component";
@@ -118,22 +90,14 @@ export const ColorInput = (__props: any) => {
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
     changeProp({
-      propKey,
-      index,
-      propItemKey,
-      propType,
-      value: "",
-      setProp,
-      query,
-      actions,
-      nodeId: id,
+      propKey, index, propItemKey, propType, value: "", setProp, query, actions, nodeId: id,
       ...(propType === "class" && classWriteView != null ? { view: classWriteView, classDark } : {}),
     });
     onChange("", "");
   };
 
   return (
-    <div ref={ref}>
+    <div ref={ref} className="relative">
       <Wrap
         props={{ label, labelHide }}
         index={index}
@@ -151,20 +115,9 @@ export const ColorInput = (__props: any) => {
             id={`input-${propKey}`}
             className="input-color"
             style={finalStyle}
-            onClick={e => {
-              setDialog({
-                enabled: !dialog.enabled,
-                value: pickerValue,
-                prefix,
-                changed,
-                showPallet,
-                propKey,
-                e: getRect(ref.current),
-              });
-            }}
-          ></button>
+            onClick={() => setIsOpen(prev => !prev)}
+          />
 
-          {/* Clear button - only show when color is set */}
           {value && (
             <button
               onClick={handleClear}
@@ -176,6 +129,19 @@ export const ColorInput = (__props: any) => {
           )}
         </div>
       </Wrap>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full z-50 mt-1">
+          <div className="rounded-lg border border-border bg-card shadow-xl">
+            <TokenPicker
+              variant="panel"
+              value={pickerValue}
+              onChange={(data) => { changed(data); }}
+              onClose={() => setIsOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

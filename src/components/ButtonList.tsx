@@ -1,7 +1,7 @@
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { RxButton } from "react-icons/rx";
-import { ClickControl } from "../utils/clickControls";
+import type { NodeAction } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../utils/lib";
@@ -21,7 +21,8 @@ type ButtonArrayProp = {
   color?: string;
   border?: string;
   iconOnly?: boolean;
-  click?: ClickControl;
+  action?: NodeAction;
+  click?: any; // Legacy
   root?: {
     background?: string;
     color?: string;
@@ -96,8 +97,8 @@ export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: Button
           try {
             const childNode = query.node(childId).get();
             if (childNode.data.name !== "Button") return null;
-            const clickValue = childNode.data.props?.click?.value;
-            if (clickValue === menuId) return null;
+            const actionTarget = childNode.data.props?.action?.target || childNode.data.props?.click?.value;
+            if (actionTarget === menuId) return null;
             return childNode.data.props;
           } catch { return null; }
         })
@@ -120,7 +121,8 @@ export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: Button
         try {
           const childNode = query.node(childId).get();
           if (childNode.data.name === "Button") {
-            const isHamburger = childNode.data.props?.click?.value?.includes("mobile-menu");
+            const actionTarget = childNode.data.props?.action?.target || childNode.data.props?.click?.value;
+            const isHamburger = actionTarget?.includes("mobile-menu");
             return !isHamburger;
           }
           return false;

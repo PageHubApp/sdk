@@ -45,6 +45,7 @@ import { SaveToServer } from "./lib";
 import { NodeBreadcrumb } from "./NodeBreadcrumb";
 import { PageSelector } from "./PageSelector";
 import { SiteSettingsModal } from "./SiteSettingsModal";
+import { ModifiersModal } from "./ModifiersModal";
 
 import { useSDK } from "../../context";
 import { usePanelUrl } from "../../utils/usePanelUrl";
@@ -122,6 +123,7 @@ export const Header = () => {
   const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useState(false);
   const [isLayersDialogOpen, setIsLayersDialogOpen] = useState(false);
   const [isSiteSettingsModalOpen, setIsSiteSettingsModalOpen] = useState(false);
+  const [isModifiersModalOpen, setIsModifiersModalOpen] = useState(false);
   const [isImportExportDialogOpen, setIsImportExportDialogOpen] = useState(false);
   const [isDesignSystemSidebarOpen, setIsDesignSystemSidebarOpen] =
     useAtomState(DesignSystemSidebarAtom);
@@ -548,6 +550,7 @@ export const Header = () => {
         isDesignSystemSidebarOpen={isDesignSystemSidebarOpen}
         setIsDesignSystemSidebarOpen={setIsDesignSystemSidebarOpen}
         setIsSiteSettingsModalOpen={setIsSiteSettingsModalOpen}
+        setIsModifiersModalOpen={setIsModifiersModalOpen}
         setIsImportExportDialogOpen={setIsImportExportDialogOpen}
         toggleTheme={toggleTheme}
         isDarkMode={isDarkMode}
@@ -563,6 +566,11 @@ export const Header = () => {
       <SiteSettingsModal
         isOpen={isSiteSettingsModalOpen}
         onClose={() => setIsSiteSettingsModalOpen(false)}
+      />
+
+      <ModifiersModal
+        isOpen={isModifiersModalOpen}
+        onClose={() => setIsModifiersModalOpen(false)}
       />
 
       <ImportExportDialog

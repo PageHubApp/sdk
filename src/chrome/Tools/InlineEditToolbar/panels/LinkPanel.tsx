@@ -1,13 +1,13 @@
 import { Editor } from "@tiptap/react";
 import { useEffect, useState } from "react";
 import { MdLink } from "react-icons/md";
-import { PageSelector } from "../../Viewport/PageSelector";
+import { PageSelector } from "../../../Viewport/PageSelector";
 
-interface LinkSelectorProps {
+interface LinkPanelProps {
   editor: Editor;
 }
 
-export function LinkSelector({ editor }: LinkSelectorProps) {
+export function LinkPanel({ editor }: LinkPanelProps) {
   const [linkType, setLinkType] = useState<"external" | "page">("page");
   const [url, setUrl] = useState("");
   const [savedSelection, setSavedSelection] = useState<{ from: number; to: number } | null>(null);
@@ -36,57 +36,50 @@ export function LinkSelector({ editor }: LinkSelectorProps) {
     setSavedSelection(null);
   };
 
-  const handlePagePick = (page: { id: string; displayName: string; isHomePage: boolean }) => {
-    applyLink(`ref:${page.id}`, page.displayName);
-  };
-
-  const handleExternalLink = () => {
-    if (url) applyLink(url, url);
-  };
-
   return (
-    <div className="space-y-3">
-      <div className="flex gap-2">
+    <div className="flex items-center gap-2 p-2">
+      {/* Type toggle */}
+      <div className="flex shrink-0 items-center rounded-md border border-border">
         <button
           type="button"
           onClick={() => setLinkType("page")}
-          className={`flex-1 rounded-lg px-3 py-2 text-xs transition-colors ${linkType === "page" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
-
+          className={`rounded-l-md px-2 py-1 text-[10px] transition-colors ${linkType === "page" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
         >
-          Internal Page
+          Page
         </button>
         <button
           type="button"
           onClick={() => setLinkType("external")}
-          className={`flex-1 rounded-lg px-3 py-2 text-xs transition-colors ${linkType === "external" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
-
+          className={`flex items-center gap-1 rounded-r-md px-2 py-1 text-[10px] transition-colors ${linkType === "external" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
         >
-          <MdLink className="mr-1 inline" />
-          External URL
+          <MdLink className="size-3" />
+          URL
         </button>
       </div>
 
+      {/* Input */}
       {linkType === "external" ? (
-        <div className="flex items-center gap-2">
+        <>
           <input
             type="text"
+            autoFocus
             value={url}
             onChange={e => setUrl(e.target.value)}
             placeholder="https://example.com"
-            className="input-dialog w-full text-sm text-muted-foreground placeholder:text-muted-foreground"
+            className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
             onClick={e => e.stopPropagation()}
+            onKeyDown={e => { if (e.key === "Enter" && url) { e.preventDefault(); applyLink(url, url); } }}
           />
           <button
-            onClick={e => { e.stopPropagation(); handleExternalLink(); }}
-            className="btn-primary w-fit"
-  
+            onClick={e => { e.stopPropagation(); if (url) applyLink(url, url); }}
+            className="shrink-0 rounded-md bg-primary px-2.5 py-1 text-xs text-primary-foreground hover:bg-primary/90"
           >
             Insert
           </button>
-        </div>
+        </>
       ) : (
-        <div role="presentation" onClick={e => e.stopPropagation()}>
-          <PageSelector onPagePick={handlePagePick} pickerMode={true} className="w-full" />
+        <div role="presentation" onClick={e => e.stopPropagation()} className="min-w-[200px]">
+          <PageSelector onPagePick={(page) => applyLink(`ref:${page.id}`, page.displayName)} pickerMode={true} className="w-full" />
         </div>
       )}
     </div>

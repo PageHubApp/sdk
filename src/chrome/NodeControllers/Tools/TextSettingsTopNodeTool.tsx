@@ -1,9 +1,7 @@
 import { useTiptapContext } from "../../TiptapContext";
 import { ToolbarItem } from "../../Toolbar/ToolbarItem";
 import { ColorInput } from "../../Toolbar/Inputs/color/ColorInput";
-import { PresetInput } from "../../Toolbar/Inputs/preset/PresetInput";
 import { NodeToolWrapper } from "../../Tools/NodeDialog";
-import { textPresets } from "../../../components/settings-stub";
 import { AiOutlineAlignRight } from "react-icons/ai";
 import { TbAlignCenter, TbAlignLeft } from "react-icons/tb";
 
@@ -51,8 +49,6 @@ export function TextSettingsTopNodeTool() {
       <div className="h-6 w-16 overflow-hidden rounded-lg border border-border">
         <ColorInput propKey="color" label="" prefix="text" labelHide={true} />
       </div>
-
-      <PresetInput presets={textPresets} type="select" label="" labelHide={true} wrap="control" />
 
       {/* Tiptap Formatting Buttons */}
       {tiptapEditor && (

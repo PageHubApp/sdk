@@ -1,6 +1,6 @@
 import { TbHandMove } from "react-icons/tb";
 import { ToolbarSection } from "../../index";
-import ClickItem from "../preset/ClickItem";
+import ActionInput from "../action/ActionInput";
 import { ColorInput } from "../color/ColorInput";
 import { OpacityInput } from "../color/OpacityInput";
 
@@ -17,7 +17,7 @@ interface HoverClickInputProps {
 export const HoverClickInput = ({ variant = "container" }: HoverClickInputProps) => {
   return (
     <>
-      <ClickItem />
+      <ActionInput />
 
       <ToolbarSection title="Hover" icon={<TbHandMove />} help="Style changes when the cursor hovers over this element.">
         <ToolbarSection title="Colors" collapsible={false}>

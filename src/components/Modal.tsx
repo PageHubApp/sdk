@@ -73,6 +73,11 @@ export const Modal = ({ children, ...props }) => {
           if (n.data.props?.id === "my-modal") {
             actions.setProp(nid, (p) => { p.id = uniqueId; });
           }
+          // Fix action.target references (new system)
+          if (n.data.props?.action?.target === "my-modal") {
+            actions.setProp(nid, (p) => { p.action = { ...p.action, target: uniqueId }; });
+          }
+          // Fix legacy click.value references
           if (n.data.props?.click?.value === "my-modal") {
             actions.setProp(nid, (p) => { p.click = { ...p.click, value: uniqueId }; });
           }

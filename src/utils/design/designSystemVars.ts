@@ -1,6 +1,7 @@
 // Utility functions for managing design system CSS variables
 
 import { NamedColor } from "../../components/Background";
+import { DEFAULT_STYLE_GUIDE } from "../defaults";
 
 export interface DesignSystemVars {
   palette: NamedColor[];
@@ -182,6 +183,7 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
     "inputFocusRing",
     // Layout & spacing
     "borderRadius",
+    "cardRadius",
     "buttonPadding",
     "containerPadding",
     "sectionGap",
@@ -320,7 +322,14 @@ export function generateDesignSystemCSSVariables(
   scope: string = ":root"
 ): string {
   const paletteVars = generatePaletteCSSVariables(designSystem.palette);
-  const styleVars = generateStyleGuideCSSVariables(designSystem.styleGuide);
+  // Partial persisted styleGuide (e.g. only fonts) must not drop layout tokens like --radius / --card-radius.
+  const mergedStyleGuide = {
+    ...DEFAULT_STYLE_GUIDE,
+    ...(designSystem.styleGuide && typeof designSystem.styleGuide === "object"
+      ? designSystem.styleGuide
+      : {}),
+  };
+  const styleVars = generateStyleGuideCSSVariables(mergedStyleGuide);
   const typographyVars = designSystem.typography
     ? generateTypographyCSSVariables(designSystem.typography)
     : "";
