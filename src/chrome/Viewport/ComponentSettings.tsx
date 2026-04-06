@@ -113,14 +113,14 @@ export const ComponentSettings = () => {
   }, [search, items]);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden bg-sidebar">
       <form
         onSubmit={e => {
           setSearch(e.target[0].value);
           e.preventDefault();
         }}
       >
-        <div className="flex gap-1.5 p-3">
+        <div className="flex gap-1.5 border-b border-border bg-background p-3">
           <input
             type="text"
             placeholder="Search Components"

@@ -129,7 +129,7 @@ export const ComponentPreview = React.memo(function ComponentPreview({ component
 
     return (
       <PreviewErrorBoundary>
-        <div className="overflow-hidden bg-(--background) text-(--text)" style={{ zoom: '0.5', pointerEvents: 'none' }}>
+        <div className="overflow-hidden bg-(--background) text-(--text)" style={{ zoom: scale, pointerEvents: 'none' }}>
           <Editor resolver={resolver} enabled={false}>
             <Frame>{element}</Frame>
           </Editor>

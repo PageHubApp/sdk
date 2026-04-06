@@ -269,8 +269,8 @@ const BlockPreviewCard = memo(function BlockPreviewCard({
     >
       <ComponentPreview component={block.structure} scale={0.2} resolver={resolver} />
       <div className="absolute inset-0 bg-primary/10 opacity-0 transition-opacity group-hover:opacity-100" />
-      <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/60 to-transparent px-2.5 pb-2 pt-6">
-        <span className="text-xs font-medium text-white">{block.name}</span>
+      <div className="border-t border-border px-2.5 py-1.5">
+        <span className="text-xs font-medium text-muted-foreground">{block.name}</span>
       </div>
     </motion.div>
   );
@@ -340,8 +340,8 @@ const CustomSectionCard = memo(function CustomSectionCard({
         <span className="text-xs font-medium text-primary-foreground">Custom</span>
       </div>
       <div className="absolute inset-0 bg-primary/10 opacity-0 transition-opacity group-hover:opacity-100" />
-      <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/60 to-transparent px-2.5 pb-2 pt-6">
-        <span className="text-xs font-medium text-white">{template.name}</span>
+      <div className="border-t border-border px-2.5 py-1.5">
+        <span className="text-xs font-medium text-muted-foreground">{template.name}</span>
       </div>
     </motion.div>
   );
@@ -668,9 +668,9 @@ export const SectionsSettings = () => {
 
   // Main view: search bar + category grid
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden bg-sidebar">
       {/* Search bar */}
-      <div className="flex items-center gap-2 p-3 pb-0">
+      <div className="flex items-center gap-2 border-b border-border bg-background p-3">
         <div className="relative flex-1">
           <TbSearch className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <input
