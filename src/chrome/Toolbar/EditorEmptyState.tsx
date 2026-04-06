@@ -3,7 +3,7 @@ import { TbBoxModel2, TbClick, TbLayoutGridAdd, TbPlus, TbPointer } from "react-
 import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
 import { ClippyOpenAtom } from "utils/atoms";
-import { ComponentsAtom, HeaderMenuAtom, OpenComponentEditorAtom, ViewModeAtom } from "utils/lib";
+import { ComponentsAtom, OpenComponentEditorAtom, ViewModeAtom } from "utils/lib";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { useSDK } from "../../context";
 import { usePanelUrl } from "../../utils/usePanelUrl";
@@ -41,7 +41,6 @@ export const EditorEmptyState = () => {
   const viewMode = useAtomValue(ViewModeAtom);
   const components = useAtomValue(ComponentsAtom);
   const setOpenComponentEditor = useSetAtomState(OpenComponentEditorAtom);
-  const setHeaderMenu = useSetAtomState(HeaderMenuAtom);
   const { open: openPanel } = usePanelUrl();
   const setViewMode = useSetAtomState(ViewModeAtom);
   const setClippyOpen = useSetAtomState(ClippyOpenAtom);
@@ -76,13 +75,11 @@ export const EditorEmptyState = () => {
   const handleComponentsClick = (e: React.MouseEvent) => {
     e.preventDefault();
     openPanel("components");
-    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components", activeTab: "components" }));
   };
 
   const handleAddSectionClick = (e: React.MouseEvent) => {
     e.preventDefault();
     openPanel("blocks");
-    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "sections", activeTab: "sections" }));
   };
 
   return (

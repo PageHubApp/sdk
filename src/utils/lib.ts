@@ -85,11 +85,6 @@ export const ViewModeAtom = atom("viewMode", "page");
 export const OpenComponentEditorAtom = atom("openComponentEditor", null);
 export const LastctiveAtom = atom("lastActive", "");
 export const ActiveAtom = atom("active", "");
-export const HeaderMenuAtom = atom("headerMenu", {
-  isOpen: false,
-  activeTab: "components",
-  menuType: "",
-});
 export const SelectedSectionAtom = atom("selectedSection", null);
 
 // ─── Submissions (registerable handler) ─────────────────────────────────

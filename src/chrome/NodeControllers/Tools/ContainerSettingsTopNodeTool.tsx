@@ -21,7 +21,6 @@ import {
 import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
 import { ClippyOpenAtom, SettingsAtom } from "utils/atoms";
-import { HeaderMenuAtom } from "utils/lib";
 import { usePanelUrl } from "../../../utils/usePanelUrl";
 import { useSDK } from "../../../context";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
@@ -102,7 +101,6 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
     actions: { setProp },
   } = useEditor();
 
-  const setHeaderMenu = useSetAtomState(HeaderMenuAtom);
   const { open: openPanel } = usePanelUrl();
 
   const match =
@@ -195,10 +193,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
         <Tooltip content="Add components">
           <button
             className={`tool-button ${direction == "horizontal" ? "-rotate-90" : ""}`}
-            onClick={() => {
-              openPanel("components");
-              setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components", activeTab: "components" }));
-            }}
+            onClick={() => openPanel("components")}
           >
             <TbPlus />
           </button>

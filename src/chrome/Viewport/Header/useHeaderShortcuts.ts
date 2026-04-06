@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { usePanelUrl } from "../../../utils/usePanelUrl";
 import { SaveToServer } from "../lib";
 
 interface UseHeaderShortcutsOptions {
@@ -8,7 +9,6 @@ interface UseHeaderShortcutsOptions {
   settings: any;
   setSettings: any;
   sessionToken: string | null;
-  setHeaderMenu: (fn: (prev: any) => any) => void;
   setIsMediaManagerModalOpen: (fn: (prev: boolean) => boolean) => void;
   setIsDesignSystemSidebarOpen: (fn: (prev: boolean) => boolean) => void;
   setIsSiteSettingsModalOpen: (fn: (prev: boolean) => boolean) => void;
@@ -24,7 +24,6 @@ export function useHeaderShortcuts({
   settings,
   setSettings,
   sessionToken,
-  setHeaderMenu,
   setIsMediaManagerModalOpen,
   setIsDesignSystemSidebarOpen,
   setIsSiteSettingsModalOpen,
@@ -32,6 +31,8 @@ export function useHeaderShortcuts({
   setShowGridLines,
   setIsImportExportDialogOpen,
 }: UseHeaderShortcutsOptions) {
+  const { open, close } = usePanelUrl();
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -55,7 +56,7 @@ export function useHeaderShortcuts({
             const json = query.serialize();
             SaveToServer(json, true, settings, setSettings, sessionToken);
           } else {
-            setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "domain" }));
+            open("publish");
           }
         }
         return;
@@ -65,7 +66,7 @@ export function useHeaderShortcuts({
       if (key === "m" && e.shiftKey) {
         e.preventDefault();
         setIsMediaManagerModalOpen(v => !v);
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        close();
         return;
       }
 
@@ -73,7 +74,7 @@ export function useHeaderShortcuts({
       if (key === "d" && e.shiftKey) {
         e.preventDefault();
         setIsDesignSystemSidebarOpen(v => !v);
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        close();
         return;
       }
 
@@ -81,7 +82,7 @@ export function useHeaderShortcuts({
       if (key === ",") {
         e.preventDefault();
         setIsSiteSettingsModalOpen(v => !v);
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        close();
         return;
       }
 
@@ -89,7 +90,7 @@ export function useHeaderShortcuts({
       if (key === "l" && e.shiftKey) {
         e.preventDefault();
         setIsLayersDialogOpen(v => !v);
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        close();
         return;
       }
 
@@ -108,7 +109,7 @@ export function useHeaderShortcuts({
       if (key === "e" && e.shiftKey) {
         e.preventDefault();
         setIsImportExportDialogOpen(v => !v);
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        close();
         return;
       }
     };

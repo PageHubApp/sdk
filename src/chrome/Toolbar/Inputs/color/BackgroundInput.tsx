@@ -3,6 +3,7 @@ import { TailwindStyles } from "utils/tailwind";
 import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
+import { TailwindInput } from "../advanced/TailwindInput";
 import { PiImageFill } from "react-icons/pi";
 import { BackgroundSettingsInput } from "./BackgroundSettingsInput";
 import { ColorInput } from "./ColorInput";
@@ -22,6 +23,9 @@ export const BackgroundInput = ({ children }: { children?: React.ReactNode }) =>
       footer={
         <ItemAdvanceToggle propKey="background" title="More background properties">
           <ToolbarSection full={1} collapsible={false}>
+            <TailwindInput propKey="bgClip" label="BG Clip" prop="bgClip" type="select" />
+            <TailwindInput propKey="bgBlend" label="BG Blend" prop="bgBlend" type="select" />
+            <TailwindInput propKey="mixBlend" label="Mix Blend" prop="mixBlend" type="select" />
             {children}
           </ToolbarSection>
         </ItemAdvanceToggle>

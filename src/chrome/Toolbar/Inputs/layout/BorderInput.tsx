@@ -3,6 +3,7 @@ import { TailwindStyles } from "utils/tailwind";
 import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
+import { TailwindInput } from "../advanced/TailwindInput";
 import { TbBorderAll } from "react-icons/tb";
 import { ColorInput } from "../color/ColorInput";
 import { RadiusInput } from "./RadiusInput";
@@ -85,6 +86,20 @@ export const BorderInput = ({ index = "" }) => {
                 index={index}
                 inline
                 inputWidth="w-fit"
+              />
+            </ToolbarSection>
+
+            <ToolbarSection full={1} title="Divide" subtitle={true} collapsible={false}>
+              <TailwindInput propKey="divideX" label="Divide X" prop="divideX" type="select" />
+              <TailwindInput propKey="divideY" label="Divide Y" prop="divideY" type="select" />
+              <TailwindInput propKey="divideStyle" label="Divide Style" prop="divideStyle" type="select" />
+              <ColorInput
+                propKey="divideColor"
+                label="Divide Color"
+                prefix="divide"
+                propType="class"
+                index={index}
+                inline
               />
             </ToolbarSection>
           </ItemAdvanceToggle>

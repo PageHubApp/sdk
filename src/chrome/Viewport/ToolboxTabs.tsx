@@ -5,33 +5,22 @@ import { usePanelUrl } from "../../utils/usePanelUrl";
 import { ComponentSettings } from "./ComponentSettings";
 import { SectionsSettings } from "./SectionsSettings";
 
-interface ToolboxTabsProps {
-  headerMenu: {
-    isOpen: boolean;
-    activeTab: string;
-    menuType: string;
-  };
-  setHeaderMenu: (value: any) => void;
-}
-
-export const ToolboxTabs = ({ headerMenu, setHeaderMenu }: ToolboxTabsProps) => {
+export const ToolboxTabs = () => {
   const { config } = useSDK();
   const isAiEnabled = useAiEnabled();
   const renderToolboxAi = config.editorChromeSlots?.renderToolboxAiButton;
-  const { switchTab } = usePanelUrl();
+  const { panel, switchTab } = usePanelUrl();
 
-  // Sync tab with menu type
-  const currentTab = headerMenu.menuType === "sections" ? "sections" :
-    headerMenu.menuType === "components" ? "components" : "components";
+  const currentTab = panel === "blocks" ? "blocks" : "components";
 
   const tabs = [
     {
-      id: "components",
+      id: "components" as const,
       label: "Components",
       component: <ComponentSettings />
     },
     {
-      id: "sections",
+      id: "blocks" as const,
       label: "Blocks",
       component: <SectionsSettings />
     }
@@ -54,8 +43,7 @@ export const ToolboxTabs = ({ headerMenu, setHeaderMenu }: ToolboxTabsProps) => 
     e.preventDefault();
     const nextTab = tabs[nextIndex];
     tablistRef.current?.querySelectorAll<HTMLElement>('[role="tab"]')[nextIndex]?.focus();
-    switchTab(nextTab.id === "sections" ? "blocks" : "components");
-    setHeaderMenu(prev => ({ ...prev, activeTab: nextTab.id, menuType: nextTab.id }));
+    switchTab(nextTab.id);
   };
 
   return (
@@ -66,14 +54,7 @@ export const ToolboxTabs = ({ headerMenu, setHeaderMenu }: ToolboxTabsProps) => 
           <Fragment key={tab.id}>
             {i > 0 ? tabDivider : null}
             <button
-              onClick={() => {
-                switchTab(tab.id === "sections" ? "blocks" : "components");
-                setHeaderMenu(prev => ({
-                  ...prev,
-                  activeTab: tab.id,
-                  menuType: tab.id
-                }));
-              }}
+              onClick={() => switchTab(tab.id)}
               onKeyDown={(e) => handleTabKeyDown(e, i)}
               className={`min-w-0 flex-1 cursor-pointer px-4 py-3 text-sm font-medium transition-colors ${currentTab === tab.id
                 ? "border-b-2 border-b-primary text-primary bg-background"

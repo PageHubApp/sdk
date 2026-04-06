@@ -1,10 +1,11 @@
 import { useEditor, useNode } from "@craftjs/core";
-import Image from "next/image";
 import { useState } from "react";
 import { TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "utils/cdn";
 import { getMediaById, getMediaContent, registerMediaWithBackground } from "utils/lib";
+import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
 import { ToolbarSection } from "../../ToolbarSection";
+import { TailwindInput } from "../advanced/TailwindInput";
 import { MediaManagerModal } from "./MediaManagerModal";
 
 export const MediaInput = propa => {
@@ -90,7 +91,19 @@ export const MediaInput = propa => {
 
   return (
     <>
-      <ToolbarSection title={title} full={1} collapsible={props.collapsible}>
+      <ToolbarSection
+        title={title}
+        full={1}
+        collapsible={props.collapsible}
+        footer={
+          <ItemAdvanceToggle propKey="media" title="More media properties">
+            <ToolbarSection full={1} collapsible={false}>
+              <TailwindInput propKey="objectFit" label="Object Fit" prop="objectFit" type="select" />
+              <TailwindInput propKey="objectPosition" label="Object Position" prop="objectPosition" type="select" />
+            </ToolbarSection>
+          </ItemAdvanceToggle>
+        }
+      >
         <div className="space-y-2">
           {/* Preview if media exists or content URL exists */}
           {(hasMedia && (svgContent || imageUrl)) || (hasContentUrl && imageUrl) ? (

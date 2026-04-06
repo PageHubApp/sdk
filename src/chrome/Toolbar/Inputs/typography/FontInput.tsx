@@ -106,6 +106,25 @@ export const FontInput = () => {
               prop="textDecoration"
               type="select"
             />
+            <TailwindInput
+              propKey="decorationStyle"
+              label="Decoration Style"
+              prop="decorationStyle"
+              type="select"
+            />
+            <TailwindInput
+              propKey="decorationThickness"
+              label="Decoration Size"
+              prop="decorationThickness"
+              type="select"
+            />
+            <TailwindInput propKey="fontStyle" label="Italic" prop="fontStyle" type="select" />
+            <TailwindInput propKey="whiteSpace" label="White Space" prop="whiteSpace" type="select" />
+            <TailwindInput propKey="textWrap" label="Text Wrap" prop="textWrap" type="select" />
+            <TailwindInput propKey="hyphens" label="Hyphens" prop="hyphens" type="select" />
+            <TailwindInput propKey="verticalAlign" label="Vertical Align" prop="verticalAlign" type="select" />
+            <TailwindInput propKey="fontSmoothing" label="Smoothing" prop="fontSmoothing" type="select" />
+            <TailwindInput propKey="float" label="Float" prop="float" type="select" />
           </ToolbarSection>
         </ItemAdvanceToggle>
       }

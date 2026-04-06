@@ -3,21 +3,43 @@
  * Renders Element ID and HTML Tag (Type).
  * Component-specific Properties content renders after this.
  */
+import { useAtomState } from "@zedux/react";
+import { TabAtom } from "../../../Viewport/atoms";
+import { scrollToSection } from "../../UnifiedTab";
 import { ToolbarItem } from "../../ToolbarItem";
 import { TypeInput } from "../typography/TypeInput";
 
-export const PropertiesInput = () => (
-  <>
-    <ToolbarItem
-      propKey="id"
-      propType="component"
-      type="text"
-      label="Element ID"
-      placeholder="myComponent"
-      labelHide={false}
-      description="Assign a unique id to the element. Can be used in Hover & Click settings."
-    />
+export const PropertiesInput = () => {
+  const [, setTab] = useAtomState(TabAtom);
 
-    <TypeInput />
-  </>
-);
+  return (
+    <>
+      <ToolbarItem
+        propKey="id"
+        propType="component"
+        type="text"
+        label="Element ID"
+        placeholder="myComponent"
+        labelHide={false}
+        description={
+          <>
+            Give this element a name so you can target it in{" "}
+            <button
+              type="button"
+              className="inline cursor-pointer font-medium text-primary underline underline-offset-2"
+              onClick={() => {
+                setTab("Interactions");
+                setTimeout(() => scrollToSection("Interactions"), 150);
+              }}
+            >
+              Actions
+            </button>
+            .
+          </>
+        }
+      />
+
+      <TypeInput />
+    </>
+  );
+};

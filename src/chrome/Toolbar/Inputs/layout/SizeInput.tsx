@@ -1,6 +1,7 @@
 import { TbArrowsMaximize } from "react-icons/tb";
 import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
 import { ToolbarSection } from "../../ToolbarSection";
+import { TailwindInput } from "../advanced/TailwindInput";
 import { HeightInput } from "./HeightInput";
 import { WidthInput } from "./WidthInput";
 
@@ -55,6 +56,15 @@ export const SizeInput = () => (
               sliderValues="minHeights"
               propTag="min-h"
             />
+          </ToolbarSection>
+
+          <ToolbarSection
+            title="Aspect Ratio"
+            subtitle={true}
+            full={1}
+            collapsible={false}
+          >
+            <TailwindInput propKey="aspectRatio" label="Ratio" prop="aspectRatio" type="select" />
           </ToolbarSection>
         </ItemAdvanceToggle>
       }

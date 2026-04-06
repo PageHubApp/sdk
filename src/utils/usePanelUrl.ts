@@ -9,10 +9,6 @@ export interface PanelUrlState {
   q: string | null; // search query
 }
 
-// URL panel values → HeaderMenuAtom menuType mapping:
-// "blocks"     ↔ "sections"    (historical: blocks tab was called sections)
-// "components" ↔ "components"
-
 const ALL_PANEL_KEYS: Array<keyof PanelUrlState> = ["panel", "cat", "sub", "q"];
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -88,8 +84,13 @@ function notify(): void {
 
 // ── Hook ────────────────────────────────────────────────────────────────────
 
+export type PanelType = "menu" | "components" | "blocks" | "publish";
+
 export function usePanelUrl() {
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  const isOpen = state.panel !== null;
+  const panel = state.panel as PanelType | null;
 
   const searchPushedRef = useRef(false);
 
@@ -99,7 +100,7 @@ export function usePanelUrl() {
   }, [state.q]);
 
   /** Open a panel — pushState so back button closes it */
-  const open = useCallback((panelType: string, params?: Partial<Omit<PanelUrlState, "panel">>) => {
+  const open = useCallback((panelType: PanelType, params?: Partial<Omit<PanelUrlState, "panel">>) => {
     const url = buildUrl({ panel: panelType, cat: null, sub: null, q: null, ...params });
     history.pushState({ source: "panelUrl" }, "", url);
     notify();
@@ -112,8 +113,21 @@ export function usePanelUrl() {
     notify();
   }, []);
 
+  /** Toggle a specific panel — close if it's already open, open otherwise */
+  const toggle = useCallback((panelType: PanelType) => {
+    const current = readParams();
+    if (current.panel === panelType) {
+      const url = stripAllPanelParams();
+      history.pushState({ source: "panelUrl" }, "", url);
+    } else {
+      const url = buildUrl({ panel: panelType, cat: null, sub: null, q: null });
+      history.pushState({ source: "panelUrl" }, "", url);
+    }
+    notify();
+  }, []);
+
   /** Switch tab — pushState so back button navigates between tabs */
-  const switchTab = useCallback((panelType: string) => {
+  const switchTab = useCallback((panelType: PanelType) => {
     const url = buildUrl({ panel: panelType, cat: null, sub: null, q: null });
     history.pushState({ source: "panelUrl" }, "", url);
     notify();
@@ -147,5 +161,5 @@ export function usePanelUrl() {
     searchPushedRef.current = false;
   }, []);
 
-  return { state, open, close, switchTab, navigate, update, enterSearchMode, exitSearchMode };
+  return { state, panel, isOpen, open, close, toggle, switchTab, navigate, update, enterSearchMode, exitSearchMode };
 }

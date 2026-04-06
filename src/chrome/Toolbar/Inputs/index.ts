@@ -25,8 +25,10 @@ export * from "./layout/OverflowInput";
 export * from "./layout/OverlayInput";
 export * from "./layout/PaddingInput";
 export * from "./layout/RadiusInput";
+export * from "./layout/RingOutlineInput";
 export * from "./layout/SizeInput";
 export * from "./layout/SpacingInput";
+export * from "./layout/PositionOffsetsInput";
 export * from "./layout/WidthInput";
 
 // Typography inputs
@@ -60,6 +62,8 @@ export * from "./advanced/HTMLCodeInput";
 export * from "./advanced/HoverClickInput";
 export * from "./advanced/PropertiesInput";
 export * from "./advanced/TailwindInput";
+export * from "./advanced/InteractivityInput";
+export * from "./advanced/MiscInput";
 
 // Action inputs
 export { default as ActionInput } from "./action/ActionInput";

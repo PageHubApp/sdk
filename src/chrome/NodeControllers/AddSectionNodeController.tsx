@@ -3,7 +3,6 @@ import { useRef, useState } from "react";
 import { TbLayoutGridAdd } from "react-icons/tb";
 import { useSetAtomState } from "../../utils/atoms";
 import { ClippyOpenAtom, SectionPickerDialogAtom } from "utils/atoms";
-import { HeaderMenuAtom } from "utils/lib";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { useSDK } from "../../context";
 import { usePanelUrl } from "../../utils/usePanelUrl";
@@ -27,7 +26,6 @@ export const AddSectionNodeController = (props: { position; align }) => {
   }));
 
   const setSectionPickerDialog = useSetAtomState(SectionPickerDialogAtom);
-  const setHeaderMenu = useSetAtomState(HeaderMenuAtom);
   const { open: openPanel } = usePanelUrl();
 
   const { parent } = useNode(node => ({
@@ -89,12 +87,10 @@ export const AddSectionNodeController = (props: { position; align }) => {
       parent: parent,
     });
     openPanel("blocks");
-    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "sections", activeTab: "sections" }));
   };
 
   const handleAddComponent = () => {
     openPanel("components");
-    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components", activeTab: "components" }));
   };
 
   const handleClick = (e: React.MouseEvent) => {

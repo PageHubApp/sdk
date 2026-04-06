@@ -1,6 +1,7 @@
 import { useNode } from "@craftjs/core";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TbFocus2 } from "react-icons/tb";
+import { TailwindInput } from "../advanced/TailwindInput";
 import { ColorInput } from "../color/ColorInput";
 import { UniversalInput } from "../UniversalInput";
 
@@ -155,6 +156,8 @@ export const RingOutlineInput = ({ index = "" }) => {
         inline
         inputWidth="flex-1"
       />
+
+      <TailwindInput propKey="outlineStyle" label="Outline style" prop="outlineStyle" type="select" />
     </ToolbarSection>
   );
 };

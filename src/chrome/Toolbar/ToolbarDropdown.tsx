@@ -145,7 +145,7 @@ export const ToolbarDropdown = ({
       onClick={handleButtonClick}
     >
       <span className="truncate">{selectedLabel ?? placeholder ?? ""}</span>
-      <span className="shrink-0 opacity-50">
+      <span className="-mr-1.5 shrink-0 opacity-50">
         <ChevronDown />
       </span>
     </ListboxButton>

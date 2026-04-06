@@ -2922,6 +2922,101 @@ export const TailwindStyles = {
     "will-change-contents",
     "will-change-transform",
   ],
+
+  // ─── Gap axis variants ─────────────────────────────────────────────────────
+  gapX: [
+    "gap-x-0", "gap-x-0.5", "gap-x-1", "gap-x-1.5", "gap-x-2", "gap-x-2.5",
+    "gap-x-3", "gap-x-3.5", "gap-x-4", "gap-x-5", "gap-x-6", "gap-x-7",
+    "gap-x-8", "gap-x-9", "gap-x-10", "gap-x-11", "gap-x-12", "gap-x-14",
+    "gap-x-16", "gap-x-20", "gap-x-24", "gap-x-28", "gap-x-32", "gap-x-36",
+    "gap-x-40", "gap-x-44", "gap-x-48", "gap-x-52", "gap-x-56", "gap-x-60",
+    "gap-x-64", "gap-x-72", "gap-x-80", "gap-x-96",
+  ],
+  gapY: [
+    "gap-y-0", "gap-y-0.5", "gap-y-1", "gap-y-1.5", "gap-y-2", "gap-y-2.5",
+    "gap-y-3", "gap-y-3.5", "gap-y-4", "gap-y-5", "gap-y-6", "gap-y-7",
+    "gap-y-8", "gap-y-9", "gap-y-10", "gap-y-11", "gap-y-12", "gap-y-14",
+    "gap-y-16", "gap-y-20", "gap-y-24", "gap-y-28", "gap-y-32", "gap-y-36",
+    "gap-y-40", "gap-y-44", "gap-y-48", "gap-y-52", "gap-y-56", "gap-y-60",
+    "gap-y-64", "gap-y-72", "gap-y-80", "gap-y-96",
+  ],
+
+  // ─── Visibility & interactivity ────────────────────────────────────────────
+  visibility: ["visible", "invisible", "collapse"],
+  pointerEvents: ["pointer-events-none", "pointer-events-auto"],
+  userSelect: ["select-none", "select-text", "select-all", "select-auto"],
+  resize: ["resize-none", "resize", "resize-y", "resize-x"],
+  touchAction: [
+    "touch-auto", "touch-none", "touch-pan-x", "touch-pan-left",
+    "touch-pan-right", "touch-pan-y", "touch-pan-up", "touch-pan-down",
+    "touch-pinch-zoom", "touch-manipulation",
+  ],
+  scrollBehavior: ["scroll-auto", "scroll-smooth"],
+  scrollSnapAlign: ["snap-start", "snap-end", "snap-center", "snap-align-none"],
+  scrollSnapStop: ["snap-normal", "snap-always"],
+  scrollSnapType: ["snap-none", "snap-x", "snap-y", "snap-both", "snap-mandatory", "snap-proximity"],
+  appearance: ["appearance-none", "appearance-auto"],
+
+  // ─── Background extras ─────────────────────────────────────────────────────
+  bgClip: ["bg-clip-border", "bg-clip-padding", "bg-clip-content", "bg-clip-text"],
+  bgBlend: [
+    "bg-blend-normal", "bg-blend-multiply", "bg-blend-screen", "bg-blend-overlay",
+    "bg-blend-darken", "bg-blend-lighten", "bg-blend-color-dodge", "bg-blend-color-burn",
+    "bg-blend-hard-light", "bg-blend-soft-light", "bg-blend-difference",
+    "bg-blend-exclusion", "bg-blend-hue", "bg-blend-saturation", "bg-blend-color",
+    "bg-blend-luminosity",
+  ],
+  mixBlend: [
+    "mix-blend-normal", "mix-blend-multiply", "mix-blend-screen", "mix-blend-overlay",
+    "mix-blend-darken", "mix-blend-lighten", "mix-blend-color-dodge", "mix-blend-color-burn",
+    "mix-blend-hard-light", "mix-blend-soft-light", "mix-blend-difference",
+    "mix-blend-exclusion", "mix-blend-hue", "mix-blend-saturation", "mix-blend-color",
+    "mix-blend-luminosity", "mix-blend-plus-lighter",
+  ],
+
+  // ─── Divide ────────────────────────────────────────────────────────────────
+  divideX: ["divide-x-0", "divide-x", "divide-x-2", "divide-x-4", "divide-x-8", "divide-x-reverse"],
+  divideY: ["divide-y-0", "divide-y", "divide-y-2", "divide-y-4", "divide-y-8", "divide-y-reverse"],
+  divideStyle: ["divide-solid", "divide-dashed", "divide-dotted", "divide-double", "divide-none"],
+
+  // ─── Outline style ─────────────────────────────────────────────────────────
+  outlineStyle: ["outline-none", "outline", "outline-dashed", "outline-dotted", "outline-double"],
+
+  // ─── Layout extras ─────────────────────────────────────────────────────────
+  boxSizing: ["box-border", "box-content"],
+  isolation: ["isolate", "isolation-auto"],
+  columns: [
+    "columns-1", "columns-2", "columns-3", "columns-4", "columns-5", "columns-6",
+    "columns-7", "columns-8", "columns-9", "columns-10", "columns-11", "columns-12",
+    "columns-auto", "columns-3xs", "columns-2xs", "columns-xs", "columns-sm",
+    "columns-md", "columns-lg", "columns-xl", "columns-2xl", "columns-3xl",
+    "columns-4xl", "columns-5xl", "columns-6xl", "columns-7xl",
+  ],
+  breakBefore: ["break-before-auto", "break-before-avoid", "break-before-all", "break-before-avoid-page", "break-before-page", "break-before-left", "break-before-right", "break-before-column"],
+  breakInside: ["break-inside-auto", "break-inside-avoid", "break-inside-avoid-page", "break-inside-avoid-column"],
+  breakAfter: ["break-after-auto", "break-after-avoid", "break-after-all", "break-after-avoid-page", "break-after-page", "break-after-left", "break-after-right", "break-after-column"],
+
+  // ─── List & table ──────────────────────────────────────────────────────────
+  listStyleType: ["list-none", "list-disc", "list-decimal"],
+  listStylePosition: ["list-inside", "list-outside"],
+  tableLayout: ["table-auto", "table-fixed"],
+  captionSide: ["caption-top", "caption-bottom"],
+
+  // ─── SVG ───────────────────────────────────────────────────────────────────
+  fill: ["fill-none", "fill-inherit", "fill-current", "fill-transparent"],
+  strokeWidth: ["stroke-0", "stroke-1", "stroke-2"],
+  stroke: ["stroke-none", "stroke-inherit", "stroke-current", "stroke-transparent"],
+
+  // ─── Accessibility ─────────────────────────────────────────────────────────
+  srOnly: ["sr-only", "not-sr-only"],
+
+  // ─── Content ───────────────────────────────────────────────────────────────
+  content: ["content-none"],
+
+  // ─── Text wrap / hyphens ───────────────────────────────────────────────────
+  textWrap: ["text-wrap", "text-nowrap", "text-balance", "text-pretty"],
+  hyphens: ["hyphens-none", "hyphens-manual", "hyphens-auto"],
+
   fonts,
 };
 
@@ -2947,6 +3042,40 @@ export const AllStyles: string[] = [..._allSet];
 // ─── Prefix → prop key mapping (for arbitrary value support) ───────────────
 
 export const PREFIX_TO_KEY: Record<string, string> = {
+  "pointer-events-": "pointerEvents",
+  "touch-manipulation": "touchAction",
+  "touch-pinch-zoom": "touchAction",
+  "break-before-": "breakBefore",
+  "break-inside-": "breakInside",
+  "break-after-": "breakAfter",
+  "divide-solid": "divideStyle",
+  "divide-dashed": "divideStyle",
+  "divide-dotted": "divideStyle",
+  "divide-double": "divideStyle",
+  "divide-none": "divideStyle",
+  "bg-clip-": "bgClip",
+  "bg-blend-": "bgBlend",
+  "mix-blend-": "mixBlend",
+  "scroll-snap-": "scrollSnapType",
+  "snap-start": "scrollSnapAlign",
+  "snap-end": "scrollSnapAlign",
+  "snap-center": "scrollSnapAlign",
+  "snap-always": "scrollSnapStop",
+  "snap-normal": "scrollSnapStop",
+  "stroke-width-": "strokeWidth",
+  "columns-": "columns",
+  "divide-x": "divideX",
+  "divide-y": "divideY",
+  "select-": "userSelect",
+  "resize-": "resize",
+  "touch-": "touchAction",
+  "scroll-": "scrollBehavior",
+  "snap-": "scrollSnapType",
+  "fill-": "fill",
+  "stroke-": "stroke",
+  "gap-x-": "gapX",
+  "gap-y-": "gapY",
+  "list-": "listStyleType",
   "backdrop-hue-rotate-": "backdropHueRotate",
   "backdrop-brightness-": "backdropBrightness",
   "backdrop-grayscale-": "backdropGrayscale",

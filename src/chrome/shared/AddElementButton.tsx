@@ -1,8 +1,6 @@
 import { Element, useEditor, useNode } from "@craftjs/core";
 import { Container } from "../../components/Container";
 import { TbPlus } from "react-icons/tb";
-import { useSetAtomState } from "../../utils/atoms";
-import { HeaderMenuAtom } from "utils/lib";
 import { useNodeTypeHelpers } from "../NodeControllers/hooks/useNodeType";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { AddElement } from "../Viewport/Toolbox/lib";
@@ -16,7 +14,6 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
   const { actions, query } = useEditor();
   const { id } = useNode();
   const { isPage, isSection } = useNodeTypeHelpers();
-  const setHeaderMenu = useSetAtomState(HeaderMenuAtom);
   const { open: openPanel } = usePanelUrl();
 
   const handleClick = async () => {
@@ -74,7 +71,6 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
     } else {
       // Open menu for other cases
       openPanel("components");
-      setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components", activeTab: "components" }));
     }
   };
 

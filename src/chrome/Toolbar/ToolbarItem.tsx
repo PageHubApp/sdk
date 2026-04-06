@@ -348,7 +348,7 @@ export type ToolbarItemProps = {
   inputWidth?: string;
   labelWidth?: string;
   append?: React.ReactNode;
-  description?: string;
+  description?: React.ReactNode;
 };
 
 export const ToolbarItem = (__props: ToolbarItemProps) => {

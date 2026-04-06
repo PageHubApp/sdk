@@ -1,7 +1,7 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { Tooltip } from "components/layout/Tooltip";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAtomState, useAtomValue } from "@zedux/react";
 import {
@@ -25,13 +25,13 @@ import { SessionTokenAtom, SettingsAtom, ShowGridLinesAtom } from "utils/atoms";
 import {
   ComponentsAtom,
   DesignSystemSidebarAtom,
-  HeaderMenuAtom,
   LastctiveAtom,
   SideBarAtom,
   ViewModeAtom,
 } from "utils/lib";
 import { useSetAtomState } from "../../utils/atoms";
 import { EDITOR_CANVAS_BREAKPOINT_PX, isEditorCanvasBreakpointView } from "../../utils/tailwind/className";
+import { usePanelUrl } from "../../utils/usePanelUrl";
 import { MediaManagerModal } from "../Toolbar/Inputs/media/MediaManagerModal";
 import { LayersDialog } from "../Toolbar/Tools/LayersDialog";
 import { AnimatedSaveButton } from "../Tools/AnimatedSaveButton";
@@ -48,7 +48,6 @@ import { SiteSettingsModal } from "./SiteSettingsModal";
 import { ModifiersModal } from "./ModifiersModal";
 
 import { useSDK } from "../../context";
-import { usePanelUrl } from "../../utils/usePanelUrl";
 import { HeaderItem as Item } from "./Header/HeaderItem";
 import { useHeaderShortcuts } from "./Header/useHeaderShortcuts";
 
@@ -118,8 +117,7 @@ export const Header = () => {
 
   const setActive = useSetAtomState(LastctiveAtom);
 
-  const [headerMenu, setHeaderMenu] = useAtomState(HeaderMenuAtom);
-  const { open: openPanel, close: closePanel } = usePanelUrl();
+  const { isOpen, panel, toggle, open, close } = usePanelUrl();
   const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useState(false);
   const [isLayersDialogOpen, setIsLayersDialogOpen] = useState(false);
   const [isSiteSettingsModalOpen, setIsSiteSettingsModalOpen] = useState(false);
@@ -133,27 +131,9 @@ export const Header = () => {
   const { features } = useSDK();
   const isTenant = features.directSave;
 
-  const ref = useRef(null);
-  useEffect(() => {
-    /**
-     * Alert if clicked on outside of element
-     */
-    function handleClickOutside(event) {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setHeaderMenu(prev => ({ ...prev, isOpen: false }));
-      }
-    }
-    // Bind the event listener
-    document.addEventListener("mousedown", handleClickOutside, true);
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("mousedown", handleClickOutside, true);
-    };
-  }, [ref, setHeaderMenu]);
-
   const [preview, setPreview] = useAtomState(PreviewAtom);
 
-  const toggle = () =>
+  const toggleEditorEnabled = () =>
     actions.setOptions(options => {
       // selectNode(ROOT_NODE);
       options.enabled = !enabled;
@@ -264,7 +244,6 @@ export const Header = () => {
     settings,
     setSettings,
     sessionToken,
-    setHeaderMenu,
     setIsMediaManagerModalOpen,
     setIsDesignSystemSidebarOpen,
     setIsSiteSettingsModalOpen,
@@ -285,14 +264,9 @@ export const Header = () => {
         <Tooltip content="Add Component" placement="bottom" arrow={false}>
           <Item
             ariaLabel="Add Component"
+            onMouseDown={e => e.stopPropagation()}
             onClick={e => {
-              if (headerMenu.menuType === "components" && headerMenu.isOpen) {
-                closePanel();
-                setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
-              } else {
-                openPanel("components");
-                setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components", activeTab: "components" }));
-              }
+              toggle("components");
               e.stopPropagation();
             }}
           >
@@ -397,7 +371,7 @@ export const Header = () => {
               const scrollTop = viewport?.scrollTop ?? 0;
               const scrollLeft = viewport?.scrollLeft ?? 0;
 
-              toggle();
+              toggleEditorEnabled();
               setPreview(!preview);
               // Deselect any active node when toggling preview
               if (enabled) {
@@ -489,6 +463,7 @@ export const Header = () => {
             <Item
               ariaLabel="Save"
               disabled={!canUndo}
+              onMouseDown={e => e.stopPropagation()}
               onClick={async () => {
                 if (!canUndo) return;
                 // If settings don't exist yet, do an initial save to create the page first
@@ -496,11 +471,7 @@ export const Header = () => {
                   const json = query.serialize();
                   await SaveToServer(json, true, settings, setSettings, sessionToken);
                 }
-                setHeaderMenu(prev => ({
-                  ...prev,
-                  isOpen: true,
-                  menuType: "domain",
-                }));
+                open("publish");
               }}
             >
               <TbDeviceFloppy />
@@ -511,15 +482,16 @@ export const Header = () => {
         <Tooltip content="More Options" placement="bottom" arrow={false}>
           <Item
             ariaLabel="More Options"
+            onMouseDown={e => e.stopPropagation()}
             onClick={() => {
-              if (headerMenu.isOpen) {
-                setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+              if (isOpen) {
+                close();
               } else {
-                setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "" }));
+                open("menu");
               }
             }}
           >
-            {headerMenu.isOpen ? <TbX /> : <TbMenu2 />}
+            {isOpen ? <TbX /> : <TbMenu2 />}
           </Item>
         </Tooltip>
       </header>
@@ -539,8 +511,6 @@ export const Header = () => {
       </div>
 
       <EditorNavigation
-        headerMenu={headerMenu}
-        setHeaderMenu={setHeaderMenu}
         settings={settings}
         isTenant={isTenant}
         sideBarLeft={sideBarLeft}

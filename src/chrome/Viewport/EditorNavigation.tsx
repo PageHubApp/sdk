@@ -27,12 +27,6 @@ import { useSDK } from "../../context";
 import { ToolboxTabs } from "./ToolboxTabs";
 
 interface EditorNavigationProps {
-  headerMenu: {
-    isOpen: boolean;
-    activeTab: string;
-    menuType: string;
-  };
-  setHeaderMenu: (value: any) => void;
   settings: any;
   isTenant: boolean;
   sideBarLeft: boolean;
@@ -75,8 +69,6 @@ const editorNavRow = (kind: "mid" | "section" | "end") =>
     .join(" ");
 
 export const EditorNavigation = ({
-  headerMenu,
-  setHeaderMenu,
   settings,
   isTenant,
   sideBarLeft,
@@ -100,87 +92,48 @@ export const EditorNavigation = ({
   const isAiEnabled = useAiEnabled();
   const renderNavAi = config.editorChromeSlots?.renderNavAiMenuItem;
 
-  const { state: panelState, close: closePanel } = usePanelUrl();
+  const { isOpen, panel, close } = usePanelUrl();
 
-  // URL → atom sync: react to panelState.panel changes (popstate, pushState, mount deep-link)
-  useEffect(() => {
-    if (panelState.panel === "blocks") {
-      setHeaderMenu(prev => {
-        if (prev.menuType === "sections" && prev.isOpen) return prev;
-        return { ...prev, isOpen: true, activeTab: "sections", menuType: "sections" };
-      });
-    } else if (panelState.panel === "components") {
-      setHeaderMenu(prev => {
-        if (prev.menuType === "components" && prev.isOpen) return prev;
-        return { ...prev, isOpen: true, activeTab: "components", menuType: "components" };
-      });
-    } else {
-      // No panel param — close if a panel tab was open
-      setHeaderMenu(prev => {
-        if (prev.menuType === "sections" || prev.menuType === "components") {
-          if (!prev.isOpen) return prev;
-          return { ...prev, isOpen: false, menuType: "" };
-        }
-        return prev;
-      });
-    }
-  }, [panelState.panel, setHeaderMenu]);
-
-  // Atom → URL sync: strip panel params when menu closes via click-outside, toggle, etc.
-  const prevOpenRef = useRef(headerMenu.isOpen);
-  useEffect(() => {
-    if (prevOpenRef.current && !headerMenu.isOpen) {
-      // Only push if URL still has panel params (avoids double-push when back button already cleared them)
-      if (panelState.panel) {
-        closePanel();
-      }
-    }
-    prevOpenRef.current = headerMenu.isOpen;
-  }, [headerMenu.isOpen, panelState.panel, closePanel]);
-
-  // Click-away: close panel when clicking outside the nav (replaces the
-  // fullscreen backdrop div that was blocking HTML5 drag events).
+  // Click-away: close panel when clicking outside the nav
   const navRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (!headerMenu.isOpen || isDesignSystemSidebarOpen) return;
+    if (!isOpen || isDesignSystemSidebarOpen) return;
     const handler = (e: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        close();
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [headerMenu.isOpen, isDesignSystemSidebarOpen, setHeaderMenu]);
+  }, [isOpen, isDesignSystemSidebarOpen, close]);
 
-  if (!headerMenu.isOpen) return null;
+  if (!isOpen) return null;
 
   return (
     <>
-      {/* Click-away: document listener instead of a backdrop div,
-          so HTML5 drag events can reach #viewport unblocked. */}
       <nav
         ref={navRef}
         role="navigation"
         aria-label="Editor menu"
         className="pointer-events-auto absolute bottom-0 top-10 z-50 flex w-full flex-col bg-background text-foreground"
       >
-      {(headerMenu.menuType === "components" || headerMenu.menuType === "sections") ? (
-        <ToolboxTabs headerMenu={headerMenu} setHeaderMenu={setHeaderMenu} />
+      {(panel === "components" || panel === "blocks") ? (
+        <ToolboxTabs />
       ) : (
       <AutoHideScrollbar
         className="flex flex-1 flex-col gap-0 overflow-y-auto pb-3 pt-0"
         hideDelay={2000}
       >
-        {headerMenu.menuType === "domain" && <div id={EDITOR_NAV_PUBLISH_ID} className="flex-1" />}
+        {panel === "publish" && <div id={EDITOR_NAV_PUBLISH_ID} className="flex-1" />}
 
-        {!headerMenu.menuType && (
+        {panel === "menu" && (
           <>
             {isTenant ? (
               // For tenant users, show background and settings panel buttons
               <>
                 <button
                   onClick={() => {
-                    setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                    close();
                     actions.selectNode(ROOT_NODE);
                   }}
                   className={editorNavRow("mid")}
@@ -215,7 +168,7 @@ export const EditorNavigation = ({
                 <button
                   onClick={() => {
                     setIsMediaManagerModalOpen(true);
-                    setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                    close();
                   }}
                   className={editorNavRow("mid")}
                 >
@@ -229,7 +182,7 @@ export const EditorNavigation = ({
                 <button
                   onClick={() => {
                     setIsDesignSystemSidebarOpen(!isDesignSystemSidebarOpen);
-                    setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                    close();
                   }}
                   className={editorNavRow("mid")}
                 >
@@ -243,7 +196,7 @@ export const EditorNavigation = ({
                 <button
                   onClick={() => {
                     setIsSiteSettingsModalOpen(true);
-                    setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                    close();
                   }}
                   className={editorNavRow("mid")}
                 >
@@ -257,7 +210,7 @@ export const EditorNavigation = ({
                 <button
                   onClick={() => {
                     setIsModifiersModalOpen(true);
-                    setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                    close();
                   }}
                   className={editorNavRow("section")}
                 >
@@ -270,7 +223,7 @@ export const EditorNavigation = ({
                 <button
                   onClick={() => {
                     setIsLayersDialogOpen(true);
-                    setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                    close();
                   }}
                   className={editorNavRow("mid")}
                 >
@@ -314,14 +267,14 @@ export const EditorNavigation = ({
                   renderNavAi({
                     onSelect: () => {
                       setClippyOpen({});
-                      setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                      close();
                     },
                   })}
 
                 <button
                   onClick={() => {
                     setIsImportExportDialogOpen(true);
-                    setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                    close();
                   }}
                   className={editorNavRow("mid")}
                 >
@@ -335,7 +288,7 @@ export const EditorNavigation = ({
                 <button
                   onClick={() => {
                     setSideBarLeft(!sideBarLeft);
-                    setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                    close();
                   }}
                   className={editorNavRow("mid")}
                 >
@@ -348,7 +301,7 @@ export const EditorNavigation = ({
                 <button
                   onClick={() => {
                     toggleTheme();
-                    setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+                    close();
                   }}
                   className={editorNavRow("end")}
                 >
@@ -363,7 +316,7 @@ export const EditorNavigation = ({
       )}
 
       {/* Portal target — app injects footer content (account, nav links) here */}
-      {headerMenu.menuType !== "components" && headerMenu.menuType !== "sections" && (
+      {panel !== "components" && panel !== "blocks" && (
         <div id="editor-nav-footer" className="mt-auto" />
       )}
     </nav>
