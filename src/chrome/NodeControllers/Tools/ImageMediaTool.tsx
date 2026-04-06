@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { MediaManagerModal } from "../../Toolbar/Inputs/media/MediaManagerModal";
 import { useState } from "react";
@@ -49,6 +48,8 @@ export const ImageMediaTool = () => {
     <>
       {/* Double-click overlay */}
       <div
+        role="presentation"
+        aria-hidden="true"
         className="absolute inset-0 z-10 cursor-pointer bg-transparent"
         onDoubleClick={handleDoubleClick}
         title="Double-click to change image"

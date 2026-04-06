@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ToolbarItem } from "../../ToolbarItem";
 
 export const TypeInput = () => (

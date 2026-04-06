@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { SketchPicker } from "@hello-pangea/color-picker";
 import { Popover, PopoverPanel } from "@headlessui/react";
@@ -194,7 +193,7 @@ export const ColorPickerDialog = () => {
     <ColorPickerBackdrop onClose={close}>
       <div
         role="dialog"
-        className="pagehub-sdk-root pointer-events-auto w-[310px] overflow-hidden rounded-lg border border-border bg-background shadow-xl"
+        className="pagehub-sdk-root ph-panel pointer-events-auto w-[310px] overflow-hidden"
         style={panelStyle}
       >
         {/* Header */}
@@ -230,7 +229,7 @@ export const ColorPickerDialog = () => {
           </button>
         </div>
 
-        <div className="scrollbar flex w-[310px] flex-col overflow-y-auto rounded-lg bg-background" style={{ maxHeight: panelStyle.maxHeight }}>
+        <div className="scrollbar-light flex w-[310px] flex-col overflow-y-auto rounded-lg bg-background" style={{ maxHeight: panelStyle.maxHeight }}>
         {/* 1. Design Tokens — always on top when available */}
         {canShowPalette && (
           <div className="border-b border-border px-2 py-1.5">

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { Accord } from "../../ToolbarStyle";
 import { useGetNode } from "../../Tools/lib";

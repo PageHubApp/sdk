@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SDK stubs for Next.js modules
  * Replaces: next/link, next/image, next/router, next-auth/react
@@ -29,6 +28,7 @@ export const useRouter = () => ({
   isReady: true,
   events: { on: () => {}, off: () => {}, emit: () => {} },
 });
+// eslint-disable-next-line react-hooks/rules-of-hooks -- module-level stub, not a real hook call
 export const router = useRouter();
 
 // next-auth/react

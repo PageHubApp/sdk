@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor } from "@craftjs/core";
 import { useEffect, useRef } from "react";
 import { useAtomValue } from "@zedux/react";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import debounce from "lodash.debounce";
 import { useEffect, useRef, useState } from "react";
@@ -50,11 +49,14 @@ const EditableName = () => {
     >
       <div
         ref={editableRef}
+        role={isEditing ? undefined : "button"}
+        tabIndex={isEditing ? undefined : 0}
         className={`${isEditing ? "cursor-text" : "cursor-grab active:cursor-grabbing"}`}
         contentEditable={isEditing}
         data-gramm="false"
         suppressContentEditableWarning={true}
         onClick={handleClick}
+        onKeyDown={isEditing ? undefined : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(e as any); } }}
         onBlur={handleBlur}
         onInput={debounce(e => {
           actions.setCustom(id, custom => (custom.displayName = e.target.innerText));

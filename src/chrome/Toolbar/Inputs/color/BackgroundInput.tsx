@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { TailwindStyles } from "utils/tailwind";
 import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
@@ -18,6 +17,7 @@ export const BackgroundInput = ({ children }: { children?: React.ReactNode }) =>
     <ToolbarSection
       title="Background"
       icon={<PiImageFill />}
+      help="Background image, color, gradient, and overlay."
       bodyClassName="px-3"
       footer={
         <ItemAdvanceToggle propKey="background" title="More background properties">

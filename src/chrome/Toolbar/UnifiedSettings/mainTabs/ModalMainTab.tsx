@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { TbAppWindow, TbEye, TbEyeOff } from "react-icons/tb";
 import { ToolbarItem } from "../../ToolbarItem";
@@ -18,7 +17,7 @@ export const ModalMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="How and when the modal opens, and close behavior.">
         {/* View toggle — collapsed/expanded in editor */}
         <div className="flex gap-1 rounded-lg bg-muted p-1">
           {VIEW_STATES.map(({ value, label, icon: Icon }) => (
@@ -98,7 +97,7 @@ export const ModalMainTab = () => {
       </ToolbarSection>
     ),
     Type: (
-      <ToolbarSection title="Type" icon={SECTION_ICONS["Type"]}>
+      <ToolbarSection title="Type" icon={SECTION_ICONS["Type"]} help="Animation, size, position, and backdrop settings.">
         <ToolbarItem
           propKey="modalAnimation"
           propType="component"
@@ -163,7 +162,7 @@ export const ModalMainTab = () => {
 export const ModalMainTabAdvanced = () => {
   return renderAdvancedComponentSlots({
     Anchor: (
-      <ToolbarSection title="Modal ID" icon={SECTION_ICONS["Anchor"]}>
+      <ToolbarSection title="Modal ID" icon={SECTION_ICONS["Anchor"]} help="ID that buttons use to open this modal.">
         <ToolbarItem
           propKey="anchor"
           propType="component"

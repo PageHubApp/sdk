@@ -1,5 +1,3 @@
-// @ts-nocheck
-import { motion, useAnimationControls } from "framer-motion";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -56,14 +54,23 @@ const getCornerFromSwipe = (dx: number, dy: number, current: Corner): Corner => 
 
 type SavedPos = { x: number; y: number; corner?: Corner };
 
-export const FloatingWidget: React.FC<FloatingWidgetProps> = ({
+const setTransform = (el: HTMLDivElement, x: number, y: number) => {
+  el.style.transform = `translate(${x}px, ${y}px)`;
+};
+
+const snapTransform = (el: HTMLDivElement, x: number, y: number) => {
+  el.style.transition = "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
+  el.style.transform = `translate(${x}px, ${y}px)`;
+  setTimeout(() => { el.style.transition = ""; }, 400);
+};
+
+export function FloatingWidget({
   storageKey,
   defaultCorner,
   margin = 24,
   zIndex = 9999,
   children,
-}) => {
-  const controls = useAnimationControls();
+}: FloatingWidgetProps) {
   const elRef = useRef<HTMLDivElement>(null);
   const didDragRef = useRef(false);
   const posRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -72,8 +79,7 @@ export const FloatingWidget: React.FC<FloatingWidgetProps> = ({
 
   // Mutable ref bag so document-level listeners always see fresh values
   // without needing to re-attach on every render.
-  const stableRef = useRef({ controls, defaultCorner, margin, save: null as any });
-  stableRef.current.controls = controls;
+  const stableRef = useRef({ defaultCorner, margin, save: null as any });
   stableRef.current.defaultCorner = defaultCorner;
   stableRef.current.margin = margin;
 
@@ -137,9 +143,9 @@ export const FloatingWidget: React.FC<FloatingWidgetProps> = ({
 
     posRef.current = pos;
     cornerRef.current = savedCorner || defaultCorner;
-    controls.set({ x: pos.x, y: pos.y });
+    if (elRef.current) setTransform(elRef.current, pos.x, pos.y);
     setMounted(true);
-  }, [storageKey, defaultCorner, margin, controls]);
+  }, [storageKey, defaultCorner, margin]);
 
   // ── Document-level pointer listeners ──────────────────────────
   // Attached once on mount to `document` so the drag NEVER disconnects
@@ -168,7 +174,7 @@ export const FloatingWidget: React.FC<FloatingWidgetProps> = ({
       posRef.current = { x, y };
 
       // Direct DOM — no re-renders during drag
-      el.style.transform = `translate(${x}px, ${y}px)`;
+      setTransform(el, x, y);
       el.style.cursor = "grabbing";
 
       // Keep a rolling window of samples for velocity calculation
@@ -183,7 +189,7 @@ export const FloatingWidget: React.FC<FloatingWidgetProps> = ({
       const ds = dragState.current;
       if (!ds?.active) return;
 
-      const { controls, defaultCorner, margin, save } = stableRef.current;
+      const { defaultCorner, margin, save } = stableRef.current;
       const el = elRef.current;
       if (el) el.style.cursor = "";
 
@@ -201,22 +207,15 @@ export const FloatingWidget: React.FC<FloatingWidgetProps> = ({
           const target = getCornerPos(newCorner, margin);
           cornerRef.current = newCorner;
           posRef.current = target;
-          controls.start({
-            x: target.x,
-            y: target.y,
-            transition: { type: "spring", stiffness: 500, damping: 30, mass: 0.6 },
-          });
+          if (el) snapTransform(el, target.x, target.y);
           save({ ...target, corner: newCorner });
         } else {
           // Slow drag — stay where released
           const pos = posRef.current;
           cornerRef.current = null;
-          controls.set({ x: pos.x, y: pos.y });
+          if (el) setTransform(el, pos.x, pos.y);
           save(pos);
         }
-
-        // Clear inline transform so framer-motion takes over
-        if (el) el.style.transform = "";
       }
 
       dragState.current = null;
@@ -241,7 +240,7 @@ export const FloatingWidget: React.FC<FloatingWidgetProps> = ({
 
       const target = getCornerPos(cornerRef.current, stableRef.current.margin);
       posRef.current = target;
-      stableRef.current.controls.set({ x: target.x, y: target.y });
+      if (elRef.current) setTransform(elRef.current, target.x, target.y);
       stableRef.current.save({ ...target, corner: cornerRef.current });
     };
 
@@ -276,10 +275,8 @@ export const FloatingWidget: React.FC<FloatingWidgetProps> = ({
   if (!mounted) return null;
 
   return (
-    <motion.div
+    <div
       ref={elRef}
-      animate={controls}
-      initial={{ x: posRef.current.x, y: posRef.current.y }}
       style={{
         position: "fixed",
         top: 0,
@@ -292,6 +289,6 @@ export const FloatingWidget: React.FC<FloatingWidgetProps> = ({
       onClickCapture={handleClickCapture}
     >
       {children}
-    </motion.div>
+    </div>
   );
-};
+}

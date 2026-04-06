@@ -1,6 +1,6 @@
-// @ts-nocheck
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { TbX } from "react-icons/tb";
+import { useFocusTrap } from "../../../utils/hooks/useAccessibility";
 
 interface MoveableDialogProps {
   isOpen: boolean;
@@ -18,7 +18,7 @@ interface MoveableDialogProps {
  * Moveable dialog component that can be dragged around
  * Only closes when clicking the X button, not when clicking outside
  */
-export const MoveableDialog: React.FC<MoveableDialogProps> = ({
+export function MoveableDialog({
   isOpen,
   onClose,
   title,
@@ -28,8 +28,9 @@ export const MoveableDialog: React.FC<MoveableDialogProps> = ({
   width = "320px",
   height = "500px",
   initialPosition = { x: 100, y: 100 },
-}) => {
+}: MoveableDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const focusTrapRef = useFocusTrap(isOpen);
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -91,8 +92,11 @@ export const MoveableDialog: React.FC<MoveableDialogProps> = ({
   return (
     <div className="pointer-events-none fixed inset-0 z-9999" style={{ pointerEvents: "none" }}>
       <div
-        ref={dialogRef}
-        className="pointer-events-auto absolute flex flex-col rounded-lg border border-border bg-background text-foreground shadow-2xl"
+        ref={(el) => { dialogRef.current = el; (focusTrapRef as any).current = el; }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="moveable-dialog-title"
+        className="pagehub-sdk-root ph-panel-heavy pointer-events-auto absolute flex flex-col text-foreground"
         style={{
           width,
           height,
@@ -104,13 +108,15 @@ export const MoveableDialog: React.FC<MoveableDialogProps> = ({
       >
         {/* Header - Draggable */}
         <div
+          role="presentation"
+          aria-hidden="true"
           className="flex cursor-move select-none items-center justify-between border-b border-border bg-accent p-3 text-accent-foreground"
           data-draggable="true"
           onMouseDown={handleMouseDown}
         >
           <div className="flex items-center gap-2">
             {icon && <span className="text-xl">{icon}</span>}
-            <h2 className="text-lg font-bold">{title}</h2>
+            <h2 id="moveable-dialog-title" className="text-lg font-bold">{title}</h2>
           </div>
           <div className="flex items-center gap-1">
             {headerRight}
@@ -131,6 +137,6 @@ export const MoveableDialog: React.FC<MoveableDialogProps> = ({
       </div>
     </div>
   );
-};
+}
 
 export default MoveableDialog;

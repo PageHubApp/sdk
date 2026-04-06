@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbAdjustments } from "react-icons/tb";
 import { ToolbarSection } from "../../ToolbarSection";
 import { CursorInput } from "../advanced/CursorInput";

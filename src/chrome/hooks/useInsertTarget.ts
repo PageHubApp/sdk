@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 
 /**

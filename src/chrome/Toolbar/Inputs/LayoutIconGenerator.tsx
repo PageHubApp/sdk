@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 
 interface LayoutIconConfig {
@@ -16,7 +15,7 @@ interface LayoutIconGeneratorProps {
   config: LayoutIconConfig;
 }
 
-const LayoutIconGenerator: React.FC<LayoutIconGeneratorProps> = ({ config }) => {
+function LayoutIconGenerator({ config }: LayoutIconGeneratorProps) {
   const {
     type,
     columns,
@@ -73,7 +72,7 @@ const LayoutIconGenerator: React.FC<LayoutIconGeneratorProps> = ({ config }) => 
   }
 
   return null;
-};
+}
 
 // Convenience function for easy usage
 export const generateLayoutIcon = (config: LayoutIconConfig) => {

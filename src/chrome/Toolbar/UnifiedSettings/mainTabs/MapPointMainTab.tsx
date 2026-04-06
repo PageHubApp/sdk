@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
@@ -7,7 +6,7 @@ export const MapPointMainTab = () =>
   renderComponentSlots({
     Content: (
       <>
-        <ToolbarSection title="Location">
+        <ToolbarSection title="Location" help="Latitude and longitude for this pin.">
           <ToolbarItem
             propKey="lat"
             propType="component"
@@ -26,7 +25,7 @@ export const MapPointMainTab = () =>
           />
         </ToolbarSection>
 
-        <ToolbarSection title="Details">
+        <ToolbarSection title="Details" help="Name and description shown in the pin popup.">
           <ToolbarItem
             propKey="title"
             propType="component"

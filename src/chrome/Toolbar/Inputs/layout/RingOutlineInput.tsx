@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TbFocus2 } from "react-icons/tb";

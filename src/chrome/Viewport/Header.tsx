@@ -1,11 +1,9 @@
-// @ts-nocheck
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { Tooltip } from "components/layout/Tooltip";
 
 import { useEffect, useRef, useState } from "react";
 
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { motion } from "framer-motion";
 import {
   TbArrowBackUp,
   TbArrowForwardUp,
@@ -49,44 +47,12 @@ import { PageSelector } from "./PageSelector";
 import { SiteSettingsModal } from "./SiteSettingsModal";
 
 import { useSDK } from "../../context";
+import { usePanelUrl } from "../../utils/usePanelUrl";
+import { HeaderItem as Item } from "./Header/HeaderItem";
+import { useHeaderShortcuts } from "./Header/useHeaderShortcuts";
 
-export function useComponentVisible(initialIsVisible) {
-  const [isComponentVisible, setIsComponentVisible] = useState(initialIsVisible);
-  const ref = useRef(null);
-
-  const handleClickOutside = event => {
-    if (ref.current && !ref.current.contains(event.target)) {
-      setIsComponentVisible(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("click", handleClickOutside, true);
-    return () => {
-      document.removeEventListener("click", handleClickOutside, true);
-    };
-  }, []);
-
-  return { ref, isComponentVisible, setIsComponentVisible };
-}
-
-const Item = ({ onClick, children, disabled = false, className = "", ariaLabel = "" }) => (
-  <motion.button
-    onClick={onClick}
-    disabled={disabled}
-    aria-label={ariaLabel}
-    className={`flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-xl hover:bg-muted hover:text-foreground ${disabled && "opacity-50"
-      } ${className}`}
-    whileTap={{ scale: 0.9 }}
-    style={{
-      willChange: "transform",
-      backfaceVisibility: "hidden",
-      WebkitFontSmoothing: "antialiased",
-    }}
-  >
-    {children}
-  </motion.button>
-);
+// Re-export for external consumers
+export { useComponentVisible } from "./Header/useComponentVisible";
 
 export const Header = () => {
   const { enabled, canUndo, canRedo, actions, query } = useEditor((state, query) => ({
@@ -152,6 +118,7 @@ export const Header = () => {
   const setActive = useSetAtomState(LastctiveAtom);
 
   const [headerMenu, setHeaderMenu] = useAtomState(HeaderMenuAtom);
+  const { open: openPanel, close: closePanel } = usePanelUrl();
   const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useState(false);
   const [isLayersDialogOpen, setIsLayersDialogOpen] = useState(false);
   const [isSiteSettingsModalOpen, setIsSiteSettingsModalOpen] = useState(false);
@@ -221,10 +188,7 @@ export const Header = () => {
     });
 
   const [view, setView] = useAtomState(ViewAtom);
-  const [lsIds, setLsIds] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => setLsIds(JSON.parse(localStorage.getItem("history")) || []), []);
 
   // Theme management
   useEffect(() => {
@@ -245,6 +209,9 @@ export const Header = () => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
 
+    // Enable transition class before toggling so colors animate smoothly
+    document.documentElement.classList.add("theme-transition");
+
     if (newTheme) {
       document.documentElement.classList.add("dark");
       localStorage.setItem("theme", "dark");
@@ -252,6 +219,9 @@ export const Header = () => {
       document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
+
+    // Remove after transition so normal interactions aren't affected
+    setTimeout(() => document.documentElement.classList.remove("theme-transition"), 350);
   };
 
   const animate = false;
@@ -285,89 +255,20 @@ export const Header = () => {
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
 
   // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.contentEditable === "true"
-      ) {
-        return;
-      }
-
-      const key = e.key.toLowerCase();
-      const mod = e.metaKey || e.ctrlKey;
-      if (!mod) return;
-
-      // Cmd+S — Save
-      if (key === "s" && !e.shiftKey) {
-        e.preventDefault();
-        if (canUndo && settings) {
-          if (isTenant) {
-            const json = query.serialize();
-            SaveToServer(json, true, settings, setSettings, sessionToken);
-          } else {
-            setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "domain" }));
-          }
-        }
-        return;
-      }
-
-      // Cmd+Shift+M — Media Manager
-      if (key === "m" && e.shiftKey) {
-        e.preventDefault();
-        setIsMediaManagerModalOpen(v => !v);
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
-        return;
-      }
-
-      // Cmd+Shift+D — Design System
-      if (key === "d" && e.shiftKey) {
-        e.preventDefault();
-        setIsDesignSystemSidebarOpen(v => !v);
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
-        return;
-      }
-
-      // Cmd+, — Site Settings
-      if (key === ",") {
-        e.preventDefault();
-        setIsSiteSettingsModalOpen(v => !v);
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
-        return;
-      }
-
-      // Cmd+Shift+L — Layers
-      if (key === "l" && e.shiftKey) {
-        e.preventDefault();
-        setIsLayersDialogOpen(v => !v);
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
-        return;
-      }
-
-      // Cmd+Shift+G — Toggle Grid Lines
-      if (key === "g" && e.shiftKey) {
-        e.preventDefault();
-        setShowGridLines(prev => {
-          const next = !prev;
-          document.getElementById("viewport")?.setAttribute("data-show-gridlines", next.toString());
-          return next;
-        });
-        return;
-      }
-
-      // Cmd+Shift+E — Import / Export
-      if (key === "e" && e.shiftKey) {
-        e.preventDefault();
-        setIsImportExportDialogOpen(v => !v);
-        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
-        return;
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+  useHeaderShortcuts({
+    canUndo,
+    isTenant,
+    query,
+    settings,
+    setSettings,
+    sessionToken,
+    setHeaderMenu,
+    setIsMediaManagerModalOpen,
+    setIsDesignSystemSidebarOpen,
+    setIsSiteSettingsModalOpen,
+    setIsLayersDialogOpen,
+    setShowGridLines,
+    setIsImportExportDialogOpen,
   });
 
   if (!enabled) return null;
@@ -376,20 +277,20 @@ export const Header = () => {
     <>
       <header
         role="banner"
-        className="pointer-events-auto flex flex-row-reverse items-center justify-between border-b border-border bg-background px-1.5 py-1 text-foreground"
+        className="pointer-events-auto relative z-50 flex flex-row-reverse items-center justify-between border-b border-border bg-background px-1.5 py-1 text-foreground"
         data-tutorial="header"
       >
         <Tooltip content="Add Component" placement="bottom" arrow={false}>
           <Item
             ariaLabel="Add Component"
             onClick={e => {
-              const newMenuType = headerMenu.menuType === "components" ? "" : "components";
-              setHeaderMenu(prev => ({
-                ...prev,
-                isOpen: newMenuType !== "",
-                menuType: newMenuType,
-                activeTab: newMenuType === "components" ? "components" : prev.activeTab,
-              }));
+              if (headerMenu.menuType === "components" && headerMenu.isOpen) {
+                closePanel();
+                setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+              } else {
+                openPanel("components");
+                setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components", activeTab: "components" }));
+              }
               e.stopPropagation();
             }}
           >
@@ -440,17 +341,11 @@ export const Header = () => {
           align="center"
           className="min-w-[12rem] rounded-lg border border-border bg-popover p-1 py-1.5 shadow-xl"
           trigger={
-            <motion.button
+            <button
               type="button"
               aria-label="Canvas width"
               aria-haspopup="menu"
-              className="flex cursor-pointer items-center justify-center gap-0.5 rounded-lg p-1.5 text-xl hover:bg-muted hover:text-foreground"
-              whileTap={{ scale: 0.9 }}
-              style={{
-                willChange: "transform",
-                backfaceVisibility: "hidden",
-                WebkitFontSmoothing: "antialiased",
-              }}
+              className="tool-button gap-0.5!"
             >
               {view === "mobile" && <TbDeviceMobile />}
               {(view === "desktop" || view === "tablet") && <TbDeviceDesktop />}
@@ -460,12 +355,13 @@ export const Header = () => {
                 </span>
               )}
               <TbChevronDown className="size-3 shrink-0 opacity-60" aria-hidden />
-            </motion.button>
+            </button>
           }
         >
           <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Canvas width
           </div>
+          <div className="ph-select-item-host">
           {headerCanvasRows.map(row => (
             <button
               key={row.id}
@@ -476,7 +372,7 @@ export const Header = () => {
                 setView(row.id);
                 scrollSelectedNodeIntoView();
               }}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+              className="ph-select-item items-start gap-2 text-xs"
             >
               <span className="flex size-4 shrink-0 items-center justify-center text-primary">
                 {view === row.id ? <TbCheck className="size-3.5" /> : null}
@@ -487,6 +383,7 @@ export const Header = () => {
               </span>
             </button>
           ))}
+          </div>
         </ToolbarPortalDropdown>
 
         <Tooltip content="Preview" placement="bottom" arrow={false}>
@@ -613,11 +510,11 @@ export const Header = () => {
           <Item
             ariaLabel="More Options"
             onClick={() => {
-              setHeaderMenu(prev => ({
-                ...prev,
-                isOpen: !prev.isOpen,
-                menuType: !prev.isOpen ? "" : prev.menuType,
-              }));
+              if (headerMenu.isOpen) {
+                setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+              } else {
+                setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "" }));
+              }
             }}
           >
             {headerMenu.isOpen ? <TbX /> : <TbMenu2 />}
@@ -642,7 +539,6 @@ export const Header = () => {
       <EditorNavigation
         headerMenu={headerMenu}
         setHeaderMenu={setHeaderMenu}
-        lsIds={lsIds}
         settings={settings}
         isTenant={isTenant}
         sideBarLeft={sideBarLeft}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbMusic } from "react-icons/tb";
@@ -19,19 +18,8 @@ export interface AudioProps extends BaseSelectorProps {
   loop?: boolean;
 }
 
-const defaultProps: AudioProps = {
-  controls: true,
-  autoplay: false,
-  loop: false,
-  canDelete: true,
-  canEditName: true,
-};
-
-export const Audio = (props: AudioProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const Audio = (incomingProps: AudioProps) => {
+  let props: AudioProps = { controls: true, autoplay: false, loop: false, canDelete: true, canEditName: true, ...incomingProps };
 
   const {
     connectors: { connect, drag },
@@ -44,8 +32,7 @@ export const Audio = (props: AudioProps) => {
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
 
-
-  const { audioUrl, controls, autoplay, loop } = props;
+  const { audioUrl } = props;
 
   props = setClonedProps(props, query);
 
@@ -68,9 +55,9 @@ export const Audio = (props: AudioProps) => {
       <audio
         className={props.className || ""}
         src={audioUrl}
-        controls={controls}
-        autoPlay={autoplay && !enabled}
-        loop={loop}
+        controls={props.controls}
+        autoPlay={props.autoplay && !enabled}
+        loop={props.loop}
         preload="metadata"
         style={{ width: "100%" }}
       >

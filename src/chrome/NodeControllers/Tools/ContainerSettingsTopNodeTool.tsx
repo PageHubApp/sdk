@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { ToolbarItem } from "../../Toolbar/ToolbarItem";
 import { FlexDirectionInput } from "../../Toolbar/Inputs/layout/FlexDirectionInput";
@@ -8,7 +7,6 @@ import { ViewAtom } from "../../Viewport/atoms";
 import { getPropFinalValue } from "../../Viewport/lib";
 import { AddElement } from "../../Viewport/Toolbox/lib";
 import { Tooltip } from "components/layout/Tooltip";
-import { motion } from "framer-motion";
 import {
   TbLayoutAlignBottom,
   TbLayoutAlignCenter,
@@ -24,6 +22,7 @@ import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
 import { ClippyOpenAtom, SettingsAtom } from "utils/atoms";
 import { HeaderMenuAtom } from "utils/lib";
+import { usePanelUrl } from "../../../utils/usePanelUrl";
 import { useSDK } from "../../../context";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { DeleteNodeButton } from "./DeleteNodeButton";
@@ -104,42 +103,14 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   } = useEditor();
 
   const setHeaderMenu = useSetAtomState(HeaderMenuAtom);
+  const { open: openPanel } = usePanelUrl();
 
   const match =
     (["flex-row", "flex-row-reverse"].includes(value)) ||
     (["flex-col", "flex-col-reverse"].includes(value));
 
   return (
-    <NodeToolWrapper
-      col={direction !== "horizontal"}
-      className={`tool-bg`}
-      animate={{
-        initial: { opacity: 0 },
-        animate: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            delay: 0.5,
-            duration: 0.5,
-            type: "spring",
-            stiffness: 200,
-            damping: 20,
-            mass: 0.5,
-          },
-        },
-        exit: {
-          opacity: 0,
-          transition: {
-            delay: 0.2,
-            duration: 0.3,
-            type: "spring",
-            stiffness: 200,
-            damping: 20,
-            mass: 0.5,
-          },
-        },
-      }}
-    >
+    <NodeToolWrapper col={direction !== "horizontal"}>
       {direction == "horizontal" && (
         <>
           <SelectParentNodeTool
@@ -197,8 +168,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
         <Tooltip
           content={`Add ${["flex-row", "flex-row-reverse"].includes(value) ? "column" : "row"} container`}
         >
-          <motion.button
-            whileTap={{ scale: 0.9 }}
+          <button
             className={`tool-button ${["flex-row", "flex-row-reverse"].includes(value) ? "-rotate-90" : ""}`}
             onClick={async () => {
               const { Container } = await import("../../../components/Container");
@@ -217,21 +187,21 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
             }}
           >
             <TbRowInsertTop />
-          </motion.button>
+          </button>
         </Tooltip>
       )}
 
       {match && (
         <Tooltip content="Add components">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
+          <button
             className={`tool-button ${direction == "horizontal" ? "-rotate-90" : ""}`}
             onClick={() => {
-              setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components" }));
+              openPanel("components");
+              setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components", activeTab: "components" }));
             }}
           >
             <TbPlus />
-          </motion.button>
+          </button>
         </Tooltip>
       )}
 

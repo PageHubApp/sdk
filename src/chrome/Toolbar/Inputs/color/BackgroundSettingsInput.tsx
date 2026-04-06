@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { getBackgroundUrl } from "utils/lib";
 import { selectorPresets } from "utils/design/selectorPresets";

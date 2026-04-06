@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { ViewAtom } from "../../../Viewport/atoms";
 import { TbBoxPadding, TbInfoSquare } from "react-icons/tb";

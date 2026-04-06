@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ROOT_NODE } from "@craftjs/core";
 import colors from "tailwindcss/colors";
 import { DEFAULT_STYLE_GUIDE } from "../defaults";

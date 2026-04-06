@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FixedSizeList as List } from "react-window";
 import { useAtomState } from "@zedux/react";
@@ -147,7 +146,7 @@ export const PatternDialog = () => {
       customRenderer={
         <div className="flex h-full flex-col overflow-hidden">
           {/* Category Tabs - Scrollable with max height */}
-          <div className="scrollbar mb-2 max-h-20 shrink-0 overflow-y-auto">
+          <div className="scrollbar-light mb-2 max-h-20 shrink-0 overflow-y-auto">
             <div className="flex flex-wrap gap-1.5">
               {categories.map(cat => (
                 <button
@@ -179,7 +178,7 @@ export const PatternDialog = () => {
               itemCount={filteredPatterns.length}
               itemSize={itemHeight}
               width={containerWidth - 24}
-              className="scrollbar"
+              className="scrollbar-light"
             >
               {Row}
             </List>

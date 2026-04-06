@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { atom } from "@zedux/react";
 
 export const DesignVarDialogAtom = atom("DesignVarDialogAtom", {

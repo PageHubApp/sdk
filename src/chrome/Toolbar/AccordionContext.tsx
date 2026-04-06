@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from "react";
 
 const STORAGE_KEY = "ph-accordion-state";

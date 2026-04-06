@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useState } from "react";
 import { TbX } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
@@ -26,7 +25,7 @@ interface DeviceSelectorProps {
   onClose: () => void;
 }
 
-export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ onClose }) => {
+export function DeviceSelector({ onClose }: DeviceSelectorProps) {
   const [deviceDimensions, setDeviceDimensions] = useAtomState(DeviceDimensionsAtom);
   const [selectedDevice, setSelectedDevice] = useState(devicePresets[0]);
   const [customWidth, setCustomWidth] = useState(deviceDimensions.width);
@@ -88,7 +87,7 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ onClose }) => {
         {showDropdown && (
           <>
             {/* Backdrop */}
-            <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
+            <div role="presentation" aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
             {/* Dropdown */}
             <div className="scrollbar-dark absolute left-0 top-full z-50 mt-1 max-h-96 w-56 overflow-y-auto rounded-lg border border-border bg-muted text-muted-foreground shadow-lg">
               {devicePresets.map(device => (
@@ -139,4 +138,4 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({ onClose }) => {
       </button>
     </div>
   );
-};
+}

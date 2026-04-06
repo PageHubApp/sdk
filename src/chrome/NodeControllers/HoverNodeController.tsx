@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import RenderNodeControlInline from "../RenderNodeControlInline";
 
@@ -30,7 +29,7 @@ export const HoverNodeController = (props: { position; align; placement; alt?: a
     >
       <div
         className={
-          "fontfamily-base flex flex-row gap-3 rounded-lg border bg-background px-2 text-base! font-normal! text-foreground"
+          "fontfamily-base flex flex-row gap-3 rounded-lg border border-border bg-muted px-2 text-base! font-normal! text-foreground shadow-sm"
         }
       >
         {name}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useMemo, useRef, useState } from "react";
 import { FixedSizeGrid as Grid } from "react-window";
 import { useAtomState } from "@zedux/react";
@@ -111,7 +110,7 @@ export const IconDialogDialog = () => {
       customRenderer={
         <div className="flex h-full flex-col overflow-hidden">
           {/* Category Tabs - Scrollable with max height */}
-          <div className="scrollbar mb-2 max-h-20 shrink-0 overflow-y-auto">
+          <div className="scrollbar-light mb-2 max-h-20 shrink-0 overflow-y-auto">
             <div className="flex flex-wrap gap-1.5">
               <button
                 className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
@@ -167,7 +166,7 @@ export const IconDialogDialog = () => {
               rowCount={rowCount}
               rowHeight={rowHeight}
               width={containerWidth - 24}
-              className="scrollbar"
+              className="scrollbar-light"
             >
               {Cell}
             </Grid>

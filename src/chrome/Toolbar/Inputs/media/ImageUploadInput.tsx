@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
 import { GetSignedUrl, SaveMedia } from "../../../Viewport/lib";
 import { useState } from "react";

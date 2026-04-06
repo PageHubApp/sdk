@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const addComponentToStorage = (data = null) => {
   data = data || JSON.parse(localStorage.getItem("clipBoard"));
   const components = JSON.parse(localStorage.getItem("components")) || [];

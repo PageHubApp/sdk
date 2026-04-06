@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor } from "@craftjs/core";
 import { GetSignedUrl, SaveMedia } from "./lib";
 import Image from "next/image";

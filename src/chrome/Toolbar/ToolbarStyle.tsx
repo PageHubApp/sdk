@@ -1,9 +1,7 @@
-// @ts-nocheck
 import { Tooltip } from "components/layout/Tooltip";
-import { TbInfoCircle, TbMoon, TbMoonOff } from "react-icons/tb";
-import { useAtomState } from "@zedux/react";
+import { TbInfoCircle } from "react-icons/tb";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
-import { ToolbarLabel, ViewSelectionAtom } from "./Label";
+import { ToolbarLabel } from "./Label";
 
 export const MobileDesktopLabels = ({
   lab,
@@ -18,32 +16,8 @@ export const MobileDesktopLabels = ({
   showVarSelector,
   varSelectorPrefix,
 }) => {
-  const [viewSelection, setViewSelection] = useAtomState(ViewSelectionAtom);
-  const darkOn = viewSelection.dark ?? false;
-
   return (
-    <div className="flex shrink-0 flex-nowrap items-center justify-end gap-0.5 w-full overflow-x-auto scrollbar-hide" onClick={e => e.stopPropagation()}>
-      {propType !== "root" && propType !== "component" && (
-        <Tooltip content={darkOn ? "Editing dark: variants" : "Edit dark: variants"} placement="top" arrow={false}>
-          <button
-            type="button"
-            onClick={e => {
-              e.preventDefault();
-              e.stopPropagation();
-              setViewSelection(prev => ({ ...prev, dark: !prev.dark }));
-            }}
-            className={`flex shrink-0 cursor-pointer items-center justify-center rounded p-0.5 transition-colors ${
-              darkOn
-                ? "bg-violet-600/20 text-violet-800 ring-1 ring-violet-500/30 dark:text-violet-200"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-            }`}
-            aria-pressed={darkOn}
-            aria-label={darkOn ? "Dark variant scope on" : "Dark variant scope off"}
-          >
-            {darkOn ? <TbMoon className="size-3.5" /> : <TbMoonOff className="size-3.5 opacity-50" />}
-          </button>
-        </Tooltip>
-      )}
+    <div role="presentation" className="mt-0.5 flex min-w-0 flex-wrap items-center justify-end gap-0.5" onClick={e => e.stopPropagation()}>
       {VIEW_BREAKPOINT_SCOPE_KEYS.map(bp => (
         <ToolbarLabel
           key={bp}

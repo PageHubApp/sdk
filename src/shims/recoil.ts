@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * SDK stubs for Zedux (formerly Recoil)
  * All atoms return default values, all hooks are no-ops

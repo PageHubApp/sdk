@@ -1,7 +1,5 @@
-// @ts-nocheck
 import { Element, ROOT_NODE, useEditor } from "@craftjs/core";
 import { atom, useAtomValue } from "@zedux/react";
-import { motion } from "framer-motion";
 import React, { cloneElement, isValidElement, useMemo, useState } from "react";
 
 /**
@@ -223,17 +221,11 @@ export const RenderToolComponent = ({
     display && isValidElement(display) ? cloneElement(display, { isDragging } as any) : display;
 
   return (
-    <motion.div
-      whileTap={{ scale: 0.9 }}
+    <div
       ref={(ref: any) => create(ref, tool)}
       onMouseDown={() => setIsDragging(true)}
       onMouseUp={() => setIsDragging(false)}
       onMouseLeave={() => setIsDragging(false)}
-      style={{
-        willChange: "transform",
-        backfaceVisibility: "hidden",
-        WebkitFontSmoothing: "antialiased",
-      }}
       onDoubleClick={() => {
         const props = {
           element: tool,
@@ -247,6 +239,6 @@ export const RenderToolComponent = ({
       }}
     >
       {renderer || <div className={"w-full"}>{displayWithProps}</div>}
-    </motion.div>
+    </div>
   );
 };

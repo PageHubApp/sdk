@@ -1,7 +1,6 @@
-// @ts-nocheck
 import { getLinkedAncestorNode } from "../../componentUtils";
 import { removeHasManyRelation } from "../../Viewport/lib";
-import { TbBoxModel2, TbLinkOff, TbPalette, TbPencil } from "react-icons/tb";
+import { TbBoxModel2, TbLink, TbLinkOff, TbPalette, TbPencil } from "react-icons/tb";
 import { useSetAtomState } from "../../../utils/atoms";
 import { OpenComponentEditorAtom, ViewModeAtom } from "utils/lib";
 
@@ -84,25 +83,52 @@ export const setClonedProps = (props, query, exclude = []) => {
   }
 };
 
+const LinkedActionCard = ({ icon, title, description, onClick, delay = 0, variant = "default" }) => {
+  const variantStyles = {
+    default: "border-border bg-card hover:bg-muted/50",
+    primary: "border-primary/20 bg-primary/5 hover:bg-primary/10",
+    destructive: "border-destructive/20 bg-destructive/5 hover:bg-destructive/10",
+  };
+  const iconStyles = {
+    default: "bg-secondary text-secondary-foreground group-hover:bg-foreground group-hover:text-background",
+    primary: "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground",
+    destructive: "bg-destructive/10 text-destructive group-hover:bg-destructive group-hover:text-destructive-foreground",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`group relative overflow-hidden rounded-xl border ${variantStyles[variant]} p-4 text-left transition-all`}
+    >
+      <div className="relative flex flex-row items-center gap-3">
+        <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${iconStyles[variant]}`}>
+          {icon}
+        </div>
+        <div className="flex flex-col">
+          <span className="toolbar-label font-semibold">{title}</span>
+          <span className="text-xs text-muted-foreground">{description}</span>
+        </div>
+      </div>
+    </button>
+  );
+};
+
 export const ConvertToRegularComponent = ({ query, actions, id }) => (
-  <button
-    className="flex w-full items-center gap-3 rounded-lg bg-destructive px-4 py-3 text-left text-destructive-foreground transition-colors hover:bg-destructive/90"
+  <LinkedActionCard
+    icon={<TbLinkOff className="size-5" />}
+    title="Unlink Component"
+    description="Make independent with all settings editable"
+    variant="destructive"
+    delay={0.25}
     onClick={() => {
       const node = query.node(id).get();
       removeHasManyRelation(node, query, actions);
-
       actions.setProp(id, prop => {
         prop.belongsTo = "";
         prop.relationType = "";
       });
     }}
-  >
-    <TbLinkOff className="shrink-0 text-xl" />
-    <div className="flex-1">
-      <div className="font-semibold">Unlink Component</div>
-      <div className="text-xs">Make independent with all settings editable</div>
-    </div>
-  </button>
+  />
 );
 
 export const getClonedState = (props, state) => {
@@ -118,41 +144,30 @@ export const getClonedState = (props, state) => {
 };
 
 export const NoSettings = ({ actions, id, query }) => (
-  <>
-    <p className="text-xl">No settings available.</p>
-
+  <div className="flex flex-col gap-4 p-4">
+    <p className="text-sm text-muted-foreground">No settings available for this linked node.</p>
     <ConvertToRegularComponent query={query} actions={actions} id={id} />
-  </>
+  </div>
 );
 
 export const ConvertToStyledComponent = ({ actions, id }) => (
-  <button
-    className="flex w-full items-center gap-3 rounded-lg bg-secondary px-4 py-3 text-left text-secondary-foreground transition-colors hover:bg-secondary/90"
+  <LinkedActionCard
+    icon={<TbPalette className="size-5" />}
+    title="Style Only Mode"
+    description="Edit styles while keeping other settings linked"
+    delay={0.15}
     onClick={() => actions.setProp(id, prop => (prop.relationType = "style"))}
-  >
-    <TbPalette className="shrink-0 text-xl" />
-    <div className="flex-1">
-      <div className="font-semibold text-foreground">Style Only Mode</div>
-      <div className="text-xs text-muted-foreground">
-        Edit styles while keeping other settings linked
-      </div>
-    </div>
-  </button>
+  />
 );
 
 export const ConvertToContentComponent = ({ actions, id }) => (
-  <button
-    className="flex w-full items-center gap-3 rounded-lg bg-accent px-4 py-3 text-left text-accent-foreground transition-colors hover:bg-accent/90"
+  <LinkedActionCard
+    icon={<TbPencil className="size-5" />}
+    title="Content Only Mode"
+    description="Edit text and content while keeping styles linked"
+    delay={0.2}
     onClick={() => actions.setProp(id, prop => (prop.relationType = "content"))}
-  >
-    <TbPencil className="shrink-0 text-xl text-purple-400" />
-    <div className="flex-1">
-      <div className="font-semibold text-foreground">Content Only Mode</div>
-      <div className="text-xs text-muted-foreground">
-        Edit text and content while keeping styles linked
-      </div>
-    </div>
-  </button>
+  />
 );
 
 export const RenderChildren = ({ props, children, query, actions, id }) => {
@@ -194,28 +209,37 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
       };
 
       return (
-        <div className="flex flex-col gap-3 p-3">
-          <div className="rounded-lg border border-border bg-card p-4">
-            <div className="mb-2 text-sm text-muted-foreground">This is a linked instance of:</div>
-            <div className="text-lg font-semibold text-foreground">{componentName}</div>
+        <div className="flex flex-col gap-4 p-4">
+          {/* Component identity header */}
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <TbLink className="size-5" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">Linked instance of</span>
+              <span className="toolbar-label font-semibold">{componentName}</span>
+            </div>
           </div>
 
-          <button
-            className="flex w-full items-center gap-3 rounded-lg bg-primary px-4 py-3 text-left text-primary-foreground transition-colors hover:bg-primary/90"
-            onClick={handleEditComponent}
-          >
-            <TbBoxModel2 className="shrink-0 text-xl" />
-            <div className="flex-1">
-              <div className="font-semibold">Edit Linked Instance</div>
-              <div className="text-xs">Change the main component</div>
-            </div>
-          </button>
+          <div className="h-px bg-border" />
 
-          <ConvertToStyledComponent actions={actions} id={id} />
+          {/* Action cards */}
+          <div className="flex flex-col gap-3">
+            <LinkedActionCard
+              icon={<TbBoxModel2 className="size-5" />}
+              title="Edit Linked Instance"
+              description="Change the main component"
+              variant="primary"
+              delay={0.1}
+              onClick={handleEditComponent}
+            />
 
-          <ConvertToContentComponent actions={actions} id={id} />
+            <ConvertToStyledComponent actions={actions} id={id} />
 
-          <ConvertToRegularComponent query={query} actions={actions} id={id} />
+            <ConvertToContentComponent actions={actions} id={id} />
+
+            <ConvertToRegularComponent query={query} actions={actions} id={id} />
+          </div>
         </div>
       );
     }

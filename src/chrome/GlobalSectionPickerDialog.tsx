@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
 import { SectionPickerDialogAtom } from "utils/atoms";

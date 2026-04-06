@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect } from "react";
 import { useAtomValue } from "@zedux/react";
 import { DeviceAtom, DeviceDimensionsAtom, ViewAtom } from "./atoms";

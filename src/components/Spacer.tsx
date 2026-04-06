@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -15,16 +14,8 @@ export interface SpacerProps extends BaseSelectorProps {
   showName?: string;
 }
 
-const defaultProps: SpacerProps = {
-  root: {},
-  className: "bg-transparent",
-};
-
-export const Spacer = (props: SpacerProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const Spacer = (incomingProps: SpacerProps) => {
+  let props: any = { root: {}, className: "bg-transparent", ...incomingProps };
 
   const {
     connectors: { connect, drag },

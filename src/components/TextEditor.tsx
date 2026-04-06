@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * TextEditorMode — Editor-only Tiptap integration for Text component.
  * Lazy-loaded by Text.tsx only when enabled=true.
@@ -24,9 +23,10 @@ import { changeProp } from "../chrome/Viewport/lib";
 import { TiptapProvider } from "../chrome/TiptapContext";
 import { TiptapToolbar } from "../chrome/Tools/TiptapToolbar";
 import { VariableSuggestionPopup } from "../chrome/Tools/VariableSuggestion";
-import { Tooltip as ReactTooltip } from "react-tooltip";
 
 import { replaceVariables, resolveVariable } from "../utils/design/variables";
+import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
+import { Tooltip as ReactTooltip } from "react-tooltip";
 import { VariableNode, preprocessVariables } from "../extensions/VariableNode";
 import type { SuggestionProps } from "../extensions/VariableNode";
 
@@ -93,14 +93,14 @@ const getTiptapExtensions = (
   }),
 ];
 
-const TextEditorMode: React.FC<{
+function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
   props: any;
   id: string;
   query: any;
   enabled: boolean;
   isMounted: boolean;
   setProp: any;
-}> = ({ props, id, query, enabled, isMounted, setProp }) => {
+}) {
   const [isEditing, setIsEditing] = React.useState(false);
   const isEditingRef = React.useRef(isEditing);
 
@@ -188,7 +188,10 @@ const TextEditorMode: React.FC<{
   return (
     <>
       <div
+        role={isEditing ? undefined : "button"}
+        tabIndex={isEditing ? undefined : 0}
         onClick={handleClick}
+        onKeyDown={isEditing ? undefined : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
         className={`min-h-inherit w-full transition-all duration-150 ease-in-out ${isEditing ? "relative cursor-text" : "cursor-pointer"}`}
       >
         {enabled && tiptapEditor ? (
@@ -207,9 +210,11 @@ const TextEditorMode: React.FC<{
         </TiptapProvider>
       )}
       {isEditing && <VariableSuggestionPopup suggestion={suggestion} />}
-      {isEditing && <ReactTooltip id="variable-tip" classNameArrow="hidden" className="max-w-[220px] rounded-lg! border! !border-border !bg-primary px-2! py-1! text-xs! font-normal! !text-primary-foreground shadow-lg!" />}
+      {isEditing && (
+        <ReactTooltip id="variable-tip" variant="light" classNameArrow="hidden" className={REACT_TOOLTIP_SURFACE_CLASS} />
+      )}
     </>
   );
-};
+}
 
 export default TextEditorMode;

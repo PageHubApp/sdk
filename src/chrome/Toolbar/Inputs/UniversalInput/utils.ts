@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { AllStyles, TailwindStyles, isValidTailwindClass } from "utils/tailwind";
 import { ParsedValue, ValueType } from "./types";
 

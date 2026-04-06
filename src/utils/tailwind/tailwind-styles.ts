@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * AUTO-GENERATED — run: node scripts/generate-tailwind-styles.js
  *

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbCode } from "react-icons/tb";
@@ -166,12 +165,6 @@ export interface EmbedProps extends BaseSelectorProps {
   title?: string;
 }
 
-const defaultProps: EmbedProps = {
-  canDelete: true,
-  canEditName: true,
-  service: "custom",
-};
-
 /**
  * Resolves the final HTML to render.
  * Priority: service-generated code > `code` prop > legacy `videoId` prop.
@@ -189,11 +182,8 @@ export function resolveEmbedHTML(props: EmbedProps): string {
   return code || videoId || "";
 }
 
-export const Embed = (props: EmbedProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const Embed = (incomingProps: EmbedProps) => {
+  let props: any = { canDelete: true, canEditName: true, service: "custom", ...incomingProps };
 
   const {
     connectors: { connect, drag },

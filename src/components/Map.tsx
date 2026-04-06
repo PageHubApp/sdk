@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbMap } from "react-icons/tb";
@@ -31,15 +30,6 @@ export interface MapProps extends BaseSelectorProps {
   title?: string;
 }
 
-const defaultProps: MapProps = {
-  lat: 51.505,
-  lng: -0.09,
-  zoom: 13,
-  type: "interactive",
-  tileStyle: "osm",
-  grayscale: false,
-  title: "",
-};
 
 /**
  * Convert lat/lng/zoom to OSM tile coordinates.
@@ -61,11 +51,8 @@ function getStaticTileUrl(lat: number, lng: number, zoom: number, tileStyle: Til
     .replace("{y}", String(y));
 }
 
-export const Map = (props: MapProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const Map = (incomingProps: MapProps) => {
+  let props: any = { lat: 51.505, lng: -0.09, zoom: 13, type: "interactive", tileStyle: "osm", grayscale: false, title: "", ...incomingProps };
 
   const {
     connectors: { connect, drag },
@@ -74,8 +61,6 @@ export const Map = (props: MapProps) => {
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
 
-
-  const { lat, lng, zoom, type, tileStyle, grayscale } = props;
 
   props = setClonedProps(props, query);
 
@@ -120,6 +105,8 @@ export const Map = (props: MapProps) => {
       childPoints = [];
     }
   }
+
+  const { lat, lng, zoom, type, tileStyle, grayscale } = props;
 
   const hasLocation = lat !== 0 || lng !== 0;
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { TailwindStyles } from "utils/tailwind";
 import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
@@ -19,6 +18,7 @@ export const BorderInput = ({ index = "" }) => {
         full={1}
         title="Border"
         icon={<TbBorderAll />}
+        help="Border width, color, style, and which sides to show."
         footer={
           <ItemAdvanceToggle propKey="border" title="More border properties">
             <ToolbarSection full={1} collapsible={false}>

@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { twMerge } from "tailwind-merge";
@@ -170,50 +168,21 @@ export const UniformPaddingNodeController = () => {
     >
       <>
         <SpacingOverlay
-          targetElement={dom as HTMLElement}
+          targetElement={dom as HTMLElement | null}
           type="padding"
           position="all"
           isActive={hovering || dragging}
         />
         <Tooltip content="Drag to adjust all padding" placement="left">
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              transition: {
-                delay: 0.5,
-                duration: 0.5,
-                type: "spring",
-                stiffness: 200,
-                damping: 20,
-                mass: 0.5,
-              },
-            }}
-            exit={{
-              opacity: 0,
-              transition: {
-                delay: 0.2,
-                duration: 0.3,
-                type: "spring",
-                stiffness: 200,
-                damping: 20,
-                mass: 0.5,
-              },
-            }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 1.1 }}
-            className="pointer-events-auto size-6 cursor-move border-l-[5px] border-t-4 border-current"
-            style={{
-              willChange: "transform",
-              backfaceVisibility: "hidden",
-              WebkitFontSmoothing: "antialiased",
-            }}
+          <button
+            type="button"
+            className="pointer-events-auto size-6 cursor-move border-l-[5px] border-t-4 border-current transition-transform hover:scale-110 active:scale-110"
+            style={{ animation: "node-control-in 0.5s ease-out 0.5s both" }}
             onMouseDown={handleMouseDown}
             onMouseEnter={() => setHovering(true)}
             onMouseLeave={() => setHovering(false)}
             aria-label="Drag to adjust uniform padding"
-          ></motion.button>
+          />
         </Tooltip>
       </>
     </RenderNodeControlInline>

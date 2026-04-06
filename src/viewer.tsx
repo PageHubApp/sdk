@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @pagehub/sdk — Viewer component
  *

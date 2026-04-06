@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { useState } from "react";
 import { TbExternalLink, TbPlayerPlay, TbPointer } from "react-icons/tb";
@@ -55,7 +54,7 @@ export default function ClickItem() {
 
   return (
     <>
-      <ToolbarSection title="Click" icon={<TbPointer />}>
+      <ToolbarSection title="Click" icon={<TbPointer />} help="What happens when someone clicks this element.">
         {/* Mode Toggle Buttons */}
         <div className="flex gap-2">
           <button

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
 import { useAtomState } from "@zedux/react";
 import { v4 as uuidv4 } from "uuid";

@@ -104,51 +104,52 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
       <div {...handleProps.w} />
 
       <div className="flex items-center justify-between px-3 py-2 border-b border-border/30">
-        <div className="flex items-center gap-0.5 rounded-lg bg-muted/50 p-0.5">
+        <div className="flex items-center gap-0.5 rounded-lg border border-border/60 bg-muted/40 p-0.5">
           <button
+            type="button"
             onClick={() => setTab("review")}
             className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
               tab === "review"
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
             }`}
           >
             Preview
           </button>
           <button
+            type="button"
             onClick={() => setTab("live")}
             className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
               tab === "live"
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
             }`}
           >
             Live
           </button>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="tool-bg gap-1!">
           <button
+            type="button"
             onClick={() => setZoom(z => Math.max(0.15, z - 0.05))}
-            className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="tool-button p-0.5! [&_svg]:size-3.5!"
             title="Zoom out"
           >
-            <TbMinus className="size-3" />
+            <TbMinus />
           </button>
           <span className="min-w-[3ch] text-center text-[10px] text-muted-foreground">
             {Math.round(zoom * 100)}%
           </span>
           <button
+            type="button"
             onClick={() => setZoom(z => Math.min(1, z + 0.05))}
-            className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="tool-button p-0.5! [&_svg]:size-3.5!"
             title="Zoom in"
           >
-            <TbPlus className="size-3" />
+            <TbPlus />
           </button>
-          <button
-            onClick={onClose}
-            className="ml-1 rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <TbX className="size-3.5" />
+          <button type="button" onClick={onClose} className="tool-button ml-1 [&_svg]:size-3.5!">
+            <TbX />
           </button>
         </div>
       </div>
@@ -167,7 +168,7 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
         </div>
       )}
 
-      <div className="scrollbar flex-1 overflow-x-hidden overflow-y-auto">
+      <div className="scrollbar-light flex-1 overflow-x-hidden overflow-y-auto">
         {(() => {
           try {
             return (

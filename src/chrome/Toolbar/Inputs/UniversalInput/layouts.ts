@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Layout configurations for different Tailwind property types
 
 export interface DropdownLayoutConfig {

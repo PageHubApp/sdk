@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ClassNameInput } from "../advanced/ClassNameInput";
 import { DisplayInput } from "./DisplayInput";
 

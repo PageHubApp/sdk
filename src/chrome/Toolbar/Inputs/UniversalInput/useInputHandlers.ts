@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import { CSS_UNITS, ValueType } from "./types";
 

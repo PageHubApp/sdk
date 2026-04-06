@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useTiptapContext } from "../../TiptapContext";
 import { ToolbarItem } from "../../Toolbar/ToolbarItem";
 import { ColorInput } from "../../Toolbar/Inputs/color/ColorInput";

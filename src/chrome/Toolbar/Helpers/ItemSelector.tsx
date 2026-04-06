@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Tooltip } from "components/layout/Tooltip";
 import { useState } from "react";
 import { TbChevronDown, TbChevronRight, TbSelector } from "react-icons/tb";
@@ -49,7 +48,7 @@ export const ItemToggle = ({ items = [], children, selected, onChange, option = 
         {isOpen && (
           <>
             {/* Backdrop to close dropdown */}
-            <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+            <div role="presentation" aria-hidden="true" className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
 
             {/* Dropdown menu */}
             <div className="absolute right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-border bg-muted font-sans text-muted-foreground shadow-lg">

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { HiOutlineMinus } from "react-icons/hi";
 
 import { Divider } from "../../../components/Divider";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { UniversalInput } from "../UniversalInput";
 
 // Popular cursors first, then less common ones

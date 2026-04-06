@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Editor } from "@tiptap/react";
 import { createContext, ReactNode, useContext } from "react";
 

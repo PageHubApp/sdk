@@ -77,7 +77,7 @@ export const FormElementDef = defineComponent({
   ],
   presets: (() => {
     const base = {
-      className: "p-(--input-padding) w-full border border-(--input-border-width) border-solid border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) :text-[color:var(--input-placeholder-color)] focus:ring-(--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
+      className: "p-(--input-padding) w-full border-solid border-(length:--input-border-width) border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) :text-[color:var(--input-placeholder-color)] focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
     };
     return [
       { label: "Textarea",  icon: "TbTextCaption",  props: { type: "textarea", placeholder: "Enter your message...", name: "message", ...base } },

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useState } from "react";
 import { TbMinus, TbPlus, TbZoomScan } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
@@ -20,7 +19,7 @@ const zoomPresets = [
   { label: "200%", value: 2 },
 ];
 
-export const DeviceZoom: React.FC = () => {
+export function DeviceZoom() {
   const [zoom, setZoom] = useAtomState(DeviceZoomAtom);
   const deviceDimensions = useAtomValue(DeviceDimensionsAtom);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -133,7 +132,7 @@ export const DeviceZoom: React.FC = () => {
         {showDropdown && (
           <>
             {/* Backdrop */}
-            <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
+            <div role="presentation" aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
             {/* Dropdown */}
             <div className="absolute left-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-lg border border-border bg-popover shadow-lg">
               <div className="scrollbar-dark max-h-80 overflow-y-auto">
@@ -184,4 +183,4 @@ export const DeviceZoom: React.FC = () => {
       </button>
     </div>
   );
-};
+}

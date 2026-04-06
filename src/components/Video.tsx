@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbBrandVimeo, TbBrandYoutube, TbPlayerPlay, TbVideo } from "react-icons/tb";
@@ -72,17 +71,8 @@ export interface VideoProps extends BaseSelectorProps {
   title?: string;
 }
 
-const defaultProps: VideoProps = {
-  canDelete: true,
-  canEditName: true,
-  provider: "youtube",
-};
-
-export const Video = (props: VideoProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const Video = (incomingProps: VideoProps) => {
+  let props: any = { canDelete: true, canEditName: true, provider: "youtube", ...incomingProps };
 
   const {
     connectors: { connect, drag },
@@ -96,9 +86,11 @@ export const Video = (props: VideoProps) => {
   const { query, enabled } = useEditor(state => getClonedState(props, state));
 
 
-  const { videoId, provider = "youtube" } = props;
+  const { videoId } = props;
 
   props = setClonedProps(props, query);
+
+  const { provider } = props;
 
   const ref = useRef();
   const [isMounted, setIsMounted] = useState(false);

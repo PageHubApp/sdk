@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useTiptapContext } from "../TiptapContext";
 import { ToolbarItem } from "../Toolbar/ToolbarItem";
 import { ColorInput } from "../Toolbar/Inputs/color/ColorInput";
@@ -18,7 +17,7 @@ export function TextSettingsDropdown() {
     <div className="flex flex-col gap-3">
       {/* Color Picker */}
       <div className="flex items-center gap-2">
-        <label className="w-16 text-xs font-medium">Color</label>
+        <span className="w-16 text-xs font-medium">Color</span>
         <div className="h-8 flex-1 overflow-hidden rounded-lg border border-border">
           <ColorInput propKey="color" label="" prefix="text" labelHide={true} />
         </div>
@@ -26,7 +25,7 @@ export function TextSettingsDropdown() {
 
       {/* Preset Selector */}
       <div className="flex items-center gap-2">
-        <label className="w-16 text-xs font-medium">Preset</label>
+        <span className="w-16 text-xs font-medium">Preset</span>
         <div className="flex-1">
           <PresetInput
             presets={textPresets}
@@ -40,7 +39,7 @@ export function TextSettingsDropdown() {
 
       {/* Text Alignment */}
       <div className="flex items-center gap-2 border-t border-border pt-2">
-        <label className="w-16 text-xs font-medium">Align</label>
+        <span className="w-16 text-xs font-medium">Align</span>
         <div className="flex-1">
           <ToolbarItem
             propKey="textAlign"

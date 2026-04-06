@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import Image from "next/image";
 import { useState } from "react";
@@ -127,15 +126,16 @@ export const MediaInput = propa => {
           {/* URL Input Field - only show when there's a content URL */}
           {hasContentUrl && (
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
+              <label htmlFor="media-input-url" className="toolbar-label block font-medium">
                 Image URL
               </label>
               <input
+                id="media-input-url"
                 type="url"
                 value={contentUrl || ""}
                 onChange={e => handleContentUrlChange(e.target.value)}
                 placeholder="https://example.com/image.jpg"
-                className="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="input px-3! py-2! placeholder:text-muted-foreground"
               />
               <p className="text-xs text-muted-foreground">
                 Enter a direct image URL or use the media library below

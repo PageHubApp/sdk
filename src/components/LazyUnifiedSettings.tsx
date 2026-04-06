@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Lazy wrapper for UnifiedSettings to break circular dependency.
  *

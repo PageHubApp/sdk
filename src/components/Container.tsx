@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbContainer, TbNote } from "react-icons/tb";
@@ -35,19 +34,8 @@ export interface ContainerProps extends BaseSelectorProps {
   click?: ClickControl;
 }
 
-const defaultProps: ContainerProps = {
-  type: "container",
-  canDelete: true,
-  canEditName: true,
-  isHomePage: false,
-  backgroundFetchPriority: "low",
-};
-
-export const Container = (props: Partial<ContainerProps>) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const Container = (incomingProps: Partial<ContainerProps>) => {
+  let props: any = { type: "container", canDelete: true, canEditName: true, isHomePage: false, backgroundFetchPriority: "low", ...incomingProps };
 
   const view = useView();
   const viewMode = "page";
@@ -87,7 +75,6 @@ export const Container = (props: Partial<ContainerProps>) => {
     const containerRef = ref.current;
 
     const handleDragOver = (e: DragEvent) => {
-      // Only set drag over if the target is this specific container (not a child)
       if (e.target === containerRef) {
         setIsDragOver(true);
       } else {
@@ -96,7 +83,6 @@ export const Container = (props: Partial<ContainerProps>) => {
     };
 
     const handleDragLeave = (e: DragEvent) => {
-      // Only remove drag over if leaving this specific container
       if (e.target === containerRef) {
         setIsDragOver(false);
       }
@@ -243,6 +229,7 @@ export const Container = (props: Partial<ContainerProps>) => {
       prop["node-id"] = id;
     }
     prop["data-enabled"] = true;
+    prop["data-node-type"] = props.type;
 
     // Ensure all sections act as positioning bounds for the absolute AddSectionNodeController
     if (props.type === "section" && !className.includes("relative")) {
@@ -254,11 +241,6 @@ export const Container = (props: Partial<ContainerProps>) => {
 
   // Add drag-over styling to container props (editor only)
   if (enabled) {
-    if (isDragOver) {
-      prop.style = {
-        ...prop.style,
-      };
-    }
     prop["data-dragged-over"] = isDragOver;
   }
 
@@ -309,26 +291,22 @@ export const Container = (props: Partial<ContainerProps>) => {
   return container;
 };
 
-const canMoveIn = (nodes, into) => {
-  // Prevent moving anything into component containers (master component storage)
-  //  if (into.data?.props?.type === "component") return false;
+const SECTION_PARENTS = new Set(["page", "component", "header", "footer"]);
 
-  const result = nodes.every(node => {
-    // Prevent moving forms into forms
+const canMoveIn = (nodes, into) => {
+  return nodes.every(node => {
     if (node?.data?.props?.type === "form") {
       if (into.data?.props?.type === "form") return false;
     }
-
-    // Prevent moving pages anywhere except ROOT_NODE
     if (node?.data?.props?.type === "page") {
-      // Pages can only be added to ROOT_NODE
       return into.id === "ROOT";
     }
-
+    // Blocks/sections can only go into pages, components, headers, or footers
+    if (node?.data?.props?.type === "section") {
+      return SECTION_PARENTS.has(into.data?.props?.type);
+    }
     return true;
   });
-
-  return result;
 };
 
 Container.craft = {

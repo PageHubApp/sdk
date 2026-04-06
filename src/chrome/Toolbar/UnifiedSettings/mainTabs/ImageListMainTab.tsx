@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { MediaInput } from "../../Inputs/media/MediaInput";
 import { PresetGroupRenderer } from "../../Inputs/preset/PresetRenderer";
@@ -38,7 +37,7 @@ export const ImageListMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Add, remove, and reorder images in this gallery.">
         <ListEditor
           items={childImages || []}
           activeIndex={activeIndex}
@@ -80,12 +79,12 @@ export const ImageListMainTab = () => {
       </ToolbarSection>
     ),
     Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} full={1}>
+      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} full={1} help="Quick-apply gallery layout presets.">
         <PresetGroupRenderer presets={selectorPresets.container} keys={["layouts"]} />
       </ToolbarSection>
     ),
     Properties: (
-      <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]}>
+      <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]} help="Layout mode (grid, carousel, masonry, etc) and items per row.">
         <ToolbarItem propKey="mode" propType="component" type="select" label="Mode" labelWidth="w-24">
           <option value="flex">Flex (Default)</option>
           <option value="grid">Grid</option>

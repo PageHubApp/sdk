@@ -1,10 +1,9 @@
-// @ts-nocheck
 import { useAtomValue } from "@zedux/react";
-import throttle from "lodash.throttle";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ComponentsAtom } from "utils/lib";
 import { NAV_EXTRA_PRESETS } from "../../components/definitions";
 import { useCustomComponents } from "../../define";
+import { usePanelUrl } from "../../utils/usePanelUrl";
 import { AutoHideScrollbar } from "../shared/layout";
 import { buildCustomToolboxEntries, buildExtraPresetEntries } from "./Toolbox/customComponents";
 import { SavedComponentsToolbox } from "./Toolbox/savedComponents";
@@ -26,7 +25,15 @@ export const ComponentSettings = () => {
   const components = useAtomValue(ComponentsAtom);
   const { toolboxCategories } = useCustomComponents();
   const [list, setList] = useState(baseItems);
-  const [search, setSearch] = useState(null);
+
+  const {
+    state: params,
+    enterSearchMode,
+    update: panelUpdate,
+  } = usePanelUrl();
+
+  const [search, setSearch] = useState(params.q ?? null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Build toolbox entries from defineComponent() definitions.
   // Flatten all presets into individual content items for the grid.
@@ -75,9 +82,31 @@ export const ComponentSettings = () => {
 
   useEffect(() => {
     const time = setTimeout(() => focusRef?.current?.focus(), 50);
-
     return () => clearTimeout(time);
   }, [focusRef]);
+
+  // Sync search input from URL params (e.g. on popstate/back)
+  useEffect(() => {
+    setSearch(params.q ?? null);
+  }, [params.q]);
+
+  // Debounce search input → URL param
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value || null);
+
+    if (value.trim().length >= 1) {
+      enterSearchMode();
+    }
+
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (value.trim().length >= 1) {
+        panelUpdate({ q: value });
+      } else {
+        panelUpdate({ q: null });
+      }
+    }, 300);
+  }, [enterSearchMode, panelUpdate]);
 
   useEffect(() => {
     if (search) {
@@ -87,11 +116,15 @@ export const ComponentSettings = () => {
           .map(item => {
             const title = item.title.toString().toLowerCase() || "";
 
-            // Filter content by searching the entire React element as a string
             const filteredContent = item.content.filter(nestedItem => {
-              // Convert the entire React element to string and search in it
-              const elementString = JSON.stringify(nestedItem) || "";
-              return elementString.toLowerCase().includes(searchTerm);
+              // Extract searchable text from React element props (circular-ref safe)
+              const props = nestedItem?.props ?? {};
+              const searchable = [
+                props.custom?.displayName,
+                props.display?.props?.label,
+                nestedItem?.key,
+              ].filter(Boolean).join(" ").toLowerCase();
+              return searchable.includes(searchTerm);
             });
 
             // Only return category if it has matching content (always filter items)
@@ -126,16 +159,15 @@ export const ComponentSettings = () => {
             placeholder="Search Components"
             className="input-transparent"
             ref={focusRef}
-            onKeyUp={throttle(e => {
-              setSearch(e.target.value);
-            }, 100)}
+            value={search ?? ""}
+            onChange={e => handleSearchChange(e.target.value)}
           />
         </div>
       </form>
       <AutoHideScrollbar className="flex-1">
         {list?.map((a, k) => (
           <div key={k} className="border-border">
-            <div className="mb-1 font-bold text-secondary-foreground ml-4 text-xs">
+            <div className="mb-1 mt-3 font-bold text-secondary-foreground ml-4 text-xs">
               {a.title}
             </div>
 
@@ -146,6 +178,7 @@ export const ComponentSettings = () => {
             </div>
           </div>
         ))}
+        <div className="shrink-0" style={{ minHeight: "70vh" }} />
       </AutoHideScrollbar>
     </div>
   );

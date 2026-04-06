@@ -1,11 +1,10 @@
-// @ts-nocheck
 import React, { useEffect, useState } from "react";
 import { TbArrowsDiagonal, TbArrowsMaximize, TbArrowsMove, TbDeviceDesktop } from "react-icons/tb";
 
 const MIN_WIDTH = 540;
 const MIN_HEIGHT = 480;
 
-export const MinimumSizeOverlay: React.FC = () => {
+export function MinimumSizeOverlay() {
   const [isTooSmall, setIsTooSmall] = useState(false);
 
   useEffect(() => {
@@ -82,7 +81,7 @@ export const MinimumSizeOverlay: React.FC = () => {
         <div className="flex items-center gap-3 rounded-lg bg-muted px-6 py-3">
           <TbArrowsMaximize className="size-5 text-primary" />
           <div className="text-left">
-            <div className="text-sm font-medium text-foreground">Minimum Size Required</div>
+            <div className="toolbar-label font-medium">Minimum Size Required</div>
             <div className="text-xs text-muted-foreground">
               {MIN_WIDTH}px × {MIN_HEIGHT}px
             </div>
@@ -101,4 +100,4 @@ export const MinimumSizeOverlay: React.FC = () => {
       </div>
     </div>
   );
-};
+}

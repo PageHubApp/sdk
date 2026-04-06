@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { RxButton } from "react-icons/rx";
@@ -39,18 +38,8 @@ export interface ButtonListProps extends BaseSelectorProps {
   source?: string;
 }
 
-const defaultProps: ButtonListProps = {
-  buttons: [],
-  alignItems: "items-center",
-  justifyContent: "justify-start",
-  gap: "gap-2",
-};
-
-export const ButtonList: UserComponent<ButtonListProps> = (props: ButtonListProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: ButtonListProps) => {
+  let props: any = { buttons: [], alignItems: "items-center", justifyContent: "justify-start", gap: "gap-2", ...incomingProps };
 
   const {
     connectors: { connect, drag },

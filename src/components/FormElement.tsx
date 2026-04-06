@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -72,30 +71,25 @@ export interface FormElementProps extends BaseSelectorProps {
   invalid?: boolean;
 }
 
-const defaultProps: FormElementProps = {
-  root: {},
-  className:
-    "border border-(--input-border-width) border-solid border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) placeholder:text-(--input-placeholder-color) focus:ring-(--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
-  canDelete: true,
-  type: "",
-  placeholder: "",
-  name: "",
-  required: false,
-  disabled: false,
-  readOnly: false,
-  rows: 4,
-  cols: 50,
-  min: "",
-  max: "",
-  step: "",
-  pattern: "",
-  options: [],
-} as any;
-
-export const FormElement = (props: Partial<FormElementProps>) => {
-  props = {
-    ...defaultProps,
-    ...props,
+export const FormElement = (incomingProps: Partial<FormElementProps>) => {
+  let props: any = {
+    root: {},
+    className: "border-solid border-(length:--input-border-width) border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) placeholder:text-(--input-placeholder-color) focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
+    canDelete: true,
+    type: "",
+    placeholder: "",
+    name: "",
+    required: false,
+    disabled: false,
+    readOnly: false,
+    rows: 4,
+    cols: 50,
+    min: "",
+    max: "",
+    step: "",
+    pattern: "",
+    options: [],
+    ...incomingProps,
   };
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));

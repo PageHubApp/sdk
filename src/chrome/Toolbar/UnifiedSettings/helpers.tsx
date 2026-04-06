@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Shared helpers for the Unified Settings system.
  *
@@ -106,7 +105,7 @@ export function renderComponentSlots(
         if (title === "Properties" && slots[title] === undefined) {
           return (
             <React.Fragment key={title}>
-              <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]}>
+              <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]} help="Custom properties for this component.">
                 <PropertiesInput />
               </ToolbarSection>
             </React.Fragment>

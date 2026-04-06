@@ -1,14 +1,10 @@
-// @ts-nocheck
 import { NodeTree, ROOT_NODE, useEditor, useNode } from "@craftjs/core";
 import { checkIfAncestorLinked } from "../componentUtils";
 import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
 import { Tooltip } from "components/layout/Tooltip";
-import { motion } from "framer-motion";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   TbCaretUp,
-  TbChevronsDown,
-  TbChevronsUp,
   TbClipboard,
   TbClipboardCheck,
   TbComponents,
@@ -29,13 +25,10 @@ import { RenderChildren } from "./Helpers/CloneHelper";
 import Tab from "./Tab";
 import { UnifiedTab, scrollToSection, toSectionId } from "./UnifiedTab";
 import { useAccordionContext } from "./AccordionContext";
+import { TabBarCollapseToggle } from "./TabBarCollapseToggle";
+import { TabBarDarkModeToggle } from "./TabBarDarkModeToggle";
+import { TabBarBreakpointPicker } from "./TabBarBreakpointPicker";
 
-// Anti-aliasing style for scale animations to prevent blurriness
-const scaleAnimationStyle = {
-  willChange: "transform" as const,
-  backfaceVisibility: "hidden" as const,
-  WebkitFontSmoothing: "antialiased" as const,
-};
 
 export const ToolbarWrapper = ({
   children = null,
@@ -65,6 +58,23 @@ export const ToolbarWrapper = ({
 
   const { id } = useNode();
   const active = id;
+
+  const tablistRef = useRef<HTMLDivElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState<{ width: number; height: number; top: number; left: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!unified || !tablistRef.current) return;
+    const activeTab = tablistRef.current.querySelector('[aria-selected="true"]') as HTMLElement | null;
+    if (!activeTab) return;
+    const containerRect = tablistRef.current.getBoundingClientRect();
+    const tabRect = activeTab.getBoundingClientRect();
+    setIndicatorStyle({
+      width: tabRect.width,
+      height: tabRect.height,
+      top: tabRect.top - containerRect.top,
+      left: tabRect.left - containerRect.left,
+    });
+  }, [activeSection, head, unified]);
 
   const getCloneTree = useCallback(
     (tree: NodeTree) => buildClonedTree({ tree, query, setProp, createLinks: false }),
@@ -184,23 +194,28 @@ export const ToolbarWrapper = ({
           id="toolbarTabs"
           aria-label="Tabs"
           role="tablist"
-          className="flex shrink-0 items-center justify-between gap-1.5 border-b border-border bg-secondary px-3 py-0.5 text-center font-semibold text-secondary-foreground"
+          className="flex shrink-0 items-center gap-1.5 border-b border-border bg-secondary px-3 py-0.5 text-center font-semibold text-secondary-foreground"
         >
-          {unified && accordionCtx ? (
-            <Tooltip content={accordionCtx.anyOpen ? "Collapse all" : "Expand all"} placement="top" arrow={false}>
-              <motion.button
-                className="flex cursor-pointer items-center justify-center rounded-md p-1 text-sm text-secondary-foreground/70 transition-colors hover:text-foreground"
-                onClick={accordionCtx.toggleAll}
-                whileTap={{ scale: 0.9 }}
-                style={scaleAnimationStyle}
-              >
-                {accordionCtx.anyOpen ? <TbChevronsUp /> : <TbChevronsDown />}
-              </motion.button>
-            </Tooltip>
-          ) : (
-            <div />
-          )}
-          <div className="relative flex flex-row-reverse items-center gap-3">
+          <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
+          <div className="mx-0.5 h-4 w-px shrink-0 bg-border" />
+          <TabBarBreakpointPicker />
+          <TabBarDarkModeToggle />
+          <div className="relative ml-auto flex flex-row-reverse items-center gap-3" role="tablist" ref={tablistRef}>
+            {indicatorStyle && (
+              <div
+                className="absolute rounded-lg bg-primary"
+                style={{
+                  width: indicatorStyle.width,
+                  height: indicatorStyle.height,
+                  top: 0,
+                  left: 0,
+                  transform: `translate(${indicatorStyle.left}px, ${indicatorStyle.top}px)`,
+                  transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  zIndex: 0,
+                  pointerEvents: "none",
+                }}
+              />
+            )}
             {head.map((_, key) => {
               // If activeSection doesn't match any tab title (stale from previous node), default to tab 0
               const sectionMatchesAny = unified && head.some(h => h.title === activeSection);
@@ -254,16 +269,16 @@ export const ToolbarWrapper = ({
 
         {id !== ROOT_NODE && parentName !== "Background" && (
           <Tooltip content="Select Parent">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
+            <button
+
               className="cursor-pointer rounded-lg p-2 text-muted-foreground hover:text-accent-foreground"
-              style={scaleAnimationStyle}
+
               onClick={() => {
                 actions.selectNode(parent);
               }}
             >
               <TbCaretUp />
-            </motion.button>
+            </button>
           </Tooltip>
         )}
 
@@ -273,15 +288,15 @@ export const ToolbarWrapper = ({
             content={!isolate ? "Isolate Page" : "Show All Pages"}
             onClick={() => isolatePage(isolate, query, active, actions, setIsolate)}
           >
-            <motion.button
-              whileTap={{ scale: 0.9 }}
+            <button
+
               className={`cursor-pointer ${
                 isolate ? "text-accent-foreground" : "text-muted-foreground"
               } rounded-lg p-2 hover:text-accent-foreground`}
-              style={scaleAnimationStyle}
+
             >
               {isolate ? <TbScaleOutlineOff /> : <TbScaleOutline />}
-            </motion.button>
+            </button>
           </Tooltip>
         )}
 
@@ -295,13 +310,13 @@ export const ToolbarWrapper = ({
                 if (props.canDelete !== false) deleteSelectedNode();
               }}
             >
-              <motion.button
-                whileTap={{ scale: 0.9 }}
+              <button
+
                 className="cursor-pointer rounded-lg p-2 text-muted-foreground hover:text-accent-foreground"
-                style={scaleAnimationStyle}
+
               >
                 {props.canDelete !== false ? <TbTrash /> : <TbTrashOff />}
-              </motion.button>
+              </button>
             </Tooltip>
 
             {/* Hide Clone and Create Component buttons for linked components */}
@@ -313,13 +328,13 @@ export const ToolbarWrapper = ({
                     handleClone(e);
                   }}
                 >
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
+                  <button
+    
                     className="cursor-pointer rounded-lg p-2 text-muted-foreground hover:text-accent-foreground"
-                    style={scaleAnimationStyle}
+    
                   >
                     <TbCopy />
-                  </motion.button>
+                  </button>
                 </Tooltip>
 
                 <Tooltip
@@ -330,17 +345,16 @@ export const ToolbarWrapper = ({
                     }
                   }}
                 >
-                  <motion.button
-                    whileTap={{ scale: id !== ROOT_NODE ? 0.9 : 1 }}
-                    className={`rounded-lg p-2 transition-colors ${
+                  <button
+                    className={`rounded-lg p-2 transition-colors active:scale-90 ${
                       id !== ROOT_NODE
                         ? "cursor-pointer text-muted-foreground hover:text-accent-foreground"
                         : "cursor-not-allowed text-muted-foreground/50"
                     }`}
-                    style={scaleAnimationStyle}
+    
                   >
                     <TbClipboard />
-                  </motion.button>
+                  </button>
                 </Tooltip>
 
                 <Tooltip
@@ -352,24 +366,17 @@ export const ToolbarWrapper = ({
                     }
                   }}
                 >
-                  <motion.button
-                    whileTap={{
-                      scale:
-                        localStorage.getItem("clipBoard") &&
-                        localStorage.getItem("clipBoard") !== "{}"
-                          ? 0.9
-                          : 1,
-                    }}
-                    className={`rounded-lg p-2 transition-colors ${
+                  <button
+                    className={`rounded-lg p-2 transition-colors active:scale-90 ${
                       localStorage.getItem("clipBoard") &&
                       localStorage.getItem("clipBoard") !== "{}"
                         ? "cursor-pointer text-muted-foreground hover:text-accent-foreground"
                         : "cursor-not-allowed text-muted-foreground/50"
                     }`}
-                    style={scaleAnimationStyle}
+    
                   >
                     <TbClipboardCheck />
-                  </motion.button>
+                  </button>
                 </Tooltip>
 
                 <Tooltip
@@ -380,14 +387,14 @@ export const ToolbarWrapper = ({
                     setComponents([...components, comp]);
                   }}
                 >
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
+                  <button
+    
                     ref={ref}
                     className="cursor-pointer rounded-lg p-2 text-muted-foreground hover:text-accent-foreground"
-                    style={scaleAnimationStyle}
+    
                   >
                     {canMake ? <TbComponents /> : <TbComponentsOff />}
-                  </motion.button>
+                  </button>
                 </Tooltip>
               </>
             )}
@@ -402,19 +409,18 @@ export const ToolbarWrapper = ({
               setSideBarOpen(false);
             }}
           >
-            <motion.button
-              whileTap={{ scale: 0.9 }}
+            <button
+
               className="cursor-pointer rounded-lg p-2 text-muted-foreground hover:text-accent-foreground"
-              style={scaleAnimationStyle}
+
             >
               <TbX />
-            </motion.button>
+            </button>
           </Tooltip>
         )}
 
         {id === ROOT_NODE && (
-          <motion.button
-            whileTap={{ scale: 0.9 }}
+          <button
             className="btn m-2 w-full"
             onClick={() => {
               actions.selectNode(null);
@@ -422,7 +428,7 @@ export const ToolbarWrapper = ({
             }}
           >
             Close
-          </motion.button>
+          </button>
         )}
       </div>
     </div>

@@ -46,6 +46,16 @@
   transition: all 0.3s ease;
 }
 
+/* Highlight valid drop targets when dragging a section/block */
+body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="page"],
+body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="header"],
+body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="footer"],
+body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="component"] {
+  outline: 2px dashed currentColor;
+  outline-offset: -2px;
+  transition: outline 0.15s ease;
+}
+
 .pagehub-sdk-root [data-enabled="true"][data-hover="true"] {
   outline: 1px dashed currentColor !important;
   outline-offset: var(--pagehub-editor-outline-offset, 1px);

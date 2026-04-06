@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import { useSDK } from "../context";
 import { useAiEnabled } from "../utils/hooks/useAiEnabled";

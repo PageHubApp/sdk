@@ -1,5 +1,3 @@
-// @ts-nocheck
-import { AnimatePresence, motion } from "framer-motion";
 import React, { useState } from "react";
 import { TbCheck, TbDeviceFloppy, TbLoader2 } from "react-icons/tb";
 
@@ -11,11 +9,11 @@ interface AnimatedSaveButtonProps {
 
 type SaveState = "idle" | "loading" | "success";
 
-export const AnimatedSaveButton: React.FC<AnimatedSaveButtonProps> = ({
+export function AnimatedSaveButton({
   onClick,
   disabled = false,
   className = "",
-}) => {
+}: AnimatedSaveButtonProps) {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -68,22 +66,12 @@ export const AnimatedSaveButton: React.FC<AnimatedSaveButtonProps> = ({
   };
 
   return (
-    <motion.div
+    <button
+      type="button"
       onClick={handleClick}
-      className={getButtonClasses()}
-      whileTap={!disabled && !isAnimating ? { scale: 0.9 } : {}}
+      className={`${getButtonClasses()} active:scale-90`}
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={saveState}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.2 }}
-        >
-          {getIcon()}
-        </motion.div>
-      </AnimatePresence>
-    </motion.div>
+      {getIcon()}
+    </button>
   );
-};
+}

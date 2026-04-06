@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { FixedSizeList as List } from "react-window";
@@ -274,16 +273,16 @@ export const FontFamilyDialog = () => {
   return ReactDOM.createPortal(
     <>
       {/* Backdrop to close dialog when clicking outside */}
-      <div className="pointer-events-auto fixed inset-0 z-9999" onClick={closeDialog} />
+      <div role="presentation" aria-hidden="true" className="pointer-events-auto fixed inset-0 z-9999" onClick={closeDialog} />
 
-      <div style={style} className="pointer-events-auto z-10000">
-        <div className="overflow-hidden rounded-lg border border-border bg-background p-0 shadow-xl">
+      <div style={style} className="pagehub-sdk-root pointer-events-auto z-10000">
+        <div className="ph-panel overflow-hidden p-0">
           {/* Search and Category Filter */}
           <div className="shrink-0 border-b border-border bg-muted px-2 pb-1 pt-2">
             <div className="flex gap-2">
               <input
                 type="text"
-                className="flex-1 rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="input-dialog-sm flex-1"
                 placeholder="Search fonts..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor } from "@craftjs/core";
 import { IpsumGenerator } from "../../Inputs/media/IpsumGenerator";
 import { PresetGroupRenderer } from "../../Inputs/preset/PresetRenderer";
@@ -51,7 +50,7 @@ export const FormElementMainTab = () => {
       </ToolbarSection>
     ),
     Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]}>
+      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply input field styles.">
         <PresetGroupRenderer presets={selectorPresets.formElement} />
       </ToolbarSection>
     ),
@@ -69,7 +68,7 @@ export const FormElementMainTab = () => {
           </ToolbarSection>
         )}
 
-        <ToolbarSection title="Additional Properties">
+        <ToolbarSection title="Additional Properties" help="Required, disabled, read-only, and URL prefill.">
           <ToolbarItem
             propKey="required"
             propType="component"

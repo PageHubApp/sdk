@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NodeId } from "@craftjs/core";
 import React, { createContext, ReactNode, useCallback, useContext, useState } from "react";
 
@@ -35,10 +34,10 @@ interface LayerManagerProviderProps {
   expandRootOnLoad?: boolean;
 }
 
-export const LayerManagerProvider: React.FC<LayerManagerProviderProps> = ({
+export function LayerManagerProvider({
   children,
   expandRootOnLoad = true,
-}) => {
+}: LayerManagerProviderProps) {
   const [state, setState] = useState<LayerState>({
     expanded: expandRootOnLoad ? { ROOT: true } : {},
     draggedNode: null,
@@ -110,4 +109,4 @@ export const LayerManagerProvider: React.FC<LayerManagerProviderProps> = ({
   };
 
   return <LayerManagerContext.Provider value={value}>{children}</LayerManagerContext.Provider>;
-};
+}

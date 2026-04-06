@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { AutoTextSize } from "auto-text-size";
 import Link from "next/link";
@@ -27,9 +26,6 @@ export interface TextProps extends BaseSelectorProps {
   click?: ClickControl;
 }
 
-const defaultProps: TextProps = {
-  canDelete: true,
-};
 
 // Strip wrapping <p> from TipTap content to avoid invalid nesting
 // (e.g. <h1><p>...</p></h1> or <p><p>...</p></p> breaks hydration)
@@ -74,8 +70,8 @@ const renderLiveMode = (props: any, query: any, router: any) => {
   return processedText;
 };
 
-export const Text = (props: Partial<TextProps>) => {
-  props = { ...defaultProps, ...props };
+export const Text = (incomingProps: Partial<TextProps>) => {
+  let props: any = { canDelete: true, ...incomingProps };
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
   const router = useRouter();

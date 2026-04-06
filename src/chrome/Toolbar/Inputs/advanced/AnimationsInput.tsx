@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import React from "react";
 import { cssAnimationPresets, isCSSAnimation } from "utils/animations";
@@ -77,7 +76,7 @@ export const AnimationsInput = () => {
 
   return (
     <>
-      <ToolbarSection enabled={true} title="Animation" icon={<TbBolt />}>
+      <ToolbarSection enabled={true} title="Animation" icon={<TbBolt />} help="Animate this element when it scrolls into view.">
         {/* Engine toggle */}
         <div className="mb-2 flex gap-1 rounded-md bg-muted p-0.5">
           <button

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { TbLayoutNavbar } from "react-icons/tb";
@@ -37,19 +36,8 @@ const defaultMenu: NavMenu = {
   breakpoint: "mobile",
 };
 
-const defaultProps: NavProps = {
-  buttons: [],
-  alignItems: "items-center",
-  justifyContent: "justify-start",
-  gap: "gap-2",
-  menu: defaultMenu,
-};
-
-export const Nav: UserComponent<NavProps> = (props: NavProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
+  let props: any = { buttons: [], alignItems: "items-center", justifyContent: "justify-start", gap: "gap-2", menu: defaultMenu, ...incomingProps };
 
   const {
     connectors: { connect, drag },

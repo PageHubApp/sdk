@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @pagehub/sdk — Clone helpers extracted from main app
  *

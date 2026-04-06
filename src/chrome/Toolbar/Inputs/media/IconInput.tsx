@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TailwindStyles } from "utils/tailwind";
 import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
 import { ToolbarItem } from "../../ToolbarItem";

@@ -1,8 +1,6 @@
-// @ts-nocheck
 import { TabAtom } from "../Viewport/atoms";
 import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
 import { Tooltip } from "components/layout/Tooltip";
-import { motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
 import { useSetAtomState } from "../../utils/atoms";
 
@@ -10,38 +8,31 @@ import { useSetAtomState } from "../../utils/atoms";
 export const toSectionId = (title: string) => `section-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
 export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
+  const [showActiveColor, setShowActiveColor] = useState(isActive);
+
+  useEffect(() => {
+    if (isActive) {
+      const t = setTimeout(() => setShowActiveColor(true), 160);
+      return () => clearTimeout(t);
+    } else {
+      setShowActiveColor(false);
+    }
+  }, [isActive]);
+
   return (
     <Tooltip content={title} placement="top" arrow={false}>
-      <motion.div
-        className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-colors ${isActive
+      <div
+        className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-colors ${showActiveColor
             ? "text-primary-foreground"
             : "text-secondary-foreground hover:bg-muted hover:text-foreground"
           }`}
-        role="button"
+        role="tab"
+        aria-selected={isActive}
         tabIndex={isActive ? 0 : -1}
         onClick={onClick}
-        whileTap={{ scale: 0.9 }}
-        style={{
-          willChange: "transform",
-          backfaceVisibility: "hidden",
-          WebkitFontSmoothing: "antialiased",
-        }}
-        layout
       >
-        {isActive && (
-          <motion.div
-            layoutId="activeTabBackground"
-            className="absolute inset-0 rounded-lg bg-primary"
-            transition={{
-              type: "spring",
-              stiffness: 380,
-              damping: 30,
-            }}
-            style={{ zIndex: -1 }}
-          />
-        )}
         <span className="relative z-10 transition-all duration-200">{icon}</span>
-      </motion.div>
+      </div>
     </Tooltip>
   );
 };
@@ -58,6 +49,8 @@ export const UnifiedSection = ({
 }: SectionProps & { onVisibilityChange?: (visible: boolean) => void }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const onVisibilityChangeRef = useRef(onVisibilityChange);
+  onVisibilityChangeRef.current = onVisibilityChange;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -76,7 +69,7 @@ export const UnifiedSection = ({
         const isActive = entry.isIntersecting && rect.top <= topThreshold && rect.bottom > topThreshold;
 
         setIsVisible(isActive);
-        onVisibilityChange?.(isActive);
+        onVisibilityChangeRef.current?.(isActive);
       },
       {
         root: document.getElementById("toolbarContents"),
@@ -94,7 +87,7 @@ export const UnifiedSection = ({
         observer.unobserve(sectionRef.current);
       }
     };
-  }, [onVisibilityChange]);
+  }, []);
 
   return (
     <div id={toSectionId(title)} ref={sectionRef} className="flex flex-col">

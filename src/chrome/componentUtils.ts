@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Utility functions for managing linked components
  */

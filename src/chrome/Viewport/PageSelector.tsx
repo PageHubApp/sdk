@@ -1,7 +1,5 @@
-// @ts-nocheck
-import { Element, ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { Tooltip } from "components/layout/Tooltip";
-import { Container } from "../../components/Container";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -17,11 +15,10 @@ import { useAtomState, useAtomValue } from "@zedux/react";
 import { SessionTokenAtom, SettingsAtom } from "utils/atoms";
 import { IsolateAtom, isolatePageAlt } from "utils/lib";
 import { PageSettingsModal } from "./PageSettingsModal";
-import { AddElement } from "./Toolbox/lib";
 import { UnsavedChangesAtom } from "./atoms";
 import { SaveToServer } from "./lib";
+import { usePageCreation } from "./PageSelector/usePageCreation";
 
-import generate from "../../utils/data/nameGenerator";
 import sluggit from "slug";
 
 interface Page {
@@ -44,7 +41,7 @@ interface PageSelectorProps {
   showHashIcon?: boolean;
 }
 
-export const PageSelector: React.FC<PageSelectorProps> = ({
+export function PageSelector({
   onPageChange,
   className = "",
   pickerMode = false,
@@ -53,7 +50,7 @@ export const PageSelector: React.FC<PageSelectorProps> = ({
   buttonClassName,
   suggestedPageName,
   showHashIcon = true,
-}) => {
+}: PageSelectorProps) {
   const { query, actions, pages } = useEditor((state, query) => {
     try {
       const root = query.node(ROOT_NODE).get();
@@ -219,135 +216,19 @@ export const PageSelector: React.FC<PageSelectorProps> = ({
     return "#";
   };
 
-  const handleCreatePage = () => {
-    try {
-      console.log("🚀 Starting page creation...");
-      console.log("📊 Current pages before creation:", pages.length);
-
-      // Determine the page name to use
-      let pageName = suggestedPageName || generate().spaced;
-      console.log("📝 Generated page name:", pageName);
-
-      // Check if a page with this slug already exists
-      if (suggestedPageName) {
-        const baseSlug = sluggit(suggestedPageName, "-");
-        const existingSlugs = pages.map(page => {
-          const displayName = page.displayName;
-          return sluggit(displayName, "-");
-        });
-
-        // If slug exists, append a number
-        if (existingSlugs.includes(baseSlug)) {
-          let counter = 2;
-          let uniqueSlug = `${baseSlug}-${counter}`;
-          while (existingSlugs.includes(uniqueSlug)) {
-            counter++;
-            uniqueSlug = `${baseSlug}-${counter}`;
-          }
-          // Convert slug back to display name format
-          pageName = `${suggestedPageName} ${counter}`;
-        }
-      }
-
-      console.log("📝 Final page name:", pageName);
-
-      const newPage = (
-        <Element
-          canvas
-          is={Container}
-          type="page"
-          isHomePage={false}
-          canDelete={true}
-          canEditName={true}
-          className="mx-auto flex flex-col items-center w-full h-full gap-8 py-6 px-3"
-          custom={{ displayName: pageName }}
-        />
-      );
-
-      console.log("🔧 Calling AddElement...");
-      const newElement = AddElement({
-        element: newPage,
-        actions,
-        query,
-        addTo: ROOT_NODE,
-      });
-
-      console.log("✅ AddElement result:", newElement);
-
-      setIsOpen(false);
-
-      // Wait for the node to be fully created before selecting it
-      if (newElement?.rootNodeId) {
-        console.log("🎯 New page created with ID:", newElement.rootNodeId);
-        const newNodeId = newElement.rootNodeId;
-
-        // Check pages count after creation
-        setTimeout(() => {
-          console.log("📊 Pages count after creation:", pages.length);
-          console.log(
-            "📋 All pages:",
-            pages.map(p => ({ id: p.id, name: p.displayName }))
-          );
-        }, 100);
-
-        setTimeout(() => {
-          try {
-            // Verify the node exists before trying to isolate
-            const node = query.node(newNodeId).get();
-            if (node) {
-              const displayName = node.data.custom?.displayName;
-
-              if (pickerMode && onPagePick) {
-                onPagePick({
-                  id: newNodeId,
-                  displayName: displayName || "Untitled Page",
-                  isHomePage: false,
-                });
-              } else {
-                // Navigation mode: navigate and isolate
-                console.log("🧭 Navigation mode - navigating to page");
-                if (displayName) {
-                  const pageSlug = sluggit(displayName, "-");
-                  const currentPath = router.asPath.split("?")[0];
-                  const pathParts = currentPath.split("/").filter(p => p);
-                  const baseUrl =
-                    pathParts.length > 1 ? `/${pathParts[0]}/${pathParts[1]}` : `/${pathParts[0]}`;
-
-                  // New pages always get a slug (they're not the first page)
-                  const newUrl = `${baseUrl}/${pageSlug}`;
-                  console.log("🔗 Would navigate to:", newUrl);
-
-                  // Don't navigate immediately - let user manually navigate
-                  // router.push(newUrl, undefined, { shallow: true });
-                }
-
-                isolatePageAlt(isolate, query, newNodeId, actions, setIsolate, true);
-                onPageChange?.(newNodeId);
-              }
-            } else {
-              console.error("❌ Node not found after creation");
-            }
-          } catch (e) {
-            console.error("❌ Error selecting new page:", e);
-          }
-        }, 300);
-
-        // Check again after longer delay to see if page disappears
-        setTimeout(() => {
-          console.log("📊 Pages count after 1 second:", pages.length);
-          console.log(
-            "📋 All pages after 1 second:",
-            pages.map(p => ({ id: p.id, name: p.displayName }))
-          );
-        }, 1000);
-      } else {
-        console.error("❌ No rootNodeId returned from AddElement");
-      }
-    } catch (e) {
-      console.error("❌ Error creating page:", e);
-      setIsOpen(false);
-    }
-  };
+  const { handleCreatePage } = usePageCreation({
+    pages,
+    actions,
+    query,
+    isolate,
+    setIsolate,
+    setIsOpen,
+    suggestedPageName,
+    pickerMode,
+    onPagePick,
+    onPageChange,
+    router,
+  });
 
   // Get current page info
   const currentPage = pickerMode
@@ -397,7 +278,7 @@ export const PageSelector: React.FC<PageSelectorProps> = ({
         disabled={isSaving}
         className={
           buttonClassName ||
-          "flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-popover px-3 py-1.5 text-sm text-popover-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+          "ph-menu-trigger py-1.5 text-sm"
         }
         aria-label="Page selector"
       >
@@ -444,7 +325,7 @@ export const PageSelector: React.FC<PageSelectorProps> = ({
       )}
 
       {isOpen && (
-        <div className="absolute inset-x-0 top-full z-50 mt-1 flex max-h-[500px] min-w-[220px] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-xl">
+        <div className="ph-panel absolute inset-x-0 top-full z-50 mt-1 flex max-h-[500px] min-w-[220px] flex-col overflow-hidden">
           {/* Search Header - Fixed */}
           <div className="border-b border-border p-3">
             <input
@@ -597,4 +478,4 @@ export const PageSelector: React.FC<PageSelectorProps> = ({
       )}
     </div>
   );
-};
+}

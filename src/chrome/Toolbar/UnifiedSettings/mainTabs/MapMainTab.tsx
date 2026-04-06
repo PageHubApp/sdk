@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -45,7 +44,7 @@ export const MapMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Map pins — add, remove, and position them.">
         <ListEditor
           items={childPoints || []}
           activeIndex={activeIndex}
@@ -115,7 +114,7 @@ export const MapMainTab = () => {
     ),
     Properties: (
       <>
-        <ToolbarSection title="Map Settings">
+        <ToolbarSection title="Map Settings" help="Interactive, static, or background display mode.">
           <ToolbarItem
             propKey="type"
             propType="component"
@@ -141,7 +140,7 @@ export const MapMainTab = () => {
           </ToolbarItem>
         </ToolbarSection>
 
-        <ToolbarSection title="Center Position">
+        <ToolbarSection title="Center Position" help="Where the map is centered by default.">
           <ToolbarItem
             propKey="lat"
             propType="component"
@@ -168,7 +167,7 @@ export const MapMainTab = () => {
           />
         </ToolbarSection>
 
-        <ToolbarSection title="Style">
+        <ToolbarSection title="Style" help="Visual filters like grayscale.">
           <ToolbarItem
             propKey="grayscale"
             propType="component"
@@ -182,7 +181,7 @@ export const MapMainTab = () => {
           />
         </ToolbarSection>
 
-        <ToolbarSection title="Accessibility">
+        <ToolbarSection title="Accessibility" help="Title for screen readers.">
           <ToolbarItem
             propKey="title"
             propType="component"

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor } from "@craftjs/core";
 import { Tooltip } from "components/layout/Tooltip";
 import React, { useEffect, useRef, useState } from "react";
@@ -23,7 +22,7 @@ interface ComponentSelectorProps {
   className?: string;
 }
 
-export const ComponentSelector: React.FC<ComponentSelectorProps> = ({ className = "" }) => {
+export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -202,7 +201,7 @@ export const ComponentSelector: React.FC<ComponentSelectorProps> = ({ className 
     <div className={`relative ${className}`} ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between gap-2 rounded-lg border border-border bg-popover px-3 py-2 text-popover-foreground transition-colors hover:bg-muted"
+        className="ph-menu-trigger py-2"
         aria-label="Component selector"
       >
         <div className="flex flex-1 items-center gap-2 overflow-hidden">
@@ -217,7 +216,7 @@ export const ComponentSelector: React.FC<ComponentSelectorProps> = ({ className 
       </button>
 
       {isOpen && (
-        <div className="absolute inset-x-0 top-full z-50 mt-1 flex max-h-[500px] flex-col overflow-hidden rounded-lg border border-border bg-background text-foreground shadow-xl">
+        <div className="ph-panel absolute inset-x-0 top-full z-50 mt-1 flex max-h-[500px] flex-col overflow-hidden text-foreground">
           {/* Search Header - Fixed */}
           <div className="border-b border-border p-3">
             <input
@@ -260,14 +259,14 @@ export const ComponentSelector: React.FC<ComponentSelectorProps> = ({ className 
                           className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
                           aria-label="Save"
                         >
-                          <TbCheck className="size-4" />
+                          <TbCheck className="size-5" />
                         </button>
                         <button
                           onClick={handleCancelRename}
-                          className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          className="tool-button"
                           aria-label="Cancel"
                         >
-                          <TbX className="size-4" />
+                          <TbX className="size-5" />
                         </button>
                       </div>
                     </>
@@ -283,15 +282,15 @@ export const ComponentSelector: React.FC<ComponentSelectorProps> = ({ className 
                       >
                         <button
                           onClick={e => handleToggleComponentType(component, e)}
-                          className="flex shrink-0 items-center rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          className="tool-button shrink-0"
                           aria-label={
                             component.isSection ? "Convert to Component" : "Convert to Section"
                           }
                         >
                           {component.isSection ? (
-                            <TbLayoutGridAdd className="size-4" />
+                            <TbLayoutGridAdd className="size-5" />
                           ) : (
-                            <TbBoxModel2 className="size-4" />
+                            <TbBoxModel2 className="size-5" />
                           )}
                         </button>
                       </Tooltip>
@@ -304,17 +303,17 @@ export const ComponentSelector: React.FC<ComponentSelectorProps> = ({ className 
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
                         <button
                           onClick={e => handleStartRename(component, e)}
-                          className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                          className="tool-button"
                           aria-label={`Rename ${component.name}`}
                         >
-                          <TbPencil className="size-4" />
+                          <TbPencil className="size-5" />
                         </button>
                         <button
                           onClick={e => handleDeleteComponent(component, e)}
                           className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
                           aria-label={`Delete ${component.name}`}
                         >
-                          <TbTrash className="size-4" />
+                          <TbTrash className="size-5" />
                         </button>
                       </div>
                     </>
@@ -358,6 +357,6 @@ export const ComponentSelector: React.FC<ComponentSelectorProps> = ({ className 
       )}
     </div>
   );
-};
+}
 
 export default ComponentSelector;

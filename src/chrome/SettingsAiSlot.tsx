@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { useSDK } from "../context";
 import { useAiEnabled } from "../utils/hooks/useAiEnabled";

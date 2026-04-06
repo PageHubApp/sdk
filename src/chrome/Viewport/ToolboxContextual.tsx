@@ -1,7 +1,5 @@
-// @ts-nocheck
 import { NodeTree, ROOT_NODE, useEditor } from "@craftjs/core";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaFont } from "react-icons/fa";
 import {
@@ -27,77 +25,13 @@ import { addHandler, buildClonedTree } from "./lib";
 
 import generate from "../../utils/data/nameGenerator";
 
-export const ulVariants = {
-  open: {
-    opacity: 1,
-    display: "flex",
-    // visibility: "visible",
-    transition: {
-      staggerChildren: 0.17,
-      delayChildren: 0.1,
-      staggerDirection: 1,
-    },
-  },
-  closed: {
-    opacity: 0,
-    display: "none",
-    transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.1,
-      staggerDirection: -1,
-      when: "afterChildren",
-    },
-  },
-  transition: { type: "linear", duration: 0.4 },
-
-  initial: { display: "none", opacity: 0 },
-};
-
-export const uloVariants = {
-  open: {
-    opacity: 1,
-    transition: {
-      staggerDirection: 1,
-      y: { stiffness: 1000, velocity: -100 },
-    },
-  },
-  closed: {
-    opacity: 0,
-    transition: {
-      staggerDirection: -1,
-      y: { stiffness: 1000 },
-    },
-  },
-};
-
-export const liVariants = {
-  open: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      staggerDirection: 1,
-      y: { stiffness: 1000, velocity: -100 },
-    },
-  },
-  closed: {
-    y: "-100%",
-    opacity: 0,
-    transition: {
-      staggerDirection: -1,
-      y: { stiffness: 1000 },
-    },
-  },
-};
 
 const Item = ({ children }) => (
-  <motion.a
-    variants={liVariants}
-    className={
-      "flex w-full cursor-pointer items-center gap-y-6 rounded-lg p-2 shadow-inner hover:bg-primary hover:text-muted-foreground"
-    }
+  <a
+    className="flex w-full cursor-pointer items-center gap-y-6 rounded-lg p-2 shadow-inner hover:bg-primary hover:text-muted-foreground"
   >
     {children}
-  </motion.a>
+  </a>
 );
 
 export const ToolboxContexual = ({ userStyle = null }) => {
@@ -253,22 +187,17 @@ export const ToolboxContexual = ({ userStyle = null }) => {
   );
 
   return (
-    <AnimatePresence>
+    <>
       {menu.enabled && (
-        <motion.div
-          animate={menu.enabled ? "open" : "closed"}
-          variants={ulVariants}
-          exit="closed"
-          initial="closed"
+        <div
           key="toolbox"
           id="toolbox"
           ref={ref}
           style={style}
-          className="fixed z-50 max-h-[330px] select-none flex-col justify-between gap-3 rounded-lg p-3 text-muted-foreground drop-shadow-lg md:flex-row"
+          className="animate-backdrop-in fixed z-50 max-h-[330px] select-none flex-col justify-between gap-3 rounded-lg p-3 text-muted-foreground drop-shadow-lg md:flex-row"
         >
-          <motion.div
-            variants={uloVariants}
-            className="scrollbar flex flex-col gap-1.5 overflow-auto rounded-lg bg-background"
+          <div
+            className="scrollbar-light flex flex-col gap-1.5 overflow-auto rounded-lg bg-background"
           >
             <div className="rounded-xl p-3">
               {name === "Background" && (
@@ -298,12 +227,11 @@ export const ToolboxContexual = ({ userStyle = null }) => {
                 </>
               )}
             </div>
-          </motion.div>
+          </div>
 
           {!["Form"].includes(name) && comps.length ? (
-            <motion.div
-              variants={uloVariants}
-              className="scrollbar flex flex-col overflow-auto rounded-lg bg-background p-3"
+            <div
+              className="scrollbar-light flex flex-col overflow-auto rounded-lg bg-background p-3"
             >
               {comps.map((a, k) => {
                 if (!a.id || !a.node) return null;
@@ -361,10 +289,10 @@ export const ToolboxContexual = ({ userStyle = null }) => {
                   </button>
                 );
               })}
-            </motion.div>
+            </div>
           ) : null}
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 };

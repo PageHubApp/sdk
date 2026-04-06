@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Editor canvas chrome by preview mode:
  * - mobile: phone frame (deviceClasses in Viewport — not defined here)

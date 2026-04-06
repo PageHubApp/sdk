@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useRef } from "react";
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { IpsumGenerator } from "../../Inputs/media/IpsumGenerator";
@@ -24,7 +23,7 @@ export const TextMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="The HTML content displayed in this text block.">
         <ToolbarItem
           propKey="text"
           propType="component"
@@ -40,7 +39,7 @@ export const TextMainTab = () => {
       </ToolbarSection>
     ),
     Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]}>
+      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply text styles and layouts.">
         <PresetGroupRenderer presets={selectorPresets.text} />
       </ToolbarSection>
     ),

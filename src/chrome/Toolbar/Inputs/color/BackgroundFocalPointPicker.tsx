@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { changeProp } from "../../../Viewport/lib";
 import { useEffect, useRef, useState } from "react";
@@ -12,9 +11,9 @@ interface BackgroundFocalPointPickerProps {
   imageUrl?: string;
 }
 
-export const BackgroundFocalPointPicker: React.FC<BackgroundFocalPointPickerProps> = ({
+export function BackgroundFocalPointPicker({
   imageUrl,
-}) => {
+}: BackgroundFocalPointPickerProps) {
   const { actions, query } = useEditor();
   const view = useAtomValue(ViewAtom);
   const viewSelection = useAtomValue(ViewSelectionAtom);
@@ -249,6 +248,8 @@ export const BackgroundFocalPointPicker: React.FC<BackgroundFocalPointPickerProp
           {/* Image Preview with Crosshair */}
           <div
             ref={pickerRef}
+            role="presentation"
+            aria-hidden="true"
             className="relative aspect-video w-full cursor-crosshair select-none overflow-hidden rounded-lg border-2 border-border bg-muted"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -332,14 +333,16 @@ export const BackgroundFocalPointPicker: React.FC<BackgroundFocalPointPickerProp
             </div>
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={handleReset}
-                className="rounded border border-border px-2 py-1 text-xs transition-colors hover:bg-accent"
+                className="btn btn-secondary btn-sm"
               >
                 Reset
               </button>
               <button
+                type="button"
                 onClick={applyFocalPoint}
-                className="rounded bg-primary px-3 py-1 text-xs text-primary-foreground transition-colors hover:bg-primary/90"
+                className="btn btn-primary btn-sm"
               >
                 Apply
               </button>
@@ -349,4 +352,4 @@ export const BackgroundFocalPointPicker: React.FC<BackgroundFocalPointPickerProp
       )}
     </>
   );
-};
+}

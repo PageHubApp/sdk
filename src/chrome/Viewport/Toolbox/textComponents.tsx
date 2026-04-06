@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { LoremIpsum } from "../../../utils/data/loremIpsum";
 import { BsBodyText } from "react-icons/bs";
 import { MdShortText } from "react-icons/md";

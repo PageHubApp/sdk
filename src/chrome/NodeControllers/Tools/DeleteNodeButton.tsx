@@ -1,12 +1,9 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
-import { motion } from "framer-motion";
 import { TbTrash, TbTrashOff } from "react-icons/tb";
 import { useUnifiedDelete } from "../../hooks/useUnifiedDelete";
 
 interface DeleteNodeButtonProps {
   className?: string;
-  iconSize?: number;
   title?: string;
   titleDisabled?: string;
   useSimpleDelete?: boolean;
@@ -14,8 +11,7 @@ interface DeleteNodeButtonProps {
 }
 
 export const DeleteNodeButton = ({
-  className = "inline-flex items-center justify-center text-destructive hover:text-destructive-foreground hover:bg-destructive p-1 rounded-lg transition-colors",
-  iconSize = 14,
+  className = "tool-button",
   title = "Delete",
   titleDisabled = "Cannot delete",
   useSimpleDelete = false,
@@ -37,17 +33,15 @@ export const DeleteNodeButton = ({
   };
 
   return (
-    <motion.div
-      role="button"
-      whileTap={{ scale: 0.9 }}
+    <button
+      type="button"
       className={className}
       onClick={handleDelete}
       title={canDelete ? title : titleDisabled}
-      aria-disabled={!canDelete}
-      style={{ opacity: canDelete ? 1 : 0.5, cursor: canDelete ? "pointer" : "not-allowed" }}
+      disabled={!canDelete}
     >
-      {canDelete ? <TbTrash size={iconSize} /> : <TbTrashOff size={iconSize} />}
+      {canDelete ? <TbTrash /> : <TbTrashOff />}
       {label && <span>{label}</span>}
-    </motion.div>
+    </button>
   );
 };

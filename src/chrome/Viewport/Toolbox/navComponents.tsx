@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Element } from "@craftjs/core";
 import { Button } from "../../../components/Button";
 import { ButtonList } from "../../../components/ButtonList";

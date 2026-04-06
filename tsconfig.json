@@ -6,6 +6,7 @@
     "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "strict": true,
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -19,7 +20,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "components/selectors/*": ["./src/components/*"]
+      "components/selectors/*": ["./src/components/*"],
+      "components/*": ["../../components/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

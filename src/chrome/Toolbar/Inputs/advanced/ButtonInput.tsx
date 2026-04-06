@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ButtonItem } from "../Items/ButtonItem";
 
 export const ButtonInput = () => (

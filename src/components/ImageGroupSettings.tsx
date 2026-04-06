@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { ToolbarItem, ToolbarSection } from "../chrome/Toolbar";
 import { TbPlus } from "react-icons/tb";

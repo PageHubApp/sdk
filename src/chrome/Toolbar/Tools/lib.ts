@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { getRect } from "../../Viewport/useRect";
 import { useEffect } from "react";

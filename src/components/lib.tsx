@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { applyPattern } from "../utils/lib";

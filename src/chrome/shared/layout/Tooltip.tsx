@@ -1,5 +1,5 @@
-// @ts-nocheck
-import { cloneElement, isValidElement, useMemo, useRef, useState } from "react";
+import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
+import { cloneElement, isValidElement, useId, useState } from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
 export const Tooltip = ({
@@ -12,19 +12,16 @@ export const Tooltip = ({
   tipStyle = {},
   onClick = (e?: React.MouseEvent) => { },
   tooltipKey = "" as any,
+  delay = 0,
 }) => {
-  // Generate a stable ID once using useMemo to avoid infinite loops
-  const id = useMemo(() => {
-    if (tooltipKey) return `tooltip-${tooltipKey}`;
-    return `tooltip-${Math.random().toString(36).substring(2, 9)}`;
-  }, [tooltipKey, content]);
+  const instanceId = useId().replace(/:/g, "");
+  const id = tooltipKey ? `tooltip-${tooltipKey}-${instanceId}` : `tooltip-${instanceId}`;
   const [isVisible, setIsVisible] = useState(true);
 
   const handleClick = (e: React.MouseEvent) => {
     setIsVisible(false);
     onClick(e);
 
-    // Reset visibility after a short delay
     setTimeout(() => {
       setIsVisible(true);
     }, 1000);
@@ -38,6 +35,10 @@ export const Tooltip = ({
     "data-tooltip-content": content,
     "data-tooltip-place": placement,
     "data-tooltip-offset": 10,
+    ...(delay > 0 ? { "data-tooltip-delay-show": delay } : {}),
+    ...(String(tooltipClassName || "").trim()
+      ? { "data-tooltip-class-name": String(tooltipClassName).trim() }
+      : {}),
   };
 
   return (
@@ -46,7 +47,6 @@ export const Tooltip = ({
         cloneElement(children, {
           ...tooltipProps,
           onClick: (e: React.MouseEvent) => {
-            // Preserve child's onClick if any
             children.props?.onClick?.(e);
             handleClick(e);
           },
@@ -54,6 +54,7 @@ export const Tooltip = ({
         })
       ) : (
         <div
+          role="presentation"
           className={className}
           onClick={handleClick}
           {...tooltipProps}
@@ -64,8 +65,10 @@ export const Tooltip = ({
       {isVisible && (
         <ReactTooltip
           id={id}
+          variant="light"
           classNameArrow="hidden"
-          className={`max-w-[220px] rounded-lg! border! !border-border !bg-primary px-2! py-1! text-xs! font-normal! !text-primary-foreground shadow-lg! ${tooltipClassName}`}
+          delayShow={delay}
+          className={`${REACT_TOOLTIP_SURFACE_CLASS} ${tooltipClassName}`}
         />
       )}
     </>

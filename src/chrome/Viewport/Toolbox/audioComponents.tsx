@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbMusic } from "react-icons/tb";
 import { Audio } from "../../../components/Audio";
 import { RenderToolComponent, ToolboxItemDisplay } from "./lib";

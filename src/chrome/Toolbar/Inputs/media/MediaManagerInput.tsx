@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor } from "@craftjs/core";
 import { useEffect, useState } from "react";
 import { TbPhoto } from "react-icons/tb";

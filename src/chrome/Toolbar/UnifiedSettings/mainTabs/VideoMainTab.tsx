@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { ToolbarItem } from "../../ToolbarItem";
@@ -32,7 +31,7 @@ export const VideoMainTab = () => {
   return renderComponentSlots({
     Content: (
       <>
-        <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+        <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Video provider and ID or URL.">
           <ToolbarItem
             propKey="provider"
             propType="component"
@@ -71,7 +70,7 @@ export const VideoMainTab = () => {
       </>
     ),
     Properties: (
-      <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]}>
+      <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]} help="Accessibility title for the video.">
         <ToolbarItem
           propKey="title"
           propType="component"

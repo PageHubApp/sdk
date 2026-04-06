@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Component barrel exports
 export { Audio } from "./Audio";
 export { Background } from "./Background";

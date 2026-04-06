@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { changeProp } from "../../../Viewport/lib";
 
@@ -65,21 +64,24 @@ export const IpsumGenerator = ({ propKey, propType }) => {
         <p className="text-xs text-muted-foreground">Fill with placeholder text</p>
         <div className="flex gap-1.5">
           <button
-            className="flex-1 rounded-md border border-border bg-secondary px-2 py-1 text-xs text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+            type="button"
+            className="btn btn-secondary btn-sm flex-1"
             onClick={() => save(capitalizeFirstLetter(lorem.generateWords(1)))}
           >
             Word
           </button>
 
           <button
-            className="flex-1 rounded-md border border-border bg-secondary px-2 py-1 text-xs text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+            type="button"
+            className="btn btn-secondary btn-sm flex-1"
             onClick={() => save(lorem.generateSentences(1))}
           >
             Sentence
           </button>
 
           <button
-            className="flex-1 rounded-md border border-border bg-secondary px-2 py-1 text-xs text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+            type="button"
+            className="btn btn-secondary btn-sm flex-1"
             onClick={() => save(lorem.generateParagraphs(1))}
           >
             Paragraph

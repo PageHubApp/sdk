@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
 
 export enum NodeType {

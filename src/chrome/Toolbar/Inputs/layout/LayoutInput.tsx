@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { ViewAtom } from "../../../Viewport/atoms";
 import React, { useEffect, useMemo, useState } from "react";
@@ -24,10 +23,10 @@ type LayoutMode = "block" | "flex-row" | "flex-col" | "grid";
 /**
  * Combined layout input — fixed section list, content varies by mode.
  */
-export const LayoutInput: React.FC<{ hidePresets?: boolean; mode?: "full" | "spacing" }> = ({ 
-  hidePresets, 
-  mode = "full" 
-}) => {
+export function LayoutInput({
+  hidePresets,
+  mode = "full"
+}: { hidePresets?: boolean; mode?: "full" | "spacing" }) {
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
   const isSpacingOnly = mode === "spacing";
@@ -77,7 +76,7 @@ export const LayoutInput: React.FC<{ hidePresets?: boolean; mode?: "full" | "spa
       {!hidePresets && !isSpacingOnly && <LayoutPresetInput />}
 
       {!isSpacingOnly && (
-        <ToolbarSection title="Alignment" icon={<TbLayoutAlignCenter />} footer={
+        <ToolbarSection title="Alignment" icon={<TbLayoutAlignCenter />} help="How child elements are arranged and aligned." footer={
           isFlex ? (
             <ItemAdvanceToggle propKey="alignment-flex" title="More alignment properties">
               <ToolbarSection full={1} collapsible={false}>
@@ -202,7 +201,7 @@ export const LayoutInput: React.FC<{ hidePresets?: boolean; mode?: "full" | "spa
       {!isSpacingOnly && <SizeInput />}
 
       {/* Spacing — combined Margin + Padding */}
-      <ToolbarSection title="Spacing" icon={<TbBoxModel />} full={1} header={
+      <ToolbarSection title="Spacing" icon={<TbBoxModel />} full={1} help="Padding (inner space) and margin (outer space)." header={
         <TypeSelector types={spacingTypes} selectedType={spacingType} onTypeChange={setSpacingType} />
       }>
         {/* Grouped sections using standardized nested ToolbarSections */}
@@ -251,6 +250,6 @@ export const LayoutInput: React.FC<{ hidePresets?: boolean; mode?: "full" | "spa
       </ToolbarSection>
     </>
   );
-};
+}
 
 export default LayoutInput;

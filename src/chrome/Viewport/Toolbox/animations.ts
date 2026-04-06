@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const menuItemVariants = {
   hidden: {
     x: -100,

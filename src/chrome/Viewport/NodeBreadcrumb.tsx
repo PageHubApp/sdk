@@ -1,10 +1,10 @@
-// @ts-nocheck
 import { useEditor } from "@craftjs/core";
 import { Tooltip } from "components/layout/Tooltip";
 import { useState } from "react";
-import { TbChevronRight } from "react-icons/tb";
+import { TbChevronRight, TbListTree } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { IsolateAtom } from "utils/lib";
+import { ToolbarPortalDropdown } from "../Tools/ToolbarPortalDropdown";
 import { TabAtom } from "./atoms";
 
 interface BreadcrumbItem {
@@ -113,33 +113,9 @@ export const NodeBreadcrumb = () => {
   const pageContext = getPageContext();
   const breadcrumb = selectedId ? buildBreadcrumb(selectedId) : [];
 
-  // Debug: log the breadcrumb to see what's in it
-
-  // Don't show breadcrumb if no node is selected
   if (!selectedId) return null;
 
-  // Dynamic breadcrumb display: ellipsis + last 2 items (skip first item)
-  const getDisplayBreadcrumb = () => {
-    if (breadcrumb.length <= 2) {
-      return breadcrumb; // Show all if 2 or fewer items
-    }
-
-    // For 3+ items: ellipsis + last 2 items (skip "Section" and other first items)
-    return [
-      { id: "ellipsis", name: "...", type: "ellipsis" },
-      ...breadcrumb.slice(-2), // Always show parent + current (last 2 items)
-    ];
-  };
-
-  const displayBreadcrumb = getDisplayBreadcrumb();
-
-  // Debug: log the display breadcrumb
-
-  // Separate the last item (current node) from the rest
-  const previousItems = displayBreadcrumb.slice(0, -1);
-  const currentItem = displayBreadcrumb[displayBreadcrumb.length - 1];
-
-  // If we're viewing a specific page but no component is selected, show just the page context
+  const currentItem = breadcrumb[breadcrumb.length - 1];
   const showOnlyPageContext = isolate && breadcrumb.length === 0;
 
   // Check if the breadcrumb is within a Header or Footer (root-level components with no page parent)
@@ -167,11 +143,60 @@ export const NodeBreadcrumb = () => {
     }
   };
 
+  // Short breadcrumb: just the immediate parent (if any)
+  const parentItem = breadcrumb.length >= 2 ? breadcrumb[breadcrumb.length - 2] : null;
+
   return (
     <div className="flex w-full items-center justify-between bg-background px-2 py-1 text-sm text-foreground">
-      {/* Breadcrumb navigation - limited width to reserve space for tab */}
       <div className="flex min-w-0 max-w-[calc(100%-120px)] flex-1 items-center gap-0">
-        {/* Page context first */}
+        {/* Ancestry dropdown — full stack on hover */}
+        {!isEditing && !showOnlyPageContext && breadcrumb.length > 1 && (
+          <ToolbarPortalDropdown
+            openOn="hover"
+            align="left"
+            className="min-w-[10rem] rounded-lg border border-border bg-popover p-1 py-1.5 shadow-xl"
+            trigger={
+              <button
+                type="button"
+                aria-label="View ancestry"
+                className="mr-0.5 rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <TbListTree className="size-3.5" />
+              </button>
+            }
+          >
+            <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Ancestry
+            </div>
+            <div className="ph-select-item-host">
+              {showPageContext && (
+                <button
+                  type="button"
+                  onClick={handlePageClick}
+                  className="ph-select-item items-center gap-2 text-xs"
+                >
+                  <span className="text-muted-foreground/40">⌂</span>
+                  <span className="font-medium">{pageContext.name}</span>
+                </button>
+              )}
+              {breadcrumb.slice(0, -1).map((item, index) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleNodeClick(item.id)}
+                  className="ph-select-item items-center gap-2 text-xs"
+                  style={{ paddingLeft: `${(index + (showPageContext ? 1 : 0)) * 8 + 8}px` }}
+                >
+                  <span className="text-[10px] text-muted-foreground/40">›</span>
+                  <span className="truncate font-medium">{item.name}</span>
+                  <span className="ml-auto text-[10px] text-muted-foreground">{item.type}</span>
+                </button>
+              ))}
+            </div>
+          </ToolbarPortalDropdown>
+        )}
+
+        {/* Page context */}
         {!isEditing && showPageContext && (
           <div className="flex items-center gap-0">
             <Tooltip
@@ -183,62 +208,35 @@ export const NodeBreadcrumb = () => {
               <button
                 onClick={handlePageClick}
                 className={`whitespace-nowrap rounded bg-muted p-1 text-xs font-medium text-foreground transition-colors hover:bg-muted/80 ${
-                  showOnlyPageContext
-                    ? "min-w-0" // No truncation when showing only page context
-                    : "min-w-0 max-w-[100px] truncate" // Truncate when showing with breadcrumb
+                  showOnlyPageContext ? "min-w-0" : "min-w-0 max-w-[100px] truncate"
                 }`}
               >
                 {showOnlyPageContext ? pageContext.fullName || pageContext.name : pageContext.name}
               </button>
             </Tooltip>
 
-            {/* Separator after page context - show if we have breadcrumb items */}
-            {!showOnlyPageContext && (previousItems.length > 0 || currentItem) && (
+            {!showOnlyPageContext && currentItem && (
               <TbChevronRight className="ml-1 size-3 text-muted-foreground/60" />
             )}
           </div>
         )}
 
-        {/* Previous breadcrumb items - only show if not showing only page context */}
-        {!isEditing && !showOnlyPageContext && (
+        {/* Short breadcrumb: Parent > Current */}
+        {!isEditing && !showOnlyPageContext && parentItem && (
           <div className="flex items-center gap-0">
-            {previousItems.map((item, index) => (
-              <div key={item.id} className="flex items-center gap-0">
-                {index > 0 && <TbChevronRight className="size-3 text-muted-foreground/60" />}
-
-                {item.type === "ellipsis" ? (
-                  <Tooltip
-                    content={`Go to ${breadcrumb[breadcrumb.length - 3]?.name || "parent"}`}
-                    placement="bottom"
-                  >
-                    <button
-                      onClick={() => handleNodeClick(breadcrumb[breadcrumb.length - 3]?.id)}
-                      className="min-w-0 whitespace-nowrap rounded p-1 text-xs text-muted-foreground/60 transition-colors hover:bg-muted hover:text-muted-foreground"
-                    >
-                      {item.name}
-                    </button>
-                  </Tooltip>
-                ) : (
-                  <Tooltip content={`Select ${item.name} (${item.type})`} placement="bottom">
-                    <button
-                      onClick={() => handleNodeClick(item.id)}
-                      className="min-w-0 max-w-[80px] truncate whitespace-nowrap rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                    >
-                      {item.name}
-                    </button>
-                  </Tooltip>
-                )}
-              </div>
-            ))}
-
-            {/* Separator chevron before current item - only if we have previous items */}
-            {!showOnlyPageContext && previousItems.length > 0 && (
-              <TbChevronRight className="size-3 text-muted-foreground/60" />
-            )}
+            <Tooltip content={`Select ${parentItem.name} (${parentItem.type})`} placement="bottom">
+              <button
+                onClick={() => handleNodeClick(parentItem.id)}
+                className="min-w-0 max-w-[80px] truncate whitespace-nowrap rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                {parentItem.name}
+              </button>
+            </Tooltip>
+            <TbChevronRight className="size-3 text-muted-foreground/60" />
           </div>
         )}
 
-        {/* Current node - editable with CSS transform animation - only show if not showing only page context */}
+        {/* Current node — editable */}
         {currentItem && !showOnlyPageContext && (
           <>
             {isEditing ? (
@@ -277,7 +275,6 @@ export const NodeBreadcrumb = () => {
         )}
       </div>
 
-      {/* Active tab indicator - reserved space */}
       {activeTab && (
         <div className="hidden text-[10px] font-medium text-secondary-foreground">{activeTab}</div>
       )}

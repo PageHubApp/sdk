@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Editor resolver — full component map with editor chrome attached.
  *

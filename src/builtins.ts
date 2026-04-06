@@ -29,6 +29,7 @@ import { Modal } from "./components/Modal";
 import { Spacer } from "./components/Spacer";
 import { Text } from "./components/Text";
 import { Video } from "./components/Video";
+import { SavedComponentLoader } from "./chrome/Viewport/Toolbox/savedComponents";
 
 import {
   AudioDef,
@@ -79,6 +80,7 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Spacer,
   Text,
   Video,
+  SavedComponentLoader,
 };
 
 /**

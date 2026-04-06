@@ -1,9 +1,9 @@
-import { AnimatePresence, motion } from "framer-motion";
-import React from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { TbX } from "react-icons/tb";
 import { useDraggableWindow } from "./hooks/useDraggableWindow";
 import { useResizable } from "./hooks/useResizable";
+import { useFocusTrap } from "../utils/hooks/useAccessibility";
 
 type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
@@ -53,6 +53,17 @@ export function FloatingPanel({
     y: 40,
   };
 
+  const focusTrapRef = useFocusTrap(isOpen);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
   const { position, isDragging, windowRef, handleMouseDown } = useDraggableWindow({
     initialPosition: defaultPos,
     bounds: { top: 0, right: 0, bottom: 0, left: 0 },
@@ -72,27 +83,21 @@ export function FloatingPanel({
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
-    <AnimatePresence>
+    <>
       {backdrop && (
-        <motion.div
-          key="backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-background/75 backdrop-blur-sm"
+        <div
+          className="pagehub-sdk-root ph-modal-backdrop"
           style={{ zIndex: zIndex - 1 }}
           onClick={onClose}
         />
       )}
 
-      <motion.div
-        key="panel"
-        ref={windowRef}
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        transition={{ duration: 0.15 }}
-        className="pointer-events-auto fixed overflow-hidden rounded-lg border border-border bg-background shadow-xl"
+      <div
+        ref={(el) => { (windowRef as any).current = el; (focusTrapRef as any).current = el; }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="pagehub-sdk-root ph-modal-surface pointer-events-auto fixed overflow-hidden"
         style={{ top: position.y, left: position.x, width, height, zIndex }}
       >
         {(edges as string[]).map(e => (handleProps as any)[e] ? <div key={e} {...(handleProps as any)[e]} /> : null)}
@@ -100,6 +105,8 @@ export function FloatingPanel({
         <div className="flex h-full flex-col">
           {/* Header — drag handle */}
           <div
+            role="presentation"
+            aria-hidden="true"
             onMouseDown={handleMouseDown}
             className={`flex items-center justify-between border-b border-border bg-accent px-3 py-1.5 text-accent-foreground ${
               isDragging ? "cursor-grabbing" : "cursor-grab"
@@ -119,8 +126,8 @@ export function FloatingPanel({
 
           {children}
         </div>
-      </motion.div>
-    </AnimatePresence>,
+      </div>
+    </>,
     document.querySelector(".pagehub-sdk-root") || document.body,
   );
 }

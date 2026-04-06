@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbBox } from "react-icons/tb";
 import { Container } from "../../../components/Container";
 import { RenderToolComponent, ToolboxItemDisplay } from "./lib";

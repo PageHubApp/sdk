@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Default Properties section — always shown in the Component tab.
  * Renders Element ID and HTML Tag (Type).

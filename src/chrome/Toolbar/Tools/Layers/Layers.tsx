@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ROOT_NODE } from "@craftjs/core";
 import React from "react";
 import { AutoHideScrollbar } from "components/layout";
@@ -9,7 +8,7 @@ interface LayersProps {
   expandRootOnLoad?: boolean;
 }
 
-export const Layers: React.FC<LayersProps> = ({ expandRootOnLoad = true }) => {
+export function Layers({ expandRootOnLoad = true }: LayersProps) {
   return (
     <LayerManagerProvider expandRootOnLoad={expandRootOnLoad}>
       <AutoHideScrollbar className="craft-layers-container size-full">
@@ -19,4 +18,4 @@ export const Layers: React.FC<LayersProps> = ({ expandRootOnLoad = true }) => {
       </AutoHideScrollbar>
     </LayerManagerProvider>
   );
-};
+}

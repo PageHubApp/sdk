@@ -1,10 +1,9 @@
-// @ts-nocheck
-import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { MdClose } from "react-icons/md";
 import { useAtomState } from "@zedux/react";
 import { getRect } from "../Viewport/useRect";
+import { useFocusTrap } from "../../utils/hooks/useAccessibility";
 
 export const useGetRectLater = localRef => {
   const [rect, setRect] = useState({
@@ -42,6 +41,7 @@ function Dialog({ children, target, state, opener }: any): any {
   const dialogContentRef = useRef(null);
 
   const [isOpen, setIsOpen] = useAtomState(state);
+  const focusTrapRef = useFocusTrap(isOpen);
 
   const dialogRect = useGetRectLater(dialogRef);
 
@@ -175,18 +175,15 @@ function Dialog({ children, target, state, opener }: any): any {
   }, [dialogRef]);
 
   return ReactDOM.createPortal(
-    <AnimatePresence>
+    <>
       {isOpen && (
         <div className="absolute size-[350px]" ref={dialogRef}>
-          <motion.div
+          <div
+            ref={focusTrapRef}
             role="dialog"
             aria-modal="true"
             aria-label="Settings dialog"
-            initial={{ scale: 1, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 1, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            className="absolute max-w-[320px] select-none flex-col gap-4 overflow-hidden rounded-lg border-2 border-border bg-muted text-foreground shadow-2xl"
+            className="animate-backdrop-in absolute max-w-[320px] select-none flex-col gap-4 overflow-hidden rounded-lg border-2 border-border bg-muted text-foreground shadow-2xl"
             style={{
               zIndex: 50,
             }}
@@ -213,14 +210,14 @@ function Dialog({ children, target, state, opener }: any): any {
 
             <div
               ref={dialogContentRef}
-              className="scrollbar max-h-[320px] overflow-y-auto overflow-x-hidden px-3 pb-1.5"
+              className="scrollbar-light max-h-[320px] overflow-y-auto overflow-x-hidden px-3 pb-1.5"
             >
               {children}
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
-    </AnimatePresence>,
+    </>,
     document.querySelector('[data-container="true"]')
   );
 }

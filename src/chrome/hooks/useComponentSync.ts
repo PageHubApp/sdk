@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Hook to sync linked component instances when master components change
  */

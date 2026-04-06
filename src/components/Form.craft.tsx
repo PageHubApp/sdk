@@ -28,7 +28,7 @@ import { Button } from "./Button";
 // ─── Shared styles for form presets ────────────────────────────────────────
 
 const inputBaseStyles = {
-  className: "p-(--input-padding) w-full border border-(--input-border-width) border-solid border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) placeholder:text-(--input-placeholder-color)",
+  className: "p-(--input-padding) w-full border-solid border-(length:--input-border-width) border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) placeholder:text-(--input-placeholder-color)",
 };
 
 const submitButtonProps = {

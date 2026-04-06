@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TailwindStyles } from "utils/tailwind";
 import { ToolbarItem } from "../../ToolbarItem";
 

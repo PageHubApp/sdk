@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Viewer resolver — lightweight component map for published/view pages.
  *

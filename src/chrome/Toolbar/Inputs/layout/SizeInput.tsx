@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbArrowsMaximize } from "react-icons/tb";
 import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
 import { ToolbarSection } from "../../ToolbarSection";

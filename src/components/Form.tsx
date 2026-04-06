@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Element, useEditor, useNode } from "@craftjs/core";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { useEffect, useState } from "react";

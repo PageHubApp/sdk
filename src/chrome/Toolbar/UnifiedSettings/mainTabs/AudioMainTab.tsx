@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
@@ -6,7 +5,7 @@ import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 export const AudioMainTab = () =>
   renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="URL to the audio file.">
         <ToolbarItem
           propKey="audioUrl"
           propType="component"
@@ -19,7 +18,7 @@ export const AudioMainTab = () =>
     ),
     Properties: (
       <>
-        <ToolbarSection title="Playback Options">
+        <ToolbarSection title="Playback Options" help="Controls, autoplay, and loop settings.">
           <ToolbarItem
             propKey="controls"
             propType="component"
@@ -46,7 +45,7 @@ export const AudioMainTab = () =>
           />
         </ToolbarSection>
 
-        <ToolbarSection title="Accessibility">
+        <ToolbarSection title="Accessibility" help="Title for screen readers.">
           <ToolbarItem
             propKey="title"
             propType="component"

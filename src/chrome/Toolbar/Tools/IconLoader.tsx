@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Image from "next/image";
 
 const placeholder =

@@ -1,10 +1,10 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { TbX } from "react-icons/tb";
 import { Container } from "./Container";
+import { useFocusTrap } from "../utils/hooks/useAccessibility";
 
 const defaultTrigger = {
   type: "click",
@@ -53,6 +53,7 @@ export const Modal = ({ children, ...props }) => {
   const [isMounted, setIsMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const anchorRef = useRef(null);
+  const focusTrapRef = useFocusTrap(!enabled && isOpen);
 
   useEffect(() => { setIsMounted(true); }, []);
 
@@ -231,13 +232,15 @@ export const Modal = ({ children, ...props }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className={`fixed inset-0 z-[9997] flex justify-center p-4 ${positionClass} ${props.backdropBlur ? "backdrop-blur-sm" : ""}`}
+              className={`fixed inset-0 z-9997 flex justify-center p-4 ${positionClass} ${props.backdropBlur ? "backdrop-blur-sm" : ""}`}
               style={{ background: "rgba(0,0,0,0.5)" }}
               onClick={props.closeOnBackdrop !== false ? () => setIsOpen(false) : undefined}
             >
               <motion.div
+                ref={focusTrapRef}
                 role="dialog"
                 aria-modal="true"
+                aria-label="Modal"
                 {...anim}
                 transition={{ duration: 0.2 }}
                 className={`${props.modalWidth || "max-w-lg"} relative w-full bg-(--background) shadow-xl`}

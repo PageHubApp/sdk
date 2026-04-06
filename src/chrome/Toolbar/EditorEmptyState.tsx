@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { TbBoxModel2, TbClick, TbLayoutGridAdd, TbPlus, TbPointer } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
@@ -8,6 +6,7 @@ import { ClippyOpenAtom } from "utils/atoms";
 import { ComponentsAtom, HeaderMenuAtom, OpenComponentEditorAtom, ViewModeAtom } from "utils/lib";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { useSDK } from "../../context";
+import { usePanelUrl } from "../../utils/usePanelUrl";
 
 interface ActionCardProps {
   icon: React.ReactNode;
@@ -19,16 +18,10 @@ interface ActionCardProps {
 
 const ActionCard = ({ icon, title, description, onClick, delay }: ActionCardProps) => {
   return (
-    <motion.button
-      initial={{ y: 8, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{
-        duration: 0.4,
-        delay,
-        ease: [0.22, 1, 0.36, 1],
-      }}
+    <button
       onClick={onClick}
-      className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 text-left transition-all hover:bg-muted/50"
+      className="animate-slide-up group relative overflow-hidden rounded-xl border border-border bg-card p-6 text-left transition-all hover:bg-muted/50"
+      style={{ animationDelay: `${delay}s` }}
     >
       <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
       <div className="relative flex flex-row items-center justify-start gap-4">
@@ -40,7 +33,7 @@ const ActionCard = ({ icon, title, description, onClick, delay }: ActionCardProp
           <p className="text-xs text-muted-foreground">{description}</p>
         </div>
       </div>
-    </motion.button>
+    </button>
   );
 };
 
@@ -49,6 +42,7 @@ export const EditorEmptyState = () => {
   const components = useAtomValue(ComponentsAtom);
   const setOpenComponentEditor = useSetAtomState(OpenComponentEditorAtom);
   const setHeaderMenu = useSetAtomState(HeaderMenuAtom);
+  const { open: openPanel } = usePanelUrl();
   const setViewMode = useSetAtomState(ViewModeAtom);
   const setClippyOpen = useSetAtomState(ClippyOpenAtom);
   const { config } = useSDK();
@@ -72,7 +66,6 @@ export const EditorEmptyState = () => {
   const hasComponents = components.length > 0;
 
   const handleCreateClick = () => {
-    // Switch to component mode and open component editor
     setViewMode("component");
     setOpenComponentEditor({
       componentId: null,
@@ -82,45 +75,35 @@ export const EditorEmptyState = () => {
 
   const handleComponentsClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components" }));
+    openPanel("components");
+    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components", activeTab: "components" }));
   };
 
   const handleAddSectionClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "sections" }));
+    openPanel("blocks");
+    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "sections", activeTab: "sections" }));
   };
 
   return (
     <div ref={containerRef} className="scrollbar z-20 flex h-screen w-auto grow basis-full flex-col items-center justify-center gap-8 overflow-auto bg-transparent p-4 pr-2 text-center text-muted-foreground">
       {/* Icon */}
       {!isCompact && (
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{
-            duration: 0.5,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          className="flex size-24 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+        <div
+          className="animate-slide-up flex size-24 items-center justify-center rounded-2xl bg-primary/10 text-primary"
         >
           {isComponentMode && !hasComponents ? (
             <TbBoxModel2 className="size-12" />
           ) : (
             <TbPointer className="size-12 rotate-90" />
           )}
-        </motion.div>
+        </div>
       )}
 
       {/* Title */}
-      <motion.div
-        initial={{ y: 8, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{
-          duration: 0.5,
-          delay: 0.1,
-          ease: [0.22, 1, 0.36, 1],
-        }}
-        className="space-y-3"
+      <div
+        className="animate-slide-up space-y-3"
+        style={{ animationDelay: "0.1s" }}
       >
         {!isCompact && (
           <h2 className="text-xl font-semibold">
@@ -195,41 +178,29 @@ export const EditorEmptyState = () => {
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
 
       {/* Action Button */}
       {!hasComponents && isComponentMode && (
-        <motion.button
-          initial={{ y: 8, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{
-            duration: 0.5,
-            delay: 0.2,
-            ease: [0.22, 1, 0.36, 1],
-          }}
+        <button
           onClick={handleCreateClick}
-          className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+          className="animate-slide-up btn btn-primary gap-2 px-6! py-3! shadow-sm"
+          style={{ animationDelay: "0.2s" }}
         >
           <TbPlus className="size-5" />
           <span>Create Component</span>
-        </motion.button>
+        </button>
       )}
 
       {/* Helpful Hint */}
       {hasComponents && isComponentMode && (
-        <motion.div
-          initial={{ y: 8, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{
-            duration: 0.5,
-            delay: 0.2,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-          className="text-xxs mt-4 flex items-center gap-2 text-muted-foreground"
+        <div
+          className="animate-slide-up text-xxs mt-4 flex items-center gap-2 text-muted-foreground"
+          style={{ animationDelay: "0.2s" }}
         >
           <TbClick className="size-4" />
           <span>Use the dropdown at the top to select a component</span>
-        </motion.div>
+        </div>
       )}
     </div>
   );

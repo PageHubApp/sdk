@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NodeId } from "@craftjs/core";
 
 /**

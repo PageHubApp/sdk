@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { TbBoxModel2, TbLayoutGridAdd, TbX } from "react-icons/tb";
@@ -36,7 +35,7 @@ const hideHeaderFooter = (query, actions, hide: boolean) => {
   });
 };
 
-export const ComponentEditorTabs: React.FC<ComponentEditorTabsProps> = ({ className = "" }) => {
+export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps) {
   const { query, actions } = useEditor();
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const [tabs, setTabs] = useState<ComponentEditorTab[]>([]);
@@ -365,7 +364,7 @@ export const ComponentEditorTabs: React.FC<ComponentEditorTabsProps> = ({ classN
       className={`relative flex h-10 items-center gap-2 border-b border-border bg-secondary px-3 pt-2 ${className}`}
     >
       {/* Tabs */}
-      <div className="scrollbar-hide flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+      <div className="scrollbar-hide flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" role="tablist">
         {tabs.map(tab => {
           // Find the component to check if it's a section
           const component = components.find(c => {
@@ -380,7 +379,11 @@ export const ComponentEditorTabs: React.FC<ComponentEditorTabsProps> = ({ classN
           return (
             <div
               key={tab.id}
+              role="tab"
+              aria-selected={activeTabId === tab.id}
+              tabIndex={0}
               onClick={() => handleTabClick(tab.id)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTabClick(tab.id); } }}
               className={`group flex min-w-32 cursor-pointer items-center gap-2 rounded-t px-3 py-1.5 transition-colors ${
                 activeTabId === tab.id
                   ? "bg-muted font-bold text-muted-foreground hover:bg-card hover:text-card-foreground"
@@ -407,6 +410,6 @@ export const ComponentEditorTabs: React.FC<ComponentEditorTabsProps> = ({ classN
       </div>
     </div>
   );
-};
+}
 
 export default ComponentEditorTabs;

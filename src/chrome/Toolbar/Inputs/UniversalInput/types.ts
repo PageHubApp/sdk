@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Value type detection and parsing
 export type ValueType =
   | "tailwind"

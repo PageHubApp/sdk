@@ -1,7 +1,5 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { useFindScrollingParent } from "../components/lib";
-import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { getRect } from "./Viewport/useRect";
@@ -204,9 +202,8 @@ export const RenderNodeControl = ({
   const display = "none";
 
   return (
-    <motion.div
+    <div
       data-type="nodeControlBase"
-      {...animate}
       className={`${className} absolute z-30`}
       style={style}
       ref={ref}
@@ -223,7 +220,7 @@ export const RenderNodeControl = ({
       >
         {children}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

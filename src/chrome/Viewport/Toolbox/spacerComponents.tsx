@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbSpace } from "react-icons/tb";
 import { Spacer } from "../../../components/Spacer";
 import { RenderToolComponent, ToolboxItemDisplay } from "./lib";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useAtomValue } from "@zedux/react";
 import { ViewAtom } from "../../../Viewport/atoms";
 import { ViewSelectionAtom } from "../../Label";

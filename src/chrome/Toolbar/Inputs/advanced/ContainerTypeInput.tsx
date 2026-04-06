@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Element, useEditor } from "@craftjs/core";
 import { AddElement } from "../../../Viewport/Toolbox/lib";
 import { ToolbarItem } from "../../ToolbarItem";

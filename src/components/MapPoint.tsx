@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { getClonedState } from "../utils/cloneHelper";
 import React, { useEffect, useState } from "react";
@@ -13,18 +12,8 @@ export interface MapPointProps extends BaseSelectorProps {
   description?: string;
 }
 
-const defaultProps: MapPointProps = {
-  lat: 0,
-  lng: 0,
-  title: "",
-  description: "",
-};
-
-export const MapPoint = (props: MapPointProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const MapPoint = ({ lat = 0, lng = 0, title = "", description = "", ...rest }: MapPointProps) => {
+  let props: any = { lat, lng, title, description, ...rest };
 
   const {
     connectors: { connect, drag },

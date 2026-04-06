@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useRef, useState, useCallback } from "react";
 
 interface AutoHideScrollbarProps {
@@ -8,19 +7,19 @@ interface AutoHideScrollbarProps {
   id?: string;
 }
 
-export const AutoHideScrollbar: React.FC<AutoHideScrollbarProps> = ({
+export function AutoHideScrollbar({
   children,
   className = "",
   hideDelay = 1000,
   id,
-}) => {
+}: AutoHideScrollbarProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const [thumb, setThumb] = useState({ height: 0, top: 0 });
   const [viewportH, setViewportH] = useState(0);
   const [visible, setVisible] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const hideTimer = useRef<ReturnType<typeof setTimeout>>();
+  const hideTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const dragStart = useRef({ y: 0, scrollTop: 0 });
 
   const updateThumb = useCallback(() => {
@@ -129,6 +128,7 @@ export const AutoHideScrollbar: React.FC<AutoHideScrollbarProps> = ({
       ref={containerRef}
       id={id}
       data-custom-scroll
+      role="presentation"
       className={`${className}`}
       style={{ overflowY: "auto", overflowX: "hidden" }}
       onScroll={handleScroll}
@@ -161,6 +161,8 @@ export const AutoHideScrollbar: React.FC<AutoHideScrollbarProps> = ({
           >
             <div
               ref={thumbRef}
+              role="presentation"
+              aria-hidden="true"
               onMouseDown={handleThumbMouseDown}
               style={{
                 position: "absolute",
@@ -183,4 +185,4 @@ export const AutoHideScrollbar: React.FC<AutoHideScrollbarProps> = ({
       {children}
     </div>
   );
-};
+}

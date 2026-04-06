@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { UserComponent } from "@craftjs/core";
 import { Container } from "./Container";
 import { LazyUnifiedSettings } from "./LazyUnifiedSettings";

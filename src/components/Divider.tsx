@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -14,14 +13,8 @@ export interface DividerProps extends BaseSelectorProps {
   showName?: string;
 }
 
-const defaultProps: DividerProps = {
-};
-
-export const Divider = (props: DividerProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const Divider = (incomingProps: DividerProps) => {
+  let props: any = { ...incomingProps };
 
   const {
     connectors: { connect, drag },

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { TbX } from "react-icons/tb";
@@ -247,13 +246,15 @@ export const Dialog = ({
         >
           <div
             className={
-              "pointer-events-auto my-auto w-full overflow-hidden rounded-lg border border-border bg-background p-0 shadow-xl"
+              "pointer-events-auto my-auto w-full overflow-hidden ph-panel p-0"
             }
             style={{ maxHeight: style.maxHeight || height }}
           >
             {/* Draggable header (only when draggable is enabled) */}
             {draggable && (
               <div
+                role="presentation"
+                aria-hidden="true"
                 className="flex cursor-move items-center justify-between border-b border-border bg-accent px-3 py-2 text-accent-foreground"
                 onMouseDown={e => {
                   setHasBeenDragged(true);
@@ -282,7 +283,7 @@ export const Dialog = ({
                   <div className="shrink-0 border-b border-border bg-muted px-2 pb-1 pt-2">
                     <input
                       type="text"
-                      className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="input-dialog-sm"
                       placeholder="Search fonts..."
                       onKeyUp={e => search(e)}
                       autoFocus={true}
@@ -291,14 +292,14 @@ export const Dialog = ({
                     />
                   </div>
                 )}
-                <div className="scrollbar min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+                <div className="scrollbar-light min-h-0 flex-1 overflow-y-auto px-2 pb-2">
                   {customRenderer}
                 </div>
                 {isUpward && !draggable && (
                   <div className="shrink-0 border-t border-border bg-muted px-2 pb-2 pt-1">
                     <input
                       type="text"
-                      className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="input-dialog-sm"
                       placeholder="Search fonts..."
                       onKeyUp={e => search(e)}
                       autoFocus={true}
@@ -316,7 +317,7 @@ export const Dialog = ({
                   <div className="shrink-0 border-b border-border bg-muted px-2 pb-1 pt-2">
                     <input
                       type="text"
-                      className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="input-dialog-sm"
                       placeholder="Search fonts..."
                       onKeyUp={e => search(e)}
                       autoFocus={true}
@@ -326,7 +327,7 @@ export const Dialog = ({
                   </div>
                 )}
 
-                <div ref={refIe} className="scrollbar min-h-0 flex-1 overflow-y-auto px-2 py-1">
+                <div ref={refIe} className="scrollbar-light min-h-0 flex-1 overflow-y-auto px-2 py-1">
                   {!searchValue && (
                     <button
                       className={`flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-muted-foreground transition-colors hover:bg-muted ${selectedIndex === -1 ? "bg-primary text-primary-foreground" : ""}`}
@@ -371,7 +372,7 @@ export const Dialog = ({
                   <div className="shrink-0 border-t border-border bg-muted px-2 pb-2 pt-1">
                     <input
                       type="text"
-                      className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="input-dialog-sm"
                       placeholder="Search fonts..."
                       onKeyUp={e => search(e)}
                       autoFocus={true}

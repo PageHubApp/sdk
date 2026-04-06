@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useView } from "../store";
 import { useEditor, useNode } from "@craftjs/core";
 import { motion } from "framer-motion";

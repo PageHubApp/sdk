@@ -1,12 +1,14 @@
 /* =============================================================================
    SDK editor — HeadlessUI Listbox panels (ToolbarDropdown, VariablePopover)
    ListboxOptions carries pagehub-sdk-root + ph-select-content for portaled UI.
+   Custom menus: wrap option rows in .ph-select-item-host under .pagehub-sdk-root
+   so .ph-select-item matches without applying full .ph-select-content chrome.
    ============================================================================= */
 
 @reference "./styles.css";
 
 .pagehub-sdk-root.ph-select-content {
-  @apply z-[9999] min-w-[8rem] rounded-lg border border-border bg-background p-1 text-foreground shadow-lg;
+  @apply z-9999 min-w-32 rounded-lg border border-border bg-background p-1 text-foreground shadow-lg;
   font-size: 14px !important;
   line-height: 1.4 !important;
   outline: none !important;
@@ -23,14 +25,16 @@
 .pagehub-sdk-root.ph-select-content[data-side="bottom"] { transform-origin: top; }
 .pagehub-sdk-root.ph-select-content[data-side="top"]    { transform-origin: bottom; }
 
-.pagehub-sdk-root.ph-select-content .ph-select-item {
+/* Item rows: inside Listbox panel (.ph-select-content) or any list shell (.ph-select-item-host). */
+.pagehub-sdk-root.ph-select-content .ph-select-item,
+.pagehub-sdk-root .ph-select-item-host .ph-select-item {
   @apply flex w-full cursor-pointer select-none items-center gap-1 rounded-sm py-1.5 pr-2 pl-1.5 text-left outline-none transition-colors;
   font-size: 13px !important;
   @apply hover:bg-accent hover:text-accent-foreground;
   @apply focus:bg-accent focus:text-accent-foreground;
-  @apply data-[focus]:bg-accent data-[focus]:text-accent-foreground;
-  @apply data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
-  @apply data-[state=checked]:font-medium data-[selected]:font-medium;
+  @apply data-focus:bg-accent data-focus:text-accent-foreground;
+  @apply data-disabled:pointer-events-none data-disabled:opacity-50;
+  @apply data-[state=checked]:font-medium data-selected:font-medium;
 }
 
 .pagehub-sdk-root.ph-select-content .ph-select-scroll-indicator {

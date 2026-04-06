@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Tooltip } from "components/layout/Tooltip";
 import { useSetAtomState } from "../../utils/atoms";
 import { OnlineAtom } from "utils/lib";

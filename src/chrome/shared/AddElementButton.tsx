@@ -1,11 +1,10 @@
-// @ts-nocheck
 import { Element, useEditor, useNode } from "@craftjs/core";
 import { Container } from "../../components/Container";
-import { motion } from "framer-motion";
 import { TbPlus } from "react-icons/tb";
 import { useSetAtomState } from "../../utils/atoms";
 import { HeaderMenuAtom } from "utils/lib";
 import { useNodeTypeHelpers } from "../NodeControllers/hooks/useNodeType";
+import { usePanelUrl } from "../../utils/usePanelUrl";
 import { AddElement } from "../Viewport/Toolbox/lib";
 
 interface AddElementButtonProps {
@@ -18,6 +17,7 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
   const { id } = useNode();
   const { isPage, isSection } = useNodeTypeHelpers();
   const setHeaderMenu = useSetAtomState(HeaderMenuAtom);
+  const { open: openPanel } = usePanelUrl();
 
   const handleClick = async () => {
     if (isPage || isSection) {
@@ -73,7 +73,8 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
       }
     } else {
       // Open menu for other cases
-      setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components" }));
+      openPanel("components");
+      setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components", activeTab: "components" }));
     }
   };
 
@@ -84,14 +85,13 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
   };
 
   return (
-    <motion.button
-      whileTap={{ scale: 0.99 }}
+    <button
       className={`w-fit ${className}`}
       onClick={handleClick}
     >
       <span className="text-xs"><TbPlus /></span>
 
       {children || getButtonText()}
-    </motion.button>
+    </button>
   );
 };

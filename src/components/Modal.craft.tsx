@@ -26,7 +26,7 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
     props.modalPosition === "bottom" ? "items-end pb-16" :
     "items-center";
 
-  const backdropClass = `fixed inset-0 z-[9997] flex justify-center p-4 ${positionClass} ${props.backdropBlur ? "backdrop-blur-sm" : ""}`;
+  const backdropClass = `fixed inset-0 z-9997 flex justify-center p-4 ${positionClass} ${props.backdropBlur ? "backdrop-blur-sm" : ""}`;
 
   const contentClass = [
     staticClasses(props, ctx),

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { PresetGroupRenderer } from "../../Inputs/preset/PresetRenderer";
@@ -36,7 +35,7 @@ export const FormMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Preview the form, loading, and submitted states.">
         <div className="flex gap-1 rounded-lg bg-muted p-1">
           {VIEW_STATES.map(({ value, label, icon: Icon }) => (
             <button
@@ -58,7 +57,7 @@ export const FormMainTab = () => {
       </ToolbarSection>
     ),
     Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]}>
+      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply form layout presets.">
         <PresetGroupRenderer presets={selectorPresets.form} />
       </ToolbarSection>
     ),

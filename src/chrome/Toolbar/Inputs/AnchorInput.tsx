@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ToolbarItem } from "../ToolbarItem";
 import { ToolbarSection } from "../ToolbarSection";
 

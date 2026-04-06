@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Diagnostic, linter } from "@codemirror/lint";
 import { CodeEditor } from "../typography/CodeEditor";
 
@@ -72,7 +71,7 @@ export const HTMLCodeInput = ({
 }: HTMLCodeInputProps) => {
   return (
     <div className={`space-y-2 ${className}`}>
-      {label && <label className="block text-sm font-medium text-foreground">{label}</label>}
+      {label && <label className="toolbar-label block font-medium">{label}</label>}
       <CodeEditor
         value={value}
         onChange={onChange}

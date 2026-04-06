@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Tooltip } from "components/layout/Tooltip";
 import { TbBoxAlignBottom, TbBoxAlignLeft, TbBoxAlignRight, TbBoxAlignTop } from "react-icons/tb";
 import { ToolbarItem } from "../../ToolbarItem";

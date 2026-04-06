@@ -1,5 +1,3 @@
-// @ts-nocheck
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
@@ -155,13 +153,10 @@ export const SpacingOverlay = ({
   return ReactDOM.createPortal(
     <>
       {overlayData.map((overlay, i) => (
-        <motion.div
+        <div
           key={`${type}-overlay-${i}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
           style={{
+            animation: "node-control-in 0.15s ease-out both",
             position: "fixed",
             left: overlay.x,
             top: overlay.y,
@@ -176,10 +171,7 @@ export const SpacingOverlay = ({
             justifyContent: "center",
           }}
         >
-          <motion.span
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.15 }}
+          <span
             style={{
               fontSize: "11px",
               fontWeight: 600,
@@ -194,8 +186,8 @@ export const SpacingOverlay = ({
             }}
           >
             {overlay.label}
-          </motion.span>
-        </motion.div>
+          </span>
+        </div>
       ))}
     </>,
     container

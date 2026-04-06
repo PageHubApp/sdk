@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Layout components barrel — re-exports real components
  */

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * UnifiedSettings — single settings shell for ALL node types.
  *
@@ -193,7 +192,7 @@ export const UnifiedSettings = () => {
         <>
           {section("Colors",
             (!off("textColor") || !off("bgColor") || (nodeData.name === "FormElement" && !off("placeholderColor"))) ? (
-              <ToolbarSection title="Colors" icon={<TbPalette />} full={1}>
+              <ToolbarSection title="Colors" icon={<TbPalette />} full={1} help="Text and background colors for this element.">
                 {!off("textColor") && <ColorInput propKey="color" label="Text" prefix="text" inline />}
                 {!off("bgColor") && <ColorInput propKey="background" label="Background" prefix="bg" inline />}
                 {nodeData.name === "FormElement" && !off("placeholderColor") && (
@@ -217,7 +216,7 @@ export const UnifiedSettings = () => {
 
           {section("Decoration",
             (!off("radius") || !off("shadow") || !off("opacity") || !off("ringOutline")) ? (
-              <ToolbarSection title="Decoration" icon={<TbSparkles />}>
+              <ToolbarSection title="Decoration" icon={<TbSparkles />} help="Rounded corners, shadows, opacity, and ring outlines.">
                 {!off("radius") && <RadiusInput />}
                 {!off("shadow") && <ShadowInput />}
                 {!off("opacity") && <OpacityInput label="Opacity" propKey="opacity" />}
@@ -270,7 +269,7 @@ export const UnifiedSettings = () => {
           <DisplaySettingsInput showCursor={!off("cursor")} />
           {section("Import / Export",
             !off("importExport")
-              ? <ToolbarSection title="Import / Export" icon={<TbArrowsExchange />} defaultOpen={false}><ComponentImportExport /></ToolbarSection>
+              ? <ToolbarSection title="Import / Export" icon={<TbArrowsExchange />} defaultOpen={false} help="Copy this component as JSON or paste one in."><ComponentImportExport /></ToolbarSection>
               : renderNA("Import / Export")
           ).children}
           {toolbar?.styleExtra}

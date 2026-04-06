@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import {
   TbDeviceDesktop,
@@ -241,7 +240,10 @@ export const ToolbarLabel = ({
 
   const renderActiveNode = () => (
     <div
+      role="button"
+      tabIndex={0}
       onClick={handleToggle}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle(e as any); } }}
       onContextMenu={e => handleRemove(e)}
       className={`flex cursor-pointer items-center gap-0.5 rounded p-0.5 transition-colors ${
         isActiveView
@@ -314,7 +316,10 @@ export const ToolbarLabel = ({
           ) : hasSelection ? (
             // Only show empty-state device icons when user has explicitly toggled view selection
             <div
+              role="button"
+              tabIndex={0}
               onClick={handleToggle}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle(e as any); } }}
               className={`flex cursor-pointer items-center justify-center rounded p-0.5 transition-colors ${
                 isActiveView
                   ? "bg-primary/10 text-primary ring-1 ring-primary/20"

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Tailwind utilities — re-exports style data from ./tailwind-styles
  * and adds React/CraftJS-dependent helpers (applyAnimation, CSStoObj, etc.).

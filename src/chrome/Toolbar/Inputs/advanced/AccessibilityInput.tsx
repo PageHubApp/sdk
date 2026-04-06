@@ -1,10 +1,9 @@
-// @ts-nocheck
 import { TbAccessible } from "react-icons/tb";
 import { ToolbarItem, ToolbarSection } from "../../index";
 
 export const AccessibilityInput = () => {
   return (
-    <ToolbarSection title="ARIA" icon={<TbAccessible />}>
+    <ToolbarSection title="ARIA" icon={<TbAccessible />} help="Labels and roles for screen readers and assistive tools.">
       <ToolbarItem
         propKey="ariaLabel"
         propType="component"

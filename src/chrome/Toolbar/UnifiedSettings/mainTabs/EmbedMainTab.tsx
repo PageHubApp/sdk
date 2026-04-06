@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { EMBED_SERVICES, type EmbedService } from "../../../../components/Embed";
 import { ToolbarItem } from "../../ToolbarItem";
@@ -80,7 +79,7 @@ export const EmbedMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Embed" icon={SECTION_ICONS["Content"]}>
+      <ToolbarSection title="Embed" icon={SECTION_ICONS["Content"]} help="Pick a service and paste the URL or embed code.">
         <ToolbarItem
           propKey="service"
           propType="component"
@@ -156,7 +155,7 @@ export const EmbedMainTab = () => {
       </ToolbarSection>
     ),
     Properties: (
-      <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]}>
+      <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]} help="Title for accessibility and optional code override.">
         <ToolbarItem
           propKey="title"
           propType="component"

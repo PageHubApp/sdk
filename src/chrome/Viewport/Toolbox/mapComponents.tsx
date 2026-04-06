@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbMap, TbMapPin, TbMap2 } from "react-icons/tb";
 import { Map } from "../../../components/Map";
 import { RenderToolComponent, ToolboxItemDisplay } from "./lib";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { changeProp } from "../../Viewport/lib";
 import { atom, useAtomState } from "@zedux/react";
@@ -50,7 +49,7 @@ const Input = ({ options, setProp }) => {
       renderPopover={(item, index) => (
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted-foreground">Label</label>
+            <span className="text-xs text-muted-foreground">Label</span>
             <ToolbarItem
               propKey="options"
               propType="component"
@@ -63,7 +62,7 @@ const Input = ({ options, setProp }) => {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted-foreground">Value</label>
+            <span className="text-xs text-muted-foreground">Value</span>
             <ToolbarItem
               propKey="options"
               propType="component"

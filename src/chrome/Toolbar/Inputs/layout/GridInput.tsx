@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { ToolbarSection } from "../../index";
 import { ToolbarItem } from "../../index";

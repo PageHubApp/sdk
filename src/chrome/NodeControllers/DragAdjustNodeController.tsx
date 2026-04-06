@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
-import { AnimatePresence } from "framer-motion";
 import React from "react";
 import { useAtomValue } from "@zedux/react";
 import { twMerge } from "tailwind-merge";
@@ -193,9 +191,9 @@ export const DragAdjustNodeController = (props: {
     );
   }
 
-  // Portal mode - use AnimatePresence
+  // Portal mode
   return (
-    <AnimatePresence mode="wait">
+    <>
       {isActive && (
         <ControlComponent
           key={`${id}-drag-${position}`}
@@ -268,6 +266,6 @@ export const DragAdjustNodeController = (props: {
           />
         </ControlComponent>
       )}
-    </AnimatePresence>
+    </>
   );
 };

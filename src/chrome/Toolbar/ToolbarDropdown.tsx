@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { Children, isValidElement, useCallback, useMemo, useRef, useState } from "react";
 import { AutoHideScrollbar } from "../shared/layout/AutoHideScrollbar";

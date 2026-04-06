@@ -1,8 +1,7 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
-import { motion } from "framer-motion";
-import { Tooltip as ReactTooltip } from "react-tooltip";
+import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
 import React from "react";
+import { Tooltip as ReactTooltip } from "react-tooltip";
 import { useAtomValue } from "@zedux/react";
 import { ViewAtom } from "../Viewport/atoms";
 import { changeProp, getPropFinalValue } from "../Viewport/lib";
@@ -30,10 +29,7 @@ const Input = (__props, ref) => {
 
   if (["toggle", "checkbox"].includes(type)) {
     return (
-      <motion.label
-        className="relative flex cursor-pointer flex-col items-center"
-        whileTap={{ scale: 0.9 }}
-      >
+      <label className="relative flex cursor-pointer flex-col items-center transition-transform active:scale-[0.98]">
         {props.option && (
           <div className="mb-2 text-center text-xs font-medium text-foreground">
             {props.option || "Enable"}
@@ -50,7 +46,7 @@ const Input = (__props, ref) => {
           />
           <div className="h-4 w-8 rounded-full bg-muted text-muted-foreground after:absolute after:left-[2px] after:top-[2px] after:size-3 after:rounded-full after:border after:border-border after:bg-background after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-background peer-focus:ring-2 peer-focus:ring-ring"></div>
         </div>
-      </motion.label>
+      </label>
     );
   }
 
@@ -204,24 +200,25 @@ const Input = (__props, ref) => {
                   className="hidden"
                   aria-label={_.value || _.label}
                 />
-                <motion.label
+                <label
                   htmlFor={`radio-${propKey}-${key}`}
                   className={`block cursor-pointer rounded px-1 py-0.5 text-[11px] font-medium transition-colors hover:bg-muted hover:text-foreground ${
                     checked
                       ? "bg-primary font-semibold text-primary-foreground"
                       : "text-muted-foreground"
                   }`}
-                  whileTap={{ scale: 0.9 }}
+
                   data-tooltip-id={`radio-${propKey}-${key}-tip`}
                   data-tooltip-content={_.value || "None"}
                   data-tooltip-place="bottom"
                 >
                   {_.label}
-                </motion.label>
+                </label>
                 <ReactTooltip
                   id={`radio-${propKey}-${key}-tip`}
+                  variant="light"
                   classNameArrow="hidden"
-                  className="max-w-[220px] rounded-lg! border! !border-border !bg-primary px-2! py-1! text-xs! font-normal! !text-primary-foreground shadow-lg!"
+                  className={REACT_TOOLTIP_SURFACE_CLASS}
                 />
               </div>
             );
@@ -263,17 +260,16 @@ const Input = (__props, ref) => {
                 className="hidden"
                 aria-label={_.value}
               />
-              <motion.label
+              <label
                 htmlFor={`radio-${propKey}-${key}`}
-                className={`block cursor-pointer rounded-lg px-2 py-1 text-sm font-medium transition-colors ${
+                className={`block cursor-pointer rounded-lg px-2 py-1 text-sm font-medium transition-[color,transform] active:scale-[0.98] ${
                   checked
                     ? "bg-primary font-semibold text-primary-foreground"
                     : "bg-muted text-muted-foreground"
                 }`}
-                whileTap={{ scale: 0.9 }}
               >
                 {_.label}
-              </motion.label>
+              </label>
             </div>
           ))}
         </div>

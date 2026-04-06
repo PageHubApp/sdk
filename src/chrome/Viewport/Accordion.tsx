@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from "react";
 
 function AccordionMenu(props) {

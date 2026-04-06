@@ -1,7 +1,5 @@
-// @ts-nocheck
 import { atom } from "@zedux/react";
 import { useNode } from "@craftjs/core";
-import { motion } from "framer-motion";
 import React, { useRef } from "react";
 import { TbSettings } from "react-icons/tb";
 import { useSetAtomState } from "../../utils/atoms";
@@ -36,16 +34,16 @@ export function NodeDialog({ tooltip = "", button = <TbSettings />, children = n
   );
 }
 
-export const NodeToolWrapper = ({ children, className = "", animate = {}, col = false }) =>
+export const NodeToolWrapper = ({ children, className = "", col = false }: { children: React.ReactNode; className?: string; animate?: any; col?: boolean }) =>
   children ? (
-    <motion.div
-      className={`flex items-center justify-center ${
+    <div
+      className={`node-control flex items-center justify-center ${
         col ? "flex-col" : "flex-row"
-      } pointer-events-auto z-50 gap-2 rounded-lg border border-border bg-background px-2 py-1.5 shadow-sm ${className}`}
-      {...animate}
+      } pointer-events-auto z-50 gap-2 ${className}`}
+      onMouseDown={e => e.stopPropagation()}
     >
       {children}
-    </motion.div>
+    </div>
   ) : null;
 
 export default NodeDialog;

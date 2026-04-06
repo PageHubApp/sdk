@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Image } from "../../../components/Image";
 import { RenderToolComponent } from "./lib";
 

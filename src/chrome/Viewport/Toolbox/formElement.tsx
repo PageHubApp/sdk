@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbAt, TbChevronDown, TbInputSearch, TbTextCaption } from "react-icons/tb";
 import { FormElement } from "../../../components/FormElement";
 import { RenderToolComponent, ToolboxItemDisplay } from "./lib";
@@ -10,7 +9,7 @@ export const RenderFormElementComponent = ({ text, ...props }) => (
 // Base styles for all form elements — single className string
 const formElementBaseStyles = {
   className:
-    "w-full border border-(--input-border-width) border-solid border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) p-(--input-padding) placeholder:text-(--input-placeholder-color) focus:ring-(--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
+    "w-full border-solid border-(length:--input-border-width) border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) p-(--input-padding) placeholder:text-(--input-placeholder-color) focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
 };
 
 export const FormElementToolbox = {

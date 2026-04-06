@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
 import { TailwindStyles } from "utils/tailwind";
 import { removeClass } from "../../../../utils/tailwind/className";
@@ -69,6 +68,7 @@ export const FontInput = () => {
     <ToolbarSection
       title="Typography"
       icon={<TbTypography />}
+      help="Font family, size, weight, and text alignment."
       footer={
         <ItemAdvanceToggle propKey="font" title="More typography properties">
           <ToolbarSection full={1} collapsible={false}>
@@ -173,10 +173,10 @@ export const FontInput = () => {
 
           return (
             <div className="mb-3">
-              <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-foreground">
+              <span className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-foreground">
                 Presets
-              </label>
-              <div className="scrollbar max-h-[140px] overflow-auto">
+              </span>
+              <div className="scrollbar-light max-h-[140px] overflow-auto">
                 <div className="flex flex-col gap-1.5">
                   {typography.map((font: any, index: number) => {
                     const active = isActive(font);

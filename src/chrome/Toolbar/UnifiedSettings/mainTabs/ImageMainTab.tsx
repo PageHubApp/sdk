@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { MediaInput } from "../../Inputs/media/MediaInput";
 import { PresetGroupRenderer } from "../../Inputs/preset/PresetRenderer";
@@ -10,13 +9,13 @@ import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 export const ImageMainTab = () =>
   renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
-        <MediaInput propKey="videoId" typeKey="type" contentKey="content" title="Content" />
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Upload or link the image source.">
+        <MediaInput propKey="videoId" typeKey="type" contentKey="content" title="" collapsible={false} />
         <SettingsAiSlot />
       </ToolbarSection>
     ),
     Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]}>
+      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply image styles.">
         <PresetGroupRenderer presets={selectorPresets.image} />
       </ToolbarSection>
     ),

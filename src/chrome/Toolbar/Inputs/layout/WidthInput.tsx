@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { UniversalInput } from "../UniversalInput";
 
 export const WidthInput = ({

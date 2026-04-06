@@ -1,18 +1,14 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { addHandler, buildClonedTree, saveHandler } from "../../Viewport/lib";
-import { motion } from "framer-motion";
 import { useCallback } from "react";
 import { TbCopy } from "react-icons/tb";
 
 interface DuplicateNodeButtonProps {
   className?: string;
-  iconSize?: number;
 }
 
 export const DuplicateNodeButton = ({
-  className = "inline-flex items-center justify-center text-muted-foreground hover:text-accent-foreground hover:bg-accent p-1 rounded-lg transition-colors",
-  iconSize = 14,
+  className = "tool-button",
 }: DuplicateNodeButtonProps) => {
   const { id } = useNode();
 
@@ -58,8 +54,8 @@ export const DuplicateNodeButton = ({
   };
 
   return (
-    <motion.div role="button" tabIndex={0} className={className} onClick={handleDuplicate} whileTap={{ scale: 0.9 }}>
-      <TbCopy size={14} />
-    </motion.div>
+    <button type="button" className={className} onClick={handleDuplicate}>
+      <TbCopy />
+    </button>
   );
 };

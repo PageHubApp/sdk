@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbVideo } from "react-icons/tb";
 import { Video } from "../../../components/Video";
 import { RenderToolComponent, ToolboxItemDisplay } from "./lib";

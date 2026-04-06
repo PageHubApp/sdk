@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { Element, ROOT_NODE, useEditor, useNode } from "@craftjs/core";
-import { motion } from "framer-motion";
 import { useRef, useState } from "react";
 import { TbLayoutGridAdd } from "react-icons/tb";
 import { useSetAtomState } from "../../utils/atoms";
@@ -8,6 +6,7 @@ import { ClippyOpenAtom, SectionPickerDialogAtom } from "utils/atoms";
 import { HeaderMenuAtom } from "utils/lib";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { useSDK } from "../../context";
+import { usePanelUrl } from "../../utils/usePanelUrl";
 import { AddElement } from "../Viewport/Toolbox/lib";
 import { NodeType, useNodeType } from "./hooks/useNodeType";
 
@@ -29,6 +28,7 @@ export const AddSectionNodeController = (props: { position; align }) => {
 
   const setSectionPickerDialog = useSetAtomState(SectionPickerDialogAtom);
   const setHeaderMenu = useSetAtomState(HeaderMenuAtom);
+  const { open: openPanel } = usePanelUrl();
 
   const { parent } = useNode(node => ({
     parent: node.data.parent,
@@ -88,11 +88,13 @@ export const AddSectionNodeController = (props: { position; align }) => {
       position: position,
       parent: parent,
     });
-    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "sections" }));
+    openPanel("blocks");
+    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "sections", activeTab: "sections" }));
   };
 
   const handleAddComponent = () => {
-    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components" }));
+    openPanel("components");
+    setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "components", activeTab: "components" }));
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -110,25 +112,20 @@ export const AddSectionNodeController = (props: { position; align }) => {
 
   return (
     <div
+      role="presentation"
+      aria-hidden="true"
       className={`absolute -bottom-4 left-1/2 flex h-0 w-fit -translate-x-1/2 items-center justify-center gap-2 ${isControllerHovered ? "opacity-100" : "opacity-0"} transition-opacity duration-300 z-9999`}
       onMouseEnter={() => setIsControllerHovered(true)}
       onMouseLeave={() => setIsControllerHovered(false)}
     >
-      <motion.button
+      <button
         ref={ref}
-        className="btn-primary btn-sm z-99999 font-bold capitalize"
-        key="add-button-motion"
-        whileTap={{ scale: 0.95 }}
-        style={{
-          willChange: "transform",
-          backfaceVisibility: "hidden",
-          WebkitFontSmoothing: "antialiased",
-        }}
+        className="btn-primary btn-sm z-99999 font-bold capitalize active:scale-95 transition-transform"
         onClick={handleClick}
       >
         <TbLayoutGridAdd />
         {type && <> Add {type}</>}
-      </motion.button>
+      </button>
 
       {aiEnabled &&
         renderNodeAi &&

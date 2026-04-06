@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { GapDragControl } from "./NodeControllers/GapDragControl";
@@ -6,7 +5,7 @@ import { ProximityHover } from "./NodeControllers/ProximityHover";
 import { RenderNodeDataStates } from "./RenderNodeDataStates";
 import { InlineToolsRenderer } from "./InlineToolsRenderer";
 
-class NodeErrorBoundary extends React.Component {
+class NodeErrorBoundary extends React.Component<{ children?: React.ReactNode }> {
   state = { hasError: false };
 
   static getDerivedStateFromError() {

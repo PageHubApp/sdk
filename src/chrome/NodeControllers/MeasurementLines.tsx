@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { useEditor } from "@craftjs/core";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
@@ -320,12 +318,9 @@ export const MeasurementLines = () => {
   return ReactDOM.createPortal(
     <>
       {measurements.map((measurement, i) => (
-        <motion.g
+        <g
           key={`measurement-${i}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          style={{ animation: "node-control-in 0.15s ease-out both" }}
         >
           {/* Main line */}
           <line
@@ -391,10 +386,7 @@ export const MeasurementLines = () => {
             height="20"
             style={{ pointerEvents: "none" }}
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.05, duration: 0.15 }}
+            <div
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -419,9 +411,9 @@ export const MeasurementLines = () => {
               >
                 {measurement.distance}px
               </span>
-            </motion.div>
+            </div>
           </foreignObject>
-        </motion.g>
+        </g>
       ))}
     </>,
     svg

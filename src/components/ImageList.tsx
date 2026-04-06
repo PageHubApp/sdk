@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { TbChevronLeft, TbChevronRight, TbPhoto } from "react-icons/tb";
@@ -28,27 +27,8 @@ export interface ImageListProps extends BaseSelectorProps {
   showDots: boolean | string;
 }
 
-const defaultProps: ImageListProps = {
-  mode: "flex",
-  itemsPerView: 3,
-  alignItems: "items-center",
-  justifyContent: "justify-start",
-  gap: "gap-2",
-  autoScroll: false,
-  autoScrollInterval: 3000,
-  infiniteSpeed: 30,
-  infiniteDirection: "left",
-  animationEnabled: true,
-  previewInEditor: false,
-  showNavigation: true,
-  showDots: true,
-};
-
-export const ImageList: UserComponent<ImageListProps> = (props: ImageListProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageListProps) => {
+  let props: any = { mode: "flex", itemsPerView: 3, alignItems: "items-center", justifyContent: "justify-start", gap: "gap-2", autoScroll: false, autoScrollInterval: 3000, infiniteSpeed: 30, infiniteDirection: "left", animationEnabled: true, previewInEditor: false, showNavigation: true, showDots: true, ...incomingProps };
 
   const {
     connectors: { connect, drag },

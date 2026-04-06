@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @pagehub/sdk — Editor component (React)
  *
@@ -338,8 +337,10 @@ function PageHubEditorInner({
           indicator={{
             success: "currentColor",
             error: "rgb(153 27 27)",
-            transition: "currentColor",
+            transition: "0.15s ease",
             thickness: 4,
+            sectionThickness: 40,
+            sectionParentTypes: ["page", "header", "footer"],
             className: "drop-zone-active",
           }}
         >

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Lazy InlineToolsRenderer — renders nothing on viewer pages,
  * dynamically loads the real implementation on editor pages.

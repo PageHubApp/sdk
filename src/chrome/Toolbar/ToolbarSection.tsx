@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
 import { Tooltip } from "components/layout/Tooltip";
 import { useEffect, useState } from "react";
@@ -29,8 +28,6 @@ export const ToolbarSection = ({
   accordionPassive = false,
   disabled = false,
 }: any) => {
-  if (title === "Presets") return null;
-
   const accordionCtx = useAccordionContext();
   const managed = accordionCtx && collapsible && title && !accordionPassive;
 
@@ -42,6 +39,8 @@ export const ToolbarSection = ({
       return () => accordionCtx.unregister(title);
     }
   }, [managed, title]);
+
+  if (title === "Presets") return null;
 
   const isOpen = managed ? accordionCtx.getIsOpen(title) : localIsOpen;
 
@@ -59,20 +58,16 @@ export const ToolbarSection = ({
     }
   };
 
-  // Different styles for nested sections
-  const helpBorder = help && !nested && collapsible ? "border-l-2 border-l-primary/30" : "";
-  const containerClasses = nested
-    ? `w-full`
-    : `w-full ${helpBorder}`;
+  const containerClasses = `w-full`;
 
   const titleClasses = nested
-    ? `flex w-full items-center justify-between gap-1 ${collapsible ? "cursor-pointer border-t border-border/30 px-2 py-1.5" : "pb-2 pt-1"} text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground ${className}`
-    : `flex w-full items-center justify-between gap-2 ${collapsible ? "cursor-pointer border-t border-border bg-sidebar px-3 py-2" : "pb-2 pt-1"} text-sm font-bold text-sidebar-foreground transition-colors ${disabled ? "opacity-40" : ""} ${className}`;
+    ? `flex w-full items-center justify-between gap-1 ${collapsible ? "cursor-pointer border-b border-border/30 px-2 py-1.5" : "pb-2 pt-1"} text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground ${className}`
+    : `flex w-full items-center justify-between gap-2 ${collapsible ? "cursor-pointer border-b border-border bg-sidebar px-3 py-2" : "pb-2 pt-1"} text-sm font-bold text-sidebar-foreground transition-colors ${className}`;
 
   // When scrollable, we remove padding from body and add it inside the scrollbar wrapper
   const bodyClasses = nested
-    ? `grid items-end gap-2 ${collapsible ? `${scrollable ? "" : "px-2 pb-2"}` : ""} ${bodyClassName}`
-    : `grid items-end gap-3 ${collapsible ? `bg-popover text-popover-foreground ${scrollable ? "" : "p-3 pt-2"}` : ""} ${bodyClassName}`;
+    ? `grid items-end gap-2 ${collapsible ? `border-b border-border/30 ${scrollable ? "" : "px-2 pb-2"}` : ""} ${bodyClassName}`
+    : `grid items-end gap-3 ${collapsible ? `border-b border-border bg-popover text-popover-foreground ${scrollable ? "" : "p-3 pt-2"}` : ""} ${bodyClassName}`;
 
   // Inner padding classes for when scrollable is enabled
   const scrollableInnerClasses = nested ? "p-2" : "p-3";
@@ -81,8 +76,8 @@ export const ToolbarSection = ({
     <div className={containerClasses}>
       {title && (() => {
         const btn = (
-          <div id={title} role="button" tabIndex={0} className={titleClasses} onClick={handleClick} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(e as any); } }} aria-label={title}>
-            <div className="flex items-center gap-1.5">{icon && <span className="text-muted-foreground opacity-70">{icon}</span>}{title}</div>
+          <div id={title} role="button" tabIndex={0} className={titleClasses} onClick={handleClick} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(e as any); } }} aria-label={title} aria-expanded={isOpen}>
+            <div className={`flex items-center gap-1.5 ${disabled ? "opacity-40" : ""}`}>{icon && <span className="text-muted-foreground opacity-70">{icon}</span>}{title}</div>
 
             {header && <div className="flex flex-1 items-center justify-end">{header}</div>}
 
@@ -97,7 +92,7 @@ export const ToolbarSection = ({
           </div>
         );
         return help ? (
-          <Tooltip content={help} placement="left" className="text-xxs">
+          <Tooltip content={help} placement="left" className="text-xxs" delay={750} full>
             {btn}
           </Tooltip>
         ) : btn;

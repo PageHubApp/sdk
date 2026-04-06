@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbCheck, TbPhoto } from "react-icons/tb";
@@ -45,17 +44,8 @@ export interface ImageProps extends BaseSelectorProps {
   title?: string;
 }
 
-const defaultProps: ImageProps = {
-  type: "cdn",
-  loading: "lazy",
-  fetchPriority: "low",
-};
-
-export const Image = (props: ImageProps) => {
-  props = {
-    ...defaultProps,
-    ...props,
-  };
+export const Image = (incomingProps: ImageProps) => {
+  let props: any = { type: "cdn", loading: "lazy", fetchPriority: "low", ...incomingProps };
 
   const {
     connectors: { connect, drag },
@@ -64,7 +54,7 @@ export const Image = (props: ImageProps) => {
   const { query, enabled } = useEditor(state => getClonedState(props, state));
 
 
-  const { videoId, content, type } = props;
+  const { videoId, content } = props;
 
   /** Craft / AI sometimes stores non-strings; guard before string methods. */
   const contentStr =
@@ -152,7 +142,7 @@ export const Image = (props: ImageProps) => {
   };
 
   // Check if media is SVG type (either from props.type or media library)
-  const isSvg = type === "svg" || mediaObject?.type === "svg";
+  const isSvg = props.type === "svg" || mediaObject?.type === "svg";
 
   if (isSvg) {
     // Get SVG content from props or media library
@@ -191,7 +181,7 @@ export const Image = (props: ImageProps) => {
       }
     } else {
       if (
-        type === "cdn" &&
+        props.type === "cdn" &&
         contentStr &&
         !contentStr.startsWith("http") &&
         !contentStr.startsWith("/") &&

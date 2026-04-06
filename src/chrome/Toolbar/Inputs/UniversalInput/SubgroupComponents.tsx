@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 
@@ -16,7 +15,7 @@ interface SubgroupPopoutProps {
 }
 
 // Popout component that renders outside the dropdown
-export const SubgroupPopout: React.FC<SubgroupPopoutProps> = ({
+export function SubgroupPopout({
   isVisible,
   anchorElement,
   subgroupName,
@@ -27,7 +26,7 @@ export const SubgroupPopout: React.FC<SubgroupPopoutProps> = ({
   onMouseEnter,
   onMouseLeave,
   propTag,
-}) => {
+}: SubgroupPopoutProps) {
   if (!isVisible || !anchorElement) return null;
 
   // Helper to get display label (strip prefix)
@@ -60,9 +59,10 @@ export const SubgroupPopout: React.FC<SubgroupPopoutProps> = ({
   return ReactDOM.createPortal(
     <>
       {/* Invisible hover bridge */}
-      <div style={bridgeStyle} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} />
+      <div role="presentation" aria-hidden="true" style={bridgeStyle} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} />
       {/* Main popout */}
       <div
+        role="presentation"
         style={style}
         className="min-w-[200px] max-w-[350px] rounded-md border border-border bg-popover p-0.5 shadow-xl"
         onMouseEnter={onMouseEnter}
@@ -83,7 +83,7 @@ export const SubgroupPopout: React.FC<SubgroupPopoutProps> = ({
     </>,
     document.querySelector(".pagehub-sdk-root") || document.body
   );
-};
+}
 
 interface SubgroupItemProps {
   subgroupName: string;
@@ -95,14 +95,14 @@ interface SubgroupItemProps {
 }
 
 // Subgroup item component with hover state management
-export const SubgroupItem: React.FC<SubgroupItemProps> = ({
+export function SubgroupItem({
   subgroupName,
   options,
   showHints,
   hintType,
   onSelect,
   propTag,
-}) => {
+}: SubgroupItemProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -146,6 +146,7 @@ export const SubgroupItem: React.FC<SubgroupItemProps> = ({
     <div className="relative">
       <div
         ref={setAnchorElement}
+        role="presentation"
         className="w-full cursor-pointer rounded px-2 py-1 text-left text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -166,4 +167,4 @@ export const SubgroupItem: React.FC<SubgroupItemProps> = ({
       />
     </div>
   );
-};
+}

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { FontFamilyAltInput } from "./FontFamilyAltInput";
 
 export const FontFamilyInput = () => (

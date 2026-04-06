@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { changeProp } from "../../../Viewport/lib";
 import { ViewAtom } from "../../../Viewport/atoms";

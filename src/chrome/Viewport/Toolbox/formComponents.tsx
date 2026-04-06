@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbForms, TbMail } from "react-icons/tb";
 import { Element } from "@craftjs/core";
 import { Form } from "../../../components/Form";
@@ -10,7 +9,7 @@ import { RenderToolComponent, ToolboxItemDisplay } from "./lib";
 // Shared input styles — single className string
 const inputBaseStyles = {
   className:
-    "w-full border border-(--input-border-width) border-solid border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) p-(--input-padding) placeholder:text-(--input-placeholder-color) focus:ring-(--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
+    "w-full border-solid border-(length:--input-border-width) border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) p-(--input-padding) placeholder:text-(--input-placeholder-color) focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
 };
 
 const submitButtonProps = {
@@ -82,9 +81,10 @@ export const RenderFormComponent = ({ text, formType, ...props }) => (
     element={Form}
     formType={formType}
     display={<ToolboxItemDisplay icon={formType === "subscribe" ? TbMail : TbForms} label={text} />}
-    children={formType === "contact" ? buildContactChildren() : buildSubscribeChildren()}
     {...props}
-  />
+  >
+    {formType === "contact" ? buildContactChildren() : buildSubscribeChildren()}
+  </RenderToolComponent>
 );
 
 export const FormToolbox = {

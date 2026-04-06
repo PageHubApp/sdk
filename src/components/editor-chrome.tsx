@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @pagehub/sdk — Real editor chrome exports
  *

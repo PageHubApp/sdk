@@ -1,6 +1,6 @@
-// @ts-nocheck
 import React, { ReactNode, useEffect, useRef } from "react";
 import { TbX } from "react-icons/tb";
+import { useFocusTrap } from "../../../utils/hooks/useAccessibility";
 
 interface LeftSidebarDialogProps {
   isOpen: boolean;
@@ -28,7 +28,7 @@ interface LeftSidebarDialogProps {
  * @param position - Position type: "fixed" (default, left sidebar) or "absolute" (full width under toolbar)
  * @param top - Top position (default: 0 for fixed, 40px for absolute)
  */
-export const LeftSidebarDialog: React.FC<LeftSidebarDialogProps> = ({
+export function LeftSidebarDialog({
   isOpen,
   onClose,
   title,
@@ -38,8 +38,9 @@ export const LeftSidebarDialog: React.FC<LeftSidebarDialogProps> = ({
   width,
   position = "fixed",
   top,
-}) => {
+}: LeftSidebarDialogProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const focusTrapRef = useFocusTrap(isOpen);
 
   // Set defaults based on position
   const finalWidth = width || (position === "absolute" ? "100%" : "360px");
@@ -86,6 +87,10 @@ export const LeftSidebarDialog: React.FC<LeftSidebarDialogProps> = ({
 
   return (
     <div
+      ref={focusTrapRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="left-sidebar-dialog-title"
       className={`${position} left-0 z-9999 flex flex-col bg-background text-foreground`}
       style={{
         width: finalWidth,
@@ -103,7 +108,7 @@ export const LeftSidebarDialog: React.FC<LeftSidebarDialogProps> = ({
         <div className="flex items-center justify-between border-b border-border bg-accent p-3 text-accent-foreground">
           <div className="flex items-center gap-2">
             {icon && <span className="text-xl">{icon}</span>}
-            <h2 className="text-lg font-bold">{title}</h2>
+            <h2 id="left-sidebar-dialog-title" className="text-lg font-bold">{title}</h2>
           </div>
           <div className="flex items-center gap-1">
             {headerRight}
@@ -122,6 +127,6 @@ export const LeftSidebarDialog: React.FC<LeftSidebarDialogProps> = ({
       </div>
     </div>
   );
-};
+}
 
 export default LeftSidebarDialog;

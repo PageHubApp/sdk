@@ -1,5 +1,3 @@
-// @ts-nocheck
-import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useClampToViewport } from "./hooks/useClampToViewport";
 
@@ -227,9 +225,8 @@ export const RenderNodeControlInline = ({
   }
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      {...animate}
       className={`${classes.join(" ")} ${className}`}
       data-node-control="true"
       style={{
@@ -254,7 +251,7 @@ export const RenderNodeControlInline = ({
       >
         {children}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

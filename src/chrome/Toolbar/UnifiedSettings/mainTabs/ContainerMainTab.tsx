@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode } from "@craftjs/core";
 import { TbSection } from "react-icons/tb";
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
@@ -36,7 +35,7 @@ export const HeaderFooterToggles = () => {
   if (!showHeaderOption && !showFooterOption) return null;
 
   return (
-    <ToolbarSection title="Container Role" icon={<TbSection />}>
+    <ToolbarSection title="Container Role" icon={<TbSection />} help="Mark this as the site header or footer.">
       {showHeaderOption && (
         <ToolbarItem
           propKey="type"
@@ -83,7 +82,7 @@ export const ContainerMainTab = () => {
   });
 
   const contentSlot = props?.type === "imageContainer" ? (
-    <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+    <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Background image and overlay for this container.">
       <SettingsAiSlot />
       <BackgroundSettingsInput />
       <ToolbarSection title="Background Image Presets" subtitle={true}>
@@ -112,7 +111,7 @@ export const ContainerMainTab = () => {
   return renderComponentSlots({
     Content: contentSlot,
     Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]}>
+      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply layout and spacing presets.">
         <PresetRenderer
           preset={selectorPresets.container.layouts}
           inputWidth="w-2/3"
@@ -134,7 +133,7 @@ export const ContainerMainTab = () => {
       </ToolbarSection>
     ),
     Type: (
-      <ToolbarSection title="Type" icon={SECTION_ICONS["Type"]}>
+      <ToolbarSection title="Type" icon={SECTION_ICONS["Type"]} help="HTML tag and container role (section, header, footer, etc).">
         <ContainerTypeInput hasHeader={hasHeader} hasFooter={hasFooter} />
       </ToolbarSection>
     ),
@@ -142,7 +141,7 @@ export const ContainerMainTab = () => {
 };
 
 export const ContainerMainTabAdvanced = () => (
-  <ToolbarSection title="Anchor" icon={SECTION_ICONS["Anchor"]}>
+  <ToolbarSection title="Anchor" icon={SECTION_ICONS["Anchor"]} help="ID for linking directly to this section with #tag.">
     <ToolbarItem
       propKey="anchor"
       propType="component"

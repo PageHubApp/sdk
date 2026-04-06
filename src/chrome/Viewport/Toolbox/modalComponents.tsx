@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Element } from "@craftjs/core";
 import { TbAppWindow } from "react-icons/tb";
 import { Button } from "../../../components/Button";

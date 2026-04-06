@@ -1,7 +1,7 @@
-// @ts-nocheck
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { TbAlertTriangle, TbCheck } from "react-icons/tb";
+import { useFocusTrap, useAnnounce } from "../../../utils/hooks/useAccessibility";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -26,6 +26,18 @@ export const ConfirmDialog = ({
   variant = "danger",
   icon,
 }: ConfirmDialogProps) => {
+  const focusTrapRef = useFocusTrap(isOpen);
+  const announce = useAnnounce();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const getVariantStyles = () => {
@@ -89,30 +101,22 @@ export const ConfirmDialog = ({
   const handleConfirm = () => {
     onConfirm();
     onClose();
+    announce(`${title} confirmed`, "assertive");
   };
 
   return ReactDOM.createPortal(
-    <AnimatePresence>
-      {/* Backdrop */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-9997 flex items-center justify-center bg-background/75 p-4 backdrop-blur-sm"
-        onClick={onClose}
+    <div
+      className="pagehub-sdk-root ph-modal-backdrop ph-modal-backdrop--center z-9997"
+      onClick={onClose}
+    >
+      <div
+        ref={focusTrapRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-dialog-title"
+        className="pagehub-sdk-root ph-modal-surface w-full max-w-md overflow-hidden"
+        onClick={e => e.stopPropagation()}
       >
-        {/* Dialog */}
-        <motion.div
-          role="dialog"
-          aria-modal="true"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.2 }}
-          className="w-full max-w-md border border-border bg-background shadow-xl"
-          style={{ borderRadius: "12px", overflow: "hidden" }}
-          onClick={e => e.stopPropagation()}
-        >
           <div className="p-6">
             {/* Icon and Title */}
             <div className="mb-4 flex items-start gap-4">
@@ -120,7 +124,7 @@ export const ConfirmDialog = ({
                 {displayIcon}
               </div>
               <div className="flex-1">
-                <h3 className="mb-2 text-lg font-semibold text-foreground">{title}</h3>
+                <h3 id="confirm-dialog-title" className="mb-2 text-lg font-semibold text-foreground">{title}</h3>
                 <p className="text-sm text-muted-foreground">{message}</p>
               </div>
             </div>
@@ -141,9 +145,8 @@ export const ConfirmDialog = ({
               </button>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>,
+      </div>
+    </div>,
     document.querySelector(".pagehub-sdk-root") || document.body
   );
 };

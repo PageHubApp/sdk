@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { IconInput } from "../../Inputs/media/IconInput";
 import LinkSettingsInput from "../../Inputs/preset/LinkSettingsInput";
@@ -60,7 +59,7 @@ export const NavMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Nav links and their URLs. Switch views to edit mobile.">
         <div className="flex gap-1 rounded-lg bg-muted p-1">
           {NAV_VIEW_STATES.map(({ value, label, icon: Icon }) => (
             <button
@@ -139,7 +138,7 @@ export const NavMainTab = () => {
       </ToolbarSection>
     ),
     Type: (
-      <ToolbarSection title="Mobile Menu" icon={SECTION_ICONS["Type"]}>
+      <ToolbarSection title="Mobile Menu" icon={SECTION_ICONS["Type"]} help="How the nav behaves on small screens.">
         <ToolbarItem
           propKey="menu.enabled"
           propType="component"

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { dropdownPositionToStyle, useDropdownPosition } from "../../hooks/useDropdownPosition";
@@ -90,7 +89,7 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
             <div
               data-type-selector-dropdown
               style={dropdownPositionToStyle(position)}
-              className="scrollbar pointer-events-auto grid min-w-32 grid-cols-3 gap-1 overflow-hidden rounded-lg border border-border bg-background p-0.5 shadow-lg"
+              className="pagehub-sdk-root scrollbar-light ph-panel-soft pointer-events-auto grid min-w-32 grid-cols-3 gap-1 overflow-hidden p-0.5"
             >
               {types.map(type => (
                 <button

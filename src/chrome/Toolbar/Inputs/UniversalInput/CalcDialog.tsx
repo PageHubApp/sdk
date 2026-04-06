@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { dropdownPositionToStyle, useDropdownPosition } from "../../hooks/useDropdownPosition";
@@ -10,7 +9,7 @@ interface CalcDialogProps {
   anchorEl: HTMLElement | null;
 }
 
-export const CalcDialog: React.FC<CalcDialogProps> = ({ value, onSave, onClose, anchorEl }) => {
+export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps) {
   const [inputValue, setInputValue] = useState(value);
   const [activeFunction, setActiveFunction] = useState<string>("calc");
   const anchorRef = useRef<HTMLElement | null>(anchorEl);
@@ -65,12 +64,12 @@ export const CalcDialog: React.FC<CalcDialogProps> = ({ value, onSave, onClose, 
 
   return ReactDOM.createPortal(
     <>
-      <div className="pointer-events-auto fixed inset-0 z-9999" onClick={onClose} />
-      <div style={style} className="pointer-events-auto z-10000" data-calc-dialog>
-        <div className="overflow-hidden rounded-lg border border-border bg-background shadow-xl">
+      <div role="presentation" aria-hidden="true" className="pointer-events-auto fixed inset-0 z-9999" onClick={onClose} />
+      <div style={style} className="pagehub-sdk-root pointer-events-auto z-10000" data-calc-dialog>
+        <div className="ph-panel overflow-hidden">
           {/* Header */}
           <div className="border-b border-border bg-muted px-3 py-2">
-            <div className="text-sm font-semibold text-foreground">CSS Functions</div>
+            <div className="toolbar-label font-semibold">CSS Functions</div>
             <div className="text-xs text-muted-foreground">Use calc, clamp, min, max, or var</div>
           </div>
 
@@ -109,14 +108,16 @@ export const CalcDialog: React.FC<CalcDialogProps> = ({ value, onSave, onClose, 
           {/* Actions */}
           <div className="flex gap-2 border-t border-border bg-muted/50 p-2">
             <button
+              type="button"
               onClick={() => onSave(inputValue)}
-              className="flex-1 rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              className="btn btn-primary flex-1"
             >
               Apply
             </button>
             <button
+              type="button"
               onClick={onClose}
-              className="rounded bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
+              className="btn btn-secondary"
             >
               Cancel
             </button>
@@ -126,4 +127,4 @@ export const CalcDialog: React.FC<CalcDialogProps> = ({ value, onSave, onClose, 
     </>,
     document.querySelector(".pagehub-sdk-root") || document.body
   );
-};
+}

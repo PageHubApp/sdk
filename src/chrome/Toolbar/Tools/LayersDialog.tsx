@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import { TbLayoutGrid } from "react-icons/tb";
 import { Layers } from "./Layers";
@@ -9,7 +8,7 @@ interface LayersDialogProps {
   onClose: () => void;
 }
 
-export const LayersDialog: React.FC<LayersDialogProps> = ({ isOpen, onClose }) => {
+export function LayersDialog({ isOpen, onClose }: LayersDialogProps) {
   return (
     <MoveableDialog
       isOpen={isOpen}
@@ -28,6 +27,6 @@ export const LayersDialog: React.FC<LayersDialogProps> = ({ isOpen, onClose }) =
       </div>
     </MoveableDialog>
   );
-};
+}
 
 export default LayersDialog;

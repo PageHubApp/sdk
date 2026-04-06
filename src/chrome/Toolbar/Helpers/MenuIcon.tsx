@@ -1,14 +1,12 @@
-// @ts-nocheck
-import { motion } from "framer-motion";
 
 const MenuItem = ({ tooltip, onClick, children, animate = false }) => (
-  <motion.button
-    whileTap={animate ? { scale: 0.9 } : {}}
-    className="cursor-pointer rounded-lg px-1 py-0.5 text-xs hover:bg-primary hover:text-primary-foreground"
+  <button
+    type="button"
+    className="cursor-pointer rounded-lg px-1 py-0.5 text-xs hover:bg-primary hover:text-primary-foreground active:scale-90 transition-transform"
     onClick={onClick}
   >
     {children}
-  </motion.button>
+  </button>
 );
 
 export default MenuItem;

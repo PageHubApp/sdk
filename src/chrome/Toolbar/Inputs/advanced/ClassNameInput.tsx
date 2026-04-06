@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import { TbCode } from "react-icons/tb";
 import { ClassItem } from "../../Items/ClassItem";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { IconInput } from "../../Inputs/media/IconInput";
 import LinkSettingsInput from "../../Inputs/preset/LinkSettingsInput";
@@ -42,7 +41,7 @@ export const ButtonListMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Add, remove, and reorder buttons in this group.">
         <ListEditor
           items={childButtons || []}
           activeIndex={activeIndex}

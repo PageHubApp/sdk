@@ -1,7 +1,5 @@
-// @ts-nocheck
 import { SpacingOverlay } from "../../NodeControllers/SpacingOverlay";
 import { Tooltip } from "components/layout/Tooltip";
-import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 // Tailwind spacing scale in pixels (1 unit = 4px)
@@ -184,31 +182,7 @@ function DragAdjust({
         position={spacingPosition}
         isActive={hovering || dragging}
       />
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{
-          opacity: 1,
-          y: 0,
-          transition: {
-            delay: 0.5,
-            duration: 0.5,
-            type: "spring",
-            stiffness: 200,
-            damping: 20,
-            mass: 0.5,
-          },
-        }}
-        exit={{
-          opacity: 0,
-          transition: {
-            delay: 0.2,
-            duration: 0.3,
-            type: "spring",
-            stiffness: 200,
-            damping: 20,
-            mass: 0.5,
-          },
-        }}
+      <button
         className={`drag-control group ${className} ${
           isPadding
             ? direction === "vertical"
@@ -219,6 +193,7 @@ function DragAdjust({
               : "h-5 w-1"
         } pointer-events-auto`}
         style={{
+          animation: "node-control-in 0.5s ease-out 0.5s both",
           willChange: "transform",
           backfaceVisibility: "hidden",
           WebkitFontSmoothing: "antialiased",

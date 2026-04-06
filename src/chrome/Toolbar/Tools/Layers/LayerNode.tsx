@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NodeId, useEditor } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { LayerHeader } from "./LayerHeader";
@@ -9,7 +8,7 @@ interface LayerNodeProps {
   depth: number;
 }
 
-export const LayerNode: React.FC<LayerNodeProps> = ({ nodeId, depth }) => {
+export function LayerNode({ nodeId, depth }: LayerNodeProps) {
   const { state, expandToNode } = useLayerManager();
   const [isRegistered, setIsRegistered] = useState(false);
 
@@ -88,4 +87,4 @@ export const LayerNode: React.FC<LayerNodeProps> = ({ nodeId, depth }) => {
       )}
     </div>
   );
-};
+}

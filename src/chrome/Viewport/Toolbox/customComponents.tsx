@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Toolbox rendering for custom components registered via defineComponent().
  *
@@ -50,9 +49,17 @@ function resolveIcon(icon: any): React.ComponentType<any> {
   // Already a component function (e.g. TbStar)
   if (typeof icon === "function") return icon;
   // React element — wrap in a component
-  if (React.isValidElement(icon)) return () => icon;
+  if (React.isValidElement(icon)) {
+    const IconWrapper = () => icon;
+    IconWrapper.displayName = "ResolvedIcon";
+    return IconWrapper;
+  }
   // Emoji or unknown string — render as text
-  if (typeof icon === "string") return () => <span className="text-lg">{icon}</span>;
+  if (typeof icon === "string") {
+    const EmojiIcon = () => <span className="text-lg">{icon}</span>;
+    EmojiIcon.displayName = "EmojiIcon";
+    return EmojiIcon;
+  }
   return TbPuzzle;
 }
 
@@ -73,8 +80,9 @@ export function buildExtraPresetEntries(
         display={<ToolboxItemDisplay icon={IconComp} label={preset.label} />}
         custom={{ displayName: preset.label }}
         {...(preset.props || {})}
-        children={children}
-      />
+      >
+        {children}
+      </RenderToolComponent>
     );
   });
 }
@@ -102,8 +110,9 @@ export function buildCustomToolboxEntries(def: ResolvedComponentDef): React.Reac
         custom={{ displayName: preset.label }}
         {...def.defaultProps}
         {...(preset.props || {})}
-        children={children}
-      />
+      >
+        {children}
+      </RenderToolComponent>
     );
   });
 }

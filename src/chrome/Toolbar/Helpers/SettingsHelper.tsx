@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import React from "react";
 import { TabBody } from "../Tab";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { useEditor } from "@craftjs/core";
 import { NoSettings } from "../../Helpers/CloneHelper";
@@ -24,12 +23,12 @@ export const DividerMainTab = () => {
 
   return renderComponentSlots({
     Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]}>
+      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply divider styles.">
         <PresetGroupRenderer presets={selectorPresets.divider} />
       </ToolbarSection>
     ),
     Properties: (
-      <ToolbarSection full={1} title="Properties" icon={SECTION_ICONS["Properties"]}>
+      <ToolbarSection full={1} title="Properties" icon={SECTION_ICONS["Properties"]} help="Divider color.">
         <ColorInput propKey="background" label="Background" prefix="bg" propType="class" />
       </ToolbarSection>
     ),

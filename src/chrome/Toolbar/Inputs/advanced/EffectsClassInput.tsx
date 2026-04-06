@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbBrandTailwind } from "react-icons/tb";
 import { ToolbarSection } from "../../ToolbarSection";
 import { UniversalInput } from "../UniversalInput";
@@ -59,6 +58,7 @@ export const EffectsClassInput = ({ index = "" }: { index?: string }) => (
     nested={false}
     collapsible={true}
     defaultOpen={false}
+    help="Transitions, transforms, filters, and backdrop effects."
   >
     <ToolbarSection title="Transition" icon={null} nested collapsible defaultOpen={false}>
       <EffectField

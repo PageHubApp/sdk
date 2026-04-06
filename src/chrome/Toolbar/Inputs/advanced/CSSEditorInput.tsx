@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Diagnostic, linter } from "@codemirror/lint";
 import { useEditor, useNode } from "@craftjs/core";
 import { ViewAtom } from "../../../Viewport/atoms";

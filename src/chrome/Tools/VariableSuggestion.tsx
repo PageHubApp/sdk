@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import type { SuggestionProps } from "../../extensions/VariableNode";
@@ -7,9 +6,9 @@ import type { SuggestionProps } from "../../extensions/VariableNode";
  * Floating popup that appears when the user types {{ in the TipTap editor.
  * Shows available template variables and inserts the selected one.
  */
-export const VariableSuggestionPopup: React.FC<{
+export function VariableSuggestionPopup({ suggestion }: {
   suggestion: SuggestionProps | null;
-}> = ({ suggestion }) => {
+}) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -93,4 +92,4 @@ export const VariableSuggestionPopup: React.FC<{
     </div>,
     document.body
   );
-};
+}

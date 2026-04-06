@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NodeId, useEditor } from "@craftjs/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -15,7 +14,8 @@ import {
 import { useAtomState } from "@zedux/react";
 import { IsolateAtom, isolatePageAlt } from "utils/lib";
 import { useLayerManager } from "./LayerManager";
-import { canMove } from "./utils";
+import { useLayerMove } from "./hooks/useLayerMove";
+import { useLayerDragDrop } from "./hooks/useLayerDragDrop";
 
 interface LayerHeaderProps {
   nodeId: NodeId;
@@ -24,12 +24,12 @@ interface LayerHeaderProps {
   isExpanded: boolean;
 }
 
-export const LayerHeader: React.FC<LayerHeaderProps> = ({
+export function LayerHeader({
   nodeId,
   depth,
   hasChildren,
   isExpanded,
-}) => {
+}: LayerHeaderProps) {
   const { toggleExpanded, setDraggedNode, setDropIndicator, state } = useLayerManager();
   const [isEditingName, setIsEditingName] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -64,148 +64,18 @@ export const LayerHeader: React.FC<LayerHeaderProps> = ({
   const isFooter = componentType === "Footer";
   const isSection = componentType === "Container" && !isPage && !isHeader && !isFooter;
 
-  // Arrow button handlers
-  const handleMoveUp = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      const node = query.node(nodeId).get();
-      const parentId = node.data.parent;
-      if (!parentId) return;
+  // Extracted hooks for move and drag/drop logic
+  const { handleMoveUp, handleMoveDown, handleMoveOut, handleMoveIn, canMoveUp, canMoveDown, canMoveOut, canMoveIn } =
+    useLayerMove({ nodeId });
 
-      const parent = query.node(parentId).get();
-      const siblings = parent.data.nodes || [];
-      const currentIndex = siblings.indexOf(nodeId);
-
-      if (currentIndex > 0) {
-        // Move before previous sibling
-        actions.move(nodeId, parentId, currentIndex - 1);
-      }
-    },
-    [nodeId, query, actions]
-  );
-
-  const handleMoveDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      const node = query.node(nodeId).get();
-      const parentId = node.data.parent;
-      if (!parentId) return;
-
-      const parent = query.node(parentId).get();
-      const siblings = parent.data.nodes || [];
-      const currentIndex = siblings.indexOf(nodeId);
-
-      if (currentIndex < siblings.length - 1) {
-        // Move after next sibling
-        actions.move(nodeId, parentId, currentIndex + 2);
-      }
-    },
-    [nodeId, query, actions]
-  );
-
-  const handleMoveOut = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      const node = query.node(nodeId).get();
-      const parentId = node.data.parent;
-      if (!parentId) return;
-
-      const parent = query.node(parentId).get();
-      const grandparentId = parent.data.parent;
-      if (!grandparentId) return;
-
-      // Check if grandparent can accept this node type
-      const grandparent = query.node(grandparentId).get();
-      if (!(grandparent.rules.canMoveIn as any)([node], grandparent)) {
-        console.warn("Cannot move node out - grandparent rejects this node type");
-        return;
-      }
-
-      try {
-        // Move to after parent (outdent)
-        const parentSiblings = grandparent.data.nodes || [];
-        const parentIndex = parentSiblings.indexOf(parentId);
-
-        actions.move(nodeId, grandparentId, parentIndex + 1);
-      } catch (error) {
-        console.error("Cannot move node out:", error);
-      }
-    },
-    [nodeId, query, actions]
-  );
-
-  const handleMoveIn = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      const node = query.node(nodeId).get();
-      const parentId = node.data.parent;
-      if (!parentId) return;
-
-      const parent = query.node(parentId).get();
-      const siblings = parent.data.nodes || [];
-      const currentIndex = siblings.indexOf(nodeId);
-
-      if (currentIndex > 0) {
-        // Move into previous sibling (if it's a canvas and accepts this node)
-        const prevSiblingId = siblings[currentIndex - 1];
-        const prevSibling = query.node(prevSiblingId).get();
-
-        if (prevSibling.data.isCanvas) {
-          try {
-            // Check if previous sibling can accept this node type
-            if (!(prevSibling.rules.canMoveIn as any)([node], prevSibling)) {
-              console.warn("Cannot move node in - previous sibling rejects this node type");
-              return;
-            }
-
-            const prevSiblingChildren = prevSibling.data.nodes || [];
-            actions.move(nodeId, prevSiblingId, prevSiblingChildren.length);
-          } catch (error) {
-            console.warn("Cannot move node into previous sibling:", error);
-          }
-        }
-      }
-    },
-    [nodeId, query, actions]
-  );
-
-  // Check what moves are possible
-  const node = query.node(nodeId).get();
-  const parentId = node?.data?.parent;
-  const parent = parentId ? query.node(parentId).get() : null;
-  const siblings = parent?.data?.nodes || [];
-  const currentIndex = siblings.indexOf(nodeId);
-  const grandparentId = parent?.data?.parent;
-
-  const canMoveUp = currentIndex > 0;
-  const canMoveDown = currentIndex < siblings.length - 1;
-
-  // Check if we can move out: grandparent must exist AND accept this node type
-  let canMoveOut = false;
-  if (grandparentId) {
-    try {
-      const grandparent = query.node(grandparentId).get();
-      canMoveOut = (grandparent?.rules?.canMoveIn as any)?.([node], grandparent) ?? false;
-    } catch (error) {
-      canMoveOut = false;
-    }
-  }
-
-  // Check if move in is possible (previous sibling must be canvas, node must be draggable, and sibling must accept this node)
-  let canMoveIn = false;
-  if (currentIndex > 0 && siblings[currentIndex - 1]) {
-    try {
-      const prevSiblingId = siblings[currentIndex - 1];
-      const prevSibling = query.node(prevSiblingId).get();
-
-      canMoveIn =
-        prevSibling?.data?.isCanvas &&
-        query.node(nodeId).isDraggable() &&
-        ((prevSibling?.rules?.canMoveIn as any)?.([node], prevSibling) ?? false);
-    } catch (error) {
-      canMoveIn = false;
-    }
-  }
+  const { handleDragStart, handleDragEnd, handleDragOver, handleDragLeave } = useLayerDragDrop({
+    nodeId,
+    depth,
+    hasChildren,
+    setDraggedNode,
+    setDropIndicator,
+    state,
+  });
 
   // Check if node can be deleted
   // Prevent deletion of Header, Footer, and Homepage
@@ -222,178 +92,6 @@ export const LayerHeader: React.FC<LayerHeaderProps> = ({
       }
     },
     [nodeId, canDelete, actions]
-  );
-
-  // Handle drag start
-  const handleDragStart = useCallback(
-    (e: React.DragEvent) => {
-      e.stopPropagation();
-      setDraggedNode(nodeId);
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", nodeId);
-    },
-    [nodeId, setDraggedNode]
-  );
-
-  // Handle drag end
-  const handleDragEnd = useCallback(
-    (e: React.DragEvent) => {
-      e.stopPropagation();
-
-      // Execute the move if we have a valid drop target
-      if (state.dropIndicator && state.draggedNode) {
-        const { targetId, position } = state.dropIndicator;
-
-        try {
-          const draggedNode = query.node(state.draggedNode).get();
-          const targetNode = query.node(targetId).get();
-
-          if (position === "inside") {
-            // Validate that target can accept this node
-            if (!(targetNode.rules.canMoveIn as any)([draggedNode], targetNode)) {
-              console.warn("Cannot drop inside - target rejects this node type");
-              setDraggedNode(null);
-              setDropIndicator(null);
-              return;
-            }
-
-            // Move inside the target node
-            const targetChildren = targetNode.data.nodes || [];
-            actions.move(state.draggedNode, targetId, targetChildren.length);
-          } else {
-            // Move before or after the target node
-            const parentId = targetNode.data.parent;
-            if (parentId) {
-              const parentNode = query.node(parentId).get();
-
-              // Validate that parent can accept this node
-              if (!(parentNode.rules.canMoveIn as any)([draggedNode], parentNode)) {
-                console.warn("Cannot drop - parent rejects this node type");
-                setDraggedNode(null);
-                setDropIndicator(null);
-                return;
-              }
-
-              const siblings = parentNode.data.nodes || [];
-              const targetIndex = siblings.indexOf(targetId);
-              const newIndex = position === "after" ? targetIndex + 1 : targetIndex;
-              actions.move(state.draggedNode, parentId, newIndex);
-            }
-          }
-        } catch (error) {
-          console.error("Error moving node:", error);
-        }
-      }
-
-      setDraggedNode(null);
-      setDropIndicator(null);
-    },
-    [state.dropIndicator, state.draggedNode, actions, query, setDraggedNode, setDropIndicator]
-  );
-
-  // Handle drag over
-  const handleDragOver = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (!state.draggedNode || state.draggedNode === nodeId) {
-        return;
-      }
-
-      const rect = e.currentTarget.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-      const height = rect.height;
-      const width = rect.width;
-
-      // Get node to check if it's a canvas
-      const node = query.node(nodeId).get();
-      const isCanvas = node?.data?.isCanvas || false;
-
-      // Check if dragging to LEFT MARGIN (to move OUT of parent)
-      const leftMargin = depth * 16 + 8;
-      const isInLeftMargin = mouseX < leftMargin + 40; // 40px margin zone
-
-      // If dragging in left margin and this node has a parent,
-      // offer to drop AFTER the parent instead
-      if (isInLeftMargin && depth > 0) {
-        const parent = query.node(node.data.parent).get();
-        if (parent && parent.data.parent) {
-          // Offer to drop after the parent (moves item out one level)
-          const editorState = query.getSerializedNodes();
-          const nodes = Object.keys(editorState).reduce(
-            (acc, id) => {
-              acc[id] = query.node(id).get();
-              return acc;
-            },
-            {} as Record<NodeId, any>
-          );
-
-          if (canMove(state.draggedNode, node.data.parent, "after", nodes)) {
-            setDropIndicator({
-              targetId: node.data.parent,
-              position: "after",
-            });
-            return;
-          }
-        }
-      }
-
-      // More generous drop zones for better UX
-      let position: "before" | "after" | "inside";
-
-      if (isCanvas && hasChildren) {
-        // For canvas nodes with children, create 3 clear zones (very generous)
-        if (mouseY < height * 0.2) {
-          position = "before"; // Top 20% = before
-        } else if (mouseY > height * 0.8) {
-          position = "after"; // Bottom 20% = after
-        } else {
-          position = "inside"; // Middle 60% = inside (larger target!)
-        }
-      } else if (isCanvas) {
-        // Canvas without children - prefer inside
-        if (mouseY < height * 0.25) {
-          position = "before";
-        } else if (mouseY > height * 0.75) {
-          position = "after";
-        } else {
-          position = "inside"; // 50% for inside
-        }
-      } else {
-        // Non-canvas - only before/after
-        position = mouseY < height / 2 ? "before" : "after";
-      }
-
-      // Validate move before showing indicator
-      const editorState = query.getSerializedNodes();
-      const nodes = Object.keys(editorState).reduce(
-        (acc, id) => {
-          acc[id] = query.node(id).get();
-          return acc;
-        },
-        {} as Record<NodeId, any>
-      );
-
-      if (canMove(state.draggedNode, nodeId, position, nodes)) {
-        setDropIndicator({ targetId: nodeId, position });
-      }
-    },
-    [nodeId, depth, hasChildren, state.draggedNode, query, setDropIndicator]
-  );
-
-  // Handle drag leave
-  const handleDragLeave = useCallback(
-    (e: React.DragEvent) => {
-      e.stopPropagation();
-      // Only clear if we're leaving this specific element
-      const relatedTarget = e.relatedTarget as HTMLElement;
-      if (!e.currentTarget.contains(relatedTarget)) {
-        setDropIndicator(null);
-      }
-    },
-    [setDropIndicator]
   );
 
   // Handle visibility toggle
@@ -475,6 +173,7 @@ export const LayerHeader: React.FC<LayerHeaderProps> = ({
         </div>
       )}
 
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div
         className={`group relative flex cursor-pointer items-center gap-2.5 border-l-2 px-3 py-2 transition-all duration-200 ${
           isHeader ? "mb-3" : ""
@@ -532,6 +231,7 @@ export const LayerHeader: React.FC<LayerHeaderProps> = ({
             <button
               onClick={handleToggleExpand}
               className="rounded p-0.5 transition-all hover:scale-110 hover:bg-white/20 dark:hover:bg-black/20"
+              aria-expanded={isExpanded}
             >
               <TbChevronRight
                 className={`size-3.5 transition-all duration-200 ${
@@ -549,6 +249,8 @@ export const LayerHeader: React.FC<LayerHeaderProps> = ({
           onClick={handleToggleVisibility}
           className="rounded p-1 transition-all hover:scale-110 hover:bg-white/20 dark:hover:bg-black/20"
           title={hidden ? "Show" : "Hide"}
+          aria-label="Toggle visibility"
+          aria-pressed={!hidden}
         >
           {hidden ? (
             <TbEyeOff
@@ -568,6 +270,7 @@ export const LayerHeader: React.FC<LayerHeaderProps> = ({
         </button>
 
         {/* Display name */}
+        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div className="min-w-0 flex-1" onDoubleClick={handleNameDoubleClick}>
           {isEditingName ? (
             <input
@@ -709,4 +412,4 @@ export const LayerHeader: React.FC<LayerHeaderProps> = ({
       )}
     </>
   );
-};
+}

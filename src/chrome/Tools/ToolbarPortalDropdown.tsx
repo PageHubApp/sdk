@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 
@@ -138,6 +137,9 @@ export const ToolbarPortalDropdown = ({
   return (
     <div
       ref={triggerRef}
+      role="presentation"
+      aria-haspopup="menu"
+      aria-expanded={isOpen}
       className={openOn === "hover" ? "inline-flex" : undefined}
       onClick={openOn === "click" ? handleToggle : undefined}
       onMouseEnter={openOn === "hover" ? openFromHover : undefined}
@@ -148,7 +150,9 @@ export const ToolbarPortalDropdown = ({
         ReactDOM.createPortal(
           <div
             ref={dropdownRef}
-            className={`pagehub-sdk-root fixed z-[99999] ${className}`}
+            role="menu"
+            tabIndex={-1}
+            className={`pagehub-sdk-root fixed z-99999 ${className}`}
             style={{
               top: position.top,
               left: position.left,

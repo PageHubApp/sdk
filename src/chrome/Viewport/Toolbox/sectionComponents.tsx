@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { TbLayoutColumns, TbLayoutRows } from "react-icons/tb";
 import { Container } from "../../../components/Container";
 import { ContainerGroup } from "../../../components/ContainerGroup";

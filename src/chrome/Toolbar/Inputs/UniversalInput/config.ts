@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Utility functions for UniversalInput component
 
 // Re-export layout utilities

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { RiImageAddLine } from "react-icons/ri";
 import { TbListNumbers } from "react-icons/tb";
 import { Image } from "../../../components/Image";

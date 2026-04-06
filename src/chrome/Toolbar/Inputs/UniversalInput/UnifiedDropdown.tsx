@@ -1,6 +1,3 @@
-// @ts-nocheck
-import { useEditor } from "@craftjs/core";
-import { ROOT_NODE } from "@craftjs/utils";
 import React, { useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import {
@@ -26,10 +23,9 @@ import {
   TbZoomIn,
   TbZoomOut,
 } from "react-icons/tb";
-import { resolveColorForDisplay } from "utils/design/colorSystem";
-import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "utils/defaults";
 import { dropdownPositionToStyle, useDropdownPosition } from "../../hooks/useDropdownPosition";
 import { getLayoutConfig, groupFractionsByDenominator, groupNumericByRange } from "./config";
+import { useDesignVars } from "./hooks/useDesignVars";
 import { SubgroupItem } from "./SubgroupComponents";
 import { DesignVar } from "./types";
 
@@ -52,7 +48,7 @@ interface UnifiedDropdownProps {
   selectedType?: string;
 }
 
-export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
+export function UnifiedDropdown({
   options,
   filteredOptions,
   selectedIndex,
@@ -64,7 +60,7 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
   searchValue,
   currentValue,
   selectedType,
-}) => {
+}: UnifiedDropdownProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [expandedGroups, setExpandedGroups] = useState({
     vars: true,
@@ -78,181 +74,8 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
   // Get layout configuration for this property type
   const layoutConfig = getLayoutConfig(propTag, tailwindKey);
 
-  // Get real design system vars - same logic as DesignVarSelector
-  const designVars = useEditor(state => {
-    const rootNode = state.nodes[ROOT_NODE];
-    const runtimePalette = rootNode?.data?.props?.pallet || [];
-    const runtimeTypography = rootNode?.data?.props?.typography || [];
-    const runtimeStyleGuide = rootNode?.data?.props?.styleGuide || {};
-
-    const vars: DesignVar[] = [];
-
-    // Use runtime palette if available, otherwise use defaults
-    const palette = runtimePalette.length > 0 ? runtimePalette : DEFAULT_PALETTE;
-
-    // Palette colors
-    palette.forEach((item: any) => {
-      if (item?.name && item?.color) {
-        const varName = item.name
-          .replace(/([A-Z])/g, "-$1")
-          .replace(/\s+/g, "-")
-          .toLowerCase()
-          .replace(/^-/, "");
-
-        vars.push({
-          name: item.name,
-          varName: `--${varName}`,
-          value: resolveColorForDisplay(item.color, "").backgroundColor || item.color,
-          category: "palette",
-          label: `${item.name} (Palette)`,
-        });
-      }
-    });
-
-    // Custom typography fonts
-    runtimeTypography.forEach((font: any, index: number) => {
-      if (font?.name) {
-        const varName = font.name
-          .replace(/([A-Z])/g, "-$1")
-          .replace(/\s+/g, "-")
-          .toLowerCase()
-          .replace(/^-/, "");
-
-        // Add font family variable
-        vars.push({
-          name: `${font.name} Font Family`,
-          varName: `--${varName}-font-family`,
-          value: font.fontFamily || "Inter",
-          category: "typography",
-          label: `${font.name} Font Family`,
-        });
-
-        // Add font size variable
-        vars.push({
-          name: `${font.name} Font Size`,
-          varName: `--${varName}-font-size`,
-          value: font.fontSize || "1rem",
-          category: "typography",
-          label: `${font.name} Font Size`,
-        });
-
-        // Add font weight variable - convert numeric weights to Tailwind classes
-        let fontWeightValue = font.fontWeight || "font-normal";
-        const fontWeightMap: Record<string, string> = {
-          "100": "font-thin",
-          "200": "font-extralight",
-          "300": "font-light",
-          "400": "font-normal",
-          "500": "font-medium",
-          "600": "font-semibold",
-          "700": "font-bold",
-          "800": "font-extrabold",
-          "900": "font-black",
-        };
-        if (fontWeightMap[fontWeightValue]) {
-          fontWeightValue = fontWeightMap[fontWeightValue];
-        }
-
-        vars.push({
-          name: `${font.name} Font Weight`,
-          varName: `--${varName}-font-weight`,
-          value: fontWeightValue,
-          category: "typography",
-          label: `${font.name} Font Weight`,
-        });
-
-        // Add line height variable
-        vars.push({
-          name: `${font.name} Line Height`,
-          varName: `--${varName}-line-height`,
-          value: font.lineHeight || "1.5",
-          category: "typography",
-          label: `${font.name} Line Height`,
-        });
-
-        // Add letter spacing variable
-        vars.push({
-          name: `${font.name} Letter Spacing`,
-          varName: `--${varName}-letter-spacing`,
-          value: font.letterSpacing || "normal",
-          category: "typography",
-          label: `${font.name} Letter Spacing`,
-        });
-
-        // Add text transform variable
-        vars.push({
-          name: `${font.name} Text Transform`,
-          varName: `--${varName}-text-transform`,
-          value: font.textTransform || "none",
-          category: "typography",
-          label: `${font.name} Text Transform`,
-        });
-      }
-    });
-
-    // Merge default style guide with runtime overrides
-    const styleGuide = { ...DEFAULT_STYLE_GUIDE, ...runtimeStyleGuide };
-
-    // Style guide vars with categories and labels
-    const styleVarMap: Record<string, { category: string; label: string }> = {
-      headingFontFamily: { category: "typography", label: "Heading Font Family" },
-      bodyFontFamily: { category: "typography", label: "Body Font Family" },
-      headingFont: { category: "typography", label: "Heading Font Weight" },
-      bodyFont: { category: "typography", label: "Body Font Weight" },
-      containerPadding: { category: "spacing", label: "Container Padding" },
-      buttonPadding: { category: "spacing", label: "Button Padding" },
-      sectionGap: { category: "spacing", label: "Section Gap" },
-      containerGap: { category: "spacing", label: "Container Gap" },
-      contentWidth: { category: "spacing", label: "Content Width" },
-      borderRadius: { category: "other", label: "Border Radius" },
-      shadowStyle: { category: "other", label: "Shadow Style" },
-      inputBorderColor: { category: "colors", label: "Input Border Color" },
-      inputBorderWidth: { category: "other", label: "Input Border Width" },
-      inputBorderRadius: { category: "other", label: "Input Border Radius" },
-      inputPadding: { category: "spacing", label: "Input Padding" },
-      inputBgColor: { category: "colors", label: "Input Background" },
-      inputTextColor: { category: "colors", label: "Input Text" },
-      inputPlaceholderColor: { category: "colors", label: "Input Placeholder" },
-      inputFocusRing: { category: "other", label: "Input Focus Ring" },
-      inputFocusRingColor: { category: "colors", label: "Input Focus Ring Color" },
-      linkColor: { category: "colors", label: "Link Color" },
-      linkHoverColor: { category: "colors", label: "Link Hover Color" },
-      linkUnderline: { category: "other", label: "Link Underline" },
-      linkUnderlineOffset: { category: "other", label: "Link Underline Offset" },
-    };
-
-    Object.entries(styleGuide).forEach(([key, value]) => {
-      if (value && styleVarMap[key]) {
-        const varName = key
-          .replace(/([A-Z])/g, "-$1")
-          .replace(/\s+/g, "-")
-          .toLowerCase()
-          .replace(/^-/, "");
-
-        vars.push({
-          name: key,
-          varName: `--${varName}`,
-          value: String(value),
-          category: styleVarMap[key].category as any,
-          label: styleVarMap[key].label,
-        });
-      }
-    });
-
-    return vars;
-  });
-
-  // Ensure designVars is always an array
-  let realDesignVars: DesignVar[] = [];
-  if (Array.isArray(designVars)) {
-    realDesignVars = designVars;
-  } else if (designVars && typeof designVars === "object") {
-    // Convert object with numeric keys to array
-    realDesignVars = Object.keys(designVars)
-      .filter(key => !isNaN(Number(key))) // Only numeric keys
-      .map(key => designVars[key])
-      .filter(item => item && typeof item === "object" && "varName" in item); // Valid DesignVar objects
-  }
+  // Get real design system vars from extracted hook
+  const realDesignVars = useDesignVars();
 
   // Smart dropdown positioning with directional opening (must call hook unconditionally)
   const position = useDropdownPosition({
@@ -440,13 +263,14 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
     // Regular flat list for named and other groups
     return (
       <div key={groupType} className="p-2">
-        <div className="space-y-1 overflow-y-auto">
+        <div className="ph-select-item-host overflow-y-auto">
           {groupOptions.map(option => {
             const preview = renderPreview(option, showPreview);
             return (
               <button
                 key={option}
-                className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-xs text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                type="button"
+                className="ph-select-item text-xs text-foreground"
                 onClick={() => onSelect(option)}
               >
                 {preview}
@@ -466,37 +290,40 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
         data-unified-dropdown
         style={style}
         ref={ref}
-        className="flex flex-col rounded-lg border border-border bg-background text-foreground shadow-xl"
+        className="pagehub-sdk-root ph-panel flex flex-col text-foreground"
       >
-        {/* None option */}
-        <button
-          onClick={() => onSelect("")}
-          className="block w-full shrink-0 border-b border-border px-3 py-1.5 text-left text-xs text-muted-foreground hover:bg-muted"
-        >
-          None
-        </button>
+        <div className="ph-select-item-host flex flex-1 flex-col">
+          <button
+            type="button"
+            onClick={() => onSelect("")}
+            className="ph-select-item shrink-0 rounded-none border-b border-border text-muted-foreground"
+          >
+            None
+          </button>
 
-        <div className="scrollbar flex-1 overflow-y-auto">
-          {filteredOptions.length === 0 ? (
-            <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-              No matches found
-            </div>
-          ) : (
-            filteredOptions.map((option, index) => {
-              const isSelected = index === selectedIndex;
-              return (
-                <button
-                  key={option}
-                  onClick={() => onSelect(option)}
-                  className={`block w-full px-3 py-1.5 text-left text-xs text-foreground hover:bg-muted ${
-                    isSelected ? "bg-primary/10 font-semibold text-primary" : ""
-                  }`}
-                >
-                  {getDisplayLabel(option)}
-                </button>
-              );
-            })
-          )}
+          <div className="scrollbar-light flex-1 overflow-y-auto">
+            {filteredOptions.length === 0 ? (
+              <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+                No matches found
+              </div>
+            ) : (
+              filteredOptions.map((option, index) => {
+                const isSelected = index === selectedIndex;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => onSelect(option)}
+                    className={`ph-select-item text-foreground ${
+                      isSelected ? "bg-primary/10 font-semibold text-primary" : ""
+                    }`}
+                  >
+                    {getDisplayLabel(option)}
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>,
       document.querySelector(".pagehub-sdk-root") || document.body
@@ -534,7 +361,7 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
             return (
               <div
                 key={col.key}
-                className={`scrollbar ${col.width} overflow-y-auto ${borderClass}`}
+                className={`scrollbar-light ${col.width} overflow-y-auto ${borderClass}`}
               >
                 {col.section.groups.map((groupType, index) => {
                   const containerClass = "flex-1";
@@ -608,15 +435,16 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
       data-unified-dropdown
       style={style}
       ref={ref}
-      className="flex h-52 flex-col overflow-hidden rounded-lg border border-border bg-background text-foreground shadow-xl"
+      className="pagehub-sdk-root ph-panel flex h-52 flex-col overflow-hidden text-foreground"
     >
+      <div className="ph-select-item-host flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Main Options Section - Configurable Layout */}
       {!isVarMode && renderMainContent()}
 
       {/* Design Variables Section - Hidden in tailwind mode */}
       {isVarMode && showVarSelector && realDesignVars.length > 0 && (
         <div className="flex h-full flex-col border-border">
-          <div className="scrollbar flex-1 overflow-y-auto">
+          <div className="scrollbar-light flex-1 overflow-y-auto">
             <div className="bg-background">
               {(() => {
                 // Filter by category based on input type
@@ -693,8 +521,9 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
                   return (
                     <button
                       key={v.varName}
+                      type="button"
                       onClick={() => onSelect(varValue)}
-                      className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-muted ${
+                      className={`ph-select-item gap-2 text-xs ${
                         isSelected ? "bg-primary/10 font-semibold text-primary" : ""
                       }`}
                     >
@@ -713,6 +542,7 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
             </div>
           </div>
           <div
+            role="presentation"
             className="border-t border-border bg-background p-2"
             onMouseDown={e => e.stopPropagation()}
           >
@@ -727,14 +557,15 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
         </div>
       )}
 
-      {/* None option */}
       <button
+        type="button"
         onClick={() => onSelect("")}
-        className="sticky top-0 z-10 block w-full shrink-0 border-t border-border bg-background px-3 py-1.5 text-left text-xs text-muted-foreground hover:bg-muted"
+        className="ph-select-item sticky top-0 z-10 shrink-0 rounded-none border-t border-border bg-background text-muted-foreground"
       >
         Reset to Default
       </button>
+      </div>
     </div>,
     document.querySelector(".pagehub-sdk-root") || document.body
   );
-};
+}

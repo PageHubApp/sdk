@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useNode } from "@craftjs/core";
 import { changeProp } from "../../../Viewport/lib";
 import { PageSelector } from "../../../Viewport/PageSelector";

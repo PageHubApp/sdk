@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useMemo } from "react";
 import { TbBraces, TbBrandTailwind, TbMathFunction } from "react-icons/tb";
 import { BgWrap, MobileDesktopLabels } from "../../ToolbarStyle";
@@ -12,7 +11,7 @@ import { useUniversalInputState } from "./useUniversalInputState";
 // Re-export types for external use
 export type { UniversalInputProps, ValueType } from "./types";
 
-export const UniversalInput: React.FC<UniversalInputProps> = props => {
+export function UniversalInput(props: UniversalInputProps) {
   const {
     label,
     labelPrefix,
@@ -277,4 +276,4 @@ export const UniversalInput: React.FC<UniversalInputProps> = props => {
       )}
     </div>
   );
-};
+}

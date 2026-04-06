@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { Element, useEditor } from "@craftjs/core";
-import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { MdClose, MdSearch } from "react-icons/md";
@@ -217,26 +215,15 @@ export const SectionPickerDialog = ({
   }
 
   return ReactDOM.createPortal(
-    <AnimatePresence>
+    <>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-100 flex items-center justify-center bg-background/75 backdrop-blur-sm"
+        <div
+          className="animate-backdrop-in fixed inset-0 z-100 flex items-center justify-center bg-background/75 backdrop-blur-sm"
           style={{ pointerEvents: "auto" }}
         >
-          <motion.div
+          <div
             ref={dialogRef}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className="flex h-[80vh] w-[33vw] max-w-md flex-col overflow-hidden rounded-lg border border-border bg-background shadow-2xl"
-            style={{
-              willChange: "transform",
-              backfaceVisibility: "hidden",
-              WebkitFontSmoothing: "antialiased",
-            }}
+            className="pagehub-sdk-root ph-modal-surface-heavy flex h-[80vh] w-[33vw] max-w-md flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border bg-accent px-6 py-4 text-accent-foreground">
@@ -276,16 +263,16 @@ export const SectionPickerDialog = ({
 
                 {/* Search Bar - Bottom of sidebar */}
                 <div className="border-t border-border p-4">
-                  <div className="relative">
+                  <div className="input-wrapper relative input-hover">
                     <input
                       type="text"
                       placeholder="Search"
                       value={searchQuery}
                       onChange={e => handleSearch(e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background py-2 pl-8 pr-3 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="input-plain-search pl-8"
                     />
                     <MdSearch
-                      className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      className="pointer-events-none absolute left-2 top-1/2 z-10 -translate-y-1/2 text-muted-foreground"
                       size={16}
                     />
                   </div>
@@ -299,10 +286,8 @@ export const SectionPickerDialog = ({
                   className="grid grid-cols-1 gap-6"
                 >
                   {templates.map((template, templateIndex) => (
-                    <motion.button
+                    <button
                       key={`${isSearchMode ? "search" : selectedCategory}-${template.isCustom ? "custom" : "builtin"}-${template.id}-${templateIndex}`}
-                      //   whileHover={{ scale: 1.1 }}
-                      //    whileTap={{ scale: 0.9 }}
                       onClick={() => {
                         if (template.isCustom) {
                           // For custom sections, get the serialized node and reconstruct
@@ -356,11 +341,6 @@ export const SectionPickerDialog = ({
                         onClose();
                       }}
                       className="group relative overflow-hidden rounded-lg border-2 border-border bg-card text-card-foreground shadow-sm transition-all hover:border-primary hover:shadow-md"
-                      style={{
-                        willChange: "transform",
-                        backfaceVisibility: "hidden",
-                        WebkitFontSmoothing: "antialiased",
-                      }}
                     >
                       {/* Preview */}
                       {template.isCustom ? (
@@ -385,7 +365,7 @@ export const SectionPickerDialog = ({
                           resolver={query.getOptions().resolver}
                         />
                       )}
-                    </motion.button>
+                    </button>
                   ))}
                 </div>
 
@@ -400,10 +380,10 @@ export const SectionPickerDialog = ({
                 )}
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>,
+    </>,
     document.querySelector(".pagehub-sdk-root") || document.body
   );
 };

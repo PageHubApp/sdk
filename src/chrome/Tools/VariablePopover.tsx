@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 
@@ -24,7 +23,7 @@ export interface VariablePopoverProps {
   anchorRect: DOMRect;
 }
 
-export const VariablePopover: React.FC<VariablePopoverProps> = ({
+export function VariablePopover({
   variables,
   currentId,
   displayValue,
@@ -32,7 +31,7 @@ export const VariablePopover: React.FC<VariablePopoverProps> = ({
   onRemove,
   onClose,
   anchorRect,
-}) => {
+}: VariablePopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -77,7 +76,7 @@ export const VariablePopover: React.FC<VariablePopoverProps> = ({
 
         <ListboxOptions
           anchor="bottom start"
-          className="pagehub-sdk-root ph-select-content !z-[999999]"
+          className="pagehub-sdk-root ph-select-content z-999999!"
           modal={false}
         >
           {variables.map(v => (
@@ -114,4 +113,4 @@ export const VariablePopover: React.FC<VariablePopoverProps> = ({
       </button>
     </div>
   );
-};
+}

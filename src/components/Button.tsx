@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import Link from "next/link";
@@ -40,40 +39,37 @@ export interface ButtonProps extends BaseSelectorProps {
   click?: ClickControl;
 }
 
-const defaultProps: ButtonProps = {
-  canDelete: true,
-  canEditName: true,
-  text: "Button",
-  type: "button",
-  icon: {
-    position: "left",
-    size: "w-6 h-6",
-    gap: "gap-2",
-  },
+const defaultIcon = {
+  position: "left" as const,
+  size: "w-6 h-6",
+  gap: "gap-2",
 };
 
-export const Button: UserComponent<ButtonProps> = (props: ButtonProps) => {
+export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) => {
   // Handle backward compatibility: convert old flat icon structure to nested
-  let icon = props.icon;
-  if (typeof props.icon === "string") {
+  let icon = incomingProps.icon;
+  if (typeof icon === "string") {
     // Old format: icon is a string
     icon = {
-      value: props.icon,
-      position: (props as any).iconPosition || defaultProps.icon.position,
-      size: (props as any).iconSize || defaultProps.icon.size,
-      color: (props as any).iconColor,
-      gap: (props as any).iconGap || defaultProps.icon.gap,
-      shadow: (props as any).iconShadow,
-      only: (props as any).iconOnly,
+      value: icon,
+      position: (incomingProps as any).iconPosition || defaultIcon.position,
+      size: (incomingProps as any).iconSize || defaultIcon.size,
+      color: (incomingProps as any).iconColor,
+      gap: (incomingProps as any).iconGap || defaultIcon.gap,
+      shadow: (incomingProps as any).iconShadow,
+      only: (incomingProps as any).iconOnly,
     };
   }
 
-  props = {
-    ...defaultProps,
-    ...props,
+  let props: any = {
+    canDelete: true,
+    canEditName: true,
+    text: "Button",
+    type: "button",
+    ...incomingProps,
     // Properly merge nested icon object
     icon: {
-      ...defaultProps.icon,
+      ...defaultIcon,
       ...icon,
     },
   };

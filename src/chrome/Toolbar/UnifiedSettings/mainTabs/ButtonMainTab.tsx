@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { IconDialogInput } from "../../Inputs/media/IconDialogInput";
 import IconInput from "../../Inputs/media/IconInput";
@@ -12,7 +11,7 @@ import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 export const ButtonMainTab = () =>
   renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]}>
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Button label, icon, and icon placement.">
         <ToolbarItem propKey="text" type="text" label="Text" propType="component" />
         <SettingsAiSlot />
 
@@ -55,12 +54,12 @@ export const ButtonMainTab = () =>
       </ToolbarSection>
     ),
     Presets: (
-      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]}>
+      <ToolbarSection title="Presets" icon={SECTION_ICONS["Presets"]} help="Quick-apply button styles.">
         <PresetGroupRenderer presets={selectorPresets.button} />
       </ToolbarSection>
     ),
     Type: (
-      <ToolbarSection title="Type" icon={SECTION_ICONS["Type"]}>
+      <ToolbarSection title="Type" icon={SECTION_ICONS["Type"]} help="Button or submit (for forms).">
         <ToolbarItem propKey="type" type="select" label="Type" propType="component">
           <option value="button">Button</option>
           <option value="submit">Submit</option>

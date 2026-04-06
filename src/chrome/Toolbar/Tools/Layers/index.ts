@@ -1,4 +1,3 @@
-// @ts-nocheck
 export { LayerHeader } from "./LayerHeader";
 export { LayerManagerProvider, useLayerManager } from "./LayerManager";
 export { LayerNode } from "./LayerNode";

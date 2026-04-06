@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import { TbAlertTriangle, TbX } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";

@@ -1,0 +1,119 @@
+import { useEffect } from "react";
+import { SaveToServer } from "../lib";
+
+interface UseHeaderShortcutsOptions {
+  canUndo: boolean;
+  isTenant: boolean;
+  query: any;
+  settings: any;
+  setSettings: any;
+  sessionToken: string | null;
+  setHeaderMenu: (fn: (prev: any) => any) => void;
+  setIsMediaManagerModalOpen: (fn: (prev: boolean) => boolean) => void;
+  setIsDesignSystemSidebarOpen: (fn: (prev: boolean) => boolean) => void;
+  setIsSiteSettingsModalOpen: (fn: (prev: boolean) => boolean) => void;
+  setIsLayersDialogOpen: (fn: (prev: boolean) => boolean) => void;
+  setShowGridLines: (fn: (prev: boolean) => boolean) => void;
+  setIsImportExportDialogOpen: (fn: (prev: boolean) => boolean) => void;
+}
+
+export function useHeaderShortcuts({
+  canUndo,
+  isTenant,
+  query,
+  settings,
+  setSettings,
+  sessionToken,
+  setHeaderMenu,
+  setIsMediaManagerModalOpen,
+  setIsDesignSystemSidebarOpen,
+  setIsSiteSettingsModalOpen,
+  setIsLayersDialogOpen,
+  setShowGridLines,
+  setIsImportExportDialogOpen,
+}: UseHeaderShortcutsOptions) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.contentEditable === "true"
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+
+      // Cmd+S -- Save
+      if (key === "s" && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo && settings) {
+          if (isTenant) {
+            const json = query.serialize();
+            SaveToServer(json, true, settings, setSettings, sessionToken);
+          } else {
+            setHeaderMenu(prev => ({ ...prev, isOpen: true, menuType: "domain" }));
+          }
+        }
+        return;
+      }
+
+      // Cmd+Shift+M -- Media Manager
+      if (key === "m" && e.shiftKey) {
+        e.preventDefault();
+        setIsMediaManagerModalOpen(v => !v);
+        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        return;
+      }
+
+      // Cmd+Shift+D -- Design System
+      if (key === "d" && e.shiftKey) {
+        e.preventDefault();
+        setIsDesignSystemSidebarOpen(v => !v);
+        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        return;
+      }
+
+      // Cmd+, -- Site Settings
+      if (key === ",") {
+        e.preventDefault();
+        setIsSiteSettingsModalOpen(v => !v);
+        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        return;
+      }
+
+      // Cmd+Shift+L -- Layers
+      if (key === "l" && e.shiftKey) {
+        e.preventDefault();
+        setIsLayersDialogOpen(v => !v);
+        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        return;
+      }
+
+      // Cmd+Shift+G -- Toggle Grid Lines
+      if (key === "g" && e.shiftKey) {
+        e.preventDefault();
+        setShowGridLines(prev => {
+          const next = !prev;
+          document.getElementById("viewport")?.setAttribute("data-show-gridlines", next.toString());
+          return next;
+        });
+        return;
+      }
+
+      // Cmd+Shift+E -- Import / Export
+      if (key === "e" && e.shiftKey) {
+        e.preventDefault();
+        setIsImportExportDialogOpen(v => !v);
+        setHeaderMenu(prev => ({ ...prev, isOpen: false, menuType: "" }));
+        return;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  });
+}

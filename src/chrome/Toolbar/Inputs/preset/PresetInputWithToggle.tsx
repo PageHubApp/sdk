@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { atom, useAtomState, useAtomValue } from "@zedux/react";
 import { ViewAtom } from "../../../Viewport/atoms";
 import { ItemToggle, sizingItems } from "../../Helpers/ItemSelector";

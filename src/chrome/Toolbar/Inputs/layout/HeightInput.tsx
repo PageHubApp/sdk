@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { atom, useAtomState } from "@zedux/react";
 import { ItemToggle, sizingItems } from "../../Helpers/ItemSelector";
 import { UniversalInput } from "../UniversalInput";

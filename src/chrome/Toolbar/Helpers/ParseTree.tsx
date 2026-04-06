@@ -1,4 +1,3 @@
-// @ts-nocheck
 export const ParseTree = ({ tree }) => {
   if (!tree) return null;
 

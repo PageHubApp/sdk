@@ -7,12 +7,12 @@ interface PaletteContextType {
 
 const PaletteContext = createContext<PaletteContextType>({ palette: [] });
 
-export const PaletteProvider: React.FC<{
+export function PaletteProvider({ palette, children }: {
   palette: NamedColor[];
   children: React.ReactNode;
-}> = ({ palette, children }) => {
+}) {
   return <PaletteContext.Provider value={{ palette }}>{children}</PaletteContext.Provider>;
-};
+}
 
 export const usePalette = () => {
   const context = useContext(PaletteContext);

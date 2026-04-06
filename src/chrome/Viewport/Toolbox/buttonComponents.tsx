@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Button } from "../../../components/Button";
 import { ButtonList } from "../../../components/ButtonList";
 import { LuImage } from "react-icons/lu";

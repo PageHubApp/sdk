@@ -1,6 +1,4 @@
-// @ts-nocheck
 import { useEditor } from "@craftjs/core";
-import { motion } from "framer-motion";
 import React, { useEffect, useRef } from "react";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { SideBarAtom, SideBarOpen } from "utils/lib";
@@ -31,12 +29,6 @@ export const Toolbar = () => {
     };
   }, [ref]);
 
-  const variants = {
-    open: { opacity: 1, width: "360px" },
-    closed: { opacity: 0, width: "0px" },
-    transition: { type: "linear", duration: 0.2 },
-  };
-
   const preview = useAtomValue(PreviewAtom);
 
   const { related } = useEditor((state, query) => {
@@ -52,28 +44,24 @@ export const Toolbar = () => {
   // Right sidebar: push to end of the flex row via CSS order
   const orderClass = !sideBarLeft ? "order-last" : "";
 
+  const isOpen = sideBarOpen && !preview;
+
   return (
-    <motion.aside
+    <aside
       role="complementary"
       aria-label="Component settings"
-      animate={sideBarOpen && !preview ? "open" : "closed"}
-      initial="closed"
-      variants={variants}
-      transition={variants.transition}
       key="sideMenu"
       id="toolbar"
-      className={
-        `relative flex h-full shrink-0 grow-0 flex-col overflow-hidden border-x border-border bg-sidebar text-sidebar-foreground shadow-lg z-60 ${orderClass}`
-      }
+      className={`relative flex h-full shrink-0 grow-0 flex-col overflow-hidden border-x border-border bg-sidebar text-sidebar-foreground shadow-lg z-60 transition-[width,opacity] duration-200 ${isOpen ? "w-[360px] opacity-100" : "w-0 opacity-0"} ${orderClass}`}
       ref={ref}
     >
       <Header />
       <div
         className="z-0 flex w-full flex-1 select-none flex-col overflow-hidden bg-sidebar text-sidebar-foreground antialiased"
-        aria-expanded={sideBarOpen && !preview ? "true" : "false"}
+        aria-expanded={isOpen ? "true" : "false"}
       >
         {tool}
       </div>
-    </motion.aside>
+    </aside>
   );
 };

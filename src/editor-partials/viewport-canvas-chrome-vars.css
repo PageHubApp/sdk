@@ -1,0 +1,73 @@
+/* =============================================================================
+   Editor chrome inside #viewport — outside Tailwind @layer (normal specificity).
+   Inline toolbars and node strips portal under canvas nodes; those nodes often
+   carry site styleGuide CSS variables. Lock tokens on chrome elements so
+   bg-muted / borders match the editor, not the page.
+
+   Values are NEUTRAL black/white/gray — no hue — so controls never clash with
+   any template palette.
+   ============================================================================= */
+
+/* Smooth theme transition — added temporarily by toggleTheme(), removed after
+   the transition ends so normal renders aren't affected. */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: color 300ms ease, background-color 300ms ease, border-color 300ms ease,
+    box-shadow 300ms ease, outline-color 300ms ease !important;
+}
+
+#viewport .pagehub-sdk-root,
+#viewport .tool-bg,
+#viewport .node-control,
+#device-tools-portal .pagehub-sdk-root,
+#device-tools-portal .tool-bg,
+#device-tools-portal .node-control {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(0 0% 6%);
+  --card: hsl(0 0% 98%);
+  --card-foreground: hsl(0 0% 6%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(0 0% 6%);
+  --primary: hsl(0 0% 9%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(0 0% 96%);
+  --secondary-foreground: hsl(0 0% 9%);
+  --muted: hsl(0 0% 95%);
+  --muted-foreground: hsl(0 0% 45%);
+  --accent: hsl(0 0% 96%);
+  --accent-foreground: hsl(0 0% 9%);
+  --destructive: hsl(0 72% 51%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(0 0% 90%);
+  --input: hsl(0 0% 90%);
+  --ring: hsl(0 0% 9%);
+}
+
+.dark #viewport .pagehub-sdk-root,
+.dark #viewport .tool-bg,
+.dark #viewport .node-control,
+.dark #device-tools-portal .pagehub-sdk-root,
+.dark #device-tools-portal .tool-bg,
+.dark #device-tools-portal .node-control {
+  --background: hsl(0 0% 10%);
+  --foreground: hsl(0 0% 93%);
+  --card: hsl(0 0% 13%);
+  --card-foreground: hsl(0 0% 93%);
+  --popover: hsl(0 0% 13%);
+  --popover-foreground: hsl(0 0% 93%);
+  --primary: hsl(0 0% 93%);
+  --primary-foreground: hsl(0 0% 9%);
+  --secondary: hsl(0 0% 18%);
+  --secondary-foreground: hsl(0 0% 93%);
+  --muted: hsl(0 0% 18%);
+  --muted-foreground: hsl(0 0% 64%);
+  --accent: hsl(0 0% 20%);
+  --accent-foreground: hsl(0 0% 93%);
+  --destructive: hsl(0 72% 51%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(0 0% 25%);
+  --input: hsl(0 0% 20%);
+  --ring: hsl(0 0% 93%);
+}
