@@ -23,6 +23,7 @@ const TextEditorMode = React.lazy(() => import("./TextEditor"));
 export interface TextProps extends BaseSelectorProps {
   text?: string;
   tagName?: string;
+  textFitMode?: "oneline" | "multiline" | "box" | "boxoneline";
   activeTab?: number;
   action?: NodeAction;
   click?: any; // Legacy — handled by migrateAction()
@@ -63,7 +64,7 @@ const renderLiveMode = (props: any, query: any, router: any) => {
   if (tagName === "Textfit") {
     return (
       <AutoTextSize
-        mode="oneline"
+        mode={props.textFitMode || "oneline"}
         maxFontSizePx={800}
         style={{ width: "100%" }}
         as="div"

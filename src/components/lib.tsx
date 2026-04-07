@@ -27,7 +27,7 @@ export const RenderPattern = ({
 
 export const RenderGradient = ({ children, props, view, enabled, properties, preview, query }) => {
   if (props?.backgroundImage && /\bbg-linear/.test(props?.className || "")) {
-    const inlayClass = "flex flex-1 w-full";
+    const inlayClass = "flex flex-col flex-1 w-full";
 
     return <div className={inlayClass}>{children}</div>;
   }

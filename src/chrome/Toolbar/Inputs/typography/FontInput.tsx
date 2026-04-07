@@ -22,8 +22,10 @@ export const FontInput = () => {
   const {
     actions: { setProp },
     helpers,
+    tagName,
   } = useNode(node => ({
     helpers: node.data.props.helpers || "",
+    tagName: node.data.props.tagName,
   }));
 
   const applyTypographyPreset = (font: any) => {
@@ -168,6 +170,15 @@ export const FontInput = () => {
         showVarSelector={true}
         varSelectorPrefix="font"
       />
+
+      {tagName === "Textfit" && (
+        <ToolbarItem propKey="textFitMode" type="select" label="Fit Mode" propType="component">
+          <option value="oneline">One Line</option>
+          <option value="multiline">Multi Line</option>
+          <option value="box">Box</option>
+          <option value="boxoneline">Box One Line</option>
+        </ToolbarItem>
+      )}
 
       {/* Typography Presets */}
       {(() => {
