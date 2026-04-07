@@ -1,4 +1,4 @@
-import { TbPlus, TbTrash } from "react-icons/tb";
+import { TbMoon, TbMoonOff, TbPlus, TbSun, TbTrash } from "react-icons/tb";
 import { toPaletteCSSVarName } from "utils/design/designSystemVars";
 import type { UseDesignSystemReturn } from "../hooks/useDesignSystem";
 
@@ -9,6 +9,50 @@ interface ColorsTabProps {
 export function ColorsTab({ ds }: ColorsTabProps) {
   return (
     <div className="space-y-3 p-6">
+      {/* Dark mode toggle bar */}
+      <div className="flex items-center justify-between">
+        {ds.darkModeEnabled ? (
+          <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
+            <button
+              onClick={() => ds.toggleDarkMode()}
+              className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                ds.colorMode === "light"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <TbSun size={14} />
+              Light
+            </button>
+            <button
+              onClick={() => ds.toggleDarkMode()}
+              className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                ds.colorMode === "dark"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <TbMoon size={14} />
+              Dark
+            </button>
+          </div>
+        ) : (
+          <div />
+        )}
+        <button
+          onClick={() => ds.darkModeEnabled ? ds.disableDarkMode() : ds.toggleDarkMode()}
+          className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
+            ds.darkModeEnabled
+              ? "bg-violet-600/10 text-violet-700 hover:bg-violet-600/20"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+          title={ds.darkModeEnabled ? "Disable dark mode" : "Enable dark mode"}
+        >
+          {ds.darkModeEnabled ? <TbMoon size={14} /> : <TbMoonOff size={14} />}
+          {ds.darkModeEnabled ? "Dark mode on" : "Dark mode"}
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 gap-2">
         {ds.palettes.map((pallet, index) => (
           <div key={index} className="group flex items-center gap-2">

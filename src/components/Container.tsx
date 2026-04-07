@@ -15,7 +15,7 @@ import {
 
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import { EmptyState } from "./EmptyState";
-import { RenderGradient, RenderPattern, hasInlay, inlayProps } from "./lib";
+import { RenderPattern, inlayProps } from "./lib";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 export interface ContainerProps extends BaseSelectorProps {
@@ -138,8 +138,6 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     });
   };
 
-  const inlayed = hasInlay(props);
-
   let className = props.className || "";
 
   // Hide component containers from the main viewport
@@ -178,20 +176,11 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
         preview={preview}
         query={query}
       >
-        <RenderGradient
-          props={props}
-          view={view}
-          enabled={enabled}
-          properties={inlayProps}
-          preview={preview}
-          query={query}
-        >
           {children ? (
             children
-          ) : (isCanvasNode && !hasChildNodes && !props.backgroundImage && !props.backgroundOverlay && !props.root?.style && !/\bbg-/.test(props.className || "")) ? (
+          ) : (isCanvasNode && !hasChildNodes && !props.backgroundImage && !props.root?.style && !/\bbg-/.test(props.className || "")) ? (
             <EmptyState icon={props.type === "page" ? <TbNote /> : <TbContainer />} />
           ) : null}
-        </RenderGradient>
       </RenderPattern>
     ),
   };

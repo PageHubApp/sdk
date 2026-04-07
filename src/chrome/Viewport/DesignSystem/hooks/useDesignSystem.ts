@@ -2,7 +2,7 @@ import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtomState } from "@zedux/react";
 import { resolveColorForDisplay } from "utils/design/colorSystem";
-import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "utils/defaults";
+import { DEFAULT_PALETTE, DEFAULT_DARK_PALETTE, DEFAULT_STYLE_GUIDE } from "utils/defaults";
 import { getStyleSheets } from "utils/lib";
 import { fonts } from "utils/tailwind";
 import { ColorPickerAtom } from "../../../Toolbar/Tools/ColorPickerDialog";
@@ -87,6 +87,10 @@ export function useDesignSystem(isOpen: boolean) {
 
   // ─── Domain state (grouped) ───
   const [palettes, setPalettes] = useState<PaletteColor[]>(DEFAULT_PALETTE);
+  const [darkPalettes, setDarkPalettes] = useState<PaletteColor[]>(DEFAULT_DARK_PALETTE);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+  /** Which palette the Colors tab is editing: "light" or "dark" */
+  const [colorMode, setColorMode] = useState<"light" | "dark">("light");
   const [customFonts, setCustomFonts] = useState<CustomFont[]>(DEFAULT_CUSTOM_FONTS);
   const [styles, setStyles] = useState<StyleGuideState>({ ...DEFAULT_STYLE_GUIDE } as StyleGuideState);
 
@@ -105,7 +109,7 @@ export function useDesignSystem(isOpen: boolean) {
   // Save tracking
   const isSaving = useRef(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSavedData = useRef<{ pallet: PaletteColor[]; styleGuide: StyleGuideState; typography?: CustomFont[] } | null>(null);
+  const lastSavedData = useRef<{ pallet: PaletteColor[]; darkPallet?: PaletteColor[]; darkModeEnabled?: boolean; styleGuide: StyleGuideState; typography?: CustomFont[] } | null>(null);
 
   // Subscribe to ROOT_NODE changes (undo/redo)
   const rootNodeData = useEditor(state => {
@@ -115,6 +119,7 @@ export function useDesignSystem(isOpen: boolean) {
 
   // Stable JSON keys for dependency tracking (avoids infinite loops from new object refs)
   const rootPalletJson = useMemo(() => JSON.stringify(rootNodeData.pallet), [rootNodeData.pallet]);
+  const rootDarkPalletJson = useMemo(() => JSON.stringify(rootNodeData.darkPallet), [rootNodeData.darkPallet]);
   const rootStyleGuideJson = useMemo(() => JSON.stringify(rootNodeData.styleGuide), [rootNodeData.styleGuide]);
   const rootTypographyJson = useMemo(() => JSON.stringify(rootNodeData.typography), [rootNodeData.typography]);
 
@@ -131,6 +136,15 @@ export function useDesignSystem(isOpen: boolean) {
         setPalettes(rootNodeData.pallet as PaletteColor[]);
       } else {
         setPalettes(DEFAULT_PALETTE);
+      }
+
+      // Dark palette
+      if (rootNodeData.darkPallet && Array.isArray(rootNodeData.darkPallet)) {
+        setDarkPalettes(rootNodeData.darkPallet as PaletteColor[]);
+        setDarkModeEnabled(true);
+      } else {
+        setDarkPalettes(DEFAULT_DARK_PALETTE);
+        setDarkModeEnabled(!!rootNodeData.darkModeEnabled);
       }
 
       // Typography
@@ -157,6 +171,8 @@ export function useDesignSystem(isOpen: boolean) {
 
       lastSavedData.current = {
         pallet: rootNodeData.pallet as PaletteColor[],
+        darkPallet: rootNodeData.darkPallet as PaletteColor[],
+        darkModeEnabled: !!rootNodeData.darkModeEnabled,
         styleGuide: loaded as unknown as StyleGuideState,
         typography: rootNodeData.typography as CustomFont[],
       };
@@ -165,16 +181,20 @@ export function useDesignSystem(isOpen: boolean) {
     }
   };
 
+  // ─── Active palette (switches based on colorMode) ───
+  const activePalettes = colorMode === "dark" ? darkPalettes : palettes;
+  const setActivePalettes = colorMode === "dark" ? setDarkPalettes : setPalettes;
+
   // ─── Color helpers ───
   const getColorPreview = (colorValue: unknown): string => {
     if (!colorValue) return "#3b82f6";
     const colorStr = typeof colorValue === "string" ? colorValue : String(colorValue);
-    const resolved = resolveColorForDisplay(colorStr, "", palettes);
+    const resolved = resolveColorForDisplay(colorStr, "", activePalettes);
     return resolved.backgroundColor || "#3b82f6";
   };
 
   const updateColor = (index: number, color: unknown) => {
-    const newPalettes = [...palettes];
+    const newPalettes = [...activePalettes];
     let colorValue: string;
     if (typeof color === "string") {
       colorValue = color;
@@ -206,7 +226,7 @@ export function useDesignSystem(isOpen: boolean) {
     }
 
     newPalettes[index] = { ...newPalettes[index], color: colorValue };
-    setPalettes(newPalettes);
+    setActivePalettes(newPalettes);
   };
 
   const openColorPicker = (index: number) => {
@@ -215,7 +235,7 @@ export function useDesignSystem(isOpen: boolean) {
     const rect = buttonRef.getBoundingClientRect();
     setColorDialog({
       enabled: true,
-      value: palettes[index].color,
+      value: activePalettes[index].color,
       prefix: "",
       changed: (value: unknown) => updateColor(index, value),
       e: rect,
@@ -225,13 +245,44 @@ export function useDesignSystem(isOpen: boolean) {
   };
 
   const updateColorName = (index: number, name: string) => {
-    const newPalettes = [...palettes];
+    const newPalettes = [...activePalettes];
     newPalettes[index] = { ...newPalettes[index], name };
-    setPalettes(newPalettes);
+    setActivePalettes(newPalettes);
   };
 
-  const addColor = () => setPalettes([...palettes, { name: "New Color", color: "#3b82f6" }]);
-  const deleteColor = (index: number) => setPalettes(palettes.filter((_, i) => i !== index));
+  const addColor = () => setActivePalettes([...activePalettes, { name: "New Color", color: "#3b82f6" }]);
+  const deleteColor = (index: number) => setActivePalettes(activePalettes.filter((_, i) => i !== index));
+
+  const toggleDarkMode = () => {
+    if (!darkModeEnabled) {
+      // Enabling dark mode — seed with only core semantic tokens that typically change.
+      // Colors not listed here inherit their light-mode value automatically.
+      const DARK_SEED_NAMES = new Set([
+        "Primary", "Primary Foreground",
+        "Secondary", "Secondary Foreground",
+        "Accent", "Accent Foreground",
+        "Muted", "Muted Foreground",
+        "Background", "Foreground",
+        "Card", "Card Foreground",
+        "Popover", "Popover Foreground",
+        "Destructive", "Destructive Foreground",
+        "Border", "Input", "Ring",
+      ]);
+      const seeded = palettes
+        .filter(p => DARK_SEED_NAMES.has(p.name))
+        .map(p => ({ ...p }));
+      setDarkPalettes(seeded.length > 0 ? seeded : palettes.map(p => ({ ...p })));
+      setDarkModeEnabled(true);
+      setColorMode("dark");
+    } else {
+      setColorMode(prev => prev === "dark" ? "light" : "dark");
+    }
+  };
+
+  const disableDarkMode = () => {
+    setDarkModeEnabled(false);
+    setColorMode("light");
+  };
 
   // ─── Typography helpers ───
   const updateFontName = (index: number, name: string) => {
@@ -357,18 +408,21 @@ export function useDesignSystem(isOpen: boolean) {
 
     const dataChanged =
       rootPalletJson !== JSON.stringify(lastSavedData.current.pallet) ||
+      rootDarkPalletJson !== JSON.stringify(lastSavedData.current.darkPallet) ||
       rootStyleGuideJson !== JSON.stringify(lastSavedData.current.styleGuide);
 
     if (dataChanged) {
       // Update lastSavedData BEFORE setting state to prevent re-triggering
       lastSavedData.current = {
         pallet: rootNodeData.pallet,
+        darkPallet: rootNodeData.darkPallet,
+        darkModeEnabled: !!rootNodeData.darkModeEnabled,
         styleGuide: rootNodeData.styleGuide,
         typography: rootNodeData.typography,
       };
       loadFromRootNode();
     }
-  }, [rootPalletJson, rootStyleGuideJson, rootTypographyJson]);
+  }, [rootPalletJson, rootDarkPalletJson, rootStyleGuideJson, rootTypographyJson]);
 
   // Debounced auto-save
   useEffect(() => {
@@ -383,8 +437,15 @@ export function useDesignSystem(isOpen: boolean) {
           props.pallet = palettes;
           props.typography = customFonts;
           props.styleGuide = styles;
+          if (darkModeEnabled) {
+            props.darkPallet = darkPalettes;
+            props.darkModeEnabled = true;
+          } else {
+            delete props.darkPallet;
+            delete props.darkModeEnabled;
+          }
         });
-        lastSavedData.current = { pallet: palettes, styleGuide: styles, typography: customFonts };
+        lastSavedData.current = { pallet: palettes, darkPallet: darkModeEnabled ? darkPalettes : undefined, darkModeEnabled, styleGuide: styles, typography: customFonts };
       } catch (e) {
         console.error("Error saving design system:", e);
       }
@@ -392,15 +453,17 @@ export function useDesignSystem(isOpen: boolean) {
     }, 300);
 
     return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
-  }, [isOpen, palettes, customFonts, styles]);
+  }, [isOpen, palettes, darkPalettes, darkModeEnabled, customFonts, styles]);
 
   return {
     // Tab
     activeTab, setActiveTab,
     // Sections
     expandedSections, toggleSection,
-    // Palette
-    palettes, setPalettes, colorButtonRefs,
+    // Dark mode
+    darkModeEnabled, colorMode, toggleDarkMode, disableDarkMode,
+    // Palette (active = light or dark based on colorMode)
+    palettes: activePalettes, setPalettes: setActivePalettes, colorButtonRefs,
     getColorPreview, updateColor, openColorPicker, updateColorName, addColor, deleteColor,
     // Typography
     customFonts, setCustomFonts,

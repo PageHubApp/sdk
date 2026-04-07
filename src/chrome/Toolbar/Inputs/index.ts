@@ -22,7 +22,6 @@ export * from "./layout/LayoutInput";
 export * from "./layout/LayoutPresetInput";
 export * from "./layout/OrderInput";
 export * from "./layout/OverflowInput";
-export * from "./layout/OverlayInput";
 export * from "./layout/PaddingInput";
 export * from "./layout/RadiusInput";
 export * from "./layout/RingOutlineInput";

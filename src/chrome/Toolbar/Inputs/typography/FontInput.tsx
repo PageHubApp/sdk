@@ -16,6 +16,7 @@ import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { FontFamilyInput } from "./FontFamilyInput";
 import { TailwindInput } from "../advanced/TailwindInput";
+import { ColorInput } from "../color/ColorInput";
 
 export const FontInput = () => {
   const { query } = useEditor();
@@ -170,6 +171,8 @@ export const FontInput = () => {
         showVarSelector={true}
         varSelectorPrefix="font"
       />
+
+      <ColorInput propKey="color" label="Color" prefix="text" inline />
 
       {tagName === "Textfit" && (
         <ToolbarItem propKey="textFitMode" type="select" label="Fit Mode" propType="component">

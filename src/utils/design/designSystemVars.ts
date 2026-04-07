@@ -5,6 +5,7 @@ import { DEFAULT_STYLE_GUIDE } from "../defaults";
 
 export interface DesignSystemVars {
   palette: NamedColor[];
+  darkPalette?: NamedColor[];
   styleGuide: Record<string, any>;
   typography?: any[];
 }
@@ -339,7 +340,20 @@ export function generateDesignSystemCSSVariables(
 
   const cssVars = `${scope} {\n${paletteVars}\n${styleVars}\n${typographyVars}\n}`;
 
-  return typographyClasses ? `${cssVars}\n${typographyClasses}` : cssVars;
+  // Dark mode palette: emit @media (prefers-color-scheme: dark) and .dark selector overrides
+  let darkBlock = "";
+  if (designSystem.darkPalette && designSystem.darkPalette.length > 0) {
+    const darkPaletteVars = generatePaletteCSSVariables(designSystem.darkPalette);
+    if (darkPaletteVars) {
+      darkBlock =
+        `\n@media (prefers-color-scheme: dark) {\n  ${scope} {\n${darkPaletteVars}\n  }\n}` +
+        `\n.dark ${scope}, ${scope}.dark {\n${darkPaletteVars}\n}`;
+    }
+  }
+
+  const allCSS = darkBlock ? `${cssVars}${darkBlock}` : cssVars;
+
+  return typographyClasses ? `${allCSS}\n${typographyClasses}` : allCSS;
 }
 
 /**

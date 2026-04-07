@@ -35,7 +35,6 @@ export {
 export {
   generatePattern,
   getBackgroundUrl,
-  resolveOverlayGradient,
   applyPattern,
   applyBackgroundImage,
   applyLazyBackgroundImage,

@@ -8,7 +8,7 @@ import { applyBackgroundImage, motionIt } from "../utils/lib";
 
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import { EmptyState } from "./EmptyState";
-import { RenderGradient, RenderPattern, hasInlay, inlayProps } from "./lib";
+import { RenderPattern, inlayProps } from "./lib";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
 export interface ContainerGroupProps extends BaseSelectorProps {
@@ -102,19 +102,6 @@ export const ContainerGroup = (props: ContainerGroupProps) => {
             <></>
           </RenderPattern>
         )}
-        {props.backgroundGradient && (
-          <RenderGradient
-            props={props}
-            view={view}
-            enabled={enabled}
-            properties={inlayProps}
-            preview={preview}
-            query={query}
-          >
-            <></>
-          </RenderGradient>
-        )}
-
         {/* Render grouped components */}
         {Object.entries(groupedComponents).map(([type, components]) => (
           <div key={type} className="group-section">

@@ -141,7 +141,7 @@ const Input = (__props, ref) => {
     }
 
     return (
-      <div className="flex h-5 w-full items-center gap-2">
+      <div className="flex h-9 w-full items-center gap-2">
         <input
           type="range"
           className="slider h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-muted text-muted-foreground"

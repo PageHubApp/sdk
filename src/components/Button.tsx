@@ -136,6 +136,15 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     if (/^https?:\/\//.test(resolvedUrl)) {
       prop.rel = "noopener noreferrer";
     }
+    // Active link detection: compare current path with resolved href
+    if (!enabled && router?.asPath) {
+      const current = router.asPath.split(/[?#]/)[0].replace(/\/$/, "") || "/";
+      const href = resolvedUrl.split(/[?#]/)[0].replace(/\/$/, "") || "/";
+      if (current === href) {
+        prop["aria-current"] = "page";
+        prop["data-active"] = "true";
+      }
+    }
   } else if (ele === "button") {
     prop.type = props.type || "button";
   }

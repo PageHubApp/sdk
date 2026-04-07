@@ -14,7 +14,6 @@ import {
   TbArrowsExchange,
   TbBoxPadding,
   TbMouse,
-  TbPalette,
   TbSettings,
   TbSparkles,
 } from "react-icons/tb";
@@ -43,7 +42,6 @@ import { ConditionsInput } from "../Inputs/advanced/ConditionsInput";
 import { EffectsClassInput } from "../Inputs/advanced/EffectsClassInput";
 import { HoverClickInput } from "../Inputs/advanced/HoverClickInput";
 import { BackgroundInput } from "../Inputs/color/BackgroundInput";
-import { ColorInput } from "../Inputs/color/ColorInput";
 import { OpacityInput } from "../Inputs/color/OpacityInput";
 import { PatternInput } from "../Inputs/color/PatternInput";
 import { ShadowInput } from "../Inputs/color/ShadowInput";
@@ -170,18 +168,6 @@ export const UnifiedSettings = () => {
       title: "Design",
       children: (
         <>
-          {section("Colors",
-            (!off("textColor") || !off("bgColor") || (nodeData.name === "FormElement" && !off("placeholderColor"))) ? (
-              <ToolbarSection title="Colors" icon={<TbPalette />} full={1} help="Text and background colors for this element.">
-                {!off("textColor") && <ColorInput propKey="color" label="Text" prefix="text" inline />}
-                {!off("bgColor") && <ColorInput propKey="background" label="Background" prefix="bg" inline />}
-                {nodeData.name === "FormElement" && !off("placeholderColor") && (
-                  <ColorInput propKey="placeholderColor" label="Placeholder" prefix="placeholder:text" inline />
-                )}
-              </ToolbarSection>
-            ) : renderNA("Colors")
-          ).children}
-
           {!off("modifiers") && <ModifiersInput />}
 
           {section("Typography",

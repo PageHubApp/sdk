@@ -9,7 +9,7 @@ import { getMediaContent, looksLikeCdnImageId, calculateOptimalBackgroundSize } 
 // ─── Color helpers (needed by generatePattern) ───
 
 function extractRGBA(rgbaString: string) {
-  const regex = /rgba\((\d{1,3}),(\d{1,3}),(\d{1,3}),(\d*(?:\.\d+)?)\)/;
+  const regex = /rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d*(?:\.\d+)?)\s*\)/;
   const matches = rgbaString.match(regex);
   if (!matches) return null;
   return {
@@ -133,7 +133,7 @@ export const generatePattern = (props: any) => {
       }</pattern></defs><rect width='800%' height='800%' transform='translate(${
         scale * moveLeft
       },${scale * moveTop})' fill='url(#a)'/></svg>`;
-    return `"data:image/svg+xml,${patternNew.replace("#", "%23")}"`;
+    return `data:image/svg+xml;base64,${btoa(patternNew)}`;
   };
 
   return svgPattern(co, maxColors, stroke, scale, spacing, angle, join, moveLeft, moveTop);
@@ -166,41 +166,6 @@ export const getBackgroundUrl = (props: any, query: any = null) => {
   return content;
 };
 
-// ─── Overlay Gradient ───
-
-export const resolveOverlayGradient = (overlay: any): string | null => {
-  if (!overlay) return null;
-
-  if (typeof overlay === "string") {
-    const presets: Record<string, string> = {
-      "dark-left": "linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 100%)",
-      "dark-right": "linear-gradient(to left, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 100%)",
-      "dark-bottom": "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 100%)",
-      "dark-top": "linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 100%)",
-      "dark": "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6))",
-      "light": "linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6))",
-    };
-    return presets[overlay] || null;
-  }
-
-  if (typeof overlay === "object" && overlay.from) {
-    const dir = overlay.direction || "to bottom";
-    const fromColor = overlay.from.color || "#000000";
-    const fromOpacity = (overlay.from.opacity ?? 70) / 100;
-    const toColor = overlay.to?.color || fromColor;
-    const toOpacity = (overlay.to?.opacity ?? 0) / 100;
-
-    const hexToRgb = (hex: string) => {
-      const h = hex.replace("#", "");
-      return `${parseInt(h.substring(0, 2), 16)},${parseInt(h.substring(2, 4), 16)},${parseInt(h.substring(4, 6), 16)}`;
-    };
-
-    return `linear-gradient(${dir}, rgba(${hexToRgb(fromColor)},${fromOpacity}) 0%, rgba(${hexToRgb(toColor)},${toOpacity}) 100%)`;
-  }
-
-  return null;
-};
-
 // ─── Apply helpers ───
 
 export const applyPattern = (prop: any, props: any, settings: any) => {
@@ -221,10 +186,7 @@ export const applyBackgroundImage = (prop: any, props: any, settings: any, query
   if (!_imgProp.src) return prop;
 
   prop.style = prop.style || {};
-  const overlayGradient = resolveOverlayGradient(props.backgroundOverlay);
-  prop.style.backgroundImage = overlayGradient
-    ? `${overlayGradient}, url(${_imgProp.src})`
-    : `url(${_imgProp.src})`;
+  prop.style.backgroundImage = `url(${_imgProp.src})`;
 
   if (props.backgroundPriority) {
     const existingChildren = prop.children;
@@ -249,19 +211,14 @@ export const applyLazyBackgroundImage = (
   if (!_imgProp.src) return prop;
 
   prop.style = prop.style || {};
-  const overlayGradient = resolveOverlayGradient(props.backgroundOverlay);
 
   if (props.backgroundLazy) {
     prop["data-bg"] = _imgProp.src;
-    if (overlayGradient) prop["data-bg-overlay"] = overlayGradient;
     prop["data-bg-loaded"] = "false";
     if (props.backgroundPlaceholder) prop.style.backgroundColor = props.backgroundPlaceholder;
-    if (overlayGradient) prop.style.backgroundImage = overlayGradient;
     if (lazyRef) prop.ref = lazyRef;
   } else {
-    prop.style.backgroundImage = overlayGradient
-      ? `${overlayGradient}, url(${_imgProp.src})`
-      : `url(${_imgProp.src})`;
+    prop.style.backgroundImage = `url(${_imgProp.src})`;
 
     if (props.backgroundPriority) {
       const existingChildren = prop.children;

@@ -35,6 +35,30 @@ export const DEFAULT_PALETTE = [
   { name: "Sidebar Ring", color: "#3b82f6" },
 ];
 
+// Default dark palette — only core semantic tokens that change between light/dark.
+// Tokens not listed here (Chart, Sidebar, etc.) inherit their light-mode value.
+export const DEFAULT_DARK_PALETTE = [
+  { name: "Primary", color: "white" },
+  { name: "Primary Foreground", color: "#0f0f0f" },
+  { name: "Secondary", color: "#1e293b" },
+  { name: "Secondary Foreground", color: "#e2e8f0" },
+  { name: "Accent", color: "#1e293b" },
+  { name: "Accent Foreground", color: "#e2e8f0" },
+  { name: "Muted", color: "#94a3b8" },
+  { name: "Muted Foreground", color: "#e2e8f0" },
+  { name: "Background", color: "#0f0f0f" },
+  { name: "Foreground", color: "#f8fafc" },
+  { name: "Card", color: "#1e293b" },
+  { name: "Card Foreground", color: "#e2e8f0" },
+  { name: "Popover", color: "#1e293b" },
+  { name: "Popover Foreground", color: "#f8fafc" },
+  { name: "Destructive", color: "#ef4444" },
+  { name: "Destructive Foreground", color: "white" },
+  { name: "Border", color: "#334155" },
+  { name: "Input", color: "#334155" },
+  { name: "Ring", color: "#60a5fa" },
+];
+
 // Default style guide values - single source of truth
 export const DEFAULT_STYLE_GUIDE = {
   // Spacing & Layout - using CSS values for CSS vars

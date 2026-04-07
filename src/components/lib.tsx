@@ -25,16 +25,6 @@ export const RenderPattern = ({
   return children;
 };
 
-export const RenderGradient = ({ children, props, view, enabled, properties, preview, query }) => {
-  if (props?.backgroundImage && /\bbg-linear/.test(props?.className || "")) {
-    const inlayClass = "flex flex-col flex-1 w-full";
-
-    return <div className={inlayClass}>{children}</div>;
-  }
-
-  return children;
-};
-
 export const inlayProps = [
   "backgroundGradient",
   "backgroundGradientTo",
@@ -49,8 +39,6 @@ export const inlayProps = [
   "gap",
 ];
 
-export const hasInlay = props =>
-  props.backgroundImage && /\bbg-linear/.test(props?.className || "");
 
 export const useFindScrollingParent = id => {
   const [scrollingParent, setScrollingParent] = useState<HTMLElement | null>(null);

@@ -157,8 +157,9 @@ export function useBackgroundEffects({
     if (typeof window === "undefined" || !enabled) return;
     injectDesignSystemVars({
       palette: props.pallet || DEFAULT_PALETTE,
+      darkPalette: props.darkPallet || undefined,
       typography: props.typography || [],
       styleGuide: props.styleGuide || DEFAULT_STYLE_GUIDE,
     });
-  }, [props.pallet, props.typography, props.styleGuide, enabled]);
+  }, [props.pallet, props.darkPallet, props.typography, props.styleGuide, enabled]);
 }

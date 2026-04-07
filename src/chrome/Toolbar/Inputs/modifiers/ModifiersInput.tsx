@@ -47,7 +47,7 @@ function SaveAsModifier({
       <button
         type="button"
         onClick={() => { setOpen(true); setTargetType(defaultType); }}
-        className="mt-1 text-[10px] text-muted-foreground hover:text-foreground"
+        className="text-xxs mx-auto flex w-full items-center justify-center gap-1 rounded-lg px-2 text-center hover:underline"
       >
         + Save as {defaultType} modifier
       </button>

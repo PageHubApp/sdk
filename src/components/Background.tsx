@@ -16,7 +16,7 @@ import {
 } from "../utils/lib";
 import { PaletteProvider } from "../utils/design/PaletteContext";
 import { EmptyState } from "./EmptyState";
-import { RenderGradient, RenderPattern, hasInlay, inlayProps } from "./lib";
+import { RenderPattern, inlayProps } from "./lib";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import { useBackgroundEffects } from "./Background/useBackgroundEffects";
 
@@ -29,6 +29,8 @@ export interface ContainerProps extends BaseSelectorProps {
   activeTab?: number;
   "data-renderer"?: boolean;
   pallet?: NamedColor[];
+  darkPallet?: NamedColor[];
+  darkModeEnabled?: boolean;
   typography?: any[];
   styleGuide?: {
     borderRadius?: string;
@@ -188,16 +190,7 @@ export function Background({
         preview={preview}
         query={query}
       >
-        <RenderGradient
-          props={props}
-          view={view}
-          enabled={enabled}
-          properties={inlayProps}
-          preview={preview}
-          query={query}
-        >
           {children || <EmptyState icon={<TbContainer />} />}
-        </RenderGradient>
       </RenderPattern>
     </PaletteProvider>
   );

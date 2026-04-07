@@ -14,7 +14,7 @@ export {
 export {
     applyBackgroundImage,
     applyPattern, collectFont, getBackgroundUrl, getFontFromComp,
-    loadCombinedFonts, motionIt, replaceVariables, resolveOverlayGradient, resolvePageRef, variants
+    loadCombinedFonts, motionIt, replaceVariables, resolvePageRef, variants
 } from "./lib";
 
 // Clone helpers

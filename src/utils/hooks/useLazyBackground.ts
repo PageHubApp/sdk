@@ -62,12 +62,11 @@ export const useLazyBackground = (
     const element = ref.current;
     const srcset = element.getAttribute("data-bg-srcset");
 
-    const overlay = element.getAttribute("data-bg-overlay");
     const imgPart = srcset
       ? `image-set(${srcset}), url(${imageUrl})`
       : `url(${imageUrl})`;
 
-    element.style.backgroundImage = overlay ? `${overlay}, ${imgPart}` : imgPart;
+    element.style.backgroundImage = imgPart;
   }, [isLoaded, imageUrl]);
 
   return {
