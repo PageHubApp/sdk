@@ -1,4 +1,4 @@
-import { ComponentType, ReactNode } from "react";
+import { ComponentType, ReactElement, ReactNode } from "react";
 import type { ComponentModifier } from "../../../define";
 
 /**
@@ -16,8 +16,8 @@ export type DisableKey =
   | "typeInput" | "importExport";
 
 export interface ToolbarConfig {
-  /** Icon name string — resolved to a component in UnifiedSettings */
-  icon?: string;
+  /** Icon component, element, or legacy string name */
+  icon?: string | ReactElement | ComponentType;
   /** Component-specific first-tab content */
   mainTab: ComponentType;
   /** Component-specific advanced-tab content (Icon, Anchor, etc.) */

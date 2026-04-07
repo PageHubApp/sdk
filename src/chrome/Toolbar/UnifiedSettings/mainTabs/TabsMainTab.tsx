@@ -1,0 +1,153 @@
+import React from "react";
+import { Element, useEditor, useNode } from "@craftjs/core";
+import { TbPlus, TbTrash } from "react-icons/tb";
+import { ToolbarItem } from "../../ToolbarItem";
+import { ToolbarSection } from "../../ToolbarSection";
+import { renderComponentSlots, renderAdvancedComponentSlots, SECTION_ICONS } from "../helpers";
+
+export const TabsMainTab = () => {
+  const { id, props } = useNode((node) => ({ props: node.data.props }));
+  const { actions, query } = useEditor();
+
+  const node = query.node(id).get();
+  const childIds = node?.data?.nodes || [];
+
+  // First child is the tab bar, rest are panels
+  const tabBarId = childIds[0];
+  const tabBar = tabBarId ? query.node(tabBarId).get() : null;
+  const tabButtonIds = tabBar?.data?.nodes || [];
+  const tabCount = tabButtonIds.length;
+  const panelIds = childIds.slice(1);
+
+  const addTab = async () => {
+    const idx = tabCount;
+    const label = `Tab ${idx + 1}`;
+    const groupId = `tabs-${id}`;
+    const panelId = `tab-${id}-panel-${idx}`;
+
+    const { Button } = await import("../../../../components/Button");
+    const { Container } = await import("../../../../components/Container");
+    const { Text } = await import("../../../../components/Text");
+
+    // Add button to tab bar
+    const btnElement = (
+      <Element
+        is={Button}
+        custom={{ displayName: label }}
+        text={label}
+        url=""
+        action={{
+          type: "show-hide",
+          target: panelId,
+          direction: "tab",
+          trigger: "click",
+          method: "class",
+          group: groupId,
+        }}
+        className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-(--muted-foreground) hover:text-(--foreground) hover:border-(--border) rounded-none"
+      />
+    );
+
+    // Add panel
+    const panelElement = (
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: `Tab Panel ${idx + 1}` }}
+        id={panelId}
+        tabGroup={groupId}
+        canDelete={true}
+        canEditName={true}
+        className="flex flex-col gap-(--container-gap) px-(--container-padding-x) py-(--container-padding-y) hidden"
+      >
+        <Element
+          is={Text}
+          custom={{ displayName: "Content" }}
+          text={`<p>Content for ${label}. Replace with your own content.</p>`}
+        />
+      </Element>
+    );
+
+    try {
+      const btnTree = query.parseReactElement(btnElement).toNodeTree();
+      actions.addNodeTree(btnTree, tabBarId);
+
+      const panelTree = query.parseReactElement(panelElement).toNodeTree();
+      actions.addNodeTree(panelTree, id);
+    } catch (e) {
+      console.error("Failed to add tab:", e);
+    }
+  };
+
+  const removeLastTab = () => {
+    if (tabCount <= 1) return;
+    // Remove last button from tab bar
+    const lastBtnId = tabButtonIds[tabCount - 1];
+    actions.delete(lastBtnId);
+    // Remove last panel
+    const lastPanelId = panelIds[panelIds.length - 1];
+    if (lastPanelId) actions.delete(lastPanelId);
+  };
+
+  // Dynamic default tab options
+  const defaultTabOptions = Array.from({ length: tabCount }, (_, i) => (
+    <option key={i} value={i}>Tab {i + 1}</option>
+  ));
+
+  return renderComponentSlots({
+    Content: (
+      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Tab behavior and layout settings.">
+        <ToolbarItem
+          propKey="defaultTab"
+          propType="component"
+          type="select"
+          label="Default Tab"
+        >
+          {defaultTabOptions}
+        </ToolbarItem>
+
+        <ToolbarItem
+          propKey="orientation"
+          propType="component"
+          type="select"
+          label="Orientation"
+        >
+          <option value="horizontal">Horizontal</option>
+          <option value="vertical">Vertical</option>
+        </ToolbarItem>
+
+        <ToolbarItem
+          propKey="mobileMode"
+          propType="component"
+          type="select"
+          label="Mobile Behavior"
+        >
+          <option value="scroll">Scroll</option>
+          <option value="stack">Stack</option>
+        </ToolbarItem>
+
+        <div className="flex gap-2">
+          <button
+            className="flex items-center justify-center gap-1.5 flex-1 px-3 py-2 text-xs font-medium rounded border border-border hover:bg-muted transition-colors"
+            onClick={addTab}
+          >
+            <TbPlus className="w-3.5 h-3.5" />
+            Add Tab
+          </button>
+          <button
+            className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            onClick={removeLastTab}
+            disabled={tabCount <= 1}
+          >
+            <TbTrash className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+      </ToolbarSection>
+    ),
+  });
+};
+
+export const TabsMainTabAdvanced = () => {
+  return renderAdvancedComponentSlots({});
+};

@@ -10,27 +10,13 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
 import React, { useEffect, useMemo } from "react";
 import { BiPaint } from "react-icons/bi";
-import { FaFont } from "react-icons/fa";
-import { RxButton } from "react-icons/rx";
 import {
   TbArrowsExchange,
   TbBoxPadding,
-  TbCode,
-  TbContainer,
-  TbForms,
-  TbInputSearch,
-  TbLayoutNavbar,
-  TbMap,
-  TbMapPin,
-  TbMinus,
   TbMouse,
-  TbMusic,
   TbPalette,
-  TbPhoto,
   TbSettings,
-  TbSpace,
   TbSparkles,
-  TbVideo,
 } from "react-icons/tb";
 import { useDefaultTab, useScrollToActiveTab } from "utils/lib";
 import { registerUnifiedSettings } from "../../../components/LazyUnifiedSettings";
@@ -39,12 +25,6 @@ import { ToolboxMenu } from "../../RenderNode";
 import { TabAtom } from "../../Viewport/atoms";
 import { TBWrap } from "../Helpers/SettingsHelper";
 import { UnifiedTabBody } from "../UnifiedTab";
-
-const ICON_MAP = {
-  TbContainer, TbCode, TbForms, TbInputSearch, TbLayoutNavbar, TbMap, TbMapPin,
-  TbMinus, TbMusic, TbPhoto, TbSpace, TbVideo,
-  FaFont, RxButton,
-};
 
 import { AccordionProvider } from "../AccordionContext";
 import { Notice } from "../Inputs/Notice";
@@ -59,6 +39,7 @@ export { renderNA } from "./helpers";
 // ─── Standard input components ───────────────────────────────────────────────
 import { AccessibilityInput } from "../Inputs/advanced/AccessibilityInput";
 import { AnimationsInput } from "../Inputs/advanced/AnimationsInput";
+import { ConditionsInput } from "../Inputs/advanced/ConditionsInput";
 import { EffectsClassInput } from "../Inputs/advanced/EffectsClassInput";
 import { HoverClickInput } from "../Inputs/advanced/HoverClickInput";
 import { BackgroundInput } from "../Inputs/color/BackgroundInput";
@@ -130,14 +111,12 @@ export const UnifiedSettings = () => {
   const isInitialMount = useScrollToActiveTab(activeTab, setActiveTab, id);
 
   // Build head — always 5 tabs. Tab 0 title & icon comes from the selected node.
-  const iconName = toolbar?.icon;
-  const IconComponent = iconName && ICON_MAP[iconName];
-  // Support direct icon elements from defineComponent() (non-string icons)
-  const iconElement = toolbar?.iconElement;
-  const resolvedIcon = IconComponent ? <IconComponent />
-    : React.isValidElement(iconElement) ? iconElement
-      : typeof iconElement === "function" ? React.createElement(iconElement)
-        : null;
+  const icon = toolbar?.icon;
+  const resolvedIcon = icon
+    ? typeof icon === "function" ? React.createElement(icon as React.ComponentType)
+      : React.isValidElement(icon) ? icon
+        : null
+    : null;
   const head = useMemo(() => [
     { title: displayName || "Component", icon: resolvedIcon },
     ...FIXED_HEAD.slice(1),
@@ -248,6 +227,10 @@ export const UnifiedSettings = () => {
             !off("hoverClick")
               ? <HoverClickInput variant={toolbar?.hoverClickVariant ?? "container"} />
               : <>{renderNA("Click")}{renderNA("Hover")}</>
+          ).children}
+
+          {section("Conditions",
+            <ConditionsInput />
           ).children}
 
           {section("Animation",

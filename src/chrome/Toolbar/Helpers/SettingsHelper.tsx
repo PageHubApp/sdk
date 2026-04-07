@@ -2,6 +2,7 @@ import { useNode } from "@craftjs/core";
 import React from "react";
 import { TabBody } from "../Tab";
 import { ToolbarSection } from "../ToolbarSection";
+import { TruncatedLabelTooltip } from "../ToolbarStyle";
 import { ToolbarWrapper } from "../ToolBarWrapper";
 import { NoSettings } from "./CloneHelper";
 
@@ -31,6 +32,7 @@ export const TBWrap = ({ head, children, unified = false, activeSection = "" }) 
     <ToolbarWrapper head={head} unified={unified} activeSection={activeSection}>
       {children}
     </ToolbarWrapper>
+    <TruncatedLabelTooltip />
   </React.Fragment>
 );
 

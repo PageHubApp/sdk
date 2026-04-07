@@ -32,6 +32,7 @@ export interface ContainerProps extends BaseSelectorProps {
   role?: string;
   "aria-label"?: string;
 
+  open?: boolean;
   actionProp?: NodeAction;
   click?: any; // Legacy — handled by migrateAction()
 }
@@ -223,6 +224,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
 
   if (props.id) prop.id = props.id;
   if (props.tabGroup) prop["data-tab-group"] = props.tabGroup;
+  if (props.type === "details" && props.open) prop.open = true;
   applyAriaProps(prop, props);
 
   if (enabled) {
@@ -280,6 +282,10 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     tagName = "main";
   } else if (props?.type === "form") {
     tagName = "form";
+  } else if (props?.type === "details") {
+    tagName = "details";
+  } else if (props?.type === "summary") {
+    tagName = "summary";
   }
 
   // Note: we intentionally do NOT force overflow:visible here.

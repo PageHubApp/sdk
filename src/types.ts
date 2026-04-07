@@ -185,6 +185,8 @@ export interface PageHubEditorChromeSlots {
   renderEmptyStateAiCard?: (ctx: { onOpenAssistant: () => void }) => ReactNode;
   /** Editor nav menu row — AI Assistant + shortcut hint lives in host. */
   renderNavAiMenuItem?: (ctx: { onSelect: () => void }) => ReactNode;
+  /** Top of editor nav — page-level actions (View Draft, Duplicate, Delete, etc.) from host. */
+  renderNavHeaderItems?: (ctx: { close: () => void }) => ReactNode;
 }
 
 // ─── Main configuration ──────────────────────────────────────────────────────

@@ -1,6 +1,9 @@
 /**
  * Text — Component definition via defineComponent()
  */
+import { BsBodyText } from "react-icons/bs";
+import { FaFont } from "react-icons/fa";
+import { MdShortText } from "react-icons/md";
 import { TextMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/TextMainTab";
 import { defineComponent } from "../define";
 import { LoremIpsum } from "../utils/data/loremIpsum";
@@ -44,7 +47,7 @@ const lorem = new LoremIpsum({
 export const TextDef = defineComponent({
   name: "Text",
   component: Text,
-  icon: "FaFont",
+  icon: FaFont,
   category: "Basic",
   settings: TextMainTab,
   toHTML,
@@ -73,7 +76,7 @@ export const TextDef = defineComponent({
   presets: [
     {
       label: "Title",
-      icon: "MdShortText",
+      icon: MdShortText,
       props: {
         text: lorem.generateSentences(1),
         className: "text-2xl md:text-4xl",
@@ -81,7 +84,7 @@ export const TextDef = defineComponent({
     },
     {
       label: "Sub-title",
-      icon: "MdShortText",
+      icon: MdShortText,
       props: {
         text: lorem.generateSentences(1),
         className: "text-lg md:text-xl",
@@ -89,7 +92,7 @@ export const TextDef = defineComponent({
     },
     {
       label: "Paragraph",
-      icon: "BsBodyText",
+      icon: BsBodyText,
       props: {
         tagName: "p",
         text: lorem.generateParagraphs(1),

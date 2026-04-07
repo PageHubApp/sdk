@@ -7,6 +7,7 @@
  */
 import React from "react";
 import { Element } from "@craftjs/core";
+import { TbAppWindow } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Modal } from "./Modal";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -123,7 +124,7 @@ function buildModalChildren() {
 export const ModalDef = defineComponent({
   name: "Modal",
   component: Modal,
-  icon: "TbAppWindow",
+  icon: TbAppWindow,
   category: "Interactive",
   canvas: true,
   settings: ModalMainTab,

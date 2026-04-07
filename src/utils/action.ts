@@ -14,7 +14,9 @@ export type ActionType =
   | "open-modal"
   | "email"
   | "phone"
-  | "show-hide";
+  | "show-hide"
+  | "copy-to-clipboard"
+  | "download-file";
 
 interface ActionBase {
   type: ActionType;
@@ -63,6 +65,17 @@ export interface ShowHideAction extends ActionBase {
   trigger?: "click" | "hover";
 }
 
+export interface CopyToClipboardAction extends ActionBase {
+  type: "copy-to-clipboard";
+  text: string;
+}
+
+export interface DownloadFileAction extends ActionBase {
+  type: "download-file";
+  url: string;
+  filename?: string;
+}
+
 export type NodeAction =
   | LinkUrlAction
   | LinkPageAction
@@ -70,7 +83,9 @@ export type NodeAction =
   | OpenModalAction
   | EmailAction
   | PhoneAction
-  | ShowHideAction;
+  | ShowHideAction
+  | CopyToClipboardAction
+  | DownloadFileAction;
 
 export type LinkTarget = "_self" | "_blank" | "_parent" | "_top";
 
@@ -196,4 +211,6 @@ export const ACTION_TYPE_OPTIONS: { value: ActionType; label: string }[] = [
   { value: "email", label: "Email" },
   { value: "phone", label: "Phone" },
   { value: "show-hide", label: "Show / Hide" },
+  { value: "copy-to-clipboard", label: "Copy to Clipboard" },
+  { value: "download-file", label: "Download File" },
 ];

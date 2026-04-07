@@ -2,6 +2,7 @@
  * ImageList — Component definition via defineComponent()
  */
 import React from "react";
+import { TbPhoto, TbPhotoScan } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { ImageList } from "./ImageList";
 import { staticClasses, collectClasses, getInlineStyle, styleObjToString, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -39,7 +40,7 @@ export const ImageListDef = defineComponent({
   name: "ImageList",
   displayName: "Image List",
   component: ImageList,
-  icon: "TbPhoto",
+  icon: TbPhoto,
   category: "Media",
   canvas: true,
   settings: ImageListMainTab,
@@ -70,7 +71,7 @@ export const ImageListDef = defineComponent({
   presets: [
     {
       label: "Image Gallery",
-      icon: "TbPhotoScan",
+      icon: TbPhotoScan,
       props: {
         className: "w-full p-4 flex-row gap-4",
       },

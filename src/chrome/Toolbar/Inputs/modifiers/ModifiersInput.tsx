@@ -109,36 +109,31 @@ export function ModifiersInput() {
     <ToolbarSection
       title="Modifiers"
       icon={<TbStack2 />}
-      help="Toggle composable style modifiers for this component."
+      help={hasModifiers ? "Toggle composable style modifiers for this component." : "No modifiers available for this component."}
       defaultOpen={true}
+      disabled={!hasModifiers}
     >
-      {!hasModifiers ? (
-        <p className="px-1 text-[10px] text-muted-foreground">
-          No modifiers available for this component.
-        </p>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {[...grouped.entries()].map(([category, mods]) => (
-            <div key={category}>
-              {grouped.size > 1 && (
-                <p className="mb-0.5 text-[10px] font-medium text-muted-foreground">
-                  {category}
-                </p>
-              )}
-              <div className="flex flex-wrap gap-1">
-                {mods.map((mod) => (
-                  <ModifierChip
-                    key={mod.name}
-                    mod={mod}
-                    active={isActive(mod.name)}
-                    onToggle={() => toggleModifier(mod)}
-                  />
-                ))}
-              </div>
+      <div className="flex flex-col gap-2">
+        {[...grouped.entries()].map(([category, mods]) => (
+          <div key={category}>
+            {grouped.size > 1 && (
+              <p className="mb-0.5 text-[10px] font-medium text-muted-foreground">
+                {category}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-1">
+              {mods.map((mod) => (
+                <ModifierChip
+                  key={mod.name}
+                  mod={mod}
+                  active={isActive(mod.name)}
+                  onToggle={() => toggleModifier(mod)}
+                />
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
       <SaveAsModifier onSave={saveAsModifier} defaultType={nodeTypeName} />
     </ToolbarSection>
   );

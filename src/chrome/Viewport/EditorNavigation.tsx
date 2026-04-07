@@ -1,14 +1,12 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import {
   TbBoxModel2,
   TbDownload,
   TbEye,
   TbEyeOff,
-  TbFilePlus,
   TbLayoutGrid,
   TbLayoutSidebar,
   TbLayoutSidebarRight,
@@ -21,7 +19,7 @@ import {
 } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
-import { ClippyOpenAtom, ClippyVisibleAtom, ShowGridLinesAtom } from "utils/atoms";
+import { ClippyOpenAtom, ShowGridLinesAtom } from "utils/atoms";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { useSDK } from "../../context";
 import { ToolboxTabs } from "./ToolboxTabs";
@@ -38,6 +36,8 @@ interface EditorNavigationProps {
   setIsSiteSettingsModalOpen: (value: boolean) => void;
   setIsModifiersModalOpen: (value: boolean) => void;
   setIsImportExportDialogOpen: (value: boolean) => void;
+  showHidden: boolean;
+  setShowHidden: (fn: (prev: boolean) => boolean) => void;
   toggleTheme: () => void;
   isDarkMode: boolean;
 }
@@ -58,15 +58,14 @@ const Kbd = ({ children, win }: { children: string; win?: string }) => (
   </kbd>
 );
 
-/** `mid` = faint row divider; `section` = full border (end of a group, replaces `<hr>`); `end` = last row, no border. */
-const editorNavRow = (kind: "mid" | "section" | "end") =>
-  [
-    "flex w-full cursor-pointer items-center gap-1 px-3 py-3 text-muted-foreground hover:bg-muted",
-    kind === "mid" && "border-b border-border/50",
-    kind === "section" && "border-b border-border",
-  ]
-    .filter(Boolean)
-    .join(" ");
+const navRow =
+  "flex w-full cursor-pointer items-center gap-1 px-3 py-3 text-muted-foreground hover:bg-muted";
+
+const SectionLabel = ({ children }: { children: string }) => (
+  <div className="px-3 pb-1 pt-3 text-[10px] font-medium uppercase tracking-widest text-muted-foreground/60">
+    {children}
+  </div>
+);
 
 export const EditorNavigation = ({
   settings,
@@ -80,17 +79,18 @@ export const EditorNavigation = ({
   setIsSiteSettingsModalOpen,
   setIsModifiersModalOpen,
   setIsImportExportDialogOpen,
+  showHidden,
+  setShowHidden,
   toggleTheme,
   isDarkMode,
 }: EditorNavigationProps) => {
   const { actions } = useEditor();
-  const [showHidden, setShowHidden] = useState(true);
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
-  const [clippyVisible, setClippyVisible] = useAtomState(ClippyVisibleAtom);
   const setClippyOpen = useSetAtomState(ClippyOpenAtom);
   const { config } = useSDK();
   const isAiEnabled = useAiEnabled();
   const renderNavAi = config.editorChromeSlots?.renderNavAiMenuItem;
+  const renderNavHeader = config.editorChromeSlots?.renderNavHeaderItems;
 
   const { isOpen, panel, close } = usePanelUrl();
 
@@ -136,7 +136,7 @@ export const EditorNavigation = ({
                     close();
                     actions.selectNode(ROOT_NODE);
                   }}
-                  className={editorNavRow("mid")}
+                  className={navRow}
                 >
                   <div className="text-base">
                     <TbBoxModel2 />
@@ -146,7 +146,7 @@ export const EditorNavigation = ({
 
                 <button
                   onClick={() => setSideBarLeft(!sideBarLeft)}
-                  className={editorNavRow("end")}
+                  className={navRow}
                 >
                   <div className="text-base">
                     {sideBarLeft ? <TbLayoutSidebarRight /> : <TbLayoutSidebar />}
@@ -157,48 +157,18 @@ export const EditorNavigation = ({
             ) : (
               // For regular users, show all the original items
               <>
-                <Link
-                  href="/build"
-                  className="hidden cursor-pointer items-center gap-3 p-3 text-muted-foreground hover:bg-muted"
-                >
-                  <TbFilePlus /> New Builder
-                </Link>
+                {/* ── Page actions (from host app) ── */}
+                {renderNavHeader && renderNavHeader({ close })}
 
-
-                <button
-                  onClick={() => {
-                    setIsMediaManagerModalOpen(true);
-                    close();
-                  }}
-                  className={editorNavRow("mid")}
-                >
-                  <div className="text-base">
-                    <TbPhoto />
-                  </div>
-                  <div className="text-sm">Media Manager</div>
-                  <Kbd>⌘⇧M</Kbd>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setIsDesignSystemSidebarOpen(!isDesignSystemSidebarOpen);
-                    close();
-                  }}
-                  className={editorNavRow("mid")}
-                >
-                  <div className="text-base">
-                    <TbPalette />
-                  </div>
-                  <div className="text-sm">Theme Settings</div>
-                  <Kbd>⌘⇧D</Kbd>
-                </button>
+                {/* ── Settings ── */}
+                <SectionLabel>Settings</SectionLabel>
 
                 <button
                   onClick={() => {
                     setIsSiteSettingsModalOpen(true);
                     close();
                   }}
-                  className={editorNavRow("mid")}
+                  className={navRow}
                 >
                   <div className="text-base">
                     <TbSettings />
@@ -209,23 +179,41 @@ export const EditorNavigation = ({
 
                 <button
                   onClick={() => {
-                    setIsModifiersModalOpen(true);
+                    setIsDesignSystemSidebarOpen(!isDesignSystemSidebarOpen);
                     close();
                   }}
-                  className={editorNavRow("section")}
+                  className={navRow}
                 >
                   <div className="text-base">
-                    <TbStack2 />
+                    <TbPalette />
                   </div>
-                  <div className="text-sm">Modifiers</div>
+                  <div className="text-sm">Theme Settings</div>
+                  <Kbd>⌘⇧D</Kbd>
                 </button>
+
+                <button
+                  onClick={() => {
+                    setIsMediaManagerModalOpen(true);
+                    close();
+                  }}
+                  className={navRow}
+                >
+                  <div className="text-base">
+                    <TbPhoto />
+                  </div>
+                  <div className="text-sm">Media Manager</div>
+                  <Kbd>⌘⇧M</Kbd>
+                </button>
+
+                {/* ── View ── */}
+                <SectionLabel>View</SectionLabel>
 
                 <button
                   onClick={() => {
                     setIsLayersDialogOpen(true);
                     close();
                   }}
-                  className={editorNavRow("mid")}
+                  className={navRow}
                 >
                   <div className="text-base">
                     <TbLayoutGrid />
@@ -240,7 +228,7 @@ export const EditorNavigation = ({
                     setShowGridLines(!showGridLines);
                     viewport?.setAttribute("data-show-gridlines", (!showGridLines).toString());
                   }}
-                  className={editorNavRow("mid")}
+                  className={navRow}
                 >
                   <div className="text-base">
                     <TbBoxModel2 />
@@ -251,16 +239,21 @@ export const EditorNavigation = ({
 
                 <button
                   onClick={() => {
-                    const viewport = document.getElementById("viewport");
-
-                    setShowHidden(!showHidden);
-                    viewport.setAttribute("data-show-hidden", showHidden ? "true" : "false");
+                    setShowHidden(prev => {
+                      const next = !prev;
+                      document.getElementById("viewport")?.setAttribute("data-show-hidden", next.toString());
+                      return next;
+                    });
                   }}
-                  className={editorNavRow("section")}
+                  className={navRow}
                 >
                   <div className="text-base">{showHidden ? <TbEyeOff /> : <TbEye />}</div>
                   <div className="text-sm">{`${showHidden ? "Show" : "Hide"} Hidden Components`}</div>
+                  <Kbd>⌘⇧H</Kbd>
                 </button>
+
+                {/* ── Tools ── */}
+                <SectionLabel>Tools</SectionLabel>
 
                 {isAiEnabled &&
                   renderNavAi &&
@@ -273,10 +266,24 @@ export const EditorNavigation = ({
 
                 <button
                   onClick={() => {
+                    setIsModifiersModalOpen(true);
+                    close();
+                  }}
+                  className={navRow}
+                >
+                  <div className="text-base">
+                    <TbStack2 />
+                  </div>
+                  <div className="text-sm">Modifiers</div>
+                  <Kbd>⌘⇧O</Kbd>
+                </button>
+
+                <button
+                  onClick={() => {
                     setIsImportExportDialogOpen(true);
                     close();
                   }}
-                  className={editorNavRow("mid")}
+                  className={navRow}
                 >
                   <div className="text-base">
                     <TbDownload />
@@ -285,12 +292,15 @@ export const EditorNavigation = ({
                   <Kbd>⌘⇧E</Kbd>
                 </button>
 
+                {/* ── Preferences ── */}
+                <SectionLabel>Preferences</SectionLabel>
+
                 <button
                   onClick={() => {
                     setSideBarLeft(!sideBarLeft);
                     close();
                   }}
-                  className={editorNavRow("mid")}
+                  className={navRow}
                 >
                   <div className="text-base">
                     {sideBarLeft ? <TbLayoutSidebarRight /> : <TbLayoutSidebar />}
@@ -303,7 +313,7 @@ export const EditorNavigation = ({
                     toggleTheme();
                     close();
                   }}
-                  className={editorNavRow("end")}
+                  className={navRow}
                 >
                   <div className="text-base">{isDarkMode ? <TbSun /> : <TbMoon />}</div>
                   <div className="text-sm">Switch to {isDarkMode ? "Light" : "Dark"} Theme</div>

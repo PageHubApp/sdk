@@ -186,3 +186,20 @@ export function addClickControls(
   };
   addActionHandlers(prop, action, enabled);
 }
+
+/**
+ * Initialize accordion single-open behavior for static/viewer HTML.
+ * Listens for native <details> toggle events within [data-accordion-group]
+ * containers and closes siblings when one opens.
+ */
+export function initAccordionGroups(root: Document | HTMLElement = document) {
+  root.querySelectorAll("[data-accordion-group]").forEach((wrapper) => {
+    wrapper.addEventListener("toggle", (e: Event) => {
+      const target = e.target as HTMLDetailsElement;
+      if (target.tagName !== "DETAILS" || !target.open) return;
+      wrapper.querySelectorAll("details[open]").forEach((d) => {
+        if (d !== target) (d as HTMLDetailsElement).open = false;
+      });
+    }, true);
+  });
+}

@@ -8,6 +8,7 @@
 
 import type { ComponentType } from "react";
 
+import { Accordion } from "./components/Accordion";
 import { Audio } from "./components/Audio";
 import { Background } from "./components/Background";
 import { Button } from "./components/Button";
@@ -16,6 +17,7 @@ import { Nav } from "./components/Nav";
 import { Container } from "./components/Container";
 import { ContainerGroup } from "./components/ContainerGroup";
 import { Divider } from "./components/Divider";
+import { Dropdown } from "./components/Dropdown";
 import { Embed } from "./components/Embed";
 import { Footer } from "./components/Footer";
 import { Form } from "./components/Form";
@@ -27,11 +29,13 @@ import { Map } from "./components/Map";
 import { MapPoint } from "./components/MapPoint";
 import { Modal } from "./components/Modal";
 import { Spacer } from "./components/Spacer";
+import { Tabs } from "./components/Tabs";
 import { Text } from "./components/Text";
 import { Video } from "./components/Video";
 import { SavedComponentLoader } from "./chrome/Viewport/Toolbox/savedComponents";
 
 import {
+  AccordionDef,
   AudioDef,
   BackgroundDef,
   ButtonDef,
@@ -39,6 +43,7 @@ import {
   ContainerDef,
   ContainerGroupDef,
   DividerDef,
+  DropdownDef,
   EmbedDef,
   FormDef,
   FormElementDef,
@@ -49,6 +54,7 @@ import {
   ModalDef,
   NavDef,
   SpacerDef,
+  TabsDef,
   TextDef,
   VideoDef,
 } from "./components/definitions";
@@ -59,6 +65,7 @@ import type { ResolvedComponentDef } from "./define";
 export type BuiltInCraftResolver = Record<string, ComponentType<any>>;
 
 export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
+  Accordion,
   Audio,
   Background,
   Button,
@@ -66,6 +73,7 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Container,
   ContainerGroup,
   Divider,
+  Dropdown,
   Embed,
   Footer,
   Form,
@@ -78,6 +86,7 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Modal,
   Nav,
   Spacer,
+  Tabs,
   Text,
   Video,
   SavedComponentLoader,
@@ -88,6 +97,7 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
  * Keep in sync with {@link ./components/definitions.ts}.
  */
 export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
+  AccordionDef,
   AudioDef,
   BackgroundDef,
   ButtonDef,
@@ -95,6 +105,7 @@ export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
   ContainerDef,
   ContainerGroupDef,
   DividerDef,
+  DropdownDef,
   EmbedDef,
   FormDef,
   FormElementDef,
@@ -105,6 +116,7 @@ export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
   ModalDef,
   NavDef,
   SpacerDef,
+  TabsDef,
   TextDef,
   VideoDef,
 ];

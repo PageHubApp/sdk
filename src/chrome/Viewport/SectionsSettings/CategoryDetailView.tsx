@@ -1,7 +1,7 @@
 import { useEditor } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import React, { useCallback, useMemo, useRef } from "react";
-import { TbArrowLeft, TbLoader2 } from "react-icons/tb";
+import { TbArrowLeft, TbChevronLeft, TbChevronRight, TbLoader2 } from "react-icons/tb";
 import { SectionPickerDialogAtom } from "utils/atoms";
 import { useSetAtomState } from "../../../utils/atoms";
 import type { BlockCategory } from "../../../utils/useBlockCategories";
@@ -14,16 +14,20 @@ import { buildElementFromStructure } from "./blockHelpers";
 
 interface CategoryDetailViewProps {
   category: BlockCategory;
+  categories: BlockCategory[];
   onBack: () => void;
   activeSubcategory: string | null;
   onSubcategoryChange: (sub: string | null) => void;
+  onCategoryChange: (catId: string) => void;
 }
 
 export function CategoryDetailView({
   category,
+  categories,
   onBack,
   activeSubcategory,
   onSubcategoryChange,
+  onCategoryChange,
 }: CategoryDetailViewProps) {
   const { actions, query } = useEditor();
   const { connectors: { create } } = useEditor(state => ({ enabled: state.options.enabled }));
@@ -38,6 +42,10 @@ export function CategoryDetailView({
   const { blocks, isLoading } = useCategoryBlocks(category.id, activeSubcategory);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const currentIndex = categories.findIndex(c => c.id === category.id);
+  const prevCategory = currentIndex > 0 ? categories[currentIndex - 1] : null;
+  const nextCategory = currentIndex < categories.length - 1 ? categories[currentIndex + 1] : null;
 
   const insertElement = useCallback((element: any) => {
     if (!element) return;
@@ -125,6 +133,37 @@ export function CategoryDetailView({
           )}
           <div className="shrink-0" style={{ minHeight: "70vh" }} />
         </AutoHideScrollbar>
+      )}
+
+      {/* Prev / Next category nav */}
+      {(prevCategory || nextCategory) && (
+        <div className="flex items-stretch border-t border-border">
+          {prevCategory ? (
+            <button
+              onClick={() => onCategoryChange(prevCategory.id)}
+              className="flex flex-1 cursor-pointer items-center gap-1.5 px-3 py-2.5 text-left transition-colors hover:bg-muted"
+            >
+              <TbChevronLeft className="size-3.5 shrink-0 text-muted-foreground" />
+              <span className="min-w-0 truncate text-xs font-medium text-muted-foreground">{prevCategory.name}</span>
+            </button>
+          ) : (
+            <div className="flex-1" />
+          )}
+          {prevCategory && nextCategory && (
+            <div className="w-px bg-border" />
+          )}
+          {nextCategory ? (
+            <button
+              onClick={() => onCategoryChange(nextCategory.id)}
+              className="flex flex-1 cursor-pointer items-center justify-end gap-1.5 px-3 py-2.5 text-right transition-colors hover:bg-muted"
+            >
+              <span className="min-w-0 truncate text-xs font-medium text-muted-foreground">{nextCategory.name}</span>
+              <TbChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+            </button>
+          ) : (
+            <div className="flex-1" />
+          )}
+        </div>
       )}
     </div>
   );

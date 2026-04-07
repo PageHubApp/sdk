@@ -15,6 +15,8 @@ interface UseHeaderShortcutsOptions {
   setIsLayersDialogOpen: (fn: (prev: boolean) => boolean) => void;
   setShowGridLines: (fn: (prev: boolean) => boolean) => void;
   setIsImportExportDialogOpen: (fn: (prev: boolean) => boolean) => void;
+  setIsModifiersModalOpen: (fn: (prev: boolean) => boolean) => void;
+  setShowHidden: (fn: (prev: boolean) => boolean) => void;
 }
 
 export function useHeaderShortcuts({
@@ -30,6 +32,8 @@ export function useHeaderShortcuts({
   setIsLayersDialogOpen,
   setShowGridLines,
   setIsImportExportDialogOpen,
+  setIsModifiersModalOpen,
+  setShowHidden,
 }: UseHeaderShortcutsOptions) {
   const { open, close } = usePanelUrl();
 
@@ -109,6 +113,25 @@ export function useHeaderShortcuts({
       if (key === "e" && e.shiftKey) {
         e.preventDefault();
         setIsImportExportDialogOpen(v => !v);
+        close();
+        return;
+      }
+
+      // Cmd+Shift+H -- Toggle Hidden Components
+      if (key === "h" && e.shiftKey) {
+        e.preventDefault();
+        setShowHidden(prev => {
+          const next = !prev;
+          document.getElementById("viewport")?.setAttribute("data-show-hidden", next.toString());
+          return next;
+        });
+        return;
+      }
+
+      // Cmd+Shift+O -- Modifiers
+      if (key === "o" && e.shiftKey) {
+        e.preventDefault();
+        setIsModifiersModalOpen(v => !v);
         close();
         return;
       }

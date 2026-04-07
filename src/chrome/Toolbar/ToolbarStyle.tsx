@@ -1,7 +1,26 @@
 import { Tooltip } from "components/layout/Tooltip";
+import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
+import { useCallback } from "react";
 import { TbInfoCircle } from "react-icons/tb";
+import { Tooltip as ReactTooltip } from "react-tooltip";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
 import { ToolbarLabel } from "./Label";
+
+const TRUNCATE_TIP_ID = "truncated-label-tip";
+
+/** Ref callback — sets data-tooltip attrs when text is clipped. */
+function useTruncateRef() {
+  return useCallback((el: HTMLElement | null) => {
+    if (!el) return;
+    if (el.scrollWidth > el.clientWidth) {
+      el.setAttribute("data-tooltip-id", TRUNCATE_TIP_ID);
+      el.setAttribute("data-tooltip-content", el.textContent || "");
+    } else {
+      el.removeAttribute("data-tooltip-id");
+      el.removeAttribute("data-tooltip-content");
+    }
+  }, []);
+}
 
 export const MobileDesktopLabels = ({
   lab,
@@ -39,6 +58,17 @@ export const MobileDesktopLabels = ({
     </div>
   );
 };
+
+/** Render once at top-level to power all truncated-label tooltips. */
+export const TruncatedLabelTooltip = () => (
+  <ReactTooltip
+    id={TRUNCATE_TIP_ID}
+    variant="light"
+    classNameArrow="hidden"
+    delayShow={400}
+    className={REACT_TOOLTIP_SURFACE_CLASS}
+  />
+);
 
 export const BgWrap = ({ children, className = "", wrap = null }) => {
   if (wrap) {
@@ -102,6 +132,8 @@ export const Wrap = ({
   labelWidth = "",
   className = "",
 }) => {
+  const truncateRef = useTruncateRef();
+
   if (inline) {
     // Inline mode: everything in one row
     // In inline mode, always show label if it exists (ignore labelHide for the label text)
@@ -110,7 +142,7 @@ export const Wrap = ({
         <div className={`flex w-full flex-col ${className}`}>
           <div className="relative flex w-full items-center gap-0.5">
             {props?.label && (
-              <label htmlFor={`input-${propKey}`} className={`cursor-pointer whitespace-nowrap text-xs ${labelWidth || "w-20"} truncate`}>
+              <label ref={truncateRef} htmlFor={`input-${propKey}`} className={`cursor-pointer whitespace-nowrap text-xs ${labelWidth || "w-20"} truncate`}>
                 {props?.label}
               </label>
             )}

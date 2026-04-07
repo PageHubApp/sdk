@@ -1,6 +1,7 @@
 /**
  * Spacer — Component definition via defineComponent()
  */
+import { TbSpace } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Spacer } from "./Spacer";
 import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -17,7 +18,7 @@ import { SpacerMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/Spacer
 export const SpacerDef = defineComponent({
   name: "Spacer",
   component: Spacer,
-  icon: "TbSpace",
+  icon: TbSpace,
   category: "Basic",
   settings: SpacerMainTab,
   toHTML,

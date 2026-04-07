@@ -28,9 +28,10 @@ const CSS_TRIGGER_OPTIONS = [
   { value: "", label: "Default" },
   { value: "scroll", label: "On Scroll" },
   { value: "load", label: "On Load" },
+  { value: "hover", label: "On Hover" },
 ];
 
-const ANIMATION_PARAM_KEYS = ["animationDuration", "animationDelay", "animationEasing", "animationTrigger"];
+const ANIMATION_PARAM_KEYS = ["animationDuration", "animationDelay", "animationEasing", "animationTrigger", "animationLoop", "animationStagger", "animationExit"];
 
 // Group CSS presets by category
 const cssGroups = Object.entries(cssAnimationPresets).reduce((acc, [key, preset]) => {
@@ -172,6 +173,42 @@ export const AnimationsInput = () => {
                 {(isCSS ? CSS_TRIGGER_OPTIONS : TRIGGER_OPTIONS).map(o => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
+              </ToolbarItem>
+            )}
+
+            {/* Loop toggle */}
+            {!isHoverPreset && (
+              <ToolbarItem propType="root" propKey="animationLoop" type="select" label="Repeat">
+                <option value="">Play Once</option>
+                <option value="loop">Loop</option>
+                <option value="2">2×</option>
+                <option value="3">3×</option>
+              </ToolbarItem>
+            )}
+
+            {/* Stagger children — Framer only */}
+            {!isCSS && (
+              <ToolbarItem
+                propType="root"
+                propKey="animationStagger"
+                type="slider"
+                label="Stagger"
+                min={0}
+                max={0.5}
+                step={0.02}
+                append={<span className="w-8 text-right text-[10px] text-muted-foreground">{props.root?.animationStagger || "0"}s</span>}
+              />
+            )}
+
+            {/* Exit animation — Framer only */}
+            {!isCSS && !isHoverPreset && !isContinuousPreset && (
+              <ToolbarItem propType="root" propKey="animationExit" type="select" label="Exit">
+                <option value="">None</option>
+                <option value="fadeOut">Fade Out</option>
+                <option value="fadeDown">Fade Down</option>
+                <option value="fadeUp">Fade Up</option>
+                <option value="scaleDown">Scale Down</option>
+                <option value="blurOut">Blur Out</option>
               </ToolbarItem>
             )}
 

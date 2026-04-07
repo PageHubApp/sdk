@@ -2,6 +2,7 @@
  * ButtonList — Component definition via defineComponent()
  */
 import React from "react";
+import { RxButton } from "react-icons/rx";
 import { defineComponent } from "../define";
 import { ButtonList } from "./ButtonList";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -19,7 +20,7 @@ import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
 export const ButtonListDef = defineComponent({
   name: "ButtonList",
   component: ButtonList,
-  icon: "RxButton",
+  icon: RxButton,
   category: "Basic",
   canvas: true,
   settings: ButtonListMainTab,

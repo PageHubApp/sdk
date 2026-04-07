@@ -62,6 +62,7 @@ export * from "./advanced/HTMLCodeInput";
 export * from "./advanced/HoverClickInput";
 export * from "./advanced/PropertiesInput";
 export * from "./advanced/TailwindInput";
+export * from "./advanced/ConditionsInput";
 export * from "./advanced/InteractivityInput";
 export * from "./advanced/MiscInput";
 

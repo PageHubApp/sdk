@@ -2,6 +2,7 @@
  * Map — Component definition via defineComponent()
  */
 import React from "react";
+import { TbMap, TbMap2, TbMapPin } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Map } from "./Map";
 import { MapMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/MapMainTab";
@@ -10,7 +11,7 @@ import { HoverNodeController, NameNodeController, DeleteNodeController } from ".
 export const MapDef = defineComponent({
   name: "Map",
   component: Map,
-  icon: "TbMap",
+  icon: TbMap,
   category: "Media",
   canvas: true,
   settings: MapMainTab,
@@ -44,7 +45,7 @@ export const MapDef = defineComponent({
   presets: [
     {
       label: "Map",
-      icon: "TbMap",
+      icon: TbMap,
       props: {
         type: "interactive",
         tileStyle: "osm",
@@ -53,7 +54,7 @@ export const MapDef = defineComponent({
     },
     {
       label: "Static Map",
-      icon: "TbMapPin",
+      icon: TbMapPin,
       props: {
         type: "static",
         tileStyle: "osm",
@@ -62,7 +63,7 @@ export const MapDef = defineComponent({
     },
     {
       label: "Map BG",
-      icon: "TbMap2",
+      icon: TbMap2,
       props: {
         type: "background",
         tileStyle: "cartodb-positron",

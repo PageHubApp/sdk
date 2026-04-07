@@ -4,6 +4,7 @@
  * This replaces the separate Divider.craft.tsx file and the toolbox
  * entry in dividerComponents.tsx. One definition drives everything.
  */
+import { TbMinus } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Divider } from "./Divider";
 import { staticClasses, buildAttrs, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -17,7 +18,7 @@ import { DividerMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/Divid
 export const DividerDef = defineComponent({
   name: "Divider",
   component: Divider,
-  icon: "TbMinus",
+  icon: TbMinus,
   category: "Basic",
   settings: DividerMainTab,
   toHTML,

@@ -7,6 +7,7 @@
  */
 import React from "react";
 import { Element } from "@craftjs/core";
+import { TbForms, TbMail } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Form } from "./Form";
 import { toHTML as containerToHTML } from "./Container.craft";
@@ -98,7 +99,7 @@ function buildContactChildren() {
 export const FormDef = defineComponent({
   name: "Form",
   component: Form,
-  icon: "TbForms",
+  icon: TbForms,
   category: "Forms",
   canvas: true,
   settings: FormMainTab,
@@ -130,13 +131,13 @@ export const FormDef = defineComponent({
   presets: [
     {
       label: "Subscribe Form",
-      icon: "TbMail",
+      icon: TbMail,
       props: { formType: "subscribe" },
       children: buildSubscribeChildren,
     },
     {
       label: "Contact Form",
-      icon: "TbForms",
+      icon: TbForms,
       props: { formType: "contact" },
       children: buildContactChildren,
     },

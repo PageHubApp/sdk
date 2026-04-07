@@ -1,6 +1,8 @@
 /**
  * Button — Component definition via defineComponent()
  */
+import { LuImage } from "react-icons/lu";
+import { RxButton } from "react-icons/rx";
 import { ButtonMainTab, ButtonMainTabAdvanced } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ButtonMainTab";
 import { defineComponent } from "../define";
 import { migrateAction, actionToHref, actionTarget } from "../utils/action";
@@ -69,7 +71,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
 export const ButtonDef = defineComponent({
   name: "Button",
   component: Button,
-  icon: "RxButton",
+  icon: RxButton,
   category: "Basic",
   settings: ButtonMainTab,
   advancedSettings: ButtonMainTabAdvanced,
@@ -105,7 +107,7 @@ export const ButtonDef = defineComponent({
     },
     {
       label: "Icon",
-      icon: "LuImage",
+      icon: LuImage,
       props: {
         text: "Icon",
         icon: {

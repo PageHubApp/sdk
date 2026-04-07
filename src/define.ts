@@ -8,11 +8,12 @@
  * Usage:
  * ```ts
  * import { defineComponent } from "@pagehub/sdk";
+ * import { TbStar } from "react-icons/tb";
  *
  * const Rating = defineComponent({
  *   name: "Rating",
  *   component: RatingStars,
- *   icon: "TbStar",
+ *   icon: TbStar,
  *   props: {
  *     value: { type: "slider", label: "Rating", min: 0, max: 5 },
  *   },
@@ -177,9 +178,9 @@ export function isComponentDef(value: any): value is ResolvedComponentDef {
 // ─── Built-in component names (for collision detection) ────────────────────
 
 const BUILT_IN_NAMES = new Set([
-  "Audio", "Background", "Button", "ButtonList", "Container", "ContainerGroup",
-  "Divider", "Embed", "Footer", "Form", "FormElement", "Header", "Image",
-  "ImageList", "Map", "MapPoint", "Modal", "Nav", "Spacer", "Text", "Video",
+  "Accordion", "Audio", "Background", "Button", "ButtonList", "Container", "ContainerGroup",
+  "Divider", "Dropdown", "Embed", "Footer", "Form", "FormElement", "Header", "Image",
+  "ImageList", "Map", "MapPoint", "Modal", "Nav", "Spacer", "Tabs", "Text", "Video",
 ]);
 
 // ─── Validation ────────────────────────────────────────────────────────────
@@ -401,10 +402,7 @@ export function attachCraft(
   const craft: any = {
     displayName: def.displayName,
     toolbar: {
-      icon: typeof def.icon === "string" ? def.icon : null,
-      // For non-string icons (elements/components), store on iconElement
-      // so UnifiedSettings can use it as a fallback
-      iconElement: typeof def.icon !== "string" ? def.icon : undefined,
+      icon: def.icon ?? null,
       mainTab: def.settings || (def.props ? buildAutoSettings(def.props) : undefined),
       disable: def.disable,
     },

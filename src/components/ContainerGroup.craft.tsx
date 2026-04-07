@@ -2,6 +2,7 @@
  * ContainerGroup — Component definition via defineComponent()
  */
 import React from "react";
+import { TbContainer } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { ContainerGroup } from "./ContainerGroup";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -20,7 +21,7 @@ import { ToolNodeController, ContainerSettingsTopNodeTool } from "./editor-chrom
 export const ContainerGroupDef = defineComponent({
   name: "ContainerGroup",
   component: ContainerGroup,
-  icon: "TbContainer",
+  icon: TbContainer,
   category: "Layout",
   canvas: true,
   settings: ContainerGroupMainTab,

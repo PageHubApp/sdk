@@ -2,6 +2,7 @@
  * Audio — Component definition via defineComponent()
  */
 import React from "react";
+import { TbMusic } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Audio } from "./Audio";
 import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -28,7 +29,7 @@ import { NameNodeController, HoverNodeController, DeleteNodeController } from ".
 export const AudioDef = defineComponent({
   name: "Audio",
   component: Audio,
-  icon: "TbMusic",
+  icon: TbMusic,
   category: "Media",
   settings: AudioMainTab,
   toHTML,

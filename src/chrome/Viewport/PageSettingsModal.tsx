@@ -48,6 +48,11 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
 
   // Advanced
   const [canonicalUrl, setCanonicalUrl] = useState("");
+  const [headCode, setHeadCode] = useState("");
+  const [bodyClass, setBodyClass] = useState("");
+  const [jsonLd, setJsonLd] = useState("");
+  const [pagePassword, setPagePassword] = useState("");
+  const [themeOverrides, setThemeOverrides] = useState<Array<{ varName: string; value: string }>>([]);
 
   useEffect(() => {
     if (isOpen && pageId) {
@@ -81,6 +86,11 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
           setTwitterCreator(props.twitterCreator || "");
 
           setCanonicalUrl(props.canonicalUrl || "");
+          setHeadCode(props.headCode || "");
+          setBodyClass(props.bodyClass || "");
+          setJsonLd(props.jsonLd || "");
+          setPagePassword(props.pagePassword || "");
+          setThemeOverrides(props.themeOverrides || []);
         }
       } catch (e) {
         console.error("Error loading page settings:", e);
@@ -116,6 +126,11 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
         props.twitterCreator = twitterCreator;
 
         props.canonicalUrl = canonicalUrl;
+        props.headCode = headCode;
+        props.bodyClass = bodyClass;
+        props.jsonLd = jsonLd;
+        props.pagePassword = pagePassword;
+        props.themeOverrides = themeOverrides;
       });
 
       onClose();
@@ -230,6 +245,11 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
             {activeTab === "advanced" && (
               <AdvancedTab
                 canonicalUrl={canonicalUrl} setCanonicalUrl={setCanonicalUrl}
+                headCode={headCode} setHeadCode={setHeadCode}
+                bodyClass={bodyClass} setBodyClass={setBodyClass}
+                jsonLd={jsonLd} setJsonLd={setJsonLd}
+                pagePassword={pagePassword} setPagePassword={setPagePassword}
+                themeOverrides={themeOverrides} setThemeOverrides={setThemeOverrides}
               />
             )}
           </div>

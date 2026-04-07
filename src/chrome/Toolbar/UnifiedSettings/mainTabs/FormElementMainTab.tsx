@@ -9,7 +9,7 @@ import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 const inputTypes = [
   "text", "textarea", "email", "password", "url", "tel",
   "date", "datetime-local", "radio", "checkbox", "select",
-  "reset", "hidden", "color", "month", "number", "range",
+  "reset", "hidden", "color", "file", "month", "number", "range",
   "search", "time", "week",
 ];
 
@@ -167,6 +167,33 @@ export const FormElementMainTab = () => {
             />
           </ToolbarSection>
         )}
+
+        <ToolbarSection title="Validation" help="Error handling and validation for this field">
+          <ToolbarItem
+            propKey="pattern"
+            propType="component"
+            type="text"
+            label="Pattern"
+            labelHide={true}
+            placeholder="Regex pattern (e.g. [A-Za-z]+)"
+          />
+          <ToolbarItem
+            propKey="errorMessage"
+            propType="component"
+            type="text"
+            label="Error Message"
+            labelHide={true}
+            placeholder="Please enter a valid value"
+          />
+          <ToolbarItem
+            propKey="label"
+            propType="component"
+            type="text"
+            label="Label"
+            labelHide={true}
+            placeholder="Field label"
+          />
+        </ToolbarSection>
 
         <ToolbarSection title="Auto generate content" subtitle={true}>
           <IpsumGenerator propKey="placeholder" propType="component" />

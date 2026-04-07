@@ -2,6 +2,7 @@
  * Image — Component definition via defineComponent()
  */
 import React from "react";
+import { TbPhoto } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { migrateAction, actionToHref } from "../utils/action";
 import { Image } from "./Image";
@@ -65,7 +66,7 @@ import { DeleteNodeController, ImageMediaTool } from "./editor-chrome";
 export const ImageDef = defineComponent({
   name: "Image",
   component: Image,
-  icon: "TbPhoto",
+  icon: TbPhoto,
   category: "Media",
   settings: ImageMainTab,
   toHTML,

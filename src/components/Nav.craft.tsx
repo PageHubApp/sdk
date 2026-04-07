@@ -15,6 +15,7 @@
  */
 import React from "react";
 import { Element } from "@craftjs/core";
+import { TbBrandTwitter, TbDeviceMobile, TbLayoutNavbar, TbMinus, TbPill } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Nav } from "./Nav";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -202,7 +203,7 @@ function buildPillNavButtons() {
 export const NavDef = defineComponent({
   name: "Nav",
   component: Nav,
-  icon: "TbLayoutNavbar",
+  icon: TbLayoutNavbar,
   category: "Navigation",
   canvas: true,
   settings: NavMainTab,
@@ -225,7 +226,7 @@ export const NavDef = defineComponent({
   presets: [
     {
       label: "Mobile Menu",
-      icon: "TbDeviceMobile",
+      icon: TbDeviceMobile,
       props: {
         menu: { enabled: true, id: "mobile-menu", side: "left", type: "slide", breakpoint: "mobile" },
         className: "flex justify-between items-center gap-(--container-gap)",
@@ -246,35 +247,35 @@ export const NavDef = defineComponent({
 export const NAV_EXTRA_PRESETS = [
   {
     label: "Social Nav",
-    icon: "TbBrandTwitter",
+    icon: TbBrandTwitter,
     element: ButtonList,
     props: { className: navListClassName },
     children: () => buildSocialButtons(true),
   },
   {
     label: "Social Icons",
-    icon: "TbBrandTwitter",
+    icon: TbBrandTwitter,
     element: ButtonList,
     props: { className: navListClassName },
     children: () => buildSocialButtons(false),
   },
   {
     label: "Plain Nav",
-    icon: "TbMinus",
+    icon: TbMinus,
     element: ButtonList,
     props: { className: navListClassName },
     children: () => buildPlainNavButtons(false),
   },
   {
     label: "Minimal Nav",
-    icon: "TbLayoutNavbar",
+    icon: TbLayoutNavbar,
     element: ButtonList,
     props: { className: navListClassName },
     children: () => buildPlainNavButtons(true),
   },
   {
     label: "Pill Nav",
-    icon: "TbPill",
+    icon: TbPill,
     element: ButtonList,
     props: {
       className: "flex flex-row items-center gap-1 md:flex md:flex-row md:items-center md:gap-1 bg-(--primary) rounded-full px-2 py-1",

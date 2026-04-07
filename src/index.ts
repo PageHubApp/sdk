@@ -301,6 +301,7 @@ export type { BuiltInCraftResolver } from "./builtins";
 export { getPageHubApiBaseUrl, setPageHubApiBaseUrl } from "./runtimeApi";
 
 // Export ported selector components for React users
+export { Accordion } from "./components/Accordion";
 export { Audio } from "./components/Audio";
 export { Background } from "./components/Background";
 export { Button } from "./components/Button";
@@ -308,6 +309,7 @@ export { ButtonList } from "./components/ButtonList";
 export { Container } from "./components/Container";
 export { ContainerGroup } from "./components/ContainerGroup";
 export { Divider } from "./components/Divider";
+export { Dropdown } from "./components/Dropdown";
 export { Embed } from "./components/Embed";
 export { Footer } from "./components/Footer";
 export { Form } from "./components/Form";
@@ -319,6 +321,7 @@ export { Map } from "./components/Map";
 export { MapPoint } from "./components/MapPoint";
 export { Modal } from "./components/Modal";
 export { Spacer } from "./components/Spacer";
+export { Tabs } from "./components/Tabs";
 export { Text } from "./components/Text";
 export { Video } from "./components/Video";
 

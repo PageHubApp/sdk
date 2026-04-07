@@ -5,6 +5,7 @@
  * drag-adjust handles for margins/padding/size, and toolbox presets for
  * Row and Column layouts.
  */
+import { TbContainer, TbLayoutColumns, TbLayoutRows } from "react-icons/tb";
 import {
   ContainerMainTab,
   ContainerMainTabAdvanced,
@@ -34,6 +35,8 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   else if (props.type === "aside") t = "aside";
   else if (props.type === "main") t = "main";
   else if (props.type === "form") t = "form";
+  else if (props.type === "details") t = "details";
+  else if (props.type === "summary") t = "summary";
 
   return tag(t, {
     class: staticClasses(props, ctx) || undefined,
@@ -42,6 +45,8 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     ...ariaAttrs(props),
     action: t === "form" ? (props.action || "") : undefined,
     method: t === "form" ? (props.method || "POST") : undefined,
+    open: t === "details" && props.open ? "" : undefined,
+    "data-tab-group": props.tabGroup || undefined,
   }, children);
 };
 
@@ -67,7 +72,7 @@ const canMoveIn = (nodes: any[], into: any) => {
 export const ContainerDef = defineComponent({
   name: "Container",
   component: Container,
-  icon: "TbContainer",
+  icon: TbContainer,
   category: "Layout",
   canvas: true,
   settings: ContainerMainTab,
@@ -195,12 +200,12 @@ export const ContainerDef = defineComponent({
   presets: [
     {
       label: "Row",
-      icon: "TbLayoutColumns",
+      icon: TbLayoutColumns,
       props: { className: "w-full" },
     },
     {
       label: "Column",
-      icon: "TbLayoutRows",
+      icon: TbLayoutRows,
       props: { className: "w-full" },
     },
   ],

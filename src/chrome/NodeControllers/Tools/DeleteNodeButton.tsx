@@ -33,15 +33,17 @@ export const DeleteNodeButton = ({
   };
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       className={className}
       onClick={handleDelete}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") handleDelete(e as any); }}
       title={canDelete ? title : titleDisabled}
-      disabled={!canDelete}
+      aria-disabled={!canDelete || undefined}
     >
       {canDelete ? <TbTrash /> : <TbTrashOff />}
       {label && <span>{label}</span>}
-    </button>
+    </div>
   );
 };

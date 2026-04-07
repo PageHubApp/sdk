@@ -9,10 +9,31 @@ interface CalcDialogProps {
   anchorEl: HTMLElement | null;
 }
 
+/** Parse clamp(a, b, c) or min(a, b) / max(a, b) into parts */
+function parseFunctionArgs(val: string): string[] {
+  const match = val.match(/^(?:clamp|min|max)\((.+)\)$/);
+  if (!match) return [];
+  return match[1].split(",").map(s => s.trim());
+}
+
 export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps) {
   const [inputValue, setInputValue] = useState(value);
-  const [activeFunction, setActiveFunction] = useState<string>("calc");
+  const [activeFunction, setActiveFunction] = useState<string>(
+    value.startsWith("clamp(") ? "clamp" :
+    value.startsWith("min(") ? "min" :
+    value.startsWith("max(") ? "max" :
+    value.startsWith("var(") ? "var" : "calc"
+  );
   const anchorRef = useRef<HTMLElement | null>(anchorEl);
+
+  // Structured fields for clamp/min/max — parse initial value
+  const initArgs = parseFunctionArgs(value);
+  const isInitClamp = value.startsWith("clamp(") && initArgs.length === 3;
+  const isInitMinMax = (value.startsWith("min(") || value.startsWith("max(")) && initArgs.length === 2;
+
+  const [clampMin, setClampMin] = useState(isInitClamp ? initArgs[0] : isInitMinMax ? initArgs[0] : "");
+  const [clampPreferred, setClampPreferred] = useState(isInitClamp ? initArgs[1] : "");
+  const [clampMax, setClampMax] = useState(isInitClamp ? initArgs[2] : isInitMinMax ? initArgs[1] : "");
 
   // Update ref when anchorEl changes
   useEffect(() => {
@@ -57,9 +78,40 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
 
   const insertFunction = (fn: string, example: string) => {
     setActiveFunction(fn);
-    if (!inputValue) {
+
+    if (fn === "clamp") {
+      const args = parseFunctionArgs(inputValue);
+      if (args.length === 3) {
+        setClampMin(args[0]);
+        setClampPreferred(args[1]);
+        setClampMax(args[2]);
+      } else if (!clampMin && !clampPreferred && !clampMax) {
+        setClampMin("1rem");
+        setClampPreferred("5vw");
+        setClampMax("3rem");
+      }
+    } else if (fn === "min" || fn === "max") {
+      const args = parseFunctionArgs(inputValue);
+      if (args.length === 2) {
+        setClampMin(args[0]);
+        setClampMax(args[1]);
+      } else if (!clampMin && !clampMax) {
+        setClampMin(fn === "min" ? "50vw" : "50vw");
+        setClampMax(fn === "min" ? "500px" : "300px");
+      }
+    } else if (!inputValue) {
       setInputValue(example);
     }
+  };
+
+  const buildStructuredValue = () => {
+    if (activeFunction === "clamp") {
+      return `clamp(${clampMin}, ${clampPreferred}, ${clampMax})`;
+    }
+    if (activeFunction === "min" || activeFunction === "max") {
+      return `${activeFunction}(${clampMin}, ${clampMax})`;
+    }
+    return inputValue;
   };
 
   return ReactDOM.createPortal(
@@ -90,26 +142,94 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
             ))}
           </div>
 
-          {/* Textarea */}
+          {/* Input area — structured for clamp/min/max, textarea for calc/var */}
           <div className="p-3">
-            <textarea
-              value={inputValue}
-              onChange={e => setInputValue(e.target.value)}
-              placeholder="e.g. calc(100% - 20px)"
-              className="w-full rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              rows={4}
-              autoFocus
-            />
-            <div className="mt-2 text-xs text-muted-foreground">
-              Examples: calc(100% - 20px), clamp(1rem, 5vw, 3rem), min(50vw, 500px)
-            </div>
+            {activeFunction === "clamp" ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <label className="w-16 text-xs text-muted-foreground">Min</label>
+                  <input
+                    type="text"
+                    value={clampMin}
+                    onChange={e => setClampMin(e.target.value)}
+                    placeholder="1rem"
+                    className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="w-16 text-xs text-muted-foreground">Preferred</label>
+                  <input
+                    type="text"
+                    value={clampPreferred}
+                    onChange={e => setClampPreferred(e.target.value)}
+                    placeholder="5vw"
+                    className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="w-16 text-xs text-muted-foreground">Max</label>
+                  <input
+                    type="text"
+                    value={clampMax}
+                    onChange={e => setClampMax(e.target.value)}
+                    placeholder="3rem"
+                    className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div className="mt-1 rounded bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
+                  {buildStructuredValue()}
+                </div>
+              </div>
+            ) : activeFunction === "min" || activeFunction === "max" ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <label className="w-16 text-xs text-muted-foreground">Value A</label>
+                  <input
+                    type="text"
+                    value={clampMin}
+                    onChange={e => setClampMin(e.target.value)}
+                    placeholder={activeFunction === "min" ? "50vw" : "50vw"}
+                    className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="w-16 text-xs text-muted-foreground">Value B</label>
+                  <input
+                    type="text"
+                    value={clampMax}
+                    onChange={e => setClampMax(e.target.value)}
+                    placeholder={activeFunction === "min" ? "500px" : "300px"}
+                    className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+                <div className="mt-1 rounded bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
+                  {buildStructuredValue()}
+                </div>
+              </div>
+            ) : (
+              <>
+                <textarea
+                  value={inputValue}
+                  onChange={e => setInputValue(e.target.value)}
+                  placeholder="e.g. calc(100% - 20px)"
+                  className="w-full rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  rows={4}
+                  autoFocus
+                />
+                <div className="mt-2 text-xs text-muted-foreground">
+                  Examples: calc(100% - 20px), clamp(1rem, 5vw, 3rem), min(50vw, 500px)
+                </div>
+              </>
+            )}
           </div>
 
           {/* Actions */}
           <div className="flex gap-2 border-t border-border bg-muted/50 p-2">
             <button
               type="button"
-              onClick={() => onSave(inputValue)}
+              onClick={() => onSave(buildStructuredValue())}
               className="btn btn-primary flex-1"
             >
               Apply

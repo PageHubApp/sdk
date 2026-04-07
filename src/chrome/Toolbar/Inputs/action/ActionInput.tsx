@@ -1,9 +1,10 @@
 /**
  * Unified action picker — replaces ClickItem + LinkSettingsInput.
  * Single dropdown to pick action type, then contextual sub-forms.
+ * Supports chained actions via `actions: NodeAction[]` prop.
  */
 import { useNode } from "@craftjs/core";
-import { TbPointer, TbX } from "react-icons/tb";
+import { TbPlus, TbPointer, TbX } from "react-icons/tb";
 import { PageSelector } from "../../../Viewport/PageSelector";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -16,18 +17,36 @@ import {
 } from "../../../../utils/action";
 import { useElementPicker, type PickerFilter } from "./useElementPicker";
 
+const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
+  "link-url": { type: "link-url", url: "" },
+  "link-page": { type: "link-page", pageId: "" },
+  "scroll-to": { type: "scroll-to", anchor: "" },
+  "open-modal": { type: "open-modal", anchor: "" },
+  email: { type: "email", email: "" },
+  phone: { type: "phone", phone: "" },
+  "show-hide": { type: "show-hide", target: "", direction: "toggle", trigger: "click" },
+  "copy-to-clipboard": { type: "copy-to-clipboard", text: "" },
+  "download-file": { type: "download-file", url: "" },
+};
+
 export default function ActionInput() {
   const {
     actions: { setProp },
-    action,
-  } = useNode((node) => ({
-    action: (node.data.props.action as NodeAction | undefined) ?? migrateAction(node.data.props),
-  }));
+    actionList,
+  } = useNode((node) => {
+    const props = node.data.props;
+    // Support both legacy single `action` and new `actions` array
+    if (props.actions?.length) return { actionList: props.actions as NodeAction[] };
+    const single = (props.action as NodeAction | undefined) ?? migrateAction(props);
+    return { actionList: single ? [single] : [] };
+  });
 
-  const setAction = (next: NodeAction | null) => {
+  const syncActions = (list: NodeAction[]) => {
     setProp((props: any) => {
-      props.action = next;
-      // Clean up legacy props when setting new action
+      props.actions = list;
+      // Keep single `action` in sync for backwards compat
+      props.action = list[0] || null;
+      // Clean up legacy props
       delete props.click;
       delete props.url;
       delete props.urlTarget;
@@ -35,97 +54,109 @@ export default function ActionInput() {
     });
   };
 
-  const patchAction = <T extends NodeAction>(patch: Partial<T>) => {
-    setProp((props: any) => {
-      props.action = { ...props.action, ...patch };
-    });
+  const updateAction = (index: number, next: NodeAction) => {
+    const list = [...actionList];
+    list[index] = next;
+    syncActions(list);
   };
 
-  const handleTypeChange = (val: string) => {
+  const patchAction = (index: number) => <T extends NodeAction>(patch: Partial<T>) => {
+    const list = [...actionList];
+    list[index] = { ...list[index], ...patch } as NodeAction;
+    syncActions(list);
+  };
+
+  const removeAction = (index: number) => {
+    syncActions(actionList.filter((_, i) => i !== index));
+  };
+
+  const addAction = () => {
+    syncActions([...actionList, { type: "show-hide", target: "", direction: "toggle", trigger: "click" }]);
+  };
+
+  const handleTypeChange = (index: number, val: string) => {
     if (!val) {
-      setAction(null);
+      removeAction(index);
       return;
     }
-    const newType = val as ActionType;
-    const defaults: Record<ActionType, NodeAction> = {
-      "link-url": { type: "link-url", url: "" },
-      "link-page": { type: "link-page", pageId: "" },
-      "scroll-to": { type: "scroll-to", anchor: "" },
-      "open-modal": { type: "open-modal", anchor: "" },
-      email: { type: "email", email: "" },
-      phone: { type: "phone", phone: "" },
-      "show-hide": { type: "show-hide", target: "", direction: "toggle", trigger: "click" },
-    };
-    setAction(defaults[newType]);
+    updateAction(index, ACTION_DEFAULTS[val as ActionType]);
   };
-
-  const clearButton = action ? (
-    <button
-      type="button"
-      onClick={() => setAction(null)}
-      className="flex shrink-0 items-center justify-center rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
-      aria-label="Clear action"
-    >
-      <TbX />
-    </button>
-  ) : null;
 
   return (
     <ToolbarSection
       title="Action"
       icon={<TbPointer />}
-      help="What happens when someone clicks this element."
+      help="What happens when someone clicks this element. Add multiple actions to chain them."
     >
-      {/* Action type selector */}
-      <ToolbarDropdown
-        value={action?.type ?? ""}
-        onChange={handleTypeChange}
-        propKey="actionType"
-        placeholder="None"
-        append={clearButton}
-      >
-        <option value="">None</option>
-        {ACTION_TYPE_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </ToolbarDropdown>
+      {actionList.map((action, i) => (
+        <div key={i} className={actionList.length > 1 ? "rounded-md border border-border p-2 mb-2" : ""}>
+          {actionList.length > 1 && (
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-[10px] font-medium text-muted-foreground">Action {i + 1}</span>
+              <button
+                type="button"
+                onClick={() => removeAction(i)}
+                className="rounded p-0.5 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+              >
+                <TbX size={12} />
+              </button>
+            </div>
+          )}
 
-      {/* Sub-forms per action type */}
-      {action?.type === "link-url" && (
-        <LinkUrlForm action={action} patch={patchAction} />
-      )}
-      {action?.type === "link-page" && (
-        <LinkPageForm action={action} patch={patchAction} />
-      )}
-      {action?.type === "scroll-to" && (
-        <ElementPickerForm
-          value={action.anchor}
-          filter="section"
-          label="Section"
-          onChange={(anchor) => patchAction({ anchor })}
-        />
-      )}
-      {action?.type === "open-modal" && (
-        <ElementPickerForm
-          value={action.anchor}
-          filter="modal"
-          label="Modal"
-          onChange={(anchor) => patchAction({ anchor })}
-        />
-      )}
-      {action?.type === "email" && (
-        <EmailForm action={action} patch={patchAction} />
-      )}
-      {action?.type === "phone" && (
-        <PhoneForm action={action} patch={patchAction} />
-      )}
-      {action?.type === "show-hide" && (
-        <ShowHideForm action={action} patch={patchAction} />
-      )}
+          <ToolbarDropdown
+            value={action.type ?? ""}
+            onChange={(val: string) => handleTypeChange(i, val)}
+            propKey={`actionType-${i}`}
+            placeholder="None"
+            append={actionList.length === 1 ? (
+              <button
+                type="button"
+                onClick={() => syncActions([])}
+                className="flex shrink-0 items-center justify-center rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
+                aria-label="Clear action"
+              >
+                <TbX />
+              </button>
+            ) : null}
+          >
+            <option value="">None</option>
+            {ACTION_TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </ToolbarDropdown>
+
+          <ActionSubForm action={action} patch={patchAction(i)} />
+        </div>
+      ))}
+
+      {/* Add action button */}
+      <button
+        type="button"
+        onClick={actionList.length === 0 ? () => syncActions([ACTION_DEFAULTS["link-url"]]) : addAction}
+        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border px-2 py-1.5 text-[11px] text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+      >
+        <TbPlus size={12} />
+        {actionList.length === 0 ? "Add Action" : "Chain Another Action"}
+      </button>
     </ToolbarSection>
   );
+}
+
+function ActionSubForm({ action, patch }: { action: NodeAction; patch: (p: any) => void }) {
+  switch (action.type) {
+    case "link-url": return <LinkUrlForm action={action} patch={patch} />;
+    case "link-page": return <LinkPageForm action={action} patch={patch} />;
+    case "scroll-to": return <ElementPickerForm value={(action as any).anchor} filter="section" label="Section" onChange={(anchor) => patch({ anchor })} />;
+    case "open-modal": return <ElementPickerForm value={(action as any).anchor} filter="modal" label="Modal" onChange={(anchor) => patch({ anchor })} />;
+    case "email": return <EmailForm action={action} patch={patch} />;
+    case "phone": return <PhoneForm action={action} patch={patch} />;
+    case "show-hide": return <ShowHideForm action={action} patch={patch} />;
+    case "copy-to-clipboard": return <CopyToClipboardForm action={action} patch={patch} />;
+    case "download-file": return <DownloadFileForm action={action} patch={patch} />;
+    default: return null;
+  }
 }
 
 // ─── Sub-forms ─────────────────────────────────────────────────────────
@@ -287,6 +318,48 @@ function TargetSelect({
       <option value="_parent">Parent window</option>
       <option value="_top">New window</option>
     </ToolbarDropdown>
+  );
+}
+
+function CopyToClipboardForm({ action, patch }: { action: any; patch: (p: any) => void }) {
+  return (
+    <div className="input-wrapper">
+      <input
+        type="text"
+        defaultValue={action.text || ""}
+        onChange={(e) => patch({ text: e.target.value })}
+        placeholder="Text to copy..."
+        className="input-plain w-full"
+        aria-label="Text to copy"
+      />
+    </div>
+  );
+}
+
+function DownloadFileForm({ action, patch }: { action: any; patch: (p: any) => void }) {
+  return (
+    <>
+      <div className="input-wrapper">
+        <input
+          type="url"
+          defaultValue={action.url || ""}
+          onChange={(e) => patch({ url: e.target.value })}
+          placeholder="https://example.com/file.pdf"
+          className="input-plain w-full"
+          aria-label="File URL"
+        />
+      </div>
+      <div className="input-wrapper">
+        <input
+          type="text"
+          defaultValue={action.filename || ""}
+          onChange={(e) => patch({ filename: e.target.value })}
+          placeholder="Filename (optional)"
+          className="input-plain w-full"
+          aria-label="Download filename"
+        />
+      </div>
+    </>
   );
 }
 

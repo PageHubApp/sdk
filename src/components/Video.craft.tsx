@@ -2,6 +2,7 @@
  * Video — Component definition via defineComponent()
  */
 import React from "react";
+import { TbVideo } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Video } from "./Video";
 import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -39,7 +40,7 @@ import { HoverNodeController, NameNodeController, DeleteNodeController } from ".
 export const VideoDef = defineComponent({
   name: "Video",
   component: Video,
-  icon: "TbVideo",
+  icon: TbVideo,
   category: "Media",
   settings: VideoMainTab,
   toHTML,

@@ -5,6 +5,7 @@
  *   UnifiedSettings → registry → MainTabs → helpers  (no cycle)
  */
 import React from "react";
+import { useEditor, useNode } from "@craftjs/core";
 import {
   TbAccessible,
   TbAdjustments,
@@ -21,6 +22,8 @@ import {
   TbHandMove,
   TbIcons,
   TbLayoutAlignCenter,
+  TbLock,
+  TbLockOpen,
   TbPalette,
   TbPointer,
   TbSettings2,
@@ -135,5 +138,27 @@ export function renderAdvancedComponentSlots(
         </React.Fragment>
       ))}
     </>
+  );
+}
+
+/**
+ * Toggle button for sealing/unsealing compound components in the layer tree.
+ * Sealed components hide their internal node structure from the layer panel.
+ */
+export function SealToggle() {
+  const { id } = useNode();
+  const { actions, query } = useEditor();
+  const isSealed = query.node(id).get()?.data?.custom?.sealed ?? false;
+
+  return (
+    <button
+      className="flex items-center gap-1.5 w-full px-3 py-2 text-xs rounded border border-border hover:bg-muted transition-colors"
+      onClick={() => {
+        actions.setCustom(id, (custom: any) => { custom.sealed = !custom.sealed; });
+      }}
+    >
+      {isSealed ? <TbLockOpen className="w-3.5 h-3.5" /> : <TbLock className="w-3.5 h-3.5" />}
+      {isSealed ? "Unseal — show child layers" : "Seal — hide child layers"}
+    </button>
   );
 }

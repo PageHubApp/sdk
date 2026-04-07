@@ -2,6 +2,10 @@
  * FormElement — Component definition via defineComponent()
  */
 import React from "react";
+import {
+  TbAdjustments, TbAt, TbCalendar, TbCheckbox, TbChevronDown,
+  TbCircleDot, TbHash, TbInputSearch, TbTextCaption, TbUpload,
+} from "react-icons/tb";
 import { defineComponent } from "../define";
 import { FormElement } from "./FormElement";
 import { staticClasses, tag, escapeHTML, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -44,7 +48,7 @@ export const FormElementDef = defineComponent({
   name: "FormElement",
   displayName: "Form Item",
   component: FormElement,
-  icon: "TbInputSearch",
+  icon: TbInputSearch,
   category: "Forms",
   settings: FormElementMainTab,
   toHTML,
@@ -80,10 +84,16 @@ export const FormElementDef = defineComponent({
       className: "p-(--input-padding) w-full border-solid border-(length:--input-border-width) border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) :text-[color:var(--input-placeholder-color)] focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
     };
     return [
-      { label: "Textarea",  icon: "TbTextCaption",  props: { type: "textarea", placeholder: "Enter your message...", name: "message", ...base } },
-      { label: "Input",     icon: "TbInputSearch",  props: { type: "text",     placeholder: "Enter text...",           name: "text",    ...base } },
-      { label: "Email",     icon: "TbAt",           props: { type: "email",    placeholder: "your@email.com",         name: "email",   ...base } },
-      { label: "Select",    icon: "TbChevronDown",  props: { type: "select",   placeholder: "Choose an option...",    name: "select",  ...base } },
+      { label: "Textarea",  icon: TbTextCaption,  props: { type: "textarea", placeholder: "Enter your message...", name: "message", ...base } },
+      { label: "Input",     icon: TbInputSearch,  props: { type: "text",     placeholder: "Enter text...",           name: "text",    ...base } },
+      { label: "Email",     icon: TbAt,           props: { type: "email",    placeholder: "your@email.com",         name: "email",   ...base } },
+      { label: "Select",    icon: TbChevronDown,  props: { type: "select",   placeholder: "Choose an option...",    name: "select",  ...base } },
+      { label: "Checkbox",  icon: TbCheckbox,     props: { type: "checkbox", label: "I agree",                      name: "agree",   className: "size-4 accent-(--input-focus-ring-color)" } },
+      { label: "Radio",     icon: TbCircleDot,    props: { type: "radio",    label: "Option",                       name: "choice",  className: "size-4 accent-(--input-focus-ring-color)" } },
+      { label: "Number",    icon: TbHash,         props: { type: "number",   placeholder: "0",                      name: "number",  ...base } },
+      { label: "Date",      icon: TbCalendar,     props: { type: "date",     name: "date",                          ...base } },
+      { label: "File",      icon: TbUpload,       props: { type: "file",     name: "file",                          className: "w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-(--input-bg-color) file:px-4 file:py-2 file:text-sm file:font-medium" } },
+      { label: "Range",     icon: TbAdjustments,  props: { type: "range",    name: "range", min: "0", max: "100",   className: "w-full accent-(--input-focus-ring-color)" } },
     ];
   })(),
 }, { __internal: true });

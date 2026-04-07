@@ -2,6 +2,11 @@
  * Embed — Component definition via defineComponent()
  */
 import React from "react";
+import {
+  TbBrandInstagram, TbBrandSpotify, TbBrandX, TbCalendar, TbCalendarEvent,
+  TbCalendarTime, TbClipboardList, TbCode, TbCoffee, TbCreditCard,
+  TbForms, TbMail, TbMessageCircle, TbShoppingBag,
+} from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Embed, resolveEmbedHTML } from "./Embed";
 import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -25,7 +30,7 @@ import { HoverNodeController, NameNodeController, DeleteNodeController } from ".
 export const EmbedDef = defineComponent({
   name: "Embed",
   component: Embed,
-  icon: "TbCode",
+  icon: TbCode,
   category: "Embeds",
   settings: EmbedMainTab,
   toHTML,
@@ -61,72 +66,72 @@ export const EmbedDef = defineComponent({
   presets: [
     {
       label: "Custom HTML",
-      icon: "TbCode",
+      icon: TbCode,
       props: { service: "custom", className: "w-full" },
     },
     {
       label: "Calendly",
-      icon: "TbCalendarEvent",
+      icon: TbCalendarEvent,
       props: { service: "calendly", className: "w-full" },
     },
     {
       label: "Cal.com",
-      icon: "TbCalendar",
+      icon: TbCalendar,
       props: { service: "cal", className: "w-full" },
     },
     {
       label: "Stripe",
-      icon: "TbCreditCard",
+      icon: TbCreditCard,
       props: { service: "stripe", className: "w-full" },
     },
     {
       label: "Gumroad",
-      icon: "TbShoppingBag",
+      icon: TbShoppingBag,
       props: { service: "gumroad", className: "w-full" },
     },
     {
       label: "Ko-fi",
-      icon: "TbCoffee",
+      icon: TbCoffee,
       props: { service: "kofi", className: "w-full" },
     },
     {
       label: "Typeform",
-      icon: "TbForms",
+      icon: TbForms,
       props: { service: "typeform", className: "w-full" },
     },
     {
       label: "Tally",
-      icon: "TbClipboardList",
+      icon: TbClipboardList,
       props: { service: "tally", className: "w-full" },
     },
     {
       label: "Mailchimp",
-      icon: "TbMail",
+      icon: TbMail,
       props: { service: "mailchimp", className: "w-full" },
     },
     {
       label: "Spotify",
-      icon: "TbBrandSpotify",
+      icon: TbBrandSpotify,
       props: { service: "spotify", className: "w-full" },
     },
     {
       label: "Instagram",
-      icon: "TbBrandInstagram",
+      icon: TbBrandInstagram,
       props: { service: "instagram", className: "w-full" },
     },
     {
       label: "Twitter / X",
-      icon: "TbBrandX",
+      icon: TbBrandX,
       props: { service: "twitter", className: "w-full" },
     },
     {
       label: "Google Calendar",
-      icon: "TbCalendarTime",
+      icon: TbCalendarTime,
       props: { service: "google-calendar", className: "w-full" },
     },
     {
       label: "Crisp Chat",
-      icon: "TbMessageCircle",
+      icon: TbMessageCircle,
       props: { service: "crisp", className: "w-full" },
     },
   ],

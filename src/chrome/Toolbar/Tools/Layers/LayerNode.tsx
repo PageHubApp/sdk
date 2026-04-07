@@ -68,17 +68,20 @@ export function LayerNode({ nodeId, depth }: LayerNodeProps) {
     return null;
   }
 
+  // Sealed components hide their children from the layer tree
+  const isSealed = node?.data?.custom?.sealed === true;
+
   return (
     <div className="craft-layer-node" data-node-id={nodeId}>
       <LayerHeader
         nodeId={nodeId}
         depth={depth}
-        hasChildren={hasChildren}
-        isExpanded={isExpanded}
+        hasChildren={isSealed ? false : hasChildren}
+        isExpanded={isSealed ? false : isExpanded}
       />
 
-      {/* Render children recursively if expanded */}
-      {hasChildren && isExpanded && (
+      {/* Render children recursively if expanded (sealed nodes hide children) */}
+      {hasChildren && isExpanded && !isSealed && (
         <div className="craft-layer-children">
           {children.map(childId => (
             <LayerNode key={childId} nodeId={childId} depth={depth + 1} />

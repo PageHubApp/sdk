@@ -101,9 +101,11 @@ export function SectionsSettings() {
       <div className="flex flex-1 flex-col overflow-hidden">
         <CategoryDetailView
           category={selectedCategory}
+          categories={sortedCategories}
           onBack={() => history.back()}
           activeSubcategory={params.sub}
           onSubcategoryChange={(sub) => panelNavigate({ sub })}
+          onCategoryChange={(catId) => panelNavigate({ cat: catId, sub: null, q: null })}
         />
       </div>
     );

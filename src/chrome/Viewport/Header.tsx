@@ -235,6 +235,7 @@ export const Header = () => {
   const [sideBarLeft, setSideBarLeft] = useAtomState(SideBarAtom);
   const [viewMode, setViewMode] = useAtomState(ViewModeAtom);
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
+  const [showHidden, setShowHidden] = useState(true);
 
   // Keyboard shortcuts
   useHeaderShortcuts({
@@ -250,6 +251,8 @@ export const Header = () => {
     setIsLayersDialogOpen,
     setShowGridLines,
     setIsImportExportDialogOpen,
+    setIsModifiersModalOpen,
+    setShowHidden,
   });
 
   if (!enabled) return null;
@@ -522,6 +525,8 @@ export const Header = () => {
         setIsSiteSettingsModalOpen={setIsSiteSettingsModalOpen}
         setIsModifiersModalOpen={setIsModifiersModalOpen}
         setIsImportExportDialogOpen={setIsImportExportDialogOpen}
+        showHidden={showHidden}
+        setShowHidden={setShowHidden}
         toggleTheme={toggleTheme}
         isDarkMode={isDarkMode}
       />

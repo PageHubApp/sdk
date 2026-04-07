@@ -2,6 +2,7 @@
  * Background — Component definition via defineComponent()
  */
 import React from "react";
+import { TbContainer } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Background } from "./Background";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -20,7 +21,7 @@ import { NameNodeController, ToolNodeController, ContainerSettingsNodeTool } fro
 export const BackgroundDef = defineComponent({
   name: "Background",
   component: Background,
-  icon: "TbContainer",
+  icon: TbContainer,
   category: "Layout",
   canvas: true,
   settings: BackgroundMainTab,

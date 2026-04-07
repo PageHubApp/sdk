@@ -23,6 +23,7 @@ export const inputTypes = [
   "reset",
   "hidden",
   "color",
+  "file",
   "month",
   "number",
   "range",
