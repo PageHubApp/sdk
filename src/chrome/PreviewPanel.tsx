@@ -1,6 +1,6 @@
 import { Editor, Frame } from "@craftjs/core";
 import React, { Component, useEffect, useMemo, useState } from "react";
-import { TbMinus, TbPlus, TbX } from "react-icons/tb";
+import { TbCheck, TbLoader2, TbMinus, TbPlus, TbRefresh, TbX } from "react-icons/tb";
 
 class PreviewErrorBoundary extends Component<{ children: React.ReactNode }, { error: boolean }> {
   state = { error: false };
@@ -17,15 +17,89 @@ import { sanitizeCraftNodeReferences } from "../utils/sanitizeNodeMap";
 
 type Tab = "review" | "live";
 
+export interface SectionOverlayItem {
+  nodeId: string;
+  displayName: string;
+  status: "pending" | "building" | "done" | "failed";
+  statusText?: string;
+  accepted?: boolean;
+  rejected?: boolean;
+}
+
+export interface SectionOverlayConfig {
+  sections: SectionOverlayItem[];
+  onRedo?: (nodeId: string) => void;
+  onAccept?: (nodeId: string) => void;
+  onReject?: (nodeId: string) => void;
+}
+
+function SectionStatusIcon({ status }: { status: SectionOverlayItem["status"] }) {
+  switch (status) {
+    case "building":
+      return <TbLoader2 className="size-3.5 animate-spin text-primary" />;
+    case "done":
+      return <TbCheck className="size-3.5 text-emerald-500" />;
+    case "failed":
+      return <TbX className="size-3.5 text-destructive" />;
+    default:
+      return <div className="size-3.5 rounded-full border border-muted-foreground/40" />;
+  }
+}
+
+function SectionControlList({ sections, onRedo, onAccept, onReject }: SectionOverlayConfig) {
+  return (
+    <div className="border-b border-border/30 px-3 py-2 space-y-1">
+      <div className="text-[10px] font-medium text-muted-foreground">Sections</div>
+      {sections.map(s => (
+        <div key={s.nodeId} className="flex items-center gap-1.5 text-[11px]">
+          <SectionStatusIcon status={s.accepted ? "done" : s.status} />
+          <span className={`flex-1 truncate font-medium ${s.rejected ? "line-through text-muted-foreground" : "text-foreground"}`}>
+            {s.displayName}
+          </span>
+          {s.statusText && s.status === "building" && (
+            <span className="truncate text-[10px] text-muted-foreground max-w-[80px]">{s.statusText}</span>
+          )}
+          {!s.accepted && !s.rejected && (s.status === "done" || s.status === "failed") && (
+            <div className="flex items-center gap-0.5">
+              {s.status === "done" && onAccept && (
+                <button type="button" onClick={() => onAccept(s.nodeId)} className="rounded px-1.5 py-0.5 text-[10px] text-emerald-600 hover:bg-emerald-500/10" title="Accept">
+                  <TbCheck className="size-3" />
+                </button>
+              )}
+              {onRedo && (
+                <button type="button" onClick={() => onRedo(s.nodeId)} className="rounded px-1.5 py-0.5 text-[10px] text-primary hover:bg-primary/10" title="Redo">
+                  <TbRefresh className="size-3" />
+                </button>
+              )}
+              {onReject && (
+                <button type="button" onClick={() => onReject(s.nodeId)} className="rounded px-1.5 py-0.5 text-[10px] text-destructive hover:bg-destructive/10" title="Reject">
+                  <TbX className="size-3" />
+                </button>
+              )}
+            </div>
+          )}
+          {s.accepted && (
+            <span className="text-[10px] text-emerald-600">Accepted</span>
+          )}
+          {s.rejected && (
+            <span className="text-[10px] text-muted-foreground">Rejected</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 interface PreviewPanelProps {
   content: Record<string, any>;
   liveContent?: string | null;
   changedNodes?: Record<string, any> | null;
   resolver: any;
   onClose: () => void;
+  sectionOverlay?: SectionOverlayConfig | null;
 }
 
-export function PreviewPanel({ content, liveContent, changedNodes, resolver, onClose }: PreviewPanelProps) {
+export function PreviewPanel({ content, liveContent, changedNodes, resolver, onClose, sectionOverlay }: PreviewPanelProps) {
   const [zoom, setZoom] = useState(0.35);
   const [tab, setTab] = useState<Tab>("review");
   const { width, handleProps } = useResizable({
@@ -154,8 +228,10 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
         </div>
       </div>
 
-      {/* Changes summary — only on review tab */}
-      {tab === "review" && changes.length > 0 && (
+      {/* Section controls during fills, or changes summary otherwise */}
+      {tab === "review" && sectionOverlay && sectionOverlay.sections.length > 0 ? (
+        <SectionControlList {...sectionOverlay} />
+      ) : tab === "review" && changes.length > 0 ? (
         <div className="border-b border-border/30 px-3 py-2 space-y-1">
           <div className="text-[10px] font-medium text-muted-foreground">Changed:</div>
           {changes.map(c => (
@@ -166,7 +242,7 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
             </div>
           ))}
         </div>
-      )}
+      ) : null}
 
       <div className="scrollbar-light flex-1 overflow-x-hidden overflow-y-auto">
         {(() => {

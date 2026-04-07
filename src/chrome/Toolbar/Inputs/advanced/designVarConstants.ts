@@ -22,6 +22,12 @@ export const STYLE_VAR_MAP: Record<string, { category: string; label: string }> 
   sectionGap: { category: "spacing", label: "Section Gap" },
   containerGap: { category: "spacing", label: "Container Gap" },
   contentWidth: { category: "spacing", label: "Content Width" },
+  // Spatial scale tokens
+  spaceXs: { category: "spacing", label: "Space XS (micro)" },
+  spaceSm: { category: "spacing", label: "Space SM (element)" },
+  spaceMd: { category: "spacing", label: "Space MD (content)" },
+  spaceLg: { category: "spacing", label: "Space LG (section)" },
+  spaceXl: { category: "spacing", label: "Space XL (statement)" },
   borderRadius: { category: "other", label: "Border Radius" },
   shadowStyle: { category: "other", label: "Shadow Style" },
   inputBorderColor: { category: "colors", label: "Input Border Color" },
@@ -51,6 +57,7 @@ export const PREFIX_CATEGORIES: Record<string, string[]> = {
   "outline-offset": ["spacing", "colors", "palette"],
 
   // Spacing-related prefixes
+  p: ["spacing"],
   px: ["spacing"],
   py: ["spacing"],
   pt: ["spacing"],

@@ -32,6 +32,13 @@ export interface StyleGuideState {
   sectionGap: string;
   containerGap: string;
   contentWidth: string;
+  // Spatial scale
+  spaceXs: string;
+  spaceSm: string;
+  spaceMd: string;
+  spaceLg: string;
+  spaceXl: string;
+  spacingDensity: string;
   headingFont: string;
   headingFontFamily: string;
   bodyFont: string;

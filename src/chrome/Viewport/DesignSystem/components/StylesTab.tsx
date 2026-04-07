@@ -73,6 +73,50 @@ function SelectField({
   );
 }
 
+const DENSITY_STEPS = [
+  { value: "0.5", label: "Tight" },
+  { value: "0.65", label: "Compact" },
+  { value: "0.8", label: "Snug" },
+  { value: "1", label: "Default" },
+  { value: "1.25", label: "Relaxed" },
+  { value: "1.5", label: "Airy" },
+  { value: "1.75", label: "Spacious" },
+];
+
+function DensitySlider({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const stepIndex = DENSITY_STEPS.findIndex(s => s.value === value);
+  const currentIndex = stepIndex >= 0 ? stepIndex : 2; // default to "Default"
+  const currentLabel = DENSITY_STEPS[currentIndex].label;
+
+  return (
+    <div>
+      <div className="mb-1 flex items-center justify-between">
+        <label className="text-xs font-medium text-muted-foreground">Spacing Density</label>
+        <span className="text-xs text-muted-foreground">{currentLabel}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-muted-foreground">Compact</span>
+        <input
+          type="range"
+          min={0}
+          max={DENSITY_STEPS.length - 1}
+          step={1}
+          value={currentIndex}
+          onChange={e => onChange(DENSITY_STEPS[Number(e.target.value)].value)}
+          className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-foreground"
+        />
+        <span className="text-[10px] text-muted-foreground">Airy</span>
+      </div>
+    </div>
+  );
+}
+
 function ColorButton({
   id,
   label,
@@ -115,16 +159,13 @@ export function StylesTab({ ds }: StylesTabProps) {
   return (
     <div className="space-y-0">
       <CollapsibleSection title="Spacing & Layout" section="spacing" expanded={!!expandedSections.spacing} onToggle={toggleSection}>
-        <SelectField id="ds-button-padding" label="Button Padding (x y)" value={styles.buttonPadding} onChange={v => updateStyle("buttonPadding", v)}
-          options={[{ value: "0.75rem 0.25rem", label: "Small" }, { value: "1rem 0.5rem", label: "Medium" }, { value: "1.5rem 0.75rem", label: "Large" }, { value: "2rem 1rem", label: "XL" }]} />
-        <SelectField id="ds-container-padding" label="Container Padding (x y)" value={styles.containerPadding} onChange={v => updateStyle("containerPadding", v)}
-          options={[{ value: "1rem 1rem", label: "Small (1rem)" }, { value: "1.5rem 1.5rem", label: "Medium (1.5rem)" }, { value: "2rem 2rem", label: "Large (2rem)" }, { value: "3rem 3rem", label: "XL (3rem)" }, { value: "2rem 1rem", label: "Wide (2rem x 1rem y)" }, { value: "1rem 2rem", label: "Tall (1rem x 2rem y)" }]} />
-        <SelectField id="ds-section-gap" label="Section Gap" value={styles.sectionGap} onChange={v => updateStyle("sectionGap", v)}
-          options={[{ value: "2rem", label: "Small (2rem)" }, { value: "3rem", label: "Medium (3rem)" }, { value: "4rem", label: "Large (4rem)" }, { value: "6rem", label: "XL (6rem)" }, { value: "8rem", label: "2XL (8rem)" }]} />
-        <SelectField id="ds-container-gap" label="Container Gap" value={styles.containerGap} onChange={v => updateStyle("containerGap", v)}
-          options={[{ value: "0.5rem", label: "XS (0.5rem)" }, { value: "1rem", label: "Small (1rem)" }, { value: "1.5rem", label: "Medium (1.5rem)" }, { value: "2rem", label: "Large (2rem)" }, { value: "3rem", label: "XL (3rem)" }]} />
+        <DensitySlider value={styles.spacingDensity} onChange={v => updateStyle("spacingDensity", v)} />
         <SelectField id="ds-content-width" label="Content Width" value={styles.contentWidth} onChange={v => updateStyle("contentWidth", v)}
           options={[{ value: "48rem", label: "Small (48rem)" }, { value: "56rem", label: "Medium (56rem)" }, { value: "64rem", label: "Large (64rem)" }, { value: "72rem", label: "XL (72rem)" }, { value: "80rem", label: "2XL (80rem)" }, { value: "100%", label: "Full Width" }]} />
+        <SelectField id="ds-container-padding" label="Page Gutter (x y)" value={styles.containerPadding} onChange={v => updateStyle("containerPadding", v)}
+          options={[{ value: "1rem 1rem", label: "Small (1rem)" }, { value: "1.5rem 1.5rem", label: "Medium (1.5rem)" }, { value: "2rem 2rem", label: "Large (2rem)" }, { value: "3rem 3rem", label: "XL (3rem)" }, { value: "2rem 1rem", label: "Wide (2rem x 1rem y)" }]} />
+        <SelectField id="ds-button-padding" label="Button Padding (x y)" value={styles.buttonPadding} onChange={v => updateStyle("buttonPadding", v)}
+          options={[{ value: "0.75rem 0.25rem", label: "Small" }, { value: "1rem 0.5rem", label: "Medium" }, { value: "1.5rem 0.75rem", label: "Large" }, { value: "2rem 1rem", label: "XL" }]} />
       </CollapsibleSection>
 
       <CollapsibleSection title="Effects & Borders" section="effects" expanded={!!expandedSections.effects} onToggle={toggleSection}>

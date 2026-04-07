@@ -71,6 +71,15 @@ export const DEFAULT_STYLE_GUIDE = {
   containerGap: "1.5rem", // Medium container gap
   contentWidth: "80rem", // 2XL content width
 
+  // Spatial scale — 5 fluid tiers (doubling scale, damped top)
+  // Each tier is a clamp() that scales fluidly from 375px to 1440px viewport
+  spaceXs: "clamp(0.375rem, 0.25rem + 0.39vw, 0.5rem)", // 6px → 8px — micro: icon gaps, tag padding
+  spaceSm: "clamp(0.75rem, 0.5rem + 0.75vw, 1rem)", // 12px → 16px — element: card items, form fields
+  spaceMd: "clamp(1.5rem, 1rem + 1.5vw, 2rem)", // 24px → 32px — content: heading-to-grid, columns
+  spaceLg: "clamp(2.5rem, 1.25rem + 3.75vw, 4rem)", // 40px → 64px — section: standard block padding
+  spaceXl: "clamp(3.5rem, 1.75rem + 5.25vw, 6rem)", // 56px → 96px — statement: heroes, full-bleed CTAs
+  spacingDensity: "1", // Master multiplier: 0.75 (compact) → 1.25 (airy)
+
   // Typography - heading/body family strings back CSS vars; weights are Tailwind classes on nodes
   headingFont: "font-bold", // Tailwind class for font weight
   headingFontFamily: "Open Sans",

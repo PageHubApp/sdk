@@ -16,7 +16,16 @@ export interface DesignSystemVars {
  */
 const STYLE_VAR_OVERRIDES: Record<string, string> = {
   borderRadius: "radius",
+  spaceXs: "space-xs",
+  spaceSm: "space-sm",
+  spaceMd: "space-md",
+  spaceLg: "space-lg",
+  spaceXl: "space-xl",
+  spacingDensity: "spacing-density",
 };
+
+/** Keys whose CSS output should be wrapped in calc(<value> * var(--spacing-density)) */
+const DENSITY_SCALED_KEYS = new Set(["spaceXs", "spaceSm", "spaceMd", "spaceLg", "spaceXl"]);
 
 /**
  * Convert a name to a valid CSS variable name
@@ -191,6 +200,13 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
     "containerGap",
     "contentWidth",
     "shadowStyle",
+    // Spatial scale
+    "spaceXs",
+    "spaceSm",
+    "spaceMd",
+    "spaceLg",
+    "spaceXl",
+    "spacingDensity",
     // Typography - font weights (Tailwind classes)
     "headingFont",
     "bodyFont",
@@ -233,11 +249,21 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
           variables.push(`  --${varName}-x: ${resolvedValue};`);
           variables.push(`  --${varName}-y: ${resolvedValue};`);
         }
+      } else if (DENSITY_SCALED_KEYS.has(key)) {
+        // Spatial scale tokens: wrap in calc() with density multiplier
+        variables.push(`  ${cssVar}: calc(${resolvedValue} * var(--spacing-density));`);
       } else {
         variables.push(`  ${cssVar}: ${resolvedValue};`);
       }
     }
   });
+
+  // Backward-compat aliases: map old tokens to new spatial scale.
+  // These come after the direct emissions, so the alias values win in CSS.
+  if (styleGuide.spaceSm) {
+    variables.push(`  --section-gap: var(--space-md);`);
+    variables.push(`  --container-gap: var(--space-sm);`);
+  }
 
   return variables.join("\n");
 }
