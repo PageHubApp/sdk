@@ -3,14 +3,14 @@ import type { ComponentModifier } from "../../../define";
 
 /**
  * Toolbar config — lives on each component's .craft.toolbar.
- * Everything is ON by default. Only declare what to disable or override.
+ * Everything is ON by default. Only declare what to hide or override.
  */
 
-export type DisableKey =
+export type HideKey =
   // Appearance granular
   | "textColor" | "bgColor" | "placeholderColor" | "font" | "background" | "pattern"
   | "border" | "shadow" | "radius" | "opacity" | "cursor" | "ringOutline"
-  // Whole-tab disables
+  // Whole-tab hides
   | "hoverClick" | "animations" | "effectsClass" | "accessibility" | "modifiers"
   // Style granular
   | "typeInput" | "importExport";
@@ -18,20 +18,18 @@ export type DisableKey =
 export interface ToolbarConfig {
   /** Icon component, element, or legacy string name */
   icon?: string | ReactElement | ComponentType;
-  /** Component-specific first-tab content */
-  mainTab: ComponentType;
-  /** Component-specific advanced-tab content (Icon, Anchor, etc.) */
-  mainTabAdvanced?: ComponentType;
-  /** Keys to disable — everything ON by default */
-  disable?: DisableKey[];
+  /** Component-specific settings panel content */
+  settings: ComponentType;
+  /** Component-specific advanced settings content (Icon, Anchor, etc.) */
+  advancedSettings?: ComponentType;
+  /** Keys to hide — everything ON by default */
+  hide?: HideKey[];
   /** Swap custom JSX for any accordion section by title */
   override?: Record<string, ReactNode>;
-  /** HoverClick variant (default "container") */
-  hoverClickVariant?: "text" | "container" | "button" | "link";
+  /** Hover variant (default "container") */
+  hover?: "text" | "container" | "button" | "link";
   /** Custom layout JSX (default is <LayoutInput />) */
-  layout?: ReactNode | "spacing" | "hidden";
-  /** Extra JSX appended to Style tab */
-  styleExtra?: ReactNode;
+  layout?: ReactNode | (() => ReactNode) | "spacing" | "hidden";
   /** Composable className modifiers from defineComponent() */
   modifiers?: ComponentModifier[];
 }

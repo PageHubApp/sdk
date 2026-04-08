@@ -1,13 +1,8 @@
 import { useEditor, useNode } from "@craftjs/core";
-import {
-  TbDeviceDesktop,
-  TbDeviceDesktopOff,
-  TbDeviceMobile,
-  TbDeviceMobileOff,
-  TbTrash,
-} from "react-icons/tb";
+import { TbTrash } from "react-icons/tb";
 import { Tooltip } from "components/layout/Tooltip";
 import { atom, useAtomState, useAtomValue } from "@zedux/react";
+
 import { ViewAtom } from "../Viewport/atoms";
 import { changeProp, getPropFinalValue } from "../Viewport/lib";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
@@ -238,6 +233,29 @@ export const ToolbarLabel = ({
 
   const valText = `${prefix || ""}${displayValue(resolvedValue)}${suffix || ""}`;
 
+  // ─── Breakpoint views: only render when value is defined ───
+  const isBreakpointView = viewValue === "mobile" || viewValue === "desktop" || viewValue === "sm" || viewValue === "lg" || viewValue === "xl" || viewValue === "2xl";
+
+  if (lab && isBreakpointView && !icon && !showDeleteIcon) {
+    const bpLabel = viewValue === "mobile" ? "xs" : viewValue === "desktop" ? "md" : viewValue;
+    const dot = (
+      <span
+        role="button"
+        tabIndex={0}
+        onClick={handleToggle}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle(e as any); } }}
+        onContextMenu={hasValue ? handleRemove : undefined}
+        data-has-value={hasValue || undefined}
+        className={`block size-1.5 cursor-pointer rounded-[1px] bg-base-content transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
+      />
+    );
+    if (hasValue) {
+      return <Tooltip content={`${bpLabel}: ${valText}`} placement="top" className="text-xxs">{dot}</Tooltip>;
+    }
+    return dot;
+  }
+
+  // ─── Non-breakpoint views (icon, delete, var selector, etc.) ───
   const renderActiveNode = () => (
     <div
       role="button"
@@ -255,41 +273,6 @@ export const ToolbarLabel = ({
         <span className="flex items-center text-[10px]">{icon}</span>
       ) : showDeleteIcon ? (
         <TbTrash className="size-3" />
-      ) : viewValue === "mobile" ? (
-        <>
-          <TbDeviceMobile className="size-3 shrink-0" />
-          {!iconOnly && (
-            <span className="max-w-[80px] truncate text-[9px] font-medium leading-none opacity-70">
-              {prefix}
-              {displayValue(resolvedValue)}
-              {suffix}
-            </span>
-          )}
-        </>
-      ) : viewValue === "desktop" ? (
-        <>
-          <TbDeviceDesktop className="size-3 shrink-0" />
-          {!iconOnly && (
-            <span className="max-w-[80px] truncate text-[9px] font-medium leading-none opacity-70">
-              {prefix}
-              {displayValue(resolvedValue)}
-              {suffix}
-            </span>
-          )}
-        </>
-      ) : viewValue === "sm" || viewValue === "lg" || viewValue === "xl" || viewValue === "2xl" ? (
-        <>
-          <span className="flex size-4 shrink-0 items-center justify-center rounded border border-base-300 bg-neutral text-[8px] font-bold leading-none">
-            {viewValue === "2xl" ? "2X" : viewValue.toUpperCase()}
-          </span>
-          {!iconOnly && (
-            <span className="max-w-[72px] truncate text-[9px] font-medium leading-none opacity-70">
-              {prefix}
-              {displayValue(resolvedValue)}
-              {suffix}
-            </span>
-          )}
-        </>
       ) : (
         <span className="block min-w-0 truncate text-[10px]">
           {prefix}
@@ -302,7 +285,6 @@ export const ToolbarLabel = ({
 
   return (
     <>
-      {/* Only show label badge if there's a value */}
       {lab && (
         <>
           {hasValue ? (
@@ -313,29 +295,6 @@ export const ToolbarLabel = ({
             ) : (
               renderActiveNode()
             )
-          ) : hasSelection ? (
-            // Only show empty-state device icons when user has explicitly toggled view selection
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={handleToggle}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle(e as any); } }}
-              className={`flex cursor-pointer items-center justify-center rounded p-0.5 transition-colors ${
-                isActiveView
-                  ? "bg-primary/10 text-primary ring-1 ring-primary/20"
-                  : "text-neutral-content hover:bg-accent hover:text-base-content"
-              }`}
-            >
-              {viewValue === "mobile" ? (
-                <TbDeviceMobileOff className="size-3 opacity-30" />
-              ) : viewValue === "desktop" ? (
-                <TbDeviceDesktopOff className="size-3 opacity-30" />
-              ) : viewValue === "sm" || viewValue === "lg" || viewValue === "xl" || viewValue === "2xl" ? (
-                <span className="flex size-4 items-center justify-center rounded border border-dashed border-base-300 text-[8px] font-bold opacity-40">
-                  {viewValue === "2xl" ? "2X" : viewValue.toUpperCase()}
-                </span>
-              ) : null}
-            </div>
           ) : null}
         </>
       )}

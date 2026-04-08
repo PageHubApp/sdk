@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { TbStack2 } from "react-icons/tb";
 import { ToolbarSection } from "../../ToolbarSection";
-import { useModifiers, type ResolvedModifier } from "./useModifiers";
+import { useModifiers, type ResolvedModifier, type CategoryMeta } from "./useModifiers";
+import { PatternCards } from "./PatternCards";
+import { ExclusiveDropdown } from "./ExclusiveDropdown";
+import { ExclusivePills } from "./ExclusivePills";
 
 function ModifierChip({
   mod,
@@ -12,6 +15,7 @@ function ModifierChip({
   active: boolean;
   onToggle: () => void;
 }) {
+  const classCount = mod.classes ? mod.classes.split(/\s+/).filter(Boolean).length : 0;
   return (
     <button
       type="button"
@@ -21,13 +25,88 @@ function ModifierChip({
           ? "border-primary/40 bg-primary/15 text-primary"
           : "border-base-300 bg-transparent text-neutral-content hover:bg-neutral"
       }`}
-      title={mod.name}
+      title={mod.classes || mod.name}
     >
       {mod.label}
+      {classCount > 0 && (
+        <span className="text-[9px] opacity-60">&times;{classCount}</span>
+      )}
       {mod.origin === "site" && (
         <span className="text-[9px] opacity-50">custom</span>
       )}
     </button>
+  );
+}
+
+function ChipGroup({
+  mods,
+  isActive,
+  onToggle,
+}: {
+  mods: ResolvedModifier[];
+  isActive: (mod: ResolvedModifier) => boolean;
+  onToggle: (mod: ResolvedModifier) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {mods.map((mod) => (
+        <ModifierChip
+          key={mod.name}
+          mod={mod}
+          active={isActive(mod)}
+          onToggle={() => onToggle(mod)}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Returns a comma-separated summary of active modifiers in a category. */
+function useActiveSummary(
+  cat: CategoryMeta,
+  isActive: (mod: ResolvedModifier) => boolean,
+): string {
+  const labels = cat.mods.filter((m) => isActive(m)).map((m) => m.label);
+  return labels.join(", ");
+}
+
+function CategorySection({
+  cat,
+  isActive,
+  onToggle,
+}: {
+  cat: CategoryMeta;
+  isActive: (mod: ResolvedModifier) => boolean;
+  onToggle: (mod: ResolvedModifier) => void;
+}) {
+  const summary = useActiveSummary(cat, isActive);
+
+  return (
+    <ToolbarSection
+      title={cat.name}
+      nested
+      collapsible
+      defaultOpen={cat.defaultOpen}
+      accordionPassive
+      header={
+        summary ? (
+          <span className="ml-auto truncate text-[10px] text-primary">{summary}</span>
+        ) : undefined
+      }
+    >
+      {cat.renderAs === "patterns" && (
+        <PatternCards mods={cat.mods} isActive={isActive} onToggle={onToggle} />
+      )}
+      {cat.renderAs === "dropdown" && (
+        <ExclusiveDropdown mods={cat.mods} isActive={isActive} onToggle={onToggle} />
+      )}
+      {cat.renderAs === "pills" && (
+        <ExclusivePills mods={cat.mods} isActive={isActive} onToggle={onToggle} />
+      )}
+      {cat.renderAs === "chips" && (
+        <ChipGroup mods={cat.mods} isActive={isActive} onToggle={onToggle} />
+      )}
+    </ToolbarSection>
   );
 }
 
@@ -102,7 +181,7 @@ function SaveAsModifier({
 }
 
 export function ModifiersInput() {
-  const { grouped, isActive, toggleModifier, saveAsModifier, nodeTypeName, hasModifiers } =
+  const { categorized, isActive, toggleModifier, saveAsModifier, nodeTypeName, hasModifiers } =
     useModifiers();
 
   return (
@@ -113,25 +192,14 @@ export function ModifiersInput() {
       defaultOpen={true}
       disabled={!hasModifiers}
     >
-      <div className="flex flex-col gap-2">
-        {[...grouped.entries()].map(([category, mods]) => (
-          <div key={category}>
-            {grouped.size > 1 && (
-              <p className="mb-0.5 text-[10px] font-medium text-neutral-content">
-                {category}
-              </p>
-            )}
-            <div className="flex flex-wrap gap-1">
-              {mods.map((mod) => (
-                <ModifierChip
-                  key={mod.name}
-                  mod={mod}
-                  active={isActive(mod.name)}
-                  onToggle={() => toggleModifier(mod)}
-                />
-              ))}
-            </div>
-          </div>
+      <div className="flex flex-col gap-0.5">
+        {categorized.map((cat) => (
+          <CategorySection
+            key={cat.name}
+            cat={cat}
+            isActive={isActive}
+            onToggle={toggleModifier}
+          />
         ))}
       </div>
       <SaveAsModifier onSave={saveAsModifier} defaultType={nodeTypeName} />

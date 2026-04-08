@@ -1,2 +1,2 @@
 export { UnifiedSettings } from "./UnifiedSettings";
-export type { ToolbarConfig, DisableKey } from "./types";
+export type { ToolbarConfig, HideKey } from "./types";

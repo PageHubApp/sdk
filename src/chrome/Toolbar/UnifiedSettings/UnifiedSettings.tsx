@@ -2,20 +2,18 @@
  * UnifiedSettings — single settings shell for ALL node types.
  *
  * Reads toolbar config from .craft.toolbar on the selected node's component.
- * Everything is ON by default — components only declare what to disable.
- * The accordion list is ALWAYS the same: same count, same order, same titles.
+ * Sections come from the settings registry — no hardcoded JSX.
+ * Everything is ON by default — components only declare what to hide.
  */
 
 import { useEditor, useNode } from "@craftjs/core";
-import { useAtomState } from "@zedux/react";
+import { useAtomState, useAtomValue } from "@zedux/react";
 import React, { useEffect, useMemo } from "react";
 import { BiPaint } from "react-icons/bi";
 import {
-  TbArrowsExchange,
   TbBoxPadding,
   TbMouse,
   TbSettings,
-  TbSparkles,
 } from "react-icons/tb";
 import { useDefaultTab, useScrollToActiveTab } from "utils/lib";
 import { registerUnifiedSettings } from "../../../components/LazyUnifiedSettings";
@@ -24,55 +22,35 @@ import { ToolboxMenu } from "../../RenderNode";
 import { TabAtom } from "../../Viewport/atoms";
 import { TBWrap } from "../Helpers/SettingsHelper";
 import { UnifiedTabBody } from "../UnifiedTab";
+import { AccordionProvider, useAccordionContext } from "../AccordionContext";
 
-import { AccordionProvider } from "../AccordionContext";
-import { Notice } from "../Inputs/Notice";
-import { ToolbarSection } from "../ToolbarSection";
-import { renderNA } from "./helpers";
+import type { HideKey, ToolbarConfig } from "./types";
+import { getSections, SettingsSearchAtom } from "./registry";
+import { RegistrySectionList } from "./RegistrySectionList";
 
-import type { DisableKey, ToolbarConfig } from "./types";
+// Ensure standard sections are registered
+import "./registry";
 
-// Re-export so existing imports from ./UnifiedSettings still work
+// Re-export for consumers
 export { renderNA } from "./helpers";
-
-// ─── Standard input components ───────────────────────────────────────────────
-import { AccessibilityInput } from "../Inputs/advanced/AccessibilityInput";
-import { AnimationsInput } from "../Inputs/advanced/AnimationsInput";
-import { ConditionsInput } from "../Inputs/advanced/ConditionsInput";
-import { EffectsClassInput } from "../Inputs/advanced/EffectsClassInput";
-import { HoverClickInput } from "../Inputs/advanced/HoverClickInput";
-import { BackgroundInput } from "../Inputs/color/BackgroundInput";
-import { OpacityInput } from "../Inputs/color/OpacityInput";
-import { PatternInput } from "../Inputs/color/PatternInput";
-import { ShadowInput } from "../Inputs/color/ShadowInput";
-import { BorderInput } from "../Inputs/layout/BorderInput";
-import DisplaySettingsInput from "../Inputs/layout/DisplaySettingsInput";
-import { LayoutInput } from "../Inputs/layout/LayoutInput";
-import { RadiusInput } from "../Inputs/layout/RadiusInput";
-import { RingOutlineInput } from "../Inputs/layout/RingOutlineInput";
-import { SpacingInput } from "../Inputs/layout/SpacingInput";
-import { ModifiersInput } from "../Inputs/modifiers/ModifiersInput";
-import { FontInput } from "../Inputs/typography/FontInput";
-const ComponentImportExport = React.lazy(() => import("../Inputs/advanced/ComponentImportExport").then(m => ({ default: m.ComponentImportExport })));
 
 // ─── Fixed tab structure — never changes ────────────────────────────────────
 
 const FIXED_HEAD = [
   { title: "Component", icon: null },
-  { title: "Design", icon: <BiPaint /> },
   { title: "Layout", icon: <TbBoxPadding /> },
+  { title: "Design", icon: <BiPaint /> },
   { title: "Interactions", icon: <TbMouse /> },
   { title: "Advanced", icon: <TbSettings /> },
 ];
 
+const TAB_IDS = ["component", "layout", "design", "interactions", "advanced"] as const;
+
 // ─── Helper: resolve toolbar config from craft node ─────────────────────────
 
 function getToolbarConfig(query: any, nodeData: any): ToolbarConfig | undefined {
-  // Try node.data.type.craft.toolbar first
   const fromType = nodeData.type?.craft?.toolbar;
   if (fromType) return fromType;
-
-  // Fallback: resolver lookup
   const resolver = query.getOptions().resolver;
   const component = resolver?.[nodeData.name || nodeData.displayName];
   return component?.craft?.toolbar;
@@ -88,27 +66,16 @@ export const UnifiedSettings = () => {
   const displayName = nodeData.displayName || nodeData.name || "";
   const toolbar = getToolbarConfig(query, nodeData);
 
-  // DEBUG: Form toolbar loading
-  if (nodeData.name === "Form" || nodeData.displayName === "Form") {
-    console.log("[UnifiedSettings] Form selected", {
-      displayName,
-      hasToolbar: !!toolbar,
-      toolbarKeys: toolbar ? Object.keys(toolbar) : null,
-      hasMainTab: !!toolbar?.mainTab,
-      craftKeys: nodeData.type?.craft ? Object.keys(nodeData.type.craft) : null,
-      craftToolbar: nodeData.type?.craft?.toolbar,
-    });
-  }
-
-  // ── All hooks run unconditionally ────────────────────────────────────
+  // ── Hooks ───────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useAtomState(TabAtom);
   const setMenu = useSetAtomState(ToolboxMenu);
+  const search = useAtomValue(SettingsSearchAtom);
 
   useEffect(() => { setMenu({ enabled: false }); }, [setMenu]);
 
   const isInitialMount = useScrollToActiveTab(activeTab, setActiveTab, id);
 
-  // Build head — always 5 tabs. Tab 0 title & icon comes from the selected node.
+  // Build head — always 5 tabs
   const icon = toolbar?.icon;
   const resolvedIcon = icon
     ? typeof icon === "function" ? React.createElement(icon as React.ComponentType)
@@ -122,142 +89,121 @@ export const UnifiedSettings = () => {
 
   useDefaultTab(head, activeTab, setActiveTab);
 
-  // ── Disabled set ────────────────────────────────────────────────────
-  const disabled = useMemo(
-    () => new Set<DisableKey>(toolbar?.disable ?? []),
-    [toolbar?.disable]
+  // ── Hidden set ──────────────────────────────────────────────────────
+  const hidden = useMemo(
+    () => new Set<HideKey>(toolbar?.hide ?? []),
+    [toolbar?.hide]
   );
-  const off = (key: DisableKey) => disabled.has(key);
+
   const override = toolbar?.override;
 
-  // ── Helper: render section content with override support ────────────
-  const section = (title: string, content: React.ReactNode) => ({
-    title,
-    children: override?.[title] !== undefined ? override[title] : content,
-  });
+  // ── Registry-driven sections ────────────────────────────────────────
 
-  // ── MainTab ─────────────────────────────────────────────────────────
-  const MainTab = toolbar?.mainTab;
-  const MainTabAdvanced = toolbar?.mainTabAdvanced;
+  // When searching, get ALL sections matching the query (flat, cross-tab)
+  // When not searching, build the normal 5-tab structure
+  const isSearching = search.length > 0;
 
-  // ── Layout resolution ───────────────────────────────────────────────
-  const layoutConfig = toolbar?.layout;
-  const layoutContent = (() => {
-    if (layoutConfig === "hidden") return renderNA("Layout");
-    if (layoutConfig === "spacing") return <SpacingInput />;
-    if (layoutConfig) {
-      return typeof layoutConfig === "function" ? layoutConfig() : <>{layoutConfig}</>;
+  const sections = useMemo(() => {
+    if (isSearching) {
+      // Flat search: all matching sections across all tabs
+      return [{
+        title: `Results for "${search}"`,
+        children: (
+          <RegistrySectionList
+            sections={getSections({ search, hidden })}
+            toolbar={toolbar}
+            hidden={hidden}
+            override={override}
+          />
+        ),
+      }];
     }
-    // Default fallback: show full layout engine (for containers with no config)
-    return <LayoutInput />;
-  })();
 
-  // ── Build the MASTER section list — 5 groups ──────────────────────
-
-  const sections = [
-    // ───── 1. Component ──────────────────────────────────────────────
-    {
-      title: head[0].title,
-      children: MainTab
-        ? <MainTab />
-        : <Notice>Select a component to edit its settings.</Notice>,
-    },
-
-    // ───── 2. Design ─────────────────────────────────────────────────
-    {
-      title: "Design",
-      children: (
-        <>
-          {!off("modifiers") && <ModifiersInput />}
-
-          {section("Typography",
-            !off("font") ? <FontInput /> : renderNA("Typography")
-          ).children}
-
-          {section("Background",
-            !off("background") ? <BackgroundInput>{!off("pattern") && <PatternInput />}</BackgroundInput> : renderNA("Background")
-          ).children}
-
-          {section("Border",
-            !off("border") ? <BorderInput /> : renderNA("Border")
-          ).children}
-
-          {section("Decoration",
-            (!off("radius") || !off("shadow") || !off("opacity") || !off("ringOutline")) ? (
-              <ToolbarSection title="Decoration" icon={<TbSparkles />} help="Rounded corners, shadows, opacity, and ring outlines.">
-                {!off("radius") && <RadiusInput />}
-                {!off("shadow") && <ShadowInput />}
-                {!off("opacity") && <OpacityInput label="Opacity" propKey="opacity" />}
-                {!off("ringOutline") && <RingOutlineInput />}
-              </ToolbarSection>
-            ) : renderNA("Decoration")
-          ).children}
-
-          {MainTabAdvanced && <MainTabAdvanced />}
-        </>
-      ),
-    },
-
-    // ───── 3. Layout ─────────────────────────────────────────────────
-    {
-      title: "Layout",
-      children: layoutContent,
-    },
-
-    // ───── 4. Interactions ───────────────────────────────────────────
-    {
-      title: "Interactions",
-      children: (
-        <>
-          {section("Click",
-            !off("hoverClick")
-              ? <HoverClickInput variant={toolbar?.hoverClickVariant ?? "container"} />
-              : <>{renderNA("Click")}{renderNA("Hover")}</>
-          ).children}
-
-          {section("Conditions",
-            <ConditionsInput />
-          ).children}
-
-          {section("Animation",
-            !off("animations") ? <AnimationsInput /> : renderNA("Animation")
-          ).children}
-
-          {section("Tailwind effects",
-            !off("effectsClass") ? <EffectsClassInput /> : renderNA("Tailwind effects")
-          ).children}
-        </>
-      ),
-    },
-
-    // ───── 5. Advanced ───────────────────────────────────────────────
-    {
-      title: "Advanced",
-      children: (
-        <>
-          {section("ARIA",
-            !off("accessibility") ? <AccessibilityInput /> : renderNA("ARIA")
-          ).children}
-          <DisplaySettingsInput showCursor={!off("cursor")} />
-          {section("Import / Export",
-            !off("importExport")
-              ? <ToolbarSection title="Import / Export" icon={<TbArrowsExchange />} defaultOpen={false} help="Copy this component as JSON or paste one in."><ComponentImportExport /></ToolbarSection>
-              : renderNA("Import / Export")
-          ).children}
-          {toolbar?.styleExtra}
-        </>
-      ),
-    },
-  ];
+    // Normal tab structure
+    return TAB_IDS.map((tabId, i) => {
+      const tabSections = getSections({ tab: tabId, hidden });
+      return {
+        title: i === 0 ? (displayName || "Component") : head[i].title,
+        children: (
+          <RegistrySectionList
+            sections={tabSections}
+            toolbar={toolbar}
+            hidden={hidden}
+            override={override}
+          />
+        ),
+      };
+    });
+  }, [search, isSearching, hidden, toolbar, override, displayName, head]);
 
   return (
     <AccordionProvider>
+      <SearchEffects search={search} />
       <TBWrap head={head} unified={true} activeSection={activeTab}>
         <UnifiedTabBody sections={sections} isInitialMount={isInitialMount} />
       </TBWrap>
     </AccordionProvider>
   );
 };
+
+/**
+ * Side-effect component that lives inside AccordionProvider.
+ * When search is active: opens all accordion sections + highlights matching text via CSS Highlight API.
+ * When search clears: restores previous accordion state.
+ */
+function SearchEffects({ search }: { search: string }) {
+  const accordionCtx = useAccordionContext();
+
+  useEffect(() => {
+    if (!accordionCtx) return;
+    if (search) {
+      accordionCtx.openAll?.();
+    }
+  }, [search, accordionCtx]);
+
+  // CSS Custom Highlight API for text highlighting
+  useEffect(() => {
+    if (typeof CSS === "undefined" || !("highlights" in CSS)) return;
+
+    const highlightName = "settings-search";
+    (CSS as any).highlights.delete(highlightName);
+
+    if (!search) return;
+
+    const q = search.toLowerCase().trim();
+    if (!q) return;
+
+    // Walk the toolbar DOM for text nodes matching the query
+    const container = document.getElementById("toolbarContents");
+    if (!container) return;
+
+    const ranges: Range[] = [];
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+
+    let node: Text | null;
+    while ((node = walker.nextNode() as Text | null)) {
+      const text = node.textContent?.toLowerCase() ?? "";
+      let idx = text.indexOf(q);
+      while (idx >= 0) {
+        const range = new Range();
+        range.setStart(node, idx);
+        range.setEnd(node, idx + q.length);
+        ranges.push(range);
+        idx = text.indexOf(q, idx + q.length);
+      }
+    }
+
+    if (ranges.length > 0) {
+      (CSS as any).highlights.set(highlightName, new (window as any).Highlight(...ranges));
+    }
+
+    return () => {
+      (CSS as any).highlights.delete(highlightName);
+    };
+  }, [search]);
+
+  return null;
+}
 
 // Self-register so LazyUnifiedSettings can find us without require()
 registerUnifiedSettings(UnifiedSettings);

@@ -132,11 +132,28 @@ export function UniversalInput(props: UniversalInputProps) {
   return (
     <div className="flex w-full flex-col">
       <div className="flex w-full items-center gap-0.5">
-        {/* Label */}
+        {/* Label + breakpoint pills */}
         {label && !labelHide && (
-          <label htmlFor={`input-${propKey}`} className={`cursor-pointer whitespace-nowrap text-xs ${labelWidth || "w-20"} truncate`}>
-            {label}
-          </label>
+          <div className={`flex flex-col items-start gap-0.5 ${labelWidth || "w-20"}`}>
+            <label htmlFor={`input-${propKey}`} className="w-full cursor-pointer truncate whitespace-nowrap text-xs">
+              {label}
+            </label>
+            {propType === "class" && (
+              <MobileDesktopLabels
+                lab={propKey}
+                prefix={labelPrefix}
+                suffix={labelSuffix}
+                propType={propType}
+                propKey={propKey}
+                index={index}
+                propItemKey={propItemKey}
+                icon={null}
+                showDeleteIcon={false}
+                showVarSelector={false}
+                varSelectorPrefix=""
+              />
+            )}
+          </div>
         )}
 
         {/* Input wrapper */}
@@ -238,24 +255,6 @@ export function UniversalInput(props: UniversalInputProps) {
         </div>
       </div>
 
-      {/* Mobile/Desktop badges - integrated */}
-      {!labelHide && propType === "class" && (
-        <div className="flex w-full justify-end pr-1">
-          <MobileDesktopLabels
-            lab={propKey}
-            prefix={labelPrefix}
-            suffix={labelSuffix}
-            propType={propType}
-            propKey={propKey}
-            index={index}
-            propItemKey={propItemKey}
-            icon={null}
-            showDeleteIcon={false}
-            showVarSelector={false}
-            varSelectorPrefix=""
-          />
-        </div>
-      )}
 
       {/* Calc Dialog */}
       {showCalcDialog && (

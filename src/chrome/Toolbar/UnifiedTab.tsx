@@ -23,8 +23,8 @@ export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
     <Tooltip content={title} placement="top" arrow={false}>
       <div
         className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-colors ${showActiveColor
-            ? "text-primary-content"
-            : "text-secondary-content hover:bg-neutral hover:text-base-content"
+            ? "text-primary"
+            : "text-secondary-content hover:text-base-content"
           }`}
         role="tab"
         aria-selected={isActive}
@@ -107,6 +107,17 @@ interface UnifiedTabBodyProps {
   isInitialMount?: boolean;
 }
 
+// Timestamp of last click-driven tab change. Scroll-based updates
+// are suppressed briefly after a click so they don't fight the indicator.
+let clickLockUntil = 0;
+
+/** Call from tab click handlers to immediately set the active tab
+ *  and suppress scroll-based tracking for a brief window. */
+export function setActiveTabFromClick(title: string, setTab: (t: string) => void) {
+  setTab(title);
+  clickLockUntil = Date.now() + 400;
+}
+
 export const UnifiedTabBody = ({ sections, isInitialMount = false }: UnifiedTabBodyProps) => {
   const [visibleSections, setVisibleSections] = React.useState<Set<string>>(new Set());
   const setActiveTab = useSetAtomState(TabAtom);
@@ -117,9 +128,10 @@ export const UnifiedTabBody = ({ sections, isInitialMount = false }: UnifiedTabB
     sectionTitlesRef.current = sections.map(s => s.title);
   }, [sections]);
 
-  // Update TabAtom when visible section changes (but not during initial mount)
+  // Update TabAtom when visible section changes (but not during initial mount
+  // and not during the click-lock window)
   useEffect(() => {
-    if (visibleSections.size > 0 && !isInitialMount) {
+    if (visibleSections.size > 0 && !isInitialMount && Date.now() > clickLockUntil) {
       const firstVisible = sectionTitlesRef.current.find(title => visibleSections.has(title));
       if (firstVisible) {
         setActiveTab(firstVisible);

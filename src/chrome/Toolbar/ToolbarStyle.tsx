@@ -8,6 +8,8 @@ import { ToolbarLabel } from "./Label";
 
 const TRUNCATE_TIP_ID = "truncated-label-tip";
 
+export { BreakpointBadge } from "./BreakpointBadge";
+
 /** Ref callback — sets data-tooltip attrs when text is clipped. */
 function useTruncateRef() {
   return useCallback((el: HTMLElement | null) => {
@@ -36,24 +38,28 @@ export const MobileDesktopLabels = ({
   varSelectorPrefix,
 }) => {
   return (
-    <div role="presentation" className="mt-0.5 flex min-w-0 flex-wrap items-center justify-end gap-0.5" onClick={e => e.stopPropagation()}>
-      {VIEW_BREAKPOINT_SCOPE_KEYS.map(bp => (
-        <ToolbarLabel
-          key={bp}
-          lab={lab}
-          prefix={prefix}
-          suffix={suffix}
-          viewValue={bp}
-          propType={propType}
-          propKey={propKey}
-          index={index}
-          propItemKey={propItemKey}
-          icon={icon}
-          showDeleteIcon={showDeleteIcon}
-          showVarSelector={showVarSelector}
-          varSelectorPrefix={varSelectorPrefix}
-          iconOnly
-        />
+    <div role="presentation" className="hidden flex-col gap-px has-[[data-has-value]]:flex" onClick={e => e.stopPropagation()}>
+      {([["mobile", "sm", "desktop"], ["lg", "xl", "2xl"]] as const).map((row, i) => (
+        <div key={i} className="flex gap-px">
+          {row.map(bp => (
+            <ToolbarLabel
+              key={bp}
+              lab={lab}
+              prefix={prefix}
+              suffix={suffix}
+              viewValue={bp}
+              propType={propType}
+              propKey={propKey}
+              index={index}
+              propItemKey={propItemKey}
+              icon={icon}
+              showDeleteIcon={showDeleteIcon}
+              showVarSelector={showVarSelector}
+              varSelectorPrefix={varSelectorPrefix}
+              iconOnly
+            />
+          ))}
+        </div>
       ))}
     </div>
   );
@@ -137,35 +143,35 @@ export const Wrap = ({
   if (inline) {
     // Inline mode: everything in one row
     // In inline mode, always show label if it exists (ignore labelHide for the label text)
+    const showPills = !props?.labelHide && propType !== "root" && propType !== "component";
     return (
       <>
         <div className={`flex w-full flex-col ${className}`}>
           <div className="relative flex w-full items-center gap-0.5">
-            {props?.label && (
-              <label ref={truncateRef} htmlFor={`input-${propKey}`} className={`cursor-pointer whitespace-nowrap text-xs ${labelWidth || "w-20"} truncate`}>
-                {props?.label}
-              </label>
-            )}
+            <div className={`flex flex-col items-start gap-0.5 ${labelWidth || "w-20"}`}>
+              {props?.label && (
+                <label ref={truncateRef} htmlFor={`input-${propKey}`} className="w-full cursor-pointer truncate whitespace-nowrap text-xs">
+                  {props?.label}
+                </label>
+              )}
+              {showPills && (
+                <MobileDesktopLabels
+                  lab={lab}
+                  prefix={props?.labelPrefix}
+                  suffix={props?.labelSuffix}
+                  propType={propType}
+                  propKey={propKey}
+                  index={index}
+                  propItemKey={propItemKey}
+                  icon={props?.labelIcon}
+                  showDeleteIcon={props?.showDeleteIcon}
+                  showVarSelector={props?.showVarSelector}
+                  varSelectorPrefix={props?.varSelectorPrefix}
+                />
+              )}
+            </div>
             <div className={`${inputWidth || "flex-1"}`}>{children}</div>
           </div>
-
-          {!props?.labelHide && propType !== "root" && propType !== "component" && (
-            <div className="flex w-full justify-end pr-1">
-              <MobileDesktopLabels
-                lab={lab}
-                prefix={props?.labelPrefix}
-                suffix={props?.labelSuffix}
-                propType={propType}
-                propKey={propKey}
-                index={index}
-                propItemKey={propItemKey}
-                icon={props?.labelIcon}
-                showDeleteIcon={props?.showDeleteIcon}
-                showVarSelector={props?.showVarSelector}
-                varSelectorPrefix={props?.varSelectorPrefix}
-              />
-            </div>
-          )}
         </div>
 
         {props.description && (
@@ -290,7 +296,7 @@ export const Card = ({
       onContextMenu={handleContextMenu}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      className={`${bgColor} inline-flex cursor-pointer whitespace-nowrap rounded-lg px-1.5 py-0.5 text-xs font-medium text-base-content hover:text-base-content hover:opacity-80 ${draggable ? "transition-transform hover:scale-105" : ""}`}
+      className={`${bgColor} inline-flex whitespace-nowrap rounded-lg px-1.5 py-0.5 text-xs font-medium hover:brightness-110 ${draggable ? "cursor-grab active:cursor-grabbing transition-transform hover:scale-105" : "cursor-pointer"}`}
     >
       {renderDisplayValue()}
     </button>

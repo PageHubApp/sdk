@@ -165,4 +165,32 @@ export function useBackgroundEffects({
       styleGuide: t.styleGuide && Object.keys(t.styleGuide).length ? t.styleGuide : DEFAULT_STYLE_GUIDE,
     });
   }, [props.theme, enabled]);
+
+  // ---- Modifier CSS utilities ----
+  useEffect(() => {
+    if (typeof window === "undefined" || !enabled) return;
+    const modifiers = props.modifiers;
+    if (!modifiers || typeof modifiers !== "object") return;
+
+    const rules: string[] = [];
+    for (const mods of Object.values(modifiers) as any[]) {
+      if (!Array.isArray(mods)) continue;
+      for (const mod of mods) {
+        if (mod.name && mod.classes) {
+          rules.push(`@utility ${mod.name} { @apply ${mod.classes}; }`);
+        }
+      }
+    }
+    if (rules.length === 0) return;
+
+    const id = "modifier-utilities";
+    let el = document.getElementById(id) as HTMLStyleElement | null;
+    if (!el) {
+      el = document.createElement("style");
+      el.id = id;
+      el.setAttribute("type", "text/tailwindcss");
+      document.head.appendChild(el);
+    }
+    el.textContent = rules.join("\n");
+  }, [props.modifiers, enabled]);
 }

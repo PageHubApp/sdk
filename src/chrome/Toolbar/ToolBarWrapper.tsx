@@ -12,6 +12,7 @@ import {
   TbCopy,
   TbScaleOutline,
   TbScaleOutlineOff,
+  TbSearch,
   TbTrash,
   TbTrashOff,
   TbX,
@@ -23,12 +24,14 @@ import { ComponentsAtom, IsolateAtom, SideBarOpen, isolatePage } from "utils/lib
 import { addHandler, buildClonedTree, saveHandler } from "../Viewport/lib";
 import { RenderChildren } from "./Helpers/CloneHelper";
 import Tab from "./Tab";
-import { UnifiedTab, scrollToSection, toSectionId } from "./UnifiedTab";
+import { UnifiedTab, scrollToSection, setActiveTabFromClick, toSectionId } from "./UnifiedTab";
 import { useAccordionContext } from "./AccordionContext";
+import { TabAtom } from "../Viewport/atoms";
 import { TabBarCollapseToggle } from "./TabBarCollapseToggle";
 import { TabBarDarkModeToggle } from "./TabBarDarkModeToggle";
 import { TabBarBreakpointPicker } from "./TabBarBreakpointPicker";
 import { phStorage } from "../../utils/phStorage";
+import { SettingsSearchAtom, SettingsSearchOpenAtom } from "./UnifiedSettings/registry/atoms";
 
 
 export const ToolbarWrapper = ({
@@ -143,6 +146,21 @@ export const ToolbarWrapper = ({
   const setSideBarOpen = useSetAtomState(SideBarOpen);
   const settings = useAtomValue(SettingsAtom);
   const accordionCtx = useAccordionContext();
+  const [searchQuery, setSearchQuery] = useAtomState(SettingsSearchAtom);
+  const [searchOpen, setSearchOpen] = useAtomState(SettingsSearchOpenAtom);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const setActiveTab = useSetAtomState(TabAtom);
+
+  const toggleSearch = useCallback(() => {
+    if (searchOpen) {
+      setSearchOpen(false);
+      setSearchQuery("");
+    } else {
+      setSearchOpen(true);
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    }
+  }, [searchOpen, setSearchQuery]);
 
   useEffect(() => {
     const iso = phStorage.get("isolated");
@@ -195,23 +213,64 @@ export const ToolbarWrapper = ({
           id="toolbarTabs"
           aria-label="Tabs"
           role="tablist"
-          className="flex shrink-0 items-center gap-1.5 border-b border-base-300 bg-secondary px-3 py-0.5 text-center font-semibold text-secondary-content"
+          className="flex shrink-0 items-center justify-between gap-1.5 border-b border-base-300 bg-secondary px-3 py-0.5 text-center font-semibold text-secondary-content"
         >
-          <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
-          <div className="mx-0.5 h-4 w-px shrink-0 bg-border" />
-          <TabBarBreakpointPicker />
-          <TabBarDarkModeToggle />
-          <div className="relative ml-auto flex flex-row-reverse items-center gap-3" role="tablist" ref={tablistRef}>
+          {/* ── Left: utilities ── */}
+          <div className="flex items-center gap-1">
+            <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
+            <Tooltip content="Search settings">
+              <button
+                type="button"
+                onClick={toggleSearch}
+                className={`cursor-pointer rounded-lg p-1.5 transition-colors ${searchOpen ? "text-primary" : "text-secondary-content hover:text-base-content"}`}
+                aria-label="Search settings"
+              >
+                <TbSearch size={14} />
+              </button>
+            </Tooltip>
+            <div className="mx-0.5 h-4 w-px shrink-0 bg-border" />
+            <TabBarBreakpointPicker />
+            <TabBarDarkModeToggle />
+          </div>
+
+          {/* ── Search input (replaces tabs when active) ── */}
+          {searchOpen ? (
+            <div className="relative flex flex-1 items-center">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") toggleSearch();
+                }}
+                placeholder="Search settings..."
+                className="h-7 w-full rounded-md border border-base-300 bg-base-100 px-2.5 text-xs text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-1 focus:ring-primary"
+                autoFocus
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-1.5 cursor-pointer text-neutral-content hover:text-base-content"
+                >
+                  <TbX size={12} />
+                </button>
+              )}
+            </div>
+          ) : (
+            /* ── Right: tab icons ── */
+            <div className="flex items-center gap-1.5">
+            <div className="mx-0.5 h-4 w-px shrink-0 bg-border" />
+            <div className="relative flex flex-row-reverse items-center gap-3" role="tablist" ref={tablistRef}>
             {indicatorStyle && (
               <div
-                className="absolute rounded-lg bg-primary"
+                className="absolute bottom-0 h-0.5 rounded-full bg-primary"
                 style={{
                   width: indicatorStyle.width,
-                  height: indicatorStyle.height,
-                  top: 0,
                   left: 0,
-                  transform: `translate(${indicatorStyle.left}px, ${indicatorStyle.top}px)`,
-                  transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  transform: `translateX(${indicatorStyle.left}px)`,
+                  transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                   zIndex: 0,
                   pointerEvents: "none",
                 }}
@@ -230,6 +289,7 @@ export const ToolbarWrapper = ({
                   icon={_.icon}
                   isActive={isActive}
                   onClick={() => {
+                    setActiveTabFromClick(_.title, setActiveTab);
                     scrollToSection(_.title);
                     if (accordionCtx?.openOnly) {
                       // Find all accordion section titles within this tab's DOM section
@@ -252,7 +312,9 @@ export const ToolbarWrapper = ({
                 <Tab key={key} title={_.title} tabId={_.title} icon={_.icon} />
               );
             })}
-          </div>
+            </div>
+            </div>
+          )}
         </div>
       )}
 

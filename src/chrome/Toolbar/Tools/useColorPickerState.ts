@@ -4,6 +4,7 @@ import { useAtomState } from "@zedux/react";
 import colors from "tailwindcss/colors";
 import useEyeDropper from "use-eye-dropper";
 import { ColorPickerSidebarAtom } from "./dialogAtoms";
+import { splitOpacitySuffix } from "../../../utils/design/colorSystem";
 import { resolveTheme } from "../../../utils/design/resolveTheme";
 import { phStorage } from "../../../utils/phStorage";
 
@@ -145,13 +146,23 @@ export function useColorPickerState() {
   };
 }
 
-/** Resolve a Tailwind color name + shade to its hex value */
+/** Resolve a Tailwind color name + shade to its hex value (strips v4 /opacity suffix if present) */
 export function getTailwindColorHex(colorName: string, shade: string): string {
-  const colorKey = colorName.toLowerCase();
+  const { base } = splitOpacitySuffix(`${colorName}-${shade}`);
+  const segs = base.split("-");
+  if (segs.length < 2) {
+    const colorKey = base.toLowerCase();
+    const colorObj = (colors as any)[colorKey];
+    if (!colorObj) return "#cccccc";
+    if (typeof colorObj === "string") return colorObj;
+    return "#cccccc";
+  }
+  const shadeKey = segs.pop()!;
+  const colorKey = segs.join("-").toLowerCase();
   const colorObj = (colors as any)[colorKey];
 
   if (!colorObj) return "#cccccc";
   if (typeof colorObj === "string") return colorObj;
-  if (typeof colorObj === "object" && colorObj[shade]) return colorObj[shade];
+  if (typeof colorObj === "object" && colorObj[shadeKey]) return colorObj[shadeKey];
   return "#cccccc";
 }

@@ -11,9 +11,11 @@ import { useAtomState } from "@zedux/react";
 import useEyeDropper from "use-eye-dropper";
 import { resolveTheme } from "../../../utils/design/resolveTheme";
 import {
+  applyOpacityToCssColor,
   getTailwindColorHex,
   hexToRGBA,
   isPaletteColorSelected,
+  splitOpacitySuffix,
   stripTailwindPrefix,
 } from "utils/design/colorSystem";
 import { getColorPalette } from "utils/tailwind";
@@ -156,23 +158,27 @@ export const ColorPickerDialog = () => {
     if (typeof val === "object" && val.r !== undefined) return val;
 
     if (typeof val === "string") {
-      let cleanValue = stripTailwindPrefix(val);
-      cleanValue = cleanValue.replace(/[\[\]]/g, "");
+      let tail = stripTailwindPrefix(val);
+      const { base: opaqueTail, opacity: tailOpacity } = splitOpacitySuffix(tail);
+      let cleanValue = opaqueTail.replace(/[\[\]]/g, "");
 
-      if (cleanValue.includes("#")) return cleanValue;
-      if (cleanValue.startsWith("rgba") || cleanValue.startsWith("rgb")) return cleanValue;
+      const withAlpha = (css: string) =>
+        tailOpacity != null && tailOpacity < 1 - 1e-6 ? applyOpacityToCssColor(css, tailOpacity) : css;
+
+      if (cleanValue.includes("#")) return withAlpha(cleanValue);
+      if (cleanValue.startsWith("rgba") || cleanValue.startsWith("rgb")) return withAlpha(cleanValue);
 
       if (cleanValue.includes("-")) {
         const parts = cleanValue.split("-");
         if (parts.length === 2) {
           const [colorName, shade] = parts;
-          return getTailwindColorHex(colorName, shade);
+          return withAlpha(getTailwindColorHex(colorName, shade));
         }
       }
 
-      if (cleanValue === "white") return "#ffffff";
-      if (cleanValue === "black") return "#000000";
-      if (cleanValue === "transparent") return "transparent";
+      if (cleanValue === "white") return withAlpha("#ffffff");
+      if (cleanValue === "black") return withAlpha("#000000");
+      if (cleanValue === "transparent") return withAlpha("transparent");
     }
 
     return undefined;

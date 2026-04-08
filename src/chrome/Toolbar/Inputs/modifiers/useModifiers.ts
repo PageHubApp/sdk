@@ -6,6 +6,61 @@ export interface ResolvedModifier extends ComponentModifier {
   origin: "builtin" | "site";
 }
 
+export type ModifierRenderType = "patterns" | "dropdown" | "pills" | "chips";
+
+export interface CategoryMeta {
+  name: string;
+  mods: ResolvedModifier[];
+  isExclusive: boolean;
+  isPattern: boolean;
+  renderAs: ModifierRenderType;
+  defaultOpen: boolean;
+  sortOrder: number;
+}
+
+// Priority order for categories. Lower = higher priority = rendered first.
+const CATEGORY_PRIORITY: Record<string, number> = {
+  Pattern: 0,
+  Size: 1,
+  Color: 2,
+  Surface: 2,
+  Weight: 3,
+  Align: 4,
+  Font: 5,
+  Style: 6,
+  DaisyUI: 7,
+  "DaisyUI Color": 7,
+  "DaisyUI Style": 7,
+  "DaisyUI Size": 7,
+  Shape: 8,
+  State: 9,
+  Spacing: 10,
+  Width: 10,
+  Height: 10,
+  Layout: 10,
+  Padding: 10,
+  General: 11,
+  Custom: 12,
+};
+
+// Categories that default to open
+const DEFAULT_OPEN = new Set(["Pattern", "Size", "Color", "Surface", "DaisyUI Color"]);
+
+function deriveRenderType(name: string, mods: ResolvedModifier[]): ModifierRenderType {
+  if (name === "Pattern") return "patterns";
+  const allExclusive = mods.length > 0 && mods.every((m) => m.exclusive);
+  if (allExclusive && mods.length >= 5) return "dropdown";
+  if (allExclusive && mods.length >= 2) return "pills";
+  return "chips";
+}
+
+/** Resolve a modifier to its actual CSS class list. Composites use `classes`, singles use `name`. */
+function resolveClasses(mod: ComponentModifier): string[] {
+  return mod.classes
+    ? mod.classes.split(/\s+/).filter(Boolean)
+    : [mod.name];
+}
+
 export function useModifiers() {
   const { query, actions } = useEditor();
   const {
@@ -65,10 +120,36 @@ export function useModifiers() {
     return map;
   }, [allModifiers]);
 
-  const isActive = (name: string) => activeModifiers.includes(name);
+  // Derive category metadata for smart rendering
+  const categorized: CategoryMeta[] = useMemo(() => {
+    const result: CategoryMeta[] = [];
+    for (const [name, mods] of grouped) {
+      const isExclusive = mods.length > 0 && mods.every((m) => m.exclusive);
+      const isPattern = name === "Pattern";
+      const renderAs = deriveRenderType(name, mods);
+      const sortOrder = CATEGORY_PRIORITY[name] ?? 11;
+      const defaultOpen = DEFAULT_OPEN.has(name) || isPattern;
+      result.push({ name, mods, isExclusive, isPattern, renderAs, defaultOpen, sortOrder });
+    }
+    result.sort((a, b) => a.sortOrder - b.sortOrder);
+    return result;
+  }, [grouped]);
+
+  const isActive = (mod: ResolvedModifier) => {
+    // Check tracked state first
+    if (activeModifiers.includes(mod.name)) return true;
+    // For composite modifiers, also check if all classes are present in className
+    if (mod.classes) {
+      const needed = resolveClasses(mod);
+      const current = currentClassName.split(/\s+/);
+      return needed.every((c) => current.includes(c));
+    }
+    // For single-class modifiers, check className directly
+    return currentClassName.split(/\s+/).includes(mod.name);
+  };
 
   const toggleModifier = (mod: ResolvedModifier) => {
-    const active = isActive(mod.name);
+    const active = isActive(mod);
 
     setProp((props: any) => {
       if (!props.root) props.root = {};
@@ -81,14 +162,17 @@ export function useModifiers() {
           (m) => m.category === mod.category && m.name !== mod.name
         );
         for (const sib of siblings) {
-          classes = classes.filter((c: string) => c !== sib.name);
+          const sibClasses = resolveClasses(sib);
+          classes = classes.filter((c: string) => !sibClasses.includes(c));
           activeMods = activeMods.filter((n: string) => n !== sib.name);
         }
       }
 
+      const modClasses = resolveClasses(mod);
+
       if (active) {
-        // Remove the modifier class name
-        classes = classes.filter((c: string) => c !== mod.name);
+        // Remove all classes for this modifier
+        classes = classes.filter((c: string) => !modClasses.includes(c));
         activeMods = activeMods.filter((n: string) => n !== mod.name);
       } else {
         // Remove conflicting classes first
@@ -108,11 +192,13 @@ export function useModifiers() {
             if (!classes.includes(req)) classes.push(req);
           }
         }
-        // Add the modifier class name
-        if (!classes.includes(mod.name)) {
-          classes.push(mod.name);
+        // Add all classes for this modifier
+        for (const c of modClasses) {
+          if (!classes.includes(c)) classes.push(c);
         }
-        activeMods.push(mod.name);
+        if (!activeMods.includes(mod.name)) {
+          activeMods.push(mod.name);
+        }
       }
 
       props.className = classes.join(" ");
@@ -131,18 +217,29 @@ export function useModifiers() {
     if (!typeName || !label.trim()) return;
 
     const name = label.trim().toLowerCase().replace(/\s+/g, "-");
+    const classes = currentClassName.trim();
+    if (!classes) return;
 
+    // Store modifier with classes on ROOT
     actions.setProp(ROOT_NODE, (props: any) => {
       if (!props.modifiers) props.modifiers = {};
       if (!props.modifiers[typeName]) props.modifiers[typeName] = [];
       if (props.modifiers[typeName].some((m: any) => m.name === name)) return;
-      props.modifiers[typeName].push({ name, label: label.trim() });
+      props.modifiers[typeName].push({ name, label: label.trim(), classes });
+    });
+
+    // Replace node's className with modifier name
+    setProp((props: any) => {
+      props.className = name;
+      if (!props.root) props.root = {};
+      props.root.activeModifiers = [name];
     });
   };
 
   return {
     allModifiers,
     grouped,
+    categorized,
     isActive,
     toggleModifier,
     saveAsModifier,

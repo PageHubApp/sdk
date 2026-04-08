@@ -120,6 +120,11 @@ export const TextDef = defineComponent({
     },
   ],
   modifiers: [
+    // Composite patterns (real CSS classes via @utility in daisyui-spatial)
+    { name: "body-text", label: "Body", category: "Pattern" },
+    { name: "section-heading", label: "Heading", category: "Pattern" },
+    { name: "eyebrow", label: "Eyebrow", category: "Pattern" },
+    { name: "subhead", label: "Subhead", category: "Pattern" },
     // Size
     { name: "text-xs", label: "XS", category: "Size", exclusive: true },
     { name: "text-sm", label: "SM", category: "Size", exclusive: true },

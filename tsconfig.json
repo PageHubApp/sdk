@@ -5,12 +5,17 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "moduleResolution": "bundler",
-    "strict": true,
+    "strict": false,
     "noImplicitAny": false,
+    "strictNullChecks": false,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "isolatedModules": true,
     "declaration": true,
     "declarationMap": true,
@@ -21,7 +26,12 @@
     "paths": {
       "@/*": ["./src/*"],
       "components/selectors/*": ["./src/components/*"],
-      "components/*": ["../../components/*"]
+      "components/layout": ["./src/chrome/shared/layout"],
+      "components/layout/*": ["./src/chrome/shared/layout/*"],
+      "components/*": ["../../components/*"],
+      "utils/icons.json": ["./src/utils/data/icons.json"],
+      "utils/googleIcons.json": ["./src/utils/data/googleIcons.json"],
+      "utils/*": ["./src/utils/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

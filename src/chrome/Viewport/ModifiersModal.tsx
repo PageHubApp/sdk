@@ -7,6 +7,7 @@ import { FloatingPanel } from "../FloatingPanel";
 interface Modifier {
   name: string;
   label: string;
+  classes?: string;
 }
 
 interface ModifiersModalProps {
@@ -22,6 +23,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editLabel, setEditLabel] = useState("");
+  const [editClasses, setEditClasses] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [addType, setAddType] = useState("");
 
@@ -69,6 +71,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     setEditingIndex(index);
     setEditName(currentList[index].name);
     setEditLabel(currentList[index].label);
+    setEditClasses(currentList[index].classes || "");
     setIsAdding(false);
   };
 
@@ -77,13 +80,16 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     const updated = { ...modifiers };
     const list = [...currentList];
     if (editingIndex !== null) {
-      list[editingIndex] = { name: editName.trim(), label: editLabel.trim() };
+      const entry: Modifier = { name: editName.trim(), label: editLabel.trim() };
+      if (editClasses.trim()) entry.classes = editClasses.trim();
+      list[editingIndex] = entry;
     }
     updated[selectedType] = list;
     save(updated);
     setEditingIndex(null);
     setEditName("");
     setEditLabel("");
+    setEditClasses("");
   };
 
   const handleAdd = () => {
@@ -93,12 +99,15 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     const updated = { ...modifiers };
     if (!updated[typeName]) updated[typeName] = [];
     if (updated[typeName].some(m => m.name === name)) return;
-    updated[typeName].push({ name, label: editLabel.trim() });
+    const entry: Modifier = { name, label: editLabel.trim() };
+    if (editClasses.trim()) entry.classes = editClasses.trim();
+    updated[typeName].push(entry);
     save(updated);
     setSelectedType(typeName);
     setIsAdding(false);
     setEditName("");
     setEditLabel("");
+    setEditClasses("");
     setAddType("");
   };
 
@@ -184,19 +193,28 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-neutral-content">CSS Class</label>
+                <label className="mb-1 block text-xs font-medium text-neutral-content">Modifier Name</label>
                 <input
                   type="text"
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
-                  placeholder="e.g. btn-outline"
+                  placeholder="e.g. section-wrapper"
                   className={inputClass}
-                  onKeyDown={e => { if (e.key === "Enter") handleAdd(); }}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-neutral-content">Classes (optional — for composite modifiers)</label>
+                <textarea
+                  value={editClasses}
+                  onChange={e => setEditClasses(e.target.value)}
+                  placeholder="e.g. flex flex-col gap-space-md w-full"
+                  className={`${inputClass} min-h-[3rem] resize-y`}
+                  rows={2}
                 />
               </div>
               <div className="flex gap-2">
                 <button onClick={handleAdd} className="btn btn-primary flex-1">Add</button>
-                <button onClick={() => { setIsAdding(false); setEditName(""); setEditLabel(""); setAddType(""); }} className="btn btn-secondary flex-1">Cancel</button>
+                <button onClick={() => { setIsAdding(false); setEditName(""); setEditLabel(""); setEditClasses(""); setAddType(""); }} className="btn btn-secondary flex-1">Cancel</button>
               </div>
             </div>
           )}
@@ -226,8 +244,12 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                           <input value={editLabel} onChange={e => setEditLabel(e.target.value)} className={inputClass} autoFocus />
                         </div>
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-neutral-content">CSS Class</label>
+                          <label className="mb-1 block text-xs font-medium text-neutral-content">Modifier Name</label>
                           <input value={editName} onChange={e => setEditName(e.target.value)} className={inputClass} onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); }} />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-neutral-content">Classes (composite)</label>
+                          <textarea value={editClasses} onChange={e => setEditClasses(e.target.value)} className={`${inputClass} min-h-[3rem] resize-y`} rows={2} placeholder="e.g. flex flex-col gap-space-md w-full" />
                         </div>
                         <div className="flex gap-2">
                           <button onClick={handleSaveEdit} className="btn btn-primary flex-1">Save</button>
@@ -236,9 +258,13 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-neutral">
-                        <div className="flex-1">
-                          <span className="text-sm font-medium">{mod.label}</span>
-                          <span className="ml-2 text-xs text-neutral-content">.{mod.name}</span>
+                        <div className="min-w-0 flex-1">
+                          <div>
+                            <span className="text-sm font-medium">{mod.label}</span>
+                            <span className="ml-2 text-xs text-neutral-content">.{mod.name}</span>
+                            {mod.classes && <span className="ml-1 text-[9px] text-neutral-content/60">×{mod.classes.split(/\s+/).filter(Boolean).length}</span>}
+                          </div>
+                          {mod.classes && <p className="truncate text-[10px] text-neutral-content/50">{mod.classes}</p>}
                         </div>
                         <button onClick={() => handleEdit(i)} className="text-neutral-content hover:text-base-content" title="Edit">
                           <TbEdit size={14} />

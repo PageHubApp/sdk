@@ -119,6 +119,9 @@ export const ButtonDef = defineComponent({
     },
   ],
   modifiers: [
+    // Composite patterns (real CSS classes via @utility in daisyui-spatial)
+    { name: "cta-responsive", label: "CTA Responsive", category: "Pattern", requires: "btn btn-primary" },
+    { name: "cta-outline-responsive", label: "CTA Outline", category: "Pattern", requires: "btn btn-outline" },
     // DaisyUI color variants
     { name: "btn-primary", label: "Primary", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },
     { name: "btn-secondary", label: "Secondary", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },

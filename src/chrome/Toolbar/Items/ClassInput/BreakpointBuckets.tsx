@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { Tooltip } from "components/layout/Tooltip";
 import { TbCheck, TbChevronRight, TbCopy, TbDeviceDesktop, TbDeviceMobile, TbLayersSubtract, TbTrash } from "react-icons/tb";
-import { Card } from "../../ToolbarStyle";
+import { BreakpointBadge, Card } from "../../ToolbarStyle";
 import { CLASS_BREAKPOINT_BUCKETS, CARD_BG_BY_BUCKET } from "./classItemUtils";
 
 // ─── Types ───
@@ -43,20 +43,28 @@ function ActionButton({ icon, tooltip, onClick, className }: {
   );
 }
 
-function DropZone({ id, classes, dragOverCategory, borderIdle, dropValid, dropInvalid, onDragOver, onDragLeave, onDrop, onDragStart, onDragEnd, onDelete }: {
-  id: string; classes: string[]; dragOverCategory: string | null;
+function DropZone({ id, classes, dragOverCategory, isDragging, borderIdle, dropValid, dropInvalid, onDragOver, onDragLeave, onDrop, onDragStart, onDragEnd, onDelete }: {
+  id: string; classes: string[]; dragOverCategory: string | null; isDragging: boolean;
   borderIdle: string; dropValid: string; dropInvalid: string;
   onDragOver: (e: React.DragEvent, category: string) => void;
   onDragLeave: () => void; onDrop: (e: React.DragEvent, category: string) => void;
   onDragStart: (e: React.DragEvent, data: any) => void; onDragEnd: () => void;
   onDelete: (cls: string, view: string, deleteLinked?: boolean) => void;
 }) {
+  const isHovered = dragOverCategory === id;
+  const isInvalid = dragOverCategory === `invalid-${id}`;
+  const dropzoneClass = isHovered
+    ? `${dropValid} ring-1 ring-primary scale-[1.01]`
+    : isInvalid
+      ? dropInvalid
+      : isDragging
+        ? "ring-1 ring-base-content/20"
+        : "";
+
   return (
     <div
       role="presentation"
-      className={`flex flex-wrap gap-1.5 rounded-lg border border-dashed p-2 transition-colors ${borderIdle} ${
-        dragOverCategory === id ? dropValid : dragOverCategory === `invalid-${id}` ? dropInvalid : ""
-      }`}
+      className={`flex flex-wrap gap-1.5 rounded-lg border border-dashed p-2 transition-all ${borderIdle} ${dropzoneClass}`}
       onDragOver={e => onDragOver(e, id)}
       onDragLeave={onDragLeave}
       onDrop={e => onDrop(e, id)}
@@ -136,10 +144,10 @@ export function BreakpointBuckets({
                 <span className="flex flex-col items-start leading-tight">
                   <span>{row.label}</span>
                   <span className="text-[10px] font-normal opacity-80">{row.hint}</span>
+                  {!open && list.length > 0 && (
+                    <BreakpointBadge className="mt-0.5">{list.length}</BreakpointBadge>
+                  )}
                 </span>
-                {!open && list.length > 0 && (
-                  <span className="ml-1 rounded-full bg-foreground/10 px-1.5 text-[10px] font-semibold">{list.length}</span>
-                )}
               </button>
 
               {/* Actions — right-aligned */}
@@ -164,7 +172,7 @@ export function BreakpointBuckets({
             {/* Drop zone — only when open */}
             {open && (
               <DropZone
-                id={row.id} classes={list} dragOverCategory={dragOverCategory}
+                id={row.id} classes={list} dragOverCategory={dragOverCategory} isDragging={isDragging}
                 borderIdle={row.borderIdle} dropValid={row.dropValid} dropInvalid={row.dropInvalid}
                 onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
                 onDragStart={onDragStart} onDragEnd={onDragEnd} onDelete={onDelete}

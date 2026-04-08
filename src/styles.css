@@ -221,3 +221,10 @@
     transform: rotate(360deg);
   }
 }
+
+/* Settings search highlight — CSS Custom Highlight API */
+::highlight(settings-search) {
+  background-color: oklch(0.8 0.15 85);
+  color: oklch(0.25 0.05 85);
+  border-radius: 2px;
+}

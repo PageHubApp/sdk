@@ -58,7 +58,7 @@ export interface ComponentPreset {
 }
 
 export interface ComponentModifier {
-  /** CSS class name added to the element, e.g. "btn-outline". This IS the class. */
+  /** Modifier identifier. For single-class modifiers this IS the class (e.g. "btn-outline"). For composites it's a semantic name (e.g. "section-wrapper"). */
   name: string;
   /** Display label in the editor UI, e.g. "Outline" */
   label: string;
@@ -70,6 +70,8 @@ export interface ComponentModifier {
   requires?: string;
   /** Class patterns to remove when this modifier is toggled on. Supports exact matches and prefix patterns ending with * (e.g. "bg-*" removes all bg- classes). */
   removes?: string[];
+  /** Multi-class composition. When set, toggling adds/removes ALL these classes instead of `name`. e.g. "flex flex-row gap-space-xs items-center w-full" */
+  classes?: string;
 }
 
 export interface PageHubComponentDef<P extends Record<string, any> = Record<string, any>> {
@@ -103,16 +105,13 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
   /** Auto-generate settings panel from prop schema. Ignored if `settings` is provided. */
   props?: Record<string, PropSchema>;
 
-  /** Sections of UnifiedSettings to disable. */
+  /** Sections of UnifiedSettings to hide. */
   disable?: string[];
-
-  /** Extra React node rendered in the toolbar header area. */
-  toolbarExtra?: React.ReactNode;
 
   /** Special toolbar layout mode. */
   toolbarLayout?: "hidden" | string;
 
-  /** Hover/click variant type. */
+  /** Hover variant type for the interactions tab. */
   hoverClickVariant?: string;
 
   /** CraftJS rules. */
@@ -160,7 +159,6 @@ export interface ResolvedComponentDef<P = any> {
   readonly advancedSettings: React.ComponentType | undefined;
   readonly props: Record<string, PropSchema> | undefined;
   readonly disable: string[];
-  readonly toolbarExtra: React.ReactNode | undefined;
   readonly toolbarLayout: string | undefined;
   readonly hoverClickVariant: string | undefined;
   readonly rules: {
@@ -304,7 +302,6 @@ export function defineComponent<P extends Record<string, any> = Record<string, a
     advancedSettings: def.advancedSettings,
     props: def.props,
     disable: def.disable || [],
-    toolbarExtra: def.toolbarExtra,
     toolbarLayout: def.toolbarLayout,
     hoverClickVariant: def.hoverClickVariant,
     rules: normalizeRules(def.rules, canvas),
@@ -405,8 +402,8 @@ function attachCraft(
     displayName: def.displayName,
     toolbar: {
       icon: def.icon ?? null,
-      mainTab: def.settings || (def.props ? buildAutoSettings(def.props) : undefined),
-      disable: def.disable,
+      settings: def.settings || (def.props ? buildAutoSettings(def.props) : undefined),
+      hide: def.disable,
     },
     rules: {
       canDrag: def.rules.canDrag,
@@ -422,12 +419,7 @@ function attachCraft(
 
   // Advanced settings tab
   if (def.advancedSettings) {
-    craft.toolbar.mainTabAdvanced = def.advancedSettings;
-  }
-
-  // Extra toolbar UI
-  if (def.toolbarExtra) {
-    craft.toolbar.styleExtra = def.toolbarExtra;
+    craft.toolbar.advancedSettings = def.advancedSettings;
   }
 
   // Toolbar layout
@@ -435,9 +427,9 @@ function attachCraft(
     craft.toolbar.layout = def.toolbarLayout;
   }
 
-  // Hover/click variant
+  // Hover variant
   if (def.hoverClickVariant) {
-    craft.toolbar.hoverClickVariant = def.hoverClickVariant;
+    craft.toolbar.hover = def.hoverClickVariant;
   }
 
   // Group settings

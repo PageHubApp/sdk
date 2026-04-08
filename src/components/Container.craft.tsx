@@ -210,6 +210,14 @@ export const ContainerDef = defineComponent({
     },
   ],
   modifiers: [
+    // Composite patterns (real CSS classes via @utility in daisyui-spatial)
+    // DaisyUI component classes go in `requires` — auto-added alongside the modifier.
+    { name: "section-wrapper", label: "Section", category: "Pattern" },
+    { name: "section-wrapper-dark", label: "Section Dark", category: "Pattern" },
+    { name: "card-surface", label: "Card Surface", category: "Pattern", requires: "card" },
+    { name: "icon-row", label: "Icon Row", category: "Pattern" },
+    { name: "content-col", label: "Content Column", category: "Pattern" },
+    { name: "hero-content-centered", label: "Hero Content", category: "Pattern", requires: "hero-content" },
     // DaisyUI component roles
     { name: "card", label: "Card", category: "DaisyUI" },
     { name: "card-body", label: "Card Body", category: "DaisyUI" },

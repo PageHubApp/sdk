@@ -37,7 +37,7 @@ export default defineConfig(({ mode, command }) => {
               include: ["src/**/*.ts", "src/**/*.tsx"],
               exclude: ["src/vite-editor-css-entry.ts"],
               outDir: "dist",
-              rollupTypes: true,
+              rollupTypes: false,
             }),
           ]
         : []),
@@ -51,7 +51,7 @@ export default defineConfig(({ mode, command }) => {
         "utils/icons.json": resolve(__dirname, "src/utils/data/icons.json"),
         "utils/googleIcons.json": resolve(__dirname, "src/utils/data/googleIcons.json"),
         "utils": resolve(__dirname, "src/utils"),
-        "lodash": resolve(__dirname, "node_modules/lodash-es"),
+        "lodash": resolve(__dirname, "../../node_modules/lodash-es"),
         // Stub Node.js polyfills pulled in by lzutf8
         "readable-stream": resolve(__dirname, "src/shims/empty.ts"),
         "stream": resolve(__dirname, "src/shims/empty.ts"),

@@ -107,7 +107,9 @@ export const resolvePageRef = (url: string, query: any, currentPath?: string): s
 
     let baseUrl = "";
     if (currentPath) {
-      const pathParts = currentPath.split("/").filter((p: string) => p && !p.startsWith("?"));
+      // asPath includes ?query and #hash — do not bake them into baseUrl or /slug appends to ?ref=...
+      const pathOnly = currentPath.split(/[?#]/)[0];
+      const pathParts = pathOnly.split("/").filter((p: string) => p && !p.startsWith("?"));
       if (pathParts.length >= 2 && (pathParts[0] === "build" || pathParts[0] === "view")) {
         baseUrl = `/${pathParts[0]}/${pathParts[1]}`;
       }

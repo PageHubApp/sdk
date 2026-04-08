@@ -160,6 +160,32 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
     return () => { el.remove(); };
   }, [content]);
 
+  // Inject modifier @utility rules from preview content's ROOT
+  useEffect(() => {
+    const modifiers = content?.ROOT?.props?.modifiers;
+    if (!modifiers || typeof modifiers !== "object") return;
+    const rules: string[] = [];
+    for (const mods of Object.values(modifiers) as any[]) {
+      if (!Array.isArray(mods)) continue;
+      for (const mod of mods) {
+        if (mod.name && mod.classes) {
+          rules.push(`@utility ${mod.name} { @apply ${mod.classes}; }`);
+        }
+      }
+    }
+    if (!rules.length) return;
+    const id = "preview-modifier-utilities";
+    let el = document.getElementById(id) as HTMLStyleElement | null;
+    if (!el) {
+      el = document.createElement("style");
+      el.id = id;
+      el.setAttribute("type", "text/tailwindcss");
+      document.head.appendChild(el);
+    }
+    el.textContent = rules.join("\n");
+    return () => { el?.remove(); };
+  }, [content?.ROOT?.props?.modifiers]);
+
   // Extract theme from ROOT to scope CSS vars into the preview
   const previewCSS = useMemo(() => {
     const rootProps = content?.ROOT?.props;

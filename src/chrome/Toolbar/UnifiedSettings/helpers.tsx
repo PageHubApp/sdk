@@ -40,7 +40,6 @@ import { PropertiesInput } from "../Inputs/advanced/PropertiesInput";
 export const SECTION_ICONS: Record<string, React.ReactNode> = {
   // Component
   Content: <TbFileText />,
-  Presets: <TbPalette />,
   Icon: <TbIcons />,
   Type: <TbCategory />,
   Properties: <TbSettings2 />,
@@ -80,15 +79,14 @@ export const renderNA = (title: string) => (
  */
 const COMPONENT_SECTIONS = [
   "Content",
-  "Presets",
   "Type",
-  "Properties",
 ] as const;
 
 /**
  * Sections that render in the Advanced tab instead of the Component tab.
  */
 export const ADVANCED_COMPONENT_SECTIONS = [
+  "Properties",
   "Anchor",
 ] as const;
 
@@ -104,7 +102,24 @@ export function renderComponentSlots(
 ) {
   return (
     <>
-      {COMPONENT_SECTIONS.map((title) => {
+      {COMPONENT_SECTIONS.map((title) => (
+        <React.Fragment key={title}>
+          {slots[title] !== undefined ? slots[title] : renderNA(title)}
+        </React.Fragment>
+      ))}
+    </>
+  );
+}
+
+/**
+ * Renders the advanced component sections (Icon, Anchor) for the Advanced tab.
+ */
+export function renderAdvancedComponentSlots(
+  slots: Partial<Record<ComponentSlotName, React.ReactNode>>
+) {
+  return (
+    <>
+      {ADVANCED_COMPONENT_SECTIONS.map((title) => {
         if (title === "Properties" && slots[title] === undefined) {
           return (
             <React.Fragment key={title}>
@@ -120,23 +135,6 @@ export function renderComponentSlots(
           </React.Fragment>
         );
       })}
-    </>
-  );
-}
-
-/**
- * Renders the advanced component sections (Icon, Anchor) for the Advanced tab.
- */
-export function renderAdvancedComponentSlots(
-  slots: Partial<Record<ComponentSlotName, React.ReactNode>>
-) {
-  return (
-    <>
-      {ADVANCED_COMPONENT_SECTIONS.map((title) => (
-        <React.Fragment key={title}>
-          {slots[title] !== undefined ? slots[title] : renderNA(title)}
-        </React.Fragment>
-      ))}
     </>
   );
 }

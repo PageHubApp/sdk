@@ -13,7 +13,7 @@ interface HoverClickInputProps {
    * - "container": Background, text, border colors + opacity (for Container components)
    * - "button": Background, text, border colors + opacity (for Button components)
    */
-  variant?: "text" | "container" | "button";
+  variant?: "text" | "container" | "button" | "link";
 }
 
 export const HoverClickInput = ({ variant = "container" }: HoverClickInputProps) => {

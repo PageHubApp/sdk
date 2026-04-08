@@ -1,8 +1,14 @@
 import { Tooltip } from "components/layout/Tooltip";
 import { BsEyedropper } from "react-icons/bs";
 import { TbCheck, TbColorPicker, TbDeviceFloppy, TbTrash, TbX } from "react-icons/tb";
+import colors from "tailwindcss/colors";
 import { LeftSidebarDialog } from "./LeftSidebarDialog";
 import { TAILWIND_COLORS, SPECIAL_COLORS } from "./colorPickerConstants";
+import {
+  applyOpacityToCssColor,
+  resolveColorForDisplay,
+  splitOpacitySuffix,
+} from "../../../utils/design/colorSystem";
 import { useColorPickerState, getTailwindColorHex } from "./useColorPickerState";
 import { phStorage } from "../../../utils/phStorage";
 
@@ -195,7 +201,7 @@ function PaletteSection({
       <span className="mb-1.5 block text-xs font-medium text-base-content">Design System</span>
       <div className="grid grid-cols-12 gap-1">
         {palette.map((paletteColor, idx) => {
-          const hexColor = resolvePaletteHex(paletteColor.color || "");
+          const hexColor = resolvePaletteHex(paletteColor.color || "", palette);
           const paletteValue = `palette:${paletteColor.name}`;
           const isSelected =
             selectedColor.includes(paletteColor.name) || selectedColor === paletteValue;
@@ -336,24 +342,41 @@ function TailwindColorsSection({
   );
 }
 
-/** Resolve a palette color string to its display hex */
-function resolvePaletteHex(colorValue: string): string {
-  // Strip Tailwind prefixes
-  colorValue = colorValue.replace(/^(bg-|text-|border-|from-|to-|via-|ring-)/, "");
+/** Resolve a palette entry color string to a CSS color for swatch preview */
+function resolvePaletteHex(colorValue: string, themePalette: { name: string; color: string }[]): string {
+  let v = colorValue.replace(/^(bg-|text-|border-|from-|to-|via-|ring-)/, "");
+  const { base, opacity } = splitOpacitySuffix(v);
 
-  if (colorValue.includes("#")) return colorValue;
-  if (colorValue === "white") return "#ffffff";
-  if (colorValue === "black") return "#000000";
-  if (colorValue === "transparent") return "transparent";
-
-  if (colorValue.includes("-")) {
-    const parts = colorValue.split("-");
-    const shade = parts[parts.length - 1];
-    const colorName = parts.slice(0, -1).join("-");
-    return getTailwindColorHex(colorName, shade);
+  if (base.includes("#")) {
+    const hex = base.match(/#[0-9A-Fa-f]{3,8}/i)?.[0] || base;
+    return opacity != null && opacity < 1 - 1e-6 ? applyOpacityToCssColor(hex, opacity) : hex;
+  }
+  if (base === "white") {
+    return opacity != null && opacity < 1 - 1e-6 ? applyOpacityToCssColor("#ffffff", opacity) : "#ffffff";
+  }
+  if (base === "black") {
+    return opacity != null && opacity < 1 - 1e-6 ? applyOpacityToCssColor("#000000", opacity) : "#000000";
+  }
+  if (base === "transparent") {
+    return opacity != null && opacity < 1 - 1e-6 ? applyOpacityToCssColor("transparent", opacity) : "transparent";
   }
 
-  // Single word colors like "blue" — use 500 shade
-  return getTailwindColorHex(colorValue, "500");
+  // Single Tailwind hue key (e.g. palette stored as "blue" → shade 500)
+  if (/^[a-z]+$/i.test(base)) {
+    const colorKey = base.toLowerCase();
+    const colorObj = colors[colorKey as keyof typeof colors] as unknown;
+    if (colorObj && typeof colorObj === "object" && Object.prototype.hasOwnProperty.call(colorObj, "500")) {
+      let h = (colorObj as Record<string, string>)["500"];
+      if (opacity != null && opacity < 1 - 1e-6) h = applyOpacityToCssColor(h, opacity);
+      return h;
+    }
+  }
+
+  const resolved = resolveColorForDisplay(`text-${base}`, "text", themePalette);
+  let bg = resolved.backgroundColor;
+  if (opacity != null && opacity < 1 - 1e-6) {
+    bg = applyOpacityToCssColor(bg, opacity);
+  }
+  return bg;
 }
 

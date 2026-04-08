@@ -75,6 +75,17 @@ export const AccordionProvider = ({ children }) => {
     });
   }, []);
 
+  const openAll = useCallback(() => {
+    setOpenSections(() => {
+      const next = {};
+      registeredSections.current.forEach((title) => {
+        next[title] = true;
+      });
+      // Don't persist search-triggered open state
+      return next;
+    });
+  }, []);
+
   const anyOpen = useMemo(() => {
     const hasExplicitlyOpen = Object.values(openSections).some((v) => v === true);
     const contentDefaultOpen = !(DEFAULT_OPEN_SECTION in openSections);
@@ -82,7 +93,7 @@ export const AccordionProvider = ({ children }) => {
   }, [openSections]);
 
   return (
-    <AccordionContext.Provider value={{ getIsOpen, toggle, toggleAll, openOnly, register, unregister, anyOpen }}>
+    <AccordionContext.Provider value={{ getIsOpen, toggle, toggleAll, openAll, openOnly, register, unregister, anyOpen }}>
       {children}
     </AccordionContext.Provider>
   );
