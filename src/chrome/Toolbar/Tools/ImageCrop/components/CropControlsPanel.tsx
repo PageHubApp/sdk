@@ -12,7 +12,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
         <div className="h-4 w-1 rounded-full bg-primary" />
         {title}
       </h3>
-      <div className="rounded-lg border border-border/30 bg-background p-4">{children}</div>
+      <div className="rounded-lg border border-base-300/30 bg-base-100 p-4">{children}</div>
     </div>
   );
 }
@@ -46,7 +46,7 @@ function ScaleControl({
             step={step}
             value={value}
             onChange={e => onChange(parseFloat(e.target.value))}
-            className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-muted"
+            className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-neutral"
           />
         </div>
         <div className="min-w-12 rounded-md bg-primary/10 px-2 py-1 text-center text-sm font-semibold text-primary">
@@ -58,7 +58,7 @@ function ScaleControl({
           <button
             key={preset}
             onClick={() => onChange(preset)}
-            className="flex-1 rounded-lg bg-muted px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+            className="flex-1 rounded-lg bg-neutral px-3 py-2 text-xs font-medium text-neutral-content transition-colors hover:bg-primary/10 hover:text-primary"
           >
             {Math.round(preset * 100)}%
           </button>
@@ -70,7 +70,7 @@ function ScaleControl({
 
 export function CropControlsPanel({ crop }: CropControlsPanelProps) {
   return (
-    <div className="scrollbar-dark w-full overflow-y-auto border-border bg-linear-to-b from-muted/20 to-muted/40 p-4 pb-20 sm:w-64 md:w-72 lg:w-80 lg:border-r lg:p-6">
+    <div className="scrollbar-dark w-full overflow-y-auto border-base-300 bg-linear-to-b from-muted/20 to-muted/40 p-4 pb-20 sm:w-64 md:w-72 lg:w-80 lg:border-r lg:p-6">
       <div className="space-y-6">
         {/* Presets */}
         <Card title="Aspect Ratios">
@@ -79,12 +79,12 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
               <button
                 key={preset.name}
                 onClick={() => crop.handlePresetSelect(preset)}
-                className="group rounded-lg border border-border bg-background p-2 text-left text-xs transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm"
+                className="group rounded-lg border border-base-300 bg-base-100 p-2 text-left text-xs transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm"
               >
-                <div className="font-semibold text-foreground transition-colors group-hover:text-primary">
+                <div className="font-semibold text-base-content transition-colors group-hover:text-primary">
                   {preset.name}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-neutral-content">
                   {preset.width} × {preset.height}
                 </div>
               </button>
@@ -96,7 +96,7 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
         <Card title="Dimensions">
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <label htmlFor="crop-width-input" className="mb-1 block text-xs font-medium text-muted-foreground">
+              <label htmlFor="crop-width-input" className="mb-1 block text-xs font-medium text-neutral-content">
                 Width
               </label>
               <input
@@ -111,15 +111,15 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
               onClick={() => crop.setLockAspectRatio(!crop.lockAspectRatio)}
               className={`rounded-lg p-2 transition-all duration-200 ${
                 crop.lockAspectRatio
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                  ? "bg-primary text-primary-content shadow-sm"
+                  : "bg-neutral text-neutral-content hover:bg-primary/10 hover:text-primary"
               }`}
               title={crop.lockAspectRatio ? "Unlock aspect ratio" : "Lock aspect ratio"}
             >
               {crop.lockAspectRatio ? <TbLock className="size-4" /> : <TbLockOpen className="size-4" />}
             </button>
             <div className="flex-1">
-              <label htmlFor="crop-height-input" className="mb-1 block text-xs font-medium text-muted-foreground">
+              <label htmlFor="crop-height-input" className="mb-1 block text-xs font-medium text-neutral-content">
                 Height
               </label>
               <input
@@ -159,7 +159,7 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
         {/* Export Settings */}
         <Card title="Export Settings">
           <div className="mb-4">
-            <label htmlFor="crop-version-name-input" className="mb-1 block text-xs font-medium text-muted-foreground">
+            <label htmlFor="crop-version-name-input" className="mb-1 block text-xs font-medium text-neutral-content">
               Version Name
             </label>
             <input
@@ -185,8 +185,8 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
                   onClick={() => crop.setImageFormat(format.value)}
                   className={`rounded-lg p-1.5 text-xs font-medium transition-colors ${
                     crop.imageFormat === format.value
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      ? "bg-primary text-primary-content"
+                      : "bg-neutral text-neutral-content hover:bg-primary/10 hover:text-primary"
                   }`}
                 >
                   <div className="text-xs font-semibold">{format.label}</div>
@@ -207,7 +207,7 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
                   step="5"
                   value={crop.imageQuality}
                   onChange={e => crop.setImageQuality(parseInt(e.target.value))}
-                  className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-muted"
+                  className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-neutral"
                 />
               </div>
               <div className="min-w-12 rounded-md bg-primary/10 px-2 py-1 text-center text-sm font-semibold text-primary">
@@ -221,8 +221,8 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
                   onClick={() => crop.setImageQuality(preset)}
                   className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                     crop.imageQuality === preset
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      ? "bg-primary text-primary-content"
+                      : "bg-neutral text-neutral-content hover:bg-primary/10 hover:text-primary"
                   }`}
                 >
                   {preset}%

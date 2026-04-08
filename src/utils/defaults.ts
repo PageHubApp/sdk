@@ -1,70 +1,77 @@
 // Default palette colors - single source of truth
-// Uses shadcn-compatible names for drop-in React/shadcn compatibility
+// Uses DaisyUI 5-compatible names: primary/secondary/accent/neutral/base-*/error/info/success/warning
 export const DEFAULT_PALETTE = [
-  { name: "Primary", color: "black" },
-  { name: "Primary Foreground", color: "white" },
-  { name: "Secondary", color: "#f1f5f9" },
-  { name: "Secondary Foreground", color: "#1e293b" },
-  { name: "Accent", color: "#f1f5f9" },
-  { name: "Accent Foreground", color: "#1e293b" },
-  { name: "Muted", color: "#64748b" },
-  { name: "Muted Foreground", color: "white" },
-  { name: "Background", color: "white" },
-  { name: "Foreground", color: "#0f0f0f" },
-  { name: "Card", color: "#eef2f6" },
-  { name: "Card Foreground", color: "#64748b" },
-  { name: "Popover", color: "white" },
-  { name: "Popover Foreground", color: "#0f0f0f" },
-  { name: "Destructive", color: "#ef4444" },
-  { name: "Destructive Foreground", color: "white" },
-  { name: "Border", color: "#e2e8f0" },
-  { name: "Input", color: "#e2e8f0" },
-  { name: "Ring", color: "#3b82f6" },
-  { name: "Chart 1", color: "#dbeafe" },
-  { name: "Chart 2", color: "#bfdbfe" },
-  { name: "Chart 3", color: "#93c5fd" },
-  { name: "Chart 4", color: "#60a5fa" },
-  { name: "Chart 5", color: "#3b82f6" },
-  { name: "Sidebar", color: "#f8fafc" },
-  { name: "Sidebar Foreground", color: "#0f0f0f" },
-  { name: "Sidebar Primary", color: "#1e293b" },
-  { name: "Sidebar Primary Foreground", color: "white" },
-  { name: "Sidebar Accent", color: "#f1f5f9" },
-  { name: "Sidebar Accent Foreground", color: "#1e293b" },
-  { name: "Sidebar Border", color: "#e2e8f0" },
-  { name: "Sidebar Ring", color: "#3b82f6" },
+  { name: "Primary", color: "#0a0a0a" },
+  { name: "Primary Content", color: "#fafafa" },
+  { name: "Secondary", color: "#f5f5f5" },
+  { name: "Secondary Content", color: "#171717" },
+  { name: "Accent", color: "#0a0a0a" },
+  { name: "Accent Content", color: "#fafafa" },
+  { name: "Neutral", color: "#f5f5f5" },
+  { name: "Neutral Content", color: "#525252" },
+  { name: "Base 100", color: "#ffffff" },
+  { name: "Base 200", color: "#fafafa" },
+  { name: "Base 300", color: "#e5e5e5" },
+  { name: "Base Content", color: "#0a0a0a" },
+  { name: "Error", color: "#ef4444" },
+  { name: "Error Content", color: "#ffffff" },
+  { name: "Info", color: "#3b82f6" },
+  { name: "Info Content", color: "#ffffff" },
+  { name: "Success", color: "#22c55e" },
+  { name: "Success Content", color: "#ffffff" },
+  { name: "Warning", color: "#f59e0b" },
+  { name: "Warning Content", color: "#171717" },
+  { name: "Ring", color: "#0a0a0a" },
 ];
 
 // Default dark palette — only core semantic tokens that change between light/dark.
-// Tokens not listed here (Chart, Sidebar, etc.) inherit their light-mode value.
 export const DEFAULT_DARK_PALETTE = [
-  { name: "Primary", color: "white" },
-  { name: "Primary Foreground", color: "#0f0f0f" },
-  { name: "Secondary", color: "#1e293b" },
-  { name: "Secondary Foreground", color: "#e2e8f0" },
-  { name: "Accent", color: "#1e293b" },
-  { name: "Accent Foreground", color: "#e2e8f0" },
-  { name: "Muted", color: "#94a3b8" },
-  { name: "Muted Foreground", color: "#e2e8f0" },
-  { name: "Background", color: "#0f0f0f" },
-  { name: "Foreground", color: "#f8fafc" },
-  { name: "Card", color: "#1e293b" },
-  { name: "Card Foreground", color: "#e2e8f0" },
-  { name: "Popover", color: "#1e293b" },
-  { name: "Popover Foreground", color: "#f8fafc" },
-  { name: "Destructive", color: "#ef4444" },
-  { name: "Destructive Foreground", color: "white" },
-  { name: "Border", color: "#334155" },
-  { name: "Input", color: "#334155" },
-  { name: "Ring", color: "#60a5fa" },
+  { name: "Primary", color: "#818cf8" },
+  { name: "Primary Content", color: "#0f0f1a" },
+  { name: "Secondary", color: "#1e1b4b" },
+  { name: "Secondary Content", color: "#e0e7ff" },
+  { name: "Accent", color: "#22d3ee" },
+  { name: "Accent Content", color: "#0f172a" },
+  { name: "Neutral", color: "#1e293b" },
+  { name: "Neutral Content", color: "#94a3b8" },
+  { name: "Base 100", color: "#0f172a" },
+  { name: "Base 200", color: "#1e293b" },
+  { name: "Base 300", color: "#334155" },
+  { name: "Base Content", color: "#f1f5f9" },
+  { name: "Error", color: "#f87171" },
+  { name: "Error Content", color: "#0f0f0f" },
+  { name: "Info", color: "#60a5fa" },
+  { name: "Info Content", color: "#0f0f0f" },
+  { name: "Success", color: "#4ade80" },
+  { name: "Success Content", color: "#0f0f0f" },
+  { name: "Warning", color: "#fbbf24" },
+  { name: "Warning Content", color: "#0f0f0f" },
+  { name: "Ring", color: "#818cf8" },
+];
+
+/** Density slider steps — single source of truth for both editor and preview UIs */
+export const DENSITY_STEPS = [
+  { value: "0.25", label: "Minimal" },
+  { value: "0.5", label: "Tight" },
+  { value: "0.65", label: "Compact" },
+  { value: "0.8", label: "Snug" },
+  { value: "1", label: "Default" },
+  { value: "1.25", label: "Relaxed" },
+  { value: "1.5", label: "Airy" },
+  { value: "1.75", label: "Spacious" },
+  { value: "2.5", label: "Ultra" },
 ];
 
 // Default style guide values - single source of truth
 export const DEFAULT_STYLE_GUIDE = {
-  // Spacing & Layout - using CSS values for CSS vars
-  borderRadius: "0.5rem", // → --radius (default UI corners)
-  /** Larger frames / media cards — `rounded-(--card-radius)` in className */
-  cardRadius: "1rem",
+  // Radius & Sizing (DaisyUI 5-aligned)
+  radiusBox: "0.5rem", // → --radius-box (cards, containers, modals, buttons)
+  radiusField: "0.375rem", // → --radius-field (inputs, textareas, selects)
+  radiusSelector: "0.5rem", // → --radius-selector (checkboxes, radios, toggles)
+  sizeField: "0.25rem", // → --size-field (input/button height base)
+  sizeSelector: "0.25rem", // → --size-selector (checkbox/radio size base)
+  depth: "1", // → --depth (subtle 3D/shadow effect: 0 = flat, 1 = raised)
+  noise: "0", // → --noise (textured noise overlay: 0 = off, 1 = on)
   buttonPadding: "1.5rem 0.75rem", // Large button padding (x y format)
   containerPadding: "2rem 2rem", // Large container padding (x y format)
   sectionGap: "4rem", // Large section gap
@@ -87,19 +94,18 @@ export const DEFAULT_STYLE_GUIDE = {
   bodyFontFamily: "Open Sans",
   shadowStyle: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)", // shadow-lg
 
-  // Form inputs - mixed approach
-  inputBorderWidth: "1px", // CSS value for CSS var
-  inputBorderColor: "#e2e8f0", // tweakcn border color
-  inputBorderRadius: "0.375rem", // CSS value for CSS var (rounded-md = 0.375rem)
+  // Form inputs
+  border: "1px", // → --border (DaisyUI 5: component border width)
+  inputBorderColor: "#e2e8f0", // default border color
   inputPadding: "1rem 1rem", // CSS value for CSS var (px-4 py-2)
   inputBgColor: "white",
-  inputTextColor: "#0f0f0f", // tweakcn foreground
-  inputPlaceholderColor: "#64748b", // tweakcn muted foreground
+  inputTextColor: "#0f0f0f", // base-content
+  inputPlaceholderColor: "#64748b", // neutral-content
   inputFocusRing: "2px", // CSS value for CSS var
-  inputFocusRingColor: "#3b82f6", // tweakcn ring color
+  inputFocusRingColor: "#3b82f6", // ring color
 
   // Links - colors only
-  linkColor: "#2563eb", // tweakcn-inspired blue
+  linkColor: "#2563eb", // default link blue
   linkHoverColor: "#1d4ed8", // darker blue for hover
   linkUnderline: "no-underline", // Tailwind class
   linkUnderlineOffset: "underline-offset-2", // Tailwind class

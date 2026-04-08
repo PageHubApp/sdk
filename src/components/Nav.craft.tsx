@@ -49,7 +49,7 @@ const navButtonClassName = "px-(--button-padding-x) py-(--button-padding-y) flex
 
 const hiddenMobileButtonClassName = `${navButtonClassName} hidden md:block`;
 
-const navListClassName = "flex flex-row items-center gap-(--container-gap) md:flex md:flex-row md:items-center md:gap-(--container-gap)";
+const navListClassName = "flex flex-row items-center gap-container md:flex md:flex-row md:items-center md:gap-container";
 
 // ─── Preset children builders ──────────────────────────────────────────────
 
@@ -108,7 +108,7 @@ function buildMobileMenuChildren() {
         custom={{ displayName: "Mobile Menu Panel" }}
         canDelete={false}
         canEditName={false}
-        className="h-full w-80 max-w-sm bg-(--background) shadow-xl"
+        className="h-full w-80 max-w-sm bg-base-100 shadow-xl"
         action={{ type: "show-hide", target: "mobile-menu", direction: "toggle", trigger: "click", method: "style" }}
       >
         <Element
@@ -118,7 +118,7 @@ function buildMobileMenuChildren() {
           custom={{ displayName: "Mobile Nav Header" }}
           canDelete={false}
           canEditName={false}
-          className="flex items-center justify-between px-(--container-padding-x) py-(--container-padding-y) border-b"
+          className="flex items-center justify-between px-container-x py-container-y border-b"
         >
           <Element
             canvas
@@ -140,7 +140,7 @@ function buildMobileMenuChildren() {
           custom={{ displayName: "Mobile Navigation" }}
           canDelete={false}
           canEditName={false}
-          className="flex flex-col gap-(--container-gap) w-full border-0"
+          className="flex flex-col gap-container w-full border-0"
         />
       </Element>
     </Element>,
@@ -149,8 +149,8 @@ function buildMobileMenuChildren() {
 
 function buildSocialButtons(filled: boolean) {
   const baseClassName = filled
-    ? "px-(--button-padding-x) py-(--button-padding-y) bg-(--primary) text-(--primary-foreground) rounded-(--radius)"
-    : "px-2 py-2 bg-transparent border-0";
+    ? "px-(--button-padding-x) py-(--button-padding-y) bg-primary text-primary-content rounded-box"
+    : "btn btn-ghost";
   const colors: Record<string, string> = filled
     ? {}
     : { twitter: "text-[#1DA1F2]", facebook: "text-[#1877F2]", instagram: "text-[#E4405F]", linkedin: "text-[#0A66C2]", youtube: "text-[#FF0000]" };
@@ -180,7 +180,7 @@ function buildPlainNavButtons(withBg: boolean) {
       custom={{ displayName: name }}
       text={name}
       url="#"
-      className={withBg ? `${navButtonClassName} bg-(--primary) text-(--primary-foreground) rounded-(--radius)` : navButtonClassName}
+      className={withBg ? `${navButtonClassName} bg-primary text-primary-content rounded-box` : navButtonClassName}
     />
   ));
 }
@@ -193,7 +193,7 @@ function buildPillNavButtons() {
       custom={{ displayName: name }}
       text={name}
       url="#"
-      className={`${navButtonClassName} bg-transparent text-(--primary-foreground) border-0`}
+      className={`${navButtonClassName} bg-transparent text-primary-content border-0`}
     />
   ));
 }
@@ -229,7 +229,7 @@ export const NavDef = defineComponent({
       icon: TbDeviceMobile,
       props: {
         menu: { enabled: true, id: "mobile-menu", side: "left", type: "slide", breakpoint: "mobile" },
-        className: "flex justify-between items-center gap-(--container-gap)",
+        className: "flex justify-between items-center gap-container",
       },
       children: buildMobileMenuChildren,
     },
@@ -278,7 +278,7 @@ export const NAV_EXTRA_PRESETS = [
     icon: TbPill,
     element: ButtonList,
     props: {
-      className: "flex flex-row items-center gap-1 md:flex md:flex-row md:items-center md:gap-1 bg-(--primary) rounded-full px-2 py-1",
+      className: "flex flex-row items-center gap-1 md:flex md:flex-row md:items-center md:gap-1 bg-primary rounded-full px-2 py-1",
     },
     children: buildPillNavButtons,
   },

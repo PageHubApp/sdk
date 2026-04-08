@@ -58,7 +58,7 @@ const ALL_VARIABLES = [
 
 const getTiptapExtensions = (
   onSuggestion?: (props: SuggestionProps | null) => void,
-  queryRef?: { current: any }
+  queryRef?: { current: any },
 ) => [
   StarterKit.configure({
     heading: {},

@@ -55,4 +55,3 @@ export const SelectMapTool = () => {
   );
 };
 
-export default SelectMapTool;

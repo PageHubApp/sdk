@@ -22,7 +22,7 @@ export function GoogleIconDialog() {
         icon={<TbIcons />}
       >
         {/* Tabs */}
-        <div className="flex border-b border-border bg-muted" role="tablist" aria-label="Icon selection tabs">
+        <div className="flex border-b border-base-300 bg-neutral" role="tablist" aria-label="Icon selection tabs">
           <TabButton active={d.activeTab === "google"} onClick={() => d.setActiveTab("google")} icon={<TbBrandGoogle size={18} />} label="Google" id="google" />
           <TabButton active={d.activeTab === "media"} onClick={() => d.setActiveTab("media")} icon={<TbPhoto size={18} />} label="Media" id="media" />
           <TabButton active={d.activeTab === "icons"} onClick={() => d.setActiveTab("icons")} icon={<TbIcons size={18} />} label="Icons" id="icons" />
@@ -53,8 +53,8 @@ function TabButton({ active, onClick, icon, label, id }: {
       onClick={onClick}
       className={`flex flex-1 items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition-colors ${
         active
-          ? "border-b-2 border-primary bg-background text-primary"
-          : "text-muted-foreground hover:text-foreground"
+          ? "border-b-2 border-primary bg-base-100 text-primary"
+          : "text-neutral-content hover:text-base-content"
       }`}
       role="tab"
       aria-selected={active}

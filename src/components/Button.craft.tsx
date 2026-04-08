@@ -102,7 +102,7 @@ export const ButtonDef = defineComponent({
       label: "Button",
       props: {
         text: "Button",
-        className: "flex-row items-center justify-center gap-2 px-6 py-3 w-auto flex cursor-pointer border border-border rounded-lg",
+        className: "flex-row items-center justify-center gap-2 px-6 py-3 w-auto flex cursor-pointer border border-base-300 rounded-lg",
       },
     },
     {
@@ -119,12 +119,34 @@ export const ButtonDef = defineComponent({
     },
   ],
   modifiers: [
-    { name: "btn-outline", label: "Outline", category: "Style" },
-    { name: "btn-ghost", label: "Ghost", category: "Style" },
-    { name: "btn-sm", label: "Small", category: "Size" },
-    { name: "btn-lg", label: "Large", category: "Size" },
-    { name: "btn-pill", label: "Pill", category: "Shape" },
-    { name: "btn-wide", label: "Wide", category: "Size" },
-    { name: "btn-square", label: "Square", category: "Shape" },
+    // DaisyUI color variants
+    { name: "btn-primary", label: "Primary", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },
+    { name: "btn-secondary", label: "Secondary", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },
+    { name: "btn-accent", label: "Accent", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },
+    { name: "btn-neutral", label: "Neutral", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },
+    { name: "btn-info", label: "Info", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },
+    { name: "btn-success", label: "Success", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },
+    { name: "btn-warning", label: "Warning", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },
+    { name: "btn-error", label: "Error", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },
+    // DaisyUI style variants
+    { name: "btn-outline", label: "Outline", category: "Style", requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent", "border*"] },
+    { name: "btn-ghost", label: "Ghost", category: "Style", requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent", "border*"] },
+    { name: "btn-link", label: "Link", category: "Style", requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent", "border*"] },
+    { name: "btn-soft", label: "Soft", category: "Style", requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent", "border*"] },
+    { name: "btn-dash", label: "Dash", category: "Style", requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent", "border*"] },
+    // DaisyUI size variants
+    { name: "btn-xs", label: "Tiny", category: "Size", exclusive: true, requires: "btn" },
+    { name: "btn-sm", label: "Small", category: "Size", exclusive: true, requires: "btn" },
+    { name: "btn-md", label: "Medium", category: "Size", exclusive: true, requires: "btn" },
+    { name: "btn-lg", label: "Large", category: "Size", exclusive: true, requires: "btn" },
+    { name: "btn-xl", label: "XL", category: "Size", exclusive: true, requires: "btn" },
+    { name: "btn-wide", label: "Wide", category: "Size", exclusive: true, requires: "btn" },
+    { name: "btn-block", label: "Full Width", category: "Size", exclusive: true, requires: "btn" },
+    // DaisyUI shape variants
+    { name: "btn-circle", label: "Circle", category: "Shape", exclusive: true, requires: "btn" },
+    { name: "btn-square", label: "Square", category: "Shape", exclusive: true, requires: "btn" },
+    // State
+    { name: "btn-disabled", label: "Disabled", category: "State", requires: "btn" },
+    { name: "loading", label: "Loading", category: "State", requires: "btn" },
   ],
 }, { __internal: true });

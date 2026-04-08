@@ -73,13 +73,13 @@ export const ImportExportDialog = ({ isOpen, onClose }: ImportExportDialogProps)
     >
       <div className="flex h-full flex-col">
         {/* Tab Navigation */}
-        <div className="flex border-b border-border bg-muted">
+        <div className="flex border-b border-base-300 bg-neutral">
           <button
             onClick={() => setActiveTab("export")}
             className={`flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
               activeTab === "export"
-                ? "border-b-2 border-primary bg-background text-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "border-b-2 border-primary bg-base-100 text-primary"
+                : "text-neutral-content hover:text-base-content"
             }`}
           >
             <TbDownload />
@@ -89,8 +89,8 @@ export const ImportExportDialog = ({ isOpen, onClose }: ImportExportDialogProps)
             onClick={() => setActiveTab("import")}
             className={`flex flex-1 items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
               activeTab === "import"
-                ? "border-b-2 border-primary bg-background text-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "border-b-2 border-primary bg-base-100 text-primary"
+                : "text-neutral-content hover:text-base-content"
             }`}
           >
             <TbUpload />
@@ -99,12 +99,12 @@ export const ImportExportDialog = ({ isOpen, onClose }: ImportExportDialogProps)
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto bg-background">
+        <div className="flex-1 overflow-y-auto bg-base-100">
           {activeTab === "export" ? (
             <div className="space-y-6 p-6">
               <div>
                 <h3 className="text-lg font-medium">Export Page Layout</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-sm text-neutral-content">
                   Copy and save this exported version of your page. You can then import it at
                   anytime into a builder.
                 </p>
@@ -112,13 +112,13 @@ export const ImportExportDialog = ({ isOpen, onClose }: ImportExportDialogProps)
 
               <div className="space-y-3">
                 <div className="flex justify-end">
-                  <div className="flex gap-1 rounded-lg border border-border bg-muted p-1">
+                  <div className="flex gap-1 rounded-lg border border-base-300 bg-neutral p-1">
                     <button
                       onClick={() => setExportFormat("compressed")}
                       className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                         exportFormat === "compressed"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "bg-base-100 text-base-content shadow-sm"
+                          : "text-neutral-content hover:text-base-content"
                       }`}
                     >
                       Compressed
@@ -127,8 +127,8 @@ export const ImportExportDialog = ({ isOpen, onClose }: ImportExportDialogProps)
                       onClick={() => setExportFormat("json")}
                       className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                         exportFormat === "json"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "bg-base-100 text-base-content shadow-sm"
+                          : "text-neutral-content hover:text-base-content"
                       }`}
                     >
                       JSON
@@ -153,7 +153,7 @@ export const ImportExportDialog = ({ isOpen, onClose }: ImportExportDialogProps)
             <div className="space-y-6 p-6">
               <div>
                 <h3 className="text-lg font-medium">Import Page Layout</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-sm text-neutral-content">
                   Paste exported data and click Import to update this builder with your exported
                   version. Supports both compressed and JSON formats.
                 </p>
@@ -161,12 +161,12 @@ export const ImportExportDialog = ({ isOpen, onClose }: ImportExportDialogProps)
 
               <div className="space-y-3">
                 <div className="flex justify-end">
-                  <div className="flex gap-1 rounded-lg border border-border bg-muted p-1">
+                  <div className="flex gap-1 rounded-lg border border-base-300 bg-neutral p-1">
                     <div
                       className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                         detectedFormat === "compressed"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground"
+                          ? "bg-base-100 text-base-content shadow-sm"
+                          : "text-neutral-content"
                       }`}
                     >
                       Compressed
@@ -174,8 +174,8 @@ export const ImportExportDialog = ({ isOpen, onClose }: ImportExportDialogProps)
                     <div
                       className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                         detectedFormat === "json"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground"
+                          ? "bg-base-100 text-base-content shadow-sm"
+                          : "text-neutral-content"
                       }`}
                     >
                       JSON

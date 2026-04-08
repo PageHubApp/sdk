@@ -6,12 +6,13 @@ class PreviewErrorBoundary extends Component<{ children: React.ReactNode }, { er
   state = { error: false };
   static getDerivedStateFromError() { return { error: true }; }
   render() {
-    if (this.state.error) return <div className="p-4 text-sm text-muted-foreground">Preview unavailable — apply changes to see the result.</div>;
+    if (this.state.error) return <div className="p-4 text-sm text-neutral-content">Preview unavailable — apply changes to see the result.</div>;
     return this.props.children;
   }
 }
 import { useResizable } from "./hooks/useResizable";
 import { generateDesignSystemCSSVariables } from "../utils/design/designSystemVars";
+import { resolveTheme } from "../utils/design/resolveTheme";
 import { getMaterialSymbolsUrlFromNodes } from "../utils/data/collectGoogleIcons";
 import { sanitizeCraftNodeReferences } from "../utils/sanitizeNodeMap";
 
@@ -40,24 +41,24 @@ function SectionStatusIcon({ status }: { status: SectionOverlayItem["status"] })
     case "done":
       return <TbCheck className="size-3.5 text-emerald-500" />;
     case "failed":
-      return <TbX className="size-3.5 text-destructive" />;
+      return <TbX className="size-3.5 text-error" />;
     default:
-      return <div className="size-3.5 rounded-full border border-muted-foreground/40" />;
+      return <div className="size-3.5 rounded-full border border-neutral-foreground/40" />;
   }
 }
 
 function SectionControlList({ sections, onRedo, onAccept, onReject }: SectionOverlayConfig) {
   return (
-    <div className="border-b border-border/30 px-3 py-2 space-y-1">
-      <div className="text-[10px] font-medium text-muted-foreground">Sections</div>
+    <div className="border-b border-base-300/30 px-3 py-2 space-y-1">
+      <div className="text-[10px] font-medium text-neutral-content">Sections</div>
       {sections.map(s => (
         <div key={s.nodeId} className="flex items-center gap-1.5 text-[11px]">
           <SectionStatusIcon status={s.accepted ? "done" : s.status} />
-          <span className={`flex-1 truncate font-medium ${s.rejected ? "line-through text-muted-foreground" : "text-foreground"}`}>
+          <span className={`flex-1 truncate font-medium ${s.rejected ? "line-through text-neutral-content" : "text-base-content"}`}>
             {s.displayName}
           </span>
           {s.statusText && s.status === "building" && (
-            <span className="truncate text-[10px] text-muted-foreground max-w-[80px]">{s.statusText}</span>
+            <span className="truncate text-[10px] text-neutral-content max-w-[80px]">{s.statusText}</span>
           )}
           {!s.accepted && !s.rejected && (s.status === "done" || s.status === "failed") && (
             <div className="flex items-center gap-0.5">
@@ -72,7 +73,7 @@ function SectionControlList({ sections, onRedo, onAccept, onReject }: SectionOve
                 </button>
               )}
               {onReject && (
-                <button type="button" onClick={() => onReject(s.nodeId)} className="rounded px-1.5 py-0.5 text-[10px] text-destructive hover:bg-destructive/10" title="Reject">
+                <button type="button" onClick={() => onReject(s.nodeId)} className="rounded px-1.5 py-0.5 text-[10px] text-error hover:bg-error/10" title="Reject">
                   <TbX className="size-3" />
                 </button>
               )}
@@ -82,7 +83,7 @@ function SectionControlList({ sections, onRedo, onAccept, onReject }: SectionOve
             <span className="text-[10px] text-emerald-600">Accepted</span>
           )}
           {s.rejected && (
-            <span className="text-[10px] text-muted-foreground">Rejected</span>
+            <span className="text-[10px] text-neutral-content">Rejected</span>
           )}
         </div>
       ))}
@@ -159,33 +160,32 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
     return () => { el.remove(); };
   }, [content]);
 
-  // Extract palette/styleGuide from ROOT to scope CSS vars into the preview
+  // Extract theme from ROOT to scope CSS vars into the preview
   const previewCSS = useMemo(() => {
     const rootProps = content?.ROOT?.props;
-    if (!rootProps?.pallet) return "";
-    return generateDesignSystemCSSVariables(
-      { palette: rootProps.pallet, styleGuide: rootProps.styleGuide || {} },
-      "#ph-preview-frame"
-    );
-  }, [content?.ROOT?.props?.pallet, content?.ROOT?.props?.styleGuide]);
+    if (!rootProps) return "";
+    const theme = resolveTheme(rootProps);
+    if (!theme.palette.length) return "";
+    return generateDesignSystemCSSVariables(theme, "#ph-preview-frame");
+  }, [content?.ROOT?.props?.theme]);
 
   const safeContent = useMemo(() => sanitizeCraftNodeReferences(content), [content]);
   const frameData = tab === "live" && liveContent ? liveContent : JSON.stringify(safeContent);
 
   return (
-    <div className="relative flex shrink-0 flex-col border-l border-border/40" style={{ width }}>
+    <div className="relative flex shrink-0 flex-col border-l border-base-300/40" style={{ width }}>
       {/* Resize handle */}
       <div {...handleProps.w} />
 
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border/30">
-        <div className="flex items-center gap-0.5 rounded-lg border border-border/60 bg-muted/40 p-0.5">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-base-300/30">
+        <div className="flex items-center gap-0.5 rounded-lg border border-base-300/60 bg-neutral/40 p-0.5">
           <button
             type="button"
             onClick={() => setTab("review")}
             className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
               tab === "review"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                ? "bg-base-100 text-base-content shadow-sm"
+                : "text-neutral-content hover:bg-neutral/60 hover:text-base-content"
             }`}
           >
             Preview
@@ -195,8 +195,8 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
             onClick={() => setTab("live")}
             className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
               tab === "live"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                ? "bg-base-100 text-base-content shadow-sm"
+                : "text-neutral-content hover:bg-neutral/60 hover:text-base-content"
             }`}
           >
             Live
@@ -211,7 +211,7 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
           >
             <TbMinus />
           </button>
-          <span className="min-w-[3ch] text-center text-[10px] text-muted-foreground">
+          <span className="min-w-[3ch] text-center text-[10px] text-neutral-content">
             {Math.round(zoom * 100)}%
           </span>
           <button
@@ -232,13 +232,13 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
       {tab === "review" && sectionOverlay && sectionOverlay.sections.length > 0 ? (
         <SectionControlList {...sectionOverlay} />
       ) : tab === "review" && changes.length > 0 ? (
-        <div className="border-b border-border/30 px-3 py-2 space-y-1">
-          <div className="text-[10px] font-medium text-muted-foreground">Changed:</div>
+        <div className="border-b border-base-300/30 px-3 py-2 space-y-1">
+          <div className="text-[10px] font-medium text-neutral-content">Changed:</div>
           {changes.map(c => (
             <div key={c.id} className="flex items-baseline gap-1.5 text-[10px]">
               {c.isNew && <span className="rounded bg-primary/20 px-1 text-[9px] text-primary">new</span>}
-              <span className="font-medium text-foreground">{c.name}</span>
-              {c.text && <span className="truncate text-muted-foreground">{c.text}</span>}
+              <span className="font-medium text-base-content">{c.name}</span>
+              {c.text && <span className="truncate text-neutral-content">{c.text}</span>}
             </div>
           ))}
         </div>
@@ -258,7 +258,7 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
               </PreviewErrorBoundary>
             );
           } catch {
-            return <div className="p-4 text-sm text-muted-foreground">Preview unavailable</div>;
+            return <div className="p-4 text-sm text-neutral-content">Preview unavailable</div>;
           }
         })()}
       </div>

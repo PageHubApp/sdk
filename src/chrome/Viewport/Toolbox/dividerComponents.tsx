@@ -12,7 +12,7 @@ export const DividerToolbox = {
   content: [
     <RenderDividerComponent
       key="1"
-      className="bg-(--accent) border-0 h-2 my-3 w-full"
+      className="bg-accent border-0 h-2 my-3 w-full"
       text={<ToolboxItemDisplay icon={HiOutlineMinus} label="Line Divider" />}
     />,
   ],

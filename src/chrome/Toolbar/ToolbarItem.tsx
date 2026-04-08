@@ -31,7 +31,7 @@ const Input = (__props, ref) => {
     return (
       <label className="relative flex cursor-pointer flex-col items-center transition-transform active:scale-[0.98]">
         {props.option && (
-          <div className="mb-2 text-center text-xs font-medium text-foreground">
+          <div className="mb-2 text-center text-xs font-medium text-base-content">
             {props.option || "Enable"}
           </div>
         )}
@@ -44,7 +44,7 @@ const Input = (__props, ref) => {
             onChange={() => changed(value ? "" : props.on)}
             className="peer sr-only"
           />
-          <div className="h-4 w-8 rounded-full bg-muted text-muted-foreground after:absolute after:left-[2px] after:top-[2px] after:size-3 after:rounded-full after:border after:border-border after:bg-background after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-background peer-focus:ring-2 peer-focus:ring-ring"></div>
+          <div className="h-4 w-8 rounded-full bg-neutral text-neutral-content after:absolute after:left-[2px] after:top-[2px] after:size-3 after:rounded-full after:border after:border-base-300 after:bg-base-100 after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-background peer-focus:ring-2 peer-focus:ring-ring"></div>
         </div>
       </label>
     );
@@ -144,7 +144,7 @@ const Input = (__props, ref) => {
       <div className="flex h-9 w-full items-center gap-2">
         <input
           type="range"
-          className="slider h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-muted text-muted-foreground"
+          className="slider h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-neutral text-neutral-content"
           min={props.min || 0}
           max={props.max || 100}
           step={props.step || 1}
@@ -202,10 +202,10 @@ const Input = (__props, ref) => {
                 />
                 <label
                   htmlFor={`radio-${propKey}-${key}`}
-                  className={`block cursor-pointer rounded px-1 py-0.5 text-[11px] font-medium transition-colors hover:bg-muted hover:text-foreground ${
+                  className={`block cursor-pointer rounded px-1 py-0.5 text-[11px] font-medium transition-colors hover:bg-neutral hover:text-base-content ${
                     checked
-                      ? "bg-primary font-semibold text-primary-foreground"
-                      : "text-muted-foreground"
+                      ? "bg-primary font-semibold text-primary-content"
+                      : "text-neutral-content"
                   }`}
 
                   data-tooltip-id={`radio-${propKey}-${key}-tip`}
@@ -264,8 +264,8 @@ const Input = (__props, ref) => {
                 htmlFor={`radio-${propKey}-${key}`}
                 className={`block cursor-pointer text-sm font-medium transition-[color,transform] active:scale-[0.98] ${
                   checked
-                    ? "text-foreground"
-                    : "text-muted-foreground"
+                    ? "text-base-content"
+                    : "text-neutral-content"
                 }`}
               >
                 {_.label}

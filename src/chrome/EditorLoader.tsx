@@ -1,9 +1,11 @@
+import { phStorage } from "../utils/phStorage";
+
 export function EditorLoader() {
   // Detect dark mode from localStorage or system preference before React hydrates
   const isDark =
     typeof window !== "undefined" &&
-    (localStorage.getItem("theme") === "dark" ||
-      (!localStorage.getItem("theme") &&
+    (phStorage.get("theme") === "dark" ||
+      (!phStorage.get("theme") &&
         window.matchMedia("(prefers-color-scheme: dark)").matches));
 
   return (

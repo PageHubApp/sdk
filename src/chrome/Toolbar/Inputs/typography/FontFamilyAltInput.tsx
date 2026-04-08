@@ -147,7 +147,7 @@ export const FontFamilyAltInput = ({
                 e.stopPropagation();
                 pushChange("", 2000);
               }}
-              className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground hover:bg-destructive/90"
+              className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
               title="Clear font family"
             >
               ×

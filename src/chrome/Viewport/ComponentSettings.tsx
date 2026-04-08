@@ -153,7 +153,7 @@ export const ComponentSettings = () => {
           e.preventDefault();
         }}
       >
-        <div className="flex gap-1.5 border-b border-border bg-background p-3">
+        <div className="flex gap-1.5 border-b border-base-300 bg-base-100 p-3">
           <input
             type="text"
             placeholder="Search Components"
@@ -166,12 +166,12 @@ export const ComponentSettings = () => {
       </form>
       <AutoHideScrollbar className="flex-1">
         {list?.map((a, k) => (
-          <div key={k} className="border-border">
-            <div className="mb-1 mt-3 font-bold text-secondary-foreground ml-4 text-xs">
+          <div key={k} className="border-base-300">
+            <div className="mb-1 mt-3 font-bold text-secondary-content ml-4 text-xs">
               {a.title}
             </div>
 
-            <div className="grid w-full grid-cols-3 gap-3 p-3 border-t border-border">
+            <div className="grid w-full grid-cols-3 gap-3 p-3 border-t border-base-300">
               {a.content.map((item, kk) => (
                 <div key={kk}>{item}</div>
               ))}

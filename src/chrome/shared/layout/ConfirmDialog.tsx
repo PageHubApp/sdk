@@ -124,8 +124,8 @@ export const ConfirmDialog = ({
                 {displayIcon}
               </div>
               <div className="flex-1">
-                <h3 id="confirm-dialog-title" className="mb-2 text-lg font-semibold text-foreground">{title}</h3>
-                <p className="text-sm text-muted-foreground">{message}</p>
+                <h3 id="confirm-dialog-title" className="mb-2 text-lg font-semibold text-base-content">{title}</h3>
+                <p className="text-sm text-neutral-content">{message}</p>
               </div>
             </div>
 
@@ -133,7 +133,7 @@ export const ConfirmDialog = ({
             <div className="flex justify-end gap-3">
               <button
                 onClick={onClose}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="rounded-lg border border-base-300 px-4 py-2 text-sm font-medium text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
               >
                 {cancelText}
               </button>

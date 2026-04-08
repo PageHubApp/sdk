@@ -112,7 +112,7 @@ export function DeviceScrollbar({ deviceWidth, deviceHeight, deviceZoom }: Devic
         role="presentation"
         aria-hidden="true"
         onMouseDown={onMouseDown}
-        className="absolute left-0 w-full cursor-grab rounded-full bg-muted-foreground/50 hover:bg-muted-foreground/80 active:cursor-grabbing"
+        className="absolute left-0 w-full cursor-grab rounded-full bg-neutral-foreground/50 hover:bg-neutral-foreground/80 active:cursor-grabbing"
       />
     </div>
   );

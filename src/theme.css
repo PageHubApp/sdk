@@ -1,0 +1,188 @@
+/* ═══ @pagehub/sdk Default Theme (DaisyUI 5) ═════════════════════════════════
+   Canonical design tokens: palette, aliases, style, shadows, fonts.
+   Import this in any Tailwind 4 entry point to get the full DaisyUI 5 theme.
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── Light palette ────────────────────────────────────────────────────────── */
+
+:root {
+  /* DaisyUI 5 canonical tokens (oklch) */
+  --primary: oklch(14% 0 0);
+  --primary-content: oklch(100% 0 0);
+  --secondary: oklch(96.5% 0 0);
+  --secondary-content: oklch(14% 0 0);
+  --accent: oklch(96.5% 0 0);
+  --accent-content: oklch(14% 0 0);
+  --neutral: oklch(96.5% 0 0);
+  --neutral-content: oklch(55% 0 0);
+  --base-100: oklch(100% 0 0);
+  --base-200: oklch(100% 0 0);
+  --base-300: oklch(92% 0 0);
+  --base-content: oklch(0% 0 0);
+  --error: oklch(63.7% 0.208 26.3);
+  --error-content: oklch(98% 0 0);
+  --info: oklch(62% 0.214 259);
+  --info-content: oklch(100% 0 0);
+  --success: oklch(62% 0.178 155);
+  --success-content: oklch(100% 0 0);
+  --warning: oklch(75% 0.183 70);
+  --warning-content: oklch(0% 0 0);
+  --ring: oklch(14% 0 0);
+  /* --border is a WIDTH in DaisyUI 5, not a color. Border color uses --base-300 */
+  --border: 1px;
+
+  /* Backwards-compat aliases (old shadcn/ui names → DaisyUI 5 names) */
+  --background: var(--base-100);
+  --foreground: var(--base-content);
+  --card: var(--base-200);
+  --card-foreground: var(--base-content);
+  --popover: var(--base-100);
+  --popover-foreground: var(--base-content);
+  --primary-foreground: var(--primary-content);
+  --secondary-foreground: var(--secondary-content);
+  --accent-foreground: var(--accent-content);
+  --muted: var(--neutral);
+  --muted-foreground: var(--neutral-content);
+  --destructive: var(--error);
+  --destructive-foreground: var(--error-content);
+
+  /* DaisyUI 5 style tokens */
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 0.5rem;
+  --size-field: 0.25rem;
+  --size-selector: 0.25rem;
+  --depth: 1;
+  --noise: 0;
+  /* Radius aliases */
+  --radius: var(--radius-box);
+  --card-radius: var(--radius-box);
+  --input-border-radius: var(--radius-field);
+
+  /* Font stacks */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+
+  /* Shadow primitives */
+  --shadow-x: 1px;
+  --shadow-y: 2px;
+  --shadow-blur: 4.5px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.14;
+  --shadow-color: #000000;
+  /* Shadow composites */
+  --shadow-2xs: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.07);
+  --shadow-xs: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.07);
+  --shadow-sm: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 1px 2px -1px hsl(0 0% 0% / 0.14);
+  --shadow: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 1px 2px -1px hsl(0 0% 0% / 0.14);
+  --shadow-md: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 2px 4px -1px hsl(0 0% 0% / 0.14);
+  --shadow-lg: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 4px 6px -1px hsl(0 0% 0% / 0.14);
+  --shadow-xl: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 8px 10px -1px hsl(0 0% 0% / 0.14);
+  --shadow-2xl: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.35);
+
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+/* ─── Dark palette ─────────────────────────────────────────────────────────── */
+
+.dark {
+  --primary: oklch(98% 0 0);
+  --primary-content: oklch(14% 0 0);
+  --secondary: oklch(20% 0 0);
+  --secondary-content: oklch(98% 0 0);
+  --accent: oklch(24% 0 0);
+  --accent-content: oklch(98% 0 0);
+  --neutral: oklch(18% 0 0);
+  --neutral-content: oklch(75% 0 0);
+  --base-100: oklch(10% 0 0);
+  --base-200: oklch(14% 0 0);
+  --base-300: oklch(18% 0 0);
+  --base-content: oklch(98% 0 0);
+  --error: oklch(40% 0.15 26);
+  --error-content: oklch(98% 0 0);
+  --info: oklch(62% 0.214 259);
+  --info-content: oklch(14% 0 0);
+  --success: oklch(62% 0.178 155);
+  --success-content: oklch(14% 0 0);
+  --warning: oklch(75% 0.183 70);
+  --warning-content: oklch(14% 0 0);
+  --ring: oklch(85% 0 0);
+}
+
+/* ─── Tailwind Theme Mapping ───────────────────────────────────────────────── */
+
+@theme inline {
+  /* DaisyUI 5 canonical color tokens */
+  --color-primary: var(--primary);
+  --color-primary-content: var(--primary-content);
+  --color-secondary: var(--secondary);
+  --color-secondary-content: var(--secondary-content);
+  --color-accent: var(--accent);
+  --color-accent-content: var(--accent-content);
+  --color-neutral: var(--neutral);
+  --color-neutral-content: var(--neutral-content);
+  --color-base-100: var(--base-100);
+  --color-base-200: var(--base-200);
+  --color-base-300: var(--base-300);
+  --color-base-content: var(--base-content);
+  --color-error: var(--error);
+  --color-error-content: var(--error-content);
+  --color-info: var(--info);
+  --color-info-content: var(--info-content);
+  --color-success: var(--success);
+  --color-success-content: var(--success-content);
+  --color-warning: var(--warning);
+  --color-warning-content: var(--warning-content);
+  --color-border: var(--base-300);
+  --color-input: var(--base-300);
+  --color-ring: var(--ring);
+
+  /* Backwards-compat Tailwind color aliases */
+  --color-background: var(--base-100);
+  --color-foreground: var(--base-content);
+  --color-card: var(--base-200);
+  --color-card-foreground: var(--base-content);
+  --color-popover: var(--base-100);
+  --color-popover-foreground: var(--base-content);
+  --color-primary-foreground: var(--primary-content);
+  --color-secondary-foreground: var(--secondary-content);
+  --color-accent-foreground: var(--accent-content);
+  --color-muted: var(--neutral);
+  --color-muted-foreground: var(--neutral-content);
+  --color-destructive: var(--error);
+  --color-destructive-foreground: var(--error-content);
+
+  /* Fonts */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+  --font-heading: var(--heading-font-family), sans-serif;
+  --font-body: var(--body-font-family), sans-serif;
+
+  /* Border Radius */
+  --radius-box: var(--radius-box);
+  --radius-field: var(--radius-field);
+  --radius-selector: var(--radius-selector);
+  --radius-full: var(--radius-full, 9999px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Shadows */
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+}

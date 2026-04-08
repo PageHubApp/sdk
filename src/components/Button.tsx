@@ -98,15 +98,27 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   useScrollToSelected(id, enabled);
 
+  // Re-render when a variable value is edited via the popover
+  const [, forceUpdate] = useState(0);
+  const hasVariables = typeof props.text === "string" && props.text.includes("{{");
+
+  useEffect(() => {
+    if (!hasVariables) return;
+    const handler = () => forceUpdate(n => n + 1);
+    document.addEventListener("pagehub:variable-changed", handler);
+    return () => document.removeEventListener("pagehub:variable-changed", handler);
+  }, [hasVariables]);
+
   const prop: any = {
     ref: r => connect(drag(r)),
     className: props.className || "",
   };
 
   // Auto-apply flex layout when icon is present so icon+text sit inline.
-  // Only inject flex layout defaults if className does not already set display/flex.
+  // Skip if className already has `btn` — DaisyUI btn handles display/flex/gap.
   const hasIcon = !!props.icon?.value;
-  if (hasIcon) {
+  const hasBtnClass = /\bbtn\b/.test(prop.className);
+  if (hasIcon && !hasBtnClass) {
     const iconPosition = props.icon?.position || "left";
     const isVertical = iconPosition === "top" || iconPosition === "bottom";
     const defaults = [

@@ -46,9 +46,9 @@ export const ContainerGroupMainTab = () => {
             accordion={accordion}
             setAccordion={setAccordion}
             title={`${type}s (${components.length})`}
-            className="group border-b border-border"
+            className="group border-b border-base-300"
           >
-            <div className="flex flex-col gap-3 bg-muted/40 p-3">
+            <div className="flex flex-col gap-3 bg-neutral/40 p-3">
               {components.map((component: any, index: number) => (
                 <Accord
                   key={component.id}
@@ -56,10 +56,10 @@ export const ContainerGroupMainTab = () => {
                   accordion={nestedAccordion}
                   setAccordion={setNestedAccordion}
                   title={`${type} ${index + 1}`}
-                  className="group border-b border-border"
+                  className="group border-b border-base-300"
                 >
                   <NodeProvider id={component.id}>
-                    <div className="flex flex-col gap-3 bg-card p-3 text-card-foreground">
+                    <div className="flex flex-col gap-3 bg-base-200 p-3 text-base-content">
                       {React.createElement(
                         query.node(component.id).get()?.data?.related?.toolbar || (() => null)
                       )}

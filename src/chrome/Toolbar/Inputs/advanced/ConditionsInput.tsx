@@ -76,14 +76,14 @@ export const ConditionsInput = () => {
       help="Show or hide this element based on URL parameters or form field values. Conditions are checked when the page loads."
     >
       {conditions.length > 1 && (
-        <div className="mb-2 flex gap-1 rounded-md bg-muted p-0.5">
+        <div className="mb-2 flex gap-1 rounded-md bg-neutral p-0.5">
           <button
             type="button"
             onClick={() => setLogic("all")}
             className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
               conditionLogic === "all"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-base-100 text-base-content shadow-sm"
+                : "text-neutral-content hover:text-base-content"
             }`}
           >
             All match
@@ -93,8 +93,8 @@ export const ConditionsInput = () => {
             onClick={() => setLogic("any")}
             className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
               conditionLogic === "any"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-base-100 text-base-content shadow-sm"
+                : "text-neutral-content hover:text-base-content"
             }`}
           >
             Any match
@@ -103,15 +103,15 @@ export const ConditionsInput = () => {
       )}
 
       {conditions.map((cond, i) => (
-        <div key={i} className="mb-2 rounded-md border border-border p-2">
+        <div key={i} className="mb-2 rounded-md border border-base-300 p-2">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-[10px] font-medium text-muted-foreground">
+            <span className="text-[10px] font-medium text-neutral-content">
               Condition {i + 1}
             </span>
             <button
               type="button"
               onClick={() => removeCondition(i)}
-              className="rounded p-0.5 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+              className="rounded p-0.5 text-neutral-content hover:bg-error hover:text-error-content"
             >
               <TbTrash size={12} />
             </button>
@@ -186,7 +186,7 @@ export const ConditionsInput = () => {
       <button
         type="button"
         onClick={addCondition}
-        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border px-2 py-1.5 text-[11px] text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-base-300 px-2 py-1.5 text-[11px] text-neutral-content transition-colors hover:border-primary hover:text-base-content"
       >
         <TbPlus size={12} />
         Add Condition

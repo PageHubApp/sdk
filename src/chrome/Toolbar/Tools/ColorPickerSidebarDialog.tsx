@@ -4,6 +4,7 @@ import { TbCheck, TbColorPicker, TbDeviceFloppy, TbTrash, TbX } from "react-icon
 import { LeftSidebarDialog } from "./LeftSidebarDialog";
 import { TAILWIND_COLORS, SPECIAL_COLORS } from "./colorPickerConstants";
 import { useColorPickerState, getTailwindColorHex } from "./useColorPickerState";
+import { phStorage } from "../../../utils/phStorage";
 
 export { ColorPickerSidebarAtom } from "./dialogAtoms";
 
@@ -28,12 +29,12 @@ export function ColorPickerSidebarDialog() {
 
   const headerRight = (
     <>
-      {dialog.showPallet && (
+      {dialog.showPalette && (
         <Tooltip content="Save to Palette" placement="bottom">
           <button
             onClick={handleSaveToPalette}
             disabled={!hexInput || !/^#[0-9A-Fa-f]{6}$/.test(hexInput)}
-            className="flex items-center justify-center rounded-lg p-1 text-accent-foreground transition-colors hover:bg-accent-foreground/10 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Save to palette"
           >
             <TbDeviceFloppy />
@@ -44,7 +45,7 @@ export function ColorPickerSidebarDialog() {
         <Tooltip content="Eyedropper" placement="bottom">
           <button
             onClick={handleEyeDropper}
-            className="flex items-center justify-center rounded-lg p-1 text-accent-foreground transition-colors hover:bg-accent-foreground/10"
+            className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10"
             aria-label="Pick color from screen"
           >
             <BsEyedropper />
@@ -68,7 +69,7 @@ export function ColorPickerSidebarDialog() {
         <div className="mb-4">
           <label
             htmlFor="color-picker-hex-input"
-            className="mb-1.5 block text-xs font-medium text-foreground"
+            className="mb-1.5 block text-xs font-medium text-base-content"
           >
             Custom Color
           </label>
@@ -80,7 +81,7 @@ export function ColorPickerSidebarDialog() {
                 setHexInput(e.target.value);
                 handleColorSelect("hex", e.target.value);
               }}
-              className="h-10 w-16 cursor-pointer rounded-lg border-2 border-border bg-background"
+              className="h-10 w-16 cursor-pointer rounded-lg border-2 border-base-300 bg-base-100"
               style={{ padding: "2px" }}
             />
             <input
@@ -90,7 +91,7 @@ export function ColorPickerSidebarDialog() {
               onChange={e => setHexInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleHexSubmit()}
               placeholder="#000000"
-              className="input-dialog-md flex-1 placeholder:text-muted-foreground"
+              className="input-dialog-md flex-1 placeholder:text-neutral-content"
             />
             <button
               type="button"
@@ -104,7 +105,7 @@ export function ColorPickerSidebarDialog() {
 
         {/* Special Colors */}
         <div className="mb-4">
-          <span className="mb-1.5 block text-xs font-medium text-foreground">Special</span>
+          <span className="mb-1.5 block text-xs font-medium text-base-content">Special</span>
           <div className="grid grid-cols-12 gap-1">
             {SPECIAL_COLORS.map(color => (
               <Tooltip key={color.value} content={color.name} placement="top">
@@ -115,7 +116,7 @@ export function ColorPickerSidebarDialog() {
                   style={{
                     backgroundColor: color.hex,
                     borderColor:
-                      selectedColor === color.value ? "var(--primary)" : "var(--border)",
+                      selectedColor === color.value ? "var(--primary)" : "var(--base-300)",
                   }}
                 >
                   {color.value === "transparent" && (
@@ -130,7 +131,7 @@ export function ColorPickerSidebarDialog() {
                     />
                   )}
                   {selectedColor === color.value && (
-                    <TbCheck className="absolute inset-0 m-auto size-5 text-foreground drop-shadow-lg" />
+                    <TbCheck className="absolute inset-0 m-auto size-5 text-base-content drop-shadow-lg" />
                   )}
                 </button>
               </Tooltip>
@@ -139,7 +140,7 @@ export function ColorPickerSidebarDialog() {
         </div>
 
         {/* Design System Palette */}
-        {dialog.showPallet && palette.length > 0 && (
+        {dialog.showPalette && palette.length > 0 && (
           <PaletteSection
             palette={palette}
             selectedColor={selectedColor}
@@ -156,7 +157,7 @@ export function ColorPickerSidebarDialog() {
             selectedColor={selectedColor}
             onClear={() => {
               setRecentColors([]);
-              localStorage.removeItem("recentColors");
+              phStorage.remove("recent-colors");
             }}
             onSelect={handleColorSelect}
             onDoubleClick={handleColorDoubleClick}
@@ -191,7 +192,7 @@ function PaletteSection({
 }) {
   return (
     <div className="mb-4">
-      <span className="mb-1.5 block text-xs font-medium text-foreground">Design System</span>
+      <span className="mb-1.5 block text-xs font-medium text-base-content">Design System</span>
       <div className="grid grid-cols-12 gap-1">
         {palette.map((paletteColor, idx) => {
           const hexColor = resolvePaletteHex(paletteColor.color || "");
@@ -208,7 +209,7 @@ function PaletteSection({
                   className="relative aspect-square w-full rounded-lg border-2 transition-all hover:scale-105"
                   style={{
                     backgroundColor: hexColor,
-                    borderColor: isSelected ? "var(--primary)" : "var(--border)",
+                    borderColor: isSelected ? "var(--primary)" : "var(--base-300)",
                   }}
                 >
                   {isSelected && (
@@ -221,7 +222,7 @@ function PaletteSection({
                   e.stopPropagation();
                   onRemove(paletteColor.name);
                 }}
-                className="absolute -right-1 -top-1 hidden rounded-full bg-destructive p-0.5 text-destructive-foreground shadow-lg transition-all hover:scale-110 group-hover:block"
+                className="absolute -right-1 -top-1 hidden rounded-full bg-error p-0.5 text-error-content shadow-lg transition-all hover:scale-110 group-hover:block"
                 aria-label="Remove color"
               >
                 <TbX className="size-3" />
@@ -250,10 +251,10 @@ function RecentColorsSection({
   return (
     <div className="mb-4">
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-xs font-medium text-foreground">Recent</span>
+        <span className="text-xs font-medium text-base-content">Recent</span>
         <button
           onClick={onClear}
-          className="text-xs text-muted-foreground hover:text-foreground"
+          className="text-xs text-neutral-content hover:text-base-content"
         >
           <TbTrash className="size-3" />
         </button>
@@ -267,7 +268,7 @@ function RecentColorsSection({
             className="group relative aspect-square w-full rounded-lg border-2 transition-all hover:scale-110"
             style={{
               backgroundColor: color,
-              borderColor: selectedColor === color ? "var(--primary)" : "var(--border)",
+              borderColor: selectedColor === color ? "var(--primary)" : "var(--base-300)",
             }}
           >
             {selectedColor === color && (
@@ -291,11 +292,11 @@ function TailwindColorsSection({
 }) {
   return (
     <div>
-      <span className="mb-1.5 block text-xs font-medium text-foreground">Tailwind Colors</span>
+      <span className="mb-1.5 block text-xs font-medium text-base-content">Tailwind Colors</span>
       <div className="space-y-3">
         {TAILWIND_COLORS.map(colorGroup => (
           <div key={colorGroup.name}>
-            <div className="mb-1 text-xs capitalize text-muted-foreground">
+            <div className="mb-1 text-xs capitalize text-neutral-content">
               {colorGroup.name}
             </div>
             <div className="grid grid-cols-12 gap-1">
@@ -316,7 +317,7 @@ function TailwindColorsSection({
                       className="group relative aspect-square w-full rounded-lg border transition-all hover:scale-110"
                       style={{
                         backgroundColor: hexColor,
-                        borderColor: isSelected ? "var(--primary)" : "var(--border)",
+                        borderColor: isSelected ? "var(--primary)" : "var(--base-300)",
                         borderWidth: isSelected ? "2px" : "1px",
                       }}
                     >
@@ -356,4 +357,3 @@ function resolvePaletteHex(colorValue: string): string {
   return getTailwindColorHex(colorValue, "500");
 }
 
-export default ColorPickerSidebarDialog;

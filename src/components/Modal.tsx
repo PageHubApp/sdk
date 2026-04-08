@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { TbX } from "react-icons/tb";
 import { Container } from "./Container";
 import { useFocusTrap } from "../utils/hooks/useAccessibility";
+import { phStorage } from "../utils/phStorage";
 
 const defaultTrigger = {
   type: "click",
@@ -36,12 +37,12 @@ const animationVariants = {
   none: { initial: {}, animate: {}, exit: {} },
 };
 
-const getStorageKey = (anchor) => `ph-modal-${anchor}`;
+const getStorageKey = (anchor) => `modal-${anchor}`;
 const hasSeenModal = (key) => {
-  try { return localStorage.getItem(key) === "1"; } catch { return false; }
+  try { return phStorage.get(key) === "1"; } catch { return false; }
 };
 const markModalSeen = (key) => {
-  try { localStorage.setItem(key, "1"); } catch {}
+  try { phStorage.set(key, "1"); } catch {}
 };
 
 export const Modal = ({ children, ...props }) => {
@@ -248,13 +249,13 @@ export const Modal = ({ children, ...props }) => {
                 aria-label="Modal"
                 {...anim}
                 transition={{ duration: 0.2 }}
-                className={`${props.modalWidth || "max-w-lg"} relative w-full bg-(--background) shadow-xl`}
+                className={`${props.modalWidth || "max-w-lg"} relative w-full bg-base-100 shadow-xl`}
                 onClick={e => e.stopPropagation()}
               >
                 {props.showCloseButton !== false && (
                   <button
                     onClick={() => setIsOpen(false)}
-                    className={`absolute z-10 p-1 text-xl leading-none text-foreground/60 hover:text-foreground ${
+                    className={`absolute z-10 p-1 text-xl leading-none text-base-content/60 hover:text-base-content ${
                       props.closeButtonPosition === "top-left" ? "left-3 top-3" : "right-3 top-3"
                     }`}
                     aria-label="Close modal"

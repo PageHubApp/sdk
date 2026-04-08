@@ -19,7 +19,7 @@ function ModifierChip({
       className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs transition-colors ${
         active
           ? "border-primary/40 bg-primary/15 text-primary"
-          : "border-border bg-transparent text-muted-foreground hover:bg-muted"
+          : "border-base-300 bg-transparent text-neutral-content hover:bg-neutral"
       }`}
       title={mod.name}
     >
@@ -63,25 +63,25 @@ function SaveAsModifier({
   };
 
   return (
-    <div className="mt-2 space-y-2 rounded-lg border border-border bg-muted/50 p-2.5">
+    <div className="mt-2 space-y-2 rounded-lg border border-base-300 bg-neutral/50 p-2.5">
       <div>
-        <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Component Type</label>
+        <label className="mb-1 block text-[11px] font-medium text-neutral-content">Component Type</label>
         <input
           type="text"
           value={targetType}
           onChange={(e) => setTargetType(e.target.value)}
           placeholder="e.g. Button, Container"
-          className="h-7 w-full rounded border border-border bg-background px-2 text-xs"
+          className="h-7 w-full rounded border border-base-300 bg-base-100 px-2 text-xs"
         />
       </div>
       <div>
-        <label className="mb-1 block text-[11px] font-medium text-muted-foreground">Modifier Name</label>
+        <label className="mb-1 block text-[11px] font-medium text-neutral-content">Modifier Name</label>
         <input
           type="text"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="e.g. my-card-style"
-          className="h-7 w-full rounded border border-border bg-background px-2 text-xs"
+          className="h-7 w-full rounded border border-base-300 bg-base-100 px-2 text-xs"
           autoFocus
           onKeyDown={(e) => {
             if (e.key === "Enter") submit();
@@ -90,10 +90,10 @@ function SaveAsModifier({
         />
       </div>
       <div className="flex gap-1.5">
-        <button type="button" onClick={submit} className="h-7 rounded bg-primary px-3 text-xs text-primary-foreground">
+        <button type="button" onClick={submit} className="h-7 rounded bg-primary px-3 text-xs text-primary-content">
           Save
         </button>
-        <button type="button" onClick={() => { setLabel(""); setOpen(false); }} className="h-7 rounded border border-border px-3 text-xs">
+        <button type="button" onClick={() => { setLabel(""); setOpen(false); }} className="h-7 rounded border border-base-300 px-3 text-xs">
           Cancel
         </button>
       </div>
@@ -117,7 +117,7 @@ export function ModifiersInput() {
         {[...grouped.entries()].map(([category, mods]) => (
           <div key={category}>
             {grouped.size > 1 && (
-              <p className="mb-0.5 text-[10px] font-medium text-muted-foreground">
+              <p className="mb-0.5 text-[10px] font-medium text-neutral-content">
                 {category}
               </p>
             )}

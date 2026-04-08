@@ -47,9 +47,9 @@ export const HoverClickInput = ({ variant = "container" }: HoverClickInputProps)
             inline
           />
         </ToolbarSection>
-        <div className="border-t border-border" />
+        <div className="border-t border-base-300" />
         <OpacityInput label="Opacity" propKey="opacity" index="hover" propType="root" />
-        <div className="border-t border-border" />
+        <div className="border-t border-base-300" />
         <ToolbarSection title="Transform" collapsible={false}>
           <UniversalInput
             propKey="scale"

@@ -27,7 +27,7 @@ export const ParseTree = ({ tree }) => {
             <div className="font-bold">{key}:</div>
             <div
               className={`${
-                to === "object" ? "ml-3 w-full rounded-lg border border-border p-1.5" : ""
+                to === "object" ? "ml-3 w-full rounded-lg border border-base-300 p-1.5" : ""
               }`}
             >
               {getval(tree[key])}

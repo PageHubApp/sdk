@@ -108,7 +108,7 @@ export function FloatingPanel({
             role="presentation"
             aria-hidden="true"
             onMouseDown={handleMouseDown}
-            className={`flex items-center justify-between border-b border-border bg-accent px-3 py-1.5 text-accent-foreground ${
+            className={`flex items-center justify-between border-b border-base-300 bg-accent px-3 py-1.5 text-accent-content ${
               isDragging ? "cursor-grabbing" : "cursor-grab"
             }`}
           >
@@ -118,7 +118,7 @@ export function FloatingPanel({
             </div>
             <button
               onClick={onClose}
-              className="rounded p-0.5 text-accent-foreground transition-colors hover:bg-accent-foreground/10"
+              className="rounded p-0.5 text-accent-content transition-colors hover:bg-accent-content/10"
             >
               <TbX className="size-3.5" />
             </button>

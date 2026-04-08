@@ -96,7 +96,7 @@ export function DesignVarSelector({
             e: getRect(ref.current),
           });
         }}
-        className="flex size-5 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className="flex size-5 items-center justify-center rounded-lg text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
         title="Bind to design system variable"
       >
         <TbVariable className="size-3.5" />
@@ -182,9 +182,9 @@ function DesignVarDialog({
       <div style={style} className="pagehub-sdk-root pointer-events-auto z-10000" data-design-var-dialog>
         <div className="ph-panel overflow-hidden p-0">
           {/* Search input */}
-          <div className="shrink-0 border-b border-border bg-muted px-2 pb-1 pt-2">
+          <div className="shrink-0 border-b border-base-300 bg-neutral px-2 pb-1 pt-2">
             <div className="relative">
-              <TbSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <TbSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-content" />
               <input
                 type="text"
                 className="input-dialog-leading"
@@ -199,13 +199,13 @@ function DesignVarDialog({
           {/* Variable list */}
           <div className="scrollbar-light max-h-80 overflow-y-auto p-2">
             {Object.keys(groupedVars).length === 0 ? (
-              <div className="p-3 text-center text-xs text-muted-foreground">
+              <div className="p-3 text-center text-xs text-neutral-content">
                 No variables found
               </div>
             ) : (
               Object.entries(groupedVars).map(([category, vars]) => (
                 <div key={category} className="mb-3 last:mb-0">
-                  <div className="rounded bg-muted/30 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="rounded bg-neutral/30 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-content">
                     {CATEGORY_LABELS[category] || category}
                   </div>
                   <div className="mt-1.5 space-y-0.5">
@@ -213,25 +213,25 @@ function DesignVarDialog({
                       <button
                         key={v.varName}
                         onClick={() => handleSelect(v)}
-                        className="group w-full rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-muted"
+                        className="group w-full rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-neutral"
                       >
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-start justify-between gap-2">
-                            <span className="text-xs font-medium leading-tight text-foreground">
+                            <span className="text-xs font-medium leading-tight text-base-content">
                               {v.label}
                             </span>
                           </div>
                           <div className="flex items-start justify-between gap-2">
-                            <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                            <span className="shrink-0 font-mono text-[10px] text-neutral-content">
                               {v.varName}
                             </span>
                             {v.category === "palette" && (
                               <div className="flex items-center gap-1.5">
                                 <div
-                                  className="size-3 shrink-0 rounded-lg border border-border"
+                                  className="size-3 shrink-0 rounded-lg border border-base-300"
                                   style={{ backgroundColor: v.value }}
                                 />
-                                <span className="text-[10px] text-muted-foreground">
+                                <span className="text-[10px] text-neutral-content">
                                   {v.value}
                                 </span>
                               </div>

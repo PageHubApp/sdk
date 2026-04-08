@@ -152,7 +152,7 @@ export function SealToggle() {
 
   return (
     <button
-      className="flex items-center gap-1.5 w-full px-3 py-2 text-xs rounded border border-border hover:bg-muted transition-colors"
+      className="flex items-center gap-1.5 w-full px-3 py-2 text-xs rounded border border-base-300 hover:bg-neutral transition-colors"
       onClick={() => {
         actions.setCustom(id, (custom: any) => { custom.sealed = !custom.sealed; });
       }}

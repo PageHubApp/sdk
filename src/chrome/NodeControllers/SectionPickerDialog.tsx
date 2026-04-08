@@ -218,7 +218,7 @@ export const SectionPickerDialog = ({
     <>
       {isOpen && (
         <div
-          className="animate-backdrop-in fixed inset-0 z-100 flex items-center justify-center bg-background/75 backdrop-blur-sm"
+          className="animate-backdrop-in fixed inset-0 z-100 flex items-center justify-center bg-base-100/75 backdrop-blur-sm"
           style={{ pointerEvents: "auto" }}
         >
           <div
@@ -226,14 +226,14 @@ export const SectionPickerDialog = ({
             className="pagehub-sdk-root ph-modal-surface-heavy flex h-[80vh] w-[33vw] max-w-md flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-border bg-accent px-6 py-4 text-accent-foreground">
-              <h2 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+            <div className="flex items-center justify-between border-b border-base-300 bg-accent px-6 py-4 text-accent-content">
+              <h2 className="flex items-center gap-2 text-2xl font-bold text-base-content">
                 <TbLayoutGridAdd className="size-7" />
                 Add Section
               </h2>
               <button
                 onClick={onClose}
-                className="text-muted-foreground transition-colors hover:text-muted-foreground"
+                className="text-neutral-content transition-colors hover:text-neutral-content"
                 aria-label="Close"
               >
                 <MdClose size={24} />
@@ -243,7 +243,7 @@ export const SectionPickerDialog = ({
             {/* Content */}
             <div className="flex flex-1 overflow-hidden">
               {/* Left sidebar - Categories */}
-              <div className="flex w-64 flex-col border-r border-border bg-muted text-muted-foreground">
+              <div className="flex w-64 flex-col border-r border-base-300 bg-neutral text-neutral-content">
                 <div className="flex-1 overflow-y-auto p-4">
                   <div className="space-y-1">
                     {categories.map(category => (
@@ -251,8 +251,8 @@ export const SectionPickerDialog = ({
                         key={category.id}
                         onClick={() => handleCategorySelect(category.id)}
                         className={`w-full rounded-lg px-4 py-2 text-left transition-colors ${selectedCategory === category.id && !isSearchMode
-                          ? "bg-primary font-medium text-primary-foreground"
-                          : "text-foreground hover:bg-muted"
+                          ? "bg-primary font-medium text-primary-content"
+                          : "text-base-content hover:bg-neutral"
                           }`}
                       >
                         {category.name}
@@ -262,7 +262,7 @@ export const SectionPickerDialog = ({
                 </div>
 
                 {/* Search Bar - Bottom of sidebar */}
-                <div className="border-t border-border p-4">
+                <div className="border-t border-base-300 p-4">
                   <div className="input-wrapper relative input-hover">
                     <input
                       type="text"
@@ -272,7 +272,7 @@ export const SectionPickerDialog = ({
                       className="input-plain-search pl-8"
                     />
                     <MdSearch
-                      className="pointer-events-none absolute left-2 top-1/2 z-10 -translate-y-1/2 text-muted-foreground"
+                      className="pointer-events-none absolute left-2 top-1/2 z-10 -translate-y-1/2 text-neutral-content"
                       size={16}
                     />
                   </div>
@@ -340,7 +340,7 @@ export const SectionPickerDialog = ({
                         }
                         onClose();
                       }}
-                      className="group relative overflow-hidden rounded-lg border-2 border-border bg-card text-card-foreground shadow-sm transition-all hover:border-primary hover:shadow-md"
+                      className="group relative overflow-hidden rounded-lg border-2 border-base-300 bg-base-200 text-base-content shadow-sm transition-all hover:border-primary hover:shadow-md"
                     >
                       {/* Preview */}
                       {template.isCustom ? (
@@ -352,7 +352,7 @@ export const SectionPickerDialog = ({
                             resolver={query.getOptions().resolver}
                           />
                           {/* Custom Section Badge */}
-                          <div className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-lg bg-primary px-2 py-1 text-primary-foreground shadow-sm">
+                          <div className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-lg bg-primary px-2 py-1 text-primary-content shadow-sm">
                             <TbLayoutGridAdd className="size-3" />
                             <span className="text-xs font-medium">Custom</span>
                           </div>
@@ -371,7 +371,7 @@ export const SectionPickerDialog = ({
 
                 {templates.length === 0 && (
                   <div className="flex h-64 items-center justify-center">
-                    <p className="text-lg text-muted-foreground">
+                    <p className="text-lg text-neutral-content">
                       {isSearchMode
                         ? `No templates found for "${searchQuery}"`
                         : "No templates available for this category yet."}

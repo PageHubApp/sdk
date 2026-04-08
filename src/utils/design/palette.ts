@@ -106,7 +106,7 @@ export const styleToCSSVar = (value: string): string => {
 /**
  * Convert palette/style reference to Tailwind-compatible CSS variable class
  * Examples:
- *   ("palette:Primary", "bg") -> "bg-(--primary)"
+ *   ("palette:Primary", "bg") -> "bg-primary"
  *   ("style:inputBorder", "border") -> "border-(--input-border)"
  */
 export const toTailwindCSSVar = (value: string, prefix: string = ""): string => {

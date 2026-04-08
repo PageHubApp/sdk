@@ -49,7 +49,7 @@ export const VideoMainTab = () => {
           </ToolbarItem>
         </ToolbarSection>
 
-        <p className="text-md px-3 pb-3 pt-2 text-sm text-muted-foreground">
+        <p className="text-md px-3 pb-3 pt-2 text-sm text-neutral-content">
           {getProviderInstructions()}
         </p>
 

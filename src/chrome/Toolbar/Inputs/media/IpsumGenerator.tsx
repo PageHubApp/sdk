@@ -62,7 +62,7 @@ export const IpsumGenerator = ({ propKey, propType }) => {
 
   return (
     <div className="flex items-center justify-between px-1">
-      <span className="text-xs text-muted-foreground">Lorem</span>
+      <span className="text-xs text-neutral-content">Lorem</span>
       <div className="flex gap-0.5">
         {buttons.map(({ icon: Icon, label, generate }) => (
           <button
@@ -70,7 +70,7 @@ export const IpsumGenerator = ({ propKey, propType }) => {
             type="button"
             data-tooltip-id="ipsum-tip"
             data-tooltip-content={label}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="rounded-md p-1.5 text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
             onClick={() => save(generate())}
           >
             <Icon className="size-3.5" />

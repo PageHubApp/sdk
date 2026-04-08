@@ -18,6 +18,7 @@ import { escapeHTML } from "./utils/static-html";
 import type { StaticRenderContext, ToHTMLFn } from "./utils/static-html";
 import { processForStatic, type ResolvedComponentDef } from "./define";
 import { toCSSVarName, toPaletteCSSVarName } from "./utils/design/designSystemVars";
+import { resolveTheme } from "./utils/design/resolveTheme";
 
 // ─── IntersectionObserver for scroll-triggered CSS animations ──────────────
 const PH_SCROLL_OBSERVER_SCRIPT = `<script>
@@ -235,8 +236,8 @@ export function renderToHTML(
 
   // 3. Auto-detect palette from ROOT
   let resolvedPalette = palette;
-  if (resolvedPalette.length === 0 && nodes["ROOT"]?.props?.pallet) {
-    resolvedPalette = nodes["ROOT"].props.pallet;
+  if (resolvedPalette.length === 0) {
+    resolvedPalette = resolveTheme(nodes["ROOT"]?.props || {}).palette;
   }
 
   // 4. Merge resolver (built-in + defineComponent + manual overrides)
@@ -262,7 +263,7 @@ export function renderToHTML(
 
   // 7. Collect font URLs
   const rootProps = nodes["ROOT"]?.props || {};
-  const sg = rootProps.styleGuide || {};
+  const sg = resolveTheme(rootProps).styleGuide;
   for (const fontKey of ["headingFont", "bodyFont"]) {
     const font = sg[fontKey];
     if (font && !["sans-serif", "serif", "monospace"].includes(font)) {
@@ -311,8 +312,9 @@ ${scrollObserverScript}
 // ─── Theme CSS variables ────────────────────────────────────────────────────
 
 function generateThemeVars(rootProps: Record<string, any>): string {
-  const sg = rootProps.styleGuide || {};
-  const palette = rootProps.pallet || [];
+  const theme = resolveTheme(rootProps);
+  const sg = theme.styleGuide;
+  const palette = theme.palette;
 
   const paletteVars = palette
     .filter((p: any) => p.name && p.color)

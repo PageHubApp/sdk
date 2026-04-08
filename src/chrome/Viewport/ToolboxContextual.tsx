@@ -28,7 +28,7 @@ import generate from "../../utils/data/nameGenerator";
 
 const Item = ({ children }) => (
   <a
-    className="flex w-full cursor-pointer items-center gap-y-6 rounded-lg p-2 shadow-inner hover:bg-primary hover:text-muted-foreground"
+    className="flex w-full cursor-pointer items-center gap-y-6 rounded-lg p-2 shadow-inner hover:bg-primary hover:text-neutral-content"
   >
     {children}
   </a>
@@ -194,10 +194,10 @@ export const ToolboxContexual = ({ userStyle = null }) => {
           id="toolbox"
           ref={ref}
           style={style}
-          className="animate-backdrop-in fixed z-50 max-h-[330px] select-none flex-col justify-between gap-3 rounded-lg p-3 text-muted-foreground drop-shadow-lg md:flex-row"
+          className="animate-backdrop-in fixed z-50 max-h-[330px] select-none flex-col justify-between gap-3 rounded-lg p-3 text-neutral-content drop-shadow-lg md:flex-row"
         >
           <div
-            className="scrollbar-light flex flex-col gap-1.5 overflow-auto rounded-lg bg-background"
+            className="scrollbar-light flex flex-col gap-1.5 overflow-auto rounded-lg bg-base-100"
           >
             <div className="rounded-xl p-3">
               {name === "Background" && (
@@ -231,7 +231,7 @@ export const ToolboxContexual = ({ userStyle = null }) => {
 
           {!["Form"].includes(name) && comps.length ? (
             <div
-              className="scrollbar-light flex flex-col overflow-auto rounded-lg bg-background p-3"
+              className="scrollbar-light flex flex-col overflow-auto rounded-lg bg-base-100 p-3"
             >
               {comps.map((a, k) => {
                 if (!a.id || !a.node) return null;
@@ -259,7 +259,7 @@ export const ToolboxContexual = ({ userStyle = null }) => {
                           {title}
                         </div>
                         <button
-                          className="text-sm text-foreground hover:text-muted-foreground"
+                          className="text-sm text-base-content hover:text-neutral-content"
                           onClick={e => {
                             e.preventDefault();
                             e.stopPropagation();

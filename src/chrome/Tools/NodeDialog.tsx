@@ -46,4 +46,3 @@ export const NodeToolWrapper = ({ children, className = "", col = false }: { chi
     </div>
   ) : null;
 
-export default NodeDialog;

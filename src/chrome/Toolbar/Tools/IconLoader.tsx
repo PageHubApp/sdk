@@ -27,4 +27,3 @@ export const IconLoader = ({ icon }) => {
   );
 };
 
-export default IconLoader;

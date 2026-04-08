@@ -13,8 +13,8 @@ export function AITab({ inputClass, aiPrompt, setAiPrompt, aiStyleTags, setAiSty
   return (
     <div className="space-y-6">
       <div className="mb-4 space-y-2">
-        <h3 className="text-lg font-semibold text-foreground">AI Content Generator</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className="text-lg font-semibold text-base-content">AI Content Generator</h3>
+        <p className="text-sm text-neutral-content">
           Customize how AI improves your content with a custom prompt and style
           preferences
         </p>
@@ -34,10 +34,10 @@ export function AITab({ inputClass, aiPrompt, setAiPrompt, aiStyleTags, setAiSty
           placeholder="Make the copy more engaging, clear, and compelling while keeping the same core message..."
         />
         <div className="mt-1 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-neutral-content">
             Brief instructions for how AI should improve your content
           </p>
-          <span className="text-xs text-muted-foreground">{aiPrompt.length}/200</span>
+          <span className="text-xs text-neutral-content">{aiPrompt.length}/200</span>
         </div>
       </div>
 
@@ -72,23 +72,23 @@ export function AITab({ inputClass, aiPrompt, setAiPrompt, aiStyleTags, setAiSty
                       setAiStyleTags(aiStyleTags.filter(t => t !== tag));
                     }
                   }}
-                  className="rounded-lg border-border text-accent focus:ring-ring"
+                  className="rounded-lg border-base-300 text-accent focus:ring-ring"
                 />
-                <span className="text-sm capitalize text-foreground">{tag}</span>
+                <span className="text-sm capitalize text-base-content">{tag}</span>
               </label>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-neutral-content">
             Select style preferences to guide AI content generation
           </p>
         </div>
       </div>
 
-      <div className="mt-4 rounded-lg border border-border bg-muted p-4">
+      <div className="mt-4 rounded-lg border border-base-300 bg-neutral p-4">
         <div className="flex gap-3">
           <TbInfoCircle className="mt-0.5 size-5 shrink-0 text-primary" />
           <div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-neutral-content">
               Your custom prompt and selected style tags will be used by the AI wand tool
               in the text editor to improve your content. Leave the prompt empty to use
               default behavior.

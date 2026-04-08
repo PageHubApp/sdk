@@ -33,7 +33,7 @@ const createCustomTheme = (isDark: boolean) => {
       {
         "&": {
           backgroundColor: "transparent !important",
-          color: "var(--foreground)",
+          color: "var(--base-content)",
         },
         "&.cm-editor": {
           outline: "none",
@@ -51,8 +51,8 @@ const createCustomTheme = (isDark: boolean) => {
         },
         ".cm-gutters": {
           backgroundColor: "transparent !important",
-          color: "var(--muted-foreground) !important",
-          borderRight: "1px solid var(--border) !important",
+          color: "var(--neutral-content) !important",
+          borderRight: "1px solid var(--base-300) !important",
           minWidth: "30px",
         },
         ".cm-gutterElement": {
@@ -61,16 +61,16 @@ const createCustomTheme = (isDark: boolean) => {
           paddingRight: "8px !important",
         },
         ".cm-activeLine": {
-          backgroundColor: "var(--muted) !important",
+          backgroundColor: "var(--neutral) !important",
           opacity: "0.4",
         },
         ".cm-activeLineGutter": {
-          backgroundColor: "var(--muted) !important",
+          backgroundColor: "var(--neutral) !important",
         },
         ".cm-foldPlaceholder": {
           backgroundColor: "transparent",
           border: "none",
-          color: "var(--muted-foreground)",
+          color: "var(--neutral-content)",
         },
       },
       { dark: isDark }
@@ -80,11 +80,11 @@ const createCustomTheme = (isDark: boolean) => {
         { tag: t.keyword, color: "var(--primary)", fontWeight: "bold" },
         {
           tag: [t.name, t.deleted, t.character, t.propertyName, t.macroName],
-          color: "var(--foreground)",
+          color: "var(--base-content)",
         },
-        { tag: [t.function(t.variableName), t.labelName], color: "var(--foreground)" },
-        { tag: [t.color, t.constant(t.name), t.standard(t.name)], color: "var(--foreground)" },
-        { tag: [t.definition(t.name), t.separator], color: "var(--foreground)" },
+        { tag: [t.function(t.variableName), t.labelName], color: "var(--base-content)" },
+        { tag: [t.color, t.constant(t.name), t.standard(t.name)], color: "var(--base-content)" },
+        { tag: [t.definition(t.name), t.separator], color: "var(--base-content)" },
         {
           tag: [
             t.typeName,
@@ -96,21 +96,21 @@ const createCustomTheme = (isDark: boolean) => {
             t.self,
             t.namespace,
           ],
-          color: "var(--foreground)",
+          color: "var(--base-content)",
         },
         {
           tag: [t.operator, t.operatorKeyword, t.url, t.escape, t.regexp, t.link, t.special(t.string)],
           color: "var(--primary)",
         },
-        { tag: [t.meta, t.comment], color: "var(--muted-foreground)", fontStyle: "italic" },
+        { tag: [t.meta, t.comment], color: "var(--neutral-content)", fontStyle: "italic" },
         { tag: t.strong, fontWeight: "bold" },
         { tag: t.emphasis, fontStyle: "italic" },
         { tag: t.strikethrough, textDecoration: "line-through" },
-        { tag: t.link, color: "var(--muted-foreground)", textDecoration: "underline" },
-        { tag: t.heading, fontWeight: "bold", color: "var(--foreground)" },
-        { tag: [t.atom, t.bool, t.special(t.variableName)], color: "var(--foreground)" },
-        { tag: [t.processingInstruction, t.string, t.inserted], color: "var(--foreground)" },
-        { tag: t.invalid, color: "var(--destructive)" },
+        { tag: t.link, color: "var(--neutral-content)", textDecoration: "underline" },
+        { tag: t.heading, fontWeight: "bold", color: "var(--base-content)" },
+        { tag: [t.atom, t.bool, t.special(t.variableName)], color: "var(--base-content)" },
+        { tag: [t.processingInstruction, t.string, t.inserted], color: "var(--base-content)" },
+        { tag: t.invalid, color: "var(--error)" },
       ])
     ),
   ];
@@ -168,7 +168,7 @@ export const CodeEditor = ({
   );
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-muted/80 transition-all focus-within:border-primary/50 hover:bg-muted">
+    <div className="overflow-hidden rounded-lg border border-base-300 bg-neutral/80 transition-all focus-within:border-primary/50 hover:bg-neutral">
       <CodeMirror
         value={typeof value === "string" ? value : String(value || "")}
         height={height}

@@ -292,20 +292,20 @@ export function PageSelector({
           <div className="flex flex-1 items-center gap-1 overflow-hidden">
             {/* Path */}
             {displayRoute && !isSaving && (
-              <span className="truncate font-mono text-xs text-muted-foreground">
+              <span className="truncate font-mono text-xs text-neutral-content">
                 {displayRoute}
               </span>
             )}
 
             {/* Page Name in Parentheses */}
             {!isSaving && (
-              <span className="text-xxs ml-auto hidden truncate font-medium text-muted-foreground">
+              <span className="text-xxs ml-auto hidden truncate font-medium text-neutral-content">
                 {displayText}
               </span>
             )}
 
             {/* Loading State */}
-            {isSaving && <span className="text-xs text-muted-foreground">Saving...</span>}
+            {isSaving && <span className="text-xs text-neutral-content">Saving...</span>}
           </div>
         </div>
         <TbChevronDown className={`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
@@ -314,7 +314,7 @@ export function PageSelector({
       {!pickerMode && liveUrl && (
         <Tooltip content="Open page in a new tab" arrow={false} placement="bottom">
           <a
-            className="shrink-0 p-0 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="shrink-0 p-0 text-xs text-neutral-content transition-colors hover:text-base-content"
             href={liveUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -327,7 +327,7 @@ export function PageSelector({
       {isOpen && (
         <div className="ph-panel absolute inset-x-0 top-full z-50 mt-1 flex max-h-[500px] min-w-[220px] flex-col overflow-hidden">
           {/* Search Header - Fixed */}
-          <div className="border-b border-border p-3">
+          <div className="border-b border-base-300 p-3">
             <input
               type="text"
               placeholder="Search pages..."
@@ -339,7 +339,7 @@ export function PageSelector({
           </div>
 
           {/* Scrollable Content */}
-          <div className="scrollbar flex-1 overflow-y-auto bg-popover text-popover-foreground">
+          <div className="scrollbar flex-1 overflow-y-auto bg-base-100 text-base-content">
             {/* All Pages Option - Only in navigation mode */}
             {!pickerMode && (
               <>
@@ -350,8 +350,8 @@ export function PageSelector({
                     e.preventDefault();
                     handlePageSelect(null);
                   }}
-                  className={`flex w-full items-center gap-2 px-3 py-2 transition-colors hover:bg-muted ${
-                    !isolate ? "bg-muted font-medium" : ""
+                  className={`flex w-full items-center gap-2 px-3 py-2 transition-colors hover:bg-neutral ${
+                    !isolate ? "bg-neutral font-medium" : ""
                   }`}
                 >
                   <Image
@@ -361,11 +361,11 @@ export function PageSelector({
                     height={16}
                     className="opacity-70"
                   />
-                  <span className="text-sm text-foreground">All Pages</span>
+                  <span className="text-sm text-base-content">All Pages</span>
                 </Link>
 
                 {/* Divider */}
-                {filteredPages.length > 0 && <div className="my-1 border-t border-border" />}
+                {filteredPages.length > 0 && <div className="my-1 border-t border-base-300" />}
               </>
             )}
 
@@ -380,8 +380,8 @@ export function PageSelector({
                 return (
                   <div
                     key={page.id}
-                    className={`group flex w-full items-center gap-2 px-3 py-2 transition-colors hover:bg-muted ${
-                      isSelected ? "bg-accent font-medium text-accent-foreground" : ""
+                    className={`group flex w-full items-center gap-2 px-3 py-2 transition-colors hover:bg-neutral ${
+                      isSelected ? "bg-accent font-medium text-accent-content" : ""
                     }`}
                   >
                     {pickerMode ? (
@@ -397,11 +397,11 @@ export function PageSelector({
                           className="opacity-70"
                         />
                         <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
-                          <span className="truncate text-sm text-foreground">
+                          <span className="truncate text-sm text-base-content">
                             {page.displayName}
                           </span>
                           {isPageHomePage && (
-                            <span className="truncate text-xs text-muted-foreground">(Home)</span>
+                            <span className="truncate text-xs text-neutral-content">(Home)</span>
                           )}
                         </div>
                       </button>
@@ -423,10 +423,10 @@ export function PageSelector({
                           className="opacity-70"
                         />
                         <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
-                          <span className="truncate text-sm text-foreground">
+                          <span className="truncate text-sm text-base-content">
                             {page.displayName}
                           </span>
-                          <span className="truncate text-xs text-muted-foreground">
+                          <span className="truncate text-xs text-neutral-content">
                             {pageRoute}
                           </span>
                         </div>
@@ -439,7 +439,7 @@ export function PageSelector({
                           setSettingsPageId(page.id);
                           setIsOpen(false);
                         }}
-                        className="shrink-0 p-1 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+                        className="shrink-0 p-1 text-neutral-content opacity-0 transition-opacity hover:text-base-content group-hover:opacity-100"
                         aria-label="Page settings"
                       >
                         <TbSettings size={16} />
@@ -449,17 +449,17 @@ export function PageSelector({
                 );
               })
             ) : searchQuery ? (
-              <div className="px-3 py-4 text-center text-sm text-muted-foreground">
+              <div className="px-3 py-4 text-center text-sm text-neutral-content">
                 No pages found
               </div>
             ) : null}
           </div>
 
           {/* Footer - Fixed */}
-          <div className="border-t border-border">
+          <div className="border-t border-base-300">
             <button
               onClick={handleCreatePage}
-              className="flex w-full items-center gap-2 px-3 py-2 text-primary transition-colors hover:bg-muted hover:text-primary"
+              className="flex w-full items-center gap-2 px-3 py-2 text-primary transition-colors hover:bg-neutral hover:text-primary"
             >
               <TbPlus />
               <span className="text-sm font-medium">Create New Page</span>

@@ -9,13 +9,13 @@ import { RenderToolComponent, ToolboxItemDisplay } from "./lib";
 // Shared input styles — single className string
 const inputBaseStyles = {
   className:
-    "w-full border-solid border-(length:--input-border-width) border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) p-(--input-padding) placeholder:text-(--input-placeholder-color) focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
+    "w-full border-solid border-(length:--border) border-(--input-border-color) rounded-field bg-(--input-bg-color) text-(--input-text-color) p-(--input-padding) placeholder:text-(--input-placeholder-color) focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
 };
 
 const submitButtonProps = {
   type: "submit",
   className:
-    "flex w-full items-center justify-center gap-2 border border-(--primary) bg-transparent px-(--button-padding-x) py-(--button-padding-y) text-center font-bold text-(--primary) rounded-(--radius)",
+    "flex w-full items-center justify-center gap-2 border border-primary bg-transparent px-(--button-padding-x) py-(--button-padding-y) text-center font-bold text-primary rounded-box",
   canDelete: true,
   canEditName: true,
 };
@@ -23,7 +23,7 @@ const submitButtonProps = {
 const fieldsContainerProps = {
   canDelete: true,
   canEditName: true,
-  className: "flex w-full flex-col gap-(--container-gap)",
+  className: "flex w-full flex-col gap-container",
   custom: { displayName: "Fields" },
 };
 

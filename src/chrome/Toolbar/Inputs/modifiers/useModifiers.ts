@@ -72,25 +72,51 @@ export function useModifiers() {
 
     setProp((props: any) => {
       if (!props.root) props.root = {};
-      const classes = (props.className || "").split(/\s+/).filter(Boolean);
+      let classes = (props.className || "").split(/\s+/).filter(Boolean);
+      let activeMods = [...(props.root.activeModifiers || [])];
+
+      // If exclusive, remove other modifiers in the same category first
+      if (mod.exclusive && mod.category && !active) {
+        const siblings = allModifiers.filter(
+          (m) => m.category === mod.category && m.name !== mod.name
+        );
+        for (const sib of siblings) {
+          classes = classes.filter((c: string) => c !== sib.name);
+          activeMods = activeMods.filter((n: string) => n !== sib.name);
+        }
+      }
 
       if (active) {
         // Remove the modifier class name
-        props.className = classes.filter((c: string) => c !== mod.name).join(" ");
-        props.root.activeModifiers = (
-          props.root.activeModifiers || []
-        ).filter((n: string) => n !== mod.name);
+        classes = classes.filter((c: string) => c !== mod.name);
+        activeMods = activeMods.filter((n: string) => n !== mod.name);
       } else {
+        // Remove conflicting classes first
+        if (mod.removes?.length) {
+          classes = classes.filter((c: string) => {
+            for (const pattern of mod.removes!) {
+              if (pattern.endsWith("*")) {
+                if (c.startsWith(pattern.slice(0, -1))) return false;
+              } else if (c === pattern) return false;
+            }
+            return true;
+          });
+        }
+        // Auto-add required base class if not present (e.g. "btn" for "btn-primary")
+        if (mod.requires) {
+          for (const req of mod.requires.split(" ")) {
+            if (!classes.includes(req)) classes.push(req);
+          }
+        }
         // Add the modifier class name
         if (!classes.includes(mod.name)) {
           classes.push(mod.name);
         }
-        props.className = classes.join(" ");
-        props.root.activeModifiers = [
-          ...(props.root.activeModifiers || []),
-          mod.name,
-        ];
+        activeMods.push(mod.name);
       }
+
+      props.className = classes.join(" ");
+      props.root.activeModifiers = activeMods;
     });
   };
 

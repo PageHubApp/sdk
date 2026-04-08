@@ -66,7 +66,7 @@ function DropZone({ id, classes, dragOverCategory, borderIdle, dropValid, dropIn
           key={`${id}-${cls}-${key}`}
           value={cls}
           onClick={(e: any, options: any) => onDelete(cls, id, options?.deleteLinked)}
-          bgColor={CARD_BG_BY_BUCKET[id] || "bg-muted text-foreground"}
+          bgColor={CARD_BG_BY_BUCKET[id] || "bg-neutral text-base-content"}
           onDragStart={(e: any, data: any) => onDragStart(e, { ...data, sourceCategory: id })}
           onDragEnd={onDragEnd}
         />
@@ -120,7 +120,7 @@ export function BreakpointBuckets({
                 <button
                   type="button"
                   onClick={() => toggleManual(row.id)}
-                  className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+                  className="rounded p-0.5 text-neutral-content transition-colors hover:text-base-content"
                 >
                   <TbChevronRight className={`size-3 transition-transform ${open ? "rotate-90" : ""}`} />
                 </button>
@@ -149,13 +149,13 @@ export function BreakpointBuckets({
                     icon={<TbTrash className="size-3.5" />}
                     tooltip="Clear"
                     onClick={() => onClearBucket(list)}
-                    className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    className="text-neutral-content hover:bg-error/10 hover:text-error"
                   />
                   <ActionButton
                     icon={copiedCategory === row.id ? <TbCheck className="size-3.5" /> : <TbCopy className="size-3.5" />}
                     tooltip={copiedCategory === row.id ? "Copied!" : `Copy ${row.id} classes`}
                     onClick={() => copyClasses(list, row.id)}
-                    className="text-muted-foreground hover:bg-accent/10 hover:text-foreground"
+                    className="text-neutral-content hover:bg-accent/10 hover:text-base-content"
                   />
                 </div>
               )}
@@ -178,7 +178,7 @@ export function BreakpointBuckets({
       {otherClasses.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground">
+            <div className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-neutral-content">
               <TbLayersSubtract className="size-3.5 shrink-0 opacity-80" />
               <span className="flex flex-col items-start leading-tight">
                 <span>Other variants</span>
@@ -190,20 +190,20 @@ export function BreakpointBuckets({
                 icon={<TbTrash className="size-3.5" />}
                 tooltip="Clear"
                 onClick={() => onClearBucket(otherClasses)}
-                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                className="text-neutral-content hover:bg-error/10 hover:text-error"
               />
               <ActionButton
                 icon={copiedCategory === "other" ? <TbCheck className="size-3.5" /> : <TbCopy className="size-3.5" />}
                 tooltip={copiedCategory === "other" ? "Copied!" : "Copy other classes"}
                 onClick={() => copyClasses(otherClasses, "other")}
-                className="text-muted-foreground hover:bg-accent/10 hover:text-foreground"
+                className="text-neutral-content hover:bg-accent/10 hover:text-base-content"
               />
             </div>
           </div>
           <div
             role="presentation"
-            className={`flex flex-wrap gap-1.5 rounded-lg border border-dashed border-border p-2 transition-colors ${
-              dragOverCategory === "invalid-other" ? "border-2 border-dashed border-destructive bg-destructive/10" : ""
+            className={`flex flex-wrap gap-1.5 rounded-lg border border-dashed border-base-300 p-2 transition-colors ${
+              dragOverCategory === "invalid-other" ? "border-2 border-dashed border-error bg-error/10" : ""
             }`}
             onDragOver={e => { e.preventDefault(); if (draggedItem) onDragOver(e, "other"); }}
             onDragLeave={onDragLeave}
@@ -213,7 +213,7 @@ export function BreakpointBuckets({
                 key={`other-${cls}-${key}`}
                 value={cls}
                 onClick={(e: any, options: any) => onDelete(cls, "other", options?.deleteLinked)}
-                bgColor="bg-muted text-foreground"
+                bgColor="bg-neutral text-base-content"
                 onDragStart={(e: any, data: any) => onDragStart(e, { ...data, sourceCategory: "other" })}
                 onDragEnd={onDragEnd}
               />
@@ -227,7 +227,7 @@ export function BreakpointBuckets({
         <button
           type="button"
           onClick={onClearAll}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-base-300 px-3 py-2 text-xs font-medium text-base-content transition-colors hover:bg-neutral"
         >
           <TbTrash className="size-3.5" />
           Clear All Styles

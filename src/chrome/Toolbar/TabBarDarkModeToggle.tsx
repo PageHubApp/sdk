@@ -15,7 +15,7 @@ export const TabBarDarkModeToggle = () => {
         className={`flex shrink-0 cursor-pointer items-center justify-center rounded p-1 transition-colors ${
           darkOn
             ? "bg-violet-600/20 text-violet-800 ring-1 ring-violet-500/30 dark:text-violet-200"
-            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+            : "text-neutral-content hover:bg-accent hover:text-base-content"
         }`}
         aria-pressed={darkOn}
         aria-label={darkOn ? "Dark variant scope on" : "Dark variant scope off"}

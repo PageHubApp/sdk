@@ -64,6 +64,12 @@ export interface ComponentModifier {
   label: string;
   /** Optional grouping for the UI, e.g. "Style", "Size", "Shape" */
   category?: string;
+  /** When true, only one modifier in this category can be active at a time (radio behavior). */
+  exclusive?: boolean;
+  /** Base class that must be present for this modifier to work, e.g. "btn" for "btn-primary". Auto-added when toggling on. */
+  requires?: string;
+  /** Class patterns to remove when this modifier is toggled on. Supports exact matches and prefix patterns ending with * (e.g. "bg-*" removes all bg- classes). */
+  removes?: string[];
 }
 
 export interface PageHubComponentDef<P extends Record<string, any> = Record<string, any>> {
@@ -169,10 +175,6 @@ export interface ResolvedComponentDef<P = any> {
   readonly craftProps: Record<string, any>;
   readonly presets: ComponentPreset[];
   readonly modifiers: ComponentModifier[];
-}
-
-export function isComponentDef(value: any): value is ResolvedComponentDef {
-  return value != null && value[COMPONENT_DEF_BRAND] === true;
 }
 
 // ─── Built-in component names (for collision detection) ────────────────────
@@ -392,7 +394,7 @@ function buildAutoSettings(propsSchema: Record<string, PropSchema>): React.Compo
  * Attach .craft config to a component based on its definition.
  * This is the editor-only step that wires up toolbar, tools, rules, etc.
  */
-export function attachCraft(
+function attachCraft(
   def: ResolvedComponentDef,
   LazyUnifiedSettings: React.ComponentType,
   defaultTools?: (canvas: boolean) => React.ReactNode[] | ((props: any) => React.ReactNode[]),

@@ -5,7 +5,7 @@ import { TabAtom } from "../Viewport/atoms";
 import MenuItem from "./Helpers/MenuIcon";
 import { UnifiedTab } from "./UnifiedTab";
 
-export const Tab = ({ tabId, icon = null, title = "" }) => {
+const Tab = ({ tabId, icon = null, title = "" }) => {
   const [activeTab, setActiveTab] = useAtomState(TabAtom);
 
   const isActive = activeTab === tabId;
@@ -23,7 +23,7 @@ export const TabBody = ({ children = null, jumps = [] }) => {
   return (
     <div id="toolbarJumps" className="flex h-full flex-col">
       {jumps.length ? (
-        <div className="text-xxs flex shrink-0 flex-row justify-end gap-3 border-b border-border bg-muted/80 px-3 py-0.5 text-muted-foreground drop-shadow-sm">
+        <div className="text-xxs flex shrink-0 flex-row justify-end gap-3 border-b border-base-300 bg-neutral/80 px-3 py-0.5 text-neutral-content drop-shadow-sm">
           {jumps.reverse().map(_ => (
             <MenuItem
               key={uuidv4()}

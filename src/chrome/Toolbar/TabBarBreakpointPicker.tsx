@@ -14,9 +14,9 @@ const BREAKPOINT_LABELS: Record<string, string> = {
 };
 
 const BREAKPOINT_PILL = {
-  dot: "bg-foreground",
-  pill: "bg-accent text-accent-foreground",
-  active: "bg-accent text-accent-foreground ring-1 ring-accent-foreground/20",
+  dot: "bg-base-content",
+  pill: "bg-accent text-accent-content",
+  active: "bg-accent text-accent-content ring-1 ring-accent-content/20",
 };
 
 export const TabBarBreakpointPicker = () => {
@@ -65,7 +65,7 @@ export const TabBarBreakpointPicker = () => {
     <ToolbarPortalDropdown
       openOn="hover"
       align="left"
-      className="flex flex-col gap-1 rounded-lg border border-border bg-popover p-2 shadow-md"
+      className="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100 p-2 shadow-md"
       trigger={
         <button
           type="button"
@@ -85,7 +85,7 @@ export const TabBarBreakpointPicker = () => {
         </button>
       }
     >
-      <p className="px-0.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+      <p className="px-0.5 text-[10px] font-medium uppercase tracking-widest text-neutral-content">
         Breakpoint scope
       </p>
       <div className="flex flex-wrap gap-1" onMouseMove={onDragMove}>
@@ -120,7 +120,7 @@ export const TabBarBreakpointPicker = () => {
             const cleared = Object.fromEntries(VIEW_BREAKPOINT_SCOPE_KEYS.map(k => [k, false]));
             setViewSelection(prev => ({ ...prev, ...cleared }));
           }}
-          className="mt-0.5 cursor-pointer rounded px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+          className="mt-0.5 cursor-pointer rounded px-1 py-0.5 text-[10px] text-neutral-content hover:text-base-content"
         >
           Clear all
         </button>

@@ -30,7 +30,7 @@ export const DividerDef = defineComponent({
     {
       label: "Line Divider",
       props: {
-        className: "h-2 my-3 w-full bg-(--accent) border-0",
+        className: "h-2 my-3 w-full bg-accent border-0",
       },
     },
   ],

@@ -6,6 +6,7 @@ import { getRandomId, ROOT_NODE } from "@craftjs/utils";
 import React from "react";
 import generate from "../../utils/data/nameGenerator";
 import { DeleteMedia } from "./api";
+import { phStorage } from "../../utils/phStorage";
 
 const fromEntries = (pairs: [string, any][]) => {
   if (Object.fromEntries) return Object.fromEntries(pairs);
@@ -54,7 +55,7 @@ export const deleteNode = async (query: any, actions: any, active: string | null
 };
 
 export const addHandler = ({ actions, query, getCloneTree, id, data = null, setProp }: any) => {
-  data = data || JSON.parse(localStorage.getItem("clipBoard") || "{}");
+  data = data || phStorage.getJSON("clipboard", {});
   const newNodes = JSON.parse(data.nodes);
 
   Object.keys(newNodes).forEach(_ => {
@@ -132,7 +133,7 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
     return { rootNodeId: id, nodes: JSON.stringify(fromEntries(componentTreePairs)), name: componentName };
   }
 
-  localStorage.setItem("clipBoard", JSON.stringify(saveData));
+  phStorage.set("clipboard", saveData);
   return saveData;
 };
 

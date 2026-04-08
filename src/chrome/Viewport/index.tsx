@@ -31,6 +31,7 @@ import { MinimumSizeOverlay } from "./MinimumSizeOverlay";
 import { ViewportMeta } from "./ViewportMeta";
 import { useNodeDropStyling } from "./hooks/useNodeDropStyling";
 import { useViewportKeyboard } from "./hooks/useViewportKeyboard";
+import { phStorage } from "../../utils/phStorage";
 
 import {
   PreviewAtom,
@@ -101,14 +102,14 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
   // ─── Grid lines ───
   useEffect(() => {
-    const saved = localStorage.getItem("showGridLines");
+    const saved = phStorage.get("grid-lines");
     if (saved !== null) setShowGridLines(saved === "true");
   }, [setShowGridLines]);
 
   useEffect(() => {
     const viewport = document.getElementById("viewport");
     if (viewport) viewport.setAttribute("data-show-gridlines", showGridLines.toString());
-    localStorage.setItem("showGridLines", showGridLines.toString());
+    phStorage.set("grid-lines", showGridLines.toString());
   }, [showGridLines]);
 
   // ─── Expose query for style guide resolution ───
@@ -123,7 +124,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   useEffect(() => { setDevice(view === "mobile"); }, [view, setDevice]);
 
   // ─── Init localStorage ───
-  useEffect(() => { localStorage.setItem("clipBoard", JSON.stringify({})); }, []);
+  useEffect(() => { phStorage.set("clipboard", {}); }, []);
 
   // ─── Online/offline ───
   useEffect(() => {
@@ -208,13 +209,13 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   // ─── View classes ───
   const desktopOuter = enabled ? "flex h-full overflow-hidden flex-row flex-1 min-w-0" : "flex h-full flex-row min-w-0 w-full";
   const desktopInner = enabled
-    ? "flex-1 min-w-0 relative scrollbar-light bg-background overflow-y-auto overflow-x-hidden"
+    ? "flex-1 min-w-0 relative scrollbar-light bg-base-100 overflow-y-auto overflow-x-hidden"
     : "w-full h-full overflow-auto relative";
 
   const deviceClasses = {
     mobile: [
       "mx-auto flex z-2 transition overflow-hidden shrink-0 p-[6px] rounded-[44px] bg-[#1a1a1a] border-[3px] border-[#2a2a2a] shadow-[0_0_0_1px_rgba(0,0,0,0.3),0_20px_60px_-10px_rgba(0,0,0,0.5),0_0_40px_-5px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] relative",
-      "w-full h-full flex overflow-auto rounded-[38px] relative bg-background [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+      "w-full h-full flex overflow-auto rounded-[38px] relative bg-base-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
     ],
     desktop: [
       enabled ? "flex h-full overflow-hidden flex-row w-full absolute top-0 left-0 right-0 bottom-0" : "",
@@ -225,7 +226,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   let viewClasses: Record<string, string[]> = {
     mobile: [
       `flex overflow-hidden flex-row mx-auto w-${enabled ? "[380px]" : "full"} h-full `,
-      enabled ? "w-full rounded-lg overflow-y-auto overflow-x-hidden scrollbar-light bg-background relative" : "w-full h-full overflow-auto relative",
+      enabled ? "w-full rounded-lg overflow-y-auto overflow-x-hidden scrollbar-light bg-base-100 relative" : "w-full h-full overflow-auto relative",
     ],
     desktop: [desktopOuter, desktopInner],
   };
@@ -251,7 +252,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       <div
         className={`flex h-full overflow-hidden flex-1 min-w-0 w-full ${
           (device && view === "mobile") || isEditorCanvasBreakpointView(view)
-            ? "items-center justify-center bg-muted/50"
+            ? "items-center justify-center bg-neutral/50"
             : "flex-row"
         }`}
         data-container={true}
@@ -261,7 +262,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           <FloatingWidget storageKey="preview-edit" defaultCorner={sideBarLeft ? "top-left" : "top-right"}>
             <Tooltip content="Edit" placement="bottom" arrow={false}>
               <button
-                className="btn cursor-pointer select-none rounded-full bg-primary p-4 text-2xl text-primary-foreground shadow-lg"
+                className="btn cursor-pointer select-none rounded-full bg-primary p-4 text-2xl text-primary-content shadow-lg"
                 aria-label="Edit page"
                 onClick={() => {
                   const viewport = document.getElementById("viewport");
@@ -297,7 +298,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
         {enabled && device && view === "mobile" && (
           <div className={`absolute top-4 ${sideBarOpen && sideBarLeft ? "left-[360px]" : "left-0"} right-0 z-50`}>
-            <div className="mx-auto flex w-fit items-center gap-4 rounded-lg bg-muted/95 px-4 py-2 shadow-lg backdrop-blur-sm">
+            <div className="mx-auto flex w-fit items-center gap-4 rounded-lg bg-neutral/95 px-4 py-2 shadow-lg backdrop-blur-sm">
               <DeviceSelector onClose={() => setDevice(false)} />
               <div className="h-4 w-px bg-border" />
               <DeviceZoom />

@@ -201,7 +201,7 @@ export function UnifiedDropdown({
 
         return (
           <div
-            className="flex size-4 shrink-0 items-center justify-center rounded border border-border bg-muted"
+            className="flex size-4 shrink-0 items-center justify-center rounded border border-base-300 bg-neutral"
             style={{ cursor: cursorValue }}
           >
             {getCursorIcon()}
@@ -210,7 +210,7 @@ export function UnifiedDropdown({
       }
       case "shadow": {
         return (
-          <div className={`size-4 shrink-0 rounded border border-border bg-background ${option}`} />
+          <div className={`size-4 shrink-0 rounded border border-base-300 bg-base-100 ${option}`} />
         );
       }
       default:
@@ -270,7 +270,7 @@ export function UnifiedDropdown({
               <button
                 key={option}
                 type="button"
-                className="ph-select-item text-xs text-foreground"
+                className="ph-select-item text-xs text-base-content"
                 onClick={() => onSelect(option)}
               >
                 {preview}
@@ -290,20 +290,20 @@ export function UnifiedDropdown({
         data-unified-dropdown
         style={style}
         ref={ref}
-        className="pagehub-sdk-root ph-panel flex flex-col text-foreground"
+        className="pagehub-sdk-root ph-panel flex flex-col text-base-content"
       >
         <div className="ph-select-item-host flex flex-1 flex-col">
           <button
             type="button"
             onClick={() => onSelect("")}
-            className="ph-select-item shrink-0 rounded-none border-b border-border text-muted-foreground"
+            className="ph-select-item shrink-0 rounded-none border-b border-base-300 text-neutral-content"
           >
             None
           </button>
 
           <div className="scrollbar-light flex-1 overflow-y-auto">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+              <div className="px-3 py-6 text-center text-xs text-neutral-content">
                 No matches found
               </div>
             ) : (
@@ -314,7 +314,7 @@ export function UnifiedDropdown({
                     key={option}
                     type="button"
                     onClick={() => onSelect(option)}
-                    className={`ph-select-item text-foreground ${
+                    className={`ph-select-item text-base-content ${
                       isSelected ? "bg-primary/10 font-semibold text-primary" : ""
                     }`}
                   >
@@ -356,7 +356,7 @@ export function UnifiedDropdown({
             if (!col.section) return null;
 
             const isLastColumn = colIndex === sections.length - 1;
-            const borderClass = isLastColumn ? "" : "border-r border-border";
+            const borderClass = isLastColumn ? "" : "border-r border-base-300";
 
             return (
               <div
@@ -435,7 +435,7 @@ export function UnifiedDropdown({
       data-unified-dropdown
       style={style}
       ref={ref}
-      className="pagehub-sdk-root ph-panel flex h-52 flex-col overflow-hidden text-foreground"
+      className="pagehub-sdk-root ph-panel flex h-52 flex-col overflow-hidden text-base-content"
     >
       <div className="ph-select-item-host flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Main Options Section - Configurable Layout */}
@@ -443,9 +443,9 @@ export function UnifiedDropdown({
 
       {/* Design Variables Section - Hidden in tailwind mode */}
       {isVarMode && showVarSelector && realDesignVars.length > 0 && (
-        <div className="flex h-full flex-col border-border">
+        <div className="flex h-full flex-col border-base-300">
           <div className="scrollbar-light flex-1 overflow-y-auto">
-            <div className="bg-background">
+            <div className="bg-base-100">
               {(() => {
                 // Filter by category based on input type
                 const getRelevantCategories = () => {
@@ -508,7 +508,7 @@ export function UnifiedDropdown({
 
                 if (filteredVars.length === 0) {
                   return (
-                    <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+                    <div className="px-3 py-6 text-center text-xs text-neutral-content">
                       No variables found
                     </div>
                   );
@@ -528,13 +528,13 @@ export function UnifiedDropdown({
                       }`}
                     >
                       <div
-                        className="size-3 shrink-0 rounded border border-border"
+                        className="size-3 shrink-0 rounded border border-base-300"
                         style={{
                           backgroundColor: v.category === "palette" ? v.value : "transparent",
                         }}
                       />
                       <span className="flex-1 truncate font-medium">{v.label}</span>
-                      <span className="text-muted-foreground">{v.varName}</span>
+                      <span className="text-neutral-content">{v.varName}</span>
                     </button>
                   );
                 });
@@ -543,7 +543,7 @@ export function UnifiedDropdown({
           </div>
           <div
             role="presentation"
-            className="border-t border-border bg-background p-2"
+            className="border-t border-base-300 bg-base-100 p-2"
             onMouseDown={e => e.stopPropagation()}
           >
             <input
@@ -560,7 +560,7 @@ export function UnifiedDropdown({
       <button
         type="button"
         onClick={() => onSelect("")}
-        className="ph-select-item sticky top-0 z-10 shrink-0 rounded-none border-t border-border bg-background text-muted-foreground"
+        className="ph-select-item sticky top-0 z-10 shrink-0 rounded-none border-t border-base-300 bg-base-100 text-neutral-content"
       >
         Reset to Default
       </button>

@@ -56,7 +56,7 @@ export function AnimatedSaveButton({
   };
 
   const getButtonClasses = () => {
-    const baseClasses = `cursor-pointer hover:bg-muted hover:text-foreground py-3 px-1.5 text-xl flex items-center justify-center rounded-lg text-foreground transition-colors duration-200 ${className}`;
+    const baseClasses = `cursor-pointer hover:bg-neutral hover:text-base-content py-3 px-1.5 text-xl flex items-center justify-center rounded-lg text-base-content transition-colors duration-200 ${className}`;
 
     if (disabled || isAnimating) {
       return `${baseClasses} opacity-50`;

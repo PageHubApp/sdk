@@ -46,7 +46,7 @@ export function BasicTab({
             type="text"
             value={pageName}
             onChange={e => onPageNameChange(e.target.value)}
-            className="w-full rounded-lg border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded-lg border border-base-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="Enter page name"
           />
         </div>
@@ -56,14 +56,14 @@ export function BasicTab({
             URL Slug
           </label>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">/</span>
+            <span className="text-sm text-neutral-content">/</span>
             <input
               id="page-slug"
               type="text"
               value={isHomePage ? "" : pageSlug}
               onChange={e => onSlugChange(e.target.value)}
               disabled={isHomePage}
-              className="flex-1 rounded-lg border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-muted disabled:text-muted-foreground"
+              className="flex-1 rounded-lg border border-base-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-neutral disabled:text-neutral-content"
               placeholder={isHomePage ? "home" : "page-url"}
             />
           </div>
@@ -85,20 +85,20 @@ export function BasicTab({
 
       <div className="flex gap-2">
         {/* Home Page Toggle */}
-        <div className="flex w-full items-center justify-between rounded-lg border border-border bg-muted p-4">
+        <div className="flex w-full items-center justify-between rounded-lg border border-base-300 bg-neutral p-4">
           <div>
             <div className="toolbar-label font-medium">Home Page</div>
-            <div className="mt-1 text-xs text-muted-foreground">Set as root URL (/)</div>
+            <div className="mt-1 text-xs text-neutral-content">Set as root URL (/)</div>
           </div>
           <button
             type="button"
             onClick={() => setIsHomePage(!isHomePage)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-              isHomePage ? "bg-primary" : "bg-muted"
+              isHomePage ? "bg-primary" : "bg-neutral"
             }`}
           >
             <span
-              className={`inline-block size-4 rounded-full bg-background transition-transform ${
+              className={`inline-block size-4 rounded-full bg-base-100 transition-transform ${
                 isHomePage ? "translate-x-6" : "translate-x-1"
               }`}
             />
@@ -106,10 +106,10 @@ export function BasicTab({
         </div>
 
         {/* 404 Page Toggle */}
-        <div className="flex w-full items-center justify-between rounded-lg border border-border bg-muted p-4">
+        <div className="flex w-full items-center justify-between rounded-lg border border-base-300 bg-neutral p-4">
           <div>
             <div className="toolbar-label font-medium">404 Page</div>
-            <div className="mt-1 text-xs text-muted-foreground">
+            <div className="mt-1 text-xs text-neutral-content">
               Show when route not found
             </div>
           </div>
@@ -117,11 +117,11 @@ export function BasicTab({
             type="button"
             onClick={() => setIs404Page(!is404Page)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-              is404Page ? "bg-primary" : "bg-muted"
+              is404Page ? "bg-primary" : "bg-neutral"
             }`}
           >
             <span
-              className={`inline-block size-4 rounded-full bg-background transition-transform ${
+              className={`inline-block size-4 rounded-full bg-base-100 transition-transform ${
                 is404Page ? "translate-x-6" : "translate-x-1"
               }`}
             />
@@ -130,11 +130,11 @@ export function BasicTab({
       </div>
 
       {/* Delete Page Section */}
-      <div className="border-t border-border pt-6">
-        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+      <div className="border-t border-base-300 pt-6">
+        <div className="rounded-lg border border-error/20 bg-error/5 p-4">
           <div className="mb-3">
-            <h3 className="text-sm font-medium text-destructive">Danger Zone</h3>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <h3 className="text-sm font-medium text-error">Danger Zone</h3>
+            <p className="mt-1 text-xs text-neutral-content">
               Once you delete a page, there is no going back.
             </p>
           </div>
@@ -143,14 +143,14 @@ export function BasicTab({
             <button
               type="button"
               onClick={() => setShowDeleteConfirm(true)}
-              className="flex items-center gap-2 rounded-lg border border-destructive px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground"
+              className="flex items-center gap-2 rounded-lg border border-error px-3 py-2 text-sm font-medium text-error transition-colors hover:bg-error hover:text-error-content"
             >
               <TbTrash className="size-4" />
               Delete Page
             </button>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-neutral-content">
                 Are you sure you want to delete &ldquo;{pageName}&rdquo;? This action
                 cannot be undone.
               </p>
@@ -158,14 +158,14 @@ export function BasicTab({
                 <button
                   type="button"
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  className="rounded-lg border border-base-300 px-3 py-2 text-sm font-medium text-base-content transition-colors hover:bg-neutral"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={onDeletePage}
-                  className="rounded-lg bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+                  className="rounded-lg bg-error px-3 py-2 text-sm font-medium text-error-content transition-colors hover:bg-error/90"
                 >
                   Yes, Delete Page
                 </button>

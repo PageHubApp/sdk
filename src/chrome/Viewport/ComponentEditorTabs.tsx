@@ -361,7 +361,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
 
   return (
     <div
-      className={`relative flex h-10 items-center gap-2 border-b border-border bg-secondary px-3 pt-2 ${className}`}
+      className={`relative flex h-10 items-center gap-2 border-b border-base-300 bg-secondary px-3 pt-2 ${className}`}
     >
       {/* Tabs */}
       <div className="scrollbar-hide flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" role="tablist">
@@ -386,8 +386,8 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTabClick(tab.id); } }}
               className={`group flex min-w-32 cursor-pointer items-center gap-2 rounded-t px-3 py-1.5 transition-colors ${
                 activeTabId === tab.id
-                  ? "bg-muted font-bold text-muted-foreground hover:bg-card hover:text-card-foreground"
-                  : "bg-background text-secondary-foreground hover:bg-card hover:text-card-foreground"
+                  ? "bg-neutral font-bold text-neutral-content hover:bg-base-200 hover:text-base-content"
+                  : "bg-base-100 text-secondary-content hover:bg-base-200 hover:text-base-content"
               } `}
             >
               {component?.isSection ? (
@@ -400,7 +400,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
               </span>
               <button
                 onClick={e => handleCloseTab(tab.id, e)}
-                className={`rounded-lg p-0.5 transition-all hover:bg-muted hover:text-muted-foreground ${activeTabId === tab.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                className={`rounded-lg p-0.5 transition-all hover:bg-neutral hover:text-neutral-content ${activeTabId === tab.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
               >
                 <TbX className="size-3" />
               </button>
@@ -412,4 +412,3 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
   );
 }
 
-export default ComponentEditorTabs;

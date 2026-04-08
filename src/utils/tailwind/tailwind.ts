@@ -16,7 +16,7 @@ import { isCSSAnimation, getCSSAnimationProps, scrollAnimRef } from "../animatio
 export {
     AllStyles, AllStylesSet,
     classNameToVar, fonts,
-    getColorPallet, isValidTailwindClass,
+    getColorPalette, isValidTailwindClass,
     PREFIX_ENTRIES, PREFIX_TO_KEY,
     RootClassGenProps, TailwindStyles
 } from "./tailwind-styles";

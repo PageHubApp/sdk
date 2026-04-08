@@ -115,9 +115,9 @@ export function SectionsSettings() {
   return (
     <div className="flex flex-1 flex-col overflow-hidden bg-sidebar">
       {/* Search bar */}
-      <div className="flex items-center gap-2 border-b border-border bg-background p-3">
+      <div className="flex items-center gap-2 border-b border-base-300 bg-base-100 p-3">
         <div className="relative flex-1">
-          <TbSearch className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <TbSearch className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-neutral-content" />
           <input
             type="text"
             placeholder="Search blocks..."
@@ -138,7 +138,7 @@ export function SectionsSettings() {
             {/* Custom sections */}
             {customSections.length > 0 && (
               <div className="mb-4">
-                <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-content">
                   My Blocks ({customSections.length})
                 </div>
                 <CustomSectionsGrid
@@ -150,7 +150,7 @@ export function SectionsSettings() {
             {/* Category grid */}
             {isLoading ? (
               <div className="flex h-32 items-center justify-center">
-                <TbLoader2 className="size-5 animate-spin text-muted-foreground" />
+                <TbLoader2 className="size-5 animate-spin text-neutral-content" />
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2.5">

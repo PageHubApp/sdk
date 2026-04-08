@@ -100,4 +100,3 @@ export const AccessibilityInput = () => {
   );
 };
 
-export default AccessibilityInput;

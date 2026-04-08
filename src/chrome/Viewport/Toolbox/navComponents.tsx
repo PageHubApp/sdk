@@ -26,7 +26,7 @@ export const NavToolbox = {
       element={Nav}
       custom={{ displayName: "Nav" }}
       menu={{ enabled: true, id: "mobile-menu", side: "left", type: "slide", breakpoint: "mobile" }}
-      className="flex justify-between items-center gap-(--container-gap)"
+      className="flex justify-between items-center gap-container"
     >
       <Element is={Button} custom={{ displayName: "Home" }} text="Home" url="#" className={navLinkClass} />
       <Element is={Button} custom={{ displayName: "About Us" }} text="About Us" url="#" className={navLinkClass} />
@@ -68,7 +68,7 @@ export const NavToolbox = {
           custom={{ displayName: "Mobile Menu Panel" }}
           canDelete={false}
           canEditName={false}
-          className="h-full w-80 max-w-sm bg-(--background) shadow-xl"
+          className="h-full w-80 max-w-sm bg-base-100 shadow-xl"
           click={{
             type: "click",
             direction: "toggle",
@@ -82,7 +82,7 @@ export const NavToolbox = {
             custom={{ displayName: "Mobile Nav Header" }}
             canDelete={false}
             canEditName={false}
-            className="flex items-center justify-between px-(--container-padding-x) py-(--container-padding-y) border-b"
+            className="flex items-center justify-between px-container-x py-container-y border-b"
           >
             <Element
               canvas
@@ -109,7 +109,7 @@ export const NavToolbox = {
             custom={{ displayName: "Mobile Navigation" }}
             canDelete={false}
             canEditName={false}
-            className="border-0 flex flex-col gap-(--container-gap) w-full"
+            className="border-0 flex flex-col gap-container w-full"
           />
         </Element>
       </Element>
@@ -120,7 +120,7 @@ export const NavToolbox = {
       display={<ToolboxItemDisplay icon={TbBrandTwitter} label="Social Nav" />}
       element={ButtonList}
       custom={{ displayName: "Social Nav" }}
-      className="flex flex-row items-center gap-(--container-gap)"
+      className="flex flex-row items-center gap-container"
     >
       <Element
         is={Button}
@@ -128,7 +128,7 @@ export const NavToolbox = {
         text="Twitter"
         icon={{ value: socialIcons.twitter, only: true }}
         url="#"
-        className="bg-(--primary) text-(--primary-foreground) rounded-(--radius) px-(--button-padding-x) py-(--button-padding-y)"
+        className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y)"
       />
       <Element
         is={Button}
@@ -136,7 +136,7 @@ export const NavToolbox = {
         text="Facebook"
         icon={{ value: socialIcons.facebook, only: true }}
         url="#"
-        className="bg-(--primary) text-(--primary-foreground) rounded-(--radius) px-(--button-padding-x) py-(--button-padding-y)"
+        className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y)"
       />
       <Element
         is={Button}
@@ -144,7 +144,7 @@ export const NavToolbox = {
         text="Instagram"
         icon={{ value: socialIcons.instagram, only: true }}
         url="#"
-        className="bg-(--primary) text-(--primary-foreground) rounded-(--radius) px-(--button-padding-x) py-(--button-padding-y)"
+        className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y)"
       />
       <Element
         is={Button}
@@ -152,7 +152,7 @@ export const NavToolbox = {
         text="LinkedIn"
         icon={{ value: socialIcons.linkedin, only: true }}
         url="#"
-        className="bg-(--primary) text-(--primary-foreground) rounded-(--radius) px-(--button-padding-x) py-(--button-padding-y)"
+        className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y)"
       />
     </RenderToolComponent>,
 
@@ -161,7 +161,7 @@ export const NavToolbox = {
       display={<ToolboxItemDisplay icon={TbBrandTwitter} label="Social Icons" />}
       element={ButtonList}
       custom={{ displayName: "Social Icons" }}
-      className="flex flex-row items-center gap-(--container-gap)"
+      className="flex flex-row items-center gap-container"
     >
       <Element
         is={Button}
@@ -210,7 +210,7 @@ export const NavToolbox = {
       display={<ToolboxItemDisplay icon={TbMinus} label="Plain Nav" />}
       element={ButtonList}
       custom={{ displayName: "Plain Nav" }}
-      className="flex flex-row items-center gap-(--container-gap)"
+      className="flex flex-row items-center gap-container"
     >
       <Element
         is={Button}
@@ -247,35 +247,35 @@ export const NavToolbox = {
       display={<ToolboxItemDisplay icon={TbLayoutNavbar} label="Minimal Nav" />}
       element={ButtonList}
       custom={{ displayName: "Minimal Nav" }}
-      className="flex flex-row items-center gap-(--container-gap)"
+      className="flex flex-row items-center gap-container"
     >
       <Element
         is={Button}
         custom={{ displayName: "Home" }}
         text="Home"
         url="#"
-        className="bg-(--primary) text-(--primary-foreground) rounded-(--radius) px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
+        className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
       />
       <Element
         is={Button}
         custom={{ displayName: "About" }}
         text="About"
         url="#"
-        className="bg-(--primary) text-(--primary-foreground) rounded-(--radius) px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
+        className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
       />
       <Element
         is={Button}
         custom={{ displayName: "Services" }}
         text="Services"
         url="#"
-        className="bg-(--primary) text-(--primary-foreground) rounded-(--radius) px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
+        className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
       />
       <Element
         is={Button}
         custom={{ displayName: "Contact" }}
         text="Contact"
         url="#"
-        className="bg-(--primary) text-(--primary-foreground) rounded-(--radius) px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
+        className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
       />
     </RenderToolComponent>,
 
@@ -284,28 +284,28 @@ export const NavToolbox = {
       display={<ToolboxItemDisplay icon={TbPill} label="Pill Nav" />}
       element={ButtonList}
       custom={{ displayName: "Pill Nav" }}
-      className="bg-(--primary) rounded-full px-2 py-1 flex flex-row items-center gap-1"
+      className="bg-primary rounded-full px-2 py-1 flex flex-row items-center gap-1"
     >
       <Element
         is={Button}
         custom={{ displayName: "Home" }}
         text="Home"
         url="#"
-        className="bg-transparent text-(--primary-foreground) border-0 px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
+        className="bg-transparent text-primary-content border-0 px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
       />
       <Element
         is={Button}
         custom={{ displayName: "About" }}
         text="About"
         url="#"
-        className="bg-transparent text-(--primary-foreground) border-0 px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
+        className="bg-transparent text-primary-content border-0 px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
       />
       <Element
         is={Button}
         custom={{ displayName: "Contact" }}
         text="Contact"
         url="#"
-        className="bg-transparent text-(--primary-foreground) border-0 px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
+        className="bg-transparent text-primary-content border-0 px-(--button-padding-x) py-(--button-padding-y) flex flex-col gap-1.5 items-center justify-center"
       />
     </RenderToolComponent>,
   ],

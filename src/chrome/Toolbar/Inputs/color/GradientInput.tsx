@@ -108,7 +108,7 @@ export const GradientInput = () => {
   return (
     <div className="flex flex-col gap-2">
       {/* Direction row — always visible, consistent layout */}
-      <div className="flex items-center gap-px rounded-md border border-border overflow-hidden">
+      <div className="flex items-center gap-px rounded-md border border-base-300 overflow-hidden">
         {ROW_ORDER.map(dir => (
           <button
             key={dir}
@@ -117,8 +117,8 @@ export const GradientInput = () => {
             title={dir.replace("bg-linear-to-", "to ").toUpperCase()}
             className={`flex flex-1 items-center justify-center py-1.5 text-xs transition-colors ${
               direction === dir
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted/30 text-muted-foreground hover:bg-muted"
+                ? "bg-primary text-primary-content"
+                : "bg-neutral/30 text-neutral-content hover:bg-neutral"
             }`}
           >
             {DIRECTION_ARROWS[dir]}
@@ -129,7 +129,7 @@ export const GradientInput = () => {
       {/* Preview bar */}
       {hasGradient && (
         <div
-          className="h-5 w-full rounded border border-border transition-all"
+          className="h-5 w-full rounded border border-base-300 transition-all"
           style={{ background: previewBg || undefined }}
         />
       )}
@@ -144,7 +144,7 @@ export const GradientInput = () => {
           <button
             type="button"
             onClick={() => setDirection("")}
-            className="self-end text-[10px] text-muted-foreground hover:text-destructive transition-colors"
+            className="self-end text-[10px] text-neutral-content hover:text-error transition-colors"
           >
             Remove gradient
           </button>
@@ -173,13 +173,13 @@ const StopRow = ({
         step={5}
         value={position ?? (prefix === "from" ? 0 : prefix === "to" ? 100 : 50)}
         onChange={(e) => onPosition(parseInt(e.target.value))}
-        className="slider h-1.5 flex-1 cursor-pointer appearance-none rounded-lg bg-muted"
+        className="slider h-1.5 flex-1 cursor-pointer appearance-none rounded-lg bg-neutral"
       />
-      <span className="w-7 text-right text-[10px] text-muted-foreground tabular-nums">
+      <span className="w-7 text-right text-[10px] text-neutral-content tabular-nums">
         {position != null ? `${position}%` : "—"}
       </span>
       {position != null && (
-        <button type="button" onClick={() => onPosition(null)} className="text-[10px] text-muted-foreground hover:text-destructive">×</button>
+        <button type="button" onClick={() => onPosition(null)} className="text-[10px] text-neutral-content hover:text-error">×</button>
       )}
     </div>
   </div>

@@ -171,7 +171,7 @@ export function AutoHideScrollbar({
                 width: 4,
                 height: thumb.height,
                 borderRadius: 2,
-                backgroundColor: "var(--muted-foreground)",
+                backgroundColor: "var(--neutral-content)",
                 opacity: visible ? 0.5 : 0,
                 transition: "opacity 150ms ease",
                 cursor: "pointer",

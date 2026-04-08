@@ -60,7 +60,7 @@ export const NavMainTab = () => {
   return renderComponentSlots({
     Content: (
       <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Nav links and their URLs. Switch views to edit mobile.">
-        <div className="flex gap-1 rounded-lg bg-muted p-1">
+        <div className="flex gap-1 rounded-lg bg-neutral p-1">
           {NAV_VIEW_STATES.map(({ value, label, icon: Icon }) => (
             <button
               key={value}
@@ -68,8 +68,8 @@ export const NavMainTab = () => {
               onClick={() => actions.setProp(id, (p: any) => { p.view = value; })}
               className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
                 currentView === value
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-base-100 text-base-content shadow-sm"
+                  : "text-neutral-content hover:text-base-content"
               }`}
             >
               <Icon className="size-3.5" />
@@ -105,7 +105,7 @@ export const NavMainTab = () => {
           extraButtons={(link) => [
             <button
               key="edit"
-              className="flex items-center justify-center text-foreground transition-colors hover:text-primary"
+              className="flex items-center justify-center text-base-content transition-colors hover:text-primary"
               title="Edit link"
               onClick={e => {
                 e.stopPropagation();

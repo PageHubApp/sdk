@@ -81,7 +81,7 @@ export const FormElementDef = defineComponent({
   ],
   presets: (() => {
     const base = {
-      className: "p-(--input-padding) w-full border-solid border-(length:--input-border-width) border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) :text-[color:var(--input-placeholder-color)] focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
+      className: "p-(--input-padding) w-full border-solid border-(length:--border) border-(--input-border-color) rounded-field bg-(--input-bg-color) text-(--input-text-color) :text-[color:var(--input-placeholder-color)] focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
     };
     return [
       { label: "Textarea",  icon: TbTextCaption,  props: { type: "textarea", placeholder: "Enter your message...", name: "message", ...base } },
@@ -96,4 +96,24 @@ export const FormElementDef = defineComponent({
       { label: "Range",     icon: TbAdjustments,  props: { type: "range",    name: "range", min: "0", max: "100",   className: "w-full accent-(--input-focus-ring-color)" } },
     ];
   })(),
+  modifiers: [
+    // DaisyUI input variants
+    { name: "input", label: "Input", category: "DaisyUI" },
+    { name: "input-primary", label: "Primary", category: "DaisyUI", requires: "input" },
+    { name: "input-secondary", label: "Secondary", category: "DaisyUI", requires: "input" },
+    { name: "input-accent", label: "Accent", category: "DaisyUI", requires: "input" },
+    { name: "input-bordered", label: "Bordered", category: "DaisyUI", requires: "input" },
+    { name: "input-ghost", label: "Ghost", category: "DaisyUI", requires: "input" },
+    { name: "textarea", label: "Textarea", category: "DaisyUI" },
+    { name: "select", label: "Select", category: "DaisyUI" },
+    { name: "checkbox", label: "Checkbox", category: "DaisyUI" },
+    { name: "radio", label: "Radio", category: "DaisyUI" },
+    { name: "toggle", label: "Toggle", category: "DaisyUI" },
+    { name: "range", label: "Range", category: "DaisyUI" },
+    // Size
+    { name: "input-xs", label: "XS", category: "Size", exclusive: true, requires: "input" },
+    { name: "input-sm", label: "SM", category: "Size", exclusive: true, requires: "input" },
+    { name: "input-md", label: "MD", category: "Size", exclusive: true, requires: "input" },
+    { name: "input-lg", label: "LG", category: "Size", exclusive: true, requires: "input" },
+  ],
 }, { __internal: true });

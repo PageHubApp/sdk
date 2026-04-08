@@ -44,10 +44,6 @@ export const GlobalSectionPickerDialog = () => {
             block: "center",
           });
 
-          // Select after scrolling completes
-          setTimeout(() => {
-            actions.selectNode(newElement.rootNodeId);
-          }, 500);
         }
       }, 100);
     }

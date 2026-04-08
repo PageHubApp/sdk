@@ -147,7 +147,7 @@ export const EmbedMainTab = () => {
               labelHide={false}
               placeholder={EMBED_SERVICES[service]?.placeholder}
             />
-            <p className="col-span-full text-[11px] leading-snug text-muted-foreground">
+            <p className="col-span-full text-[11px] leading-snug text-neutral-content">
               {getServiceHelp(service)}
             </p>
           </>

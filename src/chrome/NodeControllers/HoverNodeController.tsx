@@ -29,7 +29,7 @@ export const HoverNodeController = (props: { position; align; placement; alt?: a
     >
       <div
         className={
-          "fontfamily-base flex flex-row gap-3 rounded-lg border border-border bg-muted px-2 text-base! font-normal! text-foreground shadow-sm"
+          "fontfamily-base flex flex-row gap-3 rounded-lg border border-base-300 bg-neutral px-2 text-base! font-normal! text-base-content shadow-sm"
         }
       >
         {name}

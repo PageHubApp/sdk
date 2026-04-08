@@ -160,4 +160,3 @@ export const ImageGroupSettings = ({ onAdd }: { onAdd: () => void }) => {
   );
 };
 
-export default ImageGroupSettings;

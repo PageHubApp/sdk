@@ -94,9 +94,12 @@ export const DragAdjustNodeController = (props: {
 
   const { id } = useNode();
 
-  const { isActive } = useEditor((_, query) => ({
+  const { isActive, isHover } = useEditor((_, query) => ({
     isActive: query.getEvent("selected").contains(id),
+    isHover: query.getEvent("hovered").contains(id),
   }));
+
+  const [isDragging, setIsDragging] = React.useState(false);
 
   const dom = document.querySelector(`[node-id="${id}"]`);
 
@@ -124,8 +127,10 @@ export const DragAdjustNodeController = (props: {
   //        alt={alt}
   // could use it but drl need it ond rag adjusters..
 
+  const showControl = isHover || isDragging;
+
   // For inline rendering, skip AnimatePresence - it causes issues without portals
-  if (isInlineRender && isActive) {
+  if (isInlineRender && isActive && showControl) {
     return (
       <ControlComponent
         key={`${id}-drag-${position}`}
@@ -146,7 +151,7 @@ export const DragAdjustNodeController = (props: {
           isPadding={isPadding}
           snapToTailwind={!gridSnap} // Disable snapping for width adjuster with grid snap
           onDragStart={() => {
-            // Store parent width at drag start for consistent calculations
+            setIsDragging(true);
             if (gridSnap && dom) {
               const parent = (dom as HTMLElement)?.parentElement;
               if (parent) {
@@ -155,7 +160,7 @@ export const DragAdjustNodeController = (props: {
             }
           }}
           onDragEnd={() => {
-            // Clear stored parent width
+            setIsDragging(false);
             parentWidthRef.current = null;
           }}
           onChange={value => {
@@ -194,7 +199,7 @@ export const DragAdjustNodeController = (props: {
   // Portal mode
   return (
     <>
-      {isActive && (
+      {isActive && showControl && (
         <ControlComponent
           key={`${id}-drag-${position}`}
           position={position}
@@ -215,7 +220,7 @@ export const DragAdjustNodeController = (props: {
             isPadding={isPadding}
             snapToTailwind={!gridSnap} // Disable snapping for width adjuster with grid snap
             onDragStart={() => {
-              // Store parent width at drag start for consistent calculations
+              setIsDragging(true);
               if (gridSnap && dom) {
                 const parent = (dom as HTMLElement)?.parentElement;
                 if (parent) {
@@ -224,7 +229,7 @@ export const DragAdjustNodeController = (props: {
               }
             }}
             onDragEnd={() => {
-              // Clear stored parent width
+              setIsDragging(false);
               parentWidthRef.current = null;
             }}
             onChange={value => {

@@ -9,24 +9,25 @@ import { BsEyedropper } from "react-icons/bs";
 import { TbCheck, TbChevronDown, TbChevronRight, TbDeviceFloppy, TbX } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import useEyeDropper from "use-eye-dropper";
+import { resolveTheme } from "../../../utils/design/resolveTheme";
 import {
   getTailwindColorHex,
   hexToRGBA,
   isPaletteColorSelected,
   stripTailwindPrefix,
 } from "utils/design/colorSystem";
-import { getColorPallet } from "utils/tailwind";
+import { getColorPalette } from "utils/tailwind";
 
-export { ColorPalletAtom, ColorPickerAtom } from "./dialogAtoms";
-import { ColorPalletAtom, ColorPickerAtom } from "./dialogAtoms";
+export { ColorPaletteAtom, ColorPickerAtom } from "./dialogAtoms";
+import { ColorPaletteAtom, ColorPickerAtom } from "./dialogAtoms";
+import { phStorage } from "../../../utils/phStorage";
 
 // Recent colors stored in localStorage
-const RECENT_COLORS_KEY = "recentColors";
 const MAX_RECENT = 8;
 
 const loadRecentColors = (): string[] => {
   try {
-    const stored = localStorage.getItem(RECENT_COLORS_KEY);
+    const stored = phStorage.get("recent-colors");
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
@@ -35,15 +36,15 @@ const loadRecentColors = (): string[] => {
 
 const saveRecentColor = (color: string, recent: string[]): string[] => {
   const updated = [color, ...recent.filter(c => c !== color)].slice(0, MAX_RECENT);
-  localStorage.setItem(RECENT_COLORS_KEY, JSON.stringify(updated));
+  phStorage.set("recent-colors", updated);
   return updated;
 };
 
 export const ColorPickerDialog = () => {
-  const pallet = getColorPallet();
+  const twPalette = getColorPalette();
 
   const [colorPicker, setColorPicker] = useAtomState(ColorPickerAtom);
-  const [colorPallet, setColorPallet] = useAtomState(ColorPalletAtom);
+  const [colorPalette, setColorPallet] = useAtomState(ColorPaletteAtom);
   const [namedPalette, setNamedPalette] = useState<Array<{ name: string; color: string }>>([]);
   const [recentColors, setRecentColors] = useState<string[]>([]);
   const [showTailwind, setShowTailwind] = useState(false);
@@ -54,7 +55,7 @@ export const ColorPickerDialog = () => {
   const hasPaletteColors = namedPalette.length > 0;
   const mode = colorPicker.mode || "both";
   const canShowPalette =
-    (mode === "both" || mode === "palette") && hasPaletteColors && colorPicker.showPallet !== false;
+    (mode === "both" || mode === "palette") && hasPaletteColors && colorPicker.showPalette !== false;
   const canShowPicker = mode === "both" || mode === "picker";
 
   // Load recent colors when dialog opens
@@ -69,10 +70,10 @@ export const ColorPickerDialog = () => {
   useEffect(() => {
     const node = query.node(ROOT_NODE).get();
     if (!node) return;
-    const nodePrsets = node.data.props.pallet || [];
+    const themePalette = resolveTheme(node.data.props || {}).palette;
 
-    if (Array.isArray(nodePrsets) && nodePrsets.length > 0) {
-      const palette = nodePrsets.filter(p => p && typeof p === "object" && p.name && p.color);
+    if (Array.isArray(themePalette) && themePalette.length > 0) {
+      const palette = themePalette.filter(p => p && typeof p === "object" && p.name && p.color);
       setNamedPalette(palette);
       const colors = palette.map(p => p.color);
       setColorPallet(colors);
@@ -97,15 +98,15 @@ export const ColorPickerDialog = () => {
     }
 
     actions.setProp(ROOT_NODE, props => {
-      const currentPallet = props.pallet || [];
-      const existingIndex = currentPallet.findIndex(p => p.color === val);
+      const theme = resolveTheme(props);
+      const currentPalette = [...theme.palette];
+      const existingIndex = currentPalette.findIndex(p => p.color === val);
       if (existingIndex === -1) {
-        props.pallet = [
-          { name: `Color ${currentPallet.length + 1}`, color: val },
-          ...currentPallet,
-        ];
+        currentPalette.unshift({ name: `Color ${currentPalette.length + 1}`, color: val });
       }
-      const colors = props.pallet.map(p => p.color);
+      if (!props.theme) props.theme = {};
+      props.theme.palette = currentPalette;
+      const colors = currentPalette.map(p => p.color);
       setColorPallet(colors);
     });
   };
@@ -197,13 +198,12 @@ export const ColorPickerDialog = () => {
         style={panelStyle}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border bg-accent px-3 py-1.5 text-accent-foreground">
+        <div className="flex items-center justify-between border-b border-base-300 bg-accent px-3 py-1.5 text-accent-content">
           <div className="flex gap-1.5">
-            {!colorPicker.propKey?.startsWith("pallet-") &&
-              colorPicker.propKey !== "pallet-design-system" && (
+            {colorPicker.propKey !== "theme-design-system" && (
                 <Tooltip content="Save to palette">
                   <button
-                    className="flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs text-accent-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    className="flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs text-accent-content transition-colors hover:bg-neutral hover:text-base-content"
                     onClick={saveToPallet}
                   >
                     <TbDeviceFloppy />
@@ -214,7 +214,7 @@ export const ColorPickerDialog = () => {
               <Tooltip content="Eyedropper" arrow={false}>
                 <button
                   onClick={pickColor}
-                  className="flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs text-accent-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs text-accent-content transition-colors hover:bg-neutral hover:text-base-content"
                 >
                   <BsEyedropper />
                 </button>
@@ -223,16 +223,16 @@ export const ColorPickerDialog = () => {
           </div>
           <button
             onClick={close}
-            className="flex items-center justify-center rounded-lg p-1 text-accent-foreground transition-colors hover:bg-accent-foreground/10"
+            className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10"
           >
             <TbX className="size-3.5" />
           </button>
         </div>
 
-        <div className="scrollbar-light flex w-[310px] flex-col overflow-y-auto rounded-lg bg-background" style={{ maxHeight: panelStyle.maxHeight }}>
+        <div className="scrollbar-light flex w-[310px] flex-col overflow-y-auto rounded-lg bg-base-100" style={{ maxHeight: panelStyle.maxHeight }}>
         {/* 1. Design Tokens — always on top when available */}
         {canShowPalette && (
-          <div className="border-b border-border px-2 py-1.5">
+          <div className="border-b border-base-300 px-2 py-1.5">
             <div className="flex flex-wrap gap-1">
               {namedPalette.map((paletteColor, index) => {
                 const isSelected = isPaletteColorSelected(colorPicker.value, paletteColor);
@@ -255,7 +255,7 @@ export const ColorPickerDialog = () => {
                     >
                       <div
                         className={`size-7 rounded-md border-2 transition-all group-hover:scale-110 ${
-                          isSelected ? "border-primary ring-1 ring-primary/30" : "border-border"
+                          isSelected ? "border-primary ring-1 ring-primary/30" : "border-base-300"
                         } ${isTailwindClass ? displayColor : ""}`}
                         style={{
                           backgroundColor: !isTailwindClass ? paletteColor.color : undefined,
@@ -275,13 +275,13 @@ export const ColorPickerDialog = () => {
 
         {/* 2. Recent Colors — small circles, only if there are any */}
         {recentColors.length > 0 && (
-          <div className="flex items-center gap-1.5 border-b border-border px-2 py-1.5">
-            <span className="shrink-0 text-[9px] text-muted-foreground">Recent</span>
+          <div className="flex items-center gap-1.5 border-b border-base-300 px-2 py-1.5">
+            <span className="shrink-0 text-[9px] text-neutral-content">Recent</span>
             <div className="flex flex-1 gap-1">
               {recentColors.map((color, idx) => (
                 <button
                   key={idx}
-                  className="size-5 shrink-0 cursor-pointer rounded-full border border-border transition-all hover:scale-110 hover:border-primary"
+                  className="size-5 shrink-0 cursor-pointer rounded-full border border-base-300 transition-all hover:scale-110 hover:border-primary"
                   style={{ backgroundColor: color }}
                   onClick={() => changed({ type: "hex", value: color })}
                   title={color}
@@ -323,7 +323,7 @@ export const ColorPickerDialog = () => {
             {/* 4. Tailwind Colors — collapsed by default */}
             <div className="px-2 pb-2 pt-1">
               <button
-                className="flex w-full items-center gap-1 py-1 text-[10px] text-muted-foreground hover:text-foreground"
+                className="flex w-full items-center gap-1 py-1 text-[10px] text-neutral-content hover:text-base-content"
                 onClick={() => setShowTailwind(!showTailwind)}
               >
                 {showTailwind ? (
@@ -336,12 +336,12 @@ export const ColorPickerDialog = () => {
 
               {showTailwind && (
                 <div className="flex flex-col gap-1.5 pt-1">
-                  {Array.from({ length: Math.ceil(pallet.length / 11) }).map((_, rowIndex) => (
+                  {Array.from({ length: Math.ceil(twPalette.length / 11) }).map((_, rowIndex) => (
                     <div
                       key={`row-${rowIndex}`}
                       className="relative flex flex-row items-start gap-1"
                     >
-                      {pallet.slice(rowIndex * 11, (rowIndex + 1) * 11).map((colorGroup, k) => {
+                      {twPalette.slice(rowIndex * 11, (rowIndex + 1) * 11).map((colorGroup, k) => {
                         const mainShade =
                           colorGroup.color.find(c => c.key === "500") ||
                           colorGroup.color[Math.floor(colorGroup.color.length / 2)];
@@ -353,7 +353,7 @@ export const ColorPickerDialog = () => {
                             arrow={false}
                           >
                             <button
-                              className="size-5 cursor-pointer rounded border border-border transition-all hover:scale-110 hover:border-primary"
+                              className="size-5 cursor-pointer rounded border border-base-300 transition-all hover:scale-110 hover:border-primary"
                               style={{ backgroundColor: mainShade.color }}
                               onClick={e => {
                                 e.stopPropagation();

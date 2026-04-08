@@ -138,7 +138,7 @@ export const SavedComponentLoader = ({ componentData }) => {
   }, [componentData, actions, query, id, components]);
 
   // Show a placeholder while loading
-  return <div className="p-3 text-muted-foreground">Loading component...</div>;
+  return <div className="p-3 text-neutral-content">Loading component...</div>;
 };
 
 // This needs to have craft config for CraftJS to recognize it
@@ -175,7 +175,7 @@ const SavedComponentDisplay = ({ componentData }) => {
       <button
         onClick={handleDelete}
         onMouseDown={e => e.stopPropagation()}
-        className="pointer-events-auto absolute right-1 top-1 z-10 p-1 text-destructive hover:text-destructive"
+        className="pointer-events-auto absolute right-1 top-1 z-10 p-1 text-error hover:text-error"
         aria-label="Delete component"
       >
         <TbTrash className="text-sm" />

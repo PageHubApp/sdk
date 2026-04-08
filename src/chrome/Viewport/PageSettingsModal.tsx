@@ -167,8 +167,8 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
   const tabClass = (tab: string) =>
     `flex flex-1 items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition-colors ${
       activeTab === tab
-        ? "border-b-2 border-primary bg-background text-primary"
-        : "text-muted-foreground hover:text-foreground"
+        ? "border-b-2 border-primary bg-base-100 text-primary"
+        : "text-neutral-content hover:text-base-content"
     }`;
 
   return ReactDOM.createPortal(
@@ -185,18 +185,18 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
       >
         <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-border bg-accent px-4 py-3 text-accent-foreground">
-            <h2 className="text-2xl font-bold text-foreground">Page Settings</h2>
+          <div className="flex items-center justify-between border-b border-base-300 bg-accent px-4 py-3 text-accent-content">
+            <h2 className="text-2xl font-bold text-base-content">Page Settings</h2>
             <button
               onClick={onClose}
-              className="rounded-lg p-2 text-2xl text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="rounded-lg p-2 text-2xl text-neutral-content hover:bg-neutral hover:text-base-content"
             >
               <TbX />
             </button>
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-border bg-muted">
+          <div className="flex border-b border-base-300 bg-neutral">
             <button onClick={() => setActiveTab("basic")} className={tabClass("basic")}>
               Basic
             </button>
@@ -209,7 +209,7 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
           </div>
 
           {/* Content */}
-          <div className="scrollbar-light flex-1 space-y-4 overflow-y-auto bg-background p-6 text-foreground">
+          <div className="scrollbar-light flex-1 space-y-4 overflow-y-auto bg-base-100 p-6 text-base-content">
             {activeTab === "basic" && (
               <BasicTab
                 pageName={pageName}
@@ -255,7 +255,7 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
           </div>
 
           {/* Footer */}
-          <div className="flex gap-3 border-t border-border bg-muted p-4">
+          <div className="flex gap-3 border-t border-base-300 bg-neutral p-4">
             <button
               type="button"
               onClick={onClose}

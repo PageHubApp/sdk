@@ -4,6 +4,8 @@ import { useAtomState } from "@zedux/react";
 import colors from "tailwindcss/colors";
 import useEyeDropper from "use-eye-dropper";
 import { ColorPickerSidebarAtom } from "./dialogAtoms";
+import { resolveTheme } from "../../../utils/design/resolveTheme";
+import { phStorage } from "../../../utils/phStorage";
 
 /**
  * All state and handlers for the color picker sidebar dialog.
@@ -22,8 +24,8 @@ export function useColorPickerState() {
     if (!dialog.enabled || !query) return;
     try {
       const rootNode = query.node(ROOT_NODE).get();
-      const pagePalette = rootNode?.data?.props?.pallet || [];
-      setPalette(pagePalette);
+      const pagePalette = resolveTheme(rootNode?.data?.props || {}).palette;
+      setPalette(pagePalette as any[]);
     } catch (error) {
       console.error("Failed to load palette:", error);
     }
@@ -32,7 +34,7 @@ export function useColorPickerState() {
   // Load recent colors from localStorage
   useEffect(() => {
     if (dialog.enabled) {
-      const stored = localStorage.getItem("recentColors");
+      const stored = phStorage.get("recent-colors");
       if (stored) {
         try {
           setRecentColors(JSON.parse(stored));
@@ -61,7 +63,7 @@ export function useColorPickerState() {
   const saveToRecent = (color: string) => {
     const updated = [color, ...recentColors.filter(c => c !== color)].slice(0, 12);
     setRecentColors(updated);
-    localStorage.setItem("recentColors", JSON.stringify(updated));
+    phStorage.set("recent-colors", updated);
   };
 
   const handleColorSelect = (type: string, value: string) => {
@@ -101,11 +103,12 @@ export function useColorPickerState() {
     if (!colorName) return;
 
     const rootNode = query.node(ROOT_NODE).get();
-    const currentPalette = rootNode?.data?.props?.pallet || [];
+    const currentPalette = resolveTheme(rootNode?.data?.props || {}).palette;
     const newColor = { name: colorName, color: hexInput };
 
     actions.setProp(ROOT_NODE, (props: any) => {
-      props.pallet = [...currentPalette, newColor];
+      if (!props.theme) props.theme = {};
+      props.theme.palette = [...currentPalette, newColor];
     });
     setPalette([...currentPalette, newColor]);
   };
@@ -113,11 +116,12 @@ export function useColorPickerState() {
   const handleRemoveFromPalette = (colorName: string) => {
     if (!query || !actions) return;
     const rootNode = query.node(ROOT_NODE).get();
-    const currentPalette = rootNode?.data?.props?.pallet || [];
+    const currentPalette = resolveTheme(rootNode?.data?.props || {}).palette;
     const updatedPalette = currentPalette.filter((c: any) => c.name !== colorName);
 
     actions.setProp(ROOT_NODE, (props: any) => {
-      props.pallet = updatedPalette;
+      if (!props.theme) props.theme = {};
+      props.theme.palette = updatedPalette;
     });
     setPalette(updatedPalette);
   };

@@ -45,7 +45,7 @@ export function MorePanel({ editor, onAction, onInsertImage }: MorePanelProps) {
           { align: "right", icon: <MdFormatAlignRight />, label: "Right" },
         ].map(a => (
           <button key={a.align} onClick={onAction(() => editor.chain().focus().setTextAlign(a.align).run())}
-            className={`panel-btn ${editor.isActive({ textAlign: a.align }) ? "bg-muted text-foreground" : ""}`} data-tooltip-id="more-tip" data-tooltip-content={a.label}>
+            className={`panel-btn ${editor.isActive({ textAlign: a.align }) ? "bg-neutral text-base-content" : ""}`} data-tooltip-id="more-tip" data-tooltip-content={a.label}>
             {a.icon}
           </button>
         ))}
@@ -71,11 +71,11 @@ export function MorePanel({ editor, onAction, onInsertImage }: MorePanelProps) {
         <DeleteNodeButton className="panel-btn" />
       </div>
 
-      <div className="flex items-center gap-0.5 border-t border-border pt-1">
-        <span className="mr-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground">Vars</span>
+      <div className="flex items-center gap-0.5 border-t border-base-300 pt-1">
+        <span className="mr-0.5 text-[9px] font-medium uppercase tracking-wider text-neutral-content">Vars</span>
         {VARIABLES.map(v => (
           <button key={v.id} type="button" onClick={onAction(() => (editor.chain().focus() as any).insertVariable({ id: v.id }).run())}
-            className="rounded px-1 py-px text-[10px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+            className="rounded px-1 py-px text-[10px] text-neutral-content transition-colors hover:bg-neutral hover:text-base-content">
             {v.label}
           </button>
         ))}
@@ -90,7 +90,7 @@ function Btn({ onClick, active, tip, icon, onAction }: {
 }) {
   return (
     <button onClick={onAction(onClick)}
-      className={`panel-btn ${active ? "bg-muted text-foreground" : ""}`}
+      className={`panel-btn ${active ? "bg-neutral text-base-content" : ""}`}
       data-tooltip-id="more-tip" data-tooltip-content={tip}>
       {icon}
     </button>

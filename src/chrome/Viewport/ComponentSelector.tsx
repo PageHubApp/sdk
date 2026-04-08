@@ -216,9 +216,9 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
       </button>
 
       {isOpen && (
-        <div className="ph-panel absolute inset-x-0 top-full z-50 mt-1 flex max-h-[500px] flex-col overflow-hidden text-foreground">
+        <div className="ph-panel absolute inset-x-0 top-full z-50 mt-1 flex max-h-[500px] flex-col overflow-hidden text-base-content">
           {/* Search Header - Fixed */}
-          <div className="border-b border-border p-3">
+          <div className="border-b border-base-300 p-3">
             <input
               type="text"
               placeholder="Search components..."
@@ -230,13 +230,13 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
           </div>
 
           {/* Scrollable Content */}
-          <div className="scrollbar flex-1 overflow-y-auto bg-popover text-popover-foreground">
+          <div className="scrollbar flex-1 overflow-y-auto bg-base-100 text-base-content">
             {/* Component List */}
             {filteredComponents.length > 0 ? (
               filteredComponents.map((component, index) => (
                 <div
                   key={index}
-                  className="group flex w-full items-center justify-between px-3 py-2 transition-colors hover:bg-muted"
+                  className="group flex w-full items-center justify-between px-3 py-2 transition-colors hover:bg-neutral"
                 >
                   {editingId === component.rootNodeId ? (
                     // Rename mode
@@ -249,14 +249,14 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
                           if (e.key === "Enter") handleSaveRename(component);
                           if (e.key === "Escape") handleCancelRename();
                         }}
-                        className="flex-1 rounded-lg border border-ring bg-background px-2 py-1 text-sm text-foreground focus:outline-none"
+                        className="flex-1 rounded-lg border border-ring bg-base-100 px-2 py-1 text-sm text-base-content focus:outline-none"
                         autoFocus
                         onClick={e => e.stopPropagation()}
                       />
                       <div className="ml-2 flex items-center gap-1">
                         <button
                           onClick={() => handleSaveRename(component)}
-                          className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                          className="rounded-lg p-1 text-neutral-content transition-colors hover:bg-primary hover:text-primary-content"
                           aria-label="Save"
                         >
                           <TbCheck className="size-5" />
@@ -298,7 +298,7 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
                         onClick={() => handleComponentClick(component)}
                         className="flex flex-1 items-center gap-2 overflow-hidden text-left"
                       >
-                        <span className="truncate text-sm text-foreground">{component.name}</span>
+                        <span className="truncate text-sm text-base-content">{component.name}</span>
                       </button>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
                         <button
@@ -310,7 +310,7 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
                         </button>
                         <button
                           onClick={e => handleDeleteComponent(component, e)}
-                          className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
+                          className="rounded-lg p-1 text-neutral-content transition-colors hover:bg-error hover:text-error-content"
                           aria-label={`Delete ${component.name}`}
                         >
                           <TbTrash className="size-5" />
@@ -321,33 +321,33 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
                 </div>
               ))
             ) : searchTerm ? (
-              <div className="px-3 py-4 text-center text-sm text-muted-foreground">
+              <div className="px-3 py-4 text-center text-sm text-neutral-content">
                 No components found
               </div>
             ) : (
-              <div className="px-3 py-4 text-center text-sm text-muted-foreground">
+              <div className="px-3 py-4 text-center text-sm text-neutral-content">
                 No components yet
               </div>
             )}
           </div>
 
           {/* Footer - Fixed */}
-          <div className="border-t border-border">
+          <div className="border-t border-base-300">
             <button
               onClick={handleCreateComponent}
-              className="flex w-full items-center gap-2 px-3 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground"
+              className="flex w-full items-center gap-2 px-3 py-2 text-neutral-content transition-colors hover:bg-neutral hover:text-neutral-content"
             >
               <TbPlus />
               <span className="text-sm font-medium">Create New Component</span>
             </button>
 
             {/* Import/Export Actions */}
-            <div className="grid grid-cols-2 gap-0 border-t border-border">
-              <button className="flex items-center justify-center gap-1 border-r border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+            <div className="grid grid-cols-2 gap-0 border-t border-base-300">
+              <button className="flex items-center justify-center gap-1 border-r border-base-300 px-3 py-2 text-xs text-neutral-content transition-colors hover:bg-neutral hover:text-base-content">
                 <TbUpload className="size-3" />
                 Import
               </button>
-              <button className="flex items-center justify-center gap-1 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+              <button className="flex items-center justify-center gap-1 px-3 py-2 text-xs text-neutral-content transition-colors hover:bg-neutral hover:text-base-content">
                 <TbDownload className="size-3" />
                 Export
               </button>
@@ -359,4 +359,3 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
   );
 }
 
-export default ComponentSelector;

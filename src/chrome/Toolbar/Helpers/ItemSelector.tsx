@@ -51,7 +51,7 @@ export const ItemToggle = ({ items = [], children, selected, onChange, option = 
             <div role="presentation" aria-hidden="true" className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
 
             {/* Dropdown menu */}
-            <div className="absolute right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-border bg-muted font-sans text-muted-foreground shadow-lg">
+            <div className="absolute right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-base-300 bg-neutral font-sans text-neutral-content shadow-lg">
               {items.map(item => (
                 <button
                   key={item.id}
@@ -59,8 +59,8 @@ export const ItemToggle = ({ items = [], children, selected, onChange, option = 
                     onChange(item.id);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center gap-2 whitespace-nowrap px-3 py-2 text-left font-sans text-xs hover:bg-muted ${
-                    selected === item.id ? "bg-muted" : ""
+                  className={`flex w-full items-center gap-2 whitespace-nowrap px-3 py-2 text-left font-sans text-xs hover:bg-neutral ${
+                    selected === item.id ? "bg-neutral" : ""
                   }`}
                 >
                   <span className="flex size-4 items-center justify-center">{item.icon}</span>

@@ -23,7 +23,11 @@ function applyStylesheetLink() {
     return;
   }
 
-  if (existing?.getAttribute("href") === url) return;
+  if (existing?.getAttribute("href") === url) {
+    // SSR may inject with media="print" for non-blocking load; ensure it's active
+    if (existing.media === "print") existing.media = "all";
+    return;
+  }
 
   if (existing) existing.remove();
   const link = document.createElement("link");

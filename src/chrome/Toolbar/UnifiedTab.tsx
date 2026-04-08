@@ -23,8 +23,8 @@ export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
     <Tooltip content={title} placement="top" arrow={false}>
       <div
         className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-colors ${showActiveColor
-            ? "text-primary-foreground"
-            : "text-secondary-foreground hover:bg-muted hover:text-foreground"
+            ? "text-primary-content"
+            : "text-secondary-content hover:bg-neutral hover:text-base-content"
           }`}
         role="tab"
         aria-selected={isActive}

@@ -59,8 +59,9 @@ const pixelsToTailwindClass = (pixels: number): string => {
 export const UniformPaddingNodeController = () => {
   const { id } = useNode();
 
-  const { isActive } = useEditor((_, query) => ({
+  const { isActive, isHover } = useEditor((_, query) => ({
     isActive: query.getEvent("selected").contains(id),
+    isHover: query.getEvent("hovered").contains(id),
   }));
 
   const dom = document.querySelector(`[node-id="${id}"]`);
@@ -154,7 +155,7 @@ export const UniformPaddingNodeController = () => {
     return closest;
   };
 
-  if (!isActive) return null;
+  if (!isActive || (!isHover && !dragging)) return null;
 
   return (
     <RenderNodeControlInline

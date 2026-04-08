@@ -75,7 +75,7 @@ export interface FormElementProps extends BaseSelectorProps {
 export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   let props: any = {
     root: {},
-    className: "border-solid border-(length:--input-border-width) border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) placeholder:text-(--input-placeholder-color) focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
+    className: "border-solid border-(length:--border) border-(--input-border-color) rounded-field bg-(--input-bg-color) text-(--input-text-color) placeholder:text-(--input-placeholder-color) focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
     canDelete: true,
     type: "",
     placeholder: "",

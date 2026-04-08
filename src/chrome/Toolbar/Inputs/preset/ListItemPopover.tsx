@@ -31,15 +31,15 @@ export const ListItemRow = ({
   return (
     <div
       data-list-row={index}
-      className={`group flex h-8 items-center gap-1 border-b border-border px-1.5 text-sm transition-colors last:border-b-0 ${
+      className={`group flex h-8 items-center gap-1 border-b border-base-300 px-1.5 text-sm transition-colors last:border-b-0 ${
         isActive
-          ? "bg-accent text-accent-foreground"
+          ? "bg-accent text-accent-content"
           : "bg-sidebar text-sidebar-foreground hover:bg-accent/50"
       }`}
     >
       {/* Drag handle */}
       <span
-        className="flex shrink-0 cursor-grab items-center text-muted-foreground opacity-0 group-hover:opacity-100"
+        className="flex shrink-0 cursor-grab items-center text-neutral-content opacity-0 group-hover:opacity-100"
         {...dragHandleProps}
       >
         <TbGripVertical className="h-3.5 w-3.5" />
@@ -63,7 +63,7 @@ export const ListItemRow = ({
       {/* Delete */}
       {onDelete && (
         <button
-          className="flex shrink-0 items-center text-muted-foreground opacity-0 transition-colors hover:text-destructive group-hover:opacity-100"
+          className="flex shrink-0 items-center text-neutral-content opacity-0 transition-colors hover:text-error group-hover:opacity-100"
           onClick={e => {
             e.stopPropagation();
             onDelete();
@@ -76,7 +76,7 @@ export const ListItemRow = ({
 
       {/* Chevron indicator */}
       <TbChevronRight
-        className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${
+        className={`h-3.5 w-3.5 shrink-0 text-neutral-content transition-transform ${
           isActive ? "rotate-90" : ""
         }`}
       />
@@ -101,7 +101,7 @@ const DetailPanel = ({
   return (
     <div
       ref={panelRef}
-      className="border-t border-border bg-card p-3"
+      className="border-t border-base-300 bg-base-200 p-3"
     >
       <div className="flex flex-col gap-3">{children}</div>
     </div>
@@ -134,7 +134,7 @@ export const ListEditor = ({
   return (
     <div className="flex flex-col gap-2">
       {items.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-hidden rounded-lg border border-base-300">
           {items.map((item, index) => (
             <React.Fragment key={item.id ?? index}>
               <ListItemRow

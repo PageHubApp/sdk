@@ -133,11 +133,11 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
   const tabClass = (tab: string) =>
     `flex flex-1 items-center justify-center gap-1.5 px-2 py-1.5 text-xs font-medium transition-colors ${
       activeTab === tab
-        ? "border-b-2 border-primary bg-background text-primary"
-        : "text-muted-foreground hover:text-foreground"
+        ? "border-b-2 border-primary bg-base-100 text-primary"
+        : "text-neutral-content hover:text-base-content"
     }`;
 
-  const inputClass = "w-full rounded-lg border border-border bg-input px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+  const inputClass = "w-full rounded-lg border border-base-300 bg-input px-4 py-2 text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
     <FloatingPanel
@@ -154,7 +154,7 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
       edges={["e", "s", "se", "w", "sw"]}
     >
           {/* Tabs */}
-          <div className="flex border-b border-border bg-muted">
+          <div className="flex border-b border-base-300 bg-neutral">
             <button onClick={() => setActiveTab("branding")} className={tabClass("branding")}>
               Branding
             </button>
@@ -173,7 +173,7 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
           </div>
 
           {/* Content */}
-          <div className="scrollbar-light flex-1 space-y-4 overflow-y-auto bg-background p-6 text-foreground">
+          <div className="scrollbar-light flex-1 space-y-4 overflow-y-auto bg-base-100 p-6 text-base-content">
             {activeTab === "code" && (
               <CodeTab
                 headerCode={headerCode} setHeaderCode={setHeaderCode}
@@ -220,7 +220,7 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
           </div>
 
           {/* Footer */}
-          <div className="flex gap-3 border-t border-border bg-muted p-4">
+          <div className="flex gap-3 border-t border-base-300 bg-neutral p-4">
             <button
               type="button"
               onClick={onClose}

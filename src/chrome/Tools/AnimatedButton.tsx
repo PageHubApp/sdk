@@ -17,7 +17,7 @@ export const AnimatedTooltipButton = ({
   content,
   placement = "bottom",
   children,
-  className = "flex h-8 w-8 flex-row items-center justify-center gap-3 rounded-full border border-border bg-primary text-base text-primary-foreground shadow-inner transition-colors hover:bg-primary",
+  className = "flex h-8 w-8 flex-row items-center justify-center gap-3 rounded-full border border-base-300 bg-primary text-base text-primary-content shadow-inner transition-colors hover:bg-primary",
   ...props
 }) => (
   <Tooltip content={content} placement={placement}>
@@ -27,4 +27,3 @@ export const AnimatedTooltipButton = ({
   </Tooltip>
 );
 
-export default AnimatedButton;

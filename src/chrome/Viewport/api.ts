@@ -4,6 +4,7 @@
 
 import lz from "lzutf8";
 import { getPageHubApiBaseUrl } from "../../runtimeApi";
+import { phStorage } from "../../utils/phStorage";
 
 const getApiBase = () => getPageHubApiBaseUrl();
 
@@ -85,7 +86,7 @@ export const SaveToServer = async (
   sessionToken: string | null = null
 ) => {
   const content = lz.encodeBase64(lz.compress(json));
-  localStorage.setItem("draft", content);
+  phStorage.set("draft", content);
 
   const _id = settings?._id || "";
   const r: any = { _id };
@@ -112,14 +113,14 @@ export const SaveToServer = async (
   }
 
   if (result && result._id) {
-    const lsIds = JSON.parse(localStorage.getItem("history") || "[]") || [];
+    const lsIds = phStorage.getJSON("history", []);
     if (!lsIds.find((_: any) => _._id === result._id)) {
       lsIds.push({ _id: result._id, draftId: result?.title || result?.draftId });
-      localStorage.setItem("history", JSON.stringify(lsIds));
+      phStorage.set("history", lsIds);
     }
     if (result._id !== _id) {
       window.history.pushState(result._id, result._id, `/build/${result._id}`);
-      localStorage.setItem("_id", result._id);
+      phStorage.set("site-id", result._id);
       setSettings(result);
     }
   }

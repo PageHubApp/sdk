@@ -1,6 +1,8 @@
 import { ROOT_NODE } from "@craftjs/core";
 import colors from "tailwindcss/colors";
 import { DEFAULT_STYLE_GUIDE } from "../defaults";
+import { oklchToHex } from "./contentColor";
+import { resolveTheme } from "./resolveTheme";
 
 /**
  * Color System Utilities
@@ -101,8 +103,8 @@ export const varNameToPaletteName = (varName: string): string => {
 
 /**
  * Convert a palette display name to its CSS var name
- * e.g., "Primary Foreground" → "primary-foreground"
- * e.g., "Background" → "background"
+ * e.g., "Primary Content" → "primary-content"
+ * e.g., "Base 100" → "base-100"
  */
 export const paletteNameToShadcnVar = (paletteName: string): string => {
   return paletteNameToVarName(paletteName);
@@ -146,7 +148,7 @@ export const resolveCSSVariable = (value: string, query: any = null): string => 
   }
 
   // Extract CSS variable name from patterns like:
-  // - "font-(--heading-font-family)"
+  // - "font-heading"
   // - "var(--heading-font-family)"
   // - legacy: "var(--ph-heading-font-family)"
   const varMatch = value.match(/var\((--(?:ph-)?[^)]+)\)/);
@@ -171,8 +173,9 @@ export const resolveCSSVariable = (value: string, query: any = null): string => 
 
       if (root && root.data.props) {
         // Check style guide
-        if (root.data.props.styleGuide) {
-          const styleGuide = root.data.props.styleGuide;
+        const theme = resolveTheme(root.data.props);
+        if (theme.styleGuide) {
+          const styleGuide = theme.styleGuide;
           // Convert CSS var name to camelCase property name
           // heading-font-family → headingFontFamily
           const propName = rawName
@@ -184,8 +187,8 @@ export const resolveCSSVariable = (value: string, query: any = null): string => 
         }
 
         // Check typography
-        if (root.data.props.typography && Array.isArray(root.data.props.typography)) {
-          for (const font of root.data.props.typography) {
+        if (theme.typography && Array.isArray(theme.typography)) {
+          for (const font of theme.typography) {
             if (font && font.name) {
               // Convert font name to CSS var name
               const fontVarName =
@@ -280,6 +283,11 @@ export const resolveColorForDisplay = (
         return resolveColorForDisplay(paletteColor.color, "", palette);
       }
     }
+  }
+
+  // Handle oklch values — convert to hex for display
+  if (bg.startsWith("oklch(")) {
+    return { backgroundColor: oklchToHex(bg) };
   }
 
   // Handle hex/rgba/rgb values

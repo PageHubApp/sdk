@@ -1,6 +1,6 @@
 /**
  * Font family on nodes is stored only as Tailwind classes:
- * - Design tokens: `font-(--heading-font-family)`
+ * - Design tokens: `font-heading`
  * - Google Fonts: `font-['Playfair_Display']` (spaces in name → underscores)
  */
 

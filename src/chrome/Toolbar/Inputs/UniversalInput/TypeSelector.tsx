@@ -68,14 +68,14 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
     return (
       <>
         <div ref={mergedRef} className="relative">
-          <div className="flex h-5 items-center gap-0 rounded-md bg-background">
+          <div className="flex h-5 items-center gap-0 rounded-md bg-base-100">
             {/* Icon/Label part - opens calc dialog when calc is selected */}
             <button
               onClick={e => {
                 e.stopPropagation();
                 setIsOpen(!isOpen);
               }}
-              className="flex min-w-5 items-center justify-center p-0 text-[9px] font-medium text-muted-foreground hover:text-foreground"
+              className="flex min-w-5 items-center justify-center p-0 text-[9px] font-medium text-neutral-content hover:text-base-content"
               title={"Change type selector"}
             >
               {selectedLabel}
@@ -98,8 +98,8 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
                     onTypeChange(type.id);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center justify-center rounded-md px-3 py-1.5 text-xs hover:bg-muted ${
-                    selectedType === type.id ? "bg-muted font-semibold" : ""
+                  className={`flex w-full items-center justify-center rounded-md px-3 py-1.5 text-xs hover:bg-neutral ${
+                    selectedType === type.id ? "bg-neutral font-semibold" : ""
                   }`}
                 >
                   {type.label}

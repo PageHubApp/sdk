@@ -5,6 +5,7 @@ import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import React, { useEffect, useRef, useState } from "react";
 import { TbContainer } from "react-icons/tb";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../utils/defaults";
+import { resolveTheme } from "../utils/design/resolveTheme";
 import { useLazyBackground } from "../utils/hooks/useLazyBackground";
 
 import { Box } from "@pagehub/ui";
@@ -28,35 +29,12 @@ export interface NamedColor {
 export interface ContainerProps extends BaseSelectorProps {
   activeTab?: number;
   "data-renderer"?: boolean;
-  pallet?: NamedColor[];
-  darkPallet?: NamedColor[];
-  darkModeEnabled?: boolean;
-  typography?: any[];
-  styleGuide?: {
-    borderRadius?: string;
-    buttonPadding?: string;
-    containerPadding?: string;
-    sectionGap?: string;
-    containerGap?: string;
-    contentWidth?: string;
-    headingFont?: string;
-    headingFontFamily?: string;
-    bodyFont?: string;
-    bodyFontFamily?: string;
-    shadowStyle?: string;
-    inputBorderWidth?: string;
-    inputBorderColor?: string;
-    inputBorderRadius?: string;
-    inputPadding?: string;
-    inputBgColor?: string;
-    inputTextColor?: string;
-    inputPlaceholderColor?: string;
-    inputFocusRing?: string;
-    inputFocusRingColor?: string;
-    linkColor?: string;
-    linkHoverColor?: string;
-    linkUnderline?: string;
-    linkUnderlineOffset?: string;
+  theme?: {
+    palette?: NamedColor[];
+    darkPalette?: NamedColor[];
+    darkModeEnabled?: boolean;
+    styleGuide?: Record<string, any>;
+    typography?: any[];
   };
   header?: string;
   footer?: string;
@@ -102,16 +80,13 @@ export interface ContainerProps extends BaseSelectorProps {
 
 export function Background({
   type = "background",
-  pallet = DEFAULT_PALETTE,
-  typography = [],
-  styleGuide = DEFAULT_STYLE_GUIDE,
   backgroundFetchPriority = "low",
   backgroundPlaceholder = "rgba(0, 0, 0, 0.05)",
   pageMedia = [],
   savedComponents = [],
   ...rest
 }: Partial<ContainerProps>) {
-  let props: any = { type, pallet, typography, styleGuide, backgroundFetchPriority, backgroundPlaceholder, pageMedia, savedComponents, ...rest };
+  let props: any = { type, backgroundFetchPriority, backgroundPlaceholder, pageMedia, savedComponents, ...rest };
   const { children } = props;
 
   const { enabled, query, nodeCount } = useEditor((state) => ({
@@ -180,7 +155,7 @@ export function Background({
   }
 
   prop.children = (
-    <PaletteProvider palette={props.pallet || []}>
+    <PaletteProvider palette={resolveTheme(props).palette}>
       <RenderPattern
         props={props}
         settings={settings}

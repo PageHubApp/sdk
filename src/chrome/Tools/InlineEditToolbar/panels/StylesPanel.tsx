@@ -1,5 +1,6 @@
 import { Editor } from "@tiptap/react";
 import { ROOT_NODE, useEditor as useCraftEditor } from "@craftjs/core";
+import { resolveTheme } from "../../../../utils/design/resolveTheme";
 
 interface StylesPanelProps {
   editor: Editor;
@@ -9,10 +10,10 @@ interface StylesPanelProps {
 export function StylesPanel({ editor, onAction }: StylesPanelProps) {
   const { query } = useCraftEditor();
   const rootNode = query.node(ROOT_NODE).get();
-  const typography = (rootNode?.data?.props as Record<string, unknown>)?.typography as Array<Record<string, string>> || [];
+  const typography = (resolveTheme(rootNode?.data?.props || {}).typography || []) as Array<Record<string, string>>;
 
   if (typography.length === 0) {
-    return <div className="px-3 py-2 text-xs text-muted-foreground">No typography styles defined in Design System</div>;
+    return <div className="px-3 py-2 text-xs text-neutral-content">No typography styles defined in Design System</div>;
   }
 
   return (
@@ -32,8 +33,8 @@ export function StylesPanel({ editor, onAction }: StylesPanelProps) {
             className="flex items-center gap-2 rounded-md px-3 py-1.5 text-left transition-colors hover:bg-accent/50"
             style={{ fontFamily: font.fontFamily, fontSize: "13px" }}
           >
-            <span className="text-sm font-medium text-foreground">{font.name}</span>
-            <span className="text-[10px] text-muted-foreground">{font.fontFamily}</span>
+            <span className="text-sm font-medium text-base-content">{font.name}</span>
+            <span className="text-[10px] text-neutral-content">{font.fontFamily}</span>
           </button>
         );
       })}

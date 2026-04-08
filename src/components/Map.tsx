@@ -163,7 +163,7 @@ export const Map = (incomingProps: MapProps) => {
       return (
         <React.Suspense
           fallback={
-            <div className="flex size-full items-center justify-center text-muted-foreground">
+            <div className="flex size-full items-center justify-center text-neutral-content">
               Loading map...
             </div>
           }

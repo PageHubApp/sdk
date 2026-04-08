@@ -8,6 +8,7 @@ import { useResizable } from "../../../../hooks/useResizable";
 import { cleanSvg, sortMedia, type MediaItem, type SortDirection, type SortField } from "../utils/media-helpers";
 import { useMediaUpload } from "./useMediaUpload";
 import { useAiGeneration } from "./useAiGeneration";
+import { phStorage } from "../../../../../utils/phStorage";
 
 interface UseMediaManagerOptions {
   isOpen: boolean;
@@ -43,7 +44,7 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
   // ─── View state ───
   const [viewMode, setViewMode] = useState<"cards" | "list">(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("pagehub-media-manager-view");
+      const saved = phStorage.get("media-view");
       return saved === "list" || saved === "cards" ? saved : "cards";
     }
     return "cards";
@@ -228,7 +229,7 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("pagehub-media-manager-view", viewMode);
+      phStorage.set("media-view", viewMode);
     }
   }, [viewMode]);
 

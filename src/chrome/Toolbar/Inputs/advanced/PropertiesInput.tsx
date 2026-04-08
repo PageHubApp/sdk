@@ -90,7 +90,7 @@ function DataAttributesEditor() {
     <ToolbarSection title="Data Attributes" nested collapsible defaultOpen={false}>
       {dataAttributes.map((attr, i) => (
         <div key={i} className="flex items-center gap-1">
-          <span className="text-xs text-muted-foreground">data-</span>
+          <span className="text-xs text-neutral-content">data-</span>
           <input
             type="text"
             value={attr.key}
@@ -108,7 +108,7 @@ function DataAttributesEditor() {
           <button
             type="button"
             onClick={() => removeAttribute(i)}
-            className="rounded p-1 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+            className="rounded p-1 text-neutral-content hover:bg-error hover:text-error-content"
           >
             <TbTrash size={12} />
           </button>
@@ -116,7 +116,7 @@ function DataAttributesEditor() {
       ))}
 
       <div className="flex items-center gap-1">
-        <span className="text-xs text-muted-foreground">data-</span>
+        <span className="text-xs text-neutral-content">data-</span>
         <input
           type="text"
           value={newKey}
@@ -136,7 +136,7 @@ function DataAttributesEditor() {
         <button
           type="button"
           onClick={addAttribute}
-          className="rounded p-1 text-muted-foreground hover:bg-primary hover:text-primary-foreground"
+          className="rounded p-1 text-neutral-content hover:bg-primary hover:text-primary-content"
         >
           <TbPlus size={12} />
         </button>

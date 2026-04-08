@@ -120,21 +120,21 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
       <div style={style} className="pagehub-sdk-root pointer-events-auto z-10000" data-calc-dialog>
         <div className="ph-panel overflow-hidden">
           {/* Header */}
-          <div className="border-b border-border bg-muted px-3 py-2">
+          <div className="border-b border-base-300 bg-neutral px-3 py-2">
             <div className="toolbar-label font-semibold">CSS Functions</div>
-            <div className="text-xs text-muted-foreground">Use calc, clamp, min, max, or var</div>
+            <div className="text-xs text-neutral-content">Use calc, clamp, min, max, or var</div>
           </div>
 
           {/* Function buttons */}
-          <div className="flex gap-1 border-b border-border bg-muted/50 p-2">
+          <div className="flex gap-1 border-b border-base-300 bg-neutral/50 p-2">
             {cssFunction.map(fn => (
               <button
                 key={fn.id}
                 onClick={() => insertFunction(fn.id, fn.example)}
                 className={`rounded px-2 py-1 font-mono text-xs transition-colors ${
                   activeFunction === fn.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background text-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-content"
+                    : "bg-base-100 text-base-content hover:bg-neutral"
                 }`}
               >
                 {fn.label}
@@ -147,64 +147,64 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
             {activeFunction === "clamp" ? (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <label className="w-16 text-xs text-muted-foreground">Min</label>
+                  <label className="w-16 text-xs text-neutral-content">Min</label>
                   <input
                     type="text"
                     value={clampMin}
                     onChange={e => setClampMin(e.target.value)}
                     placeholder="1rem"
-                    className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex-1 rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
                     autoFocus
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="w-16 text-xs text-muted-foreground">Preferred</label>
+                  <label className="w-16 text-xs text-neutral-content">Preferred</label>
                   <input
                     type="text"
                     value={clampPreferred}
                     onChange={e => setClampPreferred(e.target.value)}
                     placeholder="5vw"
-                    className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex-1 rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="w-16 text-xs text-muted-foreground">Max</label>
+                  <label className="w-16 text-xs text-neutral-content">Max</label>
                   <input
                     type="text"
                     value={clampMax}
                     onChange={e => setClampMax(e.target.value)}
                     placeholder="3rem"
-                    className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex-1 rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
-                <div className="mt-1 rounded bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
+                <div className="mt-1 rounded bg-neutral px-3 py-2 font-mono text-xs text-neutral-content">
                   {buildStructuredValue()}
                 </div>
               </div>
             ) : activeFunction === "min" || activeFunction === "max" ? (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <label className="w-16 text-xs text-muted-foreground">Value A</label>
+                  <label className="w-16 text-xs text-neutral-content">Value A</label>
                   <input
                     type="text"
                     value={clampMin}
                     onChange={e => setClampMin(e.target.value)}
                     placeholder={activeFunction === "min" ? "50vw" : "50vw"}
-                    className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex-1 rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
                     autoFocus
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="w-16 text-xs text-muted-foreground">Value B</label>
+                  <label className="w-16 text-xs text-neutral-content">Value B</label>
                   <input
                     type="text"
                     value={clampMax}
                     onChange={e => setClampMax(e.target.value)}
                     placeholder={activeFunction === "min" ? "500px" : "300px"}
-                    className="flex-1 rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex-1 rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
-                <div className="mt-1 rounded bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
+                <div className="mt-1 rounded bg-neutral px-3 py-2 font-mono text-xs text-neutral-content">
                   {buildStructuredValue()}
                 </div>
               </div>
@@ -214,11 +214,11 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
                   value={inputValue}
                   onChange={e => setInputValue(e.target.value)}
                   placeholder="e.g. calc(100% - 20px)"
-                  className="w-full rounded border border-border bg-background px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
                   rows={4}
                   autoFocus
                 />
-                <div className="mt-2 text-xs text-muted-foreground">
+                <div className="mt-2 text-xs text-neutral-content">
                   Examples: calc(100% - 20px), clamp(1rem, 5vw, 3rem), min(50vw, 500px)
                 </div>
               </>
@@ -226,7 +226,7 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 border-t border-border bg-muted/50 p-2">
+          <div className="flex gap-2 border-t border-base-300 bg-neutral/50 p-2">
             <button
               type="button"
               onClick={() => onSave(buildStructuredValue())}

@@ -44,7 +44,7 @@ function buildDropdownChildren() {
       icon={{ value: chevronSvg, position: "right", only: false }}
       canDelete={true}
       canEditName={true}
-      className="px-(--button-padding-x) py-(--button-padding-y) bg-(--primary) text-(--primary-foreground) rounded-(--radius) flex items-center gap-1"
+      className="px-(--button-padding-x) py-(--button-padding-y) bg-primary text-primary-content rounded-box flex items-center gap-1"
     />,
     // Dropdown Panel
     <Element
@@ -54,28 +54,28 @@ function buildDropdownChildren() {
       custom={{ displayName: "Dropdown Panel" }}
       canDelete={true}
       canEditName={true}
-      className="absolute top-full left-0 z-50 hidden group-focus-within:flex flex-col min-w-48 mt-1 bg-(--card) text-(--card-foreground) shadow-lg rounded-(--radius) border border-(--border) py-1 overflow-hidden"
+      className="absolute top-full left-0 z-50 hidden group-focus-within:flex flex-col min-w-48 mt-1 bg-base-200 text-base-content shadow-lg rounded-box border border-base-300 py-1 overflow-hidden"
     >
       <Element
         is={Button}
         custom={{ displayName: "Option 1" }}
         text="Option 1"
         url="#"
-        className="w-full px-4 py-2 text-left text-sm hover:bg-(--muted) rounded-none border-0"
+        className="w-full px-4 py-2 text-left text-sm hover:bg-neutral rounded-none border-0"
       />
       <Element
         is={Button}
         custom={{ displayName: "Option 2" }}
         text="Option 2"
         url="#"
-        className="w-full px-4 py-2 text-left text-sm hover:bg-(--muted) rounded-none border-0"
+        className="w-full px-4 py-2 text-left text-sm hover:bg-neutral rounded-none border-0"
       />
       <Element
         is={Button}
         custom={{ displayName: "Option 3" }}
         text="Option 3"
         url="#"
-        className="w-full px-4 py-2 text-left text-sm hover:bg-(--muted) rounded-none border-0"
+        className="w-full px-4 py-2 text-left text-sm hover:bg-neutral rounded-none border-0"
       />
     </Element>,
   ];

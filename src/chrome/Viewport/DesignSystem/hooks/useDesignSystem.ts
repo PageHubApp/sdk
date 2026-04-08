@@ -2,7 +2,9 @@ import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtomState } from "@zedux/react";
 import { resolveColorForDisplay } from "utils/design/colorSystem";
+import { colorToOklch, oklchToHex } from "utils/design/contentColor";
 import { DEFAULT_PALETTE, DEFAULT_DARK_PALETTE, DEFAULT_STYLE_GUIDE } from "utils/defaults";
+import { resolveTheme, writeTheme } from "utils/design/resolveTheme";
 import { getStyleSheets } from "utils/lib";
 import { fonts } from "utils/tailwind";
 import { ColorPickerAtom } from "../../../Toolbar/Tools/ColorPickerDialog";
@@ -26,7 +28,13 @@ export interface CustomFont {
 }
 
 export interface StyleGuideState {
-  borderRadius: string;
+  radiusBox: string;
+  radiusField: string;
+  radiusSelector: string;
+  sizeField: string;
+  sizeSelector: string;
+  depth: string;
+  noise: string;
   buttonPadding: string;
   containerPadding: string;
   sectionGap: string;
@@ -45,9 +53,8 @@ export interface StyleGuideState {
   bodyFontFamily: string;
   shadowStyle: string;
   // Form inputs
-  inputBorderWidth: string;
+  border: string;
   inputBorderColor: string;
-  inputBorderRadius: string;
   inputPadding: string;
   inputBgColor: string;
   inputTextColor: string;
@@ -116,7 +123,7 @@ export function useDesignSystem(isOpen: boolean) {
   // Save tracking
   const isSaving = useRef(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSavedData = useRef<{ pallet: PaletteColor[]; darkPallet?: PaletteColor[]; darkModeEnabled?: boolean; styleGuide: StyleGuideState; typography?: CustomFont[] } | null>(null);
+  const lastSavedData = useRef<{ palette: PaletteColor[]; darkPalette?: PaletteColor[]; darkModeEnabled?: boolean; styleGuide: StyleGuideState; typography?: CustomFont[] } | null>(null);
 
   // Subscribe to ROOT_NODE changes (undo/redo)
   const rootNodeData = useEditor(state => {
@@ -124,11 +131,14 @@ export function useDesignSystem(isOpen: boolean) {
     return (rootNode?.data?.props || {}) as Record<string, unknown>;
   });
 
+  // Resolve theme from ROOT
+  const rootTheme = useMemo(() => resolveTheme(rootNodeData as Record<string, any>), [rootNodeData.theme]);
+
   // Stable JSON keys for dependency tracking (avoids infinite loops from new object refs)
-  const rootPalletJson = useMemo(() => JSON.stringify(rootNodeData.pallet), [rootNodeData.pallet]);
-  const rootDarkPalletJson = useMemo(() => JSON.stringify(rootNodeData.darkPallet), [rootNodeData.darkPallet]);
-  const rootStyleGuideJson = useMemo(() => JSON.stringify(rootNodeData.styleGuide), [rootNodeData.styleGuide]);
-  const rootTypographyJson = useMemo(() => JSON.stringify(rootNodeData.typography), [rootNodeData.typography]);
+  const rootPaletteJson = useMemo(() => JSON.stringify(rootTheme.palette), [rootTheme.palette]);
+  const rootDarkPaletteJson = useMemo(() => JSON.stringify(rootTheme.darkPalette), [rootTheme.darkPalette]);
+  const rootStyleGuideJson = useMemo(() => JSON.stringify(rootTheme.styleGuide), [rootTheme.styleGuide]);
+  const rootTypographyJson = useMemo(() => JSON.stringify(rootTheme.typography), [rootTheme.typography]);
 
   // ─── Style field updater ───
   const updateStyle = <K extends keyof StyleGuideState>(key: K, value: StyleGuideState[K]) => {
@@ -139,24 +149,24 @@ export function useDesignSystem(isOpen: boolean) {
   const loadFromRootNode = () => {
     try {
       // Palette
-      if (rootNodeData.pallet && Array.isArray(rootNodeData.pallet)) {
-        setPalettes(rootNodeData.pallet as PaletteColor[]);
+      if (rootTheme.palette && rootTheme.palette.length) {
+        setPalettes(rootTheme.palette as PaletteColor[]);
       } else {
         setPalettes(DEFAULT_PALETTE);
       }
 
       // Dark palette
-      if (rootNodeData.darkPallet && Array.isArray(rootNodeData.darkPallet)) {
-        setDarkPalettes(rootNodeData.darkPallet as PaletteColor[]);
+      if (rootTheme.darkPalette && rootTheme.darkPalette.length) {
+        setDarkPalettes(rootTheme.darkPalette as PaletteColor[]);
         setDarkModeEnabled(true);
       } else {
         setDarkPalettes(DEFAULT_DARK_PALETTE);
-        setDarkModeEnabled(!!rootNodeData.darkModeEnabled);
+        setDarkModeEnabled(!!rootTheme.darkModeEnabled);
       }
 
       // Typography
-      if (rootNodeData.typography && Array.isArray(rootNodeData.typography)) {
-        const migratedFonts = (rootNodeData.typography as Record<string, unknown>[]).map(font => ({
+      if (rootTheme.typography && rootTheme.typography.length) {
+        const migratedFonts = (rootTheme.typography as Record<string, unknown>[]).map(font => ({
           ...font,
           fontFamily: Array.isArray(font.fontFamily) ? (font.fontFamily as string[])[0] : font.fontFamily,
           letterSpacing: font.letterSpacing || "normal",
@@ -168,7 +178,7 @@ export function useDesignSystem(isOpen: boolean) {
       }
 
       // Style guide
-      const sg = (rootNodeData.styleGuide || {}) as Record<string, string>;
+      const sg = (rootTheme.styleGuide || {}) as Record<string, string>;
       const def = DEFAULT_STYLE_GUIDE as Record<string, string>;
       const loaded: Record<string, string> = {};
       for (const key of Object.keys(DEFAULT_STYLE_GUIDE)) {
@@ -177,11 +187,11 @@ export function useDesignSystem(isOpen: boolean) {
       setStyles(loaded as unknown as StyleGuideState);
 
       lastSavedData.current = {
-        pallet: rootNodeData.pallet as PaletteColor[],
-        darkPallet: rootNodeData.darkPallet as PaletteColor[],
-        darkModeEnabled: !!rootNodeData.darkModeEnabled,
+        palette: rootTheme.palette as PaletteColor[],
+        darkPalette: rootTheme.darkPalette as PaletteColor[],
+        darkModeEnabled: !!rootTheme.darkModeEnabled,
         styleGuide: loaded as unknown as StyleGuideState,
-        typography: rootNodeData.typography as CustomFont[],
+        typography: rootTheme.typography as CustomFont[],
       };
     } catch (e) {
       console.error("Error loading design system:", e);
@@ -196,6 +206,8 @@ export function useDesignSystem(isOpen: boolean) {
   const getColorPreview = (colorValue: unknown): string => {
     if (!colorValue) return "#3b82f6";
     const colorStr = typeof colorValue === "string" ? colorValue : String(colorValue);
+    // oklch → hex for the color swatch display
+    if (colorStr.startsWith("oklch(")) return oklchToHex(colorStr);
     const resolved = resolveColorForDisplay(colorStr, "", activePalettes);
     return resolved.backgroundColor || "#3b82f6";
   };
@@ -232,7 +244,8 @@ export function useDesignSystem(isOpen: boolean) {
       colorValue = String(color);
     }
 
-    newPalettes[index] = { ...newPalettes[index], color: colorValue };
+    // Store as oklch natively
+    newPalettes[index] = { ...newPalettes[index], color: colorToOklch(colorValue) };
     setActivePalettes(newPalettes);
   };
 
@@ -242,12 +255,12 @@ export function useDesignSystem(isOpen: boolean) {
     const rect = buttonRef.getBoundingClientRect();
     setColorDialog({
       enabled: true,
-      value: activePalettes[index].color,
+      value: activePalettes[index].color.startsWith("oklch(") ? oklchToHex(activePalettes[index].color) : activePalettes[index].color,
       prefix: "",
       changed: (value: unknown) => updateColor(index, value),
       e: rect,
       mode: "picker",
-      propKey: "pallet-design-system",
+      propKey: "theme-design-system",
     });
   };
 
@@ -257,7 +270,7 @@ export function useDesignSystem(isOpen: boolean) {
     setActivePalettes(newPalettes);
   };
 
-  const addColor = () => setActivePalettes([...activePalettes, { name: "New Color", color: "#3b82f6" }]);
+  const addColor = () => setActivePalettes([...activePalettes, { name: "New Color", color: "oklch(62% 0.214 259)" }]);
   const deleteColor = (index: number) => setActivePalettes(activePalettes.filter((_, i) => i !== index));
 
   const toggleDarkMode = () => {
@@ -265,14 +278,15 @@ export function useDesignSystem(isOpen: boolean) {
       // Enabling dark mode — seed with only core semantic tokens that typically change.
       // Colors not listed here inherit their light-mode value automatically.
       const DARK_SEED_NAMES = new Set([
-        "Primary", "Primary Foreground",
-        "Secondary", "Secondary Foreground",
-        "Accent", "Accent Foreground",
-        "Muted", "Muted Foreground",
-        "Background", "Foreground",
-        "Card", "Card Foreground",
-        "Popover", "Popover Foreground",
-        "Destructive", "Destructive Foreground",
+        "Primary", "Primary Content",
+        "Secondary", "Secondary Content",
+        "Accent", "Accent Content",
+        "Neutral", "Neutral Content",
+        "Base 100", "Base 200", "Base 300", "Base Content",
+        "Error", "Error Content",
+        "Info", "Info Content",
+        "Success", "Success Content",
+        "Warning", "Warning Content",
         "Border", "Input", "Ring",
       ]);
       const seeded = palettes
@@ -414,22 +428,22 @@ export function useDesignSystem(isOpen: boolean) {
     if (!isOpen || isSaving.current || !lastSavedData.current) return;
 
     const dataChanged =
-      rootPalletJson !== JSON.stringify(lastSavedData.current.pallet) ||
-      rootDarkPalletJson !== JSON.stringify(lastSavedData.current.darkPallet) ||
+      rootPaletteJson !== JSON.stringify(lastSavedData.current.palette) ||
+      rootDarkPaletteJson !== JSON.stringify(lastSavedData.current.darkPalette) ||
       rootStyleGuideJson !== JSON.stringify(lastSavedData.current.styleGuide);
 
     if (dataChanged) {
       // Update lastSavedData BEFORE setting state to prevent re-triggering
       lastSavedData.current = {
-        pallet: rootNodeData.pallet,
-        darkPallet: rootNodeData.darkPallet,
-        darkModeEnabled: !!rootNodeData.darkModeEnabled,
-        styleGuide: rootNodeData.styleGuide,
-        typography: rootNodeData.typography,
+        palette: rootTheme.palette as PaletteColor[],
+        darkPalette: rootTheme.darkPalette as PaletteColor[],
+        darkModeEnabled: !!rootTheme.darkModeEnabled,
+        styleGuide: rootTheme.styleGuide as unknown as StyleGuideState,
+        typography: rootTheme.typography as CustomFont[],
       };
       loadFromRootNode();
     }
-  }, [rootPalletJson, rootDarkPalletJson, rootStyleGuideJson, rootTypographyJson]);
+  }, [rootPaletteJson, rootDarkPaletteJson, rootStyleGuideJson, rootTypographyJson]);
 
   // Debounced auto-save
   useEffect(() => {
@@ -441,18 +455,14 @@ export function useDesignSystem(isOpen: boolean) {
       isSaving.current = true;
       try {
         actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-          props.pallet = palettes;
-          props.typography = customFonts;
-          props.styleGuide = styles;
-          if (darkModeEnabled) {
-            props.darkPallet = darkPalettes;
-            props.darkModeEnabled = true;
-          } else {
-            delete props.darkPallet;
-            delete props.darkModeEnabled;
-          }
+          writeTheme(props as Record<string, any>, {
+            palette: palettes,
+            darkPalette: darkModeEnabled ? darkPalettes : undefined,
+            styleGuide: styles as unknown as Record<string, any>,
+            typography: customFonts,
+          });
         });
-        lastSavedData.current = { pallet: palettes, darkPallet: darkModeEnabled ? darkPalettes : undefined, darkModeEnabled, styleGuide: styles, typography: customFonts };
+        lastSavedData.current = { palette: palettes, darkPalette: darkModeEnabled ? darkPalettes : undefined, darkModeEnabled, styleGuide: styles, typography: customFonts };
       } catch (e) {
         console.error("Error saving design system:", e);
       }

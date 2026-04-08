@@ -44,7 +44,7 @@ export const TabsMainTab = () => {
           method: "class",
           group: groupId,
         }}
-        className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-(--muted-foreground) hover:text-(--foreground) hover:border-(--border) rounded-none"
+        className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-neutral-content hover:text-base-content hover:border-base-300 rounded-none"
       />
     );
 
@@ -58,7 +58,7 @@ export const TabsMainTab = () => {
         tabGroup={groupId}
         canDelete={true}
         canEditName={true}
-        className="flex flex-col gap-(--container-gap) px-(--container-padding-x) py-(--container-padding-y) hidden"
+        className="flex flex-col gap-container px-container-x py-container-y hidden"
       >
         <Element
           is={Text}
@@ -128,14 +128,14 @@ export const TabsMainTab = () => {
 
         <div className="flex gap-2">
           <button
-            className="flex items-center justify-center gap-1.5 flex-1 px-3 py-2 text-xs font-medium rounded border border-border hover:bg-muted transition-colors"
+            className="flex items-center justify-center gap-1.5 flex-1 px-3 py-2 text-xs font-medium rounded border border-base-300 hover:bg-neutral transition-colors"
             onClick={addTab}
           >
             <TbPlus className="w-3.5 h-3.5" />
             Add Tab
           </button>
           <button
-            className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded border border-base-300 hover:bg-neutral transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={removeLastTab}
             disabled={tabCount <= 1}
           >

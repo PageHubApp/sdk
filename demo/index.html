@@ -11,27 +11,44 @@
   <link rel="stylesheet" href="./demo.tailwind.css" />
 
   <style>
-    /* ── CSS variables from tweakcn.css (keep in sync) ──────────────── */
+    /* ── CSS variables from tweakcn.css (DaisyUI 5 tokens) ───────────── */
     :root {
-      --background: hsl(0 0% 100%);
-      --foreground: hsl(0 0% 5.8824%);
-      --card: hsl(0 0% 98.0392%);
-      --card-foreground: hsl(0 0% 5.8824%);
-      --popover: hsl(0 0% 100%);
-      --popover-foreground: hsl(0 0% 5.8824%);
       --primary: hsl(220.8403 56.9378% 59.0196%);
-      --primary-foreground: hsl(0 0% 100%);
+      --primary-content: hsl(0 0% 100%);
       --secondary: hsl(210.0000 40.0000% 96.0784%);
-      --secondary-foreground: hsl(217.2414 32.5843% 17.4510%);
-      --muted: hsl(210.0000 30.7692% 94.9020%);
-      --muted-foreground: hsl(215.3846 16.3180% 46.8627%);
+      --secondary-content: hsl(217.2414 32.5843% 17.4510%);
       --accent: hsl(210.0000 40.0000% 96.0784%);
-      --accent-foreground: hsl(217.2414 32.5843% 17.4510%);
-      --destructive: hsl(0 72.2222% 50.5882%);
-      --destructive-foreground: hsl(0 0% 100%);
-      --border: hsl(214.2857 31.8182% 91.3725%);
-      --input: hsl(214.2857 31.8182% 91.3725%);
+      --accent-content: hsl(217.2414 32.5843% 17.4510%);
+      --neutral: hsl(210.0000 30.7692% 94.9020%);
+      --neutral-content: hsl(215.3846 16.3180% 46.8627%);
+      --base-100: hsl(0 0% 100%);
+      --base-200: hsl(0 0% 98.0392%);
+      --base-300: hsl(214.2857 31.8182% 91.3725%);
+      --base-content: hsl(0 0% 5.8824%);
+      --error: hsl(0 72.2222% 50.5882%);
+      --error-content: hsl(0 0% 100%);
+      --info: hsl(217.2193 91.2195% 59.8039%);
+      --info-content: hsl(0 0% 100%);
+      --success: hsl(142 71% 45%);
+      --success-content: hsl(0 0% 100%);
+      --warning: hsl(38 92% 50%);
+      --warning-content: hsl(0 0% 5.8824%);
       --ring: hsl(217.2193 91.2195% 59.8039%);
+      --border: 1px;
+      /* Backwards-compat aliases */
+      --background: var(--base-100);
+      --foreground: var(--base-content);
+      --card: var(--base-200);
+      --card-foreground: var(--base-content);
+      --popover: var(--base-100);
+      --popover-foreground: var(--base-content);
+      --primary-foreground: var(--primary-content);
+      --secondary-foreground: var(--secondary-content);
+      --accent-foreground: var(--accent-content);
+      --muted: var(--neutral);
+      --muted-foreground: var(--neutral-content);
+      --destructive: var(--error);
+      --destructive-foreground: var(--error-content);
       --sidebar: hsl(210.0000 40.0000% 98.0392%);
       --sidebar-foreground: hsl(0 0% 5.8824%);
       --sidebar-border: hsl(214.2857 31.8182% 91.3725%);
@@ -40,24 +57,26 @@
       --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     .dark {
-      --background: hsl(0 0% 20%);
-      --foreground: hsl(0 0% 90.9804%);
-      --card: hsl(0 0% 23.9216%);
-      --card-foreground: hsl(0 0% 90.9804%);
-      --popover: hsl(0 0% 25.0980%);
-      --popover-foreground: hsl(0 0% 90.9804%);
       --primary: hsl(220.8403 56.9378% 59.0196%);
-      --primary-foreground: hsl(0 0% 100%);
+      --primary-content: hsl(0 0% 100%);
       --secondary: hsl(0 0% 26.6667%);
-      --secondary-foreground: hsl(0 0% 90.9804%);
-      --muted: hsl(0 0% 25.0980%);
-      --muted-foreground: hsl(0 0% 69.0196%);
+      --secondary-content: hsl(0 0% 90.9804%);
       --accent: hsl(0 0% 31.3725%);
-      --accent-foreground: hsl(0 0% 90.9804%);
-      --destructive: hsl(0 72.2222% 50.5882%);
-      --destructive-foreground: hsl(0 0% 100%);
-      --border: hsl(0 0% 35.2941%);
-      --input: hsl(0 0% 26.6667%);
+      --accent-content: hsl(0 0% 90.9804%);
+      --neutral: hsl(0 0% 25.0980%);
+      --neutral-content: hsl(0 0% 69.0196%);
+      --base-100: hsl(0 0% 20%);
+      --base-200: hsl(0 0% 23.9216%);
+      --base-300: hsl(0 0% 25.0980%);
+      --base-content: hsl(0 0% 90.9804%);
+      --error: hsl(0 72.2222% 50.5882%);
+      --error-content: hsl(0 0% 100%);
+      --info: hsl(217.2193 91.2195% 59.8039%);
+      --info-content: hsl(0 0% 90.9804%);
+      --success: hsl(142 71% 45%);
+      --success-content: hsl(0 0% 90.9804%);
+      --warning: hsl(38 92% 50%);
+      --warning-content: hsl(0 0% 90.9804%);
       --ring: hsl(220.8403 56.9378% 59.0196%);
       --sidebar: hsl(0 0% 21.9608%);
       --sidebar-foreground: hsl(0 0% 90.9804%);

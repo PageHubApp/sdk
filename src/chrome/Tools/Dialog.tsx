@@ -183,7 +183,7 @@ function Dialog({ children, target, state, opener }: any): any {
             role="dialog"
             aria-modal="true"
             aria-label="Settings dialog"
-            className="animate-backdrop-in absolute max-w-[320px] select-none flex-col gap-4 overflow-hidden rounded-lg border-2 border-border bg-muted text-foreground shadow-2xl"
+            className="animate-backdrop-in absolute max-w-[320px] select-none flex-col gap-4 overflow-hidden rounded-lg border-2 border-base-300 bg-neutral text-base-content shadow-2xl"
             style={{
               zIndex: 50,
             }}
@@ -194,11 +194,11 @@ function Dialog({ children, target, state, opener }: any): any {
               className="h-8 cursor-move"
               aria-label="Drag to move dialog"
             >
-              <div className="mx-auto mt-[-2px] h-4 w-2/3 rounded-b-md border-2 border-border border-t-primary bg-primary px-3 py-1.5 shadow-inner drop-shadow-lg hover:border-t-primary hover:bg-primary"></div>
+              <div className="mx-auto mt-[-2px] h-4 w-2/3 rounded-b-md border-2 border-base-300 border-t-primary bg-primary px-3 py-1.5 shadow-inner drop-shadow-lg hover:border-t-primary hover:bg-primary"></div>
 
               <div className="flex items-center justify-between">
                 <button
-                  className="absolute left-3 top-2.5 text-muted-foreground"
+                  className="absolute left-3 top-2.5 text-neutral-content"
                   onClick={() => setIsOpen(false)}
                   aria-label="Close dialog"
                 >

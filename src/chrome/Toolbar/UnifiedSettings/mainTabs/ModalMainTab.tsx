@@ -19,7 +19,7 @@ export const ModalMainTab = () => {
     Content: (
       <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="How and when the modal opens, and close behavior.">
         {/* View toggle — collapsed/expanded in editor */}
-        <div className="flex gap-1 rounded-lg bg-muted p-1">
+        <div className="flex gap-1 rounded-lg bg-neutral p-1">
           {VIEW_STATES.map(({ value, label, icon: Icon }) => (
             <button
               key={value}
@@ -27,8 +27,8 @@ export const ModalMainTab = () => {
               onClick={() => actions.setProp(id, (p: any) => { p.view = value; })}
               className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
                 currentView === value
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-base-100 text-base-content shadow-sm"
+                  : "text-neutral-content hover:text-base-content"
               }`}
             >
               <Icon className="size-3.5" />

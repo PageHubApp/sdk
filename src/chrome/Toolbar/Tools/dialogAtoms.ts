@@ -1,6 +1,6 @@
 import { atom } from "@zedux/react";
 
-export const ColorPalletAtom = atom("colorPallet", []);
+export const ColorPaletteAtom = atom("colorPalette", []);
 
 export const ColorPickerAtom = atom("colorPicker", {
   enabled: false,
@@ -9,7 +9,7 @@ export const ColorPickerAtom = atom("colorPicker", {
   changed: null,
   preview: null,
   originalValue: null,
-  showPallet: false,
+  showPalette: false,
   e: null,
   propKey: null,
   mode: "both" as "both" | "palette" | "picker",
@@ -21,7 +21,7 @@ export const ColorPickerSidebarAtom = atom("colorPickerSidebar", {
   value: "",
   prefix: "",
   changed: null,
-  showPallet: true,
+  showPalette: true,
   propKey: null,
 } as any);
 

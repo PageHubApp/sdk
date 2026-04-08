@@ -4,6 +4,7 @@ import { changeProp, getPropFinalValue } from "../../../Viewport/lib";
 import { useMemo, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { usePalette } from "utils/design/PaletteContext";
+import { resolveTheme } from "utils/design/resolveTheme";
 import {
   formatColorForStorage,
   parseColorValue,
@@ -23,7 +24,7 @@ export const ColorInput = (__props: any) => {
     index = null,
     propItemKey = "",
     propType = "class",
-    showPallet = true,
+    showPalette = true,
     onChange = () => {},
     labelHide = false,
     inline = false,
@@ -54,7 +55,7 @@ export const ColorInput = (__props: any) => {
     if (contextPalette && contextPalette.length > 0) return contextPalette;
     try {
       const rootNode = query.node(ROOT_NODE).get();
-      return rootNode?.data?.props?.pallet || [];
+      return resolveTheme(rootNode?.data?.props || {}).palette;
     } catch {
       return [];
     }
@@ -121,7 +122,7 @@ export const ColorInput = (__props: any) => {
           {value && (
             <button
               onClick={handleClear}
-              className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground hover:bg-destructive/90"
+              className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
               title="Clear color"
             >
               ×
@@ -132,7 +133,7 @@ export const ColorInput = (__props: any) => {
 
       {isOpen && (
         <div className="absolute right-0 top-full z-50 mt-1">
-          <div className="rounded-lg border border-border bg-card shadow-xl">
+          <div className="rounded-lg border border-base-300 bg-base-200 shadow-xl">
             <TokenPicker
               variant="panel"
               value={pickerValue}

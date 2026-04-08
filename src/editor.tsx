@@ -345,7 +345,7 @@ function PageHubEditorInner({
           }}
         >
           <div
-            className="relative flex h-full w-full min-h-0 flex-col overflow-hidden bg-muted text-muted-foreground"
+            className="relative flex h-full w-full min-h-0 flex-col overflow-hidden bg-neutral text-neutral-content"
             data-base={true}
           >
             {!readOnly && <EditorSaveBanner />}

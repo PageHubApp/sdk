@@ -93,7 +93,7 @@ class PreviewErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex h-32 w-full items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
+        <div className="flex h-32 w-full items-center justify-center rounded-lg bg-neutral text-xs text-neutral-content">
           Preview unavailable
         </div>
       );
@@ -128,7 +128,7 @@ export const ComponentPreview = React.memo(function ComponentPreview({ component
 
     return (
       <PreviewErrorBoundary>
-        <div className="overflow-hidden bg-(--background) text-(--text)" style={{ zoom: scale, pointerEvents: 'none' }}>
+        <div className="overflow-hidden bg-base-100 text-(--text)" style={{ zoom: scale, pointerEvents: 'none' }}>
           <Editor resolver={resolver} enabled={false}>
             <Frame>{element}</Frame>
           </Editor>
@@ -138,11 +138,10 @@ export const ComponentPreview = React.memo(function ComponentPreview({ component
   } catch (error) {
     console.error("Error rendering component preview:", error);
     return (
-      <div className="flex h-48 w-full items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground">
+      <div className="flex h-48 w-full items-center justify-center rounded-lg border border-base-300 bg-neutral text-neutral-content">
         Failed to render preview
       </div>
     );
   }
 });
 
-export default ComponentPreview;

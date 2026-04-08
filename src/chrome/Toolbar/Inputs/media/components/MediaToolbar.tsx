@@ -75,11 +75,11 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
   } = manager;
 
   return (
-    <div ref={toolbarRef} className="border-b border-border bg-muted px-4 py-1.5">
+    <div ref={toolbarRef} className="border-b border-base-300 bg-neutral px-4 py-1.5">
       <div className="flex items-center gap-2">
         {/* Search */}
         <div className="input-wrapper relative input-hover flex-1 min-w-0">
-          <TbSearch className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
+          <TbSearch className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-neutral-content" />
           <input
             type="text"
             value={searchQuery}
@@ -90,12 +90,12 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
         </div>
 
         {/* View Mode */}
-        <div className="tool-bg gap-1! text-muted-foreground">
+        <div className="tool-bg gap-1! text-neutral-content">
           <Tooltip content="Card view" placement="bottom">
             <button
               onClick={() => setViewMode("cards")}
               type="button"
-              className={`tool-button px-2 ${viewMode === "cards" ? "bg-muted text-foreground shadow-sm" : ""}`}
+              className={`tool-button px-2 ${viewMode === "cards" ? "bg-neutral text-base-content shadow-sm" : ""}`}
             >
               <TbLayoutGrid className="size-5" />
             </button>
@@ -104,7 +104,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
             <button
               onClick={() => setViewMode("list")}
               type="button"
-              className={`tool-button px-2 ${viewMode === "list" ? "bg-muted text-foreground shadow-sm" : ""}`}
+              className={`tool-button px-2 ${viewMode === "list" ? "bg-neutral text-base-content shadow-sm" : ""}`}
             >
               <TbList className="size-5" />
             </button>
@@ -112,7 +112,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
         </div>
 
         {/* Sort */}
-        <div className="tool-bg gap-1! text-muted-foreground">
+        <div className="tool-bg gap-1! text-neutral-content">
           <Tooltip content="Sort by" placement="bottom">
             <select
               value={sortField}
@@ -150,7 +150,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
         </div>
 
         {/* Add Mode */}
-        <div className="tool-bg gap-1! text-muted-foreground">
+        <div className="tool-bg gap-1! text-neutral-content">
           <AddModeButton
             mode="upload"
             icon={<TbUpload className="inline" />}
@@ -214,7 +214,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
               value={urlInput}
               onChange={e => setUrlInput(e.target.value)}
               placeholder="https://example.com/image.jpg"
-              className="input-dialog flex-1 placeholder:text-muted-foreground"
+              className="input-dialog flex-1 placeholder:text-neutral-content"
               onKeyDown={e => e.key === "Enter" && handleAddUrl()}
               autoFocus
             />
@@ -233,13 +233,13 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
               id="saveUrlToCdn"
               checked={saveUrlToCdn}
               onChange={e => setSaveUrlToCdn(e.target.checked)}
-              className="size-4 rounded-lg border-border bg-muted text-accent focus:ring-ring"
+              className="size-4 rounded-lg border-base-300 bg-neutral text-accent focus:ring-ring"
             />
-            <label htmlFor="saveUrlToCdn" className="text-xs text-muted-foreground">
+            <label htmlFor="saveUrlToCdn" className="text-xs text-neutral-content">
               Save to CDN (downloads image to your account)
             </label>
           </div>
-          <div className="mt-2 text-xs text-muted-foreground">
+          <div className="mt-2 text-xs text-neutral-content">
             <TbInfoCircle className="mr-1 inline" /> Tip: You can also paste images directly
             (Ctrl+V / Cmd+V) or use the clipboard button above!
           </div>
@@ -254,7 +254,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
               value={svgInput}
               onChange={e => setSvgInput(e.target.value)}
               placeholder="<svg>...</svg>"
-              className="input-dialog flex-1 min-h-[4.5rem] resize-none font-mono text-xs placeholder:text-muted-foreground"
+              className="input-dialog flex-1 min-h-[4.5rem] resize-none font-mono text-xs placeholder:text-neutral-content"
               rows={3}
               autoFocus
             />
@@ -267,7 +267,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
               Add
             </button>
           </div>
-          <p className="ml-0.5 mt-1.5 text-xs text-muted-foreground">
+          <p className="ml-0.5 mt-1.5 text-xs text-neutral-content">
             Find SVGs @{" "}
             <a
               href="https://www.svgrepo.com/"
@@ -348,7 +348,7 @@ function AddModeButton({
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className={`tool-button px-3 ${activeMode === mode ? "bg-muted text-foreground shadow-sm" : ""}`}
+        className={`tool-button px-3 ${activeMode === mode ? "bg-neutral text-base-content shadow-sm" : ""}`}
       >
         {icon}
       </button>

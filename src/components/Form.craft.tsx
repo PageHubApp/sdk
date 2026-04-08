@@ -29,12 +29,12 @@ import { Button } from "./Button";
 // ─── Shared styles for form presets ────────────────────────────────────────
 
 const inputBaseStyles = {
-  className: "p-(--input-padding) w-full border-solid border-(length:--input-border-width) border-(--input-border-color) rounded-(--input-border-radius) bg-(--input-bg-color) text-(--input-text-color) placeholder:text-(--input-placeholder-color)",
+  className: "p-(--input-padding) w-full border-solid border-(length:--border) border-(--input-border-color) rounded-field bg-(--input-bg-color) text-(--input-text-color) placeholder:text-(--input-placeholder-color)",
 };
 
 const submitButtonProps = {
   type: "submit",
-  className: "px-(--button-padding-x) py-(--button-padding-y) font-bold text-center flex justify-center items-center gap-2 w-full md:w-full bg-transparent text-(--primary) rounded-(--radius) border border-(--primary)",
+  className: "px-(--button-padding-x) py-(--button-padding-y) font-bold text-center flex justify-center items-center gap-2 w-full md:w-full bg-transparent text-primary rounded-box border border-primary",
   canDelete: true,
   canEditName: true,
 };
@@ -42,7 +42,7 @@ const submitButtonProps = {
 const fieldsContainerProps = {
   canDelete: true,
   canEditName: true,
-  className: "flex flex-col w-full gap-(--container-gap)",
+  className: "flex flex-col w-full gap-container",
   custom: { displayName: "Fields" },
 };
 
@@ -106,7 +106,7 @@ export const FormDef = defineComponent({
   toHTML,
   disable: ["font", "opacity", "cursor", "hoverClick", "animations"],
   craftProps: {
-    className: "flex flex-col items-center gap-(--container-gap)",
+    className: "flex flex-col items-center gap-container",
   },
   rules: {
     canDrag: () => true,

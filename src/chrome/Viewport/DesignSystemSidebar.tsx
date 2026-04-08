@@ -30,7 +30,7 @@ export function DesignSystemSidebar({ isOpen, onClose }: DesignSystemSidebarProp
       zIndex={100}
     >
       {/* Tabs */}
-      <div className="flex border-b border-border bg-muted">
+      <div className="flex border-b border-base-300 bg-neutral">
         <TabButton
           active={ds.activeTab === "colors"}
           onClick={() => ds.setActiveTab("colors")}
@@ -52,7 +52,7 @@ export function DesignSystemSidebar({ isOpen, onClose }: DesignSystemSidebarProp
       </div>
 
       {/* Content */}
-      <div className="scrollbar-light min-h-0 flex-1 overflow-y-auto bg-background text-foreground">
+      <div className="scrollbar-light min-h-0 flex-1 overflow-y-auto bg-base-100 text-base-content">
         {ds.activeTab === "colors" && <ColorsTab ds={ds} />}
         {ds.activeTab === "styles" && <StylesTab ds={ds} />}
         {ds.activeTab === "typography" && <TypographyTab ds={ds} />}
@@ -77,8 +77,8 @@ function TabButton({
       onClick={onClick}
       className={`flex flex-1 items-center justify-center gap-1.5 px-2 py-1.5 text-xs font-medium transition-colors ${
         active
-          ? "border-b-2 border-primary bg-background text-primary"
-          : "text-muted-foreground hover:text-foreground"
+          ? "border-b-2 border-primary bg-base-100 text-primary"
+          : "text-neutral-content hover:text-base-content"
       }`}
     >
       {icon}

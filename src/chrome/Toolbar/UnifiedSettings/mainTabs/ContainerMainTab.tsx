@@ -51,7 +51,7 @@ export const HeaderFooterToggles = () => {
           on="footer"
         />
       )}
-      <p className="mt-2 text-xs text-muted-foreground">
+      <p className="mt-2 text-xs text-neutral-content">
         Headers and footers are special containers that appear on all pages.
       </p>
     </ToolbarSection>

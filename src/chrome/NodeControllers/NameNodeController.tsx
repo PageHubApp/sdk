@@ -44,7 +44,7 @@ const EditableName = () => {
   return (
     <div
       className={
-        "fontfamily-base pointer-events-auto flex flex-row gap-3 overflow-hidden border-current bg-background px-2 text-xs! font-normal! text-foreground"
+        "fontfamily-base pointer-events-auto flex flex-row gap-3 overflow-hidden border-current bg-base-100 px-2 text-xs! font-normal! text-base-content"
       }
     >
       <div

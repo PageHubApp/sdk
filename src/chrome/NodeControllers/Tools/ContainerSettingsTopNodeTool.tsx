@@ -114,7 +114,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
           <SelectParentNodeTool
             parentType="Nav"
             icon={
-              <Tooltip content="Select Navigation" className="border-r border-border pr-2">
+              <Tooltip content="Select Navigation" className="border-r border-base-300 pr-2">
                 <TbNavigation />
               </Tooltip>
             }
@@ -123,7 +123,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
       )}
 
       {direction === "horizontal" && aiEnabled && renderNodeAi && (
-        <Tooltip content="Add something with AI" className="border-r border-border pr-2">
+        <Tooltip content="Add something with AI" className="border-r border-base-300 pr-2">
           {renderNodeAi({
             onClick: () => setClippyOpen({ nodeId: id, mode: "create" }),
             className: "tool-button",
@@ -201,7 +201,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
       )}
 
       {direction === "horizontal" && (
-        <Tooltip content="Delete container" className="border-l border-border pl-2">
+        <Tooltip content="Delete container" className="border-l border-base-300 pl-2">
           <DeleteNodeButton
             title="Delete container"
             titleDisabled="Cannot delete"
@@ -214,4 +214,3 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   );
 }
 
-export default ContainerSettingsTopNodeTool;

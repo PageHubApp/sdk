@@ -10,7 +10,7 @@ export const DeviceOffline = () => {
       <Tooltip content="You data is saved locally" arrow={false}>
         <button
           className={
-            "rounded-lg border border-border/50 bg-muted/30 p-3 text-xs font-medium text-foreground underline opacity-100 shadow-inner hover:opacity-100"
+            "rounded-lg border border-base-300/50 bg-neutral/30 p-3 text-xs font-medium text-base-content underline opacity-100 shadow-inner hover:opacity-100"
           }
           onClick={() => setOnline(window.navigator.onLine)}
         >

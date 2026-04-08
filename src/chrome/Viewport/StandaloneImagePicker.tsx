@@ -117,12 +117,12 @@ export const StandaloneImagePicker = ({
           htmlFor={`file-upload-${label}`}
           className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-3 transition-all ${
             errors.length
-              ? "border-destructive bg-destructive text-destructive-foreground"
+              ? "border-error bg-error text-error-content"
               : saved
-                ? "border-secondary bg-secondary text-secondary-foreground"
+                ? "border-secondary bg-secondary text-secondary-content"
                 : loading
-                  ? "border-primary bg-muted text-primary"
-                  : "border-border bg-muted text-foreground hover:border-primary hover:bg-muted"
+                  ? "border-primary bg-neutral text-primary"
+                  : "border-base-300 bg-neutral text-base-content hover:border-primary hover:bg-neutral"
           } ${!enabled && "cursor-not-allowed opacity-50"}`}
         >
           {loading ? (
@@ -146,7 +146,7 @@ export const StandaloneImagePicker = ({
         <button
           type="button"
           onClick={() => setShowMediaBrowser(true)}
-          className="flex items-center gap-2 rounded-lg border-2 border-border px-4 py-3 text-foreground transition-all hover:border-primary hover:bg-muted"
+          className="flex items-center gap-2 rounded-lg border-2 border-base-300 px-4 py-3 text-base-content transition-all hover:border-primary hover:bg-neutral"
         >
           <TbPhoto className="text-xl" />
           <span className="text-sm font-medium">Browse</span>
@@ -156,17 +156,17 @@ export const StandaloneImagePicker = ({
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center gap-2 rounded-lg border-2 border-destructive px-4 py-3 text-destructive transition-all hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
+            className="flex items-center gap-2 rounded-lg border-2 border-error px-4 py-3 text-error transition-all hover:border-error hover:bg-error hover:text-error-content"
           >
             <TbTrash className="text-xl" />
           </button>
         )}
       </div>
 
-      {help && <p className="text-xs text-muted-foreground">{help}</p>}
+      {help && <p className="text-xs text-neutral-content">{help}</p>}
 
       {errors.length > 0 && (
-        <div className="text-sm text-destructive">
+        <div className="text-sm text-error">
           {errors.map((err, idx) => (
             <div key={idx}>{err.error}</div>
           ))}
@@ -174,7 +174,7 @@ export const StandaloneImagePicker = ({
       )}
 
       {hasUploadedImage && mediaContent && (
-        <div className="relative h-48 w-full overflow-hidden rounded-lg bg-muted text-muted-foreground">
+        <div className="relative h-48 w-full overflow-hidden rounded-lg bg-neutral text-neutral-content">
           <img
             src={mediaContent}
             alt="Preview"

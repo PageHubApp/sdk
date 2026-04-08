@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { getRect } from "./Viewport/useRect";
 
-export const RenderNodeControl = ({
+const RenderNodeControl = ({
   position,
   children = null,
   className = "",

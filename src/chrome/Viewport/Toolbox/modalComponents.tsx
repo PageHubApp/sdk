@@ -23,7 +23,7 @@ export const ModalToolbox = {
       modalAnimation="fade"
       modalWidth="max-w-lg"
       modalPosition="center"
-      className="flex flex-col items-start gap-(--container-gap)"
+      className="flex flex-col items-start gap-container"
     >
       <Element
         is={Button}
@@ -35,7 +35,7 @@ export const ModalToolbox = {
           direction: "show",
           value: "my-modal",
         }}
-        className="bg-(--primary) text-(--primary-foreground) rounded-(--radius) px-(--button-padding-x) py-(--button-padding-y)"
+        className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y)"
       />
 
       <Element
@@ -59,7 +59,7 @@ export const ModalToolbox = {
           custom={{ displayName: "Modal Content" }}
           canDelete={false}
           canEditName={false}
-          className="bg-(--background) rounded-(--radius) shadow-xl flex flex-col gap-(--container-gap) px-(--container-padding-x) py-(--container-padding-y) w-full max-w-lg"
+          className="bg-base-100 rounded-box shadow-xl flex flex-col gap-container px-container-x py-container-y w-full max-w-lg"
           click={{
             type: "click",
             direction: "toggle",

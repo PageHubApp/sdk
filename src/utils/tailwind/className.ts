@@ -38,7 +38,7 @@ function getReverseIndex(): Map<string, string> {
 /**
  * Resolve a Tailwind class to its prop key.
  * Fast path: exact match in reverse index.
- * Fallback: prefix matching for arbitrary values like gap-[32px], bg-(--primary).
+ * Fallback: prefix matching for arbitrary values like gap-[32px], bg-primary.
  */
 function resolveClassKey(cls: string): string | undefined {
   const idx = getReverseIndex();
@@ -196,13 +196,13 @@ function chainsEqual(a: ParsedVariantSeg[], b: ParsedVariantSeg[]): boolean {
  * prefix intact under a `{prefix}:{propKey}` key.
  *
  * @example
- * parseClasses("flex flex-col gap-4 py-8 bg-(--primary) lg:grid-cols-2")
+ * parseClasses("flex flex-col gap-4 py-8 bg-primary lg:grid-cols-2")
  * // → {
  * //   display: "flex",
  * //   flex: "flex-col",
  * //   gap: "gap-4",
  * //   py: "py-8",
- * //   _unknown: "bg-(--primary)",
+ * //   _unknown: "bg-primary",
  * //   "lg:gridCols": "lg:grid-cols-2",
  * // }
  */

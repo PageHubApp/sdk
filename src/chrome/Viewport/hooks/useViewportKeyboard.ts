@@ -18,6 +18,7 @@ import { Text } from "../../../components/Text";
 import { Video } from "../../../components/Video";
 import { GetHtmlToComponent, SaveToServer, buildClonedTree } from "../lib";
 import { PreviewAtom, EnabledAtom, UnsavedChangesAtom, TabAtom } from "../atoms";
+import { phStorage } from "../../../utils/phStorage";
 
 export function useViewportKeyboard() {
   const {
@@ -60,15 +61,12 @@ export function useViewportKeyboard() {
     const node = query.node(active).get();
 
     if (["page", "background"].includes(node.data.props.type))
-      return localStorage.setItem("clipBoard", JSON.stringify({}));
+      return phStorage.set("clipboard", {});
 
     const tree = query.node(active).toNodeTree();
     const nodePairs = Object.keys(tree.nodes).map(id => [id, query.node(id).toSerializedNode()]);
     const serializedNodesJSON = JSON.stringify(fromEntries(nodePairs as [string, unknown][]));
-    localStorage.setItem(
-      "clipBoard",
-      JSON.stringify({ rootNodeId: tree.rootNodeId, nodes: serializedNodesJSON })
-    );
+    phStorage.set("clipboard", { rootNodeId: tree.rootNodeId, nodes: serializedNodesJSON });
   }, [query]);
 
   async function checkIfHtmlInClipboard() {

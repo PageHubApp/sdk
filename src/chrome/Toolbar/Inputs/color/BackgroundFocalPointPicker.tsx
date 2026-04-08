@@ -240,8 +240,8 @@ export function BackgroundFocalPointPicker({
 
       {/* Picker Interface */}
       {isPickerOpen && (
-        <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3">
-          <div className="text-xs text-muted-foreground">
+        <div className="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-200 p-3">
+          <div className="text-xs text-neutral-content">
             Click or drag to set the focal point of your background image
           </div>
 
@@ -250,7 +250,7 @@ export function BackgroundFocalPointPicker({
             ref={pickerRef}
             role="presentation"
             aria-hidden="true"
-            className="relative aspect-video w-full cursor-crosshair select-none overflow-hidden rounded-lg border-2 border-border bg-muted"
+            className="relative aspect-video w-full cursor-crosshair select-none overflow-hidden rounded-lg border-2 border-base-300 bg-neutral"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -328,7 +328,7 @@ export function BackgroundFocalPointPicker({
 
           {/* Position Display and Controls */}
           <div className="flex items-center justify-between gap-2">
-            <div className="font-mono text-xs text-muted-foreground">
+            <div className="font-mono text-xs text-neutral-content">
               Position: {Math.round(currentFocalPoint.x)}%, {Math.round(currentFocalPoint.y)}%
             </div>
             <div className="flex gap-2">

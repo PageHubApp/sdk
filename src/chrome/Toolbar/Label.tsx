@@ -161,15 +161,15 @@ export const ToolbarLabel = ({
     (currentView === "md" && viewValue === "desktop");
   const isActiveView = isSelected || (!hasSelection && canvasMatchesBadge);
 
-  let bg = "bg-secondary text-secondary-foreground"; // Default to User color
+  let bg = "bg-secondary text-secondary-content"; // Default to User color
   let view = viewValue;
 
   if (viewValue === "mobile") {
-    bg = "bg-accent text-accent-foreground";
+    bg = "bg-accent text-accent-content";
   }
 
   if (viewValue === "desktop") {
-    bg = "bg-destructive text-destructive-foreground";
+    bg = "bg-error text-error-content";
   }
 
   if (viewValue === "sm") {
@@ -188,12 +188,12 @@ export const ToolbarLabel = ({
   if (propType === "component" || propType === "root") {
     viewValue = "component";
     view = "component"; // Update view too!
-    bg = "bg-primary text-primary-foreground";
+    bg = "bg-primary text-primary-content";
   }
 
   // Override styling for delete icon
   if (showDeleteIcon) {
-    bg = "text-destructive hover:text-destructive/90";
+    bg = "text-error hover:text-error/90";
   }
 
   const handleToggle = e => {
@@ -248,7 +248,7 @@ export const ToolbarLabel = ({
       className={`flex cursor-pointer items-center gap-0.5 rounded p-0.5 transition-colors ${
         isActiveView
           ? "bg-primary/10 text-primary ring-1 ring-primary/20"
-          : "text-muted-foreground hover:bg-accent hover:text-foreground"
+          : "text-neutral-content hover:bg-accent hover:text-base-content"
       }`}
     >
       {icon ? (
@@ -279,7 +279,7 @@ export const ToolbarLabel = ({
         </>
       ) : viewValue === "sm" || viewValue === "lg" || viewValue === "xl" || viewValue === "2xl" ? (
         <>
-          <span className="flex size-4 shrink-0 items-center justify-center rounded border border-border bg-muted text-[8px] font-bold leading-none">
+          <span className="flex size-4 shrink-0 items-center justify-center rounded border border-base-300 bg-neutral text-[8px] font-bold leading-none">
             {viewValue === "2xl" ? "2X" : viewValue.toUpperCase()}
           </span>
           {!iconOnly && (
@@ -323,7 +323,7 @@ export const ToolbarLabel = ({
               className={`flex cursor-pointer items-center justify-center rounded p-0.5 transition-colors ${
                 isActiveView
                   ? "bg-primary/10 text-primary ring-1 ring-primary/20"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  : "text-neutral-content hover:bg-accent hover:text-base-content"
               }`}
             >
               {viewValue === "mobile" ? (
@@ -331,7 +331,7 @@ export const ToolbarLabel = ({
               ) : viewValue === "desktop" ? (
                 <TbDeviceDesktopOff className="size-3 opacity-30" />
               ) : viewValue === "sm" || viewValue === "lg" || viewValue === "xl" || viewValue === "2xl" ? (
-                <span className="flex size-4 items-center justify-center rounded border border-dashed border-border text-[8px] font-bold opacity-40">
+                <span className="flex size-4 items-center justify-center rounded border border-dashed border-base-300 text-[8px] font-bold opacity-40">
                   {viewValue === "2xl" ? "2X" : viewValue.toUpperCase()}
                 </span>
               ) : null}

@@ -50,7 +50,7 @@ export const ButtonListDef = defineComponent({
     {
       label: "Button List",
       props: {
-        className: "flex-col items-center justify-start gap-2 px-4 py-2 w-auto flex md:flex-row md:items-center md:justify-start md:gap-2 border border-border rounded-lg",
+        className: "flex-col items-center justify-start gap-2 px-4 py-2 w-auto flex md:flex-row md:items-center md:justify-start md:gap-2 border border-base-300 rounded-lg",
         buttons: [
           { text: "Button 1" },
           { text: "Button 2" },

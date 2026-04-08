@@ -128,14 +128,14 @@ const Input = ({ value, changed, nodeProps, setProp, canvasView }: {
     <div className="relative z-10 flex flex-col gap-6">
       <ClassSearchInput classes={classes} onSave={save} classInput={classInput} setClassInput={setClassInput} />
 
-      <div className="text-xxs -mt-5 flex flex-wrap items-baseline gap-x-1 pl-1 text-muted-foreground">
+      <div className="text-xxs -mt-5 flex flex-wrap items-baseline gap-x-1 pl-1 text-neutral-content">
         <span>Apply to:</span>
-        <span className="font-medium text-foreground">
+        <span className="font-medium text-base-content">
           {breakpointScopeHasSelection(selectedViews)
             ? getEffectiveViews(selectedViews, canvasView).map(v => APPLY_SCOPE_DISPLAY[v] ?? v).join(" + ")
             : APPLY_SCOPE_DISPLAY[canvasViewToClassScopeKey(canvasView)] ?? canvasViewToClassScopeKey(canvasView)}
         </span>
-        {!breakpointScopeHasSelection(selectedViews) && <span className="text-muted-foreground">(default layers)</span>}
+        {!breakpointScopeHasSelection(selectedViews) && <span className="text-neutral-content">(default layers)</span>}
       </div>
 
       <BreakpointBuckets

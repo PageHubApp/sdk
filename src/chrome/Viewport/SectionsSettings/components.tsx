@@ -23,12 +23,12 @@ export const BlockPreviewCard = memo(function BlockPreviewCard({
 
       ref={onDragRef}
       onDoubleClick={onDoubleClick}
-      className="group border-border bg-card text-card-foreground hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-sm"
+      className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-sm"
     >
       <ComponentPreview component={block.structure} scale={0.2} resolver={resolver} />
       <div className="bg-primary/10 absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
-      <div className="border-border border-t px-2.5 py-1.5">
-        <span className="text-muted-foreground text-xs font-medium">{block.name}</span>
+      <div className="border-base-300 border-t px-2.5 py-1.5">
+        <span className="text-neutral-content text-xs font-medium">{block.name}</span>
       </div>
     </div>
   );
@@ -62,7 +62,7 @@ export const CustomSectionCard = memo(function CustomSectionCard({
     <div
 
       ref={(ref: any) => createRef(ref, tool)}
-      className="group border-border bg-card text-card-foreground hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-sm"
+      className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-sm"
       onDoubleClick={() => {
         try {
           const masterNode = editorQuery.node(template.rootNodeId).get();
@@ -101,11 +101,11 @@ export const CustomSectionCard = memo(function CustomSectionCard({
         <ComponentPreview component={customPreview} scale={0.2} resolver={resolver} />
       )}
       <div className="bg-primary absolute top-2 right-2 z-10 rounded-lg px-2 py-1">
-        <span className="text-primary-foreground text-xs font-medium">Custom</span>
+        <span className="text-primary-content text-xs font-medium">Custom</span>
       </div>
       <div className="bg-primary/10 absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
-      <div className="border-border border-t px-2.5 py-1.5">
-        <span className="text-muted-foreground text-xs font-medium">{template.name}</span>
+      <div className="border-base-300 border-t px-2.5 py-1.5">
+        <span className="text-neutral-content text-xs font-medium">{template.name}</span>
       </div>
     </div>
   );
@@ -124,20 +124,20 @@ export function CategoryCard({
   return (
     <button
       onClick={onClick}
-      className="group border-border bg-card hover:border-primary flex w-full cursor-pointer flex-col overflow-hidden rounded-xl border text-left transition-all hover:shadow-md"
+      className="group border-base-300 bg-base-200 hover:border-primary flex w-full cursor-pointer flex-col overflow-hidden rounded-xl border text-left transition-all hover:shadow-md"
     >
-      <div className="bg-muted/50 flex h-24 items-center justify-center overflow-hidden">
-        {wireframe || <span className="text-muted-foreground text-xs">{category.name}</span>}
+      <div className="bg-neutral/50 flex h-24 items-center justify-center overflow-hidden">
+        {wireframe || <span className="text-neutral-content text-xs">{category.name}</span>}
       </div>
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="min-w-0">
-          <div className="text-card-foreground text-sm font-medium">{category.name}</div>
-          <div className="text-muted-foreground text-xs">
+          <div className="text-base-content text-sm font-medium">{category.name}</div>
+          <div className="text-neutral-content text-xs">
             {category.total} {category.total === 1 ? "block" : "blocks"}
             {hasSubcategories && ` \u00b7 ${category.subcategories.length} types`}
           </div>
         </div>
-        <TbChevronRight className="text-muted-foreground size-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
+        <TbChevronRight className="text-neutral-content size-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
       </div>
     </button>
   );
@@ -159,8 +159,8 @@ export function SubcategoryChip({
       onClick={onClick}
       className={`cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
         active
-          ? "bg-primary text-primary-foreground"
-          : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          ? "bg-primary text-primary-content"
+          : "bg-neutral text-neutral-content hover:bg-accent hover:text-accent-content"
       }`}
     >
       {name.charAt(0).toUpperCase() + name.slice(1)} ({count})

@@ -28,6 +28,7 @@ import { useAccordionContext } from "./AccordionContext";
 import { TabBarCollapseToggle } from "./TabBarCollapseToggle";
 import { TabBarDarkModeToggle } from "./TabBarDarkModeToggle";
 import { TabBarBreakpointPicker } from "./TabBarBreakpointPicker";
+import { phStorage } from "../../utils/phStorage";
 
 
 export const ToolbarWrapper = ({
@@ -144,7 +145,7 @@ export const ToolbarWrapper = ({
   const accordionCtx = useAccordionContext();
 
   useEffect(() => {
-    const iso = localStorage.getItem("isolated");
+    const iso = phStorage.get("isolated");
     if (iso) setIsolate(iso);
   }, [setIsolate]);
 
@@ -166,7 +167,7 @@ export const ToolbarWrapper = ({
           e.preventDefault();
           handleCopy(e as any);
         } else if (e.key === "v") {
-          const clipData = localStorage.getItem("clipBoard");
+          const clipData = phStorage.get("clipboard");
           if (clipData && clipData !== "{}") {
             e.preventDefault();
             handlePaste(e as any);
@@ -194,7 +195,7 @@ export const ToolbarWrapper = ({
           id="toolbarTabs"
           aria-label="Tabs"
           role="tablist"
-          className="flex shrink-0 items-center gap-1.5 border-b border-border bg-secondary px-3 py-0.5 text-center font-semibold text-secondary-foreground"
+          className="flex shrink-0 items-center gap-1.5 border-b border-base-300 bg-secondary px-3 py-0.5 text-center font-semibold text-secondary-content"
         >
           <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
           <div className="mx-0.5 h-4 w-px shrink-0 bg-border" />
@@ -263,7 +264,7 @@ export const ToolbarWrapper = ({
 
       <div
         id="toolbarFooter"
-        className="flex w-full shrink-0 flex-row items-center justify-between border-t border-t-border bg-muted px-2.5 py-1.5 text-lg"
+        className="flex w-full shrink-0 flex-row items-center justify-between border-t border-t-border bg-neutral px-2.5 py-1.5 text-lg"
       >
         {foot}
 
@@ -271,7 +272,7 @@ export const ToolbarWrapper = ({
           <Tooltip content="Select Parent">
             <button
 
-              className="cursor-pointer rounded-lg p-2 text-muted-foreground hover:text-accent-foreground"
+              className="cursor-pointer rounded-lg p-2 text-neutral-content hover:text-accent-content"
 
               onClick={() => {
                 actions.selectNode(parent);
@@ -291,8 +292,8 @@ export const ToolbarWrapper = ({
             <button
 
               className={`cursor-pointer ${
-                isolate ? "text-accent-foreground" : "text-muted-foreground"
-              } rounded-lg p-2 hover:text-accent-foreground`}
+                isolate ? "text-accent-content" : "text-neutral-content"
+              } rounded-lg p-2 hover:text-accent-content`}
 
             >
               {isolate ? <TbScaleOutlineOff /> : <TbScaleOutline />}
@@ -312,7 +313,7 @@ export const ToolbarWrapper = ({
             >
               <button
 
-                className="cursor-pointer rounded-lg p-2 text-muted-foreground hover:text-accent-foreground"
+                className="cursor-pointer rounded-lg p-2 text-neutral-content hover:text-accent-content"
 
               >
                 {props.canDelete !== false ? <TbTrash /> : <TbTrashOff />}
@@ -330,7 +331,7 @@ export const ToolbarWrapper = ({
                 >
                   <button
     
-                    className="cursor-pointer rounded-lg p-2 text-muted-foreground hover:text-accent-foreground"
+                    className="cursor-pointer rounded-lg p-2 text-neutral-content hover:text-accent-content"
     
                   >
                     <TbCopy />
@@ -348,8 +349,8 @@ export const ToolbarWrapper = ({
                   <button
                     className={`rounded-lg p-2 transition-colors active:scale-90 ${
                       id !== ROOT_NODE
-                        ? "cursor-pointer text-muted-foreground hover:text-accent-foreground"
-                        : "cursor-not-allowed text-muted-foreground/50"
+                        ? "cursor-pointer text-neutral-content hover:text-accent-content"
+                        : "cursor-not-allowed text-neutral-content/50"
                     }`}
     
                   >
@@ -360,7 +361,7 @@ export const ToolbarWrapper = ({
                 <Tooltip
                   content="Paste"
                   onClick={(e: React.MouseEvent) => {
-                    const clipData = localStorage.getItem("clipBoard");
+                    const clipData = phStorage.get("clipboard");
                     if (clipData && clipData !== "{}") {
                       handlePaste(e);
                     }
@@ -368,10 +369,10 @@ export const ToolbarWrapper = ({
                 >
                   <button
                     className={`rounded-lg p-2 transition-colors active:scale-90 ${
-                      localStorage.getItem("clipBoard") &&
-                      localStorage.getItem("clipBoard") !== "{}"
-                        ? "cursor-pointer text-muted-foreground hover:text-accent-foreground"
-                        : "cursor-not-allowed text-muted-foreground/50"
+                      phStorage.get("clipboard") &&
+                      phStorage.get("clipboard") !== "{}"
+                        ? "cursor-pointer text-neutral-content hover:text-accent-content"
+                        : "cursor-not-allowed text-neutral-content/50"
                     }`}
     
                   >
@@ -390,7 +391,7 @@ export const ToolbarWrapper = ({
                   <button
     
                     ref={ref}
-                    className="cursor-pointer rounded-lg p-2 text-muted-foreground hover:text-accent-foreground"
+                    className="cursor-pointer rounded-lg p-2 text-neutral-content hover:text-accent-content"
     
                   >
                     {canMake ? <TbComponents /> : <TbComponentsOff />}
@@ -411,7 +412,7 @@ export const ToolbarWrapper = ({
           >
             <button
 
-              className="cursor-pointer rounded-lg p-2 text-muted-foreground hover:text-accent-foreground"
+              className="cursor-pointer rounded-lg p-2 text-neutral-content hover:text-accent-content"
 
             >
               <TbX />

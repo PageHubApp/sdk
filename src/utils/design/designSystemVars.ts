@@ -2,10 +2,13 @@
 
 import { NamedColor } from "../../components/Background";
 import { DEFAULT_STYLE_GUIDE } from "../defaults";
+import { autoGenerateContentColors, colorToOklch } from "./contentColor";
+import { generateCSSAliases } from "./tokenMigration";
 
 export interface DesignSystemVars {
   palette: NamedColor[];
   darkPalette?: NamedColor[];
+  darkModeEnabled?: boolean;
   styleGuide: Record<string, any>;
   typography?: any[];
 }
@@ -15,7 +18,11 @@ export interface DesignSystemVars {
  * Keys not listed here use the default toCSSVarName() conversion with no prefix.
  */
 const STYLE_VAR_OVERRIDES: Record<string, string> = {
-  borderRadius: "radius",
+  radiusBox: "radius-box",
+  radiusField: "radius-field",
+  radiusSelector: "radius-selector",
+  sizeField: "size-field",
+  sizeSelector: "size-selector",
   spaceXs: "space-xs",
   spaceSm: "space-sm",
   spaceMd: "space-md",
@@ -50,7 +57,7 @@ export function toCSSVarName(name: string): string {
 /**
  * Convert palette name to CSS variable name (no prefix)
  * "Primary" -> "--primary"
- * "Primary Foreground" -> "--primary-foreground"
+ * "Primary Content" -> "--primary-content"
  * "Card" -> "--card"
  */
 export function toPaletteCSSVarName(name: string): string {
@@ -59,7 +66,7 @@ export function toPaletteCSSVarName(name: string): string {
 
 /**
  * Convert style guide key to CSS variable name (no prefix)
- * "borderRadius" -> "--radius"
+ * "radiusBox" -> "--radius-box"
  * "inputBorder" -> "--input-border"
  */
 export function toStyleCSSVarName(key: string): string {
@@ -133,7 +140,7 @@ function quoteCssFontFamilyValue(value: string): string {
 /**
  * Generates CSS custom properties for palette colors
  * palette:Primary -> --primary
- * palette:Primary Foreground -> --primary-foreground
+ * palette:Primary Content -> --primary-content
  */
 export function generatePaletteCSSVariables(palette: NamedColor[]): string {
   const variables: string[] = [];
@@ -155,7 +162,11 @@ export function generatePaletteCSSVariables(palette: NamedColor[]): string {
     const cssVar = toPaletteCSSVarName(item.name);
     if (!cssVar || cssVar === "--") return;
 
-    const colorValue = resolveTailwindColor(item.color);
+    // Palette colors are stored as oklch() natively — pass through.
+    // Legacy hex/rgba values are handled by colorToOklch as a fallback.
+    const colorValue = item.color.startsWith("oklch(")
+      ? item.color
+      : colorToOklch(resolveTailwindColor(item.color));
     variables.push(`  ${cssVar}: ${colorValue};`);
   });
 
@@ -187,13 +198,18 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
     "linkColor",
     "linkHoverColor",
     // Sizes & measurements (actual CSS values, not Tailwind classes)
-    "inputBorderWidth",
-    "inputBorderRadius",
+    "border",
     "inputPadding",
     "inputFocusRing",
+    // Radius & sizing (DaisyUI 5)
+    "radiusBox",
+    "radiusField",
+    "radiusSelector",
+    "sizeField",
+    "sizeSelector",
+    "depth",
+    "noise",
     // Layout & spacing
-    "borderRadius",
-    "cardRadius",
     "buttonPadding",
     "containerPadding",
     "sectionGap",
@@ -348,8 +364,10 @@ export function generateDesignSystemCSSVariables(
   designSystem: DesignSystemVars,
   scope: string = ":root"
 ): string {
-  const paletteVars = generatePaletteCSSVariables(designSystem.palette);
-  // Partial persisted styleGuide (e.g. only fonts) must not drop layout tokens like --radius / --card-radius.
+  // Auto-generate content colors from surface colors (DaisyUI 5-style oklch contrast)
+  const palette = autoGenerateContentColors(designSystem.palette);
+  const paletteVars = generatePaletteCSSVariables(palette);
+  // Partial persisted styleGuide (e.g. only fonts) must not drop layout tokens like --radius-box.
   const mergedStyleGuide = {
     ...DEFAULT_STYLE_GUIDE,
     ...(designSystem.styleGuide && typeof designSystem.styleGuide === "object"
@@ -364,16 +382,20 @@ export function generateDesignSystemCSSVariables(
     ? generateTypographyCSSClasses(designSystem.typography)
     : "";
 
-  const cssVars = `${scope} {\n${paletteVars}\n${styleVars}\n${typographyVars}\n}`;
+  // Permanent backwards-compat aliases: old var names → new DaisyUI var names.
+  // Ensures old className strings in published sites keep working.
+  const aliases = generateCSSAliases();
+
+  const cssVars = `${scope} {\n  color-scheme: light;\n${paletteVars}\n${aliases}\n${styleVars}\n${typographyVars}\n}`;
 
   // Dark mode palette: emit @media (prefers-color-scheme: dark) and .dark selector overrides
   let darkBlock = "";
   if (designSystem.darkPalette && designSystem.darkPalette.length > 0) {
-    const darkPaletteVars = generatePaletteCSSVariables(designSystem.darkPalette);
+    const darkPaletteVars = generatePaletteCSSVariables(autoGenerateContentColors(designSystem.darkPalette));
     if (darkPaletteVars) {
       darkBlock =
-        `\n@media (prefers-color-scheme: dark) {\n  ${scope} {\n${darkPaletteVars}\n  }\n}` +
-        `\n.dark ${scope}, ${scope}.dark {\n${darkPaletteVars}\n}`;
+        `\n@media (prefers-color-scheme: dark) {\n  ${scope} {\n  color-scheme: dark;\n${darkPaletteVars}\n  }\n}` +
+        `\n.dark ${scope}, ${scope}.dark {\n  color-scheme: dark;\n${darkPaletteVars}\n}`;
     }
   }
 

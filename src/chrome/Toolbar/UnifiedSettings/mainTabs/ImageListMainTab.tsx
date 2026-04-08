@@ -58,7 +58,7 @@ export const ImageListMainTab = () => {
           extraButtons={(image) => [
             <button
               key="edit"
-              className="flex items-center justify-center text-foreground transition-colors hover:text-primary"
+              className="flex items-center justify-center text-base-content transition-colors hover:text-primary"
               title="Edit image"
               onClick={e => {
                 e.stopPropagation();

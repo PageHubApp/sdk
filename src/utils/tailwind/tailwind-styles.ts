@@ -32,7 +32,7 @@ export const fonts = [
 
 const colorExclude = ["lightBlue", "warmGray", "trueGray", "coolGray", "blueGray"];
 
-export function getColorPallet() {
+export function getColorPalette() {
   return Object.keys(colors)
     .filter(_ => !colorExclude.includes(_))
     .map(key => {
@@ -3177,7 +3177,7 @@ export function isValidTailwindClass(cls: string): boolean {
   if (AllStylesSet.has(cls)) return true;
   // Arbitrary values: gap-[32px], bg-[#ff0000], w-[calc(100%-2rem)]
   if (/[.+]/.test(cls)) return true;
-  // CSS var token syntax: bg-(--primary), text-(--foreground)
+  // CSS var token syntax: bg-primary, text-(--foreground)
   if (/(.+--.+)/.test(cls)) return true;
   return false;
 }

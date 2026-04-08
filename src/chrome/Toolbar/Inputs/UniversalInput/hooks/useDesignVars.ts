@@ -2,14 +2,16 @@ import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { resolveColorForDisplay } from "utils/design/colorSystem";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "utils/defaults";
+import { resolveTheme } from "utils/design/resolveTheme";
 import { DesignVar } from "../types";
 
 export function useDesignVars(): DesignVar[] {
   const designVars = useEditor(state => {
     const rootNode = state.nodes[ROOT_NODE];
-    const runtimePalette = rootNode?.data?.props?.pallet || [];
-    const runtimeTypography = rootNode?.data?.props?.typography || [];
-    const runtimeStyleGuide = rootNode?.data?.props?.styleGuide || {};
+    const theme = resolveTheme(rootNode?.data?.props || {});
+    const runtimePalette = theme.palette;
+    const runtimeTypography = theme.typography || [];
+    const runtimeStyleGuide = theme.styleGuide;
 
     const vars: DesignVar[] = [];
 
@@ -133,8 +135,8 @@ export function useDesignVars(): DesignVar[] {
       borderRadius: { category: "other", label: "Border Radius" },
       shadowStyle: { category: "other", label: "Shadow Style" },
       inputBorderColor: { category: "colors", label: "Input Border Color" },
-      inputBorderWidth: { category: "other", label: "Input Border Width" },
-      inputBorderRadius: { category: "other", label: "Input Border Radius" },
+      border: { category: "other", label: "Border Width" },
+      radiusField: { category: "other", label: "Radius Field" },
       inputPadding: { category: "spacing", label: "Input Padding" },
       inputBgColor: { category: "colors", label: "Input Background" },
       inputTextColor: { category: "colors", label: "Input Text" },

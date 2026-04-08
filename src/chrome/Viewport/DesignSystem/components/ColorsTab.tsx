@@ -12,13 +12,13 @@ export function ColorsTab({ ds }: ColorsTabProps) {
       {/* Dark mode toggle bar */}
       <div className="flex items-center justify-between">
         {ds.darkModeEnabled ? (
-          <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
+          <div className="flex items-center gap-1 rounded-lg border border-base-300 p-0.5">
             <button
               onClick={() => ds.toggleDarkMode()}
               className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 ds.colorMode === "light"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-base-100 text-base-content shadow-sm"
+                  : "text-neutral-content hover:text-base-content"
               }`}
             >
               <TbSun size={14} />
@@ -28,8 +28,8 @@ export function ColorsTab({ ds }: ColorsTabProps) {
               onClick={() => ds.toggleDarkMode()}
               className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 ds.colorMode === "dark"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-base-100 text-base-content shadow-sm"
+                  : "text-neutral-content hover:text-base-content"
               }`}
             >
               <TbMoon size={14} />
@@ -44,7 +44,7 @@ export function ColorsTab({ ds }: ColorsTabProps) {
           className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
             ds.darkModeEnabled
               ? "bg-violet-600/10 text-violet-700 hover:bg-violet-600/20"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              : "text-neutral-content hover:bg-neutral hover:text-base-content"
           }`}
           title={ds.darkModeEnabled ? "Disable dark mode" : "Enable dark mode"}
         >
@@ -54,44 +54,44 @@ export function ColorsTab({ ds }: ColorsTabProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        {ds.palettes.map((pallet, index) => (
+        {ds.palettes.map((entry, index) => (
           <div key={index} className="group flex items-center gap-2">
             <button
               ref={el => {
                 ds.colorButtonRefs.current[index] = el;
               }}
               onClick={() => ds.openColorPicker(index)}
-              className="size-8 shrink-0 cursor-pointer rounded-lg border-2 border-border transition-colors hover:border-primary"
-              style={{ backgroundColor: ds.getColorPreview(pallet.color) }}
+              className="size-8 shrink-0 cursor-pointer rounded-lg border-2 border-base-300 transition-colors hover:border-primary"
+              style={{ backgroundColor: ds.getColorPreview(entry.color) }}
               title="Click to change color"
             />
             <div className="min-w-0 flex-1">
               <input
                 type="text"
-                value={pallet.name}
+                value={entry.name}
                 onChange={e => ds.updateColorName(index, e.target.value)}
-                className="w-full border-b border-transparent bg-transparent px-1 py-0.5 pb-0 text-sm font-medium text-foreground hover:border-primary focus:border-ring focus:outline-none"
+                className="w-full border-b border-transparent bg-transparent px-1 py-0.5 pb-0 text-sm font-medium text-base-content hover:border-primary focus:border-ring focus:outline-none"
                 placeholder="Color name"
               />
               <div
-                className="cursor-pointer px-1 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
+                className="cursor-pointer px-1 text-[10px] text-neutral-content transition-colors hover:text-base-content"
                 role="button"
                 tabIndex={0}
-                onClick={() => navigator.clipboard.writeText(toPaletteCSSVarName(pallet.name))}
+                onClick={() => navigator.clipboard.writeText(toPaletteCSSVarName(entry.name))}
                 onKeyDown={e => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    navigator.clipboard.writeText(toPaletteCSSVarName(pallet.name));
+                    navigator.clipboard.writeText(toPaletteCSSVarName(entry.name));
                   }
                 }}
                 title="Click to copy CSS variable"
               >
-                {toPaletteCSSVarName(pallet.name)}
+                {toPaletteCSSVarName(entry.name)}
               </div>
             </div>
             <button
               onClick={() => ds.deleteColor(index)}
-              className="p-1 text-destructive opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+              className="p-1 text-error opacity-0 transition-opacity hover:text-error group-hover:opacity-100"
               title="Delete color"
             >
               <TbTrash size={16} />
@@ -102,7 +102,7 @@ export function ColorsTab({ ds }: ColorsTabProps) {
 
       <button
         onClick={ds.addColor}
-        className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-lg border border-border bg-accent px-3 py-2 text-sm text-accent-foreground transition-colors hover:bg-accent"
+        className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-lg border border-base-300 bg-accent px-3 py-2 text-sm text-accent-content transition-colors hover:bg-accent"
       >
         <TbPlus size={16} />
         Add Color

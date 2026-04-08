@@ -60,8 +60,8 @@ export function VariableSuggestionPopup({ suggestion }: {
         zIndex: 99999,
       }}
     >
-      <div className="rounded-lg border border-border bg-card p-1 shadow-xl">
-        <div className="mb-1 px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="rounded-lg border border-base-300 bg-base-200 p-1 shadow-xl">
+        <div className="mb-1 px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-neutral-content">
           Variables
         </div>
         {suggestion.items.map((item, index) => (
@@ -75,15 +75,15 @@ export function VariableSuggestionPopup({ suggestion }: {
             onMouseEnter={() => setSelectedIndex(index)}
             className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
               index === selectedIndex
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50"
+                ? "bg-accent text-accent-content"
+                : "text-neutral-content hover:bg-accent/50"
             }`}
           >
             <span className="flex h-5 items-center rounded bg-primary/10 px-1.5 font-mono text-[10px] text-primary">
               {"{{"}
             </span>
             <span className="flex-1 truncate">{item.label}</span>
-            <span className="font-mono text-[10px] text-muted-foreground/60">
+            <span className="font-mono text-[10px] text-neutral-content/60">
               {item.id}
             </span>
           </button>

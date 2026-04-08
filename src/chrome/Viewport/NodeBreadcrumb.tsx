@@ -147,25 +147,25 @@ export const NodeBreadcrumb = () => {
   const parentItem = breadcrumb.length >= 2 ? breadcrumb[breadcrumb.length - 2] : null;
 
   return (
-    <div className="flex w-full items-center justify-between bg-background px-2 py-1 text-sm text-foreground">
+    <div className="flex w-full items-center justify-between bg-base-100 px-2 py-1 text-sm text-base-content">
       <div className="flex min-w-0 max-w-[calc(100%-120px)] flex-1 items-center gap-0">
         {/* Ancestry dropdown — full stack on hover */}
         {!isEditing && !showOnlyPageContext && breadcrumb.length > 1 && (
           <ToolbarPortalDropdown
             openOn="hover"
             align="left"
-            className="min-w-[10rem] rounded-lg border border-border bg-popover p-1 py-1.5 shadow-xl"
+            className="min-w-[10rem] rounded-lg border border-base-300 bg-base-100 p-1 py-1.5 shadow-xl"
             trigger={
               <button
                 type="button"
                 aria-label="View ancestry"
-                className="mr-0.5 rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="mr-0.5 rounded p-1 text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
               >
                 <TbListTree className="size-3.5" />
               </button>
             }
           >
-            <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-content">
               Ancestry
             </div>
             <div className="ph-select-item-host">
@@ -175,7 +175,7 @@ export const NodeBreadcrumb = () => {
                   onClick={handlePageClick}
                   className="ph-select-item items-center gap-2 text-xs"
                 >
-                  <span className="text-muted-foreground/40">⌂</span>
+                  <span className="text-neutral-content/40">⌂</span>
                   <span className="font-medium">{pageContext.name}</span>
                 </button>
               )}
@@ -187,9 +187,9 @@ export const NodeBreadcrumb = () => {
                   className="ph-select-item items-center gap-2 text-xs"
                   style={{ paddingLeft: `${(index + (showPageContext ? 1 : 0)) * 8 + 8}px` }}
                 >
-                  <span className="text-[10px] text-muted-foreground/40">›</span>
+                  <span className="text-[10px] text-neutral-content/40">›</span>
                   <span className="truncate font-medium">{item.name}</span>
-                  <span className="ml-auto text-[10px] text-muted-foreground">{item.type}</span>
+                  <span className="ml-auto text-[10px] text-neutral-content">{item.type}</span>
                 </button>
               ))}
             </div>
@@ -207,7 +207,7 @@ export const NodeBreadcrumb = () => {
             >
               <button
                 onClick={handlePageClick}
-                className={`whitespace-nowrap rounded bg-muted p-1 text-xs font-medium text-foreground transition-colors hover:bg-muted/80 ${
+                className={`whitespace-nowrap rounded bg-neutral p-1 text-xs font-medium text-base-content transition-colors hover:bg-neutral/80 ${
                   showOnlyPageContext ? "min-w-0" : "min-w-0 max-w-[100px] truncate"
                 }`}
               >
@@ -216,7 +216,7 @@ export const NodeBreadcrumb = () => {
             </Tooltip>
 
             {!showOnlyPageContext && currentItem && (
-              <TbChevronRight className="ml-1 size-3 text-muted-foreground/60" />
+              <TbChevronRight className="ml-1 size-3 text-neutral-content/60" />
             )}
           </div>
         )}
@@ -227,12 +227,12 @@ export const NodeBreadcrumb = () => {
             <Tooltip content={`Select ${parentItem.name} (${parentItem.type})`} placement="bottom">
               <button
                 onClick={() => handleNodeClick(parentItem.id)}
-                className="min-w-0 max-w-[80px] truncate whitespace-nowrap rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="min-w-0 max-w-[80px] truncate whitespace-nowrap rounded p-1 text-xs text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
               >
                 {parentItem.name}
               </button>
             </Tooltip>
-            <TbChevronRight className="size-3 text-muted-foreground/60" />
+            <TbChevronRight className="size-3 text-neutral-content/60" />
           </div>
         )}
 
@@ -276,7 +276,7 @@ export const NodeBreadcrumb = () => {
       </div>
 
       {activeTab && (
-        <div className="hidden text-[10px] font-medium text-secondary-foreground">{activeTab}</div>
+        <div className="hidden text-[10px] font-medium text-secondary-content">{activeTab}</div>
       )}
     </div>
   );

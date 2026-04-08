@@ -255,7 +255,7 @@ export const Dialog = ({
               <div
                 role="presentation"
                 aria-hidden="true"
-                className="flex cursor-move items-center justify-between border-b border-border bg-accent px-3 py-2 text-accent-foreground"
+                className="flex cursor-move items-center justify-between border-b border-base-300 bg-accent px-3 py-2 text-accent-content"
                 onMouseDown={e => {
                   setHasBeenDragged(true);
                   draggableWindow.handleMouseDown(e);
@@ -267,7 +267,7 @@ export const Dialog = ({
                 </div>
                 <button
                   onClick={closed}
-                  className="flex items-center justify-center rounded-lg p-1 text-accent-foreground transition-colors hover:bg-accent-foreground/10"
+                  className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10"
                   aria-label="Close"
                 >
                   <TbX />
@@ -280,7 +280,7 @@ export const Dialog = ({
             {customRenderer && (
               <div className="flex size-full flex-col overflow-hidden rounded-lg">
                 {!isUpward && !draggable && (
-                  <div className="shrink-0 border-b border-border bg-muted px-2 pb-1 pt-2">
+                  <div className="shrink-0 border-b border-base-300 bg-neutral px-2 pb-1 pt-2">
                     <input
                       type="text"
                       className="input-dialog-sm"
@@ -296,7 +296,7 @@ export const Dialog = ({
                   {customRenderer}
                 </div>
                 {isUpward && !draggable && (
-                  <div className="shrink-0 border-t border-border bg-muted px-2 pb-2 pt-1">
+                  <div className="shrink-0 border-t border-base-300 bg-neutral px-2 pb-2 pt-1">
                     <input
                       type="text"
                       className="input-dialog-sm"
@@ -314,7 +314,7 @@ export const Dialog = ({
             {!children && !customRenderer && (
               <div className="flex size-full flex-col overflow-hidden rounded-lg">
                 {!isUpward && !draggable && (
-                  <div className="shrink-0 border-b border-border bg-muted px-2 pb-1 pt-2">
+                  <div className="shrink-0 border-b border-base-300 bg-neutral px-2 pb-1 pt-2">
                     <input
                       type="text"
                       className="input-dialog-sm"
@@ -330,7 +330,7 @@ export const Dialog = ({
                 <div ref={refIe} className="scrollbar-light min-h-0 flex-1 overflow-y-auto px-2 py-1">
                   {!searchValue && (
                     <button
-                      className={`flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-muted-foreground transition-colors hover:bg-muted ${selectedIndex === -1 ? "bg-primary text-primary-foreground" : ""}`}
+                      className={`flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-neutral-content transition-colors hover:bg-neutral ${selectedIndex === -1 ? "bg-primary text-primary-content" : ""}`}
                       onClick={e => changed(null)}
                     >
                       Default
@@ -338,7 +338,7 @@ export const Dialog = ({
                   )}
 
                   {!itemList.length && searchValue && (
-                    <div className="flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-muted-foreground hover:bg-muted">
+                    <div className="flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-neutral-content hover:bg-neutral">
                       No results.
                     </div>
                   )}
@@ -350,11 +350,11 @@ export const Dialog = ({
                       return (
                         <button
                           id={`font-${_}`}
-                          className={`flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-muted-foreground transition-colors hover:bg-muted ${
+                          className={`flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-neutral-content transition-colors hover:bg-neutral ${
                             dialog.value === _
-                              ? "bg-primary text-primary-foreground"
+                              ? "bg-primary text-primary-content"
                               : selectedIndex === k
-                                ? "bg-muted"
+                                ? "bg-neutral"
                                 : ""
                           }`}
                           style={{ fontFamily: (_ || []).join(", ") }}
@@ -369,7 +369,7 @@ export const Dialog = ({
                 </div>
 
                 {isUpward && !draggable && (
-                  <div className="shrink-0 border-t border-border bg-muted px-2 pb-2 pt-1">
+                  <div className="shrink-0 border-t border-base-300 bg-neutral px-2 pb-2 pt-1">
                     <input
                       type="text"
                       className="input-dialog-sm"

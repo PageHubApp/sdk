@@ -64,7 +64,7 @@ export function SubgroupPopout({
       <div
         role="presentation"
         style={style}
-        className="min-w-[200px] max-w-[350px] rounded-md border border-border bg-popover p-0.5 shadow-xl"
+        className="min-w-[200px] max-w-[350px] rounded-md border border-base-300 bg-base-100 p-0.5 shadow-xl"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
@@ -72,7 +72,7 @@ export function SubgroupPopout({
           {options.map(option => (
             <button
               key={option}
-              className="rounded border border-border/50 px-2 py-1.5 text-left text-xs transition-colors hover:border-accent hover:bg-accent hover:text-accent-foreground"
+              className="rounded border border-base-300/50 px-2 py-1.5 text-left text-xs transition-colors hover:border-accent hover:bg-accent hover:text-accent-content"
               onClick={() => onSelect(option)}
             >
               <span className="text-xs">{getDisplayLabel(option)}</span>
@@ -147,7 +147,7 @@ export function SubgroupItem({
       <div
         ref={setAnchorElement}
         role="presentation"
-        className="w-full cursor-pointer rounded px-2 py-1 text-left text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
+        className="w-full cursor-pointer rounded px-2 py-1 text-left text-xs font-medium text-neutral-content transition-colors hover:bg-neutral"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >

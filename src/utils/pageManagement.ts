@@ -3,6 +3,7 @@
  */
 
 import { ROOT_NODE } from "@craftjs/core";
+import { phStorage } from "./phStorage";
 
 // ─── Page Count ───
 
@@ -44,7 +45,7 @@ export const isolatePage = (
 
   if (select) setTimeout(() => actions.selectNode(_active), 100);
   setIsolate(!isolate ? _active : "");
-  localStorage.setItem("isolated", !isolate ? _active : "");
+  phStorage.set("isolated", !isolate ? _active : "");
 };
 
 export const isolatePageAlt = (
@@ -88,7 +89,7 @@ export const isolatePageAlt = (
   }
 
   setIsolate(active);
-  localStorage.setItem("isolated", active);
+  phStorage.set("isolated", active);
 };
 
 // ─── Page Ref Resolution ───

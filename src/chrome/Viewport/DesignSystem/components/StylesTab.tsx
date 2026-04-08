@@ -1,4 +1,5 @@
 import { TbChevronDown, TbChevronRight } from "react-icons/tb";
+import { DENSITY_STEPS } from "utils/defaults";
 import type { UseDesignSystemReturn } from "../hooks/useDesignSystem";
 
 interface StylesTabProps {
@@ -19,21 +20,21 @@ function CollapsibleSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-b border-border last:border-b-0">
+    <div className="border-b border-base-300 last:border-b-0">
       <button
         onClick={() => onToggle(section)}
-        className="flex w-full items-center justify-between bg-muted px-3 py-2 text-left transition-colors hover:bg-muted/80"
+        className="flex w-full items-center justify-between bg-neutral px-3 py-2 text-left transition-colors hover:bg-neutral/80"
         aria-expanded={expanded}
       >
-        <span className="text-sm font-semibold text-muted-foreground">{title}</span>
+        <span className="text-sm font-semibold text-neutral-content">{title}</span>
         {expanded ? (
-          <TbChevronDown className="text-muted-foreground" size={18} />
+          <TbChevronDown className="text-neutral-content" size={18} />
         ) : (
-          <TbChevronRight className="text-muted-foreground" size={18} />
+          <TbChevronRight className="text-neutral-content" size={18} />
         )}
       </button>
       {expanded && (
-        <div className="space-y-3 bg-background p-3 text-foreground">{children}</div>
+        <div className="space-y-3 bg-base-100 p-3 text-base-content">{children}</div>
       )}
     </div>
   );
@@ -54,14 +55,14 @@ function SelectField({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-xs font-medium text-muted-foreground">
+      <label htmlFor={id} className="mb-1 block text-xs font-medium text-neutral-content">
         {label}
       </label>
       <select
         id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        className="w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content focus:outline-none focus:ring-2 focus:ring-ring"
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>
@@ -73,15 +74,6 @@ function SelectField({
   );
 }
 
-const DENSITY_STEPS = [
-  { value: "0.5", label: "Tight" },
-  { value: "0.65", label: "Compact" },
-  { value: "0.8", label: "Snug" },
-  { value: "1", label: "Default" },
-  { value: "1.25", label: "Relaxed" },
-  { value: "1.5", label: "Airy" },
-  { value: "1.75", label: "Spacious" },
-];
 
 function DensitySlider({
   value,
@@ -91,17 +83,17 @@ function DensitySlider({
   onChange: (value: string) => void;
 }) {
   const stepIndex = DENSITY_STEPS.findIndex(s => s.value === value);
-  const currentIndex = stepIndex >= 0 ? stepIndex : 2; // default to "Default"
+  const currentIndex = stepIndex >= 0 ? stepIndex : DENSITY_STEPS.findIndex(s => s.value === "1");
   const currentLabel = DENSITY_STEPS[currentIndex].label;
 
   return (
     <div>
       <div className="mb-1 flex items-center justify-between">
-        <label className="text-xs font-medium text-muted-foreground">Spacing Density</label>
-        <span className="text-xs text-muted-foreground">{currentLabel}</span>
+        <label className="text-xs font-medium text-neutral-content">Spacing Density</label>
+        <span className="text-xs text-neutral-content">{currentLabel}</span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-muted-foreground">Compact</span>
+        <span className="text-[10px] text-neutral-content">Compact</span>
         <input
           type="range"
           min={0}
@@ -111,7 +103,7 @@ function DensitySlider({
           onChange={e => onChange(DENSITY_STEPS[Number(e.target.value)].value)}
           className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border accent-foreground"
         />
-        <span className="text-[10px] text-muted-foreground">Airy</span>
+        <span className="text-[10px] text-neutral-content">Airy</span>
       </div>
     </div>
   );
@@ -134,17 +126,17 @@ function ColorButton({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-xs font-medium text-muted-foreground">
+      <label htmlFor={id} className="mb-1 block text-xs font-medium text-neutral-content">
         {label}
       </label>
       <button
         id={id}
         ref={buttonRef}
         onClick={onClick}
-        className="flex w-full items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-left text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+        className="flex w-full items-center gap-2 rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-left text-sm text-base-content hover:bg-neutral focus:outline-none focus:ring-2 focus:ring-ring"
       >
         <div
-          className="size-4 rounded-lg border border-border"
+          className="size-4 rounded-lg border border-base-300"
           style={{ backgroundColor: preview }}
         />
         <span className="flex-1 truncate">{value}</span>
@@ -169,8 +161,10 @@ export function StylesTab({ ds }: StylesTabProps) {
       </CollapsibleSection>
 
       <CollapsibleSection title="Effects & Borders" section="effects" expanded={!!expandedSections.effects} onToggle={toggleSection}>
-        <SelectField id="ds-border-radius" label="Border Radius" value={styles.borderRadius} onChange={v => updateStyle("borderRadius", v)}
+        <SelectField id="ds-radius-box" label="Radius Box" value={styles.radiusBox} onChange={v => updateStyle("radiusBox", v)}
           options={[{ value: "0", label: "None" }, { value: "0.125rem", label: "Small" }, { value: "0.25rem", label: "Default" }, { value: "0.375rem", label: "Medium" }, { value: "0.5rem", label: "Large" }, { value: "0.75rem", label: "XL" }, { value: "1rem", label: "2XL" }, { value: "9999px", label: "Full" }]} />
+        <SelectField id="ds-radius-field" label="Radius Field" value={styles.radiusField} onChange={v => updateStyle("radiusField", v)}
+          options={[{ value: "0", label: "None" }, { value: "0.125rem", label: "Small" }, { value: "0.25rem", label: "Default" }, { value: "0.375rem", label: "Medium" }, { value: "0.5rem", label: "Large" }, { value: "0.75rem", label: "XL" }, { value: "9999px", label: "Full" }]} />
         <SelectField id="ds-shadow-style" label="Shadow Style" value={styles.shadowStyle} onChange={v => updateStyle("shadowStyle", v)}
           options={[{ value: "shadow-none", label: "None" }, { value: "shadow-sm", label: "Small" }, { value: "shadow", label: "Default" }, { value: "shadow-md", label: "Medium" }, { value: "shadow-lg", label: "Large" }, { value: "shadow-xl", label: "XL" }, { value: "shadow-2xl", label: "2XL" }]} />
       </CollapsibleSection>
@@ -178,12 +172,10 @@ export function StylesTab({ ds }: StylesTabProps) {
       <CollapsibleSection title="Form Inputs" section="forms" expanded={!!expandedSections.forms} onToggle={toggleSection}>
         <SelectField id="ds-input-padding" label="Input Padding" value={styles.inputPadding} onChange={v => updateStyle("inputPadding", v)}
           options={[{ value: "0.5rem 0.25rem", label: "Small" }, { value: "0.75rem 0.5rem", label: "Medium" }, { value: "1rem 0.5rem", label: "Large" }, { value: "1rem 0.75rem", label: "XL" }]} />
-        <SelectField id="ds-input-border-width" label="Border Width" value={styles.inputBorderWidth} onChange={v => updateStyle("inputBorderWidth", v)}
+        <SelectField id="ds-border" label="Border Width" value={styles.border} onChange={v => updateStyle("border", v)}
           options={[{ value: "0", label: "None" }, { value: "1px", label: "1px" }, { value: "2px", label: "2px" }, { value: "4px", label: "4px" }]} />
         <ColorButton id="ds-input-border-color" label="Border Color" value={styles.inputBorderColor} preview={getColorPreview(styles.inputBorderColor)}
           buttonRef={ds.inputBorderColorButtonRef} onClick={() => openStyleColorPicker(ds.inputBorderColorButtonRef, styles.inputBorderColor, v => updateStyle("inputBorderColor", v))} />
-        <SelectField id="ds-input-border-radius" label="Border Radius" value={styles.inputBorderRadius} onChange={v => updateStyle("inputBorderRadius", v)}
-          options={[{ value: "0", label: "None" }, { value: "0.125rem", label: "Small" }, { value: "0.25rem", label: "Default" }, { value: "0.375rem", label: "Medium" }, { value: "0.5rem", label: "Large" }, { value: "0.75rem", label: "XL" }, { value: "9999px", label: "Full" }]} />
         <ColorButton id="ds-input-bg-color" label="Background Color" value={styles.inputBgColor} preview={getColorPreview(styles.inputBgColor)}
           buttonRef={ds.inputBgColorButtonRef} onClick={() => openStyleColorPicker(ds.inputBgColorButtonRef, styles.inputBgColor, v => updateStyle("inputBgColor", v))} />
         <ColorButton id="ds-input-text-color" label="Text Color" value={styles.inputTextColor} preview={getColorPreview(styles.inputTextColor)}

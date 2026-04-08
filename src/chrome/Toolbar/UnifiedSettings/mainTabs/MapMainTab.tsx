@@ -67,7 +67,7 @@ export const MapMainTab = () => {
           extraButtons={(point) => [
             <button
               key="edit"
-              className="flex items-center justify-center text-foreground transition-colors hover:text-primary"
+              className="flex items-center justify-center text-base-content transition-colors hover:text-primary"
               title="Edit point"
               onClick={e => {
                 e.stopPropagation();

@@ -69,13 +69,13 @@ export function CategoryDetailView({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-border px-3 py-2.5">
-        <button onClick={onBack} className="rounded-md p-1 transition-colors hover:bg-muted cursor-pointer">
+      <div className="flex items-center gap-2 border-b border-base-300 px-3 py-2.5">
+        <button onClick={onBack} className="rounded-md p-1 transition-colors hover:bg-neutral cursor-pointer">
           <TbArrowLeft className="size-4" />
         </button>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-medium">{category.name}</div>
-          <div className="text-xs text-muted-foreground">{category.total} blocks</div>
+          <div className="text-xs text-neutral-content">{category.total} blocks</div>
         </div>
       </div>
 
@@ -106,7 +106,7 @@ export function CategoryDetailView({
       {/* Block list */}
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center">
-          <TbLoader2 className="size-5 animate-spin text-muted-foreground" />
+          <TbLoader2 className="size-5 animate-spin text-neutral-content" />
         </div>
       ) : (
         <AutoHideScrollbar className="flex-1" ref={containerRef}>
@@ -128,7 +128,7 @@ export function CategoryDetailView({
           </div>
           {blocks.length === 0 && (
             <div className="flex h-32 items-center justify-center">
-              <p className="text-sm text-muted-foreground">No blocks in this category.</p>
+              <p className="text-sm text-neutral-content">No blocks in this category.</p>
             </div>
           )}
           <div className="shrink-0" style={{ minHeight: "70vh" }} />
@@ -137,14 +137,14 @@ export function CategoryDetailView({
 
       {/* Prev / Next category nav */}
       {(prevCategory || nextCategory) && (
-        <div className="flex items-stretch border-t border-border">
+        <div className="flex items-stretch border-t border-base-300">
           {prevCategory ? (
             <button
               onClick={() => onCategoryChange(prevCategory.id)}
-              className="flex flex-1 cursor-pointer items-center gap-1.5 px-3 py-2.5 text-left transition-colors hover:bg-muted"
+              className="flex flex-1 cursor-pointer items-center gap-1.5 px-3 py-2.5 text-left transition-colors hover:bg-neutral"
             >
-              <TbChevronLeft className="size-3.5 shrink-0 text-muted-foreground" />
-              <span className="min-w-0 truncate text-xs font-medium text-muted-foreground">{prevCategory.name}</span>
+              <TbChevronLeft className="size-3.5 shrink-0 text-neutral-content" />
+              <span className="min-w-0 truncate text-xs font-medium text-neutral-content">{prevCategory.name}</span>
             </button>
           ) : (
             <div className="flex-1" />
@@ -155,10 +155,10 @@ export function CategoryDetailView({
           {nextCategory ? (
             <button
               onClick={() => onCategoryChange(nextCategory.id)}
-              className="flex flex-1 cursor-pointer items-center justify-end gap-1.5 px-3 py-2.5 text-right transition-colors hover:bg-muted"
+              className="flex flex-1 cursor-pointer items-center justify-end gap-1.5 px-3 py-2.5 text-right transition-colors hover:bg-neutral"
             >
-              <span className="min-w-0 truncate text-xs font-medium text-muted-foreground">{nextCategory.name}</span>
-              <TbChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+              <span className="min-w-0 truncate text-xs font-medium text-neutral-content">{nextCategory.name}</span>
+              <TbChevronRight className="size-3.5 shrink-0 text-neutral-content" />
             </button>
           ) : (
             <div className="flex-1" />

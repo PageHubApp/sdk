@@ -29,13 +29,13 @@ export function getEditorTabletCanvasClasses(
   const inner = enabled
     ? [
         "flex-1 min-h-0 min-w-0 w-full mx-auto relative",
-        "scrollbar-light bg-background overflow-y-auto overflow-x-hidden",
-        "rounded-2xl border border-border",
+        "scrollbar-light bg-base-100 overflow-y-auto overflow-x-hidden",
+        "rounded-2xl border border-base-300",
         `max-w-[${contentWidthPx}px]`,
       ].join(" ")
     : [
         "w-full h-full min-h-0 overflow-auto relative mx-auto",
-        "rounded-2xl border border-border",
+        "rounded-2xl border border-base-300",
         `max-w-[${contentWidthPx}px]`,
       ].join(" ");
 
@@ -52,8 +52,8 @@ export function getEditorWidthOnlyCanvasClasses(
   widthPx: number,
 ): [string, string] {
   const inner = enabled
-    ? `${desktopInner} max-w-[${widthPx}px] mx-auto w-full h-full min-h-0 rounded-lg border border-border bg-background shadow-sm`
-    : `${desktopInner} max-w-[${widthPx}px] mx-auto w-full h-full min-h-0 rounded-lg border border-border shadow-sm`;
+    ? `${desktopInner} max-w-[${widthPx}px] mx-auto w-full h-full min-h-0 rounded-lg border border-base-300 bg-base-100 shadow-sm`
+    : `${desktopInner} max-w-[${widthPx}px] mx-auto w-full h-full min-h-0 rounded-lg border border-base-300 shadow-sm`;
 
   return [desktopOuter, inner];
 }

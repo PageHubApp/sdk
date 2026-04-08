@@ -32,6 +32,26 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     }, text);
   }
 
+  if (props.tagName === "Textfit") {
+    // AutoTextSize is JS-only — use a reasonable clamp for static HTML
+    // Strip vw-based text-[] classes that blow up in scaled preview containers
+    const fitCls = cls.replace(/text-\[clamp\([^\]]*vw[^\]]*\)\]/g, "").trim();
+    // AutoTextSize is JS-only. Use cqw so text scales with the preview container
+    // (ancestor needs container-type: inline-size — set on the preview wrapper).
+    // At 1280px viewport, container = 250% = 3200px; AutoTextSize computes ~128px.
+    // 128/3200*100 ≈ 4cqw. Scale per char count so shorter words get bigger.
+    const plainText = text.replace(/<[^>]*>/g, "").trim();
+    const charCount = plainText.length || 1;
+    const cqw = Math.min(40 / charCount, 5.5).toFixed(1);
+    const fitStyle = [style, `font-size: ${cqw}cqw; width: 100%`].filter(Boolean).join("; ");
+
+    return tag("div", {
+      class: fitCls || undefined,
+      style: fitStyle,
+      ...ariaAttrs(props),
+    }, text);
+  }
+
   return tag(props.tagName || "div", {
     class: cls || undefined,
     style: style || undefined,
@@ -100,15 +120,45 @@ export const TextDef = defineComponent({
     },
   ],
   modifiers: [
-    { name: "text-xs", label: "Extra Small", category: "Size" },
-    { name: "text-sm", label: "Small", category: "Size" },
-    { name: "text-lg", label: "Large", category: "Size" },
-    { name: "text-2xl", label: "XL", category: "Size" },
-    { name: "text-4xl", label: "Display", category: "Size" },
-    { name: "font-bold", label: "Bold", category: "Weight" },
-    { name: "font-light", label: "Light", category: "Weight" },
-    { name: "text-center", label: "Center", category: "Alignment" },
-    { name: "text-right", label: "Right", category: "Alignment" },
+    // Size
+    { name: "text-xs", label: "XS", category: "Size", exclusive: true },
+    { name: "text-sm", label: "SM", category: "Size", exclusive: true },
+    { name: "text-base", label: "Base", category: "Size", exclusive: true },
+    { name: "text-lg", label: "LG", category: "Size", exclusive: true },
+    { name: "text-xl", label: "XL", category: "Size", exclusive: true },
+    { name: "text-2xl", label: "2XL", category: "Size", exclusive: true },
+    { name: "text-3xl", label: "3XL", category: "Size", exclusive: true },
+    { name: "text-4xl", label: "4XL", category: "Size", exclusive: true },
+    { name: "text-5xl", label: "5XL", category: "Size", exclusive: true },
+    // Weight
+    { name: "font-light", label: "Light", category: "Weight", exclusive: true },
+    { name: "font-normal", label: "Normal", category: "Weight", exclusive: true },
+    { name: "font-medium", label: "Medium", category: "Weight", exclusive: true },
+    { name: "font-semibold", label: "Semibold", category: "Weight", exclusive: true },
+    { name: "font-bold", label: "Bold", category: "Weight", exclusive: true },
+    { name: "font-extrabold", label: "Extra Bold", category: "Weight", exclusive: true },
+    // Alignment
+    { name: "text-left", label: "Left", category: "Align", exclusive: true },
+    { name: "text-center", label: "Center", category: "Align", exclusive: true },
+    { name: "text-right", label: "Right", category: "Align", exclusive: true },
+    // Style
     { name: "uppercase", label: "Uppercase", category: "Style" },
+    { name: "italic", label: "Italic", category: "Style" },
+    { name: "tracking-wide", label: "Wide Track", category: "Style" },
+    { name: "tracking-widest", label: "Widest Track", category: "Style" },
+    { name: "leading-tight", label: "Tight Lines", category: "Style" },
+    { name: "leading-relaxed", label: "Relaxed Lines", category: "Style" },
+    // DaisyUI
+    { name: "link", label: "Link", category: "DaisyUI" },
+    { name: "link-primary", label: "Link Primary", category: "DaisyUI" },
+    { name: "link-hover", label: "Link Hover", category: "DaisyUI" },
+    // Color
+    { name: "text-primary", label: "Primary", category: "Color", exclusive: true },
+    { name: "text-accent", label: "Accent", category: "Color", exclusive: true },
+    { name: "text-neutral-content", label: "Muted", category: "Color", exclusive: true },
+    { name: "opacity-70", label: "Faded", category: "Color", exclusive: true },
+    // Font family
+    { name: "font-heading", label: "Heading Font", category: "Font", exclusive: true },
+    { name: "font-body", label: "Body Font", category: "Font", exclusive: true },
   ],
 }, { __internal: true });

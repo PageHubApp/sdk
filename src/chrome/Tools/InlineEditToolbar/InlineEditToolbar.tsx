@@ -93,14 +93,14 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
 
           {/* Styles + Font triggers */}
           <Tooltip content="Typography Presets" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-            <button className={`tool-button ${activePanel === "styles" ? "bg-muted text-foreground" : ""}`} onClick={() => toggle("styles")}>
+            <button className={`tool-button ${activePanel === "styles" ? "bg-neutral text-base-content" : ""}`} onClick={() => toggle("styles")}>
               <MdFontDownload />
               <span className="text-xs">Styles</span>
               <TbChevronDown className="size-3!" />
             </button>
           </Tooltip>
           <Tooltip content="Font" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-            <button className={`tool-button ${activePanel === "font" ? "bg-muted text-foreground" : ""}`} onClick={() => toggle("font")}>
+            <button className={`tool-button ${activePanel === "font" ? "bg-neutral text-base-content" : ""}`} onClick={() => toggle("font")}>
               <MdFontDownload />
               <span className="text-xs">Font</span>
               <TbChevronDown className="size-3!" />
@@ -111,7 +111,7 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
 
           {/* Link trigger */}
           <Tooltip content="Insert Link (⌘K)" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-            <button className={`tool-button ${activePanel === "link" ? "bg-muted text-foreground" : ""}`} onClick={() => toggle("link")}>
+            <button className={`tool-button ${activePanel === "link" ? "bg-neutral text-base-content" : ""}`} onClick={() => toggle("link")}>
               <MdLink />
             </button>
           </Tooltip>
@@ -123,14 +123,14 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
             <button
               type="button"
               onClick={() => toggle("bgcolor")}
-              className={`size-6 cursor-pointer rounded border-2 transition-colors ${activePanel === "bgcolor" ? "border-primary" : "border-border"}`}
+              className={`size-6 cursor-pointer rounded border-2 transition-colors ${activePanel === "bgcolor" ? "border-primary" : "border-base-300"}`}
               style={{ backgroundColor: editor.getAttributes("highlight").color || "#ffffff" }}
               data-tooltip-id="iet-tip" data-tooltip-content="Background Color" data-tooltip-place="top"
             />
             <button
               type="button"
               onClick={() => toggle("textcolor")}
-              className={`size-6 cursor-pointer rounded border-2 transition-colors ${activePanel === "textcolor" ? "border-primary" : "border-border"}`}
+              className={`size-6 cursor-pointer rounded border-2 transition-colors ${activePanel === "textcolor" ? "border-primary" : "border-base-300"}`}
               style={{ backgroundColor: editor.getAttributes("textStyle").color || "#000000" }}
               data-tooltip-id="iet-tip" data-tooltip-content="Text Color" data-tooltip-place="top"
             />
@@ -140,7 +140,7 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
 
           {/* More trigger */}
           <Tooltip content="More" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-            <button className={`tool-button ${activePanel === "more" ? "bg-muted text-foreground" : ""}`} onClick={() => toggle("more")}>
+            <button className={`tool-button ${activePanel === "more" ? "bg-neutral text-base-content" : ""}`} onClick={() => toggle("more")}>
               <TbChevronDown />
             </button>
           </Tooltip>
@@ -200,7 +200,7 @@ function FormatButton({ command, active, tooltip, icon, onAction }: {
 }) {
   return (
     <Tooltip content={tooltip} placement="top" tooltipClassName="text-xs! px-2! py-1!">
-      <button type="button" onClick={onAction(command)} className={`tool-button ${active ? "bg-muted text-foreground" : ""}`}>
+      <button type="button" onClick={onAction(command)} className={`tool-button ${active ? "bg-neutral text-base-content" : ""}`}>
         {icon}
       </button>
     </Tooltip>

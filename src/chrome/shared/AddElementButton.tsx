@@ -33,7 +33,7 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
               canvas
               is={Container}
               canDelete={true}
-              className="flex flex-col w-full gap-(--section-gap)"
+              className="flex flex-col w-full gap-section"
               custom={{ displayName: "Section" }}
             />
           ),
@@ -49,7 +49,7 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
               canvas
               is={Container}
               canDelete={true}
-              className="flex flex-col w-full gap-(--section-gap)"
+              className="flex flex-col w-full gap-section"
               custom={{ displayName: "Container" }}
             />
           ),
@@ -59,15 +59,6 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
         });
       }
 
-      // Select the newly added element after a short delay
-      if (newElement) {
-        setTimeout(() => {
-          const newNodeId = newElement.rootNodeId;
-          if (newNodeId) {
-            actions.selectNode(newNodeId);
-          }
-        }, 100);
-      }
     } else {
       // Open menu for other cases
       openPanel("components");

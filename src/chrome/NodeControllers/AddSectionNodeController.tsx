@@ -73,7 +73,6 @@ export const AddSectionNodeController = (props: { position; align }) => {
         const node = query.node(newElement.rootNodeId).get();
         if (node?.dom) {
           node.dom.scrollIntoView({ behavior: "smooth", block: "center" });
-          setTimeout(() => actions.selectNode(newElement.rootNodeId), 500);
         }
       }, 100);
     }

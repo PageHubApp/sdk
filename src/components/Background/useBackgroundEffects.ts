@@ -11,6 +11,7 @@ import { useEffect, useRef } from "react";
 import { getMaterialSymbolsUrlFromNodes } from "../../utils/data/collectGoogleIcons";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
 import { injectDesignSystemVars } from "../../utils/design/designSystemVars";
+import { resolveTheme } from "../../utils/design/resolveTheme";
 import { GoogleFontLoadedAtom, useSetAtomState } from "../../utils/atoms";
 import { isCssValid, isJsValid } from "../../utils/lib";
 import { addElementsToHead } from "./headInjection";
@@ -92,12 +93,13 @@ export function useBackgroundEffects({
     const existingStyle = document.getElementById(styleId);
     if (existingStyle) head.removeChild(existingStyle);
 
-    if (props.styleGuide) {
+    const theme = resolveTheme(props);
+    if (theme.styleGuide) {
       const resolveLinkColor = (colorValue: string | undefined): string => {
         if (!colorValue) return "inherit";
         if (colorValue.startsWith("palette:")) {
           const paletteName = colorValue.replace("palette:", "");
-          const paletteColor = ((props.pallet || []) as NamedColor[]).find(
+          const paletteColor = (theme.palette as NamedColor[]).find(
             p => p.name === paletteName,
           );
           if (paletteColor) return resolveLinkColor(paletteColor.color);
@@ -129,14 +131,14 @@ export function useBackgroundEffects({
 
       const linkStyles = `
         ${selector} {
-          color: ${resolveLinkColor(props.styleGuide.linkColor)};
-          ${props.styleGuide.linkUnderline === "underline" ? "text-decoration: underline;" : props.styleGuide.linkUnderline === "no-underline" ? "text-decoration: none;" : ""};
-          ${props.styleGuide.linkUnderlineOffset && props.styleGuide.linkUnderlineOffset !== "underline-offset-auto" ? `text-underline-offset: ${props.styleGuide.linkUnderlineOffset.replace("underline-offset-", "")}px;` : ""};
+          color: ${resolveLinkColor(theme.styleGuide.linkColor)};
+          ${theme.styleGuide.linkUnderline === "underline" ? "text-decoration: underline;" : theme.styleGuide.linkUnderline === "no-underline" ? "text-decoration: none;" : ""};
+          ${theme.styleGuide.linkUnderlineOffset && theme.styleGuide.linkUnderlineOffset !== "underline-offset-auto" ? `text-underline-offset: ${theme.styleGuide.linkUnderlineOffset.replace("underline-offset-", "")}px;` : ""};
           transition: color 150ms ease-in-out;
         }
         ${selector}:hover {
-          color: ${resolveLinkColor(props.styleGuide.linkHoverColor)};
-          ${props.styleGuide.linkUnderline === "hover:underline" ? "text-decoration: underline;" : ""};
+          color: ${resolveLinkColor(theme.styleGuide.linkHoverColor)};
+          ${theme.styleGuide.linkUnderline === "hover:underline" ? "text-decoration: underline;" : ""};
         }
       `;
 
@@ -150,16 +152,17 @@ export function useBackgroundEffects({
       const styleToRemove = document.getElementById(styleId);
       if (styleToRemove) head.removeChild(styleToRemove);
     };
-  }, [props.styleGuide, props.pallet]);
+  }, [props.theme]);
 
   // ---- Design system CSS variables ----
   useEffect(() => {
     if (typeof window === "undefined" || !enabled) return;
+    const t = resolveTheme(props);
     injectDesignSystemVars({
-      palette: props.pallet || DEFAULT_PALETTE,
-      darkPalette: props.darkPallet || undefined,
-      typography: props.typography || [],
-      styleGuide: props.styleGuide || DEFAULT_STYLE_GUIDE,
+      palette: t.palette.length ? t.palette : DEFAULT_PALETTE,
+      darkPalette: t.darkPalette || undefined,
+      typography: t.typography || [],
+      styleGuide: t.styleGuide && Object.keys(t.styleGuide).length ? t.styleGuide : DEFAULT_STYLE_GUIDE,
     });
-  }, [props.pallet, props.darkPallet, props.typography, props.styleGuide, enabled]);
+  }, [props.theme, enabled]);
 }

@@ -52,7 +52,7 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <TbLoader2 className="size-5 animate-spin text-muted-foreground" />
+        <TbLoader2 className="size-5 animate-spin text-neutral-content" />
       </div>
     );
   }
@@ -60,7 +60,7 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
   if (blocks.length === 0) {
     return (
       <div className="flex h-32 items-center justify-center p-6">
-        <p className="text-sm text-muted-foreground">No blocks found for &ldquo;{searchQuery}&rdquo;</p>
+        <p className="text-sm text-neutral-content">No blocks found for &ldquo;{searchQuery}&rdquo;</p>
       </div>
     );
   }
@@ -70,7 +70,7 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
       <div className="p-3 pt-1">
         {Object.entries(grouped).map(([cat, catBlocks]) => (
           <div key={cat} className="mb-4">
-            <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-content">
               {cat} ({catBlocks.length})
             </div>
             <div className="grid w-full grid-cols-1 gap-3">

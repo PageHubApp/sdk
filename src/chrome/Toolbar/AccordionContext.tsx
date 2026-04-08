@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from "react";
+import { phStorage } from "../../utils/phStorage";
 
-const STORAGE_KEY = "ph-accordion-state";
 const DEFAULT_OPEN_SECTION = "Content";
 
 const AccordionContext = createContext(null);
@@ -9,18 +9,14 @@ export const useAccordionContext = () => useContext(AccordionContext);
 
 export const AccordionProvider = ({ children }) => {
   const [openSections, setOpenSections] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return {};
+    return phStorage.getJSON("accordion-state", {});
   });
 
   const registeredSections = useRef(new Set());
 
   const persist = (state) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      phStorage.set("accordion-state", state);
     } catch {}
   };
 

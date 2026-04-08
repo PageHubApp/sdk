@@ -46,7 +46,7 @@ export const ContainerTypeInput = () => {
                 canvas
                 is={Container}
                 canDelete={true}
-                className="flex flex-col w-full gap-(--section-gap)"
+                className="flex flex-col w-full gap-section"
                 custom={{ displayName: "Container" }}
               />
             ),

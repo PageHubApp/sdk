@@ -80,9 +80,8 @@ export const HTMLCodeInput = ({
         height={height}
         placeholder={placeholder}
       />
-      {helpText && <p className="text-xs text-muted-foreground">{helpText}</p>}
+      {helpText && <p className="text-xs text-neutral-content">{helpText}</p>}
     </div>
   );
 };
 
-export default HTMLCodeInput;

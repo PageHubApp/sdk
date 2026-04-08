@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { phStorage } from "../../utils/phStorage";
 
 type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
@@ -25,7 +26,6 @@ const EDGE_CURSORS: Record<ResizeEdge, string> = {
   se: "nwse-resize",
 };
 
-const STORAGE_PREFIX = "resizable-";
 const HANDLE_SIZE = 8;
 const CORNER_SIZE = 14;
 
@@ -59,12 +59,9 @@ export function useResizable(options: UseResizableOptions) {
 
   const [size, setSize] = useState(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_PREFIX + storageKey);
-      if (raw) {
-        const p = JSON.parse(raw);
-        if (typeof p.width === "number" && typeof p.height === "number") {
-          return clamp(p.width, p.height);
-        }
+      const p = phStorage.getJSON<{ width: number; height: number }>("resizable-" + storageKey, null);
+      if (p && typeof p.width === "number" && typeof p.height === "number") {
+        return clamp(p.width, p.height);
       }
     } catch {}
     return { width: defaultWidth, height: defaultHeight };
@@ -89,7 +86,7 @@ export function useResizable(options: UseResizableOptions) {
   const save = useCallback(
     (s: { width: number; height: number }) => {
       try {
-        localStorage.setItem(STORAGE_PREFIX + storageKey, JSON.stringify(s));
+        phStorage.set("resizable-" + storageKey, s);
       } catch {}
     },
     [storageKey],

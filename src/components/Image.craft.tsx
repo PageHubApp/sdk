@@ -94,12 +94,30 @@ export const ImageDef = defineComponent({
     },
   ],
   modifiers: [
-    { name: "img-rounded", label: "Rounded", category: "Shape" },
-    { name: "img-circle", label: "Circle", category: "Shape" },
-    { name: "img-cover", label: "Cover", category: "Fit" },
-    { name: "img-contain", label: "Contain", category: "Fit" },
-    { name: "aspect-square", label: "Square", category: "Aspect" },
-    { name: "aspect-video", label: "Video", category: "Aspect" },
-    { name: "aspect-4-3", label: "4:3", category: "Aspect" },
+    // Shape (using design tokens)
+    { name: "rounded-box", label: "Rounded", category: "Shape", exclusive: true },
+    { name: "rounded-field", label: "Slight Round", category: "Shape", exclusive: true },
+    { name: "rounded-full", label: "Circle", category: "Shape", exclusive: true },
+    { name: "rounded-none", label: "Sharp", category: "Shape", exclusive: true },
+    // Fit
+    { name: "object-cover", label: "Cover", category: "Fit", exclusive: true },
+    { name: "object-contain", label: "Contain", category: "Fit", exclusive: true },
+    { name: "object-fill", label: "Fill", category: "Fit", exclusive: true },
+    // Aspect ratio
+    { name: "aspect-square", label: "Square", category: "Aspect", exclusive: true },
+    { name: "aspect-video", label: "Video (16:9)", category: "Aspect", exclusive: true },
+    { name: "aspect-[4/3]", label: "4:3", category: "Aspect", exclusive: true },
+    { name: "aspect-[3/2]", label: "3:2", category: "Aspect", exclusive: true },
+    // DaisyUI
+    { name: "mask mask-squircle", label: "Squircle", category: "Mask", exclusive: true },
+    { name: "mask mask-hexagon", label: "Hexagon", category: "Mask", exclusive: true },
+    { name: "mask mask-diamond", label: "Diamond", category: "Mask", exclusive: true },
+    { name: "mask mask-heart", label: "Heart", category: "Mask", exclusive: true },
+    // Effects
+    { name: "shadow-lg", label: "Shadow", category: "Effect" },
+    { name: "shadow-2xl", label: "Deep Shadow", category: "Effect" },
+    { name: "ring-2 ring-primary", label: "Ring", category: "Effect" },
+    { name: "grayscale", label: "Grayscale", category: "Effect" },
+    { name: "opacity-80", label: "Faded", category: "Effect" },
   ],
 }, { __internal: true });

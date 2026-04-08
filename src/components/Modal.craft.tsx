@@ -77,7 +77,7 @@ function buildModalChildren() {
       text="Open Modal"
       url=""
       action={{ type: "show-hide", target: "my-modal", direction: "show", trigger: "click", method: "style" }}
-      className="px-(--button-padding-x) py-(--button-padding-y) bg-(--primary) text-(--primary-foreground) rounded-(--radius)"
+      className="px-(--button-padding-x) py-(--button-padding-y) bg-primary text-primary-content rounded-box"
     />,
     // Backdrop
     <Element
@@ -99,7 +99,7 @@ function buildModalChildren() {
         custom={{ displayName: "Modal Content" }}
         canDelete={false}
         canEditName={false}
-        className="flex flex-col gap-(--container-gap) px-(--container-padding-x) py-(--container-padding-y) w-full max-w-lg bg-(--background) rounded-(--radius) shadow-xl"
+        className="flex flex-col gap-container px-container-x py-container-y w-full max-w-lg bg-base-100 rounded-box shadow-xl"
         action={{ type: "show-hide", target: "my-modal", direction: "toggle", trigger: "click", method: "style" }}
       >
         <Element
@@ -166,7 +166,7 @@ export const ModalDef = defineComponent({
         modalAnimation: "fade",
         modalWidth: "max-w-lg",
         modalPosition: "center",
-        className: "flex flex-col items-start gap-(--container-gap)",
+        className: "flex flex-col items-start gap-container",
       },
       children: buildModalChildren,
     },

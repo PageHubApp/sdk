@@ -93,7 +93,7 @@ const Labler = ({
     <h4 className={`toolbar-label ${lab ? "my-1" : "mb-1"} flex justify-between gap-3`}>
       <label htmlFor={propKey ? `input-${propKey}` : undefined} className="flex cursor-pointer items-center gap-1.5">
         {props?.label}
-        <div className="hidden text-muted-foreground hover:text-foreground">
+        <div className="hidden text-neutral-content hover:text-base-content">
           <TbInfoCircle />
         </div>
       </label>
@@ -169,8 +169,8 @@ export const Wrap = ({
         </div>
 
         {props.description && (
-          <div className="mt-2 flex w-full items-start gap-2 rounded-lg border border-border bg-accent p-2">
-            <p className="text-xxs leading-relaxed text-accent-foreground">{props.description}</p>
+          <div className="mt-2 flex w-full items-start gap-2 rounded-lg border border-base-300 bg-accent p-2">
+            <p className="text-xxs leading-relaxed text-accent-content">{props.description}</p>
           </div>
         )}
       </>
@@ -204,7 +204,7 @@ const shortenCSSVar = className => {
 export const Card = ({
   value,
   onClick,
-  bgColor = "bg-primary text-primary-foreground",
+  bgColor = "bg-primary text-primary-content",
   onDragStart,
   onDragEnd,
   draggable = true,
@@ -290,7 +290,7 @@ export const Card = ({
       onContextMenu={handleContextMenu}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      className={`${bgColor} inline-flex cursor-pointer whitespace-nowrap rounded-lg px-1.5 py-0.5 text-xs font-medium text-foreground hover:text-foreground hover:opacity-80 ${draggable ? "transition-transform hover:scale-105" : ""}`}
+      className={`${bgColor} inline-flex cursor-pointer whitespace-nowrap rounded-lg px-1.5 py-0.5 text-xs font-medium text-base-content hover:text-base-content hover:opacity-80 ${draggable ? "transition-transform hover:scale-105" : ""}`}
     >
       {renderDisplayValue()}
     </button>
@@ -322,7 +322,7 @@ export const CardLight = ({ value, onClick, className = "" }) => {
   return (
     <button
       onClick={onClick}
-      className={`inline-flex cursor-pointer rounded-lg bg-background px-1 py-0.5 text-xs font-medium text-foreground ${className}`}
+      className={`inline-flex cursor-pointer rounded-lg bg-base-100 px-1 py-0.5 text-xs font-medium text-base-content ${className}`}
     >
       <Tooltip content={`Add ${value}`} placement="top" arrow={false}>
         {renderDisplayValue()}

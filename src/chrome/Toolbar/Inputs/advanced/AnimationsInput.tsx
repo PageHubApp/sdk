@@ -79,18 +79,18 @@ export const AnimationsInput = () => {
     <>
       <ToolbarSection enabled={true} title="Animation" icon={<TbBolt />} help="Animate this element when it scrolls into view.">
         {/* Engine toggle */}
-        <div className="mb-2 flex gap-1 rounded-md bg-muted p-0.5">
+        <div className="mb-2 flex gap-1 rounded-md bg-neutral p-0.5">
           <button
             type="button"
             onClick={() => engine !== "css" && setEngine("css")}
-            className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${engine === "css" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${engine === "css" ? "bg-base-100 text-base-content shadow-sm" : "text-neutral-content hover:text-base-content"}`}
           >
             CSS / Tailwind
           </button>
           <button
             type="button"
             onClick={() => engine !== "framer" && setEngine("framer")}
-            className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${engine === "framer" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${engine === "framer" ? "bg-base-100 text-base-content shadow-sm" : "text-neutral-content hover:text-base-content"}`}
           >
             Framer Motion
           </button>
@@ -147,7 +147,7 @@ export const AnimationsInput = () => {
               min={0.1}
               max={2}
               step={0.1}
-              append={<span className="w-8 text-right text-[10px] text-muted-foreground">{props.root?.animationDuration || "—"}s</span>}
+              append={<span className="w-8 text-right text-[10px] text-neutral-content">{props.root?.animationDuration || "—"}s</span>}
             />
             {!isHoverPreset && (
               <ToolbarItem
@@ -158,7 +158,7 @@ export const AnimationsInput = () => {
                 min={0}
                 max={1}
                 step={0.05}
-                append={<span className="w-8 text-right text-[10px] text-muted-foreground">{props.root?.animationDelay || "0"}s</span>}
+                append={<span className="w-8 text-right text-[10px] text-neutral-content">{props.root?.animationDelay || "0"}s</span>}
               />
             )}
             {!isHoverPreset && (
@@ -196,7 +196,7 @@ export const AnimationsInput = () => {
                 min={0}
                 max={0.5}
                 step={0.02}
-                append={<span className="w-8 text-right text-[10px] text-muted-foreground">{props.root?.animationStagger || "0"}s</span>}
+                append={<span className="w-8 text-right text-[10px] text-neutral-content">{props.root?.animationStagger || "0"}s</span>}
               />
             )}
 
@@ -216,7 +216,7 @@ export const AnimationsInput = () => {
               <button
                 type="button"
                 onClick={resetParams}
-                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
               >
                 <TbRotate size={12} />
                 Reset to defaults
@@ -236,7 +236,7 @@ export const AnimationsInput = () => {
           return React.createElement(
             motionIt(props, "div"),
             { ...animProps, key: currentAnimation },
-            <div className="mx-auto mt-6 flex size-24 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+            <div className="mx-auto mt-6 flex size-24 items-center justify-center rounded-2xl bg-neutral text-neutral-content">
               Test
             </div>
           );

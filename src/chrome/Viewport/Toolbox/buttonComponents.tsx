@@ -63,13 +63,13 @@ export const ButtonToolbox = {
       text="Button"
       key="1"
       custom={{ displayName: "Button" }}
-      className="flex flex-row items-center justify-center gap-2 px-6 py-3 w-auto cursor-pointer border border-border rounded-lg"
+      className="flex flex-row items-center justify-center gap-2 px-6 py-3 w-auto cursor-pointer border border-base-300 rounded-lg"
     />,
     <RenderButtonListComponent
       text="Button List"
       key="2"
       custom={{ displayName: "Button List" }}
-      className="flex flex-col items-center justify-start gap-2 px-4 py-2 w-auto md:flex-row md:items-center md:justify-start md:gap-2 border border-border rounded-lg"
+      className="flex flex-col items-center justify-start gap-2 px-4 py-2 w-auto md:flex-row md:items-center md:justify-start md:gap-2 border border-base-300 rounded-lg"
     />,
     <RenderButtonComponent
       text="Icon"

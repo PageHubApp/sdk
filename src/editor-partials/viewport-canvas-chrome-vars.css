@@ -2,7 +2,7 @@
    Editor chrome inside #viewport — outside Tailwind @layer (normal specificity).
    Inline toolbars and node strips portal under canvas nodes; those nodes often
    carry site styleGuide CSS variables. Lock tokens on chrome elements so
-   bg-muted / borders match the editor, not the page.
+   bg-neutral / borders match the editor, not the page.
 
    Values are NEUTRAL black/white/gray — no hue — so controls never clash with
    any template palette.
@@ -40,9 +40,9 @@
   --accent-foreground: hsl(0 0% 9%);
   --destructive: hsl(0 72% 51%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(0 0% 90%);
-  --input: hsl(0 0% 90%);
+  --base-300: hsl(0 0% 90%);
   --ring: hsl(0 0% 9%);
+  --border: 1px;
 }
 
 .dark #viewport .pagehub-sdk-root,
@@ -67,7 +67,7 @@
   --accent-foreground: hsl(0 0% 93%);
   --destructive: hsl(0 72% 51%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(0 0% 25%);
-  --input: hsl(0 0% 20%);
+  --base-300: hsl(0 0% 25%);
   --ring: hsl(0 0% 93%);
+  --border: 1px;
 }

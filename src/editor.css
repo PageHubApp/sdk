@@ -13,5 +13,3 @@
 @import "./editor-partials/viewport-canvas-chrome-vars.css";
 
 @source "./"; /* scan SDK source (.tsx/.ts) for class usage */
-
-@reference "../../../styles/tweakcn.css";

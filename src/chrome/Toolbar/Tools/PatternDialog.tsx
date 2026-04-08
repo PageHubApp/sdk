@@ -116,15 +116,15 @@ export const PatternDialog = () => {
       <div style={style}>
         <button
           id={`pattern-${pattern.slug}`}
-          className={`flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-muted-foreground transition-colors hover:bg-muted ${
-            dialog.value?.slug === pattern.slug ? "bg-primary text-primary-foreground" : ""
+          className={`flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-neutral-content transition-colors hover:bg-neutral ${
+            dialog.value?.slug === pattern.slug ? "bg-primary text-primary-content" : ""
           }`}
           onClick={e => changed(pattern)}
         >
           <div className="pointer-events-none flex h-6 w-full items-center justify-between gap-3">
             <div className="w-1/2 truncate whitespace-nowrap">{pattern.title}</div>
             <div
-              className="h-full w-1/2 rounded-lg border border-border bg-muted"
+              className="h-full w-1/2 rounded-lg border border-base-300 bg-neutral"
               style={{
                 backgroundImage: patt ? `url(${patt})` : null,
               }}
@@ -153,8 +153,8 @@ export const PatternDialog = () => {
                   key={cat}
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
                     category === cat
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      ? "bg-primary text-primary-content"
+                      : "bg-neutral text-neutral-content hover:bg-neutral/80"
                   }`}
                   onClick={() => handleCategoryChange(cat)}
                 >
@@ -165,7 +165,7 @@ export const PatternDialog = () => {
           </div>
 
           {/* Pattern Count */}
-          <div className="mb-2 shrink-0 text-xs text-muted-foreground">
+          <div className="mb-2 shrink-0 text-xs text-neutral-content">
             {filteredPatterns.length} pattern
             {filteredPatterns.length !== 1 ? "s" : ""}
           </div>

@@ -53,16 +53,16 @@ const formatKbd = (mac: string) => {
 };
 
 const Kbd = ({ children, win }: { children: string; win?: string }) => (
-  <kbd className="ml-auto rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-foreground/80">
+  <kbd className="ml-auto rounded border border-base-300 bg-neutral px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-base-content/80">
     {win && !isMac ? win : formatKbd(children)}
   </kbd>
 );
 
 const navRow =
-  "flex w-full cursor-pointer items-center gap-1 px-3 py-3 text-muted-foreground hover:bg-muted";
+  "flex w-full cursor-pointer items-center gap-1 px-3 py-3 text-neutral-content hover:bg-neutral";
 
 const SectionLabel = ({ children }: { children: string }) => (
-  <div className="px-3 pb-1 pt-3 text-[10px] font-medium uppercase tracking-widest text-muted-foreground/60">
+  <div className="px-3 pb-1 pt-3 text-[10px] font-medium uppercase tracking-widest text-neutral-content/60">
     {children}
   </div>
 );
@@ -115,7 +115,7 @@ export const EditorNavigation = ({
         ref={navRef}
         role="navigation"
         aria-label="Editor menu"
-        className="pointer-events-auto absolute bottom-0 top-10 z-50 flex w-full flex-col bg-background text-foreground"
+        className="pointer-events-auto absolute bottom-0 top-10 z-50 flex w-full flex-col bg-base-100 text-base-content"
       >
       {(panel === "components" || panel === "blocks") ? (
         <ToolboxTabs />

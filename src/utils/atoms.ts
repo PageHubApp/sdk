@@ -6,6 +6,7 @@
  */
 import { atom, useAtomState, useAtomValue } from "@zedux/react";
 import { useCallback } from "react";
+import { phStorage } from "./phStorage";
 
 // Re-export atom for use in other files
 export { atom };
@@ -52,7 +53,7 @@ export const ClippyModeAtom = atom<ClippyMode>(
   "clippyMode",
   (() => {
     try {
-      const saved = typeof window !== "undefined" ? localStorage.getItem("pagehub-clippy-mode") : null;
+      const saved = typeof window !== "undefined" ? phStorage.get("clippy-mode") : null;
       if (saved === "docked" || saved === "popout") return saved;
     } catch {}
     return "docked";

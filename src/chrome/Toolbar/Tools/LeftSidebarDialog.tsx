@@ -91,7 +91,7 @@ export function LeftSidebarDialog({
       role="dialog"
       aria-modal="true"
       aria-labelledby="left-sidebar-dialog-title"
-      className={`${position} left-0 z-9999 flex flex-col bg-background text-foreground`}
+      className={`${position} left-0 z-9999 flex flex-col bg-base-100 text-base-content`}
       style={{
         width: finalWidth,
         top: finalTop,
@@ -102,10 +102,10 @@ export function LeftSidebarDialog({
     >
       <div
         ref={modalRef}
-        className="flex h-full flex-col overflow-hidden border-r border-border shadow-2xl"
+        className="flex h-full flex-col overflow-hidden border-r border-base-300 shadow-2xl"
       >
         {/* Header - Matches Design System style */}
-        <div className="flex items-center justify-between border-b border-border bg-accent p-3 text-accent-foreground">
+        <div className="flex items-center justify-between border-b border-base-300 bg-accent p-3 text-accent-content">
           <div className="flex items-center gap-2">
             {icon && <span className="text-xl">{icon}</span>}
             <h2 id="left-sidebar-dialog-title" className="text-lg font-bold">{title}</h2>
@@ -114,7 +114,7 @@ export function LeftSidebarDialog({
             {headerRight}
             <button
               onClick={onClose}
-              className="flex items-center justify-center rounded-lg p-1 text-accent-foreground transition-colors hover:bg-accent-foreground/10"
+              className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10"
               aria-label="Close"
             >
               <TbX />
@@ -123,10 +123,9 @@ export function LeftSidebarDialog({
         </div>
 
         {/* Content */}
-        <div className="flex-1 bg-muted text-muted-foreground">{children}</div>
+        <div className="flex-1 bg-neutral text-neutral-content">{children}</div>
       </div>
     </div>
   );
 }
 
-export default LeftSidebarDialog;

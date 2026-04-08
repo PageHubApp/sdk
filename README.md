@@ -314,7 +314,7 @@ Vite bundles `src/editor.css` into **`dist/editor.css`** (same public path: `@pa
 
 ### Theming (variables first)
 
-- Prefer **theme tokens** from your host: load shared design CSS (for PageHub apps this is `tweakcn.css` / your design system) so `--background`, `--primary`, `--border`, etc. match the editor chrome.
+- Prefer **theme tokens** from your host: load shared design CSS (for PageHub apps this is your design system CSS) so `--base-100`, `--primary`, `--border`, etc. match the editor chrome.
 - **`config.theme.cssVariables`** and **`config.theme.customCSS`** still apply on top for integration-specific overrides.
 - **`@tailwindcss/browser`** (used for in-canvas utilities) compiles from live class attributes; `@source` in `editor.css` scans SDK sources (`./`).
 

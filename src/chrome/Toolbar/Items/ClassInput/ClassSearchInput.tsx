@@ -39,7 +39,7 @@ export function ClassSearchInput({ classes, onSave, classInput, setClassInput }:
 
   return (
     <>
-      <label htmlFor="search" className="sr-only text-sm font-medium text-foreground">Search</label>
+      <label htmlFor="search" className="sr-only text-sm font-medium text-base-content">Search</label>
       <div className="input-wrapper relative">
         <input
           type="search"
@@ -70,7 +70,7 @@ export function ClassSearchInput({ classes, onSave, classInput, setClassInput }:
         {classInput?.length > 0 && matches.length > 0 && matches[0].startsWith(classInput) && (
           <div className="pointer-events-none absolute inset-0 z-0 flex items-center px-3">
             <span className="invisible">{classInput}</span>
-            <span className="font-mono text-muted-foreground">{matches[0].slice(classInput.length)}</span>
+            <span className="font-mono text-neutral-content">{matches[0].slice(classInput.length)}</span>
           </div>
         )}
         <button type="submit" className="btn-search" onClick={() => onSave()}>
@@ -86,22 +86,22 @@ export function ClassSearchInput({ classes, onSave, classInput, setClassInput }:
                 key={k}
                 value={mat}
                 onClick={() => onSave(mat)}
-                className={k === selectedIndex ? "rounded-lg bg-accent text-accent-foreground ring-2 ring-accent" : ""}
+                className={k === selectedIndex ? "rounded-lg bg-accent text-accent-content ring-2 ring-accent" : ""}
               />
             ))}
           </div>
           {matches.length > 0 && (
-            <div className="border-t border-border bg-muted/50 p-2 text-xs text-muted-foreground">
+            <div className="border-t border-base-300 bg-neutral/50 p-2 text-xs text-neutral-content">
               <div className="flex flex-wrap gap-1">
-                <span>Press <kbd className="rounded-lg border bg-background px-1.5 py-0.5 text-foreground">Tab</kbd> to complete</span>
-                <span>Use <kbd className="rounded-lg border bg-background px-1.5 py-0.5 text-foreground">↑↓</kbd> to navigate</span>
-                <span>Press <kbd className="rounded-lg border bg-background px-1.5 py-0.5 text-foreground">Enter</kbd> to select</span>
+                <span>Press <kbd className="rounded-lg border bg-base-100 px-1.5 py-0.5 text-base-content">Tab</kbd> to complete</span>
+                <span>Use <kbd className="rounded-lg border bg-base-100 px-1.5 py-0.5 text-base-content">↑↓</kbd> to navigate</span>
+                <span>Press <kbd className="rounded-lg border bg-base-100 px-1.5 py-0.5 text-base-content">Enter</kbd> to select</span>
               </div>
               <div className="mt-1">
                 Unprefixed classes are the base layer (mobile-first). Prefix with{" "}
                 {["sm:", "md:", "lg:", "xl:", "2xl:"].map((bp, i, arr) => (
                   <span key={bp}>
-                    <kbd className="rounded-lg border bg-background px-1.5 py-0.5 text-foreground">{bp}</kbd>
+                    <kbd className="rounded-lg border bg-base-100 px-1.5 py-0.5 text-base-content">{bp}</kbd>
                     {i < arr.length - 1 ? ", " : " "}
                   </span>
                 ))}

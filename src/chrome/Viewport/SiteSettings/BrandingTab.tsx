@@ -39,10 +39,10 @@ export function BrandingTab({
   return (
     <div className="space-y-6">
       <div className="mb-4 space-y-2">
-        <h3 className="text-lg font-semibold text-foreground">
+        <h3 className="text-lg font-semibold text-base-content">
           Branding & Company Information
         </h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-neutral-content">
           Your company details and branding assets for customization
         </p>
       </div>
@@ -163,30 +163,30 @@ export function BrandingTab({
         />
       </div>
 
-      <div className="mt-4 rounded-lg border border-border bg-muted p-4">
+      <div className="mt-4 rounded-lg border border-base-300 bg-neutral p-4">
         <div className="flex gap-3">
           <TbInfoCircle className="mt-0.5 size-5 shrink-0 text-primary" />
           <div className="space-y-2">
             <p className="toolbar-label font-medium">
               Use variables throughout your site
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-neutral-content">
               Add these in any text or button to automatically display values:
             </p>
             <div className="flex flex-wrap gap-2">
-              <code className="rounded bg-background px-2 py-1 text-xs text-foreground">
+              <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
                 {"{{company.name}}"}
               </code>
-              <code className="rounded bg-background px-2 py-1 text-xs text-foreground">
+              <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
                 {"{{company.tagline}}"}
               </code>
-              <code className="rounded bg-background px-2 py-1 text-xs text-foreground">
+              <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
                 {"{{company.email}}"}
               </code>
-              <code className="rounded bg-background px-2 py-1 text-xs text-foreground">
+              <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
                 {"{{company.phone}}"}
               </code>
-              <code className="rounded bg-background px-2 py-1 text-xs text-foreground">
+              <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
                 {"{{year}}"}
               </code>
             </div>

@@ -225,16 +225,16 @@ export const Form = ({ children, ...props }: any) => {
 
       {/* Debug panel - only shows in editor mode */}
       {enabled && debugData && (
-        <div className="fixed bottom-5 right-5 w-[500px] bg-card text-card-foreground rounded-lg border border-border shadow-lg z-9999">
+        <div className="fixed bottom-5 right-5 w-[500px] bg-base-200 text-base-content rounded-lg border border-base-300 shadow-lg z-9999">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center justify-between p-4 border-b border-base-300">
             <div className="flex items-center gap-2">
               <TbClipboardCheck className="text-lg" />
               <h3 className="text-sm font-semibold">Form Submission (Debug)</h3>
             </div>
             <button
               onClick={() => setDebugData(null)}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-neutral-content hover:text-base-content transition-colors"
               title="Close"
             >
               <svg
@@ -258,13 +258,13 @@ export const Form = ({ children, ...props }: any) => {
 
           {/* Tab Navigation */}
           <div className="px-4 py-3">
-            <div className="flex gap-1 rounded-lg bg-muted p-1">
+            <div className="flex gap-1 rounded-lg bg-neutral p-1">
               <button
                 type="button"
                 onClick={() => setDebugTab("data")}
                 className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${debugTab === "data"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-base-100 text-base-content shadow-sm"
+                  : "text-neutral-content hover:text-base-content"
                   }`}
               >
                 Form Data
@@ -273,8 +273,8 @@ export const Form = ({ children, ...props }: any) => {
                 type="button"
                 onClick={() => setDebugTab("config")}
                 className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${debugTab === "config"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-base-100 text-base-content shadow-sm"
+                  : "text-neutral-content hover:text-base-content"
                   }`}
               >
                 Configuration
@@ -285,34 +285,34 @@ export const Form = ({ children, ...props }: any) => {
           {/* Tab Content */}
           <div className="px-4 pb-4">
             {debugTab === "data" && (
-              <pre className="text-xs bg-muted p-3 rounded overflow-auto max-h-96 whitespace-pre-wrap wrap-break-word">
+              <pre className="text-xs bg-neutral p-3 rounded overflow-auto max-h-96 whitespace-pre-wrap wrap-break-word">
                 {JSON.stringify(debugData.formData, null, 2)}
               </pre>
             )}
 
             {debugTab === "config" && (
-              <div className="text-xs bg-muted p-3 rounded overflow-auto max-h-96 space-y-2">
+              <div className="text-xs bg-neutral p-3 rounded overflow-auto max-h-96 space-y-2">
                 <div>
-                  <span className="font-semibold text-foreground">Form Type:</span>{" "}
-                  <span className="text-muted-foreground">{debugData.formType || "N/A"}</span>
+                  <span className="font-semibold text-base-content">Form Type:</span>{" "}
+                  <span className="text-neutral-content">{debugData.formType || "N/A"}</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-foreground">Form Name:</span>{" "}
-                  <span className="text-muted-foreground">{debugData.formName || "N/A"}</span>
+                  <span className="font-semibold text-base-content">Form Name:</span>{" "}
+                  <span className="text-neutral-content">{debugData.formName || "N/A"}</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-foreground">Action URL:</span>{" "}
-                  <span className="text-muted-foreground break-all">
+                  <span className="font-semibold text-base-content">Action URL:</span>{" "}
+                  <span className="text-neutral-content break-all">
                     {debugData.action || "N/A"}
                   </span>
                 </div>
                 <div>
-                  <span className="font-semibold text-foreground">Method:</span>{" "}
-                  <span className="text-muted-foreground">{debugData.method || "POST"}</span>
+                  <span className="font-semibold text-base-content">Method:</span>{" "}
+                  <span className="text-neutral-content">{debugData.method || "POST"}</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-foreground">Mail To:</span>{" "}
-                  <span className="text-muted-foreground">{debugData.mailto || "N/A"}</span>
+                  <span className="font-semibold text-base-content">Mail To:</span>{" "}
+                  <span className="text-neutral-content">{debugData.mailto || "N/A"}</span>
                 </div>
               </div>
             )}

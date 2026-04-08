@@ -66,35 +66,35 @@ export function MinimumSizeOverlay() {
       </div>
 
       {/* Main content */}
-      <div className="relative flex max-w-md flex-col items-center gap-6 rounded-2xl bg-background/95 p-12 text-center shadow-2xl backdrop-blur-xl">
+      <div className="relative flex max-w-md flex-col items-center gap-6 rounded-2xl bg-base-100/95 p-12 text-center shadow-2xl backdrop-blur-xl">
         <div className="flex items-center justify-center rounded-full bg-primary/10 p-6">
           <TbDeviceDesktop className="size-16 text-primary" />
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-3xl font-bold text-foreground">Viewport Too Small</h2>
-          <p className="text-lg text-muted-foreground">
+          <h2 className="text-3xl font-bold text-base-content">Viewport Too Small</h2>
+          <p className="text-lg text-neutral-content">
             The PageHub editor requires a minimum viewport size for optimal editing experience.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 rounded-lg bg-muted px-6 py-3">
+        <div className="flex items-center gap-3 rounded-lg bg-neutral px-6 py-3">
           <TbArrowsMaximize className="size-5 text-primary" />
           <div className="text-left">
             <div className="toolbar-label font-medium">Minimum Size Required</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-neutral-content">
               {MIN_WIDTH}px × {MIN_HEIGHT}px
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-neutral-content">
           <div className="h-px flex-1 bg-border" />
           <span>Drag window corners or edges to resize</span>
           <div className="h-px flex-1 bg-border" />
         </div>
 
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs text-neutral-content">
           Current: {window.innerWidth}px × {window.innerHeight}px
         </div>
       </div>

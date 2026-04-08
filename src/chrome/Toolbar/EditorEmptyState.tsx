@@ -20,17 +20,17 @@ const ActionCard = ({ icon, title, description, onClick, delay }: ActionCardProp
   return (
     <button
       onClick={onClick}
-      className="animate-slide-up group relative overflow-hidden rounded-xl border border-border bg-card p-6 text-left transition-all hover:bg-muted/50"
+      className="animate-slide-up group relative overflow-hidden rounded-xl border border-base-300 bg-base-200 p-6 text-left transition-all hover:bg-neutral/50"
       style={{ animationDelay: `${delay}s` }}
     >
       <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
       <div className="relative flex flex-row items-center justify-start gap-4">
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-content">
           {icon}
         </div>
         <div className="flex flex-col items-start justify-center">
-          <h3 className="font-semibold text-foreground">{title}</h3>
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <h3 className="font-semibold text-base-content">{title}</h3>
+          <p className="text-xs text-neutral-content">{description}</p>
         </div>
       </div>
     </button>
@@ -83,7 +83,7 @@ export const EditorEmptyState = () => {
   };
 
   return (
-    <div ref={containerRef} className="scrollbar z-20 flex h-screen w-auto grow basis-full flex-col items-center justify-center gap-8 overflow-auto bg-transparent p-4 pr-2 text-center text-muted-foreground">
+    <div ref={containerRef} className="scrollbar z-20 flex h-screen w-auto grow basis-full flex-col items-center justify-center gap-8 overflow-auto bg-transparent p-4 pr-2 text-center text-neutral-content">
       {/* Icon */}
       {!isCompact && (
         <div
@@ -120,7 +120,7 @@ export const EditorEmptyState = () => {
                 <span>or add components</span>
                 <button
                   onClick={handleComponentsClick}
-                  className="inline-flex size-5 cursor-pointer items-center justify-center text-foreground transition-colors hover:text-primary"
+                  className="inline-flex size-5 cursor-pointer items-center justify-center text-base-content transition-colors hover:text-primary"
                   title="Browse components"
                 >
                   <TbPlus className="size-8" />
@@ -138,7 +138,7 @@ export const EditorEmptyState = () => {
               {!isCompact && (
                 <div className="flex items-center gap-4">
                   <div className="h-px flex-1 bg-border" />
-                  <span className="text-xs font-medium text-muted-foreground">or</span>
+                  <span className="text-xs font-medium text-neutral-content">or</span>
                   <div className="h-px flex-1 bg-border" />
                 </div>
               )}
@@ -192,7 +192,7 @@ export const EditorEmptyState = () => {
       {/* Helpful Hint */}
       {hasComponents && isComponentMode && (
         <div
-          className="animate-slide-up text-xxs mt-4 flex items-center gap-2 text-muted-foreground"
+          className="animate-slide-up text-xxs mt-4 flex items-center gap-2 text-neutral-content"
           style={{ animationDelay: "0.2s" }}
         >
           <TbClick className="size-4" />

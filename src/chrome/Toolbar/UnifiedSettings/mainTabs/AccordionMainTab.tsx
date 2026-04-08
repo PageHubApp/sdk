@@ -28,7 +28,7 @@ export const AccordionMainTab = () => {
         is={Container}
         type="details"
         custom={{ displayName: title, rules: { canMoveOut: () => false } }}
-        className="border-b border-(--border) group"
+        className="border-b border-base-300 group"
       >
         <Element
           is={Container}
@@ -55,7 +55,7 @@ export const AccordionMainTab = () => {
           custom={{ displayName: `${title} Content` }}
           canDelete={true}
           canEditName={true}
-          className="flex flex-col gap-(--container-gap) px-4 py-3"
+          className="flex flex-col gap-container px-4 py-3"
         >
           <Element
             is={Text}
@@ -111,14 +111,14 @@ export const AccordionMainTab = () => {
 
         <div className="flex gap-2">
           <button
-            className="flex items-center justify-center gap-1.5 flex-1 px-3 py-2 text-xs font-medium rounded border border-border hover:bg-muted transition-colors"
+            className="flex items-center justify-center gap-1.5 flex-1 px-3 py-2 text-xs font-medium rounded border border-base-300 hover:bg-neutral transition-colors"
             onClick={addItem}
           >
             <TbPlus className="w-3.5 h-3.5" />
             Add Item
           </button>
           <button
-            className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded border border-base-300 hover:bg-neutral transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={removeLastItem}
             disabled={itemCount <= 1}
           >

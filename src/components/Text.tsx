@@ -98,7 +98,17 @@ export const Text = (incomingProps: Partial<TextProps>) => {
     setIsMounted(true);
   }, []);
 
+  // Re-render when a variable value is edited via the popover
+  const [, forceUpdate] = useState(0);
   const { text, tagName } = props;
+  const hasVariables = typeof text === "string" && text.includes("{{");
+
+  useEffect(() => {
+    if (!hasVariables) return;
+    const handler = () => forceUpdate(n => n + 1);
+    document.addEventListener("pagehub:variable-changed", handler);
+    return () => document.removeEventListener("pagehub:variable-changed", handler);
+  }, [hasVariables]);
 
   const prop: any = {
     ref: r => connect(drag(r)),

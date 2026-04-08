@@ -1,11 +1,12 @@
+import { phStorage } from "./phStorage";
+
 export const addComponentToStorage = (data = null) => {
-  data = data || JSON.parse(localStorage.getItem("clipBoard"));
-  const components = JSON.parse(localStorage.getItem("components")) || [];
+  data = data || phStorage.getJSON("clipboard");
+  const components = phStorage.getJSON("components", []);
 
   if (components.find(_ => _.rootNodeId === data.rootNodeId)) return components;
   const a = [...components, data];
-  const res = JSON.stringify(a);
-  localStorage.setItem("components", res);
+  phStorage.set("components", a);
   return a;
 };
 
@@ -14,7 +15,7 @@ export const removeComponentFromStorage = (nodeId, components, setComponents) =>
 
   const results = [...components];
 
-  localStorage.setItem("components", JSON.stringify(results));
+  phStorage.set("components", results);
 
   setComponents(results);
 

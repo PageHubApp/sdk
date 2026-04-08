@@ -7,7 +7,7 @@ interface SelectParentNodeToolProps {
   children?: React.ReactNode;
 }
 
-export const SelectParentNodeTool = ({
+const SelectParentNodeTool = ({
   parentType,
   icon = <TbArrowUp className="size-4" />,
   children,

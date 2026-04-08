@@ -115,12 +115,12 @@ export function CropCanvas({ crop }: CropCanvasProps) {
 
       {/* Status Messages */}
       {crop.saveError && (
-        <div className="absolute inset-x-6 top-6 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="absolute inset-x-6 top-6 rounded-lg border border-error/20 bg-error/10 p-3 text-sm text-error">
           <div className="flex items-center gap-2">
             <TbX className="size-4" />
             <span className="font-medium">Save Failed</span>
           </div>
-          <p className="mt-1 text-destructive/80">{crop.saveError}</p>
+          <p className="mt-1 text-error/80">{crop.saveError}</p>
           <button onClick={() => crop.setSaveError(null)} className="mt-2 text-xs underline hover:no-underline">
             Dismiss
           </button>
@@ -142,15 +142,15 @@ export function CropCanvas({ crop }: CropCanvasProps) {
       )}
 
       {/* Save Area */}
-      <div className="absolute bottom-3 right-3 rounded-lg border border-border bg-background/95 px-3 py-1.5 backdrop-blur-sm">
+      <div className="absolute bottom-3 right-3 rounded-lg border border-base-300 bg-base-100/95 px-3 py-1.5 backdrop-blur-sm">
         <div className="flex items-center justify-between gap-6">
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-content">
             Override original
             <input
               type="checkbox"
               checked={crop.saveMode === "override"}
               onChange={e => crop.setSaveMode(e.target.checked ? "override" : "new")}
-              className="size-4 rounded border-border bg-muted text-accent focus:ring-ring"
+              className="size-4 rounded border-base-300 bg-neutral text-accent focus:ring-ring"
             />
           </label>
           <button

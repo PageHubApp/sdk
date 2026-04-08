@@ -60,13 +60,13 @@ export function MediaManagerModal({
 
           <div className="flex h-full flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-border bg-accent px-3 py-1.5 text-accent-foreground">
+            <div className="flex items-center justify-between border-b border-base-300 bg-accent px-3 py-1.5 text-accent-content">
               <div className="flex items-center gap-2">
                 <TbPhoto className="size-4 text-primary" />
-                <span className="text-xs font-semibold text-foreground">
+                <span className="text-xs font-semibold text-base-content">
                   {selectionMode ? "Select Media" : "Media Manager"}
                 </span>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[10px] text-neutral-content">
                   {selectionMode
                     ? "Click an image to select it"
                     : `${manager.filteredMedia.length} ${manager.filteredMedia.length === 1 ? "item" : "items"}${manager.searchQuery ? ` (filtered from ${manager.mediaList.length})` : ""}`}
@@ -74,7 +74,7 @@ export function MediaManagerModal({
               </div>
               <button
                 onClick={onClose}
-                className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="rounded p-0.5 text-neutral-content hover:bg-neutral hover:text-base-content"
                 title="Close"
               >
                 <TbX className="size-3.5" />
@@ -83,19 +83,19 @@ export function MediaManagerModal({
 
             {/* Upload Error Banner */}
             {manager.uploadError && (
-              <div className="border-b border-destructive bg-destructive/10 px-6 py-3">
+              <div className="border-b border-error bg-error/10 px-6 py-3">
                 <div className="flex items-start gap-3">
-                  <TbAlertTriangle className="mt-0.5 size-5 shrink-0 text-destructive" />
+                  <TbAlertTriangle className="mt-0.5 size-5 shrink-0 text-error" />
                   <div className="flex-1">
-                    <p className="whitespace-pre-line text-sm text-destructive">
+                    <p className="whitespace-pre-line text-sm text-error">
                       {manager.uploadError}
                     </p>
                   </div>
                   <button
                     onClick={() => manager.setUploadError(null)}
-                    className="shrink-0 rounded p-1 transition-colors hover:bg-destructive/20"
+                    className="shrink-0 rounded p-1 transition-colors hover:bg-error/20"
                   >
-                    <TbX className="size-4 text-destructive" />
+                    <TbX className="size-4 text-error" />
                   </button>
                 </div>
               </div>

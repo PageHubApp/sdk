@@ -55,4 +55,3 @@ export const SelectButtonListTool = () => {
   );
 };
 
-export default SelectButtonListTool;

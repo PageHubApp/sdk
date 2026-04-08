@@ -52,7 +52,7 @@ export const Toolbar = () => {
       aria-label="Component settings"
       key="sideMenu"
       id="toolbar"
-      className={`relative flex h-full shrink-0 grow-0 flex-col overflow-hidden border-x border-border bg-sidebar text-sidebar-foreground shadow-lg z-60 transition-[width,opacity] duration-200 ${isOpen ? "w-[360px] opacity-100" : "w-0 opacity-0"} ${orderClass}`}
+      className={`relative flex h-full shrink-0 grow-0 flex-col overflow-hidden border-x border-base-300 bg-sidebar text-sidebar-foreground shadow-lg z-60 transition-[width,opacity] duration-200 ${isOpen ? "w-[360px] opacity-100" : "w-0 opacity-0"} ${orderClass}`}
       ref={ref}
     >
       <Header />

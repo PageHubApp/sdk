@@ -3,6 +3,7 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useMemo } from "react";
 import { resolveColorForDisplay } from "utils/design/colorSystem";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "utils/defaults";
+import { resolveTheme } from "utils/design/resolveTheme";
 import {
   FONT_WEIGHT_MAP,
   STYLE_VAR_MAP,
@@ -41,9 +42,10 @@ function resolveColor(color: string): string {
 export function useDesignVarOptions(prefix: string, searchTerm: string) {
   const designVarsResult = useEditor(state => {
     const rootNode = state.nodes[ROOT_NODE];
-    const runtimePalette = rootNode?.data?.props?.pallet || [];
-    const runtimeTypography = rootNode?.data?.props?.typography || [];
-    const runtimeStyleGuide = rootNode?.data?.props?.styleGuide || {};
+    const theme = resolveTheme(rootNode?.data?.props || {});
+    const runtimePalette = theme.palette;
+    const runtimeTypography = theme.typography || [];
+    const runtimeStyleGuide = theme.styleGuide;
 
     const vars: DesignVar[] = [];
 

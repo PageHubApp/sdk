@@ -3,7 +3,7 @@
  *
  * When the SDK runs outside the Next.js app (demo, viewer, 3rd-party embeds),
  * there's no build-time Tailwind pipeline to generate CSS for dynamic classes
- * like `bg-(--primary)` or `px-(--button-padding-x)`.
+ * like `bg-primary` or `px-container-x`.
  *
  * This module injects @tailwindcss/browser — a v4 runtime compiler that watches
  * the DOM via MutationObserver and generates CSS on the fly for any Tailwind
@@ -19,6 +19,7 @@
 const SCRIPT_ID = "pagehub-tw-browser";
 const CONFIG_ID = "pagehub-tw-config";
 const LAYER_STRIP_ID = "pagehub-tw-unlayered";
+const DAISYUI_ID = "pagehub-daisyui";
 
 /**
  * The theme CSS that @tailwindcss/browser needs to understand
@@ -28,25 +29,44 @@ const THEME_CSS = `
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
+  /* DaisyUI 5 canonical tokens */
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-content: var(--primary-content);
   --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-secondary-content: var(--secondary-content);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
+  --color-accent-content: var(--accent-content);
+  --color-neutral: var(--neutral);
+  --color-neutral-content: var(--neutral-content);
+  --color-base-100: var(--base-100);
+  --color-base-200: var(--base-200);
+  --color-base-300: var(--base-300);
+  --color-base-content: var(--base-content);
+  --color-error: var(--error);
+  --color-error-content: var(--error-content);
+  --color-info: var(--info);
+  --color-info-content: var(--info-content);
+  --color-success: var(--success);
+  --color-success-content: var(--success-content);
+  --color-warning: var(--warning);
+  --color-warning-content: var(--warning-content);
+  --color-border: var(--base-300);
+  --color-input: var(--base-300);
   --color-ring: var(--ring);
+  /* Backwards-compat aliases */
+  --color-background: var(--base-100);
+  --color-foreground: var(--base-content);
+  --color-card: var(--base-200);
+  --color-card-foreground: var(--base-content);
+  --color-popover: var(--base-100);
+  --color-popover-foreground: var(--base-content);
+  --color-primary-foreground: var(--primary-content);
+  --color-secondary-foreground: var(--secondary-content);
+  --color-accent-foreground: var(--accent-content);
+  --color-muted: var(--neutral);
+  --color-muted-foreground: var(--neutral-content);
+  --color-destructive: var(--error);
+  --color-destructive-foreground: var(--error-content);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-border: var(--sidebar-border);
@@ -54,7 +74,26 @@ const THEME_CSS = `
   --font-sans: var(--font-sans), sans-serif;
   --font-serif: var(--font-serif), serif;
   --font-mono: var(--font-mono), monospace;
+  --font-heading: var(--heading-font-family), sans-serif;
+  --font-body: var(--body-font-family), sans-serif;
 
+  /* Spatial scale: py-space-xl, gap-space-md, px-space-sm, etc. */
+  --spacing-space-xs: var(--space-xs);
+  --spacing-space-sm: var(--space-sm);
+  --spacing-space-md: var(--space-md);
+  --spacing-space-lg: var(--space-lg);
+  --spacing-space-xl: var(--space-xl);
+  --spacing-container-x: var(--container-padding-x);
+  --spacing-container-y: var(--container-padding-y);
+  --spacing-section: var(--section-gap);
+  --spacing-container: var(--container-gap);
+  --max-width-content: var(--content-width);
+
+  /* Radius */
+  --radius-box: var(--radius-box);
+  --radius-field: var(--radius-field);
+  --radius-selector: var(--radius-selector);
+  --radius-full: var(--radius-full, 9999px);
   --radius-sm: 0.125rem;
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
@@ -114,7 +153,16 @@ export function injectTailwindBrowser(): void {
   configStyle.textContent = THEME_CSS;
   document.head.appendChild(configStyle);
 
-  // 2. Inject the compiler script
+  // 2. Inject DaisyUI component CSS (cherry-picked bundle, ~50KB gzipped)
+  if (!document.getElementById(DAISYUI_ID)) {
+    const daisyLink = document.createElement("link");
+    daisyLink.id = DAISYUI_ID;
+    daisyLink.rel = "stylesheet";
+    daisyLink.href = "/vendor/daisyui-blocks.css";
+    document.head.appendChild(daisyLink);
+  }
+
+  // 3. Inject the compiler script
   const script = document.createElement("script");
   script.id = SCRIPT_ID;
   script.src = "/vendor/tailwind-browser.js";
@@ -163,6 +211,9 @@ export function removeTailwindBrowser(): void {
 
   const config = document.getElementById(CONFIG_ID);
   if (config) config.remove();
+
+  const daisy = document.getElementById(DAISYUI_ID);
+  if (daisy) daisy.remove();
 
   injected = false;
 }

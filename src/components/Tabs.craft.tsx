@@ -47,8 +47,8 @@ function buildTabButton(index: number) {
       }}
       className={`px-4 py-2 text-sm font-medium border-b-2 rounded-none ${
         isFirst
-          ? "border-(--primary) text-(--primary)"
-          : "border-transparent text-(--muted-foreground) hover:text-(--foreground) hover:border-(--border)"
+          ? "border-primary text-primary"
+          : "border-transparent text-neutral-content hover:text-base-content hover:border-base-300"
       }`}
     />
   );
@@ -66,7 +66,7 @@ function buildTabPanel(index: number) {
       tabGroup={GROUP_ID}
       canDelete={true}
       canEditName={true}
-      className={`flex flex-col gap-(--container-gap) px-(--container-padding-x) py-(--container-padding-y)${isFirst ? "" : " hidden"}`}
+      className={`flex flex-col gap-container px-container-x py-container-y${isFirst ? "" : " hidden"}`}
     >
       <Element
         is={Text}
@@ -95,7 +95,7 @@ function buildTabsChildren() {
       custom={{ displayName: "Tab Bar" }}
       canDelete={true}
       canEditName={true}
-      className="flex flex-row gap-0 border-b border-(--border)"
+      className="flex flex-row gap-0 border-b border-base-300"
     >
       {buttons}
     </Element>,

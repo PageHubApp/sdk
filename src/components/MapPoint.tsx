@@ -36,7 +36,7 @@ export const MapPoint = ({ lat = 0, lng = 0, title = "", description = "", ...re
       connect(drag(r));
     },
     className:
-      "flex items-center gap-2 rounded-lg border border-dashed border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground",
+      "flex items-center gap-2 rounded-lg border border-dashed border-base-300 bg-neutral/50 px-3 py-2 text-sm text-neutral-content",
     "data-bounding-box": true,
     "data-empty-state": !props.lat && !props.lng,
   };

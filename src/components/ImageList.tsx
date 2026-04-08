@@ -265,14 +265,14 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
           <>
             <button
               onClick={handlePrev}
-              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground p-2 text-background transition-colors hover:bg-muted"
+              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground p-2 text-background transition-colors hover:bg-neutral"
               aria-label="Previous"
             >
               <TbChevronLeft size={24} />
             </button>
             <button
               onClick={handleNext}
-              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground p-2 text-background transition-colors hover:bg-muted"
+              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground p-2 text-background transition-colors hover:bg-neutral"
               aria-label="Next"
             >
               <TbChevronRight size={24} />
@@ -292,7 +292,7 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`size-2 rounded-full transition-all ${currentIndex === index ? "w-8 bg-background" : "bg-muted"}`}
+                className={`size-2 rounded-full transition-all ${currentIndex === index ? "w-8 bg-base-100" : "bg-neutral"}`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}

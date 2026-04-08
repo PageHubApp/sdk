@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { phStorage } from "../utils/phStorage";
 
 type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
@@ -11,7 +12,6 @@ interface FloatingWidgetProps {
 }
 
 const CORNERS: Corner[] = ["top-left", "top-right", "bottom-left", "bottom-right"];
-const STORAGE_PREFIX = "floating-widget-";
 const DRAG_THRESHOLD = 5;
 // Velocity threshold (px/ms) and sample window (ms) for throw detection
 const THROW_VELOCITY = 0.5;
@@ -97,7 +97,7 @@ export function FloatingWidget({
   const save = useCallback(
     (pos: SavedPos) => {
       try {
-        localStorage.setItem(STORAGE_PREFIX + storageKey, JSON.stringify(pos));
+        phStorage.set("floating-" + storageKey, pos);
       } catch {}
     },
     [storageKey]
@@ -110,9 +110,8 @@ export function FloatingWidget({
     let savedCorner: Corner | null = null;
 
     try {
-      const raw = localStorage.getItem(STORAGE_PREFIX + storageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
+      const parsed = phStorage.getJSON<SavedPos>("floating-" + storageKey, null);
+      if (parsed) {
         if (typeof parsed === "object" && typeof parsed.x === "number") {
           // If it had a corner, recalculate from corner for the current window size
           if (parsed.corner && CORNERS.includes(parsed.corner)) {

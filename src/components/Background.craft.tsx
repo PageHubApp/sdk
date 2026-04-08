@@ -6,9 +6,10 @@ import { TbContainer } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Background } from "./Background";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
+import { resolveTheme } from "../utils/design/resolveTheme";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {
-  const bgCtx = { ...ctx, palette: props.pallet || ctx.palette };
+  const bgCtx = { ...ctx, palette: resolveTheme(props).palette };
   return tag("main", {
     class: staticClasses(props, bgCtx) || undefined,
     style: getInlineStyle(props) || undefined,

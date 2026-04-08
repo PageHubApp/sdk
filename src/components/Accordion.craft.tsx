@@ -37,7 +37,7 @@ export function buildAccordionItem(index: number) {
       is={Container}
       type="details"
       custom={{ displayName: title, rules: { canMoveOut: () => false } }}
-      className="border-b border-(--border) group"
+      className="border-b border-base-300 group"
     >
       <Element
         is={Container}
@@ -64,7 +64,7 @@ export function buildAccordionItem(index: number) {
         custom={{ displayName: `${title} Content` }}
         canDelete={true}
         canEditName={true}
-        className="flex flex-col gap-(--container-gap) px-4 py-3"
+        className="flex flex-col gap-container px-4 py-3"
       >
         <Element
           is={Text}

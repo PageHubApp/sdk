@@ -39,18 +39,18 @@ export function LinkPanel({ editor }: LinkPanelProps) {
   return (
     <div className="flex items-center gap-2 p-2">
       {/* Type toggle */}
-      <div className="flex shrink-0 items-center rounded-md border border-border">
+      <div className="flex shrink-0 items-center rounded-md border border-base-300">
         <button
           type="button"
           onClick={() => setLinkType("page")}
-          className={`rounded-l-md px-2 py-1 text-[10px] transition-colors ${linkType === "page" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+          className={`rounded-l-md px-2 py-1 text-[10px] transition-colors ${linkType === "page" ? "bg-primary text-primary-content" : "text-neutral-content hover:bg-neutral"}`}
         >
           Page
         </button>
         <button
           type="button"
           onClick={() => setLinkType("external")}
-          className={`flex items-center gap-1 rounded-r-md px-2 py-1 text-[10px] transition-colors ${linkType === "external" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+          className={`flex items-center gap-1 rounded-r-md px-2 py-1 text-[10px] transition-colors ${linkType === "external" ? "bg-primary text-primary-content" : "text-neutral-content hover:bg-neutral"}`}
         >
           <MdLink className="size-3" />
           URL
@@ -66,13 +66,13 @@ export function LinkPanel({ editor }: LinkPanelProps) {
             value={url}
             onChange={e => setUrl(e.target.value)}
             placeholder="https://example.com"
-            className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+            className="min-w-0 flex-1 rounded-md border border-base-300 bg-base-100 px-2 py-1 text-xs text-base-content outline-none placeholder:text-neutral-content focus:border-ring focus:ring-1 focus:ring-ring"
             onClick={e => e.stopPropagation()}
             onKeyDown={e => { if (e.key === "Enter" && url) { e.preventDefault(); applyLink(url, url); } }}
           />
           <button
             onClick={e => { e.stopPropagation(); if (url) applyLink(url, url); }}
-            className="shrink-0 rounded-md bg-primary px-2.5 py-1 text-xs text-primary-foreground hover:bg-primary/90"
+            className="shrink-0 rounded-md bg-primary px-2.5 py-1 text-xs text-primary-content hover:bg-primary/90"
           >
             Insert
           </button>

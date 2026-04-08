@@ -11,30 +11,30 @@ export function TypographyTab({ ds }: TypographyTabProps) {
   return (
     <div className="space-y-0">
       {/* Type Section */}
-      <div className="border-b border-border last:border-b-0">
+      <div className="border-b border-base-300 last:border-b-0">
         <button
           onClick={() => toggleSection("typography")}
-          className="flex w-full items-center justify-between bg-muted px-3 py-2 text-left transition-colors hover:bg-muted/80"
+          className="flex w-full items-center justify-between bg-neutral px-3 py-2 text-left transition-colors hover:bg-neutral/80"
           aria-expanded={!!expandedSections.typography}
         >
-          <span className="text-sm font-semibold text-muted-foreground">Type</span>
+          <span className="text-sm font-semibold text-neutral-content">Type</span>
           {expandedSections.typography ? (
-            <TbChevronDown className="text-muted-foreground" size={18} />
+            <TbChevronDown className="text-neutral-content" size={18} />
           ) : (
-            <TbChevronRight className="text-muted-foreground" size={18} />
+            <TbChevronRight className="text-neutral-content" size={18} />
           )}
         </button>
         {expandedSections.typography && (
-          <div className="space-y-3 bg-background p-3 text-foreground">
+          <div className="space-y-3 bg-base-100 p-3 text-base-content">
             <div>
-              <label htmlFor="ds-heading-font-weight" className="mb-1 block text-xs font-medium text-muted-foreground">
+              <label htmlFor="ds-heading-font-weight" className="mb-1 block text-xs font-medium text-neutral-content">
                 Heading Font Weight
               </label>
               <select
                 id="ds-heading-font-weight"
                 value={styles.headingFont}
                 onChange={e => updateStyle("headingFont", e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="font-normal">Normal</option>
                 <option value="font-medium">Medium</option>
@@ -45,14 +45,14 @@ export function TypographyTab({ ds }: TypographyTabProps) {
             </div>
 
             <div>
-              <label htmlFor="ds-heading-font-family" className="mb-1 block text-xs font-medium text-muted-foreground">
+              <label htmlFor="ds-heading-font-family" className="mb-1 block text-xs font-medium text-neutral-content">
                 Heading Font Family
               </label>
               <button
                 id="ds-heading-font-family"
                 ref={ds.headingFontButtonRef}
                 onClick={ds.openHeadingFontPicker}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-left text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-left text-sm text-base-content hover:bg-neutral focus:outline-none focus:ring-2 focus:ring-ring"
                 style={{ fontFamily: styles.headingFontFamily }}
               >
                 {styles.headingFontFamily || "Select font..."}
@@ -60,14 +60,14 @@ export function TypographyTab({ ds }: TypographyTabProps) {
             </div>
 
             <div>
-              <label htmlFor="ds-body-font-weight" className="mb-1 block text-xs font-medium text-muted-foreground">
+              <label htmlFor="ds-body-font-weight" className="mb-1 block text-xs font-medium text-neutral-content">
                 Body Font Weight
               </label>
               <select
                 id="ds-body-font-weight"
                 value={styles.bodyFont}
                 onChange={e => updateStyle("bodyFont", e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="font-thin">Thin</option>
                 <option value="font-extralight">Extra Light</option>
@@ -79,14 +79,14 @@ export function TypographyTab({ ds }: TypographyTabProps) {
             </div>
 
             <div>
-              <label htmlFor="ds-body-font-family" className="mb-1 block text-xs font-medium text-muted-foreground">
+              <label htmlFor="ds-body-font-family" className="mb-1 block text-xs font-medium text-neutral-content">
                 Body Font Family
               </label>
               <button
                 id="ds-body-font-family"
                 ref={ds.bodyFontButtonRef}
                 onClick={ds.openBodyFontPicker}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-left text-sm text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-left text-sm text-base-content hover:bg-neutral focus:outline-none focus:ring-2 focus:ring-ring"
                 style={{ fontFamily: styles.bodyFontFamily }}
               >
                 {styles.bodyFontFamily || "Select font..."}
@@ -100,26 +100,26 @@ export function TypographyTab({ ds }: TypographyTabProps) {
       <div className="space-y-3 p-6">
         <button
           onClick={ds.addFont}
-          className="mb-2 flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-accent px-3 py-2 text-sm text-accent-foreground transition-colors hover:bg-accent"
+          className="mb-2 flex w-full items-center justify-center gap-2 rounded-lg border border-base-300 bg-accent px-3 py-2 text-sm text-accent-content transition-colors hover:bg-accent"
         >
           <TbPlus size={16} />
           Add Font
         </button>
 
         {customFonts.map((font, index) => (
-          <div key={index} className="group space-y-3 rounded-lg border border-border bg-card p-3">
+          <div key={index} className="group space-y-3 rounded-lg border border-base-300 bg-base-200 p-3">
             {/* Font Name */}
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={font.name}
                 onChange={e => ds.updateFontName(index, e.target.value)}
-                className="flex-1 border-b border-transparent bg-transparent px-1 py-0.5 text-sm font-medium text-card-foreground hover:border-primary focus:border-ring focus:outline-none"
+                className="flex-1 border-b border-transparent bg-transparent px-1 py-0.5 text-sm font-medium text-base-content hover:border-primary focus:border-ring focus:outline-none"
                 placeholder="Font name"
               />
               <button
                 onClick={() => ds.deleteFont(index)}
-                className="p-1 text-destructive opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+                className="p-1 text-error opacity-0 transition-opacity hover:text-error group-hover:opacity-100"
                 title="Delete font"
               >
                 <TbTrash size={16} />
@@ -129,7 +129,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
             {/* Font Properties */}
             <div className="grid grid-cols-2 gap-2">
               <div className="col-span-2">
-                <label htmlFor={`ds-font-family-${index}`} className="mb-1 block text-xs font-medium text-muted-foreground">
+                <label htmlFor={`ds-font-family-${index}`} className="mb-1 block text-xs font-medium text-neutral-content">
                   Font Family
                 </label>
                 <button
@@ -151,7 +151,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
                       e: rect,
                     });
                   }}
-                  className="w-full rounded-lg border border-border bg-background px-2 py-1 text-left text-xs text-foreground hover:bg-muted focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="w-full rounded-lg border border-base-300 bg-base-100 px-2 py-1 text-left text-xs text-base-content hover:bg-neutral focus:outline-none focus:ring-1 focus:ring-ring"
                   style={{ fontFamily: font.fontFamily }}
                 >
                   {font.fontFamily || "Select font family"}
@@ -174,7 +174,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
             </div>
 
             {/* Preview */}
-            <div className="rounded-lg bg-muted p-2">
+            <div className="rounded-lg bg-neutral p-2">
               <div
                 style={{
                   fontFamily: font.fontFamily,
@@ -184,7 +184,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
                   letterSpacing: font.letterSpacing || "normal",
                   textTransform: (font.textTransform || "none") as React.CSSProperties["textTransform"],
                 }}
-                className="text-sm text-muted-foreground"
+                className="text-sm text-neutral-content"
               >
                 The quick brown fox jumps over the lazy dog
               </div>
@@ -194,7 +194,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
 
         <button
           onClick={ds.addFont}
-          className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-accent px-3 py-2 text-sm text-accent-foreground transition-colors hover:bg-accent"
+          className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-base-300 bg-accent px-3 py-2 text-sm text-accent-content transition-colors hover:bg-accent"
         >
           <TbPlus size={16} />
           Add Font
@@ -213,14 +213,14 @@ function FontSelect({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-xs font-medium text-muted-foreground">
+      <label htmlFor={id} className="mb-1 block text-xs font-medium text-neutral-content">
         {label}
       </label>
       <select
         id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+        className="w-full rounded-lg border border-base-300 bg-base-100 px-2 py-1 text-xs text-base-content focus:outline-none focus:ring-1 focus:ring-ring"
       >
         {options.map(opt => {
           const [val, lbl] = opt.split(":");

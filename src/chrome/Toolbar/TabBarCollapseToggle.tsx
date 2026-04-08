@@ -14,7 +14,7 @@ export const TabBarCollapseToggle = ({
   return (
     <Tooltip content={accordionCtx.anyOpen ? "Collapse all" : "Expand all"} placement="top" arrow={false}>
       <button
-        className="flex cursor-pointer items-center justify-center rounded-md p-1 text-sm text-secondary-foreground/70 transition-colors hover:text-foreground"
+        className="flex cursor-pointer items-center justify-center rounded-md p-1 text-sm text-secondary-content/70 transition-colors hover:text-base-content"
         onClick={accordionCtx.toggleAll}
       >
         {accordionCtx.anyOpen ? <TbChevronsUp /> : <TbChevronsDown />}

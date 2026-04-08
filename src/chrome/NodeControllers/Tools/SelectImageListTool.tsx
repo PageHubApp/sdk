@@ -55,4 +55,3 @@ export const SelectImageListTool = () => {
   );
 };
 
-export default SelectImageListTool;

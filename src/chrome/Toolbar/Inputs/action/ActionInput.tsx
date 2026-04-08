@@ -89,14 +89,14 @@ export default function ActionInput() {
       help="What happens when someone clicks this element. Add multiple actions to chain them."
     >
       {actionList.map((action, i) => (
-        <div key={i} className={actionList.length > 1 ? "rounded-md border border-border p-2 mb-2" : ""}>
+        <div key={i} className={actionList.length > 1 ? "rounded-md border border-base-300 p-2 mb-2" : ""}>
           {actionList.length > 1 && (
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-[10px] font-medium text-muted-foreground">Action {i + 1}</span>
+              <span className="text-[10px] font-medium text-neutral-content">Action {i + 1}</span>
               <button
                 type="button"
                 onClick={() => removeAction(i)}
-                className="rounded p-0.5 text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+                className="rounded p-0.5 text-neutral-content hover:bg-error hover:text-error-content"
               >
                 <TbX size={12} />
               </button>
@@ -112,7 +112,7 @@ export default function ActionInput() {
               <button
                 type="button"
                 onClick={() => syncActions([])}
-                className="flex shrink-0 items-center justify-center rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
+                className="flex shrink-0 items-center justify-center rounded p-1 text-xs text-neutral-content transition-colors hover:bg-error hover:text-error-content"
                 aria-label="Clear action"
               >
                 <TbX />
@@ -135,7 +135,7 @@ export default function ActionInput() {
       <button
         type="button"
         onClick={actionList.length === 0 ? () => syncActions([ACTION_DEFAULTS["link-url"]]) : addAction}
-        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border px-2 py-1.5 text-[11px] text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-base-300 px-2 py-1.5 text-[11px] text-neutral-content transition-colors hover:border-primary hover:text-base-content"
       >
         <TbPlus size={12} />
         {actionList.length === 0 ? "Add Action" : "Chain Another Action"}
@@ -201,7 +201,7 @@ function LinkPageForm({
           <button
             type="button"
             onClick={() => patch({ pageId: "" })}
-            className="flex shrink-0 items-center justify-center rounded p-1 text-xs text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
+            className="flex shrink-0 items-center justify-center rounded p-1 text-xs text-neutral-content transition-colors hover:bg-error hover:text-error-content"
             aria-label="Clear page"
           >
             <TbX />
@@ -378,8 +378,8 @@ function ElementPickerForm({
 
   if (!options.length) {
     return (
-      <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2">
-        <span className="text-xs text-muted-foreground">
+      <div className="flex items-center gap-2 rounded-md bg-neutral/50 px-3 py-2">
+        <span className="text-xs text-neutral-content">
           No {label.toLowerCase()}s found
         </span>
       </div>

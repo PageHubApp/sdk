@@ -57,8 +57,8 @@ export const ToolboxTabs = () => {
               onClick={() => switchTab(tab.id)}
               onKeyDown={(e) => handleTabKeyDown(e, i)}
               className={`min-w-0 flex-1 cursor-pointer px-4 py-3 text-sm font-medium transition-colors ${currentTab === tab.id
-                ? "border-b-2 border-b-primary text-primary bg-background"
-                : "border-b-2 border-b-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                ? "border-b-2 border-b-primary text-primary bg-base-100"
+                : "border-b-2 border-b-transparent text-neutral-content hover:text-base-content hover:bg-neutral/50"
                 }`}
               role="tab"
               aria-selected={currentTab === tab.id}

@@ -108,10 +108,10 @@ export const MediaInput = propa => {
           {/* Preview if media exists or content URL exists */}
           {(hasMedia && (svgContent || imageUrl)) || (hasContentUrl && imageUrl) ? (
             <div className="relative">
-              <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-background p-2">
+              <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-base-100 p-2">
                 {svgContent ? (
                   <div
-                    className="flex size-full items-center justify-center text-foreground [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
+                    className="flex size-full items-center justify-center text-base-content [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
                     dangerouslySetInnerHTML={{ __html: svgContent }}
                   />
                 ) : imageUrl ? (
@@ -127,7 +127,7 @@ export const MediaInput = propa => {
               {/* Clear button - only show when media is set or content URL exists */}
               <button
                 onClick={handleClear}
-                className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground hover:bg-destructive/90"
+                className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
                 title="Clear media"
               >
                 ×
@@ -148,9 +148,9 @@ export const MediaInput = propa => {
                 value={contentUrl || ""}
                 onChange={e => handleContentUrlChange(e.target.value)}
                 placeholder="https://example.com/image.jpg"
-                className="input px-3! py-2! placeholder:text-muted-foreground"
+                className="input px-3! py-2! placeholder:text-neutral-content"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-neutral-content">
                 Enter a direct image URL or use the media library below
               </p>
             </div>

@@ -54,9 +54,9 @@ export function AiGeneratePanel({
       <div className="grid max-h-[400px] min-h-[300px] grid-cols-2 gap-4">
         {/* Left half - Controls */}
         <div className="space-y-4 overflow-y-auto pr-2">
-          <div className="space-y-3 rounded-lg bg-muted/30 p-3">
+          <div className="space-y-3 rounded-lg bg-neutral/30 p-3">
             <div>
-              <label htmlFor="ai-model-select" className="mb-1 block text-xs font-semibold text-foreground">
+              <label htmlFor="ai-model-select" className="mb-1 block text-xs font-semibold text-base-content">
                 AI Model
               </label>
               <select
@@ -72,7 +72,7 @@ export function AiGeneratePanel({
             </div>
 
             <div>
-              <label htmlFor="ai-prompt-textarea" className="mb-1 block text-xs font-semibold text-foreground">
+              <label htmlFor="ai-prompt-textarea" className="mb-1 block text-xs font-semibold text-base-content">
                 Describe your image
               </label>
               <textarea
@@ -88,7 +88,7 @@ export function AiGeneratePanel({
             </div>
 
             {aiError && (
-              <div className="rounded-lg border border-destructive bg-destructive/10 px-2 py-1 text-xs text-destructive">
+              <div className="rounded-lg border border-error bg-error/10 px-2 py-1 text-xs text-error">
                 {aiError}
               </div>
             )}
@@ -128,12 +128,12 @@ export function AiGeneratePanel({
 
           {/* Prompt templates */}
           <div className="space-y-2">
-            <div className="flex max-h-[120px] min-h-[80px] flex-wrap gap-1 overflow-auto rounded-lg border border-border bg-popover p-2">
+            <div className="flex max-h-[120px] min-h-[80px] flex-wrap gap-1 overflow-auto rounded-lg border border-base-300 bg-base-100 p-2">
               {AI_PROMPT_TEMPLATES.map(template => (
                 <button
                   key={template}
                   onClick={() => onPromptChange(template)}
-                  className="text-xxs whitespace-nowra inline-block rounded-lg border border-border bg-background px-1 py-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="text-xxs whitespace-nowra inline-block rounded-lg border border-base-300 bg-base-100 px-1 py-0.5 text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
                 >
                   {template}
                 </button>
@@ -145,23 +145,23 @@ export function AiGeneratePanel({
         {/* Right half - Image Preview */}
         <div className="flex flex-col">
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-foreground">Preview</h3>
+            <h3 className="text-xs font-semibold text-base-content">Preview</h3>
             <div className="flex items-center gap-2">
               {aiImagePreview && (
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">Scale:</span>
+                  <span className="text-xs text-neutral-content">Scale:</span>
                   <input
                     type="range"
                     min="25"
                     max="300"
                     value={aiImageScale}
                     onChange={e => onScaleChange(Number(e.target.value))}
-                    className="slider h-2 w-16 cursor-pointer appearance-none rounded-lg bg-muted"
+                    className="slider h-2 w-16 cursor-pointer appearance-none rounded-lg bg-neutral"
                   />
-                  <span className="w-8 text-xs text-muted-foreground">{aiImageScale}%</span>
+                  <span className="w-8 text-xs text-neutral-content">{aiImageScale}%</span>
                   <button
                     onClick={onResetView}
-                    className="px-1 text-xs text-muted-foreground hover:text-foreground"
+                    className="px-1 text-xs text-neutral-content hover:text-base-content"
                     title="Reset view"
                   >
                     Reset
@@ -171,11 +171,11 @@ export function AiGeneratePanel({
             </div>
           </div>
           <div
-            className="relative flex flex-1 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted/30"
+            className="relative flex flex-1 items-center justify-center overflow-hidden rounded-lg border border-base-300 bg-neutral/30"
             onWheel={onWheel}
           >
             {aiImagePreview ? (
-              <div className="relative size-full overflow-hidden rounded-lg bg-muted">
+              <div className="relative size-full overflow-hidden rounded-lg bg-neutral">
                 <Image
                   src={aiImagePreview}
                   alt="AI Generated Preview"
@@ -196,8 +196,8 @@ export function AiGeneratePanel({
                 />
               </div>
             ) : (
-              <div className="text-center text-muted-foreground">
-                <div className="mx-auto mb-2 w-fit rounded-full bg-muted/50 p-3">
+              <div className="text-center text-neutral-content">
+                <div className="mx-auto mb-2 w-fit rounded-full bg-neutral/50 p-3">
                   <TbPhoto className="text-4xl" />
                 </div>
                 <p className="text-base font-medium">No image generated yet</p>

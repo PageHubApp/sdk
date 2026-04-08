@@ -1,7 +1,8 @@
 import { Node, mergeAttributes } from "@tiptap/core";
+import { ReactNodeViewRenderer } from "@tiptap/react";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import React from "react";
+import { VariableNodeView } from "./VariableNodeView";
 
 export interface VariableNodeOptions {
   /**
@@ -85,100 +86,10 @@ export const VariableNode = Node.create<VariableNodeOptions>({
   },
 
   addNodeView() {
-    const extension = this;
-
-    return ({ node, getPos, editor }) => {
-      const varId = node.attrs.id;
-      const resolved = extension.options.resolveVariable?.(varId);
-      const displayText = (resolved && resolved !== varId) ? resolved : varId;
-
-      const dom = document.createElement("span");
-      dom.classList.add("variable-node");
-      dom.setAttribute("data-variable", varId);
-      dom.setAttribute("contenteditable", "false");
-
-      // The text itself — inherits all surrounding text styles
-      dom.textContent = displayText;
-      dom.setAttribute("data-tooltip-id", "variable-tip");
-      dom.setAttribute("data-tooltip-content", "Double-click to edit");
-
-      // === Double-click popover (React portal) ===
-      let popoverContainer: HTMLDivElement | null = null;
-      let popoverRoot: any = null;
-
-      const closePopover = () => {
-        const root = popoverRoot;
-        const container = popoverContainer;
-        popoverRoot = null;
-        popoverContainer = null;
-        if (root) {
-          try { root.unmount(); } catch {}
-        }
-        if (container) {
-          container.remove();
-        }
-      };
-
-      const showPopover = async () => {
-        closePopover();
-
-        const { createRoot } = await import("react-dom/client");
-        const { VariablePopover } = require("../chrome/Tools/VariablePopover");
-
-        popoverContainer = document.createElement("div");
-        document.body.appendChild(popoverContainer);
-        popoverRoot = createRoot(popoverContainer);
-
-        const allVars = extension.options.getVariables();
-        const rect = dom.getBoundingClientRect();
-
-        popoverRoot.render(
-          React.createElement(VariablePopover, {
-            variables: allVars,
-            currentId: varId,
-            displayValue: displayText,
-            anchorRect: rect,
-            onChangeVariable: (newId: string) => {
-              const pos = getPos();
-              if (typeof pos === "number") {
-                const newNode = editor.state.schema.nodes.variable.create({ id: newId });
-                const tr = editor.state.tr.replaceWith(pos, pos + 1, newNode);
-                editor.view.dispatch(tr);
-              }
-            },
-            onRemove: () => {
-              const pos = getPos();
-              if (typeof pos === "number") {
-                editor.chain().focus().deleteRange({ from: pos, to: pos + 1 }).run();
-              }
-            },
-            onClose: closePopover,
-          })
-        );
-      };
-
-      dom.addEventListener("dblclick", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        void showPopover();
-      });
-
-      return {
-        dom,
-        update(updatedNode) {
-          if (updatedNode.type.name !== "variable") return false;
-          const newId = updatedNode.attrs.id;
-          const newResolved = extension.options.resolveVariable?.(newId);
-          const newDisplay = (newResolved && newResolved !== newId) ? newResolved : newId;
-          dom.setAttribute("data-variable", newId);
-          dom.textContent = newDisplay;
-          return true;
-        },
-        destroy() {
-          closePopover();
-        },
-      };
-    };
+    return ReactNodeViewRenderer(VariableNodeView, {
+      as: "span",
+      className: "",
+    });
   },
 
   addCommands() {

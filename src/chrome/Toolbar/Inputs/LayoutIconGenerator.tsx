@@ -35,7 +35,7 @@ function LayoutIconGenerator({ config }: LayoutIconGeneratorProps) {
 
   if (type === 'flex') {
     return (
-      <div className={`${sizeClasses[size]} rounded-sm border border-border p-px overflow-hidden ${className}`}>
+      <div className={`${sizeClasses[size]} rounded-sm border border-base-300 p-px overflow-hidden ${className}`}>
         <div className="flex h-full gap-px">
           {Array.from({ length: columns }, (_, i) => {
             const width = widths?.[i] || 'flex-1';
@@ -54,7 +54,7 @@ function LayoutIconGenerator({ config }: LayoutIconGeneratorProps) {
 
   if (type === 'grid') {
     return (
-      <div className={`${sizeClasses[size]} rounded-sm border border-border p-px overflow-hidden ${className}`}>
+      <div className={`${sizeClasses[size]} rounded-sm border border-base-300 p-px overflow-hidden ${className}`}>
         <div className={`grid h-full grid-cols-${columns} grid-rows-${rows} gap-px`}>
           {Array.from({ length: columns * rows }, (_, i) => {
             const span = spans?.[i] || '';

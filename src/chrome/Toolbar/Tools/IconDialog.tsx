@@ -84,9 +84,9 @@ export const IconDialogDialog = () => {
       <div style={style}>
         <button
           id={`iconPicker-${icon}`}
-          className={`flex size-full cursor-pointer flex-row items-center justify-center rounded-lg hover:bg-muted hover:text-foreground ${
+          className={`flex size-full cursor-pointer flex-row items-center justify-center rounded-lg hover:bg-neutral hover:text-base-content ${
             dialog.value === icon
-              ? "border-2 border-primary bg-primary text-primary-foreground"
+              ? "border-2 border-primary bg-primary text-primary-content"
               : ""
           }`}
           onClick={e => changed(icon)}
@@ -114,7 +114,7 @@ export const IconDialogDialog = () => {
             <div className="flex flex-wrap gap-1.5">
               <button
                 className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
-                  category === "all" ? "bg-background text-foreground" : "bg-muted hover:bg-muted"
+                  category === "all" ? "bg-base-100 text-base-content" : "bg-neutral hover:bg-neutral"
                 }`}
                 onClick={() => handleCategoryChange("all")}
               >
@@ -123,8 +123,8 @@ export const IconDialogDialog = () => {
               <button
                 className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
                   category === "regular"
-                    ? "bg-background text-foreground"
-                    : "bg-muted hover:bg-muted"
+                    ? "bg-base-100 text-base-content"
+                    : "bg-neutral hover:bg-neutral"
                 }`}
                 onClick={() => handleCategoryChange("regular")}
               >
@@ -133,8 +133,8 @@ export const IconDialogDialog = () => {
               <button
                 className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
                   category === "brands"
-                    ? "bg-background text-foreground"
-                    : "bg-muted hover:bg-muted"
+                    ? "bg-base-100 text-base-content"
+                    : "bg-neutral hover:bg-neutral"
                 }`}
                 onClick={() => handleCategoryChange("brands")}
               >
@@ -142,7 +142,7 @@ export const IconDialogDialog = () => {
               </button>
               <button
                 className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
-                  category === "solid" ? "bg-background text-foreground" : "bg-muted hover:bg-muted"
+                  category === "solid" ? "bg-base-100 text-base-content" : "bg-neutral hover:bg-neutral"
                 }`}
                 onClick={() => handleCategoryChange("solid")}
               >
@@ -152,7 +152,7 @@ export const IconDialogDialog = () => {
           </div>
 
           {/* Icon count */}
-          <div className="mb-2 shrink-0 text-xs text-muted-foreground">
+          <div className="mb-2 shrink-0 text-xs text-neutral-content">
             {filteredIcons.length} icon{filteredIcons.length !== 1 ? "s" : ""}
           </div>
 

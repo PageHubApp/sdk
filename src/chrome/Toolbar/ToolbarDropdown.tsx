@@ -188,7 +188,7 @@ export const ToolbarDropdown = ({
           {options.map((opt, i) => {
             if ("group" in opt && opt.group) {
               return (
-                <div key={`group-${opt.group}`} className="px-2 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground first:pt-1">
+                <div key={`group-${opt.group}`} className="px-2 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-content first:pt-1">
                   {opt.group}
                 </div>
               );
@@ -204,7 +204,7 @@ export const ToolbarDropdown = ({
                         {selected && (isNone ? <Dash /> : <Check />)}
                       </span>
                       {isNone ? (
-                        <span className="text-muted-foreground">None</span>
+                        <span className="text-neutral-content">None</span>
                       ) : (
                         opt.label
                       )}

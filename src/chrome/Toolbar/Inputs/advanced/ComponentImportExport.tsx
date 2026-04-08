@@ -52,13 +52,13 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
   return (
     <div className={`space-y-2 ${className}`}>
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg border border-border bg-muted p-1">
+      <div className="flex gap-1 rounded-lg border border-base-300 bg-neutral p-1">
         {(["export", "import"] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
-              activeTab === tab ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              activeTab === tab ? "bg-base-100 text-base-content shadow-sm" : "text-neutral-content hover:text-base-content"
             }`}
           >
             {tab === "export" ? <TbDownload className="size-3.5" /> : <TbUpload className="size-3.5" />}
@@ -72,7 +72,7 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
           <div className="flex gap-1.5">
             <button
               onClick={generateExportText}
-              className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+              className="flex items-center gap-1.5 rounded-md border border-base-300 px-2 py-1 text-xs font-medium text-base-content transition-colors hover:bg-neutral"
             >
               <TbDownload className="size-3.5" />
               Generate JSON
@@ -80,7 +80,7 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
             <button
               onClick={handleCopy}
               disabled={!exportText}
-              className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-md border border-base-300 px-2 py-1 text-xs font-medium text-base-content transition-colors hover:bg-neutral disabled:cursor-not-allowed disabled:opacity-50"
             >
               <TbCopy className="size-3.5" />
               Copy
@@ -111,7 +111,7 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
           <button
             onClick={handleImport}
             disabled={!importText.trim()}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-base-300 px-2 py-1.5 text-xs font-medium text-base-content transition-colors hover:bg-neutral disabled:cursor-not-allowed disabled:opacity-50"
           >
             <TbUpload className="size-3.5" />
             Import Component

@@ -73,7 +73,7 @@ export function FontPanel({ editor, onAction }: FontPanelProps) {
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           onClick={e => e.stopPropagation()}
-          className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+          className="min-w-0 flex-1 rounded-md border border-base-300 bg-base-100 px-2 py-1 text-xs text-base-content outline-none placeholder:text-neutral-content focus:border-ring focus:ring-1 focus:ring-ring"
         />
         <select
           onChange={e => {
@@ -92,7 +92,7 @@ export function FontPanel({ editor, onAction }: FontPanelProps) {
             : editor.isActive("heading", { level: 4 }) ? "heading4"
             : "paragraph"
           }
-          className="w-auto shrink-0 rounded-md border border-border bg-background px-2 py-1 text-xs text-muted-foreground outline-none"
+          className="w-auto shrink-0 rounded-md border border-base-300 bg-base-100 px-2 py-1 text-xs text-neutral-content outline-none"
         >
           <option value="paragraph">Normal</option>
           <option value="heading1">H1</option>
@@ -100,7 +100,7 @@ export function FontPanel({ editor, onAction }: FontPanelProps) {
           <option value="heading3">H3</option>
           <option value="heading4">H4</option>
         </select>
-        <div className="flex shrink-0 items-center rounded-md border border-border">
+        <div className="flex shrink-0 items-center rounded-md border border-base-300">
           {[
             { label: "S", size: "12px" },
             { label: "M", size: "16px" },
@@ -110,7 +110,7 @@ export function FontPanel({ editor, onAction }: FontPanelProps) {
             <button
               key={s.label}
               onClick={onAction(() => editor.chain().focus().setFontSize(s.size).run())}
-              className="px-1.5 py-1 text-xs text-muted-foreground transition-colors first:rounded-l-md last:rounded-r-md hover:bg-muted hover:text-foreground"
+              className="px-1.5 py-1 text-xs text-neutral-content transition-colors first:rounded-l-md last:rounded-r-md hover:bg-neutral hover:text-base-content"
             >
               {s.label}
             </button>
@@ -124,7 +124,7 @@ export function FontPanel({ editor, onAction }: FontPanelProps) {
           <button
             key={c}
             onClick={() => setCategory(c)}
-            className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] transition-colors ${category === c ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+            className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] transition-colors ${category === c ? "bg-primary text-primary-content" : "text-neutral-content hover:bg-neutral"}`}
           >
             {c}
           </button>
@@ -134,7 +134,7 @@ export function FontPanel({ editor, onAction }: FontPanelProps) {
       {/* Font list */}
       <div className="ph-panel-inset overflow-hidden rounded-md">
         {loading ? (
-          <div className="flex h-[140px] items-center justify-center text-xs text-muted-foreground">Loading fonts...</div>
+          <div className="flex h-[140px] items-center justify-center text-xs text-neutral-content">Loading fonts...</div>
         ) : (
           <List height={140} itemCount={filtered.length} itemSize={28} width="100%">
             {({ index, style }) => {
@@ -160,7 +160,7 @@ export function FontPanel({ editor, onAction }: FontPanelProps) {
                       if (originalFont) editor.chain().focus().setFontFamily(originalFont).run();
                       setPreviewFont(null);
                     }}
-                    className="w-full truncate px-2 py-1 text-left text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-accent-foreground"
+                    className="w-full truncate px-2 py-1 text-left text-xs text-neutral-content transition-colors hover:bg-accent/50 hover:text-accent-content"
                     style={{ fontFamily: font[0] }}
                   >
                     {font[0]}
