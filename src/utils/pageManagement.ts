@@ -96,6 +96,7 @@ export const isolatePageAlt = (
 
 export const resolvePageRef = (url: string, query: any, currentPath?: string): string => {
   if (!url || typeof url !== "string" || !url.startsWith("ref:")) return url;
+  if (!query) return "#";
 
   try {
     const pageId = url.replace("ref:", "");

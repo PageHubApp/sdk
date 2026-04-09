@@ -153,13 +153,14 @@ export const UnifiedSettings = () => {
  */
 function SearchEffects({ search }: { search: string }) {
   const accordionCtx = useAccordionContext();
+  const accordionCtxRef = React.useRef(accordionCtx);
+  accordionCtxRef.current = accordionCtx;
 
   useEffect(() => {
-    if (!accordionCtx) return;
     if (search) {
-      accordionCtx.openAll?.();
+      accordionCtxRef.current?.openAll?.();
     }
-  }, [search, accordionCtx]);
+  }, [search]);
 
   // CSS Custom Highlight API for text highlighting
   useEffect(() => {

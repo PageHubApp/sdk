@@ -41,6 +41,14 @@
   --destructive: hsl(0 72% 51%);
   --destructive-foreground: hsl(0 0% 100%);
   --base-300: hsl(0 0% 90%);
+  --neutral: hsl(0 0% 96%);
+  --neutral-content: hsl(0 0% 45%);
+  --base-100: hsl(0 0% 100%);
+  --base-200: hsl(0 0% 98%);
+  --base-content: hsl(0 0% 6%);
+  --primary-content: hsl(0 0% 100%);
+  --secondary-content: hsl(0 0% 9%);
+  --accent-content: hsl(0 0% 9%);
   --ring: hsl(0 0% 9%);
   --border: 1px;
 }
@@ -68,6 +76,14 @@
   --destructive: hsl(0 72% 51%);
   --destructive-foreground: hsl(0 0% 100%);
   --base-300: hsl(0 0% 25%);
+  --neutral: hsl(0 0% 18%);
+  --neutral-content: hsl(0 0% 64%);
+  --base-100: hsl(0 0% 10%);
+  --base-200: hsl(0 0% 13%);
+  --base-content: hsl(0 0% 93%);
+  --primary-content: hsl(0 0% 9%);
+  --secondary-content: hsl(0 0% 93%);
+  --accent-content: hsl(0 0% 93%);
   --ring: hsl(0 0% 93%);
   --border: 1px;
 }
