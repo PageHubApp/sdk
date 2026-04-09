@@ -498,7 +498,7 @@ export const Header = () => {
       </div>
 
       {/* Node Breadcrumb - Below Page/Component Selector */}
-      <div className="pointer-events-auto border-b border-base-300 bg-base-100">
+      <div className="pointer-events-auto bg-base-100">
         <NodeBreadcrumb />
       </div>
 

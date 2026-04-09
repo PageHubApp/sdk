@@ -44,7 +44,7 @@ export const ToolboxTabs = () => {
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Tab Headers */}
-      <div ref={tablistRef} className="flex min-w-0 border-t border-sidebar-border" role="tablist" aria-label="Content tabs">
+      <div ref={tablistRef} className="flex min-w-0" role="tablist" aria-label="Content tabs">
         {tabs.map((tab, i) => (
           <Fragment key={tab.id}>
             {i > 0 ? tabDivider : null}
@@ -52,8 +52,8 @@ export const ToolboxTabs = () => {
               onClick={() => switchTab(tab.id)}
               onKeyDown={(e) => handleTabKeyDown(e, i)}
               className={`min-w-0 flex-1 cursor-pointer px-4 py-3 text-sm font-medium transition-colors ${currentTab === tab.id
-                ? "bg-neutral text-base-content"
-                : "text-neutral-content hover:text-base-content hover:bg-neutral/50"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
                 }`}
               role="tab"
               aria-selected={currentTab === tab.id}
