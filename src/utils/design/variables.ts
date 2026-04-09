@@ -50,6 +50,17 @@ export const replaceVariables = (text: string | undefined, query: any): string =
         return new Date().getFullYear().toString();
       }
 
+      // Handle custom variables (variables.myKey -> lookup in rootProps.variables array)
+      if (trimmedVar.startsWith("variables.")) {
+        const varKey = trimmedVar.slice("variables.".length);
+        const customVars = rootProps.variables;
+        if (Array.isArray(customVars)) {
+          const found = customVars.find((v: any) => v.key === varKey);
+          if (found?.value) return String(found.value);
+        }
+        return match;
+      }
+
       // Parse nested properties (e.g., "company.name" -> rootProps.company.name)
       const parts = trimmedVar.split(".");
       let value: any = rootProps;
@@ -96,6 +107,18 @@ export const resolveVariable = (varId: string, query: any): string => {
     if (!root) return DEFAULT_VALUES[varId] || varId;
 
     const rootProps = root.data.props;
+
+    // Handle custom variables
+    if (varId.startsWith("variables.")) {
+      const varKey = varId.slice("variables.".length);
+      const customVars = rootProps.variables;
+      if (Array.isArray(customVars)) {
+        const found = customVars.find((v: any) => v.key === varKey);
+        if (found?.value) return String(found.value);
+      }
+      return varId;
+    }
+
     const parts = varId.split(".");
     let value: any = rootProps;
 
@@ -133,6 +156,15 @@ export const getAvailableVariables = (query: any): string[] => {
       Object.keys(rootProps.company).forEach(key => {
         if (rootProps.company[key]) {
           variables.push(`company.${key}`);
+        }
+      });
+    }
+
+    // Add custom variables
+    if (Array.isArray(rootProps.variables)) {
+      rootProps.variables.forEach((v: any) => {
+        if (v.key && v.value) {
+          variables.push(`variables.${v.key}`);
         }
       });
     }

@@ -39,6 +39,9 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiStyleTags, setAiStyleTags] = useState<string[]>([]);
 
+  // Custom Variables
+  const [customVariables, setCustomVariables] = useState<{ key: string; value: string }[]>([]);
+
   // Integrations
   const [integrations, setIntegrations] = useState<Record<string, Record<string, string>>>({});
 
@@ -70,6 +73,7 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
           setAiPrompt(ai.prompt || "");
           setAiStyleTags(ai.styleTags || []);
 
+          setCustomVariables(props.variables || []);
           setIntegrations(props.integrations || {});
           setRedirects(props.redirects || []);
         }
@@ -108,6 +112,9 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
           prompt: aiPrompt,
           styleTags: aiStyleTags,
         };
+
+        const cleanVariables = customVariables.filter(v => v.key.trim() && v.value.trim());
+        props.variables = cleanVariables.length ? cleanVariables : undefined;
 
         const cleanIntegrations: Record<string, Record<string, string>> = {};
         for (const [key, config] of Object.entries(integrations)) {
@@ -193,6 +200,7 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
                 companyPhone={companyPhone} setCompanyPhone={setCompanyPhone}
                 companyEmail={companyEmail} setCompanyEmail={setCompanyEmail}
                 companyWebsite={companyWebsite} setCompanyWebsite={setCompanyWebsite}
+                customVariables={customVariables} setCustomVariables={setCustomVariables}
               />
             )}
 

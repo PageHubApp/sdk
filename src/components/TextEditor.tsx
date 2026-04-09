@@ -4,7 +4,7 @@
  * Contains all TipTap, chrome, and editing dependencies.
  */
 import React, { useEffect } from "react";
-import { useEditor } from "@craftjs/core";
+import { useEditor, ROOT_NODE } from "@craftjs/core";
 import Color from "@tiptap/extension-color";
 import FontFamily from "@tiptap/extension-font-family";
 import FontSize from "@tiptap/extension-font-size";
@@ -43,8 +43,8 @@ const checkIfAncestorLinked = (nodeId: string, query: any): boolean => {
   return false;
 };
 
-// Default available variables for the suggestion popup
-const ALL_VARIABLES = [
+// Built-in variables for the suggestion popup
+const BUILTIN_VARIABLES = [
   { id: "company.name", label: "Company Name" },
   { id: "company.tagline", label: "Tagline" },
   { id: "company.type", label: "Business Type" },
@@ -87,7 +87,21 @@ const getTiptapExtensions = (
     HTMLAttributes: { class: "max-w-full h-auto" },
   }),
   VariableNode.configure({
-    getVariables: () => ALL_VARIABLES,
+    getVariables: () => {
+      const vars = [...BUILTIN_VARIABLES];
+      try {
+        const root = queryRef?.current?.node(ROOT_NODE)?.get();
+        const customVars = root?.data?.props?.variables;
+        if (Array.isArray(customVars)) {
+          customVars.forEach((v: any) => {
+            if (v.key?.trim()) {
+              vars.push({ id: `variables.${v.key}`, label: v.key });
+            }
+          });
+        }
+      } catch {}
+      return vars;
+    },
     onSuggestion: onSuggestion || null,
     resolveVariable: (id: string) => queryRef?.current ? resolveVariable(id, queryRef.current) : id,
   }),

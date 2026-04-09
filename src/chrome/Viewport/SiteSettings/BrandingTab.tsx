@@ -1,5 +1,5 @@
 import React from "react";
-import { TbInfoCircle } from "react-icons/tb";
+import { TbInfoCircle, TbPlus, TbTrash } from "react-icons/tb";
 import { StandaloneImagePicker } from "../StandaloneImagePicker";
 
 interface BrandingTabProps {
@@ -22,6 +22,8 @@ interface BrandingTabProps {
   setCompanyEmail: (v: string) => void;
   companyWebsite: string;
   setCompanyWebsite: (v: string) => void;
+  customVariables: { key: string; value: string }[];
+  setCustomVariables: (v: { key: string; value: string }[]) => void;
 }
 
 export function BrandingTab({
@@ -35,6 +37,7 @@ export function BrandingTab({
   companyPhone, setCompanyPhone,
   companyEmail, setCompanyEmail,
   companyWebsite, setCompanyWebsite,
+  customVariables, setCustomVariables,
 }: BrandingTabProps) {
   return (
     <div className="space-y-6">
@@ -163,6 +166,83 @@ export function BrandingTab({
         />
       </div>
 
+      {/* Custom Variables */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="toolbar-label font-medium">Custom Variables</label>
+          <button
+            type="button"
+            onClick={() => setCustomVariables([...customVariables, { key: "", value: "" }])}
+            className="flex items-center gap-1 rounded-md bg-base-300 px-2.5 py-1 text-xs font-medium text-base-content transition-colors hover:bg-base-200"
+          >
+            <TbPlus className="size-3.5" />
+            Add Variable
+          </button>
+        </div>
+        {customVariables.length === 0 && (
+          <p className="text-sm text-neutral-content">
+            No custom variables yet. Add one to use <code className="rounded bg-base-300 px-1 py-0.5 text-xs">{"{{variables.yourKey}}"}</code> in any text.
+          </p>
+        )}
+        {customVariables.map((variable, index) => (
+          <div key={index} className="flex items-start gap-2">
+            <div className="flex-1">
+              {index === 0 && (
+                <label className="mb-1 block text-xs text-neutral-content">Key</label>
+              )}
+              <div className="flex items-center">
+                <span className="flex h-[38px] items-center rounded-l-lg border border-r-0 border-base-300 bg-neutral px-2 text-xs text-neutral-content">
+                  variables.
+                </span>
+                <input
+                  type="text"
+                  value={variable.key}
+                  onChange={e => {
+                    const sanitized = e.target.value.replace(/[^a-zA-Z0-9_]/g, "");
+                    const updated = [...customVariables];
+                    updated[index] = { ...updated[index], key: sanitized };
+                    setCustomVariables(updated);
+                  }}
+                  className={`${inputClass} rounded-l-none`}
+                  placeholder="myField"
+                />
+              </div>
+            </div>
+            <div className="flex-[2]">
+              {index === 0 && (
+                <label className="mb-1 block text-xs text-neutral-content">Value</label>
+              )}
+              <input
+                type="text"
+                value={variable.value}
+                onChange={e => {
+                  const updated = [...customVariables];
+                  updated[index] = { ...updated[index], value: e.target.value };
+                  setCustomVariables(updated);
+                }}
+                className={inputClass}
+                placeholder="Value to display"
+              />
+            </div>
+            <div>
+              {index === 0 && (
+                <label className="mb-1 block text-xs text-neutral-content">&nbsp;</label>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const updated = customVariables.filter((_, i) => i !== index);
+                  setCustomVariables(updated);
+                }}
+                className="flex h-[38px] w-[38px] items-center justify-center rounded-lg border border-base-300 text-neutral-content transition-colors hover:border-error hover:bg-error/10 hover:text-error"
+              >
+                <TbTrash className="size-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="mt-4 rounded-lg border border-base-300 bg-neutral p-4">
         <div className="flex gap-3">
           <TbInfoCircle className="mt-0.5 size-5 shrink-0 text-primary" />
@@ -189,6 +269,11 @@ export function BrandingTab({
               <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
                 {"{{year}}"}
               </code>
+              {customVariables.filter(v => v.key.trim()).map(v => (
+                <code key={v.key} className="rounded bg-primary/10 px-2 py-1 text-xs text-primary">
+                  {`{{variables.${v.key}}}`}
+                </code>
+              ))}
             </div>
           </div>
         </div>

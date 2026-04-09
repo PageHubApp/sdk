@@ -22,14 +22,17 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const target = actionTarget(action);
 
   if (href) {
-    return tag("a", {
+    const linkTag = tag("a", {
       href,
       target: target || undefined,
       rel: /^https?:\/\//.test(href) ? "noopener noreferrer" : undefined,
+    }, text);
+    // Wrap the <a> inside the original tagName so className and semantic structure are preserved
+    return tag(props.tagName || "div", {
       class: cls || undefined,
       style: style || undefined,
       ...ariaAttrs(props),
-    }, text);
+    }, linkTag);
   }
 
   if (props.tagName === "Textfit") {

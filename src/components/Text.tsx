@@ -153,7 +153,9 @@ export const Text = (incomingProps: Partial<TextProps>) => {
     const liveAction = migrateAction(props);
     const liveHref = actionToHref(liveAction, query, router?.asPath);
     if (liveHref) {
-      return liveContent;
+      // Wrap text in a link but keep the original tagName (h1, h2, etc.) as the outer element
+      // so className, animations, and semantic structure are preserved.
+      prop.children = liveContent;
     } else if (props.tagName === "Textfit") {
       prop.children = liveContent;
     } else {

@@ -67,6 +67,25 @@ export function VariableNodeView({ node, editor, getPos, extension, updateAttrib
 
   const handleEditValue = useCallback((newValue: string) => {
     const parts = varId.split(".");
+
+    // Handle custom variables (variables.myKey)
+    if (parts[0] === "variables" && parts.length === 2) {
+      const varKey = parts[1];
+      actions.setProp(ROOT_NODE, (rootProps: any) => {
+        if (!Array.isArray(rootProps.variables)) rootProps.variables = [];
+        const existing = rootProps.variables.find((v: any) => v.key === varKey);
+        if (existing) {
+          existing.value = newValue;
+        } else {
+          rootProps.variables.push({ key: varKey, value: newValue });
+        }
+      });
+      setDisplayOverride(newValue);
+      document.dispatchEvent(new CustomEvent("pagehub:variable-changed"));
+      return;
+    }
+
+    // Handle company variables
     if (parts[0] !== "company" || parts.length !== 2) return;
     const key = parts[1];
     actions.setProp(ROOT_NODE, (rootProps: any) => {
@@ -74,7 +93,6 @@ export function VariableNodeView({ node, editor, getPos, extension, updateAttrib
       rootProps.company[key] = newValue;
     });
     setDisplayOverride(newValue);
-    // Notify non-TipTap Text/Button components to re-render with new variable value
     document.dispatchEvent(new CustomEvent("pagehub:variable-changed"));
   }, [varId, actions]);
 
