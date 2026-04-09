@@ -31,7 +31,7 @@ export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
         tabIndex={isActive ? 0 : -1}
         onClick={onClick}
       >
-        <span className="relative z-10 transition-all duration-200">{icon}</span>
+        <span className="relative z-10">{icon}</span>
       </div>
     </Tooltip>
   );

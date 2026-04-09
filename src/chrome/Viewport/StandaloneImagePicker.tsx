@@ -115,7 +115,7 @@ export const StandaloneImagePicker = ({
       <div className="flex gap-2">
         <label
           htmlFor={`file-upload-${label}`}
-          className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-3 transition-all ${
+          className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-3 ${
             errors.length
               ? "border-error bg-error text-error-content"
               : saved
@@ -146,7 +146,7 @@ export const StandaloneImagePicker = ({
         <button
           type="button"
           onClick={() => setShowMediaBrowser(true)}
-          className="flex items-center gap-2 rounded-lg border-2 border-base-300 px-4 py-3 text-base-content transition-all hover:border-primary hover:bg-neutral"
+          className="flex items-center gap-2 rounded-lg border-2 border-base-300 px-4 py-3 text-base-content hover:border-primary hover:bg-neutral"
         >
           <TbPhoto className="text-xl" />
           <span className="text-sm font-medium">Browse</span>
@@ -156,7 +156,7 @@ export const StandaloneImagePicker = ({
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center gap-2 rounded-lg border-2 border-error px-4 py-3 text-error transition-all hover:border-error hover:bg-error hover:text-error-content"
+            className="flex items-center gap-2 rounded-lg border-2 border-error px-4 py-3 text-error hover:border-error hover:bg-error hover:text-error-content"
           >
             <TbTrash className="text-xl" />
           </button>

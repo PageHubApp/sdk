@@ -98,7 +98,7 @@ export function LayoutPresetInput({
                 <button
                   key={index}
                   onClick={() => lp.handlePresetSelect(preset)}
-                  className={`flex flex-col items-center gap-1.5 rounded-lg border p-2 text-left transition-all ${
+                  className={`flex flex-col items-center gap-1.5 rounded-lg border p-2 text-left ${
                     isActive
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-base-300 bg-base-100 hover:border-primary hover:bg-accent"

@@ -26,7 +26,7 @@ const DAISYUI_ID = "pagehub-daisyui";
  * the SDK's design tokens. Mirrors styles.css @theme inline block.
  */
 const THEME_CSS = `
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *):not(#viewport:not(.dark) *));
 
 @theme inline {
   /* DaisyUI 5 canonical tokens */

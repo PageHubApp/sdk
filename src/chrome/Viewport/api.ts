@@ -8,6 +8,8 @@ import { phStorage } from "../../utils/phStorage";
 
 const getApiBase = () => getPageHubApiBaseUrl();
 
+let _saveInFlight = false;
+
 export const GetHtmlToComponent = async (html: string) => {
   try {
     const res = await fetch(`${getApiBase()}/api/convert`, {
@@ -85,43 +87,50 @@ export const SaveToServer = async (
   setSettings: any,
   sessionToken: string | null = null
 ) => {
-  const content = lz.encodeBase64(lz.compress(json));
-  phStorage.set("draft", content);
+  if (_saveInFlight) return;
+  _saveInFlight = true;
 
-  const _id = settings?._id || "";
-  const r: any = { _id };
-  if (draft) r.draft = content;
-  else r.content = content;
-  if (sessionToken) r.sessionToken = sessionToken;
+  try {
+    const content = lz.encodeBase64(lz.compress(json));
+    phStorage.set("draft", content);
 
-  const headers: any = { Accept: "application/json", "Content-Type": "application/json" };
-  if (sessionToken) headers["x-pagehub-token"] = sessionToken;
+    const _id = settings?._id || "";
+    const r: any = { _id };
+    if (draft) r.draft = content;
+    else r.content = content;
+    if (sessionToken) r.sessionToken = sessionToken;
 
-  const res = await fetch(`${getApiBase()}/api/save`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(r),
-  });
+    const headers: any = { Accept: "application/json", "Content-Type": "application/json" };
+    if (sessionToken) headers["x-pagehub-token"] = sessionToken;
 
-  let result: any = null;
-  try { result = await res.json(); } catch (e) { console.error(e); }
+    const res = await fetch(`${getApiBase()}/api/save`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(r),
+    });
 
-  if (!res.ok) {
-    const msg = result?.error || `Save failed (${res.status})`;
-    setSettings((prev: any) => ({ ...prev, error: msg, upgrade: result?.upgrade || false }));
-    return;
-  }
+    let result: any = null;
+    try { result = await res.json(); } catch (e) { console.error(e); }
 
-  if (result && result._id) {
-    const lsIds = phStorage.getJSON("history", []);
-    if (!lsIds.find((_: any) => _._id === result._id)) {
-      lsIds.push({ _id: result._id, draftId: result?.title || result?.draftId });
-      phStorage.set("history", lsIds);
+    if (!res.ok) {
+      const msg = result?.error || `Save failed (${res.status})`;
+      setSettings((prev: any) => ({ ...prev, error: msg, upgrade: result?.upgrade || false }));
+      return;
     }
-    if (result._id !== _id) {
-      window.history.pushState(result._id, result._id, `/build/${result._id}`);
-      phStorage.set("site-id", result._id);
-      setSettings(result);
+
+    if (result && result._id) {
+      const lsIds = phStorage.getJSON("history", []);
+      if (!lsIds.find((_: any) => _._id === result._id)) {
+        lsIds.push({ _id: result._id, draftId: result?.title || result?.draftId });
+        phStorage.set("history", lsIds);
+      }
+      if (result._id !== _id) {
+        window.history.pushState(result._id, result._id, `/build/${result._id}`);
+        phStorage.set("site-id", result._id);
+        setSettings(result);
+      }
     }
+  } finally {
+    _saveInFlight = false;
   }
 };

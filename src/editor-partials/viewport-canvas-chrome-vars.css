@@ -14,8 +14,7 @@
 .theme-transition *,
 .theme-transition *::before,
 .theme-transition *::after {
-  transition: color 300ms ease, background-color 300ms ease, border-color 300ms ease,
-    box-shadow 300ms ease, outline-color 300ms ease !important;
+  transition: none !important;
 }
 
 #viewport .pagehub-sdk-root,
@@ -59,27 +58,27 @@
 .dark #device-tools-portal .pagehub-sdk-root,
 .dark #device-tools-portal .tool-bg,
 .dark #device-tools-portal .node-control {
-  --background: hsl(0 0% 10%);
+  --background: hsl(0 0% 12%);
   --foreground: hsl(0 0% 93%);
-  --card: hsl(0 0% 13%);
+  --card: hsl(0 0% 18%);
   --card-foreground: hsl(0 0% 93%);
-  --popover: hsl(0 0% 13%);
+  --popover: hsl(0 0% 18%);
   --popover-foreground: hsl(0 0% 93%);
   --primary: hsl(0 0% 93%);
   --primary-foreground: hsl(0 0% 9%);
-  --secondary: hsl(0 0% 18%);
+  --secondary: hsl(0 0% 24%);
   --secondary-foreground: hsl(0 0% 93%);
-  --muted: hsl(0 0% 18%);
-  --muted-foreground: hsl(0 0% 64%);
-  --accent: hsl(0 0% 20%);
+  --muted: hsl(0 0% 20%);
+  --muted-foreground: hsl(0 0% 68%);
+  --accent: hsl(0 0% 32%);
   --accent-foreground: hsl(0 0% 93%);
   --destructive: hsl(0 72% 51%);
   --destructive-foreground: hsl(0 0% 100%);
-  --base-300: hsl(0 0% 25%);
-  --neutral: hsl(0 0% 18%);
-  --neutral-content: hsl(0 0% 64%);
-  --base-100: hsl(0 0% 10%);
-  --base-200: hsl(0 0% 13%);
+  --base-300: hsl(0 0% 32%);
+  --neutral: hsl(0 0% 20%);
+  --neutral-content: hsl(0 0% 68%);
+  --base-100: hsl(0 0% 12%);
+  --base-200: hsl(0 0% 18%);
   --base-content: hsl(0 0% 93%);
   --primary-content: hsl(0 0% 9%);
   --secondary-content: hsl(0 0% 93%);

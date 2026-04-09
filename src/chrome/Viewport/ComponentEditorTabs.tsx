@@ -400,7 +400,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
               </span>
               <button
                 onClick={e => handleCloseTab(tab.id, e)}
-                className={`rounded-lg p-0.5 transition-all hover:bg-neutral hover:text-neutral-content ${activeTabId === tab.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                className={`rounded-lg p-0.5 transition-opacity hover:bg-neutral hover:text-neutral-content ${activeTabId === tab.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
               >
                 <TbX className="size-3" />
               </button>

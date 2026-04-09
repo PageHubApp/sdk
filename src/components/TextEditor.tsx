@@ -192,7 +192,7 @@ function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
         tabIndex={isEditing ? undefined : 0}
         onClick={handleClick}
         onKeyDown={isEditing ? undefined : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
-        className={`min-h-inherit w-full transition-all duration-150 ease-in-out ${isEditing ? "relative cursor-text" : "cursor-pointer"}`}
+        className={`min-h-inherit w-full ${isEditing ? "relative cursor-text" : "cursor-pointer"}`}
       >
         {enabled && tiptapEditor ? (
           isEditing ? (

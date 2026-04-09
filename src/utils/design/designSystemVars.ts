@@ -393,9 +393,16 @@ export function generateDesignSystemCSSVariables(
   if (designSystem.darkPalette && designSystem.darkPalette.length > 0) {
     const darkPaletteVars = generatePaletteCSSVariables(autoGenerateContentColors(designSystem.darkPalette));
     if (darkPaletteVars) {
-      darkBlock =
-        `\n@media (prefers-color-scheme: dark) {\n  ${scope} {\n  color-scheme: dark;\n${darkPaletteVars}\n  }\n}` +
-        `\n.dark ${scope}, ${scope}.dark {\n  color-scheme: dark;\n${darkPaletteVars}\n}`;
+      // For #viewport scope, only activate dark palette when viewport itself has .dark class
+      // (the "Edit dark: variants" toggle), NOT when <html> has .dark (SDK chrome toggle).
+      // For :root scope (published sites), use both prefers-color-scheme and .dark ancestor.
+      if (scope === "#viewport") {
+        darkBlock = `\n${scope}.dark {\n  color-scheme: dark;\n${darkPaletteVars}\n}`;
+      } else {
+        darkBlock =
+          `\n@media (prefers-color-scheme: dark) {\n  ${scope} {\n  color-scheme: dark;\n${darkPaletteVars}\n  }\n}` +
+          `\n.dark ${scope}, ${scope}.dark {\n  color-scheme: dark;\n${darkPaletteVars}\n}`;
+      }
     }
   }
 

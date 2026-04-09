@@ -21,7 +21,7 @@ export function PatternCards({
             key={mod.name}
             type="button"
             onClick={() => onToggle(mod)}
-            className={`rounded-lg border px-3 py-2 text-left transition-all ${
+            className={`rounded-lg border px-3 py-2 text-left ${
               active
                 ? "border-primary bg-primary/10 ring-1 ring-primary/20"
                 : "border-base-300 bg-base-100 hover:border-primary/40 hover:bg-neutral"

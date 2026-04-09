@@ -79,7 +79,7 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
                 <button
                   onClick={() => d.handleSvgIconClick(iconRef, icon)}
                   onDoubleClick={() => d.handleSvgIconDoubleClick(icon)}
-                  className={`flex size-full cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg border p-1 transition-all ${
+                  className={`flex size-full cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg border p-1 ${
                     isSelected
                       ? "border-primary bg-primary/10 text-primary"
                       : isFocused

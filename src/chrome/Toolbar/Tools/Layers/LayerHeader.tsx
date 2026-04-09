@@ -175,7 +175,7 @@ export function LayerHeader({
 
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div
-        className={`group relative flex cursor-pointer items-center gap-2.5 border-l-2 px-3 py-2 transition-all duration-200 ${
+        className={`group relative flex cursor-pointer items-center gap-2.5 border-l-2 px-3 py-2 ${
           isHeader ? "mb-3" : ""
         } ${isFooter ? "mt-3" : ""} ${
           isSelected

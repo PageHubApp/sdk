@@ -98,7 +98,7 @@ const LinkedActionCard = ({ icon, title, description, onClick, delay = 0, varian
   return (
     <button
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-xl border ${variantStyles[variant]} p-4 text-left transition-all`}
+      className={`group relative overflow-hidden rounded-xl border ${variantStyles[variant]} p-4 text-left`}
     >
       <div className="relative flex flex-row items-center gap-3">
         <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${iconStyles[variant]}`}>

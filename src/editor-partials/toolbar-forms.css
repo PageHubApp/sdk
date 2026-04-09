@@ -170,7 +170,7 @@
 
 .pagehub-sdk-root .input-wrapper,
 .pagehub-sdk-root #toolbarContents .input {
-  @apply w-full rounded-lg border border-base-300 bg-neutral/80 px-1 py-0 transition-all focus-within:border-primary/50 hover:bg-neutral hover:border-base-300;
+  @apply w-full rounded-lg border border-base-300 bg-neutral/80 px-1 py-0 focus-within:border-primary/50 hover:bg-neutral hover:border-base-300;
 }
 
 .pagehub-sdk-root #toolbarContents .input,

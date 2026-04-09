@@ -146,9 +146,7 @@ export function CategoryDetailView({
   const hasSubcategories = category.subcategories.length > 0;
   const hasStyles = category.styles?.length > 0;
 
-  // Hide hint permanently once they've used Quick Look
   const hasUsedQuickLook = useRef(false);
-  try { hasUsedQuickLook.current = !!localStorage.getItem("ph-quicklook-used"); } catch {}
 
   const handleBlockHover = useCallback((block: BlockItem, rect: DOMRect) => {
     hoveredRef.current = { block, rect };
@@ -170,7 +168,6 @@ export function CategoryDetailView({
           setQuickLookBlock(hoveredRef.current.block);
           setQuickLookRect(hoveredRef.current.rect);
           hasUsedQuickLook.current = true;
-          try { localStorage.setItem("ph-quicklook-used", "1"); } catch {}
         }
       }
       if (e.key === "Escape" && quickLookBlock) {

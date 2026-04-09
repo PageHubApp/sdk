@@ -17,7 +17,7 @@ export function EditorLoader() {
         justifyContent: "center",
         height: "100%",
         color: isDark ? "#94a3b8" : "#64748b",
-        backgroundColor: isDark ? "#0f172a" : "#ffffff",
+        backgroundColor: isDark ? "#000000" : "#ffffff",
         fontFamily: "system-ui, sans-serif",
       }}
     >

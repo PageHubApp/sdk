@@ -129,7 +129,7 @@ export const GradientInput = () => {
       {/* Preview bar */}
       {hasGradient && (
         <div
-          className="h-5 w-full rounded border border-base-300 transition-all"
+          className="h-5 w-full rounded border border-base-300"
           style={{ background: previewBg || undefined }}
         />
       )}

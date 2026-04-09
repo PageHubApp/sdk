@@ -39,7 +39,7 @@ export const BlockPreviewCard = memo(function BlockPreviewCard({
         }
       }}
       onMouseDown={onDismissQuickLook}
-      className={`group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-sm ${
+      className={`group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border hover:shadow-sm ${
         quickLookOpen ? "ring-2 ring-primary/30" : ""
       }`}
     >
@@ -77,7 +77,7 @@ export const CustomSectionCard = memo(function CustomSectionCard({
     <div
 
       ref={(ref: any) => createRef(ref, tool)}
-      className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-sm"
+      className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border hover:shadow-sm"
       onDoubleClick={() => {
         try {
           const masterNode = editorQuery.node(template.rootNodeId).get();
@@ -136,7 +136,7 @@ export function CategoryCard({
   return (
     <button
       onClick={onClick}
-      className="group border-base-300 bg-base-200 hover:border-primary flex w-full cursor-pointer flex-col overflow-hidden rounded-xl border text-left transition-all hover:shadow-md"
+      className="group border-base-300 bg-base-200 hover:border-primary flex w-full cursor-pointer flex-col overflow-hidden rounded-xl border text-left hover:shadow-md"
     >
       <div className="bg-neutral/50 flex h-24 items-center justify-center overflow-hidden">
         {wireframe || <span className="text-neutral-content text-xs">{category.name}</span>}

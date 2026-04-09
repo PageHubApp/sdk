@@ -20,7 +20,7 @@ const ActionCard = ({ icon, title, description, onClick, delay }: ActionCardProp
   return (
     <button
       onClick={onClick}
-      className="animate-slide-up group relative overflow-hidden rounded-xl border border-base-300 bg-base-200 p-6 text-left transition-all hover:bg-neutral/50"
+      className="animate-slide-up group relative overflow-hidden rounded-xl border border-base-300 bg-base-200 p-6 text-left hover:bg-neutral/50"
       style={{ animationDelay: `${delay}s` }}
     >
       <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />

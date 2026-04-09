@@ -294,7 +294,7 @@ function MediaItemRow({
     <div
       role="button"
       tabIndex={0}
-      className={`group relative cursor-pointer transition-all ${
+      className={`group relative cursor-pointer ${
         viewMode === "cards"
           ? `overflow-hidden rounded-lg border border-base-300 bg-base-200 hover:border-primary hover:shadow-md ${
               isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""

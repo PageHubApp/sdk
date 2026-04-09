@@ -168,7 +168,7 @@ export const CodeEditor = ({
   );
 
   return (
-    <div className="overflow-hidden rounded-lg border border-base-300 bg-neutral/80 transition-all focus-within:border-primary/50 hover:bg-neutral">
+    <div className="overflow-hidden rounded-lg border border-base-300 bg-neutral/80 focus-within:border-primary/50 hover:bg-neutral">
       <CodeMirror
         value={typeof value === "string" ? value : String(value || "")}
         height={height}

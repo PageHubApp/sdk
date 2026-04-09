@@ -192,7 +192,7 @@ export const Header = () => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
 
-    // Enable transition class before toggling so colors animate smoothly
+    // Suppress transitions during theme switch to avoid oklch interpolation artifacts
     document.documentElement.classList.add("theme-transition");
 
     if (newTheme) {
@@ -203,8 +203,8 @@ export const Header = () => {
       phStorage.set("theme", "light");
     }
 
-    // Remove after transition so normal interactions aren't affected
-    setTimeout(() => document.documentElement.classList.remove("theme-transition"), 350);
+    // Re-enable transitions after repaint
+    requestAnimationFrame(() => document.documentElement.classList.remove("theme-transition"));
   };
 
   const animate = false;
@@ -454,33 +454,21 @@ export const Header = () => {
         </Tooltip>
 
         <Tooltip content="Save" placement="bottom" arrow={false}>
-          {isTenant ? (
-            <AnimatedSaveButton
-              onClick={async () => {
-                if (!canUndo) return;
-                const json = query.serialize();
+          <AnimatedSaveButton
+            onClick={async () => {
+              if (!canUndo) return;
+              const json = query.serialize();
+              if (isTenant) {
                 await SaveToServer(json, true, settings, setSettings, sessionToken);
-              }}
-              disabled={!canUndo || !settings}
-            />
-          ) : (
-            <Item
-              ariaLabel="Save"
-              disabled={!canUndo}
-              onMouseDown={e => e.stopPropagation()}
-              onClick={async () => {
-                if (!canUndo) return;
-                // If settings don't exist yet, do an initial save to create the page first
+              } else {
                 if (!settings) {
-                  const json = query.serialize();
-                  await SaveToServer(json, true, settings, setSettings, sessionToken);
+                  SaveToServer(json, true, settings, setSettings, sessionToken);
                 }
                 open("publish");
-              }}
-            >
-              <TbDeviceFloppy />
-            </Item>
-          )}
+              }
+            }}
+            disabled={!canUndo || (isTenant && !settings)}
+          />
         </Tooltip>
 
         <Tooltip content="More Options" placement="bottom" arrow={false}>

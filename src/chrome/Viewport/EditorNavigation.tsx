@@ -115,7 +115,7 @@ export const EditorNavigation = ({
         ref={navRef}
         role="navigation"
         aria-label="Editor menu"
-        className="pointer-events-auto absolute bottom-0 top-10 z-50 flex w-full flex-col bg-base-100 text-base-content"
+        className="pointer-events-auto absolute bottom-0 top-12 z-50 flex w-full flex-col bg-base-100 text-base-content"
       >
       {(panel === "components" || panel === "blocks") ? (
         <ToolboxTabs />

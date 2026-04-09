@@ -340,7 +340,7 @@ export const SectionPickerDialog = ({
                         }
                         onClose();
                       }}
-                      className="group relative overflow-hidden rounded-lg border-2 border-base-300 bg-base-200 text-base-content shadow-sm transition-all hover:border-primary hover:shadow-md"
+                      className="group relative overflow-hidden rounded-lg border-2 border-base-300 bg-base-200 text-base-content shadow-sm hover:border-primary hover:shadow-md"
                     >
                       {/* Preview */}
                       {template.isCustom ? (

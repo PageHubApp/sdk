@@ -79,7 +79,7 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
               <button
                 key={preset.name}
                 onClick={() => crop.handlePresetSelect(preset)}
-                className="group rounded-lg border border-base-300 bg-base-100 p-2 text-left text-xs transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm"
+                className="group rounded-lg border border-base-300 bg-base-100 p-2 text-left text-xs hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm"
               >
                 <div className="font-semibold text-base-content transition-colors group-hover:text-primary">
                   {preset.name}
@@ -109,7 +109,7 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
             </div>
             <button
               onClick={() => crop.setLockAspectRatio(!crop.lockAspectRatio)}
-              className={`rounded-lg p-2 transition-all duration-200 ${
+              className={`rounded-lg p-2 ${
                 crop.lockAspectRatio
                   ? "bg-primary text-primary-content shadow-sm"
                   : "bg-neutral text-neutral-content hover:bg-primary/10 hover:text-primary"

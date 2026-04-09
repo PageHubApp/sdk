@@ -240,7 +240,7 @@ export const NodeBreadcrumb = () => {
         {currentItem && !showOnlyPageContext && (
           <>
             {isEditing ? (
-              <div className="w-full min-w-0 rounded bg-primary/10 p-1 text-xs font-medium text-primary transition-all duration-300 ease-in-out">
+              <div className="w-full min-w-0 rounded bg-primary/10 p-1 text-xs font-medium text-primary">
                 <input
                   type="text"
                   defaultValue={currentItem.name}
