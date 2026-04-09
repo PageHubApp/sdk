@@ -93,8 +93,10 @@ export function useDesignSystem(isOpen: boolean) {
   // Collapsible sections
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     spacing: true,
+    spatial: false,
     typography: true,
     effects: false,
+    sizing: false,
     forms: false,
     links: false,
   });

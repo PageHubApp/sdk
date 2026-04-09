@@ -87,7 +87,7 @@ const THEME_CSS = `
   --spacing-container-y: var(--container-padding-y);
   --spacing-section: var(--section-gap);
   --spacing-container: var(--container-gap);
-  --max-width-content: var(--content-width);
+  --max-width-page: var(--content-width);
 
   /* Radius */
   --radius-box: var(--radius-box);
