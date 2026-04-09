@@ -176,7 +176,7 @@ export function useBackgroundEffects({
     for (const mods of Object.values(modifiers) as any[]) {
       if (!Array.isArray(mods)) continue;
       for (const mod of mods) {
-        if (mod.name && mod.classes) {
+        if (mod.name && mod.classes && /^[a-z][\w-]*$/i.test(mod.name)) {
           rules.push(`@utility ${mod.name} { @apply ${mod.classes}; }`);
         }
       }
