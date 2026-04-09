@@ -299,7 +299,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
   );
 
   // DRY: Create icon element once
-  const iconSpan = shouldShowIcon && <span className={iconClass}>{iconElement}</span>;
+  const iconSpan = shouldShowIcon && <span className={iconClass} aria-hidden="true">{iconElement}</span>;
 
   const content = (
     <>

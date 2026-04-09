@@ -96,6 +96,7 @@ export const IconDialogInput = ({
           <button
             ref={ref}
             title={value}
+            aria-label={value ? `Icon: ${value}` : "Choose icon"}
             onClick={e => {
               setDialog({
                 enabled: true,
@@ -109,7 +110,7 @@ export const IconDialogInput = ({
             }}
             className="input h-12 w-[70px]!"
           >
-            <div className="google-icons pointer-events-none mx-auto flex size-4 items-center gap-3">
+            <div className="google-icons pointer-events-none mx-auto flex size-4 items-center gap-3" aria-hidden="true">
               <ClientIconLoader value={value} />
             </div>
           </button>

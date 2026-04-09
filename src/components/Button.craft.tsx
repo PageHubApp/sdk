@@ -53,7 +53,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
       const name = icon.value.replace("ref-google:", "");
       const ic = [icon.size, icon.color || "fill-current", "flex items-center justify-center google-icons"].filter(Boolean).join(" ");
       collectClasses(ic, ctx);
-      iconHTML = `<span class="${escapeAttr(ic)}">${escapeHTML(name)}</span>`;
+      iconHTML = `<span class="${escapeAttr(ic)}" aria-hidden="true">${escapeHTML(name)}</span>`;
     } else if (icon.value.startsWith("ref-")) {
       const ic = [icon.size, icon.color || "fill-current", "flex items-center justify-center"].filter(Boolean).join(" ");
       collectClasses(ic, ctx);
@@ -119,9 +119,9 @@ export const ButtonDef = defineComponent({
     },
   ],
   modifiers: [
-    // Composite patterns (real CSS classes via @utility in daisyui-spatial)
-    { name: "cta-responsive", label: "CTA Responsive", category: "Pattern", requires: "btn btn-primary" },
-    { name: "cta-outline-responsive", label: "CTA Outline", category: "Pattern", requires: "btn btn-outline" },
+    // Composite patterns — canonical CTA buttons with spatial tokens + consistent height
+    { name: "cta-responsive", label: "CTA Responsive", category: "Pattern", requires: "btn btn-primary", expands: "rounded-box px-space-md py-space-xs min-h-12 font-semibold w-full md:w-auto" },
+    { name: "cta-outline-responsive", label: "CTA Outline", category: "Pattern", requires: "btn btn-outline", expands: "rounded-box px-space-md py-space-xs min-h-12 font-semibold border-base-content/30 text-base-content w-full md:w-auto" },
     // DaisyUI color variants
     { name: "btn-primary", label: "Primary", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },
     { name: "btn-secondary", label: "Secondary", category: "Color", exclusive: true, requires: "btn", removes: ["bg-(--*", "text-(--*", "bg-transparent"] },

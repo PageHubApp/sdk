@@ -8,14 +8,14 @@
  * Extracted from Background.tsx.
  */
 import { useEffect, useRef } from "react";
+import { GoogleFontLoadedAtom, useSetAtomState } from "../../utils/atoms";
 import { getMaterialSymbolsUrlFromNodes } from "../../utils/data/collectGoogleIcons";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
 import { injectDesignSystemVars } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
-import { GoogleFontLoadedAtom, useSetAtomState } from "../../utils/atoms";
 import { isCssValid, isJsValid } from "../../utils/lib";
-import { addElementsToHead } from "./headInjection";
 import type { ContainerProps, NamedColor } from "../Background";
+import { addElementsToHead } from "./headInjection";
 
 interface UseBackgroundEffectsOptions {
   enabled: boolean;
@@ -99,9 +99,7 @@ export function useBackgroundEffects({
         if (!colorValue) return "inherit";
         if (colorValue.startsWith("palette:")) {
           const paletteName = colorValue.replace("palette:", "");
-          const paletteColor = (theme.palette as NamedColor[]).find(
-            p => p.name === paletteName,
-          );
+          const paletteColor = (theme.palette as NamedColor[]).find(p => p.name === paletteName);
           if (paletteColor) return resolveLinkColor(paletteColor.color);
         }
         if (
@@ -162,7 +160,8 @@ export function useBackgroundEffects({
       palette: t.palette.length ? t.palette : DEFAULT_PALETTE,
       darkPalette: t.darkPalette || undefined,
       typography: t.typography || [],
-      styleGuide: t.styleGuide && Object.keys(t.styleGuide).length ? t.styleGuide : DEFAULT_STYLE_GUIDE,
+      styleGuide:
+        t.styleGuide && Object.keys(t.styleGuide).length ? t.styleGuide : DEFAULT_STYLE_GUIDE,
     });
   }, [props.theme, enabled]);
 
