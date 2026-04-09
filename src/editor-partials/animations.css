@@ -75,6 +75,19 @@
   70% { transform: scale(0.9); }
   100% { opacity: 1; transform: scale(1); }
 }
+/* ─── Horizontal scroll section ─────────────────────────────────────────── */
+.ph-hscroll-sticky {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  will-change: transform;
+}
+.ph-hscroll-track {
+  display: flex;
+  height: 100%;
+  will-change: transform;
+}
+
 @keyframes css-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

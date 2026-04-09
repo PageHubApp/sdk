@@ -85,6 +85,8 @@ export const ContainerMainTab = () => {
     </ToolbarSection>
   ) : undefined;
 
+  const isSection = props?.type === "section";
+
   return renderComponentSlots({
     Content: contentSlot,
     Type: (
@@ -92,6 +94,51 @@ export const ContainerMainTab = () => {
         <ContainerTypeInput hasHeader={hasHeader} hasFooter={hasFooter} />
       </ToolbarSection>
     ),
+    ...(isSection ? {
+      ScrollEffect: (
+        <ToolbarSection title="Scroll Effect" icon={SECTION_ICONS["Type"]} help="Pin this section and scroll its children horizontally as the user scrolls down.">
+          <ToolbarItem
+            propKey="scrollEffect"
+            propType="component"
+            type="select"
+            label="Effect"
+          >
+            <option value="">None</option>
+            <option value="horizontal-scroll">Horizontal Scroll</option>
+            <option value="parallax-stack">Parallax Stack</option>
+            <option value="scale-reveal">Scale Reveal</option>
+            <option value="stagger-cascade">Stagger Cascade</option>
+          </ToolbarItem>
+
+          {props?.scrollEffect === "horizontal-scroll" && (
+            <>
+              <ToolbarItem propKey="scrollDirection" propType="component" type="select" label="Direction">
+                <option value="ltr">Left to Right</option>
+                <option value="rtl">Right to Left</option>
+              </ToolbarItem>
+              <ToolbarItem propKey="scrollSnap" propType="component" type="toggle" option="Snap to panels" on={true} />
+            </>
+          )}
+
+          {props?.scrollEffect && (
+            <>
+              <ToolbarItem propKey="scrollSpeed" propType="component" type="select" label="Speed">
+                <option value="1">Fast</option>
+                <option value="1.5">Normal</option>
+                <option value="2">Slow</option>
+                <option value="3">Very Slow</option>
+              </ToolbarItem>
+              <ToolbarItem propKey="scrollSmoothing" propType="component" type="select" label="Smoothing">
+                <option value="0">None (instant)</option>
+                <option value="0.5">Light</option>
+                <option value="0.8">Normal</option>
+                <option value="1.5">Heavy</option>
+              </ToolbarItem>
+            </>
+          )}
+        </ToolbarSection>
+      ),
+    } : {}),
   });
 };
 

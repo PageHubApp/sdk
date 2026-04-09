@@ -38,7 +38,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   else if (props.type === "details") t = "details";
   else if (props.type === "summary") t = "summary";
 
-  return tag(t, {
+  const attrs: Record<string, any> = {
     class: staticClasses(props, ctx) || undefined,
     style: getInlineStyle(props) || undefined,
     id: props.anchor || props.id || undefined,
@@ -47,7 +47,25 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     method: t === "form" ? (props.method || "POST") : undefined,
     open: t === "details" && props.open ? "" : undefined,
     "data-tab-group": props.tabGroup || undefined,
-  }, children);
+  };
+
+  // Horizontal scroll section: wrap children in sticky viewport + flex track
+  if (props.scrollEffect === "horizontal-scroll") {
+    attrs["data-scroll-effect"] = "horizontal-scroll";
+    attrs["data-scroll-direction"] = props.scrollDirection || "ltr";
+    attrs["data-scroll-speed"] = String(props.scrollSpeed ?? 1.5);
+    attrs["data-scroll-smoothing"] = String(props.scrollSmoothing ?? 0.8);
+    attrs["data-scroll-snap"] = String(!!props.scrollSnap);
+    // Add marker class so the GSAP scripts are injected
+    ctx.classes.add("ph-hscroll");
+    const inner =
+      `<div class="ph-hscroll-sticky" style="height:100vh;overflow:hidden">` +
+        `<div class="ph-hscroll-track" style="display:flex;height:100%;will-change:transform">${children}</div>` +
+      `</div>`;
+    return tag(t, attrs, inner);
+  }
+
+  return tag(t, attrs, children);
 };
 
 const SECTION_PARENTS = new Set(["page", "component", "header", "footer"]);

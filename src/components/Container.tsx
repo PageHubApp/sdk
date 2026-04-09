@@ -14,6 +14,7 @@ import {
 } from "../utils/lib";
 
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
+import { useScrollEffect } from "../utils/hooks/useScrollEffect";
 import { EmptyState } from "./EmptyState";
 import { RenderPattern, inlayProps } from "./lib";
 
@@ -35,6 +36,11 @@ export interface ContainerProps extends BaseSelectorProps {
   open?: boolean;
   actionProp?: NodeAction;
   click?: any; // Legacy — handled by migrateAction()
+  scrollEffect?: string;
+  scrollDirection?: "ltr" | "rtl";
+  scrollSnap?: boolean;
+  scrollSpeed?: number;
+  scrollSmoothing?: number;
 }
 
 export const Container = (incomingProps: Partial<ContainerProps>) => {
@@ -211,6 +217,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     prop.target = props.target || "iframe";
   }
 
+  if (props.scrollEffect) prop["data-scroll-effect"] = props.scrollEffect;
   if (props.id) prop.id = props.id;
   if (props.tabGroup) prop["data-tab-group"] = props.tabGroup;
   if (props.type === "details" && props.open) prop.open = true;
@@ -287,6 +294,42 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   let UiComponent: any = Box;
   if (props.type === "section" || props.type === "page") {
     UiComponent = Section;
+  }
+
+  // ─── Scroll effects (GSAP ScrollTrigger) ────────────────────────────────
+  const hasScrollEffect = !!props.scrollEffect;
+  const isHScroll = props.scrollEffect === "horizontal-scroll";
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useScrollEffect(sectionRef, {
+    effect: props.scrollEffect || "",
+    direction: props.scrollDirection,
+    snap: props.scrollSnap,
+    speed: props.scrollSpeed,
+    smoothing: props.scrollSmoothing,
+    enabled,
+  });
+
+  if (hasScrollEffect) {
+    const origRef = prop.ref;
+    prop.ref = (r: any) => {
+      sectionRef.current = r;
+      if (origRef) origRef(r);
+    };
+
+    // Horizontal scroll needs wrapper divs; other effects operate directly on the section
+    if (isHScroll) {
+      prop.className = (prop.className || "") + " relative";
+      if (!enabled) {
+        prop.children = (
+          <div className="ph-hscroll-sticky" style={{ height: "100vh", overflow: "hidden" }}>
+            <div className="ph-hscroll-track" style={{ display: "flex", height: "100%", willChange: "transform" }}>
+              {prop.children}
+            </div>
+          </div>
+        );
+      }
+    }
   }
 
   const container = React.createElement(motionIt(props, UiComponent, enabled), { ...prop, as: tagName });
