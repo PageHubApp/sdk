@@ -6,20 +6,22 @@ export interface PanelUrlState {
   panel: string | null; // "blocks" | "components" | null
   cat: string | null; // block category
   sub: string | null; // block subcategory
+  sty: string | null; // block style
   q: string | null; // search query
 }
 
-const ALL_PANEL_KEYS: Array<keyof PanelUrlState> = ["panel", "cat", "sub", "q"];
+const ALL_PANEL_KEYS: Array<keyof PanelUrlState> = ["panel", "cat", "sub", "sty", "q"];
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function readParams(): PanelUrlState {
-  if (typeof window === "undefined") return { panel: null, cat: null, sub: null, q: null };
+  if (typeof window === "undefined") return { panel: null, cat: null, sub: null, sty: null, q: null };
   const sp = new URLSearchParams(window.location.search);
   return {
     panel: sp.get("panel"),
     cat: sp.get("cat"),
     sub: sp.get("sub"),
+    sty: sp.get("sty"),
     q: sp.get("q"),
   };
 }
@@ -74,7 +76,7 @@ function getSnapshot(): PanelUrlState {
 }
 
 function getServerSnapshot(): PanelUrlState {
-  return { panel: null, cat: null, sub: null, q: null };
+  return { panel: null, cat: null, sub: null, sty: null, q: null };
 }
 
 function notify(): void {
@@ -101,7 +103,7 @@ export function usePanelUrl() {
 
   /** Open a panel — pushState so back button closes it */
   const open = useCallback((panelType: PanelType, params?: Partial<Omit<PanelUrlState, "panel">>) => {
-    const url = buildUrl({ panel: panelType, cat: null, sub: null, q: null, ...params });
+    const url = buildUrl({ panel: panelType, cat: null, sub: null, sty: null, q: null, ...params });
     history.pushState({ source: "panelUrl" }, "", url);
     notify();
   }, []);
@@ -120,7 +122,7 @@ export function usePanelUrl() {
       const url = stripAllPanelParams();
       history.pushState({ source: "panelUrl" }, "", url);
     } else {
-      const url = buildUrl({ panel: panelType, cat: null, sub: null, q: null });
+      const url = buildUrl({ panel: panelType, cat: null, sub: null, sty: null, q: null });
       history.pushState({ source: "panelUrl" }, "", url);
     }
     notify();
@@ -128,7 +130,7 @@ export function usePanelUrl() {
 
   /** Switch tab — pushState so back button navigates between tabs */
   const switchTab = useCallback((panelType: PanelType) => {
-    const url = buildUrl({ panel: panelType, cat: null, sub: null, q: null });
+    const url = buildUrl({ panel: panelType, cat: null, sub: null, sty: null, q: null });
     history.pushState({ source: "panelUrl" }, "", url);
     notify();
   }, []);
@@ -151,7 +153,7 @@ export function usePanelUrl() {
   const enterSearchMode = useCallback(() => {
     if (searchPushedRef.current) return;
     searchPushedRef.current = true;
-    const url = buildUrl({ cat: null, sub: null, q: "" });
+    const url = buildUrl({ cat: null, sub: null, sty: null, q: "" });
     history.pushState({ source: "panelUrl" }, "", url);
     notify();
   }, []);

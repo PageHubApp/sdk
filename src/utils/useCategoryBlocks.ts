@@ -6,8 +6,10 @@ export interface BlockItem {
   name: string;
   category: string;
   subcategory?: string;
+  style?: string;
   description?: string;
   structure: any;
+  modifiers?: Record<string, { name: string; classes: string }[]>;
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -16,7 +18,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
  * Fetches blocks for a specific category (with full structure) on demand.
  * Pass `null` as category to skip fetching.
  */
-export function useCategoryBlocks(category: string | null, subcategory?: string | null) {
+export function useCategoryBlocks(category: string | null, subcategory?: string | null, style?: string | null) {
   const params = new URLSearchParams();
   if (category) {
     params.set("category", category);
@@ -26,6 +28,9 @@ export function useCategoryBlocks(category: string | null, subcategory?: string 
   }
   if (subcategory) {
     params.set("subcategory", subcategory);
+  }
+  if (style) {
+    params.set("style", style);
   }
 
   const key = category ? `/api/v1/components?${params.toString()}` : null;

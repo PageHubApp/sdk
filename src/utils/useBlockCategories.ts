@@ -10,6 +10,7 @@ export interface BlockCategory {
   name: string;
   total: number;
   subcategories: BlockSubcategory[];
+  styles: BlockSubcategory[];
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());

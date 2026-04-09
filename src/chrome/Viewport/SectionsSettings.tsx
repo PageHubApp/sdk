@@ -104,8 +104,10 @@ export function SectionsSettings() {
           categories={sortedCategories}
           onBack={() => history.back()}
           activeSubcategory={params.sub}
+          activeStyle={params.sty}
           onSubcategoryChange={(sub) => panelNavigate({ sub })}
-          onCategoryChange={(catId) => panelNavigate({ cat: catId, sub: null, q: null })}
+          onStyleChange={(sty) => panelNavigate({ sty })}
+          onCategoryChange={(catId) => panelNavigate({ cat: catId, sub: null, sty: null, q: null })}
         />
       </div>
     );
@@ -158,7 +160,7 @@ export function SectionsSettings() {
                   <CategoryCard
                     key={cat.id}
                     category={cat}
-                    onClick={() => panelNavigate({ cat: cat.id, sub: null, q: null })}
+                    onClick={() => panelNavigate({ cat: cat.id, sub: null, sty: null, q: null })}
                   />
                 ))}
               </div>

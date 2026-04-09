@@ -1,7 +1,7 @@
 import { useEditor } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import React, { useCallback, useMemo, useRef } from "react";
-import { TbArrowLeft, TbChevronLeft, TbChevronRight, TbLoader2 } from "react-icons/tb";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { TbArrowLeft, TbChevronDown, TbChevronLeft, TbChevronRight, TbLoader2, TbX } from "react-icons/tb";
 import { SectionPickerDialogAtom } from "utils/atoms";
 import { useSetAtomState } from "../../../utils/atoms";
 import type { BlockCategory } from "../../../utils/useBlockCategories";
@@ -9,15 +9,84 @@ import { useCategoryBlocks, type BlockItem } from "../../../utils/useCategoryBlo
 import { useInsertTarget } from "../../hooks/useInsertTarget";
 import { AutoHideScrollbar } from "../../shared/layout";
 import { AddElement } from "../Toolbox/lib";
-import { BlockPreviewCard, SubcategoryChip } from "./components";
+import { BlockPreviewCard, BlockQuickLook } from "./components";
 import { buildElementFromStructure } from "./blockHelpers";
+
+function FilterDropdown({
+  label,
+  activeValue,
+  isOpen,
+  onToggle,
+  onClose,
+  onClear,
+  items,
+  activeKey,
+  onSelect,
+}: {
+  label: string;
+  activeValue: string | null;
+  isOpen: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+  onClear: () => void;
+  items: { name: string; count: number }[];
+  activeKey: string | null;
+  onSelect: (name: string) => void;
+}) {
+  return (
+    <div className="relative">
+      {activeValue ? (
+        <div className="flex items-center gap-1">
+          <span className="bg-primary text-primary-content rounded-full px-2 py-0.5 text-xs font-medium">
+            {activeValue}
+          </span>
+          <button
+            onClick={onClear}
+            className="rounded-full p-0.5 transition-colors hover:bg-neutral cursor-pointer"
+          >
+            <TbX className="size-3 text-neutral-content" />
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={onToggle}
+          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-neutral-content transition-colors hover:bg-neutral cursor-pointer"
+        >
+          {label}
+          <TbChevronDown className={`size-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        </button>
+      )}
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={onClose} />
+          <div className="absolute right-0 top-full z-50 mt-1 min-w-[140px] rounded-lg border border-base-300 bg-base-100 py-1 shadow-lg">
+            {items.map(item => (
+              <button
+                key={item.name}
+                onClick={() => onSelect(item.name)}
+                className={`flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs transition-colors hover:bg-neutral ${
+                  activeKey === item.name ? "text-primary font-medium" : "text-base-content"
+                }`}
+              >
+                <span>{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</span>
+                <span className="text-neutral-content">{item.count}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 interface CategoryDetailViewProps {
   category: BlockCategory;
   categories: BlockCategory[];
   onBack: () => void;
   activeSubcategory: string | null;
+  activeStyle: string | null;
   onSubcategoryChange: (sub: string | null) => void;
+  onStyleChange: (style: string | null) => void;
   onCategoryChange: (catId: string) => void;
 }
 
@@ -26,7 +95,9 @@ export function CategoryDetailView({
   categories,
   onBack,
   activeSubcategory,
+  activeStyle,
   onSubcategoryChange,
+  onStyleChange,
   onCategoryChange,
 }: CategoryDetailViewProps) {
   const { actions, query } = useEditor();
@@ -39,7 +110,7 @@ export function CategoryDetailView({
   const setPositionInfo = useSetAtomState(SectionPickerDialogAtom);
   const { getTargetPageId } = useInsertTarget();
 
-  const { blocks, isLoading } = useCategoryBlocks(category.id, activeSubcategory);
+  const { blocks, isLoading } = useCategoryBlocks(category.id, activeSubcategory, activeStyle);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -66,42 +137,100 @@ export function CategoryDetailView({
     insertElement(element);
   }, [resolver, insertElement]);
 
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [styleOpen, setStyleOpen] = useState(false);
+  const [quickLookBlock, setQuickLookBlock] = useState<BlockItem | null>(null);
+  const [quickLookRect, setQuickLookRect] = useState<DOMRect | null>(null);
+  const [isHoveringCard, setIsHoveringCard] = useState(false);
+  const hoveredRef = useRef<{ block: BlockItem; rect: DOMRect } | null>(null);
+  const hasSubcategories = category.subcategories.length > 0;
+  const hasStyles = category.styles?.length > 0;
+
+  // Hide hint permanently once they've used Quick Look
+  const hasUsedQuickLook = useRef(false);
+  try { hasUsedQuickLook.current = !!localStorage.getItem("ph-quicklook-used"); } catch {}
+
+  const handleBlockHover = useCallback((block: BlockItem, rect: DOMRect) => {
+    hoveredRef.current = { block, rect };
+    setIsHoveringCard(true);
+    if (quickLookBlock) {
+      setQuickLookBlock(block);
+      setQuickLookRect(rect);
+    }
+  }, [quickLookBlock]);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === " " && !e.repeat && !(e.target as HTMLElement)?.closest("input, textarea, [contenteditable]")) {
+        e.preventDefault();
+        if (quickLookBlock) {
+          setQuickLookBlock(null);
+          setQuickLookRect(null);
+        } else if (hoveredRef.current) {
+          setQuickLookBlock(hoveredRef.current.block);
+          setQuickLookRect(hoveredRef.current.rect);
+          hasUsedQuickLook.current = true;
+          try { localStorage.setItem("ph-quicklook-used", "1"); } catch {}
+        }
+      }
+      if (e.key === "Escape" && quickLookBlock) {
+        setQuickLookBlock(null);
+        setQuickLookRect(null);
+      }
+    };
+    window.addEventListener("keydown", handleKey, { capture: true });
+    return () => window.removeEventListener("keydown", handleKey, { capture: true });
+  }, [quickLookBlock]);
+
+  const activeLabel = activeSubcategory
+    ? `${activeSubcategory.charAt(0).toUpperCase() + activeSubcategory.slice(1)}`
+    : null;
+  const styleLabel = activeStyle
+    ? `${activeStyle.charAt(0).toUpperCase() + activeStyle.slice(1)}`
+    : null;
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-base-300 px-3 py-2.5">
+      <div className="flex items-center gap-2 border-b border-base-300 px-3 py-4">
         <button onClick={onBack} className="rounded-md p-1 transition-colors hover:bg-neutral cursor-pointer">
           <TbArrowLeft className="size-4" />
         </button>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 flex items-center gap-2">
           <div className="text-sm font-medium">{category.name}</div>
-          <div className="text-xs text-neutral-content">{category.total} blocks</div>
+          <span className="text-xs text-neutral-content">{category.total}</span>
         </div>
-      </div>
 
-      {/* Subcategory chips */}
-      {category.subcategories.length > 0 && (
-        <div
-          className="flex gap-1.5 overflow-x-auto px-3 py-2"
-          style={{ scrollbarWidth: "none" }}
-        >
-          <SubcategoryChip
-            name="All"
-            count={category.total}
-            active={activeSubcategory === null}
-            onClick={() => onSubcategoryChange(null)}
+        {/* Style dropdown */}
+        {hasStyles && (
+          <FilterDropdown
+            label="Style"
+            activeValue={styleLabel}
+            isOpen={styleOpen}
+            onToggle={() => { setStyleOpen(!styleOpen); setFilterOpen(false); }}
+            onClose={() => setStyleOpen(false)}
+            onClear={() => onStyleChange(null)}
+            items={category.styles}
+            activeKey={activeStyle}
+            onSelect={(name) => { onStyleChange(name); setStyleOpen(false); }}
           />
-          {category.subcategories.map(sub => (
-            <SubcategoryChip
-              key={sub.name}
-              name={sub.name}
-              count={sub.count}
-              active={activeSubcategory === sub.name}
-              onClick={() => onSubcategoryChange(sub.name)}
-            />
-          ))}
-        </div>
-      )}
+        )}
+
+        {/* Filter dropdown */}
+        {hasSubcategories && (
+          <FilterDropdown
+            label="Filter"
+            activeValue={activeLabel}
+            isOpen={filterOpen}
+            onToggle={() => { setFilterOpen(!filterOpen); setStyleOpen(false); }}
+            onClose={() => setFilterOpen(false)}
+            onClear={() => onSubcategoryChange(null)}
+            items={category.subcategories}
+            activeKey={activeSubcategory}
+            onSelect={(name) => { onSubcategoryChange(name); setFilterOpen(false); }}
+          />
+        )}
+      </div>
 
       {/* Block list */}
       {isLoading ? (
@@ -110,7 +239,7 @@ export function CategoryDetailView({
         </div>
       ) : (
         <AutoHideScrollbar className="flex-1" ref={containerRef}>
-          <div className="grid w-full grid-cols-1 gap-3 p-3 pt-1">
+          <div className="grid w-full grid-cols-1 gap-3 p-3 pt-1" onMouseLeave={() => setIsHoveringCard(false)}>
             {blocks.map(block => (
               <BlockPreviewCard
                 key={block.slug || block._id}
@@ -123,6 +252,9 @@ export function CategoryDetailView({
                   const tool = buildElementFromStructure(block.structure, block.slug, false, resolver);
                   if (tool) create(ref, tool);
                 }}
+                onHover={handleBlockHover}
+                onDismissQuickLook={() => { setQuickLookBlock(null); setQuickLookRect(null); }}
+                quickLookOpen={quickLookBlock?.slug === block.slug}
               />
             ))}
           </div>
@@ -135,13 +267,33 @@ export function CategoryDetailView({
         </AutoHideScrollbar>
       )}
 
+      {/* Spacebar Quick Look */}
+      {quickLookBlock && (
+        <BlockQuickLook
+          key={quickLookBlock.slug}
+          block={quickLookBlock}
+          resolver={resolver}
+          originRect={quickLookRect}
+        />
+      )}
+
+      {/* Spacebar hint — fades in on card hover, fades out on leave, hidden after first use */}
+      {!hasUsedQuickLook.current && !quickLookBlock && (
+        <div className={`pointer-events-none absolute inset-x-0 bottom-14 z-50 flex justify-center transition-opacity duration-300 ${isHoveringCard ? "opacity-100" : "opacity-0"}`}>
+          <div className="rounded-md bg-base-300 px-2.5 py-1 text-[11px] text-base-content shadow-lg whitespace-nowrap">
+            <kbd className="mr-1 rounded bg-base-100 px-1 py-0.5 font-mono text-[10px]">Space</kbd>
+            to preview
+          </div>
+        </div>
+      )}
+
       {/* Prev / Next category nav */}
       {(prevCategory || nextCategory) && (
         <div className="flex items-stretch border-t border-base-300">
           {prevCategory ? (
             <button
               onClick={() => onCategoryChange(prevCategory.id)}
-              className="flex flex-1 cursor-pointer items-center gap-1.5 px-3 py-2.5 text-left transition-colors hover:bg-neutral"
+              className="flex flex-1 cursor-pointer items-center gap-1.5 px-3 py-4 text-left transition-colors hover:bg-neutral"
             >
               <TbChevronLeft className="size-3.5 shrink-0 text-neutral-content" />
               <span className="min-w-0 truncate text-xs font-medium text-neutral-content">{prevCategory.name}</span>
@@ -155,7 +307,7 @@ export function CategoryDetailView({
           {nextCategory ? (
             <button
               onClick={() => onCategoryChange(nextCategory.id)}
-              className="flex flex-1 cursor-pointer items-center justify-end gap-1.5 px-3 py-2.5 text-right transition-colors hover:bg-neutral"
+              className="flex flex-1 cursor-pointer items-center justify-end gap-1.5 px-3 py-4 text-right transition-colors hover:bg-neutral"
             >
               <span className="min-w-0 truncate text-xs font-medium text-neutral-content">{nextCategory.name}</span>
               <TbChevronRight className="size-3.5 shrink-0 text-neutral-content" />

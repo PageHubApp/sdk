@@ -28,12 +28,7 @@ export const ToolboxTabs = () => {
 
   const tablistRef = useRef<HTMLDivElement>(null);
 
-  const tabDivider = (
-    <div
-      aria-hidden
-      className="w-px shrink-0 self-stretch bg-sidebar-border"
-    />
-  );
+  const tabDivider = null;
 
   const handleTabKeyDown = (e: React.KeyboardEvent, tabIndex: number) => {
     let nextIndex = tabIndex;
@@ -57,8 +52,8 @@ export const ToolboxTabs = () => {
               onClick={() => switchTab(tab.id)}
               onKeyDown={(e) => handleTabKeyDown(e, i)}
               className={`min-w-0 flex-1 cursor-pointer px-4 py-3 text-sm font-medium transition-colors ${currentTab === tab.id
-                ? "border-b-2 border-b-primary text-primary bg-base-100"
-                : "border-b-2 border-b-transparent text-neutral-content hover:text-base-content hover:bg-neutral/50"
+                ? "bg-neutral text-base-content"
+                : "text-neutral-content hover:text-base-content hover:bg-neutral/50"
                 }`}
               role="tab"
               aria-selected={currentTab === tab.id}

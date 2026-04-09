@@ -75,11 +75,12 @@ export function useNodeDropStyling() {
           }
         }
 
-        // Auto-select and scroll (skip during batch operations)
+        // Auto-scroll to new node (skip during batch operations)
+        // To re-enable auto-select on drop, uncomment:
+        // if (newNodeId !== ROOT_NODE && !isBatch && query.node(newNodeId).get()) {
+        //   actions.selectNode(newNodeId);
+        // }
         const isBatch = ecosystem.getInstance(BatchOperationAtom).getState();
-        if (newNodeId !== ROOT_NODE && !isBatch && query.node(newNodeId).get()) {
-          actions.selectNode(newNodeId);
-        }
         if (newNodeId !== ROOT_NODE && !isBatch) {
           setTimeout(() => {
             const node = query.node(newNodeId).get();

@@ -1,5 +1,5 @@
 import { Element } from "@craftjs/core";
-import { memo, useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TbChevronRight } from "react-icons/tb";
 import type { BlockCategory } from "../../../utils/useBlockCategories";
 import type { BlockItem } from "../../../utils/useCategoryBlocks";
@@ -12,24 +12,39 @@ export const BlockPreviewCard = memo(function BlockPreviewCard({
   resolver,
   onDoubleClick,
   onDragRef,
+  onHover,
+  onDismissQuickLook,
+  quickLookOpen,
 }: {
   block: BlockItem;
   resolver: any;
   onDoubleClick: () => void;
   onDragRef: (ref: any) => void;
+  onHover?: (block: BlockItem, rect: DOMRect) => void;
+  onDismissQuickLook?: () => void;
+  quickLookOpen?: boolean;
 }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
   return (
     <div
-
-      ref={onDragRef}
+      ref={(ref) => {
+        (cardRef as any).current = ref;
+        onDragRef(ref);
+      }}
       onDoubleClick={onDoubleClick}
-      className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-sm"
+      onMouseEnter={() => {
+        if (onHover && cardRef.current) {
+          onHover(block, cardRef.current.getBoundingClientRect());
+        }
+      }}
+      onMouseDown={onDismissQuickLook}
+      className={`group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border transition-all hover:shadow-sm ${
+        quickLookOpen ? "ring-2 ring-primary/30" : ""
+      }`}
     >
-      <ComponentPreview component={block.structure} scale={0.2} resolver={resolver} />
+      <ComponentPreview component={block.structure} scale={0.35} resolver={resolver} modifiers={block.modifiers} />
       <div className="bg-primary/10 absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
-      <div className="border-base-300 border-t px-2.5 py-1.5">
-        <span className="text-neutral-content text-xs font-medium">{block.name}</span>
-      </div>
     </div>
   );
 });
@@ -98,15 +113,12 @@ export const CustomSectionCard = memo(function CustomSectionCard({
       }}
     >
       {customPreview && (
-        <ComponentPreview component={customPreview} scale={0.2} resolver={resolver} />
+        <ComponentPreview component={customPreview} scale={0.35} resolver={resolver} />
       )}
       <div className="bg-primary absolute top-2 right-2 z-10 rounded-lg px-2 py-1">
         <span className="text-primary-content text-xs font-medium">Custom</span>
       </div>
       <div className="bg-primary/10 absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
-      <div className="border-base-300 border-t px-2.5 py-1.5">
-        <span className="text-neutral-content text-xs font-medium">{template.name}</span>
-      </div>
     </div>
   );
 });
@@ -143,27 +155,44 @@ export function CategoryCard({
   );
 }
 
-export function SubcategoryChip({
-  name,
-  count,
-  active,
-  onClick,
+export function BlockQuickLook({
+  block,
+  resolver,
+  originRect,
 }: {
-  name: string;
-  count: number;
-  active: boolean;
-  onClick: () => void;
+  block: BlockItem;
+  resolver: any;
+  originRect: DOMRect | null;
 }) {
+  const [animatedIn, setAnimatedIn] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => setAnimatedIn(true));
+  }, []);
+
+  // Animate from card origin to center
+  const originStyle = originRect ? {
+    transformOrigin: `${originRect.left + originRect.width / 2}px ${originRect.top + originRect.height / 2}px`,
+  } : {};
+
   return (
-    <button
-      onClick={onClick}
-      className={`cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
-        active
-          ? "bg-primary text-primary-content"
-          : "bg-neutral text-neutral-content hover:bg-accent hover:text-accent-content"
-      }`}
-    >
-      {name.charAt(0).toUpperCase() + name.slice(1)} ({count})
-    </button>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
+      <div
+        className="pointer-events-auto w-[min(900px,85vw)] max-h-[85vh] overflow-y-auto rounded-xl border border-base-300 bg-base-100 shadow-2xl transition-all duration-200 ease-out"
+        style={{
+          ...originStyle,
+          opacity: animatedIn ? 1 : 0,
+          transform: animatedIn ? "scale(1)" : "scale(0.92)",
+        }}
+      >
+        <div className="sticky top-0 z-20 flex items-center gap-2 border-b border-base-300 bg-base-100/90 px-4 py-2 backdrop-blur-sm">
+          <span className="text-sm font-medium text-base-content flex-1">{block.name}</span>
+          <kbd className="rounded bg-base-200 px-1.5 py-0.5 text-[10px] font-medium text-neutral-content">Space</kbd>
+        </div>
+        <div className="overflow-hidden">
+          <ComponentPreview component={block.structure} scale={0.65} resolver={resolver} modifiers={block.modifiers} />
+        </div>
+      </div>
+    </div>
   );
 }
