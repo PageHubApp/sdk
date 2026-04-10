@@ -1,7 +1,11 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
 import { useEffect, useRef } from "react";
-import { usePanelUrl } from "../../utils/usePanelUrl";
+import {
+  finalizeToolboxHistorySelectionSync,
+  takeToolboxHistorySelectionSyncForRebaseline,
+  usePanelUrl,
+} from "../../utils/usePanelUrl";
 import {
   TbBoxModel2,
   TbDownload,
@@ -84,7 +88,9 @@ export const EditorNavigation = ({
   toggleTheme,
   isDarkMode,
 }: EditorNavigationProps) => {
-  const { actions } = useEditor();
+  const { actions, selectedId } = useEditor((state, query) => ({
+    selectedId: query.getEvent("selected").first() ?? null,
+  }));
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
   const setClippyOpen = useSetAtomState(ClippyOpenAtom);
   const { config } = useSDK();
@@ -94,10 +100,42 @@ export const EditorNavigation = ({
 
   const { isOpen, panel, close } = usePanelUrl();
 
-  // Click-away: close panel when clicking outside the nav
+  // Baseline Craft selection when entering Components/Blocks — close panel when it changes (see below).
+  const selectedIdAtToolboxOpenRef = useRef<string | null | undefined>(undefined);
+  const prevPanelRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const isToolbox = panel === "components" || panel === "blocks";
+    const wasToolbox =
+      prevPanelRef.current === "components" || prevPanelRef.current === "blocks";
+
+    if (isToolbox && !wasToolbox) {
+      selectedIdAtToolboxOpenRef.current = selectedId;
+    }
+    if (!isToolbox) {
+      selectedIdAtToolboxOpenRef.current = undefined;
+    }
+    prevPanelRef.current = panel;
+  }, [panel, selectedId]);
+
+  useEffect(() => {
+    if (panel !== "components" && panel !== "blocks") return;
+    const baseline = selectedIdAtToolboxOpenRef.current;
+    if (baseline === undefined) return;
+    if (selectedId !== baseline) {
+      if (takeToolboxHistorySelectionSyncForRebaseline()) {
+        selectedIdAtToolboxOpenRef.current = selectedId;
+        return;
+      }
+      close();
+    }
+  }, [panel, selectedId, close]);
+
+  // Click-away: close panel when clicking outside the nav (not for Components/Blocks — sticky toolbox)
   const navRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!isOpen || isDesignSystemSidebarOpen) return;
+    if (panel === "components" || panel === "blocks") return;
     const handler = (e: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(e.target as Node)) {
         close();
@@ -105,7 +143,7 @@ export const EditorNavigation = ({
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [isOpen, isDesignSystemSidebarOpen, close]);
+  }, [isOpen, isDesignSystemSidebarOpen, panel, close]);
 
   if (!isOpen) return null;
 

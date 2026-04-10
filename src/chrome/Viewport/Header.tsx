@@ -31,7 +31,11 @@ import {
 } from "utils/lib";
 import { useSetAtomState } from "../../utils/atoms";
 import { EDITOR_CANVAS_BREAKPOINT_PX, isEditorCanvasBreakpointView } from "../../utils/tailwind/className";
-import { usePanelUrl } from "../../utils/usePanelUrl";
+import {
+  finalizeToolboxHistorySelectionSync,
+  markToolboxHistorySelectionSync,
+  usePanelUrl,
+} from "../../utils/usePanelUrl";
 import { MediaManagerModal } from "../Toolbar/Inputs/media/MediaManagerModal";
 import { LayersDialog } from "../Toolbar/Tools/LayersDialog";
 import { SaveIndicator } from "../Tools/PublishButton";
@@ -277,10 +281,12 @@ export const Header = () => {
             ariaLabel="Redo"
             disabled={!canRedo}
             onClick={() => {
+              markToolboxHistorySelectionSync();
               actions.history.redo();
 
               const active = query.getEvent("selected");
               if (!active) actions.selectNode(ROOT_NODE);
+              finalizeToolboxHistorySelectionSync();
             }}
           >
             <TbArrowForwardUp />
@@ -292,10 +298,12 @@ export const Header = () => {
             ariaLabel="Undo"
             disabled={!canUndo}
             onClick={() => {
+              markToolboxHistorySelectionSync();
               actions.history.undo();
 
               const active = query.getEvent("selected");
               if (!active) actions.selectNode(ROOT_NODE);
+              finalizeToolboxHistorySelectionSync();
             }}
           >
             <TbArrowBackUp />

@@ -165,3 +165,28 @@ export function usePanelUrl() {
 
   return { state, panel, isOpen, open, close, toggle, switchTab, navigate, update, enterSearchMode, exitSearchMode };
 }
+
+// ── Toolbox + history (undo/redo) ───────────────────────────────────────────
+// Undo/redo changes Craft selection; EditorNavigation would otherwise treat
+// that as "user picked another node" and close Components/Blocks. Call mark
+// before history.undo/redo; take() in the close-on-selection effect re-baselines.
+
+let toolboxHistorySelectionSyncPending = false;
+
+export function markToolboxHistorySelectionSync() {
+  toolboxHistorySelectionSyncPending = true;
+}
+
+/** True once after mark — consume so the next selection delta re-baselines, not closes. */
+export function takeToolboxHistorySelectionSyncForRebaseline(): boolean {
+  if (!toolboxHistorySelectionSyncPending) return false;
+  toolboxHistorySelectionSyncPending = false;
+  return true;
+}
+
+/** If undo/redo did not change selection, clear a stale mark (after React effects). */
+export function finalizeToolboxHistorySelectionSync() {
+  setTimeout(() => {
+    toolboxHistorySelectionSyncPending = false;
+  }, 0);
+}

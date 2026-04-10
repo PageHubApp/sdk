@@ -18,6 +18,10 @@ import { Video } from "../../../components/Video";
 import { GetHtmlToComponent, buildClonedTree } from "../lib";
 import { PreviewAtom, EnabledAtom, UnsavedChangesAtom, TabAtom } from "../atoms";
 import { phStorage } from "../../../utils/phStorage";
+import {
+  finalizeToolboxHistorySelectionSync,
+  markToolboxHistorySelectionSync,
+} from "../../../utils/usePanelUrl";
 
 export function useViewportKeyboard() {
   const {
@@ -202,13 +206,27 @@ export function useViewportKeyboard() {
 
     // Ctrl+Z (undo)
     if ((event.ctrlKey || event.metaKey) && charCode === "z") {
-      try { event.preventDefault(); canUndo && actions?.history?.undo(); } catch (e) { console.error(e); }
+      try {
+        event.preventDefault();
+        if (canUndo) {
+          markToolboxHistorySelectionSync();
+          actions?.history?.undo();
+          finalizeToolboxHistorySelectionSync();
+        }
+      } catch (e) { console.error(e); }
       return;
     }
 
     // Ctrl+Y (redo)
     if ((event.ctrlKey || event.metaKey) && charCode === "y") {
-      try { event.preventDefault(); canRedo && actions?.history?.redo(); } catch (e) { console.error(e); }
+      try {
+        event.preventDefault();
+        if (canRedo) {
+          markToolboxHistorySelectionSync();
+          actions?.history?.redo();
+          finalizeToolboxHistorySelectionSync();
+        }
+      } catch (e) { console.error(e); }
     }
   };
 
