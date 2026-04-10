@@ -54,7 +54,7 @@ export const ClippyModeAtom = atom<ClippyMode>(
       const saved = typeof window !== "undefined" ? phStorage.get("clippy-mode") : null;
       if (saved === "docked" || saved === "popout") return saved;
     } catch {}
-    return "docked";
+    return "popout";
   })(),
 );
 
