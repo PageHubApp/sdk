@@ -1,5 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useEffect } from "react";
+import { useSelectionDom } from "./EditorSelectionDomContext";
 
 export const RenderNodeDataStates = () => {
   const { isHover, name, dom, id } = useNode(node => ({
@@ -12,32 +13,9 @@ export const RenderNodeDataStates = () => {
     enabled: state.options.enabled,
   }));
 
-  const { isActive, isAncestorOfSelected } = useEditor((_, query) => {
-    const selectedId = query.getEvent("selected").first();
-    const isActive = query.getEvent("selected").contains(id);
-
-    let isAncestorOfSelected = false;
-    if (selectedId && selectedId !== id) {
-      // Check if this node is an ancestor of the selected node
-      try {
-        const selectedNode = query.node(selectedId).get();
-        let currentParentId = selectedNode?.data?.parent;
-
-        while (currentParentId) {
-          if (currentParentId === id) {
-            isAncestorOfSelected = true;
-            break;
-          }
-          const parentNode = query.node(currentParentId).get();
-          currentParentId = parentNode?.data?.parent;
-        }
-      } catch (e) {
-        // Node not found or error traversing
-      }
-    }
-
-    return { isActive, isAncestorOfSelected };
-  });
+  const selectionDom = useSelectionDom();
+  const isActive = selectionDom.isActive(id);
+  const isAncestorOfSelected = selectionDom.isAncestorOfSelected(id);
 
   useEffect(() => {
     if (!dom) return;

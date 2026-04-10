@@ -1,7 +1,7 @@
 /**
  * Form — Component definition via defineComponent()
  *
- * Replaces Form.craft.tsx and the toolbox entries in formComponents.tsx.
+ * Toolbox: BUILTIN_COMPONENT_DEFS + buildCustomToolboxEntries (ComponentSettings).
  * Complex example: canvas component with inline tools, custom rules,
  * default breakpoint props, and preset children with nested Element trees.
  */

@@ -1,8 +1,9 @@
 /**
- * Toolbox rendering for custom components registered via defineComponent().
+ * Toolbox rendering for components registered via defineComponent() (built-ins
+ * and app-supplied). This is what ComponentSettings uses for the Components tab.
  *
- * Converts ResolvedComponentDef presets into draggable RenderToolComponent
- * entries, using the same pattern as built-in toolbox files.
+ * Legacy per-category Toolbox/*.tsx drag sources were removed; presets and
+ * defaultProps live on each `*Def` in packages/sdk/src/components/*.craft.*.
  */
 import React from "react";
 import { RenderToolComponent, ToolboxItemDisplay } from "./lib";

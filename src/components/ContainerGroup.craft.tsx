@@ -26,6 +26,10 @@ export const ContainerGroupDef = defineComponent({
   canvas: true,
   settings: ContainerGroupMainTab,
   toHTML,
+  defaultProps: {
+    className:
+      "w-full flex flex-col gap-space-md py-space-md px-container-x min-h-48",
+  },
   disable: ["shadow", "opacity", "pattern"],
   rules: {
     canDrag: () => true,

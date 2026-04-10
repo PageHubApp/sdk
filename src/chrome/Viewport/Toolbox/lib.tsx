@@ -1,3 +1,7 @@
+/**
+ * Craft drag sources, AddElement, and ROOT_KEPT for toolbox drops.
+ * Built-in tiles are built from defineComponent() (see customComponents.tsx, editor.tsx).
+ */
 import { Element, ROOT_NODE, useEditor } from "@craftjs/core";
 import { atom, useAtomValue } from "@zedux/react";
 import React, { cloneElement, isValidElement, useMemo, useState } from "react";

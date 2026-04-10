@@ -6,34 +6,28 @@ import { SideBarOpen } from "utils/lib";
 
 /**
  * Hook that automatically opens the sidebar when a node is selected
- * and the sidebar is currently closed
+ * and the sidebar is currently closed. Re-subscribes to Craft selection
+ * changes instead of polling.
  */
 export const useAutoOpenSidebar = () => {
   const { query } = useEditor();
   const setSideBarOpen = useSetAtomState(SideBarOpen);
   const sideBarOpen = useAtomValue(SideBarOpen);
-  const lastSelectedNodes = useRef<string[]>([]);
+  const lastSelectionLenRef = useRef(0);
+
+  const selectionKey = useEditor((_, q) => {
+    const all = q.getEvent("selected").all();
+    return all.join("\0");
+  });
 
   useEffect(() => {
-    // Check for selection changes periodically
-    const checkSelection = () => {
-      const selectedNodes = query.getEvent("selected").all();
+    const selectedNodes = query.getEvent("selected").all();
+    const len = selectedNodes.length;
 
-      // If selection changed and sidebar is closed, open it
-      if (
-        selectedNodes.length > 0 &&
-        selectedNodes.length !== lastSelectedNodes.current.length &&
-        !sideBarOpen
-      ) {
-        setSideBarOpen(true);
-      }
+    if (len > 0 && len !== lastSelectionLenRef.current && !sideBarOpen) {
+      setSideBarOpen(true);
+    }
 
-      lastSelectedNodes.current = selectedNodes;
-    };
-
-    // Check every 100ms for selection changes
-    const interval = setInterval(checkSelection, 100);
-
-    return () => clearInterval(interval);
-  }, [query, setSideBarOpen, sideBarOpen]);
+    lastSelectionLenRef.current = len;
+  }, [selectionKey, query, setSideBarOpen, sideBarOpen]);
 };

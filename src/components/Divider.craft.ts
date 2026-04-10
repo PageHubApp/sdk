@@ -1,8 +1,8 @@
 /**
  * Divider — Component definition via defineComponent()
  *
- * This replaces the separate Divider.craft.tsx file and the toolbox
- * entry in dividerComponents.tsx. One definition drives everything.
+ * Toolbox tiles come from BUILTIN_COMPONENT_DEFS + buildCustomToolboxEntries
+ * (see ComponentSettings). One definition drives editor + static HTML.
  */
 import { TbMinus } from "react-icons/tb";
 import { defineComponent } from "../define";

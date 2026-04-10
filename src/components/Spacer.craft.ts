@@ -26,6 +26,9 @@ export const SpacerDef = defineComponent({
     "textColor", "border", "shadow", "radius",
     "font", "pattern", "opacity", "animations", "hoverClick",
   ],
+  defaultProps: {
+    className: "w-full py-space-md bg-transparent",
+  },
   presets: [
     { label: "Spacer", props: {} },
   ],

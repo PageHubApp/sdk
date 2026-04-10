@@ -30,6 +30,10 @@ export const BackgroundDef = defineComponent({
   disable: [
     "shadow", "border", "opacity", "radius", "hoverClick", "animations",
   ],
+  defaultProps: {
+    className:
+      "bg-base-100 text-base-content font-normal text-base min-h-dvh w-full min-w-0 flex flex-col overflow-x-hidden overflow-y-auto font-body",
+  },
   rules: {
     canDrag: () => false,
     canMoveIn: (nodes) => nodes.every(node => node.data?.name === "Container"),

@@ -34,6 +34,7 @@ import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./builtins";
 import { Viewport } from "./chrome/Viewport";
 import { UnsavedChangesAtom } from "./chrome/Viewport/atoms";
 import { Toolbar } from "./chrome/Toolbar";
+import { EditorSelectionDomProvider } from "./chrome/EditorSelectionDomContext";
 import { RenderNodeNewer } from "./chrome/RenderNodeNewer";
 import CustomEventHandlers from "./chrome/CustomEventHandlers";
 import { AiPanelHost } from "./chrome/AiPanelHost";
@@ -341,6 +342,7 @@ function PageHubEditorInner({
             className: "drop-zone-active",
           }}
         >
+          <EditorSelectionDomProvider>
           <div
             className="relative flex h-full w-full min-h-0 flex-col overflow-hidden bg-neutral text-neutral-content"
             data-base={true}
@@ -373,6 +375,7 @@ function PageHubEditorInner({
             </div>
           </div>
           {children}
+          </EditorSelectionDomProvider>
         </Editor>
         </CustomComponentsContext.Provider>
       </EcosystemProvider>

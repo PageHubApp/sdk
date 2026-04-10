@@ -222,12 +222,14 @@ export const ContainerDef = defineComponent({
     {
       label: "Row",
       icon: TbLayoutColumns,
-      props: { className: "w-full" },
+      props: {
+        className: "flex flex-row flex-wrap gap-space-md items-start min-w-0 w-full",
+      },
     },
     {
       label: "Column",
       icon: TbLayoutRows,
-      props: { className: "w-full" },
+      props: { className: "flex flex-col gap-space-md w-full" },
     },
   ],
   modifiers: [

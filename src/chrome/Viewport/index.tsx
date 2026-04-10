@@ -18,6 +18,7 @@ import {
   isolatePageAlt,
 } from "utils/lib";
 import { FloatingWidget } from "../FloatingWidget";
+import { ProximityHoverManager } from "../NodeControllers/ProximityHoverManager";
 import { useAutoOpenSidebar } from "../hooks/useAutoOpenSidebar";
 import { useComponentSync } from "../hooks/useComponentSync";
 import { ViewSelectionAtom } from "../Toolbar/Label";
@@ -244,6 +245,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ViewportMeta />
+      {enabled && <ProximityHoverManager />}
       <div
         className={`flex h-full overflow-hidden flex-1 min-w-0 w-full ${
           (device && view === "mobile") || isEditorCanvasBreakpointView(view)
