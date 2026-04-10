@@ -18,6 +18,34 @@ import { sanitizeCraftNodeReferences } from "../utils/sanitizeNodeMap";
 
 type Tab = "review" | "live";
 
+/** When ai-draft JSON is missing ROOT.theme.palette, inherit tokens from the live editor viewport (same list as ComponentPreview). */
+function buildViewportScopedCss(scopeSelector: string): string {
+  if (typeof document === "undefined") return "";
+  const viewport = document.getElementById("viewport");
+  if (!viewport) return "";
+  const cs = getComputedStyle(viewport);
+  const keys = [
+    "primary", "primary-content", "secondary", "secondary-content",
+    "accent", "accent-content", "neutral", "neutral-content",
+    "base-100", "base-200", "base-300", "base-content",
+    "error", "error-content", "info", "info-content",
+    "success", "success-content", "warning", "warning-content",
+    "radius-box", "radius-field", "border", "depth", "noise",
+    "shadow-style", "heading-font-family", "body-font-family",
+    "container-padding-x", "container-padding-y", "content-width",
+    "section-gap", "container-gap", "spacing-density",
+    "space-xs", "space-sm", "space-md", "space-lg", "space-xl",
+    "button-padding-x", "button-padding-y",
+  ];
+  const lines: string[] = [];
+  for (const k of keys) {
+    const v = cs.getPropertyValue(`--${k}`).trim();
+    if (v) lines.push(`  --${k}: ${v};`);
+  }
+  if (!lines.length) return "";
+  return `${scopeSelector} {\n${lines.join("\n")}\n}`;
+}
+
 export interface SectionOverlayItem {
   nodeId: string;
   displayName: string;
@@ -186,14 +214,16 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
     return () => { el?.remove(); };
   }, [content?.ROOT?.props?.modifiers]);
 
-  // Extract theme from ROOT to scope CSS vars into the preview
+  // Theme for the preview iframe: prefer ROOT from ai-draft; if palette missing/stale, match live #viewport (avoids milky editor chrome defaults).
   const previewCSS = useMemo(() => {
     const rootProps = content?.ROOT?.props;
-    if (!rootProps) return "";
+    if (!rootProps) return buildViewportScopedCss("#ph-preview-frame");
     const theme = resolveTheme(rootProps);
-    if (!theme.palette.length) return "";
-    return generateDesignSystemCSSVariables(theme, "#ph-preview-frame");
-  }, [content?.ROOT?.props?.theme]);
+    if (theme.palette?.length) {
+      return generateDesignSystemCSSVariables(theme, "#ph-preview-frame");
+    }
+    return buildViewportScopedCss("#ph-preview-frame");
+  }, [content]);
 
   const safeContent = useMemo(() => sanitizeCraftNodeReferences(content), [content]);
   const frameData = tab === "live" && liveContent ? liveContent : JSON.stringify(safeContent);
