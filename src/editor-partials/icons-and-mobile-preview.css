@@ -19,7 +19,6 @@
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-feature-settings: "liga";
-  font-display: block;
 }
 
 .pagehub-sdk-root.mobile-preview .md\:hidden {

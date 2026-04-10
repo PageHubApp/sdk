@@ -3,7 +3,6 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useCallback } from "react";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
-import { SettingsAtom, SessionTokenAtom } from "utils/atoms";
 import { LastctiveAtom } from "utils/lib";
 import { useUnifiedDelete } from "../../hooks/useUnifiedDelete";
 import { Background } from "../../../components/Background";
@@ -16,7 +15,7 @@ import { FormElement, OnlyFormElement } from "../../../components/FormElement";
 import { Image } from "../../../components/Image";
 import { Text } from "../../../components/Text";
 import { Video } from "../../../components/Video";
-import { GetHtmlToComponent, SaveToServer, buildClonedTree } from "../lib";
+import { GetHtmlToComponent, buildClonedTree } from "../lib";
 import { PreviewAtom, EnabledAtom, UnsavedChangesAtom, TabAtom } from "../atoms";
 import { phStorage } from "../../../utils/phStorage";
 
@@ -34,8 +33,6 @@ export function useViewportKeyboard() {
   }));
 
   const { deleteSelectedNode } = useUnifiedDelete();
-  const [settings, setSettings] = useAtomState(SettingsAtom);
-  const sessionToken = useAtomValue(SessionTokenAtom);
   const [preview, setPreview] = useAtomState(PreviewAtom);
   const setEnabled = useSetAtomState(EnabledAtom);
   const lastActive = useAtomValue(LastctiveAtom);
@@ -197,13 +194,9 @@ export function useViewportKeyboard() {
       return;
     }
 
-    // Ctrl+S (save)
+    // Ctrl+S — just suppress browser save dialog; document-level useHeaderShortcuts handles Cmd+S
     if ((event.ctrlKey || event.metaKey) && charCode === "s") {
-      try {
-        event.preventDefault();
-        SaveToServer(query.serialize(), true, settings, setSettings);
-        setUnsavedChanged(false);
-      } catch (e) { console.error(e); }
+      event.preventDefault();
       return;
     }
 

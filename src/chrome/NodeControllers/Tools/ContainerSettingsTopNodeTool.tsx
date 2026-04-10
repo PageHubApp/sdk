@@ -158,7 +158,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
 
       {direction == "horizontal" && (
         <div className="tool-button hidden">
-          <FlexDirectionInput wrap="control" type="toggleNext" inline={false} />
+          <FlexDirectionInput wrap="control" inline={false} />
         </div>
       )}
 

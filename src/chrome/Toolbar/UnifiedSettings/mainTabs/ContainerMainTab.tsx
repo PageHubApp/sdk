@@ -1,8 +1,7 @@
-import { useEditor, useNode } from "@craftjs/core";
+import { useEditor } from "@craftjs/core";
 import { TbSection } from "react-icons/tb";
 import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { BackgroundSettingsInput } from "../../Inputs/color/BackgroundSettingsInput";
-import { ContainerTypeInput } from "../../Inputs/advanced/ContainerTypeInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useGetNode } from "../../Tools/lib";
@@ -59,24 +58,8 @@ export const HeaderFooterToggles = () => {
 };
 
 export const ContainerMainTab = () => {
-  const { id } = useNode();
   const node = useGetNode();
   const props = node.data.props;
-  const { query } = useEditor();
-
-  // Check if header/footer already exist at root level
-  const rootNode = query.node("ROOT").get();
-  const rootChildren = rootNode?.data?.nodes || [];
-
-  const hasHeader = rootChildren.some((nodeId: string) => {
-    const n = query.node(nodeId).get();
-    return n?.data?.props?.type === "header";
-  });
-
-  const hasFooter = rootChildren.some((nodeId: string) => {
-    const n = query.node(nodeId).get();
-    return n?.data?.props?.type === "footer";
-  });
 
   const contentSlot = props?.type === "imageContainer" ? (
     <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Background image and overlay for this container.">
@@ -85,79 +68,14 @@ export const ContainerMainTab = () => {
     </ToolbarSection>
   ) : undefined;
 
-  const isSection = props?.type === "section";
-
-  return renderComponentSlots({
-    Content: contentSlot,
-    Type: (
-      <ToolbarSection title="Type" icon={SECTION_ICONS["Type"]} help="HTML tag and container role (section, header, footer, etc).">
-        <ContainerTypeInput hasHeader={hasHeader} hasFooter={hasFooter} />
-      </ToolbarSection>
-    ),
-    ...(isSection ? {
-      ScrollEffect: (
-        <ToolbarSection title="Scroll Effect" icon={SECTION_ICONS["Type"]} help="Pin this section and animate children as the user scrolls.">
-          <ToolbarItem
-            propKey="scrollEffect"
-            propType="component"
-            type="select"
-            label="Effect"
-          >
-            <option value="">None</option>
-            <option value="horizontal-scroll">Horizontal Scroll</option>
-            <option value="scroll-timeline">Scroll Timeline</option>
-          </ToolbarItem>
-
-          {props?.scrollEffect === "horizontal-scroll" && (
-            <>
-              <ToolbarItem propKey="scrollDirection" propType="component" type="select" label="Direction">
-                <option value="ltr">Left to Right</option>
-                <option value="rtl">Right to Left</option>
-              </ToolbarItem>
-              <ToolbarItem propKey="scrollSnap" propType="component" type="toggle" option="Snap to panels" on={true} />
-              <ToolbarItem propKey="scrollSpeed" propType="component" type="select" label="Speed">
-                <option value="1">Fast</option>
-                <option value="1.5">Normal</option>
-                <option value="2">Slow</option>
-                <option value="3">Very Slow</option>
-              </ToolbarItem>
-            </>
-          )}
-
-          {props?.scrollEffect === "scroll-timeline" && (
-            <ToolbarItem propKey="scrollTimelineRunway" propType="component" type="select" label="Runway">
-              <option value="2">Short</option>
-              <option value="3">Normal</option>
-              <option value="5">Long</option>
-              <option value="8">Epic</option>
-            </ToolbarItem>
-          )}
-
-          {props?.scrollEffect && (
-            <ToolbarItem propKey="scrollSmoothing" propType="component" type="select" label="Smoothing">
-              <option value="0">None (instant)</option>
-              <option value="0.5">Light</option>
-              <option value="0.8">Normal</option>
-              <option value="1.5">Heavy</option>
-            </ToolbarItem>
-          )}
-        </ToolbarSection>
-      ),
-    } : {}),
-  });
+  return (
+    <>
+      {renderComponentSlots({
+        Content: contentSlot,
+        /** Add nested container lives under Layout (after presets), dashed control — see LayoutPresetInput. */
+        Type: null,
+      })}
+    </>
+  );
 };
 
-export const ContainerMainTabAdvanced = () => (
-  <ToolbarSection title="Anchor" icon={SECTION_ICONS["Anchor"]} help="ID for linking directly to this section with #tag.">
-    <ToolbarItem
-      propKey="anchor"
-      propType="component"
-      type="text"
-      labelHide={true}
-      placeholder="Anchor Tag"
-      inline
-      description="Link to this section with #tag"
-      label="Anchor Tag"
-    />
-  </ToolbarSection>
-);

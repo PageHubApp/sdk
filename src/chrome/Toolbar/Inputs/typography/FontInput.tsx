@@ -1,5 +1,5 @@
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TailwindStyles } from "utils/tailwind";
 import { getClass, removeClass } from "../../../../utils/tailwind/className";
 import { parseGoogleFontFromArbitraryClass, tailwindTokenBase } from "../../../../utils/tailwind/fontFamilyClass";
@@ -12,12 +12,16 @@ import {
   TbAlignLeft,
   TbAlignRight,
   TbClearAll,
+  TbPlus,
   TbTypography,
 } from "react-icons/tb";
+import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
 import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
+import { Wrap } from "../../ToolbarStyle";
 import { FontFamilyInput } from "./FontFamilyInput";
+import { TypographyPresetSelect } from "./TypographyPresetSelect";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { ColorInput } from "../color/ColorInput";
 
@@ -72,23 +76,79 @@ function readNodeFontValues(className: string): {
   };
 }
 
-function SaveAsFontPreset({ className, query, actions }: {
+/** CSS class suffix for a typography preset name (e.g. `ph-hero-heading`). */
+function toTypographyPresetClassName(name: string): string {
+  const slug = name
+    .replace(/([A-Z])/g, "-$1")
+    .replace(/\s+/g, "-")
+    .toLowerCase()
+    .replace(/^-/, "");
+  return `ph-${slug}`;
+}
+
+function SaveAsFontPreset({
+  className,
+  query,
+  actions,
+  hasPresets,
+}: {
   className: string;
   query: any;
   actions: any;
+  hasPresets: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [savedBanner, setSavedBanner] = useState("");
+  const [duplicateError, setDuplicateError] = useState(false);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    };
+  }, []);
+
+  const flashSaved = (label: string) => {
+    setSavedBanner(label);
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    savedTimerRef.current = setTimeout(() => {
+      setSavedBanner("");
+      savedTimerRef.current = null;
+    }, 2000);
+  };
 
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="text-xxs mx-auto flex w-full items-center justify-center gap-1 rounded-lg px-2 text-center hover:underline"
-      >
-        + Save as Font preset
-      </button>
+      <div className="space-y-1.5">
+        {savedBanner ? (
+          <p className="text-[11px] text-primary" role="status">
+            Saved &ldquo;{savedBanner}&rdquo;
+          </p>
+        ) : null}
+        {hasPresets ? (
+          <button
+            type="button"
+            onClick={() => {
+              setDuplicateError(false);
+              setOpen(true);
+            }}
+            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-solid border-base-300 bg-base-200/80 px-2 py-1.5 text-[11px] text-base-content transition-colors hover:border-primary hover:bg-accent"
+          >
+            <TbPlus size={12} aria-hidden />
+            Add font preset
+          </button>
+        ) : (
+          <ToolbarDashedButton
+            onClick={() => {
+              setDuplicateError(false);
+              setOpen(true);
+            }}
+          >
+            Save as font preset
+          </ToolbarDashedButton>
+        )}
+      </div>
     );
   }
 
@@ -96,20 +156,28 @@ function SaveAsFontPreset({ className, query, actions }: {
     const trimmed = name.trim();
     if (!trimmed) return;
 
+    const rootNode = query.node(ROOT_NODE).get();
+    const theme = resolveTheme(rootNode?.data?.props || {});
+    const existing = theme.typography || [];
+    if (existing.some((f: any) => f.name === trimmed)) {
+      setDuplicateError(true);
+      return;
+    }
+    setDuplicateError(false);
+
     const values = readNodeFontValues(className);
     const newFont = { name: trimmed, ...values };
 
     actions.setProp(ROOT_NODE, (props: any) => {
-      const theme = resolveTheme(props);
-      const fonts = [...(theme.typography || [])];
-      // Don't duplicate by name
-      if (fonts.some((f: any) => f.name === trimmed)) return;
+      const t = resolveTheme(props);
+      const fonts = [...(t.typography || [])];
       fonts.push(newFont);
-      writeTheme(props, { ...theme, typography: fonts });
+      writeTheme(props, { ...t, typography: fonts });
     });
 
     setName("");
     setOpen(false);
+    flashSaved(trimmed);
   };
 
   return (
@@ -119,21 +187,41 @@ function SaveAsFontPreset({ className, query, actions }: {
         <input
           type="text"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={e => {
+            setName(e.target.value);
+            setDuplicateError(false);
+          }}
           placeholder="e.g. Hero Heading"
-          className="h-7 w-full rounded border border-base-300 bg-base-100 px-2 text-xs"
+          className="h-7 w-full rounded border border-base-300 bg-base-200 px-2 text-xs"
           autoFocus
           onKeyDown={e => {
             if (e.key === "Enter") submit();
-            if (e.key === "Escape") { setName(""); setOpen(false); }
+            if (e.key === "Escape") {
+              setName("");
+              setDuplicateError(false);
+              setOpen(false);
+            }
           }}
         />
+        {duplicateError ? (
+          <p className="mt-1 text-[10px] text-error" role="alert">
+            A preset with that name already exists.
+          </p>
+        ) : null}
       </div>
       <div className="flex gap-1.5">
         <button type="button" onClick={submit} className="h-7 rounded bg-primary px-3 text-xs text-primary-content">
           Save
         </button>
-        <button type="button" onClick={() => { setName(""); setOpen(false); }} className="h-7 rounded border border-base-300 px-3 text-xs">
+        <button
+          type="button"
+          onClick={() => {
+            setName("");
+            setDuplicateError(false);
+            setOpen(false);
+          }}
+          className="h-7 rounded border border-base-300 px-3 text-xs"
+        >
           Cancel
         </button>
       </div>
@@ -142,7 +230,12 @@ function SaveAsFontPreset({ className, query, actions }: {
 }
 
 export const FontInput = () => {
-  const { query, actions: editorActions } = useEditor();
+  // Collector must return a plain object — returning an array breaks useCollector's
+  // `{ ...collected, actions, query }` merge (arrays spread to numeric keys) and
+  // can prevent reliable updates / break `.map` on the presets list.
+  const { query, actions: editorActions, typography } = useEditor(state => ({
+    typography: resolveTheme(state.nodes[ROOT_NODE]?.data?.props || {}).typography || [],
+  }));
   const {
     actions: { setProp },
     helpers,
@@ -153,34 +246,45 @@ export const FontInput = () => {
     tagName: node.data.props.tagName,
     nodeClassName: node.data.props.className || "",
   }));
+  const helperTokens = helpers.split(/\s+/).filter(Boolean);
+
+  const activePresetName =
+    typography.find((f: any) => helperTokens.includes(toTypographyPresetClassName(f.name)))?.name ?? null;
+
+  const clearTypographyPreset = () => {
+    const rootNode = query.node(ROOT_NODE).get();
+    const theme = resolveTheme(rootNode?.data?.props || {});
+    const allTypographyClasses = (theme.typography || []).map((f: any) =>
+      toTypographyPresetClassName(f.name)
+    );
+
+    setProp((props: any) => {
+      props.typographyClass = "";
+      const helperClasses = (props.helpers || "").split(/\s+/).filter((c: string) => c.trim());
+      props.helpers = helperClasses.filter((c: string) => !allTypographyClasses.includes(c)).join(" ").trim();
+    }, 500);
+  };
 
   const applyTypographyPreset = (font: any) => {
     if (!font || !font.name) return;
 
-    // Generate the CSS class name for this typography preset
-    const toCSSVarName = (name: string): string => {
-      return name
-        .replace(/([A-Z])/g, "-$1")
-        .replace(/\s+/g, "-")
-        .toLowerCase()
-        .replace(/^-/, "");
-    };
-
-    const className = `ph-${toCSSVarName(font.name)}`;
+    const presetClass = toTypographyPresetClassName(font.name);
 
     // Get all typography presets to remove any existing typography classes
     const rootNode = query.node(ROOT_NODE).get();
     const theme = resolveTheme(rootNode?.data?.props || {});
-    const allTypographyClasses = (theme.typography || []).map((f: any) => `ph-${toCSSVarName(f.name)}`);
+    const allTypographyClasses = (theme.typography || []).map((f: any) =>
+      toTypographyPresetClassName(f.name)
+    );
 
     setProp((props: any) => {
       // Store the typography class reference
-      props.typographyClass = className;
+      props.typographyClass = presetClass;
 
       // Remove old typography classes from helpers, add new one
       const helperClasses = (props.helpers || "").split(" ").filter((c: string) => c.trim());
       const cleanedHelpers = helperClasses.filter((c: string) => !allTypographyClasses.includes(c));
-      cleanedHelpers.push(className);
+      cleanedHelpers.push(presetClass);
       props.helpers = cleanedHelpers.join(" ").trim();
 
       // Remove font classes from className so the typography preset takes effect
@@ -308,77 +412,36 @@ export const FontInput = () => {
         </ToolbarItem>
       )}
 
-      {/* Typography Presets */}
-      {(() => {
-        const rootNode = query.node(ROOT_NODE).get();
-        const typography = resolveTheme(rootNode?.data?.props || {}).typography || [];
+      {typography.length > 0 ? (
+        <div className="mb-2">
+          <Wrap
+            props={{ label: "Preset", labelHide: false }}
+            lab=""
+            viewValue="mobile"
+            propType="class"
+            propKey="typographyPreset"
+            inline={true}
+            inputWidth="flex-1"
+          >
+            <TypographyPresetSelect
+              presets={typography}
+              selectedName={activePresetName}
+              onSelect={preset => {
+                if (!preset) clearTypographyPreset();
+                else applyTypographyPreset(preset);
+              }}
+              id="input-typographyPreset"
+            />
+          </Wrap>
+        </div>
+      ) : null}
 
-        if (typography.length > 0) {
-          // Helper to convert font name to class name
-          const toCSSVarName = (name: string): string => {
-            return name
-              .replace(/([A-Z])/g, "-$1")
-              .replace(/\s+/g, "-")
-              .toLowerCase()
-              .replace(/^-/, "");
-          };
-
-          // Check which preset is currently active
-          const isActive = (font: any): boolean => {
-            const className = `ph-${toCSSVarName(font.name)}`;
-            return helpers.includes(className);
-          };
-
-          return (
-            <div className="mb-3">
-              <span className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-base-content">
-                Presets
-              </span>
-              <div className="scrollbar-light max-h-[140px] overflow-auto">
-                <div className="flex flex-col gap-1.5">
-                  {typography.map((font: any, index: number) => {
-                    const active = isActive(font);
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => applyTypographyPreset(font)}
-                        className={`rounded-lg border px-3 py-2 text-left ${
-                          active
-                            ? "border-primary bg-primary/10 ring-1 ring-primary/20"
-                            : "border-base-300 bg-base-100 hover:border-primary hover:bg-accent"
-                        }`}
-                        title={`${font.fontFamily} • ${font.fontSize} • ${font.fontWeight}`}
-                      >
-                        <div
-                          className={`truncate ${active ? "text-primary" : "text-base-content"}`}
-                          style={{
-                            fontFamily: font.fontFamily,
-                            fontSize: font.fontSize,
-                            fontWeight: font.fontWeight,
-                            lineHeight: font.lineHeight,
-                            letterSpacing: font.letterSpacing || "normal",
-                            textTransform: (font.textTransform || "none") as any,
-                          }}
-                        >
-                          {font.name}
-                        </div>
-                        <div
-                          className={`mt-0.5 truncate text-[10px] ${active ? "text-primary/70" : "text-neutral-content"}`}
-                        >
-                          {font.fontFamily} • {font.fontSize}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          );
-        }
-        return null;
-      })()}
-
-      <SaveAsFontPreset className={nodeClassName} query={query} actions={editorActions} />
+      <SaveAsFontPreset
+        className={nodeClassName}
+        query={query}
+        actions={editorActions}
+        hasPresets={typography.length > 0}
+      />
     </ToolbarSection>
   );
 };

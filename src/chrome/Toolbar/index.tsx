@@ -6,6 +6,8 @@ import { PreviewAtom } from "../Viewport/atoms";
 import { Header } from "../Viewport/Header";
 import { EditorEmptyState } from "./EditorEmptyState";
 
+export * from "./Helpers/ToolbarDashedButton";
+export * from "./Helpers/ToolbarSegmentedControl";
 export * from "./ToolbarDropdown";
 export * from "./ToolbarItem";
 export * from "./ToolbarSection";

@@ -12,7 +12,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
         <div className="h-4 w-1 rounded-full bg-primary" />
         {title}
       </h3>
-      <div className="rounded-lg border border-base-300/30 bg-base-100 p-4">{children}</div>
+      <div className="rounded-lg border border-base-300/30 bg-base-200 p-4">{children}</div>
     </div>
   );
 }
@@ -79,7 +79,7 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
               <button
                 key={preset.name}
                 onClick={() => crop.handlePresetSelect(preset)}
-                className="group rounded-lg border border-base-300 bg-base-100 p-2 text-left text-xs hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm"
+                className="group rounded-lg border border-base-300 bg-base-200 p-2 text-left text-xs hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm"
               >
                 <div className="font-semibold text-base-content transition-colors group-hover:text-primary">
                   {preset.name}

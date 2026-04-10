@@ -7,6 +7,11 @@ import { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
 import { useEffect, useMemo, useState } from "react";
 
+/** Blend a Daisy role toward `--base-content` so tokens stay readable on `bg-base-200` when the role is low-luminance. */
+function mixToInk(roleVar: string, rolePercent: number) {
+  return `color-mix(in oklch, ${roleVar} ${rolePercent}%, var(--base-content))`;
+}
+
 const languageExtensions = {
   html: () => html(),
   css: () => css(),
@@ -26,7 +31,91 @@ function useDarkMode() {
   return isDark;
 }
 
-// Custom B&W high-contrast theme extension using project variables
+// Specific → broad. Many roles are mixed toward `--base-content` so they stay visible on `bg-base-200`.
+const codeHighlightStyle = HighlightStyle.define([
+  { tag: t.invalid, color: "var(--error)" },
+
+  { tag: t.tagName, color: mixToInk("var(--primary)", 62), fontWeight: "600" },
+  { tag: [t.attributeName, t.propertyName], color: mixToInk("var(--info)", 44), fontWeight: "500" },
+  {
+    tag: [t.attributeValue, t.string, t.inserted, t.docString, t.special(t.string)],
+    color: "var(--success)",
+  },
+  { tag: t.content, color: "var(--base-content)" },
+
+  {
+    tag: [
+      t.angleBracket,
+      t.bracket,
+      t.paren,
+      t.squareBracket,
+      t.brace,
+      t.punctuation,
+      t.separator,
+      t.derefOperator,
+    ],
+    color: "var(--info)",
+  },
+  { tag: [t.definitionOperator, t.typeOperator], color: "var(--info)" },
+
+  {
+    tag: [t.keyword, t.controlKeyword, t.moduleKeyword, t.definitionKeyword, t.operatorKeyword],
+    color: "var(--primary)",
+    fontWeight: "600",
+  },
+  { tag: [t.self, t.null], color: "var(--primary)", fontWeight: "600" },
+  { tag: [t.atom, t.bool], color: "var(--warning)" },
+  { tag: t.modifier, color: "var(--warning)", fontWeight: "600" },
+
+  {
+    tag: [
+      t.operator,
+      t.arithmeticOperator,
+      t.logicOperator,
+      t.bitwiseOperator,
+      t.compareOperator,
+      t.updateOperator,
+      t.controlOperator,
+    ],
+    color: "var(--info)",
+  },
+
+  { tag: [t.typeName, t.className, t.labelName], color: mixToInk("var(--warning)", 52) },
+  { tag: t.namespace, color: mixToInk("var(--neutral-content)", 42) },
+
+  { tag: t.function(t.variableName), color: "var(--info)" },
+  { tag: t.variableName, color: "var(--base-content)" },
+
+  { tag: t.color, color: "var(--success)" },
+  { tag: [t.number, t.integer, t.float], color: "var(--warning)" },
+  { tag: t.unit, color: "var(--neutral-content)" },
+
+  { tag: t.character, color: "var(--info)" },
+  { tag: [t.constant(t.name), t.standard(t.name)], color: mixToInk("var(--neutral-content)", 38) },
+
+  { tag: [t.name, t.deleted, t.macroName], color: "var(--base-content)" },
+  { tag: t.special(t.variableName), color: mixToInk("var(--accent)", 50) },
+  { tag: [t.changed, t.annotation], color: "var(--neutral-content)" },
+
+  { tag: [t.comment, t.lineComment, t.blockComment, t.docComment], color: "var(--neutral-content)", fontStyle: "italic" },
+  { tag: t.meta, color: "var(--neutral-content)", fontStyle: "italic" },
+  {
+    tag: [t.processingInstruction, t.documentMeta],
+    color: "var(--neutral-content)",
+    fontStyle: "italic",
+  },
+
+  { tag: [t.url, t.escape, t.regexp], color: "var(--info)" },
+  { tag: t.link, color: "var(--primary)", textDecoration: "underline" },
+
+  { tag: t.definition(t.name), color: "var(--info)" },
+
+  { tag: t.strong, fontWeight: "bold" },
+  { tag: t.emphasis, fontStyle: "italic" },
+  { tag: t.strikethrough, textDecoration: "line-through" },
+  { tag: t.heading, fontWeight: "bold", color: "var(--primary)" },
+]);
+
 const createCustomTheme = (isDark: boolean) => {
   return [
     EditorView.theme(
@@ -45,9 +134,13 @@ const createCustomTheme = (isDark: boolean) => {
         ".cm-cursor, .cm-dropCursor": {
           borderLeftColor: "var(--primary) !important",
         },
-        ".cm-selectionBackground, .cm-content ::selection": {
-          backgroundColor: "var(--primary) !important",
-          opacity: "0.15",
+        // Never use `opacity` on the selection layer — it makes the highlight nearly invisible.
+        ".cm-selectionBackground": {
+          backgroundColor:
+            "color-mix(in oklch, var(--primary) 46%, var(--color-base-300)) !important",
+        },
+        ".cm-content ::selection": {
+          backgroundColor: "color-mix(in oklch, var(--primary) 46%, var(--color-base-300)) !important",
         },
         ".cm-gutters": {
           backgroundColor: "transparent !important",
@@ -61,11 +154,10 @@ const createCustomTheme = (isDark: boolean) => {
           paddingRight: "8px !important",
         },
         ".cm-activeLine": {
-          backgroundColor: "var(--neutral) !important",
-          opacity: "0.4",
+          backgroundColor: "color-mix(in oklch, var(--color-base-200) 65%, transparent) !important",
         },
         ".cm-activeLineGutter": {
-          backgroundColor: "var(--neutral) !important",
+          backgroundColor: "color-mix(in oklch, var(--color-base-200) 65%, transparent) !important",
         },
         ".cm-foldPlaceholder": {
           backgroundColor: "transparent",
@@ -75,44 +167,7 @@ const createCustomTheme = (isDark: boolean) => {
       },
       { dark: isDark }
     ),
-    syntaxHighlighting(
-      HighlightStyle.define([
-        { tag: t.keyword, color: "var(--primary)", fontWeight: "bold" },
-        {
-          tag: [t.name, t.deleted, t.character, t.propertyName, t.macroName],
-          color: "var(--base-content)",
-        },
-        { tag: [t.function(t.variableName), t.labelName], color: "var(--base-content)" },
-        { tag: [t.color, t.constant(t.name), t.standard(t.name)], color: "var(--base-content)" },
-        { tag: [t.definition(t.name), t.separator], color: "var(--base-content)" },
-        {
-          tag: [
-            t.typeName,
-            t.className,
-            t.number,
-            t.changed,
-            t.annotation,
-            t.modifier,
-            t.self,
-            t.namespace,
-          ],
-          color: "var(--base-content)",
-        },
-        {
-          tag: [t.operator, t.operatorKeyword, t.url, t.escape, t.regexp, t.link, t.special(t.string)],
-          color: "var(--primary)",
-        },
-        { tag: [t.meta, t.comment], color: "var(--neutral-content)", fontStyle: "italic" },
-        { tag: t.strong, fontWeight: "bold" },
-        { tag: t.emphasis, fontStyle: "italic" },
-        { tag: t.strikethrough, textDecoration: "line-through" },
-        { tag: t.link, color: "var(--neutral-content)", textDecoration: "underline" },
-        { tag: t.heading, fontWeight: "bold", color: "var(--base-content)" },
-        { tag: [t.atom, t.bool, t.special(t.variableName)], color: "var(--base-content)" },
-        { tag: [t.processingInstruction, t.string, t.inserted], color: "var(--base-content)" },
-        { tag: t.invalid, color: "var(--error)" },
-      ])
-    ),
+    syntaxHighlighting(codeHighlightStyle),
   ];
 };
 
@@ -168,7 +223,7 @@ export const CodeEditor = ({
   );
 
   return (
-    <div className="overflow-hidden rounded-lg border border-base-300 bg-neutral/80 focus-within:border-primary/50 hover:bg-neutral">
+    <div className="overflow-hidden rounded-lg border border-base-300 bg-base-200 focus-within:border-primary/50 hover:bg-base-300/25">
       <CodeMirror
         value={typeof value === "string" ? value : String(value || "")}
         height={height}

@@ -12,7 +12,11 @@ export const ClassNameInput = () => (
       propType="component"
       label=""
       labelHide={true}
-    />
-    <CSSEditorInput />
+      clearAllPlacement="after-append"
+    >
+      <React.Suspense fallback={null}>
+        <CSSEditorInput />
+      </React.Suspense>
+    </ClassItem>
   </ToolbarSection>
 );

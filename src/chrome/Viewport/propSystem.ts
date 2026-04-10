@@ -64,11 +64,23 @@ export const getProp = (params: any, view: string, nodeProps: any, classDark = f
   return getClassForView(nodeProps.className || "", params.propKey, classView, { classDark }) || null;
 };
 
+/**
+ * Full-width canvas uses ViewAtom `desktop` while class writes may target any breakpoint
+ * (`getEffectiveViews` / scope toggles → `sm:` … `2xl:`). Reads must scan every layer or
+ * toolbar controls show empty even though the class is on the node.
+ */
+const DESKTOP_CANVAS_CLASS_READ_ORDER = ["mobile", "md", "sm", "lg", "xl", "2xl"] as const;
+
 export const getPropFinalValue = (__props: any, view: string, nodeProps: any, classDark = false) => {
   if (__props.propType === "class" && view === "desktop") {
-    const sequence = classDark
-      ? [["mobile", true], ["mobile", false], ["md", true], ["md", false]]
-      : [["mobile", false], ["md", false]];
+    const sequence: [string, boolean][] = [];
+    for (const v of DESKTOP_CANVAS_CLASS_READ_ORDER) {
+      if (classDark) {
+        sequence.push([v, true], [v, false]);
+      } else {
+        sequence.push([v, false]);
+      }
+    }
     for (const [v, d] of sequence) {
       const val = getProp(__props, v as string, nodeProps, d as boolean);
       if (val != null && val !== "") return { value: val, viewValue: v };

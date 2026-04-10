@@ -215,5 +215,43 @@ export const EffectsClassInput = ({ index = "" }: { index?: string }) => (
         index={index}
       />
     </ToolbarSection>
+
+    <ToolbarSection title="Scroll" icon={null} nested collapsible defaultOpen={false}>
+      <EffectField
+        propKey="scrollBehavior"
+        label="Behavior"
+        tailwindKey="scrollBehavior"
+        propTag="scroll"
+        index={index}
+      />
+      <EffectField
+        propKey="scrollSnapType"
+        label="Snap type"
+        tailwindKey="scrollSnapType"
+        propTag="snap"
+        index={index}
+      />
+      <EffectField
+        propKey="scrollSnapAlign"
+        label="Snap align"
+        tailwindKey="scrollSnapAlign"
+        propTag="snap"
+        index={index}
+      />
+      <EffectField
+        propKey="scrollSnapStop"
+        label="Snap stop"
+        tailwindKey="scrollSnapStop"
+        propTag="snap"
+        index={index}
+      />
+      <EffectField
+        propKey="overscrollBehavior"
+        label="Overscroll"
+        tailwindKey="overscrollBehavior"
+        propTag="overscroll"
+        index={index}
+      />
+    </ToolbarSection>
   </ToolbarSection>
 );

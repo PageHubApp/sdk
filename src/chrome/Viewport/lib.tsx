@@ -15,7 +15,6 @@ export {
   GetSignedUrl,
   SaveMedia,
   DeleteMedia,
-  SaveToServer,
 } from "./api";
 
 // Prop system

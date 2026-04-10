@@ -175,8 +175,8 @@ export const Wrap = ({
         </div>
 
         {props.description && (
-          <div className="mt-2 flex w-full items-start gap-2 rounded-lg border border-base-300 bg-accent p-2">
-            <p className="text-xxs leading-relaxed text-accent-content">{props.description}</p>
+          <div className="mt-2 w-full text-center">
+            <p className="text-xxs leading-relaxed text-neutral-content">{props.description}</p>
           </div>
         )}
       </>
@@ -328,7 +328,7 @@ export const CardLight = ({ value, onClick, className = "" }) => {
   return (
     <button
       onClick={onClick}
-      className={`inline-flex cursor-pointer rounded-lg bg-base-100 px-1 py-0.5 text-xs font-medium text-base-content ${className}`}
+      className={`inline-flex cursor-pointer rounded-lg bg-base-200 px-1 py-0.5 text-xs font-medium text-base-content ${className}`}
     >
       <Tooltip content={`Add ${value}`} placement="top" arrow={false}>
         {renderDisplayValue()}

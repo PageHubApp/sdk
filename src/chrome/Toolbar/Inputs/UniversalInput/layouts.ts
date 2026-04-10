@@ -37,11 +37,18 @@ export interface DropdownLayoutConfig {
 // COMMON LAYOUT PRESETS
 // ============================================================================
 
+/** First columns hug labels; last column takes remaining space (avoids huge empty gutters). */
+const THREE_COL_COMPACT: [string, string, string] = [
+  "w-auto shrink-0 min-w-14",
+  "w-auto shrink-0 min-w-14",
+  "min-w-0 flex-1",
+];
+
 export const COMMON_SIZING_LAYOUT: DropdownLayoutConfig = {
   layout: "left-right",
   columns: {
     count: 3,
-    widths: ["w-2/5", "w-1/5", "w-2/5"], // Left (40%), Middle (20%), Right (40%)
+    widths: [...THREE_COL_COMPACT],
   },
   leftSection: {
     title: "",
@@ -63,11 +70,14 @@ export const COMMON_SIZING_LAYOUT: DropdownLayoutConfig = {
   },
 };
 
+/** Named / subgroup column narrow; numeric + hints use the rest (no 50% dead space). */
+const TWO_COL_COMPACT: [string, string] = ["w-auto shrink-0 min-w-11", "min-w-0 flex-1"];
+
 export const COMMON_SPACING_LAYOUT: DropdownLayoutConfig = {
   layout: "left-right",
   columns: {
     count: 2,
-    widths: ["w-1/2", "w-1/2"], // 50/50 split
+    widths: [...TWO_COL_COMPACT],
   },
   leftSection: {
     title: "",
@@ -111,6 +121,26 @@ export const COMMON_NAMED_OTHER_COLUMN: DropdownLayoutConfig = {
   },
 };
 
+/** `ring`, `ring-inset`, `outline-none`, dashed, etc. + numeric steps (`ring-2`, `outline-1`, …). */
+export const RING_LIKE_WIDTH_LAYOUT: DropdownLayoutConfig = {
+  layout: "left-right",
+  columns: {
+    count: 2,
+    widths: [...TWO_COL_COMPACT],
+  },
+  leftSection: {
+    title: "",
+    groups: ["named", "other"],
+    showHints: false,
+  },
+  rightSection: {
+    title: "",
+    groups: ["numeric"],
+    showHints: true,
+    hintType: "pixel",
+  },
+};
+
 // ============================================================================
 // PROPERTY-SPECIFIC LAYOUTS
 // ============================================================================
@@ -126,13 +156,19 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
   margin: COMMON_SPACING_LAYOUT,
   padding: COMMON_SPACING_LAYOUT,
   gap: COMMON_SPACING_LAYOUT,
+  gapX: COMMON_SPACING_LAYOUT,
+  gapY: COMMON_SPACING_LAYOUT,
+
+  ringWidth: RING_LIKE_WIDTH_LAYOUT,
+  ringOffsetWidth: RING_LIKE_WIDTH_LAYOUT,
+  outlineWidth: RING_LIKE_WIDTH_LAYOUT,
 
   // ========== BORDER & SHADOW PROPERTIES ==========
   radius: {
     layout: "left-right",
     columns: {
       count: 2,
-      widths: ["w-1/2", "w-1/2"],
+      widths: [...TWO_COL_COMPACT],
     },
     leftSection: {
       title: "",
@@ -151,7 +187,7 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
     layout: "left-right",
     columns: {
       count: 2,
-      widths: ["w-1/2", "w-1/2"],
+      widths: [...TWO_COL_COMPACT],
     },
     leftSection: {
       title: "",
@@ -200,7 +236,7 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
     layout: "left-right",
     columns: {
       count: 2,
-      widths: ["w-1/2", "w-1/2"],
+      widths: [...TWO_COL_COMPACT],
     },
     leftSection: {
       title: "",
@@ -223,7 +259,7 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
     layout: "left-right",
     columns: {
       count: 2,
-      widths: ["w-1/2", "w-1/2"],
+      widths: [...TWO_COL_COMPACT],
     },
     leftSection: {
       title: "",
@@ -348,6 +384,8 @@ export const PROP_TAG_MAPPINGS: Record<string, string> = {
 
   // Other
   gap: "gap",
+  "gap-x": "gap",
+  "gap-y": "gap",
   shadow: "shadow",
   opacity: "opacity",
   "bg-opacity": "bgOpacity",

@@ -11,6 +11,7 @@ import { TabAtom } from "../../../Viewport/atoms";
 import { scrollToSection } from "../../UnifiedTab";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
+import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { TypeInput } from "../typography/TypeInput";
 
 export const PropertiesInput = () => {
@@ -27,7 +28,7 @@ export const PropertiesInput = () => {
         labelHide={false}
         description={
           <>
-            Give this element a name so you can target it in{" "}
+            Sets the HTML id for in-page links (<span className="font-mono">#…</span>) and{" "}
             <button
               type="button"
               className="inline cursor-pointer font-medium text-primary underline underline-offset-2"
@@ -38,7 +39,7 @@ export const PropertiesInput = () => {
             >
               Actions
             </button>
-            .
+            ).
           </>
         }
       />
@@ -89,22 +90,32 @@ function DataAttributesEditor() {
   return (
     <ToolbarSection title="Data Attributes" nested collapsible defaultOpen={false}>
       {dataAttributes.map((attr, i) => (
-        <div key={i} className="flex items-center gap-1">
-          <span className="text-xs text-neutral-content">data-</span>
-          <input
-            type="text"
-            value={attr.key}
-            onChange={(e) => updateAttribute(i, "key", e.target.value)}
-            className="input-plain w-20 font-mono text-xs"
-            placeholder="key"
-          />
-          <input
-            type="text"
-            value={attr.value}
-            onChange={(e) => updateAttribute(i, "value", e.target.value)}
-            className="input-plain flex-1 font-mono text-xs"
-            placeholder="value"
-          />
+        <div key={i} className="flex min-w-0 items-center gap-1">
+          <span className="shrink-0 text-xs text-neutral-content">data-</span>
+          <div className="w-20 shrink-0">
+            <div className="input-wrapper w-full">
+              <input
+                type="text"
+                value={attr.key}
+                onChange={(e) => updateAttribute(i, "key", e.target.value)}
+                className="input-plain w-full font-mono text-xs"
+                placeholder="key"
+                {...toolbarInputNoAutocompleteProps}
+              />
+            </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="input-wrapper w-full">
+              <input
+                type="text"
+                value={attr.value}
+                onChange={(e) => updateAttribute(i, "value", e.target.value)}
+                className="input-plain w-full font-mono text-xs"
+                placeholder="value"
+                {...toolbarInputNoAutocompleteProps}
+              />
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => removeAttribute(i)}
@@ -115,24 +126,34 @@ function DataAttributesEditor() {
         </div>
       ))}
 
-      <div className="flex items-center gap-1">
-        <span className="text-xs text-neutral-content">data-</span>
-        <input
-          type="text"
-          value={newKey}
-          onChange={(e) => setNewKey(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addAttribute()}
-          className="input-plain w-20 font-mono text-xs"
-          placeholder="key"
-        />
-        <input
-          type="text"
-          value={newValue}
-          onChange={(e) => setNewValue(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addAttribute()}
-          className="input-plain flex-1 font-mono text-xs"
-          placeholder="value"
-        />
+      <div className="flex min-w-0 items-center gap-1">
+        <span className="shrink-0 text-xs text-neutral-content">data-</span>
+        <div className="w-20 shrink-0">
+          <div className="input-wrapper w-full">
+            <input
+              type="text"
+              value={newKey}
+              onChange={(e) => setNewKey(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addAttribute()}
+              className="input-plain w-full font-mono text-xs"
+              placeholder="key"
+              {...toolbarInputNoAutocompleteProps}
+            />
+          </div>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="input-wrapper w-full">
+            <input
+              type="text"
+              value={newValue}
+              onChange={(e) => setNewValue(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addAttribute()}
+              className="input-plain w-full font-mono text-xs"
+              placeholder="value"
+              {...toolbarInputNoAutocompleteProps}
+            />
+          </div>
+        </div>
         <button
           type="button"
           onClick={addAttribute}

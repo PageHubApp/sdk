@@ -4,18 +4,19 @@ import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../../../utils/atoms";
 import { BatchOperationAtom } from "utils/atoms";
 import { UnsavedChangesAtom, ViewAtom } from "../../../../Viewport/atoms";
-import { changeProp } from "../../../../Viewport/lib";
-import { getClassForView } from "../../../../../utils/tailwind/className";
+import { changeProp, getPropFinalValue } from "../../../../Viewport/lib";
 import { getEffectiveViews, ViewSelectionAtom } from "../../../Label";
 import { useContainerLayoutManager } from "../../useContainerLayoutManager";
 import { getFlexPresets, GRID_PRESETS, type LayoutPreset } from "../presets/layoutPresets";
 
-type LayoutMode = "flex-row" | "flex-col" | "grid" | "block";
+export type LayoutMode = "flex-row" | "flex-col" | "grid" | "block";
 
 interface UseLayoutPresetOptions {
   propKey: string;
   onLayoutChange?: (preset: LayoutPreset) => void;
 }
+
+export type LayoutPresetHandle = ReturnType<typeof useLayoutPreset>;
 
 export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOptions) {
   const { actions, query } = useEditor();
@@ -38,13 +39,21 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
     classNameStr: node.data.props.className || "",
   }));
 
-  const currentDisplay = getClassForView(classNameStr, "display", view, { classDark }) || "";
-  const currentFlexDirection = getClassForView(classNameStr, "flexDirection", view, { classDark }) || "";
+  const nodePropsForRead = { className: classNameStr };
+  const currentDisplay =
+    String(getPropFinalValue({ propKey: "display", propType: "class" }, view, nodePropsForRead, classDark).value ?? "");
+  const currentFlexDirection =
+    String(
+      getPropFinalValue({ propKey: "flexDirection", propType: "class" }, view, nodePropsForRead, classDark).value ??
+        "",
+    );
 
   const detectMode = (): LayoutMode => {
     if (currentDisplay.includes("grid")) return "grid";
     if (currentDisplay.includes("flex")) {
-      return currentFlexDirection.includes("flex-row") ? "flex-row" : "flex-col";
+      // Align with LayoutInput: default flex axis is row unless flex-col* is set.
+      if (currentFlexDirection.includes("flex-col")) return "flex-col";
+      return "flex-row";
     }
     if (currentDisplay.includes("block") || currentDisplay.includes("inline-block")) return "block";
     return (currentLayoutMode as LayoutMode) || "flex-col";

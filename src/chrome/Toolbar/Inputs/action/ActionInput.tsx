@@ -4,8 +4,9 @@
  * Supports chained actions via `actions: NodeAction[]` prop.
  */
 import { useNode } from "@craftjs/core";
-import { TbPlus, TbPointer, TbX } from "react-icons/tb";
+import { TbPointer, TbX } from "react-icons/tb";
 import { PageSelector } from "../../../Viewport/PageSelector";
+import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ToolbarSection } from "../../ToolbarSection";
 import {
@@ -89,7 +90,12 @@ export default function ActionInput() {
       help="What happens when someone clicks this element. Add multiple actions to chain them."
     >
       {actionList.map((action, i) => (
-        <div key={i} className={actionList.length > 1 ? "rounded-md border border-base-300 p-2 mb-2" : ""}>
+        <div
+          key={i}
+          className={`flex flex-col gap-2 ${
+            actionList.length > 1 ? "mb-2 rounded-md border border-base-300 p-2" : ""
+          }`}
+        >
           {actionList.length > 1 && (
             <div className="mb-1 flex items-center justify-between">
               <span className="text-[10px] font-medium text-neutral-content">Action {i + 1}</span>
@@ -132,14 +138,11 @@ export default function ActionInput() {
       ))}
 
       {/* Add action button */}
-      <button
-        type="button"
+      <ToolbarDashedButton
         onClick={actionList.length === 0 ? () => syncActions([ACTION_DEFAULTS["link-url"]]) : addAction}
-        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-base-300 px-2 py-1.5 text-[11px] text-neutral-content transition-colors hover:border-primary hover:text-base-content"
       >
-        <TbPlus size={12} />
         {actionList.length === 0 ? "Add Action" : "Chain Another Action"}
-      </button>
+      </ToolbarDashedButton>
     </ToolbarSection>
   );
 }

@@ -72,7 +72,7 @@ export function GoogleTab({ d }: GoogleTabProps) {
       </div>
 
       {/* Filters */}
-      <div className="shrink-0 border-b border-base-300 bg-base-100 p-3">
+      <div className="shrink-0 border-b border-base-300 bg-base-200 p-3">
         {/* Categories */}
         <div className="mb-3">
           <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-base-content">
@@ -123,7 +123,7 @@ export function GoogleTab({ d }: GoogleTabProps) {
 
       {/* Loading */}
       {!d.fontLoaded && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-base-100/80 backdrop-blur-sm">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-base-200/80 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3">
             <div className="size-8 animate-spin rounded-full border-4 border-neutral border-t-primary" />
             <p className="text-sm text-neutral-content">Loading icons...</p>
@@ -141,7 +141,7 @@ export function GoogleTab({ d }: GoogleTabProps) {
           rowCount={d.rowCount}
           rowHeight={ROW_HEIGHT}
           width={CONTAINER_WIDTH}
-          className="scrollbar-light border-b border-base-300 bg-base-100 text-base-content"
+          className="scrollbar-light border-b border-base-300 bg-base-200 text-base-content"
         >
           {Cell}
         </Grid>

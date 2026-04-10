@@ -11,6 +11,7 @@ import { DesignVarSelector } from "./Inputs/advanced/DesignVarSelector";
 import { getEffectiveViews, ViewSelectionAtom } from "./Label";
 import { ToolbarDropdown } from "./ToolbarDropdown";
 import { BgWrap, Wrap } from "./ToolbarStyle";
+import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
 
 const Input = (__props, ref) => {
   const {
@@ -28,15 +29,20 @@ const Input = (__props, ref) => {
   } = __props;
 
   if (["toggle", "checkbox"].includes(type)) {
+    const hasOption = !!props.option;
     return (
-      <label className="relative flex cursor-pointer flex-col items-center transition-transform active:scale-[0.98]">
+      <label
+        className={`relative flex w-full cursor-pointer transition-transform active:scale-[0.98] ${
+          hasOption ? "flex-row items-center justify-between gap-3" : "flex-col items-center"
+        }`}
+      >
         {props.option && (
-          <div className="mb-2 text-center text-xs font-medium text-base-content">
+          <span className={`min-w-0 text-xs font-medium text-base-content ${hasOption ? "flex-1 text-left" : "mb-2 text-center"}`}>
             {props.option || "Enable"}
-          </div>
+          </span>
         )}
 
-        <div className="relative inline-flex w-fit">
+        <div className="relative inline-flex w-fit shrink-0">
           <input
             type="checkbox"
             id={propKey ? `input-${propKey}` : undefined}
@@ -61,6 +67,7 @@ const Input = (__props, ref) => {
             onChange={event => changed(event.target.value)}
             className="input-plain flex-1"
             aria-label={props.label || propKey || "Number input"}
+            {...toolbarInputNoAutocompleteProps}
           />
           {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
         </div>
@@ -85,6 +92,7 @@ const Input = (__props, ref) => {
             onChange={event => changed(`${propTag}-[${event.target.value}px]`)}
             className="input-plain flex-1"
             aria-label={props.label || props.placeholder || propKey || "Custom value"}
+            {...toolbarInputNoAutocompleteProps}
           />
           {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
         </div>
@@ -104,6 +112,7 @@ const Input = (__props, ref) => {
             onChange={event => changed(event.target.value)}
             className="input-plain flex-1"
             aria-label={props.label || props.placeholder || propKey || `${type} input`}
+            {...toolbarInputNoAutocompleteProps}
           />
           {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
         </div>
@@ -123,6 +132,7 @@ const Input = (__props, ref) => {
             placeholder={props.placeholder}
             className="input-plain flex-1"
             aria-label={props.label || props.placeholder || propKey || "Text area"}
+            {...toolbarInputNoAutocompleteProps}
           />
           {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
         </div>
@@ -167,14 +177,18 @@ const Input = (__props, ref) => {
   }
 
   if (type === "select") {
+    const coalesce = props.valueCoalesce;
+    const displayValue =
+      coalesce !== undefined && (value == null || value === "") ? coalesce : value;
+    const { valueCoalesce: _valueCoalesce, ...dropdownProps } = props;
     return (
       <ToolbarDropdown
         wrap={wrap}
-        value={value || ""}
+        value={displayValue ?? ""}
         onChange={value => changed(value)}
         append={append}
         propKey={propKey}
-        {...props}
+        {...dropdownProps}
       />
     );
   }
@@ -189,6 +203,12 @@ const Input = (__props, ref) => {
         >
           {props?.options?.map((_, key) => {
             const checked = value === _.value;
+            const tip =
+              typeof _.hint === "string"
+                ? _.hint
+                : typeof _.label === "string"
+                  ? _.label
+                  : String(_.value ?? "");
             return (
               <div key={key} className="flex items-center">
                 <input
@@ -198,7 +218,7 @@ const Input = (__props, ref) => {
                   defaultChecked={checked}
                   onClick={() => changed(_.value)}
                   className="hidden"
-                  aria-label={_.value || _.label}
+                  aria-label={tip || String(_.value ?? "")}
                 />
                 <label
                   htmlFor={`radio-${propKey}-${key}`}
@@ -209,7 +229,7 @@ const Input = (__props, ref) => {
                   }`}
 
                   data-tooltip-id={`radio-${propKey}-${key}-tip`}
-                  data-tooltip-content={_.value || "None"}
+                  data-tooltip-content={tip || "None"}
                   data-tooltip-place="bottom"
                 >
                   {_.label}
@@ -306,6 +326,7 @@ const Input = (__props, ref) => {
           onChange={event => changed(event.target.value)}
           placeholder={props.placeholder}
           className="input-plain flex-1"
+          {...toolbarInputNoAutocompleteProps}
         />
       </div>
     </BgWrap>
@@ -349,6 +370,8 @@ export type ToolbarItemProps = {
   labelWidth?: string;
   append?: React.ReactNode;
   description?: React.ReactNode;
+  /** When the stored prop is null/empty, use this for the select UI (matches runtime defaults). */
+  valueCoalesce?: string | number;
 };
 
 export const ToolbarItem = (__props: ToolbarItemProps) => {

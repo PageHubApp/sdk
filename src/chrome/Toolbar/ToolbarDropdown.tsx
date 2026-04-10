@@ -140,7 +140,7 @@ export const ToolbarDropdown = ({
   const trigger = (
     <ListboxButton
       id={propKey ? `input-${propKey}` : undefined}
-      className="input-plain flex flex-1 items-center justify-between gap-1 focus:border-transparent focus:outline-none active:border-transparent active:outline-none"
+      className="input-plain flex flex-1 items-center justify-between gap-1 outline-none focus:outline-none focus-visible:outline-none aria-expanded:bg-base-300/15"
       aria-label={title || placeholder || "Select option"}
       onClick={handleButtonClick}
     >

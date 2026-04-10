@@ -1,15 +1,24 @@
 /* =============================================================================
    SDK editor — toolbar inputs, buttons, sliders (scoped under .pagehub-sdk-root)
+   =============================================================================
+   Toolbar field chrome (especially under #toolbarContents):
+   - Bordered shell: .input-wrapper (+ inner .input-plain / native input.input-plain).
+     Same pattern as ToolbarDropdown. Avoid a lone full-width button.input for toolbar
+     rows; it skips the wrapper and reads inconsistent.
+   - Single control: .input (full button-style) or .input-dialog / .input-dialog-sm |
+     .input-dialog-md | .input-dialog-leading (padding variants).
+   - Field surfaces use bg-base-200 (Daisy nested step). In light theme base-200 equals
+     base-100 in tokens; in dark, fields lift above bg-sidebar / base-100 panels.
    ============================================================================= */
 
 @reference "./styles.css";
 
 .pagehub-sdk-root .input {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-neutral text-base-content hover:border-primary focus:border-ring active:border-ring;
+  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200 text-base-content hover:border-primary focus:border-ring active:border-ring;
 }
-/* Same as .input but bg matches modal/panel shells (toolbar .input uses bg-neutral) */
+/* Dialog fields; same surface token as .input */
 .pagehub-sdk-root .input-dialog {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-100! text-base-content hover:border-primary focus:border-ring active:border-ring;
+  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200! text-base-content hover:border-primary focus:border-ring active:border-ring;
 }
 .pagehub-sdk-root .input-plain {
   @apply w-full cursor-pointer border-0 bg-transparent px-2 py-1 text-base-content outline-none focus:outline-none;
@@ -24,7 +33,7 @@
 }
 /* Popover-style dropdown trigger: add py-2 or py-1.5 text-sm per control */
 .pagehub-sdk-root .ph-menu-trigger {
-  @apply flex w-full items-center justify-between gap-2 rounded-lg border border-base-300 bg-base-100 px-3 text-base-content transition-colors hover:bg-neutral disabled:cursor-not-allowed disabled:opacity-50;
+  @apply flex w-full items-center justify-between gap-2 rounded-lg border border-base-300 bg-base-200 px-3 text-base-content transition-colors hover:bg-neutral disabled:cursor-not-allowed disabled:opacity-50;
 }
 /* Floating panels — design-system radius + border + bg; pick shadow tier */
 .pagehub-sdk-root .ph-panel {
@@ -62,13 +71,13 @@
 
 /* Dialog / popover search fields — replaces repeated input-dialog + padding/text utilities */
 .pagehub-sdk-root .input-dialog-sm {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-100! px-2! py-1! text-xs! text-base-content placeholder:text-neutral-content hover:border-primary focus:border-ring active:border-ring;
+  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200! px-2! py-1! text-xs! text-base-content placeholder:text-neutral-content hover:border-primary focus:border-ring active:border-ring;
 }
 .pagehub-sdk-root .input-dialog-md {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-100! px-3! py-2! text-sm text-base-content hover:border-primary focus:border-ring active:border-ring;
+  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200! px-3! py-2! text-sm text-base-content hover:border-primary focus:border-ring active:border-ring;
 }
 .pagehub-sdk-root .input-dialog-leading {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-100! py-1.5! pl-9! pr-3! text-xs! text-base-content placeholder:text-neutral-content hover:border-primary focus:border-ring active:border-ring;
+  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200! py-1.5! pl-9! pr-3! text-xs! text-base-content placeholder:text-neutral-content hover:border-primary focus:border-ring active:border-ring;
 }
 .pagehub-sdk-root select.input-plain {
   @apply appearance-none pr-6;
@@ -81,10 +90,6 @@
 :is(.dark *) .pagehub-sdk-root select.input-plain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e8e8e8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
-.pagehub-sdk-root .input-wrapper {
-  @apply cursor-pointer border-base-300 focus-within:border-ring hover:border-primary w-full rounded-lg border border-base-300 bg-neutral px-1 py-0;
-}
-
 .pagehub-sdk-root .btn-sm {
   @apply h-6! px-1.5! py-0! text-xs!;
 }
@@ -160,17 +165,23 @@
   font-size: 11.5px;
 }
 
-.pagehub-sdk-root .input-color {
-  @apply cursor-pointer border-base-300 focus-within:border-ring hover:border-primary flex h-12 w-full items-center rounded-lg border focus-within:border-accent;
-}
-
 .pagehub-sdk-root .btn-search {
   @apply absolute bottom-2.5 right-2.5 z-20 h-8 rounded-lg border border-base-300 bg-primary px-5 py-1.5 text-primary-content hover:bg-primary;
 }
 
 .pagehub-sdk-root .input-wrapper,
 .pagehub-sdk-root #toolbarContents .input {
-  @apply w-full rounded-lg border border-base-300 bg-neutral/80 px-1 py-0 focus-within:border-primary/50 hover:bg-neutral hover:border-base-300;
+  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200 px-1 py-0 transition-[border-color,box-shadow,background-color] duration-150 ease-out;
+  @apply hover:border-primary hover:bg-base-300/25;
+  @apply focus-within:border-primary focus-within:ring-1 focus-within:ring-ring/45;
+}
+
+/* Color toolbar swatch: full-bleed fill inside border (no px-1 gutter); checker clips to rounded-lg */
+.pagehub-sdk-root .input-wrapper.color-input-field {
+  @apply overflow-hidden p-0!;
+}
+.pagehub-sdk-root #toolbarContents .input-wrapper.color-input-field .input-plain {
+  @apply px-0!;
 }
 
 .pagehub-sdk-root #toolbarContents .input,
@@ -179,6 +190,20 @@
 .pagehub-sdk-root #toolbarContents .input-dialog-md,
 .pagehub-sdk-root #toolbarContents .input-dialog-leading,
 .pagehub-sdk-root #toolbarContents .input-plain,
+.pagehub-sdk-root #toolbarContents select.input-plain {
+  @apply h-8 px-2 py-0.5 text-xs! placeholder:text-neutral-content focus:border-ring focus:ring-ring;
+}
+
+/* Headless listbox trigger: chrome lives on .input-wrapper (focus-within); avoid a second focus border on the button */
+.pagehub-sdk-root #toolbarContents button.input-plain {
+  @apply focus:border-transparent focus:shadow-none focus:ring-0 focus-visible:ring-0;
+}
+
+/* Text/textarea in the bordered shell: one focus treatment on the wrapper (focus-within), not a competing ring on the field */
+.pagehub-sdk-root #toolbarContents .input-wrapper > input.input-plain,
+.pagehub-sdk-root #toolbarContents .input-wrapper > textarea.input-plain {
+  @apply focus:border-transparent focus:shadow-none focus:ring-0 focus-visible:ring-0;
+}
 .pagehub-sdk-root #toolbarContents .btn {
   @apply h-8 px-2 py-0.5 text-sm! focus:border-ring focus:ring-ring;
 }
@@ -187,15 +212,18 @@
 }
 
 .pagehub-sdk-root option {
-  @apply bg-base-100 text-base-content;
+  @apply bg-base-200 text-base-content;
 }
 
-.pagehub-sdk-root #toolbarContents .input-color {
-  @apply h-5!;
-}
-
+/* Inset from border + vertical center — avoids flush corner and uneven gaps */
 .pagehub-sdk-root #toolbarContents .btn-search {
-  @apply right-0 top-0 flex h-7 w-7 items-center justify-center p-0;
+  @apply bottom-auto right-1.5 top-1/2 z-20 flex size-7 -translate-y-1/2 items-center justify-center rounded-md border-0 bg-primary p-0 text-primary-content shadow-none hover:bg-primary/90 [&_svg]:shrink-0;
+}
+
+/* Full-width dashed “add” CTA — Actions → Add Action, ToolbarDashedButton, AiButton.className, etc.
+   Unscoped so it works under any subtree. Duplicated in root `styles/editor.css` for Next (app does not import this file). Keep @apply in sync. */
+.ph-toolbar-dashed-btn {
+  @apply flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border border-dashed border-base-300 px-2 py-1.5 text-[11px] text-neutral-content transition-colors hover:border-primary hover:text-base-content;
 }
 
 .pagehub-sdk-root .toolbar-label {

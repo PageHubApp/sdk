@@ -7,7 +7,7 @@ import React, { useEffect, useState } from "react";
 import { TbCode } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
-import { SessionTokenAtom, SettingsAtom, ShowGridLinesAtom } from "utils/atoms";
+import { ShowGridLinesAtom } from "utils/atoms";
 import {
   IsolateAtom,
   OnlineAtom,
@@ -26,7 +26,7 @@ import { ComponentEditorTabs } from "./ComponentEditorTabs";
 import { DeviceScrollbar } from "./DeviceScrollbar";
 import { DeviceSelector } from "./DeviceSelector";
 import { DeviceZoom } from "./DeviceZoom";
-import { SaveToServer } from "./lib";
+import { useSDK } from "../../context";
 import { MinimumSizeOverlay } from "./MinimumSizeOverlay";
 import { ViewportMeta } from "./ViewportMeta";
 import { useNodeDropStyling } from "./hooks/useNodeDropStyling";
@@ -81,8 +81,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const viewMode = useAtomValue(ViewModeAtom);
-  const [settings, setSettings] = useAtomState(SettingsAtom);
-  const sessionToken = useAtomValue(SessionTokenAtom);
   const [unsavedChanges, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
   const view = useAtomValue(ViewAtom);
   const { setView: setStoreView, setPreview: setStorePreview } = useEditorStore();
@@ -99,6 +97,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const sideBarLeft = useAtomValue(SideBarAtom);
   const setInitialLoadComplete = useSetAtomState(InitialLoadCompleteAtom);
   const nextRouter = useRouter();
+  const { emitter } = useSDK();
 
   // ─── Grid lines ───
   useEffect(() => {
@@ -144,14 +143,10 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     const root = query.node(ROOT_NODE).get();
     if (!root) return;
 
-    const handlePageSwitch = async (targetPageId: string | null) => {
+    const handlePageSwitch = (targetPageId: string | null) => {
       if (unsavedChanges && Object.keys(unsavedChanges).length > 0) {
-        try {
-          await SaveToServer(unsavedChanges, true, settings, setSettings, sessionToken);
-          setUnsavedChanged(null);
-        } catch (e) {
-          console.error("Failed to save before page switch:", e);
-        }
+        emitter.emit("save", { isDraft: true });
+        setUnsavedChanged(null);
       }
       isolatePageAlt(isolate, query, targetPageId, actions, setIsolate, true);
     };

@@ -1,11 +1,8 @@
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
-import { useAtomValue } from "@zedux/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Button as UiButton } from "@pagehub/ui";
-
-import { GoogleFontLoadedAtom } from "../utils/atoms";
 import { addActionHandlers } from "../utils/clickControls";
 import { migrateAction, actionToHref, actionTarget, isLinkAction, isHandlerAction, type NodeAction } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -14,6 +11,10 @@ import {
   registerMaterialSymbolIconUsage,
   unregisterMaterialSymbolIconUsage,
 } from "../utils/materialSymbolsAutoLoad";
+import {
+  materialIconLoadPxForWidthClass,
+  PH_MS_FONT_PENDING_CLASS,
+} from "../utils/materialSymbolsReveal";
 import { motionIt } from "../utils/lib";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
@@ -45,6 +46,45 @@ const defaultIcon = {
   position: "left" as const,
   size: "w-6 h-6",
   gap: "gap-2",
+};
+
+/** Tailwind width token on icon.size → text-* for Material Symbols glyph scale */
+const iconFontSizeMap: Record<string, string> = {
+  "w-0": "text-[0px]",
+  "w-px": "text-[1px]",
+  "w-0.5": "text-[2px]",
+  "w-1": "text-[4px]",
+  "w-1.5": "text-[6px]",
+  "w-2": "text-[8px]",
+  "w-2.5": "text-[10px]",
+  "w-3": "text-xs",
+  "w-3.5": "text-[14px]",
+  "w-4": "text-sm",
+  "w-5": "text-base",
+  "w-6": "text-xl",
+  "w-7": "text-2xl",
+  "w-8": "text-3xl",
+  "w-9": "text-[36px]",
+  "w-10": "text-4xl",
+  "w-11": "text-[44px]",
+  "w-12": "text-5xl",
+  "w-14": "text-[56px]",
+  "w-16": "text-6xl",
+  "w-20": "text-7xl",
+  "w-24": "text-8xl",
+  "w-28": "text-[112px]",
+  "w-32": "text-[128px]",
+  "w-36": "text-[144px]",
+  "w-40": "text-[160px]",
+  "w-44": "text-[176px]",
+  "w-48": "text-[192px]",
+  "w-52": "text-[208px]",
+  "w-56": "text-[224px]",
+  "w-60": "text-[240px]",
+  "w-64": "text-[256px]",
+  "w-72": "text-[288px]",
+  "w-80": "text-[320px]",
+  "w-96": "text-[384px]",
 };
 
 export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) => {
@@ -89,12 +129,59 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   props = setClonedProps(props, query);
 
+  const iconSizeEarly = props.icon?.size || "w-6 h-6";
+  const sizeKey = iconSizeEarly.split(" ")[0];
+  const isGoogleIcon = props.icon?.value?.startsWith("ref-google:");
+  const googleIconName =
+    isGoogleIcon && typeof props.icon?.value === "string"
+      ? props.icon.value.replace("ref-google:", "")
+      : null;
+
   const [isMounted, setIsMounted] = useState(false);
-  const googleFontLoaded = useAtomValue(GoogleFontLoadedAtom);
+  /** Google ligature icons: hide until Font Loading API reports the face (keeps slot via size classes). */
+  const [materialSymbolsReady, setMaterialSymbolsReady] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!isGoogleIcon) {
+      setMaterialSymbolsReady(true);
+      return;
+    }
+
+    setMaterialSymbolsReady(false);
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      if (!cancelled) setMaterialSymbolsReady(true);
+    }, 2500);
+
+    if (typeof document === "undefined" || !document.fonts) {
+      setMaterialSymbolsReady(true);
+      window.clearTimeout(timer);
+      return () => {
+        cancelled = true;
+        window.clearTimeout(timer);
+      };
+    }
+
+    const px = materialIconLoadPxForWidthClass(sizeKey);
+    void document.fonts
+      .load(`400 ${px}px "Material Symbols Outlined"`)
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) {
+          setMaterialSymbolsReady(true);
+          window.clearTimeout(timer);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [isGoogleIcon, sizeKey, googleIconName]);
 
   useScrollToSelected(id, enabled);
 
@@ -204,61 +291,14 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     }
   }
 
-  // Extract size for font-size mapping (for Material Symbols)
-  const iconSize = props.icon?.size || "w-6 h-6";
-  // Map Tailwind width classes to text size classes for icon fonts
-  const fontSizeMap = {
-    "w-0": "text-[0px]",
-    "w-px": "text-[1px]",
-    "w-0.5": "text-[2px]",
-    "w-1": "text-[4px]",
-    "w-1.5": "text-[6px]",
-    "w-2": "text-[8px]",
-    "w-2.5": "text-[10px]",
-    "w-3": "text-xs",
-    "w-3.5": "text-[14px]",
-    "w-4": "text-sm",
-    "w-5": "text-base",
-    "w-6": "text-xl",
-    "w-7": "text-2xl",
-    "w-8": "text-3xl",
-    "w-9": "text-[36px]",
-    "w-10": "text-4xl",
-    "w-11": "text-[44px]",
-    "w-12": "text-5xl",
-    "w-14": "text-[56px]",
-    "w-16": "text-6xl",
-    "w-20": "text-7xl",
-    "w-24": "text-8xl",
-    "w-28": "text-[112px]",
-    "w-32": "text-[128px]",
-    "w-36": "text-[144px]",
-    "w-40": "text-[160px]",
-    "w-44": "text-[176px]",
-    "w-48": "text-[192px]",
-    "w-52": "text-[208px]",
-    "w-56": "text-[224px]",
-    "w-60": "text-[240px]",
-    "w-64": "text-[256px]",
-    "w-72": "text-[288px]",
-    "w-80": "text-[320px]",
-    "w-96": "text-[384px]",
-  };
-  const sizeKey = iconSize.split(" ")[0]; // Get first class (e.g., "w-6" from "w-6 h-6")
-  const fontSize = fontSizeMap[sizeKey] || "text-xl";
-
-  const isGoogleIcon = props.icon?.value?.startsWith("ref-google:");
+  const iconSize = iconSizeEarly;
+  const fontSize = iconFontSizeMap[sizeKey] || "text-xl";
 
   // Memoize icon resolution to avoid unnecessary calls
   const iconElement = useMemo(
     () => (props.icon?.value ? resolveIcon(props.icon.value, query) : null),
     [props.icon?.value, query]
   );
-
-  const googleIconName =
-    isGoogleIcon && typeof props.icon?.value === "string"
-      ? props.icon.value.replace("ref-google:", "")
-      : null;
 
   // Marketing / static-style previews (Frame enabled={false}) never run Background's font loader.
   // Register icon usage so one shared stylesheet covers all Buttons on the page.
@@ -267,10 +307,6 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     registerMaterialSymbolIconUsage(googleIconName);
     return () => unregisterMaterialSymbolIconUsage(googleIconName);
   }, [enabled, googleIconName]);
-
-  // Only show icon when font is loaded (prevents flash)
-  // For Google icons, always wait for font (both editor and static)
-  const shouldShowIcon = iconElement && (!isGoogleIcon || googleFontLoaded);
 
   // Memoize icon class to avoid re-joining on every render
   const iconClass = useMemo(
@@ -284,7 +320,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
         "items-center",
         "justify-center",
         isGoogleIcon && "google-icons", // Add google-icons class for Material Symbols
-        isGoogleIcon && !shouldShowIcon && "opacity-0", // Hide text until font loads
+        isGoogleIcon && !materialSymbolsReady && PH_MS_FONT_PENDING_CLASS,
       ]
         .filter(Boolean)
         .join(" "),
@@ -294,12 +330,16 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
       props.icon?.color,
       props.icon?.shadow,
       isGoogleIcon,
-      shouldShowIcon,
+      materialSymbolsReady,
     ]
   );
 
-  // DRY: Create icon element once
-  const iconSpan = shouldShowIcon && <span className={iconClass} aria-hidden="true">{iconElement}</span>;
+  // Always mount icon span for Google icons so width/height utilities reserve space
+  const iconSpan = iconElement && (
+    <span className={iconClass} aria-hidden="true">
+      {iconElement}
+    </span>
+  );
 
   const content = (
     <>

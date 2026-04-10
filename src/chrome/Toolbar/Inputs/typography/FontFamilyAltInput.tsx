@@ -119,35 +119,40 @@ export const FontFamilyAltInput = ({
         labelWidth={labelWidth}
       >
         <div className="relative">
-          <button
-            title={displayValue}
-            onClick={e => {
-              setDialog({
-                enabled: true,
-                value: [],
-                originalValue: value || "",
-                prefix,
-                propKey,
-                changed,
-                preview,
-                e: getRect(ref.current),
-              });
-            }}
-            style={{
-              fontFamily: displayValue || undefined,
-            }}
-            className="input"
-          >
-            {displayValue || "Default"}
-          </button>
+          <div className="input-wrapper flex w-full items-center">
+            <button
+              type="button"
+              title={displayValue}
+              id={propKey ? `input-${propKey}` : undefined}
+              onClick={() => {
+                setDialog({
+                  enabled: true,
+                  value: [],
+                  originalValue: value || "",
+                  prefix,
+                  propKey,
+                  changed,
+                  preview,
+                  e: getRect(ref.current),
+                });
+              }}
+              style={{
+                fontFamily: displayValue || undefined,
+              }}
+              className="input-plain flex min-w-0 flex-1 items-center truncate text-left"
+            >
+              {displayValue || "Default"}
+            </button>
+          </div>
 
           {value && (
             <button
+              type="button"
               onClick={e => {
                 e.stopPropagation();
                 pushChange("", 2000);
               }}
-              className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
+              className="absolute -right-1 -top-1 z-10 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
               title="Clear font family"
             >
               ×

@@ -2,13 +2,9 @@
  * API calls for media, HTML conversion, and saving to server.
  */
 
-import lz from "lzutf8";
 import { getPageHubApiBaseUrl } from "../../runtimeApi";
-import { phStorage } from "../../utils/phStorage";
 
 const getApiBase = () => getPageHubApiBaseUrl();
-
-let _saveInFlight = false;
 
 export const GetHtmlToComponent = async (html: string) => {
   try {
@@ -80,57 +76,3 @@ export const DeleteMedia = async (
   }
 };
 
-export const SaveToServer = async (
-  json: string,
-  draft: boolean,
-  settings: any,
-  setSettings: any,
-  sessionToken: string | null = null
-) => {
-  if (_saveInFlight) return;
-  _saveInFlight = true;
-
-  try {
-    const content = lz.encodeBase64(lz.compress(json));
-    phStorage.set("draft", content);
-
-    const _id = settings?._id || "";
-    const r: any = { _id };
-    if (draft) r.draft = content;
-    else r.content = content;
-    if (sessionToken) r.sessionToken = sessionToken;
-
-    const headers: any = { Accept: "application/json", "Content-Type": "application/json" };
-    if (sessionToken) headers["x-pagehub-token"] = sessionToken;
-
-    const res = await fetch(`${getApiBase()}/api/save`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(r),
-    });
-
-    let result: any = null;
-    try { result = await res.json(); } catch (e) { console.error(e); }
-
-    if (!res.ok) {
-      const msg = result?.error || `Save failed (${res.status})`;
-      setSettings((prev: any) => ({ ...prev, error: msg, upgrade: result?.upgrade || false }));
-      return;
-    }
-
-    if (result && result._id) {
-      const lsIds = phStorage.getJSON("history", []);
-      if (!lsIds.find((_: any) => _._id === result._id)) {
-        lsIds.push({ _id: result._id, draftId: result?.title || result?.draftId });
-        phStorage.set("history", lsIds);
-      }
-      if (result._id !== _id) {
-        window.history.pushState(result._id, result._id, `/build/${result._id}`);
-        phStorage.set("site-id", result._id);
-        setSettings(result);
-      }
-    }
-  } finally {
-    _saveInFlight = false;
-  }
-};

@@ -142,7 +142,7 @@ export function CropCanvas({ crop }: CropCanvasProps) {
       )}
 
       {/* Save Area */}
-      <div className="absolute bottom-3 right-3 rounded-lg border border-base-300 bg-base-100/95 px-3 py-1.5 backdrop-blur-sm">
+      <div className="absolute bottom-3 right-3 rounded-lg border border-base-300 bg-base-200/95 px-3 py-1.5 backdrop-blur-sm">
         <div className="flex items-center justify-between gap-6">
           <label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-content">
             Override original

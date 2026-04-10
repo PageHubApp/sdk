@@ -3,7 +3,8 @@
  * Conditions are evaluated at runtime on mount and on change.
  */
 import { useNode } from "@craftjs/core";
-import { TbEyeSearch, TbPlus, TbTrash } from "react-icons/tb";
+import { TbEyeSearch, TbTrash } from "react-icons/tb";
+import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useElementPicker } from "../action/useElementPicker";
@@ -183,14 +184,7 @@ export const ConditionsInput = () => {
         </div>
       ))}
 
-      <button
-        type="button"
-        onClick={addCondition}
-        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-base-300 px-2 py-1.5 text-[11px] text-neutral-content transition-colors hover:border-primary hover:text-base-content"
-      >
-        <TbPlus size={12} />
-        Add Condition
-      </button>
+      <ToolbarDashedButton onClick={addCondition}>Add Condition</ToolbarDashedButton>
     </ToolbarSection>
   );
 };

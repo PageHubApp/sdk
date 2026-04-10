@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
+import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { dropdownPositionToStyle, useDropdownPosition } from "../../hooks/useDropdownPosition";
 
 interface CalcDialogProps {
@@ -153,8 +154,9 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
                     value={clampMin}
                     onChange={e => setClampMin(e.target.value)}
                     placeholder="1rem"
-                    className="flex-1 rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex-1 rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
                     autoFocus
+                    {...toolbarInputNoAutocompleteProps}
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -164,7 +166,8 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
                     value={clampPreferred}
                     onChange={e => setClampPreferred(e.target.value)}
                     placeholder="5vw"
-                    className="flex-1 rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex-1 rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
+                    {...toolbarInputNoAutocompleteProps}
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -174,7 +177,8 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
                     value={clampMax}
                     onChange={e => setClampMax(e.target.value)}
                     placeholder="3rem"
-                    className="flex-1 rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex-1 rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
+                    {...toolbarInputNoAutocompleteProps}
                   />
                 </div>
                 <div className="mt-1 rounded bg-neutral px-3 py-2 font-mono text-xs text-neutral-content">
@@ -190,8 +194,9 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
                     value={clampMin}
                     onChange={e => setClampMin(e.target.value)}
                     placeholder={activeFunction === "min" ? "50vw" : "50vw"}
-                    className="flex-1 rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex-1 rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
                     autoFocus
+                    {...toolbarInputNoAutocompleteProps}
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -201,7 +206,8 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
                     value={clampMax}
                     onChange={e => setClampMax(e.target.value)}
                     placeholder={activeFunction === "min" ? "500px" : "300px"}
-                    className="flex-1 rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="flex-1 rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
+                    {...toolbarInputNoAutocompleteProps}
                   />
                 </div>
                 <div className="mt-1 rounded bg-neutral px-3 py-2 font-mono text-xs text-neutral-content">
@@ -214,9 +220,10 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
                   value={inputValue}
                   onChange={e => setInputValue(e.target.value)}
                   placeholder="e.g. calc(100% - 20px)"
-                  className="w-full rounded border border-base-300 bg-base-100 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
                   rows={4}
                   autoFocus
+                  {...toolbarInputNoAutocompleteProps}
                 />
                 <div className="mt-2 text-xs text-neutral-content">
                   Examples: calc(100% - 20px), clamp(1rem, 5vw, 3rem), min(50vw, 500px)

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ToolbarDashedButton } from "../../Toolbar/Helpers/ToolbarDashedButton";
 
 interface ThemeOverride {
   varName: string;
@@ -215,13 +216,7 @@ export function AdvancedTab({
               </button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={addOverride}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-base-300 px-2 py-1.5 text-xs text-neutral-content transition-colors hover:border-primary hover:text-base-content"
-          >
-            + Add Override
-          </button>
+          <ToolbarDashedButton onClick={addOverride}>Add Override</ToolbarDashedButton>
         </div>
       </div>
     </div>

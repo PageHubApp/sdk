@@ -69,7 +69,7 @@ export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps
         value={name}
         onChange={e => setName(e.target.value)}
         placeholder="Token name..."
-        className="rounded-md border border-base-300 bg-base-100 px-2 py-1.5 text-xs text-base-content outline-none placeholder:text-neutral-content focus:border-ring focus:ring-1 focus:ring-ring"
+        className="rounded-md border border-base-300 bg-base-200 px-2 py-1.5 text-xs text-base-content outline-none placeholder:text-neutral-content focus:border-ring focus:ring-1 focus:ring-ring"
         onKeyDown={e => { if (e.key === "Enter") handleSave(); }}
       />
 

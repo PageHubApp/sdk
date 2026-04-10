@@ -73,7 +73,6 @@ export * from "./action/useElementPicker";
 export * from "./preset/ListItemPopover";
 
 // Root inputs
-export * from "./AnchorInput";
 export * from "./LayoutIconGenerator";
 export * from "./Notice";
 

@@ -34,14 +34,14 @@ import { EDITOR_CANVAS_BREAKPOINT_PX, isEditorCanvasBreakpointView } from "../..
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { MediaManagerModal } from "../Toolbar/Inputs/media/MediaManagerModal";
 import { LayersDialog } from "../Toolbar/Tools/LayersDialog";
-import { AnimatedSaveButton } from "../Tools/AnimatedSaveButton";
+import { SaveIndicator } from "../Tools/PublishButton";
 import { ToolbarPortalDropdown } from "../Tools/ToolbarPortalDropdown";
 import { EnabledAtom, PreviewAtom, ViewAtom } from "./atoms";
 import { ComponentSelector } from "./ComponentSelector";
 import { DesignSystemSidebar } from "./DesignSystemSidebar";
 import { EditorNavigation } from "./EditorNavigation";
 import { ImportExportDialog } from "./ImportExportDialog";
-import { SaveToServer } from "./lib";
+
 import { NodeBreadcrumb } from "./NodeBreadcrumb";
 import { PageSelector } from "./PageSelector";
 import { SiteSettingsModal } from "./SiteSettingsModal";
@@ -240,12 +240,6 @@ export const Header = () => {
 
   // Keyboard shortcuts
   useHeaderShortcuts({
-    canUndo,
-    isTenant,
-    query,
-    settings,
-    setSettings,
-    sessionToken,
     setIsMediaManagerModalOpen,
     setIsDesignSystemSidebarOpen,
     setIsSiteSettingsModalOpen,
@@ -453,22 +447,13 @@ export const Header = () => {
           </Item>
         </Tooltip>
 
-        <Tooltip content="Save" placement="bottom" arrow={false}>
-          <AnimatedSaveButton
-            onClick={async () => {
-              if (!canUndo) return;
-              const json = query.serialize();
-              if (isTenant) {
-                await SaveToServer(json, true, settings, setSettings, sessionToken);
-              } else {
-                if (!settings) {
-                  SaveToServer(json, true, settings, setSettings, sessionToken);
-                }
-                open("publish");
-              }
-            }}
-            disabled={!canUndo || (isTenant && !settings)}
-          />
+        <Tooltip content="Publish" placement="bottom" arrow={false}>
+          <Item
+            ariaLabel="Publish"
+            onClick={() => open("publish")}
+          >
+            <SaveIndicator />
+          </Item>
         </Tooltip>
 
         <Tooltip content="More Options" placement="bottom" arrow={false}>

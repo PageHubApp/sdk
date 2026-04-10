@@ -219,7 +219,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   }
 
   if (props.scrollEffect) prop["data-scroll-effect"] = props.scrollEffect;
-  if (props.id) prop.id = props.id;
+  if (props.id || props.anchor) prop.id = props.id || props.anchor;
   if (props.tabGroup) prop["data-tab-group"] = props.tabGroup;
   if (props.type === "details" && props.open) prop.open = true;
   applyAriaProps(prop, props);
@@ -243,8 +243,6 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
       prop.className = (prop.className || "") + " relative";
     }
   }
-
-  if (props.anchor) prop.id = props.anchor;
 
   // Add drag-over styling to container props (editor only)
   if (enabled) {

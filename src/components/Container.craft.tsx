@@ -6,11 +6,7 @@
  * Row and Column layouts.
  */
 import { TbContainer, TbLayoutColumns, TbLayoutRows } from "react-icons/tb";
-import {
-  ContainerMainTab,
-  ContainerMainTabAdvanced,
-  HeaderFooterToggles,
-} from "../chrome/Toolbar/UnifiedSettings/mainTabs/ContainerMainTab";
+import { ContainerMainTab, HeaderFooterToggles } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ContainerMainTab";
 import { defineComponent } from "../define";
 import { ariaAttrs, getInlineStyle, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
 import { Container } from "./Container";
@@ -41,7 +37,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   const attrs: Record<string, any> = {
     class: staticClasses(props, ctx) || undefined,
     style: getInlineStyle(props) || undefined,
-    id: props.anchor || props.id || undefined,
+    id: props.id || props.anchor || undefined,
     ...ariaAttrs(props),
     action: t === "form" ? (props.action || "") : undefined,
     method: t === "form" ? (props.method || "POST") : undefined,
@@ -102,7 +98,6 @@ export const ContainerDef = defineComponent({
   category: "Layout",
   canvas: true,
   settings: ContainerMainTab,
-  advancedSettings: ContainerMainTabAdvanced,
   toolbarExtra: <HeaderFooterToggles />,
   toHTML,
   rules: {

@@ -5,7 +5,7 @@
 @reference "./styles.css";
 
 .pagehub-sdk-root .input-hover {
-  @apply cursor-pointer border-base-300 focus-within:border-ring hover:border-primary;
+  @apply cursor-pointer border-base-300 transition-[border-color,box-shadow] duration-150 ease-out focus-within:border-primary focus-within:ring-1 focus-within:ring-ring/45 hover:border-primary;
 }
 
 .pagehub-sdk-root .btn {

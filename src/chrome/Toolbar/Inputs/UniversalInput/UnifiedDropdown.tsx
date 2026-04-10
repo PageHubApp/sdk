@@ -23,6 +23,7 @@ import {
   TbZoomIn,
   TbZoomOut,
 } from "react-icons/tb";
+import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { dropdownPositionToStyle, useDropdownPosition } from "../../hooks/useDropdownPosition";
 import { getLayoutConfig, groupFractionsByDenominator, groupNumericByRange } from "./config";
 import { useDesignVars } from "./hooks/useDesignVars";
@@ -108,9 +109,14 @@ export function UnifiedDropdown({
 
   if (!position) return null;
 
-  const style = {
+  const vw = typeof window !== "undefined" ? window.innerWidth : 1536;
+  const maxPanel = Math.min(vw - 16, 320);
+  const style: React.CSSProperties = {
     ...dropdownPositionToStyle(position),
-    width: Math.max(320, position.width),
+    // Hug column content; cap width so full-width toolbar inputs don’t stretch S/M/L rows + flyout gap.
+    width: "max-content",
+    maxWidth: maxPanel,
+    minWidth: Math.min(Math.max(position.width, 120), 200),
   };
 
   const toggleGroup = (group: string) => {
@@ -210,7 +216,7 @@ export function UnifiedDropdown({
       }
       case "shadow": {
         return (
-          <div className={`size-4 shrink-0 rounded border border-base-300 bg-base-100 ${option}`} />
+          <div className={`size-4 shrink-0 rounded border border-base-300 bg-base-200 ${option}`} />
         );
       }
       default:
@@ -333,7 +339,11 @@ export function UnifiedDropdown({
   // Render based on layout configuration
   const renderMainContent = () => {
     const columns = layoutConfig.columns || { count: 3, widths: ["w-2/5", "w-1/5", "w-2/5"] };
-    const sections = [];
+    const sections: {
+      section: NonNullable<typeof layoutConfig.leftSection>;
+      width: string;
+      key: string;
+    }[] = [];
 
     // Build sections array based on column count
     if (columns.count === 3) {
@@ -349,19 +359,38 @@ export function UnifiedDropdown({
       );
     }
 
+    const sectionsDefined = sections.filter(
+      (col): col is (typeof sections)[number] & { section: NonNullable<(typeof sections)[number]["section"]> } =>
+        col.section != null
+    );
+
+    const columnHasOptions = (section: (typeof sectionsDefined)[number]["section"]) =>
+      options != null &&
+      section.groups.some(g => ((options as Record<string, string[]>)[g]?.length ?? 0) > 0);
+
+    const withContent = sectionsDefined.filter(col => columnHasOptions(col.section));
+    const collapsedSome = withContent.length > 0 && withContent.length < sectionsDefined.length;
+    const finalSections = withContent.length > 0 ? withContent : sectionsDefined;
+
     return (
       <div className="flex h-full flex-col">
         <div className="flex h-full">
-          {sections.map((col, colIndex) => {
+          {finalSections.map((col, colIndex) => {
             if (!col.section) return null;
 
-            const isLastColumn = colIndex === sections.length - 1;
+            const isLastColumn = colIndex === finalSections.length - 1;
             const borderClass = isLastColumn ? "" : "border-r border-base-300";
+            const widthClass =
+              collapsedSome && withContent.length > 0
+                ? finalSections.length === 1
+                  ? "w-max min-w-0 max-w-full shrink-0"
+                  : col.width
+                : col.width;
 
             return (
               <div
                 key={col.key}
-                className={`scrollbar-light ${col.width} overflow-y-auto ${borderClass}`}
+                className={`scrollbar-light ${widthClass} overflow-y-auto ${borderClass}`}
               >
                 {col.section.groups.map((groupType, index) => {
                   const containerClass = "flex-1";
@@ -445,7 +474,7 @@ export function UnifiedDropdown({
       {isVarMode && showVarSelector && realDesignVars.length > 0 && (
         <div className="flex h-full flex-col border-base-300">
           <div className="scrollbar-light flex-1 overflow-y-auto">
-            <div className="bg-base-100">
+            <div className="bg-base-200">
               {(() => {
                 // Filter by category based on input type
                 const getRelevantCategories = () => {
@@ -543,7 +572,7 @@ export function UnifiedDropdown({
           </div>
           <div
             role="presentation"
-            className="border-t border-base-300 bg-base-100 p-2"
+            className="border-t border-base-300 bg-base-200 p-2"
             onMouseDown={e => e.stopPropagation()}
           >
             <input
@@ -552,6 +581,7 @@ export function UnifiedDropdown({
               onChange={e => setVarSearchTerm(e.target.value)}
               placeholder="Search variables..."
               className="input-plain w-full cursor-text py-0 text-xs"
+              {...toolbarInputNoAutocompleteProps}
             />
           </div>
         </div>
@@ -560,7 +590,7 @@ export function UnifiedDropdown({
       <button
         type="button"
         onClick={() => onSelect("")}
-        className="ph-select-item sticky top-0 z-10 shrink-0 rounded-none border-t border-base-300 bg-base-100 text-neutral-content"
+        className="ph-select-item sticky top-0 z-10 shrink-0 rounded-none border-t border-base-300 bg-base-200 text-neutral-content"
       >
         Reset to Default
       </button>

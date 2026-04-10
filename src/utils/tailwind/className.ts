@@ -81,6 +81,7 @@ const RING_OUTLINE_PROP_KEYS = new Set([
   "ringOffsetWidth",
   "ringOffsetColor",
   "outlineWidth",
+  "outlineStyle",
   "outlineColor",
   "outlineOffset",
 ]);

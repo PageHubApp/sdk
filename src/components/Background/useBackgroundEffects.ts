@@ -8,7 +8,6 @@
  * Extracted from Background.tsx.
  */
 import { useEffect, useRef } from "react";
-import { GoogleFontLoadedAtom, useSetAtomState } from "../../utils/atoms";
 import { getMaterialSymbolsUrlFromNodes } from "../../utils/data/collectGoogleIcons";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
 import { injectDesignSystemVars } from "../../utils/design/designSystemVars";
@@ -30,8 +29,6 @@ export function useBackgroundEffects({
   nodeCount,
   props,
 }: UseBackgroundEffectsOptions) {
-  const setGoogleFontLoaded = useSetAtomState(GoogleFontLoadedAtom);
-
   // ---- Material Symbols icon font loading ----
   const prevFontUrlRef = useRef<string | null>(null);
   useEffect(() => {
@@ -50,19 +47,17 @@ export function useBackgroundEffects({
         link.id = fontId;
         link.rel = "stylesheet";
         link.href = fontUrl;
-        link.onload = () => setGoogleFontLoaded(true);
         document.head.appendChild(link);
         prevFontUrlRef.current = fontUrl;
       } else if (!fontUrl && prevFontUrlRef.current) {
         const existingFont = document.getElementById("google-icons");
         if (existingFont) existingFont.remove();
-        setGoogleFontLoaded(false);
         prevFontUrlRef.current = null;
       }
     } catch (error) {
       console.error("Error loading Material Symbols:", error);
     }
-  }, [enabled, query, nodeCount, setGoogleFontLoaded]);
+  }, [enabled, query, nodeCount]);
 
   // ---- Header snippet injection ----
   useEffect(() => {

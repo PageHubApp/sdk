@@ -68,7 +68,7 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
     return (
       <>
         <div ref={mergedRef} className="relative">
-          <div className="flex h-5 items-center gap-0 rounded-md bg-base-100">
+          <div className="flex h-5 items-center gap-0 rounded-md bg-base-200">
             {/* Icon/Label part - opens calc dialog when calc is selected */}
             <button
               onClick={e => {

@@ -156,39 +156,11 @@ export const ToolbarLabel = ({
     (currentView === "md" && viewValue === "desktop");
   const isActiveView = isSelected || (!hasSelection && canvasMatchesBadge);
 
-  let bg = "bg-secondary text-secondary-content"; // Default to User color
   let view = viewValue;
-
-  if (viewValue === "mobile") {
-    bg = "bg-accent text-accent-content";
-  }
-
-  if (viewValue === "desktop") {
-    bg = "bg-error text-error-content";
-  }
-
-  if (viewValue === "sm") {
-    bg = "bg-sky-600/15 text-sky-800 dark:text-sky-200";
-  }
-  if (viewValue === "lg") {
-    bg = "bg-violet-600/15 text-violet-800 dark:text-violet-200";
-  }
-  if (viewValue === "xl") {
-    bg = "bg-amber-600/15 text-amber-900 dark:text-amber-200";
-  }
-  if (viewValue === "2xl") {
-    bg = "bg-emerald-600/15 text-emerald-900 dark:text-emerald-200";
-  }
 
   if (propType === "component" || propType === "root") {
     viewValue = "component";
     view = "component"; // Update view too!
-    bg = "bg-primary text-primary-content";
-  }
-
-  // Override styling for delete icon
-  if (showDeleteIcon) {
-    bg = "text-error hover:text-error/90";
   }
 
   const handleToggle = e => {
@@ -237,7 +209,8 @@ export const ToolbarLabel = ({
   const isBreakpointView = viewValue === "mobile" || viewValue === "desktop" || viewValue === "sm" || viewValue === "lg" || viewValue === "xl" || viewValue === "2xl";
 
   if (lab && isBreakpointView && !icon && !showDeleteIcon) {
-    const bpLabel = viewValue === "mobile" ? "xs" : viewValue === "desktop" ? "md" : viewValue;
+    const bpLabel =
+      viewValue === "mobile" ? "base" : viewValue === "desktop" ? "md" : viewValue;
     const dot = (
       <span
         role="button"
@@ -249,10 +222,12 @@ export const ToolbarLabel = ({
         className={`block size-1.5 cursor-pointer rounded-[1px] bg-base-content transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
       />
     );
-    if (hasValue) {
-      return <Tooltip content={`${bpLabel}: ${valText}`} placement="top" className="text-xxs">{dot}</Tooltip>;
-    }
-    return dot;
+    const tip = hasValue ? `${bpLabel}: ${valText}` : `${bpLabel}: none`;
+    return (
+      <Tooltip content={tip} placement="top" className="text-xxs">
+        {dot}
+      </Tooltip>
+    );
   }
 
   // ─── Non-breakpoint views (icon, delete, var selector, etc.) ───

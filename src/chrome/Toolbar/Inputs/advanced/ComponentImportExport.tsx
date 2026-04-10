@@ -1,6 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useState } from "react";
 import { TbCopy, TbDownload, TbUpload } from "react-icons/tb";
+import { ToolbarSegmentedControl } from "../../Helpers/ToolbarSegmentedControl";
 import { CodeEditor } from "../typography/CodeEditor";
 
 export const ComponentImportExport = ({ className = "" }: { className?: string }) => {
@@ -51,28 +52,38 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
 
   return (
     <div className={`space-y-2 ${className}`}>
-      {/* Tabs */}
-      <div className="flex gap-1 rounded-lg border border-base-300 bg-neutral p-1">
-        {(["export", "import"] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
-              activeTab === tab ? "bg-base-100 text-base-content shadow-sm" : "text-neutral-content hover:text-base-content"
-            }`}
-          >
-            {tab === "export" ? <TbDownload className="size-3.5" /> : <TbUpload className="size-3.5" />}
-            {tab === "export" ? "Export" : "Import"}
-          </button>
-        ))}
-      </div>
+      <ToolbarSegmentedControl
+        aria-label="Import or export component JSON"
+        value={activeTab}
+        onChange={setActiveTab}
+        options={[
+          {
+            value: "export",
+            label: (
+              <>
+                <TbDownload className="size-3.5 shrink-0" />
+                Export
+              </>
+            ),
+          },
+          {
+            value: "import",
+            label: (
+              <>
+                <TbUpload className="size-3.5 shrink-0" />
+                Import
+              </>
+            ),
+          },
+        ]}
+      />
 
       {activeTab === "export" ? (
         <>
           <div className="flex gap-1.5">
             <button
               onClick={generateExportText}
-              className="flex items-center gap-1.5 rounded-md border border-base-300 px-2 py-1 text-xs font-medium text-base-content transition-colors hover:bg-neutral"
+              className="flex items-center gap-1.5 rounded-md border border-base-300 bg-base-200 px-2 py-1 text-xs font-medium text-base-content transition-colors hover:bg-base-300/25"
             >
               <TbDownload className="size-3.5" />
               Generate JSON
@@ -80,7 +91,7 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
             <button
               onClick={handleCopy}
               disabled={!exportText}
-              className="flex items-center gap-1.5 rounded-md border border-base-300 px-2 py-1 text-xs font-medium text-base-content transition-colors hover:bg-neutral disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-md border border-base-300 bg-base-200 px-2 py-1 text-xs font-medium text-base-content transition-colors hover:bg-base-300/25 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <TbCopy className="size-3.5" />
               Copy
@@ -111,7 +122,7 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
           <button
             onClick={handleImport}
             disabled={!importText.trim()}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-base-300 px-2 py-1.5 text-xs font-medium text-base-content transition-colors hover:bg-neutral disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-base-300 bg-base-200 px-2 py-1.5 text-xs font-medium text-base-content transition-colors hover:bg-base-300/25 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <TbUpload className="size-3.5" />
             Import Component

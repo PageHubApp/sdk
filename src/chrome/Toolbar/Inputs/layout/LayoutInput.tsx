@@ -2,12 +2,14 @@ import { useNode } from "@craftjs/core";
 import { ViewAtom } from "../../../Viewport/atoms";
 import React, { useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "@zedux/react";
-import { TailwindStyles, getClassForView } from "utils/tailwind";
+import { TailwindStyles } from "utils/tailwind";
+import { getPropFinalValue } from "../../../Viewport/lib";
 import { Notice } from "../Notice";
 import { FlexDirectionInput } from "./FlexDirectionInput";
 import { GapInput } from "./GapInput";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { LayoutPresetInput } from "./LayoutPresetInput";
+import { useLayoutPreset } from "./hooks/useLayoutPreset";
 import { SizeInput } from "./SizeInput";
 import { TbBoxModel, TbBrandTailwind, TbBraces, TbLayoutAlignCenter, TbMathFunction, TbArrowUp, TbArrowDown, TbArrowLeft, TbArrowRight } from "react-icons/tb";
 import { UniversalInput } from "../UniversalInput";
@@ -16,6 +18,7 @@ import type { ValueType } from "../UniversalInput/types";
 import { ViewSelectionAtom } from "../../Label";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
+import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
 import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
 
 type LayoutMode = "block" | "flex-row" | "flex-col" | "grid";
@@ -36,18 +39,33 @@ export function LayoutInput({
     currentLayoutMode: node.data.props.root?.layoutMode,
   }));
 
-  const currentDisplay = getClassForView(classNameStr, "display", view, { classDark }) || "";
-  const currentFlexDirection = getClassForView(classNameStr, "flexDirection", view, { classDark }) || "";
+  const nodePropsForRead = useMemo(() => ({ className: classNameStr }), [classNameStr]);
+  const currentDisplay =
+    String(
+      getPropFinalValue({ propKey: "display", propType: "class" }, view, nodePropsForRead, classDark).value ?? "",
+    );
+  const currentFlexDirection =
+    String(
+      getPropFinalValue({ propKey: "flexDirection", propType: "class" }, view, nodePropsForRead, classDark).value ??
+        "",
+    );
 
   const detectLayoutMode = (): LayoutMode => {
     if (currentDisplay.includes("grid")) return "grid";
     if (currentDisplay.includes("flex")) {
-      if (currentFlexDirection.includes("flex-row")) return "flex-row";
-      return "flex-col";
+      // CSS default flex-direction is row; only flex-col* is explicitly column.
+      if (currentFlexDirection.includes("flex-col")) return "flex-col";
+      return "flex-row";
     }
     if (currentDisplay.includes("block")) return "block";
     if (currentLayoutMode) return currentLayoutMode as LayoutMode;
     return "block";
+  };
+
+  /** Match FlexDirectionInput mode to the real main axis (row → L/R, column → T/B). */
+  const flexDirectionUIMode = (): "rows" | "columns" => {
+    if (currentFlexDirection.includes("flex-col")) return "columns";
+    return "rows";
   };
 
   const [layoutMode, setLayoutMode] = useState<LayoutMode>(detectLayoutMode());
@@ -71,9 +89,11 @@ export function LayoutInput({
     { id: "%" as ValueType, label: "%" },
   ], []);
 
+  const layoutPreset = useLayoutPreset({ propKey: "layoutPreset" });
+
   return (
     <>
-      {!hidePresets && !isSpacingOnly && <LayoutPresetInput />}
+      {!hidePresets && !isSpacingOnly && <LayoutPresetInput lp={layoutPreset} />}
 
       {!isSpacingOnly && (
         <ToolbarSection title="Alignment" icon={<TbLayoutAlignCenter />} help="How child elements are arranged and aligned." footer={
@@ -147,7 +167,7 @@ export function LayoutInput({
         }>
           {isFlex && (
             <>
-              <FlexDirectionInput mode={layoutMode === "flex-row" ? "rows" : "columns"} />
+              <FlexDirectionInput mode={flexDirectionUIMode()} />
               <GapInput />
               <ToolbarItem
                 propKey="alignItems"
@@ -193,7 +213,17 @@ export function LayoutInput({
             </>
           )}
           {!isFlex && !isGrid && (
-            <Notice>Switch to Flex or Grid to configure alignment.</Notice>
+            <>
+              <Notice>Switch to Flex or Grid to configure alignment.</Notice>
+              <div className="mt-2 flex flex-col gap-2">
+                <ToolbarDashedButton icon={null} onClick={() => layoutPreset.switchToMode("flex-row")}>
+                  Use flex layout
+                </ToolbarDashedButton>
+                <ToolbarDashedButton icon={null} onClick={() => layoutPreset.switchToMode("grid")}>
+                  Use grid layout
+                </ToolbarDashedButton>
+              </div>
+            </>
           )}
         </ToolbarSection>
       )}

@@ -37,19 +37,23 @@ export function SubgroupPopout({
   };
 
   const rect = anchorElement.getBoundingClientRect();
+  // Sit outside the anchor’s right edge (was rect.right - 8, which drew the flyout on top of the parent column).
+  const gapPx = 4;
+  const left = rect.right + gapPx;
+
   const style = {
     position: "fixed" as const,
-    left: rect.right - 8,
+    left,
     top: rect.top,
     zIndex: 99999,
   };
 
-  // Create a hover bridge - invisible element that connects the trigger to the popout
+  // Hover bridge from anchor right edge to the popout so the cursor path doesn’t drop hover.
   const bridgeStyle = {
     position: "fixed" as const,
     left: rect.right,
     top: rect.top,
-    width: 2, // Gap between trigger and popout
+    width: gapPx,
     height: rect.height,
     zIndex: 99998,
     backgroundColor: "transparent",
@@ -64,7 +68,7 @@ export function SubgroupPopout({
       <div
         role="presentation"
         style={style}
-        className="min-w-[200px] max-w-[350px] rounded-md border border-base-300 bg-base-100 p-0.5 shadow-xl"
+        className="min-w-[200px] max-w-[350px] rounded-md border border-base-300 bg-base-200 p-0.5 shadow-xl"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
@@ -142,14 +146,28 @@ export function SubgroupItem({
     };
   }, []);
 
+  const handleRowClick = () => {
+    if (options.length > 0) {
+      onSelect(options[0]);
+    }
+  };
+
   return (
     <div className="relative">
       <div
         ref={setAnchorElement}
-        role="presentation"
+        role="button"
+        tabIndex={0}
         className="w-full cursor-pointer rounded px-2 py-1 text-left text-xs font-medium text-neutral-content transition-colors hover:bg-neutral"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onClick={handleRowClick}
+        onKeyDown={e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleRowClick();
+          }
+        }}
       >
         {subgroupName}
       </div>

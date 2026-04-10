@@ -33,8 +33,6 @@ export const SectionPickerDialogAtom = atom("sectionPickerDialog", {
   parent: null,
 });
 
-export const GoogleFontLoadedAtom = atom("googleFontLoaded", true);
-
 export const UserUsageAtom = atom("userUsage", {
   totalCredits: 0,
   creditLimit: 3000,

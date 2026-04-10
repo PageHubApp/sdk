@@ -1,8 +1,14 @@
 import { useCallback, useState } from "react";
 import { Tooltip } from "components/layout/Tooltip";
-import { TbCheck, TbChevronRight, TbCopy, TbDeviceDesktop, TbDeviceMobile, TbLayersSubtract, TbTrash } from "react-icons/tb";
+import { TbCheck, TbChevronRight, TbCopy, TbLayersSubtract, TbTrash } from "react-icons/tb";
+import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
 import { BreakpointBadge, Card } from "../../ToolbarStyle";
-import { CLASS_BREAKPOINT_BUCKETS, CARD_BG_BY_BUCKET } from "./classItemUtils";
+import {
+  BP_SCOPE_ROW_IDLE,
+  BP_SCOPE_ROW_SELECTED,
+  CARD_BG_BY_BUCKET,
+  CLASS_BREAKPOINT_BUCKETS,
+} from "./classItemUtils";
 
 // ─── Types ───
 
@@ -21,15 +27,11 @@ interface BreakpointBucketsProps {
   onClearBucket: (classes: string[]) => void;
   onClearAll: () => void;
   draggedItem: any;
+  /** When false, parent renders Clear All (e.g. after Inline Style). Default true. */
+  showClearAllButton?: boolean;
 }
 
 // ─── Shared sub-components ───
-
-function BucketIcon({ icon, label }: { icon: string; label: string }) {
-  if (icon === "mobile") return <TbDeviceMobile className="size-3.5" />;
-  if (icon === "desktop") return <TbDeviceDesktop className="size-3.5" />;
-  return <span className="min-w-[1.25rem] text-center font-mono text-[10px] font-bold tracking-tight">{label}</span>;
-}
 
 function ActionButton({ icon, tooltip, onClick, className }: {
   icon: React.ReactNode; tooltip: string; onClick: () => void; className: string;
@@ -54,7 +56,7 @@ function DropZone({ id, classes, dragOverCategory, isDragging, borderIdle, dropV
   const isHovered = dragOverCategory === id;
   const isInvalid = dragOverCategory === `invalid-${id}`;
   const dropzoneClass = isHovered
-    ? `${dropValid} ring-1 ring-primary scale-[1.01]`
+    ? `${dropValid} ring-1 ring-base-content/25 scale-[1.01]`
     : isInvalid
       ? dropInvalid
       : isDragging
@@ -83,15 +85,27 @@ function DropZone({ id, classes, dragOverCategory, isDragging, borderIdle, dropV
   );
 }
 
+// ─── Clear all (shared with ClassItem when button is placed after Inline Style) ───
+
+export function ClearAllStylesButton({ onClick }: { onClick: () => void }) {
+  return (
+    <ToolbarDashedButton onClick={onClick} icon={<TbTrash size={12} aria-hidden />}>
+      Clear All Styles
+    </ToolbarDashedButton>
+  );
+}
+
 // ─── Main ───
 
 export function BreakpointBuckets({
   bucketLists, otherClasses, selectedViews, toggleView,
   dragOverCategory, onDragOver, onDragLeave, onDrop,
   onDragStart, onDragEnd, onDelete, onClearBucket, onClearAll, draggedItem,
+  showClearAllButton = true,
 }: BreakpointBucketsProps) {
   const [copiedCategory, setCopiedCategory] = useState<string | null>(null);
-  const [manualOpen, setManualOpen] = useState<Record<string, boolean>>({});
+  /** Base (mobile) defaults expanded so it matches breakpoint rows; user can collapse like other buckets. */
+  const [manualOpen, setManualOpen] = useState<Record<string, boolean>>({ mobile: true });
 
   const allClasses = [...Object.values(bucketLists).flat(), ...otherClasses];
 
@@ -107,7 +121,7 @@ export function BreakpointBuckets({
   }, []);
 
   const isBucketOpen = (id: string, list: string[]) =>
-    id === "mobile" || list.length > 0 || manualOpen[id] || dragOverCategory === id || dragOverCategory === `invalid-${id}`;
+    list.length > 0 || manualOpen[id] || dragOverCategory === id || dragOverCategory === `invalid-${id}`;
 
   const isDragging = !!draggedItem;
 
@@ -119,40 +133,41 @@ export function BreakpointBuckets({
         const open = isBucketOpen(row.id, list) || isDragging;
 
         return (
-          <div key={row.id} className="space-y-2">
-            {/* Header row */}
-            <div className="flex items-center gap-2">
-              {/* Collapse chevron + breakpoint toggle */}
-              {/* Chevron — toggles collapse */}
-              {row.id !== "mobile" && (
+          <div key={row.id} className="w-full space-y-2">
+            {/* Full-width row: chevron | scope toggle (flex-1) | actions */}
+            <div className="flex w-full min-w-0 items-stretch gap-1">
+              <div className="flex w-7 shrink-0 items-start justify-center pt-2">
                 <button
                   type="button"
                   onClick={() => toggleManual(row.id)}
                   className="rounded p-0.5 text-neutral-content transition-colors hover:text-base-content"
+                  aria-label={open ? "Collapse bucket" : "Expand bucket"}
+                  aria-expanded={open}
                 >
                   <TbChevronRight className={`size-3 transition-transform ${open ? "rotate-90" : ""}`} />
                 </button>
-              )}
+              </div>
 
-              {/* Breakpoint label — toggles write scope */}
               <button
                 type="button"
                 onClick={() => toggleView(row.id)}
-                className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-colors ${isOn ? row.selectedBg : row.mutedHover}`}
+                className={`flex min-w-0 flex-1 items-center justify-between gap-3 rounded-md px-3 py-2 text-xs font-medium transition-colors ${
+                  isOn ? BP_SCOPE_ROW_SELECTED : BP_SCOPE_ROW_IDLE
+                }`}
               >
-                <BucketIcon icon={row.icon} label={row.label} />
-                <span className="flex flex-col items-start leading-tight">
-                  <span>{row.label}</span>
-                  <span className="text-[10px] font-normal opacity-80">{row.hint}</span>
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="truncate">{row.label}</span>
                   {!open && list.length > 0 && (
-                    <BreakpointBadge className="mt-0.5">{list.length}</BreakpointBadge>
+                    <BreakpointBadge>{list.length}</BreakpointBadge>
                   )}
+                </span>
+                <span className="shrink-0 text-end text-[10px] font-normal tabular-nums opacity-70">
+                  {row.hint}
                 </span>
               </button>
 
-              {/* Actions — right-aligned */}
               {list.length > 0 && (
-                <div className="ml-auto flex items-center">
+                <div className="flex shrink-0 items-center self-center">
                   <ActionButton
                     icon={<TbTrash className="size-3.5" />}
                     tooltip="Clear"
@@ -230,17 +245,8 @@ export function BreakpointBuckets({
         </div>
       )}
 
-      {/* Clear all */}
-      {allClasses.length > 0 && (
-        <button
-          type="button"
-          onClick={onClearAll}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-base-300 px-3 py-2 text-xs font-medium text-base-content transition-colors hover:bg-neutral"
-        >
-          <TbTrash className="size-3.5" />
-          Clear All Styles
-        </button>
-      )}
+      {/* Clear all — optional slot when parent renders after other sections (e.g. Inline Style) */}
+      {showClearAllButton && allClasses.length > 0 && <ClearAllStylesButton onClick={onClearAll} />}
     </>
   );
 }

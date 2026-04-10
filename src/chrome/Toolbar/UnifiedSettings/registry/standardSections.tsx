@@ -33,6 +33,7 @@ import { SpacingInput } from "../../Inputs/layout/SpacingInput";
 import { ModifiersInput } from "../../Inputs/modifiers/ModifiersInput";
 import { PropertiesInput } from "../../Inputs/advanced/PropertiesInput";
 import { FontInput } from "../../Inputs/typography/FontInput";
+import { ContainerScrollEffectSection } from "../mainTabs/ContainerScrollEffectSection";
 const ComponentImportExport = React.lazy(() =>
   import("../../Inputs/advanced/ComponentImportExport").then((m) => ({
     default: m.ComponentImportExport,
@@ -228,10 +229,22 @@ registerSection({
   id: "effects",
   title: "Tailwind effects",
   tab: "interactions",
-  keywords: ["transition", "transform", "filter", "backdrop", "blur", "scale", "rotate"],
+  keywords: ["transition", "transform", "filter", "backdrop", "blur", "scale", "rotate", "scroll", "timeline", "horizontal", "pin"],
   component: () => <EffectsClassInput />,
   hideKey: "effectsClass",
   sortOrder: 40,
+});
+
+/** Container only — GSAP section scroll / timeline (renders nothing for other components). */
+registerSection({
+  id: "container-scroll-effect",
+  title: "Scroll Effect",
+  tab: "interactions",
+  icon: SECTION_ICONS["ScrollEffect"],
+  keywords: ["scroll", "horizontal", "timeline", "pin", "gsap", "section"],
+  component: () => <ContainerScrollEffectSection />,
+  sortOrder: 45,
+  help: "Pin-driven and horizontal scroll effects for section containers.",
 });
 
 // ─── 5. Advanced tab ────────────────────────────────────────────────────────

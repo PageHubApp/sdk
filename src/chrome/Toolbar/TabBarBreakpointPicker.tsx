@@ -65,7 +65,7 @@ export const TabBarBreakpointPicker = () => {
     <ToolbarPortalDropdown
       openOn="hover"
       align="left"
-      className="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100 p-2 shadow-md"
+      className="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-200 p-2 shadow-md"
       trigger={
         <button
           type="button"

@@ -82,17 +82,6 @@ export const FormMainTab = () => {
             <option value="save">Save</option>
             <option value="emailSave">Email &amp; Save</option>
           </ToolbarItem>
-
-          <ToolbarItem
-            propKey="anchor"
-            propType="component"
-            type="text"
-            labelHide={true}
-            placeholder="Anchor Tag"
-            inline
-            description="Link to this section with #tag"
-            label="Anchor Tag"
-          />
         </ToolbarSection>
 
         {formType === "emailSave" && (

@@ -1,6 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
 import { classNameToVar } from "utils/tailwind";
 import {
@@ -14,7 +14,7 @@ import { breakpointScopeHasSelection, getEffectiveViews, ViewSelectionAtom } fro
 import { ToolbarItemProps } from "../ToolbarItem";
 import { Card, Wrap } from "../ToolbarStyle";
 import { ClassSearchInput } from "./ClassInput/ClassSearchInput";
-import { BreakpointBuckets } from "./ClassInput/BreakpointBuckets";
+import { BreakpointBuckets, ClearAllStylesButton } from "./ClassInput/BreakpointBuckets";
 import {
   APPLY_SCOPE_DISPLAY,
   BREAKPOINT_PREFIXES,
@@ -24,8 +24,22 @@ import {
   parseClassNameIntoBreakpointBuckets,
 } from "./ClassInput/classItemUtils";
 
-const Input = ({ value, changed, nodeProps, setProp, canvasView }: {
-  value: any; changed: (v: any) => void; nodeProps: any; setProp: any; canvasView: string;
+const Input = ({
+  value,
+  changed,
+  nodeProps,
+  setProp,
+  canvasView,
+  children,
+  clearAllPlacement = "in-buckets",
+}: {
+  value: any;
+  changed: (v: any) => void;
+  nodeProps: any;
+  setProp: any;
+  canvasView: string;
+  children?: ReactNode;
+  clearAllPlacement?: "in-buckets" | "after-append";
 }) => {
   const [selectedViews, setSelectedViews] = useAtomState(ViewSelectionAtom);
   const classDark = selectedViews.dark ?? false;
@@ -105,6 +119,7 @@ const Input = ({ value, changed, nodeProps, setProp, canvasView }: {
 
   const _nodeProps = nodeProps ? { ...nodeProps } : {};
   const { mobile, sm, desktop, lg, xl, "2xl": twoxl, other } = parseClassNameIntoBreakpointBuckets(_nodeProps.className || "", classes || []);
+  const allBucketClasses = [mobile, sm, desktop, lg, xl, twoxl, other].flat();
 
   const clearBucket = (bucketClasses: string[]) => {
     setProp((props: any) => {
@@ -115,7 +130,6 @@ const Input = ({ value, changed, nodeProps, setProp, canvasView }: {
   };
 
   const clearAll = () => {
-    const allBucketClasses = [mobile, sm, desktop, lg, xl, twoxl, other].flat();
     setProp((props: any) => {
       if (!props.className) return;
       const remaining = (props.className || "").split(/\s+/).filter(Boolean).filter((c: string) => !allBucketClasses.includes(c));
@@ -153,12 +167,28 @@ const Input = ({ value, changed, nodeProps, setProp, canvasView }: {
         onClearBucket={clearBucket}
         onClearAll={clearAll}
         draggedItem={draggedItem}
+        showClearAllButton={clearAllPlacement === "in-buckets"}
       />
+
+      {children}
+
+      {clearAllPlacement === "after-append" && allBucketClasses.length > 0 && (
+        <ClearAllStylesButton onClick={clearAll} />
+      )}
     </div>
   );
 };
 
-export function ClassItem({ full = false, propKey, ...props }: ToolbarItemProps) {
+export function ClassItem({
+  full = false,
+  propKey,
+  children,
+  clearAllPlacement = "in-buckets",
+  ...props
+}: ToolbarItemProps & {
+  children?: ReactNode;
+  clearAllPlacement?: "in-buckets" | "after-append";
+}) {
   const { actions: { setProp }, nodeProps, id } = useNode(node => ({ nodeProps: node.data.props, id: node.id }));
   const { query, actions } = useEditor();
   const view = useAtomValue(ViewAtom);
@@ -188,7 +218,16 @@ export function ClassItem({ full = false, propKey, ...props }: ToolbarItemProps)
 
   return (
     <Wrap props={props} lab={lab} propKey={propKey}>
-      <Input nodeProps={{ ...nodeProps }} value={value} changed={changed} setProp={setProp} canvasView={view} />
+      <Input
+        nodeProps={{ ...nodeProps }}
+        value={value}
+        changed={changed}
+        setProp={setProp}
+        canvasView={view}
+        clearAllPlacement={clearAllPlacement}
+      >
+        {children}
+      </Input>
     </Wrap>
   );
 }

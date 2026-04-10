@@ -3,7 +3,7 @@ import { useState } from "react";
 import { TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "utils/cdn";
 import { getMediaById, getMediaContent, registerMediaWithBackground } from "utils/lib";
-import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
+import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { MediaManagerModal } from "./MediaManagerModal";
@@ -91,19 +91,7 @@ export const MediaInput = propa => {
 
   return (
     <>
-      <ToolbarSection
-        title={title}
-        full={1}
-        collapsible={props.collapsible}
-        footer={
-          <ItemAdvanceToggle propKey="media" title="More media properties">
-            <ToolbarSection full={1} collapsible={false}>
-              <TailwindInput propKey="objectFit" label="Object Fit" prop="objectFit" type="select" />
-              <TailwindInput propKey="objectPosition" label="Object Position" prop="objectPosition" type="select" />
-            </ToolbarSection>
-          </ItemAdvanceToggle>
-        }
-      >
+      <ToolbarSection title={title} full={1} collapsible={props.collapsible}>
         <div className="space-y-2">
           {/* Preview if media exists or content URL exists */}
           {(hasMedia && (svgContent || imageUrl)) || (hasContentUrl && imageUrl) ? (
@@ -156,12 +144,25 @@ export const MediaInput = propa => {
             </div>
           )}
 
-          {/* Browse Media Library Button */}
-          <button onClick={() => setShowMediaBrowser(true)} className="btn-primary w-full p-3">
-            <TbPhoto />
+          {/* Browse Media Library — dashed control (matches Add Action / font preset) */}
+          <ToolbarDashedButton
+            onClick={() => setShowMediaBrowser(true)}
+            icon={<TbPhoto size={12} aria-hidden />}
+          >
             {hasMedia ? "Change Media" : "Browse Media Library"}
-          </button>
+          </ToolbarDashedButton>
         </div>
+
+        <ToolbarSection
+          title="Object Properties"
+          nested
+          collapsible
+          defaultOpen={false}
+          accordionPassive
+        >
+          <TailwindInput propKey="objectFit" label="Object Fit" prop="objectFit" type="select" />
+          <TailwindInput propKey="objectPosition" label="Object Position" prop="objectPosition" type="select" />
+        </ToolbarSection>
 
         <MediaManagerModal
           isOpen={showMediaBrowser}

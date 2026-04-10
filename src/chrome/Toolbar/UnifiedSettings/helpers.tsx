@@ -27,6 +27,7 @@ import {
   TbPalette,
   TbPointer,
   TbSettings2,
+  TbChevronsDown,
   TbSparkles,
   TbTypography,
 } from "react-icons/tb";
@@ -43,7 +44,8 @@ export const SECTION_ICONS: Record<string, React.ReactNode> = {
   Icon: <TbIcons />,
   Type: <TbCategory />,
   Properties: <TbSettings2 />,
-  Anchor: <TbAnchor />,
+  /** Modal open-target id (Actions); not a generic "anchor" section */
+  ModalTarget: <TbAnchor />,
   // Design
   Colors: <TbPalette />,
   Typography: <TbTypography />,
@@ -58,6 +60,8 @@ export const SECTION_ICONS: Record<string, React.ReactNode> = {
   Click: <TbPointer />,
   Hover: <TbHandMove />,
   Animation: <TbBolt />,
+  /** Interactions registry section (Container scroll / timeline) */
+  ScrollEffect: <TbChevronsDown />,
   // Advanced
   ARIA: <TbAccessible />,
   Display: <TbAdjustments />,
@@ -69,7 +73,12 @@ export const SECTION_ICONS: Record<string, React.ReactNode> = {
  * Renders a "not available" placeholder for a section.
  */
 export const renderNA = (title: string) => (
-  <ToolbarSection title={title} icon={SECTION_ICONS[title]} disabled help="Not available for this component" />
+  <ToolbarSection
+    title={title}
+    icon={SECTION_ICONS[title]}
+    disabled
+    help="Not available for this component"
+  />
 );
 
 /**
@@ -77,19 +86,12 @@ export const renderNA = (title: string) => (
  * Every MainTab MUST render these sections in this exact order.
  * Missing sections become "not available" placeholders.
  */
-const COMPONENT_SECTIONS = [
-  "Content",
-  "Type",
-  "ScrollEffect",
-] as const;
+const COMPONENT_SECTIONS = ["Content", "Type"] as const;
 
 /**
  * Sections that render in the Advanced tab instead of the Component tab.
  */
-export const ADVANCED_COMPONENT_SECTIONS = [
-  "Properties",
-  "Anchor",
-] as const;
+export const ADVANCED_COMPONENT_SECTIONS = ["Properties"] as const;
 
 export type ComponentSlotName = (typeof COMPONENT_SECTIONS)[number] | (typeof ADVANCED_COMPONENT_SECTIONS)[number];
 
@@ -113,7 +115,7 @@ export function renderComponentSlots(
 }
 
 /**
- * Renders the advanced component sections (Icon, Anchor) for the Advanced tab.
+ * Renders the advanced component sections (Properties) for the Advanced tab.
  */
 export function renderAdvancedComponentSlots(
   slots: Partial<Record<ComponentSlotName, React.ReactNode>>

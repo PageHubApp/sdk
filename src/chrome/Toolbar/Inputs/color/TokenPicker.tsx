@@ -1,9 +1,11 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TbCheck, TbChevronDown, TbPlus } from "react-icons/tb";
 import {
+  cssColorShowsTransparency,
   isPaletteColorSelected,
   resolveColorForDisplay,
+  TRANSPARENT_CHECKER_BG,
   type PaletteColor,
 } from "../../../../utils/design/colorSystem";
 import { toCSSVarName } from "../../../../utils/design/designSystemVars";
@@ -26,8 +28,15 @@ interface TokenPickerProps {
   onChange: (data: { type: "palette"; value: string }) => void;
   /** Optional: close the picker */
   onClose?: () => void;
+  /** Optional: reset to default / remove color (shown disabled when `value` is empty) */
+  onClear?: () => void;
   /** Layout variant: "inline" = wide/thin for toolbars, "panel" = taller grid for sidebars */
   variant?: "inline" | "panel";
+}
+
+function hasClearableValue(value: unknown): boolean {
+  if (value == null) return false;
+  return String(value).trim() !== "";
 }
 
 function loadRecentTokens(): string[] {
@@ -39,14 +48,18 @@ function loadRecentTokens(): string[] {
   }
 }
 
+/** Append new picks only; re-picking does not reorder (stable compact row). */
 function saveRecentToken(name: string): string[] {
   const recent = loadRecentTokens();
-  const updated = [name, ...recent.filter(n => n !== name)].slice(0, MAX_RECENT);
+  if (recent.includes(name)) {
+    return [...recent];
+  }
+  const updated = [...recent, name].slice(-MAX_RECENT);
   phStorage.set("recent-tokens", updated);
   return updated;
 }
 
-export function TokenPicker({ value, onChange, onClose, variant = "inline" }: TokenPickerProps) {
+export function TokenPicker({ value, onChange, onClose, onClear, variant = "inline" }: TokenPickerProps) {
   const { query } = useEditor();
   const [palette, setPalette] = useState<NamedColor[]>([]);
   const [recentTokens, setRecentTokens] = useState<string[]>(loadRecentTokens);
@@ -104,7 +117,7 @@ export function TokenPicker({ value, onChange, onClose, variant = "inline" }: To
         : "relative flex w-[240px] max-w-[min(240px,100vw-2rem)] flex-col gap-3 p-3"
       }
     >
-      {/* Swatch row: capped recents (or first N palette) + new token + optional expand */}
+      {/* Swatch row: stable-order recents (or first N palette) + new token + optional expand */}
       <div className="flex min-w-0 items-center gap-1">
         {compactSwatches.map(pc => (
           <Tooltip key={pc.name} content={pc.name} placement="bottom" arrow={false}>
@@ -126,6 +139,23 @@ export function TokenPicker({ value, onChange, onClose, variant = "inline" }: To
           </button>
         )}
       </div>
+
+      {onClear != null && (
+        <div className="border-t border-base-300 pt-2">
+          <button
+            type="button"
+            disabled={!hasClearableValue(value)}
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClear();
+            }}
+            className="w-full rounded-md px-2 py-1.5 text-center text-xs font-medium text-neutral-content transition-colors hover:bg-neutral hover:text-base-content disabled:pointer-events-none disabled:opacity-40"
+          >
+            Remove color
+          </button>
+        </div>
+      )}
 
       {/* Expanded: all tokens */}
       {showAll && (
@@ -197,23 +227,6 @@ function swatchResolvedFill(pc: NamedColor, palette: NamedColor[]): string {
   return resolveColorForDisplay(`text-[var(${vn})]`, "text", palette as PaletteColor[]).backgroundColor;
 }
 
-const CHECKER_BG: CSSProperties = {
-  backgroundImage:
-    "linear-gradient(45deg, var(--color-base-300, #d4d4d8) 25%, transparent 25%, transparent 75%, var(--color-base-300, #d4d4d8) 75%), linear-gradient(45deg, var(--color-base-300, #d4d4d8) 25%, transparent 25%, transparent 75%, var(--color-base-300, #d4d4d8) 75%)",
-  backgroundSize: "8px 8px",
-  backgroundPosition: "0 0, 4px 4px",
-};
-
-function cssFillShowsTransparency(css: string): boolean {
-  const t = css.trim().toLowerCase();
-  if (t === "transparent") return true;
-  const rgba = t.match(
-    /^rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/i
-  );
-  if (rgba && parseFloat(rgba[4]) < 1 - 1e-5) return true;
-  return false;
-}
-
 function Swatch({
   color,
   palette,
@@ -228,7 +241,7 @@ function Swatch({
   size?: string;
 }) {
   const fill = swatchResolvedFill(color, palette);
-  const showChecker = cssFillShowsTransparency(fill);
+  const showChecker = cssColorShowsTransparency(fill);
 
   return (
     <button
@@ -240,7 +253,7 @@ function Swatch({
         className={`relative overflow-hidden ${size} flex items-center justify-center rounded-md border-2 transition-transform hover:scale-110 ${selected ? "border-primary ring-1 ring-primary/30" : "border-base-300"}`}
       >
         {showChecker && (
-          <span className="pointer-events-none absolute inset-0 z-0 rounded-[inherit]" style={CHECKER_BG} aria-hidden />
+          <span className="pointer-events-none absolute inset-0 z-0 rounded-[inherit]" style={TRANSPARENT_CHECKER_BG} aria-hidden />
         )}
         <span
           className="absolute inset-0 z-1 rounded-[inherit]"

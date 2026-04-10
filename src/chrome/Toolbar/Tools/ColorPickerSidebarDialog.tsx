@@ -87,7 +87,7 @@ export function ColorPickerSidebarDialog() {
                 setHexInput(e.target.value);
                 handleColorSelect("hex", e.target.value);
               }}
-              className="h-10 w-16 cursor-pointer rounded-lg border-2 border-base-300 bg-base-100"
+              className="h-10 w-16 cursor-pointer rounded-lg border-2 border-base-300 bg-base-200"
               style={{ padding: "2px" }}
             />
             <input

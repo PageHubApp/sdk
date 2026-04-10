@@ -160,9 +160,14 @@ export const ModalMainTab = () => {
 };
 
 export const ModalMainTabAdvanced = () => {
-  return renderAdvancedComponentSlots({
-    Anchor: (
-      <ToolbarSection title="Modal ID" icon={SECTION_ICONS["Anchor"]} help="ID that buttons use to open this modal.">
+  return (
+    <>
+      {renderAdvancedComponentSlots({})}
+      <ToolbarSection
+        title="Modal ID"
+        icon={SECTION_ICONS["ModalTarget"]}
+        help="ID that buttons use to open this modal."
+      >
         <ToolbarItem
           propKey="anchor"
           propType="component"
@@ -174,6 +179,6 @@ export const ModalMainTabAdvanced = () => {
           label="Modal ID"
         />
       </ToolbarSection>
-    ),
-  });
+    </>
+  );
 };

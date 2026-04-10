@@ -68,7 +68,7 @@ export const ToolbarSection = ({
   // When scrollable, we remove padding from body and add it inside the scrollbar wrapper
   const bodyClasses = nested
     ? `grid items-end gap-2 ${collapsible ? `${scrollable ? "" : "-mx-3 px-3 pb-2"}` : ""} ${bodyClassName}`
-    : `grid items-end gap-3 ${collapsible ? `border-b border-base-300 bg-base-100 text-base-content ${scrollable ? "" : "p-3 pt-2"}` : ""} ${bodyClassName}`;
+    : `grid items-end gap-3 ${collapsible ? `border-b border-base-300 bg-base-200 text-base-content ${scrollable ? "" : "p-3 pt-2"}` : ""} ${bodyClassName}`;
 
   // Inner padding classes for when scrollable is enabled
   const scrollableInnerClasses = nested ? "p-2" : "p-3";

@@ -12,11 +12,11 @@ import {
   TbSettings,
 } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { SessionTokenAtom, SettingsAtom } from "utils/atoms";
+import { SettingsAtom } from "utils/atoms";
 import { IsolateAtom, isolatePageAlt } from "utils/lib";
 import { PageSettingsModal } from "./PageSettingsModal";
 import { UnsavedChangesAtom } from "./atoms";
-import { SaveToServer } from "./lib";
+import { useSDK } from "../../context";
 import { usePageCreation } from "./PageSelector/usePageCreation";
 
 import sluggit from "slug";
@@ -89,12 +89,11 @@ export function PageSelector({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [settingsPageId, setSettingsPageId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const [settings, setSettings] = useAtomState(SettingsAtom);
+  const settings = useAtomValue(SettingsAtom);
   const [unsavedChanges, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
-  const sessionToken = useAtomValue(SessionTokenAtom);
+  const { emitter } = useSDK();
 
   // Check if the isolated page still exists, if not, show all pages
   useEffect(() => {
@@ -152,23 +151,8 @@ export function PageSelector({
 
       // Save current changes before switching pages
       if (unsavedChanges && Object.keys(unsavedChanges).length > 0) {
-        console.log("💾 Saving changes before page switch...");
-        setIsSaving(true);
-        try {
-          await SaveToServer(
-            unsavedChanges,
-            true, // Save as draft
-            settings,
-            setSettings,
-            sessionToken
-          );
-          setUnsavedChanged(null); // Clear unsaved changes
-        } catch (e) {
-          console.error("❌ Failed to save changes before page switch:", e);
-          // Continue with page switch even if save fails
-        } finally {
-          setIsSaving(false);
-        }
+        emitter.emit("save", { isDraft: true });
+        setUnsavedChanged(null);
       }
 
       // Navigation mode: isolate and navigate
@@ -275,7 +259,6 @@ export function PageSelector({
     <div className={`relative ${className} flex items-center gap-2`} ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        disabled={isSaving}
         className={
           buttonClassName ||
           "ph-menu-trigger py-1.5 text-sm"
@@ -291,21 +274,16 @@ export function PageSelector({
           {/* URL Bar Layout */}
           <div className="flex flex-1 items-center gap-1 overflow-hidden">
             {/* Path */}
-            {displayRoute && !isSaving && (
+            {displayRoute && (
               <span className="truncate font-mono text-xs text-neutral-content">
                 {displayRoute}
               </span>
             )}
 
             {/* Page Name in Parentheses */}
-            {!isSaving && (
-              <span className="text-xxs ml-auto hidden truncate font-medium text-neutral-content">
-                {displayText}
-              </span>
-            )}
-
-            {/* Loading State */}
-            {isSaving && <span className="text-xs text-neutral-content">Saving...</span>}
+            <span className="text-xxs ml-auto hidden truncate font-medium text-neutral-content">
+              {displayText}
+            </span>
           </div>
         </div>
         <TbChevronDown className={`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />

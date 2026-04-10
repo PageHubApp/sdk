@@ -40,17 +40,21 @@ export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
 interface SectionProps {
   title: string;
   children: React.ReactNode;
+  /** Stable 0–4 index for the unified settings stack — must not duplicate `title` (display names can match tab names). */
+  stackIndex: number;
 }
 
 export const UnifiedSection = ({
   title,
   children,
+  stackIndex,
   onVisibilityChange,
 }: SectionProps & { onVisibilityChange?: (visible: boolean) => void }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
   const onVisibilityChangeRef = useRef(onVisibilityChange);
   onVisibilityChangeRef.current = onVisibilityChange;
+
+  const sectionDomId = toSectionId(`stack-${stackIndex}`);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -68,7 +72,6 @@ export const UnifiedSection = ({
         // Also require the bottom edge is below the threshold so mostly-scrolled-away sections don't count
         const isActive = entry.isIntersecting && rect.top <= topThreshold && rect.bottom > topThreshold;
 
-        setIsVisible(isActive);
         onVisibilityChangeRef.current?.(isActive);
       },
       {
@@ -90,9 +93,9 @@ export const UnifiedSection = ({
   }, []);
 
   return (
-    <div id={toSectionId(title)} ref={sectionRef} className="flex flex-col">
+    <div id={sectionDomId} ref={sectionRef} className="flex flex-col" data-unified-stack-index={stackIndex}>
       {/* Section Content */}
-      <div id={`${toSectionId(title)}-content`} className="flex flex-col">
+      <div id={`${sectionDomId}-content`} className="flex flex-col">
         {children}
       </div>
     </div>
@@ -119,7 +122,7 @@ export function setActiveTabFromClick(title: string, setTab: (t: string) => void
 }
 
 export const UnifiedTabBody = ({ sections, isInitialMount = false }: UnifiedTabBodyProps) => {
-  const [visibleSections, setVisibleSections] = React.useState<Set<string>>(new Set());
+  const [visibleSections, setVisibleSections] = React.useState<Set<number>>(new Set());
   const setActiveTab = useSetAtomState(TabAtom);
   const sectionTitlesRef = useRef<string[]>([]);
 
@@ -132,20 +135,23 @@ export const UnifiedTabBody = ({ sections, isInitialMount = false }: UnifiedTabB
   // and not during the click-lock window)
   useEffect(() => {
     if (visibleSections.size > 0 && !isInitialMount && Date.now() > clickLockUntil) {
-      const firstVisible = sectionTitlesRef.current.find(title => visibleSections.has(title));
-      if (firstVisible) {
-        setActiveTab(firstVisible);
+      const titles = sectionTitlesRef.current;
+      for (let i = 0; i < titles.length; i++) {
+        if (visibleSections.has(i)) {
+          setActiveTab(titles[i]);
+          break;
+        }
       }
     }
   }, [visibleSections, isInitialMount, setActiveTab]);
 
-  const handleVisibilityChange = (title: string, visible: boolean) => {
+  const handleVisibilityChange = (stackIndex: number, visible: boolean) => {
     setVisibleSections(prev => {
       const newSet = new Set(prev);
       if (visible) {
-        newSet.add(title);
+        newSet.add(stackIndex);
       } else {
-        newSet.delete(title);
+        newSet.delete(stackIndex);
       }
       return newSet;
     });
@@ -159,9 +165,10 @@ export const UnifiedTabBody = ({ sections, isInitialMount = false }: UnifiedTabB
     >
       {sections.map((section, index) => (
         <UnifiedSection
-          key={section.title}
+          key={index}
+          stackIndex={index}
           title={section.title}
-          onVisibilityChange={visible => handleVisibilityChange(section.title, visible)}
+          onVisibilityChange={visible => handleVisibilityChange(index, visible)}
         >
           {section.children}
         </UnifiedSection>
@@ -172,9 +179,20 @@ export const UnifiedTabBody = ({ sections, isInitialMount = false }: UnifiedTabB
   );
 };
 
-// Helper to scroll to section
-export const scrollToSection = (title: string) => {
-  const sectionId = toSectionId(title);
+/** Tab labels that map to stack indices 1–4 when no explicit `stackIndex` is passed (first tab is 0). */
+const UNIFIED_FIXED_TAB_TITLES = ["Layout", "Design", "Interactions", "Advanced"] as const;
+
+/**
+ * Scroll to a unified settings tab panel. Prefer `stackIndex` from the tab bar (0–4) when the
+ * selected node’s display name matches a built-in tab title (e.g. "Layout", "Interactions").
+ */
+export const scrollToSection = (title: string, stackIndex?: number) => {
+  let idx = stackIndex;
+  if (idx === undefined) {
+    const fixedIdx = (UNIFIED_FIXED_TAB_TITLES as readonly string[]).indexOf(title);
+    idx = fixedIdx >= 0 ? fixedIdx + 1 : 0;
+  }
+  const sectionId = toSectionId(`stack-${idx}`);
   const section = document.getElementById(sectionId);
   if (section) {
     section.scrollIntoView({ behavior: "instant", block: "start" });

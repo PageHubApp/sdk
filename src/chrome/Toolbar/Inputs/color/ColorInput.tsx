@@ -1,15 +1,17 @@
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
 import { ViewAtom } from "../../../Viewport/atoms";
 import { changeProp, getPropFinalValue } from "../../../Viewport/lib";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { usePalette } from "utils/design/PaletteContext";
 import { resolveTheme } from "utils/design/resolveTheme";
 import {
+  cssColorShowsTransparency,
   formatColorForStorage,
   parseColorValue,
   resolveColorForDisplay,
   resolvePaletteReference,
+  TRANSPARENT_CHECKER_BG,
 } from "utils/design/colorSystem";
 import { editorCanvasViewToClassPrefixKey } from "../../../../utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
@@ -62,8 +64,11 @@ export const ColorInput = (__props: any) => {
   }, [contextPalette, query]);
 
   const displayValue = resolvePaletteReference(value, prefix);
-  const [bg, cpVal] = parseColorValue(displayValue, prefix);
+  const [, cpVal] = parseColorValue(displayValue, prefix);
   const finalStyle = resolveColorForDisplay(displayValue, prefix, palette);
+  const hasStoredColor = Boolean(String(value ?? "").trim());
+  const fillCss = finalStyle.backgroundColor ?? "";
+  const showChecker = !hasStoredColor || cssColorShowsTransparency(fillCss);
 
   const classWriteView = propType === "class" ? editorCanvasViewToClassPrefixKey(view) : undefined;
 
@@ -88,13 +93,18 @@ export const ColorInput = (__props: any) => {
     viewValue = index;
   }
 
-  const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const clearColor = useCallback(() => {
     changeProp({
       propKey, index, propItemKey, propType, value: "", setProp, query, actions, nodeId: id,
       ...(propType === "class" && classWriteView != null ? { view: classWriteView, classDark } : {}),
     });
     onChange("", "");
+    setIsOpen(false);
+  }, [actions, classDark, classWriteView, id, index, onChange, propItemKey, propKey, propType, query, setProp]);
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    clearColor();
   };
 
   return (
@@ -112,17 +122,36 @@ export const ColorInput = (__props: any) => {
         labelWidth={labelWidth}
       >
         <div className="relative">
-          <button
-            id={`input-${propKey}`}
-            className="input-color"
-            style={finalStyle}
-            onClick={() => setIsOpen(prev => !prev)}
-          />
+          <div className="color-input-field input-wrapper flex w-full items-stretch">
+            <button
+              type="button"
+              id={`input-${propKey}`}
+              className="input-plain relative min-h-8 w-full min-w-0 flex-1 shrink overflow-hidden rounded-lg"
+              onClick={() => setIsOpen(prev => !prev)}
+              aria-label={label || propKey || "Color"}
+            >
+              {showChecker && (
+                <span
+                  className="pointer-events-none absolute inset-0 z-0 rounded-lg"
+                  style={TRANSPARENT_CHECKER_BG}
+                  aria-hidden
+                />
+              )}
+              {hasStoredColor && (
+                <span
+                  className="pointer-events-none absolute inset-0 z-[1] rounded-lg"
+                  style={{ backgroundColor: fillCss }}
+                  aria-hidden
+                />
+              )}
+            </button>
+          </div>
 
           {value && (
             <button
+              type="button"
               onClick={handleClear}
-              className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
+              className="absolute -right-1 -top-1 z-10 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
               title="Clear color"
             >
               ×
@@ -139,6 +168,7 @@ export const ColorInput = (__props: any) => {
               value={pickerValue}
               onChange={(data) => { changed(data); }}
               onClose={() => setIsOpen(false)}
+              onClear={clearColor}
             />
           </div>
         </div>

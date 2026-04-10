@@ -62,7 +62,7 @@ export function collectGoogleIcons(nodes: Record<string, SerializedNode>): strin
  * @example
  * // Loads only 3 icons with FILL axis: ~2-3 KB
  * const url = generateOptimizedMaterialSymbolsUrl(["home", "palette", "settings"]);
- * // https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1&icon_names=home,palette,settings&display=block
+ * // https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1&icon_names=home,palette,settings&display=swap
  */
 export function generateOptimizedMaterialSymbolsUrl(
   iconNames: string[],
@@ -72,7 +72,7 @@ export function generateOptimizedMaterialSymbolsUrl(
 
   const sortedIcons = [...new Set(iconNames)].sort().join(",");
 
-  return `https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:${axes}&icon_names=${sortedIcons}&display=block`;
+  return `https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:${axes}&icon_names=${sortedIcons}&display=swap`;
 }
 
 /**

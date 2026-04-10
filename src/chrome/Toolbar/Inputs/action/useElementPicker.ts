@@ -22,26 +22,29 @@ export function useElementPicker(filter: PickerFilter): PickerOption[] {
       if (!node?.data) continue;
 
       const displayName = node.data.displayName || node.data.name || "";
-      const anchor = node.data.props?.anchor;
+      const p = node.data.props || {};
+      /** DOM id for targeting (Element ID); Modal still uses `anchor` only */
+      const targetId =
+        displayName === "Modal" ? p.anchor : p.id || p.anchor;
       const label = getDisplayName(node);
 
       if (filter === "modal") {
-        if (displayName === "Modal" && anchor) {
-          options.push({ nodeId, label, anchor, componentType: "Modal" });
+        if (displayName === "Modal" && targetId) {
+          options.push({ nodeId, label, anchor: targetId, componentType: "Modal" });
         }
       } else if (filter === "section") {
-        // Top-level containers (direct children of a page) with anchors
-        if (displayName === "Container" && anchor) {
+        // Top-level containers (direct children of a page) with an id or legacy anchor
+        if (displayName === "Container" && targetId) {
           const parent = node.data.parent ? state.nodes[node.data.parent] : null;
           const isTopLevel = parent?.data?.props?.type === "page";
           if (isTopLevel) {
-            options.push({ nodeId, label, anchor, componentType: "Section" });
+            options.push({ nodeId, label, anchor: targetId, componentType: "Section" });
           }
         }
       } else {
-        // "all" — any element with an anchor set
-        if (anchor) {
-          options.push({ nodeId, label, anchor, componentType: displayName });
+        // "all" — any element with a target id (Element ID or legacy anchor; Modal: anchor)
+        if (targetId) {
+          options.push({ nodeId, label, anchor: targetId, componentType: displayName });
         }
       }
     }

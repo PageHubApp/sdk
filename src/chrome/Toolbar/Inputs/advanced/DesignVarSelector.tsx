@@ -8,6 +8,7 @@ import { useAtomState, useAtomValue } from "@zedux/react";
 import { ViewSelectionAtom } from "../../Label";
 import { DesignVarDialogAtom } from "../../Tools/DesignVarDialog";
 import { useDialog } from "../../Tools/lib";
+import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { CATEGORY_LABELS } from "./designVarConstants";
 import { useDesignVarOptions, type DesignVar } from "./useDesignVarOptions";
 
@@ -192,6 +193,7 @@ function DesignVarDialog({
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 autoFocus
+                {...toolbarInputNoAutocompleteProps}
               />
             </div>
           </div>

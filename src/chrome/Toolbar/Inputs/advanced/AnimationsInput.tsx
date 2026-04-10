@@ -5,6 +5,7 @@ import { motionIt } from "utils/lib";
 import { applyAnimation } from "utils/tailwind";
 import { TbBolt, TbTimeline } from "react-icons/tb";
 import { TbRotate } from "react-icons/tb";
+import { ToolbarSegmentedControl } from "../../Helpers/ToolbarSegmentedControl";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 
@@ -143,22 +144,17 @@ export const AnimationsInput = () => {
       )}
 
       <ToolbarSection enabled={true} title="Animation" icon={<TbBolt />} help="Animate this element when it scrolls into view.">
-        {/* Engine toggle */}
-        <div className="mb-2 flex gap-1 rounded-md bg-neutral p-0.5">
-          <button
-            type="button"
-            onClick={() => engine !== "css" && setEngine("css")}
-            className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${engine === "css" ? "bg-base-100 text-base-content shadow-sm" : "text-neutral-content hover:text-base-content"}`}
-          >
-            CSS / Tailwind
-          </button>
-          <button
-            type="button"
-            onClick={() => engine !== "framer" && setEngine("framer")}
-            className={`flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors ${engine === "framer" ? "bg-base-100 text-base-content shadow-sm" : "text-neutral-content hover:text-base-content"}`}
-          >
-            Framer Motion
-          </button>
+        <div className="mb-2">
+          <ToolbarSegmentedControl
+            dense
+            aria-label="Animation engine"
+            value={engine}
+            onChange={setEngine}
+            options={[
+              { value: "css", label: "CSS / Tailwind" },
+              { value: "framer", label: "Framer Motion" },
+            ]}
+          />
         </div>
 
         {engine === "css" ? (

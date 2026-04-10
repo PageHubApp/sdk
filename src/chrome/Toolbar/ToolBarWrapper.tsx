@@ -22,6 +22,7 @@ import { useSetAtomState } from "../../utils/atoms";
 import { SettingsAtom } from "utils/atoms";
 import { ComponentsAtom, IsolateAtom, SideBarOpen, isolatePage } from "utils/lib";
 import { addHandler, buildClonedTree, saveHandler } from "../Viewport/lib";
+import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
 import { RenderChildren } from "./Helpers/CloneHelper";
 import Tab from "./Tab";
 import { UnifiedTab, scrollToSection, setActiveTabFromClick, toSectionId } from "./UnifiedTab";
@@ -198,7 +199,7 @@ export const ToolbarWrapper = ({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [id, handleCopy, handlePaste]);
 
-  const ref = useRef();
+  const ref = useRef<HTMLButtonElement | null>(null);
 
   const canMake = !(components || []).find(_ => _.rootNodeId === id);
 
@@ -245,8 +246,9 @@ export const ToolbarWrapper = ({
                   if (e.key === "Escape") toggleSearch();
                 }}
                 placeholder="Search settings..."
-                className="h-7 w-full rounded-md border border-base-300 bg-base-100 px-2.5 text-xs text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-1 focus:ring-primary"
+                className="h-7 w-full rounded-md border border-base-300 bg-base-200 px-2.5 text-xs text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-1 focus:ring-primary"
                 autoFocus
+                {...toolbarInputNoAutocompleteProps}
               />
               {searchQuery && (
                 <button
@@ -290,10 +292,10 @@ export const ToolbarWrapper = ({
                   isActive={isActive}
                   onClick={() => {
                     setActiveTabFromClick(_.title, setActiveTab);
-                    scrollToSection(_.title);
+                    scrollToSection(_.title, key);
                     if (accordionCtx?.openOnly) {
-                      // Find all accordion section titles within this tab's DOM section
-                      const sectionEl = document.getElementById(toSectionId(_.title));
+                      // Find all accordion section titles within this tab's DOM section (stable stack id — title can duplicate display names)
+                      const sectionEl = document.getElementById(toSectionId(`stack-${key}`));
                       if (sectionEl) {
                         const buttons = sectionEl.querySelectorAll("[role='button'][aria-label]");
                         const titles: string[] = [];
@@ -349,7 +351,7 @@ export const ToolbarWrapper = ({
           <Tooltip
             className="hidden"
             content={!isolate ? "Isolate Page" : "Show All Pages"}
-            onClick={() => isolatePage(isolate, query, active, actions, setIsolate)}
+            onClick={() => isolatePage(!!isolate, query, active, actions, setIsolate)}
           >
             <button
 

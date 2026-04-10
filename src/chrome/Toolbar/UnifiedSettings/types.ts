@@ -20,7 +20,7 @@ export interface ToolbarConfig {
   icon?: string | ReactElement | ComponentType;
   /** Component-specific settings panel content */
   settings: ComponentType;
-  /** Component-specific advanced settings content (Icon, Anchor, etc.) */
+  /** Component-specific advanced settings content (e.g. Modal ID) */
   advancedSettings?: ComponentType;
   /** Keys to hide — everything ON by default */
   hide?: HideKey[];

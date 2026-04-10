@@ -1,10 +1,10 @@
 import { Element, ROOT_NODE, useEditor, useNode } from "@craftjs/core";
 import { useRef, useState } from "react";
 import { TbLayoutGridAdd } from "react-icons/tb";
-import { useSetAtomState } from "../../utils/atoms";
 import { ClippyOpenAtom, SectionPickerDialogAtom } from "utils/atoms";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { useSDK } from "../../context";
+import { useSetAtomState } from "../../utils/atoms";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { AddElement } from "../Viewport/Toolbox/lib";
 import { NodeType, useNodeType } from "./hooks/useNodeType";
@@ -51,7 +51,7 @@ export const AddSectionNodeController = (props: { position; align }) => {
         type="page"
         canDelete={true}
         canEditName={true}
-        className="mx-auto flex flex-col items-center w-full h-full gap-8 py-6 px-3"
+        className="mx-auto flex h-full w-full flex-col items-center gap-8 px-3 py-6"
         custom={{ displayName: generate().spaced }}
       />
     );
@@ -109,13 +109,13 @@ export const AddSectionNodeController = (props: { position; align }) => {
     <div
       role="presentation"
       aria-hidden="true"
-      className={`absolute -bottom-4 left-1/2 flex h-0 w-fit -translate-x-1/2 items-center justify-center gap-2 ${isControllerHovered ? "opacity-100" : "opacity-0"} transition-opacity duration-300 z-9999`}
+      className={`absolute -bottom-4 left-1/2 flex h-0 w-fit -translate-x-1/2 items-center justify-center gap-2 ${isControllerHovered ? "opacity-100" : "opacity-0"} z-9999 transition-opacity duration-300`}
       onMouseEnter={() => setIsControllerHovered(true)}
       onMouseLeave={() => setIsControllerHovered(false)}
     >
       <button
         ref={ref}
-        className="btn-primary btn-sm z-99999 font-bold capitalize active:scale-95 transition-transform"
+        className="btn-primary btn-sm z-99999 font-bold capitalize transition-transform active:scale-95"
         onClick={handleClick}
       >
         <TbLayoutGridAdd />

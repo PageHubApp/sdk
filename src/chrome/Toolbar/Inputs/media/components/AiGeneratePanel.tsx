@@ -128,12 +128,12 @@ export function AiGeneratePanel({
 
           {/* Prompt templates */}
           <div className="space-y-2">
-            <div className="flex max-h-[120px] min-h-[80px] flex-wrap gap-1 overflow-auto rounded-lg border border-base-300 bg-base-100 p-2">
+            <div className="flex max-h-[120px] min-h-[80px] flex-wrap gap-1 overflow-auto rounded-lg border border-base-300 bg-base-200 p-2">
               {AI_PROMPT_TEMPLATES.map(template => (
                 <button
                   key={template}
                   onClick={() => onPromptChange(template)}
-                  className="text-xxs whitespace-nowra inline-block rounded-lg border border-base-300 bg-base-100 px-1 py-0.5 text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
+                  className="text-xxs whitespace-nowra inline-block rounded-lg border border-base-300 bg-base-200 px-1 py-0.5 text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
                 >
                   {template}
                 </button>

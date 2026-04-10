@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { TbStack2 } from "react-icons/tb";
+import { twMerge } from "tailwind-merge";
+import { PH_TOOLBAR_DASHED_BTN_ACTIVE } from "../../phToolbarDashedSelection";
+import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useModifiers, type ResolvedModifier, type CategoryMeta } from "./useModifiers";
 import { PatternCards } from "./PatternCards";
@@ -20,11 +23,10 @@ function ModifierChip({
     <button
       type="button"
       onClick={onToggle}
-      className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs transition-colors ${
-        active
-          ? "border-primary/40 bg-primary/15 text-primary"
-          : "border-base-300 bg-transparent text-neutral-content hover:bg-neutral"
-      }`}
+      className={twMerge(
+        "ph-toolbar-dashed-btn w-fit max-w-full gap-1 py-1 text-xs",
+        active && PH_TOOLBAR_DASHED_BTN_ACTIVE,
+      )}
       title={mod.classes || mod.name}
     >
       {mod.label}
@@ -123,13 +125,14 @@ function SaveAsModifier({
 
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => { setOpen(true); setTargetType(defaultType); }}
-        className="text-xxs mx-auto flex w-full items-center justify-center gap-1 rounded-lg px-2 text-center hover:underline"
+      <ToolbarDashedButton
+        onClick={() => {
+          setOpen(true);
+          setTargetType(defaultType);
+        }}
       >
-        + Save as {defaultType} modifier
-      </button>
+        Save as {defaultType} modifier
+      </ToolbarDashedButton>
     );
   }
 
@@ -150,7 +153,7 @@ function SaveAsModifier({
           value={targetType}
           onChange={(e) => setTargetType(e.target.value)}
           placeholder="e.g. Button, Container"
-          className="h-7 w-full rounded border border-base-300 bg-base-100 px-2 text-xs"
+          className="h-7 w-full rounded border border-base-300 bg-base-200 px-2 text-xs"
         />
       </div>
       <div>
@@ -160,7 +163,7 @@ function SaveAsModifier({
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="e.g. my-card-style"
-          className="h-7 w-full rounded border border-base-300 bg-base-100 px-2 text-xs"
+          className="h-7 w-full rounded border border-base-300 bg-base-200 px-2 text-xs"
           autoFocus
           onKeyDown={(e) => {
             if (e.key === "Enter") submit();

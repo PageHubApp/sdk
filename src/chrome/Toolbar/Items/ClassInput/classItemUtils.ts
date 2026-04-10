@@ -80,64 +80,62 @@ export const APPLY_SCOPE_DISPLAY: Record<string, string> = {
   mobile: "base", sm: "sm", md: "md", desktop: "md", lg: "lg", xl: "xl", "2xl": "2xl",
 };
 
+/** Full-width scope row: selected matches sidebar section headers (border + bg). */
+export const BP_SCOPE_ROW_SELECTED =
+  "border border-sidebar-border bg-sidebar text-sidebar-foreground shadow-sm";
+export const BP_SCOPE_ROW_IDLE =
+  "border border-transparent text-neutral-content hover:border-sidebar-border hover:bg-sidebar-accent/80";
+
+const BP_DROP_VALID = "border-2 border-dashed border-base-content/35 bg-base-content/10";
+
 export const CLASS_BREAKPOINT_BUCKETS = [
   {
     id: "mobile", label: "Base", hint: "default", icon: "mobile" as const,
-    selectedBg: "bg-primary text-primary-content",
-    mutedHover: "text-neutral-content hover:bg-neutral hover:text-base-content",
-    dropValid: "border-2 border-dashed border-primary bg-primary/10",
+    dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
   {
     id: "sm", label: "SM", hint: "640px+", icon: "badge" as const,
-    selectedBg: "bg-secondary text-secondary-content",
-    mutedHover: "text-neutral-content hover:bg-neutral hover:text-base-content",
-    dropValid: "border-2 border-dashed border-secondary bg-secondary/10",
+    dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
   {
     id: "desktop", label: "MD", hint: "768px+", icon: "desktop" as const,
-    selectedBg: "bg-accent text-accent-content",
-    mutedHover: "text-neutral-content hover:bg-neutral hover:text-base-content",
-    dropValid: "border-2 border-dashed border-accent bg-accent/10",
+    dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
   {
     id: "lg", label: "LG", hint: "1024px+", icon: "badge" as const,
-    selectedBg: "bg-info text-info-content",
-    mutedHover: "text-neutral-content hover:bg-neutral hover:text-base-content",
-    dropValid: "border-2 border-dashed border-info bg-info/10",
+    dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
   {
     id: "xl", label: "XL", hint: "1280px+", icon: "badge" as const,
-    selectedBg: "bg-warning text-warning-content",
-    mutedHover: "text-neutral-content hover:bg-neutral hover:text-base-content",
-    dropValid: "border-2 border-dashed border-warning bg-warning/10",
+    dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
   {
     id: "2xl", label: "2XL", hint: "1536px+", icon: "badge" as const,
-    selectedBg: "bg-error text-error-content",
-    mutedHover: "text-neutral-content hover:bg-neutral hover:text-base-content",
-    dropValid: "border-2 border-dashed border-error bg-error/10",
+    dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
 ];
 
+const NEUTRAL_CLASS_CARD = "bg-base-200 text-base-content border border-base-300/60";
+
 export const CARD_BG_BY_BUCKET: Record<string, string> = {
-  mobile: "bg-primary text-primary-content",
-  sm: "bg-secondary text-secondary-content",
-  desktop: "bg-accent text-accent-content",
-  lg: "bg-info text-info-content",
-  xl: "bg-warning text-warning-content",
-  "2xl": "bg-error text-error-content",
+  mobile: NEUTRAL_CLASS_CARD,
+  sm: NEUTRAL_CLASS_CARD,
+  desktop: NEUTRAL_CLASS_CARD,
+  lg: NEUTRAL_CLASS_CARD,
+  xl: NEUTRAL_CLASS_CARD,
+  "2xl": NEUTRAL_CLASS_CARD,
 };
 
 export const CONFLICT_GROUPS: Record<string, string[]> = {

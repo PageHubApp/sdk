@@ -1,14 +1,7 @@
 import { useEffect } from "react";
 import { usePanelUrl } from "../../../utils/usePanelUrl";
-import { SaveToServer } from "../lib";
 
 interface UseHeaderShortcutsOptions {
-  canUndo: boolean;
-  isTenant: boolean;
-  query: any;
-  settings: any;
-  setSettings: any;
-  sessionToken: string | null;
   setIsMediaManagerModalOpen: (fn: (prev: boolean) => boolean) => void;
   setIsDesignSystemSidebarOpen: (fn: (prev: boolean) => boolean) => void;
   setIsSiteSettingsModalOpen: (fn: (prev: boolean) => boolean) => void;
@@ -20,12 +13,6 @@ interface UseHeaderShortcutsOptions {
 }
 
 export function useHeaderShortcuts({
-  canUndo,
-  isTenant,
-  query,
-  settings,
-  setSettings,
-  sessionToken,
   setIsMediaManagerModalOpen,
   setIsDesignSystemSidebarOpen,
   setIsSiteSettingsModalOpen,
@@ -52,17 +39,10 @@ export function useHeaderShortcuts({
       const mod = e.metaKey || e.ctrlKey;
       if (!mod) return;
 
-      // Cmd+S -- Save
+      // Cmd+S -- Publish
       if (key === "s" && !e.shiftKey) {
         e.preventDefault();
-        if (canUndo && settings) {
-          if (isTenant) {
-            const json = query.serialize();
-            SaveToServer(json, true, settings, setSettings, sessionToken);
-          } else {
-            open("publish");
-          }
-        }
+        open("publish");
         return;
       }
 

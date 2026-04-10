@@ -114,10 +114,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
         }
         const pageData: PageData = { content: compressed, html, classes, scrollObserverScript };
         await config.callbacks.onSave(pageData, meta);
-        // Only clear dirty state on explicit saves, not auto-save drafts
-        if (!meta?.isDraft) {
-          setUnsavedChanges(null);
-        }
+        setUnsavedChanges(null);
       } catch (err) {
         console.error("[PageHub] Save error:", err);
         emitter.emit("error", err);

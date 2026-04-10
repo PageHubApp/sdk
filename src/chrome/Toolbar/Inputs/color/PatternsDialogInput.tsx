@@ -102,26 +102,31 @@ export const PatternsDialogInput = ({
         propKey={propKey}
       >
         <div className="relative">
-          <button
-            title={value?.title || "Select pattern"}
-            onClick={() => setIsOpen(prev => !prev)}
-            className="input"
-          >
-            <div className="pointer-events-none flex h-7 w-full items-center gap-2">
-              <div
-                className="h-full w-12 shrink-0 rounded border border-base-300 bg-base-100"
-                style={patt ? { backgroundImage: `url(${patt})` } : undefined}
-              />
-              <div className="flex-1 truncate text-left text-xs">
-                {value?.title || <span className="text-neutral-content">Select pattern</span>}
+          <div className="input-wrapper flex w-full items-center">
+            <button
+              type="button"
+              title={value?.title || "Select pattern"}
+              id={propKey ? `input-${propKey}` : undefined}
+              onClick={() => setIsOpen(prev => !prev)}
+              className="input-plain flex min-w-0 flex-1 items-center text-left"
+            >
+              <div className="pointer-events-none flex min-h-0 w-full items-center gap-2">
+                <div
+                  className="h-6 w-12 shrink-0 rounded border border-base-300 bg-base-200"
+                  style={patt ? { backgroundImage: `url(${patt})` } : undefined}
+                />
+                <div className="min-w-0 flex-1 truncate text-left">
+                  {value?.title || <span className="text-neutral-content">Select pattern</span>}
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
+          </div>
 
           {value && (
             <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); clear(); }}
-              className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
+              className="absolute -right-1 -top-1 z-10 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
               title="Clear pattern"
             >
               ×
@@ -242,7 +247,7 @@ const PatternPanel = ({
                 }`}
               >
                 <div
-                  className="h-10 w-16 shrink-0 rounded border border-base-300 bg-base-100"
+                  className="h-10 w-16 shrink-0 rounded border border-base-300 bg-base-200"
                   style={{ backgroundImage: preview ? `url(${preview})` : undefined }}
                 />
                 <span className="truncate text-xs">{pattern.title}</span>

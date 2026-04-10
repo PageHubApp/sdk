@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { TbBraces, TbBrandTailwind, TbMathFunction } from "react-icons/tb";
 import { BgWrap, MobileDesktopLabels } from "../../ToolbarStyle";
+import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { CalcDialog } from "./CalcDialog";
 import { TypeSelector } from "./TypeSelector";
 import { UnifiedDropdown } from "./UnifiedDropdown";
@@ -174,6 +175,7 @@ export function UniversalInput(props: UniversalInputProps) {
                 placeholder={dynamicPlaceholder}
                 className="input-plain h-8 w-full"
                 aria-label={label || propKey}
+                {...toolbarInputNoAutocompleteProps}
               />
 
               {/* Unified dropdown with design vars + grouped options */}

@@ -30,7 +30,7 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
       </div>
 
       {/* Categories */}
-      <div className="border-b border-base-300 bg-base-100 p-3">
+      <div className="border-b border-base-300 bg-base-200 p-3">
         <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-base-content">
           Category
           <div className="text-xs text-neutral-content">{d.filteredSvgIcons.length} icon{d.filteredSvgIcons.length !== 1 ? "s" : ""}</div>
@@ -62,7 +62,7 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
           rowCount={d.svgRowCount}
           rowHeight={ROW_HEIGHT}
           width={CONTAINER_WIDTH}
-          className="scrollbar-light border-b border-base-300 bg-base-100 text-base-content"
+          className="scrollbar-light border-b border-base-300 bg-base-200 text-base-content"
         >
           {({ columnIndex, rowIndex, style }) => {
             const index = rowIndex * COLUMN_COUNT + columnIndex;

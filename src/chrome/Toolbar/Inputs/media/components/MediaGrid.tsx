@@ -77,7 +77,7 @@ export function MediaGrid({
     >
       {/* Drag overlay */}
       {isDragOver && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center rounded-lg border-2 border-dashed border-accent bg-base-100/75 backdrop-blur-sm">
+        <div className="absolute inset-0 z-40 flex items-center justify-center rounded-lg border-2 border-dashed border-accent bg-base-200/75 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4 text-accent-content">
             <TbUpload className="text-6xl" />
             <div className="text-center">
@@ -90,7 +90,7 @@ export function MediaGrid({
 
       {/* Upload progress */}
       {uploadProgress && (
-        <div className="absolute inset-x-0 top-0 z-30 border-b border-base-300 bg-base-100 p-4">
+        <div className="absolute inset-x-0 top-0 z-30 border-b border-base-300 bg-base-200 p-4">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="size-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
@@ -369,7 +369,7 @@ function ActionButton({
         e.stopPropagation();
         onClick();
       }}
-      className={`rounded-lg border border-base-300 bg-base-100 p-1.5 shadow-lg transition-colors hover:bg-neutral ${
+      className={`rounded-lg border border-base-300 bg-base-200 p-1.5 shadow-lg transition-colors hover:bg-neutral ${
         variant === "destructive"
           ? "text-error hover:bg-error hover:text-error-content"
           : "text-primary"
