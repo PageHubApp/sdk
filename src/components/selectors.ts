@@ -79,6 +79,11 @@ export interface RootStyleProps {
   preset?: string;
   presetPadding?: string;
   presetMaxWidth?: string;
+  scrollTimeline?: {
+    preset: string;
+    startProgress: number;
+    endProgress: number;
+  };
 }
 
 export interface BaseSelectorProps {

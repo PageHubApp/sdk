@@ -41,6 +41,7 @@ export interface ContainerProps extends BaseSelectorProps {
   scrollSnap?: boolean;
   scrollSpeed?: number;
   scrollSmoothing?: number;
+  scrollTimelineRunway?: number;
 }
 
 export const Container = (incomingProps: Partial<ContainerProps>) => {
@@ -307,6 +308,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     snap: props.scrollSnap,
     speed: props.scrollSpeed,
     smoothing: props.scrollSmoothing,
+    runway: props.scrollTimelineRunway,
     enabled,
   });
 

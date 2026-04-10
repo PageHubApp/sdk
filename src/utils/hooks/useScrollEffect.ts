@@ -3,9 +3,7 @@
  *
  * Supported effects:
  *   - horizontal-scroll: Pin + translate children horizontally
- *   - parallax-stack: Children overlap and slide over each other at different speeds
- *   - scale-reveal: Section starts scaled down/blurred, grows to full on scroll
- *   - stagger-cascade: Children animate in one-by-one, scroll-linked (reverses on scroll back)
+ *   - scroll-timeline: Pin section, each child animates independently at its own scroll progress
  */
 
 import { useEffect, type RefObject } from "react";
@@ -16,12 +14,30 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+// ─── Scroll Timeline Presets ────────────────────────────────────────────────
+
+export const SCROLL_TIMELINE_PRESETS: Record<string, { from: gsap.TweenVars; to: gsap.TweenVars }> = {
+  fadeIn:      { from: { opacity: 0 },                                          to: { opacity: 1 } },
+  fadeOut:     { from: { opacity: 1 },                                          to: { opacity: 0 } },
+  scaleUp:    { from: { scale: 0.3, opacity: 0 },                              to: { scale: 1, opacity: 1 } },
+  slideLeft:  { from: { x: 200, opacity: 0 },                                  to: { x: 0, opacity: 1 } },
+  slideRight: { from: { x: -200, opacity: 0 },                                 to: { x: 0, opacity: 1 } },
+  slideUp:    { from: { y: 100, opacity: 0 },                                  to: { y: 0, opacity: 1 } },
+  slideDown:  { from: { y: -100, opacity: 0 },                                 to: { y: 0, opacity: 1 } },
+  rotateIn:   { from: { rotation: 15, opacity: 0 },                            to: { rotation: 0, opacity: 1 } },
+  fadeScale:  { from: { scale: 0.5, opacity: 0, filter: "blur(8px)" },         to: { scale: 1, opacity: 1, filter: "blur(0px)" } },
+  slideRotate:{ from: { x: 200, rotation: -15, opacity: 0 },                   to: { x: 0, rotation: 0, opacity: 1 } },
+};
+
+// ─── Hook ───────────────────────────────────────────────────────────────────
+
 export interface ScrollEffectOptions {
   effect: string;
   direction?: "ltr" | "rtl";
   snap?: boolean;
   speed?: number;
   smoothing?: number;
+  runway?: number;
   enabled?: boolean;
 }
 
@@ -35,6 +51,7 @@ export function useScrollEffect(
     snap = false,
     speed = 1.5,
     smoothing = 0.8,
+    runway = 3,
     enabled = false,
   } = options;
 
@@ -49,19 +66,13 @@ export function useScrollEffect(
       case "horizontal-scroll":
         ctx = initHorizontalScroll(section, { direction, snap, speed, smoothing });
         break;
-      case "parallax-stack":
-        ctx = initParallaxStack(section, { speed, smoothing });
-        break;
-      case "scale-reveal":
-        ctx = initScaleReveal(section, { smoothing });
-        break;
-      case "stagger-cascade":
-        ctx = initStaggerCascade(section, { speed, smoothing });
+      case "scroll-timeline":
+        ctx = initScrollTimeline(section, { runway, smoothing });
         break;
     }
 
     return () => { if (ctx) ctx.revert(); };
-  }, [effect, enabled, direction, snap, speed, smoothing]);
+  }, [effect, enabled, direction, snap, speed, smoothing, runway]);
 }
 
 // ─── Horizontal Scroll ─────────────────────────────────────────────────────
@@ -101,88 +112,47 @@ function initHorizontalScroll(
   }, section);
 }
 
-// ─── Parallax Stack ─────────────────────────────────────────────────────────
-// Each direct child of the section scrolls at a different speed, creating
-// a layered parallax effect. Later children move slower (appear to be behind).
+// ─── Scroll Timeline ────────────────────────────────────────────────────────
+// Pins the section, then each child with [data-scroll-timeline] animates
+// independently at its own scroll progress range.
 
-function initParallaxStack(
+function initScrollTimeline(
   section: HTMLElement,
-  opts: { speed: number; smoothing: number },
+  opts: { runway: number; smoothing: number },
 ) {
-  const children = Array.from(section.children) as HTMLElement[];
-  if (children.length < 2) return;
-
-  return gsap.context(() => {
-    children.forEach((child, i) => {
-      // Each child gets progressively slower parallax
-      // First child = normal speed, last child = much slower
-      const factor = 1 - (i / children.length) * 0.6; // 1.0 → 0.4
-      const yMove = 100 * factor * opts.speed;
-
-      gsap.to(child, {
-        y: -yMove,
-        ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: opts.smoothing,
-          invalidateOnRefresh: true,
-        },
-      });
-    });
-  }, section);
-}
-
-// ─── Scale Reveal ───────────────────────────────────────────────────────────
-// Section starts scaled down and blurred, reveals to full size as you scroll in.
-
-function initScaleReveal(
-  section: HTMLElement,
-  opts: { smoothing: number },
-) {
-  return gsap.context(() => {
-    gsap.from(section, {
-      scale: 0.85,
-      opacity: 0.3,
-      filter: "blur(8px)",
-      ease: "none",
-      scrollTrigger: {
-        trigger: section,
-        start: "top 85%",
-        end: "top 20%",
-        scrub: opts.smoothing,
-        invalidateOnRefresh: true,
-      },
-    });
-  }, section);
-}
-
-// ─── Stagger Cascade ────────────────────────────────────────────────────────
-// Direct children animate in one by one as the section scrolls through the viewport.
-// Scroll-linked: they reverse if you scroll back up.
-
-function initStaggerCascade(
-  section: HTMLElement,
-  opts: { speed: number; smoothing: number },
-) {
-  const children = Array.from(section.children) as HTMLElement[];
+  const children = Array.from(
+    section.querySelectorAll("[data-scroll-timeline]"),
+  ) as HTMLElement[];
   if (children.length === 0) return;
 
   return gsap.context(() => {
-    gsap.from(children, {
-      y: 60,
-      opacity: 0,
-      filter: "blur(4px)",
-      stagger: 0.15,
-      ease: "none",
+    const tl = gsap.timeline({
       scrollTrigger: {
         trigger: section,
-        start: "top 80%",
-        end: () => `+=${children.length * 120 * opts.speed}`,
+        pin: true,
         scrub: opts.smoothing,
+        end: () => `+=${window.innerHeight * opts.runway}`,
+        pinSpacing: true,
+        anticipatePin: 1,
         invalidateOnRefresh: true,
       },
+    });
+
+    children.forEach((child) => {
+      try {
+        const config = JSON.parse(child.getAttribute("data-scroll-timeline") || "{}");
+        const preset = SCROLL_TIMELINE_PRESETS[config.preset];
+        if (!preset) return;
+
+        const start = (config.startProgress ?? 0) / 100;
+        const end = (config.endProgress ?? 100) / 100;
+        const duration = Math.max(0.01, end - start);
+
+        gsap.set(child, preset.from);
+        tl.to(child, { ...preset.to, duration, ease: "none" }, start);
+      } catch {
+        // Invalid JSON — skip this child
+      }
     });
   }, section);
 }

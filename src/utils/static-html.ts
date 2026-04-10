@@ -109,11 +109,15 @@ export function tag(
 
 const ARIA_KEYS = ["role", "aria-label", "aria-hidden", "aria-describedby", "aria-live"] as const;
 
-/** Extract aria/accessibility attributes from component props for static HTML. */
+/** Extract aria/accessibility attributes + scroll-timeline data from component props for static HTML. */
 export function ariaAttrs(props: Record<string, any>): Record<string, string | undefined> {
   const attrs: Record<string, string | undefined> = {};
   for (const key of ARIA_KEYS) {
     if (props[key]) attrs[key] = props[key];
+  }
+  // Scroll timeline: emit data attribute so GSAP can find this node
+  if (props.root?.scrollTimeline?.preset) {
+    attrs["data-scroll-timeline"] = JSON.stringify(props.root.scrollTimeline);
   }
   return attrs;
 }

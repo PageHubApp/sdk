@@ -246,6 +246,11 @@ export const applyAnimation = (prop: any = {}, props: BaseSelectorProps, query: 
 
   prop.style = { ...prop.style, ...style };
 
+  // Scroll timeline: attach data attribute so GSAP can find this node
+  if (_root?.scrollTimeline?.preset && !enabled) {
+    prop["data-scroll-timeline"] = JSON.stringify(_root.scrollTimeline);
+  }
+
   getFontFromComp(props);
 
   loadCombinedFonts();

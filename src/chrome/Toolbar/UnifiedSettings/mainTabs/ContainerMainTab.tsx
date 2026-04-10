@@ -96,7 +96,7 @@ export const ContainerMainTab = () => {
     ),
     ...(isSection ? {
       ScrollEffect: (
-        <ToolbarSection title="Scroll Effect" icon={SECTION_ICONS["Type"]} help="Pin this section and scroll its children horizontally as the user scrolls down.">
+        <ToolbarSection title="Scroll Effect" icon={SECTION_ICONS["Type"]} help="Pin this section and animate children as the user scrolls.">
           <ToolbarItem
             propKey="scrollEffect"
             propType="component"
@@ -105,9 +105,7 @@ export const ContainerMainTab = () => {
           >
             <option value="">None</option>
             <option value="horizontal-scroll">Horizontal Scroll</option>
-            <option value="parallax-stack">Parallax Stack</option>
-            <option value="scale-reveal">Scale Reveal</option>
-            <option value="stagger-cascade">Stagger Cascade</option>
+            <option value="scroll-timeline">Scroll Timeline</option>
           </ToolbarItem>
 
           {props?.scrollEffect === "horizontal-scroll" && (
@@ -117,24 +115,31 @@ export const ContainerMainTab = () => {
                 <option value="rtl">Right to Left</option>
               </ToolbarItem>
               <ToolbarItem propKey="scrollSnap" propType="component" type="toggle" option="Snap to panels" on={true} />
-            </>
-          )}
-
-          {props?.scrollEffect && (
-            <>
               <ToolbarItem propKey="scrollSpeed" propType="component" type="select" label="Speed">
                 <option value="1">Fast</option>
                 <option value="1.5">Normal</option>
                 <option value="2">Slow</option>
                 <option value="3">Very Slow</option>
               </ToolbarItem>
-              <ToolbarItem propKey="scrollSmoothing" propType="component" type="select" label="Smoothing">
-                <option value="0">None (instant)</option>
-                <option value="0.5">Light</option>
-                <option value="0.8">Normal</option>
-                <option value="1.5">Heavy</option>
-              </ToolbarItem>
             </>
+          )}
+
+          {props?.scrollEffect === "scroll-timeline" && (
+            <ToolbarItem propKey="scrollTimelineRunway" propType="component" type="select" label="Runway">
+              <option value="2">Short</option>
+              <option value="3">Normal</option>
+              <option value="5">Long</option>
+              <option value="8">Epic</option>
+            </ToolbarItem>
+          )}
+
+          {props?.scrollEffect && (
+            <ToolbarItem propKey="scrollSmoothing" propType="component" type="select" label="Smoothing">
+              <option value="0">None (instant)</option>
+              <option value="0.5">Light</option>
+              <option value="0.8">Normal</option>
+              <option value="1.5">Heavy</option>
+            </ToolbarItem>
           )}
         </ToolbarSection>
       ),

@@ -56,13 +56,21 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     attrs["data-scroll-speed"] = String(props.scrollSpeed ?? 1.5);
     attrs["data-scroll-smoothing"] = String(props.scrollSmoothing ?? 0.8);
     attrs["data-scroll-snap"] = String(!!props.scrollSnap);
-    // Add marker class so the GSAP scripts are injected
     ctx.classes.add("ph-hscroll");
     const inner =
       `<div class="ph-hscroll-sticky" style="height:100vh;overflow:hidden">` +
         `<div class="ph-hscroll-track" style="display:flex;height:100%;will-change:transform">${children}</div>` +
       `</div>`;
     return tag(t, attrs, inner);
+  }
+
+  // Scroll timeline section: pin + per-child animations via data attributes
+  if (props.scrollEffect === "scroll-timeline") {
+    attrs["data-scroll-effect"] = "scroll-timeline";
+    attrs["data-scroll-runway"] = String(props.scrollTimelineRunway ?? 3);
+    attrs["data-scroll-smoothing"] = String(props.scrollSmoothing ?? 0.8);
+    ctx.classes.add("ph-scroll-timeline");
+    return tag(t, attrs, children);
   }
 
   return tag(t, attrs, children);

@@ -80,6 +80,7 @@ export const renderNA = (title: string) => (
 const COMPONENT_SECTIONS = [
   "Content",
   "Type",
+  "ScrollEffect",
 ] as const;
 
 /**

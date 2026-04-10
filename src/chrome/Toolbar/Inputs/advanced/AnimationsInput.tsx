@@ -1,9 +1,9 @@
-import { useNode } from "@craftjs/core";
+import { useEditor, useNode } from "@craftjs/core";
 import React from "react";
 import { cssAnimationPresets, isCSSAnimation } from "utils/animations";
 import { motionIt } from "utils/lib";
 import { applyAnimation } from "utils/tailwind";
-import { TbBolt } from "react-icons/tb";
+import { TbBolt, TbTimeline } from "react-icons/tb";
 import { TbRotate } from "react-icons/tb";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -40,6 +40,29 @@ const cssGroups = Object.entries(cssAnimationPresets).reduce((acc, [key, preset]
   return acc;
 }, {} as Record<string, Array<{ key: string } & typeof cssAnimationPresets[string]>>);
 
+const SCROLL_TIMELINE_TIMING = [
+  { value: "early", label: "Early (0–33%)", start: 0, end: 33 },
+  { value: "middle", label: "Middle (25–66%)", start: 25, end: 66 },
+  { value: "late", label: "Late (50–100%)", start: 50, end: 100 },
+  { value: "full", label: "Full (0–100%)", start: 0, end: 100 },
+];
+
+/** Detects if this node's parent section uses scroll-timeline. */
+function useParentScrollTimeline(): boolean {
+  const { query, id } = useNode(n => ({ id: n.id }));
+  try {
+    const node = query.node(id).get();
+    let parentId = node?.data?.parent;
+    while (parentId) {
+      const parent = query.node(parentId).get();
+      if (parent?.data?.props?.scrollEffect === "scroll-timeline") return true;
+      // Walk up — check if this parent's parent is a timeline section
+      parentId = parent?.data?.parent;
+    }
+  } catch { /* node not found */ }
+  return false;
+}
+
 export const AnimationsInput = () => {
   const {
     props,
@@ -47,6 +70,9 @@ export const AnimationsInput = () => {
   } = useNode(node => ({
     props: node.data.props,
   }));
+
+  const isInScrollTimeline = useParentScrollTimeline();
+  const stConfig = props.root?.scrollTimeline;
 
   const currentAnimation = props.root?.animation || "";
   const hasAnimation = !!currentAnimation;
@@ -77,6 +103,45 @@ export const AnimationsInput = () => {
 
   return (
     <>
+      {isInScrollTimeline && (
+        <ToolbarSection enabled={true} title="Scroll Timeline" icon={<TbTimeline />} help="Animate this element as the parent section scrolls. Pick what happens and when.">
+          <ToolbarItem propKey="root.scrollTimeline.preset" propType="component" type="select" label="Animation">
+            <option value="">None</option>
+            <option value="fadeIn">Fade In</option>
+            <option value="fadeOut">Fade Out</option>
+            <option value="scaleUp">Scale Up</option>
+            <option value="slideLeft">Slide from Right</option>
+            <option value="slideRight">Slide from Left</option>
+            <option value="slideUp">Slide Up</option>
+            <option value="slideDown">Slide Down</option>
+            <option value="rotateIn">Rotate In</option>
+            <option value="fadeScale">Fade + Scale</option>
+            <option value="slideRotate">Slide + Rotate</option>
+          </ToolbarItem>
+
+          {stConfig?.preset && (
+            <ToolbarItem propKey="root.scrollTimeline._timing" propType="component" type="select" label="Timing"
+              onChange={(val: string) => {
+                const timing = SCROLL_TIMELINE_TIMING.find(t => t.value === val);
+                if (timing) {
+                  setProp(p => {
+                    if (!p.root) p.root = {};
+                    if (!p.root.scrollTimeline) p.root.scrollTimeline = {};
+                    p.root.scrollTimeline.startProgress = timing.start;
+                    p.root.scrollTimeline.endProgress = timing.end;
+                    p.root.scrollTimeline._timing = val;
+                  });
+                }
+              }}
+            >
+              {SCROLL_TIMELINE_TIMING.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </ToolbarItem>
+          )}
+        </ToolbarSection>
+      )}
+
       <ToolbarSection enabled={true} title="Animation" icon={<TbBolt />} help="Animate this element when it scrolls into view.">
         {/* Engine toggle */}
         <div className="mb-2 flex gap-1 rounded-md bg-neutral p-0.5">
