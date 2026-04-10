@@ -122,7 +122,7 @@ export function Background({
   }, []);
 
   // All side-effects (icon fonts, header/footer injection, link styles, design system vars)
-  useBackgroundEffects({ enabled, query, nodeCount, props });
+  useBackgroundEffects({ enabled, query, nodeCount, props, nodeId: id });
 
   const contexted = (e: React.MouseEvent) => {
     if (!enabled || !enableContext) return;

@@ -7,6 +7,7 @@
  *
  * Extracted from Background.tsx.
  */
+import { ROOT_NODE } from "@craftjs/utils";
 import { useEffect, useRef } from "react";
 import { getMaterialSymbolsUrlFromNodes } from "../../utils/data/collectGoogleIcons";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
@@ -21,6 +22,8 @@ interface UseBackgroundEffectsOptions {
   query: any;
   nodeCount: number;
   props: Partial<ContainerProps>;
+  /** Craft node id — only ROOT may run document-wide theme / head injection */
+  nodeId: string;
 }
 
 export function useBackgroundEffects({
@@ -28,11 +31,14 @@ export function useBackgroundEffects({
   query,
   nodeCount,
   props,
+  nodeId,
 }: UseBackgroundEffectsOptions) {
+  const isRootBackground = nodeId === ROOT_NODE;
+
   // ---- Material Symbols icon font loading ----
   const prevFontUrlRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !isRootBackground) return;
 
     try {
       const nodes = query.getSerializedNodes();
@@ -57,31 +63,31 @@ export function useBackgroundEffects({
     } catch (error) {
       console.error("Error loading Material Symbols:", error);
     }
-  }, [enabled, query, nodeCount]);
+  }, [enabled, query, nodeCount, isRootBackground]);
 
   // ---- Header snippet injection ----
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !isRootBackground) return;
     const head = document.getElementsByTagName("head")[0];
     const elements = addElementsToHead(props.header, head, isCssValid, isJsValid);
     return () => {
       elements?.forEach(el => head.removeChild(el));
     };
-  }, [props.header, enabled]);
+  }, [props.header, enabled, isRootBackground]);
 
   // ---- Footer snippet injection ----
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !isRootBackground) return;
     const head = (document.querySelector(".pagehub-sdk-root") || document.body) as HTMLElement;
     const elements = addElementsToHead(props.footer, head, isCssValid, isJsValid);
     return () => {
       elements?.forEach(el => head.removeChild(el));
     };
-  }, [props.footer, enabled]);
+  }, [props.footer, enabled, isRootBackground]);
 
   // ---- Global link styles ----
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !isRootBackground) return;
 
     const head = document.getElementsByTagName("HEAD")[0];
     const styleId = "pagehub-link-styles";
@@ -145,11 +151,11 @@ export function useBackgroundEffects({
       const styleToRemove = document.getElementById(styleId);
       if (styleToRemove) head.removeChild(styleToRemove);
     };
-  }, [props.theme]);
+  }, [props.theme, enabled, isRootBackground]);
 
   // ---- Design system CSS variables ----
   useEffect(() => {
-    if (typeof window === "undefined" || !enabled) return;
+    if (typeof window === "undefined" || !enabled || !isRootBackground) return;
     const t = resolveTheme(props);
     injectDesignSystemVars({
       palette: t.palette.length ? t.palette : DEFAULT_PALETTE,
@@ -186,5 +192,5 @@ export function useBackgroundEffects({
       document.head.appendChild(el);
     }
     el.textContent = rules.join("\n");
-  }, [props.modifiers, enabled]);
+  }, [props.modifiers, enabled, isRootBackground]);
 }
