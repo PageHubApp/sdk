@@ -149,7 +149,7 @@ export const AddElement = ({
 
 export const ToolboxItemDisplay = ({ icon: Icon, label, isDragging = false }) => (
   <div
-    className={`pointer-events-auto w-full cursor-move rounded-lg border border-base-300 bg-base-200 text-base-content hover:bg-accent ${isDragging ? "border-accent bg-accent text-accent-content" : ""}`}
+    className={`pointer-events-auto w-full cursor-grab rounded-lg border border-base-300 bg-base-200 text-base-content hover:bg-accent active:cursor-grabbing ${isDragging ? "border-accent bg-accent text-accent-content" : ""}`}
   >
     <div className="pointer-events-none flex min-h-[60px] w-full flex-col items-center justify-center gap-2 px-1 py-2 transition-colors">
       <Icon className="text-2xl text-base-content" />
@@ -222,6 +222,7 @@ export const RenderToolComponent = ({
 
   return (
     <div
+      className="w-full cursor-grab active:cursor-grabbing"
       ref={(ref: any) => create(ref, tool)}
       onMouseDown={() => setIsDragging(true)}
       onMouseUp={() => setIsDragging(false)}

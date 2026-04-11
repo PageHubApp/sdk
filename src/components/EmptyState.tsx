@@ -3,6 +3,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { motion } from "framer-motion";
 import React from "react";
 import { TbLayoutColumns, TbLayoutRows, TbNote, TbPlus } from "react-icons/tb";
+import { useNodeTypeHelpers } from "../chrome/NodeControllers/hooks/useNodeType";
 import { ImageDefault } from "./Image";
 
 // Lazy-load AddElementButton — editor-only, keeps chrome out of viewer bundle
@@ -32,6 +33,11 @@ export const EmptyState = ({ icon = null }) => {
     name: node.data.custom.displayName || node.data.displayName,
   }));
 
+  const { isPage, isSection } = useNodeTypeHelpers();
+  // Only swap to AddElementButton on hover/active for page/section; inner containers
+  // keep the icon so height does not collapse (AddElementButton returns null there).
+  const showAddButton = (isActive || isHover) && (isPage || isSection);
+
   if (!enabled) {
     return null;
   }
@@ -60,7 +66,7 @@ export const EmptyState = ({ icon = null }) => {
     <div
       className={`mx-auto flex w-fit gap-3 opacity-30 transition-opacity duration-300 hover:opacity-100 ${isDragOver ? "pointer-events-none" : ""}`}
     >
-      {isActive || isHover ? (
+      {showAddButton ? (
         <motion.div id={`empty${id}`} whileTap={{ scale: 0.95 }}>
           <React.Suspense fallback={null}>
             <AddElementButton className="btn-primary btn-sm" />
@@ -68,7 +74,7 @@ export const EmptyState = ({ icon = null }) => {
         </motion.div>
       ) : null}
 
-      {!isActive && !isHover && icon && (
+      {icon && !showAddButton && (
         <div data-empty-state={true} className="text-3xl">
           {icon}
         </div>

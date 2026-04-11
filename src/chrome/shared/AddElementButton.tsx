@@ -16,15 +16,17 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
   const { isPage, isSection } = useNodeTypeHelpers();
   const { open: openPanel } = usePanelUrl();
 
+  // Empty inner containers: hide "Add Component" (keep handler + copy below for when we turn this back on).
+  if (!isPage && !isSection) {
+    return null;
+  }
+
   const handleClick = async () => {
     if (isPage || isSection) {
       // Direct add for pages/sections
       let newElement = null;
       
       // Dynamically import Container to break circular dependencies
-      console.log("isPage", isPage);
-      console.log("isSection", isSection);
-
       if (isPage) {
         // Add a section to a page
         newElement = AddElement({

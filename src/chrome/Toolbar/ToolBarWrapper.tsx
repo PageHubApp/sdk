@@ -10,8 +10,6 @@ import {
   TbComponents,
   TbComponentsOff,
   TbCopy,
-  TbScaleOutline,
-  TbScaleOutlineOff,
   TbSearch,
   TbTrash,
   TbTrashOff,
@@ -19,8 +17,10 @@ import {
 } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
-import { SettingsAtom } from "utils/atoms";
-import { ComponentsAtom, IsolateAtom, SideBarOpen, isolatePage } from "utils/lib";
+import { AiChatAttachedNodesAtom, ClippyOpenAtom, SettingsAtom } from "utils/atoms";
+import { ComponentsAtom, IsolateAtom, SideBarOpen } from "utils/lib";
+import { useAiEnabled } from "utils/hooks/useAiEnabled";
+import { useSDK } from "../../context";
 import { addHandler, buildClonedTree, saveHandler } from "../Viewport/lib";
 import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
 import { RenderChildren } from "./Helpers/CloneHelper";
@@ -46,7 +46,8 @@ export const ToolbarWrapper = ({
   const [components, setComponents] = useAtomState(ComponentsAtom);
   const { deleteSelectedNode } = useUnifiedDelete();
 
-  const { parent, deletable, props, nodeData, parentName } = useNode(node => ({
+  const { id, parent, deletable, props, nodeData, parentName, displayName } = useNode(node => ({
+    id: node.id,
     deletable: query.node(node.id).isDeletable(),
     parent: node.data.parent,
     props: node.data.props,
@@ -55,14 +56,15 @@ export const ToolbarWrapper = ({
       ? query.node(node.data.parent).get()?.data?.custom?.displayName ||
         query.node(node.data.parent).get()?.data?.displayName
       : null,
+    displayName:
+      (node.data.custom?.displayName as string | undefined) ||
+      (node.data.displayName as string | undefined) ||
+      String(node.data.name || "Element"),
   }));
 
   const {
     actions: { setProp },
   } = useEditor();
-
-  const { id } = useNode();
-  const active = id;
 
   const tablistRef = useRef<HTMLDivElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState<{ width: number; height: number; top: number; left: number } | null>(null);
@@ -144,6 +146,11 @@ export const ToolbarWrapper = ({
   };
 
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
+  const [, setAttachedNodes] = useAtomState(AiChatAttachedNodesAtom);
+  const setClippyOpen = useSetAtomState(ClippyOpenAtom);
+  const { config } = useSDK();
+  const aiEnabled = useAiEnabled();
+  const renderAiContext = config.editorChromeSlots?.renderNodeAiContextButton;
   const setSideBarOpen = useSetAtomState(SideBarOpen);
   const settings = useAtomValue(SettingsAtom);
   const accordionCtx = useAccordionContext();
@@ -205,6 +212,15 @@ export const ToolbarWrapper = ({
 
   // Check if this node or ANY ancestor is a fully linked component (not style mode)
   const isLinked = checkIfAncestorLinked(id, query);
+
+  const pinSelectionInAiChat = () => {
+    if (id === ROOT_NODE) return;
+    setAttachedNodes(prev => {
+      if (prev.some(n => n.id === id)) return prev;
+      return [...prev, { id, displayName }];
+    });
+    setClippyOpen({ nodeId: id });
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -347,21 +363,13 @@ export const ToolbarWrapper = ({
           </Tooltip>
         )}
 
-        {(props.type === "page" || isolate) && (
-          <Tooltip
-            className="hidden"
-            content={!isolate ? "Isolate Page" : "Show All Pages"}
-            onClick={() => isolatePage(!!isolate, query, active, actions, setIsolate)}
-          >
-            <button
-
-              className={`cursor-pointer ${
-                isolate ? "text-accent-content" : "text-neutral-content"
-              } rounded-lg p-2 hover:text-accent-content`}
-
-            >
-              {isolate ? <TbScaleOutlineOff /> : <TbScaleOutline />}
-            </button>
+        {id !== ROOT_NODE && aiEnabled && renderAiContext && (
+          <Tooltip content="Include in AI chat">
+            {renderAiContext({
+              onClick: pinSelectionInAiChat,
+              className:
+                "cursor-pointer rounded-lg p-2 text-neutral-content transition-colors hover:bg-black/7 hover:text-accent-content dark:hover:bg-white/12",
+            })}
           </Tooltip>
         )}
 

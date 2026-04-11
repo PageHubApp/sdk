@@ -6,7 +6,7 @@ import { ViewSelectionAtom } from "../../Toolbar/Label";
 import { ViewAtom } from "../../Viewport/atoms";
 import { getPropFinalValue } from "../../Viewport/lib";
 import { AddElement } from "../../Viewport/Toolbox/lib";
-import { Tooltip } from "components/layout/Tooltip";
+import { NodeInlineTooltip } from "./NodeInlineTooltip";
 import {
   TbLayoutAlignBottom,
   TbLayoutAlignCenter,
@@ -21,7 +21,7 @@ import {
 import { useAtomValue } from "@zedux/react";
 import { useAtomState } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
-import { AiChatAttachedNodesAtom, ClippyOpenAtom, SettingsAtom } from "utils/atoms";
+import { AiChatAttachedNodesAtom, ClippyOpenAtom } from "utils/atoms";
 import { usePanelUrl } from "../../../utils/usePanelUrl";
 import { useSDK } from "../../../context";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
@@ -80,15 +80,22 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   const setClippyOpen = useSetAtomState(ClippyOpenAtom);
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
-  const settings = useAtomValue(SettingsAtom);
-  const { nodeProps, id, displayName } = useNode(node => ({
+  const { nodeProps, id, displayName, craftName } = useNode(node => ({
     nodeProps: node.data.props || {},
     id: node.id,
+    craftName: node.data.name as string | undefined,
     displayName:
       (node.data.custom?.displayName as string | undefined) ||
       (node.data.displayName as string | undefined) ||
       String(node.data.name || "Container"),
   }));
+
+  /** Layout `Container` only — keep insert/add-components on `ContainerGroup` etc. */
+  const suppressContainerChromeTools = craftName === "Container";
+  /** Match `DeleteNodeController` strip: tight gap, no segment padding on anchors. */
+  const compactToolbar = suppressContainerChromeTools && direction === "horizontal";
+  const segmentBorder = "border-r border-base-300 pr-2";
+  const deleteSegmentBorder = "border-l border-base-300 pl-2";
 
   const { value } = getPropFinalValue(
     {
@@ -114,69 +121,85 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
     (["flex-row", "flex-row-reverse"].includes(value)) ||
     (["flex-col", "flex-col-reverse"].includes(value));
 
+  const pinNodeInAiChat = () => {
+    setAttachedNodes(prev => {
+      if (prev.some(n => n.id === id)) return prev;
+      return [...prev, { id, displayName }];
+    });
+    setClippyOpen({ nodeId: id });
+  };
+
   return (
-    <NodeToolWrapper col={direction !== "horizontal"}>
+    <NodeToolWrapper col={direction !== "horizontal"} dense={compactToolbar}>
       {direction == "horizontal" && (
         <>
           <SelectParentNodeTool
             parentType="Nav"
             icon={
-              <Tooltip content="Select Navigation" className="border-r border-base-300 pr-2">
+              <NodeInlineTooltip
+                variant={compactToolbar ? "strip-compact" : "container"}
+                content="Select navigation"
+                className={compactToolbar ? "" : segmentBorder}
+              >
                 <TbNavigation />
-              </Tooltip>
+              </NodeInlineTooltip>
             }
           ></SelectParentNodeTool>
         </>
       )}
 
-      {direction === "horizontal" && aiEnabled && renderNodeAi && (
-        <Tooltip content="Add something with AI" className="border-r border-base-300 pr-2">
+      {direction === "horizontal" &&
+        !suppressContainerChromeTools &&
+        aiEnabled &&
+        renderNodeAi && (
+        <NodeInlineTooltip variant="container" content="Add something with AI" className={segmentBorder}>
           {renderNodeAi({
             onClick: () => setClippyOpen({ nodeId: id, mode: "create" }),
             className: "tool-button",
           })}
-        </Tooltip>
+        </NodeInlineTooltip>
       )}
 
-      {direction === "horizontal" && aiEnabled && renderNodeContext && id !== "ROOT" && (
-        <Tooltip content="Include in AI chat" className="border-r border-base-300 pr-2">
-          {renderNodeContext({
-            onClick: () => {
-              setAttachedNodes(prev => {
-                if (prev.some(n => n.id === id)) return prev;
-                return [...prev, { id, displayName }];
-              });
-              setClippyOpen({ nodeId: id });
-            },
-            className: "tool-button",
-          })}
-        </Tooltip>
-      )}
+      {direction === "horizontal" && aiEnabled && renderNodeContext && id !== "ROOT" &&
+        (compactToolbar ? (
+          <NodeInlineTooltip variant="strip-compact" content="Include in AI chat">
+            {renderNodeContext({
+              onClick: pinNodeInAiChat,
+              className: "tool-button",
+            })}
+          </NodeInlineTooltip>
+        ) : (
+          <NodeInlineTooltip variant="container" content="Include in AI chat" className={segmentBorder}>
+            {renderNodeContext({
+              onClick: pinNodeInAiChat,
+              className: "tool-button",
+            })}
+          </NodeInlineTooltip>
+        ))}
 
-      {direction === "horizontal" && (
-        <Tooltip content="Duplicate">
+      {direction === "horizontal" && !suppressContainerChromeTools && (
+        <NodeInlineTooltip variant="container" content="Duplicate">
           <DuplicateNodeButton className="tool-button" />
-        </Tooltip>
+        </NodeInlineTooltip>
       )}
 
-      <Tooltip
-        content={`Align items ${direction === "horizontal" ? "horizontally" : "vertically"}`}
-        className="hidden"
-      >
-        <div className="tool-button">
-          <ToolbarItem
-            propKey={propKey}
-            type="toggleNext"
-            label=""
-            labelHide={true}
-            cols={direction === "horizontal"}
-            wrap="control"
-            options={options}
-            propType="class"
-            inline={false}
-          />
+      {!suppressContainerChromeTools && (
+        <div className="hidden">
+          <div className="tool-button">
+            <ToolbarItem
+              propKey={propKey}
+              type="toggleNext"
+              label=""
+              labelHide={true}
+              cols={direction === "horizontal"}
+              wrap="control"
+              options={options}
+              propType="class"
+              inline={false}
+            />
+          </div>
         </div>
-      </Tooltip>
+      )}
 
       {direction == "horizontal" && (
         <div className="tool-button hidden">
@@ -184,8 +207,9 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
         </div>
       )}
 
-      {match && (
-        <Tooltip
+      {match && !suppressContainerChromeTools && (
+        <NodeInlineTooltip
+          variant="container"
           content={`Add ${["flex-row", "flex-row-reverse"].includes(value) ? "column" : "row"} container`}
         >
           <button
@@ -208,29 +232,40 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
           >
             <TbRowInsertTop />
           </button>
-        </Tooltip>
+        </NodeInlineTooltip>
       )}
 
-      {match && (
-        <Tooltip content="Add components">
+      {match && !suppressContainerChromeTools && (
+        <NodeInlineTooltip variant="container" content="Add components">
           <button
             className={`tool-button ${direction == "horizontal" ? "-rotate-90" : ""}`}
             onClick={() => openPanel("components")}
           >
             <TbPlus />
           </button>
-        </Tooltip>
+        </NodeInlineTooltip>
       )}
 
-      {direction === "horizontal" && (
-        <Tooltip content="Delete container" className="border-l border-base-300 pl-2">
-          <DeleteNodeButton
-            title="Delete container"
-            titleDisabled="Cannot delete"
-            className="tool-button"
-          />
-        </Tooltip>
-      )}
+      {direction === "horizontal" &&
+        (compactToolbar ? (
+          <NodeInlineTooltip variant="strip-compact" content="Delete container">
+            <DeleteNodeButton
+              title="Delete container"
+              titleDisabled="Cannot delete"
+              className="tool-button"
+              suppressNativeTitle
+            />
+          </NodeInlineTooltip>
+        ) : (
+          <NodeInlineTooltip variant="container" content="Delete container" className={deleteSegmentBorder}>
+            <DeleteNodeButton
+              title="Delete container"
+              titleDisabled="Cannot delete"
+              className="tool-button"
+              suppressNativeTitle
+            />
+          </NodeInlineTooltip>
+        ))}
 
     </NodeToolWrapper>
   );

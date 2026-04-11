@@ -16,7 +16,6 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
   }, children);
 };
 import { ContainerGroupMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ContainerGroupMainTab";
-import { ToolNodeController, ContainerSettingsTopNodeTool } from "./editor-chrome";
 
 export const ContainerGroupDef = defineComponent({
   name: "ContainerGroup",
@@ -40,14 +39,5 @@ export const ContainerGroupDef = defineComponent({
     items: [],
     groupSettings: {},
   },
-  tools: (props) => [
-    <ToolNodeController
-      key="containergroupcontroller1"
-      position="top"
-      align="middle"
-      placement="start"
-    >
-      <ContainerSettingsTopNodeTool />
-    </ToolNodeController>,
-  ],
+  tools: () => [],
 }, { __internal: true });

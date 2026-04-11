@@ -61,7 +61,6 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
 };
 import { ImageMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ImageMainTab";
 import { ImageGroupSettings } from "./ImageGroupSettings";
-import { DeleteNodeController, ImageMediaTool } from "./editor-chrome";
 
 export const ImageDef = defineComponent({
   name: "Image",
@@ -80,10 +79,7 @@ export const ImageDef = defineComponent({
     canMoveIn: () => false,
   },
   groupSettings: ImageGroupSettings,
-  tools: (props) => [
-    <ImageMediaTool key="imageMediaTool" />,
-    <DeleteNodeController key="imageDelete" />,
-  ],
+  tools: () => [],
   presets: [
     {
       label: "Image",

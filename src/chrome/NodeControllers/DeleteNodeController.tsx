@@ -6,10 +6,12 @@ import { useSetAtomState } from "../../utils/atoms";
 import { useSDK } from "../../context";
 import RenderNodeControlInline from "../RenderNodeControlInline";
 import { DeleteNodeButton } from "./Tools/DeleteNodeButton";
+import { NodeInlineTooltip } from "./Tools/NodeInlineTooltip";
 
 export const DeleteNodeController = () => {
-  const { id, displayName } = useNode(node => ({
+  const { id, displayName, canDelete } = useNode(node => ({
     id: node.id,
+    canDelete: node.data.props?.canDelete !== false,
     displayName:
       (node.data.custom?.displayName as string | undefined) ||
       (node.data.displayName as string | undefined) ||
@@ -51,13 +53,20 @@ export const DeleteNodeController = () => {
         onMouseDown={e => e.stopPropagation()}
         onMouseDownCapture={e => e.stopPropagation()}
       >
-        {aiEnabled && canPinContext && renderContext
-          ? renderContext({
+        {aiEnabled && canPinContext && renderContext ? (
+          <NodeInlineTooltip variant="strip" content="Include in AI chat">
+            {renderContext({
               onClick: handleAddToContext,
               className: "tool-button",
-            })
-          : null}
-        <DeleteNodeButton className="tool-button" />
+            })}
+          </NodeInlineTooltip>
+        ) : null}
+        <NodeInlineTooltip
+          variant="strip"
+          content={canDelete ? "Delete" : "Cannot delete"}
+        >
+          <DeleteNodeButton className="tool-button" suppressNativeTitle />
+        </NodeInlineTooltip>
       </div>
     </RenderNodeControlInline>
   );

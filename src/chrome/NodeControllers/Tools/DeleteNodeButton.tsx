@@ -6,6 +6,8 @@ interface DeleteNodeButtonProps {
   className?: string;
   title?: string;
   titleDisabled?: string;
+  /** When a parent `NodeInlineTooltip` (or similar) shows the label, skip native `title` to avoid double tooltips. */
+  suppressNativeTitle?: boolean;
   useSimpleDelete?: boolean;
   label?: string;
 }
@@ -14,6 +16,7 @@ export const DeleteNodeButton = ({
   className = "tool-button",
   title = "Delete",
   titleDisabled = "Cannot delete",
+  suppressNativeTitle = false,
   useSimpleDelete = false,
   label,
 }: DeleteNodeButtonProps) => {
@@ -32,6 +35,9 @@ export const DeleteNodeButton = ({
     deleteSelectedNode(useSimpleDelete);
   };
 
+  const nativeTitle =
+    suppressNativeTitle ? undefined : canDelete ? title : titleDisabled;
+
   return (
     <div
       role="button"
@@ -39,7 +45,7 @@ export const DeleteNodeButton = ({
       className={className}
       onClick={handleDelete}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") handleDelete(e as any); }}
-      title={canDelete ? title : titleDisabled}
+      title={nativeTitle}
       aria-disabled={!canDelete || undefined}
     >
       {canDelete ? <TbTrash /> : <TbTrashOff />}

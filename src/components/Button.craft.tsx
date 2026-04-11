@@ -12,7 +12,6 @@ import {
 } from "../utils/materialSymbolsReveal";
 import { ariaAttrs, collectClasses, escapeAttr, escapeHTML, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
 import { Button } from "./Button";
-import { DeleteNodeController, HoverNodeController, SelectButtonListTool } from "./editor-chrome";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   let icon = props.icon;
@@ -93,21 +92,7 @@ export const ButtonDef = defineComponent({
     canDrag: () => true,
     canMoveIn: (nodes) => nodes.every(node => node.data?.name === "Button"),
   },
-  tools: (props) => [
-    <HoverNodeController
-      key="buttonHoverController"
-      position="top"
-      align="end"
-      placement="end"
-      alt={{
-        position: "bottom",
-        align: "start",
-        placement: "start",
-      }}
-    />,
-    <SelectButtonListTool key="selectButtonList" />,
-    <DeleteNodeController key="buttonDelete" />,
-  ],
+  tools: () => [],
   presets: [
     {
       label: "Button",

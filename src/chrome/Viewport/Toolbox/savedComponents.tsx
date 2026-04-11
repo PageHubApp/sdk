@@ -175,7 +175,7 @@ const SavedComponentDisplay = ({ componentData }) => {
       <button
         onClick={handleDelete}
         onMouseDown={e => e.stopPropagation()}
-        className="pointer-events-auto absolute right-1 top-1 z-10 p-1 text-error hover:text-error"
+        className="pointer-events-auto absolute right-1 top-1 z-10 cursor-pointer p-1 text-error hover:text-error"
         aria-label="Delete component"
       >
         <TbTrash className="text-sm" />

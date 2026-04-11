@@ -39,12 +39,12 @@ export const BlockPreviewCard = memo(function BlockPreviewCard({
         }
       }}
       onMouseDown={onDismissQuickLook}
-      className={`group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border hover:shadow-sm ${
+      className={`group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-grab overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing ${
         quickLookOpen ? "ring-2 ring-primary/30" : ""
       }`}
     >
       <ComponentPreview component={block.structure} scale={0.35} resolver={resolver} modifiers={block.modifiers} />
-      <div className="bg-primary/10 absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
+      <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
     </div>
   );
 });
@@ -77,7 +77,7 @@ export const CustomSectionCard = memo(function CustomSectionCard({
     <div
 
       ref={(ref: any) => createRef(ref, tool)}
-      className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-pointer overflow-hidden rounded-lg border hover:shadow-sm"
+      className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-grab overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing"
       onDoubleClick={() => {
         try {
           const masterNode = editorQuery.node(template.rootNodeId).get();
@@ -118,7 +118,7 @@ export const CustomSectionCard = memo(function CustomSectionCard({
       <div className="bg-primary absolute top-2 right-2 z-10 rounded-lg px-2 py-1">
         <span className="text-primary-content text-xs font-medium">Custom</span>
       </div>
-      <div className="bg-primary/10 absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
+      <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
     </div>
   );
 });

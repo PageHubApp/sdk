@@ -34,12 +34,24 @@ export function NodeDialog({ tooltip = "", button = <TbSettings />, children = n
   );
 }
 
-export const NodeToolWrapper = ({ children, className = "", col = false }: { children: React.ReactNode; className?: string; animate?: any; col?: boolean }) =>
+export const NodeToolWrapper = ({
+  children,
+  className = "",
+  col = false,
+  dense = false,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  animate?: any;
+  col?: boolean;
+  /** Tight strip — matches `DeleteNodeController` gap (e.g. Button wand + trash). */
+  dense?: boolean;
+}) =>
   children ? (
     <div
       className={`node-control flex items-center justify-center ${
         col ? "flex-col" : "flex-row"
-      } pointer-events-auto z-50 gap-2 ${className}`}
+      } pointer-events-auto ${dense ? "relative z-110 gap-0.5" : "z-50 gap-2"} ${className}`}
       onMouseDown={e => e.stopPropagation()}
     >
       {children}

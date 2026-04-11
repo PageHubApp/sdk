@@ -1,23 +1,9 @@
-/**
- * Container — Component definition via defineComponent()
- *
- * The most complex built-in: conditional inline tools based on node type,
- * drag-adjust handles for margins/padding/size, and toolbox presets for
- * Row and Column layouts.
- */
+/** Container — Component definition via defineComponent() (no canvas inline tool controllers). */
 import { TbContainer, TbLayoutColumns, TbLayoutRows } from "react-icons/tb";
 import { ContainerMainTab, HeaderFooterToggles } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ContainerMainTab";
 import { defineComponent } from "../define";
 import { ariaAttrs, getInlineStyle, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
 import { Container } from "./Container";
-import {
-  ContainerSettingsTopNodeTool,
-  DragAdjustNodeController,
-  HoverNodeController,
-  NameNodeController,
-  ToolNodeController,
-  UniformPaddingNodeController,
-} from "./editor-chrome";
 
 export const toHTML: ToHTMLFn = (props, children, ctx) => {
   if (props.type === "component") return "";
@@ -105,119 +91,7 @@ export const ContainerDef = defineComponent({
     canDelete: () => true,
     canMoveIn: (node, into) => canMoveIn(node, into),
   },
-  tools: props => {
-    const isLinked = props.belongsTo && props.relationType !== "style";
-
-    const baseControls = [
-      <NameNodeController
-        key="container1"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{
-          position: "bottom",
-          align: "start",
-          placement: "start",
-        }}
-      />,
-      <HoverNodeController
-        key="container2"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{
-          position: "bottom",
-          align: "start",
-          placement: "start",
-        }}
-      />,
-    ];
-
-    if (props.type === "page" || isLinked) {
-      return baseControls;
-    }
-
-    return [
-      ...baseControls,
-      <DragAdjustNodeController
-        key="containerdrag1"
-        position="top"
-        align="end"
-        direction="vertical"
-        propVar="mt"
-        styleToUse="marginTop"
-        tooltip="Drag to adjust margin"
-      />,
-      <DragAdjustNodeController
-        key="containerdrag2"
-        position="bottom"
-        align="end"
-        direction="vertical"
-        propVar="height"
-        styleToUse="height"
-        tooltip="Drag to adjust height"
-      />,
-      <DragAdjustNodeController
-        key="containerdrag3"
-        position="right"
-        align="end"
-        direction="horizontal"
-        propVar="width"
-        styleToUse="width"
-        gridSnap={12}
-        tooltip="Drag to adjust width"
-      />,
-      <DragAdjustNodeController
-        key="paddingdrag1"
-        position="top"
-        align="middle"
-        direction="vertical"
-        propVar="pt"
-        styleToUse="paddingTop"
-        tooltip="Drag to adjust top padding"
-        isPadding={true}
-      />,
-      <DragAdjustNodeController
-        key="paddingdrag2"
-        position="bottom"
-        align="start"
-        direction="vertical"
-        propVar="pb"
-        styleToUse="paddingBottom"
-        tooltip="Drag to adjust bottom padding"
-        isPadding={true}
-      />,
-      <DragAdjustNodeController
-        key="paddingdrag3"
-        position="left"
-        align="middle"
-        direction="horizontal"
-        propVar="pl"
-        styleToUse="paddingLeft"
-        tooltip="Drag to adjust left padding"
-        isPadding={true}
-      />,
-      <DragAdjustNodeController
-        key="paddingdrag4"
-        position="right"
-        align="middle"
-        direction="horizontal"
-        propVar="pr"
-        styleToUse="paddingRight"
-        tooltip="Drag to adjust right padding"
-        isPadding={true}
-      />,
-      <UniformPaddingNodeController key="uniformpadding" />,
-      <ToolNodeController
-        position="top"
-        align="middle"
-        placement="start"
-        key="containercontroller1"
-      >
-        <ContainerSettingsTopNodeTool />
-      </ToolNodeController>,
-    ];
-  },
+  tools: () => [],
   presets: [
     {
       label: "Row",
