@@ -1,3 +1,4 @@
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
@@ -6,6 +7,7 @@ export const MapPointMainTab = () =>
   renderComponentSlots({
     Content: (
       <>
+        <SettingsAiSlot />
         <ToolbarSection title="Location" help="Latitude and longitude for this pin.">
           <ToolbarItem
             propKey="lat"

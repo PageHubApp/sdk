@@ -14,7 +14,8 @@ export interface ToolboxMenuInterface {
   };
 }
 
-export const ToolboxMenu = atom("menu", {
+/** Full default; use when resetting so partial `setMenu({ enabled: false })` does not drop `parent`. */
+export const toolboxMenuInitialState = {
   enabled: false,
   position: "after",
   x: 0,
@@ -27,4 +28,6 @@ export const ToolboxMenu = atom("menu", {
     displayName: "",
     props: {},
   },
-} as any);
+} as const;
+
+export const ToolboxMenu = atom("menu", { ...toolboxMenuInitialState } as any);

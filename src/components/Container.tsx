@@ -9,7 +9,6 @@ import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { Section, Box } from "@pagehub/ui";
 import {
   applyBackgroundImage,
-  enableContext,
   motionIt
 } from "../utils/lib";
 
@@ -50,7 +49,6 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   const view = useView();
   const viewMode = "page";
   const isolate = useIsolate();
-  const setMenu = (_: any) => { };
   const preview = usePreview();
   const settings = null;
 
@@ -117,32 +115,11 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
 
   const ref = useRef(null);
 
-  const contexted = e => {
-    if (!enabled || !enableContext) return;
-    if (!enableContext) {
-      const theNode = id ? query.node(id).get() : { data: "no active node" };
-
-      console.info(theNode.data);
-    }
-
-    if (!enabled || !enableContext) return;
-
+  /** Editor: suppress native context menu on canvas nodes (no contextual toolbox UI). */
+  const blockCanvasContextMenu = e => {
+    if (!enabled) return;
     e.preventDefault();
     e.stopPropagation();
-
-    setMenu({
-      x: e.clientX,
-      y: e.clientY,
-      enabled: true,
-      position: "inside",
-      name,
-      id,
-      parent: {
-        name,
-        props,
-        displayName: name,
-      },
-    });
   };
 
   let className = props.className || "";
@@ -228,8 +205,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     prop["data-border"] = /\bborder(-[^\s])?/.test(props.className || "");
 
     prop["data-bounding-box"] = enabled;
-    prop.onContextMenu = contexted;
-    prop.onDoubleClick = contexted;
+    prop.onContextMenu = blockCanvasContextMenu;
     prop["data-empty-state"] = !children;
     // Only add node-id after client-side mount to prevent hydration mismatch
     if (isMounted) {

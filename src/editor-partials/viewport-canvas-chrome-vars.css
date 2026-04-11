@@ -2,7 +2,8 @@
    Editor chrome inside #viewport — outside Tailwind @layer (normal specificity).
    Inline toolbars and node strips portal under canvas nodes; those nodes often
    carry site styleGuide CSS variables. Lock tokens on chrome elements so
-   bg-neutral / borders match the editor, not the page.
+   bg-neutral / borders / radius / shadow / font / sidebar ink match the SDK,
+   not the page theme injected on #viewport (see injectDesignSystemVars).
 
    Values are NEUTRAL black/white/gray — no hue — so controls never clash with
    any template palette.
@@ -20,9 +21,11 @@
 #viewport .pagehub-sdk-root,
 #viewport .tool-bg,
 #viewport .node-control,
+#viewport [data-node-control="true"],
 #device-tools-portal .pagehub-sdk-root,
 #device-tools-portal .tool-bg,
-#device-tools-portal .node-control {
+#device-tools-portal .node-control,
+#device-tools-portal [data-node-control="true"] {
   --background: hsl(0 0% 100%);
   --foreground: hsl(0 0% 6%);
   --card: hsl(0 0% 98%);
@@ -50,14 +53,68 @@
   --accent-content: hsl(0 0% 9%);
   --ring: hsl(0 0% 9%);
   --border: 1px;
+
+  /* Match @pagehub/sdk theme.css @theme inline — utilities use --color-* */
+  --color-primary: var(--primary);
+  --color-primary-content: var(--primary-content);
+  --color-secondary: var(--secondary);
+  --color-secondary-content: var(--secondary-content);
+  --color-accent: var(--accent);
+  --color-accent-content: var(--accent-content);
+  --color-neutral: var(--neutral);
+  --color-neutral-content: var(--neutral-content);
+  --color-base-100: var(--base-100);
+  --color-base-200: var(--base-200);
+  --color-base-300: var(--base-300);
+  --color-base-content: var(--base-content);
+  --color-background: var(--base-100);
+  --color-foreground: var(--base-content);
+  --color-muted: var(--neutral);
+  --color-muted-foreground: var(--neutral-content);
+  --color-border: var(--base-300);
+  --color-input: var(--base-300);
+  --color-ring: var(--ring);
+
+  /* Radius / shadow: site styleGuide can override #viewport — keep chrome stable */
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 0.5rem;
+  --radius: var(--radius-box);
+  --card-radius: var(--radius-box);
+  --shadow-2xs: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.07);
+  --shadow-xs: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.07);
+  --shadow-sm: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 1px 2px -1px hsl(0 0% 0% / 0.14);
+  --shadow: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 1px 2px -1px hsl(0 0% 0% / 0.14);
+  --shadow-md: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 2px 4px -1px hsl(0 0% 0% / 0.14);
+  --shadow-lg: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 4px 6px -1px hsl(0 0% 0% / 0.14);
+  --shadow-xl: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 8px 10px -1px hsl(0 0% 0% / 0.14);
+  --shadow-2xl: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.35);
+
+  /* Editor UI font — not site body/heading from canvas */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Align with app sidebar tokens (styles/globals.css) — works when globals omit */
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
 }
 
 .dark #viewport .pagehub-sdk-root,
 .dark #viewport .tool-bg,
 .dark #viewport .node-control,
+.dark #viewport [data-node-control="true"],
 .dark #device-tools-portal .pagehub-sdk-root,
 .dark #device-tools-portal .tool-bg,
-.dark #device-tools-portal .node-control {
+.dark #device-tools-portal .node-control,
+.dark #device-tools-portal [data-node-control="true"],
+/* #viewport itself carries .dark for canvas dark: variants — no .dark ancestor required */
+#viewport.dark .pagehub-sdk-root,
+#viewport.dark .tool-bg,
+#viewport.dark .node-control,
+#viewport.dark [data-node-control="true"] {
   --background: hsl(0 0% 12%);
   --foreground: hsl(0 0% 93%);
   --card: hsl(0 0% 18%);
@@ -85,4 +142,47 @@
   --accent-content: hsl(0 0% 93%);
   --ring: hsl(0 0% 93%);
   --border: 1px;
+
+  --color-primary: var(--primary);
+  --color-primary-content: var(--primary-content);
+  --color-secondary: var(--secondary);
+  --color-secondary-content: var(--secondary-content);
+  --color-accent: var(--accent);
+  --color-accent-content: var(--accent-content);
+  --color-neutral: var(--neutral);
+  --color-neutral-content: var(--neutral-content);
+  --color-base-100: var(--base-100);
+  --color-base-200: var(--base-200);
+  --color-base-300: var(--base-300);
+  --color-base-content: var(--base-content);
+  --color-background: var(--base-100);
+  --color-foreground: var(--base-content);
+  --color-muted: var(--neutral);
+  --color-muted-foreground: var(--neutral-content);
+  --color-border: var(--base-300);
+  --color-input: var(--base-300);
+  --color-ring: var(--ring);
+
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 0.5rem;
+  --radius: var(--radius-box);
+  --card-radius: var(--radius-box);
+  --shadow-2xs: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.07);
+  --shadow-xs: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.07);
+  --shadow-sm: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 1px 2px -1px hsl(0 0% 0% / 0.14);
+  --shadow: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 1px 2px -1px hsl(0 0% 0% / 0.14);
+  --shadow-md: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 2px 4px -1px hsl(0 0% 0% / 0.14);
+  --shadow-lg: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 4px 6px -1px hsl(0 0% 0% / 0.14);
+  --shadow-xl: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.14), 1px 8px 10px -1px hsl(0 0% 0% / 0.14);
+  --shadow-2xl: 1px 2px 4.5px 0px hsl(0 0% 0% / 0.35);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+
+  --sidebar: hsl(0 0% 12%);
+  --sidebar-foreground: hsl(0 0% 98%);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
 }

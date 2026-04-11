@@ -232,7 +232,7 @@ export const RenderNodeControlInline = ({
         textAlign: "left",
         textTransform: "none",
         textDecoration: "none",
-        color: "inherit",
+        color: "var(--sidebar-foreground, hsl(240 5.3% 26.1%))",
         ...style,
       }}
       {...props}

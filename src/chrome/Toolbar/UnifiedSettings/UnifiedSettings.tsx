@@ -18,7 +18,7 @@ import {
 import { useDefaultTab, useScrollToActiveTab } from "utils/lib";
 import { registerUnifiedSettings } from "../../../components/LazyUnifiedSettings";
 import { useSetAtomState } from "../../../utils/atoms";
-import { ToolboxMenu } from "../../RenderNode";
+import { ToolboxMenu, toolboxMenuInitialState } from "../../RenderNode";
 import { TabAtom } from "../../Viewport/atoms";
 import { TBWrap } from "../Helpers/SettingsHelper";
 import { UnifiedTabBody } from "../UnifiedTab";
@@ -71,7 +71,9 @@ export const UnifiedSettings = () => {
   const setMenu = useSetAtomState(ToolboxMenu);
   const search = useAtomValue(SettingsSearchAtom);
 
-  useEffect(() => { setMenu({ enabled: false }); }, [setMenu]);
+  useEffect(() => {
+    setMenu({ ...toolboxMenuInitialState });
+  }, [setMenu]);
 
   const isInitialMount = useScrollToActiveTab(activeTab, setActiveTab, id);
 

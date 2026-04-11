@@ -156,7 +156,7 @@ export const InlineToolsRenderer = ({
     <InlineRenderContext.Provider value={true}>
       {/* Wrapper to shield editor UI from component CSS inheritance (like text-transform or CSS vars) */}
       <div
-        className="pagehub-sdk-root text-base-content contents font-sans text-base! leading-normal tracking-normal normal-case not-italic"
+        className="pagehub-sdk-root text-sidebar-foreground contents font-sans text-base! leading-normal tracking-normal normal-case not-italic"
         style={{ letterSpacing: "normal", whiteSpace: "normal", textIndent: "0" }}
       >
         {/* Always visible children (if any) */}

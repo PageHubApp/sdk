@@ -1,6 +1,7 @@
 import React from "react";
 import { Element, useEditor, useNode } from "@craftjs/core";
 import { TbPlus, TbTrash } from "react-icons/tb";
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, renderAdvancedComponentSlots, SECTION_ICONS } from "../helpers";
@@ -142,6 +143,7 @@ export const TabsMainTab = () => {
             <TbTrash className="w-3.5 h-3.5" />
           </button>
         </div>
+        <SettingsAiSlot />
 
       </ToolbarSection>
     ),

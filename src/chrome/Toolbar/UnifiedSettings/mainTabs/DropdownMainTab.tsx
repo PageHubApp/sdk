@@ -1,4 +1,5 @@
 import { useNode } from "@craftjs/core";
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, renderAdvancedComponentSlots, SECTION_ICONS } from "../helpers";
@@ -30,6 +31,7 @@ export const DropdownMainTab = () => {
           <option value="top-start">Above Left</option>
           <option value="top-end">Above Right</option>
         </ToolbarItem>
+        <SettingsAiSlot />
 
       </ToolbarSection>
     ),

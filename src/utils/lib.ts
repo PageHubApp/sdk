@@ -64,8 +64,6 @@ export { getCdnUrl };
 
 // ─── Constants ──────────────────────────────────────────────────────────
 
-export const enableContext = false;
-
 export const siteTitle =
   "PageHub - Easy-to-Use Website Builder for Tailwind Developers – Free & SEO-Friendly";
 export const siteDescription =

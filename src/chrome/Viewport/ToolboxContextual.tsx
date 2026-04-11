@@ -40,11 +40,12 @@ export const ToolboxContexual = ({ userStyle = null }) => {
 
   const { actions, query } = useEditor();
 
-  const { id } = menu;
-  const active = id;
   const ref = useRef(null);
-  const props: any = menu.parent.props;
-  const name = menu?.parent?.name || "";
+  const parent = menu.parent ?? { name: "", displayName: "", props: {} };
+  const props: any = parent.props ?? {};
+  const name = parent.name || menu.name || "";
+  const id = menu.id ?? "";
+  const active = id;
 
   const click = (ele, nodeTree = null) => {
     const nss = query.node(active).get();
@@ -194,7 +195,7 @@ export const ToolboxContexual = ({ userStyle = null }) => {
           id="toolbox"
           ref={ref}
           style={style}
-          className="animate-backdrop-in fixed z-50 max-h-[330px] select-none flex-col justify-between gap-3 rounded-lg p-3 text-neutral-content drop-shadow-lg md:flex-row"
+          className="animate-backdrop-in fixed z-120 flex max-h-[330px] min-w-[240px] select-none flex-col justify-between gap-3 rounded-box border border-base-300/40 bg-base-100 p-3 text-base-content shadow-xl md:flex-row"
         >
           <div
             className="scrollbar-light flex flex-col gap-1.5 overflow-auto rounded-lg bg-base-100"

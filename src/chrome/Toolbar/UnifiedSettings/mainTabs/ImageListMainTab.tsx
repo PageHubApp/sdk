@@ -1,4 +1,5 @@
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { MediaInput } from "../../Inputs/media/MediaInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -74,6 +75,7 @@ export const ImageListMainTab = () => {
             </NodeProvider>
           )}
         />
+        <SettingsAiSlot />
       </ToolbarSection>
     ),
     Properties: (

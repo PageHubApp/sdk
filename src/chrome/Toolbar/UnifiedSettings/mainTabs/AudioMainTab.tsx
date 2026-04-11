@@ -1,3 +1,4 @@
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
@@ -14,6 +15,7 @@ export const AudioMainTab = () =>
           labelHide={true}
           placeholder="https://example.com/audio.mp3"
         />
+        <SettingsAiSlot />
       </ToolbarSection>
     ),
     Properties: (

@@ -1,4 +1,5 @@
 import { useEditor } from "@craftjs/core";
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { IpsumGenerator } from "../../Inputs/media/IpsumGenerator";
 import { SelectOptionsItem } from "../../Items/SelectOptionsItem";
 import { ToolbarItem } from "../../ToolbarItem";
@@ -45,6 +46,7 @@ export const FormElementMainTab = () => {
             <option key={_}>{_}</option>
           ))}
         </ToolbarItem>
+        <SettingsAiSlot />
       </ToolbarSection>
     ),
     Properties: (

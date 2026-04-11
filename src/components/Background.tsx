@@ -12,7 +12,6 @@ import { Box } from "@pagehub/ui";
 import {
   applyBackgroundImage,
   applyLazyBackgroundImage,
-  enableContext,
   getBackgroundUrl,
 } from "../utils/lib";
 import { PaletteProvider } from "../utils/design/PaletteContext";
@@ -129,8 +128,9 @@ export function Background({
   // All side-effects (icon fonts, header/footer injection, link styles, design system vars)
   useBackgroundEffects({ enabled, query, nodeCount, props, nodeId: id });
 
-  const contexted = (e: React.MouseEvent) => {
-    if (!enabled || !enableContext) return;
+  /** Editor: suppress native context menu on the canvas root (no contextual toolbox UI). */
+  const blockCanvasContextMenu = (e: React.MouseEvent) => {
+    if (!enabled) return;
     e.preventDefault();
     e.stopPropagation();
   };
@@ -152,7 +152,7 @@ export function Background({
     prop["data-no-scrollbars"] = view !== "desktop" && device;
     prop["data-renderer"] = enabled;
     prop["data-bounding-box"] = enabled;
-    prop.onContextMenu = contexted;
+    prop.onContextMenu = blockCanvasContextMenu;
     if (isMounted) {
       prop["node-id"] = id;
     }

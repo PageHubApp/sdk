@@ -1,4 +1,5 @@
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { ListEditor } from "../../Inputs/preset/ListItemPopover";
@@ -110,6 +111,7 @@ export const MapMainTab = () => {
             </NodeProvider>
           )}
         />
+        <SettingsAiSlot />
       </ToolbarSection>
     ),
     Properties: (

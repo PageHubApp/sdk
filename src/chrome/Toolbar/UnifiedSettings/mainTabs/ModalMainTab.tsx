@@ -1,5 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { TbAppWindow, TbEye, TbEyeOff } from "react-icons/tb";
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, renderAdvancedComponentSlots, SECTION_ICONS } from "../helpers";
@@ -94,6 +95,7 @@ export const ModalMainTab = () => {
           option="Close on Escape Key"
           on={true}
         />
+        <SettingsAiSlot />
       </ToolbarSection>
     ),
     Type: (

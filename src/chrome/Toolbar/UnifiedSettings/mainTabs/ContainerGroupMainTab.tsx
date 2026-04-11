@@ -1,4 +1,5 @@
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { Accord } from "../../ToolbarStyle";
 import { useGetNode } from "../../Tools/lib";
 import { atom, useAtomState } from "@zedux/react";
@@ -39,6 +40,7 @@ export const ContainerGroupMainTab = () => {
   return renderComponentSlots({
     Content: (
       <>
+        <SettingsAiSlot />
         {Object.entries(groupedComponents).map(([type, components]) => (
           <Accord
             key={type}

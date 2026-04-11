@@ -1,4 +1,5 @@
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { IconInput } from "../../Inputs/media/IconInput";
 import ActionInput from "../../Inputs/action/ActionInput";
 import { ListEditor } from "../../Inputs/preset/ListItemPopover";
@@ -131,6 +132,7 @@ export const NavMainTab = () => {
             </NodeProvider>
           )}
         />
+        <SettingsAiSlot />
       </ToolbarSection>
     ),
     Type: (

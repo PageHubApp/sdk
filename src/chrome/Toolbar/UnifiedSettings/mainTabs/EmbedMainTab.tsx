@@ -1,5 +1,6 @@
 import { useNode } from "@craftjs/core";
 import { EMBED_SERVICES, type EmbedService } from "../../../../components/Embed";
+import { SettingsAiSlot } from "../../../SettingsAiSlot";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
@@ -152,6 +153,7 @@ export const EmbedMainTab = () => {
             </p>
           </>
         )}
+        <SettingsAiSlot />
       </ToolbarSection>
     ),
     Properties: (
