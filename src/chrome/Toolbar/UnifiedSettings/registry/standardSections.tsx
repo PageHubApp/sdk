@@ -3,14 +3,10 @@
  * Each wraps an existing input component with the registry's SectionProps interface.
  */
 import React from "react";
-import {
-  TbArrowsExchange,
-  TbSettings,
-  TbSparkles,
-} from "react-icons/tb";
-import { SECTION_ICONS } from "../helpers";
-import { ToolbarSection } from "../../ToolbarSection";
+import { TbArrowsExchange, TbSettings, TbSparkles } from "react-icons/tb";
 import { Notice } from "../../Inputs/Notice";
+import { ToolbarSection } from "../../ToolbarSection";
+import { SECTION_ICONS } from "../helpers";
 import { registerSection } from "./settingsRegistry";
 import type { SectionProps } from "./types";
 
@@ -20,6 +16,7 @@ import { AnimationsInput } from "../../Inputs/advanced/AnimationsInput";
 import { ConditionsInput } from "../../Inputs/advanced/ConditionsInput";
 import { EffectsClassInput } from "../../Inputs/advanced/EffectsClassInput";
 import { HoverClickInput } from "../../Inputs/advanced/HoverClickInput";
+import { PropertiesInput } from "../../Inputs/advanced/PropertiesInput";
 import { BackgroundInput } from "../../Inputs/color/BackgroundInput";
 import { OpacityInput } from "../../Inputs/color/OpacityInput";
 import { PatternInput } from "../../Inputs/color/PatternInput";
@@ -29,13 +26,12 @@ import DisplaySettingsInput from "../../Inputs/layout/DisplaySettingsInput";
 import { LayoutInput } from "../../Inputs/layout/LayoutInput";
 import { RadiusInput } from "../../Inputs/layout/RadiusInput";
 import { RingOutlineInput } from "../../Inputs/layout/RingOutlineInput";
-import { SpacingInput } from "../../Inputs/layout/SpacingInput";
+import { AlignmentInput, SpacingInput } from "../../Inputs/layout/SpacingInput";
 import { ModifiersInput } from "../../Inputs/modifiers/ModifiersInput";
-import { PropertiesInput } from "../../Inputs/advanced/PropertiesInput";
 import { FontInput } from "../../Inputs/typography/FontInput";
 import { ContainerScrollEffectSection } from "../mainTabs/ContainerScrollEffectSection";
 const ComponentImportExport = React.lazy(() =>
-  import("../../Inputs/advanced/ComponentImportExport").then((m) => ({
+  import("../../Inputs/advanced/ComponentImportExport").then(m => ({
     default: m.ComponentImportExport,
   }))
 );
@@ -44,9 +40,7 @@ const ComponentImportExport = React.lazy(() =>
 
 const ComponentMainSection = ({ toolbar }: SectionProps) => {
   const Settings = toolbar?.settings;
-  return Settings
-    ? <Settings />
-    : <Notice>Select a component to edit its settings.</Notice>;
+  return Settings ? <Settings /> : <Notice>Select a component to edit its settings.</Notice>;
 };
 
 registerSection({
@@ -91,15 +85,35 @@ registerSection({
   help: "Display mode, flex/grid, sizing, spacing, position, and overflow.",
 });
 
-// Spacing, Size, Alignment — these are sub-sections of LayoutInput but
-// registered separately so they're searchable. They only appear in search
-// results, not in the normal Layout tab (they'd duplicate what LayoutInput shows).
+// Spacing / Alignment — sub-sections of LayoutInput registered for search only
+// (normal Layout tab shows the full LayoutInput).
+registerSection({
+  id: "alignment-search",
+  title: "Alignment",
+  tab: "layout",
+  icon: SECTION_ICONS["Alignment"],
+  keywords: [
+    "gap",
+    "gutter",
+    "gap-x",
+    "gap-y",
+    "alignment",
+    "align",
+    "justify",
+    "direction",
+  ],
+  component: () => <AlignmentInput />,
+  sortOrder: 15,
+  help: "Flex/grid direction, gap, and child alignment.",
+  searchOnly: true,
+});
+
 registerSection({
   id: "spacing-search",
   title: "Spacing",
   tab: "layout",
   icon: SECTION_ICONS["Spacing"],
-  keywords: ["padding", "margin", "spacing", "gap", "space"],
+  keywords: ["padding", "margin", "spacing", "space"],
   component: () => <SpacingInput />,
   sortOrder: 20,
   help: "Padding and margin controls.",
@@ -113,7 +127,17 @@ registerSection({
   title: "Typography",
   tab: "design",
   icon: SECTION_ICONS["Typography"],
-  keywords: ["font", "text", "size", "weight", "line-height", "letter-spacing", "color", "align", "family"],
+  keywords: [
+    "font",
+    "text",
+    "size",
+    "weight",
+    "line-height",
+    "letter-spacing",
+    "color",
+    "align",
+    "family",
+  ],
   component: () => <FontInput />,
   hideKey: "font",
   sortOrder: 10,
@@ -121,9 +145,7 @@ registerSection({
 });
 
 const BackgroundSection = ({ hidden }: SectionProps) => (
-  <BackgroundInput>
-    {!hidden.has("pattern") && <PatternInput />}
-  </BackgroundInput>
+  <BackgroundInput>{!hidden.has("pattern") && <PatternInput />}</BackgroundInput>
 );
 
 registerSection({
@@ -151,10 +173,18 @@ registerSection({
 });
 
 const DecorationSection = ({ hidden }: SectionProps) => {
-  const hasAny = !hidden.has("radius") || !hidden.has("shadow") || !hidden.has("opacity") || !hidden.has("ringOutline");
+  const hasAny =
+    !hidden.has("radius") ||
+    !hidden.has("shadow") ||
+    !hidden.has("opacity") ||
+    !hidden.has("ringOutline");
   if (!hasAny) return null;
   return (
-    <ToolbarSection title="Decoration" icon={<TbSparkles />} help="Rounded corners, shadows, opacity, and ring outlines.">
+    <ToolbarSection
+      title="Decoration"
+      icon={<TbSparkles />}
+      help="Rounded corners, shadows, opacity, and ring outlines."
+    >
       {!hidden.has("radius") && <RadiusInput />}
       {!hidden.has("shadow") && <ShadowInput />}
       {!hidden.has("opacity") && <OpacityInput label="Opacity" propKey="opacity" />}
@@ -229,7 +259,19 @@ registerSection({
   id: "effects",
   title: "Tailwind effects",
   tab: "interactions",
-  keywords: ["transition", "transform", "filter", "backdrop", "blur", "scale", "rotate", "scroll", "timeline", "horizontal", "pin"],
+  keywords: [
+    "transition",
+    "transform",
+    "filter",
+    "backdrop",
+    "blur",
+    "scale",
+    "rotate",
+    "scroll",
+    "timeline",
+    "horizontal",
+    "pin",
+  ],
   component: () => <EffectsClassInput />,
   hideKey: "effectsClass",
   sortOrder: 40,
@@ -250,7 +292,11 @@ registerSection({
 // ─── 5. Advanced tab ────────────────────────────────────────────────────────
 
 const PropertiesSection = () => (
-  <ToolbarSection title="Properties" icon={<TbSettings />} help="Element ID, type, and data attributes.">
+  <ToolbarSection
+    title="Properties"
+    icon={<TbSettings />}
+    help="Element ID, type, and data attributes."
+  >
     <PropertiesInput />
   </ToolbarSection>
 );
@@ -291,7 +337,12 @@ registerSection({
 });
 
 const ImportExportSection = () => (
-  <ToolbarSection title="Import / Export" icon={<TbArrowsExchange />} defaultOpen={false} help="Copy this component as JSON or paste one in.">
+  <ToolbarSection
+    title="Import / Export"
+    icon={<TbArrowsExchange />}
+    defaultOpen={false}
+    help="Copy this component as JSON or paste one in."
+  >
     <ComponentImportExport />
   </ToolbarSection>
 );

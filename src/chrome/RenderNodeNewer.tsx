@@ -1,9 +1,9 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
+import { InlineToolsRenderer } from "./InlineToolsRenderer";
 import { GapDragControl } from "./NodeControllers/GapDragControl";
 import { ProximityHover } from "./NodeControllers/ProximityHover";
 import { RenderNodeDataStates } from "./RenderNodeDataStates";
-import { InlineToolsRenderer } from "./InlineToolsRenderer";
 
 class NodeErrorBoundary extends React.Component<{ children?: React.ReactNode }> {
   state = { hasError: false };

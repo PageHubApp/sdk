@@ -21,8 +21,8 @@ const checkIfOffScreen = (ref, position) => {
   if (position === "left" || position === "right") {
     // For left/right, check if clipped horizontally OR vertically (top)
     const clippedHorizontally =
-      position === "left" 
-        ? parentRect.left - controlRect.width < viewportRect.left 
+      position === "left"
+        ? parentRect.left - controlRect.width < viewportRect.left
         : parentRect.right + controlRect.width > viewportRect.right;
     const clippedAtTop = parentRect.top < viewportRect.top;
     return clippedHorizontally || clippedAtTop;
@@ -96,12 +96,12 @@ export const RenderNodeControlInline = ({
         if (alt.align) nextAlign = alt.align;
       }
 
-      setPosition((p) => (p === nextPosition ? p : nextPosition));
-      setAlign((a) => (a === nextAlign ? a : nextAlign));
-      setPlacement((pl) => (pl === nextPlacement ? pl : nextPlacement));
+      setPosition(p => (p === nextPosition ? p : nextPosition));
+      setAlign(a => (a === nextAlign ? a : nextAlign));
+      setPlacement(pl => (pl === nextPlacement ? pl : nextPlacement));
 
       const nextOff = checkIfOffScreen(ref, nextPosition);
-      setIsOffScreen((o) => (o === nextOff ? o : nextOff));
+      setIsOffScreen(o => (o === nextOff ? o : nextOff));
     };
 
     const handleScroll = () => {
@@ -133,14 +133,7 @@ export const RenderNodeControlInline = ({
         viewportElement.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [
-    initialPosition,
-    initialAlign,
-    initialPlacement,
-    alt.position,
-    alt.placement,
-    alt.align,
-  ]);
+  }, [initialPosition, initialAlign, initialPlacement, alt.position, alt.placement, alt.align]);
 
   // ============================================
   // SIMPLE BOUNDING BOX POSITIONING
@@ -149,7 +142,7 @@ export const RenderNodeControlInline = ({
   // - Inside: 2px inside the border
   // - Use Tailwind classes for positioning
 
-  const classes = ["absolute", "pointer-events-none", "z-50"];
+  const classes = ["absolute", "pointer-events-none", "z-100", "isolate"];
 
   // Edge positioning
   if (position === "top") {
@@ -244,11 +237,7 @@ export const RenderNodeControlInline = ({
       }}
       {...props}
     >
-      <div
-        ref={innerRef}
-        className="w-fit"
-        style={{ zoom: "var(--device-zoom-inverse, 1)" }}
-      >
+      <div ref={innerRef} className="w-fit" style={{ zoom: "var(--device-zoom-inverse, 1)" }}>
         {children}
       </div>
     </div>

@@ -110,7 +110,6 @@
 .pagehub-sdk-root .node-control {
   font-family: var(--font-sans);
   @apply m-1 flex items-center justify-center rounded-lg border border-base-300 bg-neutral p-1 text-sm font-normal leading-normal tracking-normal text-base-content shadow-sm;
-  animation: node-control-in 0.3s ease-out 0.5s both;
 }
 
 @keyframes node-control-in {

@@ -14,6 +14,7 @@ import {
   TbTrash,
   TbUpload,
 } from "react-icons/tb";
+import { EditorMenuNavRow, EditorMenuSectionLabel } from "../../../../Viewport/EditorMenuNav";
 import { getCdnUrl } from "utils/cdn";
 import { formatDimensions } from "utils/imageDimensions";
 import { formatFileSize, type MediaItem, type SortField, type UploadProgress } from "../utils/media-helpers";
@@ -209,42 +210,45 @@ function EmptyState({
         Start building your visual content collection
       </p>
 
-      <div className="mb-8 grid w-full gap-3 sm:grid-cols-3">
-        <button
-          onClick={() => {
-            onSetAddMode("upload");
-            fileInputRef.current?.click();
-          }}
-          className="ph-media-grid-card"
-        >
-          <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/10">
-            <TbUpload className="text-xl text-primary" />
-          </div>
-          <h4 className="toolbar-label mb-1 font-semibold">Upload Files</h4>
-          <p className="text-xs text-neutral-content">Drag & drop or click to upload images</p>
-        </button>
-
-        <button
-          onClick={() => onSetAddMode("url")}
-          className="ph-media-grid-card"
-        >
-          <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/10">
-            <TbExternalLink className="text-xl text-primary" />
-          </div>
-          <h4 className="toolbar-label mb-1 font-semibold">Use URLs</h4>
-          <p className="text-xs text-neutral-content">Link to images hosted anywhere</p>
-        </button>
-
-        <button
-          onClick={() => onSetAddMode("svg")}
-          className="ph-media-grid-card"
-        >
-          <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary/10">
-            <TbCode className="text-xl text-primary" />
-          </div>
-          <h4 className="toolbar-label mb-1 font-semibold">Paste SVG</h4>
-          <p className="text-xs text-neutral-content">Add inline SVG code directly</p>
-        </button>
+      <div className="mb-8 w-full max-w-lg">
+        <EditorMenuSectionLabel>Add media</EditorMenuSectionLabel>
+        <div className="overflow-hidden rounded-xl border border-base-300 bg-base-100">
+          <EditorMenuNavRow
+            icon={<TbUpload className="size-5" />}
+            label={
+              <div>
+                <div className="text-sm font-medium text-base-content">Upload Files</div>
+                <div className="text-xs text-neutral-content">Drag & drop or click to upload images</div>
+              </div>
+            }
+            onClick={() => {
+              onSetAddMode("upload");
+              fileInputRef.current?.click();
+            }}
+          />
+          <div className="h-px bg-base-300" aria-hidden />
+          <EditorMenuNavRow
+            icon={<TbExternalLink className="size-5" />}
+            label={
+              <div>
+                <div className="text-sm font-medium text-base-content">Use URLs</div>
+                <div className="text-xs text-neutral-content">Link to images hosted anywhere</div>
+              </div>
+            }
+            onClick={() => onSetAddMode("url")}
+          />
+          <div className="h-px bg-base-300" aria-hidden />
+          <EditorMenuNavRow
+            icon={<TbCode className="size-5" />}
+            label={
+              <div>
+                <div className="text-sm font-medium text-base-content">Paste SVG</div>
+                <div className="text-xs text-neutral-content">Add inline SVG code directly</div>
+              </div>
+            }
+            onClick={() => onSetAddMode("svg")}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-2 text-xs text-neutral-content">

@@ -181,6 +181,12 @@ export interface PageHubEditorChromeSlots {
     className?: string;
     disabled?: boolean;
   }) => ReactNode;
+  /** Floating node chip — pin this element to AI chat context (deduped in `AiChatAttachedNodesAtom`). */
+  renderNodeAiContextButton?: (ctx: {
+    onClick: () => void;
+    className?: string;
+    disabled?: boolean;
+  }) => ReactNode;
   /** Empty canvas “Build with AI” card. */
   renderEmptyStateAiCard?: (ctx: { onOpenAssistant: () => void }) => ReactNode;
   /** Editor nav menu row — AI Assistant + shortcut hint lives in host. */

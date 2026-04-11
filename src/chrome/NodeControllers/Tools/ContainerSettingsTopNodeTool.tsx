@@ -19,8 +19,9 @@ import {
   TbRowInsertTop,
 } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
+import { useAtomState } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
-import { ClippyOpenAtom, SettingsAtom } from "utils/atoms";
+import { AiChatAttachedNodesAtom, ClippyOpenAtom, SettingsAtom } from "utils/atoms";
 import { usePanelUrl } from "../../../utils/usePanelUrl";
 import { useSDK } from "../../../context";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
@@ -74,13 +75,19 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   const { config } = useSDK();
   const aiEnabled = useAiEnabled();
   const renderNodeAi = config.editorChromeSlots?.renderNodeAiGenerateButton;
+  const renderNodeContext = config.editorChromeSlots?.renderNodeAiContextButton;
+  const [, setAttachedNodes] = useAtomState(AiChatAttachedNodesAtom);
   const setClippyOpen = useSetAtomState(ClippyOpenAtom);
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
   const settings = useAtomValue(SettingsAtom);
-  const { nodeProps, id } = useNode(node => ({
+  const { nodeProps, id, displayName } = useNode(node => ({
     nodeProps: node.data.props || {},
     id: node.id,
+    displayName:
+      (node.data.custom?.displayName as string | undefined) ||
+      (node.data.displayName as string | undefined) ||
+      String(node.data.name || "Container"),
   }));
 
   const { value } = getPropFinalValue(
@@ -126,6 +133,21 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
         <Tooltip content="Add something with AI" className="border-r border-base-300 pr-2">
           {renderNodeAi({
             onClick: () => setClippyOpen({ nodeId: id, mode: "create" }),
+            className: "tool-button",
+          })}
+        </Tooltip>
+      )}
+
+      {direction === "horizontal" && aiEnabled && renderNodeContext && id !== "ROOT" && (
+        <Tooltip content="Include in AI chat" className="border-r border-base-300 pr-2">
+          {renderNodeContext({
+            onClick: () => {
+              setAttachedNodes(prev => {
+                if (prev.some(n => n.id === id)) return prev;
+                return [...prev, { id, displayName }];
+              });
+              setClippyOpen({ nodeId: id });
+            },
             className: "tool-button",
           })}
         </Tooltip>

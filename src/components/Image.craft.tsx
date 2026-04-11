@@ -81,8 +81,8 @@ export const ImageDef = defineComponent({
   },
   groupSettings: ImageGroupSettings,
   tools: (props) => [
-    <DeleteNodeController key="imageDelete" />,
     <ImageMediaTool key="imageMediaTool" />,
+    <DeleteNodeController key="imageDelete" />,
   ],
   presets: [
     {

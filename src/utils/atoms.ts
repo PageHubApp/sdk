@@ -77,3 +77,8 @@ export const ClippyOpenAtom = atom("clippyOpen", null as null | {
   parentNodeId?: string;
   position?: "top" | "bottom";
 });
+
+/** Nodes pinned from the canvas or chat for the next assistant message (shared with Clippy UI). */
+export type AiChatAttachedNode = { id: string; displayName: string };
+
+export const AiChatAttachedNodesAtom = atom<AiChatAttachedNode[]>("aiChatAttachedNodes", []);

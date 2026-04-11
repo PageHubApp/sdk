@@ -1,8 +1,8 @@
-import { useEditor as useCraftEditor } from "@craftjs/core";
+import { useEditor as useCraftEditor, useNode } from "@craftjs/core";
 import { Editor, useEditorState } from "@tiptap/react";
 import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
 import { Tooltip } from "components/layout/Tooltip";
-import React, { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { useClampToViewport } from "../../hooks/useClampToViewport";
 import {
@@ -17,7 +17,11 @@ import { TbAlphabetLatin, TbChevronDown, TbTypography } from "react-icons/tb";
 import { getMediaContent } from "utils/lib";
 import { paletteToCSSVar } from "utils/design/palette";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
+import { useAtomValue } from "@zedux/react";
 import { useSDK } from "../../../context";
+import { hasOverflowAncestor } from "../../hasOverflowAncestor";
+import { DeviceAtom, ViewAtom } from "../../Viewport/atoms";
+import { PortalToolbarBelowNode } from "./PortalToolbarBelowNode";
 import { MediaManagerModal } from "../../Toolbar/Inputs/media/MediaManagerModal";
 import { TokenPicker } from "../../Toolbar/Inputs/color/TokenPicker";
 import { StylesPanel } from "./panels/StylesPanel";
@@ -101,7 +105,21 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
     return () => document.removeEventListener("keydown", handleKey);
   }, [activePanel]);
 
+  const { dom } = useNode(node => ({
+    dom: (node.dom as HTMLElement | null) ?? null,
+  }));
+  const device = useAtomValue(DeviceAtom);
+  const view = useAtomValue(ViewAtom);
+  const isDeviceMode = Boolean(device && view === "mobile");
+  const needsPortal = useMemo(
+    () => Boolean(dom) && (hasOverflowAncestor(dom) || isDeviceMode),
+    [dom, isDeviceMode]
+  );
+  const portalTargetId = isDeviceMode ? "device-tools-portal" : "viewport";
+
   if (!editor) return null;
+
+  const innerBarClass = `pointer-events-auto relative left-1/2 z-110 w-fit -translate-x-1/2 font-sans ${needsPortal ? "" : "mt-2"}`;
 
   const handleButtonClick = (callback: () => void) => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -109,11 +127,8 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
     callback();
   };
 
-
-
-  return (
-    <div className="pointer-events-none absolute z-50 w-full cursor-pointer" ref={containerRef}>
-      <div ref={toolbarRef} className="pointer-events-auto relative left-1/2 z-50 mt-2 w-fit -translate-x-1/2 font-sans">
+  const toolbarColumn = (
+    <div ref={toolbarRef} className={innerBarClass}>
         {/* === Toolbar Bar === */}
         <div className="tool-bg flex h-10 flex-row items-center justify-center gap-0">
           {/* AI slot */}
@@ -230,8 +245,11 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
             </div>
           </div>
         )}
-      </div>
+    </div>
+  );
 
+  const modals = (
+    <>
       <ReactTooltip id="iet-tip" variant="light" classNameArrow="hidden" className={REACT_TOOLTIP_SURFACE_CLASS} />
 
       <MediaManagerModal
@@ -244,6 +262,35 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
         }}
         selectionMode={true}
       />
+    </>
+  );
+
+  /** Full-width pass-through row + narrow auto layer so portaled UI actually receives hits (nested pointer-events-none was eating events). */
+  const interactiveShell = (
+    <div
+      ref={containerRef}
+      className="relative z-110 w-fit max-w-full min-w-0 cursor-default pointer-events-auto"
+      onMouseDown={e => e.stopPropagation()}
+      onMouseDownCapture={e => e.stopPropagation()}
+    >
+      {toolbarColumn}
+      {modals}
+    </div>
+  );
+
+  if (needsPortal && dom) {
+    return (
+      <PortalToolbarBelowNode dom={dom} portalTargetId={portalTargetId}>
+        <div className="flex w-full justify-center pointer-events-none">
+          {interactiveShell}
+        </div>
+      </PortalToolbarBelowNode>
+    );
+  }
+
+  return (
+    <div className="pointer-events-none absolute z-100 w-full">
+      <div className="flex w-full justify-center pointer-events-none">{interactiveShell}</div>
     </div>
   );
 }

@@ -92,13 +92,24 @@ const uploadFiles = async (files, settings, setErrors, query, actions) => {
   return _saved;
 };
 
-const updateNodeProps = (setProp, isLoading, loaded, propKey = null, typeKey = null, id = null) => {
+const updateNodeProps = (
+  setProp,
+  isLoading,
+  loaded,
+  propKey = null,
+  typeKey = null,
+  id = null,
+  contentKey = "content",
+) => {
   setProp(_props => {
     _props.isLoading = isLoading;
     _props.loaded = loaded;
     if (id) {
       _props[propKey] = id;
       _props[typeKey] = "cdn";
+      if (contentKey !== propKey) {
+        _props[contentKey] = null;
+      }
     }
   }, 3000);
 };
@@ -108,6 +119,7 @@ export const ImageUploadInput: any = ({
   multiple = false,
   propKey,
   typeKey,
+  contentKey = "content",
   onChange,
   index,
   label = "Upload Image",
@@ -164,7 +176,7 @@ export const ImageUploadInput: any = ({
 
     setTimeout(() => {
       _saved.forEach(id => {
-        updateNodeProps(setProp, false, true, propKey, typeKey, id);
+        updateNodeProps(setProp, false, true, propKey, typeKey, id, contentKey);
         // Register new media with Background
         registerMediaWithBackground(query, actions, id, "cdn", componentId);
       });
@@ -186,6 +198,9 @@ export const ImageUploadInput: any = ({
     setProp(_props => {
       _props[propKey] = selectedMediaId;
       _props[typeKey] = "cdn";
+      if (contentKey !== propKey) {
+        _props[contentKey] = null;
+      }
     });
 
     // Register with background (if not already registered)

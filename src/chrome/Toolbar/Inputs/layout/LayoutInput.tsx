@@ -29,11 +29,9 @@ type LayoutMode = "block" | "flex-row" | "flex-col" | "grid";
 export function LayoutInput({
   hidePresets,
   mode = "full"
-}: { hidePresets?: boolean; mode?: "full" | "spacing" }) {
+}: { hidePresets?: boolean; mode?: "full" | "spacing" | "alignment" }) {
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
-  const isSpacingOnly = mode === "spacing";
-
   const { classNameStr, currentLayoutMode } = useNode(node => ({
     classNameStr: node.data.props.className || "",
     currentLayoutMode: node.data.props.root?.layoutMode,
@@ -93,9 +91,9 @@ export function LayoutInput({
 
   return (
     <>
-      {!hidePresets && !isSpacingOnly && <LayoutPresetInput lp={layoutPreset} />}
+      {!hidePresets && mode === "full" && <LayoutPresetInput lp={layoutPreset} />}
 
-      {!isSpacingOnly && (
+      {(mode === "full" || mode === "alignment") && (
         <ToolbarSection title="Alignment" icon={<TbLayoutAlignCenter />} help="How child elements are arranged and aligned." footer={
           isFlex ? (
             <ItemAdvanceToggle propKey="alignment-flex" title="More alignment properties">
@@ -228,9 +226,10 @@ export function LayoutInput({
         </ToolbarSection>
       )}
 
-      {!isSpacingOnly && <SizeInput />}
+      {mode === "full" && <SizeInput />}
 
       {/* Spacing — combined Margin + Padding */}
+      {(mode === "full" || mode === "spacing") && (
       <ToolbarSection title="Spacing" icon={<TbBoxModel />} full={1} help="Padding (inner space) and margin (outer space)." header={
         <TypeSelector types={spacingTypes} selectedType={spacingType} onTypeChange={setSpacingType} />
       }>
@@ -278,6 +277,7 @@ export function LayoutInput({
           </div>
         </ItemAdvanceToggle>
       </ToolbarSection>
+      )}
     </>
   );
 }

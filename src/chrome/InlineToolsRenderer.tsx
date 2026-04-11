@@ -1,39 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
+import { useAtomValue } from "@zedux/react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
+import { hasOverflowAncestor } from "./hasOverflowAncestor";
 import { InlineRenderContext } from "./InlineRenderContext";
 import { DeviceAtom, ViewAtom } from "./Viewport/atoms";
-import { useAtomValue } from "@zedux/react";
-
-/**
- * Checks if any ancestor of the node's DOM element has overflow clipping
- * (overflow-hidden, overflow-auto, overflow-scroll).
- * If so, inline tools will get clipped, so we need to portal them out.
- */
-function hasOverflowAncestor(dom: HTMLElement | null): boolean {
-  if (!dom) return false;
-
-  let el: HTMLElement | null = dom;
-  while (el) {
-    // Stop at the viewport container — don't check beyond it
-    if (el.id === "viewport") break;
-
-    const style = getComputedStyle(el);
-    const overflowX = style.overflowX;
-    const overflowY = style.overflowY;
-
-    if (
-      overflowX === "hidden" || overflowX === "auto" || overflowX === "scroll" ||
-      overflowY === "hidden" || overflowY === "auto" || overflowY === "scroll"
-    ) {
-      return true;
-    }
-
-    el = el.parentElement;
-  }
-
-  return false;
-}
 
 /**
  * PortalToolsWrapper - Renders tools via createPortal to a target element,
@@ -99,7 +70,7 @@ function PortalToolsWrapper({
   if (!portalTarget) return null;
 
   return ReactDOM.createPortal(
-    <div ref={ref} className="pointer-events-none absolute z-50" style={{ position: "absolute" }}>
+    <div ref={ref} className="pointer-events-none absolute z-110" style={{ position: "absolute" }}>
       {children}
     </div>,
     portalTarget
@@ -136,7 +107,7 @@ export const InlineToolsRenderer = ({
   alwaysVisible?: boolean;
   children?: React.ReactNode;
 }) => {
-  const { id, dom } = useNode((node) => ({
+  const { id, dom } = useNode(node => ({
     dom: node.dom,
   }));
   const { enabled, isActive } = useEditor((state, query) => ({
@@ -184,7 +155,10 @@ export const InlineToolsRenderer = ({
   const content = (
     <InlineRenderContext.Provider value={true}>
       {/* Wrapper to shield editor UI from component CSS inheritance (like text-transform or CSS vars) */}
-      <div className="pagehub-sdk-root contents font-sans text-base! normal-case not-italic leading-normal tracking-normal text-base-content" style={{ letterSpacing: 'normal', whiteSpace: 'normal', textIndent: '0' }}>
+      <div
+        className="pagehub-sdk-root text-base-content contents font-sans text-base! leading-normal tracking-normal normal-case not-italic"
+        style={{ letterSpacing: "normal", whiteSpace: "normal", textIndent: "0" }}
+      >
         {/* Always visible children (if any) */}
         {showChildren && children}
 

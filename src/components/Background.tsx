@@ -65,6 +65,11 @@ export interface ContainerProps extends BaseSelectorProps {
     email?: string;
     website?: string;
   };
+  /**
+   * When true, user established identity (Site Settings save or template start with profile company).
+   * AI / MCP must not overwrite `company` without explicit rebrand intent.
+   */
+  brandingCommitted?: boolean;
   /** Editor AI site hints */
   ai?: {
     prompt?: string;

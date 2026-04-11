@@ -146,12 +146,13 @@ export const Image = (incomingProps: ImageProps) => {
   const isSvg = props.type === "svg" || mediaObject?.type === "svg";
 
   if (isSvg) {
-    // Get SVG content from props or media library
-    let svgContent = content; // Direct prop content (legacy)
-
-    // If no direct content, try to get from media library
-    if (!svgContent && videoId && mediaMetadata?.svg) {
+    // Prefer library when videoId is set so stale `content` does not override a new pick
+    let svgContent = null;
+    if (videoId && mediaMetadata?.svg) {
       svgContent = mediaMetadata.svg;
+    }
+    if (!svgContent && content) {
+      svgContent = content;
     }
 
     if (svgContent) {

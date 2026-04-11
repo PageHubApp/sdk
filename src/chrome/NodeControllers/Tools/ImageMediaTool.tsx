@@ -50,7 +50,7 @@ export const ImageMediaTool = () => {
       <div
         role="presentation"
         aria-hidden="true"
-        className="absolute inset-0 z-10 cursor-pointer bg-transparent"
+        className="absolute inset-0 z-0 cursor-pointer bg-transparent"
         onDoubleClick={handleDoubleClick}
         title="Double-click to change image"
       />

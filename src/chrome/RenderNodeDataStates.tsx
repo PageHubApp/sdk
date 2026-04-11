@@ -1,5 +1,5 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { useSelectionDom } from "./EditorSelectionDomContext";
 
 export const RenderNodeDataStates = () => {
@@ -17,7 +17,7 @@ export const RenderNodeDataStates = () => {
   const isActive = selectionDom.isActive(id);
   const isAncestorOfSelected = selectionDom.isAncestorOfSelected(id);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!dom) return;
     if (!enabled) return;
 

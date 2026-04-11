@@ -33,6 +33,10 @@ export const MediaInput = propa => {
     setProp(_props => {
       _props[propKey] = selectedMediaId;
       _props[typeKey] = selectedMedia?.type || "cdn";
+      // Clear direct URL / inline content when switching to library (mirrors handleContentUrlChange)
+      if (contentKey !== propKey) {
+        _props[contentKey] = null;
+      }
     });
 
     // Don't override the media type - it's already registered with the correct type

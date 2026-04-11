@@ -12,6 +12,7 @@ import {
   TbLayoutGrid,
   TbList,
 } from "react-icons/tb";
+import { ToolbarDropdown } from "../../../ToolbarDropdown";
 import type { AddMode, SortField } from "../utils/media-helpers";
 import { AiGeneratePanel } from "./AiGeneratePanel";
 import type { UseMediaManagerReturn } from "../hooks/useMediaManager";
@@ -74,86 +75,98 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
     handleWheel,
   } = manager;
 
+  /** One height for search + segmented controls (tool-bg p-1 was making groups taller than the search field). */
+  const barH = "h-10";
+  const toolClusterClass =
+    `tool-bg ${barH} shrink-0 !items-stretch !justify-start !gap-0.5 !px-0.5 !py-0 text-neutral-content [&_button.tool-button]:h-full [&_button.tool-button]:min-h-0 [&_button.tool-button]:rounded-md [&_button.tool-button]:px-2`;
+
   return (
     <div ref={toolbarRef} className="border-b border-base-300 bg-neutral px-4 py-1.5">
-      <div className="flex items-center gap-2">
+      <div className={`flex items-center gap-2 ${barH}`}>
         {/* Search */}
-        <div className="input-wrapper relative input-hover flex-1 min-w-0">
+        <div
+          className={`input-wrapper input-hover relative flex min-h-0 min-w-0 flex-1 items-center ${barH}`}
+        >
           <TbSearch className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-neutral-content" />
           <input
             type="text"
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
             placeholder="Search media..."
-            className="input-plain-search pl-10"
+            className="input-plain-search min-h-0 h-full! pl-10"
           />
         </div>
 
         {/* View Mode */}
-        <div className="tool-bg gap-1! text-neutral-content">
-          <Tooltip content="Card view" placement="bottom">
+        <div className={toolClusterClass}>
+          <Tooltip content="Card view" placement="bottom" className="flex h-full items-stretch">
             <button
               onClick={() => setViewMode("cards")}
               type="button"
-              className={`tool-button px-2 ${viewMode === "cards" ? "bg-neutral text-base-content shadow-sm" : ""}`}
+              className={`tool-button px-2 ${viewMode === "cards" ? "bg-base-200 text-base-content" : ""}`}
             >
-              <TbLayoutGrid className="size-5" />
+              <TbLayoutGrid className="size-[18px]" />
             </button>
           </Tooltip>
-          <Tooltip content="List view" placement="bottom">
+          <Tooltip content="List view" placement="bottom" className="flex h-full items-stretch">
             <button
               onClick={() => setViewMode("list")}
               type="button"
-              className={`tool-button px-2 ${viewMode === "list" ? "bg-neutral text-base-content shadow-sm" : ""}`}
+              className={`tool-button px-2 ${viewMode === "list" ? "bg-base-200 text-base-content" : ""}`}
             >
-              <TbList className="size-5" />
+              <TbList className="size-[18px]" />
             </button>
           </Tooltip>
         </div>
 
-        {/* Sort */}
-        <div className="tool-bg gap-1! text-neutral-content">
-          <Tooltip content="Sort by" placement="bottom">
-            <select
+        {/* Sort — ToolbarDropdown (Listbox + ph-select-content), not native <select> */}
+        <div className={`${toolClusterClass} min-w-0`}>
+          <div className="flex h-full min-h-0 w-full max-w-[11rem] items-stretch [&_button.input-plain]:text-xs">
+            <ToolbarDropdown
+              wrap="control"
+              propKey="media-sort-field"
+              placeholder="Sort by"
               value={sortField}
-              onChange={e => {
-                setSortField(e.target.value as SortField);
+              onChange={(val: string) => {
+                setSortField(val as SortField);
                 resortFilteredMedia();
               }}
-              className="input-plain max-w-[6rem] cursor-pointer text-xs"
+              append={
+                <Tooltip
+                  content={`Sort ${sortDirection === "asc" ? "ascending" : "descending"}`}
+                  placement="bottom"
+                  className="flex h-full items-stretch"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                      resortFilteredMedia();
+                    }}
+                    className="tool-button px-1.5"
+                  >
+                    {sortDirection === "asc" ? (
+                      <TbArrowUp className="size-3.5" />
+                    ) : (
+                      <TbArrowDown className="size-3.5" />
+                    )}
+                  </button>
+                </Tooltip>
+              }
             >
               <option value="createdAt">Date</option>
               <option value="name">Name</option>
               <option value="size">Size</option>
               <option value="order">Order</option>
-            </select>
-          </Tooltip>
-          <Tooltip
-            content={`Sort ${sortDirection === "asc" ? "ascending" : "descending"}`}
-            placement="bottom"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-                resortFilteredMedia();
-              }}
-              className="tool-button"
-            >
-              {sortDirection === "asc" ? (
-                <TbArrowUp className="size-3" />
-              ) : (
-                <TbArrowDown className="size-3" />
-              )}
-            </button>
-          </Tooltip>
+            </ToolbarDropdown>
+          </div>
         </div>
 
         {/* Add Mode */}
-        <div className="tool-bg gap-1! text-neutral-content">
+        <div className={toolClusterClass}>
           <AddModeButton
             mode="upload"
-            icon={<TbUpload className="inline" />}
+            icon={<TbUpload className="size-[18px]" />}
             tooltip="Upload files"
             activeMode={addMode}
             disabled={uploading}
@@ -164,14 +177,14 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
           />
           <AddModeButton
             mode="url"
-            icon={<TbExternalLink className="inline" />}
+            icon={<TbExternalLink className="size-[18px]" />}
             tooltip="Add from URL"
             activeMode={addMode}
             onClick={() => setAddMode("url")}
           />
           <AddModeButton
             mode="svg"
-            icon={<TbCode className="inline" />}
+            icon={<TbCode className="size-[18px]" />}
             tooltip="Add SVG code"
             activeMode={addMode}
             onClick={() => setAddMode("svg")}
@@ -179,7 +192,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
           {canUseImageGenerate && (
             <AddModeButton
               mode="ai"
-              icon={<TbSparkles className="inline" />}
+              icon={<TbSparkles className="size-[18px]" />}
               tooltip="Generate with AI"
               activeMode={addMode}
               onClick={() => setAddMode("ai")}
@@ -192,14 +205,15 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
                 : "No image in clipboard"
             }
             placement="bottom"
+            className="flex h-full items-stretch"
           >
             <button
               type="button"
               onClick={handlePasteClick}
               disabled={!hasImageInClipboard || uploading}
-              className="tool-button px-3"
+              className="tool-button px-2"
             >
-              <TbClipboard className="inline" />
+              <TbClipboard className="size-[18px]" />
             </button>
           </Tooltip>
         </div>
@@ -343,12 +357,12 @@ function AddModeButton({
   onClick: () => void;
 }) {
   return (
-    <Tooltip content={tooltip} placement="bottom">
+    <Tooltip content={tooltip} placement="bottom" className="flex h-full items-stretch">
       <button
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className={`tool-button px-3 ${activeMode === mode ? "bg-neutral text-base-content shadow-sm" : ""}`}
+        className={`tool-button px-2 ${activeMode === mode ? "bg-base-200 text-base-content" : ""}`}
       >
         {icon}
       </button>

@@ -107,6 +107,7 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
           email: companyEmail,
           website: companyWebsite,
         };
+        props.brandingCommitted = true;
 
         props.ai = {
           prompt: aiPrompt,
