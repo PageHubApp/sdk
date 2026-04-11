@@ -191,7 +191,7 @@ export function InlineEditToolbar({ editor, onSave }: InlineEditToolbarProps) {
 
       <Tooltip content="Insert Link (⌘K)" placement="top" tooltipClassName="text-xs! px-2! py-1!">
         <button
-          className={`tool-button ${activePanel === "link" || tipTap.isLink ? "bg-base-200 text-base-content" : ""}`}
+          className={`tool-button ${tipTap.isLink ? "bg-primary/15 text-primary" : activePanel === "link" ? "bg-base-200 text-base-content" : ""}`}
           onMouseDown={e => e.preventDefault()}
           onClick={() => toggle("link")}
         >

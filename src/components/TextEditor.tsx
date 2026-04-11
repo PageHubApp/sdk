@@ -97,6 +97,7 @@ const getTiptapExtensions = (
     /** Selection-on-click is handled in TextEditor `handleDOMEvents.click` (TipTap’s built-in path does not move the caret to the click first). */
     enableClickSelection: false,
     HTMLAttributes: { class: "text-primary underline" },
+    protocols: ["ref"],
   }),
   Image.configure({
     HTMLAttributes: { class: "max-w-full h-auto" },
@@ -203,7 +204,7 @@ function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
       immediatelyRender: false,
       editorProps,
       onUpdate: ({ editor }: { editor: any }) => {
-        if (enabled && isEditingRef.current && !isInsideLinkedComponent) {
+        if (enabled && !isInsideLinkedComponent) {
           changeProp({
             setProp,
             propKey: "text",
@@ -356,9 +357,9 @@ function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
       {enabled && isEditing && (
         <TiptapProvider editor={tiptapEditor}>
           <InlineEditToolbar editor={tiptapEditor} onSave={() => {
-            if (!tiptapEditor || !enabled) return;
-            const html = persistedTextHtmlFromEditor(tiptapEditor.getHTML());
-            changeProp({ setProp, propKey: "text", propType: "component", value: html });
+            const ed = tiptapEditorRef.current;
+            if (!ed || !enabled) return;
+            changeProp({ setProp, propKey: "text", propType: "component", value: persistedTextHtmlFromEditor(ed.getHTML()) });
           }} />
         </TiptapProvider>
       )}
