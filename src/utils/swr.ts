@@ -3,6 +3,7 @@ export function useUserProfile(_isAuthenticated: boolean) {
   return {
     user: null,
     creditsRemaining: null,
+    creditsRemainingNumber: null,
     isLoading: false,
     isError: false,
     error: null,
