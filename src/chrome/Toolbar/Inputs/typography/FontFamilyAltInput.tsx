@@ -94,11 +94,11 @@ export const FontFamilyAltInput = ({
 
   useDialog(dialog, setDialog, ref, propKey);
 
-  let viewValue = view;
+  let viewValue: string | number = view;
   if (propType === "component" || propType === "root") {
     viewValue = "component";
   } else if (index) {
-    viewValue = index;
+    viewValue = typeof index === "number" ? index : String(index);
   }
 
   return (
@@ -111,7 +111,7 @@ export const FontFamilyAltInput = ({
           varSelectorPrefix: "",
         }}
         lab={value}
-        viewValue={viewValue}
+        viewValue={String(viewValue)}
         propType={propType}
         propKey={propKey}
         inline={inline}

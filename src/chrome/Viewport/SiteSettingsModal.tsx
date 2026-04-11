@@ -7,6 +7,7 @@ import { IntegrationsTab, INTEGRATION_PROVIDERS } from "./SiteSettings/Integrati
 import { RedirectsTab } from "./SiteSettings/RedirectsTab";
 import { AITab } from "./SiteSettings/AITab";
 import { CodeTab } from "./SiteSettings/CodeTab";
+import { normalizeDesignTags } from "../../utils/normalizeDesignTags";
 
 interface SiteSettingsModalProps {
   isOpen: boolean;
@@ -35,9 +36,9 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
   const [companyEmail, setCompanyEmail] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
 
-  // AI Settings
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [aiStyleTags, setAiStyleTags] = useState<string[]>([]);
+  // Site AI tone (ROOT.props.designNotes / designTags only)
+  const [designNotes, setDesignNotes] = useState("");
+  const [designTags, setDesignTags] = useState<string[]>([]);
 
   // Custom Variables
   const [customVariables, setCustomVariables] = useState<{ key: string; value: string }[]>([]);
@@ -69,9 +70,11 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
           setCompanyEmail(company.email || "");
           setCompanyWebsite(company.website || "");
 
-          const ai = props.ai || {};
-          setAiPrompt(ai.prompt || "");
-          setAiStyleTags(ai.styleTags || []);
+          setDesignNotes(typeof props.designNotes === "string" ? props.designNotes : "");
+          const dt = Array.isArray(props.designTags) ? props.designTags : [];
+          setDesignTags(
+            normalizeDesignTags(dt.filter((t: unknown): t is string => typeof t === "string")),
+          );
 
           setCustomVariables(props.variables || []);
           setIntegrations(props.integrations || {});
@@ -109,10 +112,12 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
         };
         props.brandingCommitted = true;
 
-        props.ai = {
-          prompt: aiPrompt,
-          styleTags: aiStyleTags,
-        };
+        delete props.ai;
+
+        const notesTrim = designNotes.trim();
+        props.designNotes = notesTrim ? notesTrim.slice(0, 1200) : undefined;
+        const tagList = normalizeDesignTags(designTags);
+        props.designTags = tagList.length ? tagList : undefined;
 
         const cleanVariables = customVariables.filter(v => v.key.trim() && v.value.trim());
         props.variables = cleanVariables.length ? cleanVariables : undefined;
@@ -145,7 +150,11 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
         : "text-neutral-content hover:text-base-content"
     }`;
 
-  const inputClass = "w-full rounded-lg border border-base-300 bg-input px-4 py-2 text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring";
+  /** Toolbar-aligned field chrome: lifted surface + visible border (not flat `bg-input`). */
+  const inputClass =
+    "w-full rounded-lg border border-base-300 bg-base-200 px-4 py-2 text-sm text-base-content shadow-sm placeholder:text-neutral-content transition-[border-color,box-shadow,background-color] duration-150 ease-out hover:border-primary hover:bg-base-300/25 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50";
+  const selectClass =
+    "w-full cursor-pointer rounded-lg border border-base-300 bg-base-200 px-2 py-2 text-xs text-base-content shadow-sm transition-[border-color,box-shadow,background-color] duration-150 ease-out hover:border-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50";
 
   return (
     <FloatingPanel
@@ -215,6 +224,7 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
             {activeTab === "redirects" && (
               <RedirectsTab
                 inputClass={inputClass}
+                selectClass={selectClass}
                 redirects={redirects} setRedirects={setRedirects}
               />
             )}
@@ -222,8 +232,10 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
             {activeTab === "ai" && (
               <AITab
                 inputClass={inputClass}
-                aiPrompt={aiPrompt} setAiPrompt={setAiPrompt}
-                aiStyleTags={aiStyleTags} setAiStyleTags={setAiStyleTags}
+                designNotes={designNotes}
+                setDesignNotes={setDesignNotes}
+                designTags={designTags}
+                setDesignTags={setDesignTags}
               />
             )}
           </div>

@@ -8,6 +8,7 @@ interface Modifier {
   name: string;
   label: string;
   classes?: string;
+  description?: string;
 }
 
 interface ModifiersModalProps {
@@ -24,6 +25,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
   const [editName, setEditName] = useState("");
   const [editLabel, setEditLabel] = useState("");
   const [editClasses, setEditClasses] = useState("");
+  const [editDescription, setEditDescription] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [addType, setAddType] = useState("");
 
@@ -72,6 +74,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     setEditName(currentList[index].name);
     setEditLabel(currentList[index].label);
     setEditClasses(currentList[index].classes || "");
+    setEditDescription(currentList[index].description || "");
     setIsAdding(false);
   };
 
@@ -82,6 +85,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     if (editingIndex !== null) {
       const entry: Modifier = { name: editName.trim(), label: editLabel.trim() };
       if (editClasses.trim()) entry.classes = editClasses.trim();
+      if (editDescription.trim()) entry.description = editDescription.trim();
       list[editingIndex] = entry;
     }
     updated[selectedType] = list;
@@ -90,6 +94,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     setEditName("");
     setEditLabel("");
     setEditClasses("");
+    setEditDescription("");
   };
 
   const handleAdd = () => {
@@ -101,6 +106,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     if (updated[typeName].some(m => m.name === name)) return;
     const entry: Modifier = { name, label: editLabel.trim() };
     if (editClasses.trim()) entry.classes = editClasses.trim();
+    if (editDescription.trim()) entry.description = editDescription.trim();
     updated[typeName].push(entry);
     save(updated);
     setSelectedType(typeName);
@@ -108,6 +114,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     setEditName("");
     setEditLabel("");
     setEditClasses("");
+    setEditDescription("");
     setAddType("");
   };
 
@@ -116,6 +123,8 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     setEditingIndex(null);
     setEditName("");
     setEditLabel("");
+    setEditClasses("");
+    setEditDescription("");
     setAddType(selectedType);
   };
 
@@ -212,9 +221,19 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                   rows={2}
                 />
               </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-neutral-content">Description (optional — shown as help text in the editor)</label>
+                <input
+                  type="text"
+                  value={editDescription}
+                  onChange={e => setEditDescription(e.target.value)}
+                  placeholder="e.g. Adds an outline border, removes fill"
+                  className={inputClass}
+                />
+              </div>
               <div className="flex gap-2">
                 <button onClick={handleAdd} className="btn btn-primary flex-1">Add</button>
-                <button onClick={() => { setIsAdding(false); setEditName(""); setEditLabel(""); setEditClasses(""); setAddType(""); }} className="btn btn-secondary flex-1">Cancel</button>
+                <button onClick={() => { setIsAdding(false); setEditName(""); setEditLabel(""); setEditClasses(""); setEditDescription(""); setAddType(""); }} className="btn btn-secondary flex-1">Cancel</button>
               </div>
             </div>
           )}
@@ -251,6 +270,10 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                           <label className="mb-1 block text-xs font-medium text-neutral-content">Classes (composite)</label>
                           <textarea value={editClasses} onChange={e => setEditClasses(e.target.value)} className={`${inputClass} min-h-[3rem] resize-y`} rows={2} placeholder="e.g. flex flex-col gap-space-md w-full" />
                         </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-neutral-content">Description (optional)</label>
+                          <input type="text" value={editDescription} onChange={e => setEditDescription(e.target.value)} className={inputClass} placeholder="e.g. Adds an outline border, removes fill" />
+                        </div>
                         <div className="flex gap-2">
                           <button onClick={handleSaveEdit} className="btn btn-primary flex-1">Save</button>
                           <button onClick={() => setEditingIndex(null)} className="btn btn-secondary flex-1">Cancel</button>
@@ -264,6 +287,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                             <span className="ml-2 text-xs text-neutral-content">.{mod.name}</span>
                             {mod.classes && <span className="ml-1 text-[9px] text-neutral-content/60">×{mod.classes.split(/\s+/).filter(Boolean).length}</span>}
                           </div>
+                          {mod.description && <p className="truncate text-[10px] text-neutral-content/70">{mod.description}</p>}
                           {mod.classes && <p className="truncate text-[10px] text-neutral-content/50">{mod.classes}</p>}
                         </div>
                         <button onClick={() => handleEdit(i)} className="text-neutral-content hover:text-base-content" title="Edit">

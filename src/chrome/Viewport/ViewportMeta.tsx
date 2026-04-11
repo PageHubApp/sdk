@@ -1,8 +1,74 @@
+import { useEditor } from "@craftjs/core";
 import { useEffect } from "react";
 import { useAtomValue } from "@zedux/react";
 import { DeviceAtom, DeviceDimensionsAtom, ViewAtom } from "./atoms";
 
+const EDITOR_CANVAS_SCREEN_STYLE_ID = "editor-canvas-screen-override";
+
+/** Tailwind responsive `w-screen` / `min-w-screen` / `max-w-screen` (and h-*) at common breakpoints. */
+function buildEditorCanvasScreenCss(scopedViewport: string, w: number, h: number): string {
+  const screenW = `${Math.max(0, Math.round(w))}px`;
+  const screenH = `${Math.max(0, Math.round(h))}px`;
+
+  const base = `
+        ${scopedViewport} .w-screen {
+          width: ${screenW} !important;
+        }
+        ${scopedViewport} .min-w-screen {
+          min-width: ${screenW} !important;
+        }
+        ${scopedViewport} .max-w-screen {
+          max-width: ${screenW} !important;
+        }
+        ${scopedViewport} .h-screen {
+          height: ${screenH} !important;
+        }
+        ${scopedViewport} .min-h-screen {
+          min-height: ${screenH} !important;
+        }
+        ${scopedViewport} .max-h-screen {
+          max-height: ${screenH} !important;
+        }
+        ${scopedViewport} [style*="100vw"],
+        ${scopedViewport} [style*="width: 100vw"] {
+          width: ${screenW} !important;
+        }
+        ${scopedViewport} [style*="100vh"],
+        ${scopedViewport} [style*="height: 100vh"] {
+          height: ${screenH} !important;
+        }
+        ${scopedViewport} [style*="min-height: 100vh"] {
+          min-height: ${screenH} !important;
+        }
+  `;
+
+  const responsive: Array<{ label: string; min: number }> = [
+    { label: "sm", min: 640 },
+    { label: "md", min: 768 },
+    { label: "lg", min: 1024 },
+    { label: "xl", min: 1280 },
+  ];
+
+  let mq = "";
+  for (const { label, min } of responsive) {
+    const p = label;
+    mq += `
+        @media (min-width: ${min}px) {
+          ${scopedViewport} .${p}\\:w-screen { width: ${screenW} !important; }
+          ${scopedViewport} .${p}\\:min-w-screen { min-width: ${screenW} !important; }
+          ${scopedViewport} .${p}\\:max-w-screen { max-width: ${screenW} !important; }
+          ${scopedViewport} .${p}\\:h-screen { height: ${screenH} !important; }
+          ${scopedViewport} .${p}\\:min-h-screen { min-height: ${screenH} !important; }
+          ${scopedViewport} .${p}\\:max-h-screen { max-height: ${screenH} !important; }
+        }
+    `;
+  }
+
+  return base + mq;
+}
+
 export const ViewportMeta = () => {
+  const { enabled } = useEditor(s => ({ enabled: s.options.enabled }));
   const view = useAtomValue(ViewAtom);
   const device = useAtomValue(DeviceAtom);
   const deviceDimensions = useAtomValue(DeviceDimensionsAtom);
@@ -178,6 +244,48 @@ export const ViewportMeta = () => {
       if (el) el.remove();
     };
   }, [device, view, deviceDimensions]);
+
+  // Desktop edit mode: map screen / vw utilities to the real #viewport box (not the browser window).
+  // Mobile device preview uses `device-screen-override` above; skip when that is active.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mobileDeviceChrome = device && view === "mobile";
+    if (!enabled || mobileDeviceChrome) {
+      document.getElementById(EDITOR_CANVAS_SCREEN_STYLE_ID)?.remove();
+      return;
+    }
+
+    const scopedViewport = ".pagehub-sdk-root #viewport";
+
+    const apply = () => {
+      const vp = document.getElementById("viewport");
+      if (!vp) return;
+      const w = vp.clientWidth;
+      const h = vp.clientHeight;
+      if (w < 80) return;
+
+      let styleEl = document.getElementById(EDITOR_CANVAS_SCREEN_STYLE_ID) as HTMLStyleElement;
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = EDITOR_CANVAS_SCREEN_STYLE_ID;
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = buildEditorCanvasScreenCss(scopedViewport, w, h);
+    };
+
+    apply();
+    const vp = document.getElementById("viewport");
+    const ro = vp ? new ResizeObserver(() => apply()) : null;
+    if (vp && ro) ro.observe(vp);
+    window.addEventListener("resize", apply);
+
+    return () => {
+      window.removeEventListener("resize", apply);
+      ro?.disconnect();
+      document.getElementById(EDITOR_CANVAS_SCREEN_STYLE_ID)?.remove();
+    };
+  }, [enabled, device, view]);
 
   return null; // This component doesn't render anything
 };

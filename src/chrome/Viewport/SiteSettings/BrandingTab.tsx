@@ -190,8 +190,8 @@ export function BrandingTab({
               {index === 0 && (
                 <label className="mb-1 block text-xs text-neutral-content">Key</label>
               )}
-              <div className="flex items-center">
-                <span className="flex h-[38px] items-center rounded-l-lg border border-r-0 border-base-300 bg-neutral px-2 text-xs text-neutral-content">
+              <div className="flex min-h-10 w-full overflow-hidden rounded-lg border border-base-300 bg-base-200 shadow-sm transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-2 focus-within:ring-ring/50">
+                <span className="flex shrink-0 items-center border-r border-base-300 bg-neutral/50 px-2.5 text-xs text-neutral-content">
                   variables.
                 </span>
                 <input
@@ -203,8 +203,9 @@ export function BrandingTab({
                     updated[index] = { ...updated[index], key: sanitized };
                     setCustomVariables(updated);
                   }}
-                  className={`${inputClass} rounded-l-none`}
+                  className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-sm text-base-content outline-none placeholder:text-neutral-content focus:ring-0"
                   placeholder="myField"
+                  aria-label="Variable key"
                 />
               </div>
             </div>
@@ -234,7 +235,8 @@ export function BrandingTab({
                   const updated = customVariables.filter((_, i) => i !== index);
                   setCustomVariables(updated);
                 }}
-                className="flex h-[38px] w-[38px] items-center justify-center rounded-lg border border-base-300 text-neutral-content transition-colors hover:border-error hover:bg-error/10 hover:text-error"
+                className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-base-300 bg-base-200 text-neutral-content shadow-sm transition-colors hover:border-error hover:bg-error/10 hover:text-error"
+                aria-label="Remove variable"
               >
                 <TbTrash className="size-4" />
               </button>

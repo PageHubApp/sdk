@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { TbPhoto, TbRefresh, TbSparkles } from "react-icons/tb";
+import { TbPhoto, TbRefresh, TbWand } from "react-icons/tb";
 import { AI_PROMPT_TEMPLATES } from "../utils/media-helpers";
 
 const BLUR_PLACEHOLDER =
@@ -107,7 +107,7 @@ export function AiGeneratePanel({
                   </>
                 ) : (
                   <>
-                    <TbSparkles />
+                    <TbWand />
                     Generate
                   </>
                 )}

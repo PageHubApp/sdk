@@ -8,11 +8,11 @@ const AccordionContext = createContext(null);
 export const useAccordionContext = () => useContext(AccordionContext);
 
 export const AccordionProvider = ({ children }) => {
-  const [openSections, setOpenSections] = useState(() => {
-    return phStorage.getJSON("accordion-state", {});
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+    return phStorage.getJSON("accordion-state", {}) as Record<string, boolean>;
   });
 
-  const registeredSections = useRef(new Set());
+  const registeredSections = useRef(new Set<string>());
 
   const persist = (state) => {
     try {

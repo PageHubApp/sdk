@@ -112,4 +112,6 @@ export function ProximityHoverManager() {
       previousHotIds = new Set();
     };
   }, [enabled]);
+
+  return null;
 }

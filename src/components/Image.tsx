@@ -1,6 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbCheck, TbPhoto } from "react-icons/tb";
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { Image as UiImage } from "@pagehub/ui";
 import { getCdnUrl } from "../utils/cdn";
 import { migrateAction, actionToHref } from "../utils/action";
@@ -53,6 +54,9 @@ export const Image = (incomingProps: ImageProps) => {
     id,
   } = useNode();
   const { query, enabled } = useEditor(state => getClonedState(props, state));
+  const { isActive } = useEditor((_, q) => ({
+    isActive: q.getEvent("selected").contains(id),
+  }));
 
 
   const { videoId, content } = props;
@@ -224,7 +228,16 @@ export const Image = (incomingProps: ImageProps) => {
 
   if (enabled) {
     if (empty) {
-      prop.children = <ImageDefault tab="Image" props={props} />;
+      prop.children = props.isLoading ? (
+        <ImageDefault tab="Image" props={props} />
+      ) : (
+        <EditorEmptyLeafHint
+          selected={isActive}
+          icon={<TbPhoto aria-hidden />}
+          idleLabel="Empty image"
+          selectedDetail="Pick a file in settings"
+        />
+      );
     }
     prop["data-bounding-box"] = enabled;
     prop["data-empty-state"] = empty;

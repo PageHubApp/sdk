@@ -11,7 +11,7 @@ const AddElementButton = React.lazy(() =>
   import("../chrome/shared/AddElementButton").then(m => ({ default: m.AddElementButton }))
 );
 
-export const EmptyState = ({ icon = null }) => {
+export const EmptyState = ({ icon = null, text }: { icon?: React.ReactNode | null; text?: string }) => {
   const { enabled } = useEditor(state => ({
     enabled: state.options.enabled,
   }));
@@ -33,10 +33,10 @@ export const EmptyState = ({ icon = null }) => {
     name: node.data.custom.displayName || node.data.displayName,
   }));
 
-  const { isPage, isSection } = useNodeTypeHelpers();
-  // Only swap to AddElementButton on hover/active for page/section; inner containers
-  // keep the icon so height does not collapse (AddElementButton returns null there).
-  const showAddButton = (isActive || isHover) && (isPage || isSection);
+  const { isPage } = useNodeTypeHelpers();
+  // Only swap to AddElementButton on hover/active for pages (sections: toolbox only; inner containers
+  // keep the icon so height does not collapse — AddElementButton returns null there).
+  const showAddButton = (isActive || isHover) && isPage;
 
   if (!enabled) {
     return null;
@@ -74,6 +74,9 @@ export const EmptyState = ({ icon = null }) => {
         </motion.div>
       ) : null}
 
+      {text && !showAddButton && (
+        <span className="text-xs text-neutral-content">{text}</span>
+      )}
       {icon && !showAddButton && (
         <div data-empty-state={true} className="text-3xl">
           {icon}

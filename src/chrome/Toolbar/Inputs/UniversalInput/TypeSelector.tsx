@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { dropdownPositionToStyle, useDropdownPosition } from "../../hooks/useDropdownPosition";
+import { OVERLAY_Z_TYPE_SELECTOR } from "../../../overlays/overlayZIndex";
+import { useAnchoredPopover } from "../../../overlays/useAnchoredPopover";
 import { ValueType } from "./types";
 
 interface TypeSelectorProps {
@@ -12,17 +13,16 @@ interface TypeSelectorProps {
 }
 
 export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
-  ({ types, selectedType, onTypeChange, onCalcClick, onOpenChange }, forwardedRef) => {
+  ({ types, selectedType, onTypeChange, onOpenChange }, forwardedRef) => {
     const [isOpen, setIsOpen] = useState(false);
 
-    // Notify parent when dropdown opens/closes
     useEffect(() => {
       onOpenChange?.(isOpen);
     }, [isOpen, onOpenChange]);
+
     const internalRef = useRef<HTMLDivElement>(null);
 
-    // Merge refs
-    const mergedRef = React.useCallback(
+    const mergedRef = useCallback(
       (node: HTMLDivElement | null) => {
         internalRef.current = node;
         if (typeof forwardedRef === "function") {
@@ -34,42 +34,36 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
       [forwardedRef]
     );
 
-    // Smart dropdown positioning - align to right
-    const position = useDropdownPosition({
-      isOpen,
-      anchorRef: internalRef as React.RefObject<HTMLElement>,
-      offset: 4,
-      maxHeight: 300,
-      minSpaceRequired: 100,
-      align: "right",
+    const floating = useAnchoredPopover({
+      open: isOpen,
+      placement: "bottom-end",
+      mainAxisOffset: 4,
+      maxHeightCeiling: 300,
+      maxHeightMin: 100,
+      dismiss: {
+        onDismiss: () => setIsOpen(false),
+      },
     });
 
-    useEffect(() => {
-      if (!isOpen) return;
+    const setRootRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        mergedRef(node);
+        floating.refs.setReference(node);
+      },
+      [mergedRef, floating.refs]
+    );
 
-      const handleClickOutside = (e: MouseEvent) => {
-        const target = e.target as Element;
-        // Check if click is outside both the button and the dropdown
-        if (
-          internalRef.current &&
-          !internalRef.current.contains(e.target as Node) &&
-          !target.closest("[data-type-selector-dropdown]")
-        ) {
-          setIsOpen(false);
-        }
-      };
-
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+    useLayoutEffect(() => {
+      if (isOpen) void floating.update();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     const selectedLabel = types.find(t => t.id === selectedType)?.label || "?";
 
     return (
       <>
-        <div ref={mergedRef} className="relative">
+        <div ref={setRootRef} className="relative">
           <div className="flex h-5 items-center gap-0 rounded-md bg-base-200">
-            {/* Icon/Label part - opens calc dialog when calc is selected */}
             <button
               onClick={e => {
                 e.stopPropagation();
@@ -84,11 +78,14 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
         </div>
 
         {isOpen &&
-          position &&
           ReactDOM.createPortal(
             <div
               data-type-selector-dropdown
-              style={dropdownPositionToStyle(position)}
+              ref={floating.refs.setFloating}
+              style={{
+                ...floating.floatingStyles,
+                zIndex: OVERLAY_Z_TYPE_SELECTOR,
+              }}
               className="pagehub-sdk-root scrollbar-light ph-panel-soft pointer-events-auto grid min-w-32 grid-cols-3 gap-1 overflow-hidden p-0.5"
             >
               {types.map(type => (

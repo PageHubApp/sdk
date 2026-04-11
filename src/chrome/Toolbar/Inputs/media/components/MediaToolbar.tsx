@@ -7,7 +7,7 @@ import {
   TbExternalLink,
   TbInfoCircle,
   TbSearch,
-  TbSparkles,
+  TbWand,
   TbUpload,
   TbLayoutGrid,
   TbList,
@@ -192,7 +192,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
           {canUseImageGenerate && (
             <AddModeButton
               mode="ai"
-              icon={<TbSparkles className="size-[18px]" />}
+              icon={<TbWand className="size-[18px]" />}
               tooltip="Generate with AI"
               activeMode={addMode}
               onClick={() => setAddMode("ai")}

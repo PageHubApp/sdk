@@ -1,9 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useState, useCallback } from "react";
 import { Box } from "@pagehub/ui";
+import { TbMenu2 } from "react-icons/tb";
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { BaseSelectorProps } from "./selectors";
 import { CSStoObj } from "../utils/tailwind/tailwind";
-import { EmptyState } from "./EmptyState";
 
 export interface DropdownProps extends BaseSelectorProps {
   trigger?: "click" | "hover";
@@ -31,16 +32,16 @@ export const Dropdown = ({ children, ...incomingProps }: Partial<DropdownProps> 
     ...incomingProps,
   };
 
-  const { id } = useNode();
-  const { enabled, actions, query } = useEditor((state) => ({
+  const { query, actions } = useEditor();
+  const { id, connectors: { connect } } = useNode();
+  const { enabled, isActive } = useEditor((state, q) => ({
     enabled: state.options.enabled,
+    isActive: q.getEvent("selected").contains(id),
   }));
 
   const [isMounted, setIsMounted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
-
-  const { connectors: { connect } } = useNode();
 
   // Check if this node or any child is selected
   const { isSelectedOrChildSelected } = useEditor((state) => {
@@ -163,7 +164,19 @@ export const Dropdown = ({ children, ...incomingProps }: Partial<DropdownProps> 
     prop["data-bounding-box"] = true;
   }
 
-  return React.createElement(Box, prop, children || (enabled ? <EmptyState text="Drop trigger and panel here" /> : null));
+  return React.createElement(
+    Box,
+    prop,
+    children ||
+      (enabled ? (
+        <EditorEmptyLeafHint
+          selected={isActive}
+          icon={<TbMenu2 aria-hidden />}
+          idleLabel="Empty dropdown"
+          selectedDetail="Drop trigger and panel here"
+        />
+      ) : null),
+  );
 };
 
 Dropdown.craft = {

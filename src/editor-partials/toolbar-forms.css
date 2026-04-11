@@ -104,7 +104,7 @@
 }
 
 .pagehub-sdk-root .tool-bg {
-  @apply flex items-center justify-center gap-2 rounded-lg border border-base-300 bg-neutral p-1 text-sm font-normal leading-normal tracking-normal text-neutral-content shadow-sm;
+  @apply flex items-center justify-center gap-2 rounded-box border border-base-300/50 bg-base-100 p-1 text-sm font-normal leading-normal tracking-normal text-base-content shadow-xl;
 }
 
 .pagehub-sdk-root .node-control {
@@ -145,7 +145,7 @@
 }
 
 .pagehub-sdk-root .tool-button {
-  @apply inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md border-0 bg-transparent p-2 text-sm font-medium text-neutral-content shadow-none transition-colors duration-150 hover:bg-neutral/80 hover:text-base-content active:scale-90 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-[18px] [&_svg]:shrink-0;
+  @apply inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md border-0 bg-transparent p-2 text-sm font-medium text-base-content shadow-none transition-colors duration-150 hover:bg-base-200 active:scale-90 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-[18px] [&_svg]:shrink-0;
 }
 
 .pagehub-sdk-root .tool-button svg {
@@ -153,7 +153,7 @@
 }
 
 .pagehub-sdk-root .panel-btn {
-  @apply inline-flex cursor-pointer items-center justify-center rounded border-0 bg-transparent p-1 text-neutral-content shadow-none transition-colors duration-150 hover:bg-neutral/80 hover:text-base-content active:scale-90 focus:outline-none [&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0;
+  @apply inline-flex cursor-pointer items-center justify-center rounded border-0 bg-transparent p-1 text-base-content shadow-none transition-colors duration-150 hover:bg-base-200 active:scale-90 focus:outline-none [&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0;
 }
 
 .pagehub-sdk-root .panel-btn svg {

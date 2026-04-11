@@ -120,6 +120,11 @@ export interface BaseSelectorProps {
   "aria-hidden"?: string;
   "aria-describedby"?: string;
   "aria-live"?: "polite" | "assertive" | "off";
+
+  /** Editor/AI only — prose brief for models (merged with ROOT/ancestors in prompts). Not rendered. */
+  designNotes?: string;
+  /** Editor/AI only — semantic tags (not Tailwind). Not rendered. */
+  designTags?: string[];
 }
 
 /**

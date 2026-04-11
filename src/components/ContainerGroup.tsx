@@ -1,13 +1,13 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbContainer } from "react-icons/tb";
-import { useIsolate, usePreview, useView } from "../store";
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
+import { usePreview, useView } from "../store";
 import { mergeAccessibilityProps } from "../utils/accessibility";
 import { Box } from "@pagehub/ui";
 import { applyBackgroundImage, motionIt } from "../utils/lib";
 
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
-import { EmptyState } from "./EmptyState";
 import { RenderPattern, inlayProps } from "./lib";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
@@ -33,12 +33,11 @@ export interface ContainerGroupProps extends BaseSelectorProps {
 export const ContainerGroup = (props: ContainerGroupProps) => {
   const { query, actions } = useEditor();
   const { connectors, id } = useNode();
-  const { enabled } = useEditor(state => ({
+  const { enabled, isActive } = useEditor((state, q) => ({
     enabled: state.options.enabled,
+    isActive: q.getEvent("selected").contains(id),
   }));
   const view = useView();
-  const viewMode = "page";
-  const isolate = useIsolate();
   const preview = usePreview();
   const settings = null;
   const setSettings = (_: any) => { };
@@ -64,18 +63,6 @@ export const ContainerGroup = (props: ContainerGroupProps) => {
   }, [props.items]);
 
   let className = props.className || "";
-
-  // Hide container if needed
-  if (enabled) {
-    // In preview mode, only show if this specific component is isolated
-    if (viewMode === "preview" && isolate && isolate !== id) {
-      className = `${className} hidden`;
-    }
-    // In component mode, only show if this specific component is isolated
-    else if (viewMode === "component" && isolate && isolate !== id) {
-      className = `${className} hidden`;
-    }
-  }
 
   let prop: any = {
     ref: r => {
@@ -123,7 +110,14 @@ export const ContainerGroup = (props: ContainerGroupProps) => {
         {props.children}
 
         {/* Render empty state if no items */}
-        {(props.items || []).length === 0 && <EmptyState icon={TbContainer} />}
+        {(props.items || []).length === 0 && enabled ? (
+          <EditorEmptyLeafHint
+            selected={isActive}
+            icon={<TbContainer aria-hidden />}
+            idleLabel="Empty group"
+            selectedDetail="Configure items in settings"
+          />
+        ) : null}
       </>
     ),
   };

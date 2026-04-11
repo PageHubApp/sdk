@@ -86,11 +86,11 @@ export const ColorInput = (__props: any) => {
 
   const pickerValue = value && value.includes("palette:") ? value : cpVal;
 
-  let viewValue = view;
+  let viewValue: string | number = view;
   if (propType === "component" || propType === "root") {
     viewValue = "component";
   } else if (index) {
-    viewValue = index;
+    viewValue = typeof index === "number" ? index : String(index);
   }
 
   const clearColor = useCallback(() => {
@@ -113,7 +113,7 @@ export const ColorInput = (__props: any) => {
         props={{ label, labelHide }}
         index={index}
         lab={value}
-        viewValue={viewValue}
+        viewValue={String(viewValue)}
         propType={propType}
         propKey={propKey}
         propItemKey={propItemKey}

@@ -32,6 +32,8 @@ export interface ToolbarConfig {
   layout?: ReactNode | (() => ReactNode) | "spacing" | "hidden";
   /** Composable className modifiers from defineComponent() */
   modifiers?: ComponentModifier[];
+  /** Extra toolbar chrome from defineComponent({ toolbarExtra }) */
+  toolbarExtra?: ReactNode;
 }
 
 // ─── Head Item (tab bar) ─────────────────────────────────────────────

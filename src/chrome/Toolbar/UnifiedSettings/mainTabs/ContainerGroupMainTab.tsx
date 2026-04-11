@@ -6,9 +6,9 @@ import { atom, useAtomState } from "@zedux/react";
 import React from "react";
 import { renderComponentSlots } from "../helpers";
 
-export const SelectedContainerGroupAtom = atom("selectedcontainergroup_unified", "",);
+export const SelectedContainerGroupAtom = atom<string>("selectedcontainergroup_unified", "");
 
-export const SelectedNestedAccordionAtom = atom("selectednestedaccordion_unified", "",);
+export const SelectedNestedAccordionAtom = atom<string>("selectednestedaccordion_unified", "");
 
 export const ContainerGroupMainTab = () => {
   const { id } = useNode();
@@ -63,7 +63,8 @@ export const ContainerGroupMainTab = () => {
                   <NodeProvider id={component.id}>
                     <div className="flex flex-col gap-3 bg-base-200 p-3 text-base-content">
                       {React.createElement(
-                        query.node(component.id).get()?.data?.related?.toolbar || (() => null)
+                        (query.node(component.id).get()?.data as { related?: { toolbar?: React.ComponentType } })
+                          ?.related?.toolbar || (() => null)
                       )}
                     </div>
                   </NodeProvider>

@@ -101,6 +101,8 @@ export interface PageHubFeatures {
   seoPanel?: boolean;
   /** Allow multi-page sites. Default: true */
   multiPage?: boolean;
+  /** Allow marking a page as the site custom 404 canvas. Default: true (host can set false for free tier). */
+  custom404Page?: boolean;
   /** Components to hide from the toolbox. */
   restrictedComponents?: string[];
   /** Enable responsive device preview toggle. Default: true */
@@ -140,7 +142,8 @@ export interface PageHubAiPanelContext {
 export interface PageHubAiMediaHandlers {
   analyzeImage?: (args: {
     imageUrl: string;
-    aiSettings: Record<string, unknown>;
+    designNotes?: string;
+    designTags?: string[];
   }) => Promise<{
     fileName?: string;
     altText?: string;
@@ -152,7 +155,8 @@ export interface PageHubAiMediaHandlers {
     width: number;
     height: number;
     model: string;
-    aiSettings: Record<string, unknown>;
+    designNotes?: string;
+    designTags?: string[];
   }) => Promise<{
     success?: boolean;
     imageUrl?: string;
@@ -169,12 +173,10 @@ export interface PageHubAiMediaHandlers {
 export interface PageHubEditorChromeSlots {
   /** Toolbox tab strip — wand opens assistant (host typically uses `ClippyOpenAtom`). */
   renderToolboxAiButton?: () => ReactNode;
-  /** Rich-text floating toolbar trigger button — host owns the wand icon. */
-  renderTiptapAiToolbar?: (ctx: { editor: unknown; query: unknown; activePanel: string | null; setActivePanel: (p: string | null) => void }) => ReactNode;
-  /** Rich-text AI panel content — rendered in the toolbar's panel slot when activePanel === "ai". */
-  renderTiptapAiPanel?: (ctx: { editor: unknown; query: unknown }) => ReactNode;
+  /** Rich-text floating toolbar — opens Clippy for copy (text scope). */
+  renderInlineCopyAssistantTrigger?: (ctx: { textNodeId: string; query: unknown }) => ReactNode;
   /** Settings sidebar “Edit with AI” (per selected node). Host should pin `nodeId` to `AiChatAttachedNodesAtom` like “Add to context”. */
-  renderSettingsAiButton?: (ctx: { nodeId: string; displayName: string }) => ReactNode;
+  renderSettingsAiButton?: (ctx: { nodeId: string; displayName: string; resolvedType?: string }) => ReactNode;
   /** Container / add-section wand — opens assistant in create mode. */
   renderNodeAiGenerateButton?: (ctx: {
     onClick: () => void;
@@ -186,6 +188,8 @@ export interface PageHubEditorChromeSlots {
     onClick: () => void;
     className?: string;
     disabled?: boolean;
+    /** Wand + text row (e.g. canvas context menu); omit for icon-only chip. */
+    label?: string;
   }) => ReactNode;
   /** Empty canvas “Build with AI” card. */
   renderEmptyStateAiCard?: (ctx: { onOpenAssistant: () => void }) => ReactNode;
@@ -193,13 +197,20 @@ export interface PageHubEditorChromeSlots {
   renderNavAiMenuItem?: (ctx: { onSelect: () => void }) => ReactNode;
   /** Top of editor nav — page-level actions (View Draft, Duplicate, Delete, etc.) from host. */
   renderNavHeaderItems?: (ctx: { close: () => void }) => ReactNode;
+  /**
+   * Host-only block in Import/Export → Export tab (e.g. static HTML ZIP). SDK does not call app APIs.
+   */
+  renderImportExportHandoffExtras?: () => ReactNode;
 }
 
 // ─── Main configuration ──────────────────────────────────────────────────────
 
 export interface PageHubConfig {
-  /** DOM element or CSS selector to mount the editor into */
-  container: HTMLElement | string;
+  /**
+   * DOM element or CSS selector to mount the editor into (`PageHub.init()` only).
+   * Optional when using the React `<PageHubProvider>` / `<PageHubEditor>` integration.
+   */
+  container?: HTMLElement | string;
 
   /** API key for authenticating with PageHub Cloud (optional for self-hosted) */
   apiKey?: string;
@@ -321,7 +332,8 @@ export type PageHubEvent =
   | "error"
   | "modeChange"
   | "componentSelect"
-  | "componentDeselect";
+  | "componentDeselect"
+  | "unsaved_changes";
 
 export interface PageHubEventMap {
   ready: [];
@@ -333,6 +345,8 @@ export interface PageHubEventMap {
   modeChange: [mode: "editor" | "viewer"];
   componentSelect: [nodeId: string];
   componentDeselect: [];
+  /** Emitted when dirty state toggles (editor tracks serialized graph when dirty). */
+  unsaved_changes: [dirty: boolean];
 }
 
 // ─── Component registration ─────────────────────────────────────────────────

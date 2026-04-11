@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
-import { dropdownPositionToStyle, useDropdownPosition } from "../../hooks/useDropdownPosition";
+import { OVERLAY_Z_CALC_DIALOG } from "../../../overlays/overlayZIndex";
+import { useAnchoredPopover } from "../../../overlays/useAnchoredPopover";
 
 interface CalcDialogProps {
   value: string;
@@ -41,31 +42,24 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
     anchorRef.current = anchorEl;
   }, [anchorEl]);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Element;
-      if (!target.closest("[data-calc-dialog]")) {
-        onClose();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
-
-  // Smart dropdown positioning
-  const position = useDropdownPosition({
-    isOpen: true,
-    anchorRef: anchorRef as React.RefObject<HTMLElement>,
-    offset: 6,
-    maxHeight: 500,
-    minSpaceRequired: 300,
+  const floating = useAnchoredPopover({
+    open: true,
+    placement: "bottom-start",
+    mainAxisOffset: 6,
+    maxHeightCeiling: 500,
+    maxHeightMin: 150,
+    dismiss: { onDismiss: onClose },
   });
 
-  if (!position) return null;
+  useLayoutEffect(() => {
+    floating.refs.setReference(anchorRef.current);
+    void floating.update();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anchorEl]);
 
-  const style = {
-    ...dropdownPositionToStyle(position),
+  const style: React.CSSProperties = {
+    ...floating.floatingStyles,
+    zIndex: OVERLAY_Z_CALC_DIALOG,
     width: 400,
   };
 
@@ -116,9 +110,7 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
   };
 
   return ReactDOM.createPortal(
-    <>
-      <div role="presentation" aria-hidden="true" className="pointer-events-auto fixed inset-0 z-9999" onClick={onClose} />
-      <div style={style} className="pagehub-sdk-root pointer-events-auto z-10000" data-calc-dialog>
+    <div ref={floating.refs.setFloating} style={style} className="pagehub-sdk-root pointer-events-auto" data-calc-dialog>
         <div className="ph-panel overflow-hidden">
           {/* Header */}
           <div className="border-b border-base-300 bg-neutral px-3 py-2">
@@ -250,8 +242,7 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
             </button>
           </div>
         </div>
-      </div>
-    </>,
+    </div>,
     document.querySelector(".pagehub-sdk-root") || document.body
   );
 }

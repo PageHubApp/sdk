@@ -4,6 +4,7 @@ import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 
 import React, { useEffect, useRef, useState } from "react";
 import { TbContainer } from "react-icons/tb";
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../utils/defaults";
 import { resolveTheme } from "../utils/design/resolveTheme";
 import { useLazyBackground } from "../utils/hooks/useLazyBackground";
@@ -15,7 +16,6 @@ import {
   getBackgroundUrl,
 } from "../utils/lib";
 import { PaletteProvider } from "../utils/design/PaletteContext";
-import { EmptyState } from "./EmptyState";
 import { RenderPattern, inlayProps } from "./lib";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import { useBackgroundEffects } from "./Background/useBackgroundEffects";
@@ -69,11 +69,6 @@ export interface ContainerProps extends BaseSelectorProps {
    * AI / MCP must not overwrite `company` without explicit rebrand intent.
    */
   brandingCommitted?: boolean;
-  /** Editor AI site hints */
-  ai?: {
-    prompt?: string;
-    styleTags?: string[];
-  };
   /** GA4, GTM, Search Console verification, Meta Pixel, etc. */
   integrations?: Record<string, Record<string, string>>;
   /** Server-side redirect rules */
@@ -93,15 +88,17 @@ export function Background({
   let props: any = { type, backgroundFetchPriority, backgroundPlaceholder, pageMedia, savedComponents, ...rest };
   const { children } = props;
 
-  const { enabled, query, nodeCount } = useEditor((state) => ({
-    enabled: state.options.enabled,
-    nodeCount: Object.keys(state.nodes).length,
-  }));
-
   const {
     connectors: { connect, drag },
     id,
   } = useNode();
+
+  const { enabled, query, nodeCount, isActive } = useEditor((state, q) => ({
+    enabled: state.options.enabled,
+    query: q,
+    nodeCount: Object.keys(state.nodes).length,
+    isActive: q.getEvent("selected").contains(id),
+  }));
 
   const ref = useRef<HTMLElement | null>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -128,13 +125,6 @@ export function Background({
   // All side-effects (icon fonts, header/footer injection, link styles, design system vars)
   useBackgroundEffects({ enabled, query, nodeCount, props, nodeId: id });
 
-  /** Editor: suppress native context menu on the canvas root (no contextual toolbox UI). */
-  const blockCanvasContextMenu = (e: React.MouseEvent) => {
-    if (!enabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
   const prop: Record<string, any> = {
     ref: (r: HTMLElement | null) => {
       ref.current = r;
@@ -152,7 +142,6 @@ export function Background({
     prop["data-no-scrollbars"] = view !== "desktop" && device;
     prop["data-renderer"] = enabled;
     prop["data-bounding-box"] = enabled;
-    prop.onContextMenu = blockCanvasContextMenu;
     if (isMounted) {
       prop["node-id"] = id;
     }
@@ -170,7 +159,15 @@ export function Background({
         preview={preview}
         query={query}
       >
-          {children || <EmptyState icon={<TbContainer />} />}
+          {children ||
+            (enabled ? (
+              <EditorEmptyLeafHint
+                selected={isActive}
+                icon={<TbContainer aria-hidden />}
+                idleLabel="Empty canvas"
+                selectedDetail="Add header, sections, or footer from the sidebar"
+              />
+            ) : null)}
       </RenderPattern>
     </PaletteProvider>
   );
@@ -191,6 +188,8 @@ export function Background({
   }
 
   applyAnimation(prop, props, null, enabled);
+
+  prop["data-ph-site"] = "true";
 
   return React.createElement(Box, { ...prop, as: "main" });
 }

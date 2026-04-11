@@ -5,7 +5,10 @@ import { html } from "@codemirror/lang-html";
 import { javascript } from "@codemirror/lang-javascript";
 import { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { formatToolbarCode, type ToolbarFormatLanguage } from "../../../../utils/formatToolbarCode";
+import type { EditorVariableOption } from "../../../../utils/editorVariableOptions";
+import { htmlVariableAutocompleteExtension } from "./htmlVariableCompletions";
 
 /** Blend a Daisy role toward `--base-content` so tokens stay readable on `bg-base-200` when the role is low-luminance. */
 function mixToInk(roleVar: string, rolePercent: number) {
@@ -186,6 +189,17 @@ interface CodeEditorProps {
   theme?: "dark" | "light" | "auto";
   onFocus?: () => void;
   onBlur?: () => void;
+  /**
+   * When true with `autoFormatMountKey`, Prettier runs once whenever the key changes
+   * (e.g. selecting another Text node). Does not run while typing the same node.
+   */
+  autoFormatOnMount?: boolean;
+  /** Session id for mount-time format (Craft `node.id`, or a stable tab id). */
+  autoFormatMountKey?: string;
+  /** Smaller monospace (toolbar CodeMirror only; site settings / import UI stay default). */
+  toolbarDenseCode?: boolean;
+  /** When set (HTML mode), `{{` triggers completion for company / site variables. */
+  htmlVariableCompletionOptions?: EditorVariableOption[];
 }
 
 export const CodeEditor = ({
@@ -203,7 +217,39 @@ export const CodeEditor = ({
   theme = "auto",
   onFocus,
   onBlur,
+  autoFormatOnMount = false,
+  autoFormatMountKey,
+  toolbarDenseCode = false,
+  htmlVariableCompletionOptions,
 }: CodeEditorProps) => {
+  const latestValue = useRef(typeof value === "string" ? value : String(value || ""));
+  useEffect(() => {
+    latestValue.current = typeof value === "string" ? value : String(value || "");
+  }, [value]);
+
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  useEffect(() => {
+    if (!autoFormatOnMount || !autoFormatMountKey || readOnly) return;
+    const raw = latestValue.current;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const fmt = await formatToolbarCode(raw, language as ToolbarFormatLanguage);
+        if (!cancelled && fmt !== raw) {
+          latestValue.current = fmt;
+          onChangeRef.current?.(fmt);
+        }
+      } catch {
+        // leave as stored
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [autoFormatOnMount, autoFormatMountKey, language, readOnly]);
+
   const isDark = useDarkMode();
   const themeMode = theme === "auto" ? isDark : theme === "dark";
 
@@ -212,14 +258,28 @@ export const CodeEditor = ({
   // Memoize theme to prevent unnecessary re-renders
   const customTheme = useMemo(() => createCustomTheme(themeMode), [themeMode]);
 
+  const variableExtensions = useMemo(() => {
+    if (language !== "html" || htmlVariableCompletionOptions === undefined) return [];
+    return [htmlVariableAutocompleteExtension(htmlVariableCompletionOptions)];
+  }, [language, htmlVariableCompletionOptions]);
+
   const allExtensions = useMemo(
     () => [
       EditorView.lineWrapping,
       ...(langFn ? [langFn()] : []),
       ...customTheme,
+      ...variableExtensions,
       ...extraExtensions,
     ],
-    [langFn, customTheme, extraExtensions]
+    [langFn, customTheme, extraExtensions, variableExtensions]
+  );
+
+  const handleChange = useCallback(
+    (next: string) => {
+      latestValue.current = next;
+      onChange?.(next);
+    },
+    [onChange]
   );
 
   return (
@@ -230,7 +290,7 @@ export const CodeEditor = ({
         minHeight={minHeight}
         maxHeight={maxHeight}
         extensions={allExtensions}
-        onChange={onChange}
+        onChange={handleChange}
         onFocus={onFocus}
         onBlur={onBlur}
         readOnly={readOnly}
@@ -255,7 +315,11 @@ export const CodeEditor = ({
           lintKeymap: true,
         }}
         placeholder={placeholder}
-        className="text-sm"
+        className={
+          toolbarDenseCode
+            ? "text-[10px] leading-snug [&_.cm-content]:text-[10px]"
+            : "text-sm"
+        }
       />
     </div>
   );

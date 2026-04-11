@@ -3,11 +3,12 @@ import { TbInfoCircle, TbPlus, TbTrash } from "react-icons/tb";
 
 interface RedirectsTabProps {
   inputClass: string;
+  selectClass: string;
   redirects: { from: string; to: string; permanent: boolean }[];
   setRedirects: React.Dispatch<React.SetStateAction<{ from: string; to: string; permanent: boolean }[]>>;
 }
 
-export function RedirectsTab({ inputClass, redirects, setRedirects }: RedirectsTabProps) {
+export function RedirectsTab({ inputClass, selectClass, redirects, setRedirects }: RedirectsTabProps) {
   return (
     <div className="space-y-6">
       <div className="mb-4 space-y-2">
@@ -53,7 +54,7 @@ export function RedirectsTab({ inputClass, redirects, setRedirects }: RedirectsT
                 updated[i] = { ...updated[i], permanent: e.target.value === "301" };
                 setRedirects(updated);
               }}
-              className="rounded border border-base-300 bg-input px-2 py-1.5 text-xs text-base-content"
+              className={selectClass}
             >
               <option value="301">301</option>
               <option value="302">302</option>

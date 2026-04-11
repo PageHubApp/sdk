@@ -115,14 +115,14 @@ export const StandaloneImagePicker = ({
       <div className="flex gap-2">
         <label
           htmlFor={`file-upload-${label}`}
-          className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-3 ${
+          className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-base-300 bg-base-200/60 px-4 py-3 shadow-sm transition-[border-color,background-color] ${
             errors.length
               ? "border-error bg-error text-error-content"
               : saved
                 ? "border-secondary bg-secondary text-secondary-content"
                 : loading
-                  ? "border-primary bg-neutral text-primary"
-                  : "border-base-300 bg-neutral text-base-content hover:border-primary hover:bg-neutral"
+                  ? "border-primary bg-base-200 text-primary"
+                  : "text-base-content hover:border-primary hover:bg-base-300/25"
           } ${!enabled && "cursor-not-allowed opacity-50"}`}
         >
           {loading ? (
@@ -156,7 +156,7 @@ export const StandaloneImagePicker = ({
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center gap-2 rounded-lg border-2 border-error px-4 py-3 text-error hover:border-error hover:bg-error hover:text-error-content"
+            className="flex items-center gap-2 rounded-lg border border-error bg-base-200 px-4 py-3 text-error shadow-sm transition-[border-color,background-color] hover:bg-error hover:text-error-content"
           >
             <TbTrash className="text-xl" />
           </button>

@@ -88,6 +88,8 @@ export const CSSEditorInput = () => {
       lineNumbers={false}
       theme="auto"
       placeholder="color: tomato; border-style: dotted;"
+      autoFormatOnMount
+      autoFormatMountKey={id}
     />
   );
 

@@ -8,7 +8,7 @@ export interface DropdownLayoutConfig {
   };
   leftSection?: {
     title: string;
-    groups: ("named" | "numeric" | "other")[];
+    groups: ("named" | "numeric" | "fractions" | "other")[];
     showHints?: boolean;
     hintType?: "pixel" | "percentage" | "custom";
     showPreview?: "cursor" | "color" | "shadow";
@@ -16,7 +16,7 @@ export interface DropdownLayoutConfig {
   };
   middleSection?: {
     title: string;
-    groups: "numeric"[];
+    groups: ("named" | "numeric" | "fractions" | "other")[];
     showHints?: boolean;
     hintType?: "pixel" | "percentage" | "custom";
     showPreview?: "cursor" | "color" | "shadow";

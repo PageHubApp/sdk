@@ -5,6 +5,9 @@
 import { ROOT_NODE } from "@craftjs/core";
 import { phStorage } from "./phStorage";
 
+/** Persisted when the editor canvas shows every page (not isolated to one). */
+export const EDITOR_ALL_PAGES_STORAGE = "__all_pages__";
+
 // ─── Page Count ───
 
 export const getPageCount = (query: any) => {
@@ -14,10 +17,36 @@ export const getPageCount = (query: any) => {
     : root?.data?.nodes.filter((_: string) => query.node(_).get().data.props.type === "page") || [];
 };
 
+export function listPageNodeIds(query: any): string[] {
+  const root = query.node(ROOT_NODE).get();
+  if (!root?.data?.nodes) return [];
+  return root.data.nodes.filter((nodeId: string) => {
+    const node = query.node(nodeId).get();
+    return node?.data?.props?.type === "page";
+  });
+}
+
+/** Home page id, or first page node under ROOT when none is marked home. */
+export function getDefaultEditorPageId(query: any): string | null {
+  const root = query.node(ROOT_NODE).get();
+  if (!root?.data?.nodes) return null;
+  const nodes: string[] = root.data.nodes;
+  const explicit = nodes.find((nodeId: string) => {
+    const node = query.node(nodeId).get();
+    return node?.data?.props?.type === "page" && node?.data?.props?.isHomePage === true;
+  });
+  if (explicit) return explicit;
+  const firstPage = nodes.find((nodeId: string) => {
+    const node = query.node(nodeId).get();
+    return node?.data?.props?.type === "page";
+  });
+  return firstPage ?? null;
+}
+
 // ─── Page Isolation ───
 
 export const isolatePage = (
-  isolate: boolean,
+  isolate: string | boolean,
   query: any,
   active: any,
   actions: any,
@@ -49,7 +78,7 @@ export const isolatePage = (
 };
 
 export const isolatePageAlt = (
-  isolate: boolean,
+  _isolate: string | boolean,
   query: any,
   active: any,
   actions: any,
@@ -88,8 +117,12 @@ export const isolatePageAlt = (
     }, 100);
   }
 
-  setIsolate(active);
-  phStorage.set("isolated", active);
+  setIsolate(active == null ? "" : active);
+  if (active == null) {
+    phStorage.set("isolated", EDITOR_ALL_PAGES_STORAGE);
+  } else {
+    phStorage.set("isolated", active);
+  }
 };
 
 // ─── Page Ref Resolution ───

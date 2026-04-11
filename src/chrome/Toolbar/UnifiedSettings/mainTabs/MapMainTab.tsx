@@ -8,12 +8,15 @@ import { BatchOperationAtom } from "../../../../utils/atoms";
 import { TbEdit } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
-export const SelectedMapPointAtom = atom("selectedmappoint_unified", null);
+export const SelectedMapPointAtom = atom<any>("selectedmappoint_unified", null);
 
 export const MapMainTab = () => {
   const { actions, query } = useEditor();
   const { id } = useNode();
-  const [activeIndex, setActiveIndex] = useAtomState(SelectedMapPointAtom);
+  const [activeIndex, setActiveIndex] = useAtomState(SelectedMapPointAtom) as unknown as [
+    number | null,
+    (v: number | null) => void,
+  ];
   const batchOp = useAtomInstance(BatchOperationAtom);
 
   // Get child MapPoint nodes

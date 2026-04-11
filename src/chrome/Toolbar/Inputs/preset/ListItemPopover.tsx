@@ -122,8 +122,9 @@ export const ListEditor = ({
   extraButtons,
 }: {
   items: any[];
-  activeIndex: number | null;
-  setActiveIndex: (index: number | null) => void;
+  /** Zedux `useAtomState` tuples are typed loosely in strict TS — keep permissive here. */
+  activeIndex: any;
+  setActiveIndex: (...args: any[]) => void;
   renderLabel: (item: any, index: number) => React.ReactNode;
   renderPopover: (item: any, index: number) => React.ReactNode;
   onDelete?: (item: any, index: number) => void;

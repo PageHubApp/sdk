@@ -5,6 +5,7 @@
 import { Element, ROOT_NODE, useEditor } from "@craftjs/core";
 import { atom, useAtomValue } from "@zedux/react";
 import React, { cloneElement, isValidElement, useMemo, useState } from "react";
+import { ToolboxInsertHintTooltip } from "../../shared/ToolboxInsertHintTooltip";
 
 /**
  * Allowed `props.root` keys (non-class styling). Must stay aligned with
@@ -89,6 +90,66 @@ function normalizeElementRefs(element: any, resolver: Record<string, any>): any 
   return React.cloneElement(element as any, newProps);
 }
 
+/**
+ * Build the same canvas `<Element>` tree used for toolbox drag / double-click insert.
+ * `params` matches the prop bag passed to {@link RenderToolComponent} (minus `display` / `renderer`).
+ */
+export function buildToolboxCanvasElement(
+  query: any,
+  params: {
+    element: any;
+    className?: string;
+    root?: any;
+    [key: string]: any;
+  }
+): React.ReactElement {
+  const { element, className = "", root, ...rest } = params;
+  const resolver = query.getOptions().resolver;
+  let resolvedElement = element;
+  if (resolver) {
+    if (typeof element === "string") {
+      resolvedElement = resolver[element] ?? element;
+    } else if (element) {
+      const el = element as any;
+      const name = el.resolvedName || el.displayName || el.name;
+      if (name && resolver[name]) resolvedElement = resolver[name];
+    }
+  }
+  const topRootKept = pickKeptRoot(root);
+  const cn = (typeof className === "string" ? className : "").trim();
+  const raw = (
+    <Element
+      canvas
+      is={resolvedElement}
+      canDelete={true}
+      canEditName={true}
+      {...{
+        ...rest,
+        ...(cn ? { className: cn } : {}),
+        ...(Object.keys(topRootKept).length > 0 ? { root: topRootKept } : {}),
+      }}
+    />
+  );
+  return resolver ? normalizeElementRefs(raw, resolver) : raw;
+}
+
+/** Insert a toolbox preset immediately after the given node (context menu / one-click insert). */
+export function insertToolboxPresetAfterNode(
+  query: any,
+  actions: any,
+  targetNodeId: string,
+  toolProps: { element: any; className?: string; root?: any; [key: string]: any }
+) {
+  const tool = buildToolboxCanvasElement(query, toolProps);
+  AddElement({
+    element: tool,
+    actions,
+    query,
+    selected: targetNodeId,
+    position: "after",
+  });
+}
+
 export const AddElement = ({
   element,
   actions,
@@ -100,12 +161,18 @@ export const AddElement = ({
 }) => {
   if (!element) return;
 
-  let active = query.getEvent("selected").first();
-  if (!active) active = ROOT_NODE;
-
-  if (["afterParent", "beforeParent"].includes(position) && active !== ROOT_NODE) {
-    const node = query.node(active).get();
-    active = node.data.parent;
+  let active: string;
+  if (selected && !["afterParent", "beforeParent"].includes(position)) {
+    // Derive parent directly from the target node — do NOT use CraftJS selection state,
+    // which may point to a different page when the canvas is isolated.
+    const selectedNode = query.node(selected).get();
+    active = selectedNode?.data?.parent || ROOT_NODE;
+  } else {
+    active = query.getEvent("selected").first() || ROOT_NODE;
+    if (["afterParent", "beforeParent"].includes(position) && active !== ROOT_NODE) {
+      const node = query.node(active).get();
+      active = node.data.parent;
+    }
   }
 
   const activeNode = query.node(active).get();
@@ -177,69 +244,34 @@ export const RenderToolComponent = ({
   const selectedNode = useAtomValue(SelectedNodeAtom);
   const [isDragging, setIsDragging] = useState(false);
 
-  const resolvedElement = useMemo(() => {
-    const resolver = query.getOptions().resolver;
-    if (!resolver) return element;
-
-    if (typeof element === "string") {
-      return resolver[element] ?? element;
-    }
-
-    const name = (element as any).resolvedName
-      || (element as any).displayName
-      || (element as any).name;
-
-    if (name && resolver[name]) {
-      return resolver[name];
-    }
-
-    return element;
-  }, [element, query]);
-
-  const tool = useMemo(() => {
-    const topRootKept = pickKeptRoot(root);
-    const cn = (className || "").trim();
-
-    const resolver = query.getOptions().resolver;
-    const raw = (
-      <Element
-        canvas
-        is={resolvedElement}
-        canDelete={true}
-        canEditName={true}
-        {...{
-          ...rest,
-          ...(cn ? { className: cn } : {}),
-          ...(Object.keys(topRootKept).length > 0 ? { root: topRootKept } : {}),
-        }}
-      />
-    );
-    return resolver ? normalizeElementRefs(raw, resolver) : raw;
-  }, [resolvedElement, query, className, root, rest]);
+  const tool = useMemo(
+    () => buildToolboxCanvasElement(query, { element, className, root, ...rest }),
+    [element, query, className, root, rest]
+  );
 
   const displayWithProps =
     display && isValidElement(display) ? cloneElement(display, { isDragging } as any) : display;
 
   return (
-    <div
-      className="w-full cursor-grab active:cursor-grabbing"
-      ref={(ref: any) => create(ref, tool)}
-      onMouseDown={() => setIsDragging(true)}
-      onMouseUp={() => setIsDragging(false)}
-      onMouseLeave={() => setIsDragging(false)}
-      onDoubleClick={() => {
-        const props = {
-          element: tool,
-          actions,
-          query,
-          selected: selectedNode.id,
-          position: selectedNode.position,
-        };
-
-        AddElement(props);
-      }}
-    >
-      {renderer || <div className={"w-full"}>{displayWithProps}</div>}
-    </div>
+    <ToolboxInsertHintTooltip>
+      <div
+        className="w-full cursor-grab active:cursor-grabbing"
+        ref={(ref: any) => create(ref, tool)}
+        onMouseDown={() => setIsDragging(true)}
+        onMouseUp={() => setIsDragging(false)}
+        onMouseLeave={() => setIsDragging(false)}
+        onDoubleClick={() => {
+          AddElement({
+            element: tool,
+            actions,
+            query,
+            selected: selectedNode.id,
+            position: selectedNode.position,
+          });
+        }}
+      >
+        {renderer || <div className={"w-full"}>{displayWithProps}</div>}
+      </div>
+    </ToolboxInsertHintTooltip>
   );
 };

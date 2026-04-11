@@ -93,7 +93,8 @@ export const ToolbarSection = ({
           </div>
         );
         return help ? (
-          <Tooltip content={help} placement="left" className="text-xxs" delay={750} full>
+          /* `full` = Tooltip layout (flex w-full), not ToolbarSection grid columns — keeps border-b full width */
+          <Tooltip content={help} placement="left" className="text-xxs min-w-0" delay={750} full>
             {btn}
           </Tooltip>
         ) : btn;

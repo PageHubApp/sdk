@@ -64,8 +64,12 @@ export function useAiGeneration({
       if (!analyzeImageHandler) throw new Error("Image analysis is not configured");
 
       const rootNode = query.node(ROOT_NODE).get();
-      const aiSettings = (rootNode?.data?.props as Record<string, unknown>)?.ai || {};
-      const analysis = await analyzeImageHandler({ imageUrl, aiSettings });
+      const rp = rootNode?.data?.props as Record<string, unknown> | undefined;
+      const analysis = await analyzeImageHandler({
+        imageUrl,
+        designNotes: typeof rp?.designNotes === "string" ? rp.designNotes : undefined,
+        designTags: Array.isArray(rp?.designTags) ? (rp.designTags as string[]) : undefined,
+      });
       if (!analysis) throw new Error("Failed to analyze image");
 
       return {
@@ -93,7 +97,7 @@ export function useAiGeneration({
 
     try {
       const rootNode = query.node(ROOT_NODE).get();
-      const aiSettings = (rootNode?.data?.props as Record<string, unknown>)?.ai || {};
+      const rp = rootNode?.data?.props as Record<string, unknown> | undefined;
 
       if (!generateImageHandler) throw new Error("Image generation is not configured");
 
@@ -102,7 +106,8 @@ export function useAiGeneration({
         width: 1024,
         height: 1024,
         model: aiModel,
-        aiSettings,
+        designNotes: typeof rp?.designNotes === "string" ? rp.designNotes : undefined,
+        designTags: Array.isArray(rp?.designTags) ? (rp.designTags as string[]) : undefined,
       });
 
       const result = data as Record<string, unknown>;

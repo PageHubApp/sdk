@@ -1,9 +1,10 @@
 import { TbBrandTailwind } from "react-icons/tb";
 import { ToolbarSection } from "../../ToolbarSection";
 import { UniversalInput } from "../UniversalInput";
+import type { ValueType } from "../UniversalInput/types";
 
 /** Matches ring/outline pattern: open-ended values + design vars where useful. */
-const EFFECTS_ALLOWED_TYPES = [
+const EFFECTS_ALLOWED_TYPES: ValueType[] = [
   "tailwind",
   "calc",
   "px",

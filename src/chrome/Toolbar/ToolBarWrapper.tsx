@@ -18,7 +18,7 @@ import {
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
 import { AiChatAttachedNodesAtom, ClippyOpenAtom, SettingsAtom } from "utils/atoms";
-import { ComponentsAtom, IsolateAtom, SideBarOpen } from "utils/lib";
+import { ComponentsAtom, EDITOR_ALL_PAGES_STORAGE, IsolateAtom, SideBarOpen } from "utils/lib";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { useSDK } from "../../context";
 import { addHandler, buildClonedTree, saveHandler } from "../Viewport/lib";
@@ -172,39 +172,12 @@ export const ToolbarWrapper = ({
 
   useEffect(() => {
     const iso = phStorage.get("isolated");
-    if (iso) setIsolate(iso);
+    if (iso === EDITOR_ALL_PAGES_STORAGE) {
+      setIsolate("");
+      return;
+    }
+    if (iso && iso !== "null") setIsolate(iso);
   }, [setIsolate]);
-
-  // Handle keyboard shortcuts for copy/paste
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Only handle if we're not in an input field or textarea
-      const target = e.target as HTMLElement;
-      if (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.contentEditable === "true"
-      ) {
-        return;
-      }
-
-      if (e.ctrlKey || e.metaKey) {
-        if (e.key === "c" && id !== ROOT_NODE) {
-          e.preventDefault();
-          handleCopy(e as any);
-        } else if (e.key === "v") {
-          const clipData = phStorage.get("clipboard");
-          if (clipData && clipData !== "{}") {
-            e.preventDefault();
-            handlePaste(e as any);
-          }
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [id, handleCopy, handlePaste]);
 
   const ref = useRef<HTMLButtonElement | null>(null);
 

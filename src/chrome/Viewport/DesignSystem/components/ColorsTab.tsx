@@ -53,9 +53,9 @@ export function ColorsTab({ ds }: ColorsTabProps) {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="flex flex-col gap-2">
         {ds.palettes.map((entry, index) => (
-          <div key={index} className="group flex items-center gap-2">
+          <div key={index} className="group flex w-full min-w-0 items-center gap-2">
             <button
               ref={el => {
                 ds.colorButtonRefs.current[index] = el;
@@ -101,11 +101,12 @@ export function ColorsTab({ ds }: ColorsTabProps) {
       </div>
 
       <button
+        type="button"
         onClick={ds.addColor}
-        className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-lg border border-base-300 bg-accent px-3 py-2 text-sm text-accent-content transition-colors hover:bg-accent"
+        className="btn btn-outline mt-4 flex w-full items-center justify-center gap-2 border-base-content/30 normal-case"
       >
-        <TbPlus size={16} />
-        Add Color
+        <TbPlus className="size-4 shrink-0" aria-hidden />
+        Add color
       </button>
     </div>
   );

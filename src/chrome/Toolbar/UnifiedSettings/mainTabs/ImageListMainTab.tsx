@@ -9,12 +9,15 @@ import { BatchOperationAtom } from "../../../../utils/atoms";
 import { TbEdit } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
-export const SelectedImageListItemAtom = atom("selectedimagelistitem_unified", null);
+export const SelectedImageListItemAtom = atom<any>("selectedimagelistitem_unified", null);
 
 export const ImageListMainTab = () => {
   const { actions, query } = useEditor();
   const { id, props } = useNode(node => ({ props: node.data.props }));
-  const [activeIndex, setActiveIndex] = useAtomState(SelectedImageListItemAtom);
+  const [activeIndex, setActiveIndex] = useAtomState(SelectedImageListItemAtom) as unknown as [
+    number | null,
+    (v: number | null) => void,
+  ];
   const batchOp = useAtomInstance(BatchOperationAtom);
 
   // Get child Image nodes

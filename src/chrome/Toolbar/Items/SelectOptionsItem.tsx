@@ -6,10 +6,13 @@ import { Wrap } from "../ToolbarStyle";
 import { ListEditor } from "../Inputs/preset/ListItemPopover";
 
 // Create a simple state atom for managing which option is expanded
-const SelectedOptionAtom = atom("selectedOption", null);
+const SelectedOptionAtom = atom<any>("selectedOption", null);
 
 const Input = ({ options, setProp }) => {
-  const [activeIndex, setActiveIndex] = useAtomState(SelectedOptionAtom);
+  const [activeIndex, setActiveIndex] = useAtomState(SelectedOptionAtom) as unknown as [
+    number | null,
+    (v: number | null) => void,
+  ];
 
   // Ensure options is always an array
   const optionsArray = Array.isArray(options) ? options : [];

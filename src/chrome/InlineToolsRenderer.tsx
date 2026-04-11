@@ -70,7 +70,12 @@ function PortalToolsWrapper({
   if (!portalTarget) return null;
 
   return ReactDOM.createPortal(
-    <div ref={ref} className="pointer-events-none absolute z-110" style={{ position: "absolute" }}>
+    <div
+      ref={ref}
+      data-pagehub-canvas-chrome
+      className="pointer-events-none absolute z-110"
+      style={{ position: "absolute" }}
+    >
       {children}
     </div>,
     portalTarget
@@ -110,9 +115,10 @@ export const InlineToolsRenderer = ({
   const { id, dom } = useNode(node => ({
     dom: node.dom,
   }));
-  const { enabled, isActive } = useEditor((state, query) => ({
+  const { enabled, isActive, isHovered } = useEditor((state, query) => ({
     enabled: state.options.enabled,
     isActive: query.getEvent("selected").contains(id),
+    isHovered: query.getEvent("hovered").contains(id),
   }));
 
   const device = useAtomValue(DeviceAtom);
@@ -132,19 +138,20 @@ export const InlineToolsRenderer = ({
 
   // Check if node is inside an overflow-clipped ancestor
   const needsPortal = useMemo(() => {
-    if (!isActive || !dom) return false;
+    if (!dom) return false;
+    if (!isActive && !isHovered) return false;
     // In device mode, always portal to escape the zoomed/clipped frame
     if (isDeviceMode) return true;
     return hasOverflowAncestor(dom);
-  }, [isActive, dom, isDeviceMode]);
+  }, [isActive, isHovered, dom, isDeviceMode]);
 
   // Don't render if not in edit mode or on server
   if (!enabled || !isClient) {
     return null;
   }
 
-  // Determine what to show based on selection state
-  const showTools = isActive && tools.length > 0;
+  // Show tool strip when selected or hovered (HoverNodeController only paints when hovered && !selected)
+  const showTools = (isActive || isHovered) && tools.length > 0;
   const showChildren = alwaysVisible || isActive;
 
   // Don't render if nothing to show
@@ -156,13 +163,14 @@ export const InlineToolsRenderer = ({
     <InlineRenderContext.Provider value={true}>
       {/* Wrapper to shield editor UI from component CSS inheritance (like text-transform or CSS vars) */}
       <div
+        data-pagehub-canvas-chrome
         className="pagehub-sdk-root text-sidebar-foreground contents font-sans text-base! leading-normal tracking-normal normal-case not-italic"
         style={{ letterSpacing: "normal", whiteSpace: "normal", textIndent: "0" }}
       >
         {/* Always visible children (if any) */}
         {showChildren && children}
 
-        {/* Selection-required tools */}
+        {/* Selection + hover tools (each controller gates its own visibility) */}
         {showTools &&
           tools.map((tool, index) => (
             <React.Fragment key={`inline-tool-${index}`}>{tool}</React.Fragment>

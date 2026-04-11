@@ -89,7 +89,9 @@ function buildModalChildren() {
       canDelete={false}
       canEditName={false}
       className="hidden fixed h-screen w-screen top-0 left-0 z-50 flex-col items-center justify-center px-4 py-4 md:hidden bg-black/50"
-      action={{ type: "show-hide", target: "my-modal", direction: "hide", trigger: "click", method: "style" }}
+      action={
+        { type: "show-hide", target: "my-modal", direction: "hide", trigger: "click", method: "style" } as any
+      }
     >
       {/* Content Panel */}
       <Element
@@ -100,7 +102,9 @@ function buildModalChildren() {
         canDelete={false}
         canEditName={false}
         className="flex flex-col gap-container px-container-x py-container-y w-full max-w-lg bg-base-100 rounded-box shadow-xl"
-        action={{ type: "show-hide", target: "my-modal", direction: "toggle", trigger: "click", method: "style" }}
+        action={
+          { type: "show-hide", target: "my-modal", direction: "toggle", trigger: "click", method: "style" } as any
+        }
       >
         <Element
           is={Text}

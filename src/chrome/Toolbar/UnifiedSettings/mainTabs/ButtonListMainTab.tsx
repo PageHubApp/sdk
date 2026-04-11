@@ -9,12 +9,15 @@ import { BatchOperationAtom } from "../../../../utils/atoms";
 import { TbEdit, TbPlus } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
-export const SelectedButtonListItemAtom = atom("selectedbuttonlistitem_unified", null);
+export const SelectedButtonListItemAtom = atom<any>("selectedbuttonlistitem_unified", null);
 
 export const ButtonListMainTab = () => {
   const { actions, query } = useEditor();
   const { id } = useNode();
-  const [activeIndex, setActiveIndex] = useAtomState(SelectedButtonListItemAtom);
+  const [activeIndex, setActiveIndex] = useAtomState(SelectedButtonListItemAtom) as unknown as [
+    number | null,
+    (v: number | null) => void,
+  ];
   const batchOp = useAtomInstance(BatchOperationAtom);
 
   // Get child Button nodes (excluding hamburger buttons)

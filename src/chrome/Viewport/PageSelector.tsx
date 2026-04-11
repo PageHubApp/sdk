@@ -91,17 +91,21 @@ export function PageSelector({
   const [settingsPageId, setSettingsPageId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const settings = useAtomValue(SettingsAtom);
-  const [unsavedChanges, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
+  const settings = useAtomValue(SettingsAtom) as { draftId?: string } | null;
+  const [unsavedChangesRaw, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
+  const unsavedChanges = unsavedChangesRaw as unknown as string | null;
   const { emitter } = useSDK();
 
-  // Check if the isolated page still exists, if not, show all pages
+  // If the isolated page was deleted, fall back to home page
   useEffect(() => {
     if (isolate && pages.length > 0) {
       const pageExists = pages.some(p => p.id === isolate);
       if (!pageExists) {
-        // The isolated page was deleted, show all pages
-        //  isolatePageAlt(true, query, null, actions, setIsolate, false);
+        const homeId =
+          pages.find(p => {
+            try { return query.node(p.id).get()?.data?.props?.isHomePage; } catch { return false; }
+          })?.id ?? pages[0]?.id;
+        if (homeId) isolatePageAlt(isolate, query, homeId, actions, setIsolate, true);
       }
     }
   }, [pages, isolate, query, actions, setIsolate]);
@@ -135,9 +139,9 @@ export function PageSelector({
     };
   }, []);
 
-  const handlePageSelect = async (pageId: string | null) => {
+  const handlePageSelect = async (pageId: string) => {
     try {
-      if (pickerMode && pageId && onPagePick) {
+      if (pickerMode && onPagePick) {
         // Picker mode: just return the page data
         const page = pages.find(p => p.id === pageId);
         if (page) {
@@ -150,19 +154,13 @@ export function PageSelector({
       }
 
       // Save current changes before switching pages
-      if (unsavedChanges && Object.keys(unsavedChanges).length > 0) {
+      if (typeof unsavedChanges === "string" && unsavedChanges.length > 0) {
         emitter.emit("save", { isDraft: true });
         setUnsavedChanged(null);
       }
 
-      // Navigation mode: isolate and navigate
-      if (pageId === null) {
-        // Show all pages
-        isolatePageAlt(true, query, null, actions, setIsolate, false);
-      } else {
-        // Isolate specific page
-        isolatePageAlt(isolate, query, pageId, actions, setIsolate, true);
-      }
+      // Navigation mode: isolate specific page
+      isolatePageAlt(isolate, query, pageId, actions, setIsolate, true);
       setIsOpen(false);
       onPageChange?.(pageId);
     } catch (e) {
@@ -171,15 +169,11 @@ export function PageSelector({
     }
   };
 
-  const getPageUrl = (pageId: string | null): string => {
+  const getPageUrl = (pageId: string): string => {
     try {
       const currentPath = router?.asPath?.split("?")[0] || "/";
       const pathParts = currentPath.split("/").filter(p => p);
       const baseUrl = pathParts.length > 1 ? `/${pathParts[0]}/${pathParts[1]}` : `/${pathParts[0] || ""}`;
-
-      if (pageId === null) {
-        return baseUrl || "/";
-      }
 
       // Check if this page is marked as home page
       const node = query.node(pageId).get();
@@ -211,27 +205,22 @@ export function PageSelector({
     pickerMode,
     onPagePick,
     onPageChange,
-    router,
   });
 
-  // Get current page info
+  // Home page fallback — used when no page is isolated
+  const homePage =
+    pages.find(p => {
+      try { return query.node(p.id).get()?.data?.props?.isHomePage; } catch { return false; }
+    }) ?? pages[0] ?? null;
+
+  // Current page: explicit isolation > home page fallback (never "all pages")
   const currentPage = pickerMode
-    ? selectedPageId
-      ? pages.find(p => p.id === selectedPageId)
-      : null
-    : isolate
-      ? pages.find(p => p.id === isolate)
-      : null;
+    ? (selectedPageId ? pages.find(p => p.id === selectedPageId) : null) ?? null
+    : (isolate ? pages.find(p => p.id === isolate) : null) ?? homePage;
 
   const displayText = pickerMode
-    ? currentPage
-      ? currentPage.displayName
-      : "Select a page"
-    : currentPage
-      ? currentPage.displayName
-      : pages.length > 0
-        ? "All Pages"
-        : "No Pages";
+    ? currentPage ? currentPage.displayName : "Select a page"
+    : currentPage ? currentPage.displayName : "No Pages";
 
   // Check if current page is home page
   const currentNode = currentPage ? query.node(currentPage.id).get() : null;
@@ -280,10 +269,12 @@ export function PageSelector({
               </span>
             )}
 
-            {/* Page Name in Parentheses */}
-            <span className="text-xxs ml-auto hidden truncate font-medium text-neutral-content">
-              {displayText}
-            </span>
+            {/* Page name — right-aligned, monospace */}
+            {displayText && (
+              <span className="ml-auto shrink-0 font-mono text-[10px] text-neutral-content/60">
+                {displayText}
+              </span>
+            )}
           </div>
         </div>
         <TbChevronDown className={`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
@@ -318,35 +309,6 @@ export function PageSelector({
 
           {/* Scrollable Content */}
           <div className="scrollbar flex-1 overflow-y-auto bg-base-100 text-base-content">
-            {/* All Pages Option - Only in navigation mode */}
-            {!pickerMode && (
-              <>
-                <Link
-                  href={getPageUrl(null)}
-                  shallow
-                  onClick={e => {
-                    e.preventDefault();
-                    handlePageSelect(null);
-                  }}
-                  className={`flex w-full items-center gap-2 px-3 py-2 transition-colors hover:bg-neutral ${
-                    !isolate ? "bg-neutral font-medium" : ""
-                  }`}
-                >
-                  <Image
-                    src="/logo.svg"
-                    alt="PageHub"
-                    width={16}
-                    height={16}
-                    className="opacity-70"
-                  />
-                  <span className="text-sm text-base-content">All Pages</span>
-                </Link>
-
-                {/* Divider */}
-                {filteredPages.length > 0 && <div className="my-1 border-t border-base-300" />}
-              </>
-            )}
-
             {/* Page List */}
             {filteredPages.length > 0 ? (
               filteredPages.map(page => {

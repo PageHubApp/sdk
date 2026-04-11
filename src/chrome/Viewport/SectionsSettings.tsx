@@ -27,8 +27,8 @@ export function SectionsSettings() {
   } = usePanelUrl();
 
   const [searchInput, setSearchInput] = useState(params.q ?? "");
-  const focusRef = useRef(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const focusRef = useRef<HTMLInputElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const isSearchMode = searchInput.trim().length >= 2;
 

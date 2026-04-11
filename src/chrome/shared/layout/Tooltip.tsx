@@ -1,5 +1,13 @@
 import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
-import { cloneElement, isValidElement, useId, useState } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  useId,
+  useState,
+  type ReactElement,
+  type ReactNode,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
 export const Tooltip = ({
@@ -13,6 +21,20 @@ export const Tooltip = ({
   onClick = (e?: React.MouseEvent) => { },
   tooltipKey = "" as any,
   delay = 0,
+  /** When true, wrapper is `flex w-full min-w-0` so block children (e.g. toolbar section titles) span full width. */
+  full = false,
+}: {
+  children?: ReactNode;
+  content: any;
+  arrow?: boolean;
+  placement?: any;
+  className?: string;
+  tooltipClassName?: string;
+  tipStyle?: Record<string, unknown>;
+  onClick?: (e?: React.MouseEvent) => void;
+  tooltipKey?: any;
+  delay?: number;
+  full?: boolean;
 }) => {
   const instanceId = useId().replace(/:/g, "");
   const id = tooltipKey ? `tooltip-${tooltipKey}-${instanceId}` : `tooltip-${instanceId}`;
@@ -30,6 +52,9 @@ export const Tooltip = ({
   // If single React element child, inject tooltip props directly — no wrapper div
   const isSingleElement = isValidElement(children) && typeof children.type !== "string" || (isValidElement(children) && typeof children.type === "string");
 
+  const layout = full ? "flex w-full min-w-0" : "";
+  const mergedClass = [layout, className].filter(Boolean).join(" ").trim();
+
   const tooltipProps = {
     "data-tooltip-id": id,
     "data-tooltip-content": content,
@@ -44,18 +69,18 @@ export const Tooltip = ({
   return (
     <>
       {isSingleElement ? (
-        cloneElement(children, {
+        cloneElement(children as ReactElement<any>, {
           ...tooltipProps,
-          onClick: (e: React.MouseEvent) => {
-            children.props?.onClick?.(e);
+          onClick: (e: ReactMouseEvent<Element>) => {
+            (children as ReactElement<any>).props?.onClick?.(e);
             handleClick(e);
           },
-          className: `${children.props?.className || ""} ${className}`.trim(),
+          className: `${(children as ReactElement<any>).props?.className || ""} ${mergedClass}`.trim(),
         })
       ) : (
         <div
           role="presentation"
-          className={className}
+          className={mergedClass}
           onClick={handleClick}
           {...tooltipProps}
         >

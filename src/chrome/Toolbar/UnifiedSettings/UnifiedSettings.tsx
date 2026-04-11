@@ -142,6 +142,9 @@ export const UnifiedSettings = () => {
     <AccordionProvider>
       <SearchEffects search={search} />
       <TBWrap head={head} unified={true} activeSection={activeTab}>
+        {toolbar?.toolbarExtra ? (
+          <div className="empty:hidden border-b border-base-300 px-2 py-2">{toolbar.toolbarExtra}</div>
+        ) : null}
         <UnifiedTabBody sections={sections} isInitialMount={isInitialMount} />
       </TBWrap>
     </AccordionProvider>

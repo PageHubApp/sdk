@@ -25,11 +25,11 @@ interface LayoutPresetInputProps {
 }
 
 function useIsCraftContainer(): boolean {
-  return useNode(node => {
+  const resolvedName = useNode(node => {
     const t = node.data.type as { resolvedName?: string } | string | undefined;
-    const resolved = typeof t === "string" ? t : t?.resolvedName;
-    return resolved === "Container";
-  });
+    return typeof t === "string" ? t : t?.resolvedName;
+  }) as unknown as string | undefined;
+  return resolvedName === "Container";
 }
 
 export function LayoutPresetInput({ lp }: LayoutPresetInputProps) {

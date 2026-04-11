@@ -32,6 +32,32 @@ export const useNodeType = (): NodeType | null => {
   return null;
 };
 
+/**
+ * Same classification as {@link useNodeType} for a node id (e.g. canvas context menu).
+ */
+export function resolveNodeTypeFromQuery(
+  query: { node: (id: string) => { get: () => any } },
+  nodeId: string | null | undefined
+): NodeType | null {
+  if (!nodeId) return null;
+  try {
+    const node = query.node(nodeId).get();
+    if (!node) return null;
+    const parentId = node.data.parent;
+    const currentNodeType = node.data.props?.type;
+    const parentNode = query.node(parentId || ROOT_NODE).get();
+    const propType = parentNode?.data?.props?.type;
+
+    if (Object.values(NodeType).includes(currentNodeType as NodeType)) {
+      return currentNodeType as NodeType;
+    }
+    if (propType === "page") return NodeType.Section;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // Helper functions for easy type checking
 export const useNodeTypeHelpers = () => {
   const type = useNodeType();

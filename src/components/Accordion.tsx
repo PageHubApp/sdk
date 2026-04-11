@@ -1,9 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { Box } from "@pagehub/ui";
+import { TbLayoutList } from "react-icons/tb";
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { BaseSelectorProps } from "./selectors";
 import { CSStoObj } from "../utils/tailwind/tailwind";
-import { EmptyState } from "./EmptyState";
 
 export interface AccordionProps extends BaseSelectorProps {
   multiOpen?: boolean;
@@ -12,15 +13,15 @@ export interface AccordionProps extends BaseSelectorProps {
 
 export const Accordion = ({ children, ...incomingProps }: Partial<AccordionProps> & { children?: React.ReactNode }) => {
   const props: AccordionProps = { multiOpen: false, defaultOpen: -1, ...incomingProps };
-  const { id } = useNode();
-  const { enabled, query } = useEditor((state) => ({
+  const { query } = useEditor();
+  const { id, connectors: { connect } } = useNode();
+  const { enabled, isActive } = useEditor((state, q) => ({
     enabled: state.options.enabled,
+    isActive: q.getEvent("selected").contains(id),
   }));
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
-
-  const { connectors: { connect } } = useNode();
 
   // Auto-wire unique IDs on first mount
   useEffect(() => {
@@ -87,7 +88,19 @@ export const Accordion = ({ children, ...incomingProps }: Partial<AccordionProps
     prop["data-bounding-box"] = true;
   }
 
-  return React.createElement(Box, prop, children || (enabled ? <EmptyState text="Drop accordion items here" /> : null));
+  return React.createElement(
+    Box,
+    prop,
+    children ||
+      (enabled ? (
+        <EditorEmptyLeafHint
+          selected={isActive}
+          icon={<TbLayoutList aria-hidden />}
+          idleLabel="Empty accordion"
+          selectedDetail="Drop items or panels here"
+        />
+      ) : null),
+  );
 };
 
 Accordion.craft = {

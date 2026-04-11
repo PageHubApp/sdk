@@ -10,7 +10,7 @@ import { BatchOperationAtom } from "../../../../utils/atoms";
 import { TbEdit, TbLayoutNavbar, TbMenu2 } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
-export const SelectedNavItemAtom = atom("selectednavitem_unified", null);
+export const SelectedNavItemAtom = atom<any>("selectednavitem_unified", null);
 
 const NAV_VIEW_STATES = [
   { value: "", label: "Desktop", icon: TbLayoutNavbar },
@@ -20,7 +20,10 @@ const NAV_VIEW_STATES = [
 export const NavMainTab = () => {
   const { actions, query } = useEditor();
   const { id, props: nodeProps } = useNode(node => ({ props: node.data.props }));
-  const [activeIndex, setActiveIndex] = useAtomState(SelectedNavItemAtom);
+  const [activeIndex, setActiveIndex] = useAtomState(SelectedNavItemAtom) as unknown as [
+    number | null,
+    (v: number | null) => void,
+  ];
   const batchOp = useAtomInstance(BatchOperationAtom);
 
   // Read this Nav's menu prop
@@ -143,8 +146,8 @@ export const NavMainTab = () => {
           type="select"
           label="Mobile Menu"
         >
-          <option value={true}>Enabled</option>
-          <option value={false}>Disabled</option>
+          <option value="true">Enabled</option>
+          <option value="false">Disabled</option>
         </ToolbarItem>
 
         {menu.enabled !== false && (

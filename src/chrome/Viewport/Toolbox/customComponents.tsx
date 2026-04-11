@@ -8,27 +8,7 @@
 import React from "react";
 import { RenderToolComponent, ToolboxItemDisplay } from "./lib";
 import type { ResolvedComponentDef } from "../../../define";
-import { TbPuzzle } from "react-icons/tb";
-
-/** Resolve an icon value to a React component suitable for ToolboxItemDisplay */
-function resolveIcon(icon: any): React.ComponentType<any> {
-  if (!icon) return TbPuzzle;
-  // Already a component function
-  if (typeof icon === "function") return icon;
-  // React element — wrap in a component
-  if (React.isValidElement(icon)) {
-    const IconWrapper = () => icon;
-    IconWrapper.displayName = "ResolvedIcon";
-    return IconWrapper;
-  }
-  // Emoji or unknown string — render as text
-  if (typeof icon === "string") {
-    const EmojiIcon = () => <span className="text-lg">{icon}</span>;
-    EmojiIcon.displayName = "EmojiIcon";
-    return EmojiIcon;
-  }
-  return TbPuzzle;
-}
+import { resolveToolboxIcon } from "./resolveToolboxIcon";
 
 /**
  * Build toolbox entries for raw extra presets (like Nav's ButtonList-based presets).
@@ -38,7 +18,7 @@ export function buildExtraPresetEntries(
   presets: Array<{ label: string; icon?: any; element: any; props?: Record<string, any>; children?: any }>,
 ): React.ReactElement[] {
   return presets.map((preset, i) => {
-    const IconComp = resolveIcon(preset.icon);
+    const IconComp = resolveToolboxIcon(preset.icon);
     const children = typeof preset.children === "function" ? preset.children() : preset.children;
     return (
       <RenderToolComponent
@@ -64,7 +44,7 @@ export function buildCustomToolboxEntries(def: ResolvedComponentDef): React.Reac
     : [{ label: def.displayName, icon: def.icon, props: def.defaultProps }];
 
   return presets.map((preset, i) => {
-    const IconComp = resolveIcon(preset.icon || def.icon);
+    const IconComp = resolveToolboxIcon(preset.icon || def.icon);
     // Resolve children — can be ReactNode or a factory function
     const children = typeof preset.children === "function"
       ? preset.children()

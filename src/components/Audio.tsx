@@ -1,6 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbMusic } from "react-icons/tb";
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 
 import { Box } from "@pagehub/ui";
@@ -31,12 +32,15 @@ export const Audio = (incomingProps: AudioProps) => {
   }));
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
+  const { isActive } = useEditor((_, q) => ({
+    isActive: q.getEvent("selected").contains(id),
+  }));
 
   const { audioUrl } = props;
 
   props = setClonedProps(props, query);
 
-  const ref = useRef();
+  const ref = useRef<HTMLElement | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -64,9 +68,12 @@ export const Audio = (incomingProps: AudioProps) => {
         Your browser does not support the audio element.
       </audio>
     ) : enabled ? (
-      <div className="flex size-full min-h-[50px] items-center justify-center rounded-lg border border-dashed border-base-300 text-3xl">
-        <TbMusic aria-label="Audio icon" />
-      </div>
+      <EditorEmptyLeafHint
+        selected={isActive}
+        icon={<TbMusic aria-hidden />}
+        idleLabel="Empty audio"
+        selectedDetail="Add audio URL in settings"
+      />
     ) : null,
   };
 

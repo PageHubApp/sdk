@@ -1,6 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbBrandVimeo, TbBrandYoutube, TbPlayerPlay, TbVideo } from "react-icons/tb";
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 
 import { Box } from "@pagehub/ui";
@@ -84,6 +85,9 @@ export const Video = (incomingProps: VideoProps) => {
   }));
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
+  const { isActive } = useEditor((_, q) => ({
+    isActive: q.getEvent("selected").contains(id),
+  }));
 
 
   const { videoId } = props;
@@ -92,7 +96,7 @@ export const Video = (incomingProps: VideoProps) => {
 
   const { provider } = props;
 
-  const ref = useRef();
+  const ref = useRef<HTMLElement | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -117,9 +121,12 @@ export const Video = (incomingProps: VideoProps) => {
   const renderVideoPlayer = () => {
     if (!videoId) {
       return enabled ? (
-        <div className="flex size-full items-center justify-center text-3xl">
-          {getProviderIcon()}
-        </div>
+        <EditorEmptyLeafHint
+          selected={isActive}
+          icon={getProviderIcon()}
+          idleLabel="Empty video"
+          selectedDetail="Add a link or ID in settings"
+        />
       ) : null;
     }
 

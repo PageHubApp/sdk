@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { TbCheck, TbEdit, TbLoader2, TbSparkles, TbX } from "react-icons/tb";
+import { TbCheck, TbEdit, TbLoader2, TbWand, TbX } from "react-icons/tb";
 import { getCdnUrl } from "utils/cdn";
 import { formatDimensions } from "utils/imageDimensions";
 import { formatFileSize, type MediaItem } from "../utils/media-helpers";
@@ -221,7 +221,7 @@ export function MediaEditModal({
                     </>
                   ) : (
                     <>
-                      <TbSparkles className="size-4" />
+                      <TbWand className="size-4" />
                       Generate with AI
                     </>
                   )}

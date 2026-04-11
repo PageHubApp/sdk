@@ -55,7 +55,7 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
       <ToolbarSegmentedControl
         aria-label="Import or export component JSON"
         value={activeTab}
-        onChange={setActiveTab}
+        onChange={v => setActiveTab(v as "export" | "import")}
         options={[
           {
             value: "export",

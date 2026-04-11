@@ -60,7 +60,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
   const { config, emitter, readOnly } = useSDK();
   const { actions, query, connectors } = useEditor();
   const [loaded, setLoaded] = useState(false);
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const setBatchOperation = useSetAtomState(BatchOperationAtom);
   const setEditorSaveBanner = useSetAtomState(EditorSaveBannerAtom);
 
@@ -138,7 +138,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
     });
 
     const unsubUnsaved = emitter.on("unsaved_changes", (hasChanges: boolean) => {
-      setUnsavedChanges(hasChanges ? query.serialize() : null);
+      setUnsavedChanges((hasChanges ? query.serialize() : null) as any);
     });
 
     return () => {
@@ -348,7 +348,7 @@ function PageHubEditorInner({
             data-base={true}
           >
             {!readOnly && <EditorSaveBanner />}
-            <div className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
+            <div className="relative flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
             {/* Settings sidebar */}
             {showSidebar && !readOnly && <Toolbar />}
 

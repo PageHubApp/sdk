@@ -1,4 +1,5 @@
 import { atom } from "@zedux/react";
+import type { ViewMode } from "../../store";
 
 export const TbActiveMenuAtom = atom("TbActiveMenuAtom", null);
 
@@ -12,9 +13,10 @@ export const ViewportScrollAtom = atom("vpscroll", false);
 
 export const MouseInEditor = atom("mousein", false);
 
-export const UnsavedChangesAtom = atom("unsavedchanges", {});
+/** Serialized graph when dirty, or null when clean (see `editor.tsx` unsaved listener). */
+export const UnsavedChangesAtom = atom<any>("unsavedchanges", null);
 
-export const ViewAtom = atom("view", "desktop");
+export const ViewAtom = atom<ViewMode>("view", "desktop");
 
 export const ToolbarTitleAtom = atom("ttt", "");
 

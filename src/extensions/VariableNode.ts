@@ -104,7 +104,7 @@ export const VariableNode = Node.create<VariableNodeOptions>({
             })
             .run();
         },
-    };
+    } as any;
   },
 
   addProseMirrorPlugins() {
@@ -230,11 +230,115 @@ export const VariableNode = Node.create<VariableNodeOptions>({
 });
 
 /**
+ * True when `pos` is inside an HTML tag's attribute value (quoted or unquoted).
+ * Used so `{{...}}` in e.g. `href="mailto:{{company.email}}"` is not wrapped in
+ * `<span>` nodes (that would break the attribute and TipTap parsing).
+ */
+function isOffsetInsideHtmlAttributeValue(html: string, pos: number): boolean {
+  if (pos <= 0) return false;
+
+  let i = 0;
+  let inTag = false;
+  let inQuote: '"' | "'" | null = null;
+  let inUnquotedValue = false;
+
+  const skipComment = (start: number) => {
+    const end = html.indexOf("-->", start + 4);
+    if (end === -1) {
+      i = html.length;
+      return;
+    }
+    i = end + 3;
+  };
+
+  while (i < pos) {
+    const c = html[i];
+
+    if (!inTag && html.startsWith("<!--", i)) {
+      skipComment(i);
+      continue;
+    }
+
+    if (!inTag) {
+      if (c === "<") {
+        inTag = true;
+        inQuote = null;
+        inUnquotedValue = false;
+      }
+      i++;
+      continue;
+    }
+
+    // Inside `< ... >`
+    if (inQuote) {
+      if (c === inQuote) {
+        let esc = 0;
+        for (let j = i - 1; j >= 0 && html[j] === "\\"; j--) esc++;
+        if (esc % 2 === 0) inQuote = null;
+      }
+      i++;
+      continue;
+    }
+
+    if (inUnquotedValue) {
+      if (c === ">" || /\s/.test(c)) {
+        inUnquotedValue = false;
+        if (c === ">") inTag = false;
+      }
+      i++;
+      continue;
+    }
+
+    if (c === ">") {
+      inTag = false;
+      i++;
+      continue;
+    }
+
+    if (c === "/" && html[i + 1] === ">") {
+      inTag = false;
+      i += 2;
+      continue;
+    }
+
+    if (c === '"' || c === "'") {
+      inQuote = c;
+      i++;
+      continue;
+    }
+
+    if (c === "=") {
+      let j = i + 1;
+      while (j < pos && /\s/.test(html[j])) j++;
+      if (j >= pos) break;
+      const nc = html[j];
+      if (nc === '"' || nc === "'") {
+        inQuote = nc;
+        i = j + 1;
+        continue;
+      }
+      if (nc === ">" || (nc === "/" && html[j + 1] === ">")) {
+        i = j;
+        continue;
+      }
+      inUnquotedValue = true;
+      i = j;
+      continue;
+    }
+
+    i++;
+  }
+
+  return inQuote !== null || inUnquotedValue;
+}
+
+/**
  * Preprocesses HTML content to convert raw {{variable}} text into
  * <span data-variable="variable"> nodes that TipTap can parse.
  *
  * Handles legacy content stored with plain text variables.
  * Already-wrapped spans are left untouched.
+ * Skips wrapping inside HTML attribute values (href, src, etc.).
  */
 export function preprocessVariables(html: string): string {
   if (!html || typeof html !== "string") return html;
@@ -244,6 +348,9 @@ export function preprocessVariables(html: string): string {
     // Check if already inside a data-variable span
     const before = html.substring(Math.max(0, offset - 100), offset);
     if (before.match(/<span[^>]*data-variable[^>]*>$/)) {
+      return match;
+    }
+    if (isOffsetInsideHtmlAttributeValue(html, offset)) {
       return match;
     }
     return `<span data-variable="${trimmed}" class="variable-node">{{${trimmed}}}</span>`;

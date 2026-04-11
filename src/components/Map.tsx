@@ -64,7 +64,7 @@ export const Map = (incomingProps: MapProps) => {
 
   props = setClonedProps(props, query);
 
-  const ref = useRef();
+  const ref = useRef<HTMLElement | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

@@ -1,27 +1,26 @@
-import { NodeTree, useEditor } from "@craftjs/core";
-import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import { useCallback } from "react";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
 import { LastctiveAtom } from "utils/lib";
 import { useUnifiedDelete } from "../../hooks/useUnifiedDelete";
-import { Background } from "../../../components/Background";
-import { Button } from "../../../components/Button";
-import { Container } from "../../../components/Container";
-import { Divider } from "../../../components/Divider";
-import { Embed } from "../../../components/Embed";
-import { Form } from "../../../components/Form";
-import { FormElement, OnlyFormElement } from "../../../components/FormElement";
-import { Image } from "../../../components/Image";
-import { Text } from "../../../components/Text";
-import { Video } from "../../../components/Video";
-import { GetHtmlToComponent, buildClonedTree } from "../lib";
-import { PreviewAtom, EnabledAtom, UnsavedChangesAtom, TabAtom } from "../atoms";
-import { phStorage } from "../../../utils/phStorage";
+import { PreviewAtom, EnabledAtom, TabAtom } from "../atoms";
 import {
   finalizeToolboxHistorySelectionSync,
   markToolboxHistorySelectionSync,
 } from "../../../utils/usePanelUrl";
+
+/** True when the key event target is inside a text field — skip viewport chrome shortcuts (Backspace delete, Tab cycle, etc.). */
+function isInsideTextEditingSurface(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el || typeof el.closest !== "function") return false;
+  if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") return true;
+  if (el.isContentEditable || el.getAttribute?.("contenteditable") === "true") return true;
+  if (el.closest(".ProseMirror")) return true;
+  if (el.closest(".cm-editor")) return true;
+  if (el.closest(".monaco-editor")) return true;
+  return false;
+}
 
 export function useViewportKeyboard() {
   const {
@@ -41,67 +40,6 @@ export function useViewportKeyboard() {
   const setEnabled = useSetAtomState(EnabledAtom);
   const lastActive = useAtomValue(LastctiveAtom);
   const setActiveTab = useSetAtomState(TabAtom);
-  const [unsavedChanges, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
-
-  const {
-    actions: { setProp },
-  } = useEditor(() => ({}));
-
-  const fromEntries = (pairs: [string, unknown][]) => {
-    if (Object.fromEntries) return Object.fromEntries(pairs);
-    return pairs.reduce((acc, [id, value]) => ({ ...acc, [id]: value }), {} as Record<string, unknown>);
-  };
-
-  const getCloneTree = useCallback(
-    (tree: NodeTree) => buildClonedTree({ tree, query, setProp }),
-    [query, setProp]
-  );
-
-  const handleSaveTemplate = useCallback(() => {
-    const active = query.getEvent("selected").first();
-    const node = query.node(active).get();
-
-    if (["page", "background"].includes(node.data.props.type))
-      return phStorage.set("clipboard", {});
-
-    const tree = query.node(active).toNodeTree();
-    const nodePairs = Object.keys(tree.nodes).map(id => [id, query.node(id).toSerializedNode()]);
-    const serializedNodesJSON = JSON.stringify(fromEntries(nodePairs as [string, unknown][]));
-    phStorage.set("clipboard", { rootNodeId: tree.rootNodeId, nodes: serializedNodesJSON });
-  }, [query]);
-
-  async function checkIfHtmlInClipboard() {
-    let text = await navigator.clipboard.readText();
-    text = text.replace(/\s+/g, " ").trim().replace(/\s{2,}/g, " ");
-    return text.startsWith("<") ? text : null;
-  }
-
-  const handleAdd = useCallback(async () => {
-    let active = query.getEvent("selected").first();
-    if (!active) active = ROOT_NODE;
-
-    const pasties = await checkIfHtmlInClipboard();
-    if (pasties) {
-      const editorComponents: Record<string, unknown> = {
-        Background, Container, Text, OnlyFormElement, Form, FormElement, Button, Video, Image, Embed, Divider,
-      };
-
-      const toNode = (data: any, parent = ROOT_NODE) => {
-        if (!data.type) return;
-        const result = { data: { type: editorComponents[data.type], props: data.props } };
-        let freshNode = null;
-        try {
-          freshNode = query.parseFreshNode(result).toNode();
-          actions.add(freshNode, parent);
-        } catch (e) { console.error(e); }
-        if (!freshNode) return null;
-        if (data.children) data.children.forEach((child: any) => toNode(child, freshNode.id));
-        return freshNode;
-      };
-
-      await GetHtmlToComponent(pasties);
-    }
-  }, [actions, getCloneTree, query]);
 
   const handleDoubleClick = useCallback(
     (event: React.MouseEvent) => {
@@ -140,38 +78,18 @@ export function useViewportKeyboard() {
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    const target = event.target as HTMLElement;
-    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.contentEditable === "true") return;
+    if (isInsideTextEditingSurface(event.target)) return;
 
     const charCode = String.fromCharCode(event.which).toLowerCase();
 
     handleBodyKeyDown(event.nativeEvent);
 
-    // Copy
-    if ((event.ctrlKey || event.metaKey) && charCode === "c") {
-      if (window.getSelection()?.toString()) return;
-      event.preventDefault();
-      try { handleSaveTemplate(); } catch (e) { console.error(e); }
-      return;
-    }
-
-    // Paste
-    if ((event.ctrlKey || event.metaKey) && charCode === "v") {
-      event.preventDefault();
-      handleAdd();
-      return;
-    }
-
-    // Escape
+    // Escape — clear selection (click canvas or a node again to select)
     if (event.key === "Escape") {
       event.preventDefault();
       try {
         const active = query.getEvent("selected").first();
-        if (active) {
-          const rootNode = query.node(ROOT_NODE).get();
-          const backgroundNodeId = rootNode?.data?.nodes?.[0];
-          if (backgroundNodeId) actions.selectNode(backgroundNodeId);
-        }
+        if (active) actions.selectNode(null);
       } catch (e) { console.error(e); }
       return;
     }

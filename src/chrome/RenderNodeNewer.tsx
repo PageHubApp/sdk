@@ -1,5 +1,19 @@
 import { useEditor, useNode } from "@craftjs/core";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+
+function resolveCraftComponent(
+  type: unknown,
+  resolver: Record<string, React.ComponentType<any>> | undefined,
+): React.ComponentType<any> | null {
+  if (type == null || !resolver) return null;
+  if (typeof type === "function") return type as React.ComponentType<any>;
+  if (typeof type === "string") return resolver[type] ?? null;
+  if (typeof type === "object") {
+    const rn = (type as { resolvedName?: string }).resolvedName;
+    if (rn) return resolver[rn] ?? null;
+  }
+  return null;
+}
 import { InlineToolsRenderer } from "./InlineToolsRenderer";
 import { GapDragControl } from "./NodeControllers/GapDragControl";
 import { ProximityHover } from "./NodeControllers/ProximityHover";
@@ -33,6 +47,9 @@ export const RenderNodeNewer = ({ render }) => {
     type: node.data?.type,
     nodeProps: node.data?.props,
   }));
+
+  const resolver = useEditor((_, query) => query.getOptions().resolver as Record<string, React.ComponentType<any>>);
+  const craftComponent = useMemo(() => resolveCraftComponent(type, resolver), [type, resolver]);
 
   useEffect(() => {
     const checkContainer = () => {
@@ -72,7 +89,7 @@ export const RenderNodeNewer = ({ render }) => {
       {render}
       {isClient && (
         <>
-          <InlineToolsRenderer craftComponent={type} props={nodeProps} />
+          <InlineToolsRenderer craftComponent={craftComponent ?? undefined} props={nodeProps} />
           <RenderNodeDataStates />
           <ProximityHover />
           <GapDragControl />

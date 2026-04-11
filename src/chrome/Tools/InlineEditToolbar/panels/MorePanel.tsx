@@ -14,72 +14,86 @@ import {
   MdSubscript,
   MdSuperscript,
 } from "react-icons/md";
-import { TbEraser } from "react-icons/tb";
+import { TbEraser, TbX } from "react-icons/tb";
 import { DeleteNodeButton } from "../../../NodeControllers/Tools/DeleteNodeButton";
-
-const VARIABLES = [
-  { id: "company.name", label: "Company" },
-  { id: "company.tagline", label: "Tagline" },
-  { id: "company.email", label: "Email" },
-  { id: "company.phone", label: "Phone" },
-  { id: "company.location", label: "Location" },
-  { id: "company.website", label: "Website" },
-  { id: "year", label: "Year" },
-];
+import { getEditorVariableOptions } from "../../../../utils/editorVariableOptions";
 
 interface MorePanelProps {
   editor: Editor;
+  query: any;
   onAction: (cb: () => void) => (e: React.MouseEvent) => void;
   onInsertImage: () => void;
+  onClose: () => void;
 }
 
-export function MorePanel({ editor, onAction, onInsertImage }: MorePanelProps) {
+export function MorePanel({ editor, query, onAction, onInsertImage, onClose }: MorePanelProps) {
+  const variableOptions = getEditorVariableOptions(query);
   return (
-    <div className="flex flex-col items-center gap-1 px-1.5 py-1">
+    <div className="flex flex-col gap-0.5 px-1 py-1">
       <ReactTooltip id="more-tip" variant="light" classNameArrow="hidden" className={`${REACT_TOOLTIP_SURFACE_CLASS} z-999999!`} />
 
       <div className="flex items-center">
         {[
-          { align: "left", icon: <MdFormatAlignLeft />, label: "Left" },
-          { align: "center", icon: <MdFormatAlignCenter />, label: "Center" },
-          { align: "right", icon: <MdFormatAlignRight />, label: "Right" },
+          { align: "left", icon: <MdFormatAlignLeft />, label: "Align left" },
+          { align: "center", icon: <MdFormatAlignCenter />, label: "Align center" },
+          { align: "right", icon: <MdFormatAlignRight />, label: "Align right" },
         ].map(a => (
           <button key={a.align} onClick={onAction(() => editor.chain().focus().setTextAlign(a.align).run())}
-            className={`panel-btn ${editor.isActive({ textAlign: a.align }) ? "bg-neutral text-base-content" : ""}`} data-tooltip-id="more-tip" data-tooltip-content={a.label}>
+            className={`tool-button ${editor.isActive({ textAlign: a.align }) ? "bg-base-200 text-base-content" : ""}`}
+            data-tooltip-id="more-tip" data-tooltip-content={a.label}>
             {a.icon}
           </button>
         ))}
 
-        <div className="mx-0.5 h-4 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border" />
 
-        <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} tip="Bullet List" icon={<MdFormatListBulleted />} onAction={onAction} />
-        <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} tip="Numbered List" icon={<MdFormatListNumbered />} onAction={onAction} />
+        <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} tip="Bullet list" icon={<MdFormatListBulleted />} onAction={onAction} />
+        <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} tip="Numbered list" icon={<MdFormatListNumbered />} onAction={onAction} />
         <Btn onClick={() => editor.chain().focus().liftListItem("listItem").run()} tip="Outdent" icon={<MdFormatIndentIncrease className="rotate-180" />} onAction={onAction} />
         <Btn onClick={() => editor.chain().focus().sinkListItem("listItem").run()} tip="Indent" icon={<MdFormatIndentIncrease />} onAction={onAction} />
 
-        <div className="mx-0.5 h-4 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border" />
 
         <Btn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} tip="Strikethrough" icon={<MdFormatStrikethrough />} onAction={onAction} />
         <Btn onClick={() => editor.chain().focus().toggleSuperscript().run()} active={editor.isActive("superscript")} tip="Superscript" icon={<MdSuperscript />} onAction={onAction} />
         <Btn onClick={() => editor.chain().focus().toggleSubscript().run()} active={editor.isActive("subscript")} tip="Subscript" icon={<MdSubscript />} onAction={onAction} />
 
-        <div className="mx-0.5 h-4 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border" />
 
-        <Btn onClick={onInsertImage} tip="Insert Image" icon={<MdImage />} onAction={onAction} />
-        <Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} tip="Horizontal Rule" icon={<MdFormatLineSpacing />} onAction={onAction} />
-        <Btn onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()} tip="Clear Formatting" icon={<TbEraser />} onAction={onAction} />
-        <DeleteNodeButton className="panel-btn" />
+        <Btn onClick={onInsertImage} tip="Insert image" icon={<MdImage />} onAction={onAction} />
+        <Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} tip="Horizontal rule" icon={<MdFormatLineSpacing />} onAction={onAction} />
+        <Btn onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()} tip="Clear formatting" icon={<TbEraser />} onAction={onAction} />
+        <DeleteNodeButton className="tool-button" />
+
+        <div className="mx-0.5 h-5 w-px bg-border" />
+
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          className="tool-button"
+          data-tooltip-id="more-tip"
+          data-tooltip-content="Close"
+        >
+          <TbX />
+        </button>
       </div>
 
-      <div className="flex items-center gap-0.5 border-t border-base-300 pt-1">
-        <span className="mr-0.5 text-[9px] font-medium uppercase tracking-wider text-neutral-content">Vars</span>
-        {VARIABLES.map(v => (
-          <button key={v.id} type="button" onClick={onAction(() => (editor.chain().focus() as any).insertVariable({ id: v.id }).run())}
-            className="rounded px-1 py-px text-[10px] text-neutral-content transition-colors hover:bg-neutral hover:text-base-content">
-            {v.label}
-          </button>
-        ))}
-      </div>
+      {variableOptions.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1 border-t border-base-300 pt-1">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-content/60">Vars</span>
+          {variableOptions.map(v => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={onAction(() => (editor.chain().focus() as any).insertVariable({ id: v.id }).run())}
+              className="rounded-md border border-base-300 px-1.5 py-0.5 text-xs text-base-content transition-colors hover:bg-base-200"
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -89,9 +103,12 @@ function Btn({ onClick, active, tip, icon, onAction }: {
   onAction: (cb: () => void) => (e: React.MouseEvent) => void;
 }) {
   return (
-    <button onClick={onAction(onClick)}
-      className={`panel-btn ${active ? "bg-neutral text-base-content" : ""}`}
-      data-tooltip-id="more-tip" data-tooltip-content={tip}>
+    <button
+      onClick={onAction(onClick)}
+      className={`tool-button ${active ? "bg-base-200 text-base-content" : ""}`}
+      data-tooltip-id="more-tip"
+      data-tooltip-content={tip}
+    >
       {icon}
     </button>
   );

@@ -72,6 +72,10 @@ export interface ComponentModifier {
   removes?: string[];
   /** Multi-class composition. When set, toggling adds/removes ALL these classes instead of `name`. e.g. "flex flex-row gap-space-xs items-center w-full" */
   classes?: string;
+  /** Extra utility classes applied when the modifier is toggled on (pattern presets). */
+  expands?: string;
+  /** Optional help text shown in the editor to explain what the modifier does. */
+  description?: string;
 }
 
 export interface PageHubComponentDef<P extends Record<string, any> = Record<string, any>> {
@@ -125,6 +129,9 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
   /** Inline editor tools (canvas overlays). Auto-generated if omitted. */
   tools?: React.ReactNode[] | ((props: any) => React.ReactNode[]);
 
+  /** Optional JSX rendered next to toolbar chrome (e.g. header/footer toggles on Container). */
+  toolbarExtra?: React.ReactNode;
+
   /** Group settings component (e.g. Image uses this). */
   groupSettings?: React.ComponentType<any>;
 
@@ -168,6 +175,7 @@ export interface ResolvedComponentDef<P = any> {
     canMoveOut?: () => boolean;
   };
   readonly tools: React.ReactNode[] | ((props: any) => React.ReactNode[]) | undefined;
+  readonly toolbarExtra: React.ReactNode | undefined;
   readonly groupSettings: React.ComponentType<any> | undefined;
   readonly defaultProps: Record<string, any>;
   readonly craftProps: Record<string, any>;
@@ -306,6 +314,7 @@ export function defineComponent<P extends Record<string, any> = Record<string, a
     hoverClickVariant: def.hoverClickVariant,
     rules: normalizeRules(def.rules, canvas),
     tools: def.tools,
+    toolbarExtra: def.toolbarExtra,
     groupSettings: def.groupSettings,
     defaultProps: def.defaultProps || {},
     craftProps: def.craftProps || {},
@@ -388,6 +397,29 @@ function buildAutoSettings(propsSchema: Record<string, PropSchema>): React.Compo
 }
 
 /**
+ * Selected name chip + hover name chip when a canvas component has no tools
+ * or explicitly passes an empty list (layout nodes migrated off inline chrome).
+ */
+function getMinimalCanvasTools(): (props: any) => React.ReactNode[] {
+  const { NameNodeController } = require("./chrome/NodeControllers/NameNodeController");
+  const { HoverNodeController } = require("./chrome/NodeControllers/HoverNodeController");
+  return () => [
+    React.createElement(NameNodeController, {
+      key: "ph-name",
+      position: "top",
+      align: "end",
+      placement: "start",
+    }),
+    React.createElement(HoverNodeController, {
+      key: "ph-hover",
+      position: "top",
+      align: "end",
+      placement: "start",
+    }),
+  ];
+}
+
+/**
  * Attach .craft config to a component based on its definition.
  * This is the editor-only step that wires up toolbar, tools, rules, etc.
  */
@@ -437,8 +469,27 @@ function attachCraft(
     craft.related.groupSettings = def.groupSettings;
   }
 
-  // Inline tools
-  if (def.tools) {
+  // Inline tools (canvas nodes: empty tools → name + hover labels; omitted → same)
+  if (def.canvas) {
+    const minimal = getMinimalCanvasTools();
+    if (def.tools) {
+      if (typeof def.tools === "function") {
+        craft.props.tools = (props: any) => {
+          const out = (def.tools as (p: any) => React.ReactNode[])(props);
+          if (Array.isArray(out) && out.length === 0) return minimal(props);
+          return out;
+        };
+      } else if (Array.isArray(def.tools) && def.tools.length === 0) {
+        craft.props.tools = minimal;
+      } else {
+        craft.props.tools = def.tools;
+      }
+    } else if (defaultTools) {
+      craft.props.tools = defaultTools(def.canvas);
+    } else {
+      craft.props.tools = minimal;
+    }
+  } else if (def.tools) {
     craft.props.tools = def.tools;
   } else if (defaultTools) {
     craft.props.tools = defaultTools(def.canvas);
@@ -447,6 +498,10 @@ function attachCraft(
   // Modifiers
   if (def.modifiers.length > 0) {
     craft.toolbar.modifiers = def.modifiers;
+  }
+
+  if (def.toolbarExtra) {
+    craft.toolbar.toolbarExtra = def.toolbarExtra;
   }
 
   component.craft = craft;

@@ -24,19 +24,18 @@ export function PatternCards({
             type="button"
             onClick={() => onToggle(mod)}
             className={twMerge(
-              "ph-toolbar-dashed-btn justify-between text-left",
+              "ph-toolbar-dashed-btn flex-col items-start gap-0.5 text-left",
               active && PH_TOOLBAR_DASHED_BTN_ACTIVE,
             )}
-            title={mod.classes || mod.name}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex w-full items-center justify-between">
               <span className={`text-xs font-medium ${active ? "text-primary" : "text-base-content"}`}>
                 {mod.label}
               </span>
               <span className="flex items-center gap-1.5">
                 {classCount > 0 && (
                   <span className={`text-[9px] ${active ? "text-primary/60" : "opacity-50"}`}>
-                    {classCount} classes
+                    ×{classCount}
                   </span>
                 )}
                 {mod.origin === "site" && (
@@ -44,6 +43,9 @@ export function PatternCards({
                 )}
               </span>
             </div>
+            {mod.description && (
+              <p className="line-clamp-2 text-[10px] leading-snug opacity-70">{mod.description}</p>
+            )}
           </button>
         );
       })}

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import {
   TbArrowNarrowDown,
@@ -24,7 +24,8 @@ import {
   TbZoomOut,
 } from "react-icons/tb";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
-import { dropdownPositionToStyle, useDropdownPosition } from "../../hooks/useDropdownPosition";
+import { OVERLAY_Z_UNIFIED_DROPDOWN } from "../../../overlays/overlayZIndex";
+import { useAnchoredPopover } from "../../../overlays/useAnchoredPopover";
 import { getLayoutConfig, groupFractionsByDenominator, groupNumericByRange } from "./config";
 import { useDesignVars } from "./hooks/useDesignVars";
 import { SubgroupItem } from "./SubgroupComponents";
@@ -62,7 +63,6 @@ export function UnifiedDropdown({
   currentValue,
   selectedType,
 }: UnifiedDropdownProps) {
-  const ref = useRef<HTMLDivElement>(null);
   const [expandedGroups, setExpandedGroups] = useState({
     vars: true,
     named: true,
@@ -78,15 +78,6 @@ export function UnifiedDropdown({
   // Get real design system vars from extracted hook
   const realDesignVars = useDesignVars();
 
-  // Smart dropdown positioning with directional opening (must call hook unconditionally)
-  const position = useDropdownPosition({
-    isOpen: true,
-    anchorRef: inputRef,
-    offset: 4,
-    maxHeight: 400,
-    minSpaceRequired: 200,
-  });
-
   // Determine what to show based on selectedType
   const isVarMode = selectedType === "var";
 
@@ -99,24 +90,35 @@ export function UnifiedDropdown({
       options.other.length > 0);
   const hasDesignVars = showVarSelector && realDesignVars.length > 0;
 
+  const showDropdown = isVarMode ? Boolean(hasDesignVars) : Boolean(hasOptions);
+
+  const floating = useAnchoredPopover({
+    open: showDropdown,
+    placement: "bottom-start",
+    mainAxisOffset: 4,
+    maxHeightCeiling: 400,
+    maxHeightMin: 150,
+    matchReferenceMinMaxWidth: { min: 120, max: 200 },
+  });
+
+  useLayoutEffect(() => {
+    floating.refs.setReference(inputRef.current);
+    if (showDropdown) void floating.update();
+    // floating identity updates each render; only re-attach when visibility toggles
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync reference to toolbar input
+  }, [showDropdown]);
+
   // In var mode, only show if we have design vars
   // In tailwind mode, only show if we have tailwind options
-  if (isVarMode) {
-    if (!hasDesignVars) return null;
-  } else {
-    if (!hasOptions) return null;
-  }
-
-  if (!position) return null;
+  if (!showDropdown) return null;
 
   const vw = typeof window !== "undefined" ? window.innerWidth : 1536;
   const maxPanel = Math.min(vw - 16, 320);
   const style: React.CSSProperties = {
-    ...dropdownPositionToStyle(position),
-    // Hug column content; cap width so full-width toolbar inputs don’t stretch S/M/L rows + flyout gap.
+    ...floating.floatingStyles,
+    zIndex: OVERLAY_Z_UNIFIED_DROPDOWN,
     width: "max-content",
     maxWidth: maxPanel,
-    minWidth: Math.min(Math.max(position.width, 120), 200),
   };
 
   const toggleGroup = (group: string) => {
@@ -295,7 +297,7 @@ export function UnifiedDropdown({
       <div
         data-unified-dropdown
         style={style}
-        ref={ref}
+        ref={floating.refs.setFloating}
         className="pagehub-sdk-root ph-panel flex flex-col text-base-content"
       >
         <div className="ph-select-item-host flex flex-1 flex-col">
@@ -463,7 +465,7 @@ export function UnifiedDropdown({
     <div
       data-unified-dropdown
       style={style}
-      ref={ref}
+      ref={floating.refs.setFloating}
       className="pagehub-sdk-root ph-panel flex h-52 flex-col overflow-hidden text-base-content"
     >
       <div className="ph-select-item-host flex min-h-0 flex-1 flex-col overflow-hidden">

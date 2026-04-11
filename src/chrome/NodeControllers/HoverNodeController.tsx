@@ -1,5 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import RenderNodeControlInline from "../RenderNodeControlInline";
+import { NODE_NAME_CHIP_SHELL_CLASS } from "./nodeNameChipStyles";
 
 export const HoverNodeController = (props: { position; align; placement; alt?: any }) => {
   const { position, align, placement, alt } = props as any;
@@ -25,15 +26,9 @@ export const HoverNodeController = (props: { position; align; placement; alt?: a
       align={align}
       alt={alt}
       placement={placement || "start"}
-      className={`${position === "top" && align === "start" && placement === "end" ? "m-0.5" : ""} select-none items-center whitespace-nowrap`}
+      className={`${position === "top" && align === "start" && placement === "end" ? "m-0" : ""} select-none items-center whitespace-nowrap`}
     >
-      <div
-        className={
-          "fontfamily-base flex flex-row gap-3 rounded-lg border border-base-300 bg-neutral px-2 text-base! font-normal! text-base-content shadow-sm"
-        }
-      >
-        {name}
-      </div>
+      <div className={NODE_NAME_CHIP_SHELL_CLASS}>{name}</div>
     </RenderNodeControlInline>
   );
 };

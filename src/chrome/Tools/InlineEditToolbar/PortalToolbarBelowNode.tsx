@@ -1,19 +1,24 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import ReactDOM from "react-dom";
 
 const TOOLBAR_GAP_PX = 8; // matches mt-2 under text
+const VIEWPORT_EDGE_PAD = 4;
 
 /**
  * Portals children into #viewport or #device-tools-portal and positions the box
  * just below the anchor node's bounding rect (same scroll/resize behavior as node tools).
+ * When `measureRef` is set, flips above the node if the toolbar would extend past the portal bottom.
  */
 export function PortalToolbarBelowNode({
   dom,
   portalTargetId = "viewport",
+  measureRef,
   children,
 }: {
   dom: HTMLElement;
   portalTargetId?: string;
+  /** Element whose height is used for vertical flip (e.g. inline toolbar root). */
+  measureRef?: RefObject<HTMLElement | null>;
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -28,15 +33,29 @@ export function PortalToolbarBelowNode({
 
     const nodeRect = dom.getBoundingClientRect();
     const portalRect = portalTarget.getBoundingClientRect();
+    const measureEl = measureRef?.current ?? null;
+    const toolbarH = measureEl?.offsetHeight ?? 48;
+
+    const spaceBelow = portalRect.bottom - nodeRect.bottom - VIEWPORT_EDGE_PAD;
+    const spaceAbove = nodeRect.top - portalRect.top - VIEWPORT_EDGE_PAD;
+    const needBelow = toolbarH + TOOLBAR_GAP_PX;
+    const wouldClipBelow = needBelow > spaceBelow;
+    const canPlaceAbove = spaceAbove >= needBelow + VIEWPORT_EDGE_PAD;
+
+    const placeAbove = wouldClipBelow && canPlaceAbove;
 
     ref.current.style.position = "absolute";
-    ref.current.style.top = `${nodeRect.bottom - portalRect.top + portalTarget.scrollTop + TOOLBAR_GAP_PX}px`;
+    if (placeAbove) {
+      ref.current.style.top = `${nodeRect.top - portalRect.top + portalTarget.scrollTop - TOOLBAR_GAP_PX - toolbarH}px`;
+    } else {
+      ref.current.style.top = `${nodeRect.bottom - portalRect.top + portalTarget.scrollTop + TOOLBAR_GAP_PX}px`;
+    }
     ref.current.style.left = `${nodeRect.left - portalRect.left + portalTarget.scrollLeft}px`;
     ref.current.style.width = `${nodeRect.width}px`;
     ref.current.style.height = "auto";
-  }, [dom, portalTarget]);
+  }, [dom, portalTarget, measureRef]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!dom || !portalTarget) return;
 
     updatePosition();
@@ -58,13 +77,32 @@ export function PortalToolbarBelowNode({
       ro.observe(dom);
     }
 
+    let roMeasure: ResizeObserver | undefined;
+    const attachMeasureRo = () => {
+      const measured = measureRef?.current;
+      if (!measured || typeof ResizeObserver === "undefined") return;
+      roMeasure?.disconnect();
+      roMeasure = new ResizeObserver(() => updatePosition());
+      roMeasure.observe(measured);
+    };
+    attachMeasureRo();
+    let rafAttach = 0;
+    if (measureRef && !measureRef.current) {
+      rafAttach = requestAnimationFrame(() => {
+        updatePosition();
+        attachMeasureRo();
+      });
+    }
+
     return () => {
       if (viewport) viewport.removeEventListener("scroll", handleScroll);
       cancelAnimationFrame(raf);
+      cancelAnimationFrame(rafAttach);
       observer.disconnect();
       ro?.disconnect();
+      roMeasure?.disconnect();
     };
-  }, [dom, portalTarget, updatePosition]);
+  }, [dom, portalTarget, updatePosition, measureRef]);
 
   if (!portalTarget) return null;
 

@@ -1,6 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbCode } from "react-icons/tb";
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../utils/lib";
@@ -195,6 +196,9 @@ export const Embed = (incomingProps: EmbedProps) => {
   }));
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
+  const { isActive } = useEditor((_, q) => ({
+    isActive: q.getEvent("selected").contains(id),
+  }));
 
   useScrollToSelected(id, enabled);
 
@@ -225,7 +229,16 @@ export const Embed = (incomingProps: EmbedProps) => {
   if (embedHTML) prop.dangerouslySetInnerHTML = { __html: embedHTML };
 
   if (enabled) {
-    if (!embedHTML) prop.children = <TbCode aria-label="Code icon" />;
+    if (!embedHTML) {
+      prop.children = (
+        <EditorEmptyLeafHint
+          selected={isActive}
+          icon={<TbCode aria-hidden />}
+          idleLabel="Empty embed"
+          selectedDetail="Add URL or code in settings"
+        />
+      );
+    }
     prop["data-bounding-box"] = enabled;
     prop["data-empty-state"] = !embedHTML;
     if (isMounted) {

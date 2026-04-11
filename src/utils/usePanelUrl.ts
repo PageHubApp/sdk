@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 
 export interface PanelUrlState {
   panel: string | null; // "blocks" | "components" | null
-  cat: string | null; // block category
+  /** Block category when `panel=blocks`; theme tab (`colors`|`styles`|`typography`) when `panel=theme`. */
+  cat: string | null;
   sub: string | null; // block subcategory
   sty: string | null; // block style
   q: string | null; // search query
@@ -86,7 +87,17 @@ function notify(): void {
 
 // ── Hook ────────────────────────────────────────────────────────────────────
 
-export type PanelType = "menu" | "components" | "blocks" | "publish";
+export type PanelType = "menu" | "components" | "blocks" | "publish" | "import-export" | "theme";
+
+/** Full-column flyout over the unified settings stack — disable tool column pointer-events and skip click-away close. */
+export function isFlyoutBlockingToolColumn(panel: string | null): boolean {
+  return (
+    panel === "components" ||
+    panel === "blocks" ||
+    panel === "theme" ||
+    panel === "import-export"
+  );
+}
 
 export function usePanelUrl() {
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);

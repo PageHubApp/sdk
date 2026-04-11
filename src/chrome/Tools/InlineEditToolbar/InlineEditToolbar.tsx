@@ -4,7 +4,7 @@ import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
 import { Tooltip } from "components/layout/Tooltip";
 import React, { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
-import { useClampToViewport } from "../../hooks/useClampToViewport";
+import { useClampToViewport } from "../../overlays/useClampToViewport";
 import {
   MdFormatBold,
   MdFormatColorFill,
@@ -13,7 +13,7 @@ import {
   MdFormatUnderlined,
   MdLink,
 } from "react-icons/md";
-import { TbAlphabetLatin, TbChevronDown, TbTypography } from "react-icons/tb";
+import { TbAlphabetLatin, TbChevronDown } from "react-icons/tb";
 import { getMediaContent } from "utils/lib";
 import { paletteToCSSVar } from "utils/design/palette";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
@@ -24,12 +24,13 @@ import { DeviceAtom, ViewAtom } from "../../Viewport/atoms";
 import { PortalToolbarBelowNode } from "./PortalToolbarBelowNode";
 import { MediaManagerModal } from "../../Toolbar/Inputs/media/MediaManagerModal";
 import { TokenPicker } from "../../Toolbar/Inputs/color/TokenPicker";
-import { StylesPanel } from "./panels/StylesPanel";
 import { FontPanel } from "./panels/FontPanel";
+import { OPEN_LINK_PANEL_EVENT } from "../openLinkPanelEvent";
 import { LinkPanel } from "./panels/LinkPanel";
 import { MorePanel } from "./panels/MorePanel";
+import { VariableInsertPanel } from "./panels/VariableInsertPanel";
 
-type PanelId = "styles" | "font" | "link" | "more" | "ai" | "bgcolor" | "textcolor" | null;
+type PanelId = "font" | "link" | "more" | "bgcolor" | "textcolor" | null;
 
 /** Checkerboard for “no explicit color / inherited” swatches (aligned with TokenPicker). */
 const SWATCH_INHERIT_BG: CSSProperties = {
@@ -42,24 +43,27 @@ const SWATCH_INHERIT_BG: CSSProperties = {
 interface InlineEditToolbarProps {
   editor: Editor | null;
   className?: string;
+  onSave?: () => void;
 }
 
-export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
+export function InlineEditToolbar({ editor, onSave }: InlineEditToolbarProps) {
   const [activePanel, setActivePanel] = useState<PanelId>(null);
+  const [linkPanelKey, setLinkPanelKey] = useState(0);
   const [showMediaModal, setShowMediaModal] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useClampToViewport<HTMLDivElement>();
+  const { id: textNodeId } = useNode();
   const { query } = useCraftEditor();
   const { config } = useSDK();
   const isAiEnabled = useAiEnabled();
-  const renderTiptapAi = config.editorChromeSlots?.renderTiptapAiToolbar;
-  const renderTiptapAiPanel = config.editorChromeSlots?.renderTiptapAiPanel;
+  const renderCopyAi = config.editorChromeSlots?.renderInlineCopyAssistantTrigger;
 
   const tipTap = useEditorState({
     editor,
     selector: ({ editor: ed }) => {
       if (!ed) {
         return {
+          selectionEmpty: true,
           textStyleColor: undefined as string | undefined,
           highlightColor: undefined as string | undefined,
           isBold: false,
@@ -69,6 +73,7 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
         };
       }
       return {
+        selectionEmpty: ed.state.selection.empty,
         textStyleColor: ed.getAttributes("textStyle").color as string | undefined,
         highlightColor: ed.getAttributes("highlight").color as string | undefined,
         isBold: ed.isActive("bold"),
@@ -78,6 +83,14 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
       };
     },
   });
+
+  const prevSelectionEmptyRef = useRef(true);
+  useEffect(() => {
+    if (tipTap.selectionEmpty && prevSelectionEmptyRef.current === false) {
+      setActivePanel(null);
+    }
+    prevSelectionEmptyRef.current = tipTap.selectionEmpty;
+  }, [tipTap.selectionEmpty]);
 
   // Toggle panel — same panel closes it, different panel switches
   const toggle = useCallback((id: PanelId) => {
@@ -105,6 +118,15 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
     return () => document.removeEventListener("keydown", handleKey);
   }, [activePanel]);
 
+  useEffect(() => {
+    const openLink = () => {
+      setActivePanel("link");
+      setLinkPanelKey(k => k + 1);
+    };
+    document.addEventListener(OPEN_LINK_PANEL_EVENT, openLink);
+    return () => document.removeEventListener(OPEN_LINK_PANEL_EVENT, openLink);
+  }, []);
+
   const { dom } = useNode(node => ({
     dom: (node.dom as HTMLElement | null) ?? null,
   }));
@@ -127,95 +149,118 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
     callback();
   };
 
+  const minimalToolbarRow = (
+    <div className="tool-bg flex h-10 flex-row items-center justify-center gap-0">
+      {isAiEnabled && renderCopyAi && (
+        <>
+          {renderCopyAi({ textNodeId, query })}
+          <div className="mx-1 h-5 w-px bg-border" />
+        </>
+      )}
+      <VariableInsertPanel editor={editor} query={query} />
+    </div>
+  );
+
+  const fullToolbarRow = (
+    <div className="tool-bg flex h-10 flex-row items-center justify-center gap-0">
+      {isAiEnabled && renderCopyAi && (
+        <>
+          {renderCopyAi({ textNodeId, query })}
+          <div className="mx-1 h-5 w-px bg-border" />
+        </>
+      )}
+
+      <FormatButton editor={editor} command={() => editor.chain().focus().toggleBold().run()} active={tipTap.isBold} tooltip="Bold (⌘B)" icon={<MdFormatBold />} onAction={handleButtonClick} />
+      <FormatButton editor={editor} command={() => editor.chain().focus().toggleItalic().run()} active={tipTap.isItalic} tooltip="Italic (⌘I)" icon={<MdFormatItalic />} onAction={handleButtonClick} />
+      <FormatButton editor={editor} command={() => editor.chain().focus().toggleUnderline().run()} active={tipTap.isUnderline} tooltip="Underline (⌘U)" icon={<MdFormatUnderlined />} onAction={handleButtonClick} />
+
+      <div className="mx-1 h-5 w-px bg-border" />
+
+      <Tooltip content="Font" placement="top" tooltipClassName="text-xs! px-2! py-1!">
+        <button
+          type="button"
+          aria-label="Font"
+          className={`tool-button ${activePanel === "font" ? "bg-base-200 text-base-content" : ""}`}
+          onClick={() => toggle("font")}
+        >
+          <TbAlphabetLatin aria-hidden />
+        </button>
+      </Tooltip>
+
+      <div className="mx-1 h-5 w-px bg-border" />
+
+      <Tooltip content="Insert Link (⌘K)" placement="top" tooltipClassName="text-xs! px-2! py-1!">
+        <button
+          className={`tool-button ${activePanel === "link" || tipTap.isLink ? "bg-base-200 text-base-content" : ""}`}
+          onMouseDown={e => e.preventDefault()}
+          onClick={() => toggle("link")}
+        >
+          <MdLink />
+        </button>
+      </Tooltip>
+
+      <div className="mx-1 h-5 w-px bg-border" />
+
+      <div className="flex items-center gap-1 px-1">
+        <InlineColorSwatch
+          active={activePanel === "textcolor"}
+          fill={tipTap.textStyleColor}
+          label={tipTap.textStyleColor ? "Text color" : "Text color (inherited)"}
+          onClick={() => toggle("textcolor")}
+        >
+          <MdFormatColorText className="size-3" aria-hidden />
+        </InlineColorSwatch>
+        <InlineColorSwatch
+          active={activePanel === "bgcolor"}
+          fill={tipTap.highlightColor}
+          label={tipTap.highlightColor ? "Highlight color" : "Highlight (none)"}
+          onClick={() => toggle("bgcolor")}
+        >
+          <MdFormatColorFill className="size-3" aria-hidden />
+        </InlineColorSwatch>
+      </div>
+
+      <div className="mx-1 h-5 w-px bg-border" />
+
+      <Tooltip content="More" placement="top" tooltipClassName="text-xs! px-2! py-1!">
+        <button className={`tool-button ${activePanel === "more" ? "bg-base-200 text-base-content" : ""}`} onClick={() => toggle("more")}>
+          <TbChevronDown />
+        </button>
+      </Tooltip>
+    </div>
+  );
+
   const toolbarColumn = (
     <div ref={toolbarRef} className={innerBarClass}>
-        {/* === Toolbar Bar === */}
-        <div className="tool-bg flex h-10 flex-row items-center justify-center gap-0">
-          {/* AI slot */}
-          {isAiEnabled && renderTiptapAi && <>
-            {renderTiptapAi({ editor, query, activePanel, setActivePanel })}
-            <div className="mx-1 h-5 w-px bg-border" />
-          </>}
-
-          {/* Bold / Italic / Underline */}
-          <FormatButton editor={editor} command={() => editor.chain().focus().toggleBold().run()} active={tipTap.isBold} tooltip="Bold (⌘B)" icon={<MdFormatBold />} onAction={handleButtonClick} />
-          <FormatButton editor={editor} command={() => editor.chain().focus().toggleItalic().run()} active={tipTap.isItalic} tooltip="Italic (⌘I)" icon={<MdFormatItalic />} onAction={handleButtonClick} />
-          <FormatButton editor={editor} command={() => editor.chain().focus().toggleUnderline().run()} active={tipTap.isUnderline} tooltip="Underline (⌘U)" icon={<MdFormatUnderlined />} onAction={handleButtonClick} />
-
-          <div className="mx-1 h-5 w-px bg-border" />
-
-          {/* Typography presets + font (icon-only; labels in tooltips) */}
-          <Tooltip content="Text styles" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-            <button
-              type="button"
-              aria-label="Text styles"
-              className={`tool-button ${activePanel === "styles" ? "bg-neutral text-base-content" : ""}`}
-              onClick={() => toggle("styles")}
-            >
-              <TbTypography aria-hidden />
-            </button>
-          </Tooltip>
-          <Tooltip content="Font" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-            <button
-              type="button"
-              aria-label="Font"
-              className={`tool-button ${activePanel === "font" ? "bg-neutral text-base-content" : ""}`}
-              onClick={() => toggle("font")}
-            >
-              <TbAlphabetLatin aria-hidden />
-            </button>
-          </Tooltip>
-
-          <div className="mx-1 h-5 w-px bg-border" />
-
-          {/* Link trigger */}
-          <Tooltip content="Insert Link (⌘K)" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-            <button className={`tool-button ${activePanel === "link" || tipTap.isLink ? "bg-neutral text-base-content" : ""}`} onClick={() => toggle("link")}>
-              <MdLink />
-            </button>
-          </Tooltip>
-
-          <div className="mx-1 h-5 w-px bg-border" />
-
-          {/* Color buttons — text first, then highlight/background */}
-          <div className="flex items-center gap-1 px-1">
-            <InlineColorSwatch
-              active={activePanel === "textcolor"}
-              fill={tipTap.textStyleColor}
-              label={tipTap.textStyleColor ? "Text color" : "Text color (inherited)"}
-              onClick={() => toggle("textcolor")}
-            >
-              <MdFormatColorText className="size-3" aria-hidden />
-            </InlineColorSwatch>
-            <InlineColorSwatch
-              active={activePanel === "bgcolor"}
-              fill={tipTap.highlightColor}
-              label={tipTap.highlightColor ? "Highlight color" : "Highlight (none)"}
-              onClick={() => toggle("bgcolor")}
-            >
-              <MdFormatColorFill className="size-3" aria-hidden />
-            </InlineColorSwatch>
-          </div>
-
-          <div className="mx-1 h-5 w-px bg-border" />
-
-          {/* More trigger */}
-          <Tooltip content="More" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-            <button className={`tool-button ${activePanel === "more" ? "bg-neutral text-base-content" : ""}`} onClick={() => toggle("more")}>
-              <TbChevronDown />
-            </button>
-          </Tooltip>
+      {activePanel === "font" ? (
+        <div className="rounded-box border border-base-300/50 bg-base-100 shadow-xl">
+          <FontPanel editor={editor} onAction={handleButtonClick} onClose={() => setActivePanel(null)} />
         </div>
+      ) : activePanel === "more" ? (
+        <div className="tool-bg">
+          <MorePanel
+            editor={editor}
+            query={query}
+            onAction={handleButtonClick}
+            onInsertImage={() => {
+              setActivePanel(null);
+              setShowMediaModal(true);
+            }}
+            onClose={() => setActivePanel(null)}
+          />
+        </div>
+      ) : activePanel === "link" ? (
+        <div className="tool-bg">
+          <LinkPanel key={linkPanelKey} editor={editor} onClose={() => setActivePanel(null)} onSave={onSave} />
+        </div>
+      ) : (
+      <>
+        {tipTap.selectionEmpty ? minimalToolbarRow : fullToolbarRow}
 
-        {/* === Panel Slot === */}
-        {activePanel && (
+        {/* === Dropdown panels (colors) === */}
+        {(activePanel === "textcolor" || activePanel === "bgcolor") && (
           <div className="pointer-events-auto absolute left-1/2 top-full mt-2 -translate-x-1/2">
             <div className="tool-bg w-fit">
-              {activePanel === "styles" && <StylesPanel editor={editor} onAction={handleButtonClick} />}
-              {activePanel === "font" && <FontPanel editor={editor} onAction={handleButtonClick} />}
-              {activePanel === "link" && <LinkPanel editor={editor} />}
-              {activePanel === "more" && <MorePanel editor={editor} onAction={handleButtonClick} onInsertImage={() => { setActivePanel(null); setShowMediaModal(true); }} />}
-              {activePanel === "ai" && renderTiptapAiPanel?.({ editor, query })}
               {activePanel === "textcolor" && (
                 <TokenPicker
                   value={tipTap.textStyleColor}
@@ -245,6 +290,8 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
             </div>
           </div>
         )}
+      </>
+      )}
     </div>
   );
 
@@ -269,6 +316,7 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
   const interactiveShell = (
     <div
       ref={containerRef}
+      data-pagehub-canvas-chrome
       className="relative z-110 w-fit max-w-full min-w-0 cursor-default pointer-events-auto"
       onMouseDown={e => e.stopPropagation()}
       onMouseDownCapture={e => e.stopPropagation()}
@@ -280,7 +328,7 @@ export function InlineEditToolbar({ editor }: InlineEditToolbarProps) {
 
   if (needsPortal && dom) {
     return (
-      <PortalToolbarBelowNode dom={dom} portalTargetId={portalTargetId}>
+      <PortalToolbarBelowNode dom={dom} portalTargetId={portalTargetId} measureRef={toolbarRef}>
         <div className="flex w-full justify-center pointer-events-none">
           {interactiveShell}
         </div>
@@ -338,7 +386,7 @@ function FormatButton({ command, active, tooltip, icon, onAction }: {
 }) {
   return (
     <Tooltip content={tooltip} placement="top" tooltipClassName="text-xs! px-2! py-1!">
-      <button type="button" onClick={onAction(command)} className={`tool-button ${active ? "bg-neutral text-base-content" : ""}`}>
+      <button type="button" onClick={onAction(command)} className={`tool-button ${active ? "bg-base-200 text-base-content" : ""}`}>
         {icon}
       </button>
     </Tooltip>

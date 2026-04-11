@@ -1,4 +1,6 @@
-import React from "react";
+import { useEditor } from "@craftjs/core";
+import React, { useMemo } from "react";
+import { getEditorVariableOptions } from "../../../utils/editorVariableOptions";
 
 const HTMLCodeInput = React.lazy(() => import("../../Toolbar/Inputs/advanced/HTMLCodeInput").then(m => ({ default: m.HTMLCodeInput })));
 
@@ -10,6 +12,9 @@ interface CodeTabProps {
 }
 
 export function CodeTab({ headerCode, setHeaderCode, footerCode, setFooterCode }: CodeTabProps) {
+  const { query } = useEditor();
+  const variableCompletionOptions = useMemo(() => getEditorVariableOptions(query), [query]);
+
   return (
     <div className="space-y-6">
       <HTMLCodeInput
@@ -19,6 +24,8 @@ export function CodeTab({ headerCode, setHeaderCode, footerCode, setFooterCode }
         height="200px"
         placeholder="<style>...</style>&#10;<script>...</script>"
         helpText="Custom CSS and JavaScript injected into the &lt;head&gt; of every page"
+        formatMountKey="site-settings-header-code"
+        variableCompletionOptions={variableCompletionOptions}
       />
 
       <HTMLCodeInput
@@ -28,6 +35,8 @@ export function CodeTab({ headerCode, setHeaderCode, footerCode, setFooterCode }
         height="200px"
         placeholder="<script>...</script>"
         helpText="Scripts injected before the closing &lt;/body&gt; tag"
+        formatMountKey="site-settings-footer-code"
+        variableCompletionOptions={variableCompletionOptions}
       />
     </div>
   );

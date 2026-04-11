@@ -1,9 +1,10 @@
-import { useEditor } from "@craftjs/core";
+import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { TbX } from "react-icons/tb";
 
 import sluggit from "slug";
+import { useSDK } from "../../context";
 import { BasicTab } from "./PageSettings/BasicTab";
 import { SEOTab } from "./PageSettings/SEOTab";
 import { AdvancedTab } from "./PageSettings/AdvancedTab";
@@ -16,6 +17,8 @@ interface PageSettingsModalProps {
 
 export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModalProps) {
   const { actions, query } = useEditor();
+  const { features } = useSDK();
+  const allowCustom404Page = !!features.custom404Page;
   const [pageName, setPageName] = useState("");
   const [pageSlug, setPageSlug] = useState("");
   const [isHomePage, setIsHomePage] = useState(false);
@@ -64,7 +67,7 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
 
           setPageName(custom?.displayName || "Untitled Page");
           setIsHomePage(props.isHomePage || false);
-          setIs404Page(props.is404Page || false);
+          setIs404Page(allowCustom404Page ? !!props.is404Page : false);
 
           const generatedSlug = sluggit(custom?.displayName || "untitled-page", "-");
           setPageSlug(generatedSlug);
@@ -96,19 +99,38 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
         console.error("Error loading page settings:", e);
       }
     }
-  }, [isOpen, pageId, query]);
+  }, [isOpen, pageId, query, allowCustom404Page]);
 
   const handleSave = () => {
     if (!pageId) return;
 
     try {
+      const effective404 = allowCustom404Page && is404Page;
+
+      if (effective404) {
+        try {
+          const root = query.node(ROOT_NODE).get();
+          for (const id of root?.data?.nodes || []) {
+            if (id === pageId) continue;
+            const child = query.node(id).get();
+            if (child?.data?.props?.type === "page" && child?.data?.props?.is404Page) {
+              actions.setProp(id, p => {
+                p.is404Page = false;
+              });
+            }
+          }
+        } catch (e) {
+          console.error("Error clearing other 404 pages:", e);
+        }
+      }
+
       actions.setCustom(pageId, custom => {
         custom.displayName = pageName;
       });
 
       actions.setProp(pageId, props => {
         props.isHomePage = isHomePage;
-        props.is404Page = is404Page;
+        props.is404Page = effective404;
 
         props.pageTitle = pageTitle;
         props.pageDescription = pageDescription;
@@ -218,6 +240,7 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
                 onSlugChange={handleSlugChange}
                 isHomePage={isHomePage} setIsHomePage={setIsHomePage}
                 is404Page={is404Page} setIs404Page={setIs404Page}
+                allowCustom404Page={allowCustom404Page}
                 pageImage={pageImage} setPageImage={setPageImage}
                 showDeleteConfirm={showDeleteConfirm} setShowDeleteConfirm={setShowDeleteConfirm}
                 onDeletePage={handleDeletePage}

@@ -17,7 +17,12 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
   }, children);
 };
 import { BackgroundMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/BackgroundMainTab";
-import { NameNodeController, ToolNodeController, ContainerSettingsNodeTool } from "./editor-chrome";
+import {
+  HoverNodeController,
+  NameNodeController,
+  ToolNodeController,
+  ContainerSettingsNodeTool,
+} from "./editor-chrome";
 
 export const BackgroundDef = defineComponent({
   name: "Background",
@@ -44,6 +49,17 @@ export const BackgroundDef = defineComponent({
       position="bottom"
       align="end"
       placement="start"
+    />,
+    <HoverNodeController
+      key="hover"
+      position="top"
+      align="start"
+      placement="end"
+      alt={{
+        position: "bottom",
+        align: "start",
+        placement: "start",
+      }}
     />,
     <ToolNodeController
       key="tool"

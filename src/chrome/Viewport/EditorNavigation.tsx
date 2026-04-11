@@ -2,7 +2,7 @@ import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
 import { useEffect, useRef } from "react";
 import {
-  finalizeToolboxHistorySelectionSync,
+  isFlyoutBlockingToolColumn,
   takeToolboxHistorySelectionSyncForRebaseline,
   usePanelUrl,
 } from "../../utils/usePanelUrl";
@@ -31,6 +31,9 @@ import {
   EditorMenuNavRow,
   EditorMenuSectionLabel,
 } from "./EditorMenuNav";
+import { SidebarFlyoutSurface } from "../shared/SidebarFlyoutSurface";
+import { ImportExportPanel } from "./ImportExportPanel";
+import { ThemeSettingsPanel } from "./ThemeSettingsPanel";
 import { ToolboxTabs } from "./ToolboxTabs";
 
 interface EditorNavigationProps {
@@ -40,11 +43,8 @@ interface EditorNavigationProps {
   setSideBarLeft: (value: boolean) => void;
   setIsLayersDialogOpen: (value: boolean) => void;
   setIsMediaManagerModalOpen: (value: boolean) => void;
-  isDesignSystemSidebarOpen: boolean;
-  setIsDesignSystemSidebarOpen: (value: boolean) => void;
   setIsSiteSettingsModalOpen: (value: boolean) => void;
   setIsModifiersModalOpen: (value: boolean) => void;
-  setIsImportExportDialogOpen: (value: boolean) => void;
   showHidden: boolean;
   setShowHidden: (fn: (prev: boolean) => boolean) => void;
   toggleTheme: () => void;
@@ -61,11 +61,8 @@ export const EditorNavigation = ({
   setSideBarLeft,
   setIsLayersDialogOpen,
   setIsMediaManagerModalOpen,
-  isDesignSystemSidebarOpen,
-  setIsDesignSystemSidebarOpen,
   setIsSiteSettingsModalOpen,
   setIsModifiersModalOpen,
-  setIsImportExportDialogOpen,
   showHidden,
   setShowHidden,
   toggleTheme,
@@ -81,7 +78,7 @@ export const EditorNavigation = ({
   const renderNavAi = config.editorChromeSlots?.renderNavAiMenuItem;
   const renderNavHeader = config.editorChromeSlots?.renderNavHeaderItems;
 
-  const { isOpen, panel, close } = usePanelUrl();
+  const { isOpen, panel, close, open } = usePanelUrl();
 
   // Baseline Craft selection when entering Components/Blocks — close panel when it changes (see below).
   const selectedIdAtToolboxOpenRef = useRef<string | null | undefined>(undefined);
@@ -117,16 +114,15 @@ export const EditorNavigation = ({
   // Click-away: close panel when clicking outside the nav (not for Components/Blocks — sticky toolbox)
   const navRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (!isOpen || isDesignSystemSidebarOpen) return;
-    if (panel === "components" || panel === "blocks") return;
+    if (!isOpen) return;
+    if (isFlyoutBlockingToolColumn(panel)) return;
     const handler = (e: MouseEvent) => {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        close();
-      }
+      if (!navRef.current || navRef.current.contains(e.target as Node)) return;
+      close();
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [isOpen, isDesignSystemSidebarOpen, panel, close]);
+  }, [isOpen, panel, close]);
 
   if (!isOpen) return null;
 
@@ -136,10 +132,16 @@ export const EditorNavigation = ({
         ref={navRef}
         role="navigation"
         aria-label="Editor menu"
-        className="pointer-events-auto absolute bottom-0 top-12 z-50 flex w-full flex-col bg-base-100 text-base-content"
+        className="pointer-events-auto absolute bottom-0 z-50 flex w-full flex-col bg-base-100 text-base-content"
+        style={{ top: "var(--editor-nav-height, 3rem)" }}
       >
-      {(panel === "components" || panel === "blocks") ? (
+        <SidebarFlyoutSurface>
+      {panel === "components" || panel === "blocks" ? (
         <ToolboxTabs />
+      ) : panel === "theme" ? (
+        <ThemeSettingsPanel />
+      ) : panel === "import-export" ? (
+        <ImportExportPanel onClose={close} />
       ) : (
       <AutoHideScrollbar
         className="flex flex-1 flex-col gap-0 overflow-y-auto pb-3 pt-0"
@@ -191,8 +193,7 @@ export const EditorNavigation = ({
                   label={<div className="text-sm">Theme Settings</div>}
                   kbd={<EditorMenuKbd>⌘⇧D</EditorMenuKbd>}
                   onClick={() => {
-                    setIsDesignSystemSidebarOpen(!isDesignSystemSidebarOpen);
-                    close();
+                    open("theme", { cat: "colors" });
                   }}
                 />
 
@@ -274,8 +275,7 @@ export const EditorNavigation = ({
                   label={<div className="text-sm">Import / Export</div>}
                   kbd={<EditorMenuKbd>⌘⇧E</EditorMenuKbd>}
                   onClick={() => {
-                    setIsImportExportDialogOpen(true);
-                    close();
+                    open("import-export");
                   }}
                 />
 
@@ -311,9 +311,10 @@ export const EditorNavigation = ({
         )}
       </AutoHideScrollbar>
       )}
+        </SidebarFlyoutSurface>
 
       {/* Portal target — app injects footer content (account, nav links) here */}
-      {panel !== "components" && panel !== "blocks" && (
+      {!isFlyoutBlockingToolColumn(panel) && (
         <div id="editor-nav-footer" className="mt-auto" />
       )}
     </nav>

@@ -74,7 +74,7 @@ export const addHandler = ({ actions, query, getCloneTree, id, data = null, setP
     const da = query.parseSerializedNode(newNodes[nodeId]).toNode((node: any) => (node.id = nodeId));
     return [nodeId, da];
   });
-  const tree = { rootNodeId: data.rootNodeId, nodes: fromEntries(nodePairs) };
+  const tree = { rootNodeId: data.rootNodeId, nodes: fromEntries(nodePairs as [string, any][]) };
   const newTree = getCloneTree(tree);
 
   const theNode = query.node(id).get();
@@ -90,7 +90,7 @@ export const addHandler = ({ actions, query, getCloneTree, id, data = null, setP
 export const saveHandler = async ({ query, id, component = null, actions = null }: any) => {
   const tree = query.node(id).toNodeTree();
   const nodePairs = Object.keys(tree.nodes).map((nodeId: string) => [nodeId, query.node(nodeId).toSerializedNode()]);
-  const entries = fromEntries(nodePairs);
+  const entries = fromEntries(nodePairs as [string, any][]);
   const serializedNodesJSON = JSON.stringify(entries);
 
   const rootNode = query.node(tree.rootNodeId).get();
@@ -130,7 +130,7 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
     }, 50);
 
     const componentTreePairs = Object.keys(tree.nodes).map((nodeId: string) => [nodeId, query.node(nodeId).toSerializedNode()]);
-    return { rootNodeId: id, nodes: JSON.stringify(fromEntries(componentTreePairs)), name: componentName };
+    return { rootNodeId: id, nodes: JSON.stringify(fromEntries(componentTreePairs as [string, any][])), name: componentName };
   }
 
   phStorage.set("clipboard", saveData);

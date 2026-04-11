@@ -1,4 +1,5 @@
 import { Diagnostic, linter } from "@codemirror/lint";
+import type { EditorVariableOption } from "../../../../utils/editorVariableOptions";
 import { CodeEditor } from "../typography/CodeEditor";
 
 const htmlLinter = linter(view => {
@@ -58,6 +59,10 @@ interface HTMLCodeInputProps {
   label?: string;
   helpText?: string;
   className?: string;
+  /** When set, Prettier runs once when this key changes (e.g. opening a settings tab). */
+  formatMountKey?: string;
+  /** `{{` completions in the HTML editor (company + custom site variables). */
+  variableCompletionOptions?: EditorVariableOption[];
 }
 
 export const HTMLCodeInput = ({
@@ -68,6 +73,8 @@ export const HTMLCodeInput = ({
   label,
   helpText,
   className = "",
+  formatMountKey,
+  variableCompletionOptions,
 }: HTMLCodeInputProps) => {
   return (
     <div className={`space-y-2 ${className}`}>
@@ -79,6 +86,9 @@ export const HTMLCodeInput = ({
         extensions={[htmlLinter]}
         height={height}
         placeholder={placeholder}
+        autoFormatOnMount={Boolean(formatMountKey)}
+        autoFormatMountKey={formatMountKey}
+        htmlVariableCompletionOptions={variableCompletionOptions}
       />
       {helpText && <p className="text-xs text-neutral-content">{helpText}</p>}
     </div>

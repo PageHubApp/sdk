@@ -2,6 +2,7 @@ import { useEditor, useNode, UserComponent } from "@craftjs/core";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
+import { TbPointer } from "react-icons/tb";
 import { Button as UiButton } from "@pagehub/ui";
 import { addActionHandlers } from "../utils/clickControls";
 import { migrateAction, actionToHref, actionTarget, isLinkAction, isHandlerAction, type NodeAction } from "../utils/action";
@@ -21,6 +22,8 @@ import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
 import { useScrollToSelected } from "./lib";
 
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
+import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
 interface IconProps {
@@ -122,6 +125,9 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
   } = useNode();
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
+  const { isActive } = useEditor((_, q) => ({
+    isActive: q.getEvent("selected").contains(id),
+  }));
 
 
 
@@ -341,7 +347,18 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     </span>
   );
 
-  const content = (
+  const labelHtml = replaceVariables(String(props.text ?? ""), query);
+  const hasIconValue = !!props.icon?.value;
+  const isLeafEmpty = enabled && isMounted && !hasIconValue && isVisuallyEmptyRichText(labelHtml);
+
+  const content = isLeafEmpty ? (
+    <EditorEmptyLeafHint
+      selected={isActive}
+      icon={<TbPointer aria-hidden />}
+      idleLabel="Empty button"
+      selectedDetail="Add label or icon in settings"
+    />
+  ) : (
     <>
       {(props.icon?.position === "left" || props.icon?.position === "top") && iconSpan}
 

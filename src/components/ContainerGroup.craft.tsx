@@ -39,5 +39,4 @@ export const ContainerGroupDef = defineComponent({
     items: [],
     groupSettings: {},
   },
-  tools: () => [],
 }, { __internal: true });

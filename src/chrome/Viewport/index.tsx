@@ -2,20 +2,25 @@ import sluggit from "slug";
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { Tooltip } from "components/layout/Tooltip";
-import { useRouter, router } from "next/router";
-import React, { useEffect, useState } from "react";
+import Router, { useRouter } from "next/router";
+import React, { useCallback, useEffect, useState } from "react";
 import { TbCode } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
+import { ToolboxMenu, toolboxMenuInitialState } from "../RenderNode";
+import { ToolboxContexual } from "./ToolboxContextual";
 import { ShowGridLinesAtom } from "utils/atoms";
 import {
+  EDITOR_ALL_PAGES_STORAGE,
   IsolateAtom,
   OnlineAtom,
   ScreenshotAtom,
   SideBarAtom,
   SideBarOpen,
   ViewModeAtom,
+  getDefaultEditorPageId,
   isolatePageAlt,
+  listPageNodeIds,
 } from "utils/lib";
 import { FloatingWidget } from "../FloatingWidget";
 import { ProximityHoverManager } from "../NodeControllers/ProximityHoverManager";
@@ -28,11 +33,13 @@ import { DeviceScrollbar } from "./DeviceScrollbar";
 import { DeviceSelector } from "./DeviceSelector";
 import { DeviceZoom } from "./DeviceZoom";
 import { useSDK } from "../../context";
-import { MinimumSizeOverlay } from "./MinimumSizeOverlay";
 import { ViewportMeta } from "./ViewportMeta";
 import { useNodeDropStyling } from "./hooks/useNodeDropStyling";
+import { useEditorDocumentKeydown } from "../useEditorDocumentKeydown";
+import { useViewportClickDeselect } from "./hooks/useViewportClickDeselect";
 import { useViewportKeyboard } from "./hooks/useViewportKeyboard";
 import { phStorage } from "../../utils/phStorage";
+import { useEditorToolbarOverlayLayout } from "../../utils/hooks/useEditorToolbarOverlayLayout";
 
 import {
   PreviewAtom,
@@ -63,11 +70,21 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
   const { actions, query } = useEditor();
 
+  const editorPageIdsKey = useEditor((state: any) => {
+    const root = state.nodes[ROOT_NODE];
+    if (!root?.data?.nodes) return "";
+    return root.data.nodes
+      .filter((id: string) => state.nodes[id]?.data?.props?.type === "page")
+      .join(",");
+  });
+
   // ─── Composed hooks ───
   useComponentSync();
   useAutoOpenSidebar();
   useNodeDropStyling();
   const { handleKeyDown, handleDoubleClick, handleBodyKeyDown } = useViewportKeyboard();
+  const { handleViewportClick } = useViewportClickDeselect();
+  useEditorDocumentKeydown();
 
   // ─── Init ───
   useEffect(() => {
@@ -82,7 +99,8 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const viewMode = useAtomValue(ViewModeAtom);
-  const [unsavedChanges, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
+  const [unsavedChangesRaw, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
+  const unsavedChanges = unsavedChangesRaw as unknown as string | null;
   const view = useAtomValue(ViewAtom);
   const { setView: setStoreView, setPreview: setStorePreview } = useEditorStore();
   const [device, setDevice] = useAtomState(DeviceAtom);
@@ -96,9 +114,65 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const [online, setOnline] = useAtomState(OnlineAtom);
   const sideBarOpen = useAtomValue(SideBarOpen);
   const sideBarLeft = useAtomValue(SideBarAtom);
+  const isToolbarOverlayLayout = useEditorToolbarOverlayLayout();
+  const sidebarOccupiesLeftGutter = sideBarOpen && sideBarLeft && !isToolbarOverlayLayout;
   const setInitialLoadComplete = useSetAtomState(InitialLoadCompleteAtom);
   const nextRouter = useRouter();
   const { emitter } = useSDK();
+  const setToolboxMenu = useSetAtomState(ToolboxMenu);
+
+  const handleViewportContextMenuCapture = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!enabled) return;
+      const target = e.target as HTMLElement;
+      if (target.closest(".ProseMirror")) return;
+      if (target.closest('[contenteditable="true"]')) return;
+      if (target.closest("input, textarea, select")) return;
+
+      const nodeEl = target.closest("[node-id]");
+      let nodeId = nodeEl?.getAttribute("node-id");
+      if (!nodeId) return;
+
+      // Letterboxing / short pages: clicks land on ROOT Background instead of the page surface.
+      if (nodeId === ROOT_NODE && isolate && isolate !== EDITOR_ALL_PAGES_STORAGE) {
+        const iso = query.node(isolate).get();
+        if (iso?.data?.props?.type === "page") {
+          nodeId = isolate;
+        }
+      }
+
+      const node = query.node(nodeId).get();
+      if (!node) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      actions.selectNode(nodeId);
+
+      const parentNode = node.data.parent ? query.node(node.data.parent).get() : null;
+      setToolboxMenu({
+        ...toolboxMenuInitialState,
+        enabled: true,
+        x: e.clientX,
+        y: e.clientY,
+        id: nodeId,
+        name: String(node.data.name || ""),
+        parent: parentNode
+          ? {
+              name: String(parentNode.data.name || ""),
+              displayName: String(
+                (parentNode.data.custom?.displayName as string) ||
+                  (parentNode.data.displayName as string) ||
+                  parentNode.data.name ||
+                  ""
+              ),
+              props: parentNode.data.props || {},
+            }
+          : { ...toolboxMenuInitialState.parent },
+      });
+    },
+    [enabled, query, actions, setToolboxMenu, isolate]
+  );
 
   // ─── Grid lines ───
   useEffect(() => {
@@ -130,7 +204,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handler = (event: Event) => {
       setOnline(event.type === "online");
-      if (event.type === "online") setUnsavedChanged(false);
+      if (event.type === "online") setUnsavedChanged(null);
     };
     setOnline(window.navigator.onLine);
     window.addEventListener("online", handler);
@@ -138,18 +212,24 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     return () => { window.removeEventListener("online", handler); window.removeEventListener("offline", handler); };
   }, []);
 
-  // ─── URL-based page isolation ───
+  // ─── URL-based page isolation + default to home for multi-page sites ───
   useEffect(() => {
     const pathParts = nextRouter.asPath.split("/").filter(p => p && !p.startsWith("?"));
     const root = query.node(ROOT_NODE).get();
     if (!root) return;
 
+    const pageIds = listPageNodeIds(query);
+
     const handlePageSwitch = (targetPageId: string | null) => {
-      if (unsavedChanges && Object.keys(unsavedChanges).length > 0) {
+      if (typeof unsavedChanges === "string" && unsavedChanges.length > 0) {
         emitter.emit("save", { isDraft: true });
         setUnsavedChanged(null);
       }
       isolatePageAlt(isolate, query, targetPageId, actions, setIsolate, true);
+    };
+
+    const runDeferred = (fn: () => void) => {
+      setTimeout(fn, 0);
     };
 
     if (pathParts.length >= 3) {
@@ -162,21 +242,35 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         return false;
       });
       if (matchingPage && matchingPage !== isolate) {
-        setTimeout(() => handlePageSwitch(matchingPage), 500);
+        runDeferred(() => handlePageSwitch(matchingPage));
       }
-    } else if (pathParts.length <= 2) {
-      const homePageId = root.data.nodes.find((nodeId: string) => {
-        const node = query.node(nodeId).get();
-        return node?.data?.props?.type === "page" && node?.data?.props?.isHomePage;
-      });
+      return;
+    }
+
+    // Short URL (e.g. /build/:draftId): after deserialize, isolate home when there are 2+ pages,
+    // unless localStorage says "all pages" or a specific page id (Toolbar restores the atom).
+    if (pageIds.length >= 2) {
+      const rawStored = phStorage.get("isolated");
+      // EDITOR_ALL_PAGES_STORAGE is no longer a valid state — fall through to home page default
+      if (rawStored === EDITOR_ALL_PAGES_STORAGE) {
+        phStorage.remove("isolated");
+      }
+      const storedId = rawStored && rawStored !== "null" ? rawStored : null;
+      if (storedId && pageIds.includes(storedId)) {
+        if (storedId !== isolate) {
+          runDeferred(() => handlePageSwitch(storedId));
+        }
+        return;
+      }
+      const homePageId = getDefaultEditorPageId(query);
       if (homePageId && homePageId !== isolate) {
-        setTimeout(() => handlePageSwitch(homePageId), 500);
+        runDeferred(() => handlePageSwitch(homePageId));
       }
     }
-  }, [nextRouter.asPath]);
+  }, [nextRouter.asPath, editorPageIdsKey, isolate, query, actions, setIsolate, unsavedChanges, emitter, setUnsavedChanged]);
 
   // ─── Unsaved changes warning ───
-  const hasDirtyChanges = unsavedChanges && (typeof unsavedChanges !== "object" || Object.keys(unsavedChanges).length > 0);
+  const hasDirtyChanges = typeof unsavedChanges === "string" && unsavedChanges.length > 0;
 
   useEffect(() => {
     if (!hasDirtyChanges) return;
@@ -184,17 +278,17 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
     const handleWindowClose = (e: BeforeUnloadEvent) => { e.preventDefault(); return (e.returnValue = warningText); };
     const handleBrowseAway = (url: string) => {
-      const currentParts = router.asPath.split("/").filter(p => p && !p.startsWith("?"));
+      const currentParts = Router.asPath.split("/").filter(p => p && !p.startsWith("?"));
       const newParts = url.split("/").filter(p => p && !p.startsWith("?"));
       if (currentParts.length >= 2 && newParts.length >= 2 && currentParts[0] === "build" && newParts[0] === "build" && currentParts[1] === newParts[1]) return;
       if (window.confirm(warningText)) return;
-      router.events.emit("routeChangeError");
+      Router.events.emit("routeChangeError");
     };
 
     window.addEventListener("beforeunload", handleWindowClose);
-    router.events.on("routeChangeStart", handleBrowseAway);
-    return () => { window.removeEventListener("beforeunload", handleWindowClose); router.events.off("routeChangeStart", handleBrowseAway); };
-  }, [hasDirtyChanges, router]);
+    Router.events.on("routeChangeStart", handleBrowseAway);
+    return () => { window.removeEventListener("beforeunload", handleWindowClose); Router.events.off("routeChangeStart", handleBrowseAway); };
+  }, [hasDirtyChanges]);
 
   // ─── Keyboard body listener ───
   useEffect(() => {
@@ -288,13 +382,13 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         {enabled && !online && <DeviceOffline />}
 
         {enabled && (
-          <div className={`absolute top-0 ${sideBarOpen && sideBarLeft ? "left-[360px]" : "left-0"} right-0 z-40 ${viewMode === "component" ? "" : "hidden"}`}>
+          <div className={`absolute top-0 ${sidebarOccupiesLeftGutter ? "left-[360px]" : "left-0"} right-0 z-40 ${viewMode === "component" ? "" : "hidden"}`}>
             <ComponentEditorTabs />
           </div>
         )}
 
         {enabled && device && view === "mobile" && (
-          <div className={`absolute top-4 ${sideBarOpen && sideBarLeft ? "left-[360px]" : "left-0"} right-0 z-50`}>
+          <div className={`absolute top-4 ${sidebarOccupiesLeftGutter ? "left-[360px]" : "left-0"} right-0 z-50`}>
             <div className="mx-auto flex w-fit items-center gap-4 rounded-lg bg-neutral/95 px-4 py-2 shadow-lg backdrop-blur-sm">
               <DeviceSelector onClose={() => setDevice(false)} />
               <div className="h-4 w-px bg-border" />
@@ -313,7 +407,9 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             id="viewport"
             role="application"
             onKeyDown={handleKeyDown}
+            onClick={handleViewportClick}
             onDoubleClick={handleDoubleClick}
+            onContextMenuCapture={handleViewportContextMenuCapture}
             data-isolated={!!isolated}
             tabIndex={0}
             className={`${activeClass[1]} w-full${classDarkEdit ? " dark" : ""}`}
@@ -349,9 +445,10 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 9997 }}
           />
         )}
+
+        {enabled ? <ToolboxContexual /> : null}
       </div>
 
-      {enabled && <MinimumSizeOverlay />}
     </>
   );
 }

@@ -3,8 +3,9 @@
  * Lazy-loaded by Text.tsx only when enabled=true.
  * Contains all TipTap, chrome, and editing dependencies.
  */
-import React, { useEffect } from "react";
-import { useEditor, ROOT_NODE } from "@craftjs/core";
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { TbTypography } from "react-icons/tb";
+import { useEditor } from "@craftjs/core";
 import Color from "@tiptap/extension-color";
 import FontFamily from "@tiptap/extension-font-family";
 import FontSize from "@tiptap/extension-font-size";
@@ -16,15 +17,20 @@ import Subscript from "@tiptap/extension-subscript";
 import Superscript from "@tiptap/extension-superscript";
 import TextAlign from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
+import { Extension, type Editor as TiptapEditorInstance } from "@tiptap/core";
 import { EditorContent, useEditor as useTiptapEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
 import { changeProp } from "../chrome/Viewport/lib";
 import { TiptapProvider } from "../chrome/TiptapContext";
 import { InlineEditToolbar } from "../chrome/Tools/InlineEditToolbar/InlineEditToolbar";
+import { OPEN_LINK_PANEL_EVENT } from "../chrome/Tools/openLinkPanelEvent";
 import { VariableSuggestionPopup } from "../chrome/Tools/VariableSuggestion";
 
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { replaceVariables, resolveVariable } from "../utils/design/variables";
+import { getEditorVariableOptions } from "../utils/editorVariableOptions";
+import { isVisuallyEmptyRichText, persistedTextHtmlFromEditor } from "../utils/isVisuallyEmptyRichText";
 import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { VariableNode, preprocessVariables } from "../extensions/VariableNode";
@@ -43,18 +49,25 @@ const checkIfAncestorLinked = (nodeId: string, query: any): boolean => {
   return false;
 };
 
-// Built-in variables for the suggestion popup
-const BUILTIN_VARIABLES = [
-  { id: "company.name", label: "Company Name" },
-  { id: "company.tagline", label: "Tagline" },
-  { id: "company.type", label: "Business Type" },
-  { id: "company.location", label: "Location" },
-  { id: "company.address", label: "Address" },
-  { id: "company.phone", label: "Phone" },
-  { id: "company.email", label: "Email" },
-  { id: "company.website", label: "Website" },
-  { id: "year", label: "Current Year" },
-];
+/** Explicit shortcuts while the TipTap view is focused (PM keymap; no global listeners). */
+const TextEditorInlineKeymap = Extension.create({
+  name: "textEditorInlineKeymap",
+  priority: 1000,
+  addKeyboardShortcuts() {
+    return {
+      "Mod-b": () => this.editor.chain().focus().toggleBold().run(),
+      "Mod-i": () => this.editor.chain().focus().toggleItalic().run(),
+      "Mod-u": () => this.editor.chain().focus().toggleUnderline().run(),
+      "Mod-k": () => {
+        if (this.editor.isActive("link")) {
+          this.editor.chain().focus().extendMarkRange("link").run();
+        }
+        window.dispatchEvent(new CustomEvent(OPEN_LINK_PANEL_EVENT));
+        return true;
+      },
+    };
+  },
+});
 
 const getTiptapExtensions = (
   onSuggestion?: (props: SuggestionProps | null) => void,
@@ -81,30 +94,19 @@ const getTiptapExtensions = (
   Subscript,
   TiptapLink.configure({
     openOnClick: false,
+    /** Selection-on-click is handled in TextEditor `handleDOMEvents.click` (TipTap’s built-in path does not move the caret to the click first). */
+    enableClickSelection: false,
     HTMLAttributes: { class: "text-primary underline" },
   }),
   Image.configure({
     HTMLAttributes: { class: "max-w-full h-auto" },
   }),
   VariableNode.configure({
-    getVariables: () => {
-      const vars = [...BUILTIN_VARIABLES];
-      try {
-        const root = queryRef?.current?.node(ROOT_NODE)?.get();
-        const customVars = root?.data?.props?.variables;
-        if (Array.isArray(customVars)) {
-          customVars.forEach((v: any) => {
-            if (v.key?.trim()) {
-              vars.push({ id: `variables.${v.key}`, label: v.key });
-            }
-          });
-        }
-      } catch {}
-      return vars;
-    },
+    getVariables: () => getEditorVariableOptions(queryRef?.current),
     onSuggestion: onSuggestion || null,
     resolveVariable: (id: string) => queryRef?.current ? resolveVariable(id, queryRef.current) : id,
   }),
+  TextEditorInlineKeymap,
 ];
 
 function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
@@ -141,20 +143,72 @@ function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
   const queryRef = React.useRef(query);
   queryRef.current = query;
 
+  const tiptapEditorRef = useRef<TiptapEditorInstance | null>(null);
+
+  const editorProps = useMemo(
+    () => ({
+      attributes: {
+        class:
+          "ph-text-editor-root w-full min-h-[1.15em] leading-snug outline-none focus:outline-none focus-visible:outline-none",
+      } as Record<string, string>,
+      handleDOMEvents: {
+        click(_view: unknown, event: Event) {
+          const mouse = event as MouseEvent;
+          if (mouse.button !== 0) return false;
+          const target = mouse.target as HTMLElement | null;
+          if (!target) return false;
+          const anchor = target.closest("a");
+          const ed = tiptapEditorRef.current;
+          if (!anchor || !ed?.isEditable || !ed.view.dom.contains(anchor)) return false;
+
+          const coords = ed.view.posAtCoords({ left: mouse.clientX, top: mouse.clientY });
+          if (!coords) return false;
+
+          ed.chain().focus().setTextSelection(coords.pos).extendMarkRange("link").run();
+          if (!ed.isActive("link")) return false;
+
+          mouse.preventDefault();
+          window.dispatchEvent(new CustomEvent(OPEN_LINK_PANEL_EVENT));
+          return true;
+        },
+        dblclick(_view: unknown, event: Event) {
+          const mouse = event as MouseEvent;
+          if (mouse.button !== 0) return false;
+          const target = mouse.target as HTMLElement | null;
+          if (!target) return false;
+          const anchor = target.closest("a");
+          const ed = tiptapEditorRef.current;
+          if (!anchor || !ed?.isEditable || !ed.view.dom.contains(anchor)) return false;
+
+          const coords = ed.view.posAtCoords({ left: mouse.clientX, top: mouse.clientY });
+          if (!coords) return false;
+
+          ed.chain().focus().setTextSelection(coords.pos).extendMarkRange("link").run();
+          if (!ed.isActive("link")) return false;
+
+          mouse.preventDefault();
+          window.dispatchEvent(new CustomEvent(OPEN_LINK_PANEL_EVENT));
+          return true;
+        },
+      },
+    }),
+    []
+  );
+
   const tiptapEditor = useTiptapEditor(
     {
       extensions: enabled ? getTiptapExtensions(setSuggestion, queryRef) : [],
       content: editorContent,
       editable: enabled && isEditing && !isInsideLinkedComponent,
       immediatelyRender: false,
-      editorProps: { attributes: {} },
+      editorProps,
       onUpdate: ({ editor }: { editor: any }) => {
         if (enabled && isEditingRef.current && !isInsideLinkedComponent) {
           changeProp({
             setProp,
             propKey: "text",
             propType: "component",
-            value: editor.getHTML(),
+            value: persistedTextHtmlFromEditor(editor.getHTML()),
           });
         }
       },
@@ -163,64 +217,149 @@ function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
           setIsEditing(true);
         }
       },
-      onBlur: () => {},
+      onBlur: ({ editor }: { editor: any }) => {
+        if (!enabled || !isEditingRef.current || isInsideLinkedComponent) return;
+        changeProp({
+          setProp,
+          propKey: "text",
+          propType: "component",
+          value: persistedTextHtmlFromEditor(editor.getHTML()),
+        });
+      },
     },
-    [enabled]
+    [enabled, isInsideLinkedComponent]
   );
 
   useEffect(() => {
-    if (tiptapEditor && rawText) {
-      const currentContent = tiptapEditor.getHTML();
-      const processed = preprocessVariables(rawText);
-      const normalize = (html: string) => html.replace(/>\s+</g, "><").trim();
-      if (normalize(currentContent) !== normalize(processed)) {
-        tiptapEditor.commands.setContent(processed, {
-          errorOnInvalidContent: false,
-          emitUpdate: false,
-        });
-      }
+    tiptapEditorRef.current = tiptapEditor ?? null;
+  }, [tiptapEditor]);
+
+  const [tiptapVisuallyEmpty, setTiptapVisuallyEmpty] = React.useState(true);
+
+  useEffect(() => {
+    if (!tiptapEditor) return;
+    const sync = () => setTiptapVisuallyEmpty(isVisuallyEmptyRichText(tiptapEditor.getHTML()));
+    sync();
+    tiptapEditor.on("update", sync);
+    tiptapEditor.on("selectionUpdate", sync);
+    return () => {
+      tiptapEditor.off("update", sync);
+      tiptapEditor.off("selectionUpdate", sync);
+    };
+  }, [tiptapEditor]);
+
+  useEffect(() => {
+    if (!tiptapEditor) return;
+    const currentContent = tiptapEditor.getHTML();
+    const processed = preprocessVariables(rawText || "");
+    const normalize = (html: string) => html.replace(/>\s+</g, "><").trim();
+    if (normalize(currentContent) !== normalize(processed)) {
+      tiptapEditor.commands.setContent(processed, {
+        errorOnInvalidContent: false,
+        emitUpdate: false,
+      });
     }
   }, [rawText, tiptapEditor]);
 
-  useEffect(() => {
-    if (tiptapEditor) {
-      tiptapEditor.setEditable(isEditing, false);
+  const prevCanEditRef = useRef(false);
+  useLayoutEffect(() => {
+    if (!tiptapEditor) return;
+    const canEdit = Boolean(enabled && isEditing && !isInsideLinkedComponent);
+    tiptapEditor.setEditable(canEdit, false);
+    const becameEditable = canEdit && !prevCanEditRef.current;
+    prevCanEditRef.current = canEdit;
+    if (becameEditable) {
+      queueMicrotask(() => {
+        tiptapEditor.chain().focus("end").run();
+      });
     }
-  }, [tiptapEditor, isEditing]);
+  }, [tiptapEditor, enabled, isEditing, isInsideLinkedComponent]);
 
   if (!isMounted) return null;
 
-  const handleClick = () => {
+  const enterEditFromPreview = () => {
     if (!isEditing && isActive && !isInsideLinkedComponent) {
       setIsEditing(true);
-      setTimeout(() => {
-        tiptapEditor?.commands.focus();
-      }, 10);
     }
   };
+
+  const handlePreviewClick = (e: React.MouseEvent) => {
+    if (!isEditing && isActive && !isInsideLinkedComponent) {
+      const t = e.target as HTMLElement | null;
+      if (t?.closest("a[href]")) {
+        e.preventDefault();
+      }
+      enterEditFromPreview();
+      e.stopPropagation();
+    }
+  };
+
+  const handlePreviewMouseDown = (e: React.MouseEvent) => {
+    if (!isEditing && isActive && !isInsideLinkedComponent) {
+      const t = e.target as HTMLElement | null;
+      if (t?.closest("a[href]")) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const previewHtml = replaceVariables(rawText, query);
+  const previewEmpty = isVisuallyEmptyRichText(previewHtml);
+  const showEmptyChrome =
+    enabled && previewEmpty && !isEditing && !isInsideLinkedComponent;
+  const showEmptyBlockHint = showEmptyChrome && isActive;
 
   return (
     <>
       <div
         role={isEditing ? undefined : "button"}
         tabIndex={isEditing ? undefined : 0}
-        onClick={handleClick}
-        onKeyDown={isEditing ? undefined : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
-        className={`min-h-inherit w-full ${isEditing ? "relative cursor-text" : "cursor-pointer"}`}
+        onMouseDown={handlePreviewMouseDown}
+        onClick={handlePreviewClick}
+        onKeyDown={
+          isEditing
+            ? undefined
+            : e => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  enterEditFromPreview();
+                }
+              }
+        }
+        className={`min-h-0 w-full ${isEditing ? "relative cursor-text" : "cursor-pointer"}`}
       >
         {enabled && tiptapEditor ? (
           isEditing ? (
-            <EditorContent editor={tiptapEditor} />
+            <div
+              className={
+                tiptapVisuallyEmpty
+                  ? "w-full rounded-md border border-dashed border-base-300/55 bg-base-200/20 px-1.5 py-0.5"
+                  : undefined
+              }
+            >
+              <EditorContent editor={tiptapEditor} />
+            </div>
+          ) : showEmptyChrome ? (
+            <EditorEmptyLeafHint
+              selected={!!showEmptyBlockHint}
+              icon={<TbTypography aria-hidden />}
+              idleLabel="Empty text"
+              selectedDetail="Click to edit"
+            />
           ) : (
-            <div dangerouslySetInnerHTML={{ __html: replaceVariables(rawText, query) }} />
+            <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
           )
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: replaceVariables(rawText, query) }} />
+          <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
         )}
       </div>
       {enabled && isEditing && (
         <TiptapProvider editor={tiptapEditor}>
-          <InlineEditToolbar editor={tiptapEditor} />
+          <InlineEditToolbar editor={tiptapEditor} onSave={() => {
+            if (!tiptapEditor || !enabled) return;
+            const html = persistedTextHtmlFromEditor(tiptapEditor.getHTML());
+            changeProp({ setProp, propKey: "text", propType: "component", value: html });
+          }} />
         </TiptapProvider>
       )}
       {isEditing && <VariableSuggestionPopup suggestion={suggestion} />}

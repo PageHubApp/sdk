@@ -3,7 +3,7 @@
  * Each wraps an existing input component with the registry's SectionProps interface.
  */
 import React from "react";
-import { TbArrowsExchange, TbSettings, TbSparkles } from "react-icons/tb";
+import { TbArrowsExchange, TbSettings, TbSparkles, TbWand } from "react-icons/tb";
 import { Notice } from "../../Inputs/Notice";
 import { ToolbarSection } from "../../ToolbarSection";
 import { SECTION_ICONS } from "../helpers";
@@ -30,6 +30,7 @@ import { AlignmentInput, SpacingInput } from "../../Inputs/layout/SpacingInput";
 import { ModifiersInput } from "../../Inputs/modifiers/ModifiersInput";
 import { FontInput } from "../../Inputs/typography/FontInput";
 import { ContainerScrollEffectSection } from "../mainTabs/ContainerScrollEffectSection";
+import { NodeAiContextSection } from "../mainTabs/NodeAiContextSection";
 const ComponentImportExport = React.lazy(() =>
   import("../../Inputs/advanced/ComponentImportExport").then(m => ({
     default: m.ComponentImportExport,
@@ -334,6 +335,18 @@ registerSection({
   keywords: ["visibility", "pointer", "cursor", "classname", "css"],
   component: DisplaySection,
   sortOrder: 30,
+});
+
+/** After Display (which includes Custom CSS via ClassNameInput) — see sortOrder. */
+registerSection({
+  id: "node-ai-context",
+  title: "AI context",
+  tab: "advanced",
+  icon: <TbWand />,
+  keywords: ["ai", "context", "description", "block", "notes", "tags", "assistant"],
+  component: () => <NodeAiContextSection />,
+  sortOrder: 35,
+  help: "Optional notes/tags so AI understands this component. Page-wide defaults: Site Settings → AI.",
 });
 
 const ImportExportSection = () => (

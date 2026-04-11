@@ -34,6 +34,7 @@ export function useBackgroundEffects({
   nodeId,
 }: UseBackgroundEffectsOptions) {
   const isRootBackground = nodeId === ROOT_NODE;
+  const rootModifiers = (props as { modifiers?: unknown }).modifiers;
 
   // ---- Material Symbols icon font loading ----
   const prevFontUrlRef = useRef<string | null>(null);
@@ -126,7 +127,7 @@ export function useBackgroundEffects({
 
       const selector = enabled
         ? 'main[data-renderer="true"] a:not([class*="no-style"]):not([data-button-link])'
-        : 'a:not([class*="no-style"]):not([data-button-link])';
+        : '[data-ph-site] a:not([class*="no-style"]):not([data-button-link])';
 
       const linkStyles = `
         ${selector} {
@@ -169,11 +170,10 @@ export function useBackgroundEffects({
   // ---- Modifier CSS utilities ----
   useEffect(() => {
     if (typeof window === "undefined" || !enabled) return;
-    const modifiers = props.modifiers;
-    if (!modifiers || typeof modifiers !== "object") return;
+    if (!rootModifiers || typeof rootModifiers !== "object") return;
 
     const rules: string[] = [];
-    for (const mods of Object.values(modifiers) as any[]) {
+    for (const mods of Object.values(rootModifiers) as any[]) {
       if (!Array.isArray(mods)) continue;
       for (const mod of mods) {
         if (mod.name && mod.classes && /^[a-z][\w-]*$/i.test(mod.name)) {
@@ -192,5 +192,5 @@ export function useBackgroundEffects({
       document.head.appendChild(el);
     }
     el.textContent = rules.join("\n");
-  }, [props.modifiers, enabled, isRootBackground]);
+  }, [rootModifiers, enabled, isRootBackground]);
 }

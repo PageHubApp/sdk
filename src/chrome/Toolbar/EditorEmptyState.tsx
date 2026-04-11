@@ -3,7 +3,12 @@ import { TbBoxModel2, TbClick, TbLayoutGridAdd, TbPlus, TbPointer } from "react-
 import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
 import { ClippyOpenAtom } from "utils/atoms";
-import { ComponentsAtom, OpenComponentEditorAtom, ViewModeAtom } from "utils/lib";
+import {
+  ComponentsAtom,
+  OpenComponentEditorAtom,
+  SideBarOpen,
+  ViewModeAtom,
+} from "utils/lib";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { useSDK } from "../../context";
 import { usePanelUrl } from "../../utils/usePanelUrl";
@@ -13,19 +18,18 @@ interface ActionCardProps {
   title: string;
   description: string;
   onClick: (e: React.MouseEvent) => void;
-  delay: number;
 }
 
-const ActionCard = ({ icon, title, description, onClick, delay }: ActionCardProps) => {
+const ActionCard = ({ icon, title, description, onClick }: ActionCardProps) => {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="animate-slide-up group relative overflow-hidden rounded-xl border border-base-300 bg-base-200 p-6 text-left hover:bg-neutral/50"
-      style={{ animationDelay: `${delay}s` }}
+      className="group relative overflow-hidden rounded-xl border border-base-300 bg-base-200 p-6 text-left transition-colors duration-200 hover:bg-neutral/50 active:scale-[0.99]"
     >
-      <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+      <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
       <div className="relative flex flex-row items-center justify-start gap-4">
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-content">
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-content">
           {icon}
         </div>
         <div className="flex flex-col items-start justify-center">
@@ -40,6 +44,7 @@ const ActionCard = ({ icon, title, description, onClick, delay }: ActionCardProp
 export const EditorEmptyState = () => {
   const viewMode = useAtomValue(ViewModeAtom);
   const components = useAtomValue(ComponentsAtom);
+  const setSideBarOpen = useSetAtomState(SideBarOpen);
   const setOpenComponentEditor = useSetAtomState(OpenComponentEditorAtom);
   const { open: openPanel } = usePanelUrl();
   const setViewMode = useSetAtomState(ViewModeAtom);
@@ -83,12 +88,14 @@ export const EditorEmptyState = () => {
   };
 
   return (
-    <div ref={containerRef} className="scrollbar z-20 flex h-screen w-auto grow basis-full flex-col items-center justify-center gap-8 overflow-auto bg-transparent p-4 pr-2 text-center text-neutral-content">
+    <div
+      ref={containerRef}
+      className="scrollbar z-20 flex min-h-0 w-full flex-1 flex-col overflow-auto bg-transparent p-4 pb-2 pr-2 text-center text-neutral-content"
+    >
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8">
       {/* Icon */}
       {!isCompact && (
-        <div
-          className="animate-slide-up flex size-24 items-center justify-center rounded-2xl bg-primary/10 text-primary"
-        >
+        <div className="flex size-24 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           {isComponentMode && !hasComponents ? (
             <TbBoxModel2 className="size-12" />
           ) : (
@@ -98,10 +105,7 @@ export const EditorEmptyState = () => {
       )}
 
       {/* Title */}
-      <div
-        className="animate-slide-up space-y-3"
-        style={{ animationDelay: "0.1s" }}
-      >
+      <div className="space-y-3">
         {!isCompact && (
           <h2 className="text-xl font-semibold">
             {isComponentMode && !hasComponents ? (
@@ -149,7 +153,6 @@ export const EditorEmptyState = () => {
                   title="Add Blocks"
                   description="Like heros, ctas, cards, and more..."
                   onClick={handleAddSectionClick}
-                  delay={0.15}
                 />
 
                 <ActionCard
@@ -157,7 +160,6 @@ export const EditorEmptyState = () => {
                   title="Add Components"
                   description="Like buttons, images, and text..."
                   onClick={handleComponentsClick}
-                  delay={0.2}
                 />
 
                 <ActionCard
@@ -165,7 +167,6 @@ export const EditorEmptyState = () => {
                   title="Create Components"
                   description="Don't repeat yourself..."
                   onClick={handleCreateClick}
-                  delay={0.25}
                 />
 
                 {isAiEnabled &&
@@ -180,9 +181,9 @@ export const EditorEmptyState = () => {
       {/* Action Button */}
       {!hasComponents && isComponentMode && (
         <button
+          type="button"
           onClick={handleCreateClick}
-          className="animate-slide-up btn btn-primary gap-2 px-6! py-3! shadow-sm"
-          style={{ animationDelay: "0.2s" }}
+          className="btn btn-primary gap-2 px-6! py-3! shadow-sm transition-[transform,box-shadow] duration-200 active:scale-[0.99]"
         >
           <TbPlus className="size-5" />
           <span>Create Component</span>
@@ -191,14 +192,20 @@ export const EditorEmptyState = () => {
 
       {/* Helpful Hint */}
       {hasComponents && isComponentMode && (
-        <div
-          className="animate-slide-up text-xxs mt-4 flex items-center gap-2 text-neutral-content"
-          style={{ animationDelay: "0.2s" }}
-        >
+        <div className="text-xxs mt-4 flex items-center gap-2 text-neutral-content">
           <TbClick className="size-4" />
           <span>Use the dropdown at the top to select a component</span>
         </div>
       )}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setSideBarOpen(false)}
+        className="shrink-0 border-0 bg-transparent py-2 text-xs text-neutral-content/50 transition-colors hover:text-neutral-content/80 hover:underline"
+      >
+        close sidebar
+      </button>
     </div>
   );
 };

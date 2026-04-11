@@ -11,6 +11,8 @@ interface BasicTabProps {
   setIsHomePage: (v: boolean) => void;
   is404Page: boolean;
   setIs404Page: (v: boolean) => void;
+  /** Paid feature: custom 404 canvas for unknown URLs */
+  allowCustom404Page: boolean;
   pageImage: string;
   setPageImage: (v: string) => void;
   showDeleteConfirm: boolean;
@@ -27,6 +29,7 @@ export function BasicTab({
   setIsHomePage,
   is404Page,
   setIs404Page,
+  allowCustom404Page,
   pageImage,
   setPageImage,
   showDeleteConfirm,
@@ -105,27 +108,45 @@ export function BasicTab({
           </button>
         </div>
 
-        {/* 404 Page Toggle */}
-        <div className="flex w-full items-center justify-between rounded-lg border border-base-300 bg-neutral p-4">
-          <div>
-            <div className="toolbar-label font-medium">404 Page</div>
-            <div className="mt-1 text-xs text-neutral-content">
-              Show when route not found
+        {/* 404 Page — paid */}
+        <div
+          className={`flex w-full flex-col justify-between rounded-lg border border-base-300 bg-neutral p-4 ${
+            !allowCustom404Page ? "opacity-80" : ""
+          }`}
+        >
+          <div className="flex w-full items-center justify-between gap-3">
+            <div>
+              <div className="toolbar-label font-medium">404 Page</div>
+              <div className="mt-1 text-xs text-neutral-content">
+                {allowCustom404Page
+                  ? "Show this page when the URL does not match any page"
+                  : "Available on paid plans — custom page for broken or unknown links"}
+              </div>
             </div>
+            {allowCustom404Page ? (
+              <button
+                type="button"
+                onClick={() => setIs404Page(!is404Page)}
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
+                  is404Page ? "bg-primary" : "bg-neutral"
+                }`}
+              >
+                <span
+                  className={`inline-block size-4 rounded-full bg-base-100 transition-transform ${
+                    is404Page ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            ) : null}
           </div>
-          <button
-            type="button"
-            onClick={() => setIs404Page(!is404Page)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-              is404Page ? "bg-primary" : "bg-neutral"
-            }`}
-          >
-            <span
-              className={`inline-block size-4 rounded-full bg-base-100 transition-transform ${
-                is404Page ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
+          {!allowCustom404Page ? (
+            <a
+              href="/pricing"
+              className="mt-3 text-sm font-medium text-primary hover:underline"
+            >
+              View plans
+            </a>
+          ) : null}
         </div>
       </div>
 

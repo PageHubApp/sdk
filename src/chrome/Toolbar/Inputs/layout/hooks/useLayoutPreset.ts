@@ -167,7 +167,7 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
 
       setBatchOperation(true);
       try {
-        adjustContainerCount(preset.columns, mode as LayoutMode);
+        adjustContainerCount(preset.columns, mode as "grid" | "flex-row" | "flex-col");
       } finally {
         setTimeout(() => {
           setBatchOperation(false);

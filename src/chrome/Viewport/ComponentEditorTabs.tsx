@@ -40,7 +40,11 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const [tabs, setTabs] = useState<ComponentEditorTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
-  const [openComponentEditor, setOpenComponentEditor] = useAtomState(OpenComponentEditorAtom);
+  const [openComponentEditorRaw, setOpenComponentEditor] = useAtomState(OpenComponentEditorAtom);
+  const openComponentEditor = openComponentEditorRaw as unknown as {
+    componentId: string;
+    componentName: string;
+  } | null;
   const [components, setComponents] = useAtomState(ComponentsAtom);
   const processingRef = useRef<string | null>(null);
   const viewMode = useAtomValue(ViewModeAtom);

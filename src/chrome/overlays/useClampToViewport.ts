@@ -1,13 +1,9 @@
 import { useLayoutEffect, useRef, type RefObject } from "react";
 
 /**
- * useClampToViewport - Clamps an element horizontally within the #viewport bounds.
- *
- * Measures the element's bounding rect after render and applies a translateX
- * to keep it within the viewport edges (with 4px padding).
- *
- * @param ref - RefObject to the element to clamp. If not provided, creates one.
- * @returns The ref to attach to the element.
+ * Clamps an element horizontally within the `#viewport` bounds (canvas space).
+ * Used by inline node controls and the rich-text inline toolbar until those
+ * share a single viewport-anchored floating strategy; see VIEWPORT_ANCHORING.md.
  */
 export function useClampToViewport<T extends HTMLElement = HTMLDivElement>(
   externalRef?: RefObject<T | null>
@@ -19,11 +15,8 @@ export function useClampToViewport<T extends HTMLElement = HTMLDivElement>(
     const el = ref.current;
     if (!el) return;
 
-    // Reset inline transform so we measure with only the CSS-class transform
     el.style.transform = "";
 
-    // Read the base transform from the element's CSS class (e.g. -translate-x-1/2)
-    // Must be read AFTER clearing inline transform to avoid accumulating prior shifts
     const baseTransform = getComputedStyle(el).transform;
 
     const viewport = document.getElementById("viewport");
@@ -40,7 +33,6 @@ export function useClampToViewport<T extends HTMLElement = HTMLDivElement>(
     }
 
     if (shiftX !== 0) {
-      // Compose: keep the CSS-class transform and add the clamp shift
       const base = baseTransform && baseTransform !== "none" ? `${baseTransform} ` : "";
       el.style.transform = `${base}translateX(${shiftX}px)`;
     }

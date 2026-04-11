@@ -1,6 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbContainer, TbNote } from "react-icons/tb";
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { useIsolate, usePreview, useView } from "../store";
 import { mergeAccessibilityProps } from "../utils/accessibility";
 import { addActionHandlers } from "../utils/clickControls";
@@ -14,7 +15,6 @@ import {
 
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import { useScrollEffect } from "../utils/hooks/useScrollEffect";
-import { EmptyState } from "./EmptyState";
 import { RenderPattern, inlayProps } from "./lib";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
@@ -59,7 +59,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
 
-  const { name, id, isHovered, hasChildNodes, isCanvasNode } = useNode(node => ({
+  const { name, id, isHovered, hasChildNodes, isCanvasNode, isActive } = useNode(node => ({
     name: node.data.custom.displayName || node.data.displayName,
     isActive: node.events.selected,
     isHovered: node.events.hovered,
@@ -115,14 +115,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
 
   const ref = useRef(null);
 
-  /** Editor: suppress native context menu on canvas nodes (no contextual toolbox UI). */
-  const blockCanvasContextMenu = e => {
-    if (!enabled) return;
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  let className = props.className || "";
+  let className = typeof props.className === "string" ? props.className : "";
 
   // Hide component containers from the main viewport
   // Only show them when being actively edited
@@ -140,6 +133,12 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
       className = `${className} hidden`;
     }
   }
+
+  /** Skip dashed empty hint when this canvas already has a background (image, inline style, or Tailwind `bg-*`). */
+  const suppressEmptyCanvasHint =
+    !!props.backgroundImage ||
+    !!props.root?.style ||
+    /\bbg-/.test(className.trim());
 
   let prop: any = {
     ref: r => {
@@ -162,8 +161,17 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
       >
           {children ? (
             children
-          ) : (isCanvasNode && !hasChildNodes && !props.backgroundImage && !props.root?.style && !/\bbg-/.test(props.className || "")) ? (
-            <EmptyState icon={props.type === "page" ? <TbNote /> : <TbContainer />} />
+          ) : isCanvasNode && !hasChildNodes && enabled && !suppressEmptyCanvasHint ? (
+            <EditorEmptyLeafHint
+              selected={isActive}
+              icon={props.type === "page" ? <TbNote aria-hidden /> : <TbContainer aria-hidden />}
+              idleLabel={props.type === "page" ? "Empty page" : "Empty container"}
+              selectedDetail={
+                props.type === "page"
+                  ? "Add sections from the sidebar"
+                  : "Drag blocks or components here"
+              }
+            />
           ) : null}
       </RenderPattern>
     ),
@@ -205,7 +213,6 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     prop["data-border"] = /\bborder(-[^\s])?/.test(props.className || "");
 
     prop["data-bounding-box"] = enabled;
-    prop.onContextMenu = blockCanvasContextMenu;
     prop["data-empty-state"] = !children;
     // Only add node-id after client-side mount to prevent hydration mismatch
     if (isMounted) {

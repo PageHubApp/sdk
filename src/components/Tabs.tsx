@@ -1,9 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { Box } from "@pagehub/ui";
+import { TbLayout } from "react-icons/tb";
+import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { BaseSelectorProps } from "./selectors";
 import { CSStoObj } from "../utils/tailwind/tailwind";
-import { EmptyState } from "./EmptyState";
 
 export interface TabsProps extends BaseSelectorProps {
   defaultTab?: number;
@@ -13,15 +14,15 @@ export interface TabsProps extends BaseSelectorProps {
 
 export const Tabs = ({ children, ...incomingProps }: Partial<TabsProps> & { children?: React.ReactNode }) => {
   const props: TabsProps = { defaultTab: 0, orientation: "horizontal", mobileMode: "scroll", ...incomingProps };
-  const { id } = useNode();
-  const { enabled, actions, query } = useEditor((state) => ({
+  const { query, actions } = useEditor();
+  const { id, connectors: { connect } } = useNode();
+  const { enabled, isActive } = useEditor((state, q) => ({
     enabled: state.options.enabled,
+    isActive: q.getEvent("selected").contains(id),
   }));
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
-
-  const { connectors: { connect } } = useNode();
 
   // Auto-wire unique IDs on first mount — replace placeholder IDs
   useEffect(() => {
@@ -104,7 +105,19 @@ export const Tabs = ({ children, ...incomingProps }: Partial<TabsProps> & { chil
     prop["data-bounding-box"] = true;
   }
 
-  return React.createElement(Box, prop, children || (enabled ? <EmptyState text="Drop tab bar and panels here" /> : null));
+  return React.createElement(
+    Box,
+    prop,
+    children ||
+      (enabled ? (
+        <EditorEmptyLeafHint
+          selected={isActive}
+          icon={<TbLayout aria-hidden />}
+          idleLabel="Empty tabs"
+          selectedDetail="Drop tab bar and panels here"
+        />
+      ) : null),
+  );
 };
 
 Tabs.craft = {

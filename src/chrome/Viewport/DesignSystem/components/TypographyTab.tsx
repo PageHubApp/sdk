@@ -1,3 +1,4 @@
+import type { CSSProperties, MouseEvent } from "react";
 import { TbChevronDown, TbChevronRight, TbPlus, TbTrash } from "react-icons/tb";
 import type { UseDesignSystemReturn } from "../hooks/useDesignSystem";
 
@@ -13,6 +14,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
       {/* Type Section */}
       <div className="border-b border-base-300 last:border-b-0">
         <button
+          type="button"
           onClick={() => toggleSection("typography")}
           className="flex w-full items-center justify-between bg-neutral px-3 py-2 text-left transition-colors hover:bg-neutral/80"
           aria-expanded={!!expandedSections.typography}
@@ -49,6 +51,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
                 Heading Font Family
               </label>
               <button
+                type="button"
                 id="ds-heading-font-family"
                 ref={ds.headingFontButtonRef}
                 onClick={ds.openHeadingFontPicker}
@@ -83,6 +86,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
                 Body Font Family
               </label>
               <button
+                type="button"
                 id="ds-body-font-family"
                 ref={ds.bodyFontButtonRef}
                 onClick={ds.openBodyFontPicker}
@@ -96,85 +100,154 @@ export function TypographyTab({ ds }: TypographyTabProps) {
         )}
       </div>
 
-      {/* Custom Fonts Section */}
-      <div className="space-y-3 p-6">
-        <button
-          onClick={ds.addFont}
-          className="mb-2 flex w-full items-center justify-center gap-2 rounded-lg border border-base-300 bg-accent px-3 py-2 text-sm text-accent-content transition-colors hover:bg-accent"
-        >
-          <TbPlus size={16} />
-          Add Font
-        </button>
-
+      {/* Custom fonts — cards sit on a slightly tinted band so they read as groups */}
+      <div className="space-y-3 border-t border-base-300 bg-base-200/15 p-3 pb-6 text-base-content">
         {customFonts.map((font, index) => (
-          <div key={index} className="group space-y-3 rounded-lg border border-base-300 bg-base-200 p-3">
-            {/* Font Name */}
-            <div className="flex items-center gap-2">
+          <article
+            key={index}
+            className="group overflow-hidden rounded-xl border border-base-300/80 bg-base-100 shadow-sm ring-1 ring-base-300/30"
+          >
+            {/* Title row — reads like a settings group header */}
+            <div className="flex items-center gap-2 border-b border-base-300/70 bg-base-200/35 px-3 py-2.5">
               <input
                 type="text"
                 value={font.name}
                 onChange={e => ds.updateFontName(index, e.target.value)}
-                className="flex-1 border-b border-transparent bg-transparent px-1 py-0.5 text-sm font-medium text-base-content hover:border-primary focus:border-ring focus:outline-none"
-                placeholder="Font name"
+                className="min-w-0 flex-1 border-0 bg-transparent text-sm font-semibold tracking-tight text-base-content placeholder:text-base-content/35 placeholder:font-medium focus:outline-none focus:ring-0"
+                placeholder="Token name (e.g. Caption)"
+                aria-label="Custom font token name"
               />
               <button
+                type="button"
                 onClick={() => ds.deleteFont(index)}
-                className="p-1 text-error opacity-0 transition-opacity hover:text-error group-hover:opacity-100"
-                title="Delete font"
+                className="btn btn-ghost btn-square size-8 min-h-0 shrink-0 text-base-content/50 hover:bg-error/10 hover:text-error"
+                title="Remove font"
               >
-                <TbTrash size={16} />
+                <TbTrash className="size-4" aria-hidden />
               </button>
             </div>
 
-            {/* Font Properties */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="col-span-2">
-                <label htmlFor={`ds-font-family-${index}`} className="mb-1 block text-xs font-medium text-neutral-content">
-                  Font Family
-                </label>
-                <button
-                  id={`ds-font-family-${index}`}
-                  onClick={e => {
+            <div className="space-y-2.5 p-3">
+              <FontSelect
+                id={`ds-font-family-${index}`}
+                label="Font family"
+                value={font.fontFamily}
+                familyButton={{
+                  onClick: (e: MouseEvent<HTMLButtonElement>) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     ds.setFontDialog({
                       enabled: true,
                       value: font.fontFamily ? [font.fontFamily] : [],
                       originalValue: font.fontFamily ? [font.fontFamily] : [],
                       changed: (value: unknown) => {
-                        const fontFamily = Array.isArray(value) ? (value as string[])[0] : value as string;
+                        const fontFamily = Array.isArray(value) ? (value as string[])[0] : (value as string);
                         ds.updateFontProperty(index, "fontFamily", fontFamily);
                       },
                       preview: (value: unknown) => {
-                        const fontFamily = Array.isArray(value) ? (value as string[])[0] : value as string;
+                        const fontFamily = Array.isArray(value) ? (value as string[])[0] : (value as string);
                         ds.updateFontProperty(index, "fontFamily", fontFamily);
                       },
                       e: rect,
                     });
-                  }}
-                  className="w-full rounded-lg border border-base-300 bg-base-100 px-2 py-1 text-left text-xs text-base-content hover:bg-neutral focus:outline-none focus:ring-1 focus:ring-ring"
-                  style={{ fontFamily: font.fontFamily }}
-                >
-                  {font.fontFamily || "Select font family"}
-                </button>
-              </div>
+                  },
+                  displayValue: font.fontFamily || "Choose typeface…",
+                  style: { fontFamily: font.fontFamily },
+                }}
+              />
 
-              <FontSelect id={`ds-font-size-${index}`} label="Font Size" value={font.fontSize} onChange={v => ds.updateFontProperty(index, "fontSize", v)}
-                options={[
-                  "0.625rem:XS", "0.75rem:SM", "0.875rem:Base-", "1rem:Base", "1.125rem:LG", "1.25rem:XL",
-                  "1.5rem:2XL", "1.875rem:3XL", "2rem:4XL", "2.25rem:4XL+", "3rem:5XL", "3.75rem:6XL", "4.5rem:7XL", "6rem:8XL", "8rem:9XL",
-                ]} />
-              <FontSelect id={`ds-font-weight-${index}`} label="Font Weight" value={font.fontWeight} onChange={v => ds.updateFontProperty(index, "fontWeight", v)}
-                options={["100:Thin", "200:Extra Light", "300:Light", "400:Normal", "500:Medium", "600:Semi Bold", "700:Bold", "800:Extra Bold", "900:Black"]} />
-              <FontSelect id={`ds-line-height-${index}`} label="Line Height" value={font.lineHeight} onChange={v => ds.updateFontProperty(index, "lineHeight", v)}
-                options={["1:None", "1.15:Tight", "1.2:Snug", "1.25:Compact", "1.375:Normal-", "1.5:Normal", "1.625:Relaxed", "1.75:Loose", "2:Extra"]} />
-              <FontSelect id={`ds-letter-spacing-${index}`} label="Letter Spacing" value={font.letterSpacing || "normal"} onChange={v => ds.updateFontProperty(index, "letterSpacing", v)}
-                options={["-0.05em:Tighter", "-0.025em:Tight", "normal:Normal", "0.025em:Wide", "0.05em:Wider", "0.1em:Widest"]} />
-              <FontSelect id={`ds-text-transform-${index}`} label="Text Transform" value={font.textTransform || "none"} onChange={v => ds.updateFontProperty(index, "textTransform", v)}
-                options={["none:None", "uppercase:UPPERCASE", "lowercase:lowercase", "capitalize:Capitalize"]} />
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <FontSelect
+                  id={`ds-font-size-${index}`}
+                  label="Size"
+                  value={font.fontSize}
+                  onChange={v => ds.updateFontProperty(index, "fontSize", v)}
+                  dense
+                  options={[
+                    "0.625rem:XS",
+                    "0.75rem:SM",
+                    "0.875rem:Base-",
+                    "1rem:Base",
+                    "1.125rem:LG",
+                    "1.25rem:XL",
+                    "1.5rem:2XL",
+                    "1.875rem:3XL",
+                    "2rem:4XL",
+                    "2.25rem:4XL+",
+                    "3rem:5XL",
+                    "3.75rem:6XL",
+                    "4.5rem:7XL",
+                    "6rem:8XL",
+                    "8rem:9XL",
+                  ]}
+                />
+                <FontSelect
+                  id={`ds-font-weight-${index}`}
+                  label="Weight"
+                  value={font.fontWeight}
+                  onChange={v => ds.updateFontProperty(index, "fontWeight", v)}
+                  dense
+                  options={[
+                    "100:Thin",
+                    "200:Extra Light",
+                    "300:Light",
+                    "400:Normal",
+                    "500:Medium",
+                    "600:Semi Bold",
+                    "700:Bold",
+                    "800:Extra Bold",
+                    "900:Black",
+                  ]}
+                />
+                <FontSelect
+                  id={`ds-line-height-${index}`}
+                  label="Line height"
+                  value={font.lineHeight}
+                  onChange={v => ds.updateFontProperty(index, "lineHeight", v)}
+                  dense
+                  options={[
+                    "1:None",
+                    "1.15:Tight",
+                    "1.2:Snug",
+                    "1.25:Compact",
+                    "1.375:Normal-",
+                    "1.5:Normal",
+                    "1.625:Relaxed",
+                    "1.75:Loose",
+                    "2:Extra",
+                  ]}
+                />
+                <FontSelect
+                  id={`ds-letter-spacing-${index}`}
+                  label="Tracking"
+                  value={font.letterSpacing || "normal"}
+                  onChange={v => ds.updateFontProperty(index, "letterSpacing", v)}
+                  dense
+                  options={[
+                    "-0.05em:Tighter",
+                    "-0.025em:Tight",
+                    "normal:Normal",
+                    "0.025em:Wide",
+                    "0.05em:Wider",
+                    "0.1em:Widest",
+                  ]}
+                />
+                <div className="sm:col-span-2">
+                  <FontSelect
+                    id={`ds-text-transform-${index}`}
+                    label="Transform"
+                    value={font.textTransform || "none"}
+                    onChange={v => ds.updateFontProperty(index, "textTransform", v)}
+                    dense
+                    options={["none:None", "uppercase:UPPERCASE", "lowercase:lowercase", "capitalize:Capitalize"]}
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Preview */}
-            <div className="rounded-lg bg-neutral p-2">
+            <div className="border-t border-base-300/60 bg-base-200/25 px-3 py-2.5">
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-base-content/40">
+                Preview
+              </p>
               <div
                 style={{
                   fontFamily: font.fontFamily,
@@ -184,47 +257,97 @@ export function TypographyTab({ ds }: TypographyTabProps) {
                   letterSpacing: font.letterSpacing || "normal",
                   textTransform: (font.textTransform || "none") as React.CSSProperties["textTransform"],
                 }}
-                className="text-sm text-neutral-content"
+                className="text-[13px] leading-snug text-base-content"
               >
                 The quick brown fox jumps over the lazy dog
               </div>
             </div>
-          </div>
+          </article>
         ))}
 
         <button
+          type="button"
           onClick={ds.addFont}
-          className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-base-300 bg-accent px-3 py-2 text-sm text-accent-content transition-colors hover:bg-accent"
+          className="btn btn-outline flex w-full items-center justify-center gap-2 border-base-content/30 normal-case"
         >
-          <TbPlus size={16} />
-          Add Font
+          <TbPlus className="size-4 shrink-0" aria-hidden />
+          Add font
         </button>
       </div>
     </div>
   );
 }
 
-/** Compact select for font property grids — options format: "value:Label" */
+const labelDense =
+  "mb-0.5 block text-[10px] font-semibold uppercase tracking-wider text-base-content/45";
+const labelDefault = "mb-1 block text-xs font-medium text-neutral-content";
+
+/** Options format: "value:Label" (value before first colon). */
 function FontSelect({
-  id, label, value, onChange, options,
+  id,
+  label,
+  value,
+  onChange,
+  options = [],
+  dense = false,
+  familyButton,
 }: {
-  id: string; label: string; value: string; onChange: (v: string) => void;
-  options: string[];
+  id: string;
+  label: string;
+  value: string;
+  onChange?: (v: string) => void;
+  options?: string[];
+  dense?: boolean;
+  familyButton?: {
+    onClick: (e: MouseEvent<HTMLButtonElement>) => void;
+    displayValue: string;
+    style?: CSSProperties;
+  };
 }) {
+  const lb = dense ? labelDense : labelDefault;
+  const controlDense =
+    "select select-bordered select-sm w-full min-h-8 h-8 border-base-300/90 bg-base-100 py-0 pr-8 text-xs leading-tight text-base-content focus:outline-none focus:ring-2 focus:ring-ring";
+  const controlDefault =
+    "w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content focus:outline-none focus:ring-2 focus:ring-ring";
+
+  if (familyButton) {
+    return (
+      <div className="space-y-1">
+        <span id={`${id}-lbl`} className={lb}>
+          {label}
+        </span>
+        <button
+          type="button"
+          id={id}
+          aria-labelledby={`${id}-lbl`}
+          onClick={familyButton.onClick}
+          className={`${controlDefault} text-left hover:bg-base-200/80`}
+          style={familyButton.style}
+        >
+          {familyButton.displayValue}
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <label htmlFor={id} className="mb-1 block text-xs font-medium text-neutral-content">
+    <div className="space-y-1">
+      <label htmlFor={id} className={lb}>
         {label}
       </label>
       <select
         id={id}
         value={value}
-        onChange={e => onChange(e.target.value)}
-        className="w-full rounded-lg border border-base-300 bg-base-100 px-2 py-1 text-xs text-base-content focus:outline-none focus:ring-1 focus:ring-ring"
+        onChange={e => onChange?.(e.target.value)}
+        className={dense ? controlDense : controlDefault}
       >
         {options.map(opt => {
           const [val, lbl] = opt.split(":");
-          return <option key={val} value={val}>{`${lbl} (${val})`}</option>;
+          return (
+            <option key={val} value={val}>
+              {`${lbl} (${val})`}
+            </option>
+          );
         })}
       </select>
     </div>

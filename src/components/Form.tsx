@@ -160,7 +160,11 @@ export const Form = ({ children, ...props }: any) => {
     >
       {/* Honeypot — invisible field that only bots fill out */}
       {!enabled && (
-        <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", top: "-9999px", opacity: 0, height: 0, overflow: "hidden", tabIndex: -1 }}>
+        <div
+          aria-hidden="true"
+          tabIndex={-1}
+          style={{ position: "absolute", left: "-9999px", top: "-9999px", opacity: 0, height: 0, overflow: "hidden" }}
+        >
           <input type="text" name="_ph_hp" autoComplete="off" tabIndex={-1} />
         </div>
       )}

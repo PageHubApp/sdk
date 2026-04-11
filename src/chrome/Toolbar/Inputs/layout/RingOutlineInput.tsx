@@ -4,8 +4,9 @@ import { TbFocus2 } from "react-icons/tb";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { ColorInput } from "../color/ColorInput";
 import { UniversalInput } from "../UniversalInput";
+import type { ValueType } from "../UniversalInput/types";
 
-const RING_OUTLINE_ALLOWED_TYPES = [
+const RING_OUTLINE_ALLOWED_TYPES: ValueType[] = [
   "tailwind",
   "calc",
   "px",

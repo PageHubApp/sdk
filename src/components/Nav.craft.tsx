@@ -83,7 +83,7 @@ function buildMobileMenuChildren() {
       key="hamburger"
       text="Menu"
       url=""
-      action={{ type: "show-hide", target: "mobile-menu", direction: "show", trigger: "click", method: "style" }}
+      action={{ type: "show-hide", target: "mobile-menu", direction: "show", trigger: "click", method: "style" } as any}
       icon={{
         value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg>`,
         only: true,
@@ -99,7 +99,7 @@ function buildMobileMenuChildren() {
       canDelete={false}
       canEditName={false}
       className="hidden fixed h-screen w-screen top-0 left-0 z-50 md:hidden bg-black/50"
-      action={{ type: "show-hide", target: "mobile-menu", direction: "hide", trigger: "click", method: "style" }}
+      action={{ type: "show-hide", target: "mobile-menu", direction: "hide", trigger: "click", method: "style" } as any}
     >
       <Element
         canvas
@@ -109,7 +109,9 @@ function buildMobileMenuChildren() {
         canDelete={false}
         canEditName={false}
         className="h-full w-80 max-w-sm bg-base-100 shadow-xl"
-        action={{ type: "show-hide", target: "mobile-menu", direction: "toggle", trigger: "click", method: "style" }}
+        action={
+          { type: "show-hide", target: "mobile-menu", direction: "toggle", trigger: "click", method: "style" } as any
+        }
       >
         <Element
           canvas
@@ -127,7 +129,7 @@ function buildMobileMenuChildren() {
             custom={{ displayName: "Mobile Nav Close" }}
             canDelete={false}
             canEditName={false}
-            action={{ type: "show-hide", target: "mobile-menu", direction: "hide", trigger: "click", method: "style" }}
+            action={{ type: "show-hide", target: "mobile-menu", direction: "hide", trigger: "click", method: "style" } as any}
             text="×"
             url=""
             className="px-(--button-padding-x) py-(--button-padding-y) text-xl font-bold border-0"

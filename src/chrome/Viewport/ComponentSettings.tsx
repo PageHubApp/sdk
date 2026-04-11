@@ -33,7 +33,7 @@ export const ComponentSettings = () => {
   } = usePanelUrl();
 
   const [search, setSearch] = useState(params.q ?? null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Build toolbox entries from defineComponent() definitions.
   // Flatten all presets into individual content items for the grid.
@@ -78,7 +78,7 @@ export const ComponentSettings = () => {
     return merged;
   }, [components, customItems, navExtras]);
 
-  const focusRef = useRef(null);
+  const focusRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const time = setTimeout(() => focusRef?.current?.focus(), 50);
@@ -149,7 +149,9 @@ export const ComponentSettings = () => {
     <div className="flex flex-1 flex-col overflow-hidden bg-sidebar">
       <form
         onSubmit={e => {
-          setSearch(e.target[0].value);
+          const form = e.currentTarget;
+          const input = form.querySelector("input[type=text]") as HTMLInputElement | null;
+          if (input) setSearch(input.value);
           e.preventDefault();
         }}
       >

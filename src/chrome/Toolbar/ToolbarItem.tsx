@@ -5,6 +5,7 @@ import { Tooltip as ReactTooltip } from "react-tooltip";
 import { useAtomValue } from "@zedux/react";
 import { ViewAtom } from "../Viewport/atoms";
 import { changeProp, getPropFinalValue } from "../Viewport/lib";
+import { getEditorVariableOptions } from "../../utils/editorVariableOptions";
 
 const CodeEditor = React.lazy(() => import("./Inputs/typography/CodeEditor").then(m => ({ default: m.CodeEditor })));
 import { DesignVarSelector } from "./Inputs/advanced/DesignVarSelector";
@@ -13,7 +14,7 @@ import { ToolbarDropdown } from "./ToolbarDropdown";
 import { BgWrap, Wrap } from "./ToolbarStyle";
 import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
 
-const Input = (__props, ref) => {
+const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, _ref) {
   const {
     props,
     propKey,
@@ -26,6 +27,8 @@ const Input = (__props, ref) => {
     wrap = null,
     append,
     codeType = "html",
+    autoFormatMountKey,
+    htmlVariableCompletionOptions,
   } = __props;
 
   if (["toggle", "checkbox"].includes(type)) {
@@ -309,6 +312,10 @@ const Input = (__props, ref) => {
           maxHeight="300px"
           lineNumbers={false}
           theme="auto"
+          autoFormatOnMount
+          autoFormatMountKey={autoFormatMountKey}
+          toolbarDenseCode
+          htmlVariableCompletionOptions={htmlVariableCompletionOptions}
           placeholder={props.placeholder || `Enter ${codeType} code...`}
         />
       </div>
@@ -331,7 +338,9 @@ const Input = (__props, ref) => {
       </div>
     </BgWrap>
   );
-};
+});
+
+Input.displayName = "ToolbarItemInput";
 
 export type ToolbarItemProps = {
   label?: string;
@@ -409,6 +418,11 @@ export const ToolbarItem = (__props: ToolbarItemProps) => {
   }));
 
   const { query, actions } = useEditor();
+
+  const htmlVariableCompletionOptionsForCodemirror = React.useMemo(() => {
+    if ((codeType || "html") !== "html") return undefined;
+    return getEditorVariableOptions(query);
+  }, [codeType, query]);
 
   const classDark = viewSelection.dark ?? false;
 
@@ -492,6 +506,8 @@ export const ToolbarItem = (__props: ToolbarItemProps) => {
         changed={changed}
         index={index}
         wrap={wrap}
+        autoFormatMountKey={id}
+        htmlVariableCompletionOptions={htmlVariableCompletionOptionsForCodemirror}
         append={
           <>
             {showVarSelector && (

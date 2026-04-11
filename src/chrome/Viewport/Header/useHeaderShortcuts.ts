@@ -3,26 +3,22 @@ import { usePanelUrl } from "../../../utils/usePanelUrl";
 
 interface UseHeaderShortcutsOptions {
   setIsMediaManagerModalOpen: (fn: (prev: boolean) => boolean) => void;
-  setIsDesignSystemSidebarOpen: (fn: (prev: boolean) => boolean) => void;
   setIsSiteSettingsModalOpen: (fn: (prev: boolean) => boolean) => void;
   setIsLayersDialogOpen: (fn: (prev: boolean) => boolean) => void;
   setShowGridLines: (fn: (prev: boolean) => boolean) => void;
-  setIsImportExportDialogOpen: (fn: (prev: boolean) => boolean) => void;
   setIsModifiersModalOpen: (fn: (prev: boolean) => boolean) => void;
   setShowHidden: (fn: (prev: boolean) => boolean) => void;
 }
 
 export function useHeaderShortcuts({
   setIsMediaManagerModalOpen,
-  setIsDesignSystemSidebarOpen,
   setIsSiteSettingsModalOpen,
   setIsLayersDialogOpen,
   setShowGridLines,
-  setIsImportExportDialogOpen,
   setIsModifiersModalOpen,
   setShowHidden,
 }: UseHeaderShortcutsOptions) {
-  const { open, close } = usePanelUrl();
+  const { open, close, toggle } = usePanelUrl();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -54,11 +50,10 @@ export function useHeaderShortcuts({
         return;
       }
 
-      // Cmd+Shift+D -- Design System
+      // Cmd+Shift+D -- Theme settings (URL panel)
       if (key === "d" && e.shiftKey) {
         e.preventDefault();
-        setIsDesignSystemSidebarOpen(v => !v);
-        close();
+        toggle("theme");
         return;
       }
 
@@ -89,11 +84,10 @@ export function useHeaderShortcuts({
         return;
       }
 
-      // Cmd+Shift+E -- Import / Export
+      // Cmd+Shift+E -- Import / Export (URL panel; closes when another panel opens)
       if (key === "e" && e.shiftKey) {
         e.preventDefault();
-        setIsImportExportDialogOpen(v => !v);
-        close();
+        toggle("import-export");
         return;
       }
 

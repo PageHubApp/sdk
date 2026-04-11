@@ -16,6 +16,7 @@ const DEFAULT_FEATURES: Required<PageHubFeatures> = {
   importExport: false,
   seoPanel: true,
   multiPage: true,
+  custom404Page: true,
   restrictedComponents: [],
   responsivePreview: true,
   directSave: false,
@@ -31,7 +32,8 @@ const DEFAULT_THEME: PageHubTheme = {
 export interface ResolvedConfig extends PageHubConfig {
   features: Required<PageHubFeatures>;
   theme: Required<PageHubTheme>;
-  containerEl: HTMLElement;
+  /** Set when `config.container` resolves; omitted for React-only integrations. */
+  containerEl?: HTMLElement;
 }
 
 export function resolveConfig(config: PageHubConfig): ResolvedConfig {
@@ -71,7 +73,7 @@ export function resolveConfig(config: PageHubConfig): ResolvedConfig {
 
   const resolvedConfig = {
     ...config,
-    containerEl: containerEl as HTMLElement,
+    ...(containerEl != null ? { containerEl } : {}),
     features: {
       ...DEFAULT_FEATURES,
       ...config.features,

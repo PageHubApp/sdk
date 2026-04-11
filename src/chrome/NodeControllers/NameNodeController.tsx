@@ -3,6 +3,7 @@ import debounce from "lodash.debounce";
 import { useEffect, useRef, useState } from "react";
 import RenderNodeControlInline from "../RenderNodeControlInline";
 import { useElementColor } from "./lib";
+import { NODE_NAME_CHIP_SHELL_CLASS } from "./nodeNameChipStyles";
 
 const EditableName = () => {
   const { name, id } = useNode(node => ({
@@ -42,11 +43,7 @@ const EditableName = () => {
   };
 
   return (
-    <div
-      className={
-        "fontfamily-base pointer-events-auto flex flex-row gap-3 overflow-hidden border-current bg-base-100 px-2 text-xs! font-normal! text-base-content"
-      }
-    >
+    <div className={NODE_NAME_CHIP_SHELL_CLASS}>
       <div
         ref={editableRef}
         role={isEditing ? undefined : "button"}

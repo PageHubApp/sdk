@@ -4,6 +4,7 @@ import { TbChevronRight } from "react-icons/tb";
 import type { BlockCategory } from "../../../utils/useBlockCategories";
 import type { BlockItem } from "../../../utils/useCategoryBlocks";
 import { ComponentPreview } from "../../NodeControllers/Tools/ComponentPreview";
+import { ToolboxInsertHintTooltip } from "../../shared/ToolboxInsertHintTooltip";
 import { buildComponentFromNode } from "./blockHelpers";
 import { CATEGORY_WIREFRAMES } from "./categoryWireframes";
 
@@ -27,25 +28,27 @@ export const BlockPreviewCard = memo(function BlockPreviewCard({
   const cardRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div
-      ref={(ref) => {
-        (cardRef as any).current = ref;
-        onDragRef(ref);
-      }}
-      onDoubleClick={onDoubleClick}
-      onMouseEnter={() => {
-        if (onHover && cardRef.current) {
-          onHover(block, cardRef.current.getBoundingClientRect());
-        }
-      }}
-      onMouseDown={onDismissQuickLook}
-      className={`group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-grab overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing ${
-        quickLookOpen ? "ring-2 ring-primary/30" : ""
-      }`}
-    >
-      <ComponentPreview component={block.structure} scale={0.35} resolver={resolver} modifiers={block.modifiers} />
-      <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
-    </div>
+    <ToolboxInsertHintTooltip>
+      <div
+        ref={(ref) => {
+          (cardRef as any).current = ref;
+          onDragRef(ref);
+        }}
+        onDoubleClick={onDoubleClick}
+        onMouseEnter={() => {
+          if (onHover && cardRef.current) {
+            onHover(block, cardRef.current.getBoundingClientRect());
+          }
+        }}
+        onMouseDown={onDismissQuickLook}
+        className={`group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-grab overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing ${
+          quickLookOpen ? "ring-2 ring-primary/30" : ""
+        }`}
+      >
+        <ComponentPreview component={block.structure} scale={0.35} resolver={resolver} modifiers={block.modifiers} />
+        <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
+      </div>
+    </ToolboxInsertHintTooltip>
   );
 });
 
@@ -74,52 +77,53 @@ export const CustomSectionCard = memo(function CustomSectionCard({
   const tool = <Element canvas is={"Container"} canDelete canEditName />;
 
   return (
-    <div
-
-      ref={(ref: any) => createRef(ref, tool)}
-      className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-grab overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing"
-      onDoubleClick={() => {
-        try {
-          const masterNode = editorQuery.node(template.rootNodeId).get();
-          if (!masterNode) return;
-          const uniquePrefix = `section-${Date.now()}`;
-          const buildElement = (nodeId: string, index = 0): any => {
-            const node = editorQuery.node(nodeId).get();
-            if (!node) return null;
-            const serializedNode = editorQuery.node(nodeId).toSerializedNode();
-            const typeName =
-              typeof serializedNode.type === "string"
-                ? serializedNode.type
-                : serializedNode.type?.resolvedName || "Container";
-            const children = node.data.nodes
-              .map((childId: string, childIndex: number) => buildElement(childId, childIndex))
-              .filter(Boolean);
-            return (
-              <Element
-                key={`${uniquePrefix}-${index}`}
-                canvas={serializedNode.props.canvas}
-                is={typeName}
-                {...serializedNode.props}
-              >
-                {children}
-              </Element>
-            );
-          };
-          const element = buildElement(template.rootNodeId);
-          if (element) onInsert(element);
-        } catch (e) {
-          console.error("Error creating custom section:", e);
-        }
-      }}
-    >
-      {customPreview && (
-        <ComponentPreview component={customPreview} scale={0.35} resolver={resolver} />
-      )}
-      <div className="bg-primary absolute top-2 right-2 z-10 rounded-lg px-2 py-1">
-        <span className="text-primary-content text-xs font-medium">Custom</span>
+    <ToolboxInsertHintTooltip>
+      <div
+        ref={(ref: any) => createRef(ref, tool)}
+        className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-grab overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing"
+        onDoubleClick={() => {
+          try {
+            const masterNode = editorQuery.node(template.rootNodeId).get();
+            if (!masterNode) return;
+            const uniquePrefix = `section-${Date.now()}`;
+            const buildElement = (nodeId: string, index = 0): any => {
+              const node = editorQuery.node(nodeId).get();
+              if (!node) return null;
+              const serializedNode = editorQuery.node(nodeId).toSerializedNode();
+              const typeName =
+                typeof serializedNode.type === "string"
+                  ? serializedNode.type
+                  : serializedNode.type?.resolvedName || "Container";
+              const children = node.data.nodes
+                .map((childId: string, childIndex: number) => buildElement(childId, childIndex))
+                .filter(Boolean);
+              return (
+                <Element
+                  key={`${uniquePrefix}-${index}`}
+                  canvas={serializedNode.props.canvas}
+                  is={typeName}
+                  {...serializedNode.props}
+                >
+                  {children}
+                </Element>
+              );
+            };
+            const element = buildElement(template.rootNodeId);
+            if (element) onInsert(element);
+          } catch (e) {
+            console.error("Error creating custom section:", e);
+          }
+        }}
+      >
+        {customPreview && (
+          <ComponentPreview component={customPreview} scale={0.35} resolver={resolver} />
+        )}
+        <div className="bg-primary absolute top-2 right-2 z-10 rounded-lg px-2 py-1">
+          <span className="text-primary-content text-xs font-medium">Custom</span>
+        </div>
+        <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
-      <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
-    </div>
+    </ToolboxInsertHintTooltip>
   );
 });
 

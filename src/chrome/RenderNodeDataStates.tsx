@@ -50,7 +50,7 @@ export const RenderNodeDataStates = () => {
         dom.removeAttribute("data-ancestor");
       }
 
-      if (isHover) dom.setAttribute("data-hover", "true");
+      if (isHover && !isActive) dom.setAttribute("data-hover", "true");
       else dom.removeAttribute("data-hover");
     }
   }, [isActive, isHover, isAncestorOfSelected, enabled, dom, name]);

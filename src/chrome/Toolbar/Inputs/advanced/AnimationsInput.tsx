@@ -50,7 +50,8 @@ const SCROLL_TIMELINE_TIMING = [
 
 /** Detects if this node's parent section uses scroll-timeline. */
 function useParentScrollTimeline(): boolean {
-  const { query, id } = useNode(n => ({ id: n.id }));
+  const { id } = useNode();
+  const { query } = useEditor();
   try {
     const node = query.node(id).get();
     let parentId = node?.data?.parent;

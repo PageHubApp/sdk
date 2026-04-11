@@ -16,7 +16,7 @@ export function useNodeDropStyling() {
     nodeIdKeys: Object.keys(state.nodes).join(","),
   }));
 
-  const nodeIdsRef = useRef<Set<string> | undefined>();
+  const nodeIdsRef = useRef<Set<string> | undefined>(undefined);
   const ecosystem = useEcosystem();
 
   useEffect(() => {

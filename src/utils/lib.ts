@@ -51,9 +51,12 @@ export {
 
 // Page management (isolation, counting, ref resolution, variables)
 export {
+  EDITOR_ALL_PAGES_STORAGE,
+  getDefaultEditorPageId,
   getPageCount,
   isolatePage,
   isolatePageAlt,
+  listPageNodeIds,
   resolvePageRef,
   replaceVariables,
 } from "./pageManagement";
@@ -71,18 +74,22 @@ export const siteDescription =
 
 // ─── Atoms ──────────────────────────────────────────────────────────────
 
-export const IsolateAtom = atom("isolate", "");
-export const ComponentsAtom = atom("components", []);
-export const OnlineAtom = atom("online", true);
-export const ScreenshotAtom = atom("ss", false);
-export const SideBarAtom = atom("sidebar", true);
-export const SideBarOpen = atom("sidebaropen", true);
-export const DesignSystemSidebarAtom = atom("designSystemSidebar", false);
-export const ViewModeAtom = atom("viewMode", "page");
-export const OpenComponentEditorAtom = atom("openComponentEditor", null);
-export const LastctiveAtom = atom("lastActive", "");
-export const ActiveAtom = atom("active", "");
-export const SelectedSectionAtom = atom("selectedSection", null);
+export const IsolateAtom = atom<string>("isolate", "");
+export const ComponentsAtom = atom<any[]>("components", []);
+export const OnlineAtom = atom<boolean>("online", true);
+export const ScreenshotAtom = atom<boolean>("ss", false);
+export const SideBarAtom = atom<boolean>("sidebar", true);
+export const SideBarOpen = atom<boolean>("sidebaropen", true);
+/** Canvas scope for component editor / isolation — not the same as responsive viewport `ViewMode` in store.tsx */
+export type EditorCanvasViewMode = "page" | "preview" | "component";
+export const ViewModeAtom = atom<EditorCanvasViewMode>("viewMode", "page");
+export type OpenComponentEditorState =
+  | null
+  | { componentId?: string; componentName?: string; draftId?: string };
+export const OpenComponentEditorAtom = atom<any>("openComponentEditor", null);
+export const LastctiveAtom = atom<string>("lastActive", "");
+export const ActiveAtom = atom<string>("active", "");
+export const SelectedSectionAtom = atom<string | null>("selectedSection", null);
 
 // ─── Submissions (registerable handler) ─────────────────────────────────
 

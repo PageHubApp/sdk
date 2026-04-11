@@ -493,5 +493,10 @@ function generateThemeVars(rootProps: Record<string, any>): string {
   return `:root {\n${paletteVars}\n${dsVars}\n}`;
 }
 
+/** `:root { … }` from ROOT/Background theme (palette + styleGuide) for static hand-off zips. */
+export function buildRootThemeCss(rootProps: Record<string, any>): string {
+  return generateThemeVars(rootProps);
+}
+
 // Re-export types
 export type { StaticRenderContext, ToHTMLFn } from "./utils/static-html";

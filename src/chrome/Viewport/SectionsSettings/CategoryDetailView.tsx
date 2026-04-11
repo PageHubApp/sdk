@@ -112,8 +112,6 @@ export function CategoryDetailView({
 
   const { blocks, isLoading } = useCategoryBlocks(category.id, activeSubcategory, activeStyle);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const currentIndex = categories.findIndex(c => c.id === category.id);
   const prevCategory = currentIndex > 0 ? categories[currentIndex - 1] : null;
   const nextCategory = currentIndex < categories.length - 1 ? categories[currentIndex + 1] : null;
@@ -235,7 +233,7 @@ export function CategoryDetailView({
           <TbLoader2 className="size-5 animate-spin text-neutral-content" />
         </div>
       ) : (
-        <AutoHideScrollbar className="flex-1" ref={containerRef}>
+        <AutoHideScrollbar className="flex-1">
           <div className="grid w-full grid-cols-1 gap-3 p-3 pt-1" onMouseLeave={() => setIsHoveringCard(false)}>
             {blocks.map(block => (
               <BlockPreviewCard

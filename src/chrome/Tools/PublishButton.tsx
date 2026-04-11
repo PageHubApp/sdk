@@ -6,7 +6,7 @@ type IndicatorState = "idle" | "saving" | "success" | "error";
 /** Event-driven auto-save icon. Listens to pagehub:saving/saved/save-failed CustomEvents. */
 export function SaveIndicator() {
   const [state, setState] = useState<IndicatorState>("idle");
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const clearPendingTimeout = useCallback(() => {
     if (timeoutRef.current) {

@@ -24,13 +24,18 @@ export function ExclusiveDropdown({
   };
 
   return (
-    <ToolbarDropdown value={value} onChange={handleChange} placeholder="None">
-      <option value="">None</option>
-      {mods.map((mod) => (
-        <option key={mod.name} value={mod.name}>
-          {mod.label}
-        </option>
-      ))}
-    </ToolbarDropdown>
+    <>
+      <ToolbarDropdown value={value} onChange={handleChange} placeholder="None">
+        <option value="">None</option>
+        {mods.map((mod) => (
+          <option key={mod.name} value={mod.name}>
+            {mod.label}
+          </option>
+        ))}
+      </ToolbarDropdown>
+      {activeMod?.description && (
+        <p className="mt-1 text-[10px] leading-snug text-neutral-content/70">{activeMod.description}</p>
+      )}
+    </>
   );
 }

@@ -5,9 +5,16 @@ import { useFocusTrap } from "../../../utils/hooks/useAccessibility";
 interface LeftSidebarDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Visible title, or dialog aria-label when hideHeader */
   title: string;
   icon?: ReactNode;
   headerRight?: ReactNode;
+  /** Omit title row (children provide their own chrome, e.g. tabs). */
+  hideHeader?: boolean;
+  /** Default true. Set false when chrome above (e.g. toolbar) already exposes dismiss. */
+  showCloseButton?: boolean;
+  /** Top edge against toolbar / sibling chrome */
+  showTopBorder?: boolean;
   children: ReactNode;
   width?: string;
   position?: "fixed" | "absolute";
@@ -16,17 +23,20 @@ interface LeftSidebarDialogProps {
 
 /**
  * Reusable left-aligned sidebar dialog component
- * Matches the Design System sidebar style
+ * Neutral header + base content area (aligned with toolbox / left panel chrome).
  *
  * @param isOpen - Controls visibility of the dialog
  * @param onClose - Callback when dialog should close (Escape key, outside click, or close button)
  * @param title - Header title text
  * @param icon - Optional icon to show before title
- * @param headerRight - Optional custom header right content (default: close button)
+ * @param headerRight - Optional custom header right content (before optional close button)
+ * @param hideHeader - When true, no title row; use `title` for aria-label on the dialog
+ * @param showCloseButton - When false, omit header X (Escape and click-outside still call onClose)
+ * @param showTopBorder - Border between this panel and the bar above (e.g. under editor header)
  * @param children - Dialog content
  * @param width - Optional custom width (default: 360px for fixed, 100% for absolute)
  * @param position - Position type: "fixed" (default, left sidebar) or "absolute" (full width under toolbar)
- * @param top - Top position (default: 0 for fixed, 40px for absolute)
+ * @param top - Top offset. Absolute default: `var(--editor-nav-height)` from `#toolbar` (measured icon bar).
  */
 export function LeftSidebarDialog({
   isOpen,
@@ -34,6 +44,9 @@ export function LeftSidebarDialog({
   title,
   icon,
   headerRight,
+  hideHeader = false,
+  showCloseButton = true,
+  showTopBorder = false,
   children,
   width,
   position = "fixed",
@@ -42,9 +55,10 @@ export function LeftSidebarDialog({
   const modalRef = useRef<HTMLDivElement>(null);
   const focusTrapRef = useFocusTrap(isOpen);
 
-  // Set defaults based on position
+  // Set defaults based on position (absolute panels live in `#toolbar` and anchor under the measured icon row)
   const finalWidth = width || (position === "absolute" ? "100%" : "360px");
-  const finalTop = top || (position === "absolute" ? "40px" : "40px");
+  const finalTop =
+    top ?? (position === "absolute" ? "var(--editor-nav-height, 3rem)" : "40px");
 
   // Handle Escape key
   useEffect(() => {
@@ -90,7 +104,9 @@ export function LeftSidebarDialog({
       ref={focusTrapRef}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="left-sidebar-dialog-title"
+      {...(hideHeader
+        ? { "aria-label": title }
+        : { "aria-labelledby": "left-sidebar-dialog-title" })}
       className={`${position} left-0 z-9999 flex flex-col bg-base-100 text-base-content`}
       style={{
         width: finalWidth,
@@ -102,28 +118,40 @@ export function LeftSidebarDialog({
     >
       <div
         ref={modalRef}
-        className="flex h-full flex-col overflow-hidden border-r border-base-300 shadow-2xl"
+        className={`flex h-full flex-col overflow-hidden border-r border-base-300 shadow-2xl${showTopBorder ? " border-t border-base-300" : ""}`}
       >
-        {/* Header - Matches Design System style */}
-        <div className="flex items-center justify-between border-b border-base-300 bg-accent p-3 text-accent-content">
-          <div className="flex items-center gap-2">
-            {icon && <span className="text-xl">{icon}</span>}
-            <h2 id="left-sidebar-dialog-title" className="text-lg font-bold">{title}</h2>
+        {!hideHeader ? (
+          <div
+            className={`flex items-center border-b border-base-300 bg-base-100 px-3 py-2.5 text-base-content ${
+              headerRight || showCloseButton ? "justify-between" : "justify-start"
+            }`}
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              {icon && <span className="shrink-0 text-lg text-base-content/70">{icon}</span>}
+              <h2 id="left-sidebar-dialog-title" className="truncate text-sm font-semibold tracking-tight">
+                {title}
+              </h2>
+            </div>
+            {(headerRight || showCloseButton) && (
+              <div className="flex shrink-0 items-center gap-1">
+                {headerRight}
+                {showCloseButton ? (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="flex items-center justify-center rounded-lg p-1.5 text-base-content/50 transition-colors hover:bg-base-200 hover:text-base-content"
+                    aria-label="Close"
+                  >
+                    <TbX className="size-5" />
+                  </button>
+                ) : null}
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-1">
-            {headerRight}
-            <button
-              onClick={onClose}
-              className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10"
-              aria-label="Close"
-            >
-              <TbX />
-            </button>
-          </div>
-        </div>
+        ) : null}
 
         {/* Content */}
-        <div className="flex-1 bg-neutral text-neutral-content">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-base-100 text-base-content">{children}</div>
       </div>
     </div>
   );

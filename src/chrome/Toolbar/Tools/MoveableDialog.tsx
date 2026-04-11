@@ -1,6 +1,7 @@
-import React, { ReactNode, useEffect, useRef, useState } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { TbX } from "react-icons/tb";
 import { useFocusTrap } from "../../../utils/hooks/useAccessibility";
+import { useDraggableWindow } from "../../hooks/useDraggableWindow";
 
 interface MoveableDialogProps {
   isOpen: boolean;
@@ -14,9 +15,11 @@ interface MoveableDialogProps {
   initialPosition?: { x: number; y: number };
 }
 
+const VIEW_MARGIN = 8;
+
 /**
- * Moveable dialog component that can be dragged around
- * Only closes when clicking the X button, not when clicking outside
+ * Moveable dialog that can be dragged around the window.
+ * Only closes from the X button (not outside click). Position is clamped to the viewport.
  */
 export function MoveableDialog({
   isOpen,
@@ -29,49 +32,21 @@ export function MoveableDialog({
   height = "500px",
   initialPosition = { x: 100, y: 100 },
 }: MoveableDialogProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
   const focusTrapRef = useFocusTrap(isOpen);
-  const [position, setPosition] = useState(initialPosition);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const { position, isDragging, windowRef, handleMouseDown } = useDraggableWindow({
+    initialPosition,
+    bounds: {
+      top: VIEW_MARGIN,
+      left: VIEW_MARGIN,
+      right: VIEW_MARGIN,
+      bottom: VIEW_MARGIN,
+    },
+  });
 
-  // Handle dragging
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (
-      e.target === e.currentTarget ||
-      (e.target as HTMLElement).closest('[data-draggable="true"]')
-    ) {
-      setIsDragging(true);
-      setDragStart({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y,
-      });
-    }
+  const setDialogRef = (el: HTMLDivElement | null) => {
+    (windowRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+    (focusTrapRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
   };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y,
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      return () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
-      };
-    }
-  }, [isDragging, dragStart]);
 
   // Handle Escape key
   useEffect(() => {
@@ -92,7 +67,7 @@ export function MoveableDialog({
   return (
     <div className="pointer-events-none fixed inset-0 z-9999" style={{ pointerEvents: "none" }}>
       <div
-        ref={(el) => { dialogRef.current = el; (focusTrapRef as any).current = el; }}
+        ref={setDialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="moveable-dialog-title"
@@ -110,13 +85,17 @@ export function MoveableDialog({
         <div
           role="presentation"
           aria-hidden="true"
-          className="flex cursor-move select-none items-center justify-between border-b border-base-300 bg-accent p-3 text-accent-content"
+          className={`flex select-none items-center justify-between border-b border-base-300 bg-accent p-3 text-accent-content ${
+            isDragging ? "cursor-grabbing" : "cursor-move"
+          }`}
           data-draggable="true"
           onMouseDown={handleMouseDown}
         >
           <div className="flex items-center gap-2">
             {icon && <span className="text-xl">{icon}</span>}
-            <h2 id="moveable-dialog-title" className="text-lg font-bold">{title}</h2>
+            <h2 id="moveable-dialog-title" className="text-lg font-bold">
+              {title}
+            </h2>
           </div>
           <div className="flex items-center gap-1">
             {headerRight}
@@ -138,4 +117,3 @@ export function MoveableDialog({
     </div>
   );
 }
-

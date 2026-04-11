@@ -8,6 +8,7 @@ import { useModifiers, type ResolvedModifier, type CategoryMeta } from "./useMod
 import { PatternCards } from "./PatternCards";
 import { ExclusiveDropdown } from "./ExclusiveDropdown";
 import { ExclusivePills } from "./ExclusivePills";
+import { Tooltip } from "../../../shared/layout/Tooltip";
 
 function ModifierChip({
   mod,
@@ -19,7 +20,7 @@ function ModifierChip({
   onToggle: () => void;
 }) {
   const classCount = mod.classes ? mod.classes.split(/\s+/).filter(Boolean).length : 0;
-  return (
+  const btn = (
     <button
       type="button"
       onClick={onToggle}
@@ -27,7 +28,7 @@ function ModifierChip({
         "ph-toolbar-dashed-btn w-fit max-w-full gap-1 py-1 text-xs",
         active && PH_TOOLBAR_DASHED_BTN_ACTIVE,
       )}
-      title={mod.classes || mod.name}
+      title={mod.description ? undefined : (mod.classes || mod.name)}
     >
       {mod.label}
       {classCount > 0 && (
@@ -38,6 +39,10 @@ function ModifierChip({
       )}
     </button>
   );
+  if (mod.description) {
+    return <Tooltip content={mod.description} placement="top" delay={400}>{btn}</Tooltip>;
+  }
+  return btn;
 }
 
 function ChipGroup({

@@ -330,5 +330,5 @@ export { useView, usePreview, useEditorStore } from "./store";
 export type { ViewMode } from "./store";
 
 // Static HTML renderer — no React, no DOM, runs anywhere
-export { renderToHTML } from "./static-renderer";
+export { renderToHTML, buildRootThemeCss } from "./static-renderer";
 export type { RenderToHTMLOptions, RenderToHTMLResult } from "./static-renderer";

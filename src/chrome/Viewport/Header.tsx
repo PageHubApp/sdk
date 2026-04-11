@@ -1,7 +1,7 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { Tooltip } from "components/layout/Tooltip";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { useAtomState, useAtomValue } from "@zedux/react";
 import {
@@ -24,7 +24,6 @@ import {
 import { SessionTokenAtom, SettingsAtom, ShowGridLinesAtom } from "utils/atoms";
 import {
   ComponentsAtom,
-  DesignSystemSidebarAtom,
   LastctiveAtom,
   SideBarAtom,
   ViewModeAtom,
@@ -42,15 +41,14 @@ import { SaveIndicator } from "../Tools/PublishButton";
 import { ToolbarPortalDropdown } from "../Tools/ToolbarPortalDropdown";
 import { EnabledAtom, PreviewAtom, ViewAtom } from "./atoms";
 import { ComponentSelector } from "./ComponentSelector";
-import { DesignSystemSidebar } from "./DesignSystemSidebar";
 import { EditorNavigation } from "./EditorNavigation";
-import { ImportExportDialog } from "./ImportExportDialog";
 
 import { NodeBreadcrumb } from "./NodeBreadcrumb";
 import { PageSelector } from "./PageSelector";
 import { SiteSettingsModal } from "./SiteSettingsModal";
 import { ModifiersModal } from "./ModifiersModal";
 
+import type { ViewMode as CanvasViewMode } from "../../store";
 import { useSDK } from "../../context";
 import { HeaderItem as Item } from "./Header/HeaderItem";
 import { useHeaderShortcuts } from "./Header/useHeaderShortcuts";
@@ -122,14 +120,11 @@ export const Header = () => {
 
   const setActive = useSetAtomState(LastctiveAtom);
 
-  const { isOpen, panel, toggle, open, close } = usePanelUrl();
+  const { isOpen, toggle, open, close } = usePanelUrl();
   const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useState(false);
   const [isLayersDialogOpen, setIsLayersDialogOpen] = useState(false);
   const [isSiteSettingsModalOpen, setIsSiteSettingsModalOpen] = useState(false);
   const [isModifiersModalOpen, setIsModifiersModalOpen] = useState(false);
-  const [isImportExportDialogOpen, setIsImportExportDialogOpen] = useState(false);
-  const [isDesignSystemSidebarOpen, setIsDesignSystemSidebarOpen] =
-    useAtomState(DesignSystemSidebarAtom);
 
   const setEnabled = useSetAtomState(EnabledAtom);
 
@@ -242,14 +237,32 @@ export const Header = () => {
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
   const [showHidden, setShowHidden] = useState(true);
 
+  /** Single source for overlay / flyout `top` under the icon toolbar (not page selector). */
+  const editorChromeNavRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    if (!enabled) return;
+    const toolbar = document.getElementById("toolbar");
+    const el = editorChromeNavRef.current;
+    if (!toolbar || !el) return;
+    const sync = () => {
+      const h = Math.ceil(el.getBoundingClientRect().height);
+      toolbar.style.setProperty("--editor-nav-height", `${h}px`);
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      toolbar.style.removeProperty("--editor-nav-height");
+    };
+  }, [enabled]);
+
   // Keyboard shortcuts
   useHeaderShortcuts({
     setIsMediaManagerModalOpen,
-    setIsDesignSystemSidebarOpen,
     setIsSiteSettingsModalOpen,
     setIsLayersDialogOpen,
     setShowGridLines,
-    setIsImportExportDialogOpen,
     setIsModifiersModalOpen,
     setShowHidden,
   });
@@ -259,6 +272,7 @@ export const Header = () => {
   return (
     <>
       <header
+        ref={editorChromeNavRef}
         role="banner"
         className="pointer-events-auto relative z-50 flex flex-row-reverse items-center justify-between border-b border-base-300 bg-base-100 px-1.5 py-1 text-base-content"
         data-tutorial="header"
@@ -351,7 +365,7 @@ export const Header = () => {
               role="menuitemradio"
               aria-checked={view === row.id}
               onClick={() => {
-                setView(row.id);
+                setView(row.id as CanvasViewMode);
                 scrollSelectedNodeIntoView();
               }}
               className="ph-select-item items-start gap-2 text-xs"
@@ -502,11 +516,8 @@ export const Header = () => {
         setSideBarLeft={setSideBarLeft}
         setIsLayersDialogOpen={setIsLayersDialogOpen}
         setIsMediaManagerModalOpen={setIsMediaManagerModalOpen}
-        isDesignSystemSidebarOpen={isDesignSystemSidebarOpen}
-        setIsDesignSystemSidebarOpen={setIsDesignSystemSidebarOpen}
         setIsSiteSettingsModalOpen={setIsSiteSettingsModalOpen}
         setIsModifiersModalOpen={setIsModifiersModalOpen}
-        setIsImportExportDialogOpen={setIsImportExportDialogOpen}
         showHidden={showHidden}
         setShowHidden={setShowHidden}
         toggleTheme={toggleTheme}
@@ -529,19 +540,6 @@ export const Header = () => {
         isOpen={isModifiersModalOpen}
         onClose={() => setIsModifiersModalOpen(false)}
       />
-
-      <ImportExportDialog
-        isOpen={isImportExportDialogOpen}
-        onClose={() => setIsImportExportDialogOpen(false)}
-      />
-
-      {/* Design System Modal */}
-      {enabled && isDesignSystemSidebarOpen && (
-        <DesignSystemSidebar
-          isOpen={isDesignSystemSidebarOpen}
-          onClose={() => setIsDesignSystemSidebarOpen(false)}
-        />
-      )}
     </>
   );
 };

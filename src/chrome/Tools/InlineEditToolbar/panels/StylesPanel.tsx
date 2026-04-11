@@ -30,7 +30,7 @@ export function StylesPanel({ editor, onAction }: StylesPanelProps) {
               }
               editor.chain().focus().setMark("textStyle", { class: className }).run();
             })}
-            className="flex items-center gap-2 rounded-md px-3 py-1.5 text-left transition-colors hover:bg-accent/50"
+            className="flex items-center gap-2 rounded-md px-3 py-1.5 text-left transition-colors hover:bg-base-200"
             style={{ fontFamily: font.fontFamily, fontSize: "13px" }}
           >
             <span className="text-sm font-medium text-base-content">{font.name}</span>

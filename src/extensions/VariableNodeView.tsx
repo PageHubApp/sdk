@@ -3,8 +3,9 @@ import { NodeViewWrapper } from "@tiptap/react";
 import type { NodeViewProps } from "@tiptap/core";
 import { useEditor as useCraftEditor, ROOT_NODE } from "@craftjs/core";
 import { createPortal } from "react-dom";
-import { resolveVariable } from "../utils/design/variables";
+import { OPEN_LINK_PANEL_EVENT } from "../chrome/Tools/openLinkPanelEvent";
 import { VariablePopover } from "../chrome/Tools/VariablePopover";
+import { resolveVariable } from "../utils/design/variables";
 import type { VariableNodeOptions } from "./VariableNode";
 
 export function VariableNodeView({ node, editor, getPos, extension, updateAttributes, deleteNode }: NodeViewProps) {
@@ -42,14 +43,22 @@ export function VariableNodeView({ node, editor, getPos, extension, updateAttrib
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
   const spanRef = useRef<HTMLSpanElement>(null);
 
-  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (spanRef.current) {
-      setAnchorRect(spanRef.current.getBoundingClientRect());
-      setShowPopover(true);
-    }
-  }, []);
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (editor.isActive("link")) {
+        editor.chain().focus().extendMarkRange("link").run();
+        window.dispatchEvent(new CustomEvent(OPEN_LINK_PANEL_EVENT));
+        return;
+      }
+      if (spanRef.current) {
+        setAnchorRect(spanRef.current.getBoundingClientRect());
+        setShowPopover(true);
+      }
+    },
+    [editor]
+  );
 
   const handleClose = useCallback(() => {
     setShowPopover(false);

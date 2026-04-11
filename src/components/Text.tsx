@@ -4,7 +4,6 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import { FaFont } from "react-icons/fa";
 import { Text as UiText } from "@pagehub/ui";
 import { addActionHandlers } from "../utils/clickControls";
 import { migrateAction, actionToHref, actionTarget, isHandlerAction, type NodeAction } from "../utils/action";
@@ -122,7 +121,6 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   }
 
   if (enabled) {
-    if (!text) prop.children = <FaFont />;
     prop["data-bounding-box"] = enabled;
     prop["data-empty-state"] = !text;
     if (isMounted) {
@@ -159,7 +157,8 @@ export const Text = (incomingProps: Partial<TextProps>) => {
     } else if (props.tagName === "Textfit") {
       prop.children = liveContent;
     } else {
-      prop.dangerouslySetInnerHTML = { __html: unwrapP(liveContent) };
+      const html = typeof liveContent === "string" ? liveContent : "";
+      prop.dangerouslySetInnerHTML = { __html: unwrapP(html) };
     }
   }
 

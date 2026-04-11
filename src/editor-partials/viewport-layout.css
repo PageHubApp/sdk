@@ -1,11 +1,79 @@
 /* =============================================================================
    SDK editor — #viewport / [data-renderer] containment (scoped)
+   Plain CSS (no @reference / @apply): must compile when imported from the Next
+   app (`styles/editor.css`) where Tailwind resolves @reference from this folder
+   and `./styles.css` does not exist here.
    ============================================================================= */
 
-@reference "./styles.css";
+/*
+ * Editor canvas (no iframe):
+ * 1) `transform` on #viewport — fixed CB so `fixed inset-0` site chrome matches the canvas.
+ * 2) `container-type` + `@container (max-width: …)` — nullify prefixed **flex/block/inline-flex**
+ *    only (desktop-only rows). We do **not** mirror `.md\\:hidden` / `.flex.md\\:hidden` here:
+ *    `display:flex !important` on `.flex.md:hidden` beats `root.style display:none` and keeps
+ *    mobile overlays (e.g. `fixed … md:hidden`) stuck open in the editor.
+ * 3) Do **not** use `revert` on
+ *    typography/layout for `[class*="md:text-"]` etc.: `revert` drops to UA style and wipes
+ *    unprefixed `text-7xl` (verified: hero went 96px → 16px when canvas < md).
+ */
+.pagehub-sdk-root #viewport {
+  transform: translateZ(0);
+  container-type: inline-size;
+  container-name: ph-editor-canvas;
+}
+
+/* --- Canvas-scoped: suppress prefixed flex/block (not *:hidden — see header comment) --- */
+
+@container ph-editor-canvas (max-width: 639px) {
+  .pagehub-sdk-root #viewport .sm\:flex {
+    display: none !important;
+  }
+  .pagehub-sdk-root #viewport .sm\:inline-flex {
+    display: none !important;
+  }
+  .pagehub-sdk-root #viewport .sm\:block {
+    display: none !important;
+  }
+}
+
+@container ph-editor-canvas (max-width: 767px) {
+  .pagehub-sdk-root #viewport .md\:flex {
+    display: none !important;
+  }
+  .pagehub-sdk-root #viewport .md\:inline-flex {
+    display: none !important;
+  }
+  .pagehub-sdk-root #viewport .md\:block {
+    display: none !important;
+  }
+}
+
+@container ph-editor-canvas (max-width: 1023px) {
+  .pagehub-sdk-root #viewport .lg\:flex {
+    display: none !important;
+  }
+  .pagehub-sdk-root #viewport .lg\:inline-flex {
+    display: none !important;
+  }
+  .pagehub-sdk-root #viewport .lg\:block {
+    display: none !important;
+  }
+}
+
+@container ph-editor-canvas (max-width: 1279px) {
+  .pagehub-sdk-root #viewport .xl\:flex {
+    display: none !important;
+  }
+  .pagehub-sdk-root #viewport .xl\:inline-flex {
+    display: none !important;
+  }
+  .pagehub-sdk-root #viewport .xl\:block {
+    display: none !important;
+  }
+}
 
 .pagehub-sdk-root #viewport .w-screen {
-  @apply w-full!;
+  width: 100% !important;
 }
 
 .pagehub-sdk-root #viewport,
@@ -25,25 +93,27 @@
 }
 
 .pagehub-sdk-root [data-isolated="true"] [data-renderer].h-screen {
-  @apply h-full!;
+  height: 100% !important;
 }
 
 .pagehub-sdk-root [data-isolated="true"] [data-renderer].md\:h-screen {
-  @apply h-full!;
+  height: 100% !important;
 }
 
 .pagehub-sdk-root [data-isolated="false"] [data-renderer].h-screen {
-  @apply h-full! justify-start!;
+  height: 100% !important;
+  justify-content: flex-start !important;
 }
 
 .pagehub-sdk-root [data-isolated="false"] [data-renderer].md\:h-screen {
-  @apply h-full! justify-start!;
+  height: 100% !important;
+  justify-content: flex-start !important;
 }
 
 .pagehub-sdk-root [data-renderer] .w-screen {
-  @apply w-full!;
+  width: 100% !important;
 }
 
 .pagehub-sdk-root [data-renderer] .md\:w-screen {
-  @apply w-full!;
+  width: 100% !important;
 }

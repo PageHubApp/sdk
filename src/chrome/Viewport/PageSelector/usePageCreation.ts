@@ -17,7 +17,6 @@ interface UsePageCreationOptions {
   pickerMode: boolean;
   onPagePick?: (page: { id: string; displayName: string; isHomePage: boolean }) => void;
   onPageChange?: (pageId: string) => void;
-  router: any;
 }
 
 export function usePageCreation({
@@ -31,16 +30,11 @@ export function usePageCreation({
   pickerMode,
   onPagePick,
   onPageChange,
-  router,
 }: UsePageCreationOptions) {
   function handleCreatePage() {
     try {
-      console.log("Starting page creation...");
-      console.log("Current pages before creation:", pages.length);
-
       // Determine the page name to use
       let pageName = suggestedPageName || generate().spaced;
-      console.log("Generated page name:", pageName);
 
       // Check if a page with this slug already exists
       if (suggestedPageName) {
@@ -62,8 +56,6 @@ export function usePageCreation({
         }
       }
 
-      console.log("Final page name:", pageName);
-
       const newPage = React.createElement(Element, {
         canvas: true,
         is: Container,
@@ -75,7 +67,6 @@ export function usePageCreation({
         custom: { displayName: pageName },
       } as any);
 
-      console.log("Calling AddElement...");
       const newElement = AddElement({
         element: newPage,
         actions,
@@ -83,31 +74,17 @@ export function usePageCreation({
         addTo: ROOT_NODE,
       });
 
-      console.log("AddElement result:", newElement);
-
       setIsOpen(false);
 
-      // Wait for the node to be fully created before selecting it
       if (newElement?.rootNodeId) {
-        console.log("New page created with ID:", newElement.rootNodeId);
         const newNodeId = newElement.rootNodeId;
 
-        // Check pages count after creation
-        setTimeout(() => {
-          console.log("Pages count after creation:", pages.length);
-          console.log(
-            "All pages:",
-            pages.map(p => ({ id: p.id, name: p.displayName }))
-          );
-        }, 100);
-
-        setTimeout(() => {
+        // CraftJS addNodeTree is synchronous — one rAF is enough for React to flush the update
+        requestAnimationFrame(() => {
           try {
-            // Verify the node exists before trying to isolate
             const node = query.node(newNodeId).get();
             if (node) {
               const displayName = node.data.custom?.displayName;
-
               if (pickerMode && onPagePick) {
                 onPagePick({
                   id: newNodeId,
@@ -115,40 +92,14 @@ export function usePageCreation({
                   isHomePage: false,
                 });
               } else {
-                // Navigation mode: navigate and isolate
-                console.log("Navigation mode - navigating to page");
-                if (displayName) {
-                  const pageSlug = sluggit(displayName, "-");
-                  const currentPath = router.asPath.split("?")[0];
-                  const pathParts = currentPath.split("/").filter((p: string) => p);
-                  const baseUrl =
-                    pathParts.length > 1 ? `/${pathParts[0]}/${pathParts[1]}` : `/${pathParts[0]}`;
-
-                  const newUrl = `${baseUrl}/${pageSlug}`;
-                  console.log("Would navigate to:", newUrl);
-                }
-
                 isolatePageAlt(isolate, query, newNodeId, actions, setIsolate, true);
                 onPageChange?.(newNodeId);
               }
-            } else {
-              console.error("Node not found after creation");
             }
           } catch (e) {
             console.error("Error selecting new page:", e);
           }
-        }, 300);
-
-        // Check again after longer delay to see if page disappears
-        setTimeout(() => {
-          console.log("Pages count after 1 second:", pages.length);
-          console.log(
-            "All pages after 1 second:",
-            pages.map(p => ({ id: p.id, name: p.displayName }))
-          );
-        }, 1000);
-      } else {
-        console.error("No rootNodeId returned from AddElement");
+        });
       }
     } catch (e) {
       console.error("Error creating page:", e);

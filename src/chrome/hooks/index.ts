@@ -1,5 +1,7 @@
 export { useAutoOpenSidebar } from "./useAutoOpenSidebar";
-export { useClampToViewport } from "./useClampToViewport";
+export { useEditorActivePage } from "./useEditorActivePage";
+export type { ActivePage } from "./useEditorActivePage";
+export { useClampToViewport } from "../overlays/useClampToViewport";
 export { useComponentSync } from "./useComponentSync";
 export { useDraggableWindow } from "./useDraggableWindow";
 export { useImageDrop } from "./useImageDrop";
