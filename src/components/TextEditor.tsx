@@ -161,7 +161,7 @@ function TextEditorMode({
     () => ({
       attributes: {
         class:
-          "ph-text-editor-root w-full min-h-[1.15em] leading-snug outline-none focus:outline-none focus-visible:outline-none",
+          "ph-text-editor-root w-full min-h-[1.15em] outline-none focus:outline-none focus-visible:outline-none",
       } as Record<string, string>,
       handleDOMEvents: {
         click(_view: unknown, event: Event) {
