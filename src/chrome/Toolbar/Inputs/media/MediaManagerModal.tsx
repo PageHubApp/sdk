@@ -138,11 +138,11 @@ export function MediaManagerModal({
             <MediaEditModal
               editingMedia={manager.editingMedia}
               savingMetadata={manager.savingMetadata}
-              isGeneratingMetadata={manager.isGeneratingMetadata}
               canUseImageAnalyze={manager.canUseImageAnalyze}
+              mediaEditAiActionsContext={manager.mediaEditAiActionsContext}
+              renderMediaEditAiActions={manager.renderMediaEditAiActions}
               onClose={manager.closeEditModal}
               onSave={manager.saveEditedMetadata}
-              onGenerateMetadata={manager.handleGenerateMetadata}
               onUpdate={manager.setEditingMedia}
             />
           )}

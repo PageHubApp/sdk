@@ -270,10 +270,12 @@ export type { ResolvedComponentDef, PropSchema, ComponentPreset, ComponentModifi
 export type {
   PageData,
   PageHubAIConfig,
-  PageHubAiMediaHandlers,
   PageHubAiPanelContext,
   PageHubCallbacks,
   PageHubEditorChromeSlots,
+  PageHubMediaEditAiActionsContext,
+  PageHubMediaManagerAiPanelContext,
+  PageHubMediaMetadataSuggestion,
   PageHubComponentDef,
   PageHubConfig,
   PageHubEvent,

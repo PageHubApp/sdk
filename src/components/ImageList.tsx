@@ -173,7 +173,7 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
 
     wrappedChildren = (
       <>
-        <style jsx>{`
+        <style>{`
           .carousel-container > * {
             flex-shrink: 0;
             width: ${imageWidth};
@@ -203,7 +203,7 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
 
     wrappedChildren = (
       <>
-        <style jsx global>{`
+        <style>{`
           @keyframes gallery-scroll-left {
             0% {
               transform: translateX(0);

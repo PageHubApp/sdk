@@ -5,7 +5,7 @@
  * Customers implement callbacks; we provide the editor.
  */
 
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode, WheelEvent } from "react";
 
 // ─── Page data ────────────────────────────────────────────────────────────────
 
@@ -138,32 +138,68 @@ export interface PageHubAiPanelContext {
   };
 }
 
-/** Host implements image AI — SDK calls these instead of hard-coded `/api/ai/image/*` fetches. */
-export interface PageHubAiMediaHandlers {
-  analyzeImage?: (args: {
-    imageUrl: string;
-    designNotes?: string;
-    designTags?: string[];
-  }) => Promise<{
-    fileName?: string;
-    altText?: string;
-    seoDescription?: string;
-  } | null>;
+export interface PageHubMediaMetadataSuggestion {
+  title?: string;
+  alt?: string;
+  description?: string;
+}
 
-  generateImage?: (args: {
-    prompt: string;
-    width: number;
-    height: number;
-    model: string;
-    designNotes?: string;
-    designTags?: string[];
-  }) => Promise<{
-    success?: boolean;
-    imageUrl?: string;
-    optimizedPrompt?: string;
-    claudeUsage?: unknown;
-    error?: string;
-  }>;
+export interface PageHubMediaManagerAiPanelContext {
+  prompt: string;
+  model: string;
+  imagePreviewUrl: string | null;
+  optimizedPrompt: string | null;
+  usage: unknown;
+  error: string;
+  success: string;
+  isGenerating: boolean;
+  isSaving: boolean;
+  imageScale: number;
+  imagePosition: { x: number; y: number };
+  isDragging: boolean;
+  designNotes?: string;
+  designTags?: string[];
+  setPrompt: (value: string) => void;
+  setModel: (value: string) => void;
+  setGenerating: (value: boolean) => void;
+  setError: (value: string) => void;
+  setSuccess: (value: string) => void;
+  setGeneratedImage: (args: {
+    imageUrl: string | null;
+    optimizedPrompt?: string | null;
+    usage?: unknown;
+  }) => void;
+  saveGeneratedImage: () => Promise<void>;
+  setImageScale: (value: number) => void;
+  resetImageView: () => void;
+  onImageMouseDown: (e: MouseEvent) => void;
+  onImageMouseMove: (e: MouseEvent) => void;
+  onImageMouseUp: () => void;
+  onImageWheel: (e: WheelEvent) => void;
+}
+
+export interface PageHubMediaEditAiActionsContext {
+  media: {
+    id: string;
+    type?: "cdn" | "url" | "svg";
+    cdnId?: string;
+    metadata?: {
+      title?: string;
+      alt?: string;
+      description?: string;
+      url?: string;
+      svg?: string;
+      size?: number;
+    };
+  };
+  imageUrl?: string;
+  isGenerating: boolean;
+  error: string;
+  designNotes?: string;
+  designTags?: string[];
+  setGenerating: (value: boolean) => void;
+  setError: (value: string) => void;
+  applyMetadata: (metadata: PageHubMediaMetadataSuggestion) => void;
 }
 
 /**
@@ -201,6 +237,16 @@ export interface PageHubEditorChromeSlots {
    * Host-only block in Import/Export → Export tab (e.g. static HTML ZIP). SDK does not call app APIs.
    */
   renderImportExportHandoffExtras?: () => ReactNode;
+  /**
+   * Media manager "Generate with AI" panel.
+   * Host owns API calls/auth; SDK provides media state and save/apply callbacks.
+   */
+  renderMediaManagerAiPanel?: (ctx: PageHubMediaManagerAiPanelContext) => ReactNode;
+  /**
+   * Media edit modal AI metadata action block.
+   * Host owns API calls/auth; SDK provides apply callback for metadata fields.
+   */
+  renderMediaEditAiActions?: (ctx: PageHubMediaEditAiActionsContext) => ReactNode;
 }
 
 // ─── Main configuration ──────────────────────────────────────────────────────
@@ -263,9 +309,6 @@ export interface PageHubConfig {
 
   /** Optional slots for AI (and auth-gated) chrome — implemented by the host app. */
   editorChromeSlots?: PageHubEditorChromeSlots;
-
-  /** Optional image AI — when set, media manager uses these instead of SDK fetch calls. */
-  aiMediaHandlers?: PageHubAiMediaHandlers;
 }
 
 // ─── Instance API — returned by PageHub.init() ───────────────────────────────

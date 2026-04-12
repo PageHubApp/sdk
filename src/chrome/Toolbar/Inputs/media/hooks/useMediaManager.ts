@@ -1,10 +1,18 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "utils/atoms";
+import { getCdnUrl } from "utils/cdn";
 import { getPageMedia, updateMediaMetadata } from "utils/lib";
 import { DeleteMedia } from "../../../../Viewport/lib";
 import { useResizable } from "../../../../hooks/useResizable";
+import { useSDK } from "../../../../../context";
+import { useAiEnabled } from "../../../../../utils/hooks/useAiEnabled";
+import type {
+  PageHubMediaEditAiActionsContext,
+  PageHubMediaManagerAiPanelContext,
+  PageHubMediaMetadataSuggestion,
+} from "../../../../../types";
 import { cleanSvg, sortMedia, type MediaItem, type SortDirection, type SortField } from "../utils/media-helpers";
 import { useMediaUpload } from "./useMediaUpload";
 import { useAiGeneration } from "./useAiGeneration";
@@ -19,7 +27,15 @@ interface UseMediaManagerOptions {
 
 export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: UseMediaManagerOptions) {
   const { query, actions } = useEditor();
+  const { config } = useSDK();
+  const aiEnabled = useAiEnabled();
   const settings = useAtomValue(SettingsAtom);
+
+  const mediaManagerAiPanelSlot = config.editorChromeSlots?.renderMediaManagerAiPanel;
+  const mediaEditAiActionsSlot = config.editorChromeSlots?.renderMediaEditAiActions;
+
+  const canUseImageGenerate = aiEnabled && typeof mediaManagerAiPanelSlot === "function";
+  const canUseImageAnalyze = aiEnabled && typeof mediaEditAiActionsSlot === "function";
 
   // Resizable modal
   const { width: mmWidth, height: mmHeight, handleProps: mmHandleProps } = useResizable({
@@ -63,22 +79,25 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
   // ─── Metadata editing state ───
   const [savingMetadata, setSavingMetadata] = useState<"idle" | "saving" | "saved">("idle");
 
-  // ─── Derived helpers ───
-
   const refreshMediaList = useCallback(() => {
     const media = getPageMedia(query);
     setMediaList(media);
     setFilteredMedia(sortMedia(media, sortField, sortDirection));
   }, [query, sortField, sortDirection]);
 
-  // ─── Compose sub-hooks ───
-  // Each sub-hook handles its own AI metadata generation internally
-  // via their own SDK/editor context access
-
   const upload = useMediaUpload({ isOpen, refreshMediaList, generateMetadataForImage: () => {} });
-  const ai = useAiGeneration({ refreshMediaList, generateMetadataForImage: () => {}, setUploading: () => {} });
+  const ai = useAiGeneration({
+    refreshMediaList,
+    generateMetadataForImage: () => {},
+    setUploading: upload.setUploading,
+  });
 
-  // ─── Core handlers ───
+  const rootNode = query.node(ROOT_NODE).get();
+  const rootProps = rootNode?.data?.props as Record<string, unknown> | undefined;
+  const designContext = {
+    designNotes: typeof rootProps?.designNotes === "string" ? rootProps.designNotes : undefined,
+    designTags: Array.isArray(rootProps?.designTags) ? (rootProps.designTags as string[]) : undefined,
+  };
 
   const handleSearch = (q: string) => {
     setSearchQuery(q);
@@ -170,8 +189,6 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
     setCropMedia(null);
   };
 
-  // ─── Edit metadata ───
-
   const openEditModal = (media: MediaItem) => {
     setEditingMedia({
       ...media,
@@ -184,11 +201,13 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
       },
     });
     setSavingMetadata("idle");
+    ai.setMetadataError("");
   };
 
   const closeEditModal = () => {
     setEditingMedia(null);
     setSavingMetadata("idle");
+    ai.setMetadataError("");
   };
 
   const saveEditedMetadata = async () => {
@@ -214,18 +233,71 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
     }
   };
 
-  const handleGenerateMetadata = async () => {
+  const applyGeneratedMetadata = (metadata: PageHubMediaMetadataSuggestion) => {
     if (!editingMedia) return;
-    const result = await ai.handleGenerateMetadata(editingMedia);
-    if (result) {
-      setEditingMedia({
-        ...editingMedia,
-        metadata: { ...editingMedia.metadata, ...result },
-      });
-    }
+    setEditingMedia({
+      ...editingMedia,
+      metadata: {
+        ...editingMedia.metadata,
+        ...metadata,
+      },
+    });
   };
 
-  // ─── Effects ───
+  const analysisImageUrl = useMemo(() => {
+    if (!editingMedia || editingMedia.type === "svg") return undefined;
+    if (editingMedia.type === "url") return editingMedia.metadata?.url || undefined;
+    return getCdnUrl(editingMedia.cdnId || editingMedia.id, { width: 800, format: "auto" });
+  }, [editingMedia]);
+
+  const mediaManagerAiPanelContext: PageHubMediaManagerAiPanelContext = {
+    prompt: ai.aiPrompt,
+    model: ai.aiModel,
+    imagePreviewUrl: ai.aiImagePreview,
+    optimizedPrompt: ai.aiOptimizedPrompt,
+    usage: ai.aiClaudeUsage,
+    error: ai.aiError,
+    success: ai.aiSuccess,
+    isGenerating: ai.isGeneratingAi,
+    isSaving: upload.uploading,
+    imageScale: ai.aiImageScale,
+    imagePosition: ai.aiImagePosition,
+    isDragging: ai.isDragging,
+    designNotes: designContext.designNotes,
+    designTags: designContext.designTags,
+    setPrompt: ai.setAiPrompt,
+    setModel: ai.setAiModel,
+    setGenerating: ai.setIsGeneratingAi,
+    setError: ai.setAiError,
+    setSuccess: ai.setAiSuccess,
+    setGeneratedImage: ai.applyGeneratedImage,
+    saveGeneratedImage: () => ai.handleSaveAiImage(),
+    setImageScale: ai.setAiImageScale,
+    resetImageView: ai.resetImageView,
+    onImageMouseDown: ai.handleImageMouseDown,
+    onImageMouseMove: ai.handleImageMouseMove,
+    onImageMouseUp: ai.handleImageMouseUp,
+    onImageWheel: ai.handleWheel,
+  };
+
+  const mediaEditAiActionsContext: PageHubMediaEditAiActionsContext | null = editingMedia
+    ? {
+        media: {
+          id: editingMedia.id,
+          type: editingMedia.type,
+          cdnId: editingMedia.cdnId,
+          metadata: editingMedia.metadata,
+        },
+        imageUrl: analysisImageUrl,
+        isGenerating: ai.isGeneratingMetadata,
+        error: ai.metadataError,
+        designNotes: designContext.designNotes,
+        designTags: designContext.designTags,
+        setGenerating: ai.setIsGeneratingMetadata,
+        setError: ai.setMetadataError,
+        applyMetadata: applyGeneratedMetadata,
+      }
+    : null;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -234,10 +306,10 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
   }, [viewMode]);
 
   useEffect(() => {
-    if (upload.addMode === "ai" && !ai.canUseImageGenerate) {
+    if (upload.addMode === "ai" && !canUseImageGenerate) {
       upload.setAddMode("upload");
     }
-  }, [upload.addMode, ai.canUseImageGenerate]);
+  }, [upload.addMode, canUseImageGenerate, upload.setAddMode]);
 
   useEffect(() => {
     if (isOpen) {
@@ -259,16 +331,12 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [previewMedia, filteredMedia]);
 
-  // ─── Flat return (matches UseMediaManagerReturn consumed by components) ───
-
   return {
-    // Resizable
     mmWidth, mmHeight, mmHandleProps,
-    // Core state
     mediaList, filteredMedia, searchQuery, selectedMedia, editingMedia, cropMedia,
     viewMode, sortField, sortDirection, previewMedia,
     deleteConfirm, deletingMedia, savingMetadata,
-    // Upload (delegated)
+
     uploading: upload.uploading,
     uploadProgress: upload.uploadProgress,
     uploadError: upload.uploadError,
@@ -283,22 +351,14 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
     fileInputRef: upload.fileInputRef,
     replaceInputRef: upload.replaceInputRef,
     toolbarRef: upload.toolbarRef,
-    // AI (delegated)
-    canUseImageAnalyze: ai.canUseImageAnalyze,
-    canUseImageGenerate: ai.canUseImageGenerate,
-    aiPrompt: ai.aiPrompt,
-    aiModel: ai.aiModel,
-    aiImagePreview: ai.aiImagePreview,
-    aiOptimizedPrompt: ai.aiOptimizedPrompt,
-    aiClaudeUsage: ai.aiClaudeUsage,
-    aiImageScale: ai.aiImageScale,
-    aiImagePosition: ai.aiImagePosition,
-    aiError: ai.aiError,
-    aiSuccess: ai.aiSuccess,
-    isGeneratingAi: ai.isGeneratingAi,
-    isDragging: ai.isDragging,
-    isGeneratingMetadata: ai.isGeneratingMetadata,
-    // Setters
+
+    canUseImageAnalyze,
+    canUseImageGenerate,
+    renderMediaManagerAiPanel: mediaManagerAiPanelSlot,
+    renderMediaEditAiActions: mediaEditAiActionsSlot,
+    mediaManagerAiPanelContext,
+    mediaEditAiActionsContext,
+
     setSearchQuery, setSelectedMedia, setViewMode, setSortField, setSortDirection,
     setPreviewMedia, setCropMedia, setEditingMedia,
     setAddMode: upload.setAddMode,
@@ -308,29 +368,19 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
     setUploadError: upload.setUploadError,
     setConversionDialog: upload.setConversionDialog,
     setReplacingMedia: upload.setReplacingMedia,
-    setAiPrompt: ai.setAiPrompt,
-    setAiModel: ai.setAiModel,
-    setAiImageScale: ai.setAiImageScale,
     setDeleteConfirm,
-    // Handlers
+
     handleSearch, handleDelete, confirmDelete,
     handlePreviewNext, handlePreviewPrevious,
     handleReorder, handleSaveCroppedImage,
-    openEditModal, closeEditModal, saveEditedMetadata, handleGenerateMetadata,
+    openEditModal, closeEditModal, saveEditedMetadata,
     handleUpload: upload.handleUpload,
     handleConvertAndUpload: upload.handleConvertAndUpload,
     handleReplaceMedia: upload.handleReplaceMedia,
     handleAddUrl: upload.handleAddUrl,
     handleAddSvg: upload.handleAddSvg,
     handlePasteClick: upload.handlePasteClick,
-    handleGenerateAiImage: ai.handleGenerateAiImage,
-    handleSaveAiImage: ai.handleSaveAiImage,
-    handleImageMouseDown: ai.handleImageMouseDown,
-    handleImageMouseMove: ai.handleImageMouseMove,
-    handleImageMouseUp: ai.handleImageMouseUp,
-    handleWheel: ai.handleWheel,
-    resetImageView: ai.resetImageView,
-    // Misc
+
     selectionMode, onSelect, onClose, settings,
     resortFilteredMedia: () => setFilteredMedia(sortMedia(filteredMedia, sortField, sortDirection)),
   };

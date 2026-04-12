@@ -14,7 +14,6 @@ import {
 } from "react-icons/tb";
 import { ToolbarDropdown } from "../../../ToolbarDropdown";
 import type { AddMode, SortField } from "../utils/media-helpers";
-import { AiGeneratePanel } from "./AiGeneratePanel";
 import type { UseMediaManagerReturn } from "../hooks/useMediaManager";
 
 interface MediaToolbarProps {
@@ -53,26 +52,8 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
     handlePasteClick,
     handleReplaceMedia,
     resortFilteredMedia,
-    // AI
-    aiPrompt,
-    aiModel,
-    aiError,
-    aiSuccess,
-    aiImagePreview,
-    aiImageScale,
-    aiImagePosition,
-    isGeneratingAi,
-    isDragging,
-    setAiPrompt,
-    setAiModel,
-    setAiImageScale,
-    handleGenerateAiImage,
-    handleSaveAiImage,
-    resetImageView,
-    handleImageMouseDown,
-    handleImageMouseMove,
-    handleImageMouseUp,
-    handleWheel,
+    renderMediaManagerAiPanel,
+    mediaManagerAiPanelContext,
   } = manager;
 
   /** One height for search + segmented controls (tool-bg p-1 was making groups taller than the search field). */
@@ -296,30 +277,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
       )}
 
       {/* AI panel */}
-      {canUseImageGenerate && addMode === "ai" && (
-        <AiGeneratePanel
-          aiPrompt={aiPrompt}
-          aiModel={aiModel}
-          aiError={aiError}
-          aiSuccess={aiSuccess}
-          aiImagePreview={aiImagePreview}
-          aiImageScale={aiImageScale}
-          aiImagePosition={aiImagePosition}
-          isGeneratingAi={isGeneratingAi}
-          isDragging={isDragging}
-          uploading={uploading}
-          onPromptChange={setAiPrompt}
-          onModelChange={setAiModel}
-          onGenerate={handleGenerateAiImage}
-          onSave={handleSaveAiImage}
-          onScaleChange={setAiImageScale}
-          onResetView={resetImageView}
-          onMouseDown={handleImageMouseDown}
-          onMouseMove={handleImageMouseMove}
-          onMouseUp={handleImageMouseUp}
-          onWheel={handleWheel}
-        />
-      )}
+      {canUseImageGenerate && addMode === "ai" && renderMediaManagerAiPanel?.(mediaManagerAiPanelContext)}
 
       {/* Hidden file inputs */}
       <input

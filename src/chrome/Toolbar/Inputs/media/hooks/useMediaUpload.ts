@@ -528,6 +528,7 @@ export function useMediaUpload({
     setUrlInput,
     setSvgInput,
     setSaveUrlToCdn,
+    setUploading,
     setUploadError,
     setConversionDialog,
     setReplacingMedia,

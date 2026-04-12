@@ -59,7 +59,6 @@ export default defineConfig(({ mode, command }) => {
         "next/link": resolve(__dirname, "src/shims/next.tsx"),
         "next/image": resolve(__dirname, "src/shims/next.tsx"),
         "next/router": resolve(__dirname, "src/shims/next.tsx"),
-        "next-auth/react": resolve(__dirname, "src/shims/next.tsx"),
       },
     },
     define: {

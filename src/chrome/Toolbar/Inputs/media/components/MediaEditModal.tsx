@@ -1,7 +1,9 @@
 import Image from "next/image";
-import { TbCheck, TbEdit, TbLoader2, TbWand, TbX } from "react-icons/tb";
+import { TbCheck, TbEdit, TbLoader2, TbX } from "react-icons/tb";
 import { getCdnUrl } from "utils/cdn";
 import { formatDimensions } from "utils/imageDimensions";
+import type { ReactNode } from "react";
+import type { PageHubMediaEditAiActionsContext } from "../../../../../types";
 import { formatFileSize, type MediaItem } from "../utils/media-helpers";
 
 const BLUR_PLACEHOLDER =
@@ -10,22 +12,22 @@ const BLUR_PLACEHOLDER =
 interface MediaEditModalProps {
   editingMedia: MediaItem;
   savingMetadata: "idle" | "saving" | "saved";
-  isGeneratingMetadata: boolean;
   canUseImageAnalyze: boolean;
+  mediaEditAiActionsContext: PageHubMediaEditAiActionsContext | null;
+  renderMediaEditAiActions?: (ctx: PageHubMediaEditAiActionsContext) => ReactNode;
   onClose: () => void;
   onSave: () => void;
-  onGenerateMetadata: () => void;
   onUpdate: (media: MediaItem) => void;
 }
 
 export function MediaEditModal({
   editingMedia,
   savingMetadata,
-  isGeneratingMetadata,
   canUseImageAnalyze,
+  mediaEditAiActionsContext,
+  renderMediaEditAiActions,
   onClose,
   onSave,
-  onGenerateMetadata,
   onUpdate,
 }: MediaEditModalProps) {
   const updateField = (field: string, value: string) => {
@@ -202,31 +204,9 @@ export function MediaEditModal({
           </div>
 
           {/* AI Metadata */}
-          {canUseImageAnalyze && editingMedia.type !== "svg" && (
+          {canUseImageAnalyze && editingMedia.type !== "svg" && mediaEditAiActionsContext && (
             <div className="border-t border-base-300 pt-4">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="toolbar-label font-medium">
-                  AI Metadata Generation
-                </span>
-                <button
-                  type="button"
-                  onClick={onGenerateMetadata}
-                  disabled={isGeneratingMetadata}
-                  className="btn btn-primary flex items-center gap-2"
-                >
-                  {isGeneratingMetadata ? (
-                    <>
-                      <TbLoader2 className="size-4 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <TbWand className="size-4" />
-                      Generate with AI
-                    </>
-                  )}
-                </button>
-              </div>
+              {renderMediaEditAiActions?.(mediaEditAiActionsContext)}
             </div>
           )}
         </div>

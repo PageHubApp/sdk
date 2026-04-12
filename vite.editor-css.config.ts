@@ -23,7 +23,6 @@ const resolveAliases = {
   "next/link": path.resolve(dir, "src/shims/next.tsx"),
   "next/image": path.resolve(dir, "src/shims/next.tsx"),
   "next/router": path.resolve(dir, "src/shims/next.tsx"),
-  "next-auth/react": path.resolve(dir, "src/shims/next.tsx"),
 };
 
 export default defineConfig({
