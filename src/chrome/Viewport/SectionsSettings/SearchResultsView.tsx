@@ -1,6 +1,6 @@
 import { useEditor } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TbLoader2 } from "react-icons/tb";
 import { SectionPickerDialogAtom } from "utils/atoms";
 import { useSetAtomState } from "../../../utils/atoms";
@@ -10,6 +10,8 @@ import { AutoHideScrollbar } from "../../shared/layout";
 import { AddElement } from "../Toolbox/lib";
 import { BlockPreviewCard } from "./components";
 import { buildElementFromStructure } from "./blockHelpers";
+
+const PAGE_SIZE = 6;
 
 export function SearchResultsView({ query: searchQuery }: { query: string }) {
   const { actions, query: editorQuery } = useEditor();
@@ -29,6 +31,26 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
   const { getTargetPageId } = useInsertTarget();
 
   const { blocks, isLoading } = useBlockSearch(searchQuery);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [blocks]);
+
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node || visibleCount >= blocks.length) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        if (!entries[0]?.isIntersecting) return;
+        setVisibleCount(count => Math.min(count + PAGE_SIZE, blocks.length));
+      },
+      { rootMargin: "240px 0px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [visibleCount, blocks.length]);
 
   const insertElement = useCallback(
     (element: any) => {
@@ -56,7 +78,7 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
   // Group results by category
   const grouped = useMemo(() => {
     const map: Record<string, BlockItem[]> = {};
-    for (const block of blocks) {
+    for (const block of blocks.slice(0, visibleCount)) {
       const cat = block.category || "uncategorized";
       if (!map[cat]) map[cat] = [];
       map[cat].push(block);
@@ -121,6 +143,7 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
             </div>
           </div>
         ))}
+        {visibleCount < blocks.length && <div ref={loadMoreRef} className="h-8" />}
       </div>
       <div className="shrink-0" style={{ minHeight: "70vh" }} />
     </AutoHideScrollbar>

@@ -19,6 +19,8 @@ import { AddElement } from "../Toolbox/lib";
 import { BlockPreviewCard, BlockQuickLook } from "./components";
 import { buildElementFromStructure } from "./blockHelpers";
 
+const PAGE_SIZE = 6;
+
 function FilterDropdown({
   label,
   activeValue,
@@ -159,6 +161,8 @@ export function CategoryDetailView({
   const [quickLookBlock, setQuickLookBlock] = useState<BlockItem | null>(null);
   const [quickLookRect, setQuickLookRect] = useState<DOMRect | null>(null);
   const [isHoveringCard, setIsHoveringCard] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const hoveredRef = useRef<{ block: BlockItem; rect: DOMRect } | null>(null);
   const hasSubcategories = category.subcategories.length > 0;
   const hasStyles = category.styles?.length > 0;
@@ -176,6 +180,24 @@ export function CategoryDetailView({
     },
     [quickLookBlock]
   );
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [blocks]);
+
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node || visibleCount >= blocks.length) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        if (!entries[0]?.isIntersecting) return;
+        setVisibleCount(count => Math.min(count + PAGE_SIZE, blocks.length));
+      },
+      { rootMargin: "240px 0px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [visibleCount, blocks.length]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -209,6 +231,7 @@ export function CategoryDetailView({
   const styleLabel = activeStyle
     ? `${activeStyle.charAt(0).toUpperCase() + activeStyle.slice(1)}`
     : null;
+  const visibleBlocks = useMemo(() => blocks.slice(0, visibleCount), [blocks, visibleCount]);
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -279,7 +302,7 @@ export function CategoryDetailView({
             className="grid w-full grid-cols-1 gap-3 p-3 pt-1"
             onMouseLeave={() => setIsHoveringCard(false)}
           >
-            {blocks.map(block => (
+            {visibleBlocks.map(block => (
               <BlockPreviewCard
                 key={block.slug || block._id}
                 block={block}
@@ -304,6 +327,7 @@ export function CategoryDetailView({
                 quickLookOpen={quickLookBlock?.slug === block.slug}
               />
             ))}
+            {visibleCount < blocks.length && <div ref={loadMoreRef} className="h-8" />}
           </div>
           {blocks.length === 0 && (
             <div className="flex h-32 items-center justify-center">
