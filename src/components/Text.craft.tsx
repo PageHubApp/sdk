@@ -12,10 +12,19 @@ import { ariaAttrs, getInlineStyle, staticClasses, tag, type ToHTMLFn } from "..
 import { HoverNodeController } from "./editor-chrome";
 import { Text } from "./Text";
 
+// Guard against corrupted tagName data (e.g. `p, "text": "..."` from bad MCP writes)
+const sanitizeTagName = (raw: unknown): string => {
+  if (typeof raw !== "string") return "div";
+  if (raw === "Textfit") return raw;
+  const clean = raw.split(/[,\s]/)[0].toLowerCase();
+  return /^[a-z][a-z0-9]*$/.test(clean) ? clean : "div";
+};
+
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const cls = staticClasses(props, ctx);
   const style = getInlineStyle(props);
   const text = props.text || "";
+  const safeName = sanitizeTagName(props.tagName);
 
   const action = migrateAction(props);
   const href = actionToHref(action);
@@ -28,7 +37,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
       rel: /^https?:\/\//.test(href) ? "noopener noreferrer" : undefined,
     }, text);
     // Wrap the <a> inside the original tagName so className and semantic structure are preserved
-    return tag(props.tagName || "div", {
+    return tag(safeName, {
       class: cls || undefined,
       style: style || undefined,
       ...ariaAttrs(props),
@@ -55,7 +64,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     }, text);
   }
 
-  return tag(props.tagName || "div", {
+  return tag(safeName, {
     class: cls || undefined,
     style: style || undefined,
     ...ariaAttrs(props),

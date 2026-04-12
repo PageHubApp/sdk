@@ -29,6 +29,14 @@ export interface TextProps extends BaseSelectorProps {
 }
 
 
+// Guard against corrupted tagName data (e.g. `p, "text": "..."` from bad MCP writes)
+const sanitizeTagName = (tag: unknown): string | undefined => {
+  if (typeof tag !== "string") return undefined;
+  if (tag === "Textfit") return tag;
+  const clean = tag.split(/[,\s]/)[0].toLowerCase();
+  return /^[a-z][a-z0-9]*$/.test(clean) ? clean : undefined;
+};
+
 // Strip wrapping <p> from TipTap content to avoid invalid nesting
 // (e.g. <h1><p>...</p></h1> or <p><p>...</p></p> breaks hydration)
 const unwrapP = (html: string): string => {
@@ -40,7 +48,7 @@ const unwrapP = (html: string): string => {
 // RENDER MODE - Simple HTML rendering (no editor deps)
 const renderLiveMode = (props: any, query: any, router: any) => {
   const processedText = replaceVariables(props.text, query);
-  let { tagName } = props;
+  let tagName = sanitizeTagName(props.tagName);
 
   const action = migrateAction(props);
   const resolvedUrl = actionToHref(action, query, router?.asPath);
@@ -99,7 +107,8 @@ export const Text = (incomingProps: Partial<TextProps>) => {
 
   // Re-render when a variable value is edited via the popover
   const [, forceUpdate] = useState(0);
-  const { text, tagName } = props;
+  const { text } = props;
+  const tagName = sanitizeTagName(props.tagName);
   const hasVariables = typeof text === "string" && text.includes("{{");
 
   useEffect(() => {
