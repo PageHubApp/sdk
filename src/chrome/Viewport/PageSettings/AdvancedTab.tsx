@@ -136,7 +136,7 @@ export function AdvancedTab({
         />
         <p className="mt-2 text-xs text-neutral-content">
           JSON-LD schema for this page. Helps search engines understand your content. Will be injected as{" "}
-          <code className="rounded bg-neutral px-1 text-[11px]">&lt;script type="application/ld+json"&gt;</code>.
+          <code className="rounded bg-neutral px-1 text-[11px]">&lt;script type=&quot;application/ld+json&quot;&gt;</code>.
         </p>
       </div>
 

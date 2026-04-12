@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { TbTrash } from "react-icons/tb";
 import { StandaloneImagePicker } from "../StandaloneImagePicker";
 
@@ -140,12 +141,12 @@ export function BasicTab({
             ) : null}
           </div>
           {!allowCustom404Page ? (
-            <a
+            <Link
               href="/pricing"
               className="mt-3 text-sm font-medium text-primary hover:underline"
             >
               View plans
-            </a>
+            </Link>
           ) : null}
         </div>
       </div>

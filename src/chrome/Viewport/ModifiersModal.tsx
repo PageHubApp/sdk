@@ -243,7 +243,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
             <>
               {componentTypes.length === 0 && (
                 <p className="text-center text-sm text-neutral-content">
-                  No modifiers yet. Click "Add Modifier" to create one.
+                  No modifiers yet. Click &quot;Add Modifier&quot; to create one.
                 </p>
               )}
 
