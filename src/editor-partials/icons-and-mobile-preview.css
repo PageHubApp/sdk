@@ -3,6 +3,11 @@
    mobile-preview class is toggled on .pagehub-sdk-root in ViewportMeta.
    ============================================================================= */
 
+/* Hide ligature text until Material Symbols font is confirmed loaded (Button.tsx removes this class). */
+.pagehub-sdk-root .ph-ms-font-pending {
+  opacity: 0;
+}
+
 .pagehub-sdk-root .google-icons {
   font-family: "Material Symbols Outlined";
   font-weight: normal;
