@@ -165,6 +165,11 @@ export function generatePaletteCSSVariables(palette: NamedColor[]): string {
       ? item.color
       : colorToOklch(resolveTailwindColor(item.color));
     variables.push(`  ${cssVar}: ${colorValue};`);
+    // Also emit --color-* alias for DaisyUI 5 component CSS compatibility.
+    // DaisyUI resolves var(--color-primary) at :root; overriding --primary on a
+    // descendant scope doesn't update it. Direct --color-* vars fix the cascade.
+    const colorAlias = cssVar.replace(/^--(?!color-)/, "--color-");
+    if (colorAlias !== cssVar) variables.push(`  ${colorAlias}: ${colorValue};`);
   });
 
   return variables.join("\n");
