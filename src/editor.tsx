@@ -41,6 +41,7 @@ import { AiPanelHost } from "./chrome/AiPanelHost";
 import { EditorLoader } from "./chrome/EditorLoader";
 import { GlobalSectionPickerDialog } from "./chrome/GlobalSectionPickerDialog";
 import { EditorSaveBanner } from "./chrome/EditorSaveBanner";
+import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
 
 // Lazy-loaded dialogs — only loaded when user opens them
 const ColorPickerDialog = React.lazy(() =>
@@ -94,7 +95,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
         if (pageData?.content) {
           setBatchOperation(true);
           const decompressed = lz.decompress(lz.decodeBase64(pageData.content));
-          actions.deserialize(decompressed);
+          actions.deserialize(sanitizeCraftSerializedContent(decompressed) || "");
           // Let React process the node changes with batch mode active,
           // then re-enable auto-selection for normal user interactions
           requestAnimationFrame(() => setBatchOperation(false));
@@ -144,7 +145,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
         if (pageData?.content) {
           setBatchOperation(true);
           const decompressed = lz.decompress(lz.decodeBase64(pageData.content));
-          actions.deserialize(decompressed);
+          actions.deserialize(sanitizeCraftSerializedContent(decompressed) || "");
           requestAnimationFrame(() => setBatchOperation(false));
         }
       } catch (err) {

@@ -5,6 +5,7 @@
  * This means zero editor chrome, toolbar, or node controller imports
  * reach the viewer bundle.
  */
+import { Accordion } from "../Accordion";
 import { Audio } from "../Audio";
 import { Background } from "../Background";
 import { Button } from "../Button";
@@ -12,6 +13,7 @@ import { ButtonList } from "../ButtonList";
 import { Container } from "../Container";
 import { ContainerGroup } from "../ContainerGroup";
 import { Divider } from "../Divider";
+import { Dropdown } from "../Dropdown";
 import { Embed } from "../Embed";
 import { Footer } from "../Footer";
 import { Form } from "../Form";
@@ -24,10 +26,12 @@ import { Modal } from "../Modal";
 import { MapPoint } from "../MapPoint";
 import { Nav } from "../Nav";
 import { Spacer } from "../Spacer";
+import { Tabs } from "../Tabs";
 import { Text } from "../Text";
 import { Video } from "../Video";
 
 export const viewerResolver = {
+  Accordion,
   Audio,
   Background,
   Button,
@@ -35,6 +39,7 @@ export const viewerResolver = {
   Container,
   ContainerGroup,
   Divider,
+  Dropdown,
   Embed,
   Footer,
   Form,
@@ -48,6 +53,7 @@ export const viewerResolver = {
   Modal,
   Nav,
   Spacer,
+  Tabs,
   Text,
   Video,
 };

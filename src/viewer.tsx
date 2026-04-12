@@ -13,6 +13,7 @@ import { createRoot } from "react-dom/client";
 import { DEFAULT_CRAFT_RESOLVER } from "./builtins";
 import { EditorStoreProvider } from "./store";
 import { injectTailwindBrowser } from "./tailwindBrowser";
+import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
 import { processForViewer, type ResolvedComponentDef } from "./define";
 
 interface PageHubViewerProps {
@@ -36,7 +37,7 @@ function ViewerInner({ content }: { content: string }) {
     try {
       if (content) {
         const decompressed = lz.decompress(lz.decodeBase64(content));
-        actions.deserialize(decompressed);
+        actions.deserialize(sanitizeCraftSerializedContent(decompressed) || "");
         setLoaded(true);
       }
     } catch (err) {
@@ -46,7 +47,31 @@ function ViewerInner({ content }: { content: string }) {
 
   if (!loaded) return null;
 
-  return <Frame />;
+  return (
+    <ViewerFrameBoundary>
+      <Frame />
+    </ViewerFrameBoundary>
+  );
+}
+
+class ViewerFrameBoundary extends React.Component<
+  { children?: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error("[PageHub Viewer] Frame render failed:", error);
+  }
+
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
 }
 
 /**

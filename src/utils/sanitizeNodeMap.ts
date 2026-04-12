@@ -22,3 +22,21 @@ export function sanitizeCraftNodeReferences(
   }
   return copy;
 }
+
+/**
+ * Best-effort sanitizer for serialized Craft content.
+ * If the payload parses to a node map, strip dangling references before it
+ * reaches Craft's deserializer/renderer. Invalid JSON is returned unchanged.
+ */
+export function sanitizeCraftSerializedContent(
+  serialized: string | null | undefined
+): string | null | undefined {
+  if (typeof serialized !== "string" || !serialized.trim()) return serialized;
+
+  try {
+    const parsed = JSON.parse(serialized) as Record<string, any>;
+    return JSON.stringify(sanitizeCraftNodeReferences(parsed));
+  } catch {
+    return serialized;
+  }
+}

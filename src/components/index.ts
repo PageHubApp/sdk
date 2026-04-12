@@ -1,4 +1,5 @@
 // Component barrel exports
+export { Accordion } from "./Accordion";
 export { Audio } from "./Audio";
 export { Background } from "./Background";
 export { Button } from "./Button";
@@ -6,6 +7,7 @@ export { ButtonList } from "./ButtonList";
 export { Container } from "./Container";
 export { ContainerGroup } from "./ContainerGroup";
 export { Divider } from "./Divider";
+export { Dropdown } from "./Dropdown";
 export { Embed } from "./Embed";
 export { Footer } from "./Footer";
 export { Form } from "./Form";
@@ -16,7 +18,9 @@ export { ImageList } from "./ImageList";
 export { Map } from "./Map";
 export { Modal } from "./Modal";
 export { MapPoint } from "./MapPoint";
+export { Nav } from "./Nav";
 export { Spacer } from "./Spacer";
+export { Tabs } from "./Tabs";
 export { Text } from "./Text";
 export { Video } from "./Video";
 

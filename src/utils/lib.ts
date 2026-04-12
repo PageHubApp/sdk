@@ -49,6 +49,9 @@ export {
   getFontFromComp,
 } from "./fontLoader";
 
+// Craft node-map sanitization for viewer/editor safety
+export { sanitizeCraftNodeReferences, sanitizeCraftSerializedContent } from "./sanitizeNodeMap";
+
 // Page management (isolation, counting, ref resolution, variables)
 export {
   EDITOR_ALL_PAGES_STORAGE,

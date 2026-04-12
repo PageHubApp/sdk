@@ -21,7 +21,7 @@ import { Dropdown } from "./components/Dropdown";
 import { Embed } from "./components/Embed";
 import { Footer } from "./components/Footer";
 import { Form } from "./components/Form";
-import { FormElement } from "./components/FormElement";
+import { FormElement, OnlyFormElement } from "./components/FormElement";
 import { Header } from "./components/Header";
 import { Image } from "./components/Image";
 import { ImageList } from "./components/ImageList";
@@ -78,6 +78,7 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Footer,
   Form,
   FormElement,
+  OnlyFormElement,
   Header,
   Image,
   ImageList,

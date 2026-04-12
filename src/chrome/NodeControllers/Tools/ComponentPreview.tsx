@@ -1,5 +1,5 @@
 import { Editor, Element, Frame } from "@craftjs/core";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_STYLE_GUIDE } from "../../../utils/defaults";
 
 export const buildElementFromStructure = (
@@ -177,6 +177,9 @@ export const ComponentPreview = React.memo(function ComponentPreview({
   resolver,
   modifiers,
 }: ComponentPreviewProps) {
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  const [scaledHeight, setScaledHeight] = useState<number | null>(null);
+
   // Register modifier @utility rules into the shared registry
   useEffect(() => {
     if (!modifiers || typeof modifiers !== "object") return;
@@ -204,24 +207,44 @@ export const ComponentPreview = React.memo(function ComponentPreview({
     const keys = [
       "primary",
       "primary-content",
+      "color-primary",
+      "color-primary-content",
       "secondary",
       "secondary-content",
+      "color-secondary",
+      "color-secondary-content",
       "accent",
       "accent-content",
+      "color-accent",
+      "color-accent-content",
       "neutral",
       "neutral-content",
+      "color-neutral",
+      "color-neutral-content",
       "base-100",
       "base-200",
       "base-300",
       "base-content",
+      "color-base-100",
+      "color-base-200",
+      "color-base-300",
+      "color-base-content",
       "error",
       "error-content",
+      "color-error",
+      "color-error-content",
       "info",
       "info-content",
+      "color-info",
+      "color-info-content",
       "success",
       "success-content",
+      "color-success",
+      "color-success-content",
       "warning",
       "warning-content",
+      "color-warning",
+      "color-warning-content",
       "radius-box",
       "radius-field",
       "border",
@@ -252,6 +275,23 @@ export const ComponentPreview = React.memo(function ComponentPreview({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useLayoutEffect(() => {
+    const node = previewRef.current;
+    if (!node) return;
+
+    const measure = () => {
+      const nextHeight = Math.ceil(node.scrollHeight * scale);
+      setScaledHeight(nextHeight > 0 ? nextHeight : null);
+    };
+
+    measure();
+
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => measure());
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [component, scale]);
+
   if (!component) return null;
 
   try {
@@ -266,16 +306,30 @@ export const ComponentPreview = React.memo(function ComponentPreview({
     );
 
     const element = buildElementFromStructure(cleanedComponent, resolver);
+    const scaledWidth = `${100 / scale}%`;
 
     return (
       <PreviewErrorBoundary>
         <div
-          className="bg-base-100 text-base-content overflow-hidden"
-          style={{ zoom: scale, pointerEvents: "none", ...PREVIEW_DESIGN_VARS, ...siteVars } as any}
+          className="pagehub-sdk-root bg-base-100 text-base-content overflow-hidden"
+          style={{ pointerEvents: "none", height: scaledHeight ?? undefined }}
         >
-          <Editor resolver={resolver} enabled={false}>
-            <Frame>{element}</Frame>
-          </Editor>
+          <div
+            ref={previewRef}
+            style={
+              {
+                width: scaledWidth,
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+                ...PREVIEW_DESIGN_VARS,
+                ...siteVars,
+              } as any
+            }
+          >
+            <Editor resolver={resolver} enabled={false}>
+              <Frame>{element}</Frame>
+            </Editor>
+          </div>
         </div>
       </PreviewErrorBoundary>
     );
