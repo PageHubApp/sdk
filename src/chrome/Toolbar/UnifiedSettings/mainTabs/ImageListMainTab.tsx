@@ -30,23 +30,31 @@ export const ImageListMainTab = () => {
             const childNode = q.node(childId).get();
             if (childNode.data.name !== "Image") return null;
             return { id: childId, props: childNode.data.props };
-          } catch { return null; }
+          } catch {
+            return null;
+          }
         })
         .filter(Boolean);
       return { childImages: images };
-    } catch { return { childImages: [] }; }
+    } catch {
+      return { childImages: [] };
+    }
   });
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Add, remove, and reorder images in this gallery.">
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="Add, remove, and reorder images in this gallery."
+      >
         <ListEditor
           items={childImages || []}
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
           addLabel="Add Image"
           renderLabel={(image, index) => image.props?.alt || `Image ${index + 1}`}
-          onDelete={(image) => actions.delete(image.id)}
+          onDelete={image => actions.delete(image.id)}
           onAdd={() => {
             const ImageComp = query.getOptions().resolver.Image;
             if (ImageComp) {
@@ -59,10 +67,10 @@ export const ImageListMainTab = () => {
               requestAnimationFrame(() => batchOp.setState(false));
             }
           }}
-          extraButtons={(image) => [
+          extraButtons={image => [
             <button
               key="edit"
-              className="flex items-center justify-center text-base-content transition-colors hover:text-primary"
+              className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
               title="Edit image"
               onClick={e => {
                 e.stopPropagation();
@@ -72,7 +80,7 @@ export const ImageListMainTab = () => {
               <TbEdit className="h-3.5 w-3.5" />
             </button>,
           ]}
-          renderPopover={(image) => (
+          renderPopover={image => (
             <NodeProvider id={image.id}>
               <MediaInput propKey="videoId" typeKey="type" title="" collapsible={false} />
             </NodeProvider>
@@ -82,8 +90,18 @@ export const ImageListMainTab = () => {
       </ToolbarSection>
     ),
     Properties: (
-      <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]} help="Layout mode (grid, carousel, masonry, etc) and items per row.">
-        <ToolbarItem propKey="mode" propType="component" type="select" label="Mode" labelWidth="w-24">
+      <ToolbarSection
+        title="Properties"
+        icon={SECTION_ICONS["Properties"]}
+        help="Layout mode (grid, carousel, masonry, etc) and items per row."
+      >
+        <ToolbarItem
+          propKey="mode"
+          propType="component"
+          type="select"
+          label="Mode"
+          labelWidth="w-24"
+        >
           <option value="flex">Flex (Default)</option>
           <option value="grid">Grid</option>
           <option value="carousel">Carousel</option>
@@ -91,7 +109,16 @@ export const ImageListMainTab = () => {
           <option value="masonry">Masonry</option>
           <option value="infinite">Infinite Scroll</option>
         </ToolbarItem>
-        <ToolbarItem propKey="itemsPerView" propType="component" type="select" label="Items Per View" min={1} max={6} step={1} labelWidth="w-24" />
+        <ToolbarItem
+          propKey="itemsPerView"
+          propType="component"
+          type="select"
+          label="Items Per View"
+          min={1}
+          max={6}
+          step={1}
+          labelWidth="w-24"
+        />
       </ToolbarSection>
     ),
   });

@@ -74,7 +74,11 @@ interface ArrowNavigationOptions {
  * Items matching `itemSelector` get tabIndex managed automatically.
  */
 export function useArrowNavigation(options: ArrowNavigationOptions = {}) {
-  const { orientation = "horizontal", loop = true, itemSelector = '[role="tab"], [role="menuitem"], [role="treeitem"], [role="option"]' } = options;
+  const {
+    orientation = "horizontal",
+    loop = true,
+    itemSelector = '[role="tab"], [role="menuitem"], [role="treeitem"], [role="option"]',
+  } = options;
   const ref = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -105,10 +109,16 @@ export function useArrowNavigation(options: ArrowNavigationOptions = {}) {
 
       if (isForward) {
         e.preventDefault();
-        nextIdx = loop ? (currentIdx + 1) % items.length : Math.min(currentIdx + 1, items.length - 1);
+        nextIdx = loop
+          ? (currentIdx + 1) % items.length
+          : Math.min(currentIdx + 1, items.length - 1);
       } else if (isBackward) {
         e.preventDefault();
-        nextIdx = loop ? (currentIdx === 0 ? items.length - 1 : currentIdx - 1) : Math.max(currentIdx - 1, 0);
+        nextIdx = loop
+          ? currentIdx === 0
+            ? items.length - 1
+            : currentIdx - 1
+          : Math.max(currentIdx - 1, 0);
       } else if (e.key === "Home") {
         e.preventDefault();
         nextIdx = 0;

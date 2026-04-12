@@ -7,7 +7,7 @@ import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, renderAdvancedComponentSlots, SECTION_ICONS } from "../helpers";
 
 export const TabsMainTab = () => {
-  const { id, props } = useNode((node) => ({ props: node.data.props }));
+  const { id, props } = useNode(node => ({ props: node.data.props }));
   const { actions, query } = useEditor();
 
   const node = query.node(id).get();
@@ -45,7 +45,7 @@ export const TabsMainTab = () => {
           method: "class",
           group: groupId,
         }}
-        className="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-neutral-content hover:text-base-content hover:border-base-300 rounded-none"
+        className="text-neutral-content hover:text-base-content hover:border-base-300 rounded-none border-b-2 border-transparent px-4 py-2 text-sm font-medium"
       />
     );
 
@@ -59,7 +59,7 @@ export const TabsMainTab = () => {
         tabGroup={groupId}
         canDelete={true}
         canEditName={true}
-        className="flex flex-col gap-container px-container-x py-container-y hidden"
+        className="gap-container px-container-x py-container-y flex hidden flex-col"
       >
         <Element
           is={Text}
@@ -92,27 +92,23 @@ export const TabsMainTab = () => {
 
   // Dynamic default tab options
   const defaultTabOptions = Array.from({ length: tabCount }, (_, i) => (
-    <option key={i} value={i}>Tab {i + 1}</option>
+    <option key={i} value={i}>
+      Tab {i + 1}
+    </option>
   ));
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Tab behavior and layout settings.">
-        <ToolbarItem
-          propKey="defaultTab"
-          propType="component"
-          type="select"
-          label="Default Tab"
-        >
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="Tab behavior and layout settings."
+      >
+        <ToolbarItem propKey="defaultTab" propType="component" type="select" label="Default Tab">
           {defaultTabOptions}
         </ToolbarItem>
 
-        <ToolbarItem
-          propKey="orientation"
-          propType="component"
-          type="select"
-          label="Orientation"
-        >
+        <ToolbarItem propKey="orientation" propType="component" type="select" label="Orientation">
           <option value="horizontal">Horizontal</option>
           <option value="vertical">Vertical</option>
         </ToolbarItem>
@@ -129,22 +125,21 @@ export const TabsMainTab = () => {
 
         <div className="flex gap-2">
           <button
-            className="flex items-center justify-center gap-1.5 flex-1 px-3 py-2 text-xs font-medium rounded border border-base-300 hover:bg-neutral transition-colors"
+            className="border-base-300 hover:bg-neutral flex flex-1 items-center justify-center gap-1.5 rounded border px-3 py-2 text-xs font-medium transition-colors"
             onClick={addTab}
           >
-            <TbPlus className="w-3.5 h-3.5" />
+            <TbPlus className="h-3.5 w-3.5" />
             Add Tab
           </button>
           <button
-            className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded border border-base-300 hover:bg-neutral transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="border-base-300 hover:bg-neutral flex items-center justify-center gap-1.5 rounded border px-3 py-2 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40"
             onClick={removeLastTab}
             disabled={tabCount <= 1}
           >
-            <TbTrash className="w-3.5 h-3.5" />
+            <TbTrash className="h-3.5 w-3.5" />
           </button>
         </div>
         <SettingsAiSlot />
-
       </ToolbarSection>
     ),
   });

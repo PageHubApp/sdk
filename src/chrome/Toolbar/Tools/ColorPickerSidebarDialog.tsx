@@ -40,7 +40,7 @@ export function ColorPickerSidebarDialog() {
           <button
             onClick={handleSaveToPalette}
             disabled={!hexInput || !/^#[0-9A-Fa-f]{6}$/.test(hexInput)}
-            className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10 disabled:cursor-not-allowed disabled:opacity-50"
+            className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Save to palette"
           >
             <TbDeviceFloppy />
@@ -51,7 +51,7 @@ export function ColorPickerSidebarDialog() {
         <Tooltip content="Eyedropper" placement="bottom">
           <button
             onClick={handleEyeDropper}
-            className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10"
+            className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors"
             aria-label="Pick color from screen"
           >
             <BsEyedropper />
@@ -75,7 +75,7 @@ export function ColorPickerSidebarDialog() {
         <div className="mb-4">
           <label
             htmlFor="color-picker-hex-input"
-            className="mb-1.5 block text-xs font-medium text-base-content"
+            className="text-base-content mb-1.5 block text-xs font-medium"
           >
             Custom Color
           </label>
@@ -87,7 +87,7 @@ export function ColorPickerSidebarDialog() {
                 setHexInput(e.target.value);
                 handleColorSelect("hex", e.target.value);
               }}
-              className="h-10 w-16 cursor-pointer rounded-lg border-2 border-base-300 bg-base-200"
+              className="border-base-300 bg-base-200 h-10 w-16 cursor-pointer rounded-lg border-2"
               style={{ padding: "2px" }}
             />
             <input
@@ -97,13 +97,9 @@ export function ColorPickerSidebarDialog() {
               onChange={e => setHexInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleHexSubmit()}
               placeholder="#000000"
-              className="input-dialog-md flex-1 placeholder:text-neutral-content"
+              className="input-dialog-md placeholder:text-neutral-content flex-1"
             />
-            <button
-              type="button"
-              onClick={handleHexSubmit}
-              className="btn btn-primary"
-            >
+            <button type="button" onClick={handleHexSubmit} className="btn btn-primary">
               Apply
             </button>
           </div>
@@ -111,7 +107,7 @@ export function ColorPickerSidebarDialog() {
 
         {/* Special Colors */}
         <div className="mb-4">
-          <span className="mb-1.5 block text-xs font-medium text-base-content">Special</span>
+          <span className="text-base-content mb-1.5 block text-xs font-medium">Special</span>
           <div className="grid grid-cols-12 gap-1">
             {SPECIAL_COLORS.map(color => (
               <Tooltip key={color.value} content={color.name} placement="top">
@@ -137,7 +133,7 @@ export function ColorPickerSidebarDialog() {
                     />
                   )}
                   {selectedColor === color.value && (
-                    <TbCheck className="absolute inset-0 m-auto size-5 text-base-content drop-shadow-lg" />
+                    <TbCheck className="text-base-content absolute inset-0 m-auto size-5 drop-shadow-lg" />
                   )}
                 </button>
               </Tooltip>
@@ -198,7 +194,7 @@ function PaletteSection({
 }) {
   return (
     <div className="mb-4">
-      <span className="mb-1.5 block text-xs font-medium text-base-content">Design System</span>
+      <span className="text-base-content mb-1.5 block text-xs font-medium">Design System</span>
       <div className="grid grid-cols-12 gap-1">
         {palette.map((paletteColor, idx) => {
           const hexColor = resolvePaletteHex(paletteColor.color || "", palette);
@@ -228,7 +224,7 @@ function PaletteSection({
                   e.stopPropagation();
                   onRemove(paletteColor.name);
                 }}
-                className="absolute -right-1 -top-1 hidden rounded-full bg-error p-0.5 text-error-content shadow-lg transition-all hover:scale-110 group-hover:block"
+                className="bg-error text-error-content absolute -top-1 -right-1 hidden rounded-full p-0.5 shadow-lg transition-all group-hover:block hover:scale-110"
                 aria-label="Remove color"
               >
                 <TbX className="size-3" />
@@ -257,11 +253,8 @@ function RecentColorsSection({
   return (
     <div className="mb-4">
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-xs font-medium text-base-content">Recent</span>
-        <button
-          onClick={onClear}
-          className="text-xs text-neutral-content hover:text-base-content"
-        >
+        <span className="text-base-content text-xs font-medium">Recent</span>
+        <button onClick={onClear} className="text-neutral-content hover:text-base-content text-xs">
           <TbTrash className="size-3" />
         </button>
       </div>
@@ -298,13 +291,11 @@ function TailwindColorsSection({
 }) {
   return (
     <div>
-      <span className="mb-1.5 block text-xs font-medium text-base-content">Tailwind Colors</span>
+      <span className="text-base-content mb-1.5 block text-xs font-medium">Tailwind Colors</span>
       <div className="space-y-3">
         {TAILWIND_COLORS.map(colorGroup => (
           <div key={colorGroup.name}>
-            <div className="mb-1 text-xs capitalize text-neutral-content">
-              {colorGroup.name}
-            </div>
+            <div className="text-neutral-content mb-1 text-xs capitalize">{colorGroup.name}</div>
             <div className="grid grid-cols-12 gap-1">
               {colorGroup.shades.map(shade => {
                 const colorValue = `${colorGroup.name}-${shade}`;
@@ -343,7 +334,10 @@ function TailwindColorsSection({
 }
 
 /** Resolve a palette entry color string to a CSS color for swatch preview */
-function resolvePaletteHex(colorValue: string, themePalette: { name: string; color: string }[]): string {
+function resolvePaletteHex(
+  colorValue: string,
+  themePalette: { name: string; color: string }[]
+): string {
   let v = colorValue.replace(/^(bg-|text-|border-|from-|to-|via-|ring-)/, "");
   const { base, opacity } = splitOpacitySuffix(v);
 
@@ -352,20 +346,30 @@ function resolvePaletteHex(colorValue: string, themePalette: { name: string; col
     return opacity != null && opacity < 1 - 1e-6 ? applyOpacityToCssColor(hex, opacity) : hex;
   }
   if (base === "white") {
-    return opacity != null && opacity < 1 - 1e-6 ? applyOpacityToCssColor("#ffffff", opacity) : "#ffffff";
+    return opacity != null && opacity < 1 - 1e-6
+      ? applyOpacityToCssColor("#ffffff", opacity)
+      : "#ffffff";
   }
   if (base === "black") {
-    return opacity != null && opacity < 1 - 1e-6 ? applyOpacityToCssColor("#000000", opacity) : "#000000";
+    return opacity != null && opacity < 1 - 1e-6
+      ? applyOpacityToCssColor("#000000", opacity)
+      : "#000000";
   }
   if (base === "transparent") {
-    return opacity != null && opacity < 1 - 1e-6 ? applyOpacityToCssColor("transparent", opacity) : "transparent";
+    return opacity != null && opacity < 1 - 1e-6
+      ? applyOpacityToCssColor("transparent", opacity)
+      : "transparent";
   }
 
   // Single Tailwind hue key (e.g. palette stored as "blue" → shade 500)
   if (/^[a-z]+$/i.test(base)) {
     const colorKey = base.toLowerCase();
     const colorObj = colors[colorKey as keyof typeof colors] as unknown;
-    if (colorObj && typeof colorObj === "object" && Object.prototype.hasOwnProperty.call(colorObj, "500")) {
+    if (
+      colorObj &&
+      typeof colorObj === "object" &&
+      Object.prototype.hasOwnProperty.call(colorObj, "500")
+    ) {
       let h = (colorObj as Record<string, string>)["500"];
       if (opacity != null && opacity < 1 - 1e-6) h = applyOpacityToCssColor(h, opacity);
       return h;
@@ -379,4 +383,3 @@ function resolvePaletteHex(colorValue: string, themePalette: { name: string; col
   }
   return bg;
 }
-

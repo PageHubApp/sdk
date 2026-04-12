@@ -33,8 +33,14 @@ const DIR_TO_CSS: Record<string, string> = {
 };
 
 const ROW_ORDER = [
-  "bg-linear-to-tl", "bg-linear-to-t", "bg-linear-to-tr", "bg-linear-to-r",
-  "bg-linear-to-br", "bg-linear-to-b", "bg-linear-to-bl", "bg-linear-to-l",
+  "bg-linear-to-tl",
+  "bg-linear-to-t",
+  "bg-linear-to-tr",
+  "bg-linear-to-r",
+  "bg-linear-to-br",
+  "bg-linear-to-b",
+  "bg-linear-to-bl",
+  "bg-linear-to-l",
 ];
 
 const parseDirection = (cn: string) =>
@@ -81,16 +87,23 @@ export const GradientInput = () => {
       propKey: "backgroundGradient",
       propType: "class",
       value: dir,
-      setProp, query, actions, nodeId: id,
-      view: classWriteView, classDark,
+      setProp,
+      query,
+      actions,
+      nodeId: id,
+      view: classWriteView,
+      classDark,
     });
   };
 
-  const setPosition = useCallback((prefix: string, value: number | null) => {
-    setProp((p: any) => {
-      p.className = replacePosition(p.className || "", prefix, value);
-    }, 500);
-  }, [setProp]);
+  const setPosition = useCallback(
+    (prefix: string, value: number | null) => {
+      setProp((p: any) => {
+        p.className = replacePosition(p.className || "", prefix, value);
+      }, 500);
+    },
+    [setProp]
+  );
 
   const previewBg = useMemo(() => {
     if (!hasGradient) return null;
@@ -108,7 +121,7 @@ export const GradientInput = () => {
   return (
     <div className="flex flex-col gap-2">
       {/* Direction row — always visible, consistent layout */}
-      <div className="flex items-center gap-px rounded-md border border-base-300 overflow-hidden">
+      <div className="border-base-300 flex items-center gap-px overflow-hidden rounded-md border">
         {ROW_ORDER.map(dir => (
           <button
             key={dir}
@@ -129,7 +142,7 @@ export const GradientInput = () => {
       {/* Preview bar */}
       {hasGradient && (
         <div
-          className="h-5 w-full rounded border border-base-300"
+          className="border-base-300 h-5 w-full rounded border"
           style={{ background: previewBg || undefined }}
         />
       )}
@@ -137,14 +150,32 @@ export const GradientInput = () => {
       {/* Color stops with position sliders */}
       {hasGradient && (
         <div className="flex flex-col gap-2">
-          <StopRow label="From" propKey="backgroundGradientFrom" prefix="from" position={fromPos} onPosition={(v) => setPosition("from", v)} />
-          <StopRow label="Via" propKey="backgroundGradientVia" prefix="via" position={viaPos} onPosition={(v) => setPosition("via", v)} />
-          <StopRow label="To" propKey="backgroundGradientTo" prefix="to" position={toPos} onPosition={(v) => setPosition("to", v)} />
+          <StopRow
+            label="From"
+            propKey="backgroundGradientFrom"
+            prefix="from"
+            position={fromPos}
+            onPosition={v => setPosition("from", v)}
+          />
+          <StopRow
+            label="Via"
+            propKey="backgroundGradientVia"
+            prefix="via"
+            position={viaPos}
+            onPosition={v => setPosition("via", v)}
+          />
+          <StopRow
+            label="To"
+            propKey="backgroundGradientTo"
+            prefix="to"
+            position={toPos}
+            onPosition={v => setPosition("to", v)}
+          />
 
           <button
             type="button"
             onClick={() => setDirection("")}
-            className="self-end text-[10px] text-neutral-content hover:text-error transition-colors"
+            className="text-neutral-content hover:text-error self-end text-[10px] transition-colors"
           >
             Remove gradient
           </button>
@@ -155,7 +186,11 @@ export const GradientInput = () => {
 };
 
 const StopRow = ({
-  label, propKey, prefix, position, onPosition,
+  label,
+  propKey,
+  prefix,
+  position,
+  onPosition,
 }: {
   label: string;
   propKey: string;
@@ -172,14 +207,20 @@ const StopRow = ({
         max={100}
         step={5}
         value={position ?? (prefix === "from" ? 0 : prefix === "to" ? 100 : 50)}
-        onChange={(e) => onPosition(parseInt(e.target.value))}
-        className="slider h-1.5 flex-1 cursor-pointer appearance-none rounded-lg bg-neutral"
+        onChange={e => onPosition(parseInt(e.target.value))}
+        className="slider bg-neutral h-1.5 flex-1 cursor-pointer appearance-none rounded-lg"
       />
-      <span className="w-7 text-right text-[10px] text-neutral-content tabular-nums">
+      <span className="text-neutral-content w-7 text-right text-[10px] tabular-nums">
         {position != null ? `${position}%` : "—"}
       </span>
       {position != null && (
-        <button type="button" onClick={() => onPosition(null)} className="text-[10px] text-neutral-content hover:text-error">×</button>
+        <button
+          type="button"
+          onClick={() => onPosition(null)}
+          className="text-neutral-content hover:text-error text-[10px]"
+        >
+          ×
+        </button>
       )}
     </div>
   </div>

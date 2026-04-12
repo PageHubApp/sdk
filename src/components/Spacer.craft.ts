@@ -15,21 +15,29 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
 };
 import { SpacerMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/SpacerMainTab";
 
-export const SpacerDef = defineComponent({
-  name: "Spacer",
-  component: Spacer,
-  icon: TbSpace,
-  category: "Basic",
-  settings: SpacerMainTab,
-  toHTML,
-  disable: [
-    "textColor", "border", "shadow", "radius",
-    "font", "pattern", "opacity", "animations", "hoverClick",
-  ],
-  defaultProps: {
-    className: "w-full py-space-md bg-transparent",
+export const SpacerDef = defineComponent(
+  {
+    name: "Spacer",
+    component: Spacer,
+    icon: TbSpace,
+    category: "Basic",
+    settings: SpacerMainTab,
+    toHTML,
+    disable: [
+      "textColor",
+      "border",
+      "shadow",
+      "radius",
+      "font",
+      "pattern",
+      "opacity",
+      "animations",
+      "hoverClick",
+    ],
+    defaultProps: {
+      className: "w-full py-space-md bg-transparent",
+    },
+    presets: [{ label: "Spacer", props: {} }],
   },
-  presets: [
-    { label: "Spacer", props: {} },
-  ],
-}, { __internal: true });
+  { __internal: true }
+);

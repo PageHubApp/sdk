@@ -13,7 +13,13 @@ import type {
   PageHubMediaManagerAiPanelContext,
   PageHubMediaMetadataSuggestion,
 } from "../../../../../types";
-import { cleanSvg, sortMedia, type MediaItem, type SortDirection, type SortField } from "../utils/media-helpers";
+import {
+  cleanSvg,
+  sortMedia,
+  type MediaItem,
+  type SortDirection,
+  type SortField,
+} from "../utils/media-helpers";
 import { useMediaUpload } from "./useMediaUpload";
 import { useAiGeneration } from "./useAiGeneration";
 import { phStorage } from "../../../../../utils/phStorage";
@@ -25,7 +31,12 @@ interface UseMediaManagerOptions {
   selectionMode: boolean;
 }
 
-export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: UseMediaManagerOptions) {
+export function useMediaManager({
+  isOpen,
+  onClose,
+  onSelect,
+  selectionMode,
+}: UseMediaManagerOptions) {
   const { query, actions } = useEditor();
   const { config } = useSDK();
   const aiEnabled = useAiEnabled();
@@ -38,7 +49,11 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
   const canUseImageAnalyze = aiEnabled && typeof mediaEditAiActionsSlot === "function";
 
   // Resizable modal
-  const { width: mmWidth, height: mmHeight, handleProps: mmHandleProps } = useResizable({
+  const {
+    width: mmWidth,
+    height: mmHeight,
+    handleProps: mmHandleProps,
+  } = useResizable({
     storageKey: "media-manager",
     defaultWidth: 896,
     defaultHeight: Math.round(window.innerHeight * 0.9),
@@ -96,7 +111,9 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
   const rootProps = rootNode?.data?.props as Record<string, unknown> | undefined;
   const designContext = {
     designNotes: typeof rootProps?.designNotes === "string" ? rootProps.designNotes : undefined,
-    designTags: Array.isArray(rootProps?.designTags) ? (rootProps.designTags as string[]) : undefined,
+    designTags: Array.isArray(rootProps?.designTags)
+      ? (rootProps.designTags as string[])
+      : undefined,
   };
 
   const handleSearch = (q: string) => {
@@ -106,11 +123,12 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
       return;
     }
     const searchLower = q.toLowerCase();
-    const filtered = mediaList.filter(media =>
-      media.id.toLowerCase().includes(searchLower) ||
-      media.metadata?.title?.toLowerCase().includes(searchLower) ||
-      media.metadata?.alt?.toLowerCase().includes(searchLower) ||
-      media.metadata?.description?.toLowerCase().includes(searchLower)
+    const filtered = mediaList.filter(
+      media =>
+        media.id.toLowerCase().includes(searchLower) ||
+        media.metadata?.title?.toLowerCase().includes(searchLower) ||
+        media.metadata?.alt?.toLowerCase().includes(searchLower) ||
+        media.metadata?.description?.toLowerCase().includes(searchLower)
     );
     setFilteredMedia(sortMedia(filtered, sortField, sortDirection));
   };
@@ -332,10 +350,22 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
   }, [previewMedia, filteredMedia]);
 
   return {
-    mmWidth, mmHeight, mmHandleProps,
-    mediaList, filteredMedia, searchQuery, selectedMedia, editingMedia, cropMedia,
-    viewMode, sortField, sortDirection, previewMedia,
-    deleteConfirm, deletingMedia, savingMetadata,
+    mmWidth,
+    mmHeight,
+    mmHandleProps,
+    mediaList,
+    filteredMedia,
+    searchQuery,
+    selectedMedia,
+    editingMedia,
+    cropMedia,
+    viewMode,
+    sortField,
+    sortDirection,
+    previewMedia,
+    deleteConfirm,
+    deletingMedia,
+    savingMetadata,
 
     uploading: upload.uploading,
     uploadProgress: upload.uploadProgress,
@@ -359,8 +389,14 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
     mediaManagerAiPanelContext,
     mediaEditAiActionsContext,
 
-    setSearchQuery, setSelectedMedia, setViewMode, setSortField, setSortDirection,
-    setPreviewMedia, setCropMedia, setEditingMedia,
+    setSearchQuery,
+    setSelectedMedia,
+    setViewMode,
+    setSortField,
+    setSortDirection,
+    setPreviewMedia,
+    setCropMedia,
+    setEditingMedia,
     setAddMode: upload.setAddMode,
     setUrlInput: upload.setUrlInput,
     setSvgInput: upload.setSvgInput,
@@ -370,10 +406,16 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
     setReplacingMedia: upload.setReplacingMedia,
     setDeleteConfirm,
 
-    handleSearch, handleDelete, confirmDelete,
-    handlePreviewNext, handlePreviewPrevious,
-    handleReorder, handleSaveCroppedImage,
-    openEditModal, closeEditModal, saveEditedMetadata,
+    handleSearch,
+    handleDelete,
+    confirmDelete,
+    handlePreviewNext,
+    handlePreviewPrevious,
+    handleReorder,
+    handleSaveCroppedImage,
+    openEditModal,
+    closeEditModal,
+    saveEditedMetadata,
     handleUpload: upload.handleUpload,
     handleConvertAndUpload: upload.handleConvertAndUpload,
     handleReplaceMedia: upload.handleReplaceMedia,
@@ -381,7 +423,10 @@ export function useMediaManager({ isOpen, onClose, onSelect, selectionMode }: Us
     handleAddSvg: upload.handleAddSvg,
     handlePasteClick: upload.handlePasteClick,
 
-    selectionMode, onSelect, onClose, settings,
+    selectionMode,
+    onSelect,
+    onClose,
+    settings,
     resortFilteredMedia: () => setFilteredMedia(sortMedia(filteredMedia, sortField, sortDirection)),
   };
 }

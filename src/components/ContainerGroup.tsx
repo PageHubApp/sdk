@@ -40,7 +40,7 @@ export const ContainerGroup = (props: ContainerGroupProps) => {
   const view = useView();
   const preview = usePreview();
   const settings = null;
-  const setSettings = (_: any) => { };
+  const setSettings = (_: any) => {};
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -153,11 +153,7 @@ export const ContainerGroup = (props: ContainerGroupProps) => {
       overflow: "visible",
     };
     const originalChildren = prop.children;
-    prop.children = (
-      <>
-        {originalChildren}
-      </>
-    );
+    prop.children = <>{originalChildren}</>;
   }
 
   const container = React.createElement(motionIt(props, Box, enabled), { ...prop, as: tagName });

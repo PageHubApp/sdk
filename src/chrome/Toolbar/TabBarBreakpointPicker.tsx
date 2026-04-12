@@ -41,7 +41,7 @@ export const TabBarBreakpointPicker = () => {
       };
       window.addEventListener("mouseup", stopDrag);
     },
-    [viewSelection, setViewSelection],
+    [viewSelection, setViewSelection]
   );
 
   const onDragMove = useCallback(
@@ -51,28 +51,38 @@ export const TabBarBreakpointPicker = () => {
       for (const [key, el] of pillRefs.current) {
         if (key === dragState.current.last) continue;
         const r = el.getBoundingClientRect();
-        if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+        if (
+          e.clientX >= r.left &&
+          e.clientX <= r.right &&
+          e.clientY >= r.top &&
+          e.clientY <= r.bottom
+        ) {
           dragState.current.last = key;
           setViewSelection(prev => ({ ...prev, [key]: dragState.current.value }));
           break;
         }
       }
     },
-    [setViewSelection],
+    [setViewSelection]
   );
 
   return (
     <ToolbarPortalDropdown
       openOn="hover"
       align="left"
-      className="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-200 p-2 shadow-md"
+      className="border-base-300 bg-base-200 flex flex-col gap-1 rounded-lg border p-2 shadow-md"
       trigger={
         <button
           type="button"
-          className="flex cursor-pointer flex-col gap-px rounded p-1 transition-colors hover:bg-accent"
+          className="hover:bg-accent flex cursor-pointer flex-col gap-px rounded p-1 transition-colors"
           aria-label="Select breakpoint scope"
         >
-          {([["mobile", "sm", "desktop"], ["lg", "xl", "2xl"]] as const).map((row, i) => (
+          {(
+            [
+              ["mobile", "sm", "desktop"],
+              ["lg", "xl", "2xl"],
+            ] as const
+          ).map((row, i) => (
             <div key={i} className="flex gap-px">
               {row.map(k => (
                 <span
@@ -85,7 +95,7 @@ export const TabBarBreakpointPicker = () => {
         </button>
       }
     >
-      <p className="px-0.5 text-[10px] font-medium uppercase tracking-widest text-neutral-content">
+      <p className="text-neutral-content px-0.5 text-[10px] font-medium tracking-widest uppercase">
         Breakpoint scope
       </p>
       <div className="flex flex-wrap gap-1" onMouseMove={onDragMove}>
@@ -104,8 +114,10 @@ export const TabBarBreakpointPicker = () => {
                 startDrag(key);
               }}
               aria-pressed={isOn}
-              className={`cursor-pointer select-none rounded px-2 py-0.5 text-xs font-semibold transition-colors ${
-                isOn ? BREAKPOINT_PILL.active : BREAKPOINT_PILL.pill + " opacity-60 hover:opacity-100"
+              className={`cursor-pointer rounded px-2 py-0.5 text-xs font-semibold transition-colors select-none ${
+                isOn
+                  ? BREAKPOINT_PILL.active
+                  : BREAKPOINT_PILL.pill + " opacity-60 hover:opacity-100"
               }`}
             >
               {BREAKPOINT_LABELS[key]}
@@ -120,7 +132,7 @@ export const TabBarBreakpointPicker = () => {
             const cleared = Object.fromEntries(VIEW_BREAKPOINT_SCOPE_KEYS.map(k => [k, false]));
             setViewSelection(prev => ({ ...prev, ...cleared }));
           }}
-          className="mt-0.5 cursor-pointer rounded px-1 py-0.5 text-[10px] text-neutral-content hover:text-base-content"
+          className="text-neutral-content hover:text-base-content mt-0.5 cursor-pointer rounded px-1 py-0.5 text-[10px]"
         >
           Clear all
         </button>

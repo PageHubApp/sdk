@@ -46,7 +46,7 @@ function pickKeptRoot(root) {
 
 export const Tools: any = {};
 
-export const SelectedNodeAtom = atom("selectedNode", { id: null, position: "" },);
+export const SelectedNodeAtom = atom("selectedNode", { id: null, position: "" });
 
 function normalizeElementRefs(element: any, resolver: Record<string, any>): any {
   if (Array.isArray(element)) {
@@ -60,25 +60,26 @@ function normalizeElementRefs(element: any, resolver: Record<string, any>): any 
 
   let newType: any = (element as any).type;
   if (typeof newType === "function") {
-    const n = (newType as any).resolvedName
-      || (newType as any).displayName
-      || (newType as any).name;
+    const n =
+      (newType as any).resolvedName || (newType as any).displayName || (newType as any).name;
     if (n && resolver[n]) newType = resolver[n];
   }
 
   let newIs = is;
   if (is !== undefined) {
-    const n = typeof is === "string"
-      ? is
-      : ((is as any)?.resolvedName || (is as any)?.displayName || (is as any)?.name);
+    const n =
+      typeof is === "string"
+        ? is
+        : (is as any)?.resolvedName || (is as any)?.displayName || (is as any)?.name;
     if (n && resolver[n]) newIs = resolver[n];
   }
 
-  const newChildren = children !== undefined
-    ? (Array.isArray(children)
-      ? children.map(c => normalizeElementRefs(c, resolver))
-      : normalizeElementRefs(children, resolver))
-    : children;
+  const newChildren =
+    children !== undefined
+      ? Array.isArray(children)
+        ? children.map(c => normalizeElementRefs(c, resolver))
+        : normalizeElementRefs(children, resolver)
+      : children;
 
   const newProps: any = { ...rest };
   if (newIs !== undefined) newProps.is = newIs;
@@ -216,11 +217,11 @@ export const AddElement = ({
 
 export const ToolboxItemDisplay = ({ icon: Icon, label, isDragging = false }) => (
   <div
-    className={`pointer-events-auto w-full cursor-grab rounded-lg border border-base-300 bg-base-200 text-base-content hover:bg-accent active:cursor-grabbing ${isDragging ? "border-accent bg-accent text-accent-content" : ""}`}
+    className={`border-base-300 bg-base-200 text-base-content hover:bg-accent pointer-events-auto w-full cursor-grab rounded-lg border active:cursor-grabbing ${isDragging ? "border-accent bg-accent text-accent-content" : ""}`}
   >
     <div className="pointer-events-none flex min-h-[60px] w-full flex-col items-center justify-center gap-2 px-1 py-2 transition-colors">
-      <Icon className="text-2xl text-base-content" />
-      <span className="text-center text-[10px] text-base-content">{label}</span>
+      <Icon className="text-base-content text-2xl" />
+      <span className="text-base-content text-center text-[10px]">{label}</span>
     </div>
   </div>
 );

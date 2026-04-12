@@ -31,17 +31,25 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const target = actionTarget(action);
 
   if (href) {
-    const linkTag = tag("a", {
-      href,
-      target: target || undefined,
-      rel: /^https?:\/\//.test(href) ? "noopener noreferrer" : undefined,
-    }, text);
+    const linkTag = tag(
+      "a",
+      {
+        href,
+        target: target || undefined,
+        rel: /^https?:\/\//.test(href) ? "noopener noreferrer" : undefined,
+      },
+      text
+    );
     // Wrap the <a> inside the original tagName so className and semantic structure are preserved
-    return tag(safeName, {
-      class: cls || undefined,
-      style: style || undefined,
-      ...ariaAttrs(props),
-    }, linkTag);
+    return tag(
+      safeName,
+      {
+        class: cls || undefined,
+        style: style || undefined,
+        ...ariaAttrs(props),
+      },
+      linkTag
+    );
   }
 
   if (props.tagName === "Textfit") {
@@ -57,18 +65,26 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     const cqw = Math.min(40 / charCount, 5.5).toFixed(1);
     const fitStyle = [style, `font-size: ${cqw}cqw; width: 100%`].filter(Boolean).join("; ");
 
-    return tag("div", {
-      class: fitCls || undefined,
-      style: fitStyle,
-      ...ariaAttrs(props),
-    }, text);
+    return tag(
+      "div",
+      {
+        class: fitCls || undefined,
+        style: fitStyle,
+        ...ariaAttrs(props),
+      },
+      text
+    );
   }
 
-  return tag(safeName, {
-    class: cls || undefined,
-    style: style || undefined,
-    ...ariaAttrs(props),
-  }, text);
+  return tag(
+    safeName,
+    {
+      class: cls || undefined,
+      style: style || undefined,
+      ...ariaAttrs(props),
+    },
+    text
+  );
 };
 
 const lorem = new LoremIpsum({
@@ -76,106 +92,216 @@ const lorem = new LoremIpsum({
   wordsPerSentence: { max: 8, min: 4 },
 });
 
-export const TextDef = defineComponent({
-  name: "Text",
-  component: Text,
-  icon: FaFont,
-  category: "Basic",
-  settings: TextMainTab,
-  toHTML,
-  disable: [
-    "bgColor", "background", "pattern", "border",
-    "shadow", "radius", "opacity", "cursor", "accessibility",
-  ],
-  hoverClickVariant: "text",
-  rules: {
-    canDrag: () => true,
-    canMoveIn: () => false,
+export const TextDef = defineComponent(
+  {
+    name: "Text",
+    component: Text,
+    icon: FaFont,
+    category: "Basic",
+    settings: TextMainTab,
+    toHTML,
+    disable: [
+      "bgColor",
+      "background",
+      "pattern",
+      "border",
+      "shadow",
+      "radius",
+      "opacity",
+      "cursor",
+      "accessibility",
+    ],
+    hoverClickVariant: "text",
+    rules: {
+      canDrag: () => true,
+      canMoveIn: () => false,
+    },
+    tools: props => [
+      <HoverNodeController
+        key="textHoverController"
+        position="top"
+        align="start"
+        placement="end"
+        alt={{
+          position: "bottom",
+          align: "start",
+          placement: "start",
+        }}
+      />,
+    ],
+    presets: [
+      {
+        label: "Title",
+        icon: MdShortText,
+        props: {
+          text: lorem.generateSentences(1),
+          className: "text-2xl md:text-4xl",
+        },
+      },
+      {
+        label: "Sub-title",
+        icon: MdShortText,
+        props: {
+          text: lorem.generateSentences(1),
+          className: "text-lg md:text-xl",
+        },
+      },
+      {
+        label: "Paragraph",
+        icon: BsBodyText,
+        props: {
+          tagName: "p",
+          text: lorem.generateParagraphs(1),
+        },
+      },
+    ],
+    modifiers: [
+      // Composite patterns (real CSS classes via @utility in daisyui-spatial)
+      {
+        name: "body-text",
+        label: "Body",
+        category: "Pattern",
+        description:
+          "Standard paragraph text — comfortable reading size, normal weight, relaxed line height",
+      },
+      {
+        name: "section-heading",
+        label: "Heading",
+        category: "Pattern",
+        description:
+          "Bold section heading — typically h2 size with heading font and tight line height",
+      },
+      {
+        name: "eyebrow",
+        label: "Eyebrow",
+        category: "Pattern",
+        description:
+          "Small uppercase label above a heading — wide letter spacing, muted color, small size",
+      },
+      {
+        name: "subhead",
+        label: "Subhead",
+        category: "Pattern",
+        description:
+          "Secondary heading below the main title — larger than body but smaller than the heading",
+      },
+      // Size
+      { name: "text-xs", label: "XS", category: "Size", exclusive: true },
+      { name: "text-sm", label: "SM", category: "Size", exclusive: true },
+      { name: "text-base", label: "Base", category: "Size", exclusive: true },
+      { name: "text-lg", label: "LG", category: "Size", exclusive: true },
+      { name: "text-xl", label: "XL", category: "Size", exclusive: true },
+      { name: "text-2xl", label: "2XL", category: "Size", exclusive: true },
+      { name: "text-3xl", label: "3XL", category: "Size", exclusive: true },
+      { name: "text-4xl", label: "4XL", category: "Size", exclusive: true },
+      { name: "text-5xl", label: "5XL", category: "Size", exclusive: true },
+      // Weight
+      { name: "font-light", label: "Light", category: "Weight", exclusive: true },
+      { name: "font-normal", label: "Normal", category: "Weight", exclusive: true },
+      { name: "font-medium", label: "Medium", category: "Weight", exclusive: true },
+      { name: "font-semibold", label: "Semibold", category: "Weight", exclusive: true },
+      { name: "font-bold", label: "Bold", category: "Weight", exclusive: true },
+      { name: "font-extrabold", label: "Extra Bold", category: "Weight", exclusive: true },
+      // Alignment
+      { name: "text-left", label: "Left", category: "Align", exclusive: true },
+      { name: "text-center", label: "Center", category: "Align", exclusive: true },
+      { name: "text-right", label: "Right", category: "Align", exclusive: true },
+      // Style
+      {
+        name: "uppercase",
+        label: "Uppercase",
+        category: "Style",
+        description: "Transforms all text to ALL CAPS",
+      },
+      { name: "italic", label: "Italic", category: "Style", description: "Italicizes the text" },
+      {
+        name: "tracking-wide",
+        label: "Wide Track",
+        category: "Style",
+        description: "Slightly increased letter spacing — good for subheadings",
+      },
+      {
+        name: "tracking-widest",
+        label: "Widest Track",
+        category: "Style",
+        description: "Very wide letter spacing — classic eyebrow/label treatment",
+      },
+      {
+        name: "leading-tight",
+        label: "Tight Lines",
+        category: "Style",
+        description: "Tighter line height — good for large headings",
+      },
+      {
+        name: "leading-relaxed",
+        label: "Relaxed Lines",
+        category: "Style",
+        description: "Looser line height — improves readability for body copy",
+      },
+      // DaisyUI
+      {
+        name: "link",
+        label: "Link",
+        category: "DaisyUI",
+        description: "Styles the text as a hyperlink with underline",
+      },
+      {
+        name: "link-primary",
+        label: "Link Primary",
+        category: "DaisyUI",
+        description: "Link styled in the primary brand color",
+      },
+      {
+        name: "link-hover",
+        label: "Link Hover",
+        category: "DaisyUI",
+        description: "Underline appears only on hover — cleaner look for nav links",
+      },
+      // Color
+      {
+        name: "text-primary",
+        label: "Primary",
+        category: "Color",
+        description: "Primary brand color",
+        exclusive: true,
+      },
+      {
+        name: "text-accent",
+        label: "Accent",
+        category: "Color",
+        description: "Accent color — good for highlights and callouts",
+        exclusive: true,
+      },
+      {
+        name: "text-neutral-content",
+        label: "Muted",
+        category: "Color",
+        description: "Muted secondary text — only use on bg-neutral surfaces",
+        exclusive: true,
+      },
+      {
+        name: "opacity-70",
+        label: "Faded",
+        category: "Color",
+        description: "Reduces opacity to 70% — softens text without changing color",
+        exclusive: true,
+      },
+      // Font family
+      {
+        name: "font-heading",
+        label: "Heading Font",
+        category: "Font",
+        description: "Uses the heading typeface defined in the design system",
+        exclusive: true,
+      },
+      {
+        name: "font-body",
+        label: "Body Font",
+        category: "Font",
+        description: "Uses the body typeface defined in the design system",
+        exclusive: true,
+      },
+    ],
   },
-  tools: (props) => [
-    <HoverNodeController
-      key="textHoverController"
-      position="top"
-      align="start"
-      placement="end"
-      alt={{
-        position: "bottom",
-        align: "start",
-        placement: "start",
-      }}
-    />,
-  ],
-  presets: [
-    {
-      label: "Title",
-      icon: MdShortText,
-      props: {
-        text: lorem.generateSentences(1),
-        className: "text-2xl md:text-4xl",
-      },
-    },
-    {
-      label: "Sub-title",
-      icon: MdShortText,
-      props: {
-        text: lorem.generateSentences(1),
-        className: "text-lg md:text-xl",
-      },
-    },
-    {
-      label: "Paragraph",
-      icon: BsBodyText,
-      props: {
-        tagName: "p",
-        text: lorem.generateParagraphs(1),
-      },
-    },
-  ],
-  modifiers: [
-    // Composite patterns (real CSS classes via @utility in daisyui-spatial)
-    { name: "body-text", label: "Body", category: "Pattern", description: "Standard paragraph text — comfortable reading size, normal weight, relaxed line height" },
-    { name: "section-heading", label: "Heading", category: "Pattern", description: "Bold section heading — typically h2 size with heading font and tight line height" },
-    { name: "eyebrow", label: "Eyebrow", category: "Pattern", description: "Small uppercase label above a heading — wide letter spacing, muted color, small size" },
-    { name: "subhead", label: "Subhead", category: "Pattern", description: "Secondary heading below the main title — larger than body but smaller than the heading" },
-    // Size
-    { name: "text-xs", label: "XS", category: "Size", exclusive: true },
-    { name: "text-sm", label: "SM", category: "Size", exclusive: true },
-    { name: "text-base", label: "Base", category: "Size", exclusive: true },
-    { name: "text-lg", label: "LG", category: "Size", exclusive: true },
-    { name: "text-xl", label: "XL", category: "Size", exclusive: true },
-    { name: "text-2xl", label: "2XL", category: "Size", exclusive: true },
-    { name: "text-3xl", label: "3XL", category: "Size", exclusive: true },
-    { name: "text-4xl", label: "4XL", category: "Size", exclusive: true },
-    { name: "text-5xl", label: "5XL", category: "Size", exclusive: true },
-    // Weight
-    { name: "font-light", label: "Light", category: "Weight", exclusive: true },
-    { name: "font-normal", label: "Normal", category: "Weight", exclusive: true },
-    { name: "font-medium", label: "Medium", category: "Weight", exclusive: true },
-    { name: "font-semibold", label: "Semibold", category: "Weight", exclusive: true },
-    { name: "font-bold", label: "Bold", category: "Weight", exclusive: true },
-    { name: "font-extrabold", label: "Extra Bold", category: "Weight", exclusive: true },
-    // Alignment
-    { name: "text-left", label: "Left", category: "Align", exclusive: true },
-    { name: "text-center", label: "Center", category: "Align", exclusive: true },
-    { name: "text-right", label: "Right", category: "Align", exclusive: true },
-    // Style
-    { name: "uppercase", label: "Uppercase", category: "Style", description: "Transforms all text to ALL CAPS" },
-    { name: "italic", label: "Italic", category: "Style", description: "Italicizes the text" },
-    { name: "tracking-wide", label: "Wide Track", category: "Style", description: "Slightly increased letter spacing — good for subheadings" },
-    { name: "tracking-widest", label: "Widest Track", category: "Style", description: "Very wide letter spacing — classic eyebrow/label treatment" },
-    { name: "leading-tight", label: "Tight Lines", category: "Style", description: "Tighter line height — good for large headings" },
-    { name: "leading-relaxed", label: "Relaxed Lines", category: "Style", description: "Looser line height — improves readability for body copy" },
-    // DaisyUI
-    { name: "link", label: "Link", category: "DaisyUI", description: "Styles the text as a hyperlink with underline" },
-    { name: "link-primary", label: "Link Primary", category: "DaisyUI", description: "Link styled in the primary brand color" },
-    { name: "link-hover", label: "Link Hover", category: "DaisyUI", description: "Underline appears only on hover — cleaner look for nav links" },
-    // Color
-    { name: "text-primary", label: "Primary", category: "Color", description: "Primary brand color", exclusive: true },
-    { name: "text-accent", label: "Accent", category: "Color", description: "Accent color — good for highlights and callouts", exclusive: true },
-    { name: "text-neutral-content", label: "Muted", category: "Color", description: "Muted secondary text — only use on bg-neutral surfaces", exclusive: true },
-    { name: "opacity-70", label: "Faded", category: "Color", description: "Reduces opacity to 70% — softens text without changing color", exclusive: true },
-    // Font family
-    { name: "font-heading", label: "Heading Font", category: "Font", description: "Uses the heading typeface defined in the design system", exclusive: true },
-    { name: "font-body", label: "Body Font", category: "Font", description: "Uses the body typeface defined in the design system", exclusive: true },
-  ],
-}, { __internal: true });
+  { __internal: true }
+);

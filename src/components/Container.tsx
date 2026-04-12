@@ -8,10 +8,7 @@ import { addActionHandlers } from "../utils/clickControls";
 import { migrateAction, actionToHref, isHandlerAction, type NodeAction } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { Section, Box } from "@pagehub/ui";
-import {
-  applyBackgroundImage,
-  motionIt
-} from "../utils/lib";
+import { applyBackgroundImage, motionIt } from "../utils/lib";
 
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import { useScrollEffect } from "../utils/hooks/useScrollEffect";
@@ -44,14 +41,20 @@ export interface ContainerProps extends BaseSelectorProps {
 }
 
 export const Container = (incomingProps: Partial<ContainerProps>) => {
-  let props: any = { type: "container", canDelete: true, canEditName: true, isHomePage: false, backgroundFetchPriority: "low", ...incomingProps };
+  let props: any = {
+    type: "container",
+    canDelete: true,
+    canEditName: true,
+    isHomePage: false,
+    backgroundFetchPriority: "low",
+    ...incomingProps,
+  };
 
   const view = useView();
   const viewMode = "page";
   const isolate = useIsolate();
   const preview = usePreview();
   const settings = null;
-
 
   const {
     connectors: { connect, drag },
@@ -136,9 +139,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
 
   /** Skip dashed empty hint when this canvas already has a background (image, inline style, or Tailwind `bg-*`). */
   const suppressEmptyCanvasHint =
-    !!props.backgroundImage ||
-    !!props.root?.style ||
-    /\bbg-/.test(className.trim());
+    !!props.backgroundImage || !!props.root?.style || /\bbg-/.test(className.trim());
 
   let prop: any = {
     ref: r => {
@@ -159,20 +160,20 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
         preview={preview}
         query={query}
       >
-          {children ? (
-            children
-          ) : isCanvasNode && !hasChildNodes && enabled && !suppressEmptyCanvasHint ? (
-            <EditorEmptyLeafHint
-              selected={isActive}
-              icon={props.type === "page" ? <TbNote aria-hidden /> : <TbContainer aria-hidden />}
-              idleLabel={props.type === "page" ? "Empty page" : "Empty container"}
-              selectedDetail={
-                props.type === "page"
-                  ? "Add sections from the sidebar"
-                  : "Drag blocks or components here"
-              }
-            />
-          ) : null}
+        {children ? (
+          children
+        ) : isCanvasNode && !hasChildNodes && enabled && !suppressEmptyCanvasHint ? (
+          <EditorEmptyLeafHint
+            selected={isActive}
+            icon={props.type === "page" ? <TbNote aria-hidden /> : <TbContainer aria-hidden />}
+            idleLabel={props.type === "page" ? "Empty page" : "Empty container"}
+            selectedDetail={
+              props.type === "page"
+                ? "Add sections from the sidebar"
+                : "Drag blocks or components here"
+            }
+          />
+        ) : null}
       </RenderPattern>
     ),
   };
@@ -185,8 +186,10 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     prop.onClick = (e: any) => {
       e.preventDefault();
       if (!enabled) {
-        const target = action?.type === "link-url" || action?.type === "link-page"
-          ? (action as any).target : undefined;
+        const target =
+          action?.type === "link-url" || action?.type === "link-page"
+            ? (action as any).target
+            : undefined;
         window.open(resolvedUrl, target || "_self");
       }
     };
@@ -306,7 +309,10 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
       if (!enabled) {
         prop.children = (
           <div className="ph-hscroll-sticky" style={{ height: "100vh", overflow: "hidden" }}>
-            <div className="ph-hscroll-track" style={{ display: "flex", height: "100%", willChange: "transform" }}>
+            <div
+              className="ph-hscroll-track"
+              style={{ display: "flex", height: "100%", willChange: "transform" }}
+            >
               {prop.children}
             </div>
           </div>
@@ -315,7 +321,10 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     }
   }
 
-  const container = React.createElement(motionIt(props, UiComponent, enabled), { ...prop, as: tagName });
+  const container = React.createElement(motionIt(props, UiComponent, enabled), {
+    ...prop,
+    as: tagName,
+  });
 
   return container;
 };

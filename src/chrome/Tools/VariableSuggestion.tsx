@@ -6,9 +6,7 @@ import type { SuggestionProps } from "../../extensions/VariableNode";
  * Floating popup that appears when the user types {{ in the TipTap editor.
  * Shows available template variables and inserts the selected one.
  */
-export function VariableSuggestionPopup({ suggestion }: {
-  suggestion: SuggestionProps | null;
-}) {
+export function VariableSuggestionPopup({ suggestion }: { suggestion: SuggestionProps | null }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -60,14 +58,14 @@ export function VariableSuggestionPopup({ suggestion }: {
         zIndex: 99999,
       }}
     >
-      <div className="rounded-lg border border-base-300 bg-base-200 p-1 shadow-xl">
-        <div className="mb-1 px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-neutral-content">
+      <div className="border-base-300 bg-base-200 rounded-lg border p-1 shadow-xl">
+        <div className="text-neutral-content mb-1 px-2 py-1 text-[10px] font-medium tracking-wider uppercase">
           Variables
         </div>
         {suggestion.items.map((item, index) => (
           <button
             key={item.id}
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               e.stopPropagation();
               suggestion.command(item);
@@ -79,13 +77,11 @@ export function VariableSuggestionPopup({ suggestion }: {
                 : "text-neutral-content hover:bg-accent/50"
             }`}
           >
-            <span className="flex h-5 items-center rounded bg-primary/10 px-1.5 font-mono text-[10px] text-primary">
+            <span className="bg-primary/10 text-primary flex h-5 items-center rounded px-1.5 font-mono text-[10px]">
               {"{{"}
             </span>
             <span className="flex-1 truncate">{item.label}</span>
-            <span className="font-mono text-[10px] text-neutral-content/60">
-              {item.id}
-            </span>
+            <span className="text-neutral-content/60 font-mono text-[10px]">{item.id}</span>
           </button>
         ))}
       </div>

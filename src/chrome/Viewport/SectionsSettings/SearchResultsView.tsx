@@ -13,9 +13,15 @@ import { buildElementFromStructure } from "./blockHelpers";
 
 export function SearchResultsView({ query: searchQuery }: { query: string }) {
   const { actions, query: editorQuery } = useEditor();
-  const { connectors: { create } } = useEditor(state => ({ enabled: state.options.enabled }));
+  const {
+    connectors: { create },
+  } = useEditor(state => ({ enabled: state.options.enabled }));
   const resolver = useMemo(() => {
-    try { return (editorQuery as any).getOptions?.()?.resolver ?? {}; } catch { return {}; }
+    try {
+      return (editorQuery as any).getOptions?.()?.resolver ?? {};
+    } catch {
+      return {};
+    }
   }, [editorQuery]);
 
   const positionInfo = useAtomValue(SectionPickerDialogAtom);
@@ -24,19 +30,28 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
 
   const { blocks, isLoading } = useBlockSearch(searchQuery);
 
-  const insertElement = useCallback((element: any) => {
-    if (!element) return;
-    if (positionInfo.nodeId && positionInfo.parent) {
-      const parentNodeData = editorQuery.node(positionInfo.parent).get();
-      const currentIndex = parentNodeData.data.nodes.indexOf(positionInfo.nodeId);
-      const newIndex = positionInfo.position === "bottom" ? currentIndex + 1 : currentIndex;
-      AddElement({ element, actions, query: editorQuery, addTo: positionInfo.parent, index: newIndex });
-      setPositionInfo({ isOpen: false, nodeId: null, position: null, parent: null });
-    } else {
-      const targetPageId = getTargetPageId();
-      AddElement({ element, actions, query: editorQuery, addTo: targetPageId });
-    }
-  }, [actions, editorQuery, positionInfo, setPositionInfo, getTargetPageId]);
+  const insertElement = useCallback(
+    (element: any) => {
+      if (!element) return;
+      if (positionInfo.nodeId && positionInfo.parent) {
+        const parentNodeData = editorQuery.node(positionInfo.parent).get();
+        const currentIndex = parentNodeData.data.nodes.indexOf(positionInfo.nodeId);
+        const newIndex = positionInfo.position === "bottom" ? currentIndex + 1 : currentIndex;
+        AddElement({
+          element,
+          actions,
+          query: editorQuery,
+          addTo: positionInfo.parent,
+          index: newIndex,
+        });
+        setPositionInfo({ isOpen: false, nodeId: null, position: null, parent: null });
+      } else {
+        const targetPageId = getTargetPageId();
+        AddElement({ element, actions, query: editorQuery, addTo: targetPageId });
+      }
+    },
+    [actions, editorQuery, positionInfo, setPositionInfo, getTargetPageId]
+  );
 
   // Group results by category
   const grouped = useMemo(() => {
@@ -52,7 +67,7 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <TbLoader2 className="size-5 animate-spin text-neutral-content" />
+        <TbLoader2 className="text-neutral-content size-5 animate-spin" />
       </div>
     );
   }
@@ -60,7 +75,9 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
   if (blocks.length === 0) {
     return (
       <div className="flex h-32 items-center justify-center p-6">
-        <p className="text-sm text-neutral-content">No blocks found for &ldquo;{searchQuery}&rdquo;</p>
+        <p className="text-neutral-content text-sm">
+          No blocks found for &ldquo;{searchQuery}&rdquo;
+        </p>
       </div>
     );
   }
@@ -70,7 +87,7 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
       <div className="p-3 pt-1">
         {Object.entries(grouped).map(([cat, catBlocks]) => (
           <div key={cat} className="mb-4">
-            <div className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-content">
+            <div className="text-neutral-content mb-2 text-xs font-medium tracking-wider uppercase">
               {cat} ({catBlocks.length})
             </div>
             <div className="grid w-full grid-cols-1 gap-3">
@@ -80,13 +97,23 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
                   block={block}
                   resolver={resolver}
                   onDoubleClick={() => {
-                    const element = buildElementFromStructure(block.structure, block.slug, false, resolver);
+                    const element = buildElementFromStructure(
+                      block.structure,
+                      block.slug,
+                      false,
+                      resolver
+                    );
                     insertElement(element);
                   }}
-                  onDragRef={(ref) => {
+                  onDragRef={ref => {
                     if (!ref) return;
                     ref.setAttribute("data-create-type", "section");
-                    const tool = buildElementFromStructure(block.structure, block.slug, false, resolver);
+                    const tool = buildElementFromStructure(
+                      block.structure,
+                      block.slug,
+                      false,
+                      resolver
+                    );
                     if (tool) create(ref, tool);
                   }}
                 />

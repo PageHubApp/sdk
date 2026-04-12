@@ -2,8 +2,7 @@ import type { ReactElement } from "react";
 import { Tooltip } from "./layout/Tooltip";
 
 /** Shown after {@link TOOLBOX_INSERT_HINT_DELAY_MS} hover on toolbox tiles and block cards. */
-export const TOOLBOX_INSERT_HINT =
-  "Double-click adds to the selected area; drag to place.";
+export const TOOLBOX_INSERT_HINT = "Double-click adds to the selected area; drag to place.";
 
 export const TOOLBOX_INSERT_HINT_DELAY_MS = 500;
 

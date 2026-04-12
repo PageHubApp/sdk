@@ -152,7 +152,10 @@ export const resolvePageRef = (url: string, query: any, currentPath?: string): s
     if (isHomePage) {
       return baseUrl || "/";
     } else {
-      const pageSlug = displayName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const pageSlug = displayName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
       return baseUrl ? `${baseUrl}/${pageSlug}` : `/${pageSlug}`;
     }
   } catch (e) {

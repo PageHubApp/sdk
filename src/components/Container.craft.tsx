@@ -1,6 +1,9 @@
 /** Container — Component definition via defineComponent() (no canvas inline tool controllers). */
 import { TbContainer, TbLayoutColumns, TbLayoutRows } from "react-icons/tb";
-import { ContainerMainTab, HeaderFooterToggles } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ContainerMainTab";
+import {
+  ContainerMainTab,
+  HeaderFooterToggles,
+} from "../chrome/Toolbar/UnifiedSettings/mainTabs/ContainerMainTab";
 import { defineComponent } from "../define";
 import { ariaAttrs, getInlineStyle, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
 import { Container } from "./Container";
@@ -25,8 +28,8 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     style: getInlineStyle(props) || undefined,
     id: props.id || props.anchor || undefined,
     ...ariaAttrs(props),
-    action: t === "form" ? (props.action || "") : undefined,
-    method: t === "form" ? (props.method || "POST") : undefined,
+    action: t === "form" ? props.action || "" : undefined,
+    method: t === "form" ? props.method || "POST" : undefined,
     open: t === "details" && props.open ? "" : undefined,
     "data-tab-group": props.tabGroup || undefined,
   };
@@ -41,7 +44,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     ctx.classes.add("ph-hscroll");
     const inner =
       `<div class="ph-hscroll-sticky" style="height:100vh;overflow:hidden">` +
-        `<div class="ph-hscroll-track" style="display:flex;height:100%;will-change:transform">${children}</div>` +
+      `<div class="ph-hscroll-track" style="display:flex;height:100%;will-change:transform">${children}</div>` +
       `</div>`;
     return tag(t, attrs, inner);
   }
@@ -77,82 +80,288 @@ const canMoveIn = (nodes: any[], into: any) => {
   });
 };
 
-export const ContainerDef = defineComponent({
-  name: "Container",
-  component: Container,
-  icon: TbContainer,
-  category: "Layout",
-  canvas: true,
-  settings: ContainerMainTab,
-  toolbarExtra: <HeaderFooterToggles />,
-  toHTML,
-  rules: {
-    canDrag: () => true,
-    canDelete: () => true,
-    canMoveIn: (node, into) => canMoveIn(node, into),
-  },
-  presets: [
-    {
-      label: "Row",
-      icon: TbLayoutColumns,
-      props: {
-        className: "flex flex-row flex-wrap gap-space-md items-start min-w-0 w-full",
+export const ContainerDef = defineComponent(
+  {
+    name: "Container",
+    component: Container,
+    icon: TbContainer,
+    category: "Layout",
+    canvas: true,
+    settings: ContainerMainTab,
+    toolbarExtra: <HeaderFooterToggles />,
+    toHTML,
+    rules: {
+      canDrag: () => true,
+      canDelete: () => true,
+      canMoveIn: (node, into) => canMoveIn(node, into),
+    },
+    presets: [
+      {
+        label: "Row",
+        icon: TbLayoutColumns,
+        props: {
+          className: "flex flex-row flex-wrap gap-space-md items-start min-w-0 w-full",
+        },
       },
-    },
-    {
-      label: "Column",
-      icon: TbLayoutRows,
-      props: { className: "flex flex-col gap-space-md w-full" },
-    },
-  ],
-  modifiers: [
-    // Composite patterns (real CSS classes via @utility in daisyui-spatial)
-    // DaisyUI component classes go in `requires` — auto-added alongside the modifier.
-    { name: "section-wrapper", label: "Section", category: "Pattern", description: "Full-width section with standard vertical padding and max-width content area" },
-    { name: "section-wrapper-dark", label: "Section Dark", category: "Pattern", description: "Full-width dark section — dark background with light text, standard padding" },
-    { name: "card-surface", label: "Card Surface", category: "Pattern", description: "Raised card with border, shadow, rounded corners, and padding", requires: "card" },
-    { name: "icon-row", label: "Icon Row", category: "Pattern", description: "Horizontal flex row with gap — good for icon + label pairs" },
-    { name: "content-col", label: "Content Column", category: "Pattern", description: "Vertical flex column with gap — good for stacked headings, copy, and CTAs" },
-    { name: "hero-content-centered", label: "Hero Content", category: "Pattern", description: "Centered hero content with max-width constraint — use inside a hero container", requires: "hero-content" },
-    // DaisyUI component roles
-    { name: "card", label: "Card", category: "DaisyUI", description: "DaisyUI card — adds shadow, border-radius, and overflow clipping" },
-    { name: "card-body", label: "Card Body", category: "DaisyUI", description: "Inner padding area of a DaisyUI card" },
-    { name: "card-compact", label: "Compact Card", category: "DaisyUI", description: "Card with reduced padding — tighter than the default card-body" },
-    { name: "hero", label: "Hero", category: "DaisyUI", description: "DaisyUI hero — full-width flex container with centered content layout" },
-    { name: "hero-content", label: "Hero Content", category: "DaisyUI", description: "Inner content wrapper for a hero — constrains width and centers children" },
-    { name: "hero-overlay", label: "Hero Overlay", category: "DaisyUI", description: "Dark semi-transparent overlay — place over a background image to improve text contrast" },
-    { name: "navbar", label: "Navbar", category: "DaisyUI", description: "DaisyUI navbar — horizontal bar with padding and flex layout for nav items" },
-    { name: "drawer", label: "Drawer", category: "DaisyUI", description: "DaisyUI drawer root — used for slide-in side panel layouts" },
-    { name: "modal-box", label: "Modal Box", category: "DaisyUI", description: "DaisyUI modal content box — centered dialog with shadow and padding" },
-    { name: "collapse", label: "Collapse", category: "DaisyUI", description: "DaisyUI collapsible container — children toggle open/closed" },
-    { name: "collapse-title", label: "Collapse Title", category: "DaisyUI", description: "Clickable title row that toggles the collapse open or closed" },
-    { name: "collapse-content", label: "Collapse Content", category: "DaisyUI", description: "Hidden content area that expands when the collapse is open" },
-    // Spacing (spatial tokens)
-    { name: "p-space-xs", label: "XS Padding", category: "Padding", description: "Extra-small padding on all sides using the density-aware spatial scale" },
-    { name: "p-space-sm", label: "SM Padding", category: "Padding", description: "Small padding on all sides using the density-aware spatial scale" },
-    { name: "p-space-md", label: "MD Padding", category: "Padding", description: "Medium padding on all sides using the density-aware spatial scale" },
-    { name: "p-space-lg", label: "LG Padding", category: "Padding", description: "Large padding on all sides using the density-aware spatial scale" },
-    { name: "p-space-xl", label: "XL Padding", category: "Padding", description: "Extra-large padding on all sides using the density-aware spatial scale" },
-    // Width
-    { name: "w-full", label: "Full", category: "Width", description: "Stretches to 100% of the parent width" },
-    { name: "w-1/2", label: "Half", category: "Width", description: "50% of the parent width" },
-    { name: "w-1/3", label: "Third", category: "Width", description: "33% of the parent width" },
-    { name: "w-2/3", label: "Two Thirds", category: "Width", description: "66% of the parent width" },
-    // Height
-    { name: "min-h-screen", label: "Full Screen", category: "Height", description: "Minimum height of 100vh — good for full-page hero sections" },
-    { name: "min-h-[50vh]", label: "Half Screen", category: "Height", description: "Minimum height of 50vh — good for mid-sized hero sections" },
-    // Layout
-    { name: "mx-auto", label: "Centered", category: "Layout", description: "Centers a block element horizontally using auto left/right margins" },
-    { name: "overflow-hidden", label: "Clip Overflow", category: "Layout", description: "Clips content to the container bounds — required when using rounded corners with images" },
-    { name: "items-center", label: "Center Items", category: "Layout", description: "Vertically centers flex children (cross-axis alignment)" },
-    { name: "justify-center", label: "Center Content", category: "Layout", description: "Horizontally centers flex children (main-axis alignment)" },
-    // Color surfaces
-    { name: "bg-base-100", label: "Base 100", category: "Surface", description: "Primary page background color", exclusive: true },
-    { name: "bg-base-200", label: "Base 200", category: "Surface", description: "Slightly raised surface — good for cards and sidebars", exclusive: true },
-    { name: "bg-base-content", label: "Dark", category: "Surface", description: "High-contrast dark background using the content color — use text-base-100 for text", exclusive: true },
-    { name: "bg-primary", label: "Primary", category: "Surface", description: "Primary brand color background — use text-primary-content for text", exclusive: true },
-    { name: "bg-secondary", label: "Secondary", category: "Surface", description: "Secondary brand color background — use text-secondary-content for text", exclusive: true },
-    { name: "bg-accent", label: "Accent", category: "Surface", description: "Accent color background — use text-accent-content for text", exclusive: true },
-    { name: "bg-neutral", label: "Neutral", category: "Surface", description: "Neutral dark background — use text-neutral-content for text", exclusive: true },
-  ],
-}, { __internal: true });
+      {
+        label: "Column",
+        icon: TbLayoutRows,
+        props: { className: "flex flex-col gap-space-md w-full" },
+      },
+    ],
+    modifiers: [
+      // Composite patterns (real CSS classes via @utility in daisyui-spatial)
+      // DaisyUI component classes go in `requires` — auto-added alongside the modifier.
+      {
+        name: "section-wrapper",
+        label: "Section",
+        category: "Pattern",
+        description: "Full-width section with standard vertical padding and max-width content area",
+      },
+      {
+        name: "section-wrapper-dark",
+        label: "Section Dark",
+        category: "Pattern",
+        description: "Full-width dark section — dark background with light text, standard padding",
+      },
+      {
+        name: "card-surface",
+        label: "Card Surface",
+        category: "Pattern",
+        description: "Raised card with border, shadow, rounded corners, and padding",
+        requires: "card",
+      },
+      {
+        name: "icon-row",
+        label: "Icon Row",
+        category: "Pattern",
+        description: "Horizontal flex row with gap — good for icon + label pairs",
+      },
+      {
+        name: "content-col",
+        label: "Content Column",
+        category: "Pattern",
+        description: "Vertical flex column with gap — good for stacked headings, copy, and CTAs",
+      },
+      {
+        name: "hero-content-centered",
+        label: "Hero Content",
+        category: "Pattern",
+        description:
+          "Centered hero content with max-width constraint — use inside a hero container",
+        requires: "hero-content",
+      },
+      // DaisyUI component roles
+      {
+        name: "card",
+        label: "Card",
+        category: "DaisyUI",
+        description: "DaisyUI card — adds shadow, border-radius, and overflow clipping",
+      },
+      {
+        name: "card-body",
+        label: "Card Body",
+        category: "DaisyUI",
+        description: "Inner padding area of a DaisyUI card",
+      },
+      {
+        name: "card-compact",
+        label: "Compact Card",
+        category: "DaisyUI",
+        description: "Card with reduced padding — tighter than the default card-body",
+      },
+      {
+        name: "hero",
+        label: "Hero",
+        category: "DaisyUI",
+        description: "DaisyUI hero — full-width flex container with centered content layout",
+      },
+      {
+        name: "hero-content",
+        label: "Hero Content",
+        category: "DaisyUI",
+        description: "Inner content wrapper for a hero — constrains width and centers children",
+      },
+      {
+        name: "hero-overlay",
+        label: "Hero Overlay",
+        category: "DaisyUI",
+        description:
+          "Dark semi-transparent overlay — place over a background image to improve text contrast",
+      },
+      {
+        name: "navbar",
+        label: "Navbar",
+        category: "DaisyUI",
+        description: "DaisyUI navbar — horizontal bar with padding and flex layout for nav items",
+      },
+      {
+        name: "drawer",
+        label: "Drawer",
+        category: "DaisyUI",
+        description: "DaisyUI drawer root — used for slide-in side panel layouts",
+      },
+      {
+        name: "modal-box",
+        label: "Modal Box",
+        category: "DaisyUI",
+        description: "DaisyUI modal content box — centered dialog with shadow and padding",
+      },
+      {
+        name: "collapse",
+        label: "Collapse",
+        category: "DaisyUI",
+        description: "DaisyUI collapsible container — children toggle open/closed",
+      },
+      {
+        name: "collapse-title",
+        label: "Collapse Title",
+        category: "DaisyUI",
+        description: "Clickable title row that toggles the collapse open or closed",
+      },
+      {
+        name: "collapse-content",
+        label: "Collapse Content",
+        category: "DaisyUI",
+        description: "Hidden content area that expands when the collapse is open",
+      },
+      // Spacing (spatial tokens)
+      {
+        name: "p-space-xs",
+        label: "XS Padding",
+        category: "Padding",
+        description: "Extra-small padding on all sides using the density-aware spatial scale",
+      },
+      {
+        name: "p-space-sm",
+        label: "SM Padding",
+        category: "Padding",
+        description: "Small padding on all sides using the density-aware spatial scale",
+      },
+      {
+        name: "p-space-md",
+        label: "MD Padding",
+        category: "Padding",
+        description: "Medium padding on all sides using the density-aware spatial scale",
+      },
+      {
+        name: "p-space-lg",
+        label: "LG Padding",
+        category: "Padding",
+        description: "Large padding on all sides using the density-aware spatial scale",
+      },
+      {
+        name: "p-space-xl",
+        label: "XL Padding",
+        category: "Padding",
+        description: "Extra-large padding on all sides using the density-aware spatial scale",
+      },
+      // Width
+      {
+        name: "w-full",
+        label: "Full",
+        category: "Width",
+        description: "Stretches to 100% of the parent width",
+      },
+      { name: "w-1/2", label: "Half", category: "Width", description: "50% of the parent width" },
+      { name: "w-1/3", label: "Third", category: "Width", description: "33% of the parent width" },
+      {
+        name: "w-2/3",
+        label: "Two Thirds",
+        category: "Width",
+        description: "66% of the parent width",
+      },
+      // Height
+      {
+        name: "min-h-screen",
+        label: "Full Screen",
+        category: "Height",
+        description: "Minimum height of 100vh — good for full-page hero sections",
+      },
+      {
+        name: "min-h-[50vh]",
+        label: "Half Screen",
+        category: "Height",
+        description: "Minimum height of 50vh — good for mid-sized hero sections",
+      },
+      // Layout
+      {
+        name: "mx-auto",
+        label: "Centered",
+        category: "Layout",
+        description: "Centers a block element horizontally using auto left/right margins",
+      },
+      {
+        name: "overflow-hidden",
+        label: "Clip Overflow",
+        category: "Layout",
+        description:
+          "Clips content to the container bounds — required when using rounded corners with images",
+      },
+      {
+        name: "items-center",
+        label: "Center Items",
+        category: "Layout",
+        description: "Vertically centers flex children (cross-axis alignment)",
+      },
+      {
+        name: "justify-center",
+        label: "Center Content",
+        category: "Layout",
+        description: "Horizontally centers flex children (main-axis alignment)",
+      },
+      // Color surfaces
+      {
+        name: "bg-base-100",
+        label: "Base 100",
+        category: "Surface",
+        description: "Primary page background color",
+        exclusive: true,
+      },
+      {
+        name: "bg-base-200",
+        label: "Base 200",
+        category: "Surface",
+        description: "Slightly raised surface — good for cards and sidebars",
+        exclusive: true,
+      },
+      {
+        name: "bg-base-content",
+        label: "Dark",
+        category: "Surface",
+        description:
+          "High-contrast dark background using the content color — use text-base-100 for text",
+        exclusive: true,
+      },
+      {
+        name: "bg-primary",
+        label: "Primary",
+        category: "Surface",
+        description: "Primary brand color background — use text-primary-content for text",
+        exclusive: true,
+      },
+      {
+        name: "bg-secondary",
+        label: "Secondary",
+        category: "Surface",
+        description: "Secondary brand color background — use text-secondary-content for text",
+        exclusive: true,
+      },
+      {
+        name: "bg-accent",
+        label: "Accent",
+        category: "Surface",
+        description: "Accent color background — use text-accent-content for text",
+        exclusive: true,
+      },
+      {
+        name: "bg-neutral",
+        label: "Neutral",
+        category: "Surface",
+        description: "Neutral dark background — use text-neutral-content for text",
+        exclusive: true,
+      },
+    ],
+  },
+  { __internal: true }
+);

@@ -24,7 +24,10 @@ const POSITION_CLASSES: Record<string, string> = {
   "top-end": "bottom-full right-0",
 };
 
-export const Dropdown = ({ children, ...incomingProps }: Partial<DropdownProps> & { children?: React.ReactNode }) => {
+export const Dropdown = ({
+  children,
+  ...incomingProps
+}: Partial<DropdownProps> & { children?: React.ReactNode }) => {
   const props: DropdownProps = {
     trigger: "click",
     position: "bottom-start",
@@ -33,7 +36,10 @@ export const Dropdown = ({ children, ...incomingProps }: Partial<DropdownProps> 
   };
 
   const { query, actions } = useEditor();
-  const { id, connectors: { connect } } = useNode();
+  const {
+    id,
+    connectors: { connect },
+  } = useNode();
   const { enabled, isActive } = useEditor((state, q) => ({
     enabled: state.options.enabled,
     isActive: q.getEvent("selected").contains(id),
@@ -41,10 +47,12 @@ export const Dropdown = ({ children, ...incomingProps }: Partial<DropdownProps> 
 
   const [isMounted, setIsMounted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  useEffect(() => { setIsMounted(true); }, []);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Check if this node or any child is selected
-  const { isSelectedOrChildSelected } = useEditor((state) => {
+  const { isSelectedOrChildSelected } = useEditor(state => {
     if (!enabled) return { isSelectedOrChildSelected: false };
     try {
       const selectedId = state.events?.selected?.values?.().next?.()?.value;
@@ -71,10 +79,13 @@ export const Dropdown = ({ children, ...incomingProps }: Partial<DropdownProps> 
   }, [isSelectedOrChildSelected]);
 
   // Double-click to enter edit mode (show panel)
-  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-    if (!enabled) return;
-    setIsEditing(true);
-  }, [enabled]);
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!enabled) return;
+      setIsEditing(true);
+    },
+    [enabled]
+  );
 
   // Update panel CSS classes when trigger/position props change
   useEffect(() => {
@@ -100,8 +111,8 @@ export const Dropdown = ({ children, ...incomingProps }: Partial<DropdownProps> 
           newClassName = newClassName.replace(show, "").trim();
         });
         // Remove old position classes
-        Object.values(POSITION_CLASSES).forEach((cls) => {
-          cls.split(" ").forEach((c) => {
+        Object.values(POSITION_CLASSES).forEach(cls => {
+          cls.split(" ").forEach(c => {
             newClassName = newClassName.replace(new RegExp(`\\b${c}\\b`, "g"), "").trim();
           });
         });
@@ -119,7 +130,9 @@ export const Dropdown = ({ children, ...incomingProps }: Partial<DropdownProps> 
         newClassName = newClassName.replace(/\s+/g, " ");
 
         if (newClassName !== currentClassName) {
-          actions.setProp(childId, (p: any) => { p.className = newClassName; });
+          actions.setProp(childId, (p: any) => {
+            p.className = newClassName;
+          });
         }
       }
     });
@@ -175,7 +188,7 @@ export const Dropdown = ({ children, ...incomingProps }: Partial<DropdownProps> 
           idleLabel="Empty dropdown"
           selectedDetail="Drop trigger and panel here"
         />
-      ) : null),
+      ) : null)
   );
 };
 

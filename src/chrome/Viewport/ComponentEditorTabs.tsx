@@ -68,7 +68,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
                 is={Container}
                 type="component"
                 custom={{ displayName: componentName }}
-                className="bg-transparent flex flex-col gap-4 p-6"
+                className="flex flex-col gap-4 bg-transparent p-6"
               >
                 <Text text="Start editing your component..." />
               </Element>
@@ -365,10 +365,13 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
 
   return (
     <div
-      className={`relative flex h-10 items-center gap-2 border-b border-base-300 bg-secondary px-3 pt-2 ${className}`}
+      className={`border-base-300 bg-secondary relative flex h-10 items-center gap-2 border-b px-3 pt-2 ${className}`}
     >
       {/* Tabs */}
-      <div className="scrollbar-hide flex min-w-0 flex-1 items-center gap-1 overflow-x-auto" role="tablist">
+      <div
+        className="scrollbar-hide flex min-w-0 flex-1 items-center gap-1 overflow-x-auto"
+        role="tablist"
+      >
         {tabs.map(tab => {
           // Find the component to check if it's a section
           const component = components.find(c => {
@@ -387,10 +390,15 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
               aria-selected={activeTabId === tab.id}
               tabIndex={0}
               onClick={() => handleTabClick(tab.id)}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTabClick(tab.id); } }}
+              onKeyDown={e => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleTabClick(tab.id);
+                }
+              }}
               className={`group flex min-w-32 cursor-pointer items-center gap-2 rounded-t px-3 py-1.5 transition-colors ${
                 activeTabId === tab.id
-                  ? "bg-neutral font-bold text-neutral-content hover:bg-base-200 hover:text-base-content"
+                  ? "bg-neutral text-neutral-content hover:bg-base-200 hover:text-base-content font-bold"
                   : "bg-base-100 text-secondary-content hover:bg-base-200 hover:text-base-content"
               } `}
             >
@@ -404,7 +412,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
               </span>
               <button
                 onClick={e => handleCloseTab(tab.id, e)}
-                className={`rounded-lg p-0.5 transition-opacity hover:bg-neutral hover:text-neutral-content ${activeTabId === tab.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                className={`hover:bg-neutral hover:text-neutral-content rounded-lg p-0.5 transition-opacity ${activeTabId === tab.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
               >
                 <TbX className="size-3" />
               </button>
@@ -415,4 +423,3 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
     </div>
   );
 }
-

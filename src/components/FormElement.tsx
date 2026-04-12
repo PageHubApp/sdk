@@ -75,7 +75,8 @@ export interface FormElementProps extends BaseSelectorProps {
 export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   let props: any = {
     root: {},
-    className: "border-solid border-(length:--border) border-(--input-border-color) rounded-field bg-(--input-bg-color) text-(--input-text-color) placeholder:text-(--input-placeholder-color) focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
+    className:
+      "border-solid border-(length:--border) border-(--input-border-color) rounded-field bg-(--input-bg-color) text-(--input-text-color) placeholder:text-(--input-placeholder-color) focus:ring-(length:--input-focus-ring) focus:ring-(--input-focus-ring-color) focus:outline-none",
     canDelete: true,
     type: "",
     placeholder: "",
@@ -97,8 +98,6 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
 
   props = setClonedProps(props, query);
 
-
-
   const {
     connectors: { connect, drag },
     id,
@@ -119,9 +118,10 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
     id: inputId,
     className: props.className || "",
     type: props.type,
-    defaultValue: (!enabled && props.prefillFromUrl && props.name && typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get(props.name)
-      : "") || "",
+    defaultValue:
+      (!enabled && props.prefillFromUrl && props.name && typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get(props.name)
+        : "") || "",
     "aria-label": props.label || props.placeholder || props.name || `${props.type || "text"} input`,
   };
 
@@ -160,16 +160,40 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
     // Infer autocomplete from name/type when not explicitly set
     const nameLC = (props.name || "").toLowerCase();
     const autoMap: Record<string, string> = {
-      email: "email", name: "name", "full-name": "name", fullname: "name",
-      "first-name": "given-name", firstname: "given-name", "given-name": "given-name",
-      "last-name": "family-name", lastname: "family-name", "family-name": "family-name",
-      phone: "tel", tel: "tel", telephone: "tel",
-      address: "street-address", street: "street-address",
-      city: "address-level2", state: "address-level1", zip: "postal-code", zipcode: "postal-code",
-      "postal-code": "postal-code", country: "country-name",
-      company: "organization", organization: "organization", org: "organization",
+      email: "email",
+      name: "name",
+      "full-name": "name",
+      fullname: "name",
+      "first-name": "given-name",
+      firstname: "given-name",
+      "given-name": "given-name",
+      "last-name": "family-name",
+      lastname: "family-name",
+      "family-name": "family-name",
+      phone: "tel",
+      tel: "tel",
+      telephone: "tel",
+      address: "street-address",
+      street: "street-address",
+      city: "address-level2",
+      state: "address-level1",
+      zip: "postal-code",
+      zipcode: "postal-code",
+      "postal-code": "postal-code",
+      country: "country-name",
+      company: "organization",
+      organization: "organization",
+      org: "organization",
     };
-    const inferred = autoMap[nameLC] || (props.type === "email" ? "email" : props.type === "tel" ? "tel" : props.type === "url" ? "url" : null);
+    const inferred =
+      autoMap[nameLC] ||
+      (props.type === "email"
+        ? "email"
+        : props.type === "tel"
+          ? "tel"
+          : props.type === "url"
+            ? "url"
+            : null);
     if (inferred) prop.autoComplete = inferred;
   }
 
@@ -209,11 +233,27 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   // A div with the same classes looks identical but is just a dumb box.
   if (enabled && isMounted) {
     // Remove input-specific attributes that don't apply to divs
-    const { type: _t, defaultValue: _dv, autoComplete: _ac, placeholder: _ph, name: _n,
-      disabled: _dis, readOnly: _ro, required: _req, "aria-required": _ar,
-      "aria-describedby": _ad, "aria-invalid": _ai, "aria-label": _al,
-      pattern: _pat, min: _min, max: _max, step: _step, rows: _rows, cols: _cols,
-      ...divProp } = prop;
+    const {
+      type: _t,
+      defaultValue: _dv,
+      autoComplete: _ac,
+      placeholder: _ph,
+      name: _n,
+      disabled: _dis,
+      readOnly: _ro,
+      required: _req,
+      "aria-required": _ar,
+      "aria-describedby": _ad,
+      "aria-invalid": _ai,
+      "aria-label": _al,
+      pattern: _pat,
+      min: _min,
+      max: _max,
+      step: _step,
+      rows: _rows,
+      cols: _cols,
+      ...divProp
+    } = prop;
 
     // Show placeholder text as content, styled like a real placeholder
     const placeholderContent = props.placeholder || props.name || props.type || "Input";
@@ -221,7 +261,7 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
     const content = (
       <>
         {props.label && (
-          <label className="block text-sm font-medium mb-1">
+          <label className="mb-1 block text-sm font-medium">
             {props.label}
             {props.required && <span aria-hidden="true"> *</span>}
           </label>
@@ -259,7 +299,7 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   if (props.label) {
     return (
       <div style={{ width: "100%" }}>
-        <label htmlFor={inputId} className="block text-sm font-medium mb-1">
+        <label htmlFor={inputId} className="mb-1 block text-sm font-medium">
           {props.label}
           {props.required && <span aria-hidden="true"> *</span>}
         </label>

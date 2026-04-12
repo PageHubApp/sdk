@@ -14,11 +14,16 @@ import { isCSSAnimation, getCSSAnimationProps, scrollAnimRef } from "../animatio
 // ─── Re-export everything from the pure module ─────────────────────────────
 
 export {
-    AllStyles, AllStylesSet,
-    classNameToVar, fonts,
-    getColorPalette, isValidTailwindClass,
-    PREFIX_ENTRIES, PREFIX_TO_KEY,
-    RootClassGenProps, TailwindStyles
+  AllStyles,
+  AllStylesSet,
+  classNameToVar,
+  fonts,
+  getColorPalette,
+  isValidTailwindClass,
+  PREFIX_ENTRIES,
+  PREFIX_TO_KEY,
+  RootClassGenProps,
+  TailwindStyles,
 } from "./tailwind-styles";
 
 // ─── CSStoObj ───────────────────────────────────────────────────────────────
@@ -33,9 +38,7 @@ function cssKeysToReactStyle(obj) {
       out[k] = v;
       continue;
     }
-    const reactKey = k
-      .replace(/^-ms-/, "ms-")
-      .replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    const reactKey = k.replace(/^-ms-/, "ms-").replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     out[reactKey] = v;
   }
   return out;
@@ -240,7 +243,12 @@ const animations = {
 
 // ─── applyAnimation ─────────────────────────────────────────────────────────
 
-export const applyAnimation = (prop: any = {}, props: BaseSelectorProps, query: any = null, enabled: boolean = false) => {
+export const applyAnimation = (
+  prop: any = {},
+  props: BaseSelectorProps,
+  query: any = null,
+  enabled: boolean = false
+) => {
   const _root = props.root;
   const style = _root?.style ? CSStoObj(_root.style) || {} : {};
 
@@ -340,14 +348,15 @@ export const applyAnimation = (prop: any = {}, props: BaseSelectorProps, query: 
       preset.animate = target;
     } else if (trigger === "hover") {
       // Convert to hover-triggered
-      const target = preset.animate || (preset.variants?.visible);
+      const target = preset.animate || preset.variants?.visible;
       if (target && !preset.whileHover) {
         delete preset.animate;
         delete preset.whileInView;
         delete preset.viewport;
-        const hoverState = typeof target === "string" && preset.variants?.[target]
-          ? preset.variants[target]
-          : target;
+        const hoverState =
+          typeof target === "string" && preset.variants?.[target]
+            ? preset.variants[target]
+            : target;
         preset.whileHover = hoverState;
         preset.initial = preset.variants?.hidden || preset.initial;
       }

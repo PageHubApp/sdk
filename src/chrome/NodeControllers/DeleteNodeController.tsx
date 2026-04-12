@@ -46,10 +46,10 @@ export const DeleteNodeController = () => {
       key={`${id}-delete`}
       position="top"
       align="end"
-      className="pointer-events-auto! select-none items-center whitespace-nowrap"
+      className="pointer-events-auto! items-center whitespace-nowrap select-none"
     >
       <div
-        className="node-control relative z-110 flex items-center gap-0.5 pointer-events-auto"
+        className="node-control pointer-events-auto relative z-110 flex items-center gap-0.5"
         onMouseDown={e => e.stopPropagation()}
         onMouseDownCapture={e => e.stopPropagation()}
       >
@@ -61,10 +61,7 @@ export const DeleteNodeController = () => {
             })}
           </NodeInlineTooltip>
         ) : null}
-        <NodeInlineTooltip
-          variant="strip"
-          content={canDelete ? "Delete" : "Cannot delete"}
-        >
+        <NodeInlineTooltip variant="strip" content={canDelete ? "Delete" : "Cannot delete"}>
           <DeleteNodeButton className="tool-button" suppressNativeTitle />
         </NodeInlineTooltip>
       </div>

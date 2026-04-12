@@ -2,7 +2,10 @@ import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { TailwindStyles } from "utils/tailwind";
 import { getClass, removeClass } from "../../../../utils/tailwind/className";
-import { parseGoogleFontFromArbitraryClass, tailwindTokenBase } from "../../../../utils/tailwind/fontFamilyClass";
+import {
+  parseGoogleFontFromArbitraryClass,
+  tailwindTokenBase,
+} from "../../../../utils/tailwind/fontFamilyClass";
 import { resolveTheme, writeTheme } from "../../../../utils/design/resolveTheme";
 
 import { AiOutlineAlignRight } from "react-icons/ai";
@@ -28,38 +31,73 @@ import { ColorInput } from "../color/ColorInput";
 // ─── Tailwind class → CSS value maps ───
 
 const FONT_SIZE_MAP: Record<string, string> = {
-  "text-xs": "0.75rem", "text-sm": "0.875rem", "text-base": "1rem", "text-lg": "1.125rem",
-  "text-xl": "1.25rem", "text-2xl": "1.5rem", "text-3xl": "1.875rem", "text-4xl": "2.25rem",
-  "text-5xl": "3rem", "text-6xl": "3.75rem", "text-7xl": "4.5rem", "text-8xl": "6rem", "text-9xl": "8rem",
+  "text-xs": "0.75rem",
+  "text-sm": "0.875rem",
+  "text-base": "1rem",
+  "text-lg": "1.125rem",
+  "text-xl": "1.25rem",
+  "text-2xl": "1.5rem",
+  "text-3xl": "1.875rem",
+  "text-4xl": "2.25rem",
+  "text-5xl": "3rem",
+  "text-6xl": "3.75rem",
+  "text-7xl": "4.5rem",
+  "text-8xl": "6rem",
+  "text-9xl": "8rem",
 };
 
 const FONT_WEIGHT_MAP: Record<string, string> = {
-  "font-thin": "100", "font-extralight": "200", "font-light": "300", "font-normal": "400",
-  "font-medium": "500", "font-semibold": "600", "font-bold": "700", "font-extrabold": "800", "font-black": "900",
+  "font-thin": "100",
+  "font-extralight": "200",
+  "font-light": "300",
+  "font-normal": "400",
+  "font-medium": "500",
+  "font-semibold": "600",
+  "font-bold": "700",
+  "font-extrabold": "800",
+  "font-black": "900",
 };
 
 const LINE_HEIGHT_MAP: Record<string, string> = {
-  "leading-3": "0.75rem", "leading-4": "1rem", "leading-5": "1.25rem", "leading-6": "1.5rem",
-  "leading-7": "1.75rem", "leading-8": "2rem", "leading-9": "2.25rem", "leading-10": "2.5rem",
-  "leading-none": "1", "leading-tight": "1.25", "leading-snug": "1.375",
-  "leading-normal": "1.5", "leading-relaxed": "1.625", "leading-loose": "2",
+  "leading-3": "0.75rem",
+  "leading-4": "1rem",
+  "leading-5": "1.25rem",
+  "leading-6": "1.5rem",
+  "leading-7": "1.75rem",
+  "leading-8": "2rem",
+  "leading-9": "2.25rem",
+  "leading-10": "2.5rem",
+  "leading-none": "1",
+  "leading-tight": "1.25",
+  "leading-snug": "1.375",
+  "leading-normal": "1.5",
+  "leading-relaxed": "1.625",
+  "leading-loose": "2",
 };
 
 const TRACKING_MAP: Record<string, string> = {
-  "tracking-tighter": "-0.05em", "tracking-tight": "-0.025em", "tracking-normal": "normal",
-  "tracking-wide": "0.025em", "tracking-wider": "0.05em", "tracking-widest": "0.1em",
+  "tracking-tighter": "-0.05em",
+  "tracking-tight": "-0.025em",
+  "tracking-normal": "normal",
+  "tracking-wide": "0.025em",
+  "tracking-wider": "0.05em",
+  "tracking-widest": "0.1em",
 };
 
 function readNodeFontValues(className: string): {
-  fontFamily: string; fontSize: string; fontWeight: string;
-  lineHeight: string; letterSpacing: string; textTransform: string;
+  fontFamily: string;
+  fontSize: string;
+  fontWeight: string;
+  lineHeight: string;
+  letterSpacing: string;
+  textTransform: string;
 } {
   const get = (key: string) => getClass(className, key) || "";
 
   // Font family — parse arbitrary class like font-['Playfair_Display']
   const fontFamilyToken = get("fontFamily");
   const base = fontFamilyToken ? tailwindTokenBase(fontFamilyToken) : "";
-  const fontFamily = base ? (parseGoogleFontFromArbitraryClass(base) || "") : "";
+  const fontFamily = base ? parseGoogleFontFromArbitraryClass(base) || "" : "";
 
   const sizeClass = get("fontSize");
   const weightClass = get("fontWeight");
@@ -122,7 +160,7 @@ function SaveAsFontPreset({
     return (
       <div className="space-y-1.5">
         {savedBanner ? (
-          <p className="text-[11px] text-primary" role="status">
+          <p className="text-primary text-[11px]" role="status">
             Saved &ldquo;{savedBanner}&rdquo;
           </p>
         ) : null}
@@ -133,7 +171,7 @@ function SaveAsFontPreset({
               setDuplicateError(false);
               setOpen(true);
             }}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-solid border-base-300 bg-base-200/80 px-2 py-1.5 text-[11px] text-base-content transition-colors hover:border-primary hover:bg-accent"
+            className="border-base-300 bg-base-200/80 text-base-content hover:border-primary hover:bg-accent flex w-full items-center justify-center gap-1.5 rounded-md border border-solid px-2 py-1.5 text-[11px] transition-colors"
           >
             <TbPlus size={12} aria-hidden />
             Add font preset
@@ -181,9 +219,11 @@ function SaveAsFontPreset({
   };
 
   return (
-    <div className="mt-2 space-y-2 rounded-lg border border-base-300 bg-neutral/50 p-2.5">
+    <div className="border-base-300 bg-neutral/50 mt-2 space-y-2 rounded-lg border p-2.5">
       <div>
-        <label className="mb-1 block text-[11px] font-medium text-neutral-content">Preset Name</label>
+        <label className="text-neutral-content mb-1 block text-[11px] font-medium">
+          Preset Name
+        </label>
         <input
           type="text"
           value={name}
@@ -192,7 +232,7 @@ function SaveAsFontPreset({
             setDuplicateError(false);
           }}
           placeholder="e.g. Hero Heading"
-          className="h-7 w-full rounded border border-base-300 bg-base-200 px-2 text-xs"
+          className="border-base-300 bg-base-200 h-7 w-full rounded border px-2 text-xs"
           autoFocus
           onKeyDown={e => {
             if (e.key === "Enter") submit();
@@ -204,13 +244,17 @@ function SaveAsFontPreset({
           }}
         />
         {duplicateError ? (
-          <p className="mt-1 text-[10px] text-error" role="alert">
+          <p className="text-error mt-1 text-[10px]" role="alert">
             A preset with that name already exists.
           </p>
         ) : null}
       </div>
       <div className="flex gap-1.5">
-        <button type="button" onClick={submit} className="h-7 rounded bg-primary px-3 text-xs text-primary-content">
+        <button
+          type="button"
+          onClick={submit}
+          className="bg-primary text-primary-content h-7 rounded px-3 text-xs"
+        >
           Save
         </button>
         <button
@@ -220,7 +264,7 @@ function SaveAsFontPreset({
             setDuplicateError(false);
             setOpen(false);
           }}
-          className="h-7 rounded border border-base-300 px-3 text-xs"
+          className="border-base-300 h-7 rounded border px-3 text-xs"
         >
           Cancel
         </button>
@@ -233,7 +277,11 @@ export const FontInput = () => {
   // Collector must return a plain object — returning an array breaks useCollector's
   // `{ ...collected, actions, query }` merge (arrays spread to numeric keys) and
   // can prevent reliable updates / break `.map` on the presets list.
-  const { query, actions: editorActions, typography } = useEditor(state => ({
+  const {
+    query,
+    actions: editorActions,
+    typography,
+  } = useEditor(state => ({
     typography: resolveTheme(state.nodes[ROOT_NODE]?.data?.props || {}).typography || [],
   }));
   const {
@@ -249,7 +297,8 @@ export const FontInput = () => {
   const helperTokens = helpers.split(/\s+/).filter(Boolean);
 
   const activePresetName =
-    typography.find((f: any) => helperTokens.includes(toTypographyPresetClassName(f.name)))?.name ?? null;
+    typography.find((f: any) => helperTokens.includes(toTypographyPresetClassName(f.name)))?.name ??
+    null;
 
   const clearTypographyPreset = () => {
     const rootNode = query.node(ROOT_NODE).get();
@@ -261,7 +310,10 @@ export const FontInput = () => {
     setProp((props: any) => {
       props.typographyClass = "";
       const helperClasses = (props.helpers || "").split(/\s+/).filter((c: string) => c.trim());
-      props.helpers = helperClasses.filter((c: string) => !allTypographyClasses.includes(c)).join(" ").trim();
+      props.helpers = helperClasses
+        .filter((c: string) => !allTypographyClasses.includes(c))
+        .join(" ")
+        .trim();
     }, 500);
   };
 
@@ -351,11 +403,26 @@ export const FontInput = () => {
               type="select"
             />
             <TailwindInput propKey="fontStyle" label="Italic" prop="fontStyle" type="select" />
-            <TailwindInput propKey="whiteSpace" label="White Space" prop="whiteSpace" type="select" />
+            <TailwindInput
+              propKey="whiteSpace"
+              label="White Space"
+              prop="whiteSpace"
+              type="select"
+            />
             <TailwindInput propKey="textWrap" label="Text Wrap" prop="textWrap" type="select" />
             <TailwindInput propKey="hyphens" label="Hyphens" prop="hyphens" type="select" />
-            <TailwindInput propKey="verticalAlign" label="Vertical Align" prop="verticalAlign" type="select" />
-            <TailwindInput propKey="fontSmoothing" label="Smoothing" prop="fontSmoothing" type="select" />
+            <TailwindInput
+              propKey="verticalAlign"
+              label="Vertical Align"
+              prop="verticalAlign"
+              type="select"
+            />
+            <TailwindInput
+              propKey="fontSmoothing"
+              label="Smoothing"
+              prop="fontSmoothing"
+              type="select"
+            />
             <TailwindInput propKey="float" label="Float" prop="float" type="select" />
           </ToolbarSection>
         </ItemAdvanceToggle>

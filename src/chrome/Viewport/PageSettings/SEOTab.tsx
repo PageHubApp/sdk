@@ -32,19 +32,32 @@ interface SEOTabProps {
 }
 
 export function SEOTab({
-  pageTitle, setPageTitle,
-  pageDescription, setPageDescription,
-  pageKeywords, setPageKeywords,
-  pageAuthor, setPageAuthor,
-  ogExpanded, setOgExpanded,
-  ogTitle, setOgTitle,
-  ogDescription, setOgDescription,
-  ogImage, setOgImage,
-  ogType, setOgType,
-  twitterExpanded, setTwitterExpanded,
-  twitterCard, setTwitterCard,
-  twitterSite, setTwitterSite,
-  twitterCreator, setTwitterCreator,
+  pageTitle,
+  setPageTitle,
+  pageDescription,
+  setPageDescription,
+  pageKeywords,
+  setPageKeywords,
+  pageAuthor,
+  setPageAuthor,
+  ogExpanded,
+  setOgExpanded,
+  ogTitle,
+  setOgTitle,
+  ogDescription,
+  setOgDescription,
+  ogImage,
+  setOgImage,
+  ogType,
+  setOgType,
+  twitterExpanded,
+  setTwitterExpanded,
+  twitterCard,
+  setTwitterCard,
+  twitterSite,
+  setTwitterSite,
+  twitterCreator,
+  setTwitterCreator,
 }: SEOTabProps) {
   return (
     <div className="space-y-6">
@@ -59,7 +72,7 @@ export function SEOTab({
             value={pageTitle}
             onChange={e => setPageTitle(e.target.value)}
             rows={2}
-            className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
             placeholder="Page title (50-60 characters)"
           />
         </div>
@@ -73,7 +86,7 @@ export function SEOTab({
             value={pageDescription}
             onChange={e => setPageDescription(e.target.value)}
             rows={3}
-            className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
             placeholder="Meta description (150-160 characters)"
           />
         </div>
@@ -88,7 +101,7 @@ export function SEOTab({
               type="text"
               value={pageKeywords}
               onChange={e => setPageKeywords(e.target.value)}
-              className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
               placeholder="keyword1, keyword2"
             />
           </div>
@@ -102,7 +115,7 @@ export function SEOTab({
               type="text"
               value={pageAuthor}
               onChange={e => setPageAuthor(e.target.value)}
-              className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
               placeholder="Author name"
             />
           </div>
@@ -110,17 +123,15 @@ export function SEOTab({
       </div>
 
       {/* Open Graph - Collapsible */}
-      <div className="overflow-hidden rounded-lg border border-base-300">
+      <div className="border-base-300 overflow-hidden rounded-lg border">
         <button
           type="button"
           onClick={() => setOgExpanded(!ogExpanded)}
-          className="flex w-full items-center justify-between bg-neutral p-4 transition-colors hover:bg-neutral/80"
+          className="bg-neutral hover:bg-neutral/80 flex w-full items-center justify-between p-4 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <span className="toolbar-label font-medium">
-              Open Graph (Social Media)
-            </span>
-            <span className="rounded-full bg-neutral px-2 py-1 text-xs text-neutral-content">
+            <span className="toolbar-label font-medium">Open Graph (Social Media)</span>
+            <span className="bg-neutral text-neutral-content rounded-full px-2 py-1 text-xs">
               Optional
             </span>
           </div>
@@ -132,7 +143,7 @@ export function SEOTab({
         </button>
 
         {ogExpanded && (
-          <div className="space-y-4 border-t border-base-300 bg-base-100 p-4">
+          <div className="border-base-300 bg-base-100 space-y-4 border-t p-4">
             <div>
               <label htmlFor="og-title" className="toolbar-label mb-2 block font-medium">
                 OG Title
@@ -142,7 +153,7 @@ export function SEOTab({
                 type="text"
                 value={ogTitle}
                 onChange={e => setOgTitle(e.target.value)}
-                className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
                 placeholder="Leave empty to use page title"
               />
             </div>
@@ -156,15 +167,13 @@ export function SEOTab({
                 value={ogDescription}
                 onChange={e => setOgDescription(e.target.value)}
                 rows={2}
-                className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
                 placeholder="Leave empty to use page description"
               />
             </div>
 
             <div>
-              <p className="toolbar-label mb-2 block font-medium">
-                OG Image
-              </p>
+              <p className="toolbar-label mb-2 block font-medium">OG Image</p>
               <StandaloneImagePicker
                 value={ogImage}
                 onChange={setOgImage}
@@ -181,7 +190,7 @@ export function SEOTab({
                 id="og-type"
                 value={ogType}
                 onChange={e => setOgType(e.target.value)}
-                className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
               >
                 <option value="website">Website</option>
                 <option value="article">Article</option>
@@ -194,15 +203,15 @@ export function SEOTab({
       </div>
 
       {/* Twitter - Collapsible */}
-      <div className="overflow-hidden rounded-lg border border-base-300">
+      <div className="border-base-300 overflow-hidden rounded-lg border">
         <button
           type="button"
           onClick={() => setTwitterExpanded(!twitterExpanded)}
-          className="flex w-full items-center justify-between bg-neutral p-4 transition-colors hover:bg-neutral/80"
+          className="bg-neutral hover:bg-neutral/80 flex w-full items-center justify-between p-4 transition-colors"
         >
           <div className="flex items-center gap-2">
             <span className="toolbar-label font-medium">Twitter/X Card</span>
-            <span className="rounded-full bg-neutral px-2 py-1 text-xs text-neutral-content">
+            <span className="bg-neutral text-neutral-content rounded-full px-2 py-1 text-xs">
               Optional
             </span>
           </div>
@@ -214,7 +223,7 @@ export function SEOTab({
         </button>
 
         {twitterExpanded && (
-          <div className="space-y-4 border-t border-base-300 bg-base-100 p-4">
+          <div className="border-base-300 bg-base-100 space-y-4 border-t p-4">
             <div>
               <label htmlFor="twitter-card" className="toolbar-label mb-2 block font-medium">
                 Card Type
@@ -223,7 +232,7 @@ export function SEOTab({
                 id="twitter-card"
                 value={twitterCard}
                 onChange={e => setTwitterCard(e.target.value)}
-                className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
               >
                 <option value="summary_large_image">Summary Large Image</option>
                 <option value="summary">Summary</option>
@@ -240,7 +249,7 @@ export function SEOTab({
                   type="text"
                   value={twitterSite}
                   onChange={e => setTwitterSite(e.target.value)}
-                  className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
                   placeholder="@yourusername"
                 />
               </div>
@@ -254,7 +263,7 @@ export function SEOTab({
                   type="text"
                   value={twitterCreator}
                   onChange={e => setTwitterCreator(e.target.value)}
-                  className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
                   placeholder="@authorusername"
                 />
               </div>

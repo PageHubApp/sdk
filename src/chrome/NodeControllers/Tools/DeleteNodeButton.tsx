@@ -35,8 +35,7 @@ export const DeleteNodeButton = ({
     deleteSelectedNode(useSimpleDelete);
   };
 
-  const nativeTitle =
-    suppressNativeTitle ? undefined : canDelete ? title : titleDisabled;
+  const nativeTitle = suppressNativeTitle ? undefined : canDelete ? title : titleDisabled;
 
   return (
     <div
@@ -44,7 +43,9 @@ export const DeleteNodeButton = ({
       tabIndex={0}
       className={className}
       onClick={handleDelete}
-      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") handleDelete(e as any); }}
+      onKeyDown={e => {
+        if (e.key === "Enter" || e.key === " ") handleDelete(e as any);
+      }}
       title={nativeTitle}
       aria-disabled={!canDelete || undefined}
     >

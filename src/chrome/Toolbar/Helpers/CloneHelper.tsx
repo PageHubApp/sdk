@@ -83,14 +83,22 @@ export const setClonedProps = (props, query, exclude = []) => {
   }
 };
 
-const LinkedActionCard = ({ icon, title, description, onClick, delay = 0, variant = "default" }) => {
+const LinkedActionCard = ({
+  icon,
+  title,
+  description,
+  onClick,
+  delay = 0,
+  variant = "default",
+}) => {
   const variantStyles = {
     default: "border-base-300 bg-base-200 hover:bg-neutral/50",
     primary: "border-primary/20 bg-primary/5 hover:bg-primary/10",
     destructive: "border-error/20 bg-error/5 hover:bg-error/10",
   };
   const iconStyles = {
-    default: "bg-secondary text-secondary-content group-hover:bg-foreground group-hover:text-background",
+    default:
+      "bg-secondary text-secondary-content group-hover:bg-foreground group-hover:text-background",
     primary: "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-content",
     destructive: "bg-error/10 text-error group-hover:bg-error group-hover:text-error-content",
   };
@@ -101,12 +109,14 @@ const LinkedActionCard = ({ icon, title, description, onClick, delay = 0, varian
       className={`group relative overflow-hidden rounded-xl border ${variantStyles[variant]} p-4 text-left`}
     >
       <div className="relative flex flex-row items-center gap-3">
-        <div className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${iconStyles[variant]}`}>
+        <div
+          className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${iconStyles[variant]}`}
+        >
           {icon}
         </div>
         <div className="flex flex-col">
           <span className="toolbar-label font-semibold">{title}</span>
-          <span className="text-xs text-neutral-content">{description}</span>
+          <span className="text-neutral-content text-xs">{description}</span>
         </div>
       </div>
     </button>
@@ -145,7 +155,7 @@ export const getClonedState = (props, state) => {
 
 export const NoSettings = ({ actions, id, query }) => (
   <div className="flex flex-col gap-4 p-4">
-    <p className="text-sm text-neutral-content">No settings available for this linked node.</p>
+    <p className="text-neutral-content text-sm">No settings available for this linked node.</p>
     <ConvertToRegularComponent query={query} actions={actions} id={id} />
   </div>
 );
@@ -212,16 +222,16 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
         <div className="flex flex-col gap-4 p-4">
           {/* Component identity header */}
           <div className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
               <TbLink className="size-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs text-neutral-content">Linked instance of</span>
+              <span className="text-neutral-content text-xs">Linked instance of</span>
               <span className="toolbar-label font-semibold">{componentName}</span>
             </div>
           </div>
 
-          <div className="h-px bg-border" />
+          <div className="bg-border h-px" />
 
           {/* Action cards */}
           <div className="flex flex-col gap-3">

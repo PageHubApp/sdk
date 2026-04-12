@@ -19,9 +19,15 @@ Image.displayName = "Image";
 
 // next/router
 export const useRouter = () => ({
-  push: (url: string) => { if (typeof window !== "undefined") window.location.href = url; },
-  replace: (url: string) => { if (typeof window !== "undefined") window.location.replace(url); },
-  back: () => { if (typeof window !== "undefined") window.history.back(); },
+  push: (url: string) => {
+    if (typeof window !== "undefined") window.location.href = url;
+  },
+  replace: (url: string) => {
+    if (typeof window !== "undefined") window.location.replace(url);
+  },
+  back: () => {
+    if (typeof window !== "undefined") window.history.back();
+  },
   asPath: typeof window !== "undefined" ? window.location.pathname : "/",
   pathname: typeof window !== "undefined" ? window.location.pathname : "/",
   query: {},

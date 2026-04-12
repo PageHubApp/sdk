@@ -90,9 +90,7 @@ export function sortMedia(
     }
 
     if (typeof aValue === "string" && typeof bValue === "string") {
-      return sortDirection === "asc"
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
+      return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
     }
 
     return sortDirection === "asc"
@@ -128,10 +126,7 @@ export function cleanSvg(svg: string): string {
   cleaned = cleaned.replace(/fill\s*=\s*["']#000["']/gi, 'fill="currentColor"');
   cleaned = cleaned.replace(/fill\s*=\s*["']black["']/gi, 'fill="currentColor"');
   cleaned = cleaned.replace(/fill\s*=\s*["']rgb\(0,\s*0,\s*0\)["']/gi, 'fill="currentColor"');
-  cleaned = cleaned.replace(
-    /fill\s*=\s*["']rgba\(0,\s*0,\s*0,\s*1\)["']/gi,
-    'fill="currentColor"'
-  );
+  cleaned = cleaned.replace(/fill\s*=\s*["']rgba\(0,\s*0,\s*0,\s*1\)["']/gi, 'fill="currentColor"');
 
   return cleaned.trim();
 }

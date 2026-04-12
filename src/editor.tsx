@@ -43,13 +43,29 @@ import { GlobalSectionPickerDialog } from "./chrome/GlobalSectionPickerDialog";
 import { EditorSaveBanner } from "./chrome/EditorSaveBanner";
 
 // Lazy-loaded dialogs — only loaded when user opens them
-const ColorPickerDialog = React.lazy(() => import("./chrome/Toolbar/Tools/ColorPickerDialog").then(m => ({ default: m.ColorPickerDialog })));
-const ColorPickerSidebarDialog = React.lazy(() => import("./chrome/Toolbar/Tools/ColorPickerSidebarDialog").then(m => ({ default: m.ColorPickerSidebarDialog })));
-const FontFamilyDialog = React.lazy(() => import("./chrome/Toolbar/Tools/FontFamilyDialog").then(m => ({ default: m.FontFamilyDialog })));
-const GoogleIconDialog = React.lazy(() => import("./chrome/Toolbar/Tools/GoogleIconDialog").then(m => ({ default: m.GoogleIconDialog })));
-const IconDialogDialog = React.lazy(() => import("./chrome/Toolbar/Tools/IconDialog").then(m => ({ default: m.IconDialogDialog })));
-const PatternDialog = React.lazy(() => import("./chrome/Toolbar/Tools/PatternDialog").then(m => ({ default: m.PatternDialog })));
-const ToolTipDialog = React.lazy(() => import("./chrome/Toolbar/Tools/TooltipDialog").then(m => ({ default: m.ToolTipDialog })));
+const ColorPickerDialog = React.lazy(() =>
+  import("./chrome/Toolbar/Tools/ColorPickerDialog").then(m => ({ default: m.ColorPickerDialog }))
+);
+const ColorPickerSidebarDialog = React.lazy(() =>
+  import("./chrome/Toolbar/Tools/ColorPickerSidebarDialog").then(m => ({
+    default: m.ColorPickerSidebarDialog,
+  }))
+);
+const FontFamilyDialog = React.lazy(() =>
+  import("./chrome/Toolbar/Tools/FontFamilyDialog").then(m => ({ default: m.FontFamilyDialog }))
+);
+const GoogleIconDialog = React.lazy(() =>
+  import("./chrome/Toolbar/Tools/GoogleIconDialog").then(m => ({ default: m.GoogleIconDialog }))
+);
+const IconDialogDialog = React.lazy(() =>
+  import("./chrome/Toolbar/Tools/IconDialog").then(m => ({ default: m.IconDialogDialog }))
+);
+const PatternDialog = React.lazy(() =>
+  import("./chrome/Toolbar/Tools/PatternDialog").then(m => ({ default: m.PatternDialog }))
+);
+const ToolTipDialog = React.lazy(() =>
+  import("./chrome/Toolbar/Tools/TooltipDialog").then(m => ({ default: m.ToolTipDialog }))
+);
 
 // Side-effect import: UnifiedSettings self-registers with LazyUnifiedSettings
 import "./chrome/Toolbar/UnifiedSettings/UnifiedSettings";
@@ -122,7 +138,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
       }
     });
 
-    // Listen for load events 
+    // Listen for load events
     const unsubLoad = emitter.onInternal("_doLoad", async (pageData: PageData) => {
       try {
         if (pageData?.content) {
@@ -232,7 +248,9 @@ export function PageHubEditor(props: PageHubEditorProps) {
   if (!hasProvider) {
     // Standalone mode — create provider + emitter automatically
     if (!props.callbacks) {
-      throw new Error("[PageHub] <PageHubEditor> requires callbacks prop when used without <PageHubProvider>");
+      throw new Error(
+        "[PageHub] <PageHubEditor> requires callbacks prop when used without <PageHubProvider>"
+      );
     }
     return <PageHubEditorStandalone {...props} callbacks={props.callbacks} />;
   }
@@ -274,19 +292,18 @@ function PageHubEditorInner({
   onQueryReady,
   onNodesChange,
   children,
-}: Pick<PageHubEditorProps, "resolver" | "components" | "onQueryReady" | "onNodesChange"> & { children?: React.ReactNode }) {
+}: Pick<PageHubEditorProps, "resolver" | "components" | "onQueryReady" | "onNodesChange"> & {
+  children?: React.ReactNode;
+}) {
   const { readOnly, config, emitter } = useSDK();
   const showToolbar = config.features?.toolbar !== false;
   const showSidebar = config.features?.sidebar !== false;
 
   // Process component definitions (built-in migrated + consumer custom) into resolver + toolbox data
-  const allDefs = React.useMemo(
-    () => [...BUILTIN_COMPONENT_DEFS, ...components],
-    [components],
-  );
+  const allDefs = React.useMemo(() => [...BUILTIN_COMPONENT_DEFS, ...components], [components]);
   const { resolver: customResolver, toolboxCategories } = React.useMemo(
     () => processForEditor(allDefs, LazyUnifiedSettings),
-    [allDefs],
+    [allDefs]
   );
 
   // Always merge the SDK's built-in resolver so CraftJS can resolve deserialized
@@ -294,10 +311,7 @@ function PageHubEditorInner({
   // The outer app resolver takes precedence so host apps can override components.
   const mergedResolver = { ...DEFAULT_CRAFT_RESOLVER, ...customResolver, ...resolver };
 
-  const customComponentsValue = React.useMemo(
-    () => ({ toolboxCategories }),
-    [toolboxCategories],
-  );
+  const customComponentsValue = React.useMemo(() => ({ toolboxCategories }), [toolboxCategories]);
 
   return (
     <div
@@ -315,68 +329,68 @@ function PageHubEditorInner({
            When used standalone, this creates its own ecosystem. */}
       <EcosystemProvider>
         <CustomComponentsContext.Provider value={customComponentsValue}>
-        <ToolTipDialog />
+          <ToolTipDialog />
 
-        <Editor
-          resolver={mergedResolver}
-          enabled={!readOnly}
-          onRender={RenderNodeNewer}
-          onNodesChange={(query) => {
-            emitter.emitInternal("_nodes_changed");
-            if (onNodesChange) onNodesChange(query);
-          }}
-          handlers={store =>
-            new CustomEventHandlers({
-              store,
-              isMultiSelectEnabled: () => false,
-              removeHoverOnMouseleave: true,
-            })
-          }
-          indicator={{
-            success: "currentColor",
-            error: "rgb(153 27 27)",
-            transition: "0.15s ease",
-            thickness: 4,
-            sectionThickness: 40,
-            sectionParentTypes: ["page", "header", "footer"],
-            className: "drop-zone-active",
-          }}
-        >
-          <EditorSelectionDomProvider>
-          <div
-            className="relative flex h-full w-full min-h-0 flex-col overflow-hidden bg-neutral text-neutral-content"
-            data-base={true}
+          <Editor
+            resolver={mergedResolver}
+            enabled={!readOnly}
+            onRender={RenderNodeNewer}
+            onNodesChange={query => {
+              emitter.emitInternal("_nodes_changed");
+              if (onNodesChange) onNodesChange(query);
+            }}
+            handlers={store =>
+              new CustomEventHandlers({
+                store,
+                isMultiSelectEnabled: () => false,
+                removeHoverOnMouseleave: true,
+              })
+            }
+            indicator={{
+              success: "currentColor",
+              error: "rgb(153 27 27)",
+              transition: "0.15s ease",
+              thickness: 4,
+              sectionThickness: 40,
+              sectionParentTypes: ["page", "header", "footer"],
+              className: "drop-zone-active",
+            }}
           >
-            {!readOnly && <EditorSaveBanner />}
-            <div className="relative flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
-            {/* Settings sidebar */}
-            {showSidebar && !readOnly && <Toolbar />}
+            <EditorSelectionDomProvider>
+              <div
+                className="bg-neutral text-neutral-content relative flex h-full min-h-0 w-full flex-col overflow-hidden"
+                data-base={true}
+              >
+                {!readOnly && <EditorSaveBanner />}
+                <div className="relative flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
+                  {/* Settings sidebar */}
+                  {showSidebar && !readOnly && <Toolbar />}
 
-            {/* Dialog overlays — color pickers, font selector, icons, patterns */}
-            {!readOnly && (
-              <>
-                <ColorPickerDialog />
-                <ColorPickerSidebarDialog />
-                <FontFamilyDialog />
-                <GoogleIconDialog />
-                <IconDialogDialog />
-                <PatternDialog />
-                <GlobalSectionPickerDialog />
-              </>
-            )}
+                  {/* Dialog overlays — color pickers, font selector, icons, patterns */}
+                  {!readOnly && (
+                    <>
+                      <ColorPickerDialog />
+                      <ColorPickerSidebarDialog />
+                      <FontFamilyDialog />
+                      <GoogleIconDialog />
+                      <IconDialogDialog />
+                      <PatternDialog />
+                      <GlobalSectionPickerDialog />
+                    </>
+                  )}
 
-            {/* Viewport + docked AI panel column */}
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-              <Viewport>
-                <EditorInner onQueryReady={onQueryReady} />
-              </Viewport>
-              {!readOnly && config.features?.aiGeneration && <AiPanelHost />}
-            </div>
-            </div>
-          </div>
-          {children}
-          </EditorSelectionDomProvider>
-        </Editor>
+                  {/* Viewport + docked AI panel column */}
+                  <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                    <Viewport>
+                      <EditorInner onQueryReady={onQueryReady} />
+                    </Viewport>
+                    {!readOnly && config.features?.aiGeneration && <AiPanelHost />}
+                  </div>
+                </div>
+              </div>
+              {children}
+            </EditorSelectionDomProvider>
+          </Editor>
         </CustomComponentsContext.Provider>
       </EcosystemProvider>
     </div>

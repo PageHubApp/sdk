@@ -40,13 +40,18 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
   }));
 
   const nodePropsForRead = { className: classNameStr };
-  const currentDisplay =
-    String(getPropFinalValue({ propKey: "display", propType: "class" }, view, nodePropsForRead, classDark).value ?? "");
-  const currentFlexDirection =
-    String(
-      getPropFinalValue({ propKey: "flexDirection", propType: "class" }, view, nodePropsForRead, classDark).value ??
-        "",
-    );
+  const currentDisplay = String(
+    getPropFinalValue({ propKey: "display", propType: "class" }, view, nodePropsForRead, classDark)
+      .value ?? ""
+  );
+  const currentFlexDirection = String(
+    getPropFinalValue(
+      { propKey: "flexDirection", propType: "class" },
+      view,
+      nodePropsForRead,
+      classDark
+    ).value ?? ""
+  );
 
   const detectMode = (): LayoutMode => {
     if (currentDisplay.includes("grid")) return "grid";
@@ -86,11 +91,17 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
   }, [showDisplayDropdown]);
 
   // ─── changeProp helper (reduces boilerplate) ───
-  const cp = (key: string, value: string, targetView: string, type: string = "class", targetNodeId?: string) => {
+  const cp = (
+    key: string,
+    value: string,
+    targetView: string,
+    type: string = "class",
+    targetNodeId?: string
+  ) => {
     changeProp({
       propKey: key,
       value,
-      setProp: targetNodeId ? ((cb: any) => actions.setProp(targetNodeId, cb)) : setProp,
+      setProp: targetNodeId ? (cb: any) => actions.setProp(targetNodeId, cb) : setProp,
       propType: type,
       view: targetView as "mobile" | "desktop",
       query,
@@ -103,7 +114,15 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
   // ─── Layout helpers ───
 
   const clearLayoutProps = (views: string[]) => {
-    const props = ["flexDirection", "flexWrap", "justifyContent", "alignItems", "gridTemplateColumns", "gridTemplateRows", "gridGap"];
+    const props = [
+      "flexDirection",
+      "flexWrap",
+      "justifyContent",
+      "alignItems",
+      "gridTemplateColumns",
+      "gridTemplateRows",
+      "gridGap",
+    ];
     views.forEach(v => props.forEach(p => cp(p, "", v)));
   };
 
@@ -115,7 +134,10 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
   };
 
   const setGridLayout = (views: string[], cols = "grid-cols-2") => {
-    views.forEach(v => { cp("display", "grid", v); cp("gridCols", cols, v); });
+    views.forEach(v => {
+      cp("display", "grid", v);
+      cp("gridCols", cols, v);
+    });
   };
 
   const setBlockLayout = (views: string[]) => {
@@ -161,9 +183,8 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
 
     // Auto-adjust containers
     if (preset.columns) {
-      const mode = preset.layout === "flex"
-        ? (preset.direction === "row" ? "flex-row" : "flex-col")
-        : "grid";
+      const mode =
+        preset.layout === "flex" ? (preset.direction === "row" ? "flex-row" : "flex-col") : "grid";
 
       setBatchOperation(true);
       try {

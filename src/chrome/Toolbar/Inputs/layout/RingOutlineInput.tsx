@@ -158,7 +158,12 @@ export const RingOutlineInput = ({ index = "" }) => {
         inputWidth="flex-1"
       />
 
-      <TailwindInput propKey="outlineStyle" label="Outline style" prop="outlineStyle" type="select" />
+      <TailwindInput
+        propKey="outlineStyle"
+        label="Outline style"
+        prop="outlineStyle"
+        type="select"
+      />
     </ToolbarSection>
   );
 };

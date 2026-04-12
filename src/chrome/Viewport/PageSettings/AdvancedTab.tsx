@@ -27,16 +27,22 @@ async function hashPassword(password: string): Promise<string> {
   const data = encoder.encode(password);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 export function AdvancedTab({
-  canonicalUrl, setCanonicalUrl,
-  headCode, setHeadCode,
-  bodyClass, setBodyClass,
-  jsonLd, setJsonLd,
-  pagePassword, setPagePassword,
-  themeOverrides, setThemeOverrides,
+  canonicalUrl,
+  setCanonicalUrl,
+  headCode,
+  setHeadCode,
+  bodyClass,
+  setBodyClass,
+  jsonLd,
+  setJsonLd,
+  pagePassword,
+  setPagePassword,
+  themeOverrides,
+  setThemeOverrides,
 }: AdvancedTabProps) {
   const [rawPassword, setRawPassword] = useState("");
 
@@ -80,10 +86,10 @@ export function AdvancedTab({
           type="text"
           value={canonicalUrl}
           onChange={e => setCanonicalUrl(e.target.value)}
-          className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
           placeholder="Leave empty for auto-generated"
         />
-        <p className="mt-2 text-xs text-neutral-content">
+        <p className="text-neutral-content mt-2 text-xs">
           Specify a canonical URL to prevent duplicate content issues
         </p>
       </div>
@@ -97,10 +103,10 @@ export function AdvancedTab({
           type="text"
           value={bodyClass}
           onChange={e => setBodyClass(e.target.value)}
-          className="w-full rounded-lg border border-base-300 px-4 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary"
+          className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
           placeholder="e.g. dark overflow-hidden"
         />
-        <p className="mt-2 text-xs text-neutral-content">
+        <p className="text-neutral-content mt-2 text-xs">
           Custom CSS classes added to the body tag for this page
         </p>
       </div>
@@ -113,12 +119,15 @@ export function AdvancedTab({
           id="head-code"
           value={headCode}
           onChange={e => setHeadCode(e.target.value)}
-          className="w-full rounded-lg border border-base-300 px-4 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
           rows={6}
-          placeholder={'<script>...</script>\n<link rel="stylesheet" href="...">\n<meta name="..." content="...">'}
+          placeholder={
+            '<script>...</script>\n<link rel="stylesheet" href="...">\n<meta name="..." content="...">'
+          }
         />
-        <p className="mt-2 text-xs text-neutral-content">
-          Custom HTML injected into the &lt;head&gt; for this page only. Use for page-specific scripts, styles, or meta tags.
+        <p className="text-neutral-content mt-2 text-xs">
+          Custom HTML injected into the &lt;head&gt; for this page only. Use for page-specific
+          scripts, styles, or meta tags.
         </p>
       </div>
 
@@ -130,23 +139,27 @@ export function AdvancedTab({
           id="json-ld"
           value={jsonLd}
           onChange={e => setJsonLd(e.target.value)}
-          className="w-full rounded-lg border border-base-300 px-4 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
           rows={8}
-          placeholder={'{\n  "@context": "https://schema.org",\n  "@type": "WebPage",\n  "name": "My Page"\n}'}
+          placeholder={
+            '{\n  "@context": "https://schema.org",\n  "@type": "WebPage",\n  "name": "My Page"\n}'
+          }
         />
-        <p className="mt-2 text-xs text-neutral-content">
-          JSON-LD schema for this page. Helps search engines understand your content. Will be injected as{" "}
-          <code className="rounded bg-neutral px-1 text-[11px]">&lt;script type=&quot;application/ld+json&quot;&gt;</code>.
+        <p className="text-neutral-content mt-2 text-xs">
+          JSON-LD schema for this page. Helps search engines understand your content. Will be
+          injected as{" "}
+          <code className="bg-neutral rounded px-1 text-[11px]">
+            &lt;script type=&quot;application/ld+json&quot;&gt;
+          </code>
+          .
         </p>
       </div>
 
       <div>
-        <label className="toolbar-label mb-2 block font-medium">
-          Password Protection
-        </label>
+        <label className="toolbar-label mb-2 block font-medium">Password Protection</label>
         {pagePassword ? (
           <div className="flex items-center gap-2">
-            <span className="flex-1 truncate rounded-lg border border-base-300 bg-neutral px-4 py-2 font-mono text-xs text-neutral-content">
+            <span className="border-base-300 bg-neutral text-neutral-content flex-1 truncate rounded-lg border px-4 py-2 font-mono text-xs">
               Protected (SHA-256)
             </span>
             <button
@@ -164,7 +177,7 @@ export function AdvancedTab({
               value={rawPassword}
               onChange={e => setRawPassword(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handlePasswordSet()}
-              className="flex-1 rounded-lg border border-base-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="border-base-300 focus:ring-primary flex-1 rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
               placeholder="Enter page password"
             />
             <button
@@ -177,40 +190,38 @@ export function AdvancedTab({
             </button>
           </div>
         )}
-        <p className="mt-2 text-xs text-neutral-content">
+        <p className="text-neutral-content mt-2 text-xs">
           Password is stored as a SHA-256 hash — the raw password is never saved.
         </p>
       </div>
 
       <div>
-        <label className="toolbar-label mb-2 block font-medium">
-          Theme Overrides
-        </label>
-        <p className="mb-3 text-xs text-neutral-content">
+        <label className="toolbar-label mb-2 block font-medium">Theme Overrides</label>
+        <p className="text-neutral-content mb-3 text-xs">
           Override design system CSS variables for this page only.
         </p>
         <div className="space-y-2">
           {themeOverrides.map((override, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="text-xs text-neutral-content">--</span>
+              <span className="text-neutral-content text-xs">--</span>
               <input
                 type="text"
                 value={override.varName}
                 onChange={e => updateOverride(i, "varName", e.target.value)}
-                className="w-32 rounded border border-base-300 px-2 py-1.5 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                className="border-base-300 focus:ring-primary w-32 rounded border px-2 py-1.5 font-mono text-xs focus:ring-2 focus:outline-none"
                 placeholder="var-name"
               />
               <input
                 type="text"
                 value={override.value}
                 onChange={e => updateOverride(i, "value", e.target.value)}
-                className="flex-1 rounded border border-base-300 px-2 py-1.5 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                className="border-base-300 focus:ring-primary flex-1 rounded border px-2 py-1.5 font-mono text-xs focus:ring-2 focus:outline-none"
                 placeholder="#fff or 1rem"
               />
               <button
                 type="button"
                 onClick={() => removeOverride(i)}
-                className="rounded p-1 text-neutral-content hover:bg-error hover:text-error-content"
+                className="text-neutral-content hover:bg-error hover:text-error-content rounded p-1"
               >
                 ×
               </button>

@@ -84,14 +84,18 @@ export function useIconDialog() {
 
   // Client hydration guard
   const [isClient, setIsClient] = useState(false);
-  useEffect(() => { setIsClient(true); }, []);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // ─── Filtered icons ───
 
   const _icons = useMemo(() => {
     if (category === "all") {
       let all: string[] = [];
-      Object.values(googleIcons).forEach(cat => { all = [...all, ...cat]; });
+      Object.values(googleIcons).forEach(cat => {
+        all = [...all, ...cat];
+      });
       return all;
     }
     return (googleIcons as Record<string, string[]>)[category] || [];
@@ -99,17 +103,26 @@ export function useIconDialog() {
 
   const filteredIcons = useMemo(() => {
     if (!searchValue) return _icons;
-    return _icons.filter(icon => icon.search(new RegExp(searchValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")) > -1);
+    return _icons.filter(
+      icon => icon.search(new RegExp(searchValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")) > -1
+    );
   }, [_icons, searchValue]);
 
   const svgIcons = useMemo(() => {
-    if (svgCategory === "all") return [...(iconList as Record<string, string[]>).regular, ...(iconList as Record<string, string[]>).brands, ...(iconList as Record<string, string[]>).solid];
+    if (svgCategory === "all")
+      return [
+        ...(iconList as Record<string, string[]>).regular,
+        ...(iconList as Record<string, string[]>).brands,
+        ...(iconList as Record<string, string[]>).solid,
+      ];
     return (iconList as Record<string, string[]>)[svgCategory] || [];
   }, [svgCategory]);
 
   const filteredSvgIcons = useMemo(() => {
     if (!svgSearchValue) return svgIcons;
-    return svgIcons.filter(i => i.search(new RegExp(svgSearchValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")) > -1);
+    return svgIcons.filter(
+      i => i.search(new RegExp(svgSearchValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")) > -1
+    );
   }, [svgIcons, svgSearchValue]);
 
   const rowCount = Math.ceil(filteredIcons.length / COLUMN_COUNT);
@@ -135,7 +148,8 @@ export function useIconDialog() {
   // Load Google Material Symbols font
   useEffect(() => {
     if (!dialog.enabled) return;
-    const href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap";
+    const href =
+      "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap";
     const sheetrefs = getStyleSheets();
     if (!sheetrefs.includes(href)) {
       const preloadLink = document.createElement("link");
@@ -147,7 +161,10 @@ export function useIconDialog() {
         (this as HTMLLinkElement).rel = "stylesheet";
         if ("fonts" in document) {
           document.fonts.ready.then(() => {
-            document.fonts.load("400 24px Material Symbols Outlined").then(() => setFontLoaded(true)).catch(() => setFontLoaded(true));
+            document.fonts
+              .load("400 24px Material Symbols Outlined")
+              .then(() => setFontLoaded(true))
+              .catch(() => setFontLoaded(true));
           });
         } else {
           setTimeout(() => setFontLoaded(true), 1000);
@@ -189,7 +206,9 @@ export function useIconDialog() {
       try {
         const response = await fetch(iconPath);
         dialog.changed(await response.text());
-      } catch (error) { console.error("Error loading SVG:", error); }
+      } catch (error) {
+        console.error("Error loading SVG:", error);
+      }
     }
   };
 
@@ -200,7 +219,9 @@ export function useIconDialog() {
         const svgText = await response.text();
         setDialog({ ...dialog, value: svgText, enabled: false });
         dialog.changed(svgText);
-      } catch (error) { console.error("Error loading SVG:", error); }
+      } catch (error) {
+        console.error("Error loading SVG:", error);
+      }
     }
   };
 
@@ -231,32 +252,76 @@ export function useIconDialog() {
 
   // ─── Keyboard navigation ───
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!dialog.enabled) return;
-    const icons = activeTab === "google" ? filteredIcons : filteredSvgIcons;
-    const focusIdx = activeTab === "google" ? focusedIconIndex : focusedSvgIconIndex;
-    const ref = activeTab === "google" ? gridRef : svgGridRef;
-    const setIdx = activeTab === "google" ? setFocusedIconIndex : setFocusedSvgIconIndex;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!dialog.enabled) return;
+      const icons = activeTab === "google" ? filteredIcons : filteredSvgIcons;
+      const focusIdx = activeTab === "google" ? focusedIconIndex : focusedSvgIconIndex;
+      const ref = activeTab === "google" ? gridRef : svgGridRef;
+      const setIdx = activeTab === "google" ? setFocusedIconIndex : setFocusedSvgIconIndex;
 
-    if (icons.length === 0) return;
+      if (icons.length === 0) return;
 
-    const scrollTo = (idx: number) => {
-      ref.current?.scrollToItem({ rowIndex: Math.floor(idx / COLUMN_COUNT), columnIndex: idx % COLUMN_COUNT });
-    };
+      const scrollTo = (idx: number) => {
+        ref.current?.scrollToItem({
+          rowIndex: Math.floor(idx / COLUMN_COUNT),
+          columnIndex: idx % COLUMN_COUNT,
+        });
+      };
 
-    switch (e.key) {
-      case "ArrowRight": e.preventDefault(); if (focusIdx < icons.length - 1) { setIdx(focusIdx + 1); scrollTo(focusIdx + 1); } break;
-      case "ArrowLeft": e.preventDefault(); if (focusIdx > 0) { setIdx(focusIdx - 1); scrollTo(focusIdx - 1); } break;
-      case "ArrowDown": e.preventDefault(); { const n = focusIdx + COLUMN_COUNT; if (n < icons.length) { setIdx(n); scrollTo(n); } } break;
-      case "ArrowUp": e.preventDefault(); { const n = focusIdx - COLUMN_COUNT; if (n >= 0) { setIdx(n); scrollTo(n); } } break;
-      case "Enter":
-        e.preventDefault();
-        if (activeTab === "google" && icons[focusIdx]) { setSelectedIcon(`ref-google:${icons[focusIdx]}`); changed(icons[focusIdx]); }
-        else if (activeTab === "icons" && icons[focusIdx]) { setSelectedIcon(`ref-icon:${icons[focusIdx]}`); handleSvgIconDoubleClick(icons[focusIdx]); }
-        break;
-      case "Escape": e.preventDefault(); closeDialog(); break;
-    }
-  }, [dialog, activeTab, filteredIcons, filteredSvgIcons, focusedIconIndex, focusedSvgIconIndex]);
+      switch (e.key) {
+        case "ArrowRight":
+          e.preventDefault();
+          if (focusIdx < icons.length - 1) {
+            setIdx(focusIdx + 1);
+            scrollTo(focusIdx + 1);
+          }
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          if (focusIdx > 0) {
+            setIdx(focusIdx - 1);
+            scrollTo(focusIdx - 1);
+          }
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          {
+            const n = focusIdx + COLUMN_COUNT;
+            if (n < icons.length) {
+              setIdx(n);
+              scrollTo(n);
+            }
+          }
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          {
+            const n = focusIdx - COLUMN_COUNT;
+            if (n >= 0) {
+              setIdx(n);
+              scrollTo(n);
+            }
+          }
+          break;
+        case "Enter":
+          e.preventDefault();
+          if (activeTab === "google" && icons[focusIdx]) {
+            setSelectedIcon(`ref-google:${icons[focusIdx]}`);
+            changed(icons[focusIdx]);
+          } else if (activeTab === "icons" && icons[focusIdx]) {
+            setSelectedIcon(`ref-icon:${icons[focusIdx]}`);
+            handleSvgIconDoubleClick(icons[focusIdx]);
+          }
+          break;
+        case "Escape":
+          e.preventDefault();
+          closeDialog();
+          break;
+      }
+    },
+    [dialog, activeTab, filteredIcons, filteredSvgIcons, focusedIconIndex, focusedSvgIconIndex]
+  );
 
   useEffect(() => {
     if (!dialog.enabled) return;
@@ -266,23 +331,52 @@ export function useIconDialog() {
 
   return {
     // Dialog
-    dialog, closeDialog, isClient,
+    dialog,
+    closeDialog,
+    isClient,
     // Tabs
-    activeTab, setActiveTab,
+    activeTab,
+    setActiveTab,
     // Google
-    category, searchValue, iconStyle, fill, weight, grade, opticalSize, fontLoaded,
-    filteredIcons, rowCount, selectedIcon, focusedIconIndex, gridRef,
-    handleSearch, handleCategoryChange, handleStyleChange,
-    handleIconClick, handleIconDoubleClick,
-    setWeight, setGrade, setOpticalSize,
+    category,
+    searchValue,
+    iconStyle,
+    fill,
+    weight,
+    grade,
+    opticalSize,
+    fontLoaded,
+    filteredIcons,
+    rowCount,
+    selectedIcon,
+    focusedIconIndex,
+    gridRef,
+    handleSearch,
+    handleCategoryChange,
+    handleStyleChange,
+    handleIconClick,
+    handleIconDoubleClick,
+    setWeight,
+    setGrade,
+    setOpticalSize,
     // SVG
-    svgCategory, setSvgCategory, svgSearchValue, setSvgSearchValue,
-    filteredSvgIcons, svgRowCount, focusedSvgIconIndex, svgGridRef,
-    handleSvgIconClick, handleSvgIconDoubleClick,
+    svgCategory,
+    setSvgCategory,
+    svgSearchValue,
+    setSvgSearchValue,
+    filteredSvgIcons,
+    svgRowCount,
+    focusedSvgIconIndex,
+    svgGridRef,
+    handleSvgIconClick,
+    handleSvgIconDoubleClick,
     // Media
-    showMediaBrowser, setShowMediaBrowser, handleMediaSelect,
+    showMediaBrowser,
+    setShowMediaBrowser,
+    handleMediaSelect,
     // Helpers
-    query, getMediaContent,
+    query,
+    getMediaContent,
   };
 }
 

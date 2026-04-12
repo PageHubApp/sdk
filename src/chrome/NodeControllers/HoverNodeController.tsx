@@ -26,7 +26,7 @@ export const HoverNodeController = (props: { position; align; placement; alt?: a
       align={align}
       alt={alt}
       placement={placement || "start"}
-      className={`${position === "top" && align === "start" && placement === "end" ? "m-0" : ""} select-none items-center whitespace-nowrap`}
+      className={`${position === "top" && align === "start" && placement === "end" ? "m-0" : ""} items-center whitespace-nowrap select-none`}
     >
       <div className={NODE_NAME_CHIP_SHELL_CLASS}>{name}</div>
     </RenderNodeControlInline>

@@ -34,7 +34,7 @@ export default function ActionInput() {
   const {
     actions: { setProp },
     actionList,
-  } = useNode((node) => {
+  } = useNode(node => {
     const props = node.data.props;
     // Support both legacy single `action` and new `actions` array
     if (props.actions?.length) return { actionList: props.actions as NodeAction[] };
@@ -61,18 +61,23 @@ export default function ActionInput() {
     syncActions(list);
   };
 
-  const patchAction = (index: number) => <T extends NodeAction>(patch: Partial<T>) => {
-    const list = [...actionList];
-    list[index] = { ...list[index], ...patch } as NodeAction;
-    syncActions(list);
-  };
+  const patchAction =
+    (index: number) =>
+    <T extends NodeAction>(patch: Partial<T>) => {
+      const list = [...actionList];
+      list[index] = { ...list[index], ...patch } as NodeAction;
+      syncActions(list);
+    };
 
   const removeAction = (index: number) => {
     syncActions(actionList.filter((_, i) => i !== index));
   };
 
   const addAction = () => {
-    syncActions([...actionList, { type: "show-hide", target: "", direction: "toggle", trigger: "click" }]);
+    syncActions([
+      ...actionList,
+      { type: "show-hide", target: "", direction: "toggle", trigger: "click" },
+    ]);
   };
 
   const handleTypeChange = (index: number, val: string) => {
@@ -93,16 +98,16 @@ export default function ActionInput() {
         <div
           key={i}
           className={`flex flex-col gap-2 ${
-            actionList.length > 1 ? "mb-2 rounded-md border border-base-300 p-2" : ""
+            actionList.length > 1 ? "border-base-300 mb-2 rounded-md border p-2" : ""
           }`}
         >
           {actionList.length > 1 && (
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-[10px] font-medium text-neutral-content">Action {i + 1}</span>
+              <span className="text-neutral-content text-[10px] font-medium">Action {i + 1}</span>
               <button
                 type="button"
                 onClick={() => removeAction(i)}
-                className="rounded p-0.5 text-neutral-content hover:bg-error hover:text-error-content"
+                className="text-neutral-content hover:bg-error hover:text-error-content rounded p-0.5"
               >
                 <TbX size={12} />
               </button>
@@ -114,19 +119,21 @@ export default function ActionInput() {
             onChange={(val: string) => handleTypeChange(i, val)}
             propKey={`actionType-${i}`}
             placeholder="None"
-            append={actionList.length === 1 ? (
-              <button
-                type="button"
-                onClick={() => syncActions([])}
-                className="flex shrink-0 items-center justify-center rounded p-1 text-xs text-neutral-content transition-colors hover:bg-error hover:text-error-content"
-                aria-label="Clear action"
-              >
-                <TbX />
-              </button>
-            ) : null}
+            append={
+              actionList.length === 1 ? (
+                <button
+                  type="button"
+                  onClick={() => syncActions([])}
+                  className="text-neutral-content hover:bg-error hover:text-error-content flex shrink-0 items-center justify-center rounded p-1 text-xs transition-colors"
+                  aria-label="Clear action"
+                >
+                  <TbX />
+                </button>
+              ) : null
+            }
           >
             <option value="">None</option>
-            {ACTION_TYPE_OPTIONS.map((opt) => (
+            {ACTION_TYPE_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
@@ -139,7 +146,9 @@ export default function ActionInput() {
 
       {/* Add action button */}
       <ToolbarDashedButton
-        onClick={actionList.length === 0 ? () => syncActions([ACTION_DEFAULTS["link-url"]]) : addAction}
+        onClick={
+          actionList.length === 0 ? () => syncActions([ACTION_DEFAULTS["link-url"]]) : addAction
+        }
       >
         {actionList.length === 0 ? "Add Action" : "Chain Another Action"}
       </ToolbarDashedButton>
@@ -149,16 +158,40 @@ export default function ActionInput() {
 
 function ActionSubForm({ action, patch }: { action: NodeAction; patch: (p: any) => void }) {
   switch (action.type) {
-    case "link-url": return <LinkUrlForm action={action} patch={patch} />;
-    case "link-page": return <LinkPageForm action={action} patch={patch} />;
-    case "scroll-to": return <ElementPickerForm value={(action as any).anchor} filter="section" label="Section" onChange={(anchor) => patch({ anchor })} />;
-    case "open-modal": return <ElementPickerForm value={(action as any).anchor} filter="modal" label="Modal" onChange={(anchor) => patch({ anchor })} />;
-    case "email": return <EmailForm action={action} patch={patch} />;
-    case "phone": return <PhoneForm action={action} patch={patch} />;
-    case "show-hide": return <ShowHideForm action={action} patch={patch} />;
-    case "copy-to-clipboard": return <CopyToClipboardForm action={action} patch={patch} />;
-    case "download-file": return <DownloadFileForm action={action} patch={patch} />;
-    default: return null;
+    case "link-url":
+      return <LinkUrlForm action={action} patch={patch} />;
+    case "link-page":
+      return <LinkPageForm action={action} patch={patch} />;
+    case "scroll-to":
+      return (
+        <ElementPickerForm
+          value={(action as any).anchor}
+          filter="section"
+          label="Section"
+          onChange={anchor => patch({ anchor })}
+        />
+      );
+    case "open-modal":
+      return (
+        <ElementPickerForm
+          value={(action as any).anchor}
+          filter="modal"
+          label="Modal"
+          onChange={anchor => patch({ anchor })}
+        />
+      );
+    case "email":
+      return <EmailForm action={action} patch={patch} />;
+    case "phone":
+      return <PhoneForm action={action} patch={patch} />;
+    case "show-hide":
+      return <ShowHideForm action={action} patch={patch} />;
+    case "copy-to-clipboard":
+      return <CopyToClipboardForm action={action} patch={patch} />;
+    case "download-file":
+      return <DownloadFileForm action={action} patch={patch} />;
+    default:
+      return null;
   }
 }
 
@@ -171,30 +204,24 @@ function LinkUrlForm({ action, patch }: { action: any; patch: (p: any) => void }
         <input
           type="url"
           defaultValue={action.url || ""}
-          onChange={(e) => patch({ url: e.target.value })}
+          onChange={e => patch({ url: e.target.value })}
           placeholder="https://..."
           className="input-plain w-full"
           aria-label="URL"
         />
       </div>
-      <TargetSelect value={action.target} onChange={(target) => patch({ target })} />
+      <TargetSelect value={action.target} onChange={target => patch({ target })} />
     </>
   );
 }
 
-function LinkPageForm({
-  action,
-  patch,
-}: {
-  action: any;
-  patch: (p: any) => void;
-}) {
+function LinkPageForm({ action, patch }: { action: any; patch: (p: any) => void }) {
   return (
     <>
       <div className="input-wrapper flex w-full items-center gap-1">
         <PageSelector
           pickerMode
-          onPagePick={(page) => patch({ pageId: page.id })}
+          onPagePick={page => patch({ pageId: page.id })}
           selectedPageId={action.pageId || ""}
           className="flex-1"
           buttonClassName="input-plain w-full flex items-center justify-between"
@@ -204,14 +231,14 @@ function LinkPageForm({
           <button
             type="button"
             onClick={() => patch({ pageId: "" })}
-            className="flex shrink-0 items-center justify-center rounded p-1 text-xs text-neutral-content transition-colors hover:bg-error hover:text-error-content"
+            className="text-neutral-content hover:bg-error hover:text-error-content flex shrink-0 items-center justify-center rounded p-1 text-xs transition-colors"
             aria-label="Clear page"
           >
             <TbX />
           </button>
         )}
       </div>
-      <TargetSelect value={action.target} onChange={(target) => patch({ target })} />
+      <TargetSelect value={action.target} onChange={target => patch({ target })} />
     </>
   );
 }
@@ -223,7 +250,7 @@ function EmailForm({ action, patch }: { action: any; patch: (p: any) => void }) 
         <input
           type="email"
           defaultValue={action.email || ""}
-          onChange={(e) => patch({ email: e.target.value })}
+          onChange={e => patch({ email: e.target.value })}
           placeholder="hello@example.com"
           className="input-plain w-full"
           aria-label="Email address"
@@ -233,7 +260,7 @@ function EmailForm({ action, patch }: { action: any; patch: (p: any) => void }) 
         <input
           type="text"
           defaultValue={action.subject || ""}
-          onChange={(e) => patch({ subject: e.target.value })}
+          onChange={e => patch({ subject: e.target.value })}
           placeholder="Subject (optional)"
           className="input-plain w-full"
           aria-label="Email subject"
@@ -243,7 +270,7 @@ function EmailForm({ action, patch }: { action: any; patch: (p: any) => void }) 
         <input
           type="text"
           defaultValue={action.body || ""}
-          onChange={(e) => patch({ body: e.target.value })}
+          onChange={e => patch({ body: e.target.value })}
           placeholder="Body (optional)"
           className="input-plain w-full"
           aria-label="Email body"
@@ -259,7 +286,7 @@ function PhoneForm({ action, patch }: { action: any; patch: (p: any) => void }) 
       <input
         type="tel"
         defaultValue={action.phone || ""}
-        onChange={(e) => patch({ phone: e.target.value })}
+        onChange={e => patch({ phone: e.target.value })}
         placeholder="+1 (555) 123-4567"
         className="input-plain w-full"
         aria-label="Phone number"
@@ -275,7 +302,7 @@ function ShowHideForm({ action, patch }: { action: any; patch: (p: any) => void 
         value={action.target}
         filter="all"
         label="Target"
-        onChange={(target) => patch({ target })}
+        onChange={target => patch({ target })}
       />
       <div className="flex gap-2">
         <ToolbarDropdown
@@ -330,7 +357,7 @@ function CopyToClipboardForm({ action, patch }: { action: any; patch: (p: any) =
       <input
         type="text"
         defaultValue={action.text || ""}
-        onChange={(e) => patch({ text: e.target.value })}
+        onChange={e => patch({ text: e.target.value })}
         placeholder="Text to copy..."
         className="input-plain w-full"
         aria-label="Text to copy"
@@ -346,7 +373,7 @@ function DownloadFileForm({ action, patch }: { action: any; patch: (p: any) => v
         <input
           type="url"
           defaultValue={action.url || ""}
-          onChange={(e) => patch({ url: e.target.value })}
+          onChange={e => patch({ url: e.target.value })}
           placeholder="https://example.com/file.pdf"
           className="input-plain w-full"
           aria-label="File URL"
@@ -356,7 +383,7 @@ function DownloadFileForm({ action, patch }: { action: any; patch: (p: any) => v
         <input
           type="text"
           defaultValue={action.filename || ""}
-          onChange={(e) => patch({ filename: e.target.value })}
+          onChange={e => patch({ filename: e.target.value })}
           placeholder="Filename (optional)"
           className="input-plain w-full"
           aria-label="Download filename"
@@ -381,10 +408,8 @@ function ElementPickerForm({
 
   if (!options.length) {
     return (
-      <div className="flex items-center gap-2 rounded-md bg-neutral/50 px-3 py-2">
-        <span className="text-xs text-neutral-content">
-          No {label.toLowerCase()}s found
-        </span>
+      <div className="bg-neutral/50 flex items-center gap-2 rounded-md px-3 py-2">
+        <span className="text-neutral-content text-xs">No {label.toLowerCase()}s found</span>
       </div>
     );
   }
@@ -397,9 +422,10 @@ function ElementPickerForm({
       placeholder={`Select ${label.toLowerCase()}...`}
     >
       <option value="">Select {label.toLowerCase()}...</option>
-      {options.map((opt) => (
+      {options.map(opt => (
         <option key={opt.nodeId} value={opt.anchor}>
-          {opt.label}{opt.componentType !== label ? ` (${opt.componentType})` : ""}
+          {opt.label}
+          {opt.componentType !== label ? ` (${opt.componentType})` : ""}
         </option>
       ))}
     </ToolbarDropdown>

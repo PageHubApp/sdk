@@ -125,7 +125,13 @@ export const fetchGoogleFonts = async (apiKey?: string): Promise<GoogleFont[]> =
   // Create new fetch promise
   fetchPromise = (async () => {
     try {
-      const fromVite = (() => { try { return (import.meta as any).env?.VITE_GOOGLE_FONTS_API_KEY; } catch { return undefined; } })();
+      const fromVite = (() => {
+        try {
+          return (import.meta as any).env?.VITE_GOOGLE_FONTS_API_KEY;
+        } catch {
+          return undefined;
+        }
+      })();
       const fromNext =
         typeof process !== "undefined" ? process.env.NEXT_PUBLIC_GOOGLE_FONTS_API_KEY : undefined;
       const key = apiKey || fromVite || fromNext;

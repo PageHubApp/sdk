@@ -10,7 +10,7 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
     return {
       ...defaultEventHandlers,
       drag: (el: HTMLElement, id: NodeId) => {
-        if (!query.node(id)?.isDraggable()) return () => { };
+        if (!query.node(id)?.isDraggable()) return () => {};
 
         const unbindDefaultDragHandlers = defaultEventHandlers.drag(el, id);
 
@@ -19,7 +19,8 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
 
           if (nativeEvent.dataTransfer) {
             const dragPreview = document.createElement("div");
-            dragPreview.className = "w-5 h-5 bg-blue-500 rounded border border-white/30 absolute -top-[9999px] -left-[9999px] opacity-80 shadow-md";
+            dragPreview.className =
+              "w-5 h-5 bg-blue-500 rounded border border-white/30 absolute -top-[9999px] -left-[9999px] opacity-80 shadow-md";
 
             document.body.appendChild(dragPreview);
             nativeEvent.dataTransfer.setDragImage(dragPreview, 10, 10);

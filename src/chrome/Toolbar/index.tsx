@@ -71,16 +71,16 @@ export const Toolbar = () => {
       key="sideMenu"
       id="toolbar"
       className={twMerge(
-        "flex flex-col overflow-hidden border-x border-base-300 bg-sidebar text-sidebar-foreground shadow-lg transition-[width,opacity] duration-200",
+        "border-base-300 bg-sidebar text-sidebar-foreground flex flex-col overflow-hidden border-x shadow-lg transition-[width,opacity] duration-200",
         layoutClass,
         orderClass,
-        sizeClass,
+        sizeClass
       )}
       ref={ref}
     >
       <Header />
       <div
-        className={`z-0 flex w-full flex-1 select-none flex-col overflow-hidden bg-sidebar text-sidebar-foreground antialiased ${
+        className={`bg-sidebar text-sidebar-foreground z-0 flex w-full flex-1 flex-col overflow-hidden antialiased select-none ${
           flyoutBlockingToolColumn ? "pointer-events-none" : ""
         }`}
         aria-expanded={isOpen ? "true" : "false"}

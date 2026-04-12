@@ -34,29 +34,35 @@ export type EmbedService =
   | "tidio"
   | "google-calendar";
 
-export const EMBED_SERVICES: Record<EmbedService, { label: string; placeholder: string; icon?: string }> = {
-  custom:            { label: "Custom HTML",      placeholder: "Paste HTML, iframe, or script code..." },
-  calendly:          { label: "Calendly",          placeholder: "https://calendly.com/your-name/meeting" },
-  cal:               { label: "Cal.com",           placeholder: "https://cal.com/your-name/meeting" },
-  stripe:            { label: "Stripe Buy Button", placeholder: "Paste your Stripe Buy Button code..." },
-  gumroad:           { label: "Gumroad",           placeholder: "https://yourname.gumroad.com/l/product" },
-  kofi:              { label: "Ko-fi",             placeholder: "https://ko-fi.com/yourname" },
-  typeform:          { label: "Typeform",          placeholder: "https://yourname.typeform.com/to/formId" },
-  tally:             { label: "Tally",             placeholder: "https://tally.so/r/formId" },
-  jotform:           { label: "Jotform",           placeholder: "https://form.jotform.com/formId" },
-  mailchimp:         { label: "Mailchimp",         placeholder: "Paste your Mailchimp embed code..." },
-  convertkit:        { label: "Kit (ConvertKit)",  placeholder: "Paste your Kit/ConvertKit form code..." },
-  beehiiv:           { label: "Beehiiv",           placeholder: "Paste your Beehiiv embed code..." },
-  spotify:           { label: "Spotify",           placeholder: "https://open.spotify.com/track/... or /playlist/..." },
-  soundcloud:        { label: "SoundCloud",        placeholder: "https://soundcloud.com/artist/track" },
-  podcast:           { label: "Apple Podcasts",    placeholder: "https://podcasts.apple.com/podcast/..." },
-  instagram:         { label: "Instagram",         placeholder: "https://www.instagram.com/p/postId/" },
-  twitter:           { label: "Twitter / X",       placeholder: "https://twitter.com/user/status/tweetId" },
-  tiktok:            { label: "TikTok",            placeholder: "https://www.tiktok.com/@user/video/videoId" },
-  crisp:             { label: "Crisp Chat",        placeholder: "Your Crisp Website ID (e.g. abc12345-...)" },
-  intercom:          { label: "Intercom",          placeholder: "Your Intercom App ID (e.g. abc123de)" },
-  tidio:             { label: "Tidio",             placeholder: "Your Tidio Public Key" },
-  "google-calendar": { label: "Google Calendar",   placeholder: "Your Google Calendar embed URL or calendar ID" },
+export const EMBED_SERVICES: Record<
+  EmbedService,
+  { label: string; placeholder: string; icon?: string }
+> = {
+  custom: { label: "Custom HTML", placeholder: "Paste HTML, iframe, or script code..." },
+  calendly: { label: "Calendly", placeholder: "https://calendly.com/your-name/meeting" },
+  cal: { label: "Cal.com", placeholder: "https://cal.com/your-name/meeting" },
+  stripe: { label: "Stripe Buy Button", placeholder: "Paste your Stripe Buy Button code..." },
+  gumroad: { label: "Gumroad", placeholder: "https://yourname.gumroad.com/l/product" },
+  kofi: { label: "Ko-fi", placeholder: "https://ko-fi.com/yourname" },
+  typeform: { label: "Typeform", placeholder: "https://yourname.typeform.com/to/formId" },
+  tally: { label: "Tally", placeholder: "https://tally.so/r/formId" },
+  jotform: { label: "Jotform", placeholder: "https://form.jotform.com/formId" },
+  mailchimp: { label: "Mailchimp", placeholder: "Paste your Mailchimp embed code..." },
+  convertkit: { label: "Kit (ConvertKit)", placeholder: "Paste your Kit/ConvertKit form code..." },
+  beehiiv: { label: "Beehiiv", placeholder: "Paste your Beehiiv embed code..." },
+  spotify: { label: "Spotify", placeholder: "https://open.spotify.com/track/... or /playlist/..." },
+  soundcloud: { label: "SoundCloud", placeholder: "https://soundcloud.com/artist/track" },
+  podcast: { label: "Apple Podcasts", placeholder: "https://podcasts.apple.com/podcast/..." },
+  instagram: { label: "Instagram", placeholder: "https://www.instagram.com/p/postId/" },
+  twitter: { label: "Twitter / X", placeholder: "https://twitter.com/user/status/tweetId" },
+  tiktok: { label: "TikTok", placeholder: "https://www.tiktok.com/@user/video/videoId" },
+  crisp: { label: "Crisp Chat", placeholder: "Your Crisp Website ID (e.g. abc12345-...)" },
+  intercom: { label: "Intercom", placeholder: "Your Intercom App ID (e.g. abc123de)" },
+  tidio: { label: "Tidio", placeholder: "Your Tidio Public Key" },
+  "google-calendar": {
+    label: "Google Calendar",
+    placeholder: "Your Google Calendar embed URL or calendar ID",
+  },
 };
 
 /**
@@ -91,7 +97,9 @@ export function generateEmbedCode(service: EmbedService, url: string): string | 
     }
     case "typeform": {
       const formId = trimmed.match(/to\/([a-zA-Z0-9]+)/)?.[1] || trimmed;
-      const fullUrl = trimmed.startsWith("http") ? trimmed : `https://form.typeform.com/to/${formId}`;
+      const fullUrl = trimmed.startsWith("http")
+        ? trimmed
+        : `https://form.typeform.com/to/${formId}`;
       return `<div data-tf-live="${formId}" style="width:100%;height:600px;"></div>\n<script src="//embed.typeform.com/next/embed.js"></script>`;
     }
     case "tally": {
@@ -110,7 +118,9 @@ export function generateEmbedCode(service: EmbedService, url: string): string | 
     case "beehiiv":
       return trimmed.includes("<") ? trimmed : null;
     case "spotify": {
-      const match = trimmed.match(/open\.spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/);
+      const match = trimmed.match(
+        /open\.spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/
+      );
       if (match) {
         return `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/${match[1]}/${match[2]}?utm_source=generator" width="100%" height="${match[1] === "track" ? 152 : 352}" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
       }
@@ -149,7 +159,9 @@ export function generateEmbedCode(service: EmbedService, url: string): string | 
       return `<script src="//code.tidio.co/${trimmed}.js" async></script>`;
     }
     case "google-calendar": {
-      const calUrl = trimmed.startsWith("http") ? trimmed : `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(trimmed)}`;
+      const calUrl = trimmed.startsWith("http")
+        ? trimmed
+        : `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(trimmed)}`;
       return `<iframe src="${calUrl}" style="border:0" width="100%" height="600" frameborder="0" scrolling="no"></iframe>`;
     }
     default:
@@ -202,7 +214,6 @@ export const Embed = (incomingProps: EmbedProps) => {
 
   useScrollToSelected(id, enabled);
 
-
   const ref = useRef(null);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -221,7 +232,8 @@ export const Embed = (incomingProps: EmbedProps) => {
     },
     className: props.className || "",
     role: "region",
-    "aria-label": props.title || EMBED_SERVICES[props.service || "custom"]?.label || "Embedded content",
+    "aria-label":
+      props.title || EMBED_SERVICES[props.service || "custom"]?.label || "Embedded content",
   };
 
   applyAriaProps(prop, props);
@@ -246,7 +258,10 @@ export const Embed = (incomingProps: EmbedProps) => {
     }
   }
 
-  return React.createElement(motionIt(props, Box, enabled), applyAnimation({ ...prop, key: id }, props, null, enabled));
+  return React.createElement(
+    motionIt(props, Box, enabled),
+    applyAnimation({ ...prop, key: id }, props, null, enabled)
+  );
 };
 
 Embed.craft = {

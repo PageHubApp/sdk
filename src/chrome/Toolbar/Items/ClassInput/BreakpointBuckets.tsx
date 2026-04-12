@@ -33,24 +33,60 @@ interface BreakpointBucketsProps {
 
 // ─── Shared sub-components ───
 
-function ActionButton({ icon, tooltip, onClick, className }: {
-  icon: React.ReactNode; tooltip: string; onClick: () => void; className: string;
+function ActionButton({
+  icon,
+  tooltip,
+  onClick,
+  className,
+}: {
+  icon: React.ReactNode;
+  tooltip: string;
+  onClick: () => void;
+  className: string;
 }) {
   return (
     <Tooltip content={tooltip} placement="top">
-      <button type="button" onClick={e => { e.stopPropagation(); onClick(); }} className={`rounded p-1 transition-all hover:scale-110 ${className}`}>
+      <button
+        type="button"
+        onClick={e => {
+          e.stopPropagation();
+          onClick();
+        }}
+        className={`rounded p-1 transition-all hover:scale-110 ${className}`}
+      >
         {icon}
       </button>
     </Tooltip>
   );
 }
 
-function DropZone({ id, classes, dragOverCategory, isDragging, borderIdle, dropValid, dropInvalid, onDragOver, onDragLeave, onDrop, onDragStart, onDragEnd, onDelete }: {
-  id: string; classes: string[]; dragOverCategory: string | null; isDragging: boolean;
-  borderIdle: string; dropValid: string; dropInvalid: string;
+function DropZone({
+  id,
+  classes,
+  dragOverCategory,
+  isDragging,
+  borderIdle,
+  dropValid,
+  dropInvalid,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragStart,
+  onDragEnd,
+  onDelete,
+}: {
+  id: string;
+  classes: string[];
+  dragOverCategory: string | null;
+  isDragging: boolean;
+  borderIdle: string;
+  dropValid: string;
+  dropInvalid: string;
   onDragOver: (e: React.DragEvent, category: string) => void;
-  onDragLeave: () => void; onDrop: (e: React.DragEvent, category: string) => void;
-  onDragStart: (e: React.DragEvent, data: any) => void; onDragEnd: () => void;
+  onDragLeave: () => void;
+  onDrop: (e: React.DragEvent, category: string) => void;
+  onDragStart: (e: React.DragEvent, data: any) => void;
+  onDragEnd: () => void;
   onDelete: (cls: string, view: string, deleteLinked?: boolean) => void;
 }) {
   const isHovered = dragOverCategory === id;
@@ -98,9 +134,20 @@ export function ClearAllStylesButton({ onClick }: { onClick: () => void }) {
 // ─── Main ───
 
 export function BreakpointBuckets({
-  bucketLists, otherClasses, selectedViews, toggleView,
-  dragOverCategory, onDragOver, onDragLeave, onDrop,
-  onDragStart, onDragEnd, onDelete, onClearBucket, onClearAll, draggedItem,
+  bucketLists,
+  otherClasses,
+  selectedViews,
+  toggleView,
+  dragOverCategory,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragStart,
+  onDragEnd,
+  onDelete,
+  onClearBucket,
+  onClearAll,
+  draggedItem,
   showClearAllButton = true,
 }: BreakpointBucketsProps) {
   const [copiedCategory, setCopiedCategory] = useState<string | null>(null);
@@ -121,7 +168,10 @@ export function BreakpointBuckets({
   }, []);
 
   const isBucketOpen = (id: string, list: string[]) =>
-    list.length > 0 || manualOpen[id] || dragOverCategory === id || dragOverCategory === `invalid-${id}`;
+    list.length > 0 ||
+    manualOpen[id] ||
+    dragOverCategory === id ||
+    dragOverCategory === `invalid-${id}`;
 
   const isDragging = !!draggedItem;
 
@@ -140,11 +190,13 @@ export function BreakpointBuckets({
                 <button
                   type="button"
                   onClick={() => toggleManual(row.id)}
-                  className="rounded p-0.5 text-neutral-content transition-colors hover:text-base-content"
+                  className="text-neutral-content hover:text-base-content rounded p-0.5 transition-colors"
                   aria-label={open ? "Collapse bucket" : "Expand bucket"}
                   aria-expanded={open}
                 >
-                  <TbChevronRight className={`size-3 transition-transform ${open ? "rotate-90" : ""}`} />
+                  <TbChevronRight
+                    className={`size-3 transition-transform ${open ? "rotate-90" : ""}`}
+                  />
                 </button>
               </div>
 
@@ -157,9 +209,7 @@ export function BreakpointBuckets({
               >
                 <span className="flex min-w-0 items-center gap-1.5">
                   <span className="truncate">{row.label}</span>
-                  {!open && list.length > 0 && (
-                    <BreakpointBadge>{list.length}</BreakpointBadge>
-                  )}
+                  {!open && list.length > 0 && <BreakpointBadge>{list.length}</BreakpointBadge>}
                 </span>
                 <span className="shrink-0 text-end text-[10px] font-normal tabular-nums opacity-70">
                   {row.hint}
@@ -175,7 +225,13 @@ export function BreakpointBuckets({
                     className="text-neutral-content hover:bg-error/10 hover:text-error"
                   />
                   <ActionButton
-                    icon={copiedCategory === row.id ? <TbCheck className="size-3.5" /> : <TbCopy className="size-3.5" />}
+                    icon={
+                      copiedCategory === row.id ? (
+                        <TbCheck className="size-3.5" />
+                      ) : (
+                        <TbCopy className="size-3.5" />
+                      )
+                    }
                     tooltip={copiedCategory === row.id ? "Copied!" : `Copy ${row.id} classes`}
                     onClick={() => copyClasses(list, row.id)}
                     className="text-neutral-content hover:bg-accent/10 hover:text-base-content"
@@ -187,10 +243,19 @@ export function BreakpointBuckets({
             {/* Drop zone — only when open */}
             {open && (
               <DropZone
-                id={row.id} classes={list} dragOverCategory={dragOverCategory} isDragging={isDragging}
-                borderIdle={row.borderIdle} dropValid={row.dropValid} dropInvalid={row.dropInvalid}
-                onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
-                onDragStart={onDragStart} onDragEnd={onDragEnd} onDelete={onDelete}
+                id={row.id}
+                classes={list}
+                dragOverCategory={dragOverCategory}
+                isDragging={isDragging}
+                borderIdle={row.borderIdle}
+                dropValid={row.dropValid}
+                dropInvalid={row.dropInvalid}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                onDragStart={onDragStart}
+                onDragEnd={onDragEnd}
+                onDelete={onDelete}
               />
             )}
           </div>
@@ -201,7 +266,7 @@ export function BreakpointBuckets({
       {otherClasses.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-neutral-content">
+            <div className="text-neutral-content flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium">
               <TbLayersSubtract className="size-3.5 shrink-0 opacity-80" />
               <span className="flex flex-col items-start leading-tight">
                 <span>Other variants</span>
@@ -216,7 +281,13 @@ export function BreakpointBuckets({
                 className="text-neutral-content hover:bg-error/10 hover:text-error"
               />
               <ActionButton
-                icon={copiedCategory === "other" ? <TbCheck className="size-3.5" /> : <TbCopy className="size-3.5" />}
+                icon={
+                  copiedCategory === "other" ? (
+                    <TbCheck className="size-3.5" />
+                  ) : (
+                    <TbCopy className="size-3.5" />
+                  )
+                }
                 tooltip={copiedCategory === "other" ? "Copied!" : "Copy other classes"}
                 onClick={() => copyClasses(otherClasses, "other")}
                 className="text-neutral-content hover:bg-accent/10 hover:text-base-content"
@@ -225,10 +296,15 @@ export function BreakpointBuckets({
           </div>
           <div
             role="presentation"
-            className={`flex flex-wrap gap-1.5 rounded-lg border border-dashed border-base-300 p-2 transition-colors ${
-              dragOverCategory === "invalid-other" ? "border-2 border-dashed border-error bg-error/10" : ""
+            className={`border-base-300 flex flex-wrap gap-1.5 rounded-lg border border-dashed p-2 transition-colors ${
+              dragOverCategory === "invalid-other"
+                ? "border-error bg-error/10 border-2 border-dashed"
+                : ""
             }`}
-            onDragOver={e => { e.preventDefault(); if (draggedItem) onDragOver(e, "other"); }}
+            onDragOver={e => {
+              e.preventDefault();
+              if (draggedItem) onDragOver(e, "other");
+            }}
             onDragLeave={onDragLeave}
           >
             {otherClasses.map((cls, key) => (
@@ -237,7 +313,9 @@ export function BreakpointBuckets({
                 value={cls}
                 onClick={(e: any, options: any) => onDelete(cls, "other", options?.deleteLinked)}
                 bgColor="bg-neutral text-base-content"
-                onDragStart={(e: any, data: any) => onDragStart(e, { ...data, sourceCategory: "other" })}
+                onDragStart={(e: any, data: any) =>
+                  onDragStart(e, { ...data, sourceCategory: "other" })
+                }
                 onDragEnd={onDragEnd}
               />
             ))}

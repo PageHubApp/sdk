@@ -19,12 +19,21 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
         nodeId,
         query.node(nodeId).toSerializedNode(),
       ]);
-      setExportText(JSON.stringify({
-        rootNodeId: tree.rootNodeId,
-        nodes: Object.fromEntries(nodePairs),
-        componentName: query.node(id).get().data.displayName || query.node(id).get().data.name || "Component",
-        timestamp: new Date().toISOString(),
-      }, null, 2));
+      setExportText(
+        JSON.stringify(
+          {
+            rootNodeId: tree.rootNodeId,
+            nodes: Object.fromEntries(nodePairs),
+            componentName:
+              query.node(id).get().data.displayName ||
+              query.node(id).get().data.name ||
+              "Component",
+            timestamp: new Date().toISOString(),
+          },
+          null,
+          2
+        )
+      );
     } catch (error) {
       console.error("Error generating component JSON:", error);
       setExportText("Error generating JSON");
@@ -83,7 +92,7 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
           <div className="flex gap-1.5">
             <button
               onClick={generateExportText}
-              className="flex items-center gap-1.5 rounded-md border border-base-300 bg-base-200 px-2 py-1 text-xs font-medium text-base-content transition-colors hover:bg-base-300/25"
+              className="border-base-300 bg-base-200 text-base-content hover:bg-base-300/25 flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors"
             >
               <TbDownload className="size-3.5" />
               Generate JSON
@@ -91,7 +100,7 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
             <button
               onClick={handleCopy}
               disabled={!exportText}
-              className="flex items-center gap-1.5 rounded-md border border-base-300 bg-base-200 px-2 py-1 text-xs font-medium text-base-content transition-colors hover:bg-base-300/25 disabled:cursor-not-allowed disabled:opacity-50"
+              className="border-base-300 bg-base-200 text-base-content hover:bg-base-300/25 flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               <TbCopy className="size-3.5" />
               Copy
@@ -122,7 +131,7 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
           <button
             onClick={handleImport}
             disabled={!importText.trim()}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-base-300 bg-base-200 px-2 py-1.5 text-xs font-medium text-base-content transition-colors hover:bg-base-300/25 disabled:cursor-not-allowed disabled:opacity-50"
+            className="border-base-300 bg-base-200 text-base-content hover:bg-base-300/25 flex w-full items-center justify-center gap-1.5 rounded-md border px-2 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <TbUpload className="size-3.5" />
             Import Component

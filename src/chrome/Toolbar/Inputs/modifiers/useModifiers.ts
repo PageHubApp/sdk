@@ -48,7 +48,7 @@ const DEFAULT_OPEN = new Set(["Pattern", "Size", "Color", "Surface", "DaisyUI Co
 
 function deriveRenderType(name: string, mods: ResolvedModifier[]): ModifierRenderType {
   if (name === "Pattern") return "patterns";
-  const allExclusive = mods.length > 0 && mods.every((m) => m.exclusive);
+  const allExclusive = mods.length > 0 && mods.every(m => m.exclusive);
   if (allExclusive && mods.length >= 5) return "dropdown";
   if (allExclusive && mods.length >= 2) return "pills";
   return "chips";
@@ -56,9 +56,7 @@ function deriveRenderType(name: string, mods: ResolvedModifier[]): ModifierRende
 
 /** Resolve a modifier to its actual CSS class list. Composites use `classes`, singles use `name`. */
 function resolveClasses(mod: ComponentModifier): string[] {
-  return mod.classes
-    ? mod.classes.split(/\s+/).filter(Boolean)
-    : [mod.name];
+  return mod.classes ? mod.classes.split(/\s+/).filter(Boolean) : [mod.name];
 }
 
 export function useModifiers() {
@@ -70,7 +68,7 @@ export function useModifiers() {
     activeModifiers,
     currentClassName,
     toolbarModifiers,
-  } = useNode((node) => ({
+  } = useNode(node => ({
     componentName: node.data.displayName || node.data.name || "",
     activeModifiers: (node.data.props?.root?.activeModifiers as string[]) || [],
     currentClassName: (node.data.props?.className as string) || "",
@@ -86,9 +84,7 @@ export function useModifiers() {
       const allSite = rootNode?.data?.props?.modifiers;
       if (!allSite || typeof allSite !== "object") return [];
       const typeName =
-        query.node(id).get()?.data?.name ||
-        query.node(id).get()?.data?.displayName ||
-        "";
+        query.node(id).get()?.data?.name || query.node(id).get()?.data?.displayName || "";
       return (allSite[typeName] || []) as ComponentModifier[];
     } catch {
       return [];
@@ -124,7 +120,7 @@ export function useModifiers() {
   const categorized: CategoryMeta[] = useMemo(() => {
     const result: CategoryMeta[] = [];
     for (const [name, mods] of grouped) {
-      const isExclusive = mods.length > 0 && mods.every((m) => m.exclusive);
+      const isExclusive = mods.length > 0 && mods.every(m => m.exclusive);
       const isPattern = name === "Pattern";
       const renderAs = deriveRenderType(name, mods);
       const sortOrder = CATEGORY_PRIORITY[name] ?? 11;
@@ -142,7 +138,7 @@ export function useModifiers() {
     if (mod.classes) {
       const needed = resolveClasses(mod);
       const current = currentClassName.split(/\s+/);
-      return needed.every((c) => current.includes(c));
+      return needed.every(c => current.includes(c));
     }
     // For single-class modifiers, check className directly
     return currentClassName.split(/\s+/).includes(mod.name);
@@ -159,7 +155,7 @@ export function useModifiers() {
       // If exclusive, remove other modifiers in the same category first
       if (mod.exclusive && mod.category && !active) {
         const siblings = allModifiers.filter(
-          (m) => m.category === mod.category && m.name !== mod.name
+          m => m.category === mod.category && m.name !== mod.name
         );
         for (const sib of siblings) {
           const sibClasses = resolveClasses(sib);
@@ -208,9 +204,7 @@ export function useModifiers() {
 
   // The resolved component type name for the selected node
   const nodeTypeName =
-    query.node(id).get()?.data?.name ||
-    query.node(id).get()?.data?.displayName ||
-    "";
+    query.node(id).get()?.data?.name || query.node(id).get()?.data?.displayName || "";
 
   const saveAsModifier = (label: string, targetType?: string) => {
     const typeName = targetType || nodeTypeName;

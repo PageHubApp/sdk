@@ -92,7 +92,12 @@ export const BorderInput = ({ index = "" }) => {
             <ToolbarSection full={1} title="Divide" subtitle={true} collapsible={false}>
               <TailwindInput propKey="divideX" label="Divide X" prop="divideX" type="select" />
               <TailwindInput propKey="divideY" label="Divide Y" prop="divideY" type="select" />
-              <TailwindInput propKey="divideStyle" label="Divide Style" prop="divideStyle" type="select" />
+              <TailwindInput
+                propKey="divideStyle"
+                label="Divide Style"
+                prop="divideStyle"
+                type="select"
+              />
               <ColorInput
                 propKey="divideColor"
                 label="Divide Color"

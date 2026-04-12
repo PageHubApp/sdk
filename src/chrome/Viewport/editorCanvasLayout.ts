@@ -14,7 +14,7 @@ const TABLET_SHELL_PAD_X = 12;
  */
 export function getEditorTabletCanvasClasses(
   enabled: boolean,
-  contentWidthPx: number,
+  contentWidthPx: number
 ): [string, string] {
   const outerMax = contentWidthPx + TABLET_SHELL_PAD_X * 2;
   const outer = [
@@ -49,7 +49,7 @@ export function getEditorWidthOnlyCanvasClasses(
   enabled: boolean,
   desktopOuter: string,
   desktopInner: string,
-  widthPx: number,
+  widthPx: number
 ): [string, string] {
   const inner = enabled
     ? `${desktopInner} max-w-[${widthPx}px] mx-auto w-full h-full min-h-0 rounded-lg border border-base-300 bg-base-100 shadow-sm`

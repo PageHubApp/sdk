@@ -41,7 +41,7 @@ export function MediaEditModal({
     <div
       role="button"
       tabIndex={0}
-      className="absolute inset-0 flex items-center justify-center bg-base-100/60 text-neutral-content backdrop-blur-sm"
+      className="bg-base-100/60 text-neutral-content absolute inset-0 flex items-center justify-center backdrop-blur-sm"
       onClick={onClose}
       onKeyDown={e => {
         if (e.key === "Enter" || e.key === " ") {
@@ -55,11 +55,11 @@ export function MediaEditModal({
         className="pagehub-sdk-root ph-modal-surface-heavy flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-base-300 p-6">
-          <h3 className="text-xl font-bold text-base-content">Edit Media</h3>
+        <div className="border-base-300 flex items-center justify-between border-b p-6">
+          <h3 className="text-base-content text-xl font-bold">Edit Media</h3>
           <button
             onClick={onClose}
-            className="text-xl text-neutral-content hover:text-base-content"
+            className="text-neutral-content hover:text-base-content text-xl"
           >
             <TbX />
           </button>
@@ -68,9 +68,9 @@ export function MediaEditModal({
         {/* Body */}
         <div className="scrollbar-light relative flex-1 space-y-4 overflow-y-auto p-6">
           {/* Preview */}
-          <div className="flex items-center gap-4 rounded-lg border border-base-300 bg-neutral p-4 text-neutral-content">
+          <div className="border-base-300 bg-neutral text-neutral-content flex items-center gap-4 rounded-lg border p-4">
             {editingMedia.type === "url" ? (
-              <div className="relative size-24 overflow-hidden rounded-lg bg-neutral">
+              <div className="bg-neutral relative size-24 overflow-hidden rounded-lg">
                 <Image
                   src={editingMedia.metadata?.url!}
                   alt={editingMedia.metadata?.alt || "Preview"}
@@ -83,11 +83,11 @@ export function MediaEditModal({
               </div>
             ) : editingMedia.type === "svg" ? (
               <div
-                className="flex size-24 items-center justify-center rounded-lg border border-base-300"
+                className="border-base-300 flex size-24 items-center justify-center rounded-lg border"
                 dangerouslySetInnerHTML={{ __html: editingMedia.metadata?.svg || "" }}
               />
             ) : (
-              <div className="relative size-24 overflow-hidden rounded-lg bg-neutral">
+              <div className="bg-neutral relative size-24 overflow-hidden rounded-lg">
                 <Image
                   key={`${editingMedia.id}-${editingMedia.uploadedAt || 0}`}
                   src={getCdnUrl(editingMedia.cdnId || editingMedia.id, {
@@ -104,17 +104,17 @@ export function MediaEditModal({
               </div>
             )}
             <div className="flex-1">
-              <p className="font-mono text-sm text-neutral-content">{editingMedia.id}</p>
-              <p className="mt-1 text-xs text-neutral-content">
+              <p className="text-neutral-content font-mono text-sm">{editingMedia.id}</p>
+              <p className="text-neutral-content mt-1 text-xs">
                 Type: {editingMedia.type || "cdn"}
               </p>
               {editingMedia.metadata?.size && (
-                <p className="mt-1 text-xs text-neutral-content">
+                <p className="text-neutral-content mt-1 text-xs">
                   Size: {formatFileSize(editingMedia.metadata.size)}
                 </p>
               )}
               {editingMedia.metadata?.dimensions && (
-                <p className="mt-1 text-xs text-neutral-content">
+                <p className="text-neutral-content mt-1 text-xs">
                   Dimensions: {formatDimensions(editingMedia.metadata.dimensions)}
                 </p>
               )}
@@ -149,7 +149,7 @@ export function MediaEditModal({
                 value={editingMedia.metadata?.svg || ""}
                 onChange={e => updateField("svg", e.target.value)}
                 placeholder="<svg>...</svg>"
-                className="input min-h-[8rem] resize-none font-mono text-sm placeholder:text-neutral-content"
+                className="input placeholder:text-neutral-content min-h-[8rem] resize-none font-mono text-sm"
                 rows={6}
               />
             </div>
@@ -183,9 +183,7 @@ export function MediaEditModal({
               placeholder="Describe the image for accessibility"
               className="input placeholder:text-neutral-content"
             />
-            <p className="mt-1 text-xs text-neutral-content">
-              Important for accessibility and SEO
-            </p>
+            <p className="text-neutral-content mt-1 text-xs">Important for accessibility and SEO</p>
           </div>
 
           {/* Description */}
@@ -199,25 +197,21 @@ export function MediaEditModal({
               onChange={e => updateField("description", e.target.value)}
               placeholder="Additional details about this media"
               rows={3}
-              className="input min-h-[4.5rem] resize-none placeholder:text-neutral-content"
+              className="input placeholder:text-neutral-content min-h-[4.5rem] resize-none"
             />
           </div>
 
           {/* AI Metadata */}
           {canUseImageAnalyze && editingMedia.type !== "svg" && mediaEditAiActionsContext && (
-            <div className="border-t border-base-300 pt-4">
+            <div className="border-base-300 border-t pt-4">
               {renderMediaEditAiActions?.(mediaEditAiActionsContext)}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 border-t border-base-300 bg-neutral p-6 text-neutral-content">
-          <button
-            type="button"
-            onClick={onClose}
-            className="btn btn-secondary"
-          >
+        <div className="border-base-300 bg-neutral text-neutral-content flex justify-end gap-3 border-t p-6">
+          <button type="button" onClick={onClose} className="btn btn-secondary">
             Cancel
           </button>
           <button

@@ -12,7 +12,10 @@ import { GetHtmlToComponent, addHandler, buildClonedTree, saveHandler } from "./
 
 async function readHtmlFromSystemClipboard(): Promise<string | null> {
   let text = await navigator.clipboard.readText();
-  text = text.replace(/\s+/g, " ").trim().replace(/\s{2,}/g, " ");
+  text = text
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\s{2,}/g, " ");
   return text.startsWith("<") ? text : null;
 }
 

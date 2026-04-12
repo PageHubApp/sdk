@@ -21,13 +21,9 @@ export function MediaTab({ d }: MediaTabProps) {
       {mediaContent ? (
         <>
           <div className="flex flex-col items-center gap-4">
-            <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-base-300 bg-neutral">
+            <div className="border-base-300 bg-neutral relative aspect-video w-full overflow-hidden rounded-lg border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={mediaContent}
-                alt="Selected media"
-                className="size-full object-contain"
-              />
+              <img src={mediaContent} alt="Selected media" className="size-full object-contain" />
             </div>
           </div>
           <button
@@ -42,7 +38,7 @@ export function MediaTab({ d }: MediaTabProps) {
       ) : (
         <>
           <TbPhoto size={48} className="text-neutral-content" />
-          <p className="text-center text-sm text-neutral-content">
+          <p className="text-neutral-content text-center text-sm">
             Select an image from your media library
           </p>
           <button

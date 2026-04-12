@@ -45,7 +45,9 @@ function hexToHSL(H: string) {
   if (h < 0) h += 360;
 
   const l = +(((cmax + cmin) / 2) * 100).toFixed(1);
-  s = +(((delta === 0 ? 0 : delta / (1 - Math.abs(2 * ((cmax + cmin) / 2) - 1))) * 100)).toFixed(1) as unknown as number;
+  s = +((delta === 0 ? 0 : delta / (1 - Math.abs(2 * ((cmax + cmin) / 2) - 1))) * 100).toFixed(
+    1
+  ) as unknown as number;
 
   return `hsla(${h},${s}%,${l}%,${a})`;
 }
@@ -67,8 +69,18 @@ export const generatePattern = (props: any) => {
   if (!pattern) return "";
 
   let {
-    stroke, scale, spacing, angle, moveLeft, moveTop, vHeight, mode, path,
-    width, height, colors: maxColors,
+    stroke,
+    scale,
+    spacing,
+    angle,
+    moveLeft,
+    moveTop,
+    vHeight,
+    mode,
+    path,
+    width,
+    height,
+    colors: maxColors,
   } = pattern;
 
   const join = 1;
@@ -90,8 +102,15 @@ export const generatePattern = (props: any) => {
   spacing = spacing || [+patternSpacingX || 0, +patternSpacingY || 0];
 
   const svgPattern = (
-    colors: string[], colorCounts: number, stroke: number, scale: number,
-    spacing: number[], angle: number, join: number, moveLeft: number, moveTop: number
+    colors: string[],
+    colorCounts: number,
+    stroke: number,
+    scale: number,
+    spacing: number[],
+    angle: number,
+    join: number,
+    moveLeft: number,
+    moveTop: number
   ) => {
     function multiStroke(i: number) {
       let defColor = colors[i + 1];
@@ -106,17 +125,21 @@ export const generatePattern = (props: any) => {
       let joinMode = "";
       if (mode === "stroke-join") {
         strokeFill = ` stroke='${defColor}' fill='none'`;
-        joinMode = join === 2
-          ? "stroke-linejoin='round' stroke-linecap='round' "
-          : "stroke-linecap='square' ";
+        joinMode =
+          join === 2
+            ? "stroke-linejoin='round' stroke-linecap='round' "
+            : "stroke-linecap='square' ";
       } else if (mode === "stroke") {
         strokeFill = ` stroke='${defColor}' fill='none'`;
       } else {
         strokeFill = ` stroke='none' fill='${defColor || "white"}'`;
       }
       return path
-        .split("~")[i]
-        .replace("/>", ` transform='translate(${spacing[0] / 2},0)' ${joinMode}stroke-width='${stroke}'${strokeFill}/>`)
+        .split("~")
+        [i].replace(
+          "/>",
+          ` transform='translate(${spacing[0] / 2},0)' ${joinMode}stroke-width='${stroke}'${strokeFill}/>`
+        )
         .replace("transform='translate(0,0)' ", " ");
     }
 
@@ -157,8 +180,11 @@ export const getBackgroundUrl = (props: any, query: any = null) => {
   }
 
   const useCdnUrl =
-    content && type !== "url" && type !== "svg" &&
-    (type === "cdn" || ((type === undefined || type === null || type === "") && looksLikeCdnImageId(content)));
+    content &&
+    type !== "url" &&
+    type !== "svg" &&
+    (type === "cdn" ||
+      ((type === undefined || type === null || type === "") && looksLikeCdnImageId(content)));
   if (useCdnUrl) {
     return getCdnUrl(content.trim(), { width: calculateOptimalBackgroundSize(), format: "auto" });
   }
@@ -191,9 +217,18 @@ export const applyBackgroundImage = (prop: any, props: any, settings: any, query
   if (props.backgroundPriority) {
     const existingChildren = prop.children;
     const preloadImageElement = React.createElement("img", {
-      src: _imgProp.src, alt: "", loading: "eager",
+      src: _imgProp.src,
+      alt: "",
+      loading: "eager",
       fetchpriority: props.backgroundFetchPriority || "high",
-      style: { position: "absolute", width: "1px", height: "1px", opacity: 0, pointerEvents: "none", zIndex: -9999 },
+      style: {
+        position: "absolute",
+        width: "1px",
+        height: "1px",
+        opacity: 0,
+        pointerEvents: "none",
+        zIndex: -9999,
+      },
       "aria-hidden": "true",
     });
     prop.children = React.createElement(React.Fragment, {}, preloadImageElement, existingChildren);
@@ -203,7 +238,11 @@ export const applyBackgroundImage = (prop: any, props: any, settings: any, query
 };
 
 export const applyLazyBackgroundImage = (
-  prop: any, props: any, settings: any, query: any = null, lazyRef: any = null
+  prop: any,
+  props: any,
+  settings: any,
+  query: any = null,
+  lazyRef: any = null
 ) => {
   if (!props.backgroundImage) return prop;
 
@@ -223,12 +262,26 @@ export const applyLazyBackgroundImage = (
     if (props.backgroundPriority) {
       const existingChildren = prop.children;
       const preloadImageElement = React.createElement("img", {
-        src: _imgProp.src, alt: "", loading: "eager",
+        src: _imgProp.src,
+        alt: "",
+        loading: "eager",
         fetchpriority: props.backgroundFetchPriority || "high",
-        style: { position: "absolute", width: "1px", height: "1px", opacity: 0, pointerEvents: "none", zIndex: -9999 },
+        style: {
+          position: "absolute",
+          width: "1px",
+          height: "1px",
+          opacity: 0,
+          pointerEvents: "none",
+          zIndex: -9999,
+        },
         "aria-hidden": "true",
       });
-      prop.children = React.createElement(React.Fragment, {}, preloadImageElement, existingChildren);
+      prop.children = React.createElement(
+        React.Fragment,
+        {},
+        preloadImageElement,
+        existingChildren
+      );
     }
   }
 

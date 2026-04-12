@@ -60,7 +60,9 @@ const Input = ({
     const regular = data.filter(cls => !BREAKPOINT_PREFIXES.some(bp => cls.startsWith(bp)));
 
     responsive.forEach(cls => {
-      setProp((props: any) => { props.className = twMerge(props.className || "", cls); }, 0);
+      setProp((props: any) => {
+        props.className = twMerge(props.className || "", cls);
+      }, 0);
     });
 
     if (regular.length > 0) changed([...classes, ...regular]);
@@ -70,7 +72,11 @@ const Input = ({
   const delNodeProp = (classValue: string) => {
     setProp((props: any) => {
       if (!props.className) return;
-      props.className = (props.className || "").split(/\s+/).filter(Boolean).filter((c: string) => c !== classValue).join(" ");
+      props.className = (props.className || "")
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((c: string) => c !== classValue)
+        .join(" ");
     });
   };
 
@@ -81,13 +87,19 @@ const Input = ({
     if (e.dataTransfer) e.dataTransfer.effectAllowed = e.shiftKey ? "copy" : "move";
   };
 
-  const handleDragEnd = () => { setDraggedItem(null); setDragOverCategory(null); };
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+    setDragOverCategory(null);
+  };
 
   const handleDragOver = (e: React.DragEvent, category: string) => {
     e.preventDefault();
     if (draggedItem) {
       const baseClass = stripToUtilityBase(draggedItem.value);
-      const valid = category !== "other" && (isBreakpointUtilityToken(draggedItem.value) || category === "mobile") && (isMappedOrValidTailwind(baseClass));
+      const valid =
+        category !== "other" &&
+        (isBreakpointUtilityToken(draggedItem.value) || category === "mobile") &&
+        isMappedOrValidTailwind(baseClass);
       setDragOverCategory(valid ? category : `invalid-${category}`);
     }
   };
@@ -104,27 +116,47 @@ const Input = ({
     if (!isBreakpointUtilityToken(draggedValue) && targetCategory !== "mobile") return;
 
     const mergedToken = isBreakpointUtilityToken(draggedValue)
-      ? (() => { const p = buildVariantPrefix(targetCategory, classDark); return p ? `${p}${baseClass}` : baseClass; })()
+      ? (() => {
+          const p = buildVariantPrefix(targetCategory, classDark);
+          return p ? `${p}${baseClass}` : baseClass;
+        })()
       : draggedValue;
 
     if (dragType !== "copy" && sourceCategory) {
       setProp((props: any) => {
-        props.className = (props.className || "").split(/\s+/).filter(Boolean).filter((c: string) => c !== draggedValue).join(" ");
+        props.className = (props.className || "")
+          .split(/\s+/)
+          .filter(Boolean)
+          .filter((c: string) => c !== draggedValue)
+          .join(" ");
       }, 0);
     }
 
-    setProp((props: any) => { props.className = twMerge(props.className || "", mergedToken); }, 0);
+    setProp((props: any) => {
+      props.className = twMerge(props.className || "", mergedToken);
+    }, 0);
     setDraggedItem(null);
   };
 
   const _nodeProps = nodeProps ? { ...nodeProps } : {};
-  const { mobile, sm, desktop, lg, xl, "2xl": twoxl, other } = parseClassNameIntoBreakpointBuckets(_nodeProps.className || "", classes || []);
+  const {
+    mobile,
+    sm,
+    desktop,
+    lg,
+    xl,
+    "2xl": twoxl,
+    other,
+  } = parseClassNameIntoBreakpointBuckets(_nodeProps.className || "", classes || []);
   const allBucketClasses = [mobile, sm, desktop, lg, xl, twoxl, other].flat();
 
   const clearBucket = (bucketClasses: string[]) => {
     setProp((props: any) => {
       if (!props.className) return;
-      const remaining = (props.className || "").split(/\s+/).filter(Boolean).filter((c: string) => !bucketClasses.includes(c));
+      const remaining = (props.className || "")
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((c: string) => !bucketClasses.includes(c));
       props.className = remaining.join(" ");
     }, 0);
   };
@@ -132,7 +164,10 @@ const Input = ({
   const clearAll = () => {
     setProp((props: any) => {
       if (!props.className) return;
-      const remaining = (props.className || "").split(/\s+/).filter(Boolean).filter((c: string) => !allBucketClasses.includes(c));
+      const remaining = (props.className || "")
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((c: string) => !allBucketClasses.includes(c));
       props.className = remaining.join(" ");
     }, 0);
     changed([]);
@@ -140,16 +175,26 @@ const Input = ({
 
   return (
     <div className="relative z-10 flex flex-col gap-6">
-      <ClassSearchInput classes={classes} onSave={save} classInput={classInput} setClassInput={setClassInput} />
+      <ClassSearchInput
+        classes={classes}
+        onSave={save}
+        classInput={classInput}
+        setClassInput={setClassInput}
+      />
 
-      <div className="text-xxs -mt-5 flex flex-wrap items-baseline gap-x-1 pl-1 text-neutral-content">
+      <div className="text-xxs text-neutral-content -mt-5 flex flex-wrap items-baseline gap-x-1 pl-1">
         <span>Apply to:</span>
-        <span className="font-medium text-base-content">
+        <span className="text-base-content font-medium">
           {breakpointScopeHasSelection(selectedViews)
-            ? getEffectiveViews(selectedViews, canvasView).map(v => APPLY_SCOPE_DISPLAY[v] ?? v).join(" + ")
-            : APPLY_SCOPE_DISPLAY[canvasViewToClassScopeKey(canvasView)] ?? canvasViewToClassScopeKey(canvasView)}
+            ? getEffectiveViews(selectedViews, canvasView)
+                .map(v => APPLY_SCOPE_DISPLAY[v] ?? v)
+                .join(" + ")
+            : (APPLY_SCOPE_DISPLAY[canvasViewToClassScopeKey(canvasView)] ??
+              canvasViewToClassScopeKey(canvasView))}
         </span>
-        {!breakpointScopeHasSelection(selectedViews) && <span className="text-neutral-content">(default layers)</span>}
+        {!breakpointScopeHasSelection(selectedViews) && (
+          <span className="text-neutral-content">(default layers)</span>
+        )}
       </div>
 
       <BreakpointBuckets
@@ -189,7 +234,11 @@ export function ClassItem({
   children?: ReactNode;
   clearAllPlacement?: "in-buckets" | "after-append";
 }) {
-  const { actions: { setProp }, nodeProps, id } = useNode(node => ({ nodeProps: node.data.props, id: node.id }));
+  const {
+    actions: { setProp },
+    nodeProps,
+    id,
+  } = useNode(node => ({ nodeProps: node.data.props, id: node.id }));
   const { query, actions } = useEditor();
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
@@ -199,17 +248,43 @@ export function ClassItem({
   const changed = (va: string[]) => {
     const remaining: string[] = [];
     if (!va.filter(v => v).length) {
-      return changeProp({ propKey: "className", value: [], setProp, propType: "component", query, actions, nodeId: id });
+      return changeProp({
+        propKey: "className",
+        value: [],
+        setProp,
+        propType: "component",
+        query,
+        actions,
+        nodeId: id,
+      });
     }
     va.forEach(v => {
       const pk = classNameToVar(v);
       if (pk) {
-        return changeProp({ propKey: pk, value: v, setProp, propType: "class", view: classWriteView, query, actions, nodeId: id, classDark });
+        return changeProp({
+          propKey: pk,
+          value: v,
+          setProp,
+          propType: "class",
+          view: classWriteView,
+          query,
+          actions,
+          nodeId: id,
+          classDark,
+        });
       }
       remaining.push(v);
     });
     if (remaining.length) {
-      changeProp({ propKey: "className", value: remaining.filter(v => v), setProp, propType: "component", query, actions, nodeId: id });
+      changeProp({
+        propKey: "className",
+        value: remaining.filter(v => v),
+        setProp,
+        propType: "component",
+        query,
+        actions,
+        nodeId: id,
+      });
     }
   };
 

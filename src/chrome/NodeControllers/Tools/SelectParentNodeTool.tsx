@@ -51,11 +51,7 @@ const SelectParentNodeTool = ({
 
   return (
     <>
-      <button
-        type="button"
-        className="tool-button"
-        onClick={handleSelectParent}
-      >
+      <button type="button" className="tool-button" onClick={handleSelectParent}>
         {icon}
       </button>
       {children}

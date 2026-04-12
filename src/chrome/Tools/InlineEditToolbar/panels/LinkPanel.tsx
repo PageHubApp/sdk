@@ -40,7 +40,7 @@ export function LinkPanel({ editor, onClose, onSave }: LinkPanelProps) {
     } else {
       setSavedSelection(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const applyLink = (href: string, fallbackText: string) => {
@@ -81,7 +81,7 @@ export function LinkPanel({ editor, onClose, onSave }: LinkPanelProps) {
   return (
     <div className="flex items-center gap-1.5 p-2">
       {/* Type toggle */}
-      <div className="flex shrink-0 items-center rounded-md border border-base-300">
+      <div className="border-base-300 flex shrink-0 items-center rounded-md border">
         <button
           type="button"
           onClick={() => setLinkType("page")}
@@ -109,7 +109,7 @@ export function LinkPanel({ editor, onClose, onSave }: LinkPanelProps) {
             value={url}
             onChange={e => setUrl(e.target.value)}
             placeholder="https://example.com"
-            className="min-w-0 flex-1 rounded-md border border-base-300 bg-base-100 px-2 py-1.5 text-xs text-base-content outline-none placeholder:text-neutral-content focus:border-ring focus:ring-1 focus:ring-ring"
+            className="border-base-300 bg-base-100 text-base-content placeholder:text-neutral-content focus:border-ring focus:ring-ring min-w-0 flex-1 rounded-md border px-2 py-1.5 text-xs outline-none focus:ring-1"
             onClick={e => e.stopPropagation()}
             onKeyDown={e => {
               if (e.key === "Enter" && url) {
@@ -123,7 +123,7 @@ export function LinkPanel({ editor, onClose, onSave }: LinkPanelProps) {
               e.stopPropagation();
               if (url) applyLink(url, url);
             }}
-            className="shrink-0 rounded-md bg-primary px-2.5 py-1.5 text-xs text-primary-content hover:bg-primary/90"
+            className="bg-primary text-primary-content hover:bg-primary/90 shrink-0 rounded-md px-2.5 py-1.5 text-xs"
           >
             {editingExistingLink ? "Update" : "Insert"}
           </button>
@@ -150,13 +150,18 @@ export function LinkPanel({ editor, onClose, onSave }: LinkPanelProps) {
           type="button"
           aria-label="Remove link"
           onClick={removeLink}
-          className="tool-button shrink-0 !h-7 !w-7 !p-0 text-error hover:bg-error/10"
+          className="tool-button text-error hover:bg-error/10 !h-7 !w-7 shrink-0 !p-0"
         >
           <MdLinkOff />
         </button>
       )}
 
-      <button type="button" aria-label="Close" onClick={onClose} className="tool-button shrink-0 !h-7 !w-7 !p-0">
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="tool-button !h-7 !w-7 shrink-0 !p-0"
+      >
         <TbX />
       </button>
     </div>

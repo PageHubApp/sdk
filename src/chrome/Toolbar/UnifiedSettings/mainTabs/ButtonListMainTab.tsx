@@ -36,23 +36,31 @@ export const ButtonListMainTab = () => {
               text: childNode.data.props.text || "Button",
               props: childNode.data.props,
             };
-          } catch { return null; }
+          } catch {
+            return null;
+          }
         })
         .filter(Boolean);
       return { childButtons: buttons };
-    } catch { return { childButtons: [] }; }
+    } catch {
+      return { childButtons: [] };
+    }
   });
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Add, remove, and reorder buttons in this group.">
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="Add, remove, and reorder buttons in this group."
+      >
         <ListEditor
           items={childButtons || []}
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
           addLabel="Add Button"
-          renderLabel={(button) => button.text}
-          onDelete={(button) => actions.delete(button.id)}
+          renderLabel={button => button.text}
+          onDelete={button => actions.delete(button.id)}
           onAdd={() => {
             const Button = query.getOptions().resolver.Button;
             if (Button) {
@@ -65,10 +73,10 @@ export const ButtonListMainTab = () => {
               requestAnimationFrame(() => batchOp.setState(false));
             }
           }}
-          extraButtons={(button) => [
+          extraButtons={button => [
             <button
               key="edit"
-              className="flex items-center justify-center text-base-content transition-colors hover:text-primary"
+              className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
               title="Edit button"
               onClick={e => {
                 e.stopPropagation();
@@ -78,7 +86,7 @@ export const ButtonListMainTab = () => {
               <TbEdit className="h-3.5 w-3.5" />
             </button>,
           ]}
-          renderPopover={(button) => (
+          renderPopover={button => (
             <NodeProvider id={button.id}>
               <ActionInput />
               <IconInput

@@ -55,7 +55,9 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
   const [bodyClass, setBodyClass] = useState("");
   const [jsonLd, setJsonLd] = useState("");
   const [pagePassword, setPagePassword] = useState("");
-  const [themeOverrides, setThemeOverrides] = useState<Array<{ varName: string; value: string }>>([]);
+  const [themeOverrides, setThemeOverrides] = useState<Array<{ varName: string; value: string }>>(
+    []
+  );
 
   useEffect(() => {
     if (isOpen && pageId) {
@@ -196,29 +198,24 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
   return ReactDOM.createPortal(
     <>
       {/* Backdrop */}
-      <div
-        className="pagehub-sdk-root ph-modal-backdrop z-9997"
-        onClick={onClose}
-      />
+      <div className="pagehub-sdk-root ph-modal-backdrop z-9997" onClick={onClose} />
 
       {/* Modal */}
-      <div
-        className="pagehub-sdk-root ph-modal-surface fixed inset-0 z-9998 mx-auto my-10 max-h-[750px] w-[calc(100%-80px)] max-w-3xl overflow-hidden rounded-xl!"
-      >
+      <div className="pagehub-sdk-root ph-modal-surface fixed inset-0 z-9998 mx-auto my-10 max-h-[750px] w-[calc(100%-80px)] max-w-3xl overflow-hidden rounded-xl!">
         <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-base-300 bg-accent px-4 py-3 text-accent-content">
-            <h2 className="text-2xl font-bold text-base-content">Page Settings</h2>
+          <div className="border-base-300 bg-accent text-accent-content flex items-center justify-between border-b px-4 py-3">
+            <h2 className="text-base-content text-2xl font-bold">Page Settings</h2>
             <button
               onClick={onClose}
-              className="rounded-lg p-2 text-2xl text-neutral-content hover:bg-neutral hover:text-base-content"
+              className="text-neutral-content hover:bg-neutral hover:text-base-content rounded-lg p-2 text-2xl"
             >
               <TbX />
             </button>
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-base-300 bg-neutral">
+          <div className="border-base-300 bg-neutral flex border-b">
             <button onClick={() => setActiveTab("basic")} className={tabClass("basic")}>
               Basic
             </button>
@@ -231,66 +228,81 @@ export function PageSettingsModal({ isOpen, onClose, pageId }: PageSettingsModal
           </div>
 
           {/* Content */}
-          <div className="scrollbar-light flex-1 space-y-4 overflow-y-auto bg-base-100 p-6 text-base-content">
+          <div className="scrollbar-light bg-base-100 text-base-content flex-1 space-y-4 overflow-y-auto p-6">
             {activeTab === "basic" && (
               <BasicTab
                 pageName={pageName}
                 onPageNameChange={handlePageNameChange}
                 pageSlug={pageSlug}
                 onSlugChange={handleSlugChange}
-                isHomePage={isHomePage} setIsHomePage={setIsHomePage}
-                is404Page={is404Page} setIs404Page={setIs404Page}
+                isHomePage={isHomePage}
+                setIsHomePage={setIsHomePage}
+                is404Page={is404Page}
+                setIs404Page={setIs404Page}
                 allowCustom404Page={allowCustom404Page}
-                pageImage={pageImage} setPageImage={setPageImage}
-                showDeleteConfirm={showDeleteConfirm} setShowDeleteConfirm={setShowDeleteConfirm}
+                pageImage={pageImage}
+                setPageImage={setPageImage}
+                showDeleteConfirm={showDeleteConfirm}
+                setShowDeleteConfirm={setShowDeleteConfirm}
                 onDeletePage={handleDeletePage}
               />
             )}
 
             {activeTab === "seo" && (
               <SEOTab
-                pageTitle={pageTitle} setPageTitle={setPageTitle}
-                pageDescription={pageDescription} setPageDescription={setPageDescription}
-                pageKeywords={pageKeywords} setPageKeywords={setPageKeywords}
-                pageAuthor={pageAuthor} setPageAuthor={setPageAuthor}
-                ogExpanded={ogExpanded} setOgExpanded={setOgExpanded}
-                ogTitle={ogTitle} setOgTitle={setOgTitle}
-                ogDescription={ogDescription} setOgDescription={setOgDescription}
-                ogImage={ogImage} setOgImage={setOgImage}
-                ogType={ogType} setOgType={setOgType}
-                twitterExpanded={twitterExpanded} setTwitterExpanded={setTwitterExpanded}
-                twitterCard={twitterCard} setTwitterCard={setTwitterCard}
-                twitterSite={twitterSite} setTwitterSite={setTwitterSite}
-                twitterCreator={twitterCreator} setTwitterCreator={setTwitterCreator}
+                pageTitle={pageTitle}
+                setPageTitle={setPageTitle}
+                pageDescription={pageDescription}
+                setPageDescription={setPageDescription}
+                pageKeywords={pageKeywords}
+                setPageKeywords={setPageKeywords}
+                pageAuthor={pageAuthor}
+                setPageAuthor={setPageAuthor}
+                ogExpanded={ogExpanded}
+                setOgExpanded={setOgExpanded}
+                ogTitle={ogTitle}
+                setOgTitle={setOgTitle}
+                ogDescription={ogDescription}
+                setOgDescription={setOgDescription}
+                ogImage={ogImage}
+                setOgImage={setOgImage}
+                ogType={ogType}
+                setOgType={setOgType}
+                twitterExpanded={twitterExpanded}
+                setTwitterExpanded={setTwitterExpanded}
+                twitterCard={twitterCard}
+                setTwitterCard={setTwitterCard}
+                twitterSite={twitterSite}
+                setTwitterSite={setTwitterSite}
+                twitterCreator={twitterCreator}
+                setTwitterCreator={setTwitterCreator}
               />
             )}
 
             {activeTab === "advanced" && (
               <AdvancedTab
-                canonicalUrl={canonicalUrl} setCanonicalUrl={setCanonicalUrl}
-                headCode={headCode} setHeadCode={setHeadCode}
-                bodyClass={bodyClass} setBodyClass={setBodyClass}
-                jsonLd={jsonLd} setJsonLd={setJsonLd}
-                pagePassword={pagePassword} setPagePassword={setPagePassword}
-                themeOverrides={themeOverrides} setThemeOverrides={setThemeOverrides}
+                canonicalUrl={canonicalUrl}
+                setCanonicalUrl={setCanonicalUrl}
+                headCode={headCode}
+                setHeadCode={setHeadCode}
+                bodyClass={bodyClass}
+                setBodyClass={setBodyClass}
+                jsonLd={jsonLd}
+                setJsonLd={setJsonLd}
+                pagePassword={pagePassword}
+                setPagePassword={setPagePassword}
+                themeOverrides={themeOverrides}
+                setThemeOverrides={setThemeOverrides}
               />
             )}
           </div>
 
           {/* Footer */}
-          <div className="flex gap-3 border-t border-base-300 bg-neutral p-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-secondary flex-1"
-            >
+          <div className="border-base-300 bg-neutral flex gap-3 border-t p-4">
+            <button type="button" onClick={onClose} className="btn btn-secondary flex-1">
               Cancel
             </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              className="btn btn-primary flex-1"
-            >
+            <button type="button" onClick={handleSave} className="btn btn-primary flex-1">
               Save Changes
             </button>
           </div>

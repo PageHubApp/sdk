@@ -23,7 +23,7 @@ export const TabBody = ({ children = null, jumps = [] }) => {
   return (
     <div id="toolbarJumps" className="flex h-full flex-col">
       {jumps.length ? (
-        <div className="text-xxs flex shrink-0 flex-row justify-end gap-3 border-b border-base-300 bg-neutral/80 px-3 py-0.5 text-neutral-content drop-shadow-sm">
+        <div className="text-xxs border-base-300 bg-neutral/80 text-neutral-content flex shrink-0 flex-row justify-end gap-3 border-b px-3 py-0.5 drop-shadow-sm">
           {jumps.reverse().map(_ => (
             <MenuItem
               key={uuidv4()}
@@ -42,7 +42,7 @@ export const TabBody = ({ children = null, jumps = [] }) => {
 
       <AutoHideScrollbar
         id="toolbarContents"
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden pt-2"
+        className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto pt-2"
         hideDelay={1000}
       >
         {children}

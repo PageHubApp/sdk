@@ -55,14 +55,18 @@ export const IpsumGenerator = ({ propKey, propType }) => {
   };
 
   const buttons = [
-    { icon: TbLetterA, label: "Word", generate: () => capitalizeFirstLetter(lorem.generateWords(1)) },
+    {
+      icon: TbLetterA,
+      label: "Word",
+      generate: () => capitalizeFirstLetter(lorem.generateWords(1)),
+    },
     { icon: TbMinus, label: "Sentence", generate: () => lorem.generateSentences(1) },
     { icon: TbAlignLeft, label: "Paragraph", generate: () => lorem.generateParagraphs(1) },
   ];
 
   return (
     <div className="flex items-center justify-between px-1">
-      <span className="text-xs text-neutral-content">Lorem</span>
+      <span className="text-neutral-content text-xs">Lorem</span>
       <div className="flex gap-0.5">
         {buttons.map(({ icon: Icon, label, generate }) => (
           <button
@@ -70,14 +74,19 @@ export const IpsumGenerator = ({ propKey, propType }) => {
             type="button"
             data-tooltip-id="ipsum-tip"
             data-tooltip-content={label}
-            className="rounded-md p-1.5 text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
+            className="text-neutral-content hover:bg-neutral hover:text-base-content rounded-md p-1.5 transition-colors"
             onClick={() => save(generate())}
           >
             <Icon className="size-3.5" />
           </button>
         ))}
       </div>
-      <ReactTooltip id="ipsum-tip" variant="light" classNameArrow="hidden" className={REACT_TOOLTIP_SURFACE_CLASS} />
+      <ReactTooltip
+        id="ipsum-tip"
+        variant="light"
+        classNameArrow="hidden"
+        className={REACT_TOOLTIP_SURFACE_CLASS}
+      />
     </div>
   );
 };

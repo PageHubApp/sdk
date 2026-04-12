@@ -75,30 +75,61 @@ export const ToolbarSection = ({
 
   return (
     <div className={containerClasses}>
-      {title && (() => {
-        const btn = (
-          <div id={title} role="button" tabIndex={disabled ? -1 : 0} className={titleClasses} onClick={handleClick} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(e as any); } }} aria-label={title} aria-expanded={disabled ? undefined : isOpen}>
-            <div className={`flex items-center gap-1.5 ${disabled ? "opacity-40" : ""}`}>{nested && collapsible && <TbChevronRight className={`size-3 transition-transform ${isOpen ? "rotate-90" : ""}`} />}{icon && <span className="text-neutral-content opacity-70">{icon}</span>}{title}</div>
-
-            {header && <div className="flex flex-1 items-center justify-end">{header}</div>}
-
-            {!header && (
-              <div className="flex max-w-[min(100%,11rem)] flex-wrap items-center justify-end gap-1">
-                {propKey &&
-                  VIEW_BREAKPOINT_SCOPE_KEYS.map(bp => (
-                    <ToolbarLabel key={bp} lab={propKey} propKey={propKey} viewValue={bp} iconOnly />
-                  ))}
+      {title &&
+        (() => {
+          const btn = (
+            <div
+              id={title}
+              role="button"
+              tabIndex={disabled ? -1 : 0}
+              className={titleClasses}
+              onClick={handleClick}
+              onKeyDown={e => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleClick(e as any);
+                }
+              }}
+              aria-label={title}
+              aria-expanded={disabled ? undefined : isOpen}
+            >
+              <div className={`flex items-center gap-1.5 ${disabled ? "opacity-40" : ""}`}>
+                {nested && collapsible && (
+                  <TbChevronRight
+                    className={`size-3 transition-transform ${isOpen ? "rotate-90" : ""}`}
+                  />
+                )}
+                {icon && <span className="text-neutral-content opacity-70">{icon}</span>}
+                {title}
               </div>
-            )}
-          </div>
-        );
-        return help ? (
-          /* `full` = Tooltip layout (flex w-full), not ToolbarSection grid columns — keeps border-b full width */
-          <Tooltip content={help} placement="left" className="text-xxs min-w-0" delay={750} full>
-            {btn}
-          </Tooltip>
-        ) : btn;
-      })()}
+
+              {header && <div className="flex flex-1 items-center justify-end">{header}</div>}
+
+              {!header && (
+                <div className="flex max-w-[min(100%,11rem)] flex-wrap items-center justify-end gap-1">
+                  {propKey &&
+                    VIEW_BREAKPOINT_SCOPE_KEYS.map(bp => (
+                      <ToolbarLabel
+                        key={bp}
+                        lab={propKey}
+                        propKey={propKey}
+                        viewValue={bp}
+                        iconOnly
+                      />
+                    ))}
+                </div>
+              )}
+            </div>
+          );
+          return help ? (
+            /* `full` = Tooltip layout (flex w-full), not ToolbarSection grid columns — keeps border-b full width */
+            <Tooltip content={help} placement="left" className="text-xxs min-w-0" delay={750} full>
+              {btn}
+            </Tooltip>
+          ) : (
+            btn
+          );
+        })()}
 
       {enabled && !disabled && isOpen && (
         <>

@@ -16,7 +16,7 @@ interface Props {
 export function RegistrySectionList({ sections, toolbar, hidden, override }: Props) {
   return (
     <>
-      {sections.map((entry) => {
+      {sections.map(entry => {
         // Override: swap content for matching title
         if (override?.[entry.title] !== undefined) {
           return <React.Fragment key={entry.id}>{override[entry.title]}</React.Fragment>;

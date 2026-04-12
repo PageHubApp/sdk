@@ -39,7 +39,6 @@ export const inlayProps = [
   "gap",
 ];
 
-
 export const useFindScrollingParent = id => {
   const [scrollingParent, setScrollingParent] = useState<HTMLElement | null>(null);
   const element: HTMLElement = document.querySelector(`[node-id="${id}"]`);
@@ -75,9 +74,9 @@ export const useIsInViewport = (
       const rect = element.getBoundingClientRect();
       setIsInViewport(
         rect.top >= 0 &&
-        rect.left >= 0 &&
-        rect.bottom <= scrollingParent.clientHeight &&
-        rect.right <= scrollingParent.clientWidth
+          rect.left >= 0 &&
+          rect.bottom <= scrollingParent.clientHeight &&
+          rect.right <= scrollingParent.clientWidth
       );
     }
   }, [element, scrollingParent]);
@@ -124,7 +123,7 @@ export const useScrollToSelected = (id, enabled) => {
 
     if (!scrollingDiv) return;
 
-    // Use getBoundingClientRect to compare exactly where the element is 
+    // Use getBoundingClientRect to compare exactly where the element is
     // relative to the scrolling container's screen viewport box
     const rect = el.getBoundingClientRect();
     const scrollingRect = scrollingDiv.getBoundingClientRect();
@@ -132,8 +131,7 @@ export const useScrollToSelected = (id, enabled) => {
     // Consider it in viewport if it's vertically mostly inside the scroll area
     // Allowing a small 20px buffer
     const inViewport =
-      rect.top >= scrollingRect.top - 20 &&
-      rect.bottom <= scrollingRect.bottom + 20;
+      rect.top >= scrollingRect.top - 20 && rect.bottom <= scrollingRect.bottom + 20;
 
     if (!inViewport) {
       el.scrollIntoView({

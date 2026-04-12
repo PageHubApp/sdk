@@ -3,12 +3,7 @@ import { TbBoxModel2, TbClick, TbLayoutGridAdd, TbPlus, TbPointer } from "react-
 import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
 import { ClippyOpenAtom } from "utils/atoms";
-import {
-  ComponentsAtom,
-  OpenComponentEditorAtom,
-  SideBarOpen,
-  ViewModeAtom,
-} from "utils/lib";
+import { ComponentsAtom, OpenComponentEditorAtom, SideBarOpen, ViewModeAtom } from "utils/lib";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { useSDK } from "../../context";
 import { usePanelUrl } from "../../utils/usePanelUrl";
@@ -25,16 +20,16 @@ const ActionCard = ({ icon, title, description, onClick }: ActionCardProps) => {
     <button
       type="button"
       onClick={onClick}
-      className="group relative overflow-hidden rounded-xl border border-base-300 bg-base-200 p-6 text-left transition-colors duration-200 hover:bg-neutral/50 active:scale-[0.99]"
+      className="group border-base-300 bg-base-200 hover:bg-neutral/50 relative overflow-hidden rounded-xl border p-6 text-left transition-colors duration-200 active:scale-[0.99]"
     >
-      <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+      <div className="from-primary/5 absolute inset-0 bg-linear-to-br to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
       <div className="relative flex flex-row items-center justify-start gap-4">
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-content">
+        <div className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-content flex size-12 shrink-0 items-center justify-center rounded-lg transition-colors duration-200">
           {icon}
         </div>
         <div className="flex flex-col items-start justify-center">
-          <h3 className="font-semibold text-base-content">{title}</h3>
-          <p className="text-xs text-neutral-content">{description}</p>
+          <h3 className="text-base-content font-semibold">{title}</h3>
+          <p className="text-neutral-content text-xs">{description}</p>
         </div>
       </div>
     </button>
@@ -90,119 +85,119 @@ export const EditorEmptyState = () => {
   return (
     <div
       ref={containerRef}
-      className="scrollbar z-20 flex min-h-0 w-full flex-1 flex-col overflow-auto bg-transparent p-4 pb-2 pr-2 text-center text-neutral-content"
+      className="scrollbar text-neutral-content z-20 flex min-h-0 w-full flex-1 flex-col overflow-auto bg-transparent p-4 pr-2 pb-2 text-center"
     >
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8">
-      {/* Icon */}
-      {!isCompact && (
-        <div className="flex size-24 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          {isComponentMode && !hasComponents ? (
-            <TbBoxModel2 className="size-12" />
-          ) : (
-            <TbPointer className="size-12 rotate-90" />
-          )}
-        </div>
-      )}
-
-      {/* Title */}
-      <div className="space-y-3">
+        {/* Icon */}
         {!isCompact && (
-          <h2 className="text-xl font-semibold">
+          <div className="bg-primary/10 text-primary flex size-24 items-center justify-center rounded-2xl">
             {isComponentMode && !hasComponents ? (
-              <>Create your first component</>
+              <TbBoxModel2 className="size-12" />
             ) : (
-              <>Select something to edit</>
+              <TbPointer className="size-12 rotate-90" />
             )}
-          </h2>
+          </div>
         )}
 
-        <div className="flex max-w-md flex-wrap items-center justify-center gap-1 text-sm">
-          {isComponentMode ? (
-            hasComponents ? (
-              <>
-                <span>Click on an element to start editing,</span>
-                <span>or add components</span>
-                <button
-                  onClick={handleComponentsClick}
-                  className="inline-flex size-5 cursor-pointer items-center justify-center text-base-content transition-colors hover:text-primary"
-                  title="Browse components"
-                >
-                  <TbPlus className="size-8" />
-                </button>
-                <span>to build your component.</span>
-              </>
-            ) : (
-              <>
-                Get started by creating your first reusable component. Components can be used across
-                multiple pages.
-              </>
-            )
-          ) : (
-            <div className="w-full space-y-6">
-              {!isCompact && (
-                <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-border" />
-                  <span className="text-xs font-medium text-neutral-content">or</span>
-                  <div className="h-px flex-1 bg-border" />
-                </div>
+        {/* Title */}
+        <div className="space-y-3">
+          {!isCompact && (
+            <h2 className="text-xl font-semibold">
+              {isComponentMode && !hasComponents ? (
+                <>Create your first component</>
+              ) : (
+                <>Select something to edit</>
               )}
-
-              <div className="grid grid-cols-1 gap-4">
-                <ActionCard
-                  icon={<TbLayoutGridAdd className="size-6" />}
-                  title="Add Blocks"
-                  description="Like heros, ctas, cards, and more..."
-                  onClick={handleAddSectionClick}
-                />
-
-                <ActionCard
-                  icon={<TbPlus className="size-6" />}
-                  title="Add Components"
-                  description="Like buttons, images, and text..."
-                  onClick={handleComponentsClick}
-                />
-
-                <ActionCard
-                  icon={<TbBoxModel2 className="size-6" />}
-                  title="Create Components"
-                  description="Don't repeat yourself..."
-                  onClick={handleCreateClick}
-                />
-
-                {isAiEnabled &&
-                  renderEmptyAi &&
-                  renderEmptyAi({ onOpenAssistant: () => setClippyOpen({}) })}
-              </div>
-            </div>
+            </h2>
           )}
-        </div>
-      </div>
 
-      {/* Action Button */}
-      {!hasComponents && isComponentMode && (
-        <button
-          type="button"
-          onClick={handleCreateClick}
-          className="btn btn-primary gap-2 px-6! py-3! shadow-sm transition-[transform,box-shadow] duration-200 active:scale-[0.99]"
-        >
-          <TbPlus className="size-5" />
-          <span>Create Component</span>
-        </button>
-      )}
+          <div className="flex max-w-md flex-wrap items-center justify-center gap-1 text-sm">
+            {isComponentMode ? (
+              hasComponents ? (
+                <>
+                  <span>Click on an element to start editing,</span>
+                  <span>or add components</span>
+                  <button
+                    onClick={handleComponentsClick}
+                    className="text-base-content hover:text-primary inline-flex size-5 cursor-pointer items-center justify-center transition-colors"
+                    title="Browse components"
+                  >
+                    <TbPlus className="size-8" />
+                  </button>
+                  <span>to build your component.</span>
+                </>
+              ) : (
+                <>
+                  Get started by creating your first reusable component. Components can be used
+                  across multiple pages.
+                </>
+              )
+            ) : (
+              <div className="w-full space-y-6">
+                {!isCompact && (
+                  <div className="flex items-center gap-4">
+                    <div className="bg-border h-px flex-1" />
+                    <span className="text-neutral-content text-xs font-medium">or</span>
+                    <div className="bg-border h-px flex-1" />
+                  </div>
+                )}
 
-      {/* Helpful Hint */}
-      {hasComponents && isComponentMode && (
-        <div className="text-xxs mt-4 flex items-center gap-2 text-neutral-content">
-          <TbClick className="size-4" />
-          <span>Use the dropdown at the top to select a component</span>
+                <div className="grid grid-cols-1 gap-4">
+                  <ActionCard
+                    icon={<TbLayoutGridAdd className="size-6" />}
+                    title="Add Blocks"
+                    description="Like heros, ctas, cards, and more..."
+                    onClick={handleAddSectionClick}
+                  />
+
+                  <ActionCard
+                    icon={<TbPlus className="size-6" />}
+                    title="Add Components"
+                    description="Like buttons, images, and text..."
+                    onClick={handleComponentsClick}
+                  />
+
+                  <ActionCard
+                    icon={<TbBoxModel2 className="size-6" />}
+                    title="Create Components"
+                    description="Don't repeat yourself..."
+                    onClick={handleCreateClick}
+                  />
+
+                  {isAiEnabled &&
+                    renderEmptyAi &&
+                    renderEmptyAi({ onOpenAssistant: () => setClippyOpen({}) })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+
+        {/* Action Button */}
+        {!hasComponents && isComponentMode && (
+          <button
+            type="button"
+            onClick={handleCreateClick}
+            className="btn btn-primary gap-2 px-6! py-3! shadow-sm transition-[transform,box-shadow] duration-200 active:scale-[0.99]"
+          >
+            <TbPlus className="size-5" />
+            <span>Create Component</span>
+          </button>
+        )}
+
+        {/* Helpful Hint */}
+        {hasComponents && isComponentMode && (
+          <div className="text-xxs text-neutral-content mt-4 flex items-center gap-2">
+            <TbClick className="size-4" />
+            <span>Use the dropdown at the top to select a component</span>
+          </div>
+        )}
       </div>
 
       <button
         type="button"
         onClick={() => setSideBarOpen(false)}
-        className="shrink-0 border-0 bg-transparent py-2 text-xs text-neutral-content/50 transition-colors hover:text-neutral-content/80 hover:underline"
+        className="text-neutral-content/50 hover:text-neutral-content/80 shrink-0 border-0 bg-transparent py-2 text-xs transition-colors hover:underline"
       >
         close sidebar
       </button>

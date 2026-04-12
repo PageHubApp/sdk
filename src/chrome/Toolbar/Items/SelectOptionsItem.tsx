@@ -52,7 +52,7 @@ const Input = ({ options, setProp }) => {
       renderPopover={(item, index) => (
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-neutral-content">Label</span>
+            <span className="text-neutral-content text-xs">Label</span>
             <ToolbarItem
               propKey="options"
               propType="component"
@@ -65,7 +65,7 @@ const Input = ({ options, setProp }) => {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-neutral-content">Value</span>
+            <span className="text-neutral-content text-xs">Value</span>
             <ToolbarItem
               propKey="options"
               propType="component"

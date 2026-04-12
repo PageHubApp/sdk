@@ -36,7 +36,7 @@ export const ConditionsInput = () => {
     conditions,
     conditionLogic,
     actions: { setProp },
-  } = useNode((node) => ({
+  } = useNode(node => ({
     conditions: (node.data.props.conditions || []) as Condition[],
     conditionLogic: (node.data.props.conditionLogic || "all") as "all" | "any",
   }));
@@ -77,7 +77,7 @@ export const ConditionsInput = () => {
       help="Show or hide this element based on URL parameters or form field values. Conditions are checked when the page loads."
     >
       {conditions.length > 1 && (
-        <div className="mb-2 flex gap-1 rounded-md bg-neutral p-0.5">
+        <div className="bg-neutral mb-2 flex gap-1 rounded-md p-0.5">
           <button
             type="button"
             onClick={() => setLogic("all")}
@@ -104,15 +104,13 @@ export const ConditionsInput = () => {
       )}
 
       {conditions.map((cond, i) => (
-        <div key={i} className="mb-2 rounded-md border border-base-300 p-2">
+        <div key={i} className="border-base-300 mb-2 rounded-md border p-2">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-[10px] font-medium text-neutral-content">
-              Condition {i + 1}
-            </span>
+            <span className="text-neutral-content text-[10px] font-medium">Condition {i + 1}</span>
             <button
               type="button"
               onClick={() => removeCondition(i)}
-              className="rounded p-0.5 text-neutral-content hover:bg-error hover:text-error-content"
+              className="text-neutral-content hover:bg-error hover:text-error-content rounded p-0.5"
             >
               <TbTrash size={12} />
             </button>
@@ -137,7 +135,7 @@ export const ConditionsInput = () => {
               placeholder="Select field..."
             >
               <option value="">Select field...</option>
-              {formElements.map((opt) => (
+              {formElements.map(opt => (
                 <option key={opt.nodeId} value={opt.anchor}>
                   {opt.label}
                 </option>
@@ -150,7 +148,7 @@ export const ConditionsInput = () => {
             <input
               type="text"
               value={cond.key}
-              onChange={(e) => updateCondition(i, { key: e.target.value })}
+              onChange={e => updateCondition(i, { key: e.target.value })}
               placeholder={cond.type === "url-param" ? "param name (e.g. ref)" : "field name"}
               className="input-plain w-full font-mono text-xs"
             />
@@ -162,7 +160,7 @@ export const ConditionsInput = () => {
             onChange={(val: string) => updateCondition(i, { operator: val as Operator })}
             propKey={`condOp-${i}`}
           >
-            {OPERATOR_OPTIONS.map((opt) => (
+            {OPERATOR_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
@@ -175,7 +173,7 @@ export const ConditionsInput = () => {
               <input
                 type="text"
                 value={cond.value}
-                onChange={(e) => updateCondition(i, { value: e.target.value })}
+                onChange={e => updateCondition(i, { value: e.target.value })}
                 placeholder="expected value"
                 className="input-plain w-full font-mono text-xs"
               />

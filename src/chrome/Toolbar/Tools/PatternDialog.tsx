@@ -116,7 +116,7 @@ export const PatternDialog = () => {
       <div style={style}>
         <button
           id={`pattern-${pattern.slug}`}
-          className={`flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-neutral-content transition-colors hover:bg-neutral ${
+          className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs transition-colors ${
             dialog.value?.slug === pattern.slug ? "bg-primary text-primary-content" : ""
           }`}
           onClick={e => changed(pattern)}
@@ -124,7 +124,7 @@ export const PatternDialog = () => {
           <div className="pointer-events-none flex h-6 w-full items-center justify-between gap-3">
             <div className="w-1/2 truncate whitespace-nowrap">{pattern.title}</div>
             <div
-              className="h-full w-1/2 rounded-lg border border-base-300 bg-neutral"
+              className="border-base-300 bg-neutral h-full w-1/2 rounded-lg border"
               style={{
                 backgroundImage: patt ? `url(${patt})` : null,
               }}
@@ -165,7 +165,7 @@ export const PatternDialog = () => {
           </div>
 
           {/* Pattern Count */}
-          <div className="mb-2 shrink-0 text-xs text-neutral-content">
+          <div className="text-neutral-content mb-2 shrink-0 text-xs">
             {filteredPatterns.length} pattern
             {filteredPatterns.length !== 1 ? "s" : ""}
           </div>

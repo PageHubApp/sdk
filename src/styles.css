@@ -51,28 +51,46 @@
 
 /* ─── CSS Animation Scroll Trigger ─────────────────────────────────────── */
 /* Entrance animations are paused until .ph-in-view is added by IntersectionObserver */
-.ph-anim-scroll { animation-play-state: paused; }
-.ph-anim-scroll.ph-in-view { animation-play-state: running; }
+.ph-anim-scroll {
+  animation-play-state: paused;
+}
+.ph-anim-scroll.ph-in-view {
+  animation-play-state: running;
+}
 
 /* ─── CSS Hover Animation Utilities ────────────────────────────────────── */
 @utility ph-hover-grow {
   transition: transform 0.25s ease-out;
-  &:hover { transform: scale(1.1); }
-  &:active { transform: scale(0.9); }
+  &:hover {
+    transform: scale(1.1);
+  }
+  &:active {
+    transform: scale(0.9);
+  }
 }
 @utility ph-hover-lift {
   transition: transform 0.25s ease-out;
-  &:hover { transform: translateY(-6px); }
-  &:active { transform: translateY(0); }
+  &:hover {
+    transform: translateY(-6px);
+  }
+  &:active {
+    transform: translateY(0);
+  }
 }
 @utility ph-hover-glow {
   transition: box-shadow 0.3s ease-out;
-  &:hover { box-shadow: 0 0 20px rgba(255, 255, 255, 0.15); }
+  &:hover {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+  }
 }
 @utility ph-hover-press {
   transition: transform 0.2s ease-out;
-  &:hover { transform: scale(1.02); }
-  &:active { transform: scale(0.95); }
+  &:hover {
+    transform: scale(1.02);
+  }
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 /* ─── Height: screen override ──────────────────────────────────────────── */
@@ -83,103 +101,210 @@
 /* ─── Keyframes ────────────────────────────────────────────────────────── */
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 @keyframes pulse-glow {
-  0% { box-shadow: 0 0 20px rgba(0, 245, 255, 0.3); }
-  100% { box-shadow: 0 0 40px rgba(0, 245, 255, 0.6); }
+  0% {
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 40px rgba(0, 245, 255, 0.6);
+  }
 }
 
 @keyframes slide-up {
-  0% { transform: translateY(50px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slide-down {
-  0% { transform: translateY(-50px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes fade-in {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /* ─── CSS Animation Preset Keyframes ─────────────────────────────────── */
 
 @keyframes css-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes css-fade-up {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes css-fade-down {
-  from { opacity: 0; transform: translateY(-40px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes css-fade-left {
-  from { opacity: 0; transform: translateX(40px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes css-fade-right {
-  from { opacity: 0; transform: translateX(-40px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes css-scale-up {
-  from { opacity: 0; transform: scale(0.85); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes css-blur-in {
-  from { opacity: 0; filter: blur(12px); }
-  to { opacity: 1; filter: blur(0px); }
+  from {
+    opacity: 0;
+    filter: blur(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+  }
 }
 
 @keyframes css-slide-up {
-  from { transform: translateY(60px); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(60px);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 @keyframes css-flip-in {
-  from { opacity: 0; transform: perspective(400px) rotateY(90deg); }
-  to { opacity: 1; transform: perspective(400px) rotateY(0deg); }
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateY(90deg);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(400px) rotateY(0deg);
+  }
 }
 
 @keyframes css-spring {
-  from { opacity: 0; transform: scale(0); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes css-bounce-in {
-  0% { opacity: 0; transform: scale(0.3); }
-  50% { transform: scale(1.05); }
-  70% { transform: scale(0.9); }
-  100% { opacity: 1; transform: scale(1); }
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes css-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes css-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes css-wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-5deg); }
-  75% { transform: rotate(5deg); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
 }
 
 /* ─── PageHub SDK Base Styles ──────────────────────────────────────────── */
@@ -194,7 +319,12 @@
   --ph-text: #0f172a;
   --ph-text-muted: #64748b;
 
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
   color: var(--ph-text);
   background: var(--ph-bg);
 }

@@ -7,7 +7,11 @@ function k(key: string) {
 export const phStorage = {
   /** Raw string read — drop-in for localStorage.getItem */
   get(key: string): string | null {
-    try { return localStorage.getItem(k(key)); } catch { return null; }
+    try {
+      return localStorage.getItem(k(key));
+    } catch {
+      return null;
+    }
   },
 
   /** Parsed JSON read with fallback */
@@ -15,7 +19,9 @@ export const phStorage = {
     try {
       const raw = localStorage.getItem(k(key));
       return raw !== null ? JSON.parse(raw) : fallback;
-    } catch { return fallback; }
+    } catch {
+      return fallback;
+    }
   },
 
   /** Write — strings stored as-is, everything else JSON-stringified */
@@ -26,6 +32,8 @@ export const phStorage = {
   },
 
   remove(key: string): void {
-    try { localStorage.removeItem(k(key)); } catch {}
+    try {
+      localStorage.removeItem(k(key));
+    } catch {}
   },
 };

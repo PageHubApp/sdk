@@ -50,11 +50,11 @@ export default defineConfig(({ mode, command }) => {
         "components/layout": resolve(__dirname, "src/chrome/shared/layout"),
         "utils/icons.json": resolve(__dirname, "src/utils/data/icons.json"),
         "utils/googleIcons.json": resolve(__dirname, "src/utils/data/googleIcons.json"),
-        "utils": resolve(__dirname, "src/utils"),
-        "lodash": resolve(__dirname, "../../node_modules/lodash-es"),
+        utils: resolve(__dirname, "src/utils"),
+        lodash: resolve(__dirname, "../../node_modules/lodash-es"),
         // Stub Node.js polyfills pulled in by lzutf8
         "readable-stream": resolve(__dirname, "src/shims/empty.ts"),
-        "stream": resolve(__dirname, "src/shims/empty.ts"),
+        stream: resolve(__dirname, "src/shims/empty.ts"),
         // Framework stubs
         "next/link": resolve(__dirname, "src/shims/next.tsx"),
         "next/image": resolve(__dirname, "src/shims/next.tsx"),
@@ -70,10 +70,10 @@ export default defineConfig(({ mode, command }) => {
         entry,
         name: libName,
         formats: isDev ? ["umd"] : ["es", "umd"],
-        fileName: (format) => `${baseName}.${format === "es" ? "js" : "umd.cjs"}`,
+        fileName: format => `${baseName}.${format === "es" ? "js" : "umd.cjs"}`,
       },
       rollupOptions: {
-        external: (id) => /^react(-dom)?(\/|$)/.test(id),
+        external: id => /^react(-dom)?(\/|$)/.test(id),
         output: [
           // ES — code-split heavy deps into lazy chunks
           {

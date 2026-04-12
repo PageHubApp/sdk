@@ -16,18 +16,25 @@ if (typeof window !== "undefined") {
 
 // ─── Scroll Timeline Presets ────────────────────────────────────────────────
 
-export const SCROLL_TIMELINE_PRESETS: Record<string, { from: gsap.TweenVars; to: gsap.TweenVars }> = {
-  fadeIn:      { from: { opacity: 0 },                                          to: { opacity: 1 } },
-  fadeOut:     { from: { opacity: 1 },                                          to: { opacity: 0 } },
-  scaleUp:    { from: { scale: 0.3, opacity: 0 },                              to: { scale: 1, opacity: 1 } },
-  slideLeft:  { from: { x: 200, opacity: 0 },                                  to: { x: 0, opacity: 1 } },
-  slideRight: { from: { x: -200, opacity: 0 },                                 to: { x: 0, opacity: 1 } },
-  slideUp:    { from: { y: 100, opacity: 0 },                                  to: { y: 0, opacity: 1 } },
-  slideDown:  { from: { y: -100, opacity: 0 },                                 to: { y: 0, opacity: 1 } },
-  rotateIn:   { from: { rotation: 15, opacity: 0 },                            to: { rotation: 0, opacity: 1 } },
-  fadeScale:  { from: { scale: 0.5, opacity: 0, filter: "blur(8px)" },         to: { scale: 1, opacity: 1, filter: "blur(0px)" } },
-  slideRotate:{ from: { x: 200, rotation: -15, opacity: 0 },                   to: { x: 0, rotation: 0, opacity: 1 } },
-};
+export const SCROLL_TIMELINE_PRESETS: Record<string, { from: gsap.TweenVars; to: gsap.TweenVars }> =
+  {
+    fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+    fadeOut: { from: { opacity: 1 }, to: { opacity: 0 } },
+    scaleUp: { from: { scale: 0.3, opacity: 0 }, to: { scale: 1, opacity: 1 } },
+    slideLeft: { from: { x: 200, opacity: 0 }, to: { x: 0, opacity: 1 } },
+    slideRight: { from: { x: -200, opacity: 0 }, to: { x: 0, opacity: 1 } },
+    slideUp: { from: { y: 100, opacity: 0 }, to: { y: 0, opacity: 1 } },
+    slideDown: { from: { y: -100, opacity: 0 }, to: { y: 0, opacity: 1 } },
+    rotateIn: { from: { rotation: 15, opacity: 0 }, to: { rotation: 0, opacity: 1 } },
+    fadeScale: {
+      from: { scale: 0.5, opacity: 0, filter: "blur(8px)" },
+      to: { scale: 1, opacity: 1, filter: "blur(0px)" },
+    },
+    slideRotate: {
+      from: { x: 200, rotation: -15, opacity: 0 },
+      to: { x: 0, rotation: 0, opacity: 1 },
+    },
+  };
 
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
@@ -43,7 +50,7 @@ export interface ScrollEffectOptions {
 
 export function useScrollEffect(
   sectionRef: RefObject<HTMLElement | null>,
-  options: ScrollEffectOptions,
+  options: ScrollEffectOptions
 ) {
   const {
     effect,
@@ -71,7 +78,9 @@ export function useScrollEffect(
         break;
     }
 
-    return () => { if (ctx) ctx.revert(); };
+    return () => {
+      if (ctx) ctx.revert();
+    };
   }, [effect, enabled, direction, snap, speed, smoothing, runway]);
 }
 
@@ -79,7 +88,7 @@ export function useScrollEffect(
 
 function initHorizontalScroll(
   section: HTMLElement,
-  opts: { direction: string; snap: boolean; speed: number; smoothing: number },
+  opts: { direction: string; snap: boolean; speed: number; smoothing: number }
 ) {
   const sticky = section.querySelector(".ph-hscroll-sticky") as HTMLElement;
   const track = section.querySelector(".ph-hscroll-track") as HTMLElement;
@@ -90,25 +99,28 @@ function initHorizontalScroll(
 
   const isRTL = opts.direction === "rtl";
   const panelCount = track.children.length;
-  const snapVal = opts.snap && panelCount > 1
-    ? { snapTo: 1 / (panelCount - 1), duration: { min: 0.2, max: 0.5 }, ease: "power1.inOut" }
-    : false;
+  const snapVal =
+    opts.snap && panelCount > 1
+      ? { snapTo: 1 / (panelCount - 1), duration: { min: 0.2, max: 0.5 }, ease: "power1.inOut" }
+      : false;
 
   if (isRTL) gsap.set(track, { x: -overflow });
 
   return gsap.context(() => {
-    gsap.timeline({
-      scrollTrigger: {
-        trigger: section,
-        pin: sticky,
-        scrub: opts.smoothing,
-        end: () => `+=${overflow * opts.speed}`,
-        snap: snapVal as any,
-        pinSpacing: true,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-      },
-    }).to(track, { x: isRTL ? 0 : -overflow, ease: "none" });
+    gsap
+      .timeline({
+        scrollTrigger: {
+          trigger: section,
+          pin: sticky,
+          scrub: opts.smoothing,
+          end: () => `+=${overflow * opts.speed}`,
+          snap: snapVal as any,
+          pinSpacing: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      })
+      .to(track, { x: isRTL ? 0 : -overflow, ease: "none" });
   }, section);
 }
 
@@ -116,13 +128,8 @@ function initHorizontalScroll(
 // Pins the section, then each child with [data-scroll-timeline] animates
 // independently at its own scroll progress range.
 
-function initScrollTimeline(
-  section: HTMLElement,
-  opts: { runway: number; smoothing: number },
-) {
-  const children = Array.from(
-    section.querySelectorAll("[data-scroll-timeline]"),
-  ) as HTMLElement[];
+function initScrollTimeline(section: HTMLElement, opts: { runway: number; smoothing: number }) {
+  const children = Array.from(section.querySelectorAll("[data-scroll-timeline]")) as HTMLElement[];
   if (children.length === 0) return;
 
   return gsap.context(() => {
@@ -138,7 +145,7 @@ function initScrollTimeline(
       },
     });
 
-    children.forEach((child) => {
+    children.forEach(child => {
       try {
         const config = JSON.parse(child.getAttribute("data-scroll-timeline") || "{}");
         const preset = SCROLL_TIMELINE_PRESETS[config.preset];

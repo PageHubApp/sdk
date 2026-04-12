@@ -9,7 +9,11 @@ import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 export const ButtonMainTab = () =>
   renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Button label, icon, and icon placement.">
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="Button label, icon, and icon placement."
+      >
         <ToolbarItem propKey="text" type="text" label="Text" propType="component" />
         <SettingsAiSlot />
 
@@ -29,12 +33,7 @@ export const ButtonMainTab = () =>
           labelHide
           labelWidth="w-full"
         />
-        <ToolbarItem
-          propKey="icon.position"
-          propType="component"
-          type="select"
-          label="Position"
-        >
+        <ToolbarItem propKey="icon.position" propType="component" type="select" label="Position">
           <option value="left">Left</option>
           <option value="right">Right</option>
           <option value="top">Top</option>
@@ -52,7 +51,11 @@ export const ButtonMainTab = () =>
       </ToolbarSection>
     ),
     Type: (
-      <ToolbarSection title="Type" icon={SECTION_ICONS["Type"]} help="Button or submit (for forms).">
+      <ToolbarSection
+        title="Type"
+        icon={SECTION_ICONS["Type"]}
+        help="Button or submit (for forms)."
+      >
         <ToolbarItem propKey="type" type="select" label="Type" propType="component">
           <option value="button">Button</option>
           <option value="submit">Submit</option>

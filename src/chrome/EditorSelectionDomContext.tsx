@@ -47,9 +47,7 @@ export function EditorSelectionDomProvider({ children }: { children: React.React
     };
   }, [selectionSignature, query]);
 
-  return (
-    <SelectionDomContext.Provider value={value}>{children}</SelectionDomContext.Provider>
-  );
+  return <SelectionDomContext.Provider value={value}>{children}</SelectionDomContext.Provider>;
 }
 
 export function useSelectionDom(): SelectionDomContextValue {

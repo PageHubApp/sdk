@@ -2,7 +2,9 @@ import { useEditor } from "@craftjs/core";
 import React, { useMemo } from "react";
 import { getEditorVariableOptions } from "../../../utils/editorVariableOptions";
 
-const HTMLCodeInput = React.lazy(() => import("../../Toolbar/Inputs/advanced/HTMLCodeInput").then(m => ({ default: m.HTMLCodeInput })));
+const HTMLCodeInput = React.lazy(() =>
+  import("../../Toolbar/Inputs/advanced/HTMLCodeInput").then(m => ({ default: m.HTMLCodeInput }))
+);
 
 interface CodeTabProps {
   headerCode: string;

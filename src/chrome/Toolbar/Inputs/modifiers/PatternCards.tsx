@@ -13,11 +13,9 @@ export function PatternCards({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {mods.map((mod) => {
+      {mods.map(mod => {
         const active = isActive(mod);
-        const classCount = mod.classes
-          ? mod.classes.split(/\s+/).filter(Boolean).length
-          : 0;
+        const classCount = mod.classes ? mod.classes.split(/\s+/).filter(Boolean).length : 0;
         return (
           <button
             key={mod.name}
@@ -25,11 +23,13 @@ export function PatternCards({
             onClick={() => onToggle(mod)}
             className={twMerge(
               "ph-toolbar-dashed-btn flex-col items-start gap-0.5 text-left",
-              active && PH_TOOLBAR_DASHED_BTN_ACTIVE,
+              active && PH_TOOLBAR_DASHED_BTN_ACTIVE
             )}
           >
             <div className="flex w-full items-center justify-between">
-              <span className={`text-xs font-medium ${active ? "text-primary" : "text-base-content"}`}>
+              <span
+                className={`text-xs font-medium ${active ? "text-primary" : "text-base-content"}`}
+              >
                 {mod.label}
               </span>
               <span className="flex items-center gap-1.5">
@@ -38,9 +38,7 @@ export function PatternCards({
                     ×{classCount}
                   </span>
                 )}
-                {mod.origin === "site" && (
-                  <span className="text-[9px] opacity-40">custom</span>
-                )}
+                {mod.origin === "site" && <span className="text-[9px] opacity-40">custom</span>}
               </span>
             </div>
             {mod.description && (

@@ -31,14 +31,26 @@ export interface StaticRenderContext {
 export type ToHTMLFn = (
   props: Record<string, any>,
   childrenHTML: string,
-  ctx: StaticRenderContext,
+  ctx: StaticRenderContext
 ) => string;
 
 // ─── HTML helpers ───────────────────────────────────────────────────────────
 
 const VOID_ELEMENTS = new Set([
-  "area", "base", "br", "col", "embed", "hr", "img", "input",
-  "link", "meta", "param", "source", "track", "wbr",
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr",
 ]);
 
 export function escapeHTML(str: string): string {
@@ -77,7 +89,9 @@ export function styleObjToString(obj: Record<string, string> | null | undefined)
     .join("; ");
 }
 
-export function cssStringToObj(cssString: string | undefined | null): Record<string, string> | null {
+export function cssStringToObj(
+  cssString: string | undefined | null
+): Record<string, string> | null {
   if (!cssString) return null;
   try {
     return parse(cssString);
@@ -96,7 +110,7 @@ export function isVoidElement(tag: string): boolean {
 export function tag(
   tagName: string,
   attrs: Record<string, string | boolean | undefined | null>,
-  innerHTML?: string,
+  innerHTML?: string
 ): string {
   const attrStr = buildAttrs(attrs);
   if (isVoidElement(tagName)) {
@@ -137,18 +151,22 @@ export function staticClasses(
   props: Record<string, any>,
   ctx: StaticRenderContext,
   exclude: string[] = [],
-  only: string[] = [],
+  only: string[] = []
 ): string {
   // className is now a string (post-migration)
-  let cls = typeof props.className === "string"
-    ? props.className
-    : Array.isArray(props.className)
-      ? props.className.join(" ")
-      : "";
+  let cls =
+    typeof props.className === "string"
+      ? props.className
+      : Array.isArray(props.className)
+        ? props.className.join(" ")
+        : "";
 
   // For mobile view, filter out responsive-prefixed classes
   if (ctx.view !== "desktop" && cls) {
-    cls = cls.split(/\s+/).filter(c => !RESPONSIVE_RE.test(c)).join(" ");
+    cls = cls
+      .split(/\s+/)
+      .filter(c => !RESPONSIVE_RE.test(c))
+      .join(" ");
   }
 
   // Append helpers (typography preset classes)

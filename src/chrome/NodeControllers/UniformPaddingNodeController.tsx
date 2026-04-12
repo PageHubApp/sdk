@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { twMerge } from "tailwind-merge";
 import { Tooltip } from "components/layout/Tooltip";
-import { buildVariantPrefix, editorCanvasViewToClassPrefixKey } from "../../utils/tailwind/className";
+import {
+  buildVariantPrefix,
+  editorCanvasViewToClassPrefixKey,
+} from "../../utils/tailwind/className";
 import RenderNodeControlInline from "../RenderNodeControlInline";
 import { ViewSelectionAtom } from "../Toolbar/Label";
 import { ViewAtom } from "../Viewport/atoms";
@@ -164,7 +167,7 @@ export const UniformPaddingNodeController = () => {
       align="start"
       placement="start"
       isPadding={true}
-      className="select-none items-center whitespace-nowrap"
+      className="items-center whitespace-nowrap select-none"
       style={elementColor ? { color: elementColor } : {}}
     >
       <>
@@ -177,7 +180,7 @@ export const UniformPaddingNodeController = () => {
         <Tooltip content="Drag to adjust all padding" placement="left">
           <button
             type="button"
-            className="pointer-events-auto size-6 cursor-move border-l-[5px] border-t-4 border-current transition-transform hover:scale-110 active:scale-110"
+            className="pointer-events-auto size-6 cursor-move border-t-4 border-l-[5px] border-current transition-transform hover:scale-110 active:scale-110"
             style={{ animation: "node-control-in 0.5s ease-out 0.5s both" }}
             onMouseDown={handleMouseDown}
             onMouseEnter={() => setHovering(true)}

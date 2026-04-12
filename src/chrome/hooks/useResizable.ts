@@ -59,7 +59,10 @@ export function useResizable(options: UseResizableOptions) {
 
   const [size, setSize] = useState(() => {
     try {
-      const p = phStorage.getJSON<{ width: number; height: number }>("resizable-" + storageKey, null);
+      const p = phStorage.getJSON<{ width: number; height: number }>(
+        "resizable-" + storageKey,
+        null
+      );
       if (p && typeof p.width === "number" && typeof p.height === "number") {
         return clamp(p.width, p.height);
       }
@@ -89,7 +92,7 @@ export function useResizable(options: UseResizableOptions) {
         phStorage.set("resizable-" + storageKey, s);
       } catch {}
     },
-    [storageKey],
+    [storageKey]
   );
 
   // Document-level pointer listeners — attached once
@@ -164,7 +167,7 @@ export function useResizable(options: UseResizableOptions) {
       document.body.style.cursor = EDGE_CURSORS[edge];
       document.body.style.userSelect = "none";
     },
-    [],
+    []
   );
 
   // Build per-edge style + handler objects the consumer can spread onto <div>s
@@ -236,11 +239,11 @@ export function useResizable(options: UseResizableOptions) {
   };
 
   const handleProps = Object.fromEntries(
-    edges.map((edge) => [
-      edge,
-      { style: handleStyles[edge], onPointerDown: startResize(edge) },
-    ]),
-  ) as Record<ResizeEdge, { style: React.CSSProperties; onPointerDown: (e: React.PointerEvent) => void }>;
+    edges.map(edge => [edge, { style: handleStyles[edge], onPointerDown: startResize(edge) }])
+  ) as Record<
+    ResizeEdge,
+    { style: React.CSSProperties; onPointerDown: (e: React.PointerEvent) => void }
+  >;
 
   return { width: size.width, height: size.height, isResizing, positionDelta, handleProps };
 }

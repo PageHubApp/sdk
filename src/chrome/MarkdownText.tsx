@@ -24,18 +24,31 @@ function parseInline(text: string): React.ReactNode[] {
       parts.push(text.slice(last, match.index));
     }
     if (match[1]) {
-      parts.push(<strong key={match.index} className="font-semibold">{match[2]}</strong>);
+      parts.push(
+        <strong key={match.index} className="font-semibold">
+          {match[2]}
+        </strong>
+      );
     } else if (match[3]) {
       parts.push(<em key={match.index}>{match[4]}</em>);
     } else if (match[5]) {
       parts.push(
-        <code key={match.index} className="rounded bg-black/10 px-1 py-0.5 text-[12px] dark:bg-white/10">
+        <code
+          key={match.index}
+          className="rounded bg-black/10 px-1 py-0.5 text-[12px] dark:bg-white/10"
+        >
           {match[6]}
         </code>
       );
     } else if (match[7]) {
       parts.push(
-        <a key={match.index} href={match[9]} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+        <a
+          key={match.index}
+          href={match[9]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2"
+        >
           {match[8]}
         </a>
       );
@@ -68,7 +81,10 @@ export function MarkdownText({ content, className }: MarkdownTextProps) {
       }
       i++; // skip closing ```
       elements.push(
-        <pre key={`code-${i}`} className="my-1.5 overflow-x-auto rounded bg-black/10 p-2 text-[12px] leading-snug dark:bg-white/10">
+        <pre
+          key={`code-${i}`}
+          className="my-1.5 overflow-x-auto rounded bg-black/10 p-2 text-[12px] leading-snug dark:bg-white/10"
+        >
           <code>{codeLines.join("\n")}</code>
         </pre>
       );
@@ -79,7 +95,12 @@ export function MarkdownText({ content, className }: MarkdownTextProps) {
     const headingMatch = line.match(/^(#{1,4})\s+(.+)/);
     if (headingMatch) {
       const level = headingMatch[1].length;
-      const sizes = ["text-base font-bold", "text-[14px] font-bold", "text-[13px] font-semibold", "text-[13px] font-medium"];
+      const sizes = [
+        "text-base font-bold",
+        "text-[14px] font-bold",
+        "text-[13px] font-semibold",
+        "text-[13px] font-medium",
+      ];
       elements.push(
         <div key={`h-${i}`} className={`${sizes[level - 1] || sizes[2]} mt-2 first:mt-0`}>
           {parseInline(headingMatch[2])}
@@ -93,9 +114,7 @@ export function MarkdownText({ content, className }: MarkdownTextProps) {
     if (line.match(/^[\s]*[-•]\s+/)) {
       const items: React.ReactNode[] = [];
       while (i < lines.length && lines[i].match(/^[\s]*[-•]\s+/)) {
-        items.push(
-          <li key={`li-${i}`}>{parseInline(lines[i].replace(/^[\s]*[-•]\s+/, ""))}</li>
-        );
+        items.push(<li key={`li-${i}`}>{parseInline(lines[i].replace(/^[\s]*[-•]\s+/, ""))}</li>);
         i++;
       }
       elements.push(
@@ -131,14 +150,12 @@ export function MarkdownText({ content, className }: MarkdownTextProps) {
     }
 
     // Normal paragraph
-    elements.push(
-      <div key={`p-${i}`}>{parseInline(line)}</div>
-    );
+    elements.push(<div key={`p-${i}`}>{parseInline(line)}</div>);
     i++;
   }
 
   return (
-    <div className={`select-text cursor-text text-[13px] leading-relaxed ${className || ""}`}>
+    <div className={`cursor-text text-[13px] leading-relaxed select-text ${className || ""}`}>
       {elements}
     </div>
   );

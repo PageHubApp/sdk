@@ -53,7 +53,16 @@ const EditableName = () => {
         data-gramm="false"
         suppressContentEditableWarning={true}
         onClick={handleClick}
-        onKeyDown={isEditing ? undefined : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(e as any); } }}
+        onKeyDown={
+          isEditing
+            ? undefined
+            : e => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleClick(e as any);
+                }
+              }
+        }
         onBlur={handleBlur}
         onInput={debounce(e => {
           actions.setCustom(id, custom => (custom.displayName = e.target.innerText));
@@ -83,7 +92,7 @@ export const NameNodeController = (props: { position; align; placement; alt?: an
       align={align}
       alt={alt}
       placement={placement}
-      className={`${position === "top" && align === "start" && placement === "end" ? "m-0" : ""} select-none items-center whitespace-nowrap`}
+      className={`${position === "top" && align === "start" && placement === "end" ? "m-0" : ""} items-center whitespace-nowrap select-none`}
     >
       <EditableName />
     </RenderNodeControlInline>

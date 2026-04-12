@@ -10,11 +10,7 @@ import { resolveTheme } from "../utils/design/resolveTheme";
 import { useLazyBackground } from "../utils/hooks/useLazyBackground";
 
 import { Box } from "@pagehub/ui";
-import {
-  applyBackgroundImage,
-  applyLazyBackgroundImage,
-  getBackgroundUrl,
-} from "../utils/lib";
+import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../utils/lib";
 import { PaletteProvider } from "../utils/design/PaletteContext";
 import { RenderPattern, inlayProps } from "./lib";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
@@ -85,7 +81,14 @@ export function Background({
   savedComponents = [],
   ...rest
 }: Partial<ContainerProps>) {
-  let props: any = { type, backgroundFetchPriority, backgroundPlaceholder, pageMedia, savedComponents, ...rest };
+  let props: any = {
+    type,
+    backgroundFetchPriority,
+    backgroundPlaceholder,
+    pageMedia,
+    savedComponents,
+    ...rest,
+  };
   const { children } = props;
 
   const {
@@ -108,10 +111,9 @@ export function Background({
     ref: lazyRef,
     isLoaded,
     backgroundImage,
-  } = useLazyBackground(
-    props.backgroundImage ? getBackgroundUrl(props, query) : null,
-    { enabled: props.backgroundLazy && !enabled },
-  );
+  } = useLazyBackground(props.backgroundImage ? getBackgroundUrl(props, query) : null, {
+    enabled: props.backgroundLazy && !enabled,
+  });
 
   const view = useView();
   const device = "desktop" as const;
@@ -159,15 +161,15 @@ export function Background({
         preview={preview}
         query={query}
       >
-          {children ||
-            (enabled ? (
-              <EditorEmptyLeafHint
-                selected={isActive}
-                icon={<TbContainer aria-hidden />}
-                idleLabel="Empty canvas"
-                selectedDetail="Add header, sections, or footer from the sidebar"
-              />
-            ) : null)}
+        {children ||
+          (enabled ? (
+            <EditorEmptyLeafHint
+              selected={isActive}
+              icon={<TbContainer aria-hidden />}
+              idleLabel="Empty canvas"
+              selectedDetail="Add header, sections, or footer from the sidebar"
+            />
+          ) : null)}
       </RenderPattern>
     </PaletteProvider>
   );

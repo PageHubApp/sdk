@@ -11,17 +11,25 @@ export interface AccordionProps extends BaseSelectorProps {
   defaultOpen?: number;
 }
 
-export const Accordion = ({ children, ...incomingProps }: Partial<AccordionProps> & { children?: React.ReactNode }) => {
+export const Accordion = ({
+  children,
+  ...incomingProps
+}: Partial<AccordionProps> & { children?: React.ReactNode }) => {
   const props: AccordionProps = { multiOpen: false, defaultOpen: -1, ...incomingProps };
   const { query } = useEditor();
-  const { id, connectors: { connect } } = useNode();
+  const {
+    id,
+    connectors: { connect },
+  } = useNode();
   const { enabled, isActive } = useEditor((state, q) => ({
     enabled: state.options.enabled,
     isActive: q.getEvent("selected").contains(id),
   }));
 
   const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => { setIsMounted(true); }, []);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Auto-wire unique IDs on first mount
   useEffect(() => {
@@ -50,7 +58,7 @@ export const Accordion = ({ children, ...incomingProps }: Partial<AccordionProps
     const handler = (e: Event) => {
       const target = e.target as HTMLDetailsElement;
       if (target.tagName !== "DETAILS" || !target.open) return;
-      el.querySelectorAll("details[open]").forEach((d) => {
+      el.querySelectorAll("details[open]").forEach(d => {
         if (d !== target) (d as HTMLDetailsElement).open = false;
       });
     };
@@ -99,7 +107,7 @@ export const Accordion = ({ children, ...incomingProps }: Partial<AccordionProps
           idleLabel="Empty accordion"
           selectedDetail="Drop items or panels here"
         />
-      ) : null),
+      ) : null)
   );
 };
 

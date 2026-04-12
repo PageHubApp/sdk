@@ -10,7 +10,6 @@ import { applyAnimation } from "../utils/tailwind/tailwind";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
-
 const DynamicYouTube = React.lazy(() => import("react-youtube"));
 
 const YouTube = props => (
@@ -88,7 +87,6 @@ export const Video = (incomingProps: VideoProps) => {
   const { isActive } = useEditor((_, q) => ({
     isActive: q.getEvent("selected").contains(id),
   }));
-
 
   const { videoId } = props;
 
@@ -179,7 +177,10 @@ export const Video = (incomingProps: VideoProps) => {
     prop.onClick = e => e.preventDefault();
   }
 
-  return React.createElement(motionIt(props, Box, enabled), applyAnimation({ ...prop, key: id }, props, null, enabled));
+  return React.createElement(
+    motionIt(props, Box, enabled),
+    applyAnimation({ ...prop, key: id }, props, null, enabled)
+  );
 };
 
 Video.craft = {

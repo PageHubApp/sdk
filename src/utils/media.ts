@@ -172,8 +172,14 @@ export const syncPageMedia = (query: any, actions: any) => {
     const usedMediaIds = new Set<string>();
 
     const mediaProps = [
-      "ico", "image", "videoId", "backgroundImage", "src",
-      "imageDesktop", "imageTablet", "imageMobile",
+      "ico",
+      "image",
+      "videoId",
+      "backgroundImage",
+      "src",
+      "imageDesktop",
+      "imageTablet",
+      "imageMobile",
     ];
 
     Object.keys(nodes).forEach(nodeId => {

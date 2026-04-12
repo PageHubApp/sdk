@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @import "./editor-partials/tailwind-theme-reference.css";
 @import "./editor-partials/utilities.css";
 @import "./editor-partials/icons-and-mobile-preview.css";

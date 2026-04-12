@@ -1,4 +1,9 @@
-import { autocompletion, type Completion, type CompletionContext, type CompletionResult } from "@codemirror/autocomplete";
+import {
+  autocompletion,
+  type Completion,
+  type CompletionContext,
+  type CompletionResult,
+} from "@codemirror/autocomplete";
 import type { EditorVariableOption } from "../../../../utils/editorVariableOptions";
 
 /**
@@ -20,7 +25,10 @@ function variableSource(options: EditorVariableOption[]) {
     }
 
     const matches = options.filter(
-      o => partial === "" || o.id.toLowerCase().startsWith(partial) || o.label.toLowerCase().includes(partial)
+      o =>
+        partial === "" ||
+        o.id.toLowerCase().startsWith(partial) ||
+        o.label.toLowerCase().includes(partial)
     );
     if (!matches.length) return null;
 

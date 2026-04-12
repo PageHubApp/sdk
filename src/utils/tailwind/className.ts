@@ -114,7 +114,8 @@ function classPropKeyMatches(base: string, propKey: string): boolean {
 
   if (propKey === "color") {
     if (resolved === "text") return true;
-    if (resolved === "fontSize" && base.startsWith("text-") && !isTextFontSizeUtility(base)) return true;
+    if (resolved === "fontSize" && base.startsWith("text-") && !isTextFontSizeUtility(base))
+      return true;
   }
   return false;
 }
@@ -147,7 +148,10 @@ function segFromPrefix(pref: string): ParsedVariantSeg {
 }
 
 /** Strip leading `sm:` / `md:` / … / `dark:` / `hover:` segments; base is the utility stem. */
-export function splitClassVariants(classToken: string): { segments: ParsedVariantSeg[]; base: string } {
+export function splitClassVariants(classToken: string): {
+  segments: ParsedVariantSeg[];
+  base: string;
+} {
   const segments: ParsedVariantSeg[] = [];
   let rest = classToken;
   while (true) {
@@ -250,11 +254,7 @@ export function parseClasses(className: string): ClassTokens {
  * mutateClass("flex flex-col", "gridCols", "grid-cols-3")
  * // → "flex flex-col grid-cols-3"
  */
-export function mutateClass(
-  className: string,
-  _propKey: string,
-  newValue: string,
-): string {
+export function mutateClass(className: string, _propKey: string, newValue: string): string {
   return twMerge(className, newValue);
 }
 
@@ -274,7 +274,7 @@ export function removeClass(className: string, propKey: string): string {
   return className
     .trim()
     .split(/\s+/)
-    .filter((cls) => {
+    .filter(cls => {
       const { base } = splitClassVariants(cls);
       return !classPropKeyMatches(base, propKey);
     })
@@ -294,10 +294,7 @@ export function removeClass(className: string, propKey: string): string {
  * getClass("flex flex-col gap-4 py-8", "gridCols")
  * // → undefined
  */
-export function getClass(
-  className: string,
-  propKey: string,
-): string | undefined {
+export function getClass(className: string, propKey: string): string | undefined {
   if (!className || !className.trim()) return undefined;
 
   for (const cls of className.trim().split(/\s+/)) {
@@ -326,14 +323,7 @@ export function isEditorCanvasBreakpointView(view: string): view is EditorCanvas
 }
 
 /** Ordered scope IDs for toolbar “apply to layer” toggles (base + each min-width). */
-export const VIEW_BREAKPOINT_SCOPE_KEYS = [
-  "mobile",
-  "sm",
-  "desktop",
-  "lg",
-  "xl",
-  "2xl",
-] as const;
+export const VIEW_BREAKPOINT_SCOPE_KEYS = ["mobile", "sm", "desktop", "lg", "xl", "2xl"] as const;
 
 export type ViewBreakpointScopeKey = (typeof VIEW_BREAKPOINT_SCOPE_KEYS)[number];
 
@@ -406,7 +396,7 @@ export function getClassForView(
   className: string,
   propKey: string,
   view: string,
-  options?: ClassScopeOptions,
+  options?: ClassScopeOptions
 ): string | undefined {
   if (!className || !className.trim()) return undefined;
 
@@ -438,7 +428,7 @@ export function removeClassForView(
   className: string,
   propKey: string,
   view: string,
-  options?: ClassScopeOptions,
+  options?: ClassScopeOptions
 ): string {
   if (!className || !className.trim()) return "";
 
@@ -448,7 +438,7 @@ export function removeClassForView(
   return className
     .trim()
     .split(/\s+/)
-    .filter((cls) => {
+    .filter(cls => {
       const { segments, base } = splitClassVariants(cls);
       const norm = normalizeVariantSegments(segments);
       if (!chainsEqual(norm, expected)) return true;

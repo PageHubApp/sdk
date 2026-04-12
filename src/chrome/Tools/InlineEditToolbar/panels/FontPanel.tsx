@@ -42,7 +42,9 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
 
   const { query } = useCraftEditor();
   const rootNode = query.node(ROOT_NODE).get();
-  const typography = (resolveTheme(rootNode?.data?.props || {}).typography || []) as Array<Record<string, string>>;
+  const typography = (resolveTheme(rootNode?.data?.props || {}).typography || []) as Array<
+    Record<string, string>
+  >;
 
   const activeFont = editor.getAttributes("textStyle").fontFamily || null;
 
@@ -56,7 +58,8 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
   useEffect(() => {
     (async () => {
       try {
-        const { fetchGoogleFonts, getPopularFonts, getFunkyFonts } = await import("utils/fonts/googleFonts");
+        const { fetchGoogleFonts, getPopularFonts, getFunkyFonts } =
+          await import("utils/fonts/googleFonts");
         setLoading(true);
         const googleFonts = await fetchGoogleFonts();
         const popular = getPopularFonts();
@@ -90,7 +93,11 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
         <>
           <div className="mb-2 flex flex-wrap gap-1">
             {typography.map((style, index) => {
-              const className = `ph-${style.name.replace(/([A-Z])/g, "-$1").replace(/\s+/g, "-").toLowerCase().replace(/^-/, "")}`;
+              const className = `ph-${style.name
+                .replace(/([A-Z])/g, "-$1")
+                .replace(/\s+/g, "-")
+                .toLowerCase()
+                .replace(/^-/, "")}`;
               return (
                 <button
                   key={index}
@@ -101,18 +108,18 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
                     }
                     editor.chain().focus().setMark("textStyle", { class: className }).run();
                   })}
-                  className="flex items-center gap-1.5 rounded-md border border-base-300 px-2 py-1 transition-colors hover:bg-base-200"
+                  className="border-base-300 hover:bg-base-200 flex items-center gap-1.5 rounded-md border px-2 py-1 transition-colors"
                   style={{ fontFamily: style.fontFamily }}
                 >
-                  <span className="text-xs font-medium text-base-content">{style.name}</span>
+                  <span className="text-base-content text-xs font-medium">{style.name}</span>
                   {style.fontFamily && (
-                    <span className="text-[10px] text-neutral-content">{style.fontFamily}</span>
+                    <span className="text-neutral-content text-[10px]">{style.fontFamily}</span>
                   )}
                 </button>
               );
             })}
           </div>
-          <div className="mb-2.5 h-px bg-base-300" />
+          <div className="bg-base-300 mb-2.5 h-px" />
         </>
       )}
 
@@ -124,16 +131,21 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           onClick={e => e.stopPropagation()}
-          className="min-w-0 flex-1 rounded-md border border-base-300 bg-base-100 px-2 py-1.5 text-xs text-base-content outline-none placeholder:text-neutral-content focus:border-ring focus:ring-1 focus:ring-ring"
+          className="border-base-300 bg-base-100 text-base-content placeholder:text-neutral-content focus:border-ring focus:ring-ring min-w-0 flex-1 rounded-md border px-2 py-1.5 text-xs outline-none focus:ring-1"
         />
         <Listbox
           value={
-            editor.isActive("paragraph") ? "paragraph"
-            : editor.isActive("heading", { level: 1 }) ? "heading1"
-            : editor.isActive("heading", { level: 2 }) ? "heading2"
-            : editor.isActive("heading", { level: 3 }) ? "heading3"
-            : editor.isActive("heading", { level: 4 }) ? "heading4"
-            : "paragraph"
+            editor.isActive("paragraph")
+              ? "paragraph"
+              : editor.isActive("heading", { level: 1 })
+                ? "heading1"
+                : editor.isActive("heading", { level: 2 })
+                  ? "heading2"
+                  : editor.isActive("heading", { level: 3 })
+                    ? "heading3"
+                    : editor.isActive("heading", { level: 4 })
+                      ? "heading4"
+                      : "paragraph"
           }
           onChange={val => {
             if (val === "paragraph") editor.chain().focus().setParagraph().run();
@@ -143,7 +155,7 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
             }
           }}
         >
-          <ListboxButton className="flex w-auto shrink-0 items-center gap-1 rounded-md border border-base-300 bg-base-100 px-2 py-1.5 text-xs text-neutral-content outline-none hover:bg-base-200 aria-expanded:bg-base-200">
+          <ListboxButton className="border-base-300 bg-base-100 text-neutral-content hover:bg-base-200 aria-expanded:bg-base-200 flex w-auto shrink-0 items-center gap-1 rounded-md border px-2 py-1.5 text-xs outline-none">
             {({ value }) => (
               <>
                 <span>{HEADING_OPTIONS.find(o => o.value === value)?.label ?? "Normal"}</span>
@@ -151,7 +163,11 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
               </>
             )}
           </ListboxButton>
-          <ListboxOptions anchor="bottom start" className="pagehub-sdk-root ph-select-content" modal={false}>
+          <ListboxOptions
+            anchor="bottom start"
+            className="pagehub-sdk-root ph-select-content"
+            modal={false}
+          >
             {HEADING_OPTIONS.map(o => (
               <ListboxOption key={o.value} value={o.value} className="ph-select-item">
                 {o.label}
@@ -159,7 +175,7 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
             ))}
           </ListboxOptions>
         </Listbox>
-        <div className="flex shrink-0 items-center rounded-md border border-base-300">
+        <div className="border-base-300 flex shrink-0 items-center rounded-md border">
           {[
             { label: "S", size: "12px" },
             { label: "M", size: "16px" },
@@ -169,7 +185,7 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
             <button
               key={s.label}
               onClick={onAction(() => editor.chain().focus().setFontSize(s.size).run())}
-              className="px-1.5 py-1.5 text-xs text-neutral-content transition-colors first:rounded-l-md last:rounded-r-md hover:bg-base-200 hover:text-base-content"
+              className="text-neutral-content hover:bg-base-200 hover:text-base-content px-1.5 py-1.5 text-xs transition-colors first:rounded-l-md last:rounded-r-md"
             >
               {s.label}
             </button>
@@ -179,7 +195,7 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
           type="button"
           aria-label="Close"
           onClick={onClose}
-          className="tool-button shrink-0 !h-7 !w-7 !p-0"
+          className="tool-button !h-7 !w-7 shrink-0 !p-0"
         >
           <TbX />
         </button>
@@ -201,7 +217,9 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
       {/* Font list */}
       <div className="ph-panel-inset overflow-hidden rounded-md">
         {loading ? (
-          <div className="flex h-[200px] items-center justify-center text-xs text-neutral-content">Loading fonts…</div>
+          <div className="text-neutral-content flex h-[200px] items-center justify-center text-xs">
+            Loading fonts…
+          </div>
         ) : (
           <List height={200} itemCount={filtered.length} itemSize={40} width="100%">
             {({ index, style }) => {
@@ -223,24 +241,32 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
                     onMouseEnter={async () => {
                       const { loadGoogleFont } = await import("utils/fonts/googleFonts");
                       loadGoogleFont(font[0], ["400"]);
-                      if (!originalFont) setOriginalFont(editor.getAttributes("textStyle").fontFamily || "inherit");
+                      if (!originalFont)
+                        setOriginalFont(editor.getAttributes("textStyle").fontFamily || "inherit");
                       setPreviewFont(font[0]);
                       editor.chain().focus().setFontFamily(font[0]).run();
                     }}
                     onMouseLeave={() => {
-                      if (!committedRef.current && originalFont) editor.chain().focus().setFontFamily(originalFont).run();
+                      if (!committedRef.current && originalFont)
+                        editor.chain().focus().setFontFamily(originalFont).run();
                       committedRef.current = false;
                       setPreviewFont(null);
                     }}
-                    className={`flex h-full w-full items-center gap-2 px-2 text-left transition-colors hover:bg-base-200 ${isActive ? "bg-base-200/60" : ""}`}
+                    className={`hover:bg-base-200 flex h-full w-full items-center gap-2 px-2 text-left transition-colors ${isActive ? "bg-base-200/60" : ""}`}
                   >
-                    <span className="flex-1 truncate text-sm text-base-content" style={{ fontFamily: font[0] }}>
+                    <span
+                      className="text-base-content flex-1 truncate text-sm"
+                      style={{ fontFamily: font[0] }}
+                    >
                       {font[0]}
                     </span>
-                    <span className="shrink-0 text-xs text-neutral-content/40" style={{ fontFamily: font[0] }}>
+                    <span
+                      className="text-neutral-content/40 shrink-0 text-xs"
+                      style={{ fontFamily: font[0] }}
+                    >
                       Aa
                     </span>
-                    {isActive && <TbCheck className="size-3.5 shrink-0 text-primary" />}
+                    {isActive && <TbCheck className="text-primary size-3.5 shrink-0" />}
                   </button>
                 </div>
               );

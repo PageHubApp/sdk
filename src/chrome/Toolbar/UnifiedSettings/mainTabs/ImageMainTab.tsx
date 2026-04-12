@@ -7,8 +7,18 @@ import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 export const ImageMainTab = () =>
   renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Upload or link the image source.">
-        <MediaInput propKey="videoId" typeKey="type" contentKey="content" title="" collapsible={false} />
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="Upload or link the image source."
+      >
+        <MediaInput
+          propKey="videoId"
+          typeKey="type"
+          contentKey="content"
+          title=""
+          collapsible={false}
+        />
         <SettingsAiSlot />
       </ToolbarSection>
     ),

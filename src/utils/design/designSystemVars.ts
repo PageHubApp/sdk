@@ -127,10 +127,7 @@ function quoteCssFontFamilyValue(value: string): string {
   if (!t) return t;
   if (t.startsWith("var(")) return t;
   if (t.includes(",")) return t;
-  if (
-    (t.startsWith('"') && t.endsWith('"')) ||
-    (t.startsWith("'") && t.endsWith("'"))
-  ) {
+  if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
     return t;
   }
   if (/\s/.test(t)) return JSON.stringify(t);
@@ -331,9 +328,7 @@ export function generateTypographyCSSVariables(typography: any[]): string {
     const varName = toCSSVarName(font.name);
 
     if (font.fontFamily) {
-      variables.push(
-        `  --${varName}-font-family: ${quoteCssFontFamilyValue(font.fontFamily)};`
-      );
+      variables.push(`  --${varName}-font-family: ${quoteCssFontFamilyValue(font.fontFamily)};`);
     }
     if (font.fontSize) {
       variables.push(`  --${varName}-font-size: ${font.fontSize};`);
@@ -391,7 +386,9 @@ export function generateDesignSystemCSSVariables(
   // Dark mode palette: emit @media (prefers-color-scheme: dark) and .dark selector overrides
   let darkBlock = "";
   if (designSystem.darkPalette && designSystem.darkPalette.length > 0) {
-    const darkPaletteVars = generatePaletteCSSVariables(autoGenerateContentColors(designSystem.darkPalette));
+    const darkPaletteVars = generatePaletteCSSVariables(
+      autoGenerateContentColors(designSystem.darkPalette)
+    );
     if (darkPaletteVars) {
       // For #viewport scope, only activate dark palette when viewport itself has .dark class
       // (the "Edit dark: variants" toggle), NOT when <html> has .dark (SDK chrome toggle).

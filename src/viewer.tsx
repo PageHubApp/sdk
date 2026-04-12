@@ -99,8 +99,9 @@ interface ViewerRenderOptions {
  * Mount the viewer into a DOM element (vanilla JS API).
  */
 export function renderViewer(options: ViewerRenderOptions): () => void {
-  const globalReactDom = (globalThis as typeof globalThis & { ReactDOM?: { createRoot?: typeof createRoot } })
-    .ReactDOM;
+  const globalReactDom = (
+    globalThis as typeof globalThis & { ReactDOM?: { createRoot?: typeof createRoot } }
+  ).ReactDOM;
   const createRootFn =
     typeof globalReactDom?.createRoot === "function" ? globalReactDom.createRoot : createRoot;
 

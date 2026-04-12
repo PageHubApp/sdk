@@ -29,7 +29,9 @@ export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps
   }, [onClose]);
 
   useEffect(() => {
-    const handle = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const handle = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", handle);
     return () => document.removeEventListener("keydown", handle);
   }, [onClose]);
@@ -53,10 +55,13 @@ export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps
   };
 
   return (
-    <div ref={containerRef} className="flex w-[240px] flex-col gap-3 rounded-lg border border-base-300 bg-base-200 p-3 shadow-xl">
+    <div
+      ref={containerRef}
+      className="border-base-300 bg-base-200 flex w-[240px] flex-col gap-3 rounded-lg border p-3 shadow-xl"
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-base-content">New Token</span>
+        <span className="text-base-content text-xs font-medium">New Token</span>
         <button onClick={onClose} className="text-neutral-content hover:text-base-content">
           <TbX className="size-3.5" />
         </button>
@@ -69,14 +74,19 @@ export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps
         value={name}
         onChange={e => setName(e.target.value)}
         placeholder="Token name..."
-        className="rounded-md border border-base-300 bg-base-200 px-2 py-1.5 text-xs text-base-content outline-none placeholder:text-neutral-content focus:border-ring focus:ring-1 focus:ring-ring"
-        onKeyDown={e => { if (e.key === "Enter") handleSave(); }}
+        className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:border-ring focus:ring-ring rounded-md border px-2 py-1.5 text-xs outline-none focus:ring-1"
+        onKeyDown={e => {
+          if (e.key === "Enter") handleSave();
+        }}
       />
 
       {/* Color preview + picker */}
       <div className="flex items-center gap-2">
-        <div className="size-8 shrink-0 rounded-md border-2 border-base-300" style={{ backgroundColor: color }} />
-        <span className="text-[10px] text-neutral-content">{color}</span>
+        <div
+          className="border-base-300 size-8 shrink-0 rounded-md border-2"
+          style={{ backgroundColor: color }}
+        />
+        <span className="text-neutral-content text-[10px]">{color}</span>
       </div>
 
       <div className="overflow-hidden rounded-md">
@@ -85,7 +95,13 @@ export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps
           presetColors={[]}
           styles={{
             picker: {},
-            saturation: { width: "100%", height: "80px", paddingBottom: "", position: "relative" as const, overflow: "hidden" },
+            saturation: {
+              width: "100%",
+              height: "80px",
+              paddingBottom: "",
+              position: "relative" as const,
+              overflow: "hidden",
+            },
           }}
           color={color}
           onChangeComplete={c => setColor(c.hex)}
@@ -96,7 +112,7 @@ export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps
       <button
         onClick={handleSave}
         disabled={!name.trim()}
-        className="flex items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs text-primary-content hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+        className="bg-primary text-primary-content hover:bg-primary/90 flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-50"
       >
         <TbCheck className="size-3" />
         Save Token

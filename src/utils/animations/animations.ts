@@ -22,28 +22,122 @@ export interface CSSAnimationPreset {
 
 export const cssAnimationPresets: Record<string, CSSAnimationPreset> = {
   // ── Entrance (scroll-triggered by default) ─────────────────────────────
-  cssFadeIn:    { animateClass: "animate-css-fade-in",    trigger: "scroll", label: "Fade In",    group: "Entrance" },
-  cssFadeUp:    { animateClass: "animate-css-fade-up",    trigger: "scroll", label: "Fade Up",    group: "Entrance" },
-  cssFadeDown:  { animateClass: "animate-css-fade-down",  trigger: "scroll", label: "Fade Down",  group: "Entrance" },
-  cssFadeLeft:  { animateClass: "animate-css-fade-left",  trigger: "scroll", label: "Fade Left",  group: "Entrance" },
-  cssFadeRight: { animateClass: "animate-css-fade-right", trigger: "scroll", label: "Fade Right", group: "Entrance" },
-  cssScaleUp:   { animateClass: "animate-css-scale-up",   trigger: "scroll", label: "Scale Up",   group: "Entrance" },
-  cssBlurIn:    { animateClass: "animate-css-blur-in",    trigger: "scroll", label: "Blur In",    group: "Entrance" },
-  cssSlideUp:   { animateClass: "animate-css-slide-up",   trigger: "scroll", label: "Slide Up",   group: "Entrance" },
-  cssFlipIn:    { animateClass: "animate-css-flip-in",    trigger: "scroll", label: "Flip In",    group: "Entrance" },
-  cssSpring:    { animateClass: "animate-css-spring",     trigger: "scroll", label: "Spring",     group: "Entrance" },
-  cssBounceIn:  { animateClass: "animate-css-bounce-in",  trigger: "scroll", label: "Bounce In",  group: "Entrance" },
+  cssFadeIn: {
+    animateClass: "animate-css-fade-in",
+    trigger: "scroll",
+    label: "Fade In",
+    group: "Entrance",
+  },
+  cssFadeUp: {
+    animateClass: "animate-css-fade-up",
+    trigger: "scroll",
+    label: "Fade Up",
+    group: "Entrance",
+  },
+  cssFadeDown: {
+    animateClass: "animate-css-fade-down",
+    trigger: "scroll",
+    label: "Fade Down",
+    group: "Entrance",
+  },
+  cssFadeLeft: {
+    animateClass: "animate-css-fade-left",
+    trigger: "scroll",
+    label: "Fade Left",
+    group: "Entrance",
+  },
+  cssFadeRight: {
+    animateClass: "animate-css-fade-right",
+    trigger: "scroll",
+    label: "Fade Right",
+    group: "Entrance",
+  },
+  cssScaleUp: {
+    animateClass: "animate-css-scale-up",
+    trigger: "scroll",
+    label: "Scale Up",
+    group: "Entrance",
+  },
+  cssBlurIn: {
+    animateClass: "animate-css-blur-in",
+    trigger: "scroll",
+    label: "Blur In",
+    group: "Entrance",
+  },
+  cssSlideUp: {
+    animateClass: "animate-css-slide-up",
+    trigger: "scroll",
+    label: "Slide Up",
+    group: "Entrance",
+  },
+  cssFlipIn: {
+    animateClass: "animate-css-flip-in",
+    trigger: "scroll",
+    label: "Flip In",
+    group: "Entrance",
+  },
+  cssSpring: {
+    animateClass: "animate-css-spring",
+    trigger: "scroll",
+    label: "Spring",
+    group: "Entrance",
+  },
+  cssBounceIn: {
+    animateClass: "animate-css-bounce-in",
+    trigger: "scroll",
+    label: "Bounce In",
+    group: "Entrance",
+  },
 
   // ── Hover ─────────────────────────────────────────────────────────────
-  cssHoverGrow:  { animateClass: "", hoverClass: "ph-hover-grow",  trigger: "hover", label: "Grow on Hover",  group: "Hover" },
-  cssHoverLift:  { animateClass: "", hoverClass: "ph-hover-lift",  trigger: "hover", label: "Lift on Hover",  group: "Hover" },
-  cssHoverGlow:  { animateClass: "", hoverClass: "ph-hover-glow",  trigger: "hover", label: "Glow on Hover",  group: "Hover" },
-  cssHoverPress: { animateClass: "", hoverClass: "ph-hover-press", trigger: "hover", label: "Press",          group: "Hover" },
+  cssHoverGrow: {
+    animateClass: "",
+    hoverClass: "ph-hover-grow",
+    trigger: "hover",
+    label: "Grow on Hover",
+    group: "Hover",
+  },
+  cssHoverLift: {
+    animateClass: "",
+    hoverClass: "ph-hover-lift",
+    trigger: "hover",
+    label: "Lift on Hover",
+    group: "Hover",
+  },
+  cssHoverGlow: {
+    animateClass: "",
+    hoverClass: "ph-hover-glow",
+    trigger: "hover",
+    label: "Glow on Hover",
+    group: "Hover",
+  },
+  cssHoverPress: {
+    animateClass: "",
+    hoverClass: "ph-hover-press",
+    trigger: "hover",
+    label: "Press",
+    group: "Hover",
+  },
 
   // ── Continuous ────────────────────────────────────────────────────────
-  cssSpin:   { animateClass: "animate-css-spin",   trigger: "continuous", label: "Spin",   group: "Continuous" },
-  cssPulse:  { animateClass: "animate-css-pulse",  trigger: "continuous", label: "Pulse",  group: "Continuous" },
-  cssWiggle: { animateClass: "animate-css-wiggle", trigger: "continuous", label: "Wiggle", group: "Continuous" },
+  cssSpin: {
+    animateClass: "animate-css-spin",
+    trigger: "continuous",
+    label: "Spin",
+    group: "Continuous",
+  },
+  cssPulse: {
+    animateClass: "animate-css-pulse",
+    trigger: "continuous",
+    label: "Pulse",
+    group: "Continuous",
+  },
+  cssWiggle: {
+    animateClass: "animate-css-wiggle",
+    trigger: "continuous",
+    label: "Wiggle",
+    group: "Continuous",
+  },
 };
 
 /** Check if an animation key is a CSS preset (starts with "css") */
@@ -58,7 +152,7 @@ export function getCSSAnimationProps(
     delay?: number | null;
     easing?: string | null;
     trigger?: string | null;
-  },
+  }
 ): { className: string; style: Record<string, string> } {
   const preset = cssAnimationPresets[animationKey];
   if (!preset) return { className: "", style: {} };
@@ -125,15 +219,15 @@ function getScrollObserver(): IntersectionObserver | null {
   if (typeof window === "undefined" || !("IntersectionObserver" in window)) return null;
   if (!sharedObserver) {
     sharedObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add("ph-in-view");
             sharedObserver?.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
   }
   return sharedObserver;

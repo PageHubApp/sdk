@@ -12,7 +12,9 @@ export const TailwindInput = ({ type = "select", propKey, min = 0, label, prop }
   const valueLabels = getTailwindStyleStringList(prop);
   if (!valueLabels) {
     if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
-      console.warn(`[TailwindInput] Missing or empty TailwindStyles["${String(prop)}"] (propKey=${String(propKey)})`);
+      console.warn(
+        `[TailwindInput] Missing or empty TailwindStyles["${String(prop)}"] (propKey=${String(propKey)})`
+      );
     }
     return null;
   }

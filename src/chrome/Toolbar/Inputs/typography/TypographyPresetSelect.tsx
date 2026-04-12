@@ -7,25 +7,60 @@ import { AutoHideScrollbar } from "../../../shared/layout/AutoHideScrollbar";
 const EMPTY = "__ph_empty__";
 
 const ChevronDown = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="m6 9 6 6 6-6" />
   </svg>
 );
 
 const Check = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
 
 const Dash = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+  >
     <line x1="6" y1="12" x2="18" y2="12" />
   </svg>
 );
 
 const ScrollChevron = ({ direction }: { direction: "up" | "down" }) => (
-  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="10"
+    height="10"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d={direction === "up" ? "m18 15-6-6-6 6" : "m6 9 6 6 6-6"} />
   </svg>
 );
@@ -45,20 +80,23 @@ const useScrollOverflow = () => {
     setCanDown(scrollTop + clientHeight < scrollHeight - 2);
   }, []);
 
-  const sentinelRef = useCallback((node: HTMLElement | null) => {
-    if (!node) return;
-    const el = node.closest<HTMLElement>("[data-custom-scroll]");
-    if (!el || containerRef.current === el) return;
-    containerRef.current = el;
-    armed.current = false;
-    setTimeout(() => {
-      armed.current = true;
-    }, 200);
-    update();
-    el.addEventListener("scroll", update, { passive: true });
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-  }, [update]);
+  const sentinelRef = useCallback(
+    (node: HTMLElement | null) => {
+      if (!node) return;
+      const el = node.closest<HTMLElement>("[data-custom-scroll]");
+      if (!el || containerRef.current === el) return;
+      containerRef.current = el;
+      armed.current = false;
+      setTimeout(() => {
+        armed.current = true;
+      }, 200);
+      update();
+      el.addEventListener("scroll", update, { passive: true });
+      const ro = new ResizeObserver(update);
+      ro.observe(el);
+    },
+    [update]
+  );
 
   const startScroll = useCallback((dir: number) => {
     if (!armed.current) return;
@@ -100,9 +138,12 @@ export function TypographyPresetSelect({
   placeholder = "Local styles",
   id = "typography-preset",
 }: Props) {
-  const internalValue = selectedName && presets.some(p => p.name === selectedName) ? selectedName : EMPTY;
+  const internalValue =
+    selectedName && presets.some(p => p.name === selectedName) ? selectedName : EMPTY;
   const triggerLabel =
-    internalValue !== EMPTY ? presets.find(p => p.name === internalValue)?.name ?? placeholder : placeholder;
+    internalValue !== EMPTY
+      ? (presets.find(p => p.name === internalValue)?.name ?? placeholder)
+      : placeholder;
 
   const { sentinelRef, canUp, canDown, startScroll, stopScroll } = useScrollOverflow();
 
@@ -138,7 +179,11 @@ export function TypographyPresetSelect({
         </ListboxButton>
       </div>
 
-      <ListboxOptions anchor="bottom start" className="pagehub-sdk-root ph-select-content" modal={false}>
+      <ListboxOptions
+        anchor="bottom start"
+        className="pagehub-sdk-root ph-select-content"
+        modal={false}
+      >
         <AutoHideScrollbar className="ph-select-scroll-area" hideDelay={600}>
           <div ref={sentinelRef} />
           <div
@@ -160,11 +205,15 @@ export function TypographyPresetSelect({
                 </>
               )}
             </ListboxOption>
-            {presets.length > 0 ? <div className="my-1 h-px bg-border" /> : null}
+            {presets.length > 0 ? <div className="bg-border my-1 h-px" /> : null}
           </span>
 
           {presets.map(font => (
-            <ListboxOption key={font.name} value={font.name} className="ph-select-item !items-start !py-2">
+            <ListboxOption
+              key={font.name}
+              value={font.name}
+              className="ph-select-item !items-start !py-2"
+            >
               {({ selected }) => (
                 <>
                   <span className="flex w-4 shrink-0 items-start justify-center pt-0.5">
@@ -172,19 +221,20 @@ export function TypographyPresetSelect({
                   </span>
                   <div className="min-w-0 flex-1 text-left">
                     <div
-                      className="truncate text-base-content"
+                      className="text-base-content truncate"
                       style={{
                         fontFamily: font.fontFamily,
                         fontSize: font.fontSize,
                         fontWeight: font.fontWeight,
                         lineHeight: font.lineHeight,
                         letterSpacing: font.letterSpacing || "normal",
-                        textTransform: (font.textTransform || "none") as CSSProperties["textTransform"],
+                        textTransform: (font.textTransform ||
+                          "none") as CSSProperties["textTransform"],
                       }}
                     >
                       {font.name}
                     </div>
-                    <div className="mt-0.5 truncate text-[10px] text-neutral-content">
+                    <div className="text-neutral-content mt-0.5 truncate text-[10px]">
                       {font.fontFamily} · {font.fontSize}
                     </div>
                   </div>

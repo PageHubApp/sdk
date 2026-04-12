@@ -159,7 +159,8 @@ export function actionToHref(
 export function actionTarget(action: NodeAction | null | undefined): LinkTarget | undefined {
   if (!action) return undefined;
   if (action.type === "link-url" || action.type === "link-page") return action.target;
-  if (action.type === "scroll-to" || action.type === "email" || action.type === "phone") return undefined;
+  if (action.type === "scroll-to" || action.type === "email" || action.type === "phone")
+    return undefined;
   return undefined;
 }
 

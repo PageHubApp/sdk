@@ -25,7 +25,6 @@ export const Divider = (incomingProps: DividerProps) => {
 
   useScrollToSelected(id, enabled);
 
-
   const ref = useRef(null);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -59,11 +58,7 @@ export const Divider = (incomingProps: DividerProps) => {
       applyAnimation({ ...hrProp, key: `hr-${id}` }, props, null, enabled)
     );
 
-    return (
-      <div {...containerProp}>
-        {hr}
-      </div>
-    );
+    return <div {...containerProp}>{hr}</div>;
   }
 
   const hrProp: any = {
@@ -95,7 +90,10 @@ export const Divider = (incomingProps: DividerProps) => {
     }
   }
 
-  return React.createElement(motionIt(props, UiDivider, enabled), applyAnimation({ ...prop, key: id }, props, null, enabled));
+  return React.createElement(
+    motionIt(props, UiDivider, enabled),
+    applyAnimation({ ...prop, key: id }, props, null, enabled)
+  );
 };
 
 Divider.craft = {

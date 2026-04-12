@@ -7,7 +7,9 @@ interface UseLayerDragDropOptions {
   depth: number;
   hasChildren: boolean;
   setDraggedNode: (id: NodeId | null) => void;
-  setDropIndicator: (indicator: { targetId: NodeId; position: "before" | "after" | "inside" } | null) => void;
+  setDropIndicator: (
+    indicator: { targetId: NodeId; position: "before" | "after" | "inside" } | null
+  ) => void;
   state: {
     draggedNode: NodeId | null;
     dropIndicator: { targetId: NodeId; position: "before" | "after" | "inside" } | null;

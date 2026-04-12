@@ -9,7 +9,14 @@ interface HeaderItemProps {
   ariaLabel?: string;
 }
 
-export function HeaderItem({ onClick, onMouseDown, children, disabled = false, className = "", ariaLabel = "" }: HeaderItemProps) {
+export function HeaderItem({
+  onClick,
+  onMouseDown,
+  children,
+  disabled = false,
+  className = "",
+  ariaLabel = "",
+}: HeaderItemProps) {
   return (
     <button
       onClick={onClick}

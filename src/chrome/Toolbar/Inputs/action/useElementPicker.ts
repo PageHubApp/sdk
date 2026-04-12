@@ -15,7 +15,7 @@ export interface PickerOption {
 export type PickerFilter = "modal" | "section" | "all";
 
 export function useElementPicker(filter: PickerFilter): PickerOption[] {
-  return useEditor((state) => {
+  return useEditor(state => {
     const options: PickerOption[] = [];
 
     for (const [nodeId, node] of Object.entries(state.nodes)) {
@@ -24,8 +24,7 @@ export function useElementPicker(filter: PickerFilter): PickerOption[] {
       const displayName = node.data.displayName || node.data.name || "";
       const p = node.data.props || {};
       /** DOM id for targeting (Element ID); Modal still uses `anchor` only */
-      const targetId =
-        displayName === "Modal" ? p.anchor : p.id || p.anchor;
+      const targetId = displayName === "Modal" ? p.anchor : p.id || p.anchor;
       const label = getDisplayName(node);
 
       if (filter === "modal") {

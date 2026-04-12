@@ -16,7 +16,8 @@ const ALL_PANEL_KEYS: Array<keyof PanelUrlState> = ["panel", "cat", "sub", "sty"
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function readParams(): PanelUrlState {
-  if (typeof window === "undefined") return { panel: null, cat: null, sub: null, sty: null, q: null };
+  if (typeof window === "undefined")
+    return { panel: null, cat: null, sub: null, sty: null, q: null };
   const sp = new URLSearchParams(window.location.search);
   return {
     panel: sp.get("panel"),
@@ -92,10 +93,7 @@ export type PanelType = "menu" | "components" | "blocks" | "publish" | "import-e
 /** Full-column flyout over the unified settings stack — disable tool column pointer-events and skip click-away close. */
 export function isFlyoutBlockingToolColumn(panel: string | null): boolean {
   return (
-    panel === "components" ||
-    panel === "blocks" ||
-    panel === "theme" ||
-    panel === "import-export"
+    panel === "components" || panel === "blocks" || panel === "theme" || panel === "import-export"
   );
 }
 
@@ -113,11 +111,21 @@ export function usePanelUrl() {
   }, [state.q]);
 
   /** Open a panel — pushState so back button closes it */
-  const open = useCallback((panelType: PanelType, params?: Partial<Omit<PanelUrlState, "panel">>) => {
-    const url = buildUrl({ panel: panelType, cat: null, sub: null, sty: null, q: null, ...params });
-    history.pushState({ source: "panelUrl" }, "", url);
-    notify();
-  }, []);
+  const open = useCallback(
+    (panelType: PanelType, params?: Partial<Omit<PanelUrlState, "panel">>) => {
+      const url = buildUrl({
+        panel: panelType,
+        cat: null,
+        sub: null,
+        sty: null,
+        q: null,
+        ...params,
+      });
+      history.pushState({ source: "panelUrl" }, "", url);
+      notify();
+    },
+    []
+  );
 
   /** Close panel — pushState stripping all panel params */
   const close = useCallback(() => {
@@ -174,7 +182,19 @@ export function usePanelUrl() {
     searchPushedRef.current = false;
   }, []);
 
-  return { state, panel, isOpen, open, close, toggle, switchTab, navigate, update, enterSearchMode, exitSearchMode };
+  return {
+    state,
+    panel,
+    isOpen,
+    open,
+    close,
+    toggle,
+    switchTab,
+    navigate,
+    update,
+    enterSearchMode,
+    exitSearchMode,
+  };
 }
 
 // ── Toolbox + history (undo/redo) ───────────────────────────────────────────

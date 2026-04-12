@@ -18,7 +18,7 @@ export function CropCanvas({ crop }: CropCanvasProps) {
         <div
           role="presentation"
           aria-hidden="true"
-          className="relative flex flex-1 cursor-grab select-none items-center justify-center overflow-hidden"
+          className="relative flex flex-1 cursor-grab items-center justify-center overflow-hidden select-none"
           style={{
             cursor: crop.isPanning ? "grabbing" : "grab",
             userSelect: "none",
@@ -40,11 +40,16 @@ export function CropCanvas({ crop }: CropCanvasProps) {
             {imageUrl && (
               <div
                 className="relative inline-block"
-                style={{ transform: `translate(${crop.viewportPosition.x}px, ${crop.viewportPosition.y}px)` }}
+                style={{
+                  transform: `translate(${crop.viewportPosition.x}px, ${crop.viewportPosition.y}px)`,
+                }}
               >
                 <div
                   className="relative size-full"
-                  style={{ width: crop.imageSize.width || 400, height: crop.imageSize.height || 400 }}
+                  style={{
+                    width: crop.imageSize.width || 400,
+                    height: crop.imageSize.height || 400,
+                  }}
                 >
                   <Image
                     ref={crop.imageRef}
@@ -103,8 +108,8 @@ export function CropCanvas({ crop }: CropCanvasProps) {
                     {/* Edge handles */}
                     <div className="pointer-events-auto absolute -top-1 left-1/2 h-3 w-2 -translate-x-1/2 cursor-n-resize rounded-full border-2 border-gray-800 bg-white shadow-lg transition-transform hover:scale-110" />
                     <div className="pointer-events-auto absolute -bottom-1 left-1/2 h-3 w-2 -translate-x-1/2 cursor-s-resize rounded-full border-2 border-gray-800 bg-white shadow-lg transition-transform hover:scale-110" />
-                    <div className="pointer-events-auto absolute -left-1 top-1/2 h-2 w-3 -translate-y-1/2 cursor-w-resize rounded-full border-2 border-gray-800 bg-white shadow-lg transition-transform hover:scale-110" />
-                    <div className="pointer-events-auto absolute -right-1 top-1/2 h-2 w-3 -translate-y-1/2 cursor-e-resize rounded-full border-2 border-gray-800 bg-white shadow-lg transition-transform hover:scale-110" />
+                    <div className="pointer-events-auto absolute top-1/2 -left-1 h-2 w-3 -translate-y-1/2 cursor-w-resize rounded-full border-2 border-gray-800 bg-white shadow-lg transition-transform hover:scale-110" />
+                    <div className="pointer-events-auto absolute top-1/2 -right-1 h-2 w-3 -translate-y-1/2 cursor-e-resize rounded-full border-2 border-gray-800 bg-white shadow-lg transition-transform hover:scale-110" />
                   </div>
                 )}
               </div>
@@ -115,13 +120,16 @@ export function CropCanvas({ crop }: CropCanvasProps) {
 
       {/* Status Messages */}
       {crop.saveError && (
-        <div className="absolute inset-x-6 top-6 rounded-lg border border-error/20 bg-error/10 p-3 text-sm text-error">
+        <div className="border-error/20 bg-error/10 text-error absolute inset-x-6 top-6 rounded-lg border p-3 text-sm">
           <div className="flex items-center gap-2">
             <TbX className="size-4" />
             <span className="font-medium">Save Failed</span>
           </div>
-          <p className="mt-1 text-error/80">{crop.saveError}</p>
-          <button onClick={() => crop.setSaveError(null)} className="mt-2 text-xs underline hover:no-underline">
+          <p className="text-error/80 mt-1">{crop.saveError}</p>
+          <button
+            onClick={() => crop.setSaveError(null)}
+            className="mt-2 text-xs underline hover:no-underline"
+          >
             Dismiss
           </button>
         </div>
@@ -142,15 +150,15 @@ export function CropCanvas({ crop }: CropCanvasProps) {
       )}
 
       {/* Save Area */}
-      <div className="absolute bottom-3 right-3 rounded-lg border border-base-300 bg-base-200/95 px-3 py-1.5 backdrop-blur-sm">
+      <div className="border-base-300 bg-base-200/95 absolute right-3 bottom-3 rounded-lg border px-3 py-1.5 backdrop-blur-sm">
         <div className="flex items-center justify-between gap-6">
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-neutral-content">
+          <label className="text-neutral-content flex cursor-pointer items-center gap-2 text-sm">
             Override original
             <input
               type="checkbox"
               checked={crop.saveMode === "override"}
               onChange={e => crop.setSaveMode(e.target.checked ? "override" : "new")}
-              className="size-4 rounded border-base-300 bg-neutral text-accent focus:ring-ring"
+              className="border-base-300 bg-neutral text-accent focus:ring-ring size-4 rounded"
             />
           </label>
           <button

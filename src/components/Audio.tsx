@@ -10,7 +10,6 @@ import { applyAnimation } from "../utils/tailwind/tailwind";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
-
 export interface AudioProps extends BaseSelectorProps {
   audioUrl?: string;
   title?: string;
@@ -20,7 +19,14 @@ export interface AudioProps extends BaseSelectorProps {
 }
 
 export const Audio = (incomingProps: AudioProps) => {
-  let props: AudioProps = { controls: true, autoplay: false, loop: false, canDelete: true, canEditName: true, ...incomingProps };
+  let props: AudioProps = {
+    controls: true,
+    autoplay: false,
+    loop: false,
+    canDelete: true,
+    canEditName: true,
+    ...incomingProps,
+  };
 
   const {
     connectors: { connect, drag },
@@ -89,7 +95,10 @@ export const Audio = (incomingProps: AudioProps) => {
     prop.onClick = e => e.preventDefault();
   }
 
-  return React.createElement(motionIt(props, Box, enabled), applyAnimation({ ...prop, key: id }, props, null, enabled));
+  return React.createElement(
+    motionIt(props, Box, enabled),
+    applyAnimation({ ...prop, key: id }, props, null, enabled)
+  );
 };
 
 Audio.craft = {

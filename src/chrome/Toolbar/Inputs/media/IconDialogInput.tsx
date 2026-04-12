@@ -110,7 +110,10 @@ export const IconDialogInput = ({
             }}
             className="input h-12 w-[70px]!"
           >
-            <div className="google-icons pointer-events-none mx-auto flex size-4 items-center gap-3" aria-hidden="true">
+            <div
+              className="google-icons pointer-events-none mx-auto flex size-4 items-center gap-3"
+              aria-hidden="true"
+            >
               <ClientIconLoader value={value} />
             </div>
           </button>
@@ -122,7 +125,7 @@ export const IconDialogInput = ({
                 e.stopPropagation();
                 changed("");
               }}
-              className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
+              className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-xs font-bold"
               title="Clear icon"
             >
               ×

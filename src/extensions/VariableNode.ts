@@ -131,12 +131,7 @@ export const VariableNode = Node.create<VariableNodeOptions>({
             }
 
             // Look backwards from cursor for {{ trigger
-            const textBefore = $from.parent.textBetween(
-              0,
-              $from.parentOffset,
-              undefined,
-              "\ufffc"
-            );
+            const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, "\ufffc");
 
             const match = textBefore.match(/\{\{([^}]*)$/);
 
@@ -193,9 +188,7 @@ export const VariableNode = Node.create<VariableNodeOptions>({
               const query = next.query.toLowerCase();
               const filtered = query
                 ? allVars.filter(
-                    v =>
-                      v.id.toLowerCase().includes(query) ||
-                      v.label.toLowerCase().includes(query)
+                    v => v.id.toLowerCase().includes(query) || v.label.toLowerCase().includes(query)
                   )
                 : allVars;
 
@@ -209,7 +202,7 @@ export const VariableNode = Node.create<VariableNodeOptions>({
                 items: filtered,
                 decorationId: next.decorationId,
                 clientRect,
-                command: (item) => {
+                command: item => {
                   const { tr } = view.state;
                   const node = view.state.schema.nodes.variable.create({
                     id: item.id,

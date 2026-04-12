@@ -40,7 +40,13 @@ function getVisibleChildren(parent: HTMLElement): HTMLElement[] {
   });
 }
 
-export function useGapDrag({ dom, isSelected, classPrefixView, classDark, setProp }: UseGapDragOptions) {
+export function useGapDrag({
+  dom,
+  isSelected,
+  classPrefixView,
+  classDark,
+  setProp,
+}: UseGapDragOptions) {
   const [gapHoverInfo, setGapHoverInfo] = useState<GapHoverInfo | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartPos, setDragStartPos] = useState<{
@@ -129,9 +135,7 @@ export function useGapDrag({ dom, isSelected, classPrefixView, classDark, setPro
           }
 
           setGapHoverInfo(prev =>
-            prev
-              ? { ...prev, x: newX, y: newY, currentGap: snappedPx, gapRect: newGapRect }
-              : prev,
+            prev ? { ...prev, x: newX, y: newY, currentGap: snappedPx, gapRect: newGapRect } : prev
           );
         }
         return;
@@ -170,7 +174,14 @@ export function useGapDrag({ dom, isSelected, classPrefixView, classDark, setPro
           const child2 = children[i + 1].getBoundingClientRect();
 
           const detected = detectGapHover(
-            e, child1, child2, flexDirection, isRow, isColumn, currentGapPx, i,
+            e,
+            child1,
+            child2,
+            flexDirection,
+            isRow,
+            isColumn,
+            currentGapPx,
+            i
           );
           if (detected) {
             setGapHoverInfo(detected);
@@ -256,7 +267,7 @@ function detectGapHover(
   isRow: boolean,
   isColumn: boolean,
   currentGapPx: number,
-  childIndex: number,
+  childIndex: number
 ): GapHoverInfo | null {
   const gapTolerance = Math.max(20, currentGapPx * 0.5);
 

@@ -245,9 +245,7 @@ export const Dialog = ({
           className={"pagehub-sdk-root pointer-events-none absolute z-20 flex"}
         >
           <div
-            className={
-              "pointer-events-auto my-auto w-full overflow-hidden ph-panel p-0"
-            }
+            className={"ph-panel pointer-events-auto my-auto w-full overflow-hidden p-0"}
             style={{ maxHeight: style.maxHeight || height }}
           >
             {/* Draggable header (only when draggable is enabled) */}
@@ -255,7 +253,7 @@ export const Dialog = ({
               <div
                 role="presentation"
                 aria-hidden="true"
-                className="flex cursor-move items-center justify-between border-b border-base-300 bg-accent px-3 py-2 text-accent-content"
+                className="border-base-300 bg-accent text-accent-content flex cursor-move items-center justify-between border-b px-3 py-2"
                 onMouseDown={e => {
                   setHasBeenDragged(true);
                   draggableWindow.handleMouseDown(e);
@@ -267,7 +265,7 @@ export const Dialog = ({
                 </div>
                 <button
                   onClick={closed}
-                  className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10"
+                  className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors"
                   aria-label="Close"
                 >
                   <TbX />
@@ -280,7 +278,7 @@ export const Dialog = ({
             {customRenderer && (
               <div className="flex size-full flex-col overflow-hidden rounded-lg">
                 {!isUpward && !draggable && (
-                  <div className="shrink-0 border-b border-base-300 bg-neutral px-2 pb-1 pt-2">
+                  <div className="border-base-300 bg-neutral shrink-0 border-b px-2 pt-2 pb-1">
                     <input
                       type="text"
                       className="input-dialog-sm"
@@ -296,7 +294,7 @@ export const Dialog = ({
                   {customRenderer}
                 </div>
                 {isUpward && !draggable && (
-                  <div className="shrink-0 border-t border-base-300 bg-neutral px-2 pb-2 pt-1">
+                  <div className="border-base-300 bg-neutral shrink-0 border-t px-2 pt-1 pb-2">
                     <input
                       type="text"
                       className="input-dialog-sm"
@@ -314,7 +312,7 @@ export const Dialog = ({
             {!children && !customRenderer && (
               <div className="flex size-full flex-col overflow-hidden rounded-lg">
                 {!isUpward && !draggable && (
-                  <div className="shrink-0 border-b border-base-300 bg-neutral px-2 pb-1 pt-2">
+                  <div className="border-base-300 bg-neutral shrink-0 border-b px-2 pt-2 pb-1">
                     <input
                       type="text"
                       className="input-dialog-sm"
@@ -327,10 +325,13 @@ export const Dialog = ({
                   </div>
                 )}
 
-                <div ref={refIe} className="scrollbar-light min-h-0 flex-1 overflow-y-auto px-2 py-1">
+                <div
+                  ref={refIe}
+                  className="scrollbar-light min-h-0 flex-1 overflow-y-auto px-2 py-1"
+                >
                   {!searchValue && (
                     <button
-                      className={`flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-neutral-content transition-colors hover:bg-neutral ${selectedIndex === -1 ? "bg-primary text-primary-content" : ""}`}
+                      className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs transition-colors ${selectedIndex === -1 ? "bg-primary text-primary-content" : ""}`}
                       onClick={e => changed(null)}
                     >
                       Default
@@ -338,7 +339,7 @@ export const Dialog = ({
                   )}
 
                   {!itemList.length && searchValue && (
-                    <div className="flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-neutral-content hover:bg-neutral">
+                    <div className="text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs">
                       No results.
                     </div>
                   )}
@@ -350,7 +351,7 @@ export const Dialog = ({
                       return (
                         <button
                           id={`font-${_}`}
-                          className={`flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs text-neutral-content transition-colors hover:bg-neutral ${
+                          className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs transition-colors ${
                             dialog.value === _
                               ? "bg-primary text-primary-content"
                               : selectedIndex === k
@@ -369,7 +370,7 @@ export const Dialog = ({
                 </div>
 
                 {isUpward && !draggable && (
-                  <div className="shrink-0 border-t border-base-300 bg-neutral px-2 pb-2 pt-1">
+                  <div className="border-base-300 bg-neutral shrink-0 border-t px-2 pt-1 pb-2">
                     <input
                       type="text"
                       className="input-dialog-sm"

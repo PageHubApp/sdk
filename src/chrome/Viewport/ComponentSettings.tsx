@@ -26,11 +26,7 @@ export const ComponentSettings = () => {
   const { toolboxCategories } = useCustomComponents();
   const [list, setList] = useState(baseItems);
 
-  const {
-    state: params,
-    enterSearchMode,
-    update: panelUpdate,
-  } = usePanelUrl();
+  const { state: params, enterSearchMode, update: panelUpdate } = usePanelUrl();
 
   const [search, setSearch] = useState(params.q ?? null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -41,9 +37,7 @@ export const ComponentSettings = () => {
     if (!toolboxCategories?.length) return [];
     return toolboxCategories.map(cat => ({
       title: cat.title,
-      content: cat.content.flatMap((def) =>
-        buildCustomToolboxEntries(def)
-      ),
+      content: cat.content.flatMap(def => buildCustomToolboxEntries(def)),
     }));
   }, [toolboxCategories]);
 
@@ -91,22 +85,25 @@ export const ComponentSettings = () => {
   }, [params.q]);
 
   // Debounce search input → URL param
-  const handleSearchChange = useCallback((value: string) => {
-    setSearch(value || null);
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearch(value || null);
 
-    if (value.trim().length >= 1) {
-      enterSearchMode();
-    }
-
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
       if (value.trim().length >= 1) {
-        panelUpdate({ q: value });
-      } else {
-        panelUpdate({ q: null });
+        enterSearchMode();
       }
-    }, 300);
-  }, [enterSearchMode, panelUpdate]);
+
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        if (value.trim().length >= 1) {
+          panelUpdate({ q: value });
+        } else {
+          panelUpdate({ q: null });
+        }
+      }, 300);
+    },
+    [enterSearchMode, panelUpdate]
+  );
 
   useEffect(() => {
     if (search) {
@@ -123,7 +120,10 @@ export const ComponentSettings = () => {
                 props.custom?.displayName,
                 props.display?.props?.label,
                 nestedItem?.key,
-              ].filter(Boolean).join(" ").toLowerCase();
+              ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
               return searchable.includes(searchTerm);
             });
 
@@ -146,7 +146,7 @@ export const ComponentSettings = () => {
   }, [search, items]);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden bg-sidebar">
+    <div className="bg-sidebar flex flex-1 flex-col overflow-hidden">
       <form
         onSubmit={e => {
           const form = e.currentTarget;
@@ -155,7 +155,7 @@ export const ComponentSettings = () => {
           e.preventDefault();
         }}
       >
-        <div className="flex gap-1.5 border-b border-base-300 bg-base-100 p-3">
+        <div className="border-base-300 bg-base-100 flex gap-1.5 border-b p-3">
           <input
             type="text"
             placeholder="Search Components"
@@ -169,11 +169,9 @@ export const ComponentSettings = () => {
       <AutoHideScrollbar className="flex-1">
         {list?.map((a, k) => (
           <div key={k} className="border-base-300">
-            <div className="mb-1 mt-3 font-bold text-secondary-content ml-4 text-xs">
-              {a.title}
-            </div>
+            <div className="text-secondary-content mt-3 mb-1 ml-4 text-xs font-bold">{a.title}</div>
 
-            <div className="grid w-full grid-cols-3 gap-3 p-3 border-t border-base-300">
+            <div className="border-base-300 grid w-full grid-cols-3 gap-3 border-t p-3">
               {a.content.map((item, kk) => (
                 <div key={kk}>{item}</div>
               ))}

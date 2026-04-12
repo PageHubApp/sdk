@@ -11,7 +11,13 @@ const AddElementButton = React.lazy(() =>
   import("../chrome/shared/AddElementButton").then(m => ({ default: m.AddElementButton }))
 );
 
-export const EmptyState = ({ icon = null, text }: { icon?: React.ReactNode | null; text?: string }) => {
+export const EmptyState = ({
+  icon = null,
+  text,
+}: {
+  icon?: React.ReactNode | null;
+  text?: string;
+}) => {
   const { enabled } = useEditor(state => ({
     enabled: state.options.enabled,
   }));
@@ -74,9 +80,7 @@ export const EmptyState = ({ icon = null, text }: { icon?: React.ReactNode | nul
         </motion.div>
       ) : null}
 
-      {text && !showAddButton && (
-        <span className="text-xs text-neutral-content">{text}</span>
-      )}
+      {text && !showAddButton && <span className="text-neutral-content text-xs">{text}</span>}
       {icon && !showAddButton && (
         <div data-empty-state={true} className="text-3xl">
           {icon}

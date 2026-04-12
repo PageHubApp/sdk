@@ -17,14 +17,20 @@ export const removeHasManyRelation = (node: any, query: any, actions: any) => {
   if (node.data.props?.belongsTo) {
     const belongsTo = query.node(node.data.props.belongsTo).get();
     if (belongsTo) {
-      actions.setProp(node.data.props.belongsTo, (prop: any) =>
-        (prop.hasMany = prop.hasMany.filter((_: string) => _ !== node.id))
+      actions.setProp(
+        node.data.props.belongsTo,
+        (prop: any) => (prop.hasMany = prop.hasMany.filter((_: string) => _ !== node.id))
       );
     }
   }
 };
 
-export const deleteNode = async (query: any, actions: any, active: string | null, settings: any) => {
+export const deleteNode = async (
+  query: any,
+  actions: any,
+  active: string | null,
+  settings: any
+) => {
   const selected = active || query.getEvent("selected").first();
   if (!selected) return;
 
@@ -71,7 +77,9 @@ export const addHandler = ({ actions, query, getCloneTree, id, data = null, setP
   });
 
   const nodePairs = Object.keys(newNodes).map(nodeId => {
-    const da = query.parseSerializedNode(newNodes[nodeId]).toNode((node: any) => (node.id = nodeId));
+    const da = query
+      .parseSerializedNode(newNodes[nodeId])
+      .toNode((node: any) => (node.id = nodeId));
     return [nodeId, da];
   });
   const tree = { rootNodeId: data.rootNodeId, nodes: fromEntries(nodePairs as [string, any][]) };
@@ -89,12 +97,19 @@ export const addHandler = ({ actions, query, getCloneTree, id, data = null, setP
 
 export const saveHandler = async ({ query, id, component = null, actions = null }: any) => {
   const tree = query.node(id).toNodeTree();
-  const nodePairs = Object.keys(tree.nodes).map((nodeId: string) => [nodeId, query.node(nodeId).toSerializedNode()]);
+  const nodePairs = Object.keys(tree.nodes).map((nodeId: string) => [
+    nodeId,
+    query.node(nodeId).toSerializedNode(),
+  ]);
   const entries = fromEntries(nodePairs as [string, any][]);
   const serializedNodesJSON = JSON.stringify(entries);
 
   const rootNode = query.node(tree.rootNodeId).get();
-  const componentName = rootNode?.data?.custom?.displayName || rootNode?.data?.displayName || rootNode?.data?.name || `Component ${Date.now()}`;
+  const componentName =
+    rootNode?.data?.custom?.displayName ||
+    rootNode?.data?.displayName ||
+    rootNode?.data?.name ||
+    `Component ${Date.now()}`;
 
   const saveData = { rootNodeId: tree.rootNodeId, nodes: serializedNodesJSON, name: componentName };
 
@@ -109,7 +124,13 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
 
     const componentWrapper = query
       .parseReactElement(
-        <Element canvas is={Container} type="component" custom={{ displayName: componentName }} className="bg-transparent flex flex-col gap-0" />
+        <Element
+          canvas
+          is={Container}
+          type="component"
+          custom={{ displayName: componentName }}
+          className="flex flex-col gap-0 bg-transparent"
+        />
       )
       .toNodeTree();
 
@@ -118,19 +139,37 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
 
     actions.move(id, componentId, 0);
 
-    const clonedTree = buildClonedTree({ tree: query.node(id).toNodeTree(), query, setProp: actions.setProp, createLinks: true });
+    const clonedTree = buildClonedTree({
+      tree: query.node(id).toNodeTree(),
+      query,
+      setProp: actions.setProp,
+      createLinks: true,
+    });
     actions.addNodeTree(clonedTree, originalParent, originalIndex);
 
     setTimeout(async () => {
       const { setRecursiveBelongsTo } = await import("../componentUtils");
-      setRecursiveBelongsTo(clonedTree.rootNodeId, id, query, actions, (clonedNodeId: string, prop: any) => {
-        if (clonedNodeId === clonedTree.rootNodeId) prop.savedComponentName = componentName;
-      });
+      setRecursiveBelongsTo(
+        clonedTree.rootNodeId,
+        id,
+        query,
+        actions,
+        (clonedNodeId: string, prop: any) => {
+          if (clonedNodeId === clonedTree.rootNodeId) prop.savedComponentName = componentName;
+        }
+      );
       actions.selectNode(clonedTree.rootNodeId);
     }, 50);
 
-    const componentTreePairs = Object.keys(tree.nodes).map((nodeId: string) => [nodeId, query.node(nodeId).toSerializedNode()]);
-    return { rootNodeId: id, nodes: JSON.stringify(fromEntries(componentTreePairs as [string, any][])), name: componentName };
+    const componentTreePairs = Object.keys(tree.nodes).map((nodeId: string) => [
+      nodeId,
+      query.node(nodeId).toSerializedNode(),
+    ]);
+    return {
+      rootNodeId: id,
+      nodes: JSON.stringify(fromEntries(componentTreePairs as [string, any][])),
+      name: componentName,
+    };
   }
 
   phStorage.set("clipboard", saveData);
@@ -141,16 +180,29 @@ export const getNodeTree = ({ tree, query }: any) => {
   const newNodes: Record<string, any> = {};
   const changeNodeId = (node: any, newParentId?: string): string => {
     const newNodeId = getRandomId();
-    const childNodes = node.data.nodes.map((childId: string) => changeNodeId(tree.nodes[childId], newNodeId));
-    const linkedNodes = Object.keys(node.data.linkedNodes).reduce((acc: Record<string, string>, id) => {
-      acc[id] = changeNodeId(tree.nodes[node.data.linkedNodes[id]], newNodeId);
-      return acc;
-    }, {});
+    const childNodes = node.data.nodes.map((childId: string) =>
+      changeNodeId(tree.nodes[childId], newNodeId)
+    );
+    const linkedNodes = Object.keys(node.data.linkedNodes).reduce(
+      (acc: Record<string, string>, id) => {
+        acc[id] = changeNodeId(tree.nodes[node.data.linkedNodes[id]], newNodeId);
+        return acc;
+      },
+      {}
+    );
 
-    const freshNode = query.parseFreshNode({
-      ...node, id: newNodeId,
-      data: { ...node.data, parent: newParentId || node.data.parent, nodes: childNodes, linkedNodes },
-    }).toNode();
+    const freshNode = query
+      .parseFreshNode({
+        ...node,
+        id: newNodeId,
+        data: {
+          ...node.data,
+          parent: newParentId || node.data.parent,
+          nodes: childNodes,
+          linkedNodes,
+        },
+      })
+      .toNode();
     newNodes[newNodeId] = freshNode;
     return newNodeId;
   };
@@ -164,17 +216,30 @@ export const buildClonedTree = ({ tree, query, setProp, createLinks = true }: an
 
   const changeNodeId = (node: any, newParentId?: string): string => {
     const newNodeId = getRandomId();
-    const childNodes = node.data.nodes.map((childId: string) => changeNodeId(tree.nodes[childId], newNodeId));
-    const linkedNodes = Object.keys(node.data.linkedNodes).reduce((acc: Record<string, string>, id) => {
-      acc[id] = changeNodeId(tree.nodes[node.data.linkedNodes[id]], newNodeId);
-      return acc;
-    }, {});
+    const childNodes = node.data.nodes.map((childId: string) =>
+      changeNodeId(tree.nodes[childId], newNodeId)
+    );
+    const linkedNodes = Object.keys(node.data.linkedNodes).reduce(
+      (acc: Record<string, string>, id) => {
+        acc[id] = changeNodeId(tree.nodes[node.data.linkedNodes[id]], newNodeId);
+        return acc;
+      },
+      {}
+    );
 
     const oldid = node.id;
-    const freshNode = query.parseFreshNode({
-      ...node, id: newNodeId,
-      data: { ...node.data, parent: newParentId || node.data.parent, nodes: childNodes, linkedNodes },
-    }).toNode();
+    const freshNode = query
+      .parseFreshNode({
+        ...node,
+        id: newNodeId,
+        data: {
+          ...node.data,
+          parent: newParentId || node.data.parent,
+          nodes: childNodes,
+          linkedNodes,
+        },
+      })
+      .toNode();
     newNodes[newNodeId] = freshNode;
 
     if (createLinks && query.node(oldid).get()) linksToCreate.push({ oldid, newNodeId });

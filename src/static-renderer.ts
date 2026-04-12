@@ -53,7 +53,9 @@ function styleGuideGoogleFontFamily(raw: string | undefined | null): string | nu
  * True when cached `preview.fontUrls` should be replaced (empty, or old renderer emitted
  * Tailwind weight classes as Google `family=` — e.g. `family=font-bold:wght@...`).
  */
-export function cachedPreviewGoogleTextFontUrlsLookInvalid(urls: string[] | undefined | null): boolean {
+export function cachedPreviewGoogleTextFontUrlsLookInvalid(
+  urls: string[] | undefined | null
+): boolean {
   if (!Array.isArray(urls) || urls.length === 0) return true;
   for (const raw of urls) {
     if (typeof raw !== "string" || !raw.trim()) continue;
@@ -252,7 +254,7 @@ function renderNode(
   nodeId: string,
   nodes: SerializedNodes,
   resolver: Record<string, ToHTMLFn>,
-  ctx: StaticRenderContext,
+  ctx: StaticRenderContext
 ): string {
   const node = nodes[nodeId];
   if (!node || node.hidden) return "";
@@ -261,10 +263,7 @@ function renderNode(
   const toHTML = resolver[typeName];
 
   // Render children + linked nodes
-  const childIds = [
-    ...(node.nodes || []),
-    ...Object.values(node.linkedNodes || {}),
-  ];
+  const childIds = [...(node.nodes || []), ...Object.values(node.linkedNodes || {})];
   const childrenHTML = childIds
     .map(id => renderNode(id as string, nodes, resolver, ctx))
     .filter(Boolean)
@@ -283,7 +282,7 @@ function renderInvalidTreeResult(
   opts: Pick<
     RenderToHTMLOptions,
     "document" | "includeThemeVars" | "title" | "extraCSS" | "extraHead"
-  >,
+  >
 ): RenderToHTMLResult {
   const {
     document: wrapDocument = false,
@@ -323,7 +322,7 @@ ${scrollObserverScript}
 
 export function renderToHTML(
   content: string,
-  options: RenderToHTMLOptions = {},
+  options: RenderToHTMLOptions = {}
 ): RenderToHTMLResult {
   const {
     compressed = true,
@@ -354,12 +353,7 @@ export function renderToHTML(
     throw new Error(`[renderToHTML] Failed to parse node tree: ${err}`);
   }
 
-  if (
-    !nodes ||
-    typeof nodes !== "object" ||
-    Array.isArray(nodes) ||
-    !nodes["ROOT"]
-  ) {
+  if (!nodes || typeof nodes !== "object" || Array.isArray(nodes) || !nodes["ROOT"]) {
     return renderInvalidTreeResult({
       document: wrapDocument,
       includeThemeVars,
@@ -452,7 +446,12 @@ ${scrollObserverScript}
 </body>
 </html>`;
 
-    return { html: doc, classes: [...ctx.classes], fontUrls: [...ctx.fontUrls], scrollObserverScript };
+    return {
+      html: doc,
+      classes: [...ctx.classes],
+      fontUrls: [...ctx.fontUrls],
+      scrollObserverScript,
+    };
   }
 
   return { html, classes: [...ctx.classes], fontUrls: [...ctx.fontUrls], scrollObserverScript };
@@ -488,7 +487,9 @@ function generateThemeVars(rootProps: Record<string, any>): string {
     sg.inputPlaceholderColor && `  --input-placeholder-color: ${sg.inputPlaceholderColor};`,
     sg.inputFocusRing && `  --input-focus-ring: ${sg.inputFocusRing};`,
     sg.inputFocusRingColor && `  --input-focus-ring-color: ${sg.inputFocusRingColor};`,
-  ].filter(Boolean).join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   return `:root {\n${paletteVars}\n${dsVars}\n}`;
 }

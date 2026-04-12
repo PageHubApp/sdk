@@ -90,8 +90,7 @@ export const HTMLCodeInput = ({
         autoFormatMountKey={formatMountKey}
         htmlVariableCompletionOptions={variableCompletionOptions}
       />
-      {helpText && <p className="text-xs text-neutral-content">{helpText}</p>}
+      {helpText && <p className="text-neutral-content text-xs">{helpText}</p>}
     </div>
   );
 };
-

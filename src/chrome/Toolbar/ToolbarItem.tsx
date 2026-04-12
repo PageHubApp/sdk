@@ -7,7 +7,9 @@ import { ViewAtom } from "../Viewport/atoms";
 import { changeProp, getPropFinalValue } from "../Viewport/lib";
 import { getEditorVariableOptions } from "../../utils/editorVariableOptions";
 
-const CodeEditor = React.lazy(() => import("./Inputs/typography/CodeEditor").then(m => ({ default: m.CodeEditor })));
+const CodeEditor = React.lazy(() =>
+  import("./Inputs/typography/CodeEditor").then(m => ({ default: m.CodeEditor }))
+);
 import { DesignVarSelector } from "./Inputs/advanced/DesignVarSelector";
 import { getEffectiveViews, ViewSelectionAtom } from "./Label";
 import { ToolbarDropdown } from "./ToolbarDropdown";
@@ -40,7 +42,9 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
         }`}
       >
         {props.option && (
-          <span className={`min-w-0 text-xs font-medium text-base-content ${hasOption ? "flex-1 text-left" : "mb-2 text-center"}`}>
+          <span
+            className={`text-base-content min-w-0 text-xs font-medium ${hasOption ? "flex-1 text-left" : "mb-2 text-center"}`}
+          >
             {props.option || "Enable"}
           </span>
         )}
@@ -53,7 +57,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
             onChange={() => changed(value ? "" : props.on)}
             className="peer sr-only"
           />
-          <div className="h-4 w-8 rounded-full bg-neutral text-neutral-content after:absolute after:left-[2px] after:top-[2px] after:size-3 after:rounded-full after:border after:border-base-300 after:bg-base-100 after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-background peer-focus:ring-2 peer-focus:ring-ring"></div>
+          <div className="bg-neutral text-neutral-content after:border-base-300 after:bg-base-100 peer-checked:bg-primary peer-checked:after:border-background peer-focus:ring-ring h-4 w-8 rounded-full peer-focus:ring-2 after:absolute after:top-[2px] after:left-[2px] after:size-3 after:rounded-full after:border after:transition-all after:content-[''] peer-checked:after:translate-x-full"></div>
         </div>
       </label>
     );
@@ -157,7 +161,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
       <div className="flex h-9 w-full items-center gap-2">
         <input
           type="range"
-          className="slider h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-neutral text-neutral-content"
+          className="slider bg-neutral text-neutral-content h-2 flex-1 cursor-pointer appearance-none rounded-lg"
           min={props.min || 0}
           max={props.max || 100}
           step={props.step || 1}
@@ -225,12 +229,11 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
                 />
                 <label
                   htmlFor={`radio-${propKey}-${key}`}
-                  className={`block cursor-pointer rounded px-1 py-0.5 text-[11px] font-medium transition-colors hover:bg-neutral hover:text-base-content ${
+                  className={`hover:bg-neutral hover:text-base-content block cursor-pointer rounded px-1 py-0.5 text-[11px] font-medium transition-colors ${
                     checked
-                      ? "bg-primary font-semibold text-primary-content"
+                      ? "bg-primary text-primary-content font-semibold"
                       : "text-neutral-content"
                   }`}
-
                   data-tooltip-id={`radio-${propKey}-${key}-tip`}
                   data-tooltip-content={tip || "None"}
                   data-tooltip-place="bottom"
@@ -286,9 +289,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
               <label
                 htmlFor={`radio-${propKey}-${key}`}
                 className={`block cursor-pointer text-sm font-medium transition-[color,transform] active:scale-[0.98] ${
-                  checked
-                    ? "text-base-content"
-                    : "text-neutral-content"
+                  checked ? "text-base-content" : "text-neutral-content"
                 }`}
               >
                 {_.label}

@@ -12,7 +12,7 @@ export function ColorsTab({ ds }: ColorsTabProps) {
       {/* Dark mode toggle bar */}
       <div className="flex items-center justify-between">
         {ds.darkModeEnabled ? (
-          <div className="flex items-center gap-1 rounded-lg border border-base-300 p-0.5">
+          <div className="border-base-300 flex items-center gap-1 rounded-lg border p-0.5">
             <button
               onClick={() => ds.toggleDarkMode()}
               className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
@@ -40,7 +40,7 @@ export function ColorsTab({ ds }: ColorsTabProps) {
           <div />
         )}
         <button
-          onClick={() => ds.darkModeEnabled ? ds.disableDarkMode() : ds.toggleDarkMode()}
+          onClick={() => (ds.darkModeEnabled ? ds.disableDarkMode() : ds.toggleDarkMode())}
           className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
             ds.darkModeEnabled
               ? "bg-violet-600/10 text-violet-700 hover:bg-violet-600/20"
@@ -61,7 +61,7 @@ export function ColorsTab({ ds }: ColorsTabProps) {
                 ds.colorButtonRefs.current[index] = el;
               }}
               onClick={() => ds.openColorPicker(index)}
-              className="size-8 shrink-0 cursor-pointer rounded-lg border-2 border-base-300 transition-colors hover:border-primary"
+              className="border-base-300 hover:border-primary size-8 shrink-0 cursor-pointer rounded-lg border-2 transition-colors"
               style={{ backgroundColor: ds.getColorPreview(entry.color) }}
               title="Click to change color"
             />
@@ -70,11 +70,11 @@ export function ColorsTab({ ds }: ColorsTabProps) {
                 type="text"
                 value={entry.name}
                 onChange={e => ds.updateColorName(index, e.target.value)}
-                className="w-full border-b border-transparent bg-transparent px-1 py-0.5 pb-0 text-sm font-medium text-base-content hover:border-primary focus:border-ring focus:outline-none"
+                className="text-base-content hover:border-primary focus:border-ring w-full border-b border-transparent bg-transparent px-1 py-0.5 pb-0 text-sm font-medium focus:outline-none"
                 placeholder="Color name"
               />
               <div
-                className="cursor-pointer px-1 text-[10px] text-neutral-content transition-colors hover:text-base-content"
+                className="text-neutral-content hover:text-base-content cursor-pointer px-1 text-[10px] transition-colors"
                 role="button"
                 tabIndex={0}
                 onClick={() => navigator.clipboard.writeText(toPaletteCSSVarName(entry.name))}
@@ -91,7 +91,7 @@ export function ColorsTab({ ds }: ColorsTabProps) {
             </div>
             <button
               onClick={() => ds.deleteColor(index)}
-              className="p-1 text-error opacity-0 transition-opacity hover:text-error group-hover:opacity-100"
+              className="text-error hover:text-error p-1 opacity-0 transition-opacity group-hover:opacity-100"
               title="Delete color"
             >
               <TbTrash size={16} />
@@ -103,7 +103,7 @@ export function ColorsTab({ ds }: ColorsTabProps) {
       <button
         type="button"
         onClick={ds.addColor}
-        className="btn btn-outline mt-4 flex w-full items-center justify-center gap-2 border-base-content/30 normal-case"
+        className="btn btn-outline border-base-content/30 mt-4 flex w-full items-center justify-center gap-2 normal-case"
       >
         <TbPlus className="size-4 shrink-0" aria-hidden />
         Add color

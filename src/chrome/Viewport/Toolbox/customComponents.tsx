@@ -15,7 +15,13 @@ import { resolveToolboxIcon } from "./resolveToolboxIcon";
  * These specify their own `element` and don't go through defineComponent().
  */
 export function buildExtraPresetEntries(
-  presets: Array<{ label: string; icon?: any; element: any; props?: Record<string, any>; children?: any }>,
+  presets: Array<{
+    label: string;
+    icon?: any;
+    element: any;
+    props?: Record<string, any>;
+    children?: any;
+  }>
 ): React.ReactElement[] {
   return presets.map((preset, i) => {
     const IconComp = resolveToolboxIcon(preset.icon);
@@ -39,16 +45,15 @@ export function buildExtraPresetEntries(
  * Returns an array of React elements (one per preset, or one default).
  */
 export function buildCustomToolboxEntries(def: ResolvedComponentDef): React.ReactElement[] {
-  const presets = def.presets.length > 0
-    ? def.presets
-    : [{ label: def.displayName, icon: def.icon, props: def.defaultProps }];
+  const presets =
+    def.presets.length > 0
+      ? def.presets
+      : [{ label: def.displayName, icon: def.icon, props: def.defaultProps }];
 
   return presets.map((preset, i) => {
     const IconComp = resolveToolboxIcon(preset.icon || def.icon);
     // Resolve children — can be ReactNode or a factory function
-    const children = typeof preset.children === "function"
-      ? preset.children()
-      : preset.children;
+    const children = typeof preset.children === "function" ? preset.children() : preset.children;
     return (
       <RenderToolComponent
         key={`${def.name}-preset-${i}`}

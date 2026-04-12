@@ -10,7 +10,7 @@ export function ExclusiveDropdown({
   isActive: (mod: ResolvedModifier) => boolean;
   onToggle: (mod: ResolvedModifier) => void;
 }) {
-  const activeMod = mods.find((m) => isActive(m));
+  const activeMod = mods.find(m => isActive(m));
   const value = activeMod?.name ?? "";
 
   const handleChange = (newValue: string) => {
@@ -18,7 +18,7 @@ export function ExclusiveDropdown({
       // Selected "None" — toggle off current
       onToggle(activeMod);
     } else {
-      const mod = mods.find((m) => m.name === newValue);
+      const mod = mods.find(m => m.name === newValue);
       if (mod) onToggle(mod);
     }
   };
@@ -27,14 +27,16 @@ export function ExclusiveDropdown({
     <>
       <ToolbarDropdown value={value} onChange={handleChange} placeholder="None">
         <option value="">None</option>
-        {mods.map((mod) => (
+        {mods.map(mod => (
           <option key={mod.name} value={mod.name}>
             {mod.label}
           </option>
         ))}
       </ToolbarDropdown>
       {activeMod?.description && (
-        <p className="mt-1 text-[10px] leading-snug text-neutral-content/70">{activeMod.description}</p>
+        <p className="text-neutral-content/70 mt-1 text-[10px] leading-snug">
+          {activeMod.description}
+        </p>
       )}
     </>
   );

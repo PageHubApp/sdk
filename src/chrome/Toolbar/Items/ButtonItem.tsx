@@ -33,7 +33,7 @@ const Input = ({ nodeProps, setProp }) => {
       activeIndex={activeIndex}
       setActiveIndex={setActiveIndex}
       addLabel="Add Button"
-      renderLabel={(item) => item.text || "Button"}
+      renderLabel={item => item.text || "Button"}
       onDelete={(item, index) => {
         const _buttons = [...buttons];
         _buttons.splice(index, 1);

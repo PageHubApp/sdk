@@ -22,7 +22,10 @@ function displayFontFromToken(token: string, query: any): string {
   if (/^font-\(--/.test(base)) {
     const r = resolveCSSVariable(base, query);
     if (r && typeof r === "string" && !r.includes("var(")) {
-      return r.split(",")[0].trim().replace(/^['"]|['"]$/g, "");
+      return r
+        .split(",")[0]
+        .trim()
+        .replace(/^['"]|['"]$/g, "");
     }
   }
   const g = parseGoogleFontFromArbitraryClass(base);
@@ -62,18 +65,23 @@ export const FontFamilyAltInput = ({
   const classWriteView = propType === "class" ? editorCanvasViewToClassPrefixKey(view) : undefined;
 
   const pushChange = (nextClass: string, delay = 0) => {
-    changeProp({
-      propType,
-      propKey,
-      value: nextClass,
-      setProp,
-      index,
-      propItemKey,
-      query,
-      actions,
-      nodeId: id,
-      ...(propType === "class" && classWriteView != null ? { view: classWriteView, classDark } : {}),
-    }, delay);
+    changeProp(
+      {
+        propType,
+        propKey,
+        value: nextClass,
+        setProp,
+        index,
+        propItemKey,
+        query,
+        actions,
+        nodeId: id,
+        ...(propType === "class" && classWriteView != null
+          ? { view: classWriteView, classDark }
+          : {}),
+      },
+      delay
+    );
   };
 
   /** `string` = already a stored class token (reset preview). Array = Google family name from dialog. */
@@ -152,7 +160,7 @@ export const FontFamilyAltInput = ({
                 e.stopPropagation();
                 pushChange("", 2000);
               }}
-              className="absolute -right-1 -top-1 z-10 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
+              className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 z-10 flex size-4 items-center justify-center rounded-full text-xs font-bold"
               title="Clear font family"
             >
               ×

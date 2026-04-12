@@ -31,7 +31,7 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
           canvas
           is={Container}
           canDelete={true}
-          className="flex flex-col w-full gap-section"
+          className="gap-section flex w-full flex-col"
           custom={{ displayName: "Section" }}
         />
       ),
@@ -42,11 +42,10 @@ export const AddElementButton = ({ className = "", children }: AddElementButtonP
   };
 
   return (
-    <button
-      className={`w-fit ${className}`}
-      onClick={handleClick}
-    >
-      <span className="text-xs"><TbPlus /></span>
+    <button className={`w-fit ${className}`} onClick={handleClick}>
+      <span className="text-xs">
+        <TbPlus />
+      </span>
 
       {children || "Add Section"}
     </button>

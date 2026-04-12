@@ -186,14 +186,38 @@ export interface ResolvedComponentDef<P = any> {
 // ─── Built-in component names (for collision detection) ────────────────────
 
 const BUILT_IN_NAMES = new Set([
-  "Accordion", "Audio", "Background", "Button", "ButtonList", "Container", "ContainerGroup",
-  "Divider", "Dropdown", "Embed", "Footer", "Form", "FormElement", "Header", "Image",
-  "ImageList", "Map", "MapPoint", "Modal", "Nav", "Spacer", "Tabs", "Text", "Video",
+  "Accordion",
+  "Audio",
+  "Background",
+  "Button",
+  "ButtonList",
+  "Container",
+  "ContainerGroup",
+  "Divider",
+  "Dropdown",
+  "Embed",
+  "Footer",
+  "Form",
+  "FormElement",
+  "Header",
+  "Image",
+  "ImageList",
+  "Map",
+  "MapPoint",
+  "Modal",
+  "Nav",
+  "Spacer",
+  "Tabs",
+  "Text",
+  "Video",
 ]);
 
 // ─── Validation ────────────────────────────────────────────────────────────
 
-function validate<P extends Record<string, any>>(def: PageHubComponentDef<P>, allowBuiltIn: boolean) {
+function validate<P extends Record<string, any>>(
+  def: PageHubComponentDef<P>,
+  allowBuiltIn: boolean
+) {
   const tag = `[PageHub] defineComponent("${def.name || "?"}")`;
 
   if (!def.name || typeof def.name !== "string") {
@@ -201,12 +225,17 @@ function validate<P extends Record<string, any>>(def: PageHubComponentDef<P>, al
   }
   if (!/^[A-Z][a-zA-Z0-9]*$/.test(def.name)) {
     const suggestion = def.name.charAt(0).toUpperCase() + def.name.slice(1);
-    throw new Error(`${tag}: name must be PascalCase (start with uppercase, alphanumeric only). Did you mean "${suggestion}"?`);
+    throw new Error(
+      `${tag}: name must be PascalCase (start with uppercase, alphanumeric only). Did you mean "${suggestion}"?`
+    );
   }
   if (!allowBuiltIn && BUILT_IN_NAMES.has(def.name)) {
     throw new Error(`${tag}: "${def.name}" is a built-in component. Choose a different name.`);
   }
-  if (!def.component || (typeof def.component !== "function" && typeof def.component !== "object")) {
+  if (
+    !def.component ||
+    (typeof def.component !== "function" && typeof def.component !== "object")
+  ) {
     throw new Error(`${tag}: "component" is required and must be a React component`);
   }
   if (def.toHTML && typeof def.toHTML !== "function") {
@@ -240,22 +269,29 @@ function humanize(name: string): string {
 /** Normalize boolean rules to functions */
 function normalizeRules(
   rules: PageHubComponentDef["rules"],
-  canvas: boolean,
+  canvas: boolean
 ): ResolvedComponentDef["rules"] {
   const r = rules || {};
   return {
-    canDrag: typeof r.canDrag === "function" ? r.canDrag
-      : typeof r.canDrag === "boolean" ? () => r.canDrag as boolean
-      : () => true,
-    canDelete: typeof r.canDelete === "function" ? r.canDelete
-      : typeof r.canDelete === "boolean" ? () => r.canDelete as boolean
-      : () => true,
-    canMoveIn: typeof r.canMoveIn === "function" ? r.canMoveIn
-      : canvas ? () => true : () => false,
-    ...(r.canMoveOut != null ? {
-      canMoveOut: typeof r.canMoveOut === "function" ? r.canMoveOut
-        : () => r.canMoveOut as boolean,
-    } : {}),
+    canDrag:
+      typeof r.canDrag === "function"
+        ? r.canDrag
+        : typeof r.canDrag === "boolean"
+          ? () => r.canDrag as boolean
+          : () => true,
+    canDelete:
+      typeof r.canDelete === "function"
+        ? r.canDelete
+        : typeof r.canDelete === "boolean"
+          ? () => r.canDelete as boolean
+          : () => true,
+    canMoveIn: typeof r.canMoveIn === "function" ? r.canMoveIn : canvas ? () => true : () => false,
+    ...(r.canMoveOut != null
+      ? {
+          canMoveOut:
+            typeof r.canMoveOut === "function" ? r.canMoveOut : () => r.canMoveOut as boolean,
+        }
+      : {}),
   };
 }
 
@@ -291,7 +327,7 @@ function buildFallbackToHTML(canvas: boolean): ToHTMLFn {
  */
 export function defineComponent<P extends Record<string, any> = Record<string, any>>(
   def: PageHubComponentDef<P>,
-  opts?: { __internal?: boolean },
+  opts?: { __internal?: boolean }
 ): ResolvedComponentDef<P> {
   validate(def, !!opts?.__internal);
 
@@ -373,9 +409,13 @@ function buildAutoSettings(propsSchema: Record<string, PropSchema>): React.Compo
     const TI = ToolbarItem!;
     const TS = ToolbarSection!;
 
-    return React.createElement(React.Fragment, null,
+    return React.createElement(
+      React.Fragment,
+      null,
       ...Array.from(sections.entries()).map(([sectionName, entries]) =>
-        React.createElement(TS, { key: sectionName, title: sectionName, full: 1 },
+        React.createElement(
+          TS,
+          { key: sectionName, title: sectionName, full: 1 },
           ...entries.map(([propKey, schema]) =>
             React.createElement(TI, {
               key: propKey,
@@ -426,7 +466,7 @@ function getMinimalCanvasTools(): (props: any) => React.ReactNode[] {
 function attachCraft(
   def: ResolvedComponentDef,
   LazyUnifiedSettings: React.ComponentType,
-  defaultTools?: (canvas: boolean) => React.ReactNode[] | ((props: any) => React.ReactNode[]),
+  defaultTools?: (canvas: boolean) => React.ReactNode[] | ((props: any) => React.ReactNode[])
 ) {
   const component = def.component as any;
 
@@ -514,7 +554,7 @@ function attachCraft(
 export function processForEditor(
   defs: ResolvedComponentDef[],
   LazyUnifiedSettings: React.ComponentType,
-  defaultTools?: (canvas: boolean) => React.ReactNode[] | ((props: any) => React.ReactNode[]),
+  defaultTools?: (canvas: boolean) => React.ReactNode[] | ((props: any) => React.ReactNode[])
 ): {
   resolver: Record<string, React.ComponentType>;
   toolboxCategories: Array<{ title: string; content: ResolvedComponentDef[] }>;
@@ -526,7 +566,9 @@ export function processForEditor(
   const seen = new Set<string>();
   for (const def of defs) {
     if (seen.has(def.name)) {
-      throw new Error(`[PageHub] Duplicate component name: "${def.name}". Each component must have a unique name.`);
+      throw new Error(
+        `[PageHub] Duplicate component name: "${def.name}". Each component must have a unique name.`
+      );
     }
     seen.add(def.name);
 
@@ -543,9 +585,10 @@ export function processForEditor(
     categoryMap.get(def.category)!.push(def);
   }
 
-  const toolboxCategories = Array.from(categoryMap.entries()).map(
-    ([title, content]) => ({ title, content })
-  );
+  const toolboxCategories = Array.from(categoryMap.entries()).map(([title, content]) => ({
+    title,
+    content,
+  }));
 
   return { resolver, toolboxCategories };
 }
@@ -555,7 +598,7 @@ export function processForEditor(
  * Returns a plain resolver map (no .craft, no editor chrome).
  */
 export function processForViewer(
-  defs: ResolvedComponentDef[],
+  defs: ResolvedComponentDef[]
 ): Record<string, React.ComponentType> {
   const resolver: Record<string, React.ComponentType> = {};
   for (const def of defs) {
@@ -568,9 +611,7 @@ export function processForViewer(
  * Process an array of component definitions for the static renderer.
  * Returns a map of name → toHTML function.
  */
-export function processForStatic(
-  defs: ResolvedComponentDef[],
-): Record<string, ToHTMLFn> {
+export function processForStatic(defs: ResolvedComponentDef[]): Record<string, ToHTMLFn> {
   const resolver: Record<string, ToHTMLFn> = {};
   for (const def of defs) {
     resolver[def.name] = def.toHTML;

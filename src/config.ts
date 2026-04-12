@@ -45,9 +45,7 @@ export function resolveConfig(config: PageHubConfig): ResolvedConfig {
     if (typeof config.container === "string") {
       const el = document.querySelector(config.container);
       if (!el) {
-        throw new Error(
-          `[PageHub] Container element not found: "${config.container}"`
-        );
+        throw new Error(`[PageHub] Container element not found: "${config.container}"`);
       }
       containerEl = el as HTMLElement;
     } else if (

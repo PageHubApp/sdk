@@ -30,7 +30,7 @@ export const BlockPreviewCard = memo(function BlockPreviewCard({
   return (
     <ToolboxInsertHintTooltip>
       <div
-        ref={(ref) => {
+        ref={ref => {
           (cardRef as any).current = ref;
           onDragRef(ref);
         }}
@@ -42,10 +42,15 @@ export const BlockPreviewCard = memo(function BlockPreviewCard({
         }}
         onMouseDown={onDismissQuickLook}
         className={`group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-grab overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing ${
-          quickLookOpen ? "ring-2 ring-primary/30" : ""
+          quickLookOpen ? "ring-primary/30 ring-2" : ""
         }`}
       >
-        <ComponentPreview component={block.structure} scale={0.35} resolver={resolver} modifiers={block.modifiers} />
+        <ComponentPreview
+          component={block.structure}
+          scale={0.35}
+          resolver={resolver}
+          modifiers={block.modifiers}
+        />
         <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
     </ToolboxInsertHintTooltip>
@@ -175,26 +180,35 @@ export function BlockQuickLook({
   }, []);
 
   // Animate from card origin to center
-  const originStyle = originRect ? {
-    transformOrigin: `${originRect.left + originRect.width / 2}px ${originRect.top + originRect.height / 2}px`,
-  } : {};
+  const originStyle = originRect
+    ? {
+        transformOrigin: `${originRect.left + originRect.width / 2}px ${originRect.top + originRect.height / 2}px`,
+      }
+    : {};
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
+    <div className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center">
       <div
-        className="pointer-events-auto w-[min(900px,85vw)] max-h-[85vh] overflow-y-auto rounded-xl border border-base-300 bg-base-100 shadow-2xl transition-all duration-200 ease-out"
+        className="border-base-300 bg-base-100 pointer-events-auto max-h-[85vh] w-[min(900px,85vw)] overflow-y-auto rounded-xl border shadow-2xl transition-all duration-200 ease-out"
         style={{
           ...originStyle,
           opacity: animatedIn ? 1 : 0,
           transform: animatedIn ? "scale(1)" : "scale(0.92)",
         }}
       >
-        <div className="sticky top-0 z-20 flex items-center gap-2 border-b border-base-300 bg-base-100/90 px-4 py-2 backdrop-blur-sm">
-          <span className="text-sm font-medium text-base-content flex-1">{block.name}</span>
-          <kbd className="rounded bg-base-200 px-1.5 py-0.5 text-[10px] font-medium text-neutral-content">Space</kbd>
+        <div className="border-base-300 bg-base-100/90 sticky top-0 z-20 flex items-center gap-2 border-b px-4 py-2 backdrop-blur-sm">
+          <span className="text-base-content flex-1 text-sm font-medium">{block.name}</span>
+          <kbd className="bg-base-200 text-neutral-content rounded px-1.5 py-0.5 text-[10px] font-medium">
+            Space
+          </kbd>
         </div>
         <div className="overflow-hidden">
-          <ComponentPreview component={block.structure} scale={0.65} resolver={resolver} modifiers={block.modifiers} />
+          <ComponentPreview
+            component={block.structure}
+            scale={0.65}
+            resolver={resolver}
+            modifiers={block.modifiers}
+          />
         </div>
       </div>
     </div>

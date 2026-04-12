@@ -206,20 +206,30 @@ export const ToolbarLabel = ({
   const valText = `${prefix || ""}${displayValue(resolvedValue)}${suffix || ""}`;
 
   // ─── Breakpoint views: only render when value is defined ───
-  const isBreakpointView = viewValue === "mobile" || viewValue === "desktop" || viewValue === "sm" || viewValue === "lg" || viewValue === "xl" || viewValue === "2xl";
+  const isBreakpointView =
+    viewValue === "mobile" ||
+    viewValue === "desktop" ||
+    viewValue === "sm" ||
+    viewValue === "lg" ||
+    viewValue === "xl" ||
+    viewValue === "2xl";
 
   if (lab && isBreakpointView && !icon && !showDeleteIcon) {
-    const bpLabel =
-      viewValue === "mobile" ? "base" : viewValue === "desktop" ? "md" : viewValue;
+    const bpLabel = viewValue === "mobile" ? "base" : viewValue === "desktop" ? "md" : viewValue;
     const dot = (
       <span
         role="button"
         tabIndex={0}
         onClick={handleToggle}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle(e as any); } }}
+        onKeyDown={e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleToggle(e as any);
+          }
+        }}
         onContextMenu={hasValue ? handleRemove : undefined}
         data-has-value={hasValue || undefined}
-        className={`block size-1.5 cursor-pointer rounded-[1px] bg-base-content transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
+        className={`bg-base-content block size-1.5 cursor-pointer rounded-[1px] transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
       />
     );
     const tip = hasValue ? `${bpLabel}: ${valText}` : `${bpLabel}: none`;
@@ -236,11 +246,16 @@ export const ToolbarLabel = ({
       role="button"
       tabIndex={0}
       onClick={handleToggle}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle(e as any); } }}
+      onKeyDown={e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleToggle(e as any);
+        }
+      }}
       onContextMenu={e => handleRemove(e)}
       className={`flex cursor-pointer items-center gap-0.5 rounded p-0.5 transition-colors ${
         isActiveView
-          ? "bg-primary/10 text-primary ring-1 ring-primary/20"
+          ? "bg-primary/10 text-primary ring-primary/20 ring-1"
           : "text-neutral-content hover:bg-accent hover:text-base-content"
       }`}
     >

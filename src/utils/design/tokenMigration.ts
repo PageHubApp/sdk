@@ -156,7 +156,5 @@ export function migrateClassName(className: string): string {
  * Each alias maps an old CSS var name to the new one via var() reference.
  */
 export function generateCSSAliases(): string {
-  return CSS_VAR_ALIASES.map(
-    ([oldVar, newVar]) => `  ${oldVar}: var(${newVar});`
-  ).join("\n");
+  return CSS_VAR_ALIASES.map(([oldVar, newVar]) => `  ${oldVar}: var(${newVar});`).join("\n");
 }

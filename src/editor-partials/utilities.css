@@ -5,9 +5,9 @@
 @reference "./styles.css";
 
 .pagehub-sdk-root .input-hover {
-  @apply cursor-pointer border-base-300 transition-[border-color,box-shadow] duration-150 ease-out focus-within:border-primary focus-within:ring-1 focus-within:ring-ring/45 hover:border-primary;
+  @apply border-base-300 focus-within:border-primary focus-within:ring-ring/45 hover:border-primary cursor-pointer transition-[border-color,box-shadow] duration-150 ease-out focus-within:ring-1;
 }
 
 .pagehub-sdk-root .btn {
-  @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary text-base font-medium text-primary-content shadow transition-colors hover:bg-primary/90 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
+  @apply bg-primary text-primary-content hover:bg-primary/90 focus-visible:ring-ring inline-flex items-center justify-center gap-2 rounded-lg text-base font-medium whitespace-nowrap shadow transition-colors focus:outline-none focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
 }

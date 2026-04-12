@@ -26,7 +26,6 @@ export const Spacer = (incomingProps: SpacerProps) => {
 
   useScrollToSelected(id, enabled);
 
-
   const ref = useRef(null);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -67,11 +66,7 @@ export const Spacer = (incomingProps: SpacerProps) => {
       )
     );
 
-    return (
-      <div {...containerProp}>
-        {spacerDiv}
-      </div>
-    );
+    return <div {...containerProp}>{spacerDiv}</div>;
   }
 
   // In preview mode, just render the spacer div
@@ -107,4 +102,3 @@ Spacer.craft = {
     canMoveIn: () => false,
   },
 };
-

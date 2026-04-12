@@ -31,7 +31,9 @@ export const NavMainTab = () => {
     try {
       const node = q.node(id).get();
       return { menu: node.data.props?.menu || {} };
-    } catch { return { menu: {} }; }
+    } catch {
+      return { menu: {} };
+    }
   });
 
   const menuId = menu.id || "mobile-menu";
@@ -52,25 +54,37 @@ export const NavMainTab = () => {
               text: childNode.data.props.text || "Link",
               props: childNode.data.props,
             };
-          } catch { return null; }
+          } catch {
+            return null;
+          }
         })
         .filter(Boolean);
       return { navLinks: links };
-    } catch { return { navLinks: [] }; }
+    } catch {
+      return { navLinks: [] };
+    }
   });
 
   const currentView = nodeProps.view || "";
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Nav links and their URLs. Switch views to edit mobile.">
-        <div className="flex gap-1 rounded-lg bg-neutral p-1">
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="Nav links and their URLs. Switch views to edit mobile."
+      >
+        <div className="bg-neutral flex gap-1 rounded-lg p-1">
           {NAV_VIEW_STATES.map(({ value, label, icon: Icon }) => (
             <button
               key={value}
               type="button"
-              onClick={() => actions.setProp(id, (p: any) => { p.view = value; })}
-              className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+              onClick={() =>
+                actions.setProp(id, (p: any) => {
+                  p.view = value;
+                })
+              }
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
                 currentView === value
                   ? "bg-base-100 text-base-content shadow-sm"
                   : "text-neutral-content hover:text-base-content"
@@ -86,30 +100,32 @@ export const NavMainTab = () => {
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
           addLabel="Add Link"
-          renderLabel={(link) => link.text}
-          onDelete={(link) => actions.delete(link.id)}
+          renderLabel={link => link.text}
+          onDelete={link => actions.delete(link.id)}
           onAdd={() => {
             const Button = query.getOptions().resolver.Button;
             if (Button) {
               batchOp.setState(true);
               actions.addNodeTree(
-                query.parseReactElement(
-                  <Button
-                    text="New Link"
-                    url="#"
-                    className="hidden md:block px-(--button-padding-x) py-(--button-padding-y)"
-                  />
-                ).toNodeTree(),
+                query
+                  .parseReactElement(
+                    <Button
+                      text="New Link"
+                      url="#"
+                      className="hidden px-(--button-padding-x) py-(--button-padding-y) md:block"
+                    />
+                  )
+                  .toNodeTree(),
                 id
               );
               setActiveIndex(navLinks.length);
               requestAnimationFrame(() => batchOp.setState(false));
             }
           }}
-          extraButtons={(link) => [
+          extraButtons={link => [
             <button
               key="edit"
-              className="flex items-center justify-center text-base-content transition-colors hover:text-primary"
+              className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
               title="Edit link"
               onClick={e => {
                 e.stopPropagation();
@@ -119,7 +135,7 @@ export const NavMainTab = () => {
               <TbEdit className="h-3.5 w-3.5" />
             </button>,
           ]}
-          renderPopover={(link) => (
+          renderPopover={link => (
             <NodeProvider id={link.id}>
               <ActionInput />
               <IconInput
@@ -139,36 +155,25 @@ export const NavMainTab = () => {
       </ToolbarSection>
     ),
     Type: (
-      <ToolbarSection title="Mobile Menu" icon={SECTION_ICONS["Type"]} help="How the nav behaves on small screens.">
-        <ToolbarItem
-          propKey="menu.enabled"
-          propType="component"
-          type="select"
-          label="Mobile Menu"
-        >
+      <ToolbarSection
+        title="Mobile Menu"
+        icon={SECTION_ICONS["Type"]}
+        help="How the nav behaves on small screens."
+      >
+        <ToolbarItem propKey="menu.enabled" propType="component" type="select" label="Mobile Menu">
           <option value="true">Enabled</option>
           <option value="false">Disabled</option>
         </ToolbarItem>
 
         {menu.enabled !== false && (
           <>
-            <ToolbarItem
-              propKey="menu.type"
-              propType="component"
-              type="select"
-              label="Style"
-            >
+            <ToolbarItem propKey="menu.type" propType="component" type="select" label="Style">
               <option value="slide">Slide Panel</option>
               <option value="fullscreen">Fullscreen</option>
               <option value="dropdown">Dropdown</option>
             </ToolbarItem>
 
-            <ToolbarItem
-              propKey="menu.side"
-              propType="component"
-              type="select"
-              label="Side"
-            >
+            <ToolbarItem propKey="menu.side" propType="component" type="select" label="Side">
               <option value="left">Left</option>
               <option value="right">Right</option>
             </ToolbarItem>
@@ -182,7 +187,6 @@ export const NavMainTab = () => {
               <option value="mobile">Mobile</option>
               <option value="tablet">Tablet</option>
             </ToolbarItem>
-
           </>
         )}
       </ToolbarSection>

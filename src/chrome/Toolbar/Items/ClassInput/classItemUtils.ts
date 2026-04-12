@@ -45,7 +45,13 @@ export function breakpointBucketForClassToken(
 
 export function parseClassNameIntoBreakpointBuckets(classNameStr: string, excludeList: string[]) {
   const buckets: Record<string, string[]> = {
-    mobile: [], sm: [], desktop: [], lg: [], xl: [], "2xl": [], other: [],
+    mobile: [],
+    sm: [],
+    desktop: [],
+    lg: [],
+    xl: [],
+    "2xl": [],
+    other: [],
   };
 
   const tokens = (classNameStr || "").split(/\s+/).filter(Boolean);
@@ -59,7 +65,6 @@ export function parseClassNameIntoBreakpointBuckets(classNameStr: string, exclud
 }
 
 // ─── View scope helpers ───
-
 
 /** Single Tailwind layer for unprefixed class writes. */
 export function canvasViewToClassScopeKey(canvasView: string | undefined): string {
@@ -77,7 +82,13 @@ export function canvasViewToClassScopeKey(canvasView: string | undefined): strin
 // ─── Constants ───
 
 export const APPLY_SCOPE_DISPLAY: Record<string, string> = {
-  mobile: "base", sm: "sm", md: "md", desktop: "md", lg: "lg", xl: "xl", "2xl": "2xl",
+  mobile: "base",
+  sm: "sm",
+  md: "md",
+  desktop: "md",
+  lg: "lg",
+  xl: "xl",
+  "2xl": "2xl",
 };
 
 /** Full-width scope row: selected matches sidebar section headers (border + bg). */
@@ -90,37 +101,55 @@ const BP_DROP_VALID = "border-2 border-dashed border-base-content/35 bg-base-con
 
 export const CLASS_BREAKPOINT_BUCKETS = [
   {
-    id: "mobile", label: "Base", hint: "default", icon: "mobile" as const,
+    id: "mobile",
+    label: "Base",
+    hint: "default",
+    icon: "mobile" as const,
     dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
   {
-    id: "sm", label: "SM", hint: "640px+", icon: "badge" as const,
+    id: "sm",
+    label: "SM",
+    hint: "640px+",
+    icon: "badge" as const,
     dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
   {
-    id: "desktop", label: "MD", hint: "768px+", icon: "desktop" as const,
+    id: "desktop",
+    label: "MD",
+    hint: "768px+",
+    icon: "desktop" as const,
     dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
   {
-    id: "lg", label: "LG", hint: "1024px+", icon: "badge" as const,
+    id: "lg",
+    label: "LG",
+    hint: "1024px+",
+    icon: "badge" as const,
     dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
   {
-    id: "xl", label: "XL", hint: "1280px+", icon: "badge" as const,
+    id: "xl",
+    label: "XL",
+    hint: "1280px+",
+    icon: "badge" as const,
     dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
   },
   {
-    id: "2xl", label: "2XL", hint: "1536px+", icon: "badge" as const,
+    id: "2xl",
+    label: "2XL",
+    hint: "1536px+",
+    icon: "badge" as const,
     dropValid: BP_DROP_VALID,
     dropInvalid: "border-2 border-dashed border-error bg-error/10",
     borderIdle: "border-base-300",
@@ -140,15 +169,57 @@ export const CARD_BG_BY_BUCKET: Record<string, string> = {
 
 export const CONFLICT_GROUPS: Record<string, string[]> = {
   flex: ["flex-row", "flex-row-reverse", "flex-col", "flex-col-reverse"],
-  justify: ["justify-start", "justify-end", "justify-center", "justify-between", "justify-around", "justify-evenly"],
+  justify: [
+    "justify-start",
+    "justify-end",
+    "justify-center",
+    "justify-between",
+    "justify-around",
+    "justify-evenly",
+  ],
   items: ["items-start", "items-end", "items-center", "items-baseline", "items-stretch"],
   text: ["text-left", "text-center", "text-right", "text-justify"],
   float: ["float-left", "float-right", "float-none"],
   clear: ["clear-left", "clear-right", "clear-both", "clear-none"],
-  display: ["block", "inline-block", "inline", "flex", "inline-flex", "table", "inline-table", "table-caption", "table-cell", "table-column", "table-column-group", "table-footer-group", "table-header-group", "table-row-group", "table-row", "flow-root", "grid", "inline-grid", "contents", "list-item", "hidden"],
+  display: [
+    "block",
+    "inline-block",
+    "inline",
+    "flex",
+    "inline-flex",
+    "table",
+    "inline-table",
+    "table-caption",
+    "table-cell",
+    "table-column",
+    "table-column-group",
+    "table-footer-group",
+    "table-header-group",
+    "table-row-group",
+    "table-row",
+    "flow-root",
+    "grid",
+    "inline-grid",
+    "contents",
+    "list-item",
+    "hidden",
+  ],
   position: ["static", "fixed", "absolute", "relative", "sticky"],
-  overflow: ["overflow-auto", "overflow-hidden", "overflow-clip", "overflow-visible", "overflow-scroll"],
-  whitespace: ["whitespace-normal", "whitespace-nowrap", "whitespace-pre", "whitespace-pre-line", "whitespace-pre-wrap", "whitespace-break-spaces"],
+  overflow: [
+    "overflow-auto",
+    "overflow-hidden",
+    "overflow-clip",
+    "overflow-visible",
+    "overflow-scroll",
+  ],
+  whitespace: [
+    "whitespace-normal",
+    "whitespace-nowrap",
+    "whitespace-pre",
+    "whitespace-pre-line",
+    "whitespace-pre-wrap",
+    "whitespace-break-spaces",
+  ],
 };
 
 export const BREAKPOINT_PREFIXES = ["sm:", "md:", "lg:", "xl:", "2xl:"];

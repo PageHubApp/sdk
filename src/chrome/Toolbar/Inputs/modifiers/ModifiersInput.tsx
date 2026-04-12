@@ -26,21 +26,21 @@ function ModifierChip({
       onClick={onToggle}
       className={twMerge(
         "ph-toolbar-dashed-btn w-fit max-w-full gap-1 py-1 text-xs",
-        active && PH_TOOLBAR_DASHED_BTN_ACTIVE,
+        active && PH_TOOLBAR_DASHED_BTN_ACTIVE
       )}
-      title={mod.description ? undefined : (mod.classes || mod.name)}
+      title={mod.description ? undefined : mod.classes || mod.name}
     >
       {mod.label}
-      {classCount > 0 && (
-        <span className="text-[9px] opacity-60">&times;{classCount}</span>
-      )}
-      {mod.origin === "site" && (
-        <span className="text-[9px] opacity-50">custom</span>
-      )}
+      {classCount > 0 && <span className="text-[9px] opacity-60">&times;{classCount}</span>}
+      {mod.origin === "site" && <span className="text-[9px] opacity-50">custom</span>}
     </button>
   );
   if (mod.description) {
-    return <Tooltip content={mod.description} placement="top" delay={400}>{btn}</Tooltip>;
+    return (
+      <Tooltip content={mod.description} placement="top" delay={400}>
+        {btn}
+      </Tooltip>
+    );
   }
   return btn;
 }
@@ -56,7 +56,7 @@ function ChipGroup({
 }) {
   return (
     <div className="flex flex-wrap gap-1">
-      {mods.map((mod) => (
+      {mods.map(mod => (
         <ModifierChip
           key={mod.name}
           mod={mod}
@@ -69,11 +69,8 @@ function ChipGroup({
 }
 
 /** Returns a comma-separated summary of active modifiers in a category. */
-function useActiveSummary(
-  cat: CategoryMeta,
-  isActive: (mod: ResolvedModifier) => boolean,
-): string {
-  const labels = cat.mods.filter((m) => isActive(m)).map((m) => m.label);
+function useActiveSummary(cat: CategoryMeta, isActive: (mod: ResolvedModifier) => boolean): string {
+  const labels = cat.mods.filter(m => isActive(m)).map(m => m.label);
   return labels.join(", ");
 }
 
@@ -97,7 +94,7 @@ function CategorySection({
       accordionPassive
       header={
         summary ? (
-          <span className="ml-auto truncate text-[10px] text-primary">{summary}</span>
+          <span className="text-primary ml-auto truncate text-[10px]">{summary}</span>
         ) : undefined
       }
     >
@@ -150,37 +147,55 @@ function SaveAsModifier({
   };
 
   return (
-    <div className="mt-2 space-y-2 rounded-lg border border-base-300 bg-neutral/50 p-2.5">
+    <div className="border-base-300 bg-neutral/50 mt-2 space-y-2 rounded-lg border p-2.5">
       <div>
-        <label className="mb-1 block text-[11px] font-medium text-neutral-content">Component Type</label>
+        <label className="text-neutral-content mb-1 block text-[11px] font-medium">
+          Component Type
+        </label>
         <input
           type="text"
           value={targetType}
-          onChange={(e) => setTargetType(e.target.value)}
+          onChange={e => setTargetType(e.target.value)}
           placeholder="e.g. Button, Container"
-          className="h-7 w-full rounded border border-base-300 bg-base-200 px-2 text-xs"
+          className="border-base-300 bg-base-200 h-7 w-full rounded border px-2 text-xs"
         />
       </div>
       <div>
-        <label className="mb-1 block text-[11px] font-medium text-neutral-content">Modifier Name</label>
+        <label className="text-neutral-content mb-1 block text-[11px] font-medium">
+          Modifier Name
+        </label>
         <input
           type="text"
           value={label}
-          onChange={(e) => setLabel(e.target.value)}
+          onChange={e => setLabel(e.target.value)}
           placeholder="e.g. my-card-style"
-          className="h-7 w-full rounded border border-base-300 bg-base-200 px-2 text-xs"
+          className="border-base-300 bg-base-200 h-7 w-full rounded border px-2 text-xs"
           autoFocus
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.key === "Enter") submit();
-            if (e.key === "Escape") { setLabel(""); setOpen(false); }
+            if (e.key === "Escape") {
+              setLabel("");
+              setOpen(false);
+            }
           }}
         />
       </div>
       <div className="flex gap-1.5">
-        <button type="button" onClick={submit} className="h-7 rounded bg-primary px-3 text-xs text-primary-content">
+        <button
+          type="button"
+          onClick={submit}
+          className="bg-primary text-primary-content h-7 rounded px-3 text-xs"
+        >
           Save
         </button>
-        <button type="button" onClick={() => { setLabel(""); setOpen(false); }} className="h-7 rounded border border-base-300 px-3 text-xs">
+        <button
+          type="button"
+          onClick={() => {
+            setLabel("");
+            setOpen(false);
+          }}
+          className="border-base-300 h-7 rounded border px-3 text-xs"
+        >
           Cancel
         </button>
       </div>
@@ -196,18 +211,17 @@ export function ModifiersInput() {
     <ToolbarSection
       title="Modifiers"
       icon={<TbStack2 />}
-      help={hasModifiers ? "Toggle composable style modifiers for this component." : "No modifiers available for this component."}
+      help={
+        hasModifiers
+          ? "Toggle composable style modifiers for this component."
+          : "No modifiers available for this component."
+      }
       defaultOpen={true}
       disabled={!hasModifiers}
     >
       <div className="flex flex-col gap-0.5">
-        {categorized.map((cat) => (
-          <CategorySection
-            key={cat.name}
-            cat={cat}
-            isActive={isActive}
-            onToggle={toggleModifier}
-          />
+        {categorized.map(cat => (
+          <CategorySection key={cat.name} cat={cat} isActive={isActive} onToggle={toggleModifier} />
         ))}
       </div>
       <SaveAsModifier onSave={saveAsModifier} defaultType={nodeTypeName} />

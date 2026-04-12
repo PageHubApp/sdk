@@ -112,7 +112,7 @@ export const PatternsDialogInput = ({
             >
               <div className="pointer-events-none flex min-h-0 w-full items-center gap-2">
                 <div
-                  className="h-6 w-12 shrink-0 rounded border border-base-300 bg-base-200"
+                  className="border-base-300 bg-base-200 h-6 w-12 shrink-0 rounded border"
                   style={patt ? { backgroundImage: `url(${patt})` } : undefined}
                 />
                 <div className="min-w-0 flex-1 truncate text-left">
@@ -125,8 +125,11 @@ export const PatternsDialogInput = ({
           {value && (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); clear(); }}
-              className="absolute -right-1 -top-1 z-10 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
+              onClick={e => {
+                e.stopPropagation();
+                clear();
+              }}
+              className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 z-10 flex size-4 items-center justify-center rounded-full text-xs font-bold"
               title="Clear pattern"
             >
               ×
@@ -136,10 +139,13 @@ export const PatternsDialogInput = ({
       </Wrap>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-1">
+        <div className="absolute top-full right-0 z-50 mt-1">
           <PatternPanel
             selected={value?.slug}
-            onSelect={(pattern) => { changed(pattern); setIsOpen(false); }}
+            onSelect={pattern => {
+              changed(pattern);
+              setIsOpen(false);
+            }}
             onClose={() => setIsOpen(false)}
           />
         </div>
@@ -188,53 +194,64 @@ const PatternPanel = ({
     if (mode !== "all") list = list.filter(p => p.mode === mode);
     if (search) {
       const q = search.toLowerCase();
-      list = list.filter(p => p.title.toLowerCase().includes(q) || p.tags?.some((t: string) => t.includes(q)));
+      list = list.filter(
+        p => p.title.toLowerCase().includes(q) || p.tags?.some((t: string) => t.includes(q))
+      );
     }
     return list;
   }, [patterns, mode, search]);
 
   return (
-    <div ref={panelRef} className="w-64 rounded-lg border border-base-300 bg-base-200 shadow-xl">
+    <div ref={panelRef} className="border-base-300 bg-base-200 w-64 rounded-lg border shadow-xl">
       {/* Search */}
-      <div className="flex items-center gap-1.5 border-b border-base-300 px-2 py-1.5">
-        <TbSearch className="size-3.5 shrink-0 text-neutral-content" />
+      <div className="border-base-300 flex items-center gap-1.5 border-b px-2 py-1.5">
+        <TbSearch className="text-neutral-content size-3.5 shrink-0" />
         <input
           type="text"
           placeholder="Search patterns..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full bg-transparent text-xs outline-none placeholder:text-neutral-content"
+          className="placeholder:text-neutral-content w-full bg-transparent text-xs outline-none"
           autoFocus
         />
         {search && (
-          <button onClick={() => setSearch("")} className="text-neutral-content hover:text-base-content">
+          <button
+            onClick={() => setSearch("")}
+            className="text-neutral-content hover:text-base-content"
+          >
             <TbX className="size-3" />
           </button>
         )}
       </div>
 
       {/* Mode tabs */}
-      <div className="flex gap-1 border-b border-base-300 px-2 py-1">
+      <div className="border-base-300 flex gap-1 border-b px-2 py-1">
         {(["all", "stroke", "fill"] as const).map(m => (
           <button
             key={m}
             onClick={() => setMode(m)}
             className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${
-              mode === m ? "bg-primary text-primary-content" : "text-neutral-content hover:bg-neutral"
+              mode === m
+                ? "bg-primary text-primary-content"
+                : "text-neutral-content hover:bg-neutral"
             }`}
           >
             {m.charAt(0).toUpperCase() + m.slice(1)}
           </button>
         ))}
-        <span className="ml-auto text-[10px] text-neutral-content self-center">{filtered.length}</span>
+        <span className="text-neutral-content ml-auto self-center text-[10px]">
+          {filtered.length}
+        </span>
       </div>
 
       {/* Pattern list */}
-      <div className="max-h-48 overflow-y-auto scrollbar-light">
+      <div className="scrollbar-light max-h-48 overflow-y-auto">
         {!patterns ? (
-          <div className="px-3 py-6 text-center text-xs text-neutral-content">Loading...</div>
+          <div className="text-neutral-content px-3 py-6 text-center text-xs">Loading...</div>
         ) : filtered.length === 0 ? (
-          <div className="px-3 py-6 text-center text-xs text-neutral-content">No patterns found</div>
+          <div className="text-neutral-content px-3 py-6 text-center text-xs">
+            No patterns found
+          </div>
         ) : (
           filtered.map(pattern => {
             const preview = makePreview(pattern);
@@ -242,12 +259,12 @@ const PatternPanel = ({
               <button
                 key={pattern.slug}
                 onClick={() => onSelect(pattern)}
-                className={`flex w-full items-center gap-2 px-2 py-1 text-left transition-colors hover:bg-neutral ${
+                className={`hover:bg-neutral flex w-full items-center gap-2 px-2 py-1 text-left transition-colors ${
                   selected === pattern.slug ? "bg-primary/10" : ""
                 }`}
               >
                 <div
-                  className="h-10 w-16 shrink-0 rounded border border-base-300 bg-base-200"
+                  className="border-base-300 bg-base-200 h-10 w-16 shrink-0 rounded border"
                   style={{ backgroundImage: preview ? `url(${preview})` : undefined }}
                 />
                 <span className="truncate text-xs">{pattern.title}</span>

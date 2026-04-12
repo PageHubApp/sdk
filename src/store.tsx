@@ -12,23 +12,9 @@
  *   EnabledAtom  → handled by CraftJS Editor.enabled
  */
 
-import React, {
-  createContext,
-  useContext,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, useContext, useLayoutEffect, useMemo, useState } from "react";
 
-export type ViewMode =
-  | "mobile"
-  | "desktop"
-  | "tablet"
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "2xl";
+export type ViewMode = "mobile" | "desktop" | "tablet" | "sm" | "md" | "lg" | "xl" | "2xl";
 
 export interface EditorStoreValue {
   /** Current responsive viewport */
@@ -57,9 +43,7 @@ const EditorStoreContext = createContext<EditorStoreValue | null>(null);
 export function useEditorStore(): EditorStoreValue {
   const ctx = useContext(EditorStoreContext);
   if (!ctx) {
-    throw new Error(
-      "[PageHub] useEditorStore must be used inside <EditorStoreProvider>"
-    );
+    throw new Error("[PageHub] useEditorStore must be used inside <EditorStoreProvider>");
   }
   return ctx;
 }
@@ -122,9 +106,5 @@ export function EditorStoreProvider({
     [view, preview, isolate, settings]
   );
 
-  return (
-    <EditorStoreContext.Provider value={value}>
-      {children}
-    </EditorStoreContext.Provider>
-  );
+  return <EditorStoreContext.Provider value={value}>{children}</EditorStoreContext.Provider>;
 }

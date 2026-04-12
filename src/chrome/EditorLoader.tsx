@@ -5,8 +5,7 @@ export function EditorLoader() {
   const isDark =
     typeof window !== "undefined" &&
     (phStorage.get("theme") === "dark" ||
-      (!phStorage.get("theme") &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches));
+      (!phStorage.get("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches));
 
   return (
     <div

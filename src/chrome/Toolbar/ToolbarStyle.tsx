@@ -38,8 +38,17 @@ export const MobileDesktopLabels = ({
   varSelectorPrefix,
 }) => {
   return (
-    <div role="presentation" className="hidden flex-col gap-px has-[[data-has-value]]:flex" onClick={e => e.stopPropagation()}>
-      {([["mobile", "sm", "desktop"], ["lg", "xl", "2xl"]] as const).map((row, i) => (
+    <div
+      role="presentation"
+      className="hidden flex-col gap-px has-[[data-has-value]]:flex"
+      onClick={e => e.stopPropagation()}
+    >
+      {(
+        [
+          ["mobile", "sm", "desktop"],
+          ["lg", "xl", "2xl"],
+        ] as const
+      ).map((row, i) => (
         <div key={i} className="flex gap-px">
           {row.map(bp => (
             <ToolbarLabel
@@ -97,9 +106,12 @@ const Labler = ({
 
   return (
     <h4 className={`toolbar-label ${lab ? "my-1" : "mb-1"} flex justify-between gap-3`}>
-      <label htmlFor={propKey ? `input-${propKey}` : undefined} className="flex cursor-pointer items-center gap-1.5">
+      <label
+        htmlFor={propKey ? `input-${propKey}` : undefined}
+        className="flex cursor-pointer items-center gap-1.5"
+      >
         {props?.label}
-        <div className="hidden text-neutral-content hover:text-base-content">
+        <div className="text-neutral-content hover:text-base-content hidden">
           <TbInfoCircle />
         </div>
       </label>
@@ -150,7 +162,11 @@ export const Wrap = ({
           <div className="relative flex w-full items-center gap-0.5">
             <div className={`flex flex-col items-start gap-0.5 ${labelWidth || "w-20"}`}>
               {props?.label && (
-                <label ref={truncateRef} htmlFor={`input-${propKey}`} className="w-full cursor-pointer truncate whitespace-nowrap text-xs">
+                <label
+                  ref={truncateRef}
+                  htmlFor={`input-${propKey}`}
+                  className="w-full cursor-pointer truncate text-xs whitespace-nowrap"
+                >
                   {props?.label}
                 </label>
               )}
@@ -176,7 +192,7 @@ export const Wrap = ({
 
         {props.description && (
           <div className="mt-2 w-full text-center">
-            <p className="text-xxs leading-relaxed text-neutral-content">{props.description}</p>
+            <p className="text-xxs text-neutral-content leading-relaxed">{props.description}</p>
           </div>
         )}
       </>
@@ -296,7 +312,7 @@ export const Card = ({
       onContextMenu={handleContextMenu}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      className={`${bgColor} inline-flex whitespace-nowrap rounded-lg px-1.5 py-0.5 text-xs font-medium hover:brightness-110 ${draggable ? "cursor-grab active:cursor-grabbing transition-transform hover:scale-105" : "cursor-pointer"}`}
+      className={`${bgColor} inline-flex rounded-lg px-1.5 py-0.5 text-xs font-medium whitespace-nowrap hover:brightness-110 ${draggable ? "cursor-grab transition-transform hover:scale-105 active:cursor-grabbing" : "cursor-pointer"}`}
     >
       {renderDisplayValue()}
     </button>
@@ -328,7 +344,7 @@ export const CardLight = ({ value, onClick, className = "" }) => {
   return (
     <button
       onClick={onClick}
-      className={`inline-flex cursor-pointer rounded-lg bg-base-200 px-1 py-0.5 text-xs font-medium text-base-content ${className}`}
+      className={`bg-base-200 text-base-content inline-flex cursor-pointer rounded-lg px-1 py-0.5 text-xs font-medium ${className}`}
     >
       <Tooltip content={`Add ${value}`} placement="top" arrow={false}>
         {renderDisplayValue()}
@@ -350,9 +366,9 @@ export const Accord = ({
 
   return (
     <div className={className}>
-      <div className="flex gap-2 bg-sidebar px-3 py-1.5 text-sidebar-foreground">
+      <div className="bg-sidebar text-sidebar-foreground flex gap-2 px-3 py-1.5">
         <button
-          className="w-full cursor-pointer truncate whitespace-nowrap pr-3 text-sm font-semibold"
+          className="w-full cursor-pointer truncate pr-3 text-sm font-semibold whitespace-nowrap"
           onClick={() => setAccordion(active ? "" : prop)}
         >
           {title}

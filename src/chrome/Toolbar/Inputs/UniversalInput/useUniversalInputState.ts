@@ -37,7 +37,12 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
     const nodeProps = node.data.props || {};
 
     if (propType === "class") {
-      value = getPropFinalValue({ propKey, propType, propItemKey, index }, view, nodeProps, classDark).value;
+      value = getPropFinalValue(
+        { propKey, propType, propItemKey, index },
+        view,
+        nodeProps,
+        classDark
+      ).value;
     } else {
       // root / component / etc. — must read from props.root (not top-level props[propKey])
       value = getProp({ propKey, propType, propItemKey, index }, view, nodeProps);
@@ -183,10 +188,7 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
       // If option has no prefix (value unchanged), it's a keyword — treat as named
       const hasNoPrefix = value === option;
 
-      if (
-        hasNoPrefix ||
-        ["full", "screen", "auto", "min", "max", "fit", "none"].includes(value)
-      ) {
+      if (hasNoPrefix || ["full", "screen", "auto", "min", "max", "fit", "none"].includes(value)) {
         groups.named.push(option);
       } else if (value.includes("/")) {
         groups.fractions.push(option);

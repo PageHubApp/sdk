@@ -12,7 +12,7 @@ import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
 export const ImageDefault = ({ tab, props }) => {
-  const setActiveTab = (_: any) => { };
+  const setActiveTab = (_: any) => {};
 
   return (
     <button
@@ -58,7 +58,6 @@ export const Image = (incomingProps: ImageProps) => {
     isActive: q.getEvent("selected").contains(id),
   }));
 
-
   const { videoId, content } = props;
 
   /** Craft / AI sometimes stores non-strings; guard before string methods. */
@@ -101,11 +100,10 @@ export const Image = (incomingProps: ImageProps) => {
 
   // Check if radius is set (for overflow-hidden)
   const cn = props.className || "";
-  const hasRadius =
-    cn.split(/\s+/).some(t => {
-      const u = t.replace(/^(sm:|md:|lg:|xl:|2xl:)+/, "");
-      return u === "rounded" || u.startsWith("rounded-");
-    });
+  const hasRadius = cn.split(/\s+/).some(t => {
+    const u = t.replace(/^(sm:|md:|lg:|xl:|2xl:)+/, "");
+    return u === "rounded" || u.startsWith("rounded-");
+  });
 
   const prop: any = {
     ref: r => {
@@ -140,7 +138,8 @@ export const Image = (incomingProps: ImageProps) => {
     // Different behavior for editor vs live view
     // Editor: img fills wrapper (w-full h-full) + gets object-fit/position classes
     // Live view: img gets sizing classes directly + gets object-fit/position classes
-    className: `${enabled ? "w-full h-full" : ""} ${!hasObjectFit ? "object-cover" : ""} ${props.className || ""}`.trim(),
+    className:
+      `${enabled ? "w-full h-full" : ""} ${!hasObjectFit ? "object-cover" : ""} ${props.className || ""}`.trim(),
     // width: "100",
     // height: "100",
     // fill: true,
@@ -263,17 +262,16 @@ export const Image = (incomingProps: ImageProps) => {
   const createImgElement = (shouldConnectDrag: boolean) => {
     const imgTag = tagName === "img" ? UiImage : tagName;
     const imgAnimProps = applyAnimation({ ..._imgProp, key: `img-${id}` }, props, null, enabled);
-    const imgFinalProps = tagName === "img"
-      ? { ...imgAnimProps, ratio: null, fit: null, rounded: null }
-      : imgAnimProps;
+    const imgFinalProps =
+      tagName === "img" ? { ...imgAnimProps, ratio: null, fit: null, rounded: null } : imgAnimProps;
     return React.createElement(motionIt(props, imgTag, enabled), {
       ...imgFinalProps,
       ref: shouldConnectDrag
         ? r => {
-          if (props.url) return;
-          ref.current = r;
-          connect(drag(r));
-        }
+            if (props.url) return;
+            ref.current = r;
+            connect(drag(r));
+          }
         : undefined,
     });
   };
@@ -284,11 +282,7 @@ export const Image = (incomingProps: ImageProps) => {
 
     // For all cases, wrap the image
     // Don't use dangerouslySetInnerHTML on the wrapper - it's on the SVG element itself
-    prop.children = (
-      <>
-        {empty ? prop.children : Img}
-      </>
-    );
+    prop.children = <>{empty ? prop.children : Img}</>;
 
     const ele = props.url ? "a" : "div";
     return React.createElement(ele, {

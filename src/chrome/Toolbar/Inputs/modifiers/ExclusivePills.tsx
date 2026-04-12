@@ -14,7 +14,7 @@ export function ExclusivePills({
 }) {
   return (
     <div className="flex flex-wrap gap-1.5">
-      {mods.map((mod) => {
+      {mods.map(mod => {
         const active = isActive(mod);
         const btn = (
           <button
@@ -23,9 +23,9 @@ export function ExclusivePills({
             onClick={() => onToggle(mod)}
             className={twMerge(
               "ph-toolbar-dashed-btn w-fit text-xs font-medium",
-              active && PH_TOOLBAR_DASHED_BTN_ACTIVE,
+              active && PH_TOOLBAR_DASHED_BTN_ACTIVE
             )}
-            title={mod.description ? undefined : (mod.classes || mod.name)}
+            title={mod.description ? undefined : mod.classes || mod.name}
           >
             {mod.label}
           </button>

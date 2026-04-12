@@ -31,7 +31,11 @@ export const VideoMainTab = () => {
   return renderComponentSlots({
     Content: (
       <>
-        <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Video provider and ID or URL.">
+        <ToolbarSection
+          title="Content"
+          icon={SECTION_ICONS["Content"]}
+          help="Video provider and ID or URL."
+        >
           <ToolbarItem
             propKey="provider"
             propType="component"
@@ -49,7 +53,7 @@ export const VideoMainTab = () => {
           </ToolbarItem>
         </ToolbarSection>
 
-        <p className="text-md px-3 pb-3 pt-2 text-sm text-neutral-content">
+        <p className="text-md text-neutral-content px-3 pt-2 pb-3 text-sm">
           {getProviderInstructions()}
         </p>
 
@@ -70,7 +74,11 @@ export const VideoMainTab = () => {
       </>
     ),
     Properties: (
-      <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]} help="Accessibility title for the video.">
+      <ToolbarSection
+        title="Properties"
+        icon={SECTION_ICONS["Properties"]}
+        help="Accessibility title for the video."
+      >
         <ToolbarItem
           propKey="title"
           propType="component"

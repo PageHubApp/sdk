@@ -21,7 +21,11 @@ export const HoverClickInput = ({ variant = "container" }: HoverClickInputProps)
     <>
       <ActionInput />
 
-      <ToolbarSection title="Hover" icon={<TbHandMove />} help="Style changes when the cursor hovers over this element.">
+      <ToolbarSection
+        title="Hover"
+        icon={<TbHandMove />}
+        help="Style changes when the cursor hovers over this element."
+      >
         <ToolbarSection title="Colors" collapsible={false}>
           <ColorInput
             propKey="background"
@@ -39,17 +43,11 @@ export const HoverClickInput = ({ variant = "container" }: HoverClickInputProps)
             propType="component"
             inline
           />
-          <ColorInput
-            propKey="borderColor"
-            label="Border"
-            prefix="border"
-            index="hover"
-            inline
-          />
+          <ColorInput propKey="borderColor" label="Border" prefix="border" index="hover" inline />
         </ToolbarSection>
-        <div className="border-t border-base-300" />
+        <div className="border-base-300 border-t" />
         <OpacityInput label="Opacity" propKey="opacity" index="hover" propType="root" />
-        <div className="border-t border-base-300" />
+        <div className="border-base-300 border-t" />
         <ToolbarSection title="Transform" collapsible={false}>
           <UniversalInput
             propKey="scale"

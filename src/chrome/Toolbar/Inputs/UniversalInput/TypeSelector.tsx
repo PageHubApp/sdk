@@ -63,13 +63,13 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
     return (
       <>
         <div ref={setRootRef} className="relative">
-          <div className="flex h-5 items-center gap-0 rounded-md bg-base-200">
+          <div className="bg-base-200 flex h-5 items-center gap-0 rounded-md">
             <button
               onClick={e => {
                 e.stopPropagation();
                 setIsOpen(!isOpen);
               }}
-              className="flex min-w-5 items-center justify-center p-0 text-[9px] font-medium text-neutral-content hover:text-base-content"
+              className="text-neutral-content hover:text-base-content flex min-w-5 items-center justify-center p-0 text-[9px] font-medium"
               title={"Change type selector"}
             >
               {selectedLabel}
@@ -95,7 +95,7 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
                     onTypeChange(type.id);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center justify-center rounded-md px-3 py-1.5 text-xs hover:bg-neutral ${
+                  className={`hover:bg-neutral flex w-full items-center justify-center rounded-md px-3 py-1.5 text-xs ${
                     selectedType === type.id ? "bg-neutral font-semibold" : ""
                   }`}
                 >

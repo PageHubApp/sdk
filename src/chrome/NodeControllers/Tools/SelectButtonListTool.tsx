@@ -42,7 +42,7 @@ export const SelectButtonListTool = () => {
       key={`${id}-select-button-list`}
       position="top"
       align="end"
-      className="pointer-events-auto select-none items-center whitespace-nowrap"
+      className="pointer-events-auto items-center whitespace-nowrap select-none"
     >
       <div className="node-control" onMouseDown={e => e.stopPropagation()}>
         <Tooltip content="Select List Container">
@@ -54,4 +54,3 @@ export const SelectButtonListTool = () => {
     </RenderNodeControlInline>
   );
 };
-

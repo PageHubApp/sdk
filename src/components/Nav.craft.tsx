@@ -21,11 +21,15 @@ import { Nav } from "./Nav";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {
-  return tag("nav", {
-    class: staticClasses(props, ctx) || undefined,
-    style: getInlineStyle(props) || undefined,
-    ...ariaAttrs(props),
-  }, children);
+  return tag(
+    "nav",
+    {
+      class: staticClasses(props, ctx) || undefined,
+      style: getInlineStyle(props) || undefined,
+      ...ariaAttrs(props),
+    },
+    children
+  );
 };
 import { NavMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/NavMainTab";
 import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
@@ -45,11 +49,13 @@ const socialIcons = {
 
 // ─── Shared button props for nav links ─────────────────────────────────────
 
-const navButtonClassName = "px-(--button-padding-x) py-(--button-padding-y) flex-col gap-1.5 items-center justify-center";
+const navButtonClassName =
+  "px-(--button-padding-x) py-(--button-padding-y) flex-col gap-1.5 items-center justify-center";
 
 const hiddenMobileButtonClassName = `${navButtonClassName} hidden md:block`;
 
-const navListClassName = "flex flex-row items-center gap-container md:flex md:flex-row md:items-center md:gap-container";
+const navListClassName =
+  "flex flex-row items-center gap-container md:flex md:flex-row md:items-center md:gap-container";
 
 // ─── Preset children builders ──────────────────────────────────────────────
 
@@ -83,12 +89,20 @@ function buildMobileMenuChildren() {
       key="hamburger"
       text="Menu"
       url=""
-      action={{ type: "show-hide", target: "mobile-menu", direction: "show", trigger: "click", method: "style" } as any}
+      action={
+        {
+          type: "show-hide",
+          target: "mobile-menu",
+          direction: "show",
+          trigger: "click",
+          method: "style",
+        } as any
+      }
       icon={{
         value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg>`,
         only: true,
       }}
-      className="block px-(--button-padding-x) py-(--button-padding-y) md:hidden border-0"
+      className="block border-0 px-(--button-padding-x) py-(--button-padding-y) md:hidden"
     />,
     <Element
       key="overlay"
@@ -98,8 +112,16 @@ function buildMobileMenuChildren() {
       custom={{ displayName: "Mobile Menu Overlay" }}
       canDelete={false}
       canEditName={false}
-      className="hidden fixed h-screen w-screen top-0 left-0 z-50 md:hidden bg-black/50"
-      action={{ type: "show-hide", target: "mobile-menu", direction: "hide", trigger: "click", method: "style" } as any}
+      className="fixed top-0 left-0 z-50 hidden h-screen w-screen bg-black/50 md:hidden"
+      action={
+        {
+          type: "show-hide",
+          target: "mobile-menu",
+          direction: "hide",
+          trigger: "click",
+          method: "style",
+        } as any
+      }
     >
       <Element
         canvas
@@ -108,9 +130,15 @@ function buildMobileMenuChildren() {
         custom={{ displayName: "Mobile Menu Panel" }}
         canDelete={false}
         canEditName={false}
-        className="h-full w-80 max-w-sm bg-base-100 shadow-xl"
+        className="bg-base-100 h-full w-80 max-w-sm shadow-xl"
         action={
-          { type: "show-hide", target: "mobile-menu", direction: "toggle", trigger: "click", method: "style" } as any
+          {
+            type: "show-hide",
+            target: "mobile-menu",
+            direction: "toggle",
+            trigger: "click",
+            method: "style",
+          } as any
         }
       >
         <Element
@@ -120,7 +148,7 @@ function buildMobileMenuChildren() {
           custom={{ displayName: "Mobile Nav Header" }}
           canDelete={false}
           canEditName={false}
-          className="flex items-center justify-between px-container-x py-container-y border-b"
+          className="px-container-x py-container-y flex items-center justify-between border-b"
         >
           <Element
             canvas
@@ -129,10 +157,18 @@ function buildMobileMenuChildren() {
             custom={{ displayName: "Mobile Nav Close" }}
             canDelete={false}
             canEditName={false}
-            action={{ type: "show-hide", target: "mobile-menu", direction: "hide", trigger: "click", method: "style" } as any}
+            action={
+              {
+                type: "show-hide",
+                target: "mobile-menu",
+                direction: "hide",
+                trigger: "click",
+                method: "style",
+              } as any
+            }
             text="×"
             url=""
-            className="px-(--button-padding-x) py-(--button-padding-y) text-xl font-bold border-0"
+            className="border-0 px-(--button-padding-x) py-(--button-padding-y) text-xl font-bold"
           />
         </Element>
         <Element
@@ -142,7 +178,7 @@ function buildMobileMenuChildren() {
           custom={{ displayName: "Mobile Navigation" }}
           canDelete={false}
           canEditName={false}
-          className="flex flex-col gap-container w-full border-0"
+          className="gap-container flex w-full flex-col border-0"
         />
       </Element>
     </Element>,
@@ -155,7 +191,13 @@ function buildSocialButtons(filled: boolean) {
     : "btn btn-ghost";
   const colors: Record<string, string> = filled
     ? {}
-    : { twitter: "text-[#1DA1F2]", facebook: "text-[#1877F2]", instagram: "text-[#E4405F]", linkedin: "text-[#0A66C2]", youtube: "text-[#FF0000]" };
+    : {
+        twitter: "text-[#1DA1F2]",
+        facebook: "text-[#1877F2]",
+        instagram: "text-[#E4405F]",
+        linkedin: "text-[#0A66C2]",
+        youtube: "text-[#FF0000]",
+      };
 
   const items = ["twitter", "facebook", "instagram", "linkedin"] as const;
   const all = filled ? items : [...items, "youtube" as const];
@@ -182,7 +224,11 @@ function buildPlainNavButtons(withBg: boolean) {
       custom={{ displayName: name }}
       text={name}
       url="#"
-      className={withBg ? `${navButtonClassName} bg-primary text-primary-content rounded-box` : navButtonClassName}
+      className={
+        withBg
+          ? `${navButtonClassName} bg-primary text-primary-content rounded-box`
+          : navButtonClassName
+      }
     />
   ));
 }
@@ -195,48 +241,57 @@ function buildPillNavButtons() {
       custom={{ displayName: name }}
       text={name}
       url="#"
-      className={`${navButtonClassName} bg-transparent text-primary-content border-0`}
+      className={`${navButtonClassName} text-primary-content border-0 bg-transparent`}
     />
   ));
 }
 
 // ─── Nav definition (only the Mobile Menu preset uses Nav component) ───────
 
-export const NavDef = defineComponent({
-  name: "Nav",
-  component: Nav,
-  icon: TbLayoutNavbar,
-  category: "Navigation",
-  canvas: true,
-  settings: NavMainTab,
-  toHTML,
-  disable: ["textColor", "bgColor", "shadow", "opacity", "hoverClick"],
-  rules: {
-    canDrag: () => true,
-    canMoveIn: (nodes) => nodes.every(node => ["Button", "Container"].includes(node.data?.name)),
-  },
-  tools: (props) => [
-    <HoverNodeController
-      key="navHoverController"
-      position="top"
-      align="end"
-      placement="end"
-      alt={{ position: "bottom", align: "start", placement: "start" }}
-    />,
-    <DeleteNodeController key="navDelete" />,
-  ],
-  presets: [
-    {
-      label: "Mobile Menu",
-      icon: TbDeviceMobile,
-      props: {
-        menu: { enabled: true, id: "mobile-menu", side: "left", type: "slide", breakpoint: "mobile" },
-        className: "flex justify-between items-center gap-container",
-      },
-      children: buildMobileMenuChildren,
+export const NavDef = defineComponent(
+  {
+    name: "Nav",
+    component: Nav,
+    icon: TbLayoutNavbar,
+    category: "Navigation",
+    canvas: true,
+    settings: NavMainTab,
+    toHTML,
+    disable: ["textColor", "bgColor", "shadow", "opacity", "hoverClick"],
+    rules: {
+      canDrag: () => true,
+      canMoveIn: nodes => nodes.every(node => ["Button", "Container"].includes(node.data?.name)),
     },
-  ],
-}, { __internal: true });
+    tools: props => [
+      <HoverNodeController
+        key="navHoverController"
+        position="top"
+        align="end"
+        placement="end"
+        alt={{ position: "bottom", align: "start", placement: "start" }}
+      />,
+      <DeleteNodeController key="navDelete" />,
+    ],
+    presets: [
+      {
+        label: "Mobile Menu",
+        icon: TbDeviceMobile,
+        props: {
+          menu: {
+            enabled: true,
+            id: "mobile-menu",
+            side: "left",
+            type: "slide",
+            breakpoint: "mobile",
+          },
+          className: "flex justify-between items-center gap-container",
+        },
+        children: buildMobileMenuChildren,
+      },
+    ],
+  },
+  { __internal: true }
+);
 
 /**
  * Extra nav toolbox presets that use ButtonList (not Nav).
@@ -280,7 +335,8 @@ export const NAV_EXTRA_PRESETS = [
     icon: TbPill,
     element: ButtonList,
     props: {
-      className: "flex flex-row items-center gap-1 md:flex md:flex-row md:items-center md:gap-1 bg-primary rounded-full px-2 py-1",
+      className:
+        "flex flex-row items-center gap-1 md:flex md:flex-row md:items-center md:gap-1 bg-primary rounded-full px-2 py-1",
     },
     children: buildPillNavButtons,
   },

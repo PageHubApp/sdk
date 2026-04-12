@@ -36,7 +36,7 @@ export function MediaPreviewModal({
       {/* Close */}
       <button
         onClick={onClose}
-        className="absolute right-4 top-4 z-10 rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+        className="absolute top-4 right-4 z-10 rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
         title="Close (ESC)"
       >
         <TbX className="size-6" />
@@ -49,7 +49,7 @@ export function MediaPreviewModal({
             e.stopPropagation();
             onPrevious();
           }}
-          className="absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
+          className="absolute top-1/2 left-4 z-10 -translate-y-1/2 rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
           title="Previous (←)"
         >
           <TbChevronLeft className="size-8" />
@@ -63,7 +63,7 @@ export function MediaPreviewModal({
             e.stopPropagation();
             onNext();
           }}
-          className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
+          className="absolute top-1/2 right-4 z-10 -translate-y-1/2 rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
           title="Next (→)"
         >
           <TbChevronRight className="size-8" />
@@ -116,9 +116,7 @@ export function MediaPreviewModal({
               <span>{formatDimensions(media.metadata.dimensions)}</span>
             )}
             {media.metadata?.size && <span>{formatFileSize(media.metadata.size)}</span>}
-            {media.uploadedAt && (
-              <span>{new Date(media.uploadedAt).toLocaleDateString()}</span>
-            )}
+            {media.uploadedAt && <span>{new Date(media.uploadedAt).toLocaleDateString()}</span>}
             <span>
               {currentIndex + 1} / {filteredMedia.length}
             </span>

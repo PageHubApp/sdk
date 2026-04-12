@@ -34,7 +34,6 @@ import { TabBarBreakpointPicker } from "./TabBarBreakpointPicker";
 import { phStorage } from "../../utils/phStorage";
 import { SettingsSearchAtom, SettingsSearchOpenAtom } from "./UnifiedSettings/registry/atoms";
 
-
 export const ToolbarWrapper = ({
   children = null,
   head,
@@ -67,11 +66,18 @@ export const ToolbarWrapper = ({
   } = useEditor();
 
   const tablistRef = useRef<HTMLDivElement>(null);
-  const [indicatorStyle, setIndicatorStyle] = useState<{ width: number; height: number; top: number; left: number } | null>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState<{
+    width: number;
+    height: number;
+    top: number;
+    left: number;
+  } | null>(null);
 
   useLayoutEffect(() => {
     if (!unified || !tablistRef.current) return;
-    const activeTab = tablistRef.current.querySelector('[aria-selected="true"]') as HTMLElement | null;
+    const activeTab = tablistRef.current.querySelector(
+      '[aria-selected="true"]'
+    ) as HTMLElement | null;
     if (!activeTab) return;
     const containerRect = tablistRef.current.getBoundingClientRect();
     const tabRect = activeTab.getBoundingClientRect();
@@ -103,7 +109,7 @@ export const ToolbarWrapper = ({
     });
   }, [actions, getCloneTree, id, query, setProp]);
 
-  const handleClone = async (e) => {
+  const handleClone = async e => {
     e.preventDefault();
 
     try {
@@ -119,7 +125,7 @@ export const ToolbarWrapper = ({
     }
   };
 
-  const handleCopy = async (e) => {
+  const handleCopy = async e => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -131,7 +137,7 @@ export const ToolbarWrapper = ({
     }
   };
 
-  const handlePaste = async (e) => {
+  const handlePaste = async e => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -203,7 +209,7 @@ export const ToolbarWrapper = ({
           id="toolbarTabs"
           aria-label="Tabs"
           role="tablist"
-          className="flex shrink-0 items-center justify-between gap-1.5 border-b border-base-300 bg-secondary px-3 py-0.5 text-center font-semibold text-secondary-content"
+          className="border-base-300 bg-secondary text-secondary-content flex shrink-0 items-center justify-between gap-1.5 border-b px-3 py-0.5 text-center font-semibold"
         >
           {/* ── Left: utilities ── */}
           <div className="flex items-center gap-1">
@@ -218,7 +224,7 @@ export const ToolbarWrapper = ({
                 <TbSearch size={14} />
               </button>
             </Tooltip>
-            <div className="mx-0.5 h-4 w-px shrink-0 bg-border" />
+            <div className="bg-border mx-0.5 h-4 w-px shrink-0" />
             <TabBarBreakpointPicker />
             <TabBarDarkModeToggle />
           </div>
@@ -230,12 +236,12 @@ export const ToolbarWrapper = ({
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={e => {
                   if (e.key === "Escape") toggleSearch();
                 }}
                 placeholder="Search settings..."
-                className="h-7 w-full rounded-md border border-base-300 bg-base-200 px-2.5 text-xs text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-1 focus:ring-primary"
+                className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:ring-primary h-7 w-full rounded-md border px-2.5 text-xs focus:ring-1 focus:outline-none"
                 autoFocus
                 {...toolbarInputNoAutocompleteProps}
               />
@@ -243,7 +249,7 @@ export const ToolbarWrapper = ({
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-1.5 cursor-pointer text-neutral-content hover:text-base-content"
+                  className="text-neutral-content hover:text-base-content absolute right-1.5 cursor-pointer"
                 >
                   <TbX size={12} />
                 </button>
@@ -252,58 +258,67 @@ export const ToolbarWrapper = ({
           ) : (
             /* ── Right: tab icons ── */
             <div className="flex items-center gap-1.5">
-            <div className="mx-0.5 h-4 w-px shrink-0 bg-border" />
-            <div className="relative flex flex-row-reverse items-center gap-3" role="tablist" ref={tablistRef}>
-            {indicatorStyle && (
+              <div className="bg-border mx-0.5 h-4 w-px shrink-0" />
               <div
-                className="absolute bottom-0 h-0.5 rounded-full bg-primary"
-                style={{
-                  width: indicatorStyle.width,
-                  left: 0,
-                  transform: `translateX(${indicatorStyle.left}px)`,
-                  transition: "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                  zIndex: 0,
-                  pointerEvents: "none",
-                }}
-              />
-            )}
-            {head.map((_, key) => {
-              // If activeSection doesn't match any tab title (stale from previous node), default to tab 0
-              const sectionMatchesAny = unified && head.some(h => h.title === activeSection);
-              const isActive = unified
-                ? (sectionMatchesAny ? activeSection === _.title : key === 0)
-                : false;
-              return unified ? (
-                <UnifiedTab
-                  key={key}
-                  title={_.title}
-                  icon={_.icon}
-                  isActive={isActive}
-                  onClick={() => {
-                    setActiveTabFromClick(_.title, setActiveTab);
-                    scrollToSection(_.title, key);
-                    if (accordionCtx?.openOnly) {
-                      // Find all accordion section titles within this tab's DOM section (stable stack id — title can duplicate display names)
-                      const sectionEl = document.getElementById(toSectionId(`stack-${key}`));
-                      if (sectionEl) {
-                        const buttons = sectionEl.querySelectorAll("[role='button'][aria-label]");
-                        const titles: string[] = [];
-                        buttons.forEach((btn) => {
-                          const label = btn.getAttribute("aria-label");
-                          if (label) titles.push(label);
-                        });
-                        if (titles.length > 0) {
-                          accordionCtx.openOnly(titles);
+                className="relative flex flex-row-reverse items-center gap-3"
+                role="tablist"
+                ref={tablistRef}
+              >
+                {indicatorStyle && (
+                  <div
+                    className="bg-primary absolute bottom-0 h-0.5 rounded-full"
+                    style={{
+                      width: indicatorStyle.width,
+                      left: 0,
+                      transform: `translateX(${indicatorStyle.left}px)`,
+                      transition:
+                        "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                      zIndex: 0,
+                      pointerEvents: "none",
+                    }}
+                  />
+                )}
+                {head.map((_, key) => {
+                  // If activeSection doesn't match any tab title (stale from previous node), default to tab 0
+                  const sectionMatchesAny = unified && head.some(h => h.title === activeSection);
+                  const isActive = unified
+                    ? sectionMatchesAny
+                      ? activeSection === _.title
+                      : key === 0
+                    : false;
+                  return unified ? (
+                    <UnifiedTab
+                      key={key}
+                      title={_.title}
+                      icon={_.icon}
+                      isActive={isActive}
+                      onClick={() => {
+                        setActiveTabFromClick(_.title, setActiveTab);
+                        scrollToSection(_.title, key);
+                        if (accordionCtx?.openOnly) {
+                          // Find all accordion section titles within this tab's DOM section (stable stack id — title can duplicate display names)
+                          const sectionEl = document.getElementById(toSectionId(`stack-${key}`));
+                          if (sectionEl) {
+                            const buttons = sectionEl.querySelectorAll(
+                              "[role='button'][aria-label]"
+                            );
+                            const titles: string[] = [];
+                            buttons.forEach(btn => {
+                              const label = btn.getAttribute("aria-label");
+                              if (label) titles.push(label);
+                            });
+                            if (titles.length > 0) {
+                              accordionCtx.openOnly(titles);
+                            }
+                          }
                         }
-                      }
-                    }
-                  }}
-                />
-              ) : (
-                <Tab key={key} title={_.title} tabId={_.title} icon={_.icon} />
-              );
-            })}
-            </div>
+                      }}
+                    />
+                  ) : (
+                    <Tab key={key} title={_.title} tabId={_.title} icon={_.icon} />
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -317,16 +332,14 @@ export const ToolbarWrapper = ({
 
       <div
         id="toolbarFooter"
-        className="flex w-full shrink-0 flex-row items-center justify-between border-t border-t-border bg-neutral px-2.5 py-1.5 text-lg"
+        className="border-t-border bg-neutral flex w-full shrink-0 flex-row items-center justify-between border-t px-2.5 py-1.5 text-lg"
       >
         {foot}
 
         {id !== ROOT_NODE && parentName !== "Background" && (
           <Tooltip content="Select Parent">
             <button
-
-              className="cursor-pointer rounded-lg p-2 text-neutral-content hover:text-accent-content"
-
+              className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
               onClick={() => {
                 actions.selectNode(parent);
               }}
@@ -356,11 +369,7 @@ export const ToolbarWrapper = ({
                 if (props.canDelete !== false) deleteSelectedNode();
               }}
             >
-              <button
-
-                className="cursor-pointer rounded-lg p-2 text-neutral-content hover:text-accent-content"
-
-              >
+              <button className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2">
                 {props.canDelete !== false ? <TbTrash /> : <TbTrashOff />}
               </button>
             </Tooltip>
@@ -374,11 +383,7 @@ export const ToolbarWrapper = ({
                     handleClone(e);
                   }}
                 >
-                  <button
-    
-                    className="cursor-pointer rounded-lg p-2 text-neutral-content hover:text-accent-content"
-    
-                  >
+                  <button className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2">
                     <TbCopy />
                   </button>
                 </Tooltip>
@@ -394,10 +399,9 @@ export const ToolbarWrapper = ({
                   <button
                     className={`rounded-lg p-2 transition-colors active:scale-90 ${
                       id !== ROOT_NODE
-                        ? "cursor-pointer text-neutral-content hover:text-accent-content"
-                        : "cursor-not-allowed text-neutral-content/50"
+                        ? "text-neutral-content hover:text-accent-content cursor-pointer"
+                        : "text-neutral-content/50 cursor-not-allowed"
                     }`}
-    
                   >
                     <TbClipboard />
                   </button>
@@ -414,12 +418,10 @@ export const ToolbarWrapper = ({
                 >
                   <button
                     className={`rounded-lg p-2 transition-colors active:scale-90 ${
-                      phStorage.get("clipboard") &&
-                      phStorage.get("clipboard") !== "{}"
-                        ? "cursor-pointer text-neutral-content hover:text-accent-content"
-                        : "cursor-not-allowed text-neutral-content/50"
+                      phStorage.get("clipboard") && phStorage.get("clipboard") !== "{}"
+                        ? "text-neutral-content hover:text-accent-content cursor-pointer"
+                        : "text-neutral-content/50 cursor-not-allowed"
                     }`}
-    
                   >
                     <TbClipboardCheck />
                   </button>
@@ -434,10 +436,8 @@ export const ToolbarWrapper = ({
                   }}
                 >
                   <button
-    
                     ref={ref}
-                    className="cursor-pointer rounded-lg p-2 text-neutral-content hover:text-accent-content"
-    
+                    className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
                   >
                     {canMake ? <TbComponents /> : <TbComponentsOff />}
                   </button>
@@ -455,11 +455,7 @@ export const ToolbarWrapper = ({
               setSideBarOpen(false);
             }}
           >
-            <button
-
-              className="cursor-pointer rounded-lg p-2 text-neutral-content hover:text-accent-content"
-
-            >
+            <button className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2">
               <TbX />
             </button>
           </Tooltip>

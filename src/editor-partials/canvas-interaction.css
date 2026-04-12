@@ -67,7 +67,9 @@ body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="component"
   outline-offset: var(--pagehub-editor-outline-offset, -1px);
 }
 
-.pagehub-sdk-root [data-show-gridlines="true"] [data-enabled="true"][node-id]:not([data-selected="true"]) {
+.pagehub-sdk-root
+  [data-show-gridlines="true"]
+  [data-enabled="true"][node-id]:not([data-selected="true"]) {
   outline: 1px dashed currentColor !important;
   outline-offset: var(--pagehub-editor-outline-offset, -1px);
 }

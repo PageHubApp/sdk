@@ -93,9 +93,7 @@ export function generateSrcSet(
 /**
  * Generate sizes attribute for responsive images
  */
-export function generateSizes(
-  breakpoints: Record<string, string> = {}
-): string {
+export function generateSizes(breakpoints: Record<string, string> = {}): string {
   const entries = Object.entries(breakpoints);
   const defaultIndex = entries.findIndex(([key]) => key === "default");
 

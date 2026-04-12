@@ -27,7 +27,12 @@ export const DisplayInput = ({ showCursor = true }: { showCursor?: boolean }) =>
             showVarSelector={true}
             inline
           />
-          <TailwindInput propKey="pointerEvents" label="Pointer Events" prop="pointerEvents" type="select" />
+          <TailwindInput
+            propKey="pointerEvents"
+            label="Pointer Events"
+            prop="pointerEvents"
+            type="select"
+          />
           <TailwindInput propKey="userSelect" label="User Select" prop="userSelect" type="select" />
         </ToolbarSection>
       </ItemAdvanceToggle>

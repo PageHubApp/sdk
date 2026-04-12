@@ -69,9 +69,21 @@ export const EffectsClassInput = ({ index = "" }: { index?: string }) => (
         propTag="transition"
         index={index}
       />
-      <EffectField propKey="duration" label="Duration" tailwindKey="duration" propTag="duration" index={index} />
+      <EffectField
+        propKey="duration"
+        label="Duration"
+        tailwindKey="duration"
+        propTag="duration"
+        index={index}
+      />
       <EffectField propKey="ease" label="Easing" tailwindKey="ease" propTag="ease" index={index} />
-      <EffectField propKey="delay" label="Delay" tailwindKey="delay" propTag="delay" index={index} />
+      <EffectField
+        propKey="delay"
+        label="Delay"
+        tailwindKey="delay"
+        propTag="delay"
+        index={index}
+      />
     </ToolbarSection>
 
     <ToolbarSection title="Utility animate" icon={null} nested collapsible defaultOpen={false}>
@@ -86,10 +98,34 @@ export const EffectsClassInput = ({ index = "" }: { index?: string }) => (
 
     <ToolbarSection title="Transform" icon={null} nested collapsible defaultOpen={false}>
       <EffectField propKey="twTransform" label="GPU mode" tailwindKey="twTransform" index={index} />
-      <EffectField propKey="scale" label="Scale" tailwindKey="scale" propTag="scale" index={index} />
-      <EffectField propKey="scaleX" label="Scale X" tailwindKey="scaleX" propTag="scale-x" index={index} />
-      <EffectField propKey="scaleY" label="Scale Y" tailwindKey="scaleY" propTag="scale-y" index={index} />
-      <EffectField propKey="rotate" label="Rotate" tailwindKey="rotate" propTag="rotate" index={index} />
+      <EffectField
+        propKey="scale"
+        label="Scale"
+        tailwindKey="scale"
+        propTag="scale"
+        index={index}
+      />
+      <EffectField
+        propKey="scaleX"
+        label="Scale X"
+        tailwindKey="scaleX"
+        propTag="scale-x"
+        index={index}
+      />
+      <EffectField
+        propKey="scaleY"
+        label="Scale Y"
+        tailwindKey="scaleY"
+        propTag="scale-y"
+        index={index}
+      />
+      <EffectField
+        propKey="rotate"
+        label="Rotate"
+        tailwindKey="rotate"
+        propTag="rotate"
+        index={index}
+      />
       <EffectField
         propKey="translateX"
         label="Translate X"
@@ -104,8 +140,20 @@ export const EffectsClassInput = ({ index = "" }: { index?: string }) => (
         propTag="translate-y"
         index={index}
       />
-      <EffectField propKey="skewX" label="Skew X" tailwindKey="skewX" propTag="skew-x" index={index} />
-      <EffectField propKey="skewY" label="Skew Y" tailwindKey="skewY" propTag="skew-y" index={index} />
+      <EffectField
+        propKey="skewX"
+        label="Skew X"
+        tailwindKey="skewX"
+        propTag="skew-x"
+        index={index}
+      />
+      <EffectField
+        propKey="skewY"
+        label="Skew Y"
+        tailwindKey="skewY"
+        propTag="skew-y"
+        index={index}
+      />
       <EffectField
         propKey="transformOrigin"
         label="Origin"
@@ -124,7 +172,13 @@ export const EffectsClassInput = ({ index = "" }: { index?: string }) => (
         propTag="brightness"
         index={index}
       />
-      <EffectField propKey="contrast" label="Contrast" tailwindKey="contrast" propTag="contrast" index={index} />
+      <EffectField
+        propKey="contrast"
+        label="Contrast"
+        tailwindKey="contrast"
+        propTag="contrast"
+        index={index}
+      />
       <EffectField
         propKey="grayscale"
         label="Grayscale"
@@ -139,9 +193,27 @@ export const EffectsClassInput = ({ index = "" }: { index?: string }) => (
         propTag="hue-rotate"
         index={index}
       />
-      <EffectField propKey="invert" label="Invert" tailwindKey="invert" propTag="invert" index={index} />
-      <EffectField propKey="saturate" label="Saturate" tailwindKey="saturate" propTag="saturate" index={index} />
-      <EffectField propKey="sepia" label="Sepia" tailwindKey="sepia" propTag="sepia" index={index} />
+      <EffectField
+        propKey="invert"
+        label="Invert"
+        tailwindKey="invert"
+        propTag="invert"
+        index={index}
+      />
+      <EffectField
+        propKey="saturate"
+        label="Saturate"
+        tailwindKey="saturate"
+        propTag="saturate"
+        index={index}
+      />
+      <EffectField
+        propKey="sepia"
+        label="Sepia"
+        tailwindKey="sepia"
+        propTag="sepia"
+        index={index}
+      />
       <EffectField
         propKey="willChange"
         label="Will-change"

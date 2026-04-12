@@ -37,12 +37,18 @@ const animationVariants = {
   none: { initial: {}, animate: {}, exit: {} },
 };
 
-const getStorageKey = (anchor) => `modal-${anchor}`;
-const hasSeenModal = (key) => {
-  try { return phStorage.get(key) === "1"; } catch { return false; }
+const getStorageKey = anchor => `modal-${anchor}`;
+const hasSeenModal = key => {
+  try {
+    return phStorage.get(key) === "1";
+  } catch {
+    return false;
+  }
 };
-const markModalSeen = (key) => {
-  try { phStorage.set(key, "1"); } catch {}
+const markModalSeen = key => {
+  try {
+    phStorage.set(key, "1");
+  } catch {}
 };
 
 export const Modal = ({ children, ...props }) => {
@@ -56,7 +62,9 @@ export const Modal = ({ children, ...props }) => {
   const anchorRef = useRef(null);
   const focusTrapRef = useFocusTrap(!enabled && isOpen);
 
-  useEffect(() => { setIsMounted(true); }, []);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Auto-wire unique IDs on first mount — replace placeholder "my-modal" with node ID
   useEffect(() => {
@@ -68,26 +76,34 @@ export const Modal = ({ children, ...props }) => {
       const node = query.node(id).get();
       const childIds = node.data.nodes || [];
 
-      const walkAndFix = (nid) => {
+      const walkAndFix = nid => {
         try {
           const n = query.node(nid).get();
           if (n.data.props?.id === "my-modal") {
-            actions.setProp(nid, (p) => { p.id = uniqueId; });
+            actions.setProp(nid, p => {
+              p.id = uniqueId;
+            });
           }
           // Fix action.target references (new system)
           if (n.data.props?.action?.target === "my-modal") {
-            actions.setProp(nid, (p) => { p.action = { ...p.action, target: uniqueId }; });
+            actions.setProp(nid, p => {
+              p.action = { ...p.action, target: uniqueId };
+            });
           }
           // Fix legacy click.value references
           if (n.data.props?.click?.value === "my-modal") {
-            actions.setProp(nid, (p) => { p.click = { ...p.click, value: uniqueId }; });
+            actions.setProp(nid, p => {
+              p.click = { ...p.click, value: uniqueId };
+            });
           }
-          for (const cid of (n.data.nodes || [])) walkAndFix(cid);
+          for (const cid of n.data.nodes || []) walkAndFix(cid);
         } catch {}
       };
       for (const childId of childIds) walkAndFix(childId);
 
-      actions.setProp(id, (p) => { p.anchor = uniqueId; });
+      actions.setProp(id, p => {
+        p.anchor = uniqueId;
+      });
     } catch (e) {
       console.warn("Modal: failed to auto-wire IDs", e);
     }
@@ -110,11 +126,13 @@ export const Modal = ({ children, ...props }) => {
 
     if (isPreview) {
       // Overlay mode — positioned absolute within the relative-positioned root
-      backdropEl.style.cssText = "position:absolute;top:0;left:0;right:0;bottom:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;" +
+      backdropEl.style.cssText =
+        "position:absolute;top:0;left:0;right:0;bottom:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;" +
         (props.backdropBlur ? "backdrop-filter:blur(4px);" : "");
     } else {
       // Edit mode — inline layout so users can drag into content areas
-      backdropEl.style.cssText = "display:flex;align-items:center;justify-content:center;padding:1rem;width:100%;";
+      backdropEl.style.cssText =
+        "display:flex;align-items:center;justify-content:center;padding:1rem;width:100%;";
     }
 
     // Force content panel styles so the modal structure is visible
@@ -129,7 +147,8 @@ export const Modal = ({ children, ...props }) => {
         const n = query.node(nid).get();
         const displayName = n.data.custom?.displayName || "";
         if (displayName.includes("Content") || displayName.includes("content")) {
-          htmlEl.style.cssText = "display:flex;flex-direction:column;gap:0.5rem;width:100%;max-width:32rem;padding:1.5rem;background:var(--background,#fff);border-radius:var(--radius,0.5rem);box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);";
+          htmlEl.style.cssText =
+            "display:flex;flex-direction:column;gap:0.5rem;width:100%;max-width:32rem;padding:1.5rem;background:var(--background,#fff);border-radius:var(--radius,0.5rem);box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);";
         }
       } catch {}
     });
@@ -147,10 +166,13 @@ export const Modal = ({ children, ...props }) => {
   useEffect(() => {
     if (enabled || trigger.type !== "delay") return;
     if (trigger.showOnce && hasSeenModal(storageKey)) return;
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-      if (trigger.showOnce) markModalSeen(storageKey);
-    }, (trigger.delay || 3) * 1000);
+    const timer = setTimeout(
+      () => {
+        setIsOpen(true);
+        if (trigger.showOnce) markModalSeen(storageKey);
+      },
+      (trigger.delay || 3) * 1000
+    );
     return () => clearTimeout(timer);
   }, [enabled]);
 
@@ -158,7 +180,7 @@ export const Modal = ({ children, ...props }) => {
     if (enabled) return;
     const el = anchorRef.current;
     if (!el) return;
-    const handler = (e) => {
+    const handler = e => {
       const { action } = e.detail;
       if (action === "open") setIsOpen(true);
       else if (action === "close") setIsOpen(false);
@@ -170,7 +192,9 @@ export const Modal = ({ children, ...props }) => {
 
   useEffect(() => {
     if (enabled || !isOpen || props.closeOnEscape === false) return;
-    const handler = (e) => { if (e.key === "Escape") setIsOpen(false); };
+    const handler = e => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [enabled, isOpen, props.closeOnEscape]);
@@ -179,17 +203,26 @@ export const Modal = ({ children, ...props }) => {
     if (enabled || !isOpen) return;
     const original = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = original; };
+    return () => {
+      document.body.style.overflow = original;
+    };
   }, [enabled, isOpen]);
 
   // ── Editor mode — just a Container ──────────────────────────────────
 
   if (enabled) {
     const {
-      anchor, view: _view, trigger: _trigger,
-      closeOnBackdrop, closeOnEscape, showCloseButton,
-      closeButtonPosition, backdropBlur, modalAnimation,
-      modalWidth, modalPosition,
+      anchor,
+      view: _view,
+      trigger: _trigger,
+      closeOnBackdrop,
+      closeOnEscape,
+      showCloseButton,
+      closeButtonPosition,
+      backdropBlur,
+      modalAnimation,
+      modalWidth,
+      modalPosition,
       ...containerProps
     } = props;
 
@@ -212,15 +245,18 @@ export const Modal = ({ children, ...props }) => {
   // ── Viewer mode — portal overlay ─────────────────────────────────────
 
   const positionClass =
-    props.modalPosition === "top" ? "items-start pt-16" :
-    props.modalPosition === "bottom" ? "items-end pb-16" :
-    "items-center";
+    props.modalPosition === "top"
+      ? "items-start pt-16"
+      : props.modalPosition === "bottom"
+        ? "items-end pb-16"
+        : "items-center";
 
   const anim = animationVariants[props.modalAnimation || "fade"] || animationVariants.fade;
 
-  const portalTarget = (typeof document !== "undefined")
-    ? document.querySelector(".pagehub-sdk-root") || document.body
-    : null;
+  const portalTarget =
+    typeof document !== "undefined"
+      ? document.querySelector(".pagehub-sdk-root") || document.body
+      : null;
 
   return (
     <>
@@ -231,45 +267,47 @@ export const Modal = ({ children, ...props }) => {
         style={{ display: "none" }}
       />
 
-      {isMounted && portalTarget && ReactDOM.createPortal(
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className={`fixed inset-0 z-9997 flex justify-center p-4 ${positionClass} ${props.backdropBlur ? "backdrop-blur-sm" : ""}`}
-              style={{ background: "rgba(0,0,0,0.5)" }}
-              onClick={props.closeOnBackdrop !== false ? () => setIsOpen(false) : undefined}
-            >
+      {isMounted &&
+        portalTarget &&
+        ReactDOM.createPortal(
+          <AnimatePresence>
+            {isOpen && (
               <motion.div
-                ref={focusTrapRef}
-                role="dialog"
-                aria-modal="true"
-                aria-label="Modal"
-                {...anim}
-                transition={{ duration: 0.2 }}
-                className={`${props.modalWidth || "max-w-lg"} relative w-full bg-base-100 shadow-xl`}
-                onClick={e => e.stopPropagation()}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className={`fixed inset-0 z-9997 flex justify-center p-4 ${positionClass} ${props.backdropBlur ? "backdrop-blur-sm" : ""}`}
+                style={{ background: "rgba(0,0,0,0.5)" }}
+                onClick={props.closeOnBackdrop !== false ? () => setIsOpen(false) : undefined}
               >
-                {props.showCloseButton !== false && (
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className={`absolute z-10 p-1 text-xl leading-none text-base-content/60 hover:text-base-content ${
-                      props.closeButtonPosition === "top-left" ? "left-3 top-3" : "right-3 top-3"
-                    }`}
-                    aria-label="Close modal"
-                  >
-                    <TbX />
-                  </button>
-                )}
-                {children}
+                <motion.div
+                  ref={focusTrapRef}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Modal"
+                  {...anim}
+                  transition={{ duration: 0.2 }}
+                  className={`${props.modalWidth || "max-w-lg"} bg-base-100 relative w-full shadow-xl`}
+                  onClick={e => e.stopPropagation()}
+                >
+                  {props.showCloseButton !== false && (
+                    <button
+                      onClick={() => setIsOpen(false)}
+                      className={`text-base-content/60 hover:text-base-content absolute z-10 p-1 text-xl leading-none ${
+                        props.closeButtonPosition === "top-left" ? "top-3 left-3" : "top-3 right-3"
+                      }`}
+                      aria-label="Close modal"
+                    >
+                      <TbX />
+                    </button>
+                  )}
+                  {children}
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        portalTarget
-      )}
+            )}
+          </AnimatePresence>,
+          portalTarget
+        )}
     </>
   );
 };

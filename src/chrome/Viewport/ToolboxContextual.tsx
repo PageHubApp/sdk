@@ -50,10 +50,8 @@ const CANVAS_CLASS_CLIPBOARD = "canvas-class-clipboard";
 /** Same interaction as `.ph-select-item` (dropdowns.css): accent fill reads on base-100 menus. */
 const CTX_MENU_HOVER =
   "outline-none transition-[color,background-color] duration-150 ease-out hover:bg-accent hover:text-accent-content focus-visible:bg-accent focus-visible:text-accent-content active:bg-accent/90";
-const CTX_MENU_ITEM =
-  `flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-3 py-2 text-left text-sm ${CTX_MENU_HOVER}`;
-const CTX_MENU_SUBMENU_TRIGGER =
-  `flex w-full cursor-default select-none items-center justify-between gap-2 rounded-sm px-3 py-2 text-left text-sm ${CTX_MENU_HOVER}`;
+const CTX_MENU_ITEM = `flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-3 py-2 text-left text-sm ${CTX_MENU_HOVER}`;
+const CTX_MENU_SUBMENU_TRIGGER = `flex w-full cursor-default select-none items-center justify-between gap-2 rounded-sm px-3 py-2 text-left text-sm ${CTX_MENU_HOVER}`;
 
 const CONTEXT_SUBMENU_FALLBACKS: Placement[] = [
   "left-start",
@@ -201,12 +199,12 @@ export const ToolboxContexual = () => {
 
   const hasAnyMenuItems = Boolean(
     showCopyBtn ||
-      showPaste ||
-      showMoveSection ||
-      showClassesSection ||
-      hasInsertSubmenu ||
-      showDupDelSection ||
-      (canPinAi && renderContext)
+    showPaste ||
+    showMoveSection ||
+    showClassesSection ||
+    hasInsertSubmenu ||
+    showDupDelSection ||
+    (canPinAi && renderContext)
   );
 
   const [style, setStyle] = useState<CSSProperties>({});
@@ -528,12 +526,7 @@ export const ToolboxContexual = () => {
         </button>
       ) : null}
       {showPaste ? (
-        <button
-          type="button"
-          role="menuitem"
-          className={CTX_MENU_ITEM}
-          onClick={handlePaste}
-        >
+        <button type="button" role="menuitem" className={CTX_MENU_ITEM} onClick={handlePaste}>
           <TbClipboardCheck className="size-4 shrink-0 opacity-80" aria-hidden />
           Paste
         </button>
@@ -542,12 +535,7 @@ export const ToolboxContexual = () => {
       {showMoveSection ? (
         <div className={dividerBeforeMove ? "border-base-200 border-t pt-1" : ""}>
           {showMoveUpBtn ? (
-            <button
-              type="button"
-              role="menuitem"
-              className={CTX_MENU_ITEM}
-              onClick={handleMoveUp}
-            >
+            <button type="button" role="menuitem" className={CTX_MENU_ITEM} onClick={handleMoveUp}>
               <TbChevronUp className="size-4 shrink-0 opacity-80" aria-hidden />
               Move up
             </button>
@@ -603,10 +591,7 @@ export const ToolboxContexual = () => {
             }}
             onMouseLeave={scheduleCloseInsertPanels}
           >
-            <div
-              role="menuitem"
-              className={CTX_MENU_SUBMENU_TRIGGER}
-            >
+            <div role="menuitem" className={CTX_MENU_SUBMENU_TRIGGER}>
               <span className="flex items-center gap-2">
                 <TbPlus className="size-4 shrink-0 opacity-80" aria-hidden />
                 Insert
@@ -622,7 +607,7 @@ export const ToolboxContexual = () => {
                     ...insertPanelFloating.floatingStyles,
                     zIndex: OVERLAY_Z_CONTEXT_INSERT_PANEL,
                   }}
-                  className="rounded-box border-base-300/50 bg-base-100 text-base-content max-h-[min(70vh,28rem)] min-w-[11rem] overflow-y-auto overflow-x-visible border py-1 shadow-xl select-none"
+                  className="rounded-box border-base-300/50 bg-base-100 text-base-content max-h-[min(70vh,28rem)] min-w-[11rem] overflow-x-visible overflow-y-auto border py-1 shadow-xl select-none"
                   onMouseEnter={cancelInsertLeaveTimer}
                   onMouseLeave={scheduleCloseInsertPanels}
                 >
@@ -735,12 +720,7 @@ export const ToolboxContexual = () => {
             </button>
           ) : null}
           {showDeleteBtn ? (
-            <button
-              type="button"
-              role="menuitem"
-              className={CTX_MENU_ITEM}
-              onClick={handleDelete}
-            >
+            <button type="button" role="menuitem" className={CTX_MENU_ITEM} onClick={handleDelete}>
               <TbTrash className="size-4 shrink-0 opacity-80" aria-hidden />
               Delete
             </button>

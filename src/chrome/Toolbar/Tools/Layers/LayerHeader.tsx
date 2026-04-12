@@ -24,12 +24,7 @@ interface LayerHeaderProps {
   isExpanded: boolean;
 }
 
-export function LayerHeader({
-  nodeId,
-  depth,
-  hasChildren,
-  isExpanded,
-}: LayerHeaderProps) {
+export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHeaderProps) {
   const { toggleExpanded, setDraggedNode, setDropIndicator, state } = useLayerManager();
   const [isEditingName, setIsEditingName] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -65,8 +60,16 @@ export function LayerHeader({
   const isSection = componentType === "Container" && !isPage && !isHeader && !isFooter;
 
   // Extracted hooks for move and drag/drop logic
-  const { handleMoveUp, handleMoveDown, handleMoveOut, handleMoveIn, canMoveUp, canMoveDown, canMoveOut, canMoveIn } =
-    useLayerMove({ nodeId });
+  const {
+    handleMoveUp,
+    handleMoveDown,
+    handleMoveOut,
+    handleMoveIn,
+    canMoveUp,
+    canMoveDown,
+    canMoveOut,
+    canMoveIn,
+  } = useLayerMove({ nodeId });
 
   const { handleDragStart, handleDragEnd, handleDragOver, handleDragLeave } = useLayerDragDrop({
     nodeId,
@@ -166,7 +169,7 @@ export function LayerHeader({
           style={{ marginLeft: `${depth * 16}px` }}
         >
           <div className="h-1 w-full animate-pulse rounded-full bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 shadow-lg shadow-blue-500/50" />
-          <div className="border-3 absolute -top-1.5 left-0 size-5 rounded-full border-white bg-linear-to-br from-blue-400 to-blue-600 shadow-lg" />
+          <div className="absolute -top-1.5 left-0 size-5 rounded-full border-3 border-white bg-linear-to-br from-blue-400 to-blue-600 shadow-lg" />
           <div className="absolute -top-1 right-0 rounded-full bg-linear-to-r from-blue-500 to-blue-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
             Drop here
           </div>
@@ -201,7 +204,7 @@ export function LayerHeader({
           isHovered && !isSelected ? "bg-gray-50 dark:bg-gray-900" : ""
         } ${
           isDropTarget && state.dropIndicator?.position === "inside"
-            ? "scale-[1.02] border-l-blue-500 bg-linear-to-r from-blue-50 to-blue-100 ring-2 ring-inset ring-blue-400 dark:from-blue-950 dark:to-blue-900 dark:ring-blue-600"
+            ? "scale-[1.02] border-l-blue-500 bg-linear-to-r from-blue-50 to-blue-100 ring-2 ring-blue-400 ring-inset dark:from-blue-950 dark:to-blue-900 dark:ring-blue-600"
             : ""
         } ${isDropTarget ? "my-1" : ""}`}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
@@ -255,7 +258,7 @@ export function LayerHeader({
           {hidden ? (
             <TbEyeOff
               className={`size-4 transition-colors ${
-                isSelected ? "text-white/70" : "hover:text-red-500 text-gray-400"
+                isSelected ? "text-white/70" : "text-gray-400 hover:text-red-500"
               }`}
             />
           ) : (
@@ -373,14 +376,14 @@ export function LayerHeader({
                 <div className="h-4 w-px bg-white/20 dark:bg-black/20" />
                 <button
                   onClick={handleDelete}
-                  className="hover:bg-red-500/20 dark:hover:bg-red-500/30 rounded p-1 transition-all hover:scale-110"
+                  className="rounded p-1 transition-all hover:scale-110 hover:bg-red-500/20 dark:hover:bg-red-500/30"
                   title="Delete"
                 >
                   <TbTrash
                     className={`size-3.5 transition-colors ${
                       isSelected
-                        ? "hover:text-red-300 text-white"
-                        : "hover:text-red-600 dark:hover:text-red-400 text-gray-700 dark:text-gray-300"
+                        ? "text-white hover:text-red-300"
+                        : "text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"
                     }`}
                   />
                 </button>
@@ -397,7 +400,7 @@ export function LayerHeader({
           style={{ marginLeft: `${depth * 16}px` }}
         >
           <div className="h-1 w-full animate-pulse rounded-full bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 shadow-lg shadow-blue-500/50" />
-          <div className="border-3 absolute -top-1.5 left-0 size-5 rounded-full border-white bg-linear-to-br from-blue-400 to-blue-600 shadow-lg" />
+          <div className="absolute -top-1.5 left-0 size-5 rounded-full border-3 border-white bg-linear-to-br from-blue-400 to-blue-600 shadow-lg" />
           <div className="absolute -top-1 right-0 rounded-full bg-linear-to-r from-blue-500 to-blue-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
             Drop here
           </div>
@@ -406,7 +409,7 @@ export function LayerHeader({
 
       {/* Label for inside drops */}
       {isDropTarget && state.dropIndicator?.position === "inside" && (
-        <div className="pointer-events-none absolute right-3 top-2 z-10 animate-pulse rounded-full border-2 border-blue-400 bg-linear-to-r from-blue-500 to-blue-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
+        <div className="pointer-events-none absolute top-2 right-3 z-10 animate-pulse rounded-full border-2 border-blue-400 bg-linear-to-r from-blue-500 to-blue-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
           Drop inside
         </div>
       )}

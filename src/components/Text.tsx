@@ -6,7 +6,13 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { Text as UiText } from "@pagehub/ui";
 import { addActionHandlers } from "../utils/clickControls";
-import { migrateAction, actionToHref, actionTarget, isHandlerAction, type NodeAction } from "../utils/action";
+import {
+  migrateAction,
+  actionToHref,
+  actionTarget,
+  isHandlerAction,
+  type NodeAction,
+} from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { motionIt } from "../utils/lib";
 
@@ -27,7 +33,6 @@ export interface TextProps extends BaseSelectorProps {
   action?: NodeAction;
   click?: any; // Legacy — handled by migrateAction()
 }
-
 
 // Guard against corrupted tagName data (e.g. `p, "text": "..."` from bad MCP writes)
 const sanitizeTagName = (tag: unknown): string | undefined => {
@@ -88,7 +93,6 @@ export const Text = (incomingProps: Partial<TextProps>) => {
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
   const router = useRouter();
-
 
   const {
     connectors: { connect, drag },

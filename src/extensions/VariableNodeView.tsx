@@ -8,14 +8,21 @@ import { VariablePopover } from "../chrome/Tools/VariablePopover";
 import { resolveVariable } from "../utils/design/variables";
 import type { VariableNodeOptions } from "./VariableNode";
 
-export function VariableNodeView({ node, editor, getPos, extension, updateAttributes, deleteNode }: NodeViewProps) {
+export function VariableNodeView({
+  node,
+  editor,
+  getPos,
+  extension,
+  updateAttributes,
+  deleteNode,
+}: NodeViewProps) {
   const varId = node.attrs.id as string;
   const options = extension.options as VariableNodeOptions;
 
   const { query, actions } = useCraftEditor();
 
   const resolved = resolveVariable(varId, query);
-  const initialDisplay = (resolved && resolved !== varId) ? resolved : varId;
+  const initialDisplay = resolved && resolved !== varId ? resolved : varId;
   const [displayOverride, setDisplayOverride] = useState<string | null>(null);
   const displayText = displayOverride ?? initialDisplay;
 
@@ -32,8 +39,8 @@ export function VariableNodeView({ node, editor, getPos, extension, updateAttrib
   useEffect(() => {
     const handler = () => {
       const fresh = resolveVariable(varId, query);
-      const freshDisplay = (fresh && fresh !== varId) ? fresh : varId;
-      setDisplayOverride(prev => prev !== freshDisplay ? freshDisplay : prev);
+      const freshDisplay = fresh && fresh !== varId ? fresh : varId;
+      setDisplayOverride(prev => (prev !== freshDisplay ? freshDisplay : prev));
     };
     document.addEventListener("pagehub:variable-changed", handler);
     return () => document.removeEventListener("pagehub:variable-changed", handler);
@@ -64,51 +71,61 @@ export function VariableNodeView({ node, editor, getPos, extension, updateAttrib
     setShowPopover(false);
   }, []);
 
-  const handleChangeVariable = useCallback((newId: string) => {
-    const pos = getPos();
-    if (typeof pos === "number") {
-      const newNode = editor.state.schema.nodes.variable.create({ id: newId });
-      const tr = editor.state.tr.replaceWith(pos, pos + 1, newNode);
-      editor.view.dispatch(tr);
-    }
-    setShowPopover(false);
-  }, [editor, getPos]);
+  const handleChangeVariable = useCallback(
+    (newId: string) => {
+      const pos = getPos();
+      if (typeof pos === "number") {
+        const newNode = editor.state.schema.nodes.variable.create({ id: newId });
+        const tr = editor.state.tr.replaceWith(pos, pos + 1, newNode);
+        editor.view.dispatch(tr);
+      }
+      setShowPopover(false);
+    },
+    [editor, getPos]
+  );
 
-  const handleEditValue = useCallback((newValue: string) => {
-    const parts = varId.split(".");
+  const handleEditValue = useCallback(
+    (newValue: string) => {
+      const parts = varId.split(".");
 
-    // Handle custom variables (variables.myKey)
-    if (parts[0] === "variables" && parts.length === 2) {
-      const varKey = parts[1];
+      // Handle custom variables (variables.myKey)
+      if (parts[0] === "variables" && parts.length === 2) {
+        const varKey = parts[1];
+        actions.setProp(ROOT_NODE, (rootProps: any) => {
+          if (!Array.isArray(rootProps.variables)) rootProps.variables = [];
+          const existing = rootProps.variables.find((v: any) => v.key === varKey);
+          if (existing) {
+            existing.value = newValue;
+          } else {
+            rootProps.variables.push({ key: varKey, value: newValue });
+          }
+        });
+        setDisplayOverride(newValue);
+        document.dispatchEvent(new CustomEvent("pagehub:variable-changed"));
+        return;
+      }
+
+      // Handle company variables
+      if (parts[0] !== "company" || parts.length !== 2) return;
+      const key = parts[1];
       actions.setProp(ROOT_NODE, (rootProps: any) => {
-        if (!Array.isArray(rootProps.variables)) rootProps.variables = [];
-        const existing = rootProps.variables.find((v: any) => v.key === varKey);
-        if (existing) {
-          existing.value = newValue;
-        } else {
-          rootProps.variables.push({ key: varKey, value: newValue });
-        }
+        if (!rootProps.company) rootProps.company = {};
+        rootProps.company[key] = newValue;
       });
       setDisplayOverride(newValue);
       document.dispatchEvent(new CustomEvent("pagehub:variable-changed"));
-      return;
-    }
-
-    // Handle company variables
-    if (parts[0] !== "company" || parts.length !== 2) return;
-    const key = parts[1];
-    actions.setProp(ROOT_NODE, (rootProps: any) => {
-      if (!rootProps.company) rootProps.company = {};
-      rootProps.company[key] = newValue;
-    });
-    setDisplayOverride(newValue);
-    document.dispatchEvent(new CustomEvent("pagehub:variable-changed"));
-  }, [varId, actions]);
+    },
+    [varId, actions]
+  );
 
   const handleRemove = useCallback(() => {
     const pos = getPos();
     if (typeof pos === "number") {
-      editor.chain().focus().deleteRange({ from: pos, to: pos + 1 }).run();
+      editor
+        .chain()
+        .focus()
+        .deleteRange({ from: pos, to: pos + 1 })
+        .run();
     }
     setShowPopover(false);
   }, [editor, getPos]);
@@ -121,25 +138,24 @@ export function VariableNodeView({ node, editor, getPos, extension, updateAttrib
       data-tooltip-id="variable-tip"
       data-tooltip-content="Double-click to edit"
     >
-      <span
-        ref={spanRef}
-        onDoubleClick={handleDoubleClick}
-      >
+      <span ref={spanRef} onDoubleClick={handleDoubleClick}>
         {displayText}
       </span>
-      {showPopover && anchorRect && createPortal(
-        <VariablePopover
-          variables={options.getVariables()}
-          currentId={varId}
-          displayValue={displayText}
-          anchorRect={anchorRect}
-          onChangeVariable={handleChangeVariable}
-          onEditValue={varId !== "year" ? handleEditValue : undefined}
-          onRemove={handleRemove}
-          onClose={handleClose}
-        />,
-        document.body,
-      )}
+      {showPopover &&
+        anchorRect &&
+        createPortal(
+          <VariablePopover
+            variables={options.getVariables()}
+            currentId={varId}
+            displayValue={displayText}
+            anchorRect={anchorRect}
+            onChangeVariable={handleChangeVariable}
+            onEditValue={varId !== "year" ? handleEditValue : undefined}
+            onRemove={handleRemove}
+            onClose={handleClose}
+          />,
+          document.body
+        )}
     </NodeViewWrapper>
   );
 }

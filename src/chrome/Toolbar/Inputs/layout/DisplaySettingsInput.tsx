@@ -9,4 +9,3 @@ export default function DisplaySettingsInput({ showCursor = true }: { showCursor
     </>
   );
 }
-

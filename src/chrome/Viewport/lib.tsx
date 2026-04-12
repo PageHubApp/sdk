@@ -10,12 +10,7 @@
  */
 
 // API calls
-export {
-  GetHtmlToComponent,
-  GetSignedUrl,
-  SaveMedia,
-  DeleteMedia,
-} from "./api";
+export { GetHtmlToComponent, GetSignedUrl, SaveMedia, DeleteMedia } from "./api";
 
 // Prop system
 export {

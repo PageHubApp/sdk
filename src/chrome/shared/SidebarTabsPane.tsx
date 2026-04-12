@@ -23,7 +23,8 @@ export interface SidebarTabsPaneProps {
   bodyClassName?: string;
 }
 
-const inactive = "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground";
+const inactive =
+  "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground";
 const active = "bg-sidebar-accent text-sidebar-accent-foreground";
 
 function tabPad(density: SidebarTabDensity | undefined, hasIcon: boolean): string {
@@ -72,7 +73,7 @@ export function SidebarTabsPane({
                 className={twMerge(
                   "flex min-w-0 flex-1 cursor-pointer items-center justify-center text-sm font-medium transition-colors",
                   pad,
-                  value === tab.id ? active : inactive,
+                  value === tab.id ? active : inactive
                 )}
                 role="tab"
                 aria-selected={value === tab.id}

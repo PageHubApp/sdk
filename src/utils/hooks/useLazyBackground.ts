@@ -62,9 +62,7 @@ export const useLazyBackground = (
     const element = ref.current;
     const srcset = element.getAttribute("data-bg-srcset");
 
-    const imgPart = srcset
-      ? `image-set(${srcset}), url(${imageUrl})`
-      : `url(${imageUrl})`;
+    const imgPart = srcset ? `image-set(${srcset}), url(${imageUrl})` : `url(${imageUrl})`;
 
     element.style.backgroundImage = imgPart;
   }, [isLoaded, imageUrl]);

@@ -80,7 +80,10 @@ export function parseValue(value: string, prefix?: string): ParsedValue {
   if (prefix) {
     const tailwindOptions = Object.keys(TailwindStyles).find(key => {
       const styles = TailwindStyles[key];
-      return Array.isArray(styles) && styles.some(style => typeof style === "string" && style.startsWith(`${prefix}-`));
+      return (
+        Array.isArray(styles) &&
+        styles.some(style => typeof style === "string" && style.startsWith(`${prefix}-`))
+      );
     });
 
     if (tailwindOptions && TailwindStyles[tailwindOptions]?.includes(value)) {

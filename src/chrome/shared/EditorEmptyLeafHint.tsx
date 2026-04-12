@@ -24,11 +24,14 @@ export function EditorEmptyLeafHint({
     return (
       <div
         className={twMerge(
-          "flex min-h-8 w-full items-center gap-2 rounded-md border border-dashed border-base-300/70 bg-base-200/50 px-2 py-2 text-left text-xs text-neutral-content/80",
-          className,
+          "border-base-300/70 bg-base-200/50 text-neutral-content/80 flex min-h-8 w-full items-center gap-2 rounded-md border border-dashed px-2 py-2 text-left text-xs",
+          className
         )}
       >
-        <span className="flex size-4 shrink-0 items-center justify-center opacity-70 [&>svg]:size-4" aria-hidden>
+        <span
+          className="flex size-4 shrink-0 items-center justify-center opacity-70 [&>svg]:size-4"
+          aria-hidden
+        >
           {icon}
         </span>
         <span className="italic">
@@ -41,11 +44,14 @@ export function EditorEmptyLeafHint({
   return (
     <div
       className={twMerge(
-        "flex min-h-8 w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-base-300/45 bg-base-200/35 px-2 py-1.5 text-[10px] font-medium uppercase tracking-wide text-neutral-content/55",
-        className,
+        "border-base-300/45 bg-base-200/35 text-neutral-content/55 flex min-h-8 w-full items-center justify-center gap-1.5 rounded-md border border-dashed px-2 py-1.5 text-[10px] font-medium tracking-wide uppercase",
+        className
       )}
     >
-      <span className="flex size-3.5 shrink-0 items-center justify-center opacity-60 [&>svg]:size-3.5" aria-hidden>
+      <span
+        className="flex size-3.5 shrink-0 items-center justify-center opacity-60 [&>svg]:size-3.5"
+        aria-hidden
+      >
         {icon}
       </span>
       <span>{idleLabel}</span>

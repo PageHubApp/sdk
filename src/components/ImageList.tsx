@@ -28,7 +28,22 @@ export interface ImageListProps extends BaseSelectorProps {
 }
 
 export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageListProps) => {
-  let props: any = { mode: "flex", itemsPerView: 3, alignItems: "items-center", justifyContent: "justify-start", gap: "gap-2", autoScroll: false, autoScrollInterval: 3000, infiniteSpeed: 30, infiniteDirection: "left", animationEnabled: true, previewInEditor: false, showNavigation: true, showDots: true, ...incomingProps };
+  let props: any = {
+    mode: "flex",
+    itemsPerView: 3,
+    alignItems: "items-center",
+    justifyContent: "justify-start",
+    gap: "gap-2",
+    autoScroll: false,
+    autoScrollInterval: 3000,
+    infiniteSpeed: 30,
+    infiniteDirection: "left",
+    animationEnabled: true,
+    previewInEditor: false,
+    showNavigation: true,
+    showDots: true,
+    ...incomingProps,
+  };
 
   const {
     connectors: { connect, drag },
@@ -36,8 +51,6 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
   } = useNode();
 
   const { actions, query, enabled } = useEditor(state => getClonedState(props, state));
-
-
 
   props = setClonedProps(props, query);
 
@@ -250,12 +263,12 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
       {hasActualImages || !enabled
         ? wrappedChildren
         : enabled && (
-          <div className="flex w-auto items-center justify-center p-4">
-            <div data-empty-state={true} className="text-3xl">
-              <TbPhoto />
+            <div className="flex w-auto items-center justify-center p-4">
+              <div data-empty-state={true} className="text-3xl">
+                <TbPhoto />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
       {/* Navigation Arrows for carousel/hero */}
       {(props.mode === "carousel" || props.mode === "hero") &&
@@ -265,14 +278,14 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
           <>
             <button
               onClick={handlePrev}
-              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground p-2 text-background transition-colors hover:bg-neutral"
+              className="bg-foreground text-background hover:bg-neutral absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full p-2 transition-colors"
               aria-label="Previous"
             >
               <TbChevronLeft size={24} />
             </button>
             <button
               onClick={handleNext}
-              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground p-2 text-background transition-colors hover:bg-neutral"
+              className="bg-foreground text-background hover:bg-neutral absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full p-2 transition-colors"
               aria-label="Next"
             >
               <TbChevronRight size={24} />
@@ -292,7 +305,7 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`size-2 rounded-full transition-all ${currentIndex === index ? "w-8 bg-base-100" : "bg-neutral"}`}
+                className={`size-2 rounded-full transition-all ${currentIndex === index ? "bg-base-100 w-8" : "bg-neutral"}`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}

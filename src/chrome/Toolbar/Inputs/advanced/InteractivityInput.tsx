@@ -12,9 +12,19 @@ export const InteractivityInput = () => (
   >
     <TailwindInput propKey="resize" label="Resize" prop="resize" type="select" />
     <TailwindInput propKey="touchAction" label="Touch Action" prop="touchAction" type="select" />
-    <TailwindInput propKey="scrollBehavior" label="Scroll Behavior" prop="scrollBehavior" type="select" />
+    <TailwindInput
+      propKey="scrollBehavior"
+      label="Scroll Behavior"
+      prop="scrollBehavior"
+      type="select"
+    />
     <TailwindInput propKey="scrollSnapType" label="Snap Type" prop="scrollSnapType" type="select" />
-    <TailwindInput propKey="scrollSnapAlign" label="Snap Align" prop="scrollSnapAlign" type="select" />
+    <TailwindInput
+      propKey="scrollSnapAlign"
+      label="Snap Align"
+      prop="scrollSnapAlign"
+      type="select"
+    />
     <TailwindInput propKey="scrollSnapStop" label="Snap Stop" prop="scrollSnapStop" type="select" />
     <TailwindInput propKey="appearance" label="Appearance" prop="appearance" type="select" />
   </ToolbarSection>

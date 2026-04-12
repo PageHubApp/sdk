@@ -15,23 +15,33 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
 };
 import { DividerMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/DividerMainTab";
 
-export const DividerDef = defineComponent({
-  name: "Divider",
-  component: Divider,
-  icon: TbMinus,
-  category: "Basic",
-  settings: DividerMainTab,
-  toHTML,
-  disable: [
-    "textColor", "bgColor", "background", "pattern",
-    "font", "border", "opacity", "hoverClick", "animations",
-  ],
-  presets: [
-    {
-      label: "Line Divider",
-      props: {
-        className: "h-2 my-3 w-full bg-accent border-0",
+export const DividerDef = defineComponent(
+  {
+    name: "Divider",
+    component: Divider,
+    icon: TbMinus,
+    category: "Basic",
+    settings: DividerMainTab,
+    toHTML,
+    disable: [
+      "textColor",
+      "bgColor",
+      "background",
+      "pattern",
+      "font",
+      "border",
+      "opacity",
+      "hoverClick",
+      "animations",
+    ],
+    presets: [
+      {
+        label: "Line Divider",
+        props: {
+          className: "h-2 my-3 w-full bg-accent border-0",
+        },
       },
-    },
-  ],
-}, { __internal: true });
+    ],
+  },
+  { __internal: true }
+);

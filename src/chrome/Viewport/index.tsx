@@ -90,7 +90,13 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!window) return;
     window.requestAnimationFrame(() => {
-      setTimeout(() => setOptions(options => { options.enabled = true; }), 200);
+      setTimeout(
+        () =>
+          setOptions(options => {
+            options.enabled = true;
+          }),
+        200
+      );
     });
   }, [setOptions]);
 
@@ -189,16 +195,26 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   // ─── Expose query for style guide resolution ───
   useEffect(() => {
     if (typeof window !== "undefined") (window as any).__CRAFT_EDITOR__ = { query };
-    return () => { if (typeof window !== "undefined") delete (window as any).__CRAFT_EDITOR__; };
+    return () => {
+      if (typeof window !== "undefined") delete (window as any).__CRAFT_EDITOR__;
+    };
   }, [query]);
 
   // ─── Sync atoms → store ───
-  useEffect(() => { setStoreView(view); }, [view, setStoreView]);
-  useEffect(() => { setStorePreview(preview); }, [preview, setStorePreview]);
-  useEffect(() => { setDevice(view === "mobile"); }, [view, setDevice]);
+  useEffect(() => {
+    setStoreView(view);
+  }, [view, setStoreView]);
+  useEffect(() => {
+    setStorePreview(preview);
+  }, [preview, setStorePreview]);
+  useEffect(() => {
+    setDevice(view === "mobile");
+  }, [view, setDevice]);
 
   // ─── Init localStorage ───
-  useEffect(() => { phStorage.set("clipboard", {}); }, []);
+  useEffect(() => {
+    phStorage.set("clipboard", {});
+  }, []);
 
   // ─── Online/offline ───
   useEffect(() => {
@@ -209,7 +225,10 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     setOnline(window.navigator.onLine);
     window.addEventListener("online", handler);
     window.addEventListener("offline", handler);
-    return () => { window.removeEventListener("online", handler); window.removeEventListener("offline", handler); };
+    return () => {
+      window.removeEventListener("online", handler);
+      window.removeEventListener("offline", handler);
+    };
   }, []);
 
   // ─── URL-based page isolation + default to home for multi-page sites ───
@@ -267,7 +286,17 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         runDeferred(() => handlePageSwitch(homePageId));
       }
     }
-  }, [nextRouter.asPath, editorPageIdsKey, isolate, query, actions, setIsolate, unsavedChanges, emitter, setUnsavedChanged]);
+  }, [
+    nextRouter.asPath,
+    editorPageIdsKey,
+    isolate,
+    query,
+    actions,
+    setIsolate,
+    unsavedChanges,
+    emitter,
+    setUnsavedChanged,
+  ]);
 
   // ─── Unsaved changes warning ───
   const hasDirtyChanges = typeof unsavedChanges === "string" && unsavedChanges.length > 0;
@@ -276,18 +305,31 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     if (!hasDirtyChanges) return;
     const warningText = "Leave site? Changes you made may not be saved.";
 
-    const handleWindowClose = (e: BeforeUnloadEvent) => { e.preventDefault(); return (e.returnValue = warningText); };
+    const handleWindowClose = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      return (e.returnValue = warningText);
+    };
     const handleBrowseAway = (url: string) => {
       const currentParts = Router.asPath.split("/").filter(p => p && !p.startsWith("?"));
       const newParts = url.split("/").filter(p => p && !p.startsWith("?"));
-      if (currentParts.length >= 2 && newParts.length >= 2 && currentParts[0] === "build" && newParts[0] === "build" && currentParts[1] === newParts[1]) return;
+      if (
+        currentParts.length >= 2 &&
+        newParts.length >= 2 &&
+        currentParts[0] === "build" &&
+        newParts[0] === "build" &&
+        currentParts[1] === newParts[1]
+      )
+        return;
       if (window.confirm(warningText)) return;
       Router.events.emit("routeChangeError");
     };
 
     window.addEventListener("beforeunload", handleWindowClose);
     Router.events.on("routeChangeStart", handleBrowseAway);
-    return () => { window.removeEventListener("beforeunload", handleWindowClose); Router.events.off("routeChangeStart", handleBrowseAway); };
+    return () => {
+      window.removeEventListener("beforeunload", handleWindowClose);
+      Router.events.off("routeChangeStart", handleBrowseAway);
+    };
   }, [hasDirtyChanges]);
 
   // ─── Keyboard body listener ───
@@ -297,7 +339,9 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ─── View classes ───
-  const desktopOuter = enabled ? "flex h-full overflow-hidden flex-row flex-1 min-w-0" : "flex h-full flex-row min-w-0 w-full";
+  const desktopOuter = enabled
+    ? "flex h-full overflow-hidden flex-row flex-1 min-w-0"
+    : "flex h-full flex-row min-w-0 w-full";
   const desktopInner = enabled
     ? "flex-1 min-w-0 relative scrollbar-light bg-base-100 overflow-y-auto overflow-x-hidden"
     : "w-full h-full overflow-auto relative";
@@ -308,22 +352,33 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       "w-full h-full flex overflow-auto rounded-[38px] relative bg-base-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
     ],
     desktop: [
-      enabled ? "flex h-full overflow-hidden flex-row w-full absolute top-0 left-0 right-0 bottom-0" : "",
-      enabled ? `w-full h-full overflow-auto ${viewMode === "component" ? "mt-[49px]" : ""} ` : "w-full h-full overflow-auto",
+      enabled
+        ? "flex h-full overflow-hidden flex-row w-full absolute top-0 left-0 right-0 bottom-0"
+        : "",
+      enabled
+        ? `w-full h-full overflow-auto ${viewMode === "component" ? "mt-[49px]" : ""} `
+        : "w-full h-full overflow-auto",
     ],
   };
 
   let viewClasses: Record<string, string[]> = {
     mobile: [
       `flex overflow-hidden flex-row mx-auto w-${enabled ? "[380px]" : "full"} h-full `,
-      enabled ? "w-full rounded-lg overflow-y-auto overflow-x-hidden scrollbar-light bg-base-100 relative" : "w-full h-full overflow-auto relative",
+      enabled
+        ? "w-full rounded-lg overflow-y-auto overflow-x-hidden scrollbar-light bg-base-100 relative"
+        : "w-full h-full overflow-auto relative",
     ],
     desktop: [desktopOuter, desktopInner],
   };
 
   viewClasses.sm = getEditorTabletCanvasClasses(enabled, EDITOR_CANVAS_BREAKPOINT_PX.sm);
   ["md", "lg", "xl", "2xl"].forEach(bp => {
-    viewClasses[bp] = getEditorWidthOnlyCanvasClasses(enabled, desktopOuter, desktopInner, (EDITOR_CANVAS_BREAKPOINT_PX as Record<string, number>)[bp]);
+    viewClasses[bp] = getEditorWidthOnlyCanvasClasses(
+      enabled,
+      desktopOuter,
+      desktopInner,
+      (EDITOR_CANVAS_BREAKPOINT_PX as Record<string, number>)[bp]
+    );
   });
 
   if (device) viewClasses = deviceClasses;
@@ -331,9 +386,15 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
   const bezelX = (6 + 3) * 2;
   const bezelY = (6 + 3) * 2;
-  const deviceStyles = device && view === "mobile"
-    ? { width: `${deviceDimensions.width + bezelX}px`, height: `${deviceDimensions.height + bezelY}px`, zoom: deviceZoom, "--device-zoom-inverse": 1 / deviceZoom } as React.CSSProperties
-    : {};
+  const deviceStyles =
+    device && view === "mobile"
+      ? ({
+          width: `${deviceDimensions.width + bezelX}px`,
+          height: `${deviceDimensions.height + bezelY}px`,
+          zoom: deviceZoom,
+          "--device-zoom-inverse": 1 / deviceZoom,
+        } as React.CSSProperties)
+      : {};
 
   // ─── Render ───
   return (
@@ -341,19 +402,22 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       <ViewportMeta />
       {enabled && <ProximityHoverManager />}
       <div
-        className={`flex h-full overflow-hidden flex-1 min-w-0 w-full ${
+        className={`flex h-full w-full min-w-0 flex-1 overflow-hidden ${
           (device && view === "mobile") || isEditorCanvasBreakpointView(view)
-            ? "items-center justify-center bg-neutral/50"
+            ? "bg-neutral/50 items-center justify-center"
             : "flex-row"
         }`}
         data-container={true}
       >
         {/* Preview edit button */}
         {!enabled && !screenshot && (
-          <FloatingWidget storageKey="preview-edit" defaultCorner={sideBarLeft ? "top-left" : "top-right"}>
+          <FloatingWidget
+            storageKey="preview-edit"
+            defaultCorner={sideBarLeft ? "top-left" : "top-right"}
+          >
             <Tooltip content="Edit" placement="bottom" arrow={false}>
               <button
-                className="btn cursor-pointer select-none rounded-full bg-primary p-4 text-2xl text-primary-content shadow-lg"
+                className="btn bg-primary text-primary-content cursor-pointer rounded-full p-4 text-2xl shadow-lg select-none"
                 aria-label="Edit page"
                 onClick={() => {
                   const viewport = document.getElementById("viewport");
@@ -369,7 +433,10 @@ export function Viewport({ children }: { children: React.ReactNode }) {
                     }, 0);
                   });
                   requestAnimationFrame(() => {
-                    if (viewport) { viewport.scrollTop = scrollTop; viewport.scrollLeft = scrollLeft; }
+                    if (viewport) {
+                      viewport.scrollTop = scrollTop;
+                      viewport.scrollLeft = scrollLeft;
+                    }
                   });
                 }}
               >
@@ -382,16 +449,20 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         {enabled && !online && <DeviceOffline />}
 
         {enabled && (
-          <div className={`absolute top-0 ${sidebarOccupiesLeftGutter ? "left-[360px]" : "left-0"} right-0 z-40 ${viewMode === "component" ? "" : "hidden"}`}>
+          <div
+            className={`absolute top-0 ${sidebarOccupiesLeftGutter ? "left-[360px]" : "left-0"} right-0 z-40 ${viewMode === "component" ? "" : "hidden"}`}
+          >
             <ComponentEditorTabs />
           </div>
         )}
 
         {enabled && device && view === "mobile" && (
-          <div className={`absolute top-4 ${sidebarOccupiesLeftGutter ? "left-[360px]" : "left-0"} right-0 z-50`}>
-            <div className="mx-auto flex w-fit items-center gap-4 rounded-lg bg-neutral/95 px-4 py-2 shadow-lg backdrop-blur-sm">
+          <div
+            className={`absolute top-4 ${sidebarOccupiesLeftGutter ? "left-[360px]" : "left-0"} right-0 z-50`}
+          >
+            <div className="bg-neutral/95 mx-auto flex w-fit items-center gap-4 rounded-lg px-4 py-2 shadow-lg backdrop-blur-sm">
               <DeviceSelector onClose={() => setDevice(false)} />
-              <div className="h-4 w-px bg-border" />
+              <div className="bg-border h-4 w-px" />
               <DeviceZoom />
             </div>
           </div>
@@ -399,7 +470,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
         <div className={`${activeClass[0]} w-full`} style={deviceStyles}>
           {device && view === "mobile" && (
-            <div className="pointer-events-none absolute left-0 right-0 top-[14px] z-60 flex justify-center">
+            <div className="pointer-events-none absolute top-[14px] right-0 left-0 z-60 flex justify-center">
               <div className="h-[30px] w-[105px] rounded-full bg-[#0a0a0a]" />
             </div>
           )}
@@ -412,15 +483,17 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             onContextMenuCapture={handleViewportContextMenuCapture}
             data-isolated={!!isolated}
             tabIndex={0}
-            className={`${activeClass[1]} w-full${classDarkEdit ? " dark" : ""}`}
+            className={`${activeClass[1]} w-full${classDarkEdit ? "dark" : ""}`}
             ref={(ref: any) => connectors.select(connectors.hover(ref, null), null)}
-            style={viewMode === "component" && !device && !preview ? { marginTop: "49px" } : undefined}
+            style={
+              viewMode === "component" && !device && !preview ? { marginTop: "49px" } : undefined
+            }
           >
             {children}
           </div>
           {device && view === "mobile" && (
-            <div className="pointer-events-none absolute bottom-[14px] left-0 right-0 z-60 flex justify-center">
-              <div className="h-[5px] w-[120px] rounded-full bg-foreground/30" />
+            <div className="pointer-events-none absolute right-0 bottom-[14px] left-0 z-60 flex justify-center">
+              <div className="bg-foreground/30 h-[5px] w-[120px] rounded-full" />
             </div>
           )}
         </div>
@@ -442,13 +515,20 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         {enabled && (
           <svg
             id="measurement-lines-svg"
-            style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 9997 }}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              pointerEvents: "none",
+              zIndex: 9997,
+            }}
           />
         )}
 
         {enabled ? <ToolboxContexual /> : null}
       </div>
-
     </>
   );
 }

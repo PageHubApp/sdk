@@ -18,7 +18,7 @@ export const Tooltip = ({
   className = "",
   tooltipClassName = "",
   tipStyle = {},
-  onClick = (e?: React.MouseEvent) => { },
+  onClick = (e?: React.MouseEvent) => {},
   tooltipKey = "" as any,
   delay = 0,
   /** When true, wrapper is `flex w-full min-w-0` so block children (e.g. toolbar section titles) span full width. */
@@ -50,7 +50,9 @@ export const Tooltip = ({
   };
 
   // If single React element child, inject tooltip props directly — no wrapper div
-  const isSingleElement = isValidElement(children) && typeof children.type !== "string" || (isValidElement(children) && typeof children.type === "string");
+  const isSingleElement =
+    (isValidElement(children) && typeof children.type !== "string") ||
+    (isValidElement(children) && typeof children.type === "string");
 
   const layout = full ? "flex w-full min-w-0" : "";
   const mergedClass = [layout, className].filter(Boolean).join(" ").trim();
@@ -75,15 +77,11 @@ export const Tooltip = ({
             (children as ReactElement<any>).props?.onClick?.(e);
             handleClick(e);
           },
-          className: `${(children as ReactElement<any>).props?.className || ""} ${mergedClass}`.trim(),
+          className:
+            `${(children as ReactElement<any>).props?.className || ""} ${mergedClass}`.trim(),
         })
       ) : (
-        <div
-          role="presentation"
-          className={mergedClass}
-          onClick={handleClick}
-          {...tooltipProps}
-        >
+        <div role="presentation" className={mergedClass} onClick={handleClick} {...tooltipProps}>
           {children}
         </div>
       )}

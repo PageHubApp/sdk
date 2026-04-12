@@ -21,7 +21,11 @@ export const TextMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="The HTML content displayed in this text block.">
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="The HTML content displayed in this text block."
+      >
         <ToolbarItem
           propKey="text"
           propType="component"

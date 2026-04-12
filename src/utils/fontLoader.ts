@@ -145,7 +145,10 @@ export const getFontFromComp = (props: { className?: unknown }) => {
   if (/^font-\(--/.test(base)) {
     const resolved = resolveCSSVariable(base, null);
     if (resolved && typeof resolved === "string" && !resolved.includes("var(")) {
-      fontName = resolved.split(",")[0].trim().replace(/^['"]|['"]$/g, "");
+      fontName = resolved
+        .split(",")[0]
+        .trim()
+        .replace(/^['"]|['"]$/g, "");
     }
   } else {
     fontName = parseGoogleFontFromArbitraryClass(base);

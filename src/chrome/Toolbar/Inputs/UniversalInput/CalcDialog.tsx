@@ -21,21 +21,31 @@ function parseFunctionArgs(val: string): string[] {
 export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps) {
   const [inputValue, setInputValue] = useState(value);
   const [activeFunction, setActiveFunction] = useState<string>(
-    value.startsWith("clamp(") ? "clamp" :
-    value.startsWith("min(") ? "min" :
-    value.startsWith("max(") ? "max" :
-    value.startsWith("var(") ? "var" : "calc"
+    value.startsWith("clamp(")
+      ? "clamp"
+      : value.startsWith("min(")
+        ? "min"
+        : value.startsWith("max(")
+          ? "max"
+          : value.startsWith("var(")
+            ? "var"
+            : "calc"
   );
   const anchorRef = useRef<HTMLElement | null>(anchorEl);
 
   // Structured fields for clamp/min/max — parse initial value
   const initArgs = parseFunctionArgs(value);
   const isInitClamp = value.startsWith("clamp(") && initArgs.length === 3;
-  const isInitMinMax = (value.startsWith("min(") || value.startsWith("max(")) && initArgs.length === 2;
+  const isInitMinMax =
+    (value.startsWith("min(") || value.startsWith("max(")) && initArgs.length === 2;
 
-  const [clampMin, setClampMin] = useState(isInitClamp ? initArgs[0] : isInitMinMax ? initArgs[0] : "");
+  const [clampMin, setClampMin] = useState(
+    isInitClamp ? initArgs[0] : isInitMinMax ? initArgs[0] : ""
+  );
   const [clampPreferred, setClampPreferred] = useState(isInitClamp ? initArgs[1] : "");
-  const [clampMax, setClampMax] = useState(isInitClamp ? initArgs[2] : isInitMinMax ? initArgs[1] : "");
+  const [clampMax, setClampMax] = useState(
+    isInitClamp ? initArgs[2] : isInitMinMax ? initArgs[1] : ""
+  );
 
   // Update ref when anchorEl changes
   useEffect(() => {
@@ -110,138 +120,139 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
   };
 
   return ReactDOM.createPortal(
-    <div ref={floating.refs.setFloating} style={style} className="pagehub-sdk-root pointer-events-auto" data-calc-dialog>
-        <div className="ph-panel overflow-hidden">
-          {/* Header */}
-          <div className="border-b border-base-300 bg-neutral px-3 py-2">
-            <div className="toolbar-label font-semibold">CSS Functions</div>
-            <div className="text-xs text-neutral-content">Use calc, clamp, min, max, or var</div>
-          </div>
+    <div
+      ref={floating.refs.setFloating}
+      style={style}
+      className="pagehub-sdk-root pointer-events-auto"
+      data-calc-dialog
+    >
+      <div className="ph-panel overflow-hidden">
+        {/* Header */}
+        <div className="border-base-300 bg-neutral border-b px-3 py-2">
+          <div className="toolbar-label font-semibold">CSS Functions</div>
+          <div className="text-neutral-content text-xs">Use calc, clamp, min, max, or var</div>
+        </div>
 
-          {/* Function buttons */}
-          <div className="flex gap-1 border-b border-base-300 bg-neutral/50 p-2">
-            {cssFunction.map(fn => (
-              <button
-                key={fn.id}
-                onClick={() => insertFunction(fn.id, fn.example)}
-                className={`rounded px-2 py-1 font-mono text-xs transition-colors ${
-                  activeFunction === fn.id
-                    ? "bg-primary text-primary-content"
-                    : "bg-base-100 text-base-content hover:bg-neutral"
-                }`}
-              >
-                {fn.label}
-              </button>
-            ))}
-          </div>
+        {/* Function buttons */}
+        <div className="border-base-300 bg-neutral/50 flex gap-1 border-b p-2">
+          {cssFunction.map(fn => (
+            <button
+              key={fn.id}
+              onClick={() => insertFunction(fn.id, fn.example)}
+              className={`rounded px-2 py-1 font-mono text-xs transition-colors ${
+                activeFunction === fn.id
+                  ? "bg-primary text-primary-content"
+                  : "bg-base-100 text-base-content hover:bg-neutral"
+              }`}
+            >
+              {fn.label}
+            </button>
+          ))}
+        </div>
 
-          {/* Input area — structured for clamp/min/max, textarea for calc/var */}
-          <div className="p-3">
-            {activeFunction === "clamp" ? (
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <label className="w-16 text-xs text-neutral-content">Min</label>
-                  <input
-                    type="text"
-                    value={clampMin}
-                    onChange={e => setClampMin(e.target.value)}
-                    placeholder="1rem"
-                    className="flex-1 rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
-                    autoFocus
-                    {...toolbarInputNoAutocompleteProps}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="w-16 text-xs text-neutral-content">Preferred</label>
-                  <input
-                    type="text"
-                    value={clampPreferred}
-                    onChange={e => setClampPreferred(e.target.value)}
-                    placeholder="5vw"
-                    className="flex-1 rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
-                    {...toolbarInputNoAutocompleteProps}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="w-16 text-xs text-neutral-content">Max</label>
-                  <input
-                    type="text"
-                    value={clampMax}
-                    onChange={e => setClampMax(e.target.value)}
-                    placeholder="3rem"
-                    className="flex-1 rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
-                    {...toolbarInputNoAutocompleteProps}
-                  />
-                </div>
-                <div className="mt-1 rounded bg-neutral px-3 py-2 font-mono text-xs text-neutral-content">
-                  {buildStructuredValue()}
-                </div>
-              </div>
-            ) : activeFunction === "min" || activeFunction === "max" ? (
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <label className="w-16 text-xs text-neutral-content">Value A</label>
-                  <input
-                    type="text"
-                    value={clampMin}
-                    onChange={e => setClampMin(e.target.value)}
-                    placeholder={activeFunction === "min" ? "50vw" : "50vw"}
-                    className="flex-1 rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
-                    autoFocus
-                    {...toolbarInputNoAutocompleteProps}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="w-16 text-xs text-neutral-content">Value B</label>
-                  <input
-                    type="text"
-                    value={clampMax}
-                    onChange={e => setClampMax(e.target.value)}
-                    placeholder={activeFunction === "min" ? "500px" : "300px"}
-                    className="flex-1 rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
-                    {...toolbarInputNoAutocompleteProps}
-                  />
-                </div>
-                <div className="mt-1 rounded bg-neutral px-3 py-2 font-mono text-xs text-neutral-content">
-                  {buildStructuredValue()}
-                </div>
-              </div>
-            ) : (
-              <>
-                <textarea
-                  value={inputValue}
-                  onChange={e => setInputValue(e.target.value)}
-                  placeholder="e.g. calc(100% - 20px)"
-                  className="w-full rounded border border-base-300 bg-base-200 px-3 py-2 font-mono text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring"
-                  rows={4}
+        {/* Input area — structured for clamp/min/max, textarea for calc/var */}
+        <div className="p-3">
+          {activeFunction === "clamp" ? (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <label className="text-neutral-content w-16 text-xs">Min</label>
+                <input
+                  type="text"
+                  value={clampMin}
+                  onChange={e => setClampMin(e.target.value)}
+                  placeholder="1rem"
+                  className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:ring-ring flex-1 rounded border px-3 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
                   autoFocus
                   {...toolbarInputNoAutocompleteProps}
                 />
-                <div className="mt-2 text-xs text-neutral-content">
-                  Examples: calc(100% - 20px), clamp(1rem, 5vw, 3rem), min(50vw, 500px)
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-2 border-t border-base-300 bg-neutral/50 p-2">
-            <button
-              type="button"
-              onClick={() => onSave(buildStructuredValue())}
-              className="btn btn-primary flex-1"
-            >
-              Apply
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-secondary"
-            >
-              Cancel
-            </button>
-          </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-neutral-content w-16 text-xs">Preferred</label>
+                <input
+                  type="text"
+                  value={clampPreferred}
+                  onChange={e => setClampPreferred(e.target.value)}
+                  placeholder="5vw"
+                  className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:ring-ring flex-1 rounded border px-3 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
+                  {...toolbarInputNoAutocompleteProps}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-neutral-content w-16 text-xs">Max</label>
+                <input
+                  type="text"
+                  value={clampMax}
+                  onChange={e => setClampMax(e.target.value)}
+                  placeholder="3rem"
+                  className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:ring-ring flex-1 rounded border px-3 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
+                  {...toolbarInputNoAutocompleteProps}
+                />
+              </div>
+              <div className="bg-neutral text-neutral-content mt-1 rounded px-3 py-2 font-mono text-xs">
+                {buildStructuredValue()}
+              </div>
+            </div>
+          ) : activeFunction === "min" || activeFunction === "max" ? (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <label className="text-neutral-content w-16 text-xs">Value A</label>
+                <input
+                  type="text"
+                  value={clampMin}
+                  onChange={e => setClampMin(e.target.value)}
+                  placeholder={activeFunction === "min" ? "50vw" : "50vw"}
+                  className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:ring-ring flex-1 rounded border px-3 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
+                  autoFocus
+                  {...toolbarInputNoAutocompleteProps}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-neutral-content w-16 text-xs">Value B</label>
+                <input
+                  type="text"
+                  value={clampMax}
+                  onChange={e => setClampMax(e.target.value)}
+                  placeholder={activeFunction === "min" ? "500px" : "300px"}
+                  className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:ring-ring flex-1 rounded border px-3 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
+                  {...toolbarInputNoAutocompleteProps}
+                />
+              </div>
+              <div className="bg-neutral text-neutral-content mt-1 rounded px-3 py-2 font-mono text-xs">
+                {buildStructuredValue()}
+              </div>
+            </div>
+          ) : (
+            <>
+              <textarea
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                placeholder="e.g. calc(100% - 20px)"
+                className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:ring-ring w-full rounded border px-3 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
+                rows={4}
+                autoFocus
+                {...toolbarInputNoAutocompleteProps}
+              />
+              <div className="text-neutral-content mt-2 text-xs">
+                Examples: calc(100% - 20px), clamp(1rem, 5vw, 3rem), min(50vw, 500px)
+              </div>
+            </>
+          )}
         </div>
+
+        {/* Actions */}
+        <div className="border-base-300 bg-neutral/50 flex gap-2 border-t p-2">
+          <button
+            type="button"
+            onClick={() => onSave(buildStructuredValue())}
+            className="btn btn-primary flex-1"
+          >
+            Apply
+          </button>
+          <button type="button" onClick={onClose} className="btn btn-secondary">
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>,
     document.querySelector(".pagehub-sdk-root") || document.body
   );

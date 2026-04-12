@@ -42,7 +42,7 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        assetFileNames: (info) => {
+        assetFileNames: info => {
           const name = info.name || "";
           if (name.endsWith(".css")) return "editor.css";
           return name || "assets/[name]-[hash][extname]";

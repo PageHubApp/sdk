@@ -117,34 +117,39 @@ export const ConfirmDialog = ({
         className="pagehub-sdk-root ph-modal-surface w-full max-w-md overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
-          <div className="p-6">
-            {/* Icon and Title */}
-            <div className="mb-4 flex items-start gap-4">
-              <div className={`${styles.iconBg} ${styles.iconColor} shrink-0 rounded-full p-3`}>
-                {displayIcon}
-              </div>
-              <div className="flex-1">
-                <h3 id="confirm-dialog-title" className="mb-2 text-lg font-semibold text-base-content">{title}</h3>
-                <p className="text-sm text-neutral-content">{message}</p>
-              </div>
+        <div className="p-6">
+          {/* Icon and Title */}
+          <div className="mb-4 flex items-start gap-4">
+            <div className={`${styles.iconBg} ${styles.iconColor} shrink-0 rounded-full p-3`}>
+              {displayIcon}
             </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={onClose}
-                className="rounded-lg border border-base-300 px-4 py-2 text-sm font-medium text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
+            <div className="flex-1">
+              <h3
+                id="confirm-dialog-title"
+                className="text-base-content mb-2 text-lg font-semibold"
               >
-                {cancelText}
-              </button>
-              <button
-                onClick={handleConfirm}
-                className={`px-4 py-2 text-sm font-medium ${styles.confirmBg} ${styles.confirmText} rounded-lg transition-colors`}
-              >
-                {confirmText}
-              </button>
+                {title}
+              </h3>
+              <p className="text-neutral-content text-sm">{message}</p>
             </div>
           </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="border-base-300 text-neutral-content hover:bg-neutral hover:text-base-content rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+            >
+              {cancelText}
+            </button>
+            <button
+              onClick={handleConfirm}
+              className={`px-4 py-2 text-sm font-medium ${styles.confirmBg} ${styles.confirmText} rounded-lg transition-colors`}
+            >
+              {confirmText}
+            </button>
+          </div>
+        </div>
       </div>
     </div>,
     document.querySelector(".pagehub-sdk-root") || document.body

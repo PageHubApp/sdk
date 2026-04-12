@@ -57,7 +57,9 @@ export const ColorPickerDialog = () => {
   const hasPaletteColors = namedPalette.length > 0;
   const mode = colorPicker.mode || "both";
   const canShowPalette =
-    (mode === "both" || mode === "palette") && hasPaletteColors && colorPicker.showPalette !== false;
+    (mode === "both" || mode === "palette") &&
+    hasPaletteColors &&
+    colorPicker.showPalette !== false;
   const canShowPicker = mode === "both" || mode === "picker";
 
   // Load recent colors when dialog opens
@@ -163,10 +165,13 @@ export const ColorPickerDialog = () => {
       let cleanValue = opaqueTail.replace(/[\[\]]/g, "");
 
       const withAlpha = (css: string) =>
-        tailOpacity != null && tailOpacity < 1 - 1e-6 ? applyOpacityToCssColor(css, tailOpacity) : css;
+        tailOpacity != null && tailOpacity < 1 - 1e-6
+          ? applyOpacityToCssColor(css, tailOpacity)
+          : css;
 
       if (cleanValue.includes("#")) return withAlpha(cleanValue);
-      if (cleanValue.startsWith("rgba") || cleanValue.startsWith("rgb")) return withAlpha(cleanValue);
+      if (cleanValue.startsWith("rgba") || cleanValue.startsWith("rgb"))
+        return withAlpha(cleanValue);
 
       if (cleanValue.includes("-")) {
         const parts = cleanValue.split("-");
@@ -204,23 +209,23 @@ export const ColorPickerDialog = () => {
         style={panelStyle}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-base-300 bg-accent px-3 py-1.5 text-accent-content">
+        <div className="border-base-300 bg-accent text-accent-content flex items-center justify-between border-b px-3 py-1.5">
           <div className="flex gap-1.5">
             {colorPicker.propKey !== "theme-design-system" && (
-                <Tooltip content="Save to palette">
-                  <button
-                    className="flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs text-accent-content transition-colors hover:bg-neutral hover:text-base-content"
-                    onClick={saveToPallet}
-                  >
-                    <TbDeviceFloppy />
-                  </button>
-                </Tooltip>
-              )}
+              <Tooltip content="Save to palette">
+                <button
+                  className="text-accent-content hover:bg-neutral hover:text-base-content flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs transition-colors"
+                  onClick={saveToPallet}
+                >
+                  <TbDeviceFloppy />
+                </button>
+              </Tooltip>
+            )}
             {isSupported() && (
               <Tooltip content="Eyedropper" arrow={false}>
                 <button
                   onClick={pickColor}
-                  className="flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs text-accent-content transition-colors hover:bg-neutral hover:text-base-content"
+                  className="text-accent-content hover:bg-neutral hover:text-base-content flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs transition-colors"
                 >
                   <BsEyedropper />
                 </button>
@@ -229,156 +234,161 @@ export const ColorPickerDialog = () => {
           </div>
           <button
             onClick={close}
-            className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10"
+            className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors"
           >
             <TbX className="size-3.5" />
           </button>
         </div>
 
-        <div className="scrollbar-light flex w-[310px] flex-col overflow-y-auto rounded-lg bg-base-100" style={{ maxHeight: panelStyle.maxHeight }}>
-        {/* 1. Design Tokens — always on top when available */}
-        {canShowPalette && (
-          <div className="border-b border-base-300 px-2 py-1.5">
-            <div className="flex flex-wrap gap-1">
-              {namedPalette.map((paletteColor, index) => {
-                const isSelected = isPaletteColorSelected(colorPicker.value, paletteColor);
-                const isTailwindClass =
-                  !paletteColor.color.includes("rgba") && !paletteColor.color.startsWith("#");
-                const displayColor =
-                  isTailwindClass && !paletteColor.color.startsWith("bg-")
-                    ? `bg-${paletteColor.color}`
-                    : paletteColor.color;
+        <div
+          className="scrollbar-light bg-base-100 flex w-[310px] flex-col overflow-y-auto rounded-lg"
+          style={{ maxHeight: panelStyle.maxHeight }}
+        >
+          {/* 1. Design Tokens — always on top when available */}
+          {canShowPalette && (
+            <div className="border-base-300 border-b px-2 py-1.5">
+              <div className="flex flex-wrap gap-1">
+                {namedPalette.map((paletteColor, index) => {
+                  const isSelected = isPaletteColorSelected(colorPicker.value, paletteColor);
+                  const isTailwindClass =
+                    !paletteColor.color.includes("rgba") && !paletteColor.color.startsWith("#");
+                  const displayColor =
+                    isTailwindClass && !paletteColor.color.startsWith("bg-")
+                      ? `bg-${paletteColor.color}`
+                      : paletteColor.color;
 
-                return (
-                  <Tooltip key={index} content={paletteColor.name} placement="top" arrow={false}>
-                    <button
-                      className="group relative"
-                      onMouseDown={e => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        changed({ type: "palette", value: `palette:${paletteColor.name}` });
-                      }}
-                    >
-                      <div
-                        className={`size-7 rounded-md border-2 transition-all group-hover:scale-110 ${
-                          isSelected ? "border-primary ring-1 ring-primary/30" : "border-base-300"
-                        } ${isTailwindClass ? displayColor : ""}`}
-                        style={{
-                          backgroundColor: !isTailwindClass ? paletteColor.color : undefined,
+                  return (
+                    <Tooltip key={index} content={paletteColor.name} placement="top" arrow={false}>
+                      <button
+                        className="group relative"
+                        onMouseDown={e => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          changed({ type: "palette", value: `palette:${paletteColor.name}` });
                         }}
                       >
-                        {isSelected && (
-                          <TbCheck className="m-auto mt-0.5 size-4 text-white drop-shadow-md" />
-                        )}
-                      </div>
-                    </button>
-                  </Tooltip>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* 2. Recent Colors — small circles, only if there are any */}
-        {recentColors.length > 0 && (
-          <div className="flex items-center gap-1.5 border-b border-base-300 px-2 py-1.5">
-            <span className="shrink-0 text-[9px] text-neutral-content">Recent</span>
-            <div className="flex flex-1 gap-1">
-              {recentColors.map((color, idx) => (
-                <button
-                  key={idx}
-                  className="size-5 shrink-0 cursor-pointer rounded-full border border-base-300 transition-all hover:scale-110 hover:border-primary"
-                  style={{ backgroundColor: color }}
-                  onClick={() => changed({ type: "hex", value: color })}
-                  title={color}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 3. Spectrum Picker — always visible when picker mode allows */}
-        {canShowPicker && (
-          <>
-            <div className="px-2 pt-2">
-              <div className="overflow-hidden rounded-lg">
-                <SketchPicker
-                  width="100%"
-                  presetColors={[]}
-                  styles={{
-                    picker: {},
-                    saturation: {
-                      width: "100%",
-                      height: "100px",
-                      paddingBottom: "",
-                      position: "relative",
-                      overflow: "hidden",
-                    },
-                  }}
-                  color={pickerColor || undefined}
-                  onChangeComplete={_color => {
-                    changed({ type: "rgb", value: _color?.rgb });
-                  }}
-                  onChange={debounce(_color => {
-                    setColorPicker({ ...colorPicker, value: _color?.rgb });
-                  }, 20)}
-                />
+                        <div
+                          className={`size-7 rounded-md border-2 transition-all group-hover:scale-110 ${
+                            isSelected ? "border-primary ring-primary/30 ring-1" : "border-base-300"
+                          } ${isTailwindClass ? displayColor : ""}`}
+                          style={{
+                            backgroundColor: !isTailwindClass ? paletteColor.color : undefined,
+                          }}
+                        >
+                          {isSelected && (
+                            <TbCheck className="m-auto mt-0.5 size-4 text-white drop-shadow-md" />
+                          )}
+                        </div>
+                      </button>
+                    </Tooltip>
+                  );
+                })}
               </div>
             </div>
+          )}
 
-            {/* 4. Tailwind Colors — collapsed by default */}
-            <div className="px-2 pb-2 pt-1">
-              <button
-                className="flex w-full items-center gap-1 py-1 text-[10px] text-neutral-content hover:text-base-content"
-                onClick={() => setShowTailwind(!showTailwind)}
-              >
-                {showTailwind ? (
-                  <TbChevronDown className="size-3" />
-                ) : (
-                  <TbChevronRight className="size-3" />
-                )}
-                <span>Tailwind Colors</span>
-              </button>
-
-              {showTailwind && (
-                <div className="flex flex-col gap-1.5 pt-1">
-                  {Array.from({ length: Math.ceil(twPalette.length / 11) }).map((_, rowIndex) => (
-                    <div
-                      key={`row-${rowIndex}`}
-                      className="relative flex flex-row items-start gap-1"
-                    >
-                      {twPalette.slice(rowIndex * 11, (rowIndex + 1) * 11).map((colorGroup, k) => {
-                        const mainShade =
-                          colorGroup.color.find(c => c.key === "500") ||
-                          colorGroup.color[Math.floor(colorGroup.color.length / 2)];
-                        return (
-                          <Tooltip
-                            key={`color-${rowIndex * 11 + k}`}
-                            content={colorGroup.key}
-                            placement="top"
-                            arrow={false}
-                          >
-                            <button
-                              className="size-5 cursor-pointer rounded border border-base-300 transition-all hover:scale-110 hover:border-primary"
-                              style={{ backgroundColor: mainShade.color }}
-                              onClick={e => {
-                                e.stopPropagation();
-                                changed({
-                                  type: "class",
-                                  value: `${colorGroup.key}-${mainShade.key}`,
-                                });
-                              }}
-                            />
-                          </Tooltip>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-              )}
+          {/* 2. Recent Colors — small circles, only if there are any */}
+          {recentColors.length > 0 && (
+            <div className="border-base-300 flex items-center gap-1.5 border-b px-2 py-1.5">
+              <span className="text-neutral-content shrink-0 text-[9px]">Recent</span>
+              <div className="flex flex-1 gap-1">
+                {recentColors.map((color, idx) => (
+                  <button
+                    key={idx}
+                    className="border-base-300 hover:border-primary size-5 shrink-0 cursor-pointer rounded-full border transition-all hover:scale-110"
+                    style={{ backgroundColor: color }}
+                    onClick={() => changed({ type: "hex", value: color })}
+                    title={color}
+                  />
+                ))}
+              </div>
             </div>
-          </>
-        )}
+          )}
+
+          {/* 3. Spectrum Picker — always visible when picker mode allows */}
+          {canShowPicker && (
+            <>
+              <div className="px-2 pt-2">
+                <div className="overflow-hidden rounded-lg">
+                  <SketchPicker
+                    width="100%"
+                    presetColors={[]}
+                    styles={{
+                      picker: {},
+                      saturation: {
+                        width: "100%",
+                        height: "100px",
+                        paddingBottom: "",
+                        position: "relative",
+                        overflow: "hidden",
+                      },
+                    }}
+                    color={pickerColor || undefined}
+                    onChangeComplete={_color => {
+                      changed({ type: "rgb", value: _color?.rgb });
+                    }}
+                    onChange={debounce(_color => {
+                      setColorPicker({ ...colorPicker, value: _color?.rgb });
+                    }, 20)}
+                  />
+                </div>
+              </div>
+
+              {/* 4. Tailwind Colors — collapsed by default */}
+              <div className="px-2 pt-1 pb-2">
+                <button
+                  className="text-neutral-content hover:text-base-content flex w-full items-center gap-1 py-1 text-[10px]"
+                  onClick={() => setShowTailwind(!showTailwind)}
+                >
+                  {showTailwind ? (
+                    <TbChevronDown className="size-3" />
+                  ) : (
+                    <TbChevronRight className="size-3" />
+                  )}
+                  <span>Tailwind Colors</span>
+                </button>
+
+                {showTailwind && (
+                  <div className="flex flex-col gap-1.5 pt-1">
+                    {Array.from({ length: Math.ceil(twPalette.length / 11) }).map((_, rowIndex) => (
+                      <div
+                        key={`row-${rowIndex}`}
+                        className="relative flex flex-row items-start gap-1"
+                      >
+                        {twPalette
+                          .slice(rowIndex * 11, (rowIndex + 1) * 11)
+                          .map((colorGroup, k) => {
+                            const mainShade =
+                              colorGroup.color.find(c => c.key === "500") ||
+                              colorGroup.color[Math.floor(colorGroup.color.length / 2)];
+                            return (
+                              <Tooltip
+                                key={`color-${rowIndex * 11 + k}`}
+                                content={colorGroup.key}
+                                placement="top"
+                                arrow={false}
+                              >
+                                <button
+                                  className="border-base-300 hover:border-primary size-5 cursor-pointer rounded border transition-all hover:scale-110"
+                                  style={{ backgroundColor: mainShade.color }}
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    changed({
+                                      type: "class",
+                                      value: `${colorGroup.key}-${mainShade.key}`,
+                                    });
+                                  }}
+                                />
+                              </Tooltip>
+                            );
+                          })}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </ColorPickerBackdrop>,

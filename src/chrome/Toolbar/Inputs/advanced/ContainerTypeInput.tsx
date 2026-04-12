@@ -20,7 +20,7 @@ export const ContainerTypeInput = (_props?: { hasHeader?: boolean; hasFooter?: b
               canvas
               is={Container}
               canDelete={true}
-              className="flex flex-col w-full gap-section"
+              className="gap-section flex w-full flex-col"
               custom={{ displayName: "Container" }}
             />
           ),

@@ -183,7 +183,7 @@ function Dialog({ children, target, state, opener }: any): any {
             role="dialog"
             aria-modal="true"
             aria-label="Settings dialog"
-            className="animate-backdrop-in absolute max-w-[320px] select-none flex-col gap-4 overflow-hidden rounded-lg border-2 border-base-300 bg-neutral text-base-content shadow-2xl"
+            className="animate-backdrop-in border-base-300 bg-neutral text-base-content absolute max-w-[320px] flex-col gap-4 overflow-hidden rounded-lg border-2 shadow-2xl select-none"
             style={{
               zIndex: 50,
             }}
@@ -194,11 +194,11 @@ function Dialog({ children, target, state, opener }: any): any {
               className="h-8 cursor-move"
               aria-label="Drag to move dialog"
             >
-              <div className="mx-auto mt-[-2px] h-4 w-2/3 rounded-b-md border-2 border-base-300 border-t-primary bg-primary px-3 py-1.5 shadow-inner drop-shadow-lg hover:border-t-primary hover:bg-primary"></div>
+              <div className="border-base-300 border-t-primary bg-primary hover:border-t-primary hover:bg-primary mx-auto mt-[-2px] h-4 w-2/3 rounded-b-md border-2 px-3 py-1.5 shadow-inner drop-shadow-lg"></div>
 
               <div className="flex items-center justify-between">
                 <button
-                  className="absolute left-3 top-2.5 text-neutral-content"
+                  className="text-neutral-content absolute top-2.5 left-3"
                   onClick={() => setIsOpen(false)}
                   aria-label="Close dialog"
                 >
@@ -210,7 +210,7 @@ function Dialog({ children, target, state, opener }: any): any {
 
             <div
               ref={dialogContentRef}
-              className="scrollbar-light max-h-[320px] overflow-y-auto overflow-x-hidden px-3 pb-1.5"
+              className="scrollbar-light max-h-[320px] overflow-x-hidden overflow-y-auto px-3 pb-1.5"
             >
               {children}
             </div>

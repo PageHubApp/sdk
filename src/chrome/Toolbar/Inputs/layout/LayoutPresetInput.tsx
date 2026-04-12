@@ -36,7 +36,13 @@ export function LayoutPresetInput({ lp }: LayoutPresetInputProps) {
   const isContainer = useIsCraftContainer();
 
   return (
-    <ToolbarSection title="Layout" icon={<TbLayoutGrid />} propKey="display" collapsible={true} defaultOpen={true}>
+    <ToolbarSection
+      title="Layout"
+      icon={<TbLayoutGrid />}
+      propKey="display"
+      collapsible={true}
+      defaultOpen={true}
+    >
       {/* Layout mode — same track + segment styling as ToolbarSegmentedControl */}
       <ToolbarSegmentedControl
         className="col-span-full"
@@ -88,8 +94,10 @@ export function LayoutPresetInput({ lp }: LayoutPresetInputProps) {
               aria-expanded={lp.showDisplayDropdown}
               aria-haspopup="listbox"
               onClick={() => lp.setShowDisplayDropdown(!lp.showDisplayDropdown)}
-              className={`flex items-center justify-center gap-1 rounded px-2 py-2 text-xs font-medium leading-tight transition-colors ${
-                ["inline-block", "inline-flex", "inline-grid", "inline", "hidden"].includes(lp.currentDisplay)
+              className={`flex items-center justify-center gap-1 rounded px-2 py-2 text-xs leading-tight font-medium transition-colors ${
+                ["inline-block", "inline-flex", "inline-grid", "inline", "hidden"].includes(
+                  lp.currentDisplay
+                )
                   ? TOOLBAR_SEGMENTED_ACTIVE
                   : TOOLBAR_SEGMENTED_INACTIVE
               }`}
@@ -98,15 +106,15 @@ export function LayoutPresetInput({ lp }: LayoutPresetInputProps) {
             </button>
 
             {lp.showDisplayDropdown && (
-              <div className="absolute right-0 top-full z-50 mt-1 w-32 rounded-md border border-base-300 bg-base-200 shadow-lg">
+              <div className="border-base-300 bg-base-200 absolute top-full right-0 z-50 mt-1 w-32 rounded-md border shadow-lg">
                 {DISPLAY_VARIANTS.map(variant => (
                   <button
                     key={variant.value}
                     type="button"
                     onClick={() => lp.handleDisplayVariant(variant.value)}
-                    className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-accent ${
+                    className={`hover:bg-accent w-full px-3 py-2 text-left text-xs transition-colors ${
                       lp.currentDisplay === variant.value
-                        ? "bg-accent font-medium text-base-content"
+                        ? "bg-accent text-base-content font-medium"
                         : "text-neutral-content"
                     }`}
                   >
@@ -121,19 +129,19 @@ export function LayoutPresetInput({ lp }: LayoutPresetInputProps) {
 
       {/* Presets Grid */}
       {lp.layoutMode !== "block" && (
-        <AutoHideScrollbar className="max-h-[152px] min-h-0 min-w-0 -mx-3 px-3">
+        <AutoHideScrollbar className="-mx-3 max-h-[152px] min-h-0 min-w-0 px-3">
           <div className="col-span-full grid grid-cols-2 gap-1.5">
             {lp.currentPresets.map((preset, index) => {
               // root.layoutColumns is stored as a string; preset.columns is a number — strict === never matched.
               const slug = preset.name.toLowerCase().replace(/\s+/g, "-");
-              const savedSlug = String(lp.currentPresetLayout ?? "").trim().toLowerCase();
+              const savedSlug = String(lp.currentPresetLayout ?? "")
+                .trim()
+                .toLowerCase();
               const columnsMatch =
                 preset.columns === undefined ||
                 Number(lp.currentLayoutColumns) === Number(preset.columns);
               const isActive =
-                lp.currentLayoutMode === lp.layoutMode &&
-                columnsMatch &&
-                savedSlug === slug;
+                lp.currentLayoutMode === lp.layoutMode && columnsMatch && savedSlug === slug;
 
               return (
                 <button
@@ -143,7 +151,7 @@ export function LayoutPresetInput({ lp }: LayoutPresetInputProps) {
                   onClick={() => lp.handlePresetSelect(preset)}
                   className={twMerge(
                     "ph-toolbar-dashed-btn flex-col items-center justify-start gap-1.5 p-2 text-left text-xs font-medium",
-                    isActive && PH_TOOLBAR_DASHED_BTN_ACTIVE,
+                    isActive && PH_TOOLBAR_DASHED_BTN_ACTIVE
                   )}
                   title={preset.name}
                 >
@@ -151,7 +159,7 @@ export function LayoutPresetInput({ lp }: LayoutPresetInputProps) {
                   <div
                     className={twMerge(
                       "text-xs font-medium",
-                      isActive ? "text-primary" : "text-base-content",
+                      isActive ? "text-primary" : "text-base-content"
                     )}
                   >
                     {preset.name}

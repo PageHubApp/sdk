@@ -33,14 +33,22 @@ export const FormMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Preview the form, loading, and submitted states.">
-        <div className="flex gap-1 rounded-lg bg-neutral p-1">
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="Preview the form, loading, and submitted states."
+      >
+        <div className="bg-neutral flex gap-1 rounded-lg p-1">
           {VIEW_STATES.map(({ value, label, icon: Icon }) => (
             <button
               key={value}
               type="button"
-              onClick={() => actions.setProp(id, (p: any) => { p.view = value; })}
-              className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+              onClick={() =>
+                actions.setProp(id, (p: any) => {
+                  p.view = value;
+                })
+              }
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
                 currentView === value
                   ? "bg-base-100 text-base-content shadow-sm"
                   : "text-neutral-content hover:text-base-content"
@@ -56,11 +64,7 @@ export const FormMainTab = () => {
     ),
     Properties: (
       <>
-        <ToolbarSection
-          title="Properties"
-          icon={SECTION_ICONS["Properties"]}
-          help={help}
-        >
+        <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]} help={help}>
           <ToolbarItem
             propKey="formName"
             propType="component"

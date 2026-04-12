@@ -28,24 +28,32 @@ interface BrandingTabProps {
 
 export function BrandingTab({
   inputClass,
-  favicon, setFavicon,
-  companyName, setCompanyName,
-  companyTagline, setCompanyTagline,
-  companyType, setCompanyType,
-  companyLocation, setCompanyLocation,
-  companyAddress, setCompanyAddress,
-  companyPhone, setCompanyPhone,
-  companyEmail, setCompanyEmail,
-  companyWebsite, setCompanyWebsite,
-  customVariables, setCustomVariables,
+  favicon,
+  setFavicon,
+  companyName,
+  setCompanyName,
+  companyTagline,
+  setCompanyTagline,
+  companyType,
+  setCompanyType,
+  companyLocation,
+  setCompanyLocation,
+  companyAddress,
+  setCompanyAddress,
+  companyPhone,
+  setCompanyPhone,
+  companyEmail,
+  setCompanyEmail,
+  companyWebsite,
+  setCompanyWebsite,
+  customVariables,
+  setCustomVariables,
 }: BrandingTabProps) {
   return (
     <div className="space-y-6">
       <div className="mb-4 space-y-2">
-        <h3 className="text-lg font-semibold text-base-content">
-          Branding & Company Information
-        </h3>
-        <p className="text-sm text-neutral-content">
+        <h3 className="text-base-content text-lg font-semibold">Branding & Company Information</h3>
+        <p className="text-neutral-content text-sm">
           Your company details and branding assets for customization
         </p>
       </div>
@@ -117,7 +125,9 @@ export function BrandingTab({
         </div>
       </div>
       <div>
-        <label htmlFor="company-address" className="toolbar-label mb-2 block font-medium">Address</label>
+        <label htmlFor="company-address" className="toolbar-label mb-2 block font-medium">
+          Address
+        </label>
         <textarea
           id="company-address"
           value={companyAddress}
@@ -130,7 +140,9 @@ export function BrandingTab({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="company-phone" className="toolbar-label mb-2 block font-medium">Phone</label>
+          <label htmlFor="company-phone" className="toolbar-label mb-2 block font-medium">
+            Phone
+          </label>
           <input
             id="company-phone"
             type="tel"
@@ -142,7 +154,9 @@ export function BrandingTab({
         </div>
 
         <div>
-          <label htmlFor="company-email" className="toolbar-label mb-2 block font-medium">Email</label>
+          <label htmlFor="company-email" className="toolbar-label mb-2 block font-medium">
+            Email
+          </label>
           <input
             id="company-email"
             type="email"
@@ -155,7 +169,9 @@ export function BrandingTab({
       </div>
 
       <div>
-        <label htmlFor="company-website" className="toolbar-label mb-2 block font-medium">Website</label>
+        <label htmlFor="company-website" className="toolbar-label mb-2 block font-medium">
+          Website
+        </label>
         <input
           id="company-website"
           type="url"
@@ -173,25 +189,29 @@ export function BrandingTab({
           <button
             type="button"
             onClick={() => setCustomVariables([...customVariables, { key: "", value: "" }])}
-            className="flex items-center gap-1 rounded-md bg-base-300 px-2.5 py-1 text-xs font-medium text-base-content transition-colors hover:bg-base-200"
+            className="bg-base-300 text-base-content hover:bg-base-200 flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
           >
             <TbPlus className="size-3.5" />
             Add Variable
           </button>
         </div>
         {customVariables.length === 0 && (
-          <p className="text-sm text-neutral-content">
-            No custom variables yet. Add one to use <code className="rounded bg-base-300 px-1 py-0.5 text-xs">{"{{variables.yourKey}}"}</code> in any text.
+          <p className="text-neutral-content text-sm">
+            No custom variables yet. Add one to use{" "}
+            <code className="bg-base-300 rounded px-1 py-0.5 text-xs">
+              {"{{variables.yourKey}}"}
+            </code>{" "}
+            in any text.
           </p>
         )}
         {customVariables.map((variable, index) => (
           <div key={index} className="flex items-start gap-2">
             <div className="flex-1">
               {index === 0 && (
-                <label className="mb-1 block text-xs text-neutral-content">Key</label>
+                <label className="text-neutral-content mb-1 block text-xs">Key</label>
               )}
-              <div className="flex min-h-10 w-full overflow-hidden rounded-lg border border-base-300 bg-base-200 shadow-sm transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-2 focus-within:ring-ring/50">
-                <span className="flex shrink-0 items-center border-r border-base-300 bg-neutral/50 px-2.5 text-xs text-neutral-content">
+              <div className="border-base-300 bg-base-200 focus-within:border-primary focus-within:ring-ring/50 flex min-h-10 w-full overflow-hidden rounded-lg border shadow-sm transition-[border-color,box-shadow] focus-within:ring-2">
+                <span className="border-base-300 bg-neutral/50 text-neutral-content flex shrink-0 items-center border-r px-2.5 text-xs">
                   variables.
                 </span>
                 <input
@@ -203,7 +223,7 @@ export function BrandingTab({
                     updated[index] = { ...updated[index], key: sanitized };
                     setCustomVariables(updated);
                   }}
-                  className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-sm text-base-content outline-none placeholder:text-neutral-content focus:ring-0"
+                  className="text-base-content placeholder:text-neutral-content min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-sm outline-none focus:ring-0"
                   placeholder="myField"
                   aria-label="Variable key"
                 />
@@ -211,7 +231,7 @@ export function BrandingTab({
             </div>
             <div className="flex-[2]">
               {index === 0 && (
-                <label className="mb-1 block text-xs text-neutral-content">Value</label>
+                <label className="text-neutral-content mb-1 block text-xs">Value</label>
               )}
               <input
                 type="text"
@@ -227,7 +247,7 @@ export function BrandingTab({
             </div>
             <div>
               {index === 0 && (
-                <label className="mb-1 block text-xs text-neutral-content">&nbsp;</label>
+                <label className="text-neutral-content mb-1 block text-xs">&nbsp;</label>
               )}
               <button
                 type="button"
@@ -235,7 +255,7 @@ export function BrandingTab({
                   const updated = customVariables.filter((_, i) => i !== index);
                   setCustomVariables(updated);
                 }}
-                className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-base-300 bg-base-200 text-neutral-content shadow-sm transition-colors hover:border-error hover:bg-error/10 hover:text-error"
+                className="border-base-300 bg-base-200 text-neutral-content hover:border-error hover:bg-error/10 hover:text-error flex size-10 shrink-0 items-center justify-center rounded-lg border shadow-sm transition-colors"
                 aria-label="Remove variable"
               >
                 <TbTrash className="size-4" />
@@ -245,37 +265,40 @@ export function BrandingTab({
         ))}
       </div>
 
-      <div className="mt-4 rounded-lg border border-base-300 bg-neutral p-4">
+      <div className="border-base-300 bg-neutral mt-4 rounded-lg border p-4">
         <div className="flex gap-3">
-          <TbInfoCircle className="mt-0.5 size-5 shrink-0 text-primary" />
+          <TbInfoCircle className="text-primary mt-0.5 size-5 shrink-0" />
           <div className="space-y-2">
-            <p className="toolbar-label font-medium">
-              Use variables throughout your site
-            </p>
-            <p className="text-sm text-neutral-content">
+            <p className="toolbar-label font-medium">Use variables throughout your site</p>
+            <p className="text-neutral-content text-sm">
               Add these in any text or button to automatically display values:
             </p>
             <div className="flex flex-wrap gap-2">
-              <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
+              <code className="bg-base-100 text-base-content rounded px-2 py-1 text-xs">
                 {"{{company.name}}"}
               </code>
-              <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
+              <code className="bg-base-100 text-base-content rounded px-2 py-1 text-xs">
                 {"{{company.tagline}}"}
               </code>
-              <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
+              <code className="bg-base-100 text-base-content rounded px-2 py-1 text-xs">
                 {"{{company.email}}"}
               </code>
-              <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
+              <code className="bg-base-100 text-base-content rounded px-2 py-1 text-xs">
                 {"{{company.phone}}"}
               </code>
-              <code className="rounded bg-base-100 px-2 py-1 text-xs text-base-content">
+              <code className="bg-base-100 text-base-content rounded px-2 py-1 text-xs">
                 {"{{year}}"}
               </code>
-              {customVariables.filter(v => v.key.trim()).map(v => (
-                <code key={v.key} className="rounded bg-primary/10 px-2 py-1 text-xs text-primary">
-                  {`{{variables.${v.key}}}`}
-                </code>
-              ))}
+              {customVariables
+                .filter(v => v.key.trim())
+                .map(v => (
+                  <code
+                    key={v.key}
+                    className="bg-primary/10 text-primary rounded px-2 py-1 text-xs"
+                  >
+                    {`{{variables.${v.key}}}`}
+                  </code>
+                ))}
             </div>
           </div>
         </div>

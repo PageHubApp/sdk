@@ -76,8 +76,18 @@ export const ColorInput = (__props: any) => {
     if (!data) return;
     const val = formatColorForStorage(data, prefix);
     changeProp({
-      propKey, index, propItemKey, propType, value: val, setProp, query, actions, nodeId: id,
-      ...(propType === "class" && classWriteView != null ? { view: classWriteView, classDark } : {}),
+      propKey,
+      index,
+      propItemKey,
+      propType,
+      value: val,
+      setProp,
+      query,
+      actions,
+      nodeId: id,
+      ...(propType === "class" && classWriteView != null
+        ? { view: classWriteView, classDark }
+        : {}),
     });
     onChange(cpVal, val);
   };
@@ -95,12 +105,34 @@ export const ColorInput = (__props: any) => {
 
   const clearColor = useCallback(() => {
     changeProp({
-      propKey, index, propItemKey, propType, value: "", setProp, query, actions, nodeId: id,
-      ...(propType === "class" && classWriteView != null ? { view: classWriteView, classDark } : {}),
+      propKey,
+      index,
+      propItemKey,
+      propType,
+      value: "",
+      setProp,
+      query,
+      actions,
+      nodeId: id,
+      ...(propType === "class" && classWriteView != null
+        ? { view: classWriteView, classDark }
+        : {}),
     });
     onChange("", "");
     setIsOpen(false);
-  }, [actions, classDark, classWriteView, id, index, onChange, propItemKey, propKey, propType, query, setProp]);
+  }, [
+    actions,
+    classDark,
+    classWriteView,
+    id,
+    index,
+    onChange,
+    propItemKey,
+    propKey,
+    propType,
+    query,
+    setProp,
+  ]);
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -151,7 +183,7 @@ export const ColorInput = (__props: any) => {
             <button
               type="button"
               onClick={handleClear}
-              className="absolute -right-1 -top-1 z-10 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
+              className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 z-10 flex size-4 items-center justify-center rounded-full text-xs font-bold"
               title="Clear color"
             >
               ×
@@ -161,12 +193,14 @@ export const ColorInput = (__props: any) => {
       </Wrap>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-1">
-          <div className="rounded-lg border border-base-300 bg-base-200 shadow-xl">
+        <div className="absolute top-full right-0 z-50 mt-1">
+          <div className="border-base-300 bg-base-200 rounded-lg border shadow-xl">
             <TokenPicker
               variant="panel"
               value={pickerValue}
-              onChange={(data) => { changed(data); }}
+              onChange={data => {
+                changed(data);
+              }}
               onClose={() => setIsOpen(false)}
               onClear={clearColor}
             />

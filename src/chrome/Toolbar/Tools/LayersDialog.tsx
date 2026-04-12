@@ -21,11 +21,10 @@ export function LayersDialog({ isOpen, onClose }: LayersDialogProps) {
     >
       <div className="flex h-full flex-col" style={{ minWidth: "320px", maxWidth: "600px" }}>
         {/* Layers Panel */}
-        <div className="flex-1 overflow-auto bg-base-100 text-base-content">
+        <div className="bg-base-100 text-base-content flex-1 overflow-auto">
           <Layers expandRootOnLoad={true} />
         </div>
       </div>
     </MoveableDialog>
   );
 }
-

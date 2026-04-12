@@ -63,12 +63,18 @@ export function SubgroupPopout({
   return ReactDOM.createPortal(
     <>
       {/* Invisible hover bridge */}
-      <div role="presentation" aria-hidden="true" style={bridgeStyle} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} />
+      <div
+        role="presentation"
+        aria-hidden="true"
+        style={bridgeStyle}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      />
       {/* Main popout */}
       <div
         role="presentation"
         style={style}
-        className="min-w-[200px] max-w-[350px] rounded-md border border-base-300 bg-base-200 p-0.5 shadow-xl"
+        className="border-base-300 bg-base-200 max-w-[350px] min-w-[200px] rounded-md border p-0.5 shadow-xl"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
@@ -76,7 +82,7 @@ export function SubgroupPopout({
           {options.map(option => (
             <button
               key={option}
-              className="rounded border border-base-300/50 px-2 py-1.5 text-left text-xs transition-colors hover:border-accent hover:bg-accent hover:text-accent-content"
+              className="border-base-300/50 hover:border-accent hover:bg-accent hover:text-accent-content rounded border px-2 py-1.5 text-left text-xs transition-colors"
               onClick={() => onSelect(option)}
             >
               <span className="text-xs">{getDisplayLabel(option)}</span>
@@ -158,7 +164,7 @@ export function SubgroupItem({
         ref={setAnchorElement}
         role="button"
         tabIndex={0}
-        className="w-full cursor-pointer rounded px-2 py-1 text-left text-xs font-medium text-neutral-content transition-colors hover:bg-neutral"
+        className="text-neutral-content hover:bg-neutral w-full cursor-pointer rounded px-2 py-1 text-left text-xs font-medium transition-colors"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={handleRowClick}

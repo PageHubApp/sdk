@@ -108,7 +108,9 @@ export function useDesignSystem(isOpen: boolean) {
   /** Which palette the Colors tab is editing: "light" or "dark" */
   const [colorMode, setColorMode] = useState<"light" | "dark">("light");
   const [customFonts, setCustomFonts] = useState<CustomFont[]>(DEFAULT_CUSTOM_FONTS);
-  const [styles, setStyles] = useState<StyleGuideState>({ ...DEFAULT_STYLE_GUIDE } as StyleGuideState);
+  const [styles, setStyles] = useState<StyleGuideState>({
+    ...DEFAULT_STYLE_GUIDE,
+  } as StyleGuideState);
 
   // ─── Refs ───
   const headingFontButtonRef = useRef<HTMLButtonElement>(null);
@@ -125,7 +127,13 @@ export function useDesignSystem(isOpen: boolean) {
   // Save tracking
   const isSaving = useRef(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSavedData = useRef<{ palette: PaletteColor[]; darkPalette?: PaletteColor[]; darkModeEnabled?: boolean; styleGuide: StyleGuideState; typography?: CustomFont[] } | null>(null);
+  const lastSavedData = useRef<{
+    palette: PaletteColor[];
+    darkPalette?: PaletteColor[];
+    darkModeEnabled?: boolean;
+    styleGuide: StyleGuideState;
+    typography?: CustomFont[];
+  } | null>(null);
 
   // Subscribe to ROOT_NODE changes (undo/redo)
   const rootNodeData = useEditor(state => {
@@ -134,13 +142,25 @@ export function useDesignSystem(isOpen: boolean) {
   });
 
   // Resolve theme from ROOT
-  const rootTheme = useMemo(() => resolveTheme(rootNodeData as Record<string, any>), [rootNodeData.theme]);
+  const rootTheme = useMemo(
+    () => resolveTheme(rootNodeData as Record<string, any>),
+    [rootNodeData.theme]
+  );
 
   // Stable JSON keys for dependency tracking (avoids infinite loops from new object refs)
   const rootPaletteJson = useMemo(() => JSON.stringify(rootTheme.palette), [rootTheme.palette]);
-  const rootDarkPaletteJson = useMemo(() => JSON.stringify(rootTheme.darkPalette), [rootTheme.darkPalette]);
-  const rootStyleGuideJson = useMemo(() => JSON.stringify(rootTheme.styleGuide), [rootTheme.styleGuide]);
-  const rootTypographyJson = useMemo(() => JSON.stringify(rootTheme.typography), [rootTheme.typography]);
+  const rootDarkPaletteJson = useMemo(
+    () => JSON.stringify(rootTheme.darkPalette),
+    [rootTheme.darkPalette]
+  );
+  const rootStyleGuideJson = useMemo(
+    () => JSON.stringify(rootTheme.styleGuide),
+    [rootTheme.styleGuide]
+  );
+  const rootTypographyJson = useMemo(
+    () => JSON.stringify(rootTheme.typography),
+    [rootTheme.typography]
+  );
 
   // ─── Style field updater ───
   const updateStyle = <K extends keyof StyleGuideState>(key: K, value: StyleGuideState[K]) => {
@@ -170,7 +190,9 @@ export function useDesignSystem(isOpen: boolean) {
       if (rootTheme.typography && rootTheme.typography.length) {
         const migratedFonts = (rootTheme.typography as Record<string, unknown>[]).map(font => ({
           ...font,
-          fontFamily: Array.isArray(font.fontFamily) ? (font.fontFamily as string[])[0] : font.fontFamily,
+          fontFamily: Array.isArray(font.fontFamily)
+            ? (font.fontFamily as string[])[0]
+            : font.fontFamily,
           letterSpacing: font.letterSpacing || "normal",
           textTransform: font.textTransform || "none",
         })) as CustomFont[];
@@ -226,7 +248,7 @@ export function useDesignSystem(isOpen: boolean) {
           if ((c.value as string).startsWith("palette:")) {
             const paletteName = (c.value as string).replace("palette:", "").trim();
             const paletteColor = palettes.find(p => p.name === paletteName);
-            colorValue = paletteColor ? paletteColor.color : c.value as string;
+            colorValue = paletteColor ? paletteColor.color : (c.value as string);
           } else {
             colorValue = c.value as string;
           }
@@ -257,7 +279,9 @@ export function useDesignSystem(isOpen: boolean) {
     const rect = buttonRef.getBoundingClientRect();
     setColorDialog({
       enabled: true,
-      value: activePalettes[index].color.startsWith("oklch(") ? oklchToHex(activePalettes[index].color) : activePalettes[index].color,
+      value: activePalettes[index].color.startsWith("oklch(")
+        ? oklchToHex(activePalettes[index].color)
+        : activePalettes[index].color,
       prefix: "",
       changed: (value: unknown) => updateColor(index, value),
       e: rect,
@@ -272,33 +296,46 @@ export function useDesignSystem(isOpen: boolean) {
     setActivePalettes(newPalettes);
   };
 
-  const addColor = () => setActivePalettes([...activePalettes, { name: "New Color", color: "oklch(62% 0.214 259)" }]);
-  const deleteColor = (index: number) => setActivePalettes(activePalettes.filter((_, i) => i !== index));
+  const addColor = () =>
+    setActivePalettes([...activePalettes, { name: "New Color", color: "oklch(62% 0.214 259)" }]);
+  const deleteColor = (index: number) =>
+    setActivePalettes(activePalettes.filter((_, i) => i !== index));
 
   const toggleDarkMode = () => {
     if (!darkModeEnabled) {
       // Enabling dark mode — seed with only core semantic tokens that typically change.
       // Colors not listed here inherit their light-mode value automatically.
       const DARK_SEED_NAMES = new Set([
-        "Primary", "Primary Content",
-        "Secondary", "Secondary Content",
-        "Accent", "Accent Content",
-        "Neutral", "Neutral Content",
-        "Base 100", "Base 200", "Base 300", "Base Content",
-        "Error", "Error Content",
-        "Info", "Info Content",
-        "Success", "Success Content",
-        "Warning", "Warning Content",
-        "Border", "Input", "Ring",
+        "Primary",
+        "Primary Content",
+        "Secondary",
+        "Secondary Content",
+        "Accent",
+        "Accent Content",
+        "Neutral",
+        "Neutral Content",
+        "Base 100",
+        "Base 200",
+        "Base 300",
+        "Base Content",
+        "Error",
+        "Error Content",
+        "Info",
+        "Info Content",
+        "Success",
+        "Success Content",
+        "Warning",
+        "Warning Content",
+        "Border",
+        "Input",
+        "Ring",
       ]);
-      const seeded = palettes
-        .filter(p => DARK_SEED_NAMES.has(p.name))
-        .map(p => ({ ...p }));
+      const seeded = palettes.filter(p => DARK_SEED_NAMES.has(p.name)).map(p => ({ ...p }));
       setDarkPalettes(seeded.length > 0 ? seeded : palettes.map(p => ({ ...p })));
       setDarkModeEnabled(true);
       setColorMode("dark");
     } else {
-      setColorMode(prev => prev === "dark" ? "light" : "dark");
+      setColorMode(prev => (prev === "dark" ? "light" : "dark"));
     }
   };
 
@@ -316,7 +353,8 @@ export function useDesignSystem(isOpen: boolean) {
 
   const updateFontProperty = (index: number, property: string, value: string) => {
     const newFonts = [...customFonts];
-    const finalValue = property === "fontFamily" && Array.isArray(value) ? (value as unknown as string[])[0] : value;
+    const finalValue =
+      property === "fontFamily" && Array.isArray(value) ? (value as unknown as string[])[0] : value;
     newFonts[index] = { ...newFonts[index], [property]: finalValue };
     setCustomFonts(newFonts);
   };
@@ -324,7 +362,15 @@ export function useDesignSystem(isOpen: boolean) {
   const addFont = () => {
     setCustomFonts([
       ...customFonts,
-      { name: "New Font", fontFamily: "Inter", fontSize: "1rem", fontWeight: "400", lineHeight: "1.5", letterSpacing: "normal", textTransform: "none" },
+      {
+        name: "New Font",
+        fontFamily: "Inter",
+        fontSize: "1rem",
+        fontWeight: "400",
+        lineHeight: "1.5",
+        letterSpacing: "normal",
+        textTransform: "none",
+      },
     ]);
   };
 
@@ -344,17 +390,19 @@ export function useDesignSystem(isOpen: boolean) {
       value: currentFont,
       originalValue: currentFont,
       changed: (value: unknown) => {
-        onChanged(Array.isArray(value) ? (value as string[]).join(", ") : value as string);
+        onChanged(Array.isArray(value) ? (value as string[]).join(", ") : (value as string));
       },
       preview: (value: unknown) => {
-        onChanged(Array.isArray(value) ? (value as string[]).join(", ") : value as string);
+        onChanged(Array.isArray(value) ? (value as string[]).join(", ") : (value as string));
       },
       e: rect,
     });
   };
 
   const openHeadingFontPicker = () =>
-    openFontPicker(headingFontButtonRef, styles.headingFontFamily, v => updateStyle("headingFontFamily", v));
+    openFontPicker(headingFontButtonRef, styles.headingFontFamily, v =>
+      updateStyle("headingFontFamily", v)
+    );
 
   const openBodyFontPicker = () =>
     openFontPicker(bodyFontButtonRef, styles.bodyFontFamily, v => updateStyle("bodyFontFamily", v));
@@ -393,14 +441,21 @@ export function useDesignSystem(isOpen: boolean) {
 
     const styleGuideFonts: string[] = [];
     const weightMap: Record<string, string> = {
-      "font-bold": "700", "font-semibold": "600", "font-medium": "500", "font-normal": "400",
+      "font-bold": "700",
+      "font-semibold": "600",
+      "font-medium": "500",
+      "font-normal": "400",
     };
 
     if (styles.headingFontFamily && !styles.headingFontFamily.startsWith("style:")) {
-      styleGuideFonts.push(`family=${styles.headingFontFamily.replace(/ +/g, "+")}:wght@${weightMap[styles.headingFont] || "400"}`);
+      styleGuideFonts.push(
+        `family=${styles.headingFontFamily.replace(/ +/g, "+")}:wght@${weightMap[styles.headingFont] || "400"}`
+      );
     }
     if (styles.bodyFontFamily && !styles.bodyFontFamily.startsWith("style:")) {
-      styleGuideFonts.push(`family=${styles.bodyFontFamily.replace(/ +/g, "+")}:wght@${weightMap[styles.bodyFont] || "400"}`);
+      styleGuideFonts.push(
+        `family=${styles.bodyFontFamily.replace(/ +/g, "+")}:wght@${weightMap[styles.bodyFont] || "400"}`
+      );
     }
 
     const allFamilies = [...families.split("&"), ...styleGuideFonts].join("&");
@@ -464,39 +519,73 @@ export function useDesignSystem(isOpen: boolean) {
             typography: customFonts,
           });
         });
-        lastSavedData.current = { palette: palettes, darkPalette: darkModeEnabled ? darkPalettes : undefined, darkModeEnabled, styleGuide: styles, typography: customFonts };
+        lastSavedData.current = {
+          palette: palettes,
+          darkPalette: darkModeEnabled ? darkPalettes : undefined,
+          darkModeEnabled,
+          styleGuide: styles,
+          typography: customFonts,
+        };
       } catch (e) {
         console.error("Error saving design system:", e);
       }
-      setTimeout(() => { isSaving.current = false; }, 100);
+      setTimeout(() => {
+        isSaving.current = false;
+      }, 100);
     }, 300);
 
-    return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); };
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
   }, [isOpen, palettes, darkPalettes, darkModeEnabled, customFonts, styles]);
 
   return {
     // Tab
-    activeTab, setActiveTab,
+    activeTab,
+    setActiveTab,
     // Sections
-    expandedSections, toggleSection,
+    expandedSections,
+    toggleSection,
     // Dark mode
-    darkModeEnabled, colorMode, toggleDarkMode, disableDarkMode,
+    darkModeEnabled,
+    colorMode,
+    toggleDarkMode,
+    disableDarkMode,
     // Palette (active = light or dark based on colorMode)
-    palettes: activePalettes, setPalettes: setActivePalettes, colorButtonRefs,
-    getColorPreview, updateColor, openColorPicker, updateColorName, addColor, deleteColor,
+    palettes: activePalettes,
+    setPalettes: setActivePalettes,
+    colorButtonRefs,
+    getColorPreview,
+    updateColor,
+    openColorPicker,
+    updateColorName,
+    addColor,
+    deleteColor,
     // Typography
-    customFonts, setCustomFonts,
-    updateFontName, updateFontProperty, addFont, deleteFont,
+    customFonts,
+    setCustomFonts,
+    updateFontName,
+    updateFontProperty,
+    addFont,
+    deleteFont,
     // Styles (grouped)
-    styles, updateStyle,
+    styles,
+    updateStyle,
     // Font pickers
-    headingFontButtonRef, bodyFontButtonRef,
-    openHeadingFontPicker, openBodyFontPicker,
-    openFontPicker, setFontDialog,
+    headingFontButtonRef,
+    bodyFontButtonRef,
+    openHeadingFontPicker,
+    openBodyFontPicker,
+    openFontPicker,
+    setFontDialog,
     // Style color pickers
-    inputBorderColorButtonRef, inputBgColorButtonRef, inputTextColorButtonRef,
-    inputPlaceholderColorButtonRef, inputFocusRingColorButtonRef,
-    linkColorButtonRef, linkHoverColorButtonRef,
+    inputBorderColorButtonRef,
+    inputBgColorButtonRef,
+    inputTextColorButtonRef,
+    inputPlaceholderColorButtonRef,
+    inputFocusRingColorButtonRef,
+    linkColorButtonRef,
+    linkHoverColorButtonRef,
     openStyleColorPicker,
   };
 }

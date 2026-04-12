@@ -18,7 +18,9 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
   const { actions, query } = useEditor();
 
   // UI State
-  const [activeTab, setActiveTab] = useState<"branding" | "code" | "ai" | "integrations" | "redirects">("branding");
+  const [activeTab, setActiveTab] = useState<
+    "branding" | "code" | "ai" | "integrations" | "redirects"
+  >("branding");
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved">("idle");
 
   // Site Settings
@@ -47,7 +49,9 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
   const [integrations, setIntegrations] = useState<Record<string, Record<string, string>>>({});
 
   // Redirects
-  const [redirects, setRedirects] = useState<{ from: string; to: string; permanent: boolean }[]>([]);
+  const [redirects, setRedirects] = useState<{ from: string; to: string; permanent: boolean }[]>(
+    []
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -73,7 +77,7 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
           setDesignNotes(typeof props.designNotes === "string" ? props.designNotes : "");
           const dt = Array.isArray(props.designTags) ? props.designTags : [];
           setDesignTags(
-            normalizeDesignTags(dt.filter((t: unknown): t is string => typeof t === "string")),
+            normalizeDesignTags(dt.filter((t: unknown): t is string => typeof t === "string"))
           );
 
           setCustomVariables(props.variables || []);
@@ -136,7 +140,9 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
       });
 
       setSavingState("saved");
-      setTimeout(() => { setSavingState("idle"); }, 2000);
+      setTimeout(() => {
+        setSavingState("idle");
+      }, 2000);
     } catch (e) {
       setSavingState("idle");
       console.error("Error saving site settings:", e);
@@ -170,108 +176,118 @@ export function SiteSettingsModal({ isOpen, onClose }: SiteSettingsModalProps) {
       minHeight={400}
       edges={["e", "s", "se", "w", "sw"]}
     >
-          {/* Tabs */}
-          <div className="flex border-b border-base-300 bg-neutral">
-            <button onClick={() => setActiveTab("branding")} className={tabClass("branding")}>
-              Branding
-            </button>
-            <button onClick={() => setActiveTab("integrations")} className={tabClass("integrations")}>
-              Integrations
-            </button>
-            <button onClick={() => setActiveTab("redirects")} className={tabClass("redirects")}>
-              Redirects
-            </button>
-            <button onClick={() => setActiveTab("ai")} className={tabClass("ai")}>
-              AI
-            </button>
-            <button onClick={() => setActiveTab("code")} className={tabClass("code")}>
-              Code
-            </button>
-          </div>
+      {/* Tabs */}
+      <div className="border-base-300 bg-neutral flex border-b">
+        <button onClick={() => setActiveTab("branding")} className={tabClass("branding")}>
+          Branding
+        </button>
+        <button onClick={() => setActiveTab("integrations")} className={tabClass("integrations")}>
+          Integrations
+        </button>
+        <button onClick={() => setActiveTab("redirects")} className={tabClass("redirects")}>
+          Redirects
+        </button>
+        <button onClick={() => setActiveTab("ai")} className={tabClass("ai")}>
+          AI
+        </button>
+        <button onClick={() => setActiveTab("code")} className={tabClass("code")}>
+          Code
+        </button>
+      </div>
 
-          {/* Content */}
-          <div className="scrollbar-light flex-1 space-y-4 overflow-y-auto bg-base-100 p-6 text-base-content">
-            {activeTab === "code" && (
-              <CodeTab
-                headerCode={headerCode} setHeaderCode={setHeaderCode}
-                footerCode={footerCode} setFooterCode={setFooterCode}
-              />
-            )}
+      {/* Content */}
+      <div className="scrollbar-light bg-base-100 text-base-content flex-1 space-y-4 overflow-y-auto p-6">
+        {activeTab === "code" && (
+          <CodeTab
+            headerCode={headerCode}
+            setHeaderCode={setHeaderCode}
+            footerCode={footerCode}
+            setFooterCode={setFooterCode}
+          />
+        )}
 
-            {activeTab === "branding" && (
-              <BrandingTab
-                inputClass={inputClass}
-                favicon={favicon} setFavicon={setFavicon}
-                companyName={companyName} setCompanyName={setCompanyName}
-                companyTagline={companyTagline} setCompanyTagline={setCompanyTagline}
-                companyType={companyType} setCompanyType={setCompanyType}
-                companyLocation={companyLocation} setCompanyLocation={setCompanyLocation}
-                companyAddress={companyAddress} setCompanyAddress={setCompanyAddress}
-                companyPhone={companyPhone} setCompanyPhone={setCompanyPhone}
-                companyEmail={companyEmail} setCompanyEmail={setCompanyEmail}
-                companyWebsite={companyWebsite} setCompanyWebsite={setCompanyWebsite}
-                customVariables={customVariables} setCustomVariables={setCustomVariables}
-              />
-            )}
+        {activeTab === "branding" && (
+          <BrandingTab
+            inputClass={inputClass}
+            favicon={favicon}
+            setFavicon={setFavicon}
+            companyName={companyName}
+            setCompanyName={setCompanyName}
+            companyTagline={companyTagline}
+            setCompanyTagline={setCompanyTagline}
+            companyType={companyType}
+            setCompanyType={setCompanyType}
+            companyLocation={companyLocation}
+            setCompanyLocation={setCompanyLocation}
+            companyAddress={companyAddress}
+            setCompanyAddress={setCompanyAddress}
+            companyPhone={companyPhone}
+            setCompanyPhone={setCompanyPhone}
+            companyEmail={companyEmail}
+            setCompanyEmail={setCompanyEmail}
+            companyWebsite={companyWebsite}
+            setCompanyWebsite={setCompanyWebsite}
+            customVariables={customVariables}
+            setCustomVariables={setCustomVariables}
+          />
+        )}
 
-            {activeTab === "integrations" && (
-              <IntegrationsTab
-                inputClass={inputClass}
-                integrations={integrations} setIntegrations={setIntegrations}
-              />
-            )}
+        {activeTab === "integrations" && (
+          <IntegrationsTab
+            inputClass={inputClass}
+            integrations={integrations}
+            setIntegrations={setIntegrations}
+          />
+        )}
 
-            {activeTab === "redirects" && (
-              <RedirectsTab
-                inputClass={inputClass}
-                selectClass={selectClass}
-                redirects={redirects} setRedirects={setRedirects}
-              />
-            )}
+        {activeTab === "redirects" && (
+          <RedirectsTab
+            inputClass={inputClass}
+            selectClass={selectClass}
+            redirects={redirects}
+            setRedirects={setRedirects}
+          />
+        )}
 
-            {activeTab === "ai" && (
-              <AITab
-                inputClass={inputClass}
-                designNotes={designNotes}
-                setDesignNotes={setDesignNotes}
-                designTags={designTags}
-                setDesignTags={setDesignTags}
-              />
-            )}
-          </div>
+        {activeTab === "ai" && (
+          <AITab
+            inputClass={inputClass}
+            designNotes={designNotes}
+            setDesignNotes={setDesignNotes}
+            designTags={designTags}
+            setDesignTags={setDesignTags}
+          />
+        )}
+      </div>
 
-          {/* Footer */}
-          <div className="flex gap-3 border-t border-base-300 bg-neutral p-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-secondary flex-1"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={savingState !== "idle"}
-              className={`btn btn-primary flex flex-1 items-center justify-center gap-2 ${
-                savingState === "saving" ? "cursor-not-allowed opacity-60" : ""
-              }`}
-            >
-              {savingState === "saving" ? (
-                <>
-                  <TbLoader2 className="animate-spin" />
-                  Saving...
-                </>
-              ) : savingState === "saved" ? (
-                <>
-                  <TbCheck />
-                  Saved
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </button>
-          </div>
+      {/* Footer */}
+      <div className="border-base-300 bg-neutral flex gap-3 border-t p-4">
+        <button type="button" onClick={onClose} className="btn btn-secondary flex-1">
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={savingState !== "idle"}
+          className={`btn btn-primary flex flex-1 items-center justify-center gap-2 ${
+            savingState === "saving" ? "cursor-not-allowed opacity-60" : ""
+          }`}
+        >
+          {savingState === "saving" ? (
+            <>
+              <TbLoader2 className="animate-spin" />
+              Saving...
+            </>
+          ) : savingState === "saved" ? (
+            <>
+              <TbCheck />
+              Saved
+            </>
+          ) : (
+            "Save Changes"
+          )}
+        </button>
+      </div>
     </FloatingPanel>
   );
 }

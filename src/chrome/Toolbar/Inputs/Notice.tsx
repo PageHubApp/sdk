@@ -7,9 +7,7 @@ interface NoticeProps {
 
 export const Notice = ({ children, className = "" }: NoticeProps) => {
   return (
-    <p
-      className={`w-full py-1 text-center text-xs leading-snug text-neutral-content ${className}`}
-    >
+    <p className={`text-neutral-content w-full py-1 text-center text-xs leading-snug ${className}`}>
       {children}
     </p>
   );

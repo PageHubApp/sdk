@@ -71,12 +71,12 @@ export function DeviceSelector({ onClose }: DeviceSelectorProps) {
   };
 
   return (
-    <div className="flex items-center gap-3 text-xs text-neutral-content">
+    <div className="text-neutral-content flex items-center gap-3 text-xs">
       {/* Device Dropdown */}
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center gap-1 transition-colors hover:text-base-content"
+          className="hover:text-base-content flex items-center gap-1 transition-colors"
         >
           <span className="whitespace-nowrap">{selectedDevice.name}</span>
           <svg className="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,19 +87,24 @@ export function DeviceSelector({ onClose }: DeviceSelectorProps) {
         {showDropdown && (
           <>
             {/* Backdrop */}
-            <div role="presentation" aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
+            <div
+              role="presentation"
+              aria-hidden="true"
+              className="fixed inset-0 z-40"
+              onClick={() => setShowDropdown(false)}
+            />
             {/* Dropdown */}
-            <div className="scrollbar-dark absolute left-0 top-full z-50 mt-1 max-h-96 w-56 overflow-y-auto rounded-lg border border-base-300 bg-neutral text-neutral-content shadow-lg">
+            <div className="scrollbar-dark border-base-300 bg-neutral text-neutral-content absolute top-full left-0 z-50 mt-1 max-h-96 w-56 overflow-y-auto rounded-lg border shadow-lg">
               {devicePresets.map(device => (
                 <button
                   key={device.name}
                   onClick={() => handleDeviceChange(device)}
-                  className={`w-full px-4 py-2 text-left transition-colors hover:bg-neutral ${
+                  className={`hover:bg-neutral w-full px-4 py-2 text-left transition-colors ${
                     selectedDevice.name === device.name ? "bg-neutral" : ""
                   }`}
                 >
                   <div className="font-medium">{device.name}</div>
-                  <div className="text-xs text-neutral-content">
+                  <div className="text-neutral-content text-xs">
                     {device.width} × {device.height} • {device.dpr}x DPR
                   </div>
                 </button>
@@ -115,7 +120,7 @@ export function DeviceSelector({ onClose }: DeviceSelectorProps) {
           type="number"
           value={customWidth}
           onChange={handleWidthChange}
-          className="w-12 bg-transparent text-center transition-colors hover:text-base-content focus:outline-none"
+          className="hover:text-base-content w-12 bg-transparent text-center transition-colors focus:outline-none"
           placeholder="W"
         />
         <span>×</span>
@@ -123,7 +128,7 @@ export function DeviceSelector({ onClose }: DeviceSelectorProps) {
           type="number"
           value={customHeight}
           onChange={handleHeightChange}
-          className="w-12 bg-transparent text-center transition-colors hover:text-base-content focus:outline-none"
+          className="hover:text-base-content w-12 bg-transparent text-center transition-colors focus:outline-none"
           placeholder="H"
         />
       </div>
@@ -131,7 +136,7 @@ export function DeviceSelector({ onClose }: DeviceSelectorProps) {
       {/* Close button */}
       <button
         onClick={onClose}
-        className="transition-colors hover:text-base-content"
+        className="hover:text-base-content transition-colors"
         title="Exit device mode"
       >
         <TbX className="size-4" />

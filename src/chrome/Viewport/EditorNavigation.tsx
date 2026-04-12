@@ -26,11 +26,7 @@ import { useSetAtomState } from "../../utils/atoms";
 import { ClippyOpenAtom, ShowGridLinesAtom } from "utils/atoms";
 import { useAiEnabled } from "utils/hooks/useAiEnabled";
 import { useSDK } from "../../context";
-import {
-  EditorMenuKbd,
-  EditorMenuNavRow,
-  EditorMenuSectionLabel,
-} from "./EditorMenuNav";
+import { EditorMenuKbd, EditorMenuNavRow, EditorMenuSectionLabel } from "./EditorMenuNav";
 import { SidebarFlyoutSurface } from "../shared/SidebarFlyoutSurface";
 import { ImportExportPanel } from "./ImportExportPanel";
 import { ThemeSettingsPanel } from "./ThemeSettingsPanel";
@@ -86,8 +82,7 @@ export const EditorNavigation = ({
 
   useEffect(() => {
     const isToolbox = panel === "components" || panel === "blocks";
-    const wasToolbox =
-      prevPanelRef.current === "components" || prevPanelRef.current === "blocks";
+    const wasToolbox = prevPanelRef.current === "components" || prevPanelRef.current === "blocks";
 
     if (isToolbox && !wasToolbox) {
       selectedIdAtToolboxOpenRef.current = selectedId;
@@ -132,192 +127,197 @@ export const EditorNavigation = ({
         ref={navRef}
         role="navigation"
         aria-label="Editor menu"
-        className="pointer-events-auto absolute bottom-0 z-50 flex w-full flex-col bg-base-100 text-base-content"
+        className="bg-base-100 text-base-content pointer-events-auto absolute bottom-0 z-50 flex w-full flex-col"
         style={{ top: "var(--editor-nav-height, 3rem)" }}
       >
         <SidebarFlyoutSurface>
-      {panel === "components" || panel === "blocks" ? (
-        <ToolboxTabs />
-      ) : panel === "theme" ? (
-        <ThemeSettingsPanel />
-      ) : panel === "import-export" ? (
-        <ImportExportPanel onClose={close} />
-      ) : (
-      <AutoHideScrollbar
-        className="flex flex-1 flex-col gap-0 overflow-y-auto pb-3 pt-0"
-        hideDelay={2000}
-      >
-        {panel === "publish" && <div id={EDITOR_NAV_PUBLISH_ID} className="flex-1" />}
+          {panel === "components" || panel === "blocks" ? (
+            <ToolboxTabs />
+          ) : panel === "theme" ? (
+            <ThemeSettingsPanel />
+          ) : panel === "import-export" ? (
+            <ImportExportPanel onClose={close} />
+          ) : (
+            <AutoHideScrollbar
+              className="flex flex-1 flex-col gap-0 overflow-y-auto pt-0 pb-3"
+              hideDelay={2000}
+            >
+              {panel === "publish" && <div id={EDITOR_NAV_PUBLISH_ID} className="flex-1" />}
 
-        {panel === "menu" && (
-          <>
-            {isTenant ? (
-              // For tenant users, show background and settings panel buttons
-              <>
-                <EditorMenuNavRow
-                  icon={<TbBoxModel2 />}
-                  label="Select Background"
-                  onClick={() => {
-                    close();
-                    actions.selectNode(ROOT_NODE);
-                  }}
-                />
+              {panel === "menu" && (
+                <>
+                  {isTenant ? (
+                    // For tenant users, show background and settings panel buttons
+                    <>
+                      <EditorMenuNavRow
+                        icon={<TbBoxModel2 />}
+                        label="Select Background"
+                        onClick={() => {
+                          close();
+                          actions.selectNode(ROOT_NODE);
+                        }}
+                      />
 
-                <EditorMenuNavRow
-                  icon={sideBarLeft ? <TbLayoutSidebarRight /> : <TbLayoutSidebar />}
-                  label={`Move this panel to the ${sideBarLeft ? "right" : "left"} side`}
-                  onClick={() => setSideBarLeft(!sideBarLeft)}
-                />
-              </>
-            ) : (
-              // For regular users, show all the original items
-              <>
-                {/* ── Page actions (from host app) ── */}
-                {renderNavHeader && renderNavHeader({ close })}
+                      <EditorMenuNavRow
+                        icon={sideBarLeft ? <TbLayoutSidebarRight /> : <TbLayoutSidebar />}
+                        label={`Move this panel to the ${sideBarLeft ? "right" : "left"} side`}
+                        onClick={() => setSideBarLeft(!sideBarLeft)}
+                      />
+                    </>
+                  ) : (
+                    // For regular users, show all the original items
+                    <>
+                      {/* ── Page actions (from host app) ── */}
+                      {renderNavHeader && renderNavHeader({ close })}
 
-                {/* ── Settings ── */}
-                <EditorMenuSectionLabel>Settings</EditorMenuSectionLabel>
+                      {/* ── Settings ── */}
+                      <EditorMenuSectionLabel>Settings</EditorMenuSectionLabel>
 
-                <EditorMenuNavRow
-                  icon={<TbSettings />}
-                  label={<div className="text-sm">Site Settings</div>}
-                  kbd={<EditorMenuKbd>⌘,</EditorMenuKbd>}
-                  onClick={() => {
-                    setIsSiteSettingsModalOpen(true);
-                    close();
-                  }}
-                />
+                      <EditorMenuNavRow
+                        icon={<TbSettings />}
+                        label={<div className="text-sm">Site Settings</div>}
+                        kbd={<EditorMenuKbd>⌘,</EditorMenuKbd>}
+                        onClick={() => {
+                          setIsSiteSettingsModalOpen(true);
+                          close();
+                        }}
+                      />
 
-                <EditorMenuNavRow
-                  icon={<TbPalette />}
-                  label={<div className="text-sm">Theme Settings</div>}
-                  kbd={<EditorMenuKbd>⌘⇧D</EditorMenuKbd>}
-                  onClick={() => {
-                    open("theme", { cat: "colors" });
-                  }}
-                />
+                      <EditorMenuNavRow
+                        icon={<TbPalette />}
+                        label={<div className="text-sm">Theme Settings</div>}
+                        kbd={<EditorMenuKbd>⌘⇧D</EditorMenuKbd>}
+                        onClick={() => {
+                          open("theme", { cat: "colors" });
+                        }}
+                      />
 
-                <EditorMenuNavRow
-                  icon={<TbPhoto />}
-                  label={<div className="text-sm">Media Manager</div>}
-                  kbd={<EditorMenuKbd>⌘⇧M</EditorMenuKbd>}
-                  onClick={() => {
-                    setIsMediaManagerModalOpen(true);
-                    close();
-                  }}
-                />
+                      <EditorMenuNavRow
+                        icon={<TbPhoto />}
+                        label={<div className="text-sm">Media Manager</div>}
+                        kbd={<EditorMenuKbd>⌘⇧M</EditorMenuKbd>}
+                        onClick={() => {
+                          setIsMediaManagerModalOpen(true);
+                          close();
+                        }}
+                      />
 
-                {/* ── View ── */}
-                <EditorMenuSectionLabel>View</EditorMenuSectionLabel>
+                      {/* ── View ── */}
+                      <EditorMenuSectionLabel>View</EditorMenuSectionLabel>
 
-                <EditorMenuNavRow
-                  icon={<TbLayoutGrid />}
-                  label={<div className="text-sm">Show Layers</div>}
-                  kbd={<EditorMenuKbd>⌘⇧L</EditorMenuKbd>}
-                  onClick={() => {
-                    setIsLayersDialogOpen(true);
-                    close();
-                  }}
-                />
+                      <EditorMenuNavRow
+                        icon={<TbLayoutGrid />}
+                        label={<div className="text-sm">Show Layers</div>}
+                        kbd={<EditorMenuKbd>⌘⇧L</EditorMenuKbd>}
+                        onClick={() => {
+                          setIsLayersDialogOpen(true);
+                          close();
+                        }}
+                      />
 
-                <EditorMenuNavRow
-                  icon={<TbBoxModel2 />}
-                  label={
-                    <div className="text-sm">{`${showGridLines ? "Hide" : "Show"} Grid Lines`}</div>
-                  }
-                  kbd={<EditorMenuKbd>⌘⇧G</EditorMenuKbd>}
-                  onClick={() => {
-                    const viewport = document.getElementById("viewport");
-                    setShowGridLines(!showGridLines);
-                    viewport?.setAttribute("data-show-gridlines", (!showGridLines).toString());
-                  }}
-                />
+                      <EditorMenuNavRow
+                        icon={<TbBoxModel2 />}
+                        label={
+                          <div className="text-sm">{`${showGridLines ? "Hide" : "Show"} Grid Lines`}</div>
+                        }
+                        kbd={<EditorMenuKbd>⌘⇧G</EditorMenuKbd>}
+                        onClick={() => {
+                          const viewport = document.getElementById("viewport");
+                          setShowGridLines(!showGridLines);
+                          viewport?.setAttribute(
+                            "data-show-gridlines",
+                            (!showGridLines).toString()
+                          );
+                        }}
+                      />
 
-                <EditorMenuNavRow
-                  icon={showHidden ? <TbEyeOff /> : <TbEye />}
-                  label={
-                    <div className="text-sm">{`${showHidden ? "Show" : "Hide"} Hidden Components`}</div>
-                  }
-                  kbd={<EditorMenuKbd>⌘⇧H</EditorMenuKbd>}
-                  onClick={() => {
-                    setShowHidden(prev => {
-                      const next = !prev;
-                      document.getElementById("viewport")?.setAttribute("data-show-hidden", next.toString());
-                      return next;
-                    });
-                  }}
-                />
+                      <EditorMenuNavRow
+                        icon={showHidden ? <TbEyeOff /> : <TbEye />}
+                        label={
+                          <div className="text-sm">{`${showHidden ? "Show" : "Hide"} Hidden Components`}</div>
+                        }
+                        kbd={<EditorMenuKbd>⌘⇧H</EditorMenuKbd>}
+                        onClick={() => {
+                          setShowHidden(prev => {
+                            const next = !prev;
+                            document
+                              .getElementById("viewport")
+                              ?.setAttribute("data-show-hidden", next.toString());
+                            return next;
+                          });
+                        }}
+                      />
 
-                {/* ── Tools ── */}
-                <EditorMenuSectionLabel>Tools</EditorMenuSectionLabel>
+                      {/* ── Tools ── */}
+                      <EditorMenuSectionLabel>Tools</EditorMenuSectionLabel>
 
-                {isAiEnabled &&
-                  renderNavAi &&
-                  renderNavAi({
-                    onSelect: () => {
-                      setClippyOpen({});
-                      close();
-                    },
-                  })}
+                      {isAiEnabled &&
+                        renderNavAi &&
+                        renderNavAi({
+                          onSelect: () => {
+                            setClippyOpen({});
+                            close();
+                          },
+                        })}
 
-                <EditorMenuNavRow
-                  icon={<TbStack2 />}
-                  label={<div className="text-sm">Modifiers</div>}
-                  kbd={<EditorMenuKbd>⌘⇧O</EditorMenuKbd>}
-                  onClick={() => {
-                    setIsModifiersModalOpen(true);
-                    close();
-                  }}
-                />
+                      <EditorMenuNavRow
+                        icon={<TbStack2 />}
+                        label={<div className="text-sm">Modifiers</div>}
+                        kbd={<EditorMenuKbd>⌘⇧O</EditorMenuKbd>}
+                        onClick={() => {
+                          setIsModifiersModalOpen(true);
+                          close();
+                        }}
+                      />
 
-                <EditorMenuNavRow
-                  icon={<TbDownload />}
-                  label={<div className="text-sm">Import / Export</div>}
-                  kbd={<EditorMenuKbd>⌘⇧E</EditorMenuKbd>}
-                  onClick={() => {
-                    open("import-export");
-                  }}
-                />
+                      <EditorMenuNavRow
+                        icon={<TbDownload />}
+                        label={<div className="text-sm">Import / Export</div>}
+                        kbd={<EditorMenuKbd>⌘⇧E</EditorMenuKbd>}
+                        onClick={() => {
+                          open("import-export");
+                        }}
+                      />
 
-                {/* ── Preferences ── */}
-                <EditorMenuSectionLabel>Preferences</EditorMenuSectionLabel>
+                      {/* ── Preferences ── */}
+                      <EditorMenuSectionLabel>Preferences</EditorMenuSectionLabel>
 
-                <EditorMenuNavRow
-                  icon={sideBarLeft ? <TbLayoutSidebarRight /> : <TbLayoutSidebar />}
-                  label={
-                    <div className="text-sm">{sideBarLeft ? "Right" : "Left"} Settings Panel</div>
-                  }
-                  onClick={() => {
-                    setSideBarLeft(!sideBarLeft);
-                    close();
-                  }}
-                />
+                      <EditorMenuNavRow
+                        icon={sideBarLeft ? <TbLayoutSidebarRight /> : <TbLayoutSidebar />}
+                        label={
+                          <div className="text-sm">
+                            {sideBarLeft ? "Right" : "Left"} Settings Panel
+                          </div>
+                        }
+                        onClick={() => {
+                          setSideBarLeft(!sideBarLeft);
+                          close();
+                        }}
+                      />
 
-                <EditorMenuNavRow
-                  icon={isDarkMode ? <TbSun /> : <TbMoon />}
-                  label={
-                    <div className="text-sm">
-                      Switch to {isDarkMode ? "Light" : "Dark"} Theme
-                    </div>
-                  }
-                  onClick={() => {
-                    toggleTheme();
-                    close();
-                  }}
-                />
-              </>
-            )}
-          </>
-        )}
-      </AutoHideScrollbar>
-      )}
+                      <EditorMenuNavRow
+                        icon={isDarkMode ? <TbSun /> : <TbMoon />}
+                        label={
+                          <div className="text-sm">
+                            Switch to {isDarkMode ? "Light" : "Dark"} Theme
+                          </div>
+                        }
+                        onClick={() => {
+                          toggleTheme();
+                          close();
+                        }}
+                      />
+                    </>
+                  )}
+                </>
+              )}
+            </AutoHideScrollbar>
+          )}
         </SidebarFlyoutSurface>
 
-      {/* Portal target — app injects footer content (account, nav links) here */}
-      {!isFlyoutBlockingToolColumn(panel) && (
-        <div id="editor-nav-footer" className="mt-auto" />
-      )}
-    </nav>
+        {/* Portal target — app injects footer content (account, nav links) here */}
+        {!isFlyoutBlockingToolColumn(panel) && <div id="editor-nav-footer" className="mt-auto" />}
+      </nav>
     </>
   );
 };

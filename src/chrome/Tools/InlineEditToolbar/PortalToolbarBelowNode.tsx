@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import ReactDOM from "react-dom";
 
 const TOOLBAR_GAP_PX = 8; // matches mt-2 under text

@@ -12,7 +12,13 @@ export interface MapPointProps extends BaseSelectorProps {
   description?: string;
 }
 
-export const MapPoint = ({ lat = 0, lng = 0, title = "", description = "", ...rest }: MapPointProps) => {
+export const MapPoint = ({
+  lat = 0,
+  lng = 0,
+  title = "",
+  description = "",
+  ...rest
+}: MapPointProps) => {
   let props: any = { lat, lng, title, description, ...rest };
 
   const {

@@ -64,7 +64,7 @@ export const StandaloneImagePicker = ({
 
   let timeout;
 
-  const handleChange = async (e) => {
+  const handleChange = async e => {
     if (timeout) clearTimeout(timeout);
 
     setSaved(false);
@@ -115,7 +115,7 @@ export const StandaloneImagePicker = ({
       <div className="flex gap-2">
         <label
           htmlFor={`file-upload-${label}`}
-          className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-base-300 bg-base-200/60 px-4 py-3 shadow-sm transition-[border-color,background-color] ${
+          className={`border-base-300 bg-base-200/60 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-3 shadow-sm transition-[border-color,background-color] ${
             errors.length
               ? "border-error bg-error text-error-content"
               : saved
@@ -146,7 +146,7 @@ export const StandaloneImagePicker = ({
         <button
           type="button"
           onClick={() => setShowMediaBrowser(true)}
-          className="flex items-center gap-2 rounded-lg border-2 border-base-300 px-4 py-3 text-base-content hover:border-primary hover:bg-neutral"
+          className="border-base-300 text-base-content hover:border-primary hover:bg-neutral flex items-center gap-2 rounded-lg border-2 px-4 py-3"
         >
           <TbPhoto className="text-xl" />
           <span className="text-sm font-medium">Browse</span>
@@ -156,17 +156,17 @@ export const StandaloneImagePicker = ({
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center gap-2 rounded-lg border border-error bg-base-200 px-4 py-3 text-error shadow-sm transition-[border-color,background-color] hover:bg-error hover:text-error-content"
+            className="border-error bg-base-200 text-error hover:bg-error hover:text-error-content flex items-center gap-2 rounded-lg border px-4 py-3 shadow-sm transition-[border-color,background-color]"
           >
             <TbTrash className="text-xl" />
           </button>
         )}
       </div>
 
-      {help && <p className="text-xs text-neutral-content">{help}</p>}
+      {help && <p className="text-neutral-content text-xs">{help}</p>}
 
       {errors.length > 0 && (
-        <div className="text-sm text-error">
+        <div className="text-error text-sm">
           {errors.map((err, idx) => (
             <div key={idx}>{err.error}</div>
           ))}
@@ -174,12 +174,8 @@ export const StandaloneImagePicker = ({
       )}
 
       {hasUploadedImage && mediaContent && (
-        <div className="relative h-48 w-full overflow-hidden rounded-lg bg-neutral text-neutral-content">
-          <img
-            src={mediaContent}
-            alt="Preview"
-            className="size-full object-cover"
-          />
+        <div className="bg-neutral text-neutral-content relative h-48 w-full overflow-hidden rounded-lg">
+          <img src={mediaContent} alt="Preview" className="size-full object-cover" />
         </div>
       )}
 

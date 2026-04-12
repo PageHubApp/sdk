@@ -5,7 +5,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSetAtomState } from "../../utils/atoms";
 
 // Convert tab title to valid HTML ID
-export const toSectionId = (title: string) => `section-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+export const toSectionId = (title: string) =>
+  `section-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
 export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
   const [showActiveColor, setShowActiveColor] = useState(isActive);
@@ -22,10 +23,9 @@ export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
   return (
     <Tooltip content={title} placement="top" arrow={false}>
       <div
-        className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-colors ${showActiveColor
-            ? "text-primary"
-            : "text-secondary-content hover:text-base-content"
-          }`}
+        className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-colors ${
+          showActiveColor ? "text-primary" : "text-secondary-content hover:text-base-content"
+        }`}
         role="tab"
         aria-selected={isActive}
         tabIndex={isActive ? 0 : -1}
@@ -70,7 +70,8 @@ export const UnifiedSection = ({
 
         // Section is active if it's visible and its top edge is near the container top
         // Also require the bottom edge is below the threshold so mostly-scrolled-away sections don't count
-        const isActive = entry.isIntersecting && rect.top <= topThreshold && rect.bottom > topThreshold;
+        const isActive =
+          entry.isIntersecting && rect.top <= topThreshold && rect.bottom > topThreshold;
 
         onVisibilityChangeRef.current?.(isActive);
       },
@@ -93,7 +94,12 @@ export const UnifiedSection = ({
   }, []);
 
   return (
-    <div id={sectionDomId} ref={sectionRef} className="flex flex-col" data-unified-stack-index={stackIndex}>
+    <div
+      id={sectionDomId}
+      ref={sectionRef}
+      className="flex flex-col"
+      data-unified-stack-index={stackIndex}
+    >
       {/* Section Content */}
       <div id={`${sectionDomId}-content`} className="flex flex-col">
         {children}

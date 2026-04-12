@@ -2,8 +2,19 @@ import { Element } from "@craftjs/core";
 import React from "react";
 
 export const CATEGORY_ORDER = [
-  "hero", "features", "content", "cta", "testimonials", "team",
-  "pricing", "newsletter", "contact", "faq", "commerce", "navigation", "social-proof",
+  "hero",
+  "features",
+  "content",
+  "cta",
+  "testimonials",
+  "team",
+  "pricing",
+  "newsletter",
+  "contact",
+  "faq",
+  "commerce",
+  "navigation",
+  "social-proof",
 ];
 
 export function buildElementFromStructure(
@@ -24,11 +35,11 @@ export function buildElementFromStructure(
 
   const props = isPreview
     ? {
-      ...structure.props,
-      className:
-        structure.props.className?.replace?.(/py-\d+/g, "py-2").replace?.(/p-\d+/g, "p-2") ||
-        undefined,
-    }
+        ...structure.props,
+        className:
+          structure.props.className?.replace?.(/py-\d+/g, "py-2").replace?.(/p-\d+/g, "p-2") ||
+          undefined,
+      }
     : structure.props;
 
   return React.createElement(

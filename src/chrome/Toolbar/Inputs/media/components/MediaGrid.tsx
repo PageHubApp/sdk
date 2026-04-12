@@ -17,7 +17,12 @@ import {
 import { EditorMenuNavRow, EditorMenuSectionLabel } from "../../../../Viewport/EditorMenuNav";
 import { getCdnUrl } from "utils/cdn";
 import { formatDimensions } from "utils/imageDimensions";
-import { formatFileSize, type MediaItem, type SortField, type UploadProgress } from "../utils/media-helpers";
+import {
+  formatFileSize,
+  type MediaItem,
+  type SortField,
+  type UploadProgress,
+} from "../utils/media-helpers";
 
 const BLUR_PLACEHOLDER =
   "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
@@ -71,15 +76,15 @@ export function MediaGrid({
 }: MediaGridProps) {
   return (
     <div
-      className={`scrollbar-light relative flex-1 overflow-y-auto bg-base-100 transition-colors ${
-        isDragOver ? "border-2 border-dashed border-accent bg-accent" : ""
+      className={`scrollbar-light bg-base-100 relative flex-1 overflow-y-auto transition-colors ${
+        isDragOver ? "border-accent bg-accent border-2 border-dashed" : ""
       } ${uploadProgress ? "pt-16" : "p-3"}`}
       {...dropProps}
     >
       {/* Drag overlay */}
       {isDragOver && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center rounded-lg border-2 border-dashed border-accent bg-base-200/75 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-4 text-accent-content">
+        <div className="border-accent bg-base-200/75 absolute inset-0 z-40 flex items-center justify-center rounded-lg border-2 border-dashed backdrop-blur-sm">
+          <div className="text-accent-content flex flex-col items-center gap-4">
             <TbUpload className="text-6xl" />
             <div className="text-center">
               <p className="text-xl font-semibold">Drop files here</p>
@@ -91,33 +96,33 @@ export function MediaGrid({
 
       {/* Upload progress */}
       {uploadProgress && (
-        <div className="absolute inset-x-0 top-0 z-30 border-b border-base-300 bg-base-200 p-4">
+        <div className="border-base-300 bg-base-200 absolute inset-x-0 top-0 z-30 border-b p-4">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="size-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-              <span className="text-sm font-medium text-base-content">
+              <div className="border-accent size-4 animate-spin rounded-full border-2 border-t-transparent" />
+              <span className="text-base-content text-sm font-medium">
                 Uploading {uploadProgress.current + 1} of {uploadProgress.total} files
               </span>
             </div>
-            <span className="text-xs text-neutral-content">
+            <span className="text-neutral-content text-xs">
               {Math.round(((uploadProgress.current + 1) / uploadProgress.total) * 100)}%
             </span>
           </div>
-          <div className="mb-2 h-2 w-full rounded-full bg-neutral text-neutral-content">
+          <div className="bg-neutral text-neutral-content mb-2 h-2 w-full rounded-full">
             <div
-              className="h-2 rounded-full bg-accent text-accent-content transition-all duration-300 ease-out"
+              className="bg-accent text-accent-content h-2 rounded-full transition-all duration-300 ease-out"
               style={{
                 width: `${((uploadProgress.current + 1) / uploadProgress.total) * 100}%`,
               }}
             />
           </div>
           {uploadProgress.currentFile && (
-            <div className="truncate text-xs text-neutral-content">
+            <div className="text-neutral-content truncate text-xs">
               <TbFolder className="mr-1 inline" /> {uploadProgress.currentFile}
             </div>
           )}
           {uploadProgress.completedFiles.length > 0 && (
-            <div className="mt-1 text-xs text-secondary-content">
+            <div className="text-secondary-content mt-1 text-xs">
               <TbCheck className="mr-1 inline" /> Completed:{" "}
               {uploadProgress.completedFiles.join(", ")}
             </div>
@@ -129,11 +134,11 @@ export function MediaGrid({
         <div className="flex h-full flex-col items-center justify-center p-8 text-center">
           {searchQuery ? (
             <div className="animate-modal-in flex flex-col items-center">
-              <div className="mb-4 rounded-full bg-neutral p-6">
-                <TbSearch className="text-5xl text-neutral-content" />
+              <div className="bg-neutral mb-4 rounded-full p-6">
+                <TbSearch className="text-neutral-content text-5xl" />
               </div>
-              <p className="mb-2 text-xl font-semibold text-base-content">No media found</p>
-              <p className="text-sm text-neutral-content">
+              <p className="text-base-content mb-2 text-xl font-semibold">No media found</p>
+              <p className="text-neutral-content text-sm">
                 Try adjusting your search term or filter
               </p>
             </div>
@@ -177,7 +182,7 @@ export function MediaGrid({
 
       {/* Selection button */}
       {selectedMedia && selectionMode && onSelect && (
-        <div className="absolute bottom-4 right-4">
+        <div className="absolute right-4 bottom-4">
           <button
             type="button"
             onClick={() => {
@@ -205,20 +210,22 @@ function EmptyState({
 }) {
   return (
     <div className="animate-slide-up flex max-w-2xl flex-col items-center">
-      <h3 className="mb-2 text-2xl font-bold text-base-content">Your media library is empty</h3>
-      <p className="mb-8 text-sm text-neutral-content">
+      <h3 className="text-base-content mb-2 text-2xl font-bold">Your media library is empty</h3>
+      <p className="text-neutral-content mb-8 text-sm">
         Start building your visual content collection
       </p>
 
       <div className="mb-8 w-full max-w-lg">
         <EditorMenuSectionLabel>Add media</EditorMenuSectionLabel>
-        <div className="overflow-hidden rounded-xl border border-base-300 bg-base-100">
+        <div className="border-base-300 bg-base-100 overflow-hidden rounded-xl border">
           <EditorMenuNavRow
             icon={<TbUpload className="size-5" />}
             label={
               <div>
-                <div className="text-sm font-medium text-base-content">Upload Files</div>
-                <div className="text-xs text-neutral-content">Drag & drop or click to upload images</div>
+                <div className="text-base-content text-sm font-medium">Upload Files</div>
+                <div className="text-neutral-content text-xs">
+                  Drag & drop or click to upload images
+                </div>
               </div>
             }
             onClick={() => {
@@ -226,24 +233,24 @@ function EmptyState({
               fileInputRef.current?.click();
             }}
           />
-          <div className="h-px bg-base-300" aria-hidden />
+          <div className="bg-base-300 h-px" aria-hidden />
           <EditorMenuNavRow
             icon={<TbExternalLink className="size-5" />}
             label={
               <div>
-                <div className="text-sm font-medium text-base-content">Use URLs</div>
-                <div className="text-xs text-neutral-content">Link to images hosted anywhere</div>
+                <div className="text-base-content text-sm font-medium">Use URLs</div>
+                <div className="text-neutral-content text-xs">Link to images hosted anywhere</div>
               </div>
             }
             onClick={() => onSetAddMode("url")}
           />
-          <div className="h-px bg-base-300" aria-hidden />
+          <div className="bg-base-300 h-px" aria-hidden />
           <EditorMenuNavRow
             icon={<TbCode className="size-5" />}
             label={
               <div>
-                <div className="text-sm font-medium text-base-content">Paste SVG</div>
-                <div className="text-xs text-neutral-content">Add inline SVG code directly</div>
+                <div className="text-base-content text-sm font-medium">Paste SVG</div>
+                <div className="text-neutral-content text-xs">Add inline SVG code directly</div>
               </div>
             }
             onClick={() => onSetAddMode("svg")}
@@ -251,13 +258,13 @@ function EmptyState({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 text-xs text-neutral-content">
+      <div className="text-neutral-content flex flex-col gap-2 text-xs">
         <div className="flex items-center gap-2">
-          <TbInfoCircle className="text-base text-primary" />
+          <TbInfoCircle className="text-primary text-base" />
           <span>Paste images from your clipboard anywhere in this window</span>
         </div>
         <div className="flex items-center gap-2">
-          <TbInfoCircle className="text-base text-primary" />
+          <TbInfoCircle className="text-primary text-base" />
           <span>Drag and drop multiple files at once for batch upload</span>
         </div>
       </div>
@@ -300,10 +307,10 @@ function MediaItemRow({
       tabIndex={0}
       className={`group relative cursor-pointer ${
         viewMode === "cards"
-          ? `overflow-hidden rounded-lg border border-base-300 bg-base-200 hover:border-primary hover:shadow-md ${
-              isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
+          ? `border-base-300 bg-base-200 hover:border-primary overflow-hidden rounded-lg border hover:shadow-md ${
+              isSelected ? "ring-primary ring-offset-background ring-2 ring-offset-2" : ""
             }`
-          : `border-b border-base-300 hover:bg-neutral/50 ${isSelected ? "bg-primary/5" : ""}`
+          : `border-base-300 hover:bg-neutral/50 border-b ${isSelected ? "bg-primary/5" : ""}`
       } ${isDeleting ? "pointer-events-none opacity-60" : ""}`}
       onClick={onSelect}
       onKeyDown={e => {
@@ -316,10 +323,10 @@ function MediaItemRow({
     >
       {/* Deleting overlay */}
       {isDeleting && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-error/20 backdrop-blur-sm">
+        <div className="bg-error/20 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="flex flex-col items-center gap-2">
-            <TbLoader2 className="size-8 animate-spin text-error" />
-            <span className="text-xs font-medium text-error">Deleting...</span>
+            <TbLoader2 className="text-error size-8 animate-spin" />
+            <span className="text-error text-xs font-medium">Deleting...</span>
           </div>
         </div>
       )}
@@ -332,24 +339,19 @@ function MediaItemRow({
 
       {/* Action buttons */}
       <div
-        className={`absolute ${viewMode === "cards" ? "right-1 top-1" : "right-3 top-1/2 -translate-y-1/2"} flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 ${isSelected ? "opacity-100" : "opacity-0"}`}
+        className={`absolute ${viewMode === "cards" ? "top-1 right-1" : "top-1/2 right-3 -translate-y-1/2"} flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 ${isSelected ? "opacity-100" : "opacity-0"}`}
       >
         <ActionButton icon={<TbEye />} title="Preview image" onClick={onPreview} />
         <ActionButton icon={<TbCrop />} title="Crop/Resize image" onClick={onCrop} />
         <ActionButton icon={<TbRefresh />} title="Replace image" onClick={onReplace} />
         <ActionButton icon={<TbEdit />} title="Edit metadata" onClick={onEdit} />
-        <ActionButton
-          icon={<TbTrash />}
-          title="Delete"
-          onClick={onDelete}
-          variant="destructive"
-        />
+        <ActionButton icon={<TbTrash />} title="Delete" onClick={onDelete} variant="destructive" />
       </div>
 
       {/* Metadata indicator */}
       {(media.metadata?.alt || media.metadata?.description) && (
         <div className="absolute bottom-10 left-1">
-          <div className="size-2 rounded-full bg-secondary" />
+          <div className="bg-secondary size-2 rounded-full" />
         </div>
       )}
     </div>
@@ -373,7 +375,7 @@ function ActionButton({
         e.stopPropagation();
         onClick();
       }}
-      className={`rounded-lg border border-base-300 bg-base-200 p-1.5 shadow-lg transition-colors hover:bg-neutral ${
+      className={`border-base-300 bg-base-200 hover:bg-neutral rounded-lg border p-1.5 shadow-lg transition-colors ${
         variant === "destructive"
           ? "text-error hover:bg-error hover:text-error-content"
           : "text-primary"
@@ -390,7 +392,7 @@ function CardView({ media, sortField }: { media: MediaItem; sortField: SortField
     <div className="flex flex-col">
       <div
         key={`card-${media.id}`}
-        className="relative aspect-square overflow-hidden bg-neutral bg-cover bg-center transition-transform duration-200 hover:scale-105"
+        className="bg-neutral relative aspect-square overflow-hidden bg-cover bg-center transition-transform duration-200 hover:scale-105"
         style={{
           backgroundImage:
             media.type === "url"
@@ -401,17 +403,17 @@ function CardView({ media, sortField }: { media: MediaItem; sortField: SortField
         }}
       >
         {media.metadata?.size && (
-          <div className="absolute bottom-1 right-1 rounded bg-base-100/90 px-1 py-0.5 text-[10px] text-base-content opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="bg-base-100/90 text-base-content absolute right-1 bottom-1 rounded px-1 py-0.5 text-[10px] opacity-0 transition-opacity group-hover:opacity-100">
             {formatFileSize(media.metadata.size)}
           </div>
         )}
         {media.metadata?.dimensions && (
-          <div className="absolute bottom-1 right-1 rounded bg-base-100/90 px-1 py-0.5 text-[10px] text-base-content opacity-100 transition-opacity group-hover:opacity-0">
+          <div className="bg-base-100/90 text-base-content absolute right-1 bottom-1 rounded px-1 py-0.5 text-[10px] opacity-100 transition-opacity group-hover:opacity-0">
             {formatDimensions(media.metadata.dimensions)}
           </div>
         )}
         {media.metadata?.isVariant && (
-          <div className="absolute bottom-1 left-1 flex items-center justify-center rounded bg-primary px-1 py-0.5 text-[10px] text-primary-content">
+          <div className="bg-primary text-primary-content absolute bottom-1 left-1 flex items-center justify-center rounded px-1 py-0.5 text-[10px]">
             <TbCrop className="size-3" />
           </div>
         )}
@@ -423,20 +425,18 @@ function CardView({ media, sortField }: { media: MediaItem; sortField: SortField
         )}
       </div>
 
-      <div className="bg-accent p-1.5 text-accent-content">
-        <p className="truncate text-xs font-medium text-base-content">
+      <div className="bg-accent text-accent-content p-1.5">
+        <p className="text-base-content truncate text-xs font-medium">
           {media.metadata?.title || media.id}
         </p>
         {sortField === "createdAt" && (
-          <p className="truncate text-[10px] text-neutral-content">
+          <p className="text-neutral-content truncate text-[10px]">
             {media.metadata?.description ||
-              (media.uploadedAt
-                ? new Date(media.uploadedAt).toLocaleDateString()
-                : "Unknown")}
+              (media.uploadedAt ? new Date(media.uploadedAt).toLocaleDateString() : "Unknown")}
           </p>
         )}
         {sortField === "order" && (
-          <p className="text-[10px] text-neutral-content">Order: {media.order || 0}</p>
+          <p className="text-neutral-content text-[10px]">Order: {media.order || 0}</p>
         )}
       </div>
     </div>
@@ -447,9 +447,9 @@ function ListView({ media, sortField }: { media: MediaItem; sortField: SortField
   return (
     <div className="flex items-center gap-4 px-3 py-2">
       {/* Thumbnail */}
-      <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded border border-base-300 bg-neutral">
+      <div className="border-base-300 bg-neutral flex size-12 shrink-0 items-center justify-center overflow-hidden rounded border">
         {media.type === "url" ? (
-          <div className="relative size-full bg-neutral">
+          <div className="bg-neutral relative size-full">
             <Image
               key={`${media.id}-url-${media.uploadedAt || 0}`}
               src={media.metadata?.url!}
@@ -469,7 +469,7 @@ function ListView({ media, sortField }: { media: MediaItem; sortField: SortField
             dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }}
           />
         ) : (
-          <div className="relative size-full bg-neutral">
+          <div className="bg-neutral relative size-full">
             <Image
               key={`${media.id}-cdn-${media.uploadedAt || 0}`}
               src={getCdnUrl(media.cdnId || media.id, { width: 100, format: "auto" })}
@@ -489,11 +489,11 @@ function ListView({ media, sortField }: { media: MediaItem; sortField: SortField
 
       {/* Name */}
       <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-        <p className="min-w-0 flex-1 truncate text-sm font-medium text-base-content">
+        <p className="text-base-content min-w-0 flex-1 truncate text-sm font-medium">
           {media.metadata?.title || media.id}
         </p>
         {media.metadata?.isVariant && (
-          <span className="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+          <span className="bg-primary/10 text-primary shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium">
             Variant
           </span>
         )}
@@ -501,20 +501,20 @@ function ListView({ media, sortField }: { media: MediaItem; sortField: SortField
 
       {/* Dimensions */}
       {media.metadata?.dimensions && (
-        <div className="hidden shrink-0 text-xs text-neutral-content sm:block sm:w-24">
+        <div className="text-neutral-content hidden shrink-0 text-xs sm:block sm:w-24">
           {formatDimensions(media.metadata.dimensions)}
         </div>
       )}
 
       {/* Size */}
       {media.metadata?.size && (
-        <div className="hidden shrink-0 text-xs text-neutral-content sm:block sm:w-20">
+        <div className="text-neutral-content hidden shrink-0 text-xs sm:block sm:w-20">
           {formatFileSize(media.metadata.size)}
         </div>
       )}
 
       {/* Date/Order */}
-      <div className="hidden shrink-0 text-xs text-neutral-content md:block md:w-24">
+      <div className="text-neutral-content hidden shrink-0 text-xs md:block md:w-24">
         {sortField === "createdAt"
           ? media.uploadedAt
             ? new Date(media.uploadedAt).toLocaleDateString()

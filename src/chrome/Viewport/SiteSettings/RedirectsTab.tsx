@@ -5,17 +5,22 @@ interface RedirectsTabProps {
   inputClass: string;
   selectClass: string;
   redirects: { from: string; to: string; permanent: boolean }[];
-  setRedirects: React.Dispatch<React.SetStateAction<{ from: string; to: string; permanent: boolean }[]>>;
+  setRedirects: React.Dispatch<
+    React.SetStateAction<{ from: string; to: string; permanent: boolean }[]>
+  >;
 }
 
-export function RedirectsTab({ inputClass, selectClass, redirects, setRedirects }: RedirectsTabProps) {
+export function RedirectsTab({
+  inputClass,
+  selectClass,
+  redirects,
+  setRedirects,
+}: RedirectsTabProps) {
   return (
     <div className="space-y-6">
       <div className="mb-4 space-y-2">
-        <h3 className="text-lg font-semibold text-base-content">
-          301 Redirects
-        </h3>
-        <p className="text-sm text-neutral-content">
+        <h3 className="text-base-content text-lg font-semibold">301 Redirects</h3>
+        <p className="text-neutral-content text-sm">
           Redirect old URLs to new ones. Prevents broken links and preserves SEO juice.
         </p>
       </div>
@@ -61,7 +66,7 @@ export function RedirectsTab({ inputClass, selectClass, redirects, setRedirects 
             </select>
             <button
               onClick={() => setRedirects(redirects.filter((_, j) => j !== i))}
-              className="rounded p-1 text-neutral-content hover:bg-error/10 hover:text-error"
+              className="text-neutral-content hover:bg-error/10 hover:text-error rounded p-1"
             >
               <TbTrash className="size-4" />
             </button>
@@ -71,20 +76,21 @@ export function RedirectsTab({ inputClass, selectClass, redirects, setRedirects 
 
       <button
         onClick={() => setRedirects([...redirects, { from: "", to: "", permanent: true }])}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-base-300 px-4 py-2 text-sm text-neutral-content transition-colors hover:border-primary hover:text-base-content"
+        className="border-base-300 text-neutral-content hover:border-primary hover:text-base-content flex w-full items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-2 text-sm transition-colors"
       >
         <TbPlus className="size-4" />
         Add redirect
       </button>
 
       {redirects.length > 0 && (
-        <div className="mt-4 rounded-lg border border-base-300 bg-neutral p-4">
+        <div className="border-base-300 bg-neutral mt-4 rounded-lg border p-4">
           <div className="flex gap-3">
-            <TbInfoCircle className="mt-0.5 size-5 shrink-0 text-primary" />
+            <TbInfoCircle className="text-primary mt-0.5 size-5 shrink-0" />
             <div className="space-y-1">
-              <p className="text-sm text-neutral-content">
+              <p className="text-neutral-content text-sm">
                 <strong>301</strong> = permanent redirect (search engines transfer SEO).{" "}
-                <strong>302</strong> = temporary redirect (search engines keep the original URL indexed).
+                <strong>302</strong> = temporary redirect (search engines keep the original URL
+                indexed).
               </p>
             </div>
           </div>

@@ -48,14 +48,18 @@ export const MapMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Map pins — add, remove, and position them.">
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="Map pins — add, remove, and position them."
+      >
         <ListEditor
           items={childPoints || []}
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
           addLabel="Add Point"
           renderLabel={(point, index) => point.title || `Point ${index + 1}`}
-          onDelete={(point) => actions.delete(point.id)}
+          onDelete={point => actions.delete(point.id)}
           onAdd={() => {
             const MapPoint = query.getOptions().resolver.MapPoint;
             if (MapPoint) {
@@ -68,10 +72,10 @@ export const MapMainTab = () => {
               requestAnimationFrame(() => batchOp.setState(false));
             }
           }}
-          extraButtons={(point) => [
+          extraButtons={point => [
             <button
               key="edit"
-              className="flex items-center justify-center text-base-content transition-colors hover:text-primary"
+              className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
               title="Edit point"
               onClick={e => {
                 e.stopPropagation();
@@ -81,7 +85,7 @@ export const MapMainTab = () => {
               <TbEdit className="h-3.5 w-3.5" />
             </button>,
           ]}
-          renderPopover={(point) => (
+          renderPopover={point => (
             <NodeProvider id={point.id}>
               <ToolbarSection title="Location">
                 <ToolbarItem
@@ -119,7 +123,10 @@ export const MapMainTab = () => {
     ),
     Properties: (
       <>
-        <ToolbarSection title="Map Settings" help="Interactive, static, or background display mode.">
+        <ToolbarSection
+          title="Map Settings"
+          help="Interactive, static, or background display mode."
+        >
           <ToolbarItem
             propKey="type"
             propType="component"

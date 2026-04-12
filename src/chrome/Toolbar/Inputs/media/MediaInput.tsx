@@ -55,7 +55,8 @@ export const MediaInput = propa => {
   const mediaId = nodeProps[propKey];
   const contentUrl = nodeProps[contentKey];
   const hasMedia = !!mediaId;
-  const hasContentUrl = !!contentUrl && typeof contentUrl === "string" && contentUrl.startsWith("http");
+  const hasContentUrl =
+    !!contentUrl && typeof contentUrl === "string" && contentUrl.startsWith("http");
   const selectedMedia = hasMedia ? getMediaById(query, mediaId) : null;
   const isSvg = selectedMedia?.type === "svg";
   const svgContent = isSvg ? selectedMedia?.metadata?.svg : null;
@@ -100,10 +101,10 @@ export const MediaInput = propa => {
           {/* Preview if media exists or content URL exists */}
           {(hasMedia && (svgContent || imageUrl)) || (hasContentUrl && imageUrl) ? (
             <div className="relative">
-              <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-base-100 p-2">
+              <div className="bg-base-100 flex aspect-video items-center justify-center overflow-hidden rounded-lg p-2">
                 {svgContent ? (
                   <div
-                    className="flex size-full items-center justify-center text-base-content [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
+                    className="text-base-content flex size-full items-center justify-center [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
                     dangerouslySetInnerHTML={{ __html: svgContent }}
                   />
                 ) : imageUrl ? (
@@ -119,14 +120,13 @@ export const MediaInput = propa => {
               {/* Clear button - only show when media is set or content URL exists */}
               <button
                 onClick={handleClear}
-                className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-error text-xs font-bold text-error-content hover:bg-error/90"
+                className="bg-error text-error-content hover:bg-error/90 absolute top-1 right-1 flex size-4 items-center justify-center rounded-full text-xs font-bold"
                 title="Clear media"
               >
                 ×
               </button>
             </div>
           ) : null}
-
 
           {/* URL Input Field - only show when there's a content URL */}
           {hasContentUrl && (
@@ -140,9 +140,9 @@ export const MediaInput = propa => {
                 value={contentUrl || ""}
                 onChange={e => handleContentUrlChange(e.target.value)}
                 placeholder="https://example.com/image.jpg"
-                className="input px-3! py-2! placeholder:text-neutral-content"
+                className="input placeholder:text-neutral-content px-3! py-2!"
               />
-              <p className="text-xs text-neutral-content">
+              <p className="text-neutral-content text-xs">
                 Enter a direct image URL or use the media library below
               </p>
             </div>
@@ -165,7 +165,12 @@ export const MediaInput = propa => {
           accordionPassive
         >
           <TailwindInput propKey="objectFit" label="Object Fit" prop="objectFit" type="select" />
-          <TailwindInput propKey="objectPosition" label="Object Position" prop="objectPosition" type="select" />
+          <TailwindInput
+            propKey="objectPosition"
+            label="Object Position"
+            prop="objectPosition"
+            type="select"
+          />
         </ToolbarSection>
 
         <MediaManagerModal

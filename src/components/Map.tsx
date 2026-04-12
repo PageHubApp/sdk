@@ -30,7 +30,6 @@ export interface MapProps extends BaseSelectorProps {
   title?: string;
 }
 
-
 /**
  * Convert lat/lng/zoom to OSM tile coordinates.
  * See: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
@@ -52,7 +51,16 @@ function getStaticTileUrl(lat: number, lng: number, zoom: number, tileStyle: Til
 }
 
 export const Map = (incomingProps: MapProps) => {
-  let props: any = { lat: 51.505, lng: -0.09, zoom: 13, type: "interactive", tileStyle: "osm", grayscale: false, title: "", ...incomingProps };
+  let props: any = {
+    lat: 51.505,
+    lng: -0.09,
+    zoom: 13,
+    type: "interactive",
+    tileStyle: "osm",
+    grayscale: false,
+    title: "",
+    ...incomingProps,
+  };
 
   const {
     connectors: { connect, drag },
@@ -60,7 +68,6 @@ export const Map = (incomingProps: MapProps) => {
   } = useNode();
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
-
 
   props = setClonedProps(props, query);
 
@@ -163,7 +170,7 @@ export const Map = (incomingProps: MapProps) => {
       return (
         <React.Suspense
           fallback={
-            <div className="flex size-full items-center justify-center text-neutral-content">
+            <div className="text-neutral-content flex size-full items-center justify-center">
               Loading map...
             </div>
           }

@@ -42,7 +42,7 @@ export const SelectMapTool = () => {
       key={`${id}-select-map`}
       position="right"
       align="middle"
-      className="pointer-events-auto select-none items-center whitespace-nowrap"
+      className="pointer-events-auto items-center whitespace-nowrap select-none"
     >
       <div className="node-control" onMouseDown={e => e.stopPropagation()}>
         <Tooltip content="Select Map">
@@ -54,4 +54,3 @@ export const SelectMapTool = () => {
     </RenderNodeControlInline>
   );
 };
-

@@ -58,12 +58,7 @@ export const SizeInput = () => (
             />
           </ToolbarSection>
 
-          <ToolbarSection
-            title="Aspect Ratio"
-            subtitle={true}
-            full={1}
-            collapsible={false}
-          >
+          <ToolbarSection title="Aspect Ratio" subtitle={true} full={1} collapsible={false}>
             <TailwindInput propKey="aspectRatio" label="Ratio" prop="aspectRatio" type="select" />
           </ToolbarSection>
         </ItemAdvanceToggle>

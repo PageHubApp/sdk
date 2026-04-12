@@ -7,7 +7,10 @@ interface PaletteContextType {
 
 const PaletteContext = createContext<PaletteContextType>({ palette: [] });
 
-export function PaletteProvider({ palette, children }: {
+export function PaletteProvider({
+  palette,
+  children,
+}: {
   palette: NamedColor[];
   children: React.ReactNode;
 }) {

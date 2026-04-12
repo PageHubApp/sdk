@@ -8,10 +8,27 @@ import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 // Inlined to avoid circular dep (FormElement.tsx → UnifiedSettings → registry → this file)
 const inputTypes = [
-  "text", "textarea", "email", "password", "url", "tel",
-  "date", "datetime-local", "radio", "checkbox", "select",
-  "reset", "hidden", "color", "file", "month", "number", "range",
-  "search", "time", "week",
+  "text",
+  "textarea",
+  "email",
+  "password",
+  "url",
+  "tel",
+  "date",
+  "datetime-local",
+  "radio",
+  "checkbox",
+  "select",
+  "reset",
+  "hidden",
+  "color",
+  "file",
+  "month",
+  "number",
+  "range",
+  "search",
+  "time",
+  "week",
 ];
 
 export const FormElementMainTab = () => {
@@ -41,7 +58,13 @@ export const FormElementMainTab = () => {
           labelHide={true}
           label="Input Name"
         />
-        <ToolbarItem propKey="type" propType="component" type="select" label="Type" labelHide={true}>
+        <ToolbarItem
+          propKey="type"
+          propType="component"
+          type="select"
+          label="Type"
+          labelHide={true}
+        >
           {inputTypes.map((_, k) => (
             <option key={_}>{_}</option>
           ))}
@@ -63,7 +86,10 @@ export const FormElementMainTab = () => {
           </ToolbarSection>
         )}
 
-        <ToolbarSection title="Additional Properties" help="Required, disabled, read-only, and URL prefill.">
+        <ToolbarSection
+          title="Additional Properties"
+          help="Required, disabled, read-only, and URL prefill."
+        >
           <ToolbarItem
             propKey="required"
             propType="component"

@@ -100,7 +100,11 @@ const codeHighlightStyle = HighlightStyle.define([
   { tag: t.special(t.variableName), color: mixToInk("var(--accent)", 50) },
   { tag: [t.changed, t.annotation], color: "var(--neutral-content)" },
 
-  { tag: [t.comment, t.lineComment, t.blockComment, t.docComment], color: "var(--neutral-content)", fontStyle: "italic" },
+  {
+    tag: [t.comment, t.lineComment, t.blockComment, t.docComment],
+    color: "var(--neutral-content)",
+    fontStyle: "italic",
+  },
   { tag: t.meta, color: "var(--neutral-content)", fontStyle: "italic" },
   {
     tag: [t.processingInstruction, t.documentMeta],
@@ -143,7 +147,8 @@ const createCustomTheme = (isDark: boolean) => {
             "color-mix(in oklch, var(--primary) 46%, var(--color-base-300)) !important",
         },
         ".cm-content ::selection": {
-          backgroundColor: "color-mix(in oklch, var(--primary) 46%, var(--color-base-300)) !important",
+          backgroundColor:
+            "color-mix(in oklch, var(--primary) 46%, var(--color-base-300)) !important",
         },
         ".cm-gutters": {
           backgroundColor: "transparent !important",
@@ -283,7 +288,7 @@ export const CodeEditor = ({
   );
 
   return (
-    <div className="overflow-hidden rounded-lg border border-base-300 bg-base-200 focus-within:border-primary/50 hover:bg-base-300/25">
+    <div className="border-base-300 bg-base-200 focus-within:border-primary/50 hover:bg-base-300/25 overflow-hidden rounded-lg border">
       <CodeMirror
         value={typeof value === "string" ? value : String(value || "")}
         height={height}
@@ -316,9 +321,7 @@ export const CodeEditor = ({
         }}
         placeholder={placeholder}
         className={
-          toolbarDenseCode
-            ? "text-[10px] leading-snug [&_.cm-content]:text-[10px]"
-            : "text-sm"
+          toolbarDenseCode ? "text-[10px] leading-snug [&_.cm-content]:text-[10px]" : "text-sm"
         }
       />
     </div>

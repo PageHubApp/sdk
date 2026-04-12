@@ -2,7 +2,10 @@ import { useEditor, useNode } from "@craftjs/core";
 import React from "react";
 import { useAtomValue } from "@zedux/react";
 import { twMerge } from "tailwind-merge";
-import { buildVariantPrefix, editorCanvasViewToClassPrefixKey } from "../../utils/tailwind/className";
+import {
+  buildVariantPrefix,
+  editorCanvasViewToClassPrefixKey,
+} from "../../utils/tailwind/className";
 import { ViewSelectionAtom } from "../Toolbar/Label";
 import { useIsInlineRender } from "../InlineRenderContext";
 import RenderNodeControl from "../RenderNodeControl";
@@ -186,7 +189,10 @@ export const DragAdjustNodeController = (props: {
                   prop.className = twMerge(prop.className || "", prefix + tailwindClass);
                 } else {
                   const tailwindProp = PROP_VAR_MAP[propVar] || propVar;
-                  prop.className = twMerge(prop.className || "", prefix + `${tailwindProp}-[${numericValue}${unit}]`);
+                  prop.className = twMerge(
+                    prop.className || "",
+                    prefix + `${tailwindProp}-[${numericValue}${unit}]`
+                  );
                 }
               }
             }, 50);
@@ -263,7 +269,10 @@ export const DragAdjustNodeController = (props: {
                   } else {
                     // Map propVar to Tailwind abbreviation for non-px units too
                     const tailwindProp = PROP_VAR_MAP[propVar] || propVar;
-                    prop.className = twMerge(prop.className || "", prefix + `${tailwindProp}-[${numericValue}${unit}]`);
+                    prop.className = twMerge(
+                      prop.className || "",
+                      prefix + `${tailwindProp}-[${numericValue}${unit}]`
+                    );
                   }
                 }
               }, 50);

@@ -3,7 +3,10 @@ export type ToolbarFormatLanguage = "html" | "css" | "javascript" | "js";
 /**
  * Prettier via dynamic import so the editor chunk stays small until first format.
  */
-export async function formatToolbarCode(source: string, language: ToolbarFormatLanguage): Promise<string> {
+export async function formatToolbarCode(
+  source: string,
+  language: ToolbarFormatLanguage
+): Promise<string> {
   const trimmed = source.trim();
   if (!trimmed) return source;
 

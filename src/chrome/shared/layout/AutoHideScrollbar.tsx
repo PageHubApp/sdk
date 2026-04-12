@@ -42,7 +42,7 @@ export function AutoHideScrollbar({
     setVisible(true);
     if (hideTimer.current) clearTimeout(hideTimer.current);
     hideTimer.current = setTimeout(() => {
-      setDragging((d) => {
+      setDragging(d => {
         if (!d) setVisible(false);
         return d;
       });
@@ -61,7 +61,7 @@ export function AutoHideScrollbar({
 
   const handleMouseLeave = useCallback(() => {
     if (hideTimer.current) clearTimeout(hideTimer.current);
-    setDragging((d) => {
+    setDragging(d => {
       if (!d) hideTimer.current = setTimeout(() => setVisible(false), 300);
       return d;
     });
@@ -88,8 +88,7 @@ export function AutoHideScrollbar({
       if (thumbRange <= 0) return;
       const deltaY = e.clientY - dragStart.current.y;
       el.scrollTop =
-        dragStart.current.scrollTop +
-        (deltaY / thumbRange) * (scrollHeight - clientHeight);
+        dragStart.current.scrollTop + (deltaY / thumbRange) * (scrollHeight - clientHeight);
     };
     const handleUp = () => setDragging(false);
     document.addEventListener("mousemove", handleMove);

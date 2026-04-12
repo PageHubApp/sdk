@@ -48,10 +48,15 @@ export const ItemToggle = ({ items = [], children, selected, onChange, option = 
         {isOpen && (
           <>
             {/* Backdrop to close dropdown */}
-            <div role="presentation" aria-hidden="true" className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+            <div
+              role="presentation"
+              aria-hidden="true"
+              className="fixed inset-0 z-10"
+              onClick={() => setIsOpen(false)}
+            />
 
             {/* Dropdown menu */}
-            <div className="absolute right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-base-300 bg-neutral font-sans text-neutral-content shadow-lg">
+            <div className="border-base-300 bg-neutral text-neutral-content absolute top-full right-0 z-20 mt-1 overflow-hidden rounded-lg border font-sans shadow-lg">
               {items.map(item => (
                 <button
                   key={item.id}
@@ -59,7 +64,7 @@ export const ItemToggle = ({ items = [], children, selected, onChange, option = 
                     onChange(item.id);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center gap-2 whitespace-nowrap px-3 py-2 text-left font-sans text-xs hover:bg-neutral ${
+                  className={`hover:bg-neutral flex w-full items-center gap-2 px-3 py-2 text-left font-sans text-xs whitespace-nowrap ${
                     selected === item.id ? "bg-neutral" : ""
                   }`}
                 >

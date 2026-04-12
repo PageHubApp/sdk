@@ -3,7 +3,11 @@ import { ToolbarItem, ToolbarSection } from "../../index";
 
 export const AccessibilityInput = () => {
   return (
-    <ToolbarSection title="ARIA" icon={<TbAccessible />} help="Labels and roles for screen readers and assistive tools.">
+    <ToolbarSection
+      title="ARIA"
+      icon={<TbAccessible />}
+      help="Labels and roles for screen readers and assistive tools."
+    >
       <ToolbarItem
         propKey="ariaLabel"
         propType="component"
@@ -99,4 +103,3 @@ export const AccessibilityInput = () => {
     </ToolbarSection>
   );
 };
-

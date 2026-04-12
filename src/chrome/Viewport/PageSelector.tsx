@@ -103,7 +103,11 @@ export function PageSelector({
       if (!pageExists) {
         const homeId =
           pages.find(p => {
-            try { return query.node(p.id).get()?.data?.props?.isHomePage; } catch { return false; }
+            try {
+              return query.node(p.id).get()?.data?.props?.isHomePage;
+            } catch {
+              return false;
+            }
           })?.id ?? pages[0]?.id;
         if (homeId) isolatePageAlt(isolate, query, homeId, actions, setIsolate, true);
       }
@@ -173,7 +177,8 @@ export function PageSelector({
     try {
       const currentPath = router?.asPath?.split("?")[0] || "/";
       const pathParts = currentPath.split("/").filter(p => p);
-      const baseUrl = pathParts.length > 1 ? `/${pathParts[0]}/${pathParts[1]}` : `/${pathParts[0] || ""}`;
+      const baseUrl =
+        pathParts.length > 1 ? `/${pathParts[0]}/${pathParts[1]}` : `/${pathParts[0] || ""}`;
 
       // Check if this page is marked as home page
       const node = query.node(pageId).get();
@@ -210,17 +215,27 @@ export function PageSelector({
   // Home page fallback — used when no page is isolated
   const homePage =
     pages.find(p => {
-      try { return query.node(p.id).get()?.data?.props?.isHomePage; } catch { return false; }
-    }) ?? pages[0] ?? null;
+      try {
+        return query.node(p.id).get()?.data?.props?.isHomePage;
+      } catch {
+        return false;
+      }
+    }) ??
+    pages[0] ??
+    null;
 
   // Current page: explicit isolation > home page fallback (never "all pages")
   const currentPage = pickerMode
-    ? (selectedPageId ? pages.find(p => p.id === selectedPageId) : null) ?? null
-    : (isolate ? pages.find(p => p.id === isolate) : null) ?? homePage;
+    ? ((selectedPageId ? pages.find(p => p.id === selectedPageId) : null) ?? null)
+    : ((isolate ? pages.find(p => p.id === isolate) : null) ?? homePage);
 
   const displayText = pickerMode
-    ? currentPage ? currentPage.displayName : "Select a page"
-    : currentPage ? currentPage.displayName : "No Pages";
+    ? currentPage
+      ? currentPage.displayName
+      : "Select a page"
+    : currentPage
+      ? currentPage.displayName
+      : "No Pages";
 
   // Check if current page is home page
   const currentNode = currentPage ? query.node(currentPage.id).get() : null;
@@ -248,10 +263,7 @@ export function PageSelector({
     <div className={`relative ${className} flex items-center gap-2`} ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={
-          buttonClassName ||
-          "ph-menu-trigger py-1.5 text-sm"
-        }
+        className={buttonClassName || "ph-menu-trigger py-1.5 text-sm"}
         aria-label="Page selector"
       >
         <div className="flex flex-1 items-center gap-2 overflow-hidden">
@@ -264,14 +276,14 @@ export function PageSelector({
           <div className="flex flex-1 items-center gap-1 overflow-hidden">
             {/* Path */}
             {displayRoute && (
-              <span className="truncate font-mono text-xs text-neutral-content">
+              <span className="text-neutral-content truncate font-mono text-xs">
                 {displayRoute}
               </span>
             )}
 
             {/* Page name — right-aligned, monospace */}
             {displayText && (
-              <span className="ml-auto shrink-0 font-mono text-[10px] text-neutral-content/60">
+              <span className="text-neutral-content/60 ml-auto shrink-0 font-mono text-[10px]">
                 {displayText}
               </span>
             )}
@@ -283,7 +295,7 @@ export function PageSelector({
       {!pickerMode && liveUrl && (
         <Tooltip content="Open page in a new tab" arrow={false} placement="bottom">
           <a
-            className="shrink-0 p-0 text-xs text-neutral-content transition-colors hover:text-base-content"
+            className="text-neutral-content hover:text-base-content shrink-0 p-0 text-xs transition-colors"
             href={liveUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -296,7 +308,7 @@ export function PageSelector({
       {isOpen && (
         <div className="ph-panel absolute inset-x-0 top-full z-50 mt-1 flex max-h-[500px] min-w-[220px] flex-col overflow-hidden">
           {/* Search Header - Fixed */}
-          <div className="border-b border-base-300 p-3">
+          <div className="border-base-300 border-b p-3">
             <input
               type="text"
               placeholder="Search pages..."
@@ -308,7 +320,7 @@ export function PageSelector({
           </div>
 
           {/* Scrollable Content */}
-          <div className="scrollbar flex-1 overflow-y-auto bg-base-100 text-base-content">
+          <div className="scrollbar bg-base-100 text-base-content flex-1 overflow-y-auto">
             {/* Page List */}
             {filteredPages.length > 0 ? (
               filteredPages.map(page => {
@@ -320,8 +332,8 @@ export function PageSelector({
                 return (
                   <div
                     key={page.id}
-                    className={`group flex w-full items-center gap-2 px-3 py-2 transition-colors hover:bg-neutral ${
-                      isSelected ? "bg-accent font-medium text-accent-content" : ""
+                    className={`group hover:bg-neutral flex w-full items-center gap-2 px-3 py-2 transition-colors ${
+                      isSelected ? "bg-accent text-accent-content font-medium" : ""
                     }`}
                   >
                     {pickerMode ? (
@@ -337,11 +349,11 @@ export function PageSelector({
                           className="opacity-70"
                         />
                         <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
-                          <span className="truncate text-sm text-base-content">
+                          <span className="text-base-content truncate text-sm">
                             {page.displayName}
                           </span>
                           {isPageHomePage && (
-                            <span className="truncate text-xs text-neutral-content">(Home)</span>
+                            <span className="text-neutral-content truncate text-xs">(Home)</span>
                           )}
                         </div>
                       </button>
@@ -363,12 +375,10 @@ export function PageSelector({
                           className="opacity-70"
                         />
                         <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
-                          <span className="truncate text-sm text-base-content">
+                          <span className="text-base-content truncate text-sm">
                             {page.displayName}
                           </span>
-                          <span className="truncate text-xs text-neutral-content">
-                            {pageRoute}
-                          </span>
+                          <span className="text-neutral-content truncate text-xs">{pageRoute}</span>
                         </div>
                       </Link>
                     )}
@@ -379,7 +389,7 @@ export function PageSelector({
                           setSettingsPageId(page.id);
                           setIsOpen(false);
                         }}
-                        className="shrink-0 p-1 text-neutral-content opacity-0 transition-opacity hover:text-base-content group-hover:opacity-100"
+                        className="text-neutral-content hover:text-base-content shrink-0 p-1 opacity-0 transition-opacity group-hover:opacity-100"
                         aria-label="Page settings"
                       >
                         <TbSettings size={16} />
@@ -389,17 +399,17 @@ export function PageSelector({
                 );
               })
             ) : searchQuery ? (
-              <div className="px-3 py-4 text-center text-sm text-neutral-content">
+              <div className="text-neutral-content px-3 py-4 text-center text-sm">
                 No pages found
               </div>
             ) : null}
           </div>
 
           {/* Footer - Fixed */}
-          <div className="border-t border-base-300">
+          <div className="border-base-300 border-t">
             <button
               onClick={handleCreatePage}
-              className="flex w-full items-center gap-2 px-3 py-2 text-primary transition-colors hover:bg-neutral hover:text-primary"
+              className="text-primary hover:bg-neutral hover:text-primary flex w-full items-center gap-2 px-3 py-2 transition-colors"
             >
               <TbPlus />
               <span className="text-sm font-medium">Create New Page</span>

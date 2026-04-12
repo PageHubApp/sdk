@@ -30,7 +30,10 @@ import { VariableSuggestionPopup } from "../chrome/Tools/VariableSuggestion";
 import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { replaceVariables, resolveVariable } from "../utils/design/variables";
 import { getEditorVariableOptions } from "../utils/editorVariableOptions";
-import { isVisuallyEmptyRichText, persistedTextHtmlFromEditor } from "../utils/isVisuallyEmptyRichText";
+import {
+  isVisuallyEmptyRichText,
+  persistedTextHtmlFromEditor,
+} from "../utils/isVisuallyEmptyRichText";
 import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { VariableNode, preprocessVariables } from "../extensions/VariableNode";
@@ -71,7 +74,7 @@ const TextEditorInlineKeymap = Extension.create({
 
 const getTiptapExtensions = (
   onSuggestion?: (props: SuggestionProps | null) => void,
-  queryRef?: { current: any },
+  queryRef?: { current: any }
 ) => [
   StarterKit.configure({
     heading: {},
@@ -105,12 +108,20 @@ const getTiptapExtensions = (
   VariableNode.configure({
     getVariables: () => getEditorVariableOptions(queryRef?.current),
     onSuggestion: onSuggestion || null,
-    resolveVariable: (id: string) => queryRef?.current ? resolveVariable(id, queryRef.current) : id,
+    resolveVariable: (id: string) =>
+      queryRef?.current ? resolveVariable(id, queryRef.current) : id,
   }),
   TextEditorInlineKeymap,
 ];
 
-function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
+function TextEditorMode({
+  props,
+  id,
+  query,
+  enabled,
+  isMounted,
+  setProp,
+}: {
   props: any;
   id: string;
   query: any;
@@ -306,8 +317,7 @@ function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
 
   const previewHtml = replaceVariables(rawText, query);
   const previewEmpty = isVisuallyEmptyRichText(previewHtml);
-  const showEmptyChrome =
-    enabled && previewEmpty && !isEditing && !isInsideLinkedComponent;
+  const showEmptyChrome = enabled && previewEmpty && !isEditing && !isInsideLinkedComponent;
   const showEmptyBlockHint = showEmptyChrome && isActive;
 
   return (
@@ -334,7 +344,7 @@ function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
             <div
               className={
                 tiptapVisuallyEmpty
-                  ? "w-full rounded-md border border-dashed border-base-300/55 bg-base-200/20 px-1.5 py-0.5"
+                  ? "border-base-300/55 bg-base-200/20 w-full rounded-md border border-dashed px-1.5 py-0.5"
                   : undefined
               }
             >
@@ -356,16 +366,29 @@ function TextEditorMode({ props, id, query, enabled, isMounted, setProp }: {
       </div>
       {enabled && isEditing && (
         <TiptapProvider editor={tiptapEditor}>
-          <InlineEditToolbar editor={tiptapEditor} onSave={() => {
-            const ed = tiptapEditorRef.current;
-            if (!ed || !enabled) return;
-            changeProp({ setProp, propKey: "text", propType: "component", value: persistedTextHtmlFromEditor(ed.getHTML()) });
-          }} />
+          <InlineEditToolbar
+            editor={tiptapEditor}
+            onSave={() => {
+              const ed = tiptapEditorRef.current;
+              if (!ed || !enabled) return;
+              changeProp({
+                setProp,
+                propKey: "text",
+                propType: "component",
+                value: persistedTextHtmlFromEditor(ed.getHTML()),
+              });
+            }}
+          />
         </TiptapProvider>
       )}
       {isEditing && <VariableSuggestionPopup suggestion={suggestion} />}
       {isEditing && (
-        <ReactTooltip id="variable-tip" variant="light" classNameArrow="hidden" className={REACT_TOOLTIP_SURFACE_CLASS} />
+        <ReactTooltip
+          id="variable-tip"
+          variant="light"
+          classNameArrow="hidden"
+          className={REACT_TOOLTIP_SURFACE_CLASS}
+        />
       )}
     </>
   );

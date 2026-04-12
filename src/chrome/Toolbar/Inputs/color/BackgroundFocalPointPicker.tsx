@@ -11,9 +11,7 @@ interface BackgroundFocalPointPickerProps {
   imageUrl?: string;
 }
 
-export function BackgroundFocalPointPicker({
-  imageUrl,
-}: BackgroundFocalPointPickerProps) {
+export function BackgroundFocalPointPicker({ imageUrl }: BackgroundFocalPointPickerProps) {
   const { actions, query } = useEditor();
   const view = useAtomValue(ViewAtom);
   const viewSelection = useAtomValue(ViewSelectionAtom);
@@ -240,8 +238,8 @@ export function BackgroundFocalPointPicker({
 
       {/* Picker Interface */}
       {isPickerOpen && (
-        <div className="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-200 p-3">
-          <div className="text-xs text-neutral-content">
+        <div className="border-base-300 bg-base-200 flex flex-col gap-3 rounded-lg border p-3">
+          <div className="text-neutral-content text-xs">
             Click or drag to set the focal point of your background image
           </div>
 
@@ -250,7 +248,7 @@ export function BackgroundFocalPointPicker({
             ref={pickerRef}
             role="presentation"
             aria-hidden="true"
-            className="relative aspect-video w-full cursor-crosshair select-none overflow-hidden rounded-lg border-2 border-base-300 bg-neutral"
+            className="border-base-300 bg-neutral relative aspect-video w-full cursor-crosshair overflow-hidden rounded-lg border-2 select-none"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -313,37 +311,29 @@ export function BackgroundFocalPointPicker({
 
             {/* Focal Point Crosshair */}
             <div
-              className="pointer-events-none absolute -ml-4 -mt-4 size-8"
+              className="pointer-events-none absolute -mt-4 -ml-4 size-8"
               style={{ left: `${currentFocalPoint.x}%`, top: `${currentFocalPoint.y}%` }}
             >
               {/* Outer ring */}
               <div className="absolute inset-0 rounded-full border-2 border-white shadow-lg"></div>
               {/* Inner dot */}
-              <div className="absolute inset-2 rounded-full bg-primary shadow-lg"></div>
+              <div className="bg-primary absolute inset-2 rounded-full shadow-lg"></div>
               {/* Crosshair lines */}
-              <div className="absolute left-1/2 top-0 h-full w-px bg-white opacity-50"></div>
-              <div className="absolute left-0 top-1/2 h-px w-full bg-white opacity-50"></div>
+              <div className="absolute top-0 left-1/2 h-full w-px bg-white opacity-50"></div>
+              <div className="absolute top-1/2 left-0 h-px w-full bg-white opacity-50"></div>
             </div>
           </div>
 
           {/* Position Display and Controls */}
           <div className="flex items-center justify-between gap-2">
-            <div className="font-mono text-xs text-neutral-content">
+            <div className="text-neutral-content font-mono text-xs">
               Position: {Math.round(currentFocalPoint.x)}%, {Math.round(currentFocalPoint.y)}%
             </div>
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleReset}
-                className="btn btn-secondary btn-sm"
-              >
+              <button type="button" onClick={handleReset} className="btn btn-secondary btn-sm">
                 Reset
               </button>
-              <button
-                type="button"
-                onClick={applyFocalPoint}
-                className="btn btn-primary btn-sm"
-              >
+              <button type="button" onClick={applyFocalPoint} className="btn btn-primary btn-sm">
                 Apply
               </button>
             </div>

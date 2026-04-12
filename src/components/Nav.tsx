@@ -37,7 +37,14 @@ const defaultMenu: NavMenu = {
 };
 
 export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
-  let props: any = { buttons: [], alignItems: "items-center", justifyContent: "justify-start", gap: "gap-2", menu: defaultMenu, ...incomingProps };
+  let props: any = {
+    buttons: [],
+    alignItems: "items-center",
+    justifyContent: "justify-start",
+    gap: "gap-2",
+    menu: defaultMenu,
+    ...incomingProps,
+  };
 
   const {
     connectors: { connect, drag },
@@ -45,8 +52,6 @@ export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
   } = useNode();
 
   const { actions, query, enabled } = useEditor(state => getClonedState(props, state));
-
-
 
   props = setClonedProps(props, query);
 
@@ -67,29 +72,37 @@ export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
       const node = query.node(id).get();
       const childIds = node.data.nodes || [];
 
-      const walkAndFix = (nid) => {
+      const walkAndFix = nid => {
         try {
           const n = query.node(nid).get();
           // Fix Container id prop
           if (n.data.props?.id === "mobile-menu") {
-            actions.setProp(nid, (p) => { p.id = uniqueId; });
+            actions.setProp(nid, p => {
+              p.id = uniqueId;
+            });
           }
           // Fix action.target references (new system)
           if (n.data.props?.action?.target === "mobile-menu") {
-            actions.setProp(nid, (p) => { p.action = { ...p.action, target: uniqueId }; });
+            actions.setProp(nid, p => {
+              p.action = { ...p.action, target: uniqueId };
+            });
           }
           // Fix legacy click.value references
           if (n.data.props?.click?.value === "mobile-menu") {
-            actions.setProp(nid, (p) => { p.click = { ...p.click, value: uniqueId }; });
+            actions.setProp(nid, p => {
+              p.click = { ...p.click, value: uniqueId };
+            });
           }
-          for (const cid of (n.data.nodes || [])) walkAndFix(cid);
+          for (const cid of n.data.nodes || []) walkAndFix(cid);
         } catch {}
       };
 
       for (const childId of childIds) walkAndFix(childId);
 
       // Update the Nav's own menu.id
-      actions.setProp(id, (p) => { p.menu = { ...p.menu, id: uniqueId }; });
+      actions.setProp(id, p => {
+        p.menu = { ...p.menu, id: uniqueId };
+      });
     } catch (e) {
       console.warn("Nav: failed to auto-wire IDs", e);
     }
@@ -163,7 +176,14 @@ export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
 
       // Find the mobile-menu-items ButtonList by linked node ID
       const menuContainerId = childIds.find(cid => {
-        try { return query.node(cid).get().data.props?.id === menuId || document.getElementById(menuId)?.getAttribute("node-id") === cid; } catch { return false; }
+        try {
+          return (
+            query.node(cid).get().data.props?.id === menuId ||
+            document.getElementById(menuId)?.getAttribute("node-id") === cid
+          );
+        } catch {
+          return false;
+        }
       });
       if (!menuContainerId) return;
 
@@ -172,7 +192,7 @@ export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
         try {
           const n = query.node(nodeId).get();
           if (n.data.name === "ButtonList") return nodeId;
-          for (const cid of (n.data.nodes || [])) {
+          for (const cid of n.data.nodes || []) {
             const found = findButtonList(cid);
             if (found) return found;
           }
@@ -188,14 +208,26 @@ export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
 
       // Get desktop nav buttons (exclude hamburger)
       const desktopButtons = childIds
-        .map(cid => { try { return query.node(cid).get(); } catch { return null; } })
+        .map(cid => {
+          try {
+            return query.node(cid).get();
+          } catch {
+            return null;
+          }
+        })
         .filter(n => n && n.data.name === "Button" && n.data.props?.click?.value !== menuId);
 
       // Get existing mobile button texts to avoid duplicates
       const existingTexts = new Set(
-        existingMobileButtons.map(cid => {
-          try { return query.node(cid).get().data.props?.text; } catch { return null; }
-        }).filter(Boolean)
+        existingMobileButtons
+          .map(cid => {
+            try {
+              return query.node(cid).get().data.props?.text;
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean)
       );
 
       // Add missing buttons
@@ -204,14 +236,16 @@ export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
 
       desktopButtons.forEach(btn => {
         if (existingTexts.has(btn.data.props.text)) return;
-        const tree = query.parseReactElement(
-          <Button
-            text={btn.data.props.text || "Link"}
-            url={btn.data.props.url || "#"}
-            icon={btn.data.props.icon}
-            className="flex w-full justify-start px-(--button-padding-x) py-(--button-padding-y)"
-          />
-        ).toNodeTree();
+        const tree = query
+          .parseReactElement(
+            <Button
+              text={btn.data.props.text || "Link"}
+              url={btn.data.props.url || "#"}
+              icon={btn.data.props.icon}
+              className="flex w-full justify-start px-(--button-padding-x) py-(--button-padding-y)"
+            />
+          )
+          .toNodeTree();
         actions.addNodeTree(tree, buttonListId);
       });
     } catch (e) {
@@ -227,7 +261,8 @@ export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
 
     if (isMobileMenuView) {
       menuEl.classList.remove("hidden");
-      menuEl.style.cssText = "position:absolute;top:0;left:0;right:0;bottom:0;z-index:9999;display:flex;";
+      menuEl.style.cssText =
+        "position:absolute;top:0;left:0;right:0;bottom:0;z-index:9999;display:flex;";
       // Force mobile layout on child elements in the overlay preview at wide viewport
       Array.from(menuEl.querySelectorAll("[node-id]")).forEach(el => {
         const nid = el.getAttribute("node-id");
@@ -244,7 +279,8 @@ export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
           if (name === "ButtonList") {
             htmlEl.style.cssText = "display:flex;flex-direction:column;width:100%;gap:0.25rem;";
           } else if (displayName.includes("Header") || displayName.includes("header")) {
-            htmlEl.style.cssText = "display:flex;align-items:center;justify-content:flex-end;padding:0.75rem 1rem;border-bottom:1px solid rgba(0,0,0,0.1);";
+            htmlEl.style.cssText =
+              "display:flex;align-items:center;justify-content:flex-end;padding:0.75rem 1rem;border-bottom:1px solid rgba(0,0,0,0.1);";
           }
         } catch {}
       });
@@ -265,12 +301,12 @@ export const Nav: UserComponent<NavProps> = (incomingProps: NavProps) => {
       {hasActualButtons || !enabled
         ? children
         : enabled && (
-          <div className="flex w-auto items-center justify-center p-4">
-            <div data-empty-state={true} className="text-3xl">
-              <TbLayoutNavbar />
+            <div className="flex w-auto items-center justify-center p-4">
+              <div data-empty-state={true} className="text-3xl">
+                <TbLayoutNavbar />
+              </div>
             </div>
-          </div>
-        )}
+          )}
     </>
   );
 

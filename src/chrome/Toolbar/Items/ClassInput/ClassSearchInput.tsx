@@ -12,7 +12,12 @@ interface ClassSearchInputProps {
   setClassInput: (v: string) => void;
 }
 
-export function ClassSearchInput({ classes, onSave, classInput, setClassInput }: ClassSearchInputProps) {
+export function ClassSearchInput({
+  classes,
+  onSave,
+  classInput,
+  setClassInput,
+}: ClassSearchInputProps) {
   const [matches, setMatches] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -28,7 +33,9 @@ export function ClassSearchInput({ classes, onSave, classInput, setClassInput }:
       results = AllStyles.filter(s => s?.includes(classAfter)).map(cls => `${breakpoint}${cls}`);
     } else {
       const baseMatches = AllStyles.filter(s => s?.includes(classInput));
-      const responsive = baseMatches.slice(0, 5).flatMap(cls => BREAKPOINT_PREFIXES.map(bp => `${bp}${cls}`));
+      const responsive = baseMatches
+        .slice(0, 5)
+        .flatMap(cls => BREAKPOINT_PREFIXES.map(bp => `${bp}${cls}`));
       results = [...baseMatches, ...responsive];
     }
 
@@ -40,7 +47,7 @@ export function ClassSearchInput({ classes, onSave, classInput, setClassInput }:
 
   return (
     <>
-      <label htmlFor="class-search-input" className="sr-only text-sm font-medium text-base-content">
+      <label htmlFor="class-search-input" className="text-base-content sr-only text-sm font-medium">
         Search
       </label>
       <BgWrap>
@@ -84,12 +91,19 @@ export function ClassSearchInput({ classes, onSave, classInput, setClassInput }:
             {...toolbarInputNoAutocompleteProps}
           />
           {classInput?.length > 0 && matches.length > 0 && matches[0].startsWith(classInput) && (
-            <div className="pointer-events-none absolute inset-0 z-0 flex items-center pl-2 pr-10">
+            <div className="pointer-events-none absolute inset-0 z-0 flex items-center pr-10 pl-2">
               <span className="invisible">{classInput}</span>
-              <span className="font-mono text-neutral-content">{matches[0].slice(classInput.length)}</span>
+              <span className="text-neutral-content font-mono">
+                {matches[0].slice(classInput.length)}
+              </span>
             </div>
           )}
-          <button type="button" className="btn-search" onClick={() => onSave()} aria-label="Apply class">
+          <button
+            type="button"
+            className="btn-search"
+            onClick={() => onSave()}
+            aria-label="Apply class"
+          >
             <TbSearch className="size-3.5" aria-hidden />
           </button>
         </div>
@@ -103,22 +117,46 @@ export function ClassSearchInput({ classes, onSave, classInput, setClassInput }:
                 key={k}
                 value={mat}
                 onClick={() => onSave(mat)}
-                className={k === selectedIndex ? "rounded-lg bg-accent text-accent-content ring-2 ring-accent" : ""}
+                className={
+                  k === selectedIndex
+                    ? "bg-accent text-accent-content ring-accent rounded-lg ring-2"
+                    : ""
+                }
               />
             ))}
           </div>
           {matches.length > 0 && (
-            <div className="border-t border-base-300 bg-neutral/50 p-2 text-xs text-neutral-content">
+            <div className="border-base-300 bg-neutral/50 text-neutral-content border-t p-2 text-xs">
               <div className="flex flex-wrap gap-1">
-                <span>Press <kbd className="rounded-lg border bg-base-200 px-1.5 py-0.5 text-base-content">Tab</kbd> to complete</span>
-                <span>Use <kbd className="rounded-lg border bg-base-200 px-1.5 py-0.5 text-base-content">↑↓</kbd> to navigate</span>
-                <span>Press <kbd className="rounded-lg border bg-base-200 px-1.5 py-0.5 text-base-content">Enter</kbd> to select</span>
+                <span>
+                  Press{" "}
+                  <kbd className="bg-base-200 text-base-content rounded-lg border px-1.5 py-0.5">
+                    Tab
+                  </kbd>{" "}
+                  to complete
+                </span>
+                <span>
+                  Use{" "}
+                  <kbd className="bg-base-200 text-base-content rounded-lg border px-1.5 py-0.5">
+                    ↑↓
+                  </kbd>{" "}
+                  to navigate
+                </span>
+                <span>
+                  Press{" "}
+                  <kbd className="bg-base-200 text-base-content rounded-lg border px-1.5 py-0.5">
+                    Enter
+                  </kbd>{" "}
+                  to select
+                </span>
               </div>
               <div className="mt-1">
                 Unprefixed classes are the base layer (mobile-first). Prefix with{" "}
                 {["sm:", "md:", "lg:", "xl:", "2xl:"].map((bp, i, arr) => (
                   <span key={bp}>
-                    <kbd className="rounded-lg border bg-base-200 px-1.5 py-0.5 text-base-content">{bp}</kbd>
+                    <kbd className="bg-base-200 text-base-content rounded-lg border px-1.5 py-0.5">
+                      {bp}
+                    </kbd>
                     {i < arr.length - 1 ? ", " : " "}
                   </span>
                 ))}

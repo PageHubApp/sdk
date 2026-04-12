@@ -23,7 +23,12 @@ export const DividerMainTab = () => {
 
   return renderComponentSlots({
     Properties: (
-      <ToolbarSection full={1} title="Properties" icon={SECTION_ICONS["Properties"]} help="Divider color.">
+      <ToolbarSection
+        full={1}
+        title="Properties"
+        icon={SECTION_ICONS["Properties"]}
+        help="Divider color."
+      >
         <ColorInput propKey="background" label="Background" prefix="bg" propType="class" />
         <SettingsAiSlot />
       </ToolbarSection>

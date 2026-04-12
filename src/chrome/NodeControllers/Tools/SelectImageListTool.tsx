@@ -42,7 +42,7 @@ export const SelectImageListTool = () => {
       key={`${id}-select-image-list`}
       position="right"
       align="middle"
-      className="pointer-events-auto select-none items-center whitespace-nowrap"
+      className="pointer-events-auto items-center whitespace-nowrap select-none"
     >
       <div className="node-control" onMouseDown={e => e.stopPropagation()}>
         <Tooltip content="Select Image List">
@@ -54,4 +54,3 @@ export const SelectImageListTool = () => {
     </RenderNodeControlInline>
   );
 };
-

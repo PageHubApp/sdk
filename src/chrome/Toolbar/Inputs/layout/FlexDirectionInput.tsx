@@ -40,11 +40,7 @@ function getDirectionOptions(mode: FlexMode | undefined): DirOption[] {
   ];
 }
 
-export const FlexDirectionInput = ({
-  wrap = "",
-  inline = true,
-  mode,
-}: FlexDirectionInputProps) => {
+export const FlexDirectionInput = ({ wrap = "", inline = true, mode }: FlexDirectionInputProps) => {
   const view = useAtomValue(ViewAtom);
   const viewSelection = useAtomValue(ViewSelectionAtom);
   const classDark = viewSelection.dark ?? false;

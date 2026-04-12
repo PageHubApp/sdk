@@ -13,19 +13,26 @@ import { Container } from "./Container";
 import { Button } from "./Button";
 import { Text } from "./Text";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
-import { TabsMainTab, TabsMainTabAdvanced } from "../chrome/Toolbar/UnifiedSettings/mainTabs/TabsMainTab";
+import {
+  TabsMainTab,
+  TabsMainTabAdvanced,
+} from "../chrome/Toolbar/UnifiedSettings/mainTabs/TabsMainTab";
 import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
 
 const TAB_COUNT = 3;
 const GROUP_ID = "tabs-group";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {
-  return tag("div", {
-    class: staticClasses(props, ctx) || undefined,
-    style: getInlineStyle(props) || undefined,
-    role: "tablist",
-    ...ariaAttrs(props),
-  }, children);
+  return tag(
+    "div",
+    {
+      class: staticClasses(props, ctx) || undefined,
+      style: getInlineStyle(props) || undefined,
+      role: "tablist",
+      ...ariaAttrs(props),
+    },
+    children
+  );
 };
 
 function buildTabButton(index: number) {
@@ -45,10 +52,10 @@ function buildTabButton(index: number) {
         method: "class",
         group: GROUP_ID,
       }}
-      className={`px-4 py-2 text-sm font-medium border-b-2 rounded-none ${
+      className={`rounded-none border-b-2 px-4 py-2 text-sm font-medium ${
         isFirst
           ? "border-primary text-primary"
-          : "border-transparent text-neutral-content hover:text-base-content hover:border-base-300"
+          : "text-neutral-content hover:text-base-content hover:border-base-300 border-transparent"
       }`}
     />
   );
@@ -66,7 +73,7 @@ function buildTabPanel(index: number) {
       tabGroup={GROUP_ID}
       canDelete={true}
       canEditName={true}
-      className={`flex flex-col gap-container px-container-x py-container-y${isFirst ? "" : " hidden"}`}
+      className={`gap-container px-container-x flex flex-col py-container-y${isFirst ? "" : "hidden"}`}
     >
       <Element
         is={Text}
@@ -95,7 +102,7 @@ function buildTabsChildren() {
       custom={{ displayName: "Tab Bar" }}
       canDelete={true}
       canEditName={true}
-      className="flex flex-row gap-0 border-b border-base-300"
+      className="border-base-300 flex flex-row gap-0 border-b"
     >
       {buttons}
     </Element>,
@@ -104,50 +111,53 @@ function buildTabsChildren() {
   ];
 }
 
-export const TabsDef = defineComponent({
-  name: "Tabs",
-  component: Tabs,
-  icon: TbLayoutBottombar,
-  category: "Interactive",
-  canvas: true,
-  settings: TabsMainTab,
-  advancedSettings: TabsMainTabAdvanced,
-  toHTML,
-  disable: ["hoverClick"],
-  rules: {
-    canDrag: () => true,
-    canDelete: () => true,
-    canMoveIn: () => true,
-    canMoveOut: () => false,
-  },
-  tools: () => [
-    <NameNodeController
-      key="tabsName"
-      position="top"
-      align="start"
-      placement="end"
-      alt={{ position: "bottom", align: "start", placement: "start" }}
-    />,
-    <HoverNodeController
-      key="tabsHover"
-      position="top"
-      align="start"
-      placement="end"
-      alt={{ position: "bottom", align: "start", placement: "start" }}
-    />,
-    <DeleteNodeController key="tabsDelete" />,
-  ],
-  presets: [
-    {
-      label: "Tabs",
-      props: {
-        defaultTab: 0,
-        orientation: "horizontal",
-        mobileMode: "scroll",
-        className: "flex flex-col w-full",
-        custom: {},
-      },
-      children: buildTabsChildren,
+export const TabsDef = defineComponent(
+  {
+    name: "Tabs",
+    component: Tabs,
+    icon: TbLayoutBottombar,
+    category: "Interactive",
+    canvas: true,
+    settings: TabsMainTab,
+    advancedSettings: TabsMainTabAdvanced,
+    toHTML,
+    disable: ["hoverClick"],
+    rules: {
+      canDrag: () => true,
+      canDelete: () => true,
+      canMoveIn: () => true,
+      canMoveOut: () => false,
     },
-  ],
-}, { __internal: true });
+    tools: () => [
+      <NameNodeController
+        key="tabsName"
+        position="top"
+        align="start"
+        placement="end"
+        alt={{ position: "bottom", align: "start", placement: "start" }}
+      />,
+      <HoverNodeController
+        key="tabsHover"
+        position="top"
+        align="start"
+        placement="end"
+        alt={{ position: "bottom", align: "start", placement: "start" }}
+      />,
+      <DeleteNodeController key="tabsDelete" />,
+    ],
+    presets: [
+      {
+        label: "Tabs",
+        props: {
+          defaultTab: 0,
+          orientation: "horizontal",
+          mobileMode: "scroll",
+          className: "flex flex-col w-full",
+          custom: {},
+        },
+        children: buildTabsChildren,
+      },
+    ],
+  },
+  { __internal: true }
+);

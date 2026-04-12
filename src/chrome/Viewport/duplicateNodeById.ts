@@ -15,8 +15,7 @@ export async function duplicateNodeById({
   id: string;
 }): Promise<void> {
   await saveHandler({ query, id, component: null, actions });
-  const getCloneTree = (tree: any) =>
-    buildClonedTree({ tree, query, setProp, createLinks: false });
+  const getCloneTree = (tree: any) => buildClonedTree({ tree, query, setProp, createLinks: false });
   await new Promise<void>(resolve => {
     requestAnimationFrame(() => {
       addHandler({

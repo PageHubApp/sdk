@@ -10,11 +10,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import React, { useEffect, useMemo } from "react";
 import { BiPaint } from "react-icons/bi";
-import {
-  TbBoxPadding,
-  TbMouse,
-  TbSettings,
-} from "react-icons/tb";
+import { TbBoxPadding, TbMouse, TbSettings } from "react-icons/tb";
 import { useDefaultTab, useScrollToActiveTab } from "utils/lib";
 import { registerUnifiedSettings } from "../../../components/LazyUnifiedSettings";
 import { useSetAtomState } from "../../../utils/atoms";
@@ -80,22 +76,21 @@ export const UnifiedSettings = () => {
   // Build head — always 5 tabs
   const icon = toolbar?.icon;
   const resolvedIcon = icon
-    ? typeof icon === "function" ? React.createElement(icon as React.ComponentType)
-      : React.isValidElement(icon) ? icon
+    ? typeof icon === "function"
+      ? React.createElement(icon as React.ComponentType)
+      : React.isValidElement(icon)
+        ? icon
         : null
     : null;
-  const head = useMemo(() => [
-    { title: displayName || "Component", icon: resolvedIcon },
-    ...FIXED_HEAD.slice(1),
-  ], [displayName, resolvedIcon]);
+  const head = useMemo(
+    () => [{ title: displayName || "Component", icon: resolvedIcon }, ...FIXED_HEAD.slice(1)],
+    [displayName, resolvedIcon]
+  );
 
   useDefaultTab(head, activeTab, setActiveTab);
 
   // ── Hidden set ──────────────────────────────────────────────────────
-  const hidden = useMemo(
-    () => new Set<HideKey>(toolbar?.hide ?? []),
-    [toolbar?.hide]
-  );
+  const hidden = useMemo(() => new Set<HideKey>(toolbar?.hide ?? []), [toolbar?.hide]);
 
   const override = toolbar?.override;
 
@@ -108,24 +103,26 @@ export const UnifiedSettings = () => {
   const sections = useMemo(() => {
     if (isSearching) {
       // Flat search: all matching sections across all tabs
-      return [{
-        title: `Results for "${search}"`,
-        children: (
-          <RegistrySectionList
-            sections={getSections({ search, hidden })}
-            toolbar={toolbar}
-            hidden={hidden}
-            override={override}
-          />
-        ),
-      }];
+      return [
+        {
+          title: `Results for "${search}"`,
+          children: (
+            <RegistrySectionList
+              sections={getSections({ search, hidden })}
+              toolbar={toolbar}
+              hidden={hidden}
+              override={override}
+            />
+          ),
+        },
+      ];
     }
 
     // Normal tab structure
     return TAB_IDS.map((tabId, i) => {
       const tabSections = getSections({ tab: tabId, hidden });
       return {
-        title: i === 0 ? (displayName || "Component") : head[i].title,
+        title: i === 0 ? displayName || "Component" : head[i].title,
         children: (
           <RegistrySectionList
             sections={tabSections}
@@ -143,7 +140,9 @@ export const UnifiedSettings = () => {
       <SearchEffects search={search} />
       <TBWrap head={head} unified={true} activeSection={activeTab}>
         {toolbar?.toolbarExtra ? (
-          <div className="empty:hidden border-b border-base-300 px-2 py-2">{toolbar.toolbarExtra}</div>
+          <div className="border-base-300 border-b px-2 py-2 empty:hidden">
+            {toolbar.toolbarExtra}
+          </div>
         ) : null}
         <UnifiedTabBody sections={sections} isInitialMount={isInitialMount} />
       </TBWrap>

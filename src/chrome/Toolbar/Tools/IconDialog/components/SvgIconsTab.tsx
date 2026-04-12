@@ -16,11 +16,18 @@ interface SvgIconsTabProps {
 
 export function SvgIconsTab({ d }: SvgIconsTabProps) {
   return (
-    <div role="tabpanel" id="icons-tabpanel" aria-labelledby="icons-tab" aria-label="SVG Icons selection">
+    <div
+      role="tabpanel"
+      id="icons-tabpanel"
+      aria-labelledby="icons-tab"
+      aria-label="SVG Icons selection"
+    >
       {/* Search */}
-      <div className="border-b border-base-300 bg-neutral px-3 py-2">
+      <div className="border-base-300 bg-neutral border-b px-3 py-2">
         <input
-          ref={el => { if (el) el.focus(); }}
+          ref={el => {
+            if (el) el.focus();
+          }}
           type="text"
           className="input-dialog-sm py-1.5!"
           placeholder="Search icons..."
@@ -30,12 +37,18 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
       </div>
 
       {/* Categories */}
-      <div className="border-b border-base-300 bg-base-200 p-3">
-        <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-base-content">
+      <div className="border-base-300 bg-base-200 border-b p-3">
+        <div className="text-base-content mb-1.5 flex items-center justify-between text-xs font-medium">
           Category
-          <div className="text-xs text-neutral-content">{d.filteredSvgIcons.length} icon{d.filteredSvgIcons.length !== 1 ? "s" : ""}</div>
+          <div className="text-neutral-content text-xs">
+            {d.filteredSvgIcons.length} icon{d.filteredSvgIcons.length !== 1 ? "s" : ""}
+          </div>
         </div>
-        <div className="scrollbar-light flex gap-1.5 overflow-x-auto py-1" role="group" aria-label="SVG icon categories">
+        <div
+          className="scrollbar-light flex gap-1.5 overflow-x-auto py-1"
+          role="group"
+          aria-label="SVG icon categories"
+        >
           {SVG_CATEGORIES.map(cat => (
             <button
               key={cat.id}
@@ -53,7 +66,12 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
       </div>
 
       {/* Grid */}
-      <div role="grid" aria-label="SVG Icons grid" aria-rowcount={d.svgRowCount} aria-colcount={COLUMN_COUNT}>
+      <div
+        role="grid"
+        aria-label="SVG Icons grid"
+        aria-rowcount={d.svgRowCount}
+        aria-colcount={COLUMN_COUNT}
+      >
         <Grid
           ref={d.svgGridRef}
           columnCount={COLUMN_COUNT}
@@ -62,7 +80,7 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
           rowCount={d.svgRowCount}
           rowHeight={ROW_HEIGHT}
           width={CONTAINER_WIDTH}
-          className="scrollbar-light border-b border-base-300 bg-base-200 text-base-content"
+          className="scrollbar-light border-base-300 bg-base-200 text-base-content border-b"
         >
           {({ columnIndex, rowIndex, style }) => {
             const index = rowIndex * COLUMN_COUNT + columnIndex;
@@ -72,7 +90,12 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
             const iconRef = `ref-icon:${icon}`;
             const isSelected = d.selectedIcon === iconRef;
             const isFocused = d.focusedSvgIconIndex === index;
-            const iconName = icon.split("/").pop()?.replace(/\.svg$/, "").replace(/-/g, " ") || "";
+            const iconName =
+              icon
+                .split("/")
+                .pop()
+                ?.replace(/\.svg$/, "")
+                .replace(/-/g, " ") || "";
 
             return (
               <div style={style}>
@@ -84,7 +107,7 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
                       ? "border-primary bg-primary/10 text-primary"
                       : isFocused
                         ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
-                        : "border-transparent hover:border-base-300 hover:bg-neutral"
+                        : "hover:border-base-300 hover:bg-neutral border-transparent"
                   }`}
                   aria-label={`SVG icon: ${iconName}`}
                   tabIndex={isFocused ? 0 : -1}
@@ -92,7 +115,7 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
                   aria-selected={isSelected}
                 >
                   <IconLoader icon={icon} />
-                  <span className="w-full truncate text-center text-[8px] leading-tight text-neutral-content">
+                  <span className="text-neutral-content w-full truncate text-center text-[8px] leading-tight">
                     {iconName}
                   </span>
                 </button>

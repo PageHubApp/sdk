@@ -17,7 +17,7 @@ export function TextSettingsTopNodeTool() {
 
   return (
     <NodeToolWrapper
-      className="m-1 rounded-lg bg-primary px-3 text-base-content shadow-inner"
+      className="bg-primary text-base-content m-1 rounded-lg px-3 shadow-inner"
       animate={{
         initial: { opacity: 0 },
         animate: {
@@ -46,7 +46,7 @@ export function TextSettingsTopNodeTool() {
         },
       }}
     >
-      <div className="h-6 w-16 overflow-hidden rounded-lg border border-base-300">
+      <div className="border-base-300 h-6 w-16 overflow-hidden rounded-lg border">
         <ColorInput propKey="color" label="" prefix="text" labelHide={true} />
       </div>
 
@@ -55,7 +55,7 @@ export function TextSettingsTopNodeTool() {
         <>
           <button
             onClick={() => tiptapEditor.chain().focus().toggleBold().run()}
-            className={`rounded-lg px-2 py-1 text-sm hover:bg-neutral ${
+            className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
               tiptapEditor.isActive("bold") ? "bg-neutral text-primary" : "text-base-content"
             }`}
             title="Bold"
@@ -65,7 +65,7 @@ export function TextSettingsTopNodeTool() {
 
           <button
             onClick={() => tiptapEditor.chain().focus().toggleItalic().run()}
-            className={`rounded-lg px-2 py-1 text-sm hover:bg-neutral ${
+            className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
               tiptapEditor.isActive("italic") ? "bg-neutral text-primary" : "text-base-content"
             }`}
             title="Italic"
@@ -75,7 +75,7 @@ export function TextSettingsTopNodeTool() {
 
           <button
             onClick={() => tiptapEditor.chain().focus().toggleUnderline().run()}
-            className={`rounded-lg px-2 py-1 text-sm hover:bg-neutral ${
+            className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
               tiptapEditor.isActive("underline") ? "bg-neutral text-primary" : "text-base-content"
             }`}
             title="Underline"
@@ -85,7 +85,7 @@ export function TextSettingsTopNodeTool() {
 
           <button
             onClick={() => tiptapEditor.chain().focus().toggleStrike().run()}
-            className={`rounded-lg px-2 py-1 text-sm hover:bg-neutral ${
+            className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
               tiptapEditor.isActive("strike") ? "bg-neutral text-primary" : "text-base-content"
             }`}
             title="Strikethrough"
@@ -95,7 +95,7 @@ export function TextSettingsTopNodeTool() {
 
           <button
             onClick={() => tiptapEditor.chain().focus().toggleCode().run()}
-            className={`rounded-lg px-2 py-1 text-sm hover:bg-neutral ${
+            className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
               tiptapEditor.isActive("code") ? "bg-neutral text-primary" : "text-base-content"
             }`}
             title="Code"
@@ -121,4 +121,3 @@ export function TextSettingsTopNodeTool() {
     </NodeToolWrapper>
   );
 }
-

@@ -7,7 +7,11 @@ import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 /** Services where the user pastes raw code instead of a URL */
 const CODE_PASTE_SERVICES: EmbedService[] = [
-  "custom", "stripe", "mailchimp", "convertkit", "beehiiv",
+  "custom",
+  "stripe",
+  "mailchimp",
+  "convertkit",
+  "beehiiv",
 ];
 
 /** Chat widget services that use an ID, not a URL */
@@ -80,7 +84,11 @@ export const EmbedMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Embed" icon={SECTION_ICONS["Content"]} help="Pick a service and paste the URL or embed code.">
+      <ToolbarSection
+        title="Embed"
+        icon={SECTION_ICONS["Content"]}
+        help="Pick a service and paste the URL or embed code."
+      >
         <ToolbarItem
           propKey="service"
           propType="component"
@@ -148,7 +156,7 @@ export const EmbedMainTab = () => {
               labelHide={false}
               placeholder={EMBED_SERVICES[service]?.placeholder}
             />
-            <p className="col-span-full text-[11px] leading-snug text-neutral-content">
+            <p className="text-neutral-content col-span-full text-[11px] leading-snug">
               {getServiceHelp(service)}
             </p>
           </>
@@ -157,7 +165,11 @@ export const EmbedMainTab = () => {
       </ToolbarSection>
     ),
     Properties: (
-      <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]} help="Title for accessibility and optional code override.">
+      <ToolbarSection
+        title="Properties"
+        icon={SECTION_ICONS["Properties"]}
+        help="Title for accessibility and optional code override."
+      >
         <ToolbarItem
           propKey="title"
           propType="component"

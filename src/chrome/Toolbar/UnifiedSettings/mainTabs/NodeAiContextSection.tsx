@@ -31,7 +31,7 @@ export function NodeAiContextSection() {
         props.designNotes = t ? t : undefined;
       });
     },
-    [actions, id],
+    [actions, id]
   );
 
   const setDesignTags = useCallback(
@@ -41,7 +41,7 @@ export function NodeAiContextSection() {
         props.designTags = normalized.length ? normalized : undefined;
       });
     },
-    [actions, id],
+    [actions, id]
   );
 
   if (id === ROOT_NODE) {
@@ -52,9 +52,9 @@ export function NodeAiContextSection() {
         defaultOpen={false}
         help="Page-wide tone lives in Site Settings (AI tab)."
       >
-        <p className="text-sm text-neutral-content">
+        <p className="text-neutral-content text-sm">
           Page-wide design notes and tags are edited in{" "}
-          <span className="font-medium text-base-content">Site Settings → AI</span>.
+          <span className="text-base-content font-medium">Site Settings → AI</span>.
         </p>
       </ToolbarSection>
     );
@@ -67,9 +67,9 @@ export function NodeAiContextSection() {
       defaultOpen={false}
       help="Describe this component for AI (assistant, fills, text tools). Not shown on the published site."
     >
-      <p className="mb-3 text-xs text-neutral-content">
-        Optional brief for models when this node is in scope. Page-wide defaults still apply from Site Settings →
-        AI.
+      <p className="text-neutral-content mb-3 text-xs">
+        Optional brief for models when this node is in scope. Page-wide defaults still apply from
+        Site Settings → AI.
       </p>
       <SiteAiToneForm
         fieldIdPrefix={`toolbar-ai-ctx-${id}-`}

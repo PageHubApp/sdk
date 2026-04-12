@@ -2,7 +2,12 @@ import { Editor, Element, Frame } from "@craftjs/core";
 import React, { useEffect, useMemo } from "react";
 import { DEFAULT_STYLE_GUIDE } from "../../../utils/defaults";
 
-export const buildElementFromStructure = (structure: any, resolver: any, key?: string, isRoot: boolean = true): any => {
+export const buildElementFromStructure = (
+  structure: any,
+  resolver: any,
+  key?: string,
+  isRoot: boolean = true
+): any => {
   // Guard against incomplete partial JSON structures
   if (!structure || !structure.type || !structure.props) return null;
 
@@ -20,7 +25,8 @@ export const buildElementFromStructure = (structure: any, resolver: any, key?: s
         ...structure,
         props: {
           ...structure.props,
-          content: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect width="800" height="600" fill="%23e5e7eb"/%3E%3C/svg%3E',
+          content:
+            'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect width="800" height="600" fill="%23e5e7eb"/%3E%3C/svg%3E',
         },
       };
     }
@@ -47,13 +53,13 @@ export const buildElementFromStructure = (structure: any, resolver: any, key?: s
   // Only strip vertical padding from the root container to keep the preview compact.
   // Leave child node padding intact so inner content spacing looks correct.
   let cleanedClassName = structure.props.className;
-  if (typeof cleanedClassName !== 'string') cleanedClassName = '';
+  if (typeof cleanedClassName !== "string") cleanedClassName = "";
   if (cleanedClassName && isRoot) {
     cleanedClassName = cleanedClassName
-      .replace(/py-\d+/g, 'py-2')
-      .replace(/pt-\d+/g, '')
-      .replace(/pb-\d+/g, '')
-      .replace(/\s+/g, ' ')
+      .replace(/py-\d+/g, "py-2")
+      .replace(/pt-\d+/g, "")
+      .replace(/pb-\d+/g, "")
+      .replace(/\s+/g, " ")
       .trim();
   }
 
@@ -94,7 +100,7 @@ class PreviewErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex h-32 w-full items-center justify-center rounded-lg bg-neutral text-xs text-neutral-content">
+        <div className="bg-neutral text-neutral-content flex h-32 w-full items-center justify-center rounded-lg text-xs">
           Preview unavailable
         </div>
       );
@@ -117,9 +123,13 @@ const PREVIEW_DESIGN_VARS: React.CSSProperties & Record<string, string> = {
   "--body-font-family": `'${DEFAULT_STYLE_GUIDE.bodyFontFamily}', system-ui, sans-serif`,
   "--button-padding": DEFAULT_STYLE_GUIDE.buttonPadding,
   "--button-padding-x": DEFAULT_STYLE_GUIDE.buttonPadding.split(" ")[0],
-  "--button-padding-y": DEFAULT_STYLE_GUIDE.buttonPadding.split(" ")[1] || DEFAULT_STYLE_GUIDE.buttonPadding.split(" ")[0],
+  "--button-padding-y":
+    DEFAULT_STYLE_GUIDE.buttonPadding.split(" ")[1] ||
+    DEFAULT_STYLE_GUIDE.buttonPadding.split(" ")[0],
   "--container-padding": DEFAULT_STYLE_GUIDE.containerPadding,
-  "--container-padding-x": DEFAULT_STYLE_GUIDE.containerPadding.split(" ")[1] || DEFAULT_STYLE_GUIDE.containerPadding.split(" ")[0],
+  "--container-padding-x":
+    DEFAULT_STYLE_GUIDE.containerPadding.split(" ")[1] ||
+    DEFAULT_STYLE_GUIDE.containerPadding.split(" ")[0],
   "--container-padding-y": DEFAULT_STYLE_GUIDE.containerPadding.split(" ")[0],
   "--section-gap": DEFAULT_STYLE_GUIDE.sectionGap,
   "--container-gap": DEFAULT_STYLE_GUIDE.containerGap,
@@ -161,7 +171,12 @@ interface ComponentPreviewProps {
   modifiers?: Record<string, { name: string; classes: string }[]>;
 }
 
-export const ComponentPreview = React.memo(function ComponentPreview({ component, scale = 0.25, resolver, modifiers }: ComponentPreviewProps) {
+export const ComponentPreview = React.memo(function ComponentPreview({
+  component,
+  scale = 0.25,
+  resolver,
+  modifiers,
+}: ComponentPreviewProps) {
   // Register modifier @utility rules into the shared registry
   useEffect(() => {
     if (!modifiers || typeof modifiers !== "object") return;
@@ -187,24 +202,54 @@ export const ComponentPreview = React.memo(function ComponentPreview({ component
     const cs = getComputedStyle(viewport);
     const vars: Record<string, string> = {};
     const keys = [
-      "primary", "primary-content", "secondary", "secondary-content",
-      "accent", "accent-content", "neutral", "neutral-content",
-      "base-100", "base-200", "base-300", "base-content",
-      "error", "error-content", "info", "info-content",
-      "success", "success-content", "warning", "warning-content",
-      "radius-box", "radius-field", "border", "depth", "noise",
-      "shadow-style", "heading-font-family", "body-font-family",
-      "container-padding-x", "container-padding-y", "content-width",
-      "section-gap", "container-gap", "spacing-density",
-      "space-xs", "space-sm", "space-md", "space-lg", "space-xl",
-      "button-padding-x", "button-padding-y",
+      "primary",
+      "primary-content",
+      "secondary",
+      "secondary-content",
+      "accent",
+      "accent-content",
+      "neutral",
+      "neutral-content",
+      "base-100",
+      "base-200",
+      "base-300",
+      "base-content",
+      "error",
+      "error-content",
+      "info",
+      "info-content",
+      "success",
+      "success-content",
+      "warning",
+      "warning-content",
+      "radius-box",
+      "radius-field",
+      "border",
+      "depth",
+      "noise",
+      "shadow-style",
+      "heading-font-family",
+      "body-font-family",
+      "container-padding-x",
+      "container-padding-y",
+      "content-width",
+      "section-gap",
+      "container-gap",
+      "spacing-density",
+      "space-xs",
+      "space-sm",
+      "space-md",
+      "space-lg",
+      "space-xl",
+      "button-padding-x",
+      "button-padding-y",
     ];
     for (const k of keys) {
       const v = cs.getPropertyValue(`--${k}`).trim();
       if (v) vars[`--${k}`] = v;
     }
     return vars;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!component) return null;
@@ -217,16 +262,17 @@ export const ComponentPreview = React.memo(function ComponentPreview({ component
     }
 
     const cleanedComponent = JSON.parse(
-      jsonString
-        .replace(/min-h-screen/g, '')
-        .replace(/min-h-full/g, '')
+      jsonString.replace(/min-h-screen/g, "").replace(/min-h-full/g, "")
     );
 
     const element = buildElementFromStructure(cleanedComponent, resolver);
 
     return (
       <PreviewErrorBoundary>
-        <div className="overflow-hidden bg-base-100 text-base-content" style={{ zoom: scale, pointerEvents: 'none', ...PREVIEW_DESIGN_VARS, ...siteVars } as any}>
+        <div
+          className="bg-base-100 text-base-content overflow-hidden"
+          style={{ zoom: scale, pointerEvents: "none", ...PREVIEW_DESIGN_VARS, ...siteVars } as any}
+        >
           <Editor resolver={resolver} enabled={false}>
             <Frame>{element}</Frame>
           </Editor>
@@ -236,10 +282,9 @@ export const ComponentPreview = React.memo(function ComponentPreview({ component
   } catch (error) {
     console.error("Error rendering component preview:", error);
     return (
-      <div className="flex h-48 w-full items-center justify-center rounded-lg border border-base-300 bg-neutral text-neutral-content">
+      <div className="border-base-300 bg-neutral text-neutral-content flex h-48 w-full items-center justify-center rounded-lg border">
         Failed to render preview
       </div>
     );
   }
 });
-

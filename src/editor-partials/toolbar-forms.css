@@ -14,56 +14,56 @@
 @reference "./styles.css";
 
 .pagehub-sdk-root .input {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200 text-base-content hover:border-primary focus:border-ring active:border-ring;
+  @apply border-base-300 bg-base-200 text-base-content hover:border-primary focus:border-ring active:border-ring w-full cursor-pointer rounded-lg border;
 }
 /* Dialog fields; same surface token as .input */
 .pagehub-sdk-root .input-dialog {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200! text-base-content hover:border-primary focus:border-ring active:border-ring;
+  @apply border-base-300 bg-base-200! text-base-content hover:border-primary focus:border-ring active:border-ring w-full cursor-pointer rounded-lg border;
 }
 .pagehub-sdk-root .input-plain {
-  @apply w-full cursor-pointer border-0 bg-transparent px-2 py-1 text-base-content outline-none focus:outline-none;
+  @apply text-base-content w-full cursor-pointer border-0 bg-transparent px-2 py-1 outline-none focus:outline-none;
 }
 /* Icon-leading search in toolbar/sidebars: pair with pl-8 or pl-10 to clear the glyph */
 .pagehub-sdk-root .input-plain-search {
-  @apply w-full cursor-pointer border-0 bg-transparent h-9 py-2 pr-3 text-sm text-base-content outline-none focus:outline-none focus:ring-0 placeholder:text-neutral-content;
+  @apply text-base-content placeholder:text-neutral-content h-9 w-full cursor-pointer border-0 bg-transparent py-2 pr-3 text-sm outline-none focus:ring-0 focus:outline-none;
 }
 /* Empty-state action tiles in media manager grid */
 .pagehub-sdk-root .ph-media-grid-card {
-  @apply rounded-lg border border-base-300 bg-base-200/50 p-4 text-left backdrop-blur-sm transition-all hover:scale-105 hover:border-primary hover:bg-base-200 hover:shadow-lg active:scale-100;
+  @apply border-base-300 bg-base-200/50 hover:border-primary hover:bg-base-200 rounded-lg border p-4 text-left backdrop-blur-sm transition-all hover:scale-105 hover:shadow-lg active:scale-100;
 }
 /* Popover-style dropdown trigger: add py-2 or py-1.5 text-sm per control */
 .pagehub-sdk-root .ph-menu-trigger {
-  @apply flex w-full items-center justify-between gap-2 rounded-lg border border-base-300 bg-base-200 px-3 text-base-content transition-colors hover:bg-neutral disabled:cursor-not-allowed disabled:opacity-50;
+  @apply border-base-300 bg-base-200 text-base-content hover:bg-neutral flex w-full items-center justify-between gap-2 rounded-lg border px-3 transition-colors disabled:cursor-not-allowed disabled:opacity-50;
 }
 /* Floating panels — design-system radius + border + bg; pick shadow tier */
 .pagehub-sdk-root .ph-panel {
-  @apply rounded-lg border border-base-300 bg-base-100 shadow-xl;
+  @apply border-base-300 bg-base-100 rounded-lg border shadow-xl;
 }
 .pagehub-sdk-root .ph-panel-soft {
-  @apply rounded-lg border border-base-300 bg-base-100 shadow-lg;
+  @apply border-base-300 bg-base-100 rounded-lg border shadow-lg;
 }
 .pagehub-sdk-root .ph-panel-inset {
-  @apply rounded-lg border border-base-300 bg-base-100 shadow-sm;
+  @apply border-base-300 bg-base-100 rounded-lg border shadow-sm;
 }
 .pagehub-sdk-root .ph-panel-heavy {
-  @apply rounded-lg border border-base-300 bg-base-100 shadow-2xl;
+  @apply border-base-300 bg-base-100 rounded-lg border shadow-2xl;
 }
 /* Centered modal shells: same entrance as .animate-modal-in; add overflow / rounded-xl! per modal */
 .pagehub-sdk-root .ph-modal-surface,
 .pagehub-sdk-root.ph-modal-surface {
   animation: modal-in 0.2s ease-out both;
-  @apply rounded-lg border border-base-300 bg-base-100 shadow-xl;
+  @apply border-base-300 bg-base-100 rounded-lg border shadow-xl;
 }
 .pagehub-sdk-root .ph-modal-surface-heavy,
 .pagehub-sdk-root.ph-modal-surface-heavy {
   animation: modal-in 0.2s ease-out both;
-  @apply rounded-lg border border-base-300 bg-base-100 shadow-2xl;
+  @apply border-base-300 bg-base-100 rounded-lg border shadow-2xl;
 }
 
 /* Modal backdrops (portaled). Use .pagehub-sdk-root.ph-modal-backdrop on the same node for scoped tokens. */
 .pagehub-sdk-root.ph-modal-backdrop {
   animation: backdrop-in 0.15s ease-out both;
-  @apply fixed inset-0 bg-base-100/75 backdrop-blur-sm;
+  @apply bg-base-100/75 fixed inset-0 backdrop-blur-sm;
 }
 .pagehub-sdk-root.ph-modal-backdrop--center {
   @apply flex items-center justify-center p-4;
@@ -71,13 +71,13 @@
 
 /* Dialog / popover search fields — replaces repeated input-dialog + padding/text utilities */
 .pagehub-sdk-root .input-dialog-sm {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200! px-2! py-1! text-xs! text-base-content placeholder:text-neutral-content hover:border-primary focus:border-ring active:border-ring;
+  @apply border-base-300 bg-base-200! text-base-content placeholder:text-neutral-content hover:border-primary focus:border-ring active:border-ring w-full cursor-pointer rounded-lg border px-2! py-1! text-xs!;
 }
 .pagehub-sdk-root .input-dialog-md {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200! px-3! py-2! text-sm text-base-content hover:border-primary focus:border-ring active:border-ring;
+  @apply border-base-300 bg-base-200! text-base-content hover:border-primary focus:border-ring active:border-ring w-full cursor-pointer rounded-lg border px-3! py-2! text-sm;
 }
 .pagehub-sdk-root .input-dialog-leading {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200! py-1.5! pl-9! pr-3! text-xs! text-base-content placeholder:text-neutral-content hover:border-primary focus:border-ring active:border-ring;
+  @apply border-base-300 bg-base-200! text-base-content placeholder:text-neutral-content hover:border-primary focus:border-ring active:border-ring w-full cursor-pointer rounded-lg border py-1.5! pr-3! pl-9! text-xs!;
 }
 .pagehub-sdk-root select.input-plain {
   @apply appearance-none pr-6;
@@ -95,36 +95,50 @@
 }
 
 .pagehub-sdk-root .btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-base font-medium shadow transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
-  @apply border! border-base-300! bg-secondary! text-secondary-content! hover:bg-primary! hover:text-primary-content!;
+  @apply focus-visible:ring-ring inline-flex items-center justify-center gap-2 rounded-lg text-base font-medium whitespace-nowrap shadow transition-colors focus:outline-none focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
+  @apply border-base-300! bg-secondary! text-secondary-content! hover:bg-primary! hover:text-primary-content! border!;
 }
 
 .pagehub-sdk-root .btn-primary {
-  @apply inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-content shadow transition-colors hover:bg-primary/90 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
+  @apply bg-primary text-primary-content hover:bg-primary/90 focus-visible:ring-ring inline-flex h-8 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap shadow transition-colors focus:outline-none focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
 }
 
 .pagehub-sdk-root .tool-bg {
-  @apply flex items-center justify-center gap-2 rounded-box border border-base-300/50 bg-base-100 p-1 text-sm font-normal leading-normal tracking-normal text-base-content shadow-xl;
+  @apply rounded-box border-base-300/50 bg-base-100 text-base-content flex items-center justify-center gap-2 border p-1 text-sm leading-normal font-normal tracking-normal shadow-xl;
 }
 
 .pagehub-sdk-root .node-control {
   font-family: var(--font-sans);
-  @apply m-1 flex items-center justify-center rounded-lg border border-base-300 bg-neutral p-1 text-sm font-normal leading-normal tracking-normal text-base-content shadow-sm;
+  @apply border-base-300 bg-neutral text-base-content m-1 flex items-center justify-center rounded-lg border p-1 text-sm leading-normal font-normal tracking-normal shadow-sm;
 }
 
 @keyframes node-control-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes modal-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes backdrop-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-modal-in {
@@ -136,8 +150,14 @@
 }
 
 @keyframes slide-up-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-slide-up {
@@ -145,7 +165,7 @@
 }
 
 .pagehub-sdk-root .tool-button {
-  @apply inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md border-0 bg-transparent p-2 text-sm font-medium text-base-content shadow-none transition-colors duration-150 hover:bg-base-200 active:scale-90 focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-[18px] [&_svg]:shrink-0;
+  @apply text-base-content hover:bg-base-200 focus-visible:ring-ring inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border-0 bg-transparent p-2 text-sm font-medium whitespace-nowrap shadow-none transition-colors duration-150 focus:outline-none focus-visible:ring-1 focus-visible:outline-none active:scale-90 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-[18px] [&_svg]:shrink-0;
 }
 
 .pagehub-sdk-root .tool-button svg {
@@ -153,7 +173,7 @@
 }
 
 .pagehub-sdk-root .panel-btn {
-  @apply inline-flex cursor-pointer items-center justify-center rounded border-0 bg-transparent p-1 text-base-content shadow-none transition-colors duration-150 hover:bg-base-200 active:scale-90 focus:outline-none [&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0;
+  @apply text-base-content hover:bg-base-200 inline-flex cursor-pointer items-center justify-center rounded border-0 bg-transparent p-1 shadow-none transition-colors duration-150 focus:outline-none active:scale-90 [&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0;
 }
 
 .pagehub-sdk-root .panel-btn svg {
@@ -165,14 +185,14 @@
 }
 
 .pagehub-sdk-root .btn-search {
-  @apply absolute bottom-2.5 right-2.5 z-20 h-8 rounded-lg border border-base-300 bg-primary px-5 py-1.5 text-primary-content hover:bg-primary;
+  @apply border-base-300 bg-primary text-primary-content hover:bg-primary absolute right-2.5 bottom-2.5 z-20 h-8 rounded-lg border px-5 py-1.5;
 }
 
 .pagehub-sdk-root .input-wrapper,
 .pagehub-sdk-root #toolbarContents .input {
-  @apply w-full cursor-pointer rounded-lg border border-base-300 bg-base-200 px-1 py-0 transition-[border-color,box-shadow,background-color] duration-150 ease-out;
+  @apply border-base-300 bg-base-200 w-full cursor-pointer rounded-lg border px-1 py-0 transition-[border-color,box-shadow,background-color] duration-150 ease-out;
   @apply hover:border-primary hover:bg-base-300/25;
-  @apply focus-within:border-primary focus-within:ring-1 focus-within:ring-ring/45;
+  @apply focus-within:border-primary focus-within:ring-ring/45 focus-within:ring-1;
 }
 
 /* Color toolbar swatch: full-bleed fill inside border (no px-1 gutter); checker clips to rounded-lg */
@@ -190,7 +210,7 @@
 .pagehub-sdk-root #toolbarContents .input-dialog-leading,
 .pagehub-sdk-root #toolbarContents .input-plain,
 .pagehub-sdk-root #toolbarContents select.input-plain {
-  @apply h-8 px-2 py-0.5 text-xs! placeholder:text-neutral-content focus:border-ring focus:ring-ring;
+  @apply placeholder:text-neutral-content focus:border-ring focus:ring-ring h-8 px-2 py-0.5 text-xs!;
 }
 
 /* Headless listbox trigger: chrome lives on .input-wrapper (focus-within); avoid a second focus border on the button */
@@ -204,7 +224,7 @@
   @apply focus:border-transparent focus:shadow-none focus:ring-0 focus-visible:ring-0;
 }
 .pagehub-sdk-root #toolbarContents .btn {
-  @apply h-8 px-2 py-0.5 text-sm! focus:border-ring focus:ring-ring;
+  @apply focus:border-ring focus:ring-ring h-8 px-2 py-0.5 text-sm!;
 }
 .pagehub-sdk-root #toolbarContents textarea.input-plain {
   @apply h-auto;
@@ -216,35 +236,35 @@
 
 /* Inset from border + vertical center — avoids flush corner and uneven gaps */
 .pagehub-sdk-root #toolbarContents .btn-search {
-  @apply bottom-auto right-1.5 top-1/2 z-20 flex size-7 -translate-y-1/2 items-center justify-center rounded-md border-0 bg-primary p-0 text-primary-content shadow-none hover:bg-primary/90 [&_svg]:shrink-0;
+  @apply bg-primary text-primary-content hover:bg-primary/90 top-1/2 right-1.5 bottom-auto z-20 flex size-7 -translate-y-1/2 items-center justify-center rounded-md border-0 p-0 shadow-none [&_svg]:shrink-0;
 }
 
 /* Full-width dashed “add” CTA — Actions → Add Action, ToolbarDashedButton, AiButton.className, etc.
    Unscoped so it works under any subtree. Duplicated in root `styles/editor.css` for Next (app does not import this file). Keep @apply in sync. */
 .ph-toolbar-dashed-btn {
-  @apply flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border border-dashed border-base-300 px-2 py-1.5 text-[11px] text-neutral-content transition-colors hover:border-primary hover:text-base-content;
+  @apply border-base-300 text-neutral-content hover:border-primary hover:text-base-content flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border border-dashed px-2 py-1.5 text-[11px] transition-colors;
 }
 
 .pagehub-sdk-root .toolbar-label {
-  @apply text-sm text-base-content;
+  @apply text-base-content text-sm;
 }
 
 .pagehub-sdk-root .slider::-webkit-slider-thumb {
-  @apply h-4 w-4 cursor-pointer appearance-none rounded-full bg-primary shadow-sm;
+  @apply bg-primary h-4 w-4 cursor-pointer appearance-none rounded-full shadow-sm;
 }
 
 .pagehub-sdk-root .slider::-moz-range-thumb {
-  @apply h-4 w-4 cursor-pointer rounded-full border-0 bg-primary shadow-sm;
+  @apply bg-primary h-4 w-4 cursor-pointer rounded-full border-0 shadow-sm;
 }
 
 .pagehub-sdk-root .slider::-webkit-slider-track {
-  @apply rounded-lg bg-neutral;
+  @apply bg-neutral rounded-lg;
 }
 
 .pagehub-sdk-root .slider::-moz-range-track {
-  @apply rounded-lg bg-neutral;
+  @apply bg-neutral rounded-lg;
 }
 
 .pagehub-sdk-root .input-transparent {
-  @apply flex h-9 w-full rounded-lg border border-base-300 bg-transparent px-3 py-1 text-base transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-base-content placeholder:text-neutral-content focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
+  @apply border-base-300 file:text-base-content placeholder:text-neutral-content focus-visible:ring-ring flex h-9 w-full rounded-lg border bg-transparent px-3 py-1 text-base transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
 }

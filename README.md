@@ -30,7 +30,7 @@ export default function Builder() {
           const res = await fetch("/api/pages/home");
           return res.ok ? res.json() : null; // null = blank canvas
         },
-        onSave: async (pageData) => {
+        onSave: async pageData => {
           await fetch("/api/pages/home", {
             method: "PUT",
             body: JSON.stringify(pageData),
@@ -64,7 +64,7 @@ export default function Builder() {
         const res = await fetch("/api/pages/home");
         return res.ok ? res.json() : null; // null = blank canvas
       },
-      onSave: async (pageData) => {
+      onSave: async pageData => {
         await fetch("/api/pages/home", {
           method: "PUT",
           body: JSON.stringify(pageData),
@@ -81,18 +81,18 @@ export default function Builder() {
 
 ### `resolveConfig(config)`
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `container` | `string \| HTMLElement` | — | DOM selector or element to mount into (vanilla JS only) |
-| `apiKey` | `string` | — | PageHub Cloud API key (optional for self-hosted) |
-| `apiBaseUrl` | `string` | `"https://pagehub.dev/api"` | API base URL (override for self-hosted) |
-| `pageId` | `string` | — | Initial page ID to load |
-| `readOnly` | `boolean` | `false` | Start in viewer mode |
-| `callbacks` | `PageHubCallbacks` | *required* | Your integration hooks (see below) |
-| `theme` | `PageHubTheme` | — | Visual theming |
-| `features` | `PageHubFeatures` | — | Feature toggles |
-| `ai` | `PageHubAIConfig` | — | AI generation config |
-| `locale` | `PageHubLocale` | — | Localization overrides |
+| Option       | Type                    | Default                     | Description                                             |
+| ------------ | ----------------------- | --------------------------- | ------------------------------------------------------- |
+| `container`  | `string \| HTMLElement` | —                           | DOM selector or element to mount into (vanilla JS only) |
+| `apiKey`     | `string`                | —                           | PageHub Cloud API key (optional for self-hosted)        |
+| `apiBaseUrl` | `string`                | `"https://pagehub.dev/api"` | API base URL (override for self-hosted)                 |
+| `pageId`     | `string`                | —                           | Initial page ID to load                                 |
+| `readOnly`   | `boolean`               | `false`                     | Start in viewer mode                                    |
+| `callbacks`  | `PageHubCallbacks`      | _required_                  | Your integration hooks (see below)                      |
+| `theme`      | `PageHubTheme`          | —                           | Visual theming                                          |
+| `features`   | `PageHubFeatures`       | —                           | Feature toggles                                         |
+| `ai`         | `PageHubAIConfig`       | —                           | AI generation config                                    |
+| `locale`     | `PageHubLocale`         | —                           | Localization overrides                                  |
 
 ### Callbacks
 
@@ -206,17 +206,17 @@ editor.destroy();
 
 ### Events
 
-| Event | Payload | When |
-|---|---|---|
-| `ready` | — | Editor mounted and ready |
-| `save` | `PageData` | User or programmatic save |
-| `load` | `PageData` | Page loaded |
-| `change` | `PageData` | Editor state changed (debounced) |
-| `publish` | `PageData` | User published |
-| `error` | `Error` | Something went wrong |
-| `modeChange` | `"editor" \| "viewer"` | Read-only toggled |
-| `componentSelect` | node info | User selected a component |
-| `componentDeselect` | — | Selection cleared |
+| Event               | Payload                | When                             |
+| ------------------- | ---------------------- | -------------------------------- |
+| `ready`             | —                      | Editor mounted and ready         |
+| `save`              | `PageData`             | User or programmatic save        |
+| `load`              | `PageData`             | Page loaded                      |
+| `change`            | `PageData`             | Editor state changed (debounced) |
+| `publish`           | `PageData`             | User published                   |
+| `error`             | `Error`                | Something went wrong             |
+| `modeChange`        | `"editor" \| "viewer"` | Read-only toggled                |
+| `componentSelect`   | node info              | User selected a component        |
+| `componentDeselect` | —                      | Selection cleared                |
 
 ---
 
@@ -227,7 +227,7 @@ Display saved pages in read-only mode — no editor UI, smaller bundle:
 ```tsx
 import { PageHubViewer } from "@pagehub/sdk/viewer";
 
-<PageHubViewer content={savedContent} resolver={resolver} />
+<PageHubViewer content={savedContent} resolver={resolver} />;
 ```
 
 > The viewer injects Tailwind CSS at runtime — no stylesheet import needed.
@@ -260,26 +260,26 @@ const { html } = renderToHTML(savedContent, {
 
 The SDK ships with these drag-and-drop components out of the box:
 
-| Component | Description |
-|---|---|
-| `Container` | Flex/grid layout wrapper |
-| `ContainerGroup` | Grouped layout sections |
-| `Header` | Page header with nav |
-| `Nav` | Navigation menu |
-| `Footer` | Page footer |
-| `Text` | Rich text with inline editing |
-| `Image` | Responsive images |
-| `ImageList` | Image gallery / grid |
-| `Button` | CTA button with variants |
-| `ButtonList` | Button group |
-| `Video` | Video embed (YouTube, Vimeo, self-hosted) |
-| `Audio` | Audio player |
-| `Embed` | Raw HTML / iframe embed |
-| `Form` | Form container |
-| `FormElement` | Input, select, textarea, etc. |
-| `Divider` | Horizontal rule |
-| `Spacer` | Vertical spacing |
-| `Background` | Full-bleed background section |
+| Component        | Description                               |
+| ---------------- | ----------------------------------------- |
+| `Container`      | Flex/grid layout wrapper                  |
+| `ContainerGroup` | Grouped layout sections                   |
+| `Header`         | Page header with nav                      |
+| `Nav`            | Navigation menu                           |
+| `Footer`         | Page footer                               |
+| `Text`           | Rich text with inline editing             |
+| `Image`          | Responsive images                         |
+| `ImageList`      | Image gallery / grid                      |
+| `Button`         | CTA button with variants                  |
+| `ButtonList`     | Button group                              |
+| `Video`          | Video embed (YouTube, Vimeo, self-hosted) |
+| `Audio`          | Audio player                              |
+| `Embed`          | Raw HTML / iframe embed                   |
+| `Form`           | Form container                            |
+| `FormElement`    | Input, select, textarea, etc.             |
+| `Divider`        | Horizontal rule                           |
+| `Spacer`         | Vertical spacing                          |
+| `Background`     | Full-bleed background section             |
 
 ### Custom Components
 
@@ -322,18 +322,18 @@ Vite bundles `src/editor.css` into **`dist/editor.css`** (same public path: `@pa
 
 Partials that use `@apply` / `@utility` rely on **`editor-partials/tailwind-theme-reference.css`**, imported immediately after `tailwindcss` in `editor.css`. `@reference` URLs are resolved from **`packages/sdk/src/`** (same as the old monolithic `editor.css`), not from the partial file path. Add new `@import` lines only at the top of `editor.css` (PostCSS requires every `@import` before `@source` / other at-rules).
 
-| Concern | File |
-| --- | --- |
-| Tailwind theme `@reference` (single, paths from `src/`) | `editor-partials/tailwind-theme-reference.css` |
-| Scoped `.btn` / `.input-hover` (not `@utility`) | `editor-partials/utilities.css` |
-| Google icons + mobile preview overrides | `editor-partials/icons-and-mobile-preview.css` |
-| Canvas selection, drag/drop, `#viewport` handles | `editor-partials/canvas-interaction.css` |
-| Shell typography on `.pagehub-sdk-root`, scrollbars, range thumbs | `editor-partials/base-and-scrollbars.css` |
-| `#viewport` / `[data-renderer]` containment | `editor-partials/viewport-layout.css` |
-| Toolbar inputs, buttons, sliders | `editor-partials/toolbar-forms.css` |
-| Third-party (e.g. Sketch color picker) | `editor-partials/third-party.css` |
-| HeadlessUI listbox (`ph-select-*`) | `editor-partials/dropdowns.css` |
-| Scroll/hover presets + `css-*` keyframes | `editor-partials/animations.css` |
+| Concern                                                           | File                                           |
+| ----------------------------------------------------------------- | ---------------------------------------------- |
+| Tailwind theme `@reference` (single, paths from `src/`)           | `editor-partials/tailwind-theme-reference.css` |
+| Scoped `.btn` / `.input-hover` (not `@utility`)                   | `editor-partials/utilities.css`                |
+| Google icons + mobile preview overrides                           | `editor-partials/icons-and-mobile-preview.css` |
+| Canvas selection, drag/drop, `#viewport` handles                  | `editor-partials/canvas-interaction.css`       |
+| Shell typography on `.pagehub-sdk-root`, scrollbars, range thumbs | `editor-partials/base-and-scrollbars.css`      |
+| `#viewport` / `[data-renderer]` containment                       | `editor-partials/viewport-layout.css`          |
+| Toolbar inputs, buttons, sliders                                  | `editor-partials/toolbar-forms.css`            |
+| Third-party (e.g. Sketch color picker)                            | `editor-partials/third-party.css`              |
+| HeadlessUI listbox (`ph-select-*`)                                | `editor-partials/dropdowns.css`                |
+| Scroll/hover presets + `css-*` keyframes                          | `editor-partials/animations.css`               |
 
 ### Naming contract (integrators & contributors)
 
@@ -352,14 +352,14 @@ Partials that use `@apply` / `@utility` rely on **`editor-partials/tailwind-them
 
 Some editor features require a [PageHub](https://pagehub.dev) account or self-hosted backend:
 
-| Feature | Requires Backend | Notes |
-|---|---|---|
-| Drag-and-drop editor | No | Works standalone |
-| Viewer / static renderer | No | Works standalone |
-| AI content generation | Yes | Enable with `ai: { enabled: true }`, requires PageHub account |
-| Image uploads | Yes | Provide `onMediaUpload` callback or use PageHub CDN |
-| Domain settings | Yes | Requires PageHub Cloud |
-| Multi-tenant / user profiles | Yes | Requires PageHub Cloud |
+| Feature                      | Requires Backend | Notes                                                         |
+| ---------------------------- | ---------------- | ------------------------------------------------------------- |
+| Drag-and-drop editor         | No               | Works standalone                                              |
+| Viewer / static renderer     | No               | Works standalone                                              |
+| AI content generation        | Yes              | Enable with `ai: { enabled: true }`, requires PageHub account |
+| Image uploads                | Yes              | Provide `onMediaUpload` callback or use PageHub CDN           |
+| Domain settings              | Yes              | Requires PageHub Cloud                                        |
+| Multi-tenant / user profiles | Yes              | Requires PageHub Cloud                                        |
 
 The core editor and viewer work fully offline with just the `onLoad`/`onSave` callbacks.
 

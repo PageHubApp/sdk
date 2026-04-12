@@ -104,7 +104,7 @@ export function DeviceScrollbar({ deviceWidth, deviceHeight, deviceZoom }: Devic
   return (
     <div
       ref={containerRef}
-      className="fixed z-5 w-1.5 rounded-full bg-border/30"
+      className="bg-border/30 fixed z-5 w-1.5 rounded-full"
       style={{ height: `${trackH}px` }}
     >
       <div
@@ -112,7 +112,7 @@ export function DeviceScrollbar({ deviceWidth, deviceHeight, deviceZoom }: Devic
         role="presentation"
         aria-hidden="true"
         onMouseDown={onMouseDown}
-        className="absolute left-0 w-full cursor-grab rounded-full bg-neutral-foreground/50 hover:bg-neutral-foreground/80 active:cursor-grabbing"
+        className="bg-neutral-foreground/50 hover:bg-neutral-foreground/80 absolute left-0 w-full cursor-grab rounded-full active:cursor-grabbing"
       />
     </div>
   );

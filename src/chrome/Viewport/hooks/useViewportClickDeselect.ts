@@ -108,8 +108,7 @@ export function useViewportClickDeselect() {
         return;
       }
 
-      const nodeEl =
-        e.target instanceof HTMLElement ? e.target.closest("[node-id]") : null;
+      const nodeEl = e.target instanceof HTMLElement ? e.target.closest("[node-id]") : null;
       const nodeId = nodeEl?.getAttribute("node-id");
       if (nodeId !== pending.nodeId) {
         pendingRef.current = null;

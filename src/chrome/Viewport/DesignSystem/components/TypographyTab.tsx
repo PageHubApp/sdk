@@ -12,14 +12,14 @@ export function TypographyTab({ ds }: TypographyTabProps) {
   return (
     <div className="space-y-0">
       {/* Type Section */}
-      <div className="border-b border-base-300 last:border-b-0">
+      <div className="border-base-300 border-b last:border-b-0">
         <button
           type="button"
           onClick={() => toggleSection("typography")}
-          className="flex w-full items-center justify-between bg-neutral px-3 py-2 text-left transition-colors hover:bg-neutral/80"
+          className="bg-neutral hover:bg-neutral/80 flex w-full items-center justify-between px-3 py-2 text-left transition-colors"
           aria-expanded={!!expandedSections.typography}
         >
-          <span className="text-sm font-semibold text-neutral-content">Type</span>
+          <span className="text-neutral-content text-sm font-semibold">Type</span>
           {expandedSections.typography ? (
             <TbChevronDown className="text-neutral-content" size={18} />
           ) : (
@@ -27,16 +27,19 @@ export function TypographyTab({ ds }: TypographyTabProps) {
           )}
         </button>
         {expandedSections.typography && (
-          <div className="space-y-3 bg-base-100 p-3 text-base-content">
+          <div className="bg-base-100 text-base-content space-y-3 p-3">
             <div>
-              <label htmlFor="ds-heading-font-weight" className="mb-1 block text-xs font-medium text-neutral-content">
+              <label
+                htmlFor="ds-heading-font-weight"
+                className="text-neutral-content mb-1 block text-xs font-medium"
+              >
                 Heading Font Weight
               </label>
               <select
                 id="ds-heading-font-weight"
                 value={styles.headingFont}
                 onChange={e => updateStyle("headingFont", e.target.value)}
-                className="w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content focus:outline-none focus:ring-2 focus:ring-ring"
+                className="border-base-300 bg-base-100 text-base-content focus:ring-ring w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
               >
                 <option value="font-normal">Normal</option>
                 <option value="font-medium">Medium</option>
@@ -47,7 +50,10 @@ export function TypographyTab({ ds }: TypographyTabProps) {
             </div>
 
             <div>
-              <label htmlFor="ds-heading-font-family" className="mb-1 block text-xs font-medium text-neutral-content">
+              <label
+                htmlFor="ds-heading-font-family"
+                className="text-neutral-content mb-1 block text-xs font-medium"
+              >
                 Heading Font Family
               </label>
               <button
@@ -55,7 +61,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
                 id="ds-heading-font-family"
                 ref={ds.headingFontButtonRef}
                 onClick={ds.openHeadingFontPicker}
-                className="w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-left text-sm text-base-content hover:bg-neutral focus:outline-none focus:ring-2 focus:ring-ring"
+                className="border-base-300 bg-base-100 text-base-content hover:bg-neutral focus:ring-ring w-full rounded-lg border px-3 py-2 text-left text-sm focus:ring-2 focus:outline-none"
                 style={{ fontFamily: styles.headingFontFamily }}
               >
                 {styles.headingFontFamily || "Select font..."}
@@ -63,14 +69,17 @@ export function TypographyTab({ ds }: TypographyTabProps) {
             </div>
 
             <div>
-              <label htmlFor="ds-body-font-weight" className="mb-1 block text-xs font-medium text-neutral-content">
+              <label
+                htmlFor="ds-body-font-weight"
+                className="text-neutral-content mb-1 block text-xs font-medium"
+              >
                 Body Font Weight
               </label>
               <select
                 id="ds-body-font-weight"
                 value={styles.bodyFont}
                 onChange={e => updateStyle("bodyFont", e.target.value)}
-                className="w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content focus:outline-none focus:ring-2 focus:ring-ring"
+                className="border-base-300 bg-base-100 text-base-content focus:ring-ring w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
               >
                 <option value="font-thin">Thin</option>
                 <option value="font-extralight">Extra Light</option>
@@ -82,7 +91,10 @@ export function TypographyTab({ ds }: TypographyTabProps) {
             </div>
 
             <div>
-              <label htmlFor="ds-body-font-family" className="mb-1 block text-xs font-medium text-neutral-content">
+              <label
+                htmlFor="ds-body-font-family"
+                className="text-neutral-content mb-1 block text-xs font-medium"
+              >
                 Body Font Family
               </label>
               <button
@@ -90,7 +102,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
                 id="ds-body-font-family"
                 ref={ds.bodyFontButtonRef}
                 onClick={ds.openBodyFontPicker}
-                className="w-full rounded-lg border border-base-300 bg-base-100 px-3 py-2 text-left text-sm text-base-content hover:bg-neutral focus:outline-none focus:ring-2 focus:ring-ring"
+                className="border-base-300 bg-base-100 text-base-content hover:bg-neutral focus:ring-ring w-full rounded-lg border px-3 py-2 text-left text-sm focus:ring-2 focus:outline-none"
                 style={{ fontFamily: styles.bodyFontFamily }}
               >
                 {styles.bodyFontFamily || "Select font..."}
@@ -101,26 +113,26 @@ export function TypographyTab({ ds }: TypographyTabProps) {
       </div>
 
       {/* Custom fonts — cards sit on a slightly tinted band so they read as groups */}
-      <div className="space-y-3 border-t border-base-300 bg-base-200/15 p-3 pb-6 text-base-content">
+      <div className="border-base-300 bg-base-200/15 text-base-content space-y-3 border-t p-3 pb-6">
         {customFonts.map((font, index) => (
           <article
             key={index}
-            className="group overflow-hidden rounded-xl border border-base-300/80 bg-base-100 shadow-sm ring-1 ring-base-300/30"
+            className="group border-base-300/80 bg-base-100 ring-base-300/30 overflow-hidden rounded-xl border shadow-sm ring-1"
           >
             {/* Title row — reads like a settings group header */}
-            <div className="flex items-center gap-2 border-b border-base-300/70 bg-base-200/35 px-3 py-2.5">
+            <div className="border-base-300/70 bg-base-200/35 flex items-center gap-2 border-b px-3 py-2.5">
               <input
                 type="text"
                 value={font.name}
                 onChange={e => ds.updateFontName(index, e.target.value)}
-                className="min-w-0 flex-1 border-0 bg-transparent text-sm font-semibold tracking-tight text-base-content placeholder:text-base-content/35 placeholder:font-medium focus:outline-none focus:ring-0"
+                className="text-base-content placeholder:text-base-content/35 min-w-0 flex-1 border-0 bg-transparent text-sm font-semibold tracking-tight placeholder:font-medium focus:ring-0 focus:outline-none"
                 placeholder="Token name (e.g. Caption)"
                 aria-label="Custom font token name"
               />
               <button
                 type="button"
                 onClick={() => ds.deleteFont(index)}
-                className="btn btn-ghost btn-square size-8 min-h-0 shrink-0 text-base-content/50 hover:bg-error/10 hover:text-error"
+                className="btn btn-ghost btn-square text-base-content/50 hover:bg-error/10 hover:text-error size-8 min-h-0 shrink-0"
                 title="Remove font"
               >
                 <TbTrash className="size-4" aria-hidden />
@@ -140,11 +152,15 @@ export function TypographyTab({ ds }: TypographyTabProps) {
                       value: font.fontFamily ? [font.fontFamily] : [],
                       originalValue: font.fontFamily ? [font.fontFamily] : [],
                       changed: (value: unknown) => {
-                        const fontFamily = Array.isArray(value) ? (value as string[])[0] : (value as string);
+                        const fontFamily = Array.isArray(value)
+                          ? (value as string[])[0]
+                          : (value as string);
                         ds.updateFontProperty(index, "fontFamily", fontFamily);
                       },
                       preview: (value: unknown) => {
-                        const fontFamily = Array.isArray(value) ? (value as string[])[0] : (value as string);
+                        const fontFamily = Array.isArray(value)
+                          ? (value as string[])[0]
+                          : (value as string);
                         ds.updateFontProperty(index, "fontFamily", fontFamily);
                       },
                       e: rect,
@@ -238,14 +254,19 @@ export function TypographyTab({ ds }: TypographyTabProps) {
                     value={font.textTransform || "none"}
                     onChange={v => ds.updateFontProperty(index, "textTransform", v)}
                     dense
-                    options={["none:None", "uppercase:UPPERCASE", "lowercase:lowercase", "capitalize:Capitalize"]}
+                    options={[
+                      "none:None",
+                      "uppercase:UPPERCASE",
+                      "lowercase:lowercase",
+                      "capitalize:Capitalize",
+                    ]}
                   />
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-base-300/60 bg-base-200/25 px-3 py-2.5">
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-base-content/40">
+            <div className="border-base-300/60 bg-base-200/25 border-t px-3 py-2.5">
+              <p className="text-base-content/40 mb-1.5 text-[10px] font-semibold tracking-wider uppercase">
                 Preview
               </p>
               <div
@@ -255,9 +276,10 @@ export function TypographyTab({ ds }: TypographyTabProps) {
                   fontWeight: font.fontWeight,
                   lineHeight: font.lineHeight,
                   letterSpacing: font.letterSpacing || "normal",
-                  textTransform: (font.textTransform || "none") as React.CSSProperties["textTransform"],
+                  textTransform: (font.textTransform ||
+                    "none") as React.CSSProperties["textTransform"],
                 }}
-                className="text-[13px] leading-snug text-base-content"
+                className="text-base-content text-[13px] leading-snug"
               >
                 The quick brown fox jumps over the lazy dog
               </div>
@@ -268,7 +290,7 @@ export function TypographyTab({ ds }: TypographyTabProps) {
         <button
           type="button"
           onClick={ds.addFont}
-          className="btn btn-outline flex w-full items-center justify-center gap-2 border-base-content/30 normal-case"
+          className="btn btn-outline border-base-content/30 flex w-full items-center justify-center gap-2 normal-case"
         >
           <TbPlus className="size-4 shrink-0" aria-hidden />
           Add font
@@ -321,7 +343,7 @@ function FontSelect({
           id={id}
           aria-labelledby={`${id}-lbl`}
           onClick={familyButton.onClick}
-          className={`${controlDefault} text-left hover:bg-base-200/80`}
+          className={`${controlDefault} hover:bg-base-200/80 text-left`}
           style={familyButton.style}
         >
           {familyButton.displayValue}

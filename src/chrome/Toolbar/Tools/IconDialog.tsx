@@ -16,7 +16,7 @@ export const IconDialogDialog = () => {
   const [searchValue, setSearchValue] = useState("");
   const gridRef = useRef(null);
 
-  const changed = async (value) => {
+  const changed = async value => {
     if (dialog.changed) {
       const response = await fetch(value);
       const svgText = await response.text();
@@ -84,10 +84,8 @@ export const IconDialogDialog = () => {
       <div style={style}>
         <button
           id={`iconPicker-${icon}`}
-          className={`flex size-full cursor-pointer flex-row items-center justify-center rounded-lg hover:bg-neutral hover:text-base-content ${
-            dialog.value === icon
-              ? "border-2 border-primary bg-primary text-primary-content"
-              : ""
+          className={`hover:bg-neutral hover:text-base-content flex size-full cursor-pointer flex-row items-center justify-center rounded-lg ${
+            dialog.value === icon ? "border-primary bg-primary text-primary-content border-2" : ""
           }`}
           onClick={e => changed(icon)}
         >
@@ -114,7 +112,9 @@ export const IconDialogDialog = () => {
             <div className="flex flex-wrap gap-1.5">
               <button
                 className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
-                  category === "all" ? "bg-base-100 text-base-content" : "bg-neutral hover:bg-neutral"
+                  category === "all"
+                    ? "bg-base-100 text-base-content"
+                    : "bg-neutral hover:bg-neutral"
                 }`}
                 onClick={() => handleCategoryChange("all")}
               >
@@ -142,7 +142,9 @@ export const IconDialogDialog = () => {
               </button>
               <button
                 className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
-                  category === "solid" ? "bg-base-100 text-base-content" : "bg-neutral hover:bg-neutral"
+                  category === "solid"
+                    ? "bg-base-100 text-base-content"
+                    : "bg-neutral hover:bg-neutral"
                 }`}
                 onClick={() => handleCategoryChange("solid")}
               >
@@ -152,7 +154,7 @@ export const IconDialogDialog = () => {
           </div>
 
           {/* Icon count */}
-          <div className="mb-2 shrink-0 text-xs text-neutral-content">
+          <div className="text-neutral-content mb-2 shrink-0 text-xs">
             {filteredIcons.length} icon{filteredIcons.length !== 1 ? "s" : ""}
           </div>
 

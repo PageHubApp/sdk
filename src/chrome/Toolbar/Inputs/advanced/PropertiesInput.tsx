@@ -31,7 +31,7 @@ export const PropertiesInput = () => {
             Sets the HTML id for in-page links (<span className="font-mono">#…</span>) and{" "}
             <button
               type="button"
-              className="inline cursor-pointer font-medium text-primary underline underline-offset-2"
+              className="text-primary inline cursor-pointer font-medium underline underline-offset-2"
               onClick={() => {
                 setTab("Interactions");
                 setTimeout(() => scrollToSection("Interactions"), 150);
@@ -55,7 +55,7 @@ function DataAttributesEditor() {
   const {
     dataAttributes,
     actions: { setProp },
-  } = useNode((node) => ({
+  } = useNode(node => ({
     dataAttributes: (node.data.props.dataAttributes || []) as Array<{ key: string; value: string }>,
   }));
 
@@ -75,7 +75,9 @@ function DataAttributesEditor() {
 
   const removeAttribute = (index: number) => {
     setProp((props: any) => {
-      props.dataAttributes = (props.dataAttributes || []).filter((_: any, i: number) => i !== index);
+      props.dataAttributes = (props.dataAttributes || []).filter(
+        (_: any, i: number) => i !== index
+      );
     });
   };
 
@@ -91,13 +93,13 @@ function DataAttributesEditor() {
     <ToolbarSection title="Data Attributes" nested collapsible defaultOpen={false}>
       {dataAttributes.map((attr, i) => (
         <div key={i} className="flex min-w-0 items-center gap-1">
-          <span className="shrink-0 text-xs text-neutral-content">data-</span>
+          <span className="text-neutral-content shrink-0 text-xs">data-</span>
           <div className="w-20 shrink-0">
             <div className="input-wrapper w-full">
               <input
                 type="text"
                 value={attr.key}
-                onChange={(e) => updateAttribute(i, "key", e.target.value)}
+                onChange={e => updateAttribute(i, "key", e.target.value)}
                 className="input-plain w-full font-mono text-xs"
                 placeholder="key"
                 {...toolbarInputNoAutocompleteProps}
@@ -109,7 +111,7 @@ function DataAttributesEditor() {
               <input
                 type="text"
                 value={attr.value}
-                onChange={(e) => updateAttribute(i, "value", e.target.value)}
+                onChange={e => updateAttribute(i, "value", e.target.value)}
                 className="input-plain w-full font-mono text-xs"
                 placeholder="value"
                 {...toolbarInputNoAutocompleteProps}
@@ -119,7 +121,7 @@ function DataAttributesEditor() {
           <button
             type="button"
             onClick={() => removeAttribute(i)}
-            className="rounded p-1 text-neutral-content hover:bg-error hover:text-error-content"
+            className="text-neutral-content hover:bg-error hover:text-error-content rounded p-1"
           >
             <TbTrash size={12} />
           </button>
@@ -127,14 +129,14 @@ function DataAttributesEditor() {
       ))}
 
       <div className="flex min-w-0 items-center gap-1">
-        <span className="shrink-0 text-xs text-neutral-content">data-</span>
+        <span className="text-neutral-content shrink-0 text-xs">data-</span>
         <div className="w-20 shrink-0">
           <div className="input-wrapper w-full">
             <input
               type="text"
               value={newKey}
-              onChange={(e) => setNewKey(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addAttribute()}
+              onChange={e => setNewKey(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && addAttribute()}
               className="input-plain w-full font-mono text-xs"
               placeholder="key"
               {...toolbarInputNoAutocompleteProps}
@@ -146,8 +148,8 @@ function DataAttributesEditor() {
             <input
               type="text"
               value={newValue}
-              onChange={(e) => setNewValue(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addAttribute()}
+              onChange={e => setNewValue(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && addAttribute()}
               className="input-plain w-full font-mono text-xs"
               placeholder="value"
               {...toolbarInputNoAutocompleteProps}
@@ -157,7 +159,7 @@ function DataAttributesEditor() {
         <button
           type="button"
           onClick={addAttribute}
-          className="rounded p-1 text-neutral-content hover:bg-primary hover:text-primary-content"
+          className="text-neutral-content hover:bg-primary hover:text-primary-content rounded p-1"
         >
           <TbPlus size={12} />
         </button>

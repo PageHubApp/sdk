@@ -4,7 +4,11 @@
  */
 
 import { twMerge } from "tailwind-merge";
-import { buildVariantPrefix, getClassForView, removeClassForView } from "../../utils/tailwind/className";
+import {
+  buildVariantPrefix,
+  getClassForView,
+  removeClassForView,
+} from "../../utils/tailwind/className";
 
 // ─── Types ───
 
@@ -60,8 +64,11 @@ export const getProp = (params: any, view: string, nodeProps: any, classDark = f
 
   const classView =
     params.index === "hover" && params.propType !== "root" && params.propType !== "component"
-      ? "hover" : view;
-  return getClassForView(nodeProps.className || "", params.propKey, classView, { classDark }) || null;
+      ? "hover"
+      : view;
+  return (
+    getClassForView(nodeProps.className || "", params.propKey, classView, { classDark }) || null
+  );
 };
 
 /**
@@ -71,7 +78,12 @@ export const getProp = (params: any, view: string, nodeProps: any, classDark = f
  */
 const DESKTOP_CANVAS_CLASS_READ_ORDER = ["mobile", "md", "sm", "lg", "xl", "2xl"] as const;
 
-export const getPropFinalValue = (__props: any, view: string, nodeProps: any, classDark = false) => {
+export const getPropFinalValue = (
+  __props: any,
+  view: string,
+  nodeProps: any,
+  classDark = false
+) => {
   if (__props.propType === "class" && view === "desktop") {
     const sequence: [string, boolean][] = [];
     for (const v of DESKTOP_CANVAS_CLASS_READ_ORDER) {
@@ -99,11 +111,13 @@ export const getPropFinalValue = (__props: any, view: string, nodeProps: any, cl
     if (view === "desktop" || view === "mobile") {
       const theView = view === "desktop" ? "mobile" : "desktop";
       value = getProp(__props, theView, nodeProps, classDark);
-      if (classDark && (value == null || value === "")) value = getProp(__props, theView, nodeProps, false);
+      if (classDark && (value == null || value === ""))
+        value = getProp(__props, theView, nodeProps, false);
       viewValue = theView;
     } else if (["sm", "md", "lg", "xl", "2xl"].includes(view)) {
       value = getProp(__props, "mobile", nodeProps, classDark);
-      if (classDark && (value == null || value === "")) value = getProp(__props, "mobile", nodeProps, false);
+      if (classDark && (value == null || value === ""))
+        value = getProp(__props, "mobile", nodeProps, false);
       viewValue = "mobile";
     }
   }
@@ -124,7 +138,16 @@ const setNestedProp = (obj: any, path: string, value: any) => {
 };
 
 export const setPropOnView = (
-  { propKey, value, setProp, view, index = null, propItemKey = null, onChange = null, classDark = false }: PropType,
+  {
+    propKey,
+    value,
+    setProp,
+    view,
+    index = null,
+    propItemKey = null,
+    onChange = null,
+    classDark = false,
+  }: PropType,
   delay = 2000
 ) => {
   try {
@@ -134,14 +157,17 @@ export const setPropOnView = (
       if (view !== "component" && view !== "root") {
         const prefix = buildVariantPrefix(view!, classDark);
         if (!value || value === "") {
-          props.className = removeClassForView(props.className || "", propKey, view!, { classDark });
+          props.className = removeClassForView(props.className || "", propKey, view!, {
+            classDark,
+          });
         } else {
           props.className = twMerge(props.className || "", prefix ? `${prefix}${value}` : value);
         }
         return;
       }
 
-      const setting = view === "component" ? (props = props || {}) : (props[view!] = props[view!] || {});
+      const setting =
+        view === "component" ? (props = props || {}) : (props[view!] = props[view!] || {});
 
       if (index >= 0 && propItemKey) {
         setting[propKey] = setting[propKey] || {};
@@ -169,8 +195,15 @@ export const setPropOnView = (
 // ─── Clone propagation ───
 
 export const propagatePropsToClones = (
-  originalId: string, propKey: string, value: any, view: string,
-  query: any, actions: any, index: any = null, propItemKey: string | null = null, classDark = false
+  originalId: string,
+  propKey: string,
+  value: any,
+  view: string,
+  query: any,
+  actions: any,
+  index: any = null,
+  propItemKey: string | null = null,
+  classDark = false
 ) => {
   try {
     const original = query.node(originalId).get();
@@ -182,24 +215,41 @@ export const propagatePropsToClones = (
 
       const rel = clone.data.props.relationType;
       if (rel === "style") {
-        const styleViews = ["root", "mobile", "sm", "tablet", "desktop", "md", "lg", "xl", "2xl", "hover"];
+        const styleViews = [
+          "root",
+          "mobile",
+          "sm",
+          "tablet",
+          "desktop",
+          "md",
+          "lg",
+          "xl",
+          "2xl",
+          "hover",
+        ];
         if (view !== "component" && !styleViews.includes(view)) return;
         if (view === "component") return;
       }
 
-      actions.setProp(cloneId, (props: any) => {
-        if (view !== "component" && !["root"].includes(view)) {
-          const prefix = buildVariantPrefix(view, classDark);
-          if (!value || value === "") {
-            props.className = removeClassForView(props.className || "", propKey, view, { classDark });
-          } else {
-            props.className = twMerge(props.className || "", prefix + value);
+      actions.setProp(
+        cloneId,
+        (props: any) => {
+          if (view !== "component" && !["root"].includes(view)) {
+            const prefix = buildVariantPrefix(view, classDark);
+            if (!value || value === "") {
+              props.className = removeClassForView(props.className || "", propKey, view, {
+                classDark,
+              });
+            } else {
+              props.className = twMerge(props.className || "", prefix + value);
+            }
+            return;
           }
-          return;
-        }
-        const setting = view === "component" ? props : (props[view] = props[view] || {});
-        setting[propKey] = value;
-      }, 0);
+          const setting = view === "component" ? props : (props[view] = props[view] || {});
+          setting[propKey] = value;
+        },
+        0
+      );
     });
   } catch (e) {
     console.error("Error propagating props to clones:", e);
@@ -210,10 +260,13 @@ export const propagatePropsToClones = (
 
 export const changeProp = (props: PropType, delay = 2000) => {
   const view =
-    props.propType === "root" ? "root"
-    : props.propType === "component" ? "component"
-    : props.index === "hover" ? "hover"
-    : props.view;
+    props.propType === "root"
+      ? "root"
+      : props.propType === "component"
+        ? "component"
+        : props.index === "hover"
+          ? "hover"
+          : props.view;
 
   const classDark = props.classDark ?? false;
   setPropOnView({ ...props, view, classDark }, delay);
@@ -222,8 +275,15 @@ export const changeProp = (props: PropType, delay = 2000) => {
     const node = props.query.node(props.nodeId).get();
     if (node?.data?.props?.hasMany?.length) {
       propagatePropsToClones(
-        props.nodeId, props.propKey, props.value, view!,
-        props.query, props.actions, props.index, props.propItemKey, classDark
+        props.nodeId,
+        props.propKey,
+        props.value,
+        view!,
+        props.query,
+        props.actions,
+        props.index,
+        props.propItemKey,
+        classDark
       );
     }
   }

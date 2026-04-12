@@ -30,8 +30,8 @@ export function getFlexPresets(direction: "row" | "column"): LayoutPreset[] {
     {
       name: isColumn ? "Single Column" : "Single Row",
       icon: (
-        <div className="h-6 w-full overflow-hidden rounded-sm border border-base-300 p-px">
-          <div className="h-full rounded-sm bg-primary/30" />
+        <div className="border-base-300 h-6 w-full overflow-hidden rounded-sm border p-px">
+          <div className="bg-primary/30 h-full rounded-sm" />
         </div>
       ),
       layout: "flex",
@@ -43,7 +43,7 @@ export function getFlexPresets(direction: "row" | "column"): LayoutPreset[] {
     {
       name: isColumn ? "Two Columns" : "Two Rows",
       icon: (
-        <div className="h-6 w-full overflow-hidden rounded-sm border border-base-300 p-px">
+        <div className="border-base-300 h-6 w-full overflow-hidden rounded-sm border p-px">
           <div className={containerClass}>
             <div className={itemClass} />
             <div className={itemClass} />
@@ -59,7 +59,7 @@ export function getFlexPresets(direction: "row" | "column"): LayoutPreset[] {
     {
       name: isColumn ? "Three Columns" : "Three Rows",
       icon: (
-        <div className="h-6 w-full overflow-hidden rounded-sm border border-base-300 p-px">
+        <div className="border-base-300 h-6 w-full overflow-hidden rounded-sm border p-px">
           <div className={containerClass}>
             <div className={itemClass} />
             <div className={itemClass} />
@@ -76,7 +76,7 @@ export function getFlexPresets(direction: "row" | "column"): LayoutPreset[] {
     {
       name: isColumn ? "Four Columns" : "Four Rows",
       icon: (
-        <div className="h-6 w-full overflow-hidden rounded-sm border border-base-300 p-px">
+        <div className="border-base-300 h-6 w-full overflow-hidden rounded-sm border p-px">
           <div className={containerClass}>
             <div className={itemClass} />
             <div className={itemClass} />
@@ -101,10 +101,10 @@ export function getFlexPresets(direction: "row" | "column"): LayoutPreset[] {
     {
       name: "Wide Left",
       icon: (
-        <div className="h-6 w-full overflow-hidden rounded-sm border border-base-300 p-px">
+        <div className="border-base-300 h-6 w-full overflow-hidden rounded-sm border p-px">
           <div className="flex h-full gap-px">
-            <div className="w-3/4 rounded-sm bg-primary/30" />
-            <div className="w-1/4 rounded-sm bg-primary/20" />
+            <div className="bg-primary/30 w-3/4 rounded-sm" />
+            <div className="bg-primary/20 w-1/4 rounded-sm" />
           </div>
         </div>
       ),
@@ -119,10 +119,10 @@ export function getFlexPresets(direction: "row" | "column"): LayoutPreset[] {
     {
       name: "Wide Right",
       icon: (
-        <div className="h-6 w-full overflow-hidden rounded-sm border border-base-300 p-px">
+        <div className="border-base-300 h-6 w-full overflow-hidden rounded-sm border p-px">
           <div className="flex h-full gap-px">
-            <div className="w-1/4 rounded-sm bg-primary/20" />
-            <div className="w-3/4 rounded-sm bg-primary/30" />
+            <div className="bg-primary/20 w-1/4 rounded-sm" />
+            <div className="bg-primary/30 w-3/4 rounded-sm" />
           </div>
         </div>
       ),
@@ -154,8 +154,8 @@ export const GRID_PRESETS: LayoutPreset[] = [
   {
     name: "Single Column",
     icon: (
-      <div className="grid h-6 w-full overflow-hidden rounded-sm border border-base-300 p-px">
-        <div className="rounded-sm bg-primary/30" />
+      <div className="border-base-300 grid h-6 w-full overflow-hidden rounded-sm border p-px">
+        <div className="bg-primary/30 rounded-sm" />
       </div>
     ),
     layout: "grid",
@@ -166,9 +166,9 @@ export const GRID_PRESETS: LayoutPreset[] = [
   {
     name: "Two Columns",
     icon: (
-      <div className="grid h-6 w-full grid-cols-2 gap-px overflow-hidden rounded-sm border border-base-300 p-px">
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
+      <div className="border-base-300 grid h-6 w-full grid-cols-2 gap-px overflow-hidden rounded-sm border p-px">
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
       </div>
     ),
     layout: "grid",
@@ -179,11 +179,11 @@ export const GRID_PRESETS: LayoutPreset[] = [
   {
     name: "2x2 Grid",
     icon: (
-      <div className="grid h-6 w-full grid-cols-2 grid-rows-2 gap-px overflow-hidden rounded-sm border border-base-300 p-px">
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
+      <div className="border-base-300 grid h-6 w-full grid-cols-2 grid-rows-2 gap-px overflow-hidden rounded-sm border p-px">
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
       </div>
     ),
     layout: "grid",
@@ -195,10 +195,10 @@ export const GRID_PRESETS: LayoutPreset[] = [
   {
     name: "Three Columns",
     icon: (
-      <div className="grid h-6 w-full grid-cols-3 gap-px overflow-hidden rounded-sm border border-base-300 p-px">
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
+      <div className="border-base-300 grid h-6 w-full grid-cols-3 gap-px overflow-hidden rounded-sm border p-px">
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
       </div>
     ),
     layout: "grid",
@@ -209,13 +209,13 @@ export const GRID_PRESETS: LayoutPreset[] = [
   {
     name: "3x2 Grid",
     icon: (
-      <div className="grid h-6 w-full grid-cols-3 grid-rows-2 gap-px overflow-hidden rounded-sm border border-base-300 p-px">
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
+      <div className="border-base-300 grid h-6 w-full grid-cols-3 grid-rows-2 gap-px overflow-hidden rounded-sm border p-px">
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
       </div>
     ),
     layout: "grid",
@@ -227,11 +227,11 @@ export const GRID_PRESETS: LayoutPreset[] = [
   {
     name: "Four Columns",
     icon: (
-      <div className="grid h-6 w-full grid-cols-4 gap-px overflow-hidden rounded-sm border border-base-300 p-px">
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
-        <div className="rounded-sm bg-primary/30" />
+      <div className="border-base-300 grid h-6 w-full grid-cols-4 gap-px overflow-hidden rounded-sm border p-px">
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
+        <div className="bg-primary/30 rounded-sm" />
       </div>
     ),
     layout: "grid",
@@ -241,7 +241,12 @@ export const GRID_PRESETS: LayoutPreset[] = [
   },
   {
     name: "Header + 2 Columns",
-    icon: generateLayoutIcon({ type: "grid", columns: 2, rows: 4, spans: ["col-span-2 row-span-2", "row-span-2", "row-span-2"] }),
+    icon: generateLayoutIcon({
+      type: "grid",
+      columns: 2,
+      rows: 4,
+      spans: ["col-span-2 row-span-2", "row-span-2", "row-span-2"],
+    }),
     layout: "grid",
     columns: 3,
     gridTemplate: "grid-cols-2",
@@ -251,10 +256,10 @@ export const GRID_PRESETS: LayoutPreset[] = [
   {
     name: "Wide Left",
     icon: (
-      <div className="h-6 w-full overflow-hidden rounded-sm border border-base-300 p-px">
-        <div className="grid h-full grid-cols-[3fr_1fr] gap-px overflow-hidden rounded-sm border border-base-300 p-px">
-          <div className="rounded-sm bg-primary/30" />
-          <div className="rounded-sm bg-primary/20" />
+      <div className="border-base-300 h-6 w-full overflow-hidden rounded-sm border p-px">
+        <div className="border-base-300 grid h-full grid-cols-[3fr_1fr] gap-px overflow-hidden rounded-sm border p-px">
+          <div className="bg-primary/30 rounded-sm" />
+          <div className="bg-primary/20 rounded-sm" />
         </div>
       </div>
     ),
@@ -266,10 +271,10 @@ export const GRID_PRESETS: LayoutPreset[] = [
   {
     name: "Wide Right",
     icon: (
-      <div className="h-6 w-full overflow-hidden rounded-sm border border-base-300 p-px">
-        <div className="grid h-full grid-cols-[1fr_3fr] gap-px overflow-hidden rounded-sm border border-base-300 p-px">
-          <div className="rounded-sm bg-primary/20" />
-          <div className="rounded-sm bg-primary/30" />
+      <div className="border-base-300 h-6 w-full overflow-hidden rounded-sm border p-px">
+        <div className="border-base-300 grid h-full grid-cols-[1fr_3fr] gap-px overflow-hidden rounded-sm border p-px">
+          <div className="bg-primary/20 rounded-sm" />
+          <div className="bg-primary/30 rounded-sm" />
         </div>
       </div>
     ),
@@ -281,11 +286,11 @@ export const GRID_PRESETS: LayoutPreset[] = [
   {
     name: "Wide Middle",
     icon: (
-      <div className="h-6 w-full overflow-hidden rounded-sm border border-base-300 p-px">
-        <div className="grid h-full grid-cols-[1fr_2fr_1fr] gap-px overflow-hidden rounded-sm border border-base-300 p-px">
-          <div className="rounded-sm bg-primary/20" />
-          <div className="rounded-sm bg-primary/30" />
-          <div className="rounded-sm bg-primary/20" />
+      <div className="border-base-300 h-6 w-full overflow-hidden rounded-sm border p-px">
+        <div className="border-base-300 grid h-full grid-cols-[1fr_2fr_1fr] gap-px overflow-hidden rounded-sm border p-px">
+          <div className="bg-primary/20 rounded-sm" />
+          <div className="bg-primary/30 rounded-sm" />
+          <div className="bg-primary/20 rounded-sm" />
         </div>
       </div>
     ),

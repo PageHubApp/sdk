@@ -15,18 +15,29 @@ interface UseImageDropOptions {
  * Shared hook for drag-and-drop file handling.
  * Returns props to spread on a container element + isDragOver state.
  */
-export function useImageDrop({ onFiles, accept = "image/", max = 10, disabled = false }: UseImageDropOptions) {
+export function useImageDrop({
+  onFiles,
+  accept = "image/",
+  max = 10,
+  disabled = false,
+}: UseImageDropOptions) {
   const [isDragOver, setIsDragOver] = useState(false);
 
-  const onDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    if (!disabled) setIsDragOver(true);
-  }, [disabled]);
+  const onDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      if (!disabled) setIsDragOver(true);
+    },
+    [disabled]
+  );
 
-  const onDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    if (!disabled) setIsDragOver(true);
-  }, [disabled]);
+  const onDragEnter = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      if (!disabled) setIsDragOver(true);
+    },
+    [disabled]
+  );
 
   const onDragLeave = useCallback((e: React.DragEvent) => {
     // Only leave when exiting the container, not entering a child
@@ -35,18 +46,21 @@ export function useImageDrop({ onFiles, accept = "image/", max = 10, disabled = 
     }
   }, []);
 
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-    if (disabled) return;
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+      if (disabled) return;
 
-    const files = Array.from(e.dataTransfer.files)
-      .filter(f => accept === "*" || f.type.startsWith(accept))
-      .slice(0, max);
+      const files = Array.from(e.dataTransfer.files)
+        .filter(f => accept === "*" || f.type.startsWith(accept))
+        .slice(0, max);
 
-    if (files.length > 0) onFiles(files);
-  }, [onFiles, max, disabled]);
+      if (files.length > 0) onFiles(files);
+    },
+    [onFiles, max, disabled]
+  );
 
   return {
     isDragOver,

@@ -1,7 +1,14 @@
 import { useEditor } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TbArrowLeft, TbChevronDown, TbChevronLeft, TbChevronRight, TbLoader2, TbX } from "react-icons/tb";
+import {
+  TbArrowLeft,
+  TbChevronDown,
+  TbChevronLeft,
+  TbChevronRight,
+  TbLoader2,
+  TbX,
+} from "react-icons/tb";
 import { SectionPickerDialogAtom } from "utils/atoms";
 import { useSetAtomState } from "../../../utils/atoms";
 import type { BlockCategory } from "../../../utils/useBlockCategories";
@@ -42,15 +49,15 @@ function FilterDropdown({
           </span>
           <button
             onClick={onClear}
-            className="rounded-full p-0.5 transition-colors hover:bg-neutral cursor-pointer"
+            className="hover:bg-neutral cursor-pointer rounded-full p-0.5 transition-colors"
           >
-            <TbX className="size-3 text-neutral-content" />
+            <TbX className="text-neutral-content size-3" />
           </button>
         </div>
       ) : (
         <button
           onClick={onToggle}
-          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-neutral-content transition-colors hover:bg-neutral cursor-pointer"
+          className="text-neutral-content hover:bg-neutral flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors"
         >
           {label}
           <TbChevronDown className={`size-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />
@@ -59,12 +66,12 @@ function FilterDropdown({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={onClose} />
-          <div className="absolute right-0 top-full z-50 mt-1 min-w-[140px] rounded-lg border border-base-300 bg-base-100 py-1 shadow-lg">
+          <div className="border-base-300 bg-base-100 absolute top-full right-0 z-50 mt-1 min-w-[140px] rounded-lg border py-1 shadow-lg">
             {items.map(item => (
               <button
                 key={item.name}
                 onClick={() => onSelect(item.name)}
-                className={`flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs transition-colors hover:bg-neutral ${
+                className={`hover:bg-neutral flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs transition-colors ${
                   activeKey === item.name ? "text-primary font-medium" : "text-base-content"
                 }`}
               >
@@ -101,9 +108,15 @@ export function CategoryDetailView({
   onCategoryChange,
 }: CategoryDetailViewProps) {
   const { actions, query } = useEditor();
-  const { connectors: { create } } = useEditor(state => ({ enabled: state.options.enabled }));
+  const {
+    connectors: { create },
+  } = useEditor(state => ({ enabled: state.options.enabled }));
   const resolver = useMemo(() => {
-    try { return (query as any).getOptions?.()?.resolver ?? {}; } catch { return {}; }
+    try {
+      return (query as any).getOptions?.()?.resolver ?? {};
+    } catch {
+      return {};
+    }
   }, [query]);
 
   const positionInfo = useAtomValue(SectionPickerDialogAtom);
@@ -116,24 +129,30 @@ export function CategoryDetailView({
   const prevCategory = currentIndex > 0 ? categories[currentIndex - 1] : null;
   const nextCategory = currentIndex < categories.length - 1 ? categories[currentIndex + 1] : null;
 
-  const insertElement = useCallback((element: any) => {
-    if (!element) return;
-    if (positionInfo.nodeId && positionInfo.parent) {
-      const parentNodeData = query.node(positionInfo.parent).get();
-      const currentIndex = parentNodeData.data.nodes.indexOf(positionInfo.nodeId);
-      const newIndex = positionInfo.position === "bottom" ? currentIndex + 1 : currentIndex;
-      AddElement({ element, actions, query, addTo: positionInfo.parent, index: newIndex });
-      setPositionInfo({ isOpen: false, nodeId: null, position: null, parent: null });
-    } else {
-      const targetPageId = getTargetPageId();
-      AddElement({ element, actions, query, addTo: targetPageId });
-    }
-  }, [actions, query, positionInfo, setPositionInfo, getTargetPageId]);
+  const insertElement = useCallback(
+    (element: any) => {
+      if (!element) return;
+      if (positionInfo.nodeId && positionInfo.parent) {
+        const parentNodeData = query.node(positionInfo.parent).get();
+        const currentIndex = parentNodeData.data.nodes.indexOf(positionInfo.nodeId);
+        const newIndex = positionInfo.position === "bottom" ? currentIndex + 1 : currentIndex;
+        AddElement({ element, actions, query, addTo: positionInfo.parent, index: newIndex });
+        setPositionInfo({ isOpen: false, nodeId: null, position: null, parent: null });
+      } else {
+        const targetPageId = getTargetPageId();
+        AddElement({ element, actions, query, addTo: targetPageId });
+      }
+    },
+    [actions, query, positionInfo, setPositionInfo, getTargetPageId]
+  );
 
-  const handleDoubleClick = useCallback((block: BlockItem) => {
-    const element = buildElementFromStructure(block.structure, block.slug, false, resolver);
-    insertElement(element);
-  }, [resolver, insertElement]);
+  const handleDoubleClick = useCallback(
+    (block: BlockItem) => {
+      const element = buildElementFromStructure(block.structure, block.slug, false, resolver);
+      insertElement(element);
+    },
+    [resolver, insertElement]
+  );
 
   const [filterOpen, setFilterOpen] = useState(false);
   const [styleOpen, setStyleOpen] = useState(false);
@@ -146,18 +165,25 @@ export function CategoryDetailView({
 
   const hasUsedQuickLook = useRef(false);
 
-  const handleBlockHover = useCallback((block: BlockItem, rect: DOMRect) => {
-    hoveredRef.current = { block, rect };
-    setIsHoveringCard(true);
-    if (quickLookBlock) {
-      setQuickLookBlock(block);
-      setQuickLookRect(rect);
-    }
-  }, [quickLookBlock]);
+  const handleBlockHover = useCallback(
+    (block: BlockItem, rect: DOMRect) => {
+      hoveredRef.current = { block, rect };
+      setIsHoveringCard(true);
+      if (quickLookBlock) {
+        setQuickLookBlock(block);
+        setQuickLookRect(rect);
+      }
+    },
+    [quickLookBlock]
+  );
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === " " && !e.repeat && !(e.target as HTMLElement)?.closest("input, textarea, [contenteditable]")) {
+      if (
+        e.key === " " &&
+        !e.repeat &&
+        !(e.target as HTMLElement)?.closest("input, textarea, [contenteditable]")
+      ) {
         e.preventDefault();
         if (quickLookBlock) {
           setQuickLookBlock(null);
@@ -187,13 +213,16 @@ export function CategoryDetailView({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-base-300 px-3 py-4">
-        <button onClick={onBack} className="rounded-md p-1 transition-colors hover:bg-neutral cursor-pointer">
+      <div className="border-base-300 flex items-center gap-2 border-b px-3 py-4">
+        <button
+          onClick={onBack}
+          className="hover:bg-neutral cursor-pointer rounded-md p-1 transition-colors"
+        >
           <TbArrowLeft className="size-4" />
         </button>
-        <div className="min-w-0 flex-1 flex items-center gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <div className="text-sm font-medium">{category.name}</div>
-          <span className="text-xs text-neutral-content">{category.total}</span>
+          <span className="text-neutral-content text-xs">{category.total}</span>
         </div>
 
         {/* Style dropdown */}
@@ -202,12 +231,18 @@ export function CategoryDetailView({
             label="Style"
             activeValue={styleLabel}
             isOpen={styleOpen}
-            onToggle={() => { setStyleOpen(!styleOpen); setFilterOpen(false); }}
+            onToggle={() => {
+              setStyleOpen(!styleOpen);
+              setFilterOpen(false);
+            }}
             onClose={() => setStyleOpen(false)}
             onClear={() => onStyleChange(null)}
             items={category.styles}
             activeKey={activeStyle}
-            onSelect={(name) => { onStyleChange(name); setStyleOpen(false); }}
+            onSelect={name => {
+              onStyleChange(name);
+              setStyleOpen(false);
+            }}
           />
         )}
 
@@ -217,12 +252,18 @@ export function CategoryDetailView({
             label="Filter"
             activeValue={activeLabel}
             isOpen={filterOpen}
-            onToggle={() => { setFilterOpen(!filterOpen); setStyleOpen(false); }}
+            onToggle={() => {
+              setFilterOpen(!filterOpen);
+              setStyleOpen(false);
+            }}
             onClose={() => setFilterOpen(false)}
             onClear={() => onSubcategoryChange(null)}
             items={category.subcategories}
             activeKey={activeSubcategory}
-            onSelect={(name) => { onSubcategoryChange(name); setFilterOpen(false); }}
+            onSelect={name => {
+              onSubcategoryChange(name);
+              setFilterOpen(false);
+            }}
           />
         )}
       </div>
@@ -230,32 +271,43 @@ export function CategoryDetailView({
       {/* Block list */}
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center">
-          <TbLoader2 className="size-5 animate-spin text-neutral-content" />
+          <TbLoader2 className="text-neutral-content size-5 animate-spin" />
         </div>
       ) : (
         <AutoHideScrollbar className="flex-1">
-          <div className="grid w-full grid-cols-1 gap-3 p-3 pt-1" onMouseLeave={() => setIsHoveringCard(false)}>
+          <div
+            className="grid w-full grid-cols-1 gap-3 p-3 pt-1"
+            onMouseLeave={() => setIsHoveringCard(false)}
+          >
             {blocks.map(block => (
               <BlockPreviewCard
                 key={block.slug || block._id}
                 block={block}
                 resolver={resolver}
                 onDoubleClick={() => handleDoubleClick(block)}
-                onDragRef={(ref) => {
+                onDragRef={ref => {
                   if (!ref) return;
                   ref.setAttribute("data-create-type", "section");
-                  const tool = buildElementFromStructure(block.structure, block.slug, false, resolver);
+                  const tool = buildElementFromStructure(
+                    block.structure,
+                    block.slug,
+                    false,
+                    resolver
+                  );
                   if (tool) create(ref, tool);
                 }}
                 onHover={handleBlockHover}
-                onDismissQuickLook={() => { setQuickLookBlock(null); setQuickLookRect(null); }}
+                onDismissQuickLook={() => {
+                  setQuickLookBlock(null);
+                  setQuickLookRect(null);
+                }}
                 quickLookOpen={quickLookBlock?.slug === block.slug}
               />
             ))}
           </div>
           {blocks.length === 0 && (
             <div className="flex h-32 items-center justify-center">
-              <p className="text-sm text-neutral-content">No blocks in this category.</p>
+              <p className="text-neutral-content text-sm">No blocks in this category.</p>
             </div>
           )}
           <div className="shrink-0" style={{ minHeight: "70vh" }} />
@@ -274,9 +326,11 @@ export function CategoryDetailView({
 
       {/* Spacebar hint — fades in on card hover, fades out on leave, hidden after first use */}
       {!hasUsedQuickLook.current && !quickLookBlock && (
-        <div className={`pointer-events-none absolute inset-x-0 bottom-14 z-50 flex justify-center transition-opacity duration-300 ${isHoveringCard ? "opacity-100" : "opacity-0"}`}>
-          <div className="rounded-md bg-base-300 px-2.5 py-1 text-[11px] text-base-content shadow-lg whitespace-nowrap">
-            <kbd className="mr-1 rounded bg-base-100 px-1 py-0.5 font-mono text-[10px]">Space</kbd>
+        <div
+          className={`pointer-events-none absolute inset-x-0 bottom-14 z-50 flex justify-center transition-opacity duration-300 ${isHoveringCard ? "opacity-100" : "opacity-0"}`}
+        >
+          <div className="bg-base-300 text-base-content rounded-md px-2.5 py-1 text-[11px] whitespace-nowrap shadow-lg">
+            <kbd className="bg-base-100 mr-1 rounded px-1 py-0.5 font-mono text-[10px]">Space</kbd>
             to preview
           </div>
         </div>
@@ -284,28 +338,30 @@ export function CategoryDetailView({
 
       {/* Prev / Next category nav */}
       {(prevCategory || nextCategory) && (
-        <div className="flex items-stretch border-t border-base-300">
+        <div className="border-base-300 flex items-stretch border-t">
           {prevCategory ? (
             <button
               onClick={() => onCategoryChange(prevCategory.id)}
-              className="flex flex-1 cursor-pointer items-center gap-1.5 px-3 py-4 text-left transition-colors hover:bg-neutral"
+              className="hover:bg-neutral flex flex-1 cursor-pointer items-center gap-1.5 px-3 py-4 text-left transition-colors"
             >
-              <TbChevronLeft className="size-3.5 shrink-0 text-neutral-content" />
-              <span className="min-w-0 truncate text-xs font-medium text-neutral-content">{prevCategory.name}</span>
+              <TbChevronLeft className="text-neutral-content size-3.5 shrink-0" />
+              <span className="text-neutral-content min-w-0 truncate text-xs font-medium">
+                {prevCategory.name}
+              </span>
             </button>
           ) : (
             <div className="flex-1" />
           )}
-          {prevCategory && nextCategory && (
-            <div className="w-px bg-border" />
-          )}
+          {prevCategory && nextCategory && <div className="bg-border w-px" />}
           {nextCategory ? (
             <button
               onClick={() => onCategoryChange(nextCategory.id)}
-              className="flex flex-1 cursor-pointer items-center justify-end gap-1.5 px-3 py-4 text-right transition-colors hover:bg-neutral"
+              className="hover:bg-neutral flex flex-1 cursor-pointer items-center justify-end gap-1.5 px-3 py-4 text-right transition-colors"
             >
-              <span className="min-w-0 truncate text-xs font-medium text-neutral-content">{nextCategory.name}</span>
-              <TbChevronRight className="size-3.5 shrink-0 text-neutral-content" />
+              <span className="text-neutral-content min-w-0 truncate text-xs font-medium">
+                {nextCategory.name}
+              </span>
+              <TbChevronRight className="text-neutral-content size-3.5 shrink-0" />
             </button>
           ) : (
             <div className="flex-1" />

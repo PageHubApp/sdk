@@ -35,7 +35,7 @@ export function addElementsToHead(
   header: string | undefined,
   parent: HTMLElement,
   isCssValid: (css: string) => boolean,
-  isJsValid: (js: string) => boolean,
+  isJsValid: (js: string) => boolean
 ): HTMLElement[] {
   const elements: HTMLElement[] = [];
   if (!header || typeof window === "undefined") return elements;

@@ -23,13 +23,7 @@ function isInsideTextEditingSurface(target: EventTarget | null): boolean {
 }
 
 export function useViewportKeyboard() {
-  const {
-    enabled,
-    canUndo,
-    canRedo,
-    actions,
-    query,
-  } = useEditor((state, query) => ({
+  const { enabled, canUndo, canRedo, actions, query } = useEditor((state, query) => ({
     enabled: state.options.enabled,
     canUndo: query.history.canUndo(),
     canRedo: query.history.canRedo(),
@@ -90,7 +84,9 @@ export function useViewportKeyboard() {
       try {
         const active = query.getEvent("selected").first();
         if (active) actions.selectNode(null);
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
       return;
     }
 
@@ -106,13 +102,20 @@ export function useViewportKeyboard() {
         if (index + 1 > parentNode.data.nodes.length) index = 0;
         const ee = query.node(parentNode.data.nodes[index]).get();
         actions.selectNode(ee.id);
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
       return;
     }
 
     // Backspace (delete)
     if (event.which === 8) {
-      try { event.preventDefault(); deleteSelectedNode(); } catch (e) { console.error(e); }
+      try {
+        event.preventDefault();
+        deleteSelectedNode();
+      } catch (e) {
+        console.error(e);
+      }
       return;
     }
 
@@ -131,7 +134,9 @@ export function useViewportKeyboard() {
           actions?.history?.undo();
           finalizeToolboxHistorySelectionSync();
         }
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
       return;
     }
 
@@ -144,7 +149,9 @@ export function useViewportKeyboard() {
           actions?.history?.redo();
           finalizeToolboxHistorySelectionSync();
         }
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 

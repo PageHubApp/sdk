@@ -212,7 +212,11 @@ export interface PageHubEditorChromeSlots {
   /** Rich-text floating toolbar — opens Clippy for copy (text scope). */
   renderInlineCopyAssistantTrigger?: (ctx: { textNodeId: string; query: unknown }) => ReactNode;
   /** Settings sidebar “Edit with AI” (per selected node). Host should pin `nodeId` to `AiChatAttachedNodesAtom` like “Add to context”. */
-  renderSettingsAiButton?: (ctx: { nodeId: string; displayName: string; resolvedType?: string }) => ReactNode;
+  renderSettingsAiButton?: (ctx: {
+    nodeId: string;
+    displayName: string;
+    resolvedType?: string;
+  }) => ReactNode;
   /** Container / add-section wand — opens assistant in create mode. */
   renderNodeAiGenerateButton?: (ctx: {
     onClick: () => void;
@@ -336,7 +340,10 @@ export interface PageHubInstance {
   destroy: () => void;
 
   /** Listen to SDK events */
-  on: <E extends PageHubEvent>(event: E, handler: (...args: PageHubEventMap[E]) => void) => () => void;
+  on: <E extends PageHubEvent>(
+    event: E,
+    handler: (...args: PageHubEventMap[E]) => void
+  ) => () => void;
 
   /** Get the rendered HTML string */
   getHTML: () => string;
@@ -396,4 +403,9 @@ export interface PageHubEventMap {
 // Types re-exported from define.ts — the canonical definitions live there.
 // This re-export keeps the types.ts barrel working for existing consumers.
 
-export type { PageHubComponentDef, ResolvedComponentDef, PropSchema, ComponentPreset } from "./define";
+export type {
+  PageHubComponentDef,
+  ResolvedComponentDef,
+  PropSchema,
+  ComponentPreset,
+} from "./define";

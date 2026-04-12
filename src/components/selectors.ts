@@ -138,7 +138,6 @@ export function applyAriaProps(prop: Record<string, any>, props: Partial<BaseSel
   if (props["aria-live"]) prop["aria-live"] = props["aria-live"];
 }
 
-
 // TODO: Export ContainerGroup once ported
 // export { ContainerGroup } from "./ContainerGroup";
 // export type { ContainerGroupProps } from "./ContainerGroup";

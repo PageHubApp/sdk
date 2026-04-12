@@ -38,7 +38,11 @@ function parseColor(color: string): [number, number, number] {
   // hsl()/hsla()
   const hslMatch = c.match(/^hsla?\(\s*([\d.]+)\s+(?:deg\s+)?([\d.]+)%\s+([\d.]+)%/);
   if (hslMatch) {
-    const [h, s, l] = [parseFloat(hslMatch[1]), parseFloat(hslMatch[2]) / 100, parseFloat(hslMatch[3]) / 100];
+    const [h, s, l] = [
+      parseFloat(hslMatch[1]),
+      parseFloat(hslMatch[2]) / 100,
+      parseFloat(hslMatch[3]) / 100,
+    ];
     [r, g, b] = hslToRgb(h, s, l);
     return srgbToOklch(r, g, b);
   }
@@ -87,9 +91,9 @@ function srgbToOklch(r: number, g: number, b: number): [number, number, number] 
   const s1 = Math.cbrt(s_);
 
   // LMS → OKLab
-  const L = 0.2104542553 * l1 + 0.7936177850 * m1 - 0.0040720468 * s1;
-  const a = 1.9779984951 * l1 - 2.4285922050 * m1 + 0.4505937099 * s1;
-  const bk = 0.0259040371 * l1 + 0.7827717662 * m1 - 0.8086757660 * s1;
+  const L = 0.2104542553 * l1 + 0.793617785 * m1 - 0.0040720468 * s1;
+  const a = 1.9779984951 * l1 - 2.428592205 * m1 + 0.4505937099 * s1;
+  const bk = 0.0259040371 * l1 + 0.7827717662 * m1 - 0.808675766 * s1;
 
   // OKLab → OKLCH
   const C = Math.sqrt(a * a + bk * bk);
@@ -123,11 +127,11 @@ function oklchToSrgb(L: number, C: number, H: number): [number, number, number] 
 
   const l1 = L + 0.3963377774 * a + 0.2158037573 * b;
   const m1 = L - 0.1055613458 * a - 0.0638541728 * b;
-  const s1 = L - 0.0894841775 * a - 1.2914855480 * b;
+  const s1 = L - 0.0894841775 * a - 1.291485548 * b;
 
-  const lr = +4.0767416621 * (l1 ** 3) - 3.3077115913 * (m1 ** 3) + 0.2309699292 * (s1 ** 3);
-  const lg = -1.2684380046 * (l1 ** 3) + 2.6097574011 * (m1 ** 3) - 0.3413193965 * (s1 ** 3);
-  const lb = -0.0041960863 * (l1 ** 3) - 0.7034186147 * (m1 ** 3) + 1.7076147010 * (s1 ** 3);
+  const lr = +4.0767416621 * l1 ** 3 - 3.3077115913 * m1 ** 3 + 0.2309699292 * s1 ** 3;
+  const lg = -1.2684380046 * l1 ** 3 + 2.6097574011 * m1 ** 3 - 0.3413193965 * s1 ** 3;
+  const lb = -0.0041960863 * l1 ** 3 - 0.7034186147 * m1 ** 3 + 1.707614701 * s1 ** 3;
 
   return [
     Math.max(0, Math.min(1, delinearize(lr))),
@@ -145,7 +149,10 @@ export function oklchToHex(oklch: string): string {
   let L = parseFloat(m[1]);
   if (L > 1) L /= 100;
   const [r, g, b] = oklchToSrgb(L, parseFloat(m[2]), parseFloat(m[3]));
-  const toHex = (c: number) => Math.round(c * 255).toString(16).padStart(2, "0");
+  const toHex = (c: number) =>
+    Math.round(c * 255)
+      .toString(16)
+      .padStart(2, "0");
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
@@ -209,7 +216,7 @@ export const CONTENT_COLOR_PAIRS: Record<string, string> = {
 export function autoGenerateContentColors(
   palette: { name: string; color: string }[]
 ): { name: string; color: string }[] {
-  const map = new Map(palette.map((p) => [p.name, p.color]));
+  const map = new Map(palette.map(p => [p.name, p.color]));
   const result = [...palette];
 
   for (const [surfaceName, contentName] of Object.entries(CONTENT_COLOR_PAIRS)) {
@@ -217,13 +224,13 @@ export function autoGenerateContentColors(
     if (!surfaceColor) continue;
 
     const generated = generateContentColor(surfaceColor);
-    const existingIdx = result.findIndex((p) => p.name === contentName);
+    const existingIdx = result.findIndex(p => p.name === contentName);
 
     if (existingIdx >= 0) {
       result[existingIdx] = { name: contentName, color: generated };
     } else {
       // Insert content color right after its surface color
-      const surfaceIdx = result.findIndex((p) => p.name === surfaceName);
+      const surfaceIdx = result.findIndex(p => p.name === surfaceName);
       result.splice(surfaceIdx + 1, 0, { name: contentName, color: generated });
     }
   }

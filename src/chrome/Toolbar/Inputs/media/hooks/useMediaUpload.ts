@@ -111,9 +111,7 @@ export function useMediaUpload({
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        setUploadProgress(prev =>
-          prev ? { ...prev, current: i, currentFile: file.name } : null
-        );
+        setUploadProgress(prev => (prev ? { ...prev, current: i, currentFile: file.name } : null));
 
         try {
           const processedFile = file.type.startsWith("image/")
@@ -273,7 +271,11 @@ export function useMediaUpload({
                 title: result.filename,
                 alt: result.filename.replace(/\.[^/.]+$/, ""),
                 size: result.size,
-                dimensions: { width: dimensions.width, height: dimensions.height, aspectRatio: dimensions.aspectRatio },
+                dimensions: {
+                  width: dimensions.width,
+                  height: dimensions.height,
+                  aspectRatio: dimensions.aspectRatio,
+                },
                 originalUrl: urlInput,
               };
             }
@@ -310,7 +312,11 @@ export function useMediaUpload({
                 ...existingMedia.metadata,
                 title: urlInput.split("/").pop() || urlInput,
                 url: urlInput,
-                dimensions: { width: dimensions.width, height: dimensions.height, aspectRatio: dimensions.aspectRatio },
+                dimensions: {
+                  width: dimensions.width,
+                  height: dimensions.height,
+                  aspectRatio: dimensions.aspectRatio,
+                },
               };
             }
           });
@@ -358,7 +364,12 @@ export function useMediaUpload({
         const pageMedia = (props.pageMedia || []) as MediaItem[];
         const existingMedia = pageMedia.find(m => m.id === mediaId);
         if (existingMedia) {
-          existingMedia.metadata = { ...existingMedia.metadata, title: "SVG Image", svg: cleanedSvg, size: svgSize };
+          existingMedia.metadata = {
+            ...existingMedia.metadata,
+            title: "SVG Image",
+            svg: cleanedSvg,
+            size: svgSize,
+          };
         }
       });
 
@@ -376,7 +387,9 @@ export function useMediaUpload({
   const checkClipboardForImages = async () => {
     try {
       const clipboardItems = await navigator.clipboard.read();
-      setHasImageInClipboard(clipboardItems.some(item => item.types.some(type => type.startsWith("image/"))));
+      setHasImageInClipboard(
+        clipboardItems.some(item => item.types.some(type => type.startsWith("image/")))
+      );
     } catch {
       setHasImageInClipboard(false);
     }
@@ -397,7 +410,12 @@ export function useMediaUpload({
         if (!file) continue;
 
         setUploading(true);
-        setUploadProgress({ current: 0, total: 1, currentFile: file.name || "Pasted image", completedFiles: [] });
+        setUploadProgress({
+          current: 0,
+          total: 1,
+          currentFile: file.name || "Pasted image",
+          completedFiles: [],
+        });
 
         try {
           const processedFile = await resizeImageIfNeeded(file);
@@ -431,12 +449,15 @@ export function useMediaUpload({
         for (const type of clipboardItem.types) {
           if (type.startsWith("image/")) {
             const blob = await clipboardItem.getType(type);
-            const file = new File([blob], `pasted-image-${Date.now()}.${type.split("/")[1]}`, { type });
+            const file = new File([blob], `pasted-image-${Date.now()}.${type.split("/")[1]}`, {
+              type,
+            });
 
             setUploading(true);
             try {
               const geturl = await GetSignedUrl();
-              const signedURL = (geturl as Record<string, Record<string, string>>)?.result?.uploadURL;
+              const signedURL = (geturl as Record<string, Record<string, string>>)?.result
+                ?.uploadURL;
               if (!signedURL) throw new Error("Failed to get upload URL");
 
               const res = await SaveMedia(file, signedURL);

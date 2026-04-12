@@ -43,7 +43,6 @@ export const GlobalSectionPickerDialog = () => {
             behavior: "smooth",
             block: "center",
           });
-
         }
       }, 100);
     }

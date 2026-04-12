@@ -9,10 +9,7 @@ import type { PageHubTheme } from "./types";
 
 const STYLE_ID = "pagehub-sdk-theme";
 
-export function injectTheme(
-  container: HTMLElement,
-  theme: Required<PageHubTheme>
-): void {
+export function injectTheme(container: HTMLElement, theme: Required<PageHubTheme>): void {
   // Remove existing theme style
   const existing = container.querySelector(`#${STYLE_ID}`);
   if (existing) existing.remove();

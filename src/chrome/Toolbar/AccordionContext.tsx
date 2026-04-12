@@ -14,22 +14,22 @@ export const AccordionProvider = ({ children }) => {
 
   const registeredSections = useRef(new Set<string>());
 
-  const persist = (state) => {
+  const persist = state => {
     try {
       phStorage.set("accordion-state", state);
     } catch {}
   };
 
   const getIsOpen = useCallback(
-    (title) => {
+    title => {
       if (title in openSections) return openSections[title];
       return title === DEFAULT_OPEN_SECTION;
     },
     [openSections]
   );
 
-  const toggle = useCallback((title) => {
-    setOpenSections((prev) => {
+  const toggle = useCallback(title => {
+    setOpenSections(prev => {
       const currentlyOpen = title in prev ? prev[title] : title === DEFAULT_OPEN_SECTION;
       const next = { ...prev, [title]: !currentlyOpen };
       persist(next);
@@ -37,25 +37,25 @@ export const AccordionProvider = ({ children }) => {
     });
   }, []);
 
-  const register = useCallback((title) => {
+  const register = useCallback(title => {
     registeredSections.current.add(title);
   }, []);
 
-  const unregister = useCallback((title) => {
+  const unregister = useCallback(title => {
     registeredSections.current.delete(title);
   }, []);
 
   const toggleAll = useCallback(() => {
-    setOpenSections((prev) => {
+    setOpenSections(prev => {
       const sections = registeredSections.current;
       let hasAnyOpen = false;
-      sections.forEach((title) => {
+      sections.forEach(title => {
         const isOpen = title in prev ? prev[title] : title === DEFAULT_OPEN_SECTION;
         if (isOpen) hasAnyOpen = true;
       });
 
       const next = {};
-      sections.forEach((title) => {
+      sections.forEach(title => {
         next[title] = !hasAnyOpen;
       });
       persist(next);
@@ -67,7 +67,7 @@ export const AccordionProvider = ({ children }) => {
     setOpenSections(() => {
       const toOpen = new Set(titles);
       const next = {};
-      registeredSections.current.forEach((title) => {
+      registeredSections.current.forEach(title => {
         next[title] = toOpen.has(title);
       });
       persist(next);
@@ -78,7 +78,7 @@ export const AccordionProvider = ({ children }) => {
   const openAll = useCallback(() => {
     setOpenSections(() => {
       const next = {};
-      registeredSections.current.forEach((title) => {
+      registeredSections.current.forEach(title => {
         next[title] = true;
       });
       // Don't persist search-triggered open state
@@ -87,13 +87,15 @@ export const AccordionProvider = ({ children }) => {
   }, []);
 
   const anyOpen = useMemo(() => {
-    const hasExplicitlyOpen = Object.values(openSections).some((v) => v === true);
+    const hasExplicitlyOpen = Object.values(openSections).some(v => v === true);
     const contentDefaultOpen = !(DEFAULT_OPEN_SECTION in openSections);
     return hasExplicitlyOpen || contentDefaultOpen;
   }, [openSections]);
 
   return (
-    <AccordionContext.Provider value={{ getIsOpen, toggle, toggleAll, openAll, openOnly, register, unregister, anyOpen }}>
+    <AccordionContext.Provider
+      value={{ getIsOpen, toggle, toggleAll, openAll, openOnly, register, unregister, anyOpen }}
+    >
       {children}
     </AccordionContext.Provider>
   );

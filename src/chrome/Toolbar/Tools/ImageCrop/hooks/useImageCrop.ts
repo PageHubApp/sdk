@@ -41,7 +41,12 @@ interface UseImageCropOptions {
 export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropOptions) {
   // ─── Crop state ───
   const [cropArea, setCropArea] = useState<CropArea>({ x: 0, y: 0, width: 200, height: 200 });
-  const [baseCropArea, setBaseCropArea] = useState<CropArea>({ x: 0, y: 0, width: 200, height: 200 });
+  const [baseCropArea, setBaseCropArea] = useState<CropArea>({
+    x: 0,
+    y: 0,
+    width: 200,
+    height: 200,
+  });
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
   const [lockAspectRatio, setLockAspectRatio] = useState(false);
   const [customWidth, setCustomWidth] = useState(400);
@@ -169,8 +174,10 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
     }
 
     if (
-      x >= cropArea.x && x <= cropArea.x + cropArea.width &&
-      y >= cropArea.y && y <= cropArea.y + cropArea.height
+      x >= cropArea.x &&
+      x <= cropArea.x + cropArea.width &&
+      y >= cropArea.y &&
+      y <= cropArea.y + cropArea.height
     ) {
       setIsDragging(true);
       setDragType("move");
@@ -195,10 +202,26 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
       } else if (dragType === "resize" && resizeHandle) {
         const newArea = { ...cropArea };
         switch (resizeHandle) {
-          case "nw": newArea.width = cropArea.width + (cropArea.x - x); newArea.height = cropArea.height + (cropArea.y - y); newArea.x = x; newArea.y = y; break;
-          case "ne": newArea.width = x - cropArea.x; newArea.height = cropArea.height + (cropArea.y - y); newArea.y = y; break;
-          case "sw": newArea.width = cropArea.width + (cropArea.x - x); newArea.height = y - cropArea.y; newArea.x = x; break;
-          case "se": newArea.width = x - cropArea.x; newArea.height = y - cropArea.y; break;
+          case "nw":
+            newArea.width = cropArea.width + (cropArea.x - x);
+            newArea.height = cropArea.height + (cropArea.y - y);
+            newArea.x = x;
+            newArea.y = y;
+            break;
+          case "ne":
+            newArea.width = x - cropArea.x;
+            newArea.height = cropArea.height + (cropArea.y - y);
+            newArea.y = y;
+            break;
+          case "sw":
+            newArea.width = cropArea.width + (cropArea.x - x);
+            newArea.height = y - cropArea.y;
+            newArea.x = x;
+            break;
+          case "se":
+            newArea.width = x - cropArea.x;
+            newArea.height = y - cropArea.y;
+            break;
         }
         updateCropArea(newArea);
       }
@@ -263,8 +286,8 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
       const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
       const containerRect = containerRef.current.getBoundingClientRect();
       const imageRect = imageRef.current.getBoundingClientRect();
-      const offsetX = (centerX - containerRect.left) - imageRect.width / 2;
-      const offsetY = (centerY - containerRect.top) - imageRect.height / 2;
+      const offsetX = centerX - containerRect.left - imageRect.width / 2;
+      const offsetY = centerY - containerRect.top - imageRect.height / 2;
       const scaleChange = newScale / previewScale;
       setPreviewScale(newScale);
       setViewportPosition({
@@ -291,9 +314,10 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
   const handleCropScaleChange = (scale: number) => {
     setCropScale(scale);
     const newWidth = Math.min(baseCropArea.width * scale, imageSize.width);
-    const newHeight = lockAspectRatio && aspectRatio
-      ? newWidth / aspectRatio
-      : Math.min(baseCropArea.height * scale, imageSize.height);
+    const newHeight =
+      lockAspectRatio && aspectRatio
+        ? newWidth / aspectRatio
+        : Math.min(baseCropArea.height * scale, imageSize.height);
     const centerX = baseCropArea.x + baseCropArea.width / 2;
     const centerY = baseCropArea.y + baseCropArea.height / 2;
     updateCropArea({
@@ -319,11 +343,17 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
   const processCroppedImage = async (): Promise<File> => {
     return new Promise((resolve, reject) => {
       const img = imageRef.current;
-      if (!img || !img.complete) { reject(new Error("Image not loaded")); return; }
+      if (!img || !img.complete) {
+        reject(new Error("Image not loaded"));
+        return;
+      }
 
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      if (!ctx) { reject(new Error("Canvas context not available")); return; }
+      if (!ctx) {
+        reject(new Error("Canvas context not available"));
+        return;
+      }
 
       canvas.width = customWidth;
       canvas.height = customHeight;
@@ -334,16 +364,29 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
 
       ctx.drawImage(
         img,
-        cropArea.x * scaleX, cropArea.y * scaleY,
-        cropArea.width * scaleX, cropArea.height * scaleY,
-        0, 0, customWidth, customHeight
+        cropArea.x * scaleX,
+        cropArea.y * scaleY,
+        cropArea.width * scaleX,
+        cropArea.height * scaleY,
+        0,
+        0,
+        customWidth,
+        customHeight
       );
 
       canvas.toBlob(
         blob => {
-          if (!blob) { reject(new Error("Failed to create image blob")); return; }
-          const baseName = versionName.trim() || `${media.metadata?.title || media.id}-${customWidth}x${customHeight}`;
-          const finalName = saveMode === "new" ? `${baseName}-${Date.now()}.${imageFormat}` : `${baseName}.${imageFormat}`;
+          if (!blob) {
+            reject(new Error("Failed to create image blob"));
+            return;
+          }
+          const baseName =
+            versionName.trim() ||
+            `${media.metadata?.title || media.id}-${customWidth}x${customHeight}`;
+          const finalName =
+            saveMode === "new"
+              ? `${baseName}-${Date.now()}.${imageFormat}`
+              : `${baseName}.${imageFormat}`;
           resolve(new File([blob], finalName, { type: `image/${imageFormat}` }));
         },
         `image/${imageFormat}`,
@@ -370,7 +413,9 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
       let finalMediaId = (uploadResult as any).result.id;
 
       if (saveMode === "override") {
-        try { await DeleteMedia(media.id, settings); } catch {}
+        try {
+          await DeleteMedia(media.id, settings);
+        } catch {}
       }
 
       const croppedImage = {
@@ -378,7 +423,9 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
         id: saveMode === "new" ? finalMediaId : media.id,
         metadata: {
           ...media.metadata,
-          title: versionName.trim() || `${media.metadata?.title || media.id} (${customWidth}x${customHeight})`,
+          title:
+            versionName.trim() ||
+            `${media.metadata?.title || media.id} (${customWidth}x${customHeight})`,
           versionName: versionName.trim() || `${customWidth}x${customHeight}`,
           cropArea,
           customWidth,
@@ -386,7 +433,11 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
           aspectRatio,
           isVariant: saveMode === "new",
           parentId: saveMode === "new" ? media.id : undefined,
-          dimensions: { width: customWidth, height: customHeight, aspectRatio: customWidth / customHeight },
+          dimensions: {
+            width: customWidth,
+            height: customHeight,
+            aspectRatio: customWidth / customHeight,
+          },
           ...(saveMode === "override" && {
             originalFileReplaced: true,
             replacedAt: new Date().toISOString(),
@@ -416,19 +467,52 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
 
   return {
     // Crop
-    cropArea, imageSize, aspectRatio, lockAspectRatio, customWidth, customHeight, cropScale, baseCropArea,
-    setLockAspectRatio, setAspectRatio,
-    updateCropArea, handleImageLoad, handlePresetSelect, handleCropScaleChange, handleCustomSizeChange,
+    cropArea,
+    imageSize,
+    aspectRatio,
+    lockAspectRatio,
+    customWidth,
+    customHeight,
+    cropScale,
+    baseCropArea,
+    setLockAspectRatio,
+    setAspectRatio,
+    updateCropArea,
+    handleImageLoad,
+    handlePresetSelect,
+    handleCropScaleChange,
+    handleCustomSizeChange,
     // Viewport
-    previewScale, setPreviewScale, viewportPosition, setViewportPosition, isPanning,
+    previewScale,
+    setPreviewScale,
+    viewportPosition,
+    setViewportPosition,
+    isPanning,
     // Drag
-    handleMouseDown, handleMouseMove, handleMouseUp, handleWheel, handleTouchStart, handleTouchMove,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleWheel,
+    handleTouchStart,
+    handleTouchMove,
     // Save
-    saveMode, setSaveMode, isSaving, saveError, setSaveError, saveSuccess, handleSave,
+    saveMode,
+    setSaveMode,
+    isSaving,
+    saveError,
+    setSaveError,
+    saveSuccess,
+    handleSave,
     // Export
-    imageFormat, setImageFormat, imageQuality, setImageQuality, versionName, setVersionName,
+    imageFormat,
+    setImageFormat,
+    imageQuality,
+    setImageQuality,
+    versionName,
+    setVersionName,
     // Refs
-    imageRef, containerRef,
+    imageRef,
+    containerRef,
     // Image
     getImageUrl,
   };

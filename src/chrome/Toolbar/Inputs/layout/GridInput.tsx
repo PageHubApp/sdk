@@ -60,7 +60,7 @@ export const GridInput = ({ propType = "class" }) => {
 
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="mb-2 flex w-full items-center justify-between rounded-lg border border-base-300 px-3 py-2 text-xs font-medium transition-colors hover:bg-accent"
+          className="border-base-300 hover:bg-accent mb-2 flex w-full items-center justify-between rounded-lg border px-3 py-2 text-xs font-medium transition-colors"
         >
           <span>Position Controls</span>
           <span className="text-neutral-content">{showAdvanced ? "−" : "+"}</span>
@@ -152,4 +152,3 @@ export const GridInput = ({ propType = "class" }) => {
     </>
   );
 };
-

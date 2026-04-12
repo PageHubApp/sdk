@@ -209,7 +209,7 @@ export function UnifiedDropdown({
 
         return (
           <div
-            className="flex size-4 shrink-0 items-center justify-center rounded border border-base-300 bg-neutral"
+            className="border-base-300 bg-neutral flex size-4 shrink-0 items-center justify-center rounded border"
             style={{ cursor: cursorValue }}
           >
             {getCursorIcon()}
@@ -218,7 +218,7 @@ export function UnifiedDropdown({
       }
       case "shadow": {
         return (
-          <div className={`size-4 shrink-0 rounded border border-base-300 bg-base-200 ${option}`} />
+          <div className={`border-base-300 bg-base-200 size-4 shrink-0 rounded border ${option}`} />
         );
       }
       default:
@@ -278,7 +278,7 @@ export function UnifiedDropdown({
               <button
                 key={option}
                 type="button"
-                className="ph-select-item text-xs text-base-content"
+                className="ph-select-item text-base-content text-xs"
                 onClick={() => onSelect(option)}
               >
                 {preview}
@@ -298,20 +298,20 @@ export function UnifiedDropdown({
         data-unified-dropdown
         style={style}
         ref={floating.refs.setFloating}
-        className="pagehub-sdk-root ph-panel flex flex-col text-base-content"
+        className="pagehub-sdk-root ph-panel text-base-content flex flex-col"
       >
         <div className="ph-select-item-host flex flex-1 flex-col">
           <button
             type="button"
             onClick={() => onSelect("")}
-            className="ph-select-item shrink-0 rounded-none border-b border-base-300 text-neutral-content"
+            className="ph-select-item border-base-300 text-neutral-content shrink-0 rounded-none border-b"
           >
             None
           </button>
 
           <div className="scrollbar-light flex-1 overflow-y-auto">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-6 text-center text-xs text-neutral-content">
+              <div className="text-neutral-content px-3 py-6 text-center text-xs">
                 No matches found
               </div>
             ) : (
@@ -323,7 +323,7 @@ export function UnifiedDropdown({
                     type="button"
                     onClick={() => onSelect(option)}
                     className={`ph-select-item text-base-content ${
-                      isSelected ? "bg-primary/10 font-semibold text-primary" : ""
+                      isSelected ? "bg-primary/10 text-primary font-semibold" : ""
                     }`}
                   >
                     {getDisplayLabel(option)}
@@ -362,8 +362,11 @@ export function UnifiedDropdown({
     }
 
     const sectionsDefined = sections.filter(
-      (col): col is (typeof sections)[number] & { section: NonNullable<(typeof sections)[number]["section"]> } =>
-        col.section != null
+      (
+        col
+      ): col is (typeof sections)[number] & {
+        section: NonNullable<(typeof sections)[number]["section"]>;
+      } => col.section != null
     );
 
     const columnHasOptions = (section: (typeof sectionsDefined)[number]["section"]) =>
@@ -466,136 +469,136 @@ export function UnifiedDropdown({
       data-unified-dropdown
       style={style}
       ref={floating.refs.setFloating}
-      className="pagehub-sdk-root ph-panel flex h-52 flex-col overflow-hidden text-base-content"
+      className="pagehub-sdk-root ph-panel text-base-content flex h-52 flex-col overflow-hidden"
     >
       <div className="ph-select-item-host flex min-h-0 flex-1 flex-col overflow-hidden">
-      {/* Main Options Section - Configurable Layout */}
-      {!isVarMode && renderMainContent()}
+        {/* Main Options Section - Configurable Layout */}
+        {!isVarMode && renderMainContent()}
 
-      {/* Design Variables Section - Hidden in tailwind mode */}
-      {isVarMode && showVarSelector && realDesignVars.length > 0 && (
-        <div className="flex h-full flex-col border-base-300">
-          <div className="scrollbar-light flex-1 overflow-y-auto">
-            <div className="bg-base-200">
-              {(() => {
-                // Filter by category based on input type
-                const getRelevantCategories = () => {
-                  // Width, height, spacing inputs - show spacing and other
-                  if (
-                    propTag &&
-                    [
-                      "w",
-                      "h",
-                      "m",
-                      "p",
-                      "mt",
-                      "mb",
-                      "ml",
-                      "mr",
-                      "mx",
-                      "my",
-                      "pt",
-                      "pb",
-                      "pl",
-                      "pr",
-                      "px",
-                      "py",
-                      "gap",
-                    ].includes(propTag)
-                  ) {
-                    return ["spacing", "other"];
+        {/* Design Variables Section - Hidden in tailwind mode */}
+        {isVarMode && showVarSelector && realDesignVars.length > 0 && (
+          <div className="border-base-300 flex h-full flex-col">
+            <div className="scrollbar-light flex-1 overflow-y-auto">
+              <div className="bg-base-200">
+                {(() => {
+                  // Filter by category based on input type
+                  const getRelevantCategories = () => {
+                    // Width, height, spacing inputs - show spacing and other
+                    if (
+                      propTag &&
+                      [
+                        "w",
+                        "h",
+                        "m",
+                        "p",
+                        "mt",
+                        "mb",
+                        "ml",
+                        "mr",
+                        "mx",
+                        "my",
+                        "pt",
+                        "pb",
+                        "pl",
+                        "pr",
+                        "px",
+                        "py",
+                        "gap",
+                      ].includes(propTag)
+                    ) {
+                      return ["spacing", "other"];
+                    }
+                    // Color inputs - show palette and colors
+                    if (propTag && ["bg", "text", "border"].includes(propTag)) {
+                      return ["palette", "colors"];
+                    }
+                    // Typography inputs - show typography
+                    if (
+                      (propTag && ["font", "text"].includes(propTag)) ||
+                      tailwindKey === "fontFamily"
+                    ) {
+                      return ["typography", "palette"];
+                    }
+                    // Default: show all
+                    return ["palette", "typography", "spacing", "colors", "other"];
+                  };
+
+                  const relevantCategories = getRelevantCategories();
+
+                  const filteredVars = realDesignVars.filter(v => {
+                    // Filter by category first
+                    if (!relevantCategories.includes(v.category)) {
+                      return false;
+                    }
+                    // Then filter by search term
+                    if (!varSearchTerm) return true;
+                    const search = varSearchTerm.toLowerCase();
+                    return (
+                      v.label.toLowerCase().includes(search) ||
+                      v.varName.toLowerCase().includes(search) ||
+                      v.name.toLowerCase().includes(search)
+                    );
+                  });
+
+                  if (filteredVars.length === 0) {
+                    return (
+                      <div className="text-neutral-content px-3 py-6 text-center text-xs">
+                        No variables found
+                      </div>
+                    );
                   }
-                  // Color inputs - show palette and colors
-                  if (propTag && ["bg", "text", "border"].includes(propTag)) {
-                    return ["palette", "colors"];
-                  }
-                  // Typography inputs - show typography
-                  if (
-                    (propTag && ["font", "text"].includes(propTag)) ||
-                    tailwindKey === "fontFamily"
-                  ) {
-                    return ["typography", "palette"];
-                  }
-                  // Default: show all
-                  return ["palette", "typography", "spacing", "colors", "other"];
-                };
 
-                const relevantCategories = getRelevantCategories();
-
-                const filteredVars = realDesignVars.filter(v => {
-                  // Filter by category first
-                  if (!relevantCategories.includes(v.category)) {
-                    return false;
-                  }
-                  // Then filter by search term
-                  if (!varSearchTerm) return true;
-                  const search = varSearchTerm.toLowerCase();
-                  return (
-                    v.label.toLowerCase().includes(search) ||
-                    v.varName.toLowerCase().includes(search) ||
-                    v.name.toLowerCase().includes(search)
-                  );
-                });
-
-                if (filteredVars.length === 0) {
-                  return (
-                    <div className="px-3 py-6 text-center text-xs text-neutral-content">
-                      No variables found
-                    </div>
-                  );
-                }
-
-                return filteredVars.map(v => {
-                  const varValue =
-                    tailwindKey === "fontFamily" ? `font-(${v.varName})` : `var(${v.varName})`;
-                  const isSelected = currentValue === varValue;
-                  return (
-                    <button
-                      key={v.varName}
-                      type="button"
-                      onClick={() => onSelect(varValue)}
-                      className={`ph-select-item gap-2 text-xs ${
-                        isSelected ? "bg-primary/10 font-semibold text-primary" : ""
-                      }`}
-                    >
-                      <div
-                        className="size-3 shrink-0 rounded border border-base-300"
-                        style={{
-                          backgroundColor: v.category === "palette" ? v.value : "transparent",
-                        }}
-                      />
-                      <span className="flex-1 truncate font-medium">{v.label}</span>
-                      <span className="text-neutral-content">{v.varName}</span>
-                    </button>
-                  );
-                });
-              })()}
+                  return filteredVars.map(v => {
+                    const varValue =
+                      tailwindKey === "fontFamily" ? `font-(${v.varName})` : `var(${v.varName})`;
+                    const isSelected = currentValue === varValue;
+                    return (
+                      <button
+                        key={v.varName}
+                        type="button"
+                        onClick={() => onSelect(varValue)}
+                        className={`ph-select-item gap-2 text-xs ${
+                          isSelected ? "bg-primary/10 text-primary font-semibold" : ""
+                        }`}
+                      >
+                        <div
+                          className="border-base-300 size-3 shrink-0 rounded border"
+                          style={{
+                            backgroundColor: v.category === "palette" ? v.value : "transparent",
+                          }}
+                        />
+                        <span className="flex-1 truncate font-medium">{v.label}</span>
+                        <span className="text-neutral-content">{v.varName}</span>
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+            <div
+              role="presentation"
+              className="border-base-300 bg-base-200 border-t p-2"
+              onMouseDown={e => e.stopPropagation()}
+            >
+              <input
+                type="text"
+                value={varSearchTerm}
+                onChange={e => setVarSearchTerm(e.target.value)}
+                placeholder="Search variables..."
+                className="input-plain w-full cursor-text py-0 text-xs"
+                {...toolbarInputNoAutocompleteProps}
+              />
             </div>
           </div>
-          <div
-            role="presentation"
-            className="border-t border-base-300 bg-base-200 p-2"
-            onMouseDown={e => e.stopPropagation()}
-          >
-            <input
-              type="text"
-              value={varSearchTerm}
-              onChange={e => setVarSearchTerm(e.target.value)}
-              placeholder="Search variables..."
-              className="input-plain w-full cursor-text py-0 text-xs"
-              {...toolbarInputNoAutocompleteProps}
-            />
-          </div>
-        </div>
-      )}
+        )}
 
-      <button
-        type="button"
-        onClick={() => onSelect("")}
-        className="ph-select-item sticky top-0 z-10 shrink-0 rounded-none border-t border-base-300 bg-base-200 text-neutral-content"
-      >
-        Reset to Default
-      </button>
+        <button
+          type="button"
+          onClick={() => onSelect("")}
+          className="ph-select-item border-base-300 bg-base-200 text-neutral-content sticky top-0 z-10 shrink-0 rounded-none border-t"
+        >
+          Reset to Default
+        </button>
       </div>
     </div>,
     document.querySelector(".pagehub-sdk-root") || document.body

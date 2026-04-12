@@ -8,7 +8,11 @@ export const TabBarDarkModeToggle = () => {
   const darkOn = viewSelection.dark ?? false;
 
   return (
-    <Tooltip content={darkOn ? "Editing dark: variants" : "Edit dark: variants"} placement="top" arrow={false}>
+    <Tooltip
+      content={darkOn ? "Editing dark: variants" : "Edit dark: variants"}
+      placement="top"
+      arrow={false}
+    >
       <button
         type="button"
         onClick={() => setViewSelection(prev => ({ ...prev, dark: !prev.dark }))}

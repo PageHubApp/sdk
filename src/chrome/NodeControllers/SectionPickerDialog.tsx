@@ -31,10 +31,14 @@ const buildElementFromStructure = (
   );
 
   // Reduce padding for preview mode
-  const props = isPreview ? {
-    ...structure.props,
-    className: structure.props.className?.replace(/py-\d+/g, 'py-2').replace(/p-\d+/g, 'p-2') || undefined
-  } : structure.props;
+  const props = isPreview
+    ? {
+        ...structure.props,
+        className:
+          structure.props.className?.replace(/py-\d+/g, "py-2").replace(/p-\d+/g, "p-2") ||
+          undefined,
+      }
+    : structure.props;
 
   return (
     <Element key={uniqueKey} canvas is={Component} {...props}>
@@ -72,13 +76,23 @@ const convertTemplates = (categoryId: string, resolver: any, templateData: any) 
   return templates.map(template => ({
     id: template.slug || template.id,
     name: template.name,
-    element: buildElementFromStructure(template.structure, template.slug || template.id, false, resolver),
+    element: buildElementFromStructure(
+      template.structure,
+      template.slug || template.id,
+      false,
+      resolver
+    ),
     structure: template.structure,
   }));
 };
 
 // Search across all templates
-const searchTemplates = (searchQuery: string, resolver: any, templateData: any, categories: any[]) => {
+const searchTemplates = (
+  searchQuery: string,
+  resolver: any,
+  templateData: any,
+  categories: any[]
+) => {
   if (!searchQuery.trim()) return [];
 
   const allTemplates = [];
@@ -90,7 +104,12 @@ const searchTemplates = (searchQuery: string, resolver: any, templateData: any, 
           name: template.name,
           categoryId,
           categoryName: categories.find(c => c.id === categoryId)?.name || categoryId,
-          element: buildElementFromStructure(template.structure, template.slug || template.id, false, resolver),
+          element: buildElementFromStructure(
+            template.structure,
+            template.slug || template.id,
+            false,
+            resolver
+          ),
           structure: template.structure,
         });
       }
@@ -131,11 +150,14 @@ export const SectionPickerDialog = ({
       }));
   }, [components]);
 
-  const baseCategories = useMemo(() => [
-    { id: "all", name: "All" },
-    { id: "my-sections", name: "My Blocks" },
-    ...(templateData?.categories || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0)),
-  ], [templateData]);
+  const baseCategories = useMemo(
+    () => [
+      { id: "all", name: "All" },
+      { id: "my-sections", name: "My Blocks" },
+      ...(templateData?.categories || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0)),
+    ],
+    [templateData]
+  );
 
   // Show/hide category based on whether there are custom sections
   const categories = useMemo(() => {
@@ -218,7 +240,7 @@ export const SectionPickerDialog = ({
     <>
       {isOpen && (
         <div
-          className="animate-backdrop-in fixed inset-0 z-100 flex items-center justify-center bg-base-100/75 backdrop-blur-sm"
+          className="animate-backdrop-in bg-base-100/75 fixed inset-0 z-100 flex items-center justify-center backdrop-blur-sm"
           style={{ pointerEvents: "auto" }}
         >
           <div
@@ -226,14 +248,14 @@ export const SectionPickerDialog = ({
             className="pagehub-sdk-root ph-modal-surface-heavy flex h-[80vh] w-[33vw] max-w-md flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-base-300 bg-accent px-6 py-4 text-accent-content">
-              <h2 className="flex items-center gap-2 text-2xl font-bold text-base-content">
+            <div className="border-base-300 bg-accent text-accent-content flex items-center justify-between border-b px-6 py-4">
+              <h2 className="text-base-content flex items-center gap-2 text-2xl font-bold">
                 <TbLayoutGridAdd className="size-7" />
                 Add Section
               </h2>
               <button
                 onClick={onClose}
-                className="text-neutral-content transition-colors hover:text-neutral-content"
+                className="text-neutral-content hover:text-neutral-content transition-colors"
                 aria-label="Close"
               >
                 <MdClose size={24} />
@@ -243,17 +265,18 @@ export const SectionPickerDialog = ({
             {/* Content */}
             <div className="flex flex-1 overflow-hidden">
               {/* Left sidebar - Categories */}
-              <div className="flex w-64 flex-col border-r border-base-300 bg-neutral text-neutral-content">
+              <div className="border-base-300 bg-neutral text-neutral-content flex w-64 flex-col border-r">
                 <div className="flex-1 overflow-y-auto p-4">
                   <div className="space-y-1">
                     {categories.map(category => (
                       <button
                         key={category.id}
                         onClick={() => handleCategorySelect(category.id)}
-                        className={`w-full rounded-lg px-4 py-2 text-left transition-colors ${selectedCategory === category.id && !isSearchMode
-                          ? "bg-primary font-medium text-primary-content"
-                          : "text-base-content hover:bg-neutral"
-                          }`}
+                        className={`w-full rounded-lg px-4 py-2 text-left transition-colors ${
+                          selectedCategory === category.id && !isSearchMode
+                            ? "bg-primary text-primary-content font-medium"
+                            : "text-base-content hover:bg-neutral"
+                        }`}
                       >
                         {category.name}
                       </button>
@@ -262,8 +285,8 @@ export const SectionPickerDialog = ({
                 </div>
 
                 {/* Search Bar - Bottom of sidebar */}
-                <div className="border-t border-base-300 p-4">
-                  <div className="input-wrapper relative input-hover">
+                <div className="border-base-300 border-t p-4">
+                  <div className="input-wrapper input-hover relative">
                     <input
                       type="text"
                       placeholder="Search"
@@ -272,7 +295,7 @@ export const SectionPickerDialog = ({
                       className="input-plain-search pl-8"
                     />
                     <MdSearch
-                      className="pointer-events-none absolute left-2 top-1/2 z-10 -translate-y-1/2 text-neutral-content"
+                      className="text-neutral-content pointer-events-none absolute top-1/2 left-2 z-10 -translate-y-1/2"
                       size={16}
                     />
                   </div>
@@ -340,7 +363,7 @@ export const SectionPickerDialog = ({
                         }
                         onClose();
                       }}
-                      className="group relative overflow-hidden rounded-lg border-2 border-base-300 bg-base-200 text-base-content shadow-sm hover:border-primary hover:shadow-md"
+                      className="group border-base-300 bg-base-200 text-base-content hover:border-primary relative overflow-hidden rounded-lg border-2 shadow-sm hover:shadow-md"
                     >
                       {/* Preview */}
                       {template.isCustom ? (
@@ -352,16 +375,16 @@ export const SectionPickerDialog = ({
                             resolver={query.getOptions().resolver}
                           />
                           {/* Custom Section Badge */}
-                          <div className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-lg bg-primary px-2 py-1 text-primary-content shadow-sm">
+                          <div className="bg-primary text-primary-content absolute top-2 right-2 z-10 flex items-center gap-1 rounded-lg px-2 py-1 shadow-sm">
                             <TbLayoutGridAdd className="size-3" />
                             <span className="text-xs font-medium">Custom</span>
                           </div>
                         </>
                       ) : (
                         // Preview for built-in templates - use ComponentPreview
-                        <ComponentPreview 
-                          component={template.structure} 
-                          scale={0.2} 
+                        <ComponentPreview
+                          component={template.structure}
+                          scale={0.2}
                           resolver={query.getOptions().resolver}
                         />
                       )}
@@ -371,7 +394,7 @@ export const SectionPickerDialog = ({
 
                 {templates.length === 0 && (
                   <div className="flex h-64 items-center justify-center">
-                    <p className="text-lg text-neutral-content">
+                    <p className="text-neutral-content text-lg">
                       {isSearchMode
                         ? `No templates found for "${searchQuery}"`
                         : "No templates available for this category yet."}

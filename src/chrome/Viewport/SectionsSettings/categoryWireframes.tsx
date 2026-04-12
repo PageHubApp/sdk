@@ -50,7 +50,16 @@ export const CATEGORY_WIREFRAMES: Record<string, React.ReactNode> = {
       <rect x="40" y="28" width="240" height="10" rx="3" fill={c.dark} />
       <rect x="56" y="46" width="208" height="6" rx="2" fill={c.line} />
       <rect x="72" y="58" width="176" height="6" rx="2" fill={c.line} />
-      <rect x="40" y="82" width="240" height="36" rx="8" fill="white" stroke={c.line} strokeWidth="1" />
+      <rect
+        x="40"
+        y="82"
+        width="240"
+        height="36"
+        rx="8"
+        fill="white"
+        stroke={c.line}
+        strokeWidth="1"
+      />
       <rect x="52" y="94" width="16" height="12" rx="2" fill={c.line} />
       <rect x="76" y="97" width="100" height="6" rx="2" fill={c.block} />
       <rect x="188" y="82" width="92" height="36" fill={c.accent} />
@@ -59,7 +68,9 @@ export const CATEGORY_WIREFRAMES: Record<string, React.ReactNode> = {
   ),
   testimonials: (
     <svg viewBox="0 0 320 180" fill="none" className="h-full w-full">
-      <text x="130" y="50" fontSize="48" fill={c.block} fontFamily="Georgia">&ldquo;</text>
+      <text x="130" y="50" fontSize="48" fill={c.block} fontFamily="Georgia">
+        &ldquo;
+      </text>
       <rect x="70" y="64" width="180" height="6" rx="2" fill={c.line} />
       <rect x="85" y="78" width="150" height="6" rx="2" fill={c.line} />
       <rect x="95" y="92" width="130" height="6" rx="2" fill={c.line} />
@@ -88,7 +99,16 @@ export const CATEGORY_WIREFRAMES: Record<string, React.ReactNode> = {
       <rect x="96" y="24" width="128" height="5" rx="2" fill={c.line} />
       {[28, 118, 208].map((x, i) => (
         <g key={x}>
-          <rect x={x} y="40" width="84" height="128" rx="8" fill={c.block} stroke={i === 1 ? c.accent : c.line} strokeWidth={i === 1 ? 2 : 1} />
+          <rect
+            x={x}
+            y="40"
+            width="84"
+            height="128"
+            rx="8"
+            fill={c.block}
+            stroke={i === 1 ? c.accent : c.line}
+            strokeWidth={i === 1 ? 2 : 1}
+          />
           <rect x={x + 24} y="50" width="36" height="5" rx="2" fill={c.dark} />
           <rect x={x + 12} y="60" width="60" height="4" rx="1" fill={c.line} />
           <rect x={x + 20} y="72" width="44" height="10" rx="2" fill={c.dark} />
@@ -104,9 +124,36 @@ export const CATEGORY_WIREFRAMES: Record<string, React.ReactNode> = {
       <rect x="60" y="16" width="200" height="148" rx="10" fill={c.block} />
       <rect x="80" y="30" width="50" height="4" rx="2" fill={c.accent} />
       <rect x="80" y="40" width="100" height="8" rx="2" fill={c.dark} />
-      <rect x="80" y="58" width="160" height="18" rx="4" fill="white" stroke={c.line} strokeWidth="1" />
-      <rect x="80" y="82" width="160" height="18" rx="4" fill="white" stroke={c.line} strokeWidth="1" />
-      <rect x="80" y="106" width="160" height="28" rx="4" fill="white" stroke={c.line} strokeWidth="1" />
+      <rect
+        x="80"
+        y="58"
+        width="160"
+        height="18"
+        rx="4"
+        fill="white"
+        stroke={c.line}
+        strokeWidth="1"
+      />
+      <rect
+        x="80"
+        y="82"
+        width="160"
+        height="18"
+        rx="4"
+        fill="white"
+        stroke={c.line}
+        strokeWidth="1"
+      />
+      <rect
+        x="80"
+        y="106"
+        width="160"
+        height="28"
+        rx="4"
+        fill="white"
+        stroke={c.line}
+        strokeWidth="1"
+      />
       <rect x="80" y="140" width="160" height="18" rx="9" fill={c.accent} />
     </svg>
   ),
@@ -127,7 +174,9 @@ export const CATEGORY_WIREFRAMES: Record<string, React.ReactNode> = {
           <rect x="40" y={y} width="180" height="7" rx="2" fill={c.dark} />
           <rect x="40" y={y + 14} width="240" height="5" rx="2" fill={c.line} />
           <rect x="40" y={y + 24} width="200" height="5" rx="2" fill={c.line} />
-          {i < 2 && <line x1="40" y1={y + 40} x2="280" y2={y + 40} stroke={c.block} strokeWidth="1" />}
+          {i < 2 && (
+            <line x1="40" y1={y + 40} x2="280" y2={y + 40} stroke={c.block} strokeWidth="1" />
+          )}
         </g>
       ))}
     </svg>

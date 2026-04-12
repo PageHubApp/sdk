@@ -12,17 +12,30 @@ export interface TabsProps extends BaseSelectorProps {
   mobileMode?: "scroll" | "accordion" | "stack";
 }
 
-export const Tabs = ({ children, ...incomingProps }: Partial<TabsProps> & { children?: React.ReactNode }) => {
-  const props: TabsProps = { defaultTab: 0, orientation: "horizontal", mobileMode: "scroll", ...incomingProps };
+export const Tabs = ({
+  children,
+  ...incomingProps
+}: Partial<TabsProps> & { children?: React.ReactNode }) => {
+  const props: TabsProps = {
+    defaultTab: 0,
+    orientation: "horizontal",
+    mobileMode: "scroll",
+    ...incomingProps,
+  };
   const { query, actions } = useEditor();
-  const { id, connectors: { connect } } = useNode();
+  const {
+    id,
+    connectors: { connect },
+  } = useNode();
   const { enabled, isActive } = useEditor((state, q) => ({
     enabled: state.options.enabled,
     isActive: q.getEvent("selected").contains(id),
   }));
 
   const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => { setIsMounted(true); }, []);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Auto-wire unique IDs on first mount — replace placeholder IDs
   useEffect(() => {
@@ -116,7 +129,7 @@ export const Tabs = ({ children, ...incomingProps }: Partial<TabsProps> & { chil
           idleLabel="Empty tabs"
           selectedDetail="Drop tab bar and panels here"
         />
-      ) : null),
+      ) : null)
   );
 };
 

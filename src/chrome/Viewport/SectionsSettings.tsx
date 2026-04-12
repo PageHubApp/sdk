@@ -78,22 +78,25 @@ export function SectionsSettings() {
   }, [params.q]);
 
   // Debounce search input -> URL param
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchInput(value);
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchInput(value);
 
-    if (value.trim().length >= 2) {
-      enterSearchMode();
-    }
-
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
       if (value.trim().length >= 2) {
-        panelUpdate({ q: value });
-      } else {
-        panelUpdate({ q: null });
+        enterSearchMode();
       }
-    }, 300);
-  }, [enterSearchMode, panelUpdate]);
+
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        if (value.trim().length >= 2) {
+          panelUpdate({ q: value });
+        } else {
+          panelUpdate({ q: null });
+        }
+      }, 300);
+    },
+    [enterSearchMode, panelUpdate]
+  );
 
   // Category drill-in view
   if (selectedCategory && !isSearchMode) {
@@ -105,9 +108,9 @@ export function SectionsSettings() {
           onBack={() => history.back()}
           activeSubcategory={params.sub}
           activeStyle={params.sty}
-          onSubcategoryChange={(sub) => panelNavigate({ sub })}
-          onStyleChange={(sty) => panelNavigate({ sty })}
-          onCategoryChange={(catId) => panelNavigate({ cat: catId, sub: null, sty: null, q: null })}
+          onSubcategoryChange={sub => panelNavigate({ sub })}
+          onStyleChange={sty => panelNavigate({ sty })}
+          onCategoryChange={catId => panelNavigate({ cat: catId, sub: null, sty: null, q: null })}
         />
       </div>
     );
@@ -115,11 +118,11 @@ export function SectionsSettings() {
 
   // Main view: search bar + category grid
   return (
-    <div className="flex flex-1 flex-col overflow-hidden bg-sidebar">
+    <div className="bg-sidebar flex flex-1 flex-col overflow-hidden">
       {/* Search bar */}
-      <div className="flex items-center gap-2 border-b border-base-300 bg-base-100 p-3">
+      <div className="border-base-300 bg-base-100 flex items-center gap-2 border-b p-3">
         <div className="relative flex-1">
-          <TbSearch className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-neutral-content" />
+          <TbSearch className="text-neutral-content absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search blocks..."
@@ -140,19 +143,17 @@ export function SectionsSettings() {
             {/* Custom sections */}
             {customSections.length > 0 && (
               <div className="mb-4">
-                <div className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-content">
+                <div className="text-neutral-content mb-2 text-xs font-medium tracking-wider uppercase">
                   My Blocks ({customSections.length})
                 </div>
-                <CustomSectionsGrid
-                  sections={customSections}
-                />
+                <CustomSectionsGrid sections={customSections} />
               </div>
             )}
 
             {/* Category grid */}
             {isLoading ? (
               <div className="flex h-32 items-center justify-center">
-                <TbLoader2 className="size-5 animate-spin text-neutral-content" />
+                <TbLoader2 className="text-neutral-content size-5 animate-spin" />
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2.5">

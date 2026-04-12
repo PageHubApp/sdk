@@ -103,14 +103,14 @@ export function DeviceZoom() {
 
   return (
     <div
-      className="flex items-center gap-1 text-xs text-neutral-content"
+      className="text-neutral-content flex items-center gap-1 text-xs"
       data-device-zoom-active="true"
     >
       {/* Zoom Out Button */}
       <button
         onClick={handleZoomOut}
         disabled={zoom <= 0.25}
-        className="rounded p-1 transition-colors hover:bg-neutral hover:text-base-content disabled:opacity-30"
+        className="hover:bg-neutral hover:text-base-content rounded p-1 transition-colors disabled:opacity-30"
         title="Zoom out (Ctrl/Cmd + -)"
       >
         <TbMinus className="size-3" />
@@ -120,7 +120,7 @@ export function DeviceZoom() {
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex min-w-[50px] items-center justify-center gap-1 rounded px-2 py-1 transition-colors hover:bg-neutral hover:text-base-content"
+          className="hover:bg-neutral hover:text-base-content flex min-w-[50px] items-center justify-center gap-1 rounded px-2 py-1 transition-colors"
           title="Zoom level (Ctrl/Cmd + 0 to reset)"
         >
           <span className="whitespace-nowrap">{currentZoomLabel}</span>
@@ -132,15 +132,20 @@ export function DeviceZoom() {
         {showDropdown && (
           <>
             {/* Backdrop */}
-            <div role="presentation" aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
+            <div
+              role="presentation"
+              aria-hidden="true"
+              className="fixed inset-0 z-40"
+              onClick={() => setShowDropdown(false)}
+            />
             {/* Dropdown */}
-            <div className="absolute left-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-lg border border-base-300 bg-base-100 shadow-lg">
+            <div className="border-base-300 bg-base-100 absolute top-full left-0 z-50 mt-1 w-48 overflow-hidden rounded-lg border shadow-lg">
               <div className="scrollbar-dark max-h-80 overflow-y-auto">
                 {zoomPresets.map(preset => (
                   <button
                     key={preset.value}
                     onClick={() => handleZoomChange(preset.value)}
-                    className={`w-full px-4 py-2 text-left transition-colors hover:bg-neutral ${
+                    className={`hover:bg-neutral w-full px-4 py-2 text-left transition-colors ${
                       zoom === preset.value && !fitToWindow
                         ? "bg-neutral text-base-content"
                         : "text-neutral-content"
@@ -153,13 +158,13 @@ export function DeviceZoom() {
                   </button>
                 ))}
               </div>
-              <div className="border-t border-base-300">
+              <div className="border-base-300 border-t">
                 <button
                   onClick={() => {
                     setFitToWindow(true);
                     setShowDropdown(false);
                   }}
-                  className={`flex w-full items-center gap-2 px-4 py-2 text-left transition-colors hover:bg-neutral ${
+                  className={`hover:bg-neutral flex w-full items-center gap-2 px-4 py-2 text-left transition-colors ${
                     fitToWindow ? "bg-neutral text-base-content" : "text-neutral-content"
                   }`}
                 >
@@ -176,7 +181,7 @@ export function DeviceZoom() {
       <button
         onClick={handleZoomIn}
         disabled={zoom >= 2}
-        className="rounded p-1 transition-colors hover:bg-neutral hover:text-base-content disabled:opacity-30"
+        className="hover:bg-neutral hover:text-base-content rounded p-1 transition-colors disabled:opacity-30"
         title="Zoom in (Ctrl/Cmd + +)"
       >
         <TbPlus className="size-3" />

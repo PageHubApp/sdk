@@ -47,16 +47,19 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
   const currentList = modifiers[selectedType] || [];
   const componentTypes = Object.keys(modifiers).sort();
 
-  const save = useCallback((updated: Record<string, Modifier[]>) => {
-    const clean: Record<string, Modifier[]> = {};
-    for (const [k, v] of Object.entries(updated)) {
-      if (v.length > 0) clean[k] = v;
-    }
-    setModifiers(clean);
-    actions.setProp(ROOT_NODE, (props: any) => {
-      props.modifiers = Object.keys(clean).length > 0 ? clean : undefined;
-    });
-  }, [actions]);
+  const save = useCallback(
+    (updated: Record<string, Modifier[]>) => {
+      const clean: Record<string, Modifier[]> = {};
+      for (const [k, v] of Object.entries(updated)) {
+        if (v.length > 0) clean[k] = v;
+      }
+      setModifiers(clean);
+      actions.setProp(ROOT_NODE, (props: any) => {
+        props.modifiers = Object.keys(clean).length > 0 ? clean : undefined;
+      });
+    },
+    [actions]
+  );
 
   const handleDelete = (index: number) => {
     const updated = { ...modifiers };
@@ -128,7 +131,8 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     setAddType(selectedType);
   };
 
-  const inputClass = "w-full rounded-lg border border-base-300 bg-input px-3 py-2 text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring";
+  const inputClass =
+    "w-full rounded-lg border border-base-300 bg-input px-3 py-2 text-sm text-base-content placeholder:text-neutral-content focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
     <FloatingPanel
@@ -147,14 +151,24 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
       <div className="flex h-full flex-col">
         {/* Type filter */}
         {componentTypes.length > 0 && !isAdding && (
-          <div className="border-b border-base-300 bg-neutral px-4 py-2">
-            <Listbox value={selectedType} onChange={(v) => { setSelectedType(v); setEditingIndex(null); }}>
+          <div className="border-base-300 bg-neutral border-b px-4 py-2">
+            <Listbox
+              value={selectedType}
+              onChange={v => {
+                setSelectedType(v);
+                setEditingIndex(null);
+              }}
+            >
               <div className="relative">
-                <ListboxButton className="flex w-full items-center justify-between rounded-lg border border-base-300 bg-input px-4 py-2 text-left text-sm text-base-content focus:outline-none focus:ring-2 focus:ring-ring">
+                <ListboxButton className="border-base-300 bg-input text-base-content focus:ring-ring flex w-full items-center justify-between rounded-lg border px-4 py-2 text-left text-sm focus:ring-2 focus:outline-none">
                   <span>{selectedType || "Select type"}</span>
                   <TbChevronDown className="text-neutral-content" />
                 </ListboxButton>
-                <ListboxOptions anchor="bottom start" className="pagehub-sdk-root ph-select-content" modal={false}>
+                <ListboxOptions
+                  anchor="bottom start"
+                  className="pagehub-sdk-root ph-select-content"
+                  modal={false}
+                >
                   {componentTypes.map(t => (
                     <ListboxOption key={t} value={t} className="ph-select-item">
                       {({ selected }) => (
@@ -163,7 +177,9 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                             {selected && <TbCheck size={14} />}
                           </span>
                           {t}
-                          <span className="ml-auto text-xs text-neutral-content">{modifiers[t]?.length || 0}</span>
+                          <span className="text-neutral-content ml-auto text-xs">
+                            {modifiers[t]?.length || 0}
+                          </span>
                         </div>
                       )}
                     </ListboxOption>
@@ -175,13 +191,15 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
         )}
 
         {/* Content */}
-        <div className="scrollbar-light flex-1 overflow-y-auto bg-base-100 p-4">
+        <div className="scrollbar-light bg-base-100 flex-1 overflow-y-auto p-4">
           {/* Add modifier form */}
           {isAdding && (
-            <div className="space-y-3 rounded-lg border border-base-300 bg-neutral/50 p-4">
+            <div className="border-base-300 bg-neutral/50 space-y-3 rounded-lg border p-4">
               <p className="text-sm font-medium">New Modifier</p>
               <div>
-                <label className="mb-1 block text-xs font-medium text-neutral-content">Component Type</label>
+                <label className="text-neutral-content mb-1 block text-xs font-medium">
+                  Component Type
+                </label>
                 <input
                   type="text"
                   value={addType}
@@ -191,7 +209,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-neutral-content">Label</label>
+                <label className="text-neutral-content mb-1 block text-xs font-medium">Label</label>
                 <input
                   type="text"
                   value={editLabel}
@@ -202,7 +220,9 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-neutral-content">Modifier Name</label>
+                <label className="text-neutral-content mb-1 block text-xs font-medium">
+                  Modifier Name
+                </label>
                 <input
                   type="text"
                   value={editName}
@@ -212,7 +232,9 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-neutral-content">Classes (optional — for composite modifiers)</label>
+                <label className="text-neutral-content mb-1 block text-xs font-medium">
+                  Classes (optional — for composite modifiers)
+                </label>
                 <textarea
                   value={editClasses}
                   onChange={e => setEditClasses(e.target.value)}
@@ -222,7 +244,9 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-neutral-content">Description (optional — shown as help text in the editor)</label>
+                <label className="text-neutral-content mb-1 block text-xs font-medium">
+                  Description (optional — shown as help text in the editor)
+                </label>
                 <input
                   type="text"
                   value={editDescription}
@@ -232,8 +256,22 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                 />
               </div>
               <div className="flex gap-2">
-                <button onClick={handleAdd} className="btn btn-primary flex-1">Add</button>
-                <button onClick={() => { setIsAdding(false); setEditName(""); setEditLabel(""); setEditClasses(""); setEditDescription(""); setAddType(""); }} className="btn btn-secondary flex-1">Cancel</button>
+                <button onClick={handleAdd} className="btn btn-primary flex-1">
+                  Add
+                </button>
+                <button
+                  onClick={() => {
+                    setIsAdding(false);
+                    setEditName("");
+                    setEditLabel("");
+                    setEditClasses("");
+                    setEditDescription("");
+                    setAddType("");
+                  }}
+                  className="btn btn-secondary flex-1"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           )}
@@ -242,13 +280,13 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
           {!isAdding && (
             <>
               {componentTypes.length === 0 && (
-                <p className="text-center text-sm text-neutral-content">
+                <p className="text-neutral-content text-center text-sm">
                   No modifiers yet. Click &quot;Add Modifier&quot; to create one.
                 </p>
               )}
 
               {selectedType && currentList.length === 0 && (
-                <p className="text-center text-sm text-neutral-content">
+                <p className="text-neutral-content text-center text-sm">
                   No modifiers for {selectedType}.
                 </p>
               )}
@@ -257,43 +295,102 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                 {currentList.map((mod, i) => (
                   <div key={i}>
                     {editingIndex === i ? (
-                      <div className="space-y-2 rounded-lg border border-base-300 bg-neutral/50 p-3">
+                      <div className="border-base-300 bg-neutral/50 space-y-2 rounded-lg border p-3">
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-neutral-content">Label</label>
-                          <input value={editLabel} onChange={e => setEditLabel(e.target.value)} className={inputClass} autoFocus />
+                          <label className="text-neutral-content mb-1 block text-xs font-medium">
+                            Label
+                          </label>
+                          <input
+                            value={editLabel}
+                            onChange={e => setEditLabel(e.target.value)}
+                            className={inputClass}
+                            autoFocus
+                          />
                         </div>
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-neutral-content">Modifier Name</label>
-                          <input value={editName} onChange={e => setEditName(e.target.value)} className={inputClass} onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); }} />
+                          <label className="text-neutral-content mb-1 block text-xs font-medium">
+                            Modifier Name
+                          </label>
+                          <input
+                            value={editName}
+                            onChange={e => setEditName(e.target.value)}
+                            className={inputClass}
+                            onKeyDown={e => {
+                              if (e.key === "Enter") handleSaveEdit();
+                            }}
+                          />
                         </div>
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-neutral-content">Classes (composite)</label>
-                          <textarea value={editClasses} onChange={e => setEditClasses(e.target.value)} className={`${inputClass} min-h-[3rem] resize-y`} rows={2} placeholder="e.g. flex flex-col gap-space-md w-full" />
+                          <label className="text-neutral-content mb-1 block text-xs font-medium">
+                            Classes (composite)
+                          </label>
+                          <textarea
+                            value={editClasses}
+                            onChange={e => setEditClasses(e.target.value)}
+                            className={`${inputClass} min-h-[3rem] resize-y`}
+                            rows={2}
+                            placeholder="e.g. flex flex-col gap-space-md w-full"
+                          />
                         </div>
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-neutral-content">Description (optional)</label>
-                          <input type="text" value={editDescription} onChange={e => setEditDescription(e.target.value)} className={inputClass} placeholder="e.g. Adds an outline border, removes fill" />
+                          <label className="text-neutral-content mb-1 block text-xs font-medium">
+                            Description (optional)
+                          </label>
+                          <input
+                            type="text"
+                            value={editDescription}
+                            onChange={e => setEditDescription(e.target.value)}
+                            className={inputClass}
+                            placeholder="e.g. Adds an outline border, removes fill"
+                          />
                         </div>
                         <div className="flex gap-2">
-                          <button onClick={handleSaveEdit} className="btn btn-primary flex-1">Save</button>
-                          <button onClick={() => setEditingIndex(null)} className="btn btn-secondary flex-1">Cancel</button>
+                          <button onClick={handleSaveEdit} className="btn btn-primary flex-1">
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingIndex(null)}
+                            className="btn btn-secondary flex-1"
+                          >
+                            Cancel
+                          </button>
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-neutral">
+                      <div className="hover:bg-neutral flex items-center gap-2 rounded-lg px-3 py-2">
                         <div className="min-w-0 flex-1">
                           <div>
                             <span className="text-sm font-medium">{mod.label}</span>
-                            <span className="ml-2 text-xs text-neutral-content">.{mod.name}</span>
-                            {mod.classes && <span className="ml-1 text-[9px] text-neutral-content/60">×{mod.classes.split(/\s+/).filter(Boolean).length}</span>}
+                            <span className="text-neutral-content ml-2 text-xs">.{mod.name}</span>
+                            {mod.classes && (
+                              <span className="text-neutral-content/60 ml-1 text-[9px]">
+                                ×{mod.classes.split(/\s+/).filter(Boolean).length}
+                              </span>
+                            )}
                           </div>
-                          {mod.description && <p className="truncate text-[10px] text-neutral-content/70">{mod.description}</p>}
-                          {mod.classes && <p className="truncate text-[10px] text-neutral-content/50">{mod.classes}</p>}
+                          {mod.description && (
+                            <p className="text-neutral-content/70 truncate text-[10px]">
+                              {mod.description}
+                            </p>
+                          )}
+                          {mod.classes && (
+                            <p className="text-neutral-content/50 truncate text-[10px]">
+                              {mod.classes}
+                            </p>
+                          )}
                         </div>
-                        <button onClick={() => handleEdit(i)} className="text-neutral-content hover:text-base-content" title="Edit">
+                        <button
+                          onClick={() => handleEdit(i)}
+                          className="text-neutral-content hover:text-base-content"
+                          title="Edit"
+                        >
                           <TbEdit size={14} />
                         </button>
-                        <button onClick={() => handleDelete(i)} className="text-neutral-content hover:text-error" title="Delete">
+                        <button
+                          onClick={() => handleDelete(i)}
+                          className="text-neutral-content hover:text-error"
+                          title="Delete"
+                        >
                           <TbTrash size={14} />
                         </button>
                       </div>
@@ -306,9 +403,13 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 border-t border-base-300 bg-neutral p-4">
+        <div className="border-base-300 bg-neutral flex gap-3 border-t p-4">
           {!isAdding && (
-            <button type="button" onClick={startAdding} className="btn btn-primary flex flex-1 items-center justify-center gap-1">
+            <button
+              type="button"
+              onClick={startAdding}
+              className="btn btn-primary flex flex-1 items-center justify-center gap-1"
+            >
               <TbPlus size={14} />
               Add Modifier
             </button>

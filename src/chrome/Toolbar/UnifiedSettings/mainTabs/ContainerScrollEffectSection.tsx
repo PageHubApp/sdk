@@ -28,7 +28,8 @@ export function ContainerScrollEffectSection() {
 
   const scrollEffectBlockedRoles = ["header", "footer", "page", "component"] as const;
   const canSetSectionType =
-    !isSection && !scrollEffectBlockedRoles.includes(containerType as (typeof scrollEffectBlockedRoles)[number]);
+    !isSection &&
+    !scrollEffectBlockedRoles.includes(containerType as (typeof scrollEffectBlockedRoles)[number]);
 
   const sectionHelp = "Pin this section and animate children as the user scrolls.";
   const nonSectionHelp =
@@ -67,7 +68,13 @@ export function ContainerScrollEffectSection() {
             <option value="ltr">Left to Right</option>
             <option value="rtl">Right to Left</option>
           </ToolbarItem>
-          <ToolbarItem propKey="scrollSnap" propType="component" type="toggle" label="Snap to panels" on={true} />
+          <ToolbarItem
+            propKey="scrollSnap"
+            propType="component"
+            type="toggle"
+            label="Snap to panels"
+            on={true}
+          />
           <ToolbarItem
             propKey="scrollSpeed"
             propType="component"
@@ -84,7 +91,12 @@ export function ContainerScrollEffectSection() {
       )}
 
       {scrollEffect === "scroll-timeline" && (
-        <ToolbarItem propKey="scrollTimelineRunway" propType="component" type="select" label="Runway">
+        <ToolbarItem
+          propKey="scrollTimelineRunway"
+          propType="component"
+          type="select"
+          label="Runway"
+        >
           <option value="2">Short</option>
           <option value="3">Normal</option>
           <option value="5">Long</option>
@@ -107,22 +119,27 @@ export function ContainerScrollEffectSection() {
     <>
       {canSetSectionType ? (
         <>
-          <p className="text-xs leading-relaxed text-neutral-content">
-            Scroll effects only run when this container is a <span className="font-medium text-base-content">section</span>. Use the button, or set this container&apos;s type to Section in component settings.
+          <p className="text-neutral-content text-xs leading-relaxed">
+            Scroll effects only run when this container is a{" "}
+            <span className="text-base-content font-medium">section</span>. Use the button, or set
+            this container&apos;s type to Section in component settings.
           </p>
           <ToolbarDashedButton
             className="mt-2"
             icon={null}
-            onClick={() => actions.setProp(id, (p: any) => {
-              p.type = "section";
-            })}
+            onClick={() =>
+              actions.setProp(id, (p: any) => {
+                p.type = "section";
+              })
+            }
           >
             Use section type
           </ToolbarDashedButton>
         </>
       ) : (
-        <p className="text-xs leading-relaxed text-neutral-content">
-          Scroll effects are not available for this container role (e.g. header, footer, or page). Use a section block inside this area if you need scroll effects.
+        <p className="text-neutral-content text-xs leading-relaxed">
+          Scroll effects are not available for this container role (e.g. header, footer, or page).
+          Use a section block inside this area if you need scroll effects.
         </p>
       )}
     </>

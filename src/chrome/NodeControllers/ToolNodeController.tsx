@@ -25,7 +25,7 @@ export const ToolNodeController = (props: {
       align={align}
       placement={placement}
       alt={alt}
-      className="select-none items-center whitespace-nowrap"
+      className="items-center whitespace-nowrap select-none"
     >
       {children}
     </RenderNodeControlInline>

@@ -135,7 +135,7 @@
 }
 
 .pagehub-sdk-root input[type="range"]::-webkit-slider-thumb {
-  @apply h-3 w-3 bg-primary;
+  @apply bg-primary h-3 w-3;
 }
 
 .pagehub-sdk-root input[type="range"]::-webkit-slider-thumb:hover {

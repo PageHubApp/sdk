@@ -4,9 +4,16 @@ import { TbCheck, TbLoader2, TbMinus, TbPlus, TbRefresh, TbX } from "react-icons
 
 class PreviewErrorBoundary extends Component<{ children: React.ReactNode }, { error: boolean }> {
   state = { error: false };
-  static getDerivedStateFromError() { return { error: true }; }
+  static getDerivedStateFromError() {
+    return { error: true };
+  }
   render() {
-    if (this.state.error) return <div className="p-4 text-sm text-neutral-content">Preview unavailable — apply changes to see the result.</div>;
+    if (this.state.error)
+      return (
+        <div className="text-neutral-content p-4 text-sm">
+          Preview unavailable — apply changes to see the result.
+        </div>
+      );
     return this.props.children;
   }
 }
@@ -25,17 +32,47 @@ function buildViewportScopedCss(scopeSelector: string): string {
   if (!viewport) return "";
   const cs = getComputedStyle(viewport);
   const keys = [
-    "primary", "primary-content", "secondary", "secondary-content",
-    "accent", "accent-content", "neutral", "neutral-content",
-    "base-100", "base-200", "base-300", "base-content",
-    "error", "error-content", "info", "info-content",
-    "success", "success-content", "warning", "warning-content",
-    "radius-box", "radius-field", "border", "depth", "noise",
-    "shadow-style", "heading-font-family", "body-font-family",
-    "container-padding-x", "container-padding-y", "content-width",
-    "section-gap", "container-gap", "spacing-density",
-    "space-xs", "space-sm", "space-md", "space-lg", "space-xl",
-    "button-padding-x", "button-padding-y",
+    "primary",
+    "primary-content",
+    "secondary",
+    "secondary-content",
+    "accent",
+    "accent-content",
+    "neutral",
+    "neutral-content",
+    "base-100",
+    "base-200",
+    "base-300",
+    "base-content",
+    "error",
+    "error-content",
+    "info",
+    "info-content",
+    "success",
+    "success-content",
+    "warning",
+    "warning-content",
+    "radius-box",
+    "radius-field",
+    "border",
+    "depth",
+    "noise",
+    "shadow-style",
+    "heading-font-family",
+    "body-font-family",
+    "container-padding-x",
+    "container-padding-y",
+    "content-width",
+    "section-gap",
+    "container-gap",
+    "spacing-density",
+    "space-xs",
+    "space-sm",
+    "space-md",
+    "space-lg",
+    "space-xl",
+    "button-padding-x",
+    "button-padding-y",
   ];
   const lines: string[] = [];
   for (const k of keys) {
@@ -65,54 +102,69 @@ export interface SectionOverlayConfig {
 function SectionStatusIcon({ status }: { status: SectionOverlayItem["status"] }) {
   switch (status) {
     case "building":
-      return <TbLoader2 className="size-3.5 animate-spin text-primary" />;
+      return <TbLoader2 className="text-primary size-3.5 animate-spin" />;
     case "done":
       return <TbCheck className="size-3.5 text-emerald-500" />;
     case "failed":
-      return <TbX className="size-3.5 text-error" />;
+      return <TbX className="text-error size-3.5" />;
     default:
-      return <div className="size-3.5 rounded-full border border-neutral-foreground/40" />;
+      return <div className="border-neutral-foreground/40 size-3.5 rounded-full border" />;
   }
 }
 
 function SectionControlList({ sections, onRedo, onAccept, onReject }: SectionOverlayConfig) {
   return (
-    <div className="border-b border-base-300/30 px-3 py-2 space-y-1">
-      <div className="text-[10px] font-medium text-neutral-content">Sections</div>
+    <div className="border-base-300/30 space-y-1 border-b px-3 py-2">
+      <div className="text-neutral-content text-[10px] font-medium">Sections</div>
       {sections.map(s => (
         <div key={s.nodeId} className="flex items-center gap-1.5 text-[11px]">
           <SectionStatusIcon status={s.accepted ? "done" : s.status} />
-          <span className={`flex-1 truncate font-medium ${s.rejected ? "line-through text-neutral-content" : "text-base-content"}`}>
+          <span
+            className={`flex-1 truncate font-medium ${s.rejected ? "text-neutral-content line-through" : "text-base-content"}`}
+          >
             {s.displayName}
           </span>
           {s.statusText && s.status === "building" && (
-            <span className="truncate text-[10px] text-neutral-content max-w-[80px]">{s.statusText}</span>
+            <span className="text-neutral-content max-w-[80px] truncate text-[10px]">
+              {s.statusText}
+            </span>
           )}
           {!s.accepted && !s.rejected && (s.status === "done" || s.status === "failed") && (
             <div className="flex items-center gap-0.5">
               {s.status === "done" && onAccept && (
-                <button type="button" onClick={() => onAccept(s.nodeId)} className="rounded px-1.5 py-0.5 text-[10px] text-emerald-600 hover:bg-emerald-500/10" title="Accept">
+                <button
+                  type="button"
+                  onClick={() => onAccept(s.nodeId)}
+                  className="rounded px-1.5 py-0.5 text-[10px] text-emerald-600 hover:bg-emerald-500/10"
+                  title="Accept"
+                >
                   <TbCheck className="size-3" />
                 </button>
               )}
               {onRedo && (
-                <button type="button" onClick={() => onRedo(s.nodeId)} className="rounded px-1.5 py-0.5 text-[10px] text-primary hover:bg-primary/10" title="Redo">
+                <button
+                  type="button"
+                  onClick={() => onRedo(s.nodeId)}
+                  className="text-primary hover:bg-primary/10 rounded px-1.5 py-0.5 text-[10px]"
+                  title="Redo"
+                >
                   <TbRefresh className="size-3" />
                 </button>
               )}
               {onReject && (
-                <button type="button" onClick={() => onReject(s.nodeId)} className="rounded px-1.5 py-0.5 text-[10px] text-error hover:bg-error/10" title="Reject">
+                <button
+                  type="button"
+                  onClick={() => onReject(s.nodeId)}
+                  className="text-error hover:bg-error/10 rounded px-1.5 py-0.5 text-[10px]"
+                  title="Reject"
+                >
                   <TbX className="size-3" />
                 </button>
               )}
             </div>
           )}
-          {s.accepted && (
-            <span className="text-[10px] text-emerald-600">Accepted</span>
-          )}
-          {s.rejected && (
-            <span className="text-[10px] text-neutral-content">Rejected</span>
-          )}
+          {s.accepted && <span className="text-[10px] text-emerald-600">Accepted</span>}
+          {s.rejected && <span className="text-neutral-content text-[10px]">Rejected</span>}
         </div>
       ))}
     </div>
@@ -128,7 +180,14 @@ interface PreviewPanelProps {
   sectionOverlay?: SectionOverlayConfig | null;
 }
 
-export function PreviewPanel({ content, liveContent, changedNodes, resolver, onClose, sectionOverlay }: PreviewPanelProps) {
+export function PreviewPanel({
+  content,
+  liveContent,
+  changedNodes,
+  resolver,
+  onClose,
+  sectionOverlay,
+}: PreviewPanelProps) {
   const [zoom, setZoom] = useState(0.35);
   const [tab, setTab] = useState<Tab>("review");
   const { width, handleProps } = useResizable({
@@ -141,15 +200,17 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
   });
 
   // Summarize what changed
-  const changes = changedNodes ? Object.entries(changedNodes)
-    .filter(([_, n]: any) => n?.props?.text || n?.parent === "page_home")
-    .slice(0, 6)
-    .map(([id, n]: any) => ({
-      id,
-      name: n.custom?.displayName || n.type?.resolvedName || id,
-      text: n.props?.text?.replace(/<[^>]*>/g, "").slice(0, 40),
-      isNew: n.parent === "page_home",
-    })) : [];
+  const changes = changedNodes
+    ? Object.entries(changedNodes)
+        .filter(([_, n]: any) => n?.props?.text || n?.parent === "page_home")
+        .slice(0, 6)
+        .map(([id, n]: any) => ({
+          id,
+          name: n.custom?.displayName || n.type?.resolvedName || id,
+          text: n.props?.text?.replace(/<[^>]*>/g, "").slice(0, 40),
+          isNew: n.parent === "page_home",
+        }))
+    : [];
 
   // Load Google Fonts from the preview content's ROOT header
   useEffect(() => {
@@ -171,7 +232,9 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
         added.push(el);
       }
     });
-    return () => { added.forEach(el => el.remove()); };
+    return () => {
+      added.forEach(el => el.remove());
+    };
   }, [content?.ROOT?.props?.header]);
 
   // Load Material Symbols font for Google icons used in preview
@@ -179,13 +242,18 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
     const iconsUrl = getMaterialSymbolsUrlFromNodes(content);
     if (!iconsUrl) return;
     const existing = document.getElementById("google-icons-preview");
-    if (existing) { (existing as HTMLLinkElement).href = iconsUrl; return; }
+    if (existing) {
+      (existing as HTMLLinkElement).href = iconsUrl;
+      return;
+    }
     const el = document.createElement("link");
     el.id = "google-icons-preview";
     el.rel = "stylesheet";
     el.href = iconsUrl;
     document.head.appendChild(el);
-    return () => { el.remove(); };
+    return () => {
+      el.remove();
+    };
   }, [content]);
 
   // Inject modifier @utility rules from preview content's ROOT
@@ -211,7 +279,9 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
       document.head.appendChild(el);
     }
     el.textContent = rules.join("\n");
-    return () => { el?.remove(); };
+    return () => {
+      el?.remove();
+    };
   }, [content?.ROOT?.props?.modifiers]);
 
   // Theme for the preview iframe: prefer ROOT from ai-draft; if palette missing/stale, match live #viewport (avoids milky editor chrome defaults).
@@ -229,12 +299,12 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
   const frameData = tab === "live" && liveContent ? liveContent : JSON.stringify(safeContent);
 
   return (
-    <div className="relative flex shrink-0 flex-col border-l border-base-300/40" style={{ width }}>
+    <div className="border-base-300/40 relative flex shrink-0 flex-col border-l" style={{ width }}>
       {/* Resize handle */}
       <div {...handleProps.w} />
 
-      <div className="flex items-center justify-between px-3 py-2 border-b border-base-300/30">
-        <div className="flex items-center gap-0.5 rounded-lg border border-base-300/60 bg-neutral/40 p-0.5">
+      <div className="border-base-300/30 flex items-center justify-between border-b px-3 py-2">
+        <div className="border-base-300/60 bg-neutral/40 flex items-center gap-0.5 rounded-lg border p-0.5">
           <button
             type="button"
             onClick={() => setTab("review")}
@@ -267,7 +337,7 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
           >
             <TbMinus />
           </button>
-          <span className="min-w-[3ch] text-center text-[10px] text-neutral-content">
+          <span className="text-neutral-content min-w-[3ch] text-center text-[10px]">
             {Math.round(zoom * 100)}%
           </span>
           <button
@@ -288,13 +358,15 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
       {tab === "review" && sectionOverlay && sectionOverlay.sections.length > 0 ? (
         <SectionControlList {...sectionOverlay} />
       ) : tab === "review" && changes.length > 0 ? (
-        <div className="border-b border-base-300/30 px-3 py-2 space-y-1">
-          <div className="text-[10px] font-medium text-neutral-content">Changed:</div>
+        <div className="border-base-300/30 space-y-1 border-b px-3 py-2">
+          <div className="text-neutral-content text-[10px] font-medium">Changed:</div>
           {changes.map(c => (
             <div key={c.id} className="flex items-baseline gap-1.5 text-[10px]">
-              {c.isNew && <span className="rounded bg-primary/20 px-1 text-[9px] text-primary">new</span>}
-              <span className="font-medium text-base-content">{c.name}</span>
-              {c.text && <span className="truncate text-neutral-content">{c.text}</span>}
+              {c.isNew && (
+                <span className="bg-primary/20 text-primary rounded px-1 text-[9px]">new</span>
+              )}
+              <span className="text-base-content font-medium">{c.name}</span>
+              {c.text && <span className="text-neutral-content truncate">{c.text}</span>}
             </div>
           ))}
         </div>
@@ -305,7 +377,15 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
           try {
             return (
               <PreviewErrorBoundary>
-                <div id="ph-preview-frame" style={{ transform: `scale(${zoom})`, transformOrigin: "top left", width: `${100 / zoom}%`, pointerEvents: "none" }}>
+                <div
+                  id="ph-preview-frame"
+                  style={{
+                    transform: `scale(${zoom})`,
+                    transformOrigin: "top left",
+                    width: `${100 / zoom}%`,
+                    pointerEvents: "none",
+                  }}
+                >
                   {previewCSS && <style dangerouslySetInnerHTML={{ __html: previewCSS }} />}
                   <Editor key={tab + frameData} resolver={resolver} enabled={false}>
                     <Frame data={frameData} />
@@ -314,7 +394,7 @@ export function PreviewPanel({ content, liveContent, changedNodes, resolver, onC
               </PreviewErrorBoundary>
             );
           } catch {
-            return <div className="p-4 text-sm text-neutral-content">Preview unavailable</div>;
+            return <div className="text-neutral-content p-4 text-sm">Preview unavailable</div>;
           }
         })()}
       </div>

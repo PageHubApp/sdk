@@ -99,7 +99,7 @@ const updateNodeProps = (
   propKey = null,
   typeKey = null,
   id = null,
-  contentKey = "content",
+  contentKey = "content"
 ) => {
   setProp(_props => {
     _props.isLoading = isLoading;
@@ -147,7 +147,7 @@ export const ImageUploadInput: any = ({
 
   let timeout;
 
-  const handleChange = async (e) => {
+  const handleChange = async e => {
     if (timeout) clearTimeout(timeout);
 
     setSaved(false);
@@ -272,7 +272,7 @@ export const ImageUploadInput: any = ({
       />
 
       {errors.length ? (
-        <div className="whitespace-nowrap py-3">
+        <div className="py-3 whitespace-nowrap">
           {errors.map((error, key) => (
             <div key={key}>{error.error}</div>
           ))}

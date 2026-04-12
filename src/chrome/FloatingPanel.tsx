@@ -49,7 +49,9 @@ export function FloatingPanel({
   children,
 }: FloatingPanelProps) {
   const defaultPos = initialPosition ?? {
-    x: Math.round((typeof window !== "undefined" ? window.innerWidth : 1200) / 2 - defaultWidth / 2),
+    x: Math.round(
+      (typeof window !== "undefined" ? window.innerWidth : 1200) / 2 - defaultWidth / 2
+    ),
     y: 40,
   };
 
@@ -93,14 +95,19 @@ export function FloatingPanel({
       )}
 
       <div
-        ref={(el) => { (windowRef as any).current = el; (focusTrapRef as any).current = el; }}
+        ref={el => {
+          (windowRef as any).current = el;
+          (focusTrapRef as any).current = el;
+        }}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         className="pagehub-sdk-root ph-modal-surface pointer-events-auto fixed overflow-hidden"
         style={{ top: position.y, left: position.x, width, height, zIndex }}
       >
-        {(edges as string[]).map(e => (handleProps as any)[e] ? <div key={e} {...(handleProps as any)[e]} /> : null)}
+        {(edges as string[]).map(e =>
+          (handleProps as any)[e] ? <div key={e} {...(handleProps as any)[e]} /> : null
+        )}
 
         <div className="flex h-full flex-col">
           {/* Header — drag handle */}
@@ -108,7 +115,7 @@ export function FloatingPanel({
             role="presentation"
             aria-hidden="true"
             onMouseDown={handleMouseDown}
-            className={`flex items-center justify-between border-b border-base-300 bg-accent px-3 py-1.5 text-accent-content ${
+            className={`border-base-300 bg-accent text-accent-content flex items-center justify-between border-b px-3 py-1.5 ${
               isDragging ? "cursor-grabbing" : "cursor-grab"
             }`}
           >
@@ -118,7 +125,7 @@ export function FloatingPanel({
             </div>
             <button
               onClick={onClose}
-              className="rounded p-0.5 text-accent-content transition-colors hover:bg-accent-content/10"
+              className="text-accent-content hover:bg-accent-content/10 rounded p-0.5 transition-colors"
             >
               <TbX className="size-3.5" />
             </button>
@@ -128,6 +135,6 @@ export function FloatingPanel({
         </div>
       </div>
     </>,
-    document.querySelector(".pagehub-sdk-root") || document.body,
+    document.querySelector(".pagehub-sdk-root") || document.body
   );
 }

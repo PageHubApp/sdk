@@ -24,7 +24,10 @@ export function useEditorActivePage(): ActivePage | undefined {
         const node = query.node(id).get();
         if (!node?.data) return undefined;
         if (node.data.props?.type === "page") {
-          return { pageNodeId: id, displayName: node.data.custom?.displayName as string | undefined };
+          return {
+            pageNodeId: id,
+            displayName: node.data.custom?.displayName as string | undefined,
+          };
         }
         const p = node.data.parent;
         if (!p) return undefined;

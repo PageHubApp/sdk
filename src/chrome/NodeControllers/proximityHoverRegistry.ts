@@ -9,9 +9,7 @@ export function unregisterProximityTarget(id: string): void {
   targets.delete(id);
 }
 
-export function forEachProximityTarget(
-  fn: (id: string, dom: HTMLElement) => void,
-): void {
+export function forEachProximityTarget(fn: (id: string, dom: HTMLElement) => void): void {
   for (const [id, dom] of targets) {
     fn(id, dom);
   }

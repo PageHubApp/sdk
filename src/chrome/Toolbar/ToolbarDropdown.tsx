@@ -15,7 +15,9 @@ const extractText = (node: any): string => {
   return "";
 };
 
-type OptionItem = { value: string; label: string; group?: undefined } | { group: string; value?: undefined; label?: undefined };
+type OptionItem =
+  | { value: string; label: string; group?: undefined }
+  | { group: string; value?: undefined; label?: undefined };
 
 const useOptions = (children: any, valueLabels: string[]): OptionItem[] =>
   useMemo(() => {
@@ -45,25 +47,60 @@ const useOptions = (children: any, valueLabels: string[]): OptionItem[] =>
   }, [children, valueLabels]);
 
 const ChevronDown = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="m6 9 6 6 6-6" />
   </svg>
 );
 
 const Check = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="20 6 9 17 4 12" />
   </svg>
 );
 
 const Dash = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+  >
     <line x1="6" y1="12" x2="18" y2="12" />
   </svg>
 );
 
 const ScrollChevron = ({ direction }: { direction: "up" | "down" }) => (
-  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="10"
+    height="10"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d={direction === "up" ? "m18 15-6-6-6 6" : "m6 9 6 6 6-6"} />
   </svg>
 );
@@ -83,18 +120,23 @@ const useScrollOverflow = () => {
     setCanDown(scrollTop + clientHeight < scrollHeight - 2);
   }, []);
 
-  const sentinelRef = useCallback((node: HTMLElement | null) => {
-    if (!node) return;
-    const el = node.closest<HTMLElement>("[data-custom-scroll]");
-    if (!el || containerRef.current === el) return;
-    containerRef.current = el;
-    armed.current = false;
-    setTimeout(() => { armed.current = true; }, 200);
-    update();
-    el.addEventListener("scroll", update, { passive: true });
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-  }, [update]);
+  const sentinelRef = useCallback(
+    (node: HTMLElement | null) => {
+      if (!node) return;
+      const el = node.closest<HTMLElement>("[data-custom-scroll]");
+      if (!el || containerRef.current === el) return;
+      containerRef.current = el;
+      armed.current = false;
+      setTimeout(() => {
+        armed.current = true;
+      }, 200);
+      update();
+      el.addEventListener("scroll", update, { passive: true });
+      const ro = new ResizeObserver(update);
+      ro.observe(el);
+    },
+    [update]
+  );
 
   const startScroll = useCallback((dir: number) => {
     if (!armed.current) return;
@@ -123,7 +165,8 @@ export const ToolbarDropdown = ({
 }: any) => {
   const options = useOptions(children, valueLabels);
   const internalValue = toInternal(String(value ?? ""));
-  const selectedLabel = internalValue === EMPTY ? null : options.find(o => o.value === internalValue)?.label;
+  const selectedLabel =
+    internalValue === EMPTY ? null : options.find(o => o.value === internalValue)?.label;
   const { sentinelRef, canUp, canDown, startScroll, stopScroll } = useScrollOverflow();
 
   const handleChange = (val: string) => {
@@ -140,7 +183,7 @@ export const ToolbarDropdown = ({
   const trigger = (
     <ListboxButton
       id={propKey ? `input-${propKey}` : undefined}
-      className="input-plain flex flex-1 items-center justify-between gap-1 outline-none focus:outline-none focus-visible:outline-none aria-expanded:bg-base-300/15"
+      className="input-plain aria-expanded:bg-base-300/15 flex flex-1 items-center justify-between gap-1 outline-none focus:outline-none focus-visible:outline-none"
       aria-label={title || placeholder || "Select option"}
       onClick={handleButtonClick}
     >
@@ -188,7 +231,10 @@ export const ToolbarDropdown = ({
           {options.map((opt, i) => {
             if ("group" in opt && opt.group) {
               return (
-                <div key={`group-${opt.group}`} className="px-2 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-content first:pt-1">
+                <div
+                  key={`group-${opt.group}`}
+                  className="text-neutral-content px-2 pt-2 pb-0.5 text-[10px] font-semibold tracking-wider uppercase first:pt-1"
+                >
                   {opt.group}
                 </div>
               );
@@ -203,15 +249,11 @@ export const ToolbarDropdown = ({
                       <span className="flex w-4 shrink-0 items-center justify-center">
                         {selected && (isNone ? <Dash /> : <Check />)}
                       </span>
-                      {isNone ? (
-                        <span className="text-neutral-content">None</span>
-                      ) : (
-                        opt.label
-                      )}
+                      {isNone ? <span className="text-neutral-content">None</span> : opt.label}
                     </>
                   )}
                 </ListboxOption>
-                {nextIsReal && <div className="my-1 h-px bg-border" />}
+                {nextIsReal && <div className="bg-border my-1 h-px" />}
               </span>
             );
           })}

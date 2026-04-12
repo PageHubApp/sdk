@@ -14,7 +14,7 @@ interface SectionTemplateData {
   templates: Record<string, SectionTemplate[]>;
 }
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export function useSectionTemplates(): { data: SectionTemplateData | null; isLoading: boolean } {
   const { data, isLoading } = useSWR(

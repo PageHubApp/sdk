@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 
 function resolveCraftComponent(
   type: unknown,
-  resolver: Record<string, React.ComponentType<any>> | undefined,
+  resolver: Record<string, React.ComponentType<any>> | undefined
 ): React.ComponentType<any> | null {
   if (type == null || !resolver) return null;
   if (typeof type === "function") return type as React.ComponentType<any>;
@@ -48,7 +48,9 @@ export const RenderNodeNewer = ({ render }) => {
     nodeProps: node.data?.props,
   }));
 
-  const resolver = useEditor((_, query) => query.getOptions().resolver as Record<string, React.ComponentType<any>>);
+  const resolver = useEditor(
+    (_, query) => query.getOptions().resolver as Record<string, React.ComponentType<any>>
+  );
   const craftComponent = useMemo(() => resolveCraftComponent(type, resolver), [type, resolver]);
 
   useEffect(() => {

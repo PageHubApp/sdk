@@ -239,8 +239,7 @@ export const resolveCSSVariable = (value: string, query: any = null): string => 
           const styleGuide = theme.styleGuide;
           // Convert CSS var name to camelCase property name
           // heading-font-family → headingFontFamily
-          const propName = rawName
-            .replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+          const propName = rawName.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 
           if (styleGuide[propName]) {
             return styleGuide[propName];
@@ -252,12 +251,11 @@ export const resolveCSSVariable = (value: string, query: any = null): string => 
           for (const font of theme.typography) {
             if (font && font.name) {
               // Convert font name to CSS var name
-              const fontVarName =
-                font.name
-                  .replace(/([A-Z])/g, "-$1")
-                  .replace(/\s+/g, "-")
-                  .toLowerCase()
-                  .replace(/^-/, "");
+              const fontVarName = font.name
+                .replace(/([A-Z])/g, "-$1")
+                .replace(/\s+/g, "-")
+                .toLowerCase()
+                .replace(/^-/, "");
 
               if (rawName.startsWith(fontVarName)) {
                 if (rawName.includes("-font-family")) {
@@ -280,8 +278,7 @@ export const resolveCSSVariable = (value: string, query: any = null): string => 
   }
 
   // Fallback to DEFAULT values (always available — no dynamic require for browser bundles)
-  const propName = rawName
-    .replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+  const propName = rawName.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 
   if (DEFAULT_STYLE_GUIDE[propName] != null && DEFAULT_STYLE_GUIDE[propName] !== "") {
     return DEFAULT_STYLE_GUIDE[propName];
@@ -320,7 +317,10 @@ export const getTailwindColorHex = (colorName: string, shade?: string): string =
 /**
  * Resolve opaque color from utility tail (no /opacity suffix — use splitOpacitySuffix first).
  */
-function resolveColorForDisplayCore(bg: string, palette: PaletteColor[]): { backgroundColor: string } {
+function resolveColorForDisplayCore(
+  bg: string,
+  palette: PaletteColor[]
+): { backgroundColor: string } {
   // Handle CSS variables (e.g., "var(--primary)" or legacy "var(--ph-primary)")
   if (bg.includes("var(--")) {
     const varMatch = bg.match(/var\(--((?:ph-)?[^)]+)\)/);
@@ -571,7 +571,7 @@ export const isPaletteColorSelected = (
   paletteColor: PaletteColor
 ): boolean => {
   if (!currentValue) return false;
-  
+
   // Convert RGB object to string if needed
   let valueString: string;
   if (typeof currentValue === "object" && currentValue.r !== undefined) {
@@ -620,8 +620,8 @@ export const isPaletteColorSelected = (
         const colorObj = colors[colorKey as keyof typeof colors] as unknown;
         return Boolean(
           colorObj &&
-            typeof colorObj === "object" &&
-            Object.prototype.hasOwnProperty.call(colorObj, shade)
+          typeof colorObj === "object" &&
+          Object.prototype.hasOwnProperty.call(colorObj, shade)
         );
       })();
     if (!isTailwindTwoPart) {
@@ -657,9 +657,7 @@ export const TRANSPARENT_CHECKER_BG: CSSProperties = {
 export function cssColorShowsTransparency(css: string): boolean {
   const t = css.trim().toLowerCase();
   if (t === "transparent") return true;
-  const rgba = t.match(
-    /^rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/i
-  );
+  const rgba = t.match(/^rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/i);
   if (rgba && parseFloat(rgba[4]) < 1 - 1e-5) return true;
   return false;
 }

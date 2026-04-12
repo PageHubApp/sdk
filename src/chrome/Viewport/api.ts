@@ -75,4 +75,3 @@ export const DeleteMedia = async (
     throw e;
   }
 };
-

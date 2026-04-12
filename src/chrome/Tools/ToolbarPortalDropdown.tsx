@@ -29,8 +29,7 @@ export const ToolbarPortalDropdown = ({
   const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const placement =
-    align === "left" ? "bottom-start" : align === "right" ? "bottom-end" : "bottom";
+  const placement = align === "left" ? "bottom-start" : align === "right" ? "bottom-end" : "bottom";
 
   const floating = useAnchoredPopover({
     open: isOpen,

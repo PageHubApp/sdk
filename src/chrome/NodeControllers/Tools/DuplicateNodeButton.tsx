@@ -6,9 +6,7 @@ interface DuplicateNodeButtonProps {
   className?: string;
 }
 
-export const DuplicateNodeButton = ({
-  className = "tool-button",
-}: DuplicateNodeButtonProps) => {
+export const DuplicateNodeButton = ({ className = "tool-button" }: DuplicateNodeButtonProps) => {
   const { id } = useNode();
 
   const { actions, query } = useEditor();

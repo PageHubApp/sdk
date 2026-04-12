@@ -59,7 +59,13 @@ function saveRecentToken(name: string): string[] {
   return updated;
 }
 
-export function TokenPicker({ value, onChange, onClose, onClear, variant = "inline" }: TokenPickerProps) {
+export function TokenPicker({
+  value,
+  onChange,
+  onClose,
+  onClear,
+  variant = "inline",
+}: TokenPickerProps) {
   const { query } = useEditor();
   const [palette, setPalette] = useState<NamedColor[]>([]);
   const [recentTokens, setRecentTokens] = useState<string[]>(loadRecentTokens);
@@ -86,15 +92,20 @@ export function TokenPicker({ value, onChange, onClose, onClear, variant = "inli
 
   useEffect(() => {
     if (!onClose) return;
-    const handle = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const handle = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", handle);
     return () => document.removeEventListener("keydown", handle);
   }, [onClose]);
 
-  const handlePick = useCallback((name: string) => {
-    onChange({ type: "palette", value: `palette:${name}` });
-    setRecentTokens(saveRecentToken(name));
-  }, [onChange]);
+  const handlePick = useCallback(
+    (name: string) => {
+      onChange({ type: "palette", value: `palette:${name}` });
+      setRecentTokens(saveRecentToken(name));
+    },
+    [onChange]
+  );
 
   const recentPalette = recentTokens
     .map(name => palette.find(p => p.name === name))
@@ -112,9 +123,10 @@ export function TokenPicker({ value, onChange, onClose, onClear, variant = "inli
   return (
     <div
       ref={containerRef}
-      className={isInline
-        ? "relative flex w-[360px] max-w-[min(360px,100vw-2rem)] flex-col gap-2 p-2"
-        : "relative flex w-[240px] max-w-[min(240px,100vw-2rem)] flex-col gap-3 p-3"
+      className={
+        isInline
+          ? "relative flex w-[360px] max-w-[min(360px,100vw-2rem)] flex-col gap-2 p-2"
+          : "relative flex w-[240px] max-w-[min(240px,100vw-2rem)] flex-col gap-3 p-3"
       }
     >
       {/* Swatch row: stable-order recents (or first N palette) + new token + optional expand */}
@@ -130,18 +142,30 @@ export function TokenPicker({ value, onChange, onClose, onClear, variant = "inli
             />
           </Tooltip>
         ))}
-        <button type="button" onClick={() => setShowCreateDialog(true)} className={`${swatchSize} flex shrink-0 items-center justify-center rounded-md border-2 border-dashed border-base-300 text-neutral-content transition-colors hover:border-foreground hover:text-base-content`} title="New token">
+        <button
+          type="button"
+          onClick={() => setShowCreateDialog(true)}
+          className={`${swatchSize} border-base-300 text-neutral-content hover:border-foreground hover:text-base-content flex shrink-0 items-center justify-center rounded-md border-2 border-dashed transition-colors`}
+          title="New token"
+        >
           <TbPlus className="size-3" />
         </button>
         {hasMoreToShow && (
-          <button type="button" onClick={() => setShowAll(prev => !prev)} className="ml-auto flex shrink-0 items-center text-neutral-content hover:text-base-content" title={showAll ? "Less" : "All tokens"}>
-            <TbChevronDown className={`size-3.5 transition-transform ${showAll ? "rotate-180" : ""}`} />
+          <button
+            type="button"
+            onClick={() => setShowAll(prev => !prev)}
+            className="text-neutral-content hover:text-base-content ml-auto flex shrink-0 items-center"
+            title={showAll ? "Less" : "All tokens"}
+          >
+            <TbChevronDown
+              className={`size-3.5 transition-transform ${showAll ? "rotate-180" : ""}`}
+            />
           </button>
         )}
       </div>
 
       {onClear != null && (
-        <div className="border-t border-base-300 pt-2">
+        <div className="border-base-300 border-t pt-2">
           <button
             type="button"
             disabled={!hasClearableValue(value)}
@@ -150,7 +174,7 @@ export function TokenPicker({ value, onChange, onClose, onClear, variant = "inli
               e.stopPropagation();
               onClear();
             }}
-            className="w-full rounded-md px-2 py-1.5 text-center text-xs font-medium text-neutral-content transition-colors hover:bg-neutral hover:text-base-content disabled:pointer-events-none disabled:opacity-40"
+            className="text-neutral-content hover:bg-neutral hover:text-base-content w-full rounded-md px-2 py-1.5 text-center text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-40"
           >
             Remove color
           </button>
@@ -159,7 +183,7 @@ export function TokenPicker({ value, onChange, onClose, onClear, variant = "inli
 
       {/* Expanded: all tokens */}
       {showAll && (
-        <div className="flex flex-wrap gap-1 border-t border-base-300 pt-2">
+        <div className="border-base-300 flex flex-wrap gap-1 border-t pt-2">
           {palette.map(pc => (
             <Tooltip key={pc.name} content={pc.name} placement="bottom" arrow={false}>
               <Swatch
@@ -176,9 +200,9 @@ export function TokenPicker({ value, onChange, onClose, onClear, variant = "inli
 
       {/* Create token dialog */}
       {showCreateDialog && (
-        <div className="absolute left-1/2 top-full z-50 mt-1 -translate-x-1/2">
+        <div className="absolute top-full left-1/2 z-50 mt-1 -translate-x-1/2">
           <CreateTokenDialog
-            onCreated={(name) => {
+            onCreated={name => {
               setShowCreateDialog(false);
               // Reload palette
               try {
@@ -215,7 +239,8 @@ function swatchResolvedFill(pc: NamedColor, palette: NamedColor[]): string {
   const c = pc.color.trim();
   if (!c) {
     const vn = `--${toCSSVarName(pc.name)}`;
-    return resolveColorForDisplay(`text-[var(${vn})]`, "text", palette as PaletteColor[]).backgroundColor;
+    return resolveColorForDisplay(`text-[var(${vn})]`, "text", palette as PaletteColor[])
+      .backgroundColor;
   }
   if (isLiteralCssColorField(c)) {
     return resolveColorForDisplay(`text-${c}`, "text", palette as PaletteColor[]).backgroundColor;
@@ -224,7 +249,8 @@ function swatchResolvedFill(pc: NamedColor, palette: NamedColor[]): string {
     return resolveColorForDisplay(`text-${c}`, "text", palette as PaletteColor[]).backgroundColor;
   }
   const vn = `--${toCSSVarName(pc.name)}`;
-  return resolveColorForDisplay(`text-[var(${vn})]`, "text", palette as PaletteColor[]).backgroundColor;
+  return resolveColorForDisplay(`text-[var(${vn})]`, "text", palette as PaletteColor[])
+    .backgroundColor;
 }
 
 function Swatch({
@@ -244,25 +270,23 @@ function Swatch({
   const showChecker = cssColorShowsTransparency(fill);
 
   return (
-    <button
-      type="button"
-      onClick={() => onPick(color.name)}
-      className="group relative"
-    >
+    <button type="button" onClick={() => onPick(color.name)} className="group relative">
       <div
-        className={`relative overflow-hidden ${size} flex items-center justify-center rounded-md border-2 transition-transform hover:scale-110 ${selected ? "border-primary ring-1 ring-primary/30" : "border-base-300"}`}
+        className={`relative overflow-hidden ${size} flex items-center justify-center rounded-md border-2 transition-transform hover:scale-110 ${selected ? "border-primary ring-primary/30 ring-1" : "border-base-300"}`}
       >
         {showChecker && (
-          <span className="pointer-events-none absolute inset-0 z-0 rounded-[inherit]" style={TRANSPARENT_CHECKER_BG} aria-hidden />
+          <span
+            className="pointer-events-none absolute inset-0 z-0 rounded-[inherit]"
+            style={TRANSPARENT_CHECKER_BG}
+            aria-hidden
+          />
         )}
         <span
           className="absolute inset-0 z-1 rounded-[inherit]"
           style={{ backgroundColor: fill }}
           aria-hidden
         />
-        {selected && (
-          <TbCheck className="relative z-2 size-3 text-white drop-shadow-md" />
-        )}
+        {selected && <TbCheck className="relative z-2 size-3 text-white drop-shadow-md" />}
       </div>
     </button>
   );

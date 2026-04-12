@@ -58,23 +58,22 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
 
   /** One height for search + segmented controls (tool-bg p-1 was making groups taller than the search field). */
   const barH = "h-10";
-  const toolClusterClass =
-    `tool-bg ${barH} shrink-0 !items-stretch !justify-start !gap-0.5 !px-0.5 !py-0 text-neutral-content [&_button.tool-button]:h-full [&_button.tool-button]:min-h-0 [&_button.tool-button]:rounded-md [&_button.tool-button]:px-2`;
+  const toolClusterClass = `tool-bg ${barH} shrink-0 !items-stretch !justify-start !gap-0.5 !px-0.5 !py-0 text-neutral-content [&_button.tool-button]:h-full [&_button.tool-button]:min-h-0 [&_button.tool-button]:rounded-md [&_button.tool-button]:px-2`;
 
   return (
-    <div ref={toolbarRef} className="border-b border-base-300 bg-neutral px-4 py-1.5">
+    <div ref={toolbarRef} className="border-base-300 bg-neutral border-b px-4 py-1.5">
       <div className={`flex items-center gap-2 ${barH}`}>
         {/* Search */}
         <div
           className={`input-wrapper input-hover relative flex min-h-0 min-w-0 flex-1 items-center ${barH}`}
         >
-          <TbSearch className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-neutral-content" />
+          <TbSearch className="text-neutral-content pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={e => handleSearch(e.target.value)}
             placeholder="Search media..."
-            className="input-plain-search min-h-0 h-full! pl-10"
+            className="input-plain-search h-full! min-h-0 pl-10"
           />
         </div>
 
@@ -209,7 +208,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
               value={urlInput}
               onChange={e => setUrlInput(e.target.value)}
               placeholder="https://example.com/image.jpg"
-              className="input-dialog flex-1 placeholder:text-neutral-content"
+              className="input-dialog placeholder:text-neutral-content flex-1"
               onKeyDown={e => e.key === "Enter" && handleAddUrl()}
               autoFocus
             />
@@ -228,15 +227,15 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
               id="saveUrlToCdn"
               checked={saveUrlToCdn}
               onChange={e => setSaveUrlToCdn(e.target.checked)}
-              className="size-4 rounded-lg border-base-300 bg-neutral text-accent focus:ring-ring"
+              className="border-base-300 bg-neutral text-accent focus:ring-ring size-4 rounded-lg"
             />
-            <label htmlFor="saveUrlToCdn" className="text-xs text-neutral-content">
+            <label htmlFor="saveUrlToCdn" className="text-neutral-content text-xs">
               Save to CDN (downloads image to your account)
             </label>
           </div>
-          <div className="mt-2 text-xs text-neutral-content">
-            <TbInfoCircle className="mr-1 inline" /> Tip: You can also paste images directly
-            (Ctrl+V / Cmd+V) or use the clipboard button above!
+          <div className="text-neutral-content mt-2 text-xs">
+            <TbInfoCircle className="mr-1 inline" /> Tip: You can also paste images directly (Ctrl+V
+            / Cmd+V) or use the clipboard button above!
           </div>
         </div>
       )}
@@ -249,7 +248,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
               value={svgInput}
               onChange={e => setSvgInput(e.target.value)}
               placeholder="<svg>...</svg>"
-              className="input-dialog flex-1 min-h-[4.5rem] resize-none font-mono text-xs placeholder:text-neutral-content"
+              className="input-dialog placeholder:text-neutral-content min-h-[4.5rem] flex-1 resize-none font-mono text-xs"
               rows={3}
               autoFocus
             />
@@ -262,13 +261,13 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
               Add
             </button>
           </div>
-          <p className="ml-0.5 mt-1.5 text-xs text-neutral-content">
+          <p className="text-neutral-content mt-1.5 ml-0.5 text-xs">
             Find SVGs @{" "}
             <a
               href="https://www.svgrepo.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary underline hover:text-primary"
+              className="text-primary hover:text-primary underline"
             >
               svgrepo.com
             </a>
@@ -277,7 +276,9 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
       )}
 
       {/* AI panel */}
-      {canUseImageGenerate && addMode === "ai" && renderMediaManagerAiPanel?.(mediaManagerAiPanelContext)}
+      {canUseImageGenerate &&
+        addMode === "ai" &&
+        renderMediaManagerAiPanel?.(mediaManagerAiPanelContext)}
 
       {/* Hidden file inputs */}
       <input

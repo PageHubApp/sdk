@@ -57,8 +57,7 @@ export function LeftSidebarDialog({
 
   // Set defaults based on position (absolute panels live in `#toolbar` and anchor under the measured icon row)
   const finalWidth = width || (position === "absolute" ? "100%" : "360px");
-  const finalTop =
-    top ?? (position === "absolute" ? "var(--editor-nav-height, 3rem)" : "40px");
+  const finalTop = top ?? (position === "absolute" ? "var(--editor-nav-height, 3rem)" : "40px");
 
   // Handle Escape key
   useEffect(() => {
@@ -107,7 +106,7 @@ export function LeftSidebarDialog({
       {...(hideHeader
         ? { "aria-label": title }
         : { "aria-labelledby": "left-sidebar-dialog-title" })}
-      className={`${position} left-0 z-9999 flex flex-col bg-base-100 text-base-content`}
+      className={`${position} bg-base-100 text-base-content left-0 z-9999 flex flex-col`}
       style={{
         width: finalWidth,
         top: finalTop,
@@ -118,17 +117,20 @@ export function LeftSidebarDialog({
     >
       <div
         ref={modalRef}
-        className={`flex h-full flex-col overflow-hidden border-r border-base-300 shadow-2xl${showTopBorder ? " border-t border-base-300" : ""}`}
+        className={`border-base-300 flex h-full flex-col overflow-hidden border-r shadow-2xl${showTopBorder ? "border-base-300 border-t" : ""}`}
       >
         {!hideHeader ? (
           <div
-            className={`flex items-center border-b border-base-300 bg-base-100 px-3 py-2.5 text-base-content ${
+            className={`border-base-300 bg-base-100 text-base-content flex items-center border-b px-3 py-2.5 ${
               headerRight || showCloseButton ? "justify-between" : "justify-start"
             }`}
           >
             <div className="flex min-w-0 items-center gap-2">
-              {icon && <span className="shrink-0 text-lg text-base-content/70">{icon}</span>}
-              <h2 id="left-sidebar-dialog-title" className="truncate text-sm font-semibold tracking-tight">
+              {icon && <span className="text-base-content/70 shrink-0 text-lg">{icon}</span>}
+              <h2
+                id="left-sidebar-dialog-title"
+                className="truncate text-sm font-semibold tracking-tight"
+              >
                 {title}
               </h2>
             </div>
@@ -139,7 +141,7 @@ export function LeftSidebarDialog({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="flex items-center justify-center rounded-lg p-1.5 text-base-content/50 transition-colors hover:bg-base-200 hover:text-base-content"
+                    className="text-base-content/50 hover:bg-base-200 hover:text-base-content flex items-center justify-center rounded-lg p-1.5 transition-colors"
                     aria-label="Close"
                   >
                     <TbX className="size-5" />
@@ -151,9 +153,10 @@ export function LeftSidebarDialog({
         ) : null}
 
         {/* Content */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-base-100 text-base-content">{children}</div>
+        <div className="bg-base-100 text-base-content flex min-h-0 flex-1 flex-col overflow-hidden">
+          {children}
+        </div>
       </div>
     </div>
   );
 }
-

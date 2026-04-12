@@ -40,7 +40,13 @@ export interface ButtonListProps extends BaseSelectorProps {
 }
 
 export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: ButtonListProps) => {
-  let props: any = { buttons: [], alignItems: "items-center", justifyContent: "justify-start", gap: "gap-2", ...incomingProps };
+  let props: any = {
+    buttons: [],
+    alignItems: "items-center",
+    justifyContent: "justify-start",
+    gap: "gap-2",
+    ...incomingProps,
+  };
 
   const {
     connectors: { connect, drag },
@@ -48,8 +54,6 @@ export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: Button
   } = useNode();
 
   const { actions, query, enabled } = useEditor(state => getClonedState(props, state));
-
-
 
   props = setClonedProps(props, query);
 
@@ -97,10 +101,13 @@ export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: Button
           try {
             const childNode = query.node(childId).get();
             if (childNode.data.name !== "Button") return null;
-            const actionTarget = childNode.data.props?.action?.target || childNode.data.props?.click?.value;
+            const actionTarget =
+              childNode.data.props?.action?.target || childNode.data.props?.click?.value;
             if (actionTarget === menuId) return null;
             return childNode.data.props;
-          } catch { return null; }
+          } catch {
+            return null;
+          }
         })
         .filter(Boolean);
     } catch (e) {
@@ -121,7 +128,8 @@ export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: Button
         try {
           const childNode = query.node(childId).get();
           if (childNode.data.name === "Button") {
-            const actionTarget = childNode.data.props?.action?.target || childNode.data.props?.click?.value;
+            const actionTarget =
+              childNode.data.props?.action?.target || childNode.data.props?.click?.value;
             const isHamburger = actionTarget?.includes("mobile-menu");
             return !isHamburger;
           }
@@ -141,9 +149,11 @@ export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: Button
     <a
       key={i}
       href={linkProps.url || "#"}
-      className="block w-full px-4 py-3 hover:opacity-75 transition-opacity"
+      className="block w-full px-4 py-3 transition-opacity hover:opacity-75"
       style={{ color: "var(--text)" }}
-      onClick={e => { if (enabled) e.preventDefault(); }}
+      onClick={e => {
+        if (enabled) e.preventDefault();
+      }}
     >
       {linkProps.text || "Link"}
     </a>
@@ -152,23 +162,24 @@ export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: Button
   const content = (
     <>
       {props.source
-        ? (sourceContent && sourceContent.length > 0 ? sourceContent : enabled && (
-          <div className="flex w-auto items-center justify-center p-4">
-            <div data-empty-state={true} className="text-3xl">
-              <RxButton />
-            </div>
-          </div>
-        ))
-        : (hasActualButtons || !enabled
+        ? sourceContent && sourceContent.length > 0
+          ? sourceContent
+          : enabled && (
+              <div className="flex w-auto items-center justify-center p-4">
+                <div data-empty-state={true} className="text-3xl">
+                  <RxButton />
+                </div>
+              </div>
+            )
+        : hasActualButtons || !enabled
           ? children
           : enabled && (
-            <div className="flex w-auto items-center justify-center p-4">
-              <div data-empty-state={true} className="text-3xl">
-                <RxButton />
+              <div className="flex w-auto items-center justify-center p-4">
+                <div data-empty-state={true} className="text-3xl">
+                  <RxButton />
+                </div>
               </div>
-            </div>
-          ))
-      }
+            )}
     </>
   );
 

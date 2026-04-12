@@ -13,12 +13,9 @@ export interface SidebarFlyoutSurfaceProps {
 export const SidebarFlyoutSurface = forwardRef<HTMLDivElement, SidebarFlyoutSurfaceProps>(
   function SidebarFlyoutSurface({ children, className }, ref) {
     return (
-      <div
-        ref={ref}
-        className={twMerge("flex min-h-0 min-w-0 w-full flex-1 flex-col", className)}
-      >
+      <div ref={ref} className={twMerge("flex min-h-0 w-full min-w-0 flex-1 flex-col", className)}>
         {children}
       </div>
     );
-  },
+  }
 );

@@ -12,7 +12,10 @@ import { Accordion } from "./Accordion";
 import { Container } from "./Container";
 import { Text } from "./Text";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
-import { AccordionMainTab, AccordionMainTabAdvanced } from "../chrome/Toolbar/UnifiedSettings/mainTabs/AccordionMainTab";
+import {
+  AccordionMainTab,
+  AccordionMainTabAdvanced,
+} from "../chrome/Toolbar/UnifiedSettings/mainTabs/AccordionMainTab";
 import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {
@@ -37,7 +40,7 @@ export function buildAccordionItem(index: number) {
       is={Container}
       type="details"
       custom={{ displayName: title, rules: { canMoveOut: () => false } }}
-      className="border-b border-base-300 group"
+      className="border-base-300 group border-b"
     >
       <Element
         is={Container}
@@ -45,7 +48,7 @@ export function buildAccordionItem(index: number) {
         custom={{ displayName: `${title} Header` }}
         canDelete={true}
         canEditName={true}
-        className="flex flex-row items-center justify-between px-4 py-3 cursor-pointer list-none select-none"
+        className="flex cursor-pointer list-none flex-row items-center justify-between px-4 py-3 select-none"
       >
         <Element
           is={Text}
@@ -64,7 +67,7 @@ export function buildAccordionItem(index: number) {
         custom={{ displayName: `${title} Content` }}
         canDelete={true}
         canEditName={true}
-        className="flex flex-col gap-container px-4 py-3"
+        className="gap-container flex flex-col px-4 py-3"
       >
         <Element
           is={Text}
@@ -77,56 +80,55 @@ export function buildAccordionItem(index: number) {
 }
 
 function buildAccordionChildren() {
-  return [
-    buildAccordionItem(0),
-    buildAccordionItem(1),
-    buildAccordionItem(2),
-  ];
+  return [buildAccordionItem(0), buildAccordionItem(1), buildAccordionItem(2)];
 }
 
-export const AccordionDef = defineComponent({
-  name: "Accordion",
-  component: Accordion,
-  icon: TbLayoutList,
-  category: "Interactive",
-  canvas: true,
-  settings: AccordionMainTab,
-  advancedSettings: AccordionMainTabAdvanced,
-  toHTML,
-  disable: ["hoverClick"],
-  rules: {
-    canDrag: () => true,
-    canDelete: () => true,
-    canMoveIn: () => true,
-    canMoveOut: () => false,
-  },
-  tools: () => [
-    <NameNodeController
-      key="accordionName"
-      position="top"
-      align="start"
-      placement="end"
-      alt={{ position: "bottom", align: "start", placement: "start" }}
-    />,
-    <HoverNodeController
-      key="accordionHover"
-      position="top"
-      align="start"
-      placement="end"
-      alt={{ position: "bottom", align: "start", placement: "start" }}
-    />,
-    <DeleteNodeController key="accordionDelete" />,
-  ],
-  presets: [
-    {
-      label: "Accordion",
-      props: {
-        multiOpen: false,
-        defaultOpen: -1,
-        className: "flex flex-col w-full",
-        custom: {},
-      },
-      children: buildAccordionChildren,
+export const AccordionDef = defineComponent(
+  {
+    name: "Accordion",
+    component: Accordion,
+    icon: TbLayoutList,
+    category: "Interactive",
+    canvas: true,
+    settings: AccordionMainTab,
+    advancedSettings: AccordionMainTabAdvanced,
+    toHTML,
+    disable: ["hoverClick"],
+    rules: {
+      canDrag: () => true,
+      canDelete: () => true,
+      canMoveIn: () => true,
+      canMoveOut: () => false,
     },
-  ],
-}, { __internal: true });
+    tools: () => [
+      <NameNodeController
+        key="accordionName"
+        position="top"
+        align="start"
+        placement="end"
+        alt={{ position: "bottom", align: "start", placement: "start" }}
+      />,
+      <HoverNodeController
+        key="accordionHover"
+        position="top"
+        align="start"
+        placement="end"
+        alt={{ position: "bottom", align: "start", placement: "start" }}
+      />,
+      <DeleteNodeController key="accordionDelete" />,
+    ],
+    presets: [
+      {
+        label: "Accordion",
+        props: {
+          multiOpen: false,
+          defaultOpen: -1,
+          className: "flex flex-col w-full",
+          custom: {},
+        },
+        children: buildAccordionChildren,
+      },
+    ],
+  },
+  { __internal: true }
+);

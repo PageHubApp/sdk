@@ -47,36 +47,30 @@ export interface PageHubProviderProps {
   children?: React.ReactNode;
 }
 
-export function PageHubProvider({
-  config,
-  emitter,
-  children,
-}: PageHubProviderProps) {
+export function PageHubProvider({ config, emitter, children }: PageHubProviderProps) {
   const [theme, setThemeState] = useState<Required<PageHubTheme>>(config.theme);
-  const [features, setFeaturesState] = useState<Required<PageHubFeatures>>(
-    config.features
-  );
+  const [features, setFeaturesState] = useState<Required<PageHubFeatures>>(config.features);
   const [readOnly, setReadOnly] = useState(config.readOnly ?? false);
 
   const setTheme = (patch: Partial<PageHubTheme>) => {
-    setThemeState((prev) => ({ ...prev, ...patch }));
+    setThemeState(prev => ({ ...prev, ...patch }));
   };
 
   const setFeatures = (patch: Partial<PageHubFeatures>) => {
-    setFeaturesState((prev) => ({ ...prev, ...patch }));
+    setFeaturesState(prev => ({ ...prev, ...patch }));
   };
 
   React.useEffect(() => {
     // Listen to the public modeChange event triggered by index.ts
-    const unsub = emitter.on("modeChange", (mode) => {
+    const unsub = emitter.on("modeChange", mode => {
       setReadOnly(mode === "viewer");
     });
     return () => unsub();
   }, [emitter]);
 
   React.useEffect(() => {
-    const unsub = emitter.onInternal("_setFeatures", (patch) => {
-      setFeaturesState((prev) => ({ ...prev, ...(patch as Partial<PageHubFeatures>) }));
+    const unsub = emitter.onInternal("_setFeatures", patch => {
+      setFeaturesState(prev => ({ ...prev, ...(patch as Partial<PageHubFeatures>) }));
     });
     return () => unsub();
   }, [emitter]);

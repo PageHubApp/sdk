@@ -7,7 +7,7 @@ export const AnimatedButton = ({ children, className = "", ariaLabel = "", ...pr
     <button
       type="button"
       onClick={props.onClick}
-      className={`${className} origin-top cursor-pointer active:scale-90 transition-transform`}
+      className={`${className} origin-top cursor-pointer transition-transform active:scale-90`}
       aria-label={ariaLabel}
     >
       {children}
@@ -34,4 +34,3 @@ export const AnimatedTooltipButton = ({
     </AnimatedButton>
   </Tooltip>
 );
-

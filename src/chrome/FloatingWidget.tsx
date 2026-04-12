@@ -40,11 +40,11 @@ const getCornerFromSwipe = (dx: number, dy: number, current: Corner): Corner => 
 
   if (absDx > absDy * 2) {
     const isTop = current.startsWith("top");
-    return isTop ? (goRight ? "top-right" : "top-left") : (goRight ? "bottom-right" : "bottom-left");
+    return isTop ? (goRight ? "top-right" : "top-left") : goRight ? "bottom-right" : "bottom-left";
   }
   if (absDy > absDx * 2) {
     const isLeft = current.endsWith("left");
-    return isLeft ? (goDown ? "bottom-left" : "top-left") : (goDown ? "bottom-right" : "top-right");
+    return isLeft ? (goDown ? "bottom-left" : "top-left") : goDown ? "bottom-right" : "top-right";
   }
   if (goRight && goDown) return "bottom-right";
   if (goRight && !goDown) return "top-right";
@@ -61,7 +61,9 @@ const setTransform = (el: HTMLDivElement, x: number, y: number) => {
 const snapTransform = (el: HTMLDivElement, x: number, y: number) => {
   el.style.transition = "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
   el.style.transform = `translate(${x}px, ${y}px)`;
-  setTimeout(() => { el.style.transition = ""; }, 400);
+  setTimeout(() => {
+    el.style.transition = "";
+  }, 400);
 };
 
 export function FloatingWidget({
@@ -202,7 +204,11 @@ export function FloatingWidget({
 
         if (velocity > THROW_VELOCITY) {
           // Fast throw — snap to corner based on throw direction
-          const newCorner = getCornerFromSwipe(windowDx, windowDy, cornerRef.current || defaultCorner);
+          const newCorner = getCornerFromSwipe(
+            windowDx,
+            windowDy,
+            cornerRef.current || defaultCorner
+          );
           const target = getCornerPos(newCorner, margin);
           cornerRef.current = newCorner;
           posRef.current = target;

@@ -43,10 +43,7 @@ function dispatchModal(el: HTMLElement, modalAction: "open" | "close" | "toggle"
 
 // ─── Show/Hide + Tab logic ─────────────────────────────────────────────
 
-function applyShowHide(
-  action: ShowHideAction,
-  e?: any
-) {
+function applyShowHide(action: ShowHideAction, e?: any) {
   const el = document.getElementById(action.target);
   if (!el) return;
 
@@ -55,25 +52,23 @@ function applyShowHide(
   // Modal intercept
   if (el.hasAttribute("data-modal")) {
     const ma =
-      action.direction === "show" ? "open" :
-      action.direction === "hide" ? "close" :
-      "toggle";
+      action.direction === "show" ? "open" : action.direction === "hide" ? "close" : "toggle";
     dispatchModal(el, ma);
     return;
   }
 
   if (action.direction === "tab") {
     const group = action.group || action.target;
-    document.querySelectorAll(`[data-tab-group="${group}"]`).forEach((panel) =>
-      hideElement(panel as HTMLElement, method)
-    );
+    document
+      .querySelectorAll(`[data-tab-group="${group}"]`)
+      .forEach(panel => hideElement(panel as HTMLElement, method));
     showElement(el, method);
 
     // Update active button states
     const button = e?.currentTarget as HTMLElement | undefined;
     const parent = button?.parentElement;
     if (parent) {
-      parent.querySelectorAll("[data-tab-button]").forEach((btn) => {
+      parent.querySelectorAll("[data-tab-button]").forEach(btn => {
         (btn as HTMLElement).setAttribute("data-tab-active", "false");
         (btn as HTMLElement).style.opacity = "0.6";
       });
@@ -193,13 +188,17 @@ export function addClickControls(
  * containers and closes siblings when one opens.
  */
 export function initAccordionGroups(root: Document | HTMLElement = document) {
-  root.querySelectorAll("[data-accordion-group]").forEach((wrapper) => {
-    wrapper.addEventListener("toggle", (e: Event) => {
-      const target = e.target as HTMLDetailsElement;
-      if (target.tagName !== "DETAILS" || !target.open) return;
-      wrapper.querySelectorAll("details[open]").forEach((d) => {
-        if (d !== target) (d as HTMLDetailsElement).open = false;
-      });
-    }, true);
+  root.querySelectorAll("[data-accordion-group]").forEach(wrapper => {
+    wrapper.addEventListener(
+      "toggle",
+      (e: Event) => {
+        const target = e.target as HTMLDetailsElement;
+        if (target.tagName !== "DETAILS" || !target.open) return;
+        wrapper.querySelectorAll("details[open]").forEach(d => {
+          if (d !== target) (d as HTMLDetailsElement).open = false;
+        });
+      },
+      true
+    );
   });
 }

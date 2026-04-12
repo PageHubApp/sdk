@@ -22,14 +22,12 @@ import {
   TbX,
 } from "react-icons/tb";
 import { SessionTokenAtom, SettingsAtom, ShowGridLinesAtom } from "utils/atoms";
-import {
-  ComponentsAtom,
-  LastctiveAtom,
-  SideBarAtom,
-  ViewModeAtom,
-} from "utils/lib";
+import { ComponentsAtom, LastctiveAtom, SideBarAtom, ViewModeAtom } from "utils/lib";
 import { useSetAtomState } from "../../utils/atoms";
-import { EDITOR_CANVAS_BREAKPOINT_PX, isEditorCanvasBreakpointView } from "../../utils/tailwind/className";
+import {
+  EDITOR_CANVAS_BREAKPOINT_PX,
+  isEditorCanvasBreakpointView,
+} from "../../utils/tailwind/className";
 import {
   finalizeToolboxHistorySelectionSync,
   markToolboxHistorySelectionSync,
@@ -274,7 +272,7 @@ export const Header = () => {
       <header
         ref={editorChromeNavRef}
         role="banner"
-        className="pointer-events-auto relative z-50 flex flex-row-reverse items-center justify-between border-b border-base-300 bg-base-100 px-1.5 py-1 text-base-content"
+        className="border-base-300 bg-base-100 text-base-content pointer-events-auto relative z-50 flex flex-row-reverse items-center justify-between border-b px-1.5 py-1"
         data-tutorial="header"
       >
         <Tooltip content="Add Component" placement="bottom" arrow={false}>
@@ -326,7 +324,7 @@ export const Header = () => {
 
         {animate && (
           <Tooltip content="Play Animations" placement="bottom" arrow={false}>
-            <Item ariaLabel="Play Animations" onClick={() => { }}>
+            <Item ariaLabel="Play Animations" onClick={() => {}}>
               <TbPlayerPlay />
             </Item>
           </Tooltip>
@@ -335,7 +333,7 @@ export const Header = () => {
         <ToolbarPortalDropdown
           openOn="hover"
           align="center"
-          className="min-w-[12rem] rounded-lg border border-base-300 bg-base-100 p-1 py-1.5 shadow-xl"
+          className="border-base-300 bg-base-100 min-w-[12rem] rounded-lg border p-1 py-1.5 shadow-xl"
           trigger={
             <button
               type="button"
@@ -346,7 +344,7 @@ export const Header = () => {
               {view === "mobile" && <TbDeviceMobile />}
               {(view === "desktop" || view === "tablet") && <TbDeviceDesktop />}
               {isEditorCanvasBreakpointView(view) && (
-                <span className="font-mono text-xs font-bold leading-none tracking-tight">
+                <span className="font-mono text-xs leading-none font-bold tracking-tight">
                   {view === "2xl" ? "2XL" : view.toUpperCase()}
                 </span>
               )}
@@ -354,31 +352,31 @@ export const Header = () => {
             </button>
           }
         >
-          <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-content">
+          <div className="text-neutral-content px-2 pb-1 text-[10px] font-semibold tracking-wide uppercase">
             Canvas width
           </div>
           <div className="ph-select-item-host">
-          {headerCanvasRows.map(row => (
-            <button
-              key={row.id}
-              type="button"
-              role="menuitemradio"
-              aria-checked={view === row.id}
-              onClick={() => {
-                setView(row.id as CanvasViewMode);
-                scrollSelectedNodeIntoView();
-              }}
-              className="ph-select-item items-start gap-2 text-xs"
-            >
-              <span className="flex size-4 shrink-0 items-center justify-center text-primary">
-                {view === row.id ? <TbCheck className="size-3.5" /> : null}
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col leading-tight">
-                <span className="font-medium">{row.label}</span>
-                <span className="text-[10px] text-neutral-content">{row.sub}</span>
-              </span>
-            </button>
-          ))}
+            {headerCanvasRows.map(row => (
+              <button
+                key={row.id}
+                type="button"
+                role="menuitemradio"
+                aria-checked={view === row.id}
+                onClick={() => {
+                  setView(row.id as CanvasViewMode);
+                  scrollSelectedNodeIntoView();
+                }}
+                className="ph-select-item items-start gap-2 text-xs"
+              >
+                <span className="text-primary flex size-4 shrink-0 items-center justify-center">
+                  {view === row.id ? <TbCheck className="size-3.5" /> : null}
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                  <span className="font-medium">{row.label}</span>
+                  <span className="text-neutral-content text-[10px]">{row.sub}</span>
+                </span>
+              </button>
+            ))}
           </div>
         </ToolbarPortalDropdown>
 
@@ -431,7 +429,7 @@ export const Header = () => {
 
                 // Un-isolate to show all pages
                 import("utils/lib").then(({ isolatePageAlt }) => {
-                  isolatePageAlt(true, query, null, actions, () => { }, false);
+                  isolatePageAlt(true, query, null, actions, () => {}, false);
                 });
 
                 // Show headers, footers, and pages
@@ -470,10 +468,7 @@ export const Header = () => {
         </Tooltip>
 
         <Tooltip content="Publish" placement="bottom" arrow={false}>
-          <Item
-            ariaLabel="Publish"
-            onClick={() => open("publish")}
-          >
+          <Item ariaLabel="Publish" onClick={() => open("publish")}>
             <SaveIndicator />
           </Item>
         </Tooltip>
@@ -496,7 +491,7 @@ export const Header = () => {
       </header>
 
       {/* Page/Component Selector Bar - Below Header */}
-      <div className="pointer-events-auto border-b border-base-300 bg-base-100 px-3 py-2">
+      <div className="border-base-300 bg-base-100 pointer-events-auto border-b px-3 py-2">
         {viewMode === "page" ? (
           <PageSelector className="w-full" />
         ) : (
@@ -505,7 +500,7 @@ export const Header = () => {
       </div>
 
       {/* Node Breadcrumb - Below Page/Component Selector */}
-      <div className="pointer-events-auto bg-base-100">
+      <div className="bg-base-100 pointer-events-auto">
         <NodeBreadcrumb />
       </div>
 

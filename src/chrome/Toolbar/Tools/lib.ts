@@ -19,7 +19,10 @@ export const useTypeProps = () => {
   return { setProp, nodeProps };
 };
 
-export const useGetTypeProp = (props: { propType?: string; [k: string]: unknown } = {}, nodeProps) => {
+export const useGetTypeProp = (
+  props: { propType?: string; [k: string]: unknown } = {},
+  nodeProps
+) => {
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
 

@@ -71,7 +71,7 @@ export function MoveableDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="moveable-dialog-title"
-        className="pagehub-sdk-root ph-panel-heavy pointer-events-auto absolute flex flex-col text-base-content"
+        className="pagehub-sdk-root ph-panel-heavy text-base-content pointer-events-auto absolute flex flex-col"
         style={{
           width,
           height,
@@ -85,7 +85,7 @@ export function MoveableDialog({
         <div
           role="presentation"
           aria-hidden="true"
-          className={`flex select-none items-center justify-between border-b border-base-300 bg-accent p-3 text-accent-content ${
+          className={`border-base-300 bg-accent text-accent-content flex items-center justify-between border-b p-3 select-none ${
             isDragging ? "cursor-grabbing" : "cursor-move"
           }`}
           data-draggable="true"
@@ -101,7 +101,7 @@ export function MoveableDialog({
             {headerRight}
             <button
               onClick={onClose}
-              className="flex items-center justify-center rounded-lg p-1 text-accent-content transition-colors hover:bg-accent-content/10"
+              className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors"
               aria-label="Close"
             >
               <TbX />
@@ -110,7 +110,7 @@ export function MoveableDialog({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-hidden rounded-b-lg bg-neutral text-neutral-content">
+        <div className="bg-neutral text-neutral-content flex-1 overflow-hidden rounded-b-lg">
           {children}
         </div>
       </div>

@@ -121,8 +121,9 @@ function init(config: PageHubConfig): PageHubInstance {
   injectTheme(resolved.containerEl, resolved.theme);
 
   // Mount React tree — UMD (script tags) may expose ReactDOM.createRoot; otherwise use ESM import.
-  const globalReactDom = (globalThis as typeof globalThis & { ReactDOM?: { createRoot?: typeof createRoot } })
-    .ReactDOM;
+  const globalReactDom = (
+    globalThis as typeof globalThis & { ReactDOM?: { createRoot?: typeof createRoot } }
+  ).ReactDOM;
   const root =
     typeof globalReactDom?.createRoot === "function"
       ? globalReactDom.createRoot(resolved.containerEl)
@@ -264,7 +265,12 @@ export { PageHubViewer, renderViewer } from "./viewer";
 
 // Component registration API
 export { defineComponent } from "./define";
-export type { ResolvedComponentDef, PropSchema, ComponentPreset, ComponentModifier } from "./define";
+export type {
+  ResolvedComponentDef,
+  PropSchema,
+  ComponentPreset,
+  ComponentModifier,
+} from "./define";
 
 // Type exports
 export type {

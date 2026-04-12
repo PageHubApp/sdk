@@ -5,7 +5,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import { TbPointer } from "react-icons/tb";
 import { Button as UiButton } from "@pagehub/ui";
 import { addActionHandlers } from "../utils/clickControls";
-import { migrateAction, actionToHref, actionTarget, isLinkAction, isHandlerAction, type NodeAction } from "../utils/action";
+import {
+  migrateAction,
+  actionToHref,
+  actionTarget,
+  isLinkAction,
+  isHandlerAction,
+  type NodeAction,
+} from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { resolveIcon } from "../utils/iconResolver";
 import {
@@ -129,8 +136,6 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     isActive: q.getEvent("selected").contains(id),
   }));
 
-
-
   const router = useRouter();
 
   props = setClonedProps(props, query);
@@ -231,7 +236,8 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
   const resolvedUrl = actionToHref(action, query, router?.asPath);
   const target = actionTarget(action);
 
-  const isInternalLink = resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
+  const isInternalLink =
+    resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
   let ele: any = resolvedUrl && typeof resolvedUrl === "string" ? "a" : "button";
 
   if (resolvedUrl && typeof resolvedUrl === "string") {
@@ -330,14 +336,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
       ]
         .filter(Boolean)
         .join(" "),
-    [
-      iconSize,
-      fontSize,
-      props.icon?.color,
-      props.icon?.shadow,
-      isGoogleIcon,
-      materialSymbolsReady,
-    ]
+    [iconSize, fontSize, props.icon?.color, props.icon?.shadow, isGoogleIcon, materialSymbolsReady]
   );
 
   // Always mount icon span for Google icons so width/height utilities reserve space
@@ -382,12 +381,10 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   // Use @pagehub/ui Button for actual button/link renders.
   // Keep "span" for editor mode and Link for Next.js internal navigation.
-  const renderComponent = (ele === "button" || ele === "a") ? UiButton : ele;
+  const renderComponent = ele === "button" || ele === "a" ? UiButton : ele;
 
   // Suppress UiButton's built-in variant/size classes — className is the source of truth.
-  const finalProps = renderComponent === UiButton
-    ? { ...final, variant: null, size: null }
-    : final;
+  const finalProps = renderComponent === UiButton ? { ...final, variant: null, size: null } : final;
 
   return React.createElement(motionIt(props, renderComponent, enabled), finalProps);
 };

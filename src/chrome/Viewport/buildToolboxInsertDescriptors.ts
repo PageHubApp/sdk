@@ -23,7 +23,16 @@ function presetChildren(preset: { children?: unknown }): unknown {
  */
 export function buildToolboxInsertDescriptors(
   toolboxCategories: Array<{ title: string; content: ResolvedComponentDef[] }> | undefined,
-  components: Array<{ name?: string; rootNodeId?: string; isSection?: boolean; nodes?: string; [k: string]: any }> | null | undefined
+  components:
+    | Array<{
+        name?: string;
+        rootNodeId?: string;
+        isSection?: boolean;
+        nodes?: string;
+        [k: string]: any;
+      }>
+    | null
+    | undefined
 ): ToolboxInsertDescriptor[] {
   const rows: ToolboxInsertDescriptor[] = [];
 

@@ -1,406 +1,425 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PageHub SDK demo — Templates API</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
-      min-height: 100vh;
-    }
-    .top {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 24px;
-      background: #1e293b;
-      border-bottom: 1px solid #334155;
-    }
-    .top h1 {
-      font-size: 16px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-right: 8px;
-    }
-    .top a.nav {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid #334155;
-      background: #0f172a;
-      color: #e2e8f0;
-      font-size: 12px;
-      font-weight: 500;
-      text-decoration: none;
-    }
-    .top a.nav:hover {
-      background: #334155;
-      border-color: #475569;
-    }
-    .wrap {
-      max-width: 56rem;
-      margin: 0 auto;
-      padding: 24px;
-    }
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-    }
-    .card h2 {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: #f1f5f9;
-    }
-    .muted {
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 16px;
-      line-height: 1.5;
-    }
-    label.lbl {
-      display: block;
-      font-size: 12px;
-      color: #94a3b8;
-      margin-bottom: 4px;
-    }
-    input.inp {
-      width: 100%;
-      max-width: 32rem;
-      padding: 8px 10px;
-      border-radius: 6px;
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #e2e8f0;
-      font-size: 14px;
-      outline: none;
-    }
-    input.inp:focus {
-      border-color: #475569;
-      box-shadow: 0 0 0 1px #475569;
-    }
-    .row {
-      margin-bottom: 14px;
-    }
-    .btns {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 16px;
-    }
-    button.btn {
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: 1px solid #334155;
-      background: #1e293b;
-      color: #e2e8f0;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    button.btn:hover {
-      background: #334155;
-    }
-    button.btn-primary {
-      background: #3b82f6;
-      border-color: #3b82f6;
-      color: white;
-    }
-    button.btn-primary:hover {
-      background: #2563eb;
-    }
-    .err {
-      color: #f87171;
-      font-size: 13px;
-      margin-top: 10px;
-    }
-    .list {
-      list-style: none;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .list li {
-      padding: 14px 16px;
-      border-bottom: 1px solid #334155;
-      background: #0f172a;
-    }
-    .list li:last-child {
-      border-bottom: none;
-    }
-    .list .title {
-      font-weight: 600;
-      color: #f8fafc;
-      font-size: 14px;
-    }
-    .list .desc {
-      font-size: 13px;
-      color: #94a3b8;
-      margin-top: 4px;
-    }
-    .list .slug {
-      font-family: ui-monospace, monospace;
-      font-size: 11px;
-      color: #64748b;
-      margin-top: 6px;
-    }
-    .list .actions {
-      margin-top: 10px;
-    }
-    .list a.open {
-      display: inline-block;
-      font-size: 12px;
-      color: #60a5fa;
-      text-decoration: none;
-    }
-    .list a.open:hover {
-      text-decoration: underline;
-    }
-    .loading {
-      font-size: 13px;
-      color: #94a3b8;
-    }
-    code.inline {
-      font-family: ui-monospace, monospace;
-      font-size: 12px;
-      background: #0f172a;
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid #334155;
-    }
-  </style>
-</head>
-<body>
-  <header class="top">
-    <h1>Templates API</h1>
-    <a class="nav" href="../index.html">Editor demo</a>
-    <span style="font-size:12px;color:#64748b;margin-left:auto;">SDK demo / templates</span>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PageHub SDK demo — Templates API</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        min-height: 100vh;
+      }
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 24px;
+        background: #1e293b;
+        border-bottom: 1px solid #334155;
+      }
+      .top h1 {
+        font-size: 16px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-right: 8px;
+      }
+      .top a.nav {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #334155;
+        background: #0f172a;
+        color: #e2e8f0;
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+      }
+      .top a.nav:hover {
+        background: #334155;
+        border-color: #475569;
+      }
+      .wrap {
+        max-width: 56rem;
+        margin: 0 auto;
+        padding: 24px;
+      }
+      .card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+      .card h2 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #f1f5f9;
+      }
+      .muted {
+        font-size: 13px;
+        color: #94a3b8;
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+      label.lbl {
+        display: block;
+        font-size: 12px;
+        color: #94a3b8;
+        margin-bottom: 4px;
+      }
+      input.inp {
+        width: 100%;
+        max-width: 32rem;
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: #e2e8f0;
+        font-size: 14px;
+        outline: none;
+      }
+      input.inp:focus {
+        border-color: #475569;
+        box-shadow: 0 0 0 1px #475569;
+      }
+      .row {
+        margin-bottom: 14px;
+      }
+      .btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 16px;
+      }
+      button.btn {
+        padding: 8px 14px;
+        border-radius: 6px;
+        border: 1px solid #334155;
+        background: #1e293b;
+        color: #e2e8f0;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      button.btn:hover {
+        background: #334155;
+      }
+      button.btn-primary {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+      }
+      button.btn-primary:hover {
+        background: #2563eb;
+      }
+      .err {
+        color: #f87171;
+        font-size: 13px;
+        margin-top: 10px;
+      }
+      .list {
+        list-style: none;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .list li {
+        padding: 14px 16px;
+        border-bottom: 1px solid #334155;
+        background: #0f172a;
+      }
+      .list li:last-child {
+        border-bottom: none;
+      }
+      .list .title {
+        font-weight: 600;
+        color: #f8fafc;
+        font-size: 14px;
+      }
+      .list .desc {
+        font-size: 13px;
+        color: #94a3b8;
+        margin-top: 4px;
+      }
+      .list .slug {
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 6px;
+      }
+      .list .actions {
+        margin-top: 10px;
+      }
+      .list a.open {
+        display: inline-block;
+        font-size: 12px;
+        color: #60a5fa;
+        text-decoration: none;
+      }
+      .list a.open:hover {
+        text-decoration: underline;
+      }
+      .loading {
+        font-size: 13px;
+        color: #94a3b8;
+      }
+      code.inline {
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        background: #0f172a;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid #334155;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <h1>Templates API</h1>
+      <a class="nav" href="../index.html">Editor demo</a>
+      <span style="font-size: 12px; color: #64748b; margin-left: auto">SDK demo / templates</span>
+    </header>
 
-  <div class="wrap">
-    <div class="card">
-      <h2>API base and key</h2>
-      <p class="muted">
-        Uses the same <code class="inline">localStorage</code> key as the editor demo (<code class="inline">pagehub-demo-config</code>).
-        Stock templates: <code class="inline">GET /api/v1/templates</code> (no key). Your sites: <code class="inline">GET /api/v1/sites</code> with <code class="inline">Authorization: Bearer ph_…</code>.
-      </p>
-      <div class="row">
-        <label class="lbl" for="apiBaseUrl">API base URL</label>
-        <input class="inp" id="apiBaseUrl" type="text" placeholder="https://pagehub.dev" autocomplete="off" />
+    <div class="wrap">
+      <div class="card">
+        <h2>API base and key</h2>
+        <p class="muted">
+          Uses the same <code class="inline">localStorage</code> key as the editor demo (<code
+            class="inline"
+            >pagehub-demo-config</code
+          >). Stock templates: <code class="inline">GET /api/v1/templates</code> (no key). Your
+          sites: <code class="inline">GET /api/v1/sites</code> with
+          <code class="inline">Authorization: Bearer ph_…</code>.
+        </p>
+        <div class="row">
+          <label class="lbl" for="apiBaseUrl">API base URL</label>
+          <input
+            class="inp"
+            id="apiBaseUrl"
+            type="text"
+            placeholder="https://pagehub.dev"
+            autocomplete="off"
+          />
+        </div>
+        <div class="row">
+          <label class="lbl" for="apiKey">API key (optional, for your sites)</label>
+          <input class="inp" id="apiKey" type="password" placeholder="ph_…" autocomplete="off" />
+        </div>
+        <div class="btns">
+          <button type="button" class="btn btn-primary" id="btnSaveConfig">
+            Save to editor demo config
+          </button>
+          <button type="button" class="btn" id="btnReloadTemplates">Reload stock templates</button>
+          <button type="button" class="btn" id="btnReloadSites">Reload my sites</button>
+        </div>
+        <p class="err" id="configMsg" style="display: none"></p>
       </div>
-      <div class="row">
-        <label class="lbl" for="apiKey">API key (optional, for your sites)</label>
-        <input class="inp" id="apiKey" type="password" placeholder="ph_…" autocomplete="off" />
+
+      <div class="card">
+        <h2>Stock templates</h2>
+        <p class="loading" id="templatesStatus">Loading…</p>
+        <p class="err" id="templatesErr" style="display: none"></p>
+        <ul class="list" id="templatesList" style="display: none"></ul>
       </div>
-      <div class="btns">
-        <button type="button" class="btn btn-primary" id="btnSaveConfig">Save to editor demo config</button>
-        <button type="button" class="btn" id="btnReloadTemplates">Reload stock templates</button>
-        <button type="button" class="btn" id="btnReloadSites">Reload my sites</button>
+
+      <div class="card">
+        <h2>Your sites</h2>
+        <p class="muted" id="sitesHint">Enter an API key and click &quot;Reload my sites&quot;.</p>
+        <p class="loading" id="sitesStatus" style="display: none"></p>
+        <p class="err" id="sitesErr" style="display: none"></p>
+        <ul class="list" id="sitesList" style="display: none"></ul>
       </div>
-      <p class="err" id="configMsg" style="display:none;"></p>
     </div>
 
-    <div class="card">
-      <h2>Stock templates</h2>
-      <p class="loading" id="templatesStatus">Loading…</p>
-      <p class="err" id="templatesErr" style="display:none;"></p>
-      <ul class="list" id="templatesList" style="display:none;"></ul>
-    </div>
+    <script>
+      (function () {
+        var CFG_KEY = "pagehub-demo-config";
+        var DEFAULT_BASE = "https://pagehub.dev";
 
-    <div class="card">
-      <h2>Your sites</h2>
-      <p class="muted" id="sitesHint">Enter an API key and click &quot;Reload my sites&quot;.</p>
-      <p class="loading" id="sitesStatus" style="display:none;"></p>
-      <p class="err" id="sitesErr" style="display:none;"></p>
-      <ul class="list" id="sitesList" style="display:none;"></ul>
-    </div>
-  </div>
-
-  <script>
-    (function () {
-      var CFG_KEY = 'pagehub-demo-config';
-      var DEFAULT_BASE = 'https://pagehub.dev';
-
-      function readConfig() {
-        try {
-          var s = localStorage.getItem(CFG_KEY);
-          if (s) return JSON.parse(s);
-        } catch (e) {}
-        return {};
-      }
-
-      function normBase(url) {
-        var u = (url || '').trim() || DEFAULT_BASE;
-        return u.replace(/\/$/, '');
-      }
-
-      function el(id) {
-        return document.getElementById(id);
-      }
-
-      function showErr(id, msg) {
-        var n = el(id);
-        if (!msg) {
-          n.style.display = 'none';
-          n.textContent = '';
-          return;
+        function readConfig() {
+          try {
+            var s = localStorage.getItem(CFG_KEY);
+            if (s) return JSON.parse(s);
+          } catch (e) {}
+          return {};
         }
-        n.textContent = msg;
-        n.style.display = 'block';
-      }
 
-      function fillForm() {
-        var c = readConfig();
-        el('apiBaseUrl').value = c.apiBaseUrl != null ? c.apiBaseUrl : DEFAULT_BASE;
-        el('apiKey').value = c.apiKey != null ? c.apiKey : '';
-      }
-
-      function saveMergedConfig() {
-        var base = normBase(el('apiBaseUrl').value);
-        var key = (el('apiKey').value || '').trim();
-        var cur = readConfig();
-        cur.apiBaseUrl = el('apiBaseUrl').value.trim() || DEFAULT_BASE;
-        cur.apiKey = key;
-        try {
-          localStorage.setItem(CFG_KEY, JSON.stringify(cur));
-          var cm = el('configMsg');
-          cm.style.display = 'block';
-          cm.style.color = '#4ade80';
-          cm.textContent = 'Saved. The editor demo will use these values on reload.';
-          setTimeout(function () {
-            cm.style.display = 'none';
-          }, 2500);
-        } catch (e) {
-          var cm2 = el('configMsg');
-          cm2.style.display = 'block';
-          cm2.style.color = '#f87171';
-          cm2.textContent = 'Could not save: ' + (e.message || String(e));
+        function normBase(url) {
+          var u = (url || "").trim() || DEFAULT_BASE;
+          return u.replace(/\/$/, "");
         }
-      }
 
-      function renderTemplates(items) {
-        var ul = el('templatesList');
-        ul.innerHTML = '';
-        items.forEach(function (t) {
-          var li = document.createElement('li');
-          var buildUrl = '../index.html?site=' + encodeURIComponent(t.slug);
-          li.innerHTML =
-            '<div class="title"></div>' +
-            '<div class="desc"></div>' +
-            '<div class="slug"></div>' +
-            '<div class="actions"><a class="open" target="_blank" rel="noopener noreferrer">Open in builder</a></div>';
-          li.querySelector('.title').textContent = t.title || t.slug;
-          li.querySelector('.desc').textContent = t.description || '—';
-          li.querySelector('.slug').textContent = t.slug;
-          var a = li.querySelector('a.open');
-          a.href = buildUrl;
-          ul.appendChild(li);
-        });
-        ul.style.display = items.length ? 'block' : 'none';
-      }
+        function el(id) {
+          return document.getElementById(id);
+        }
 
-      function renderSites(items) {
-        var ul = el('sitesList');
-        ul.innerHTML = '';
-        items.forEach(function (s) {
-          var li = document.createElement('li');
-          var buildUrl = '../index.html?site=' + encodeURIComponent(s._id);
-          var title = s.title || s.name || s._id;
-          li.innerHTML =
-            '<div class="title"></div>' +
-            (s.description ? '<div class="desc"></div>' : '') +
-            '<div class="slug"></div>' +
-            '<div class="actions"><a class="open" target="_blank" rel="noopener noreferrer">Open in builder</a></div>';
-          li.querySelector('.title').textContent = title;
-          if (s.description) li.querySelector('.desc').textContent = s.description;
-          li.querySelector('.slug').textContent = s._id;
-          li.querySelector('a.open').href = buildUrl;
-          ul.appendChild(li);
-        });
-        ul.style.display = items.length ? 'block' : 'none';
-      }
-
-      async function loadTemplates() {
-        showErr('templatesErr', '');
-        el('templatesStatus').style.display = 'block';
-        el('templatesStatus').textContent = 'Loading…';
-        el('templatesList').style.display = 'none';
-        var base = normBase(el('apiBaseUrl').value);
-        try {
-          var r = await fetch(base + '/api/v1/templates');
-          var data = await r.json().catch(function () {
-            return {};
-          });
-          if (!r.ok) throw new Error(data.error || 'HTTP ' + r.status);
-          var list = Array.isArray(data.templates) ? data.templates : [];
-          el('templatesStatus').style.display = 'none';
-          if (!list.length) {
-            el('templatesStatus').style.display = 'block';
-            el('templatesStatus').textContent = 'No templates returned.';
+        function showErr(id, msg) {
+          var n = el(id);
+          if (!msg) {
+            n.style.display = "none";
+            n.textContent = "";
             return;
           }
-          renderTemplates(list);
-        } catch (e) {
-          el('templatesStatus').style.display = 'none';
-          showErr('templatesErr', e.message || String(e));
+          n.textContent = msg;
+          n.style.display = "block";
         }
-      }
 
-      async function loadSites() {
-        showErr('sitesErr', '');
-        el('sitesHint').style.display = 'none';
-        var key = (el('apiKey').value || '').trim();
-        if (!key) {
-          el('sitesList').style.display = 'none';
-          el('sitesStatus').style.display = 'none';
-          el('sitesHint').style.display = 'block';
-          showErr('sitesErr', 'Add an API key first.');
-          return;
+        function fillForm() {
+          var c = readConfig();
+          el("apiBaseUrl").value = c.apiBaseUrl != null ? c.apiBaseUrl : DEFAULT_BASE;
+          el("apiKey").value = c.apiKey != null ? c.apiKey : "";
         }
-        el('sitesStatus').style.display = 'block';
-        el('sitesStatus').textContent = 'Loading sites…';
-        el('sitesList').style.display = 'none';
-        var base = normBase(el('apiBaseUrl').value);
-        try {
-          var r = await fetch(base + '/api/v1/sites', {
-            headers: { Authorization: 'Bearer ' + key },
+
+        function saveMergedConfig() {
+          var base = normBase(el("apiBaseUrl").value);
+          var key = (el("apiKey").value || "").trim();
+          var cur = readConfig();
+          cur.apiBaseUrl = el("apiBaseUrl").value.trim() || DEFAULT_BASE;
+          cur.apiKey = key;
+          try {
+            localStorage.setItem(CFG_KEY, JSON.stringify(cur));
+            var cm = el("configMsg");
+            cm.style.display = "block";
+            cm.style.color = "#4ade80";
+            cm.textContent = "Saved. The editor demo will use these values on reload.";
+            setTimeout(function () {
+              cm.style.display = "none";
+            }, 2500);
+          } catch (e) {
+            var cm2 = el("configMsg");
+            cm2.style.display = "block";
+            cm2.style.color = "#f87171";
+            cm2.textContent = "Could not save: " + (e.message || String(e));
+          }
+        }
+
+        function renderTemplates(items) {
+          var ul = el("templatesList");
+          ul.innerHTML = "";
+          items.forEach(function (t) {
+            var li = document.createElement("li");
+            var buildUrl = "../index.html?site=" + encodeURIComponent(t.slug);
+            li.innerHTML =
+              '<div class="title"></div>' +
+              '<div class="desc"></div>' +
+              '<div class="slug"></div>' +
+              '<div class="actions"><a class="open" target="_blank" rel="noopener noreferrer">Open in builder</a></div>';
+            li.querySelector(".title").textContent = t.title || t.slug;
+            li.querySelector(".desc").textContent = t.description || "—";
+            li.querySelector(".slug").textContent = t.slug;
+            var a = li.querySelector("a.open");
+            a.href = buildUrl;
+            ul.appendChild(li);
           });
-          var data = await r.json().catch(function () {
-            return {};
+          ul.style.display = items.length ? "block" : "none";
+        }
+
+        function renderSites(items) {
+          var ul = el("sitesList");
+          ul.innerHTML = "";
+          items.forEach(function (s) {
+            var li = document.createElement("li");
+            var buildUrl = "../index.html?site=" + encodeURIComponent(s._id);
+            var title = s.title || s.name || s._id;
+            li.innerHTML =
+              '<div class="title"></div>' +
+              (s.description ? '<div class="desc"></div>' : "") +
+              '<div class="slug"></div>' +
+              '<div class="actions"><a class="open" target="_blank" rel="noopener noreferrer">Open in builder</a></div>';
+            li.querySelector(".title").textContent = title;
+            if (s.description) li.querySelector(".desc").textContent = s.description;
+            li.querySelector(".slug").textContent = s._id;
+            li.querySelector("a.open").href = buildUrl;
+            ul.appendChild(li);
           });
-          if (!r.ok) throw new Error(data.error || 'HTTP ' + r.status);
-          var list = Array.isArray(data.sites) ? data.sites : [];
-          el('sitesStatus').style.display = 'none';
-          if (!list.length) {
-            el('sitesStatus').style.display = 'block';
-            el('sitesStatus').textContent = 'No sites for this key.';
+          ul.style.display = items.length ? "block" : "none";
+        }
+
+        async function loadTemplates() {
+          showErr("templatesErr", "");
+          el("templatesStatus").style.display = "block";
+          el("templatesStatus").textContent = "Loading…";
+          el("templatesList").style.display = "none";
+          var base = normBase(el("apiBaseUrl").value);
+          try {
+            var r = await fetch(base + "/api/v1/templates");
+            var data = await r.json().catch(function () {
+              return {};
+            });
+            if (!r.ok) throw new Error(data.error || "HTTP " + r.status);
+            var list = Array.isArray(data.templates) ? data.templates : [];
+            el("templatesStatus").style.display = "none";
+            if (!list.length) {
+              el("templatesStatus").style.display = "block";
+              el("templatesStatus").textContent = "No templates returned.";
+              return;
+            }
+            renderTemplates(list);
+          } catch (e) {
+            el("templatesStatus").style.display = "none";
+            showErr("templatesErr", e.message || String(e));
+          }
+        }
+
+        async function loadSites() {
+          showErr("sitesErr", "");
+          el("sitesHint").style.display = "none";
+          var key = (el("apiKey").value || "").trim();
+          if (!key) {
+            el("sitesList").style.display = "none";
+            el("sitesStatus").style.display = "none";
+            el("sitesHint").style.display = "block";
+            showErr("sitesErr", "Add an API key first.");
             return;
           }
-          renderSites(list);
-        } catch (e) {
-          el('sitesStatus').style.display = 'none';
-          showErr('sitesErr', e.message || String(e));
+          el("sitesStatus").style.display = "block";
+          el("sitesStatus").textContent = "Loading sites…";
+          el("sitesList").style.display = "none";
+          var base = normBase(el("apiBaseUrl").value);
+          try {
+            var r = await fetch(base + "/api/v1/sites", {
+              headers: { Authorization: "Bearer " + key },
+            });
+            var data = await r.json().catch(function () {
+              return {};
+            });
+            if (!r.ok) throw new Error(data.error || "HTTP " + r.status);
+            var list = Array.isArray(data.sites) ? data.sites : [];
+            el("sitesStatus").style.display = "none";
+            if (!list.length) {
+              el("sitesStatus").style.display = "block";
+              el("sitesStatus").textContent = "No sites for this key.";
+              return;
+            }
+            renderSites(list);
+          } catch (e) {
+            el("sitesStatus").style.display = "none";
+            showErr("sitesErr", e.message || String(e));
+          }
         }
-      }
 
-      fillForm();
-      loadTemplates();
-
-      el('btnSaveConfig').addEventListener('click', saveMergedConfig);
-      el('btnReloadTemplates').addEventListener('click', function () {
+        fillForm();
         loadTemplates();
-      });
-      el('btnReloadSites').addEventListener('click', loadSites);
-    })();
-  </script>
-</body>
+
+        el("btnSaveConfig").addEventListener("click", saveMergedConfig);
+        el("btnReloadTemplates").addEventListener("click", function () {
+          loadTemplates();
+        });
+        el("btnReloadSites").addEventListener("click", loadSites);
+      })();
+    </script>
+  </body>
 </html>

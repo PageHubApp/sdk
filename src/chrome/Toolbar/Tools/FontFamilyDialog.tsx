@@ -219,11 +219,11 @@ export const FontFamilyDialog = () => {
       <div style={style}>
         <button
           id={`fontFamily-${font}`}
-          className={`flex w-full cursor-pointer flex-row truncate whitespace-nowrap rounded-lg p-1 text-xs text-neutral-content transition-colors hover:bg-neutral ${
+          className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row truncate rounded-lg p-1 text-xs whitespace-nowrap transition-colors ${
             JSON.stringify(dialog.value) === JSON.stringify(font)
               ? "bg-primary text-primary-content"
               : ""
-          } ${hoveredIndex === index ? "border border-primary/20 bg-primary/10" : ""}`}
+          } ${hoveredIndex === index ? "border-primary/20 bg-primary/10 border" : ""}`}
           style={{
             fontFamily: font.join(", "),
             fontSize: "14px",
@@ -236,7 +236,7 @@ export const FontFamilyDialog = () => {
           onMouseLeave={handleMouseLeave}
         >
           <span className="flex-1 text-left">{font.join(", ")}</span>
-          {hoveredIndex === index && <span className="ml-2 text-xs text-primary/60">Preview</span>}
+          {hoveredIndex === index && <span className="text-primary/60 ml-2 text-xs">Preview</span>}
         </button>
       </div>
     );
@@ -273,12 +273,17 @@ export const FontFamilyDialog = () => {
   return ReactDOM.createPortal(
     <>
       {/* Backdrop to close dialog when clicking outside */}
-      <div role="presentation" aria-hidden="true" className="pointer-events-auto fixed inset-0 z-9999" onClick={closeDialog} />
+      <div
+        role="presentation"
+        aria-hidden="true"
+        className="pointer-events-auto fixed inset-0 z-9999"
+        onClick={closeDialog}
+      />
 
       <div style={style} className="pagehub-sdk-root pointer-events-auto z-10000">
         <div className="ph-panel overflow-hidden p-0">
           {/* Search and Category Filter */}
-          <div className="shrink-0 border-b border-base-300 bg-neutral px-2 pb-1 pt-2">
+          <div className="border-base-300 bg-neutral shrink-0 border-b px-2 pt-2 pb-1">
             <div className="flex gap-2">
               <input
                 type="text"

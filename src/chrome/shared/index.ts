@@ -8,4 +8,8 @@ export {
 export { SidebarFlyoutSurface } from "./SidebarFlyoutSurface";
 export { SidebarTabPanel } from "./SidebarTabPanel";
 export { SidebarTabsPane } from "./SidebarTabsPane";
-export type { SidebarTabDensity, SidebarTabsPaneItem, SidebarTabsPaneProps } from "./SidebarTabsPane";
+export type {
+  SidebarTabDensity,
+  SidebarTabsPaneItem,
+  SidebarTabsPaneProps,
+} from "./SidebarTabsPane";

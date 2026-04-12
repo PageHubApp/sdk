@@ -32,14 +32,25 @@ const CSS_TRIGGER_OPTIONS = [
   { value: "hover", label: "On Hover" },
 ];
 
-const ANIMATION_PARAM_KEYS = ["animationDuration", "animationDelay", "animationEasing", "animationTrigger", "animationLoop", "animationStagger", "animationExit"];
+const ANIMATION_PARAM_KEYS = [
+  "animationDuration",
+  "animationDelay",
+  "animationEasing",
+  "animationTrigger",
+  "animationLoop",
+  "animationStagger",
+  "animationExit",
+];
 
 // Group CSS presets by category
-const cssGroups = Object.entries(cssAnimationPresets).reduce((acc, [key, preset]) => {
-  if (!acc[preset.group]) acc[preset.group] = [];
-  acc[preset.group].push({ key, ...preset });
-  return acc;
-}, {} as Record<string, Array<{ key: string } & typeof cssAnimationPresets[string]>>);
+const cssGroups = Object.entries(cssAnimationPresets).reduce(
+  (acc, [key, preset]) => {
+    if (!acc[preset.group]) acc[preset.group] = [];
+    acc[preset.group].push({ key, ...preset });
+    return acc;
+  },
+  {} as Record<string, Array<{ key: string } & (typeof cssAnimationPresets)[string]>>
+);
 
 const SCROLL_TIMELINE_TIMING = [
   { value: "early", label: "Early (0–33%)", start: 0, end: 33 },
@@ -61,7 +72,9 @@ function useParentScrollTimeline(): boolean {
       // Walk up — check if this parent's parent is a timeline section
       parentId = parent?.data?.parent;
     }
-  } catch { /* node not found */ }
+  } catch {
+    /* node not found */
+  }
   return false;
 }
 
@@ -89,25 +102,40 @@ export const AnimationsInput = () => {
       if (!p.root) p.root = {};
       p.root.animationEngine = newEngine;
       p.root.animation = "";
-      ANIMATION_PARAM_KEYS.forEach(k => { delete p.root[k]; });
+      ANIMATION_PARAM_KEYS.forEach(k => {
+        delete p.root[k];
+      });
     });
   };
 
   const resetParams = () => {
     setProp(p => {
-      ANIMATION_PARAM_KEYS.forEach(k => { delete p.root[k]; });
+      ANIMATION_PARAM_KEYS.forEach(k => {
+        delete p.root[k];
+      });
     });
   };
 
   // Hover presets don't use @keyframes so easing/trigger don't apply
   const isHoverPreset = isCSS && cssAnimationPresets[currentAnimation]?.trigger === "hover";
-  const isContinuousPreset = isCSS && cssAnimationPresets[currentAnimation]?.trigger === "continuous";
+  const isContinuousPreset =
+    isCSS && cssAnimationPresets[currentAnimation]?.trigger === "continuous";
 
   return (
     <>
       {isInScrollTimeline && (
-        <ToolbarSection enabled={true} title="Scroll Timeline" icon={<TbTimeline />} help="Animate this element as the parent section scrolls. Pick what happens and when.">
-          <ToolbarItem propKey="root.scrollTimeline.preset" propType="component" type="select" label="Animation">
+        <ToolbarSection
+          enabled={true}
+          title="Scroll Timeline"
+          icon={<TbTimeline />}
+          help="Animate this element as the parent section scrolls. Pick what happens and when."
+        >
+          <ToolbarItem
+            propKey="root.scrollTimeline.preset"
+            propType="component"
+            type="select"
+            label="Animation"
+          >
             <option value="">None</option>
             <option value="fadeIn">Fade In</option>
             <option value="fadeOut">Fade Out</option>
@@ -122,7 +150,11 @@ export const AnimationsInput = () => {
           </ToolbarItem>
 
           {stConfig?.preset && (
-            <ToolbarItem propKey="root.scrollTimeline._timing" propType="component" type="select" label="Timing"
+            <ToolbarItem
+              propKey="root.scrollTimeline._timing"
+              propType="component"
+              type="select"
+              label="Timing"
               onChange={(val: string) => {
                 const timing = SCROLL_TIMELINE_TIMING.find(t => t.value === val);
                 if (timing) {
@@ -137,14 +169,21 @@ export const AnimationsInput = () => {
               }}
             >
               {SCROLL_TIMELINE_TIMING.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
               ))}
             </ToolbarItem>
           )}
         </ToolbarSection>
       )}
 
-      <ToolbarSection enabled={true} title="Animation" icon={<TbBolt />} help="Animate this element when it scrolls into view.">
+      <ToolbarSection
+        enabled={true}
+        title="Animation"
+        icon={<TbBolt />}
+        help="Animate this element when it scrolls into view."
+      >
         <div className="mb-2">
           <ToolbarSegmentedControl
             dense
@@ -165,7 +204,9 @@ export const AnimationsInput = () => {
             {Object.entries(cssGroups).map(([group, presets]) => (
               <optgroup key={group} label={group}>
                 {presets.map(p => (
-                  <option key={p.key} value={p.key}>{p.label}</option>
+                  <option key={p.key} value={p.key}>
+                    {p.label}
+                  </option>
                 ))}
               </optgroup>
             ))}
@@ -209,7 +250,11 @@ export const AnimationsInput = () => {
               min={0.1}
               max={2}
               step={0.1}
-              append={<span className="w-8 text-right text-[10px] text-neutral-content">{props.root?.animationDuration || "—"}s</span>}
+              append={
+                <span className="text-neutral-content w-8 text-right text-[10px]">
+                  {props.root?.animationDuration || "—"}s
+                </span>
+              }
             />
             {!isHoverPreset && (
               <ToolbarItem
@@ -220,20 +265,28 @@ export const AnimationsInput = () => {
                 min={0}
                 max={1}
                 step={0.05}
-                append={<span className="w-8 text-right text-[10px] text-neutral-content">{props.root?.animationDelay || "0"}s</span>}
+                append={
+                  <span className="text-neutral-content w-8 text-right text-[10px]">
+                    {props.root?.animationDelay || "0"}s
+                  </span>
+                }
               />
             )}
             {!isHoverPreset && (
               <ToolbarItem propType="root" propKey="animationEasing" type="select" label="Easing">
                 {EASING_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
                 ))}
               </ToolbarItem>
             )}
             {!isHoverPreset && !isContinuousPreset && (
               <ToolbarItem propType="root" propKey="animationTrigger" type="select" label="Trigger">
                 {(isCSS ? CSS_TRIGGER_OPTIONS : TRIGGER_OPTIONS).map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
                 ))}
               </ToolbarItem>
             )}
@@ -258,7 +311,11 @@ export const AnimationsInput = () => {
                 min={0}
                 max={0.5}
                 step={0.02}
-                append={<span className="w-8 text-right text-[10px] text-neutral-content">{props.root?.animationStagger || "0"}s</span>}
+                append={
+                  <span className="text-neutral-content w-8 text-right text-[10px]">
+                    {props.root?.animationStagger || "0"}s
+                  </span>
+                }
               />
             )}
 
@@ -278,7 +335,7 @@ export const AnimationsInput = () => {
               <button
                 type="button"
                 onClick={resetParams}
-                className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
+                className="text-neutral-content hover:bg-neutral hover:text-base-content mt-1 flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-1 text-[11px] transition-colors"
               >
                 <TbRotate size={12} />
                 Reset to defaults
@@ -288,21 +345,23 @@ export const AnimationsInput = () => {
         )}
 
         {/* Live preview */}
-        {hasAnimation && (() => {
-          const animProps = applyAnimation({}, props);
-          // Force-unpause scroll animations in the preview so they play immediately
-          if (animProps.className?.includes("ph-anim-scroll")) {
-            animProps.className = animProps.className.replace("ph-anim-scroll", "").trim() + " ph-in-view";
-            delete animProps.ref;
-          }
-          return React.createElement(
-            motionIt(props, "div"),
-            { ...animProps, key: currentAnimation },
-            <div className="mx-auto mt-6 flex size-24 items-center justify-center rounded-2xl bg-neutral text-neutral-content">
-              Test
-            </div>
-          );
-        })()}
+        {hasAnimation &&
+          (() => {
+            const animProps = applyAnimation({}, props);
+            // Force-unpause scroll animations in the preview so they play immediately
+            if (animProps.className?.includes("ph-anim-scroll")) {
+              animProps.className =
+                animProps.className.replace("ph-anim-scroll", "").trim() + " ph-in-view";
+              delete animProps.ref;
+            }
+            return React.createElement(
+              motionIt(props, "div"),
+              { ...animProps, key: currentAnimation },
+              <div className="bg-neutral text-neutral-content mx-auto mt-6 flex size-24 items-center justify-center rounded-2xl">
+                Test
+              </div>
+            );
+          })()}
       </ToolbarSection>
     </>
   );

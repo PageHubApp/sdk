@@ -93,19 +93,19 @@ const COMPONENT_SECTIONS = ["Content", "Type"] as const;
  */
 export const ADVANCED_COMPONENT_SECTIONS = ["Properties"] as const;
 
-export type ComponentSlotName = (typeof COMPONENT_SECTIONS)[number] | (typeof ADVANCED_COMPONENT_SECTIONS)[number];
+export type ComponentSlotName =
+  | (typeof COMPONENT_SECTIONS)[number]
+  | (typeof ADVANCED_COMPONENT_SECTIONS)[number];
 
 /**
  * Renders component-specific sections in the guaranteed standard order.
  * Pass a map of slot name → ReactNode for sections you want filled.
  * Every slot not in the map gets a "not available" placeholder.
  */
-export function renderComponentSlots(
-  slots: Partial<Record<ComponentSlotName, React.ReactNode>>
-) {
+export function renderComponentSlots(slots: Partial<Record<ComponentSlotName, React.ReactNode>>) {
   return (
     <>
-      {COMPONENT_SECTIONS.map((title) => (
+      {COMPONENT_SECTIONS.map(title => (
         <React.Fragment key={title}>
           {slots[title] !== undefined ? slots[title] : renderNA(title)}
         </React.Fragment>
@@ -122,11 +122,15 @@ export function renderAdvancedComponentSlots(
 ) {
   return (
     <>
-      {ADVANCED_COMPONENT_SECTIONS.map((title) => {
+      {ADVANCED_COMPONENT_SECTIONS.map(title => {
         if (title === "Properties" && slots[title] === undefined) {
           return (
             <React.Fragment key={title}>
-              <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]} help="Custom properties for this component.">
+              <ToolbarSection
+                title="Properties"
+                icon={SECTION_ICONS["Properties"]}
+                help="Custom properties for this component."
+              >
                 <PropertiesInput />
               </ToolbarSection>
             </React.Fragment>
@@ -153,12 +157,14 @@ export function SealToggle() {
 
   return (
     <button
-      className="flex items-center gap-1.5 w-full px-3 py-2 text-xs rounded border border-base-300 hover:bg-neutral transition-colors"
+      className="border-base-300 hover:bg-neutral flex w-full items-center gap-1.5 rounded border px-3 py-2 text-xs transition-colors"
       onClick={() => {
-        actions.setCustom(id, (custom: any) => { custom.sealed = !custom.sealed; });
+        actions.setCustom(id, (custom: any) => {
+          custom.sealed = !custom.sealed;
+        });
       }}
     >
-      {isSealed ? <TbLockOpen className="w-3.5 h-3.5" /> : <TbLock className="w-3.5 h-3.5" />}
+      {isSealed ? <TbLockOpen className="h-3.5 w-3.5" /> : <TbLock className="h-3.5 w-3.5" />}
       {isSealed ? "Unseal — show child layers" : "Seal — hide child layers"}
     </button>
   );

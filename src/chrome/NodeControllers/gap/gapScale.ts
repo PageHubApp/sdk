@@ -48,7 +48,7 @@ export const TAILWIND_GAPS: GapEntry[] = [
 
 /** Lookup from gap class name to pixel value. */
 export const GAP_CLASS_TO_PX: Record<string, number> = Object.fromEntries(
-  TAILWIND_GAPS.map(g => [g.class, g.px]),
+  TAILWIND_GAPS.map(g => [g.class, g.px])
 );
 
 /** Snap a pixel value to the nearest Tailwind gap class. */

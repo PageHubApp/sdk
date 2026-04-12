@@ -24,23 +24,72 @@ export const PaddingInput = ({ propKey = "padding" }) => {
         footer={
           <ItemAdvanceToggle propKey={propKey} title="More padding properties">
             <ToolbarSection full={2} collapsible={false}>
-              <UniversalInput propKey="pt" propTag="pt" allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]} label="Top" showVarSelector={true} inline />
-              <UniversalInput propKey="pb" propTag="pb" allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]} label="Bottom" showVarSelector={true} inline />
-              <UniversalInput propKey="pl" propTag="pl" allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]} label="Left" showVarSelector={true} inline />
-              <UniversalInput propKey="pr" propTag="pr" allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]} label="Right" showVarSelector={true} inline />
+              <UniversalInput
+                propKey="pt"
+                propTag="pt"
+                allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]}
+                label="Top"
+                showVarSelector={true}
+                inline
+              />
+              <UniversalInput
+                propKey="pb"
+                propTag="pb"
+                allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]}
+                label="Bottom"
+                showVarSelector={true}
+                inline
+              />
+              <UniversalInput
+                propKey="pl"
+                propTag="pl"
+                allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]}
+                label="Left"
+                showVarSelector={true}
+                inline
+              />
+              <UniversalInput
+                propKey="pr"
+                propTag="pr"
+                allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]}
+                label="Right"
+                showVarSelector={true}
+                inline
+              />
             </ToolbarSection>
           </ItemAdvanceToggle>
         }
       >
-        <UniversalInput propKey="p" propTag="p" allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]} label="All Sides" showVarSelector={true} inline />
-        <UniversalInput propKey="px" propTag="px" allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]} label="Horizontal" showVarSelector={true} inline />
-        <UniversalInput propKey="py" propTag="py" allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]} label="Vertical" showVarSelector={true} inline />
+        <UniversalInput
+          propKey="p"
+          propTag="p"
+          allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]}
+          label="All Sides"
+          showVarSelector={true}
+          inline
+        />
+        <UniversalInput
+          propKey="px"
+          propTag="px"
+          allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]}
+          label="Horizontal"
+          showVarSelector={true}
+          inline
+        />
+        <UniversalInput
+          propKey="py"
+          propTag="py"
+          allowedTypes={["tailwind", "calc", "px", "em", "rem", "%"]}
+          label="Vertical"
+          showVarSelector={true}
+          inline
+        />
       </ToolbarSection>
 
       {view === "mobile" &&
         TailwindStyles.px.indexOf(propValues[view]?.px) > TailwindStyles.px.indexOf("px-3") && (
           <ToolbarSection>
-            <div className="flex items-center gap-3 text-xs text-neutral-content">
+            <div className="text-neutral-content flex items-center gap-3 text-xs">
               <TbInfoSquare /> Padding may be too large for mobile.
             </div>
           </ToolbarSection>

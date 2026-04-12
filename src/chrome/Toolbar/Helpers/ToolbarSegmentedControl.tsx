@@ -37,7 +37,7 @@ export function ToolbarSegmentedControl<T extends string>({
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className={`flex w-full min-w-0 gap-1 rounded-md bg-neutral p-1 ${className}`}
+      className={`bg-neutral flex w-full min-w-0 gap-1 rounded-md p-1 ${className}`}
     >
       {options.map(opt => {
         const selected = value === opt.value;
@@ -51,8 +51,8 @@ export function ToolbarSegmentedControl<T extends string>({
             onClick={() => onChange(opt.value)}
             className={
               dense
-                ? `flex min-w-0 flex-1 items-center justify-center gap-1 rounded px-2 py-2 text-[11px] font-medium leading-tight transition-colors ${selected ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE}`
-                : `flex min-w-0 flex-1 items-center justify-center gap-1 rounded px-2 py-2 text-xs font-medium leading-tight transition-colors ${selected ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE}`
+                ? `flex min-w-0 flex-1 items-center justify-center gap-1 rounded px-2 py-2 text-[11px] leading-tight font-medium transition-colors ${selected ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE}`
+                : `flex min-w-0 flex-1 items-center justify-center gap-1 rounded px-2 py-2 text-xs leading-tight font-medium transition-colors ${selected ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE}`
             }
           >
             {opt.label}

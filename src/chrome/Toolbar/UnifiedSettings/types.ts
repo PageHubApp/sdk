@@ -8,12 +8,27 @@ import type { ComponentModifier } from "../../../define";
 
 export type HideKey =
   // Appearance granular
-  | "textColor" | "bgColor" | "placeholderColor" | "font" | "background" | "pattern"
-  | "border" | "shadow" | "radius" | "opacity" | "cursor" | "ringOutline"
+  | "textColor"
+  | "bgColor"
+  | "placeholderColor"
+  | "font"
+  | "background"
+  | "pattern"
+  | "border"
+  | "shadow"
+  | "radius"
+  | "opacity"
+  | "cursor"
+  | "ringOutline"
   // Whole-tab hides
-  | "hoverClick" | "animations" | "effectsClass" | "accessibility" | "modifiers"
+  | "hoverClick"
+  | "animations"
+  | "effectsClass"
+  | "accessibility"
+  | "modifiers"
   // Style granular
-  | "typeInput" | "importExport";
+  | "typeInput"
+  | "importExport";
 
 export interface ToolbarConfig {
   /** Icon component, element, or legacy string name */

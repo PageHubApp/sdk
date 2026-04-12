@@ -42,7 +42,10 @@ export function shouldDelegateCopyToBrowser(): boolean {
   return Boolean(sel && sel.toString().trim().length > 0);
 }
 
-export function shouldDelegateCraftChordToBrowser(e: KeyboardEvent, kind: "copy" | "paste"): boolean {
+export function shouldDelegateCraftChordToBrowser(
+  e: KeyboardEvent,
+  kind: "copy" | "paste"
+): boolean {
   if (e.defaultPrevented) return true;
   const t = e.target;
   if (isFormFieldOrRichTextTarget(t)) return true;

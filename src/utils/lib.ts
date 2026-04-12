@@ -83,9 +83,11 @@ export const SideBarOpen = atom<boolean>("sidebaropen", true);
 /** Canvas scope for component editor / isolation — not the same as responsive viewport `ViewMode` in store.tsx */
 export type EditorCanvasViewMode = "page" | "preview" | "component";
 export const ViewModeAtom = atom<EditorCanvasViewMode>("viewMode", "page");
-export type OpenComponentEditorState =
-  | null
-  | { componentId?: string; componentName?: string; draftId?: string };
+export type OpenComponentEditorState = null | {
+  componentId?: string;
+  componentName?: string;
+  draftId?: string;
+};
 export const OpenComponentEditorAtom = atom<any>("openComponentEditor", null);
 export const LastctiveAtom = atom<string>("lastActive", "");
 export const ActiveAtom = atom<string>("active", "");
@@ -95,8 +97,11 @@ export const SelectedSectionAtom = atom<string | null>("selectedSection", null);
 
 type SubmissionHandler = (submission: any, settings: any, additional?: any) => Promise<any> | void;
 let _saveSubmissions: SubmissionHandler = () => {};
-export const registerSubmissionHandler = (fn: SubmissionHandler) => { _saveSubmissions = fn; };
-export const SaveSubmissions = (submission: any, settings: any, additional?: any) => _saveSubmissions(submission, settings, additional);
+export const registerSubmissionHandler = (fn: SubmissionHandler) => {
+  _saveSubmissions = fn;
+};
+export const SaveSubmissions = (submission: any, settings: any, additional?: any) =>
+  _saveSubmissions(submission, settings, additional);
 
 // ─── Stylesheet helpers ─────────────────────────────────────────────────
 
@@ -135,7 +140,11 @@ export const useAutoOpenMenu = (menu: any, setMenu: any, id: string, node: any) 
   }, [menu.id, id, node.data.parent, setMenu]);
 };
 
-export const useDefaultTab = (head: any[], activeTab: string, setActiveTab: (t: string) => void) => {
+export const useDefaultTab = (
+  head: any[],
+  activeTab: string,
+  setActiveTab: (t: string) => void
+) => {
   useEffect(() => {
     if (!head || head.length === 0) return;
     const activeTabExists = head.some((tab: any) => tab.title === activeTab);
@@ -145,7 +154,11 @@ export const useDefaultTab = (head: any[], activeTab: string, setActiveTab: (t: 
   }, [head, activeTab, setActiveTab]);
 };
 
-export const useScrollToActiveTab = (activeTab: string, setActiveSection: any, nodeId: string | null = null) => {
+export const useScrollToActiveTab = (
+  activeTab: string,
+  setActiveSection: any,
+  nodeId: string | null = null
+) => {
   const [isInitialMount, setIsInitialMount] = React.useState(true);
 
   useEffect(
@@ -207,7 +220,8 @@ export const popupCenter = (url: string, title: string) => {
   const top = (screenHeight - popupHeight) / 2 + dualScreenTop;
 
   const newWindow = window.open(
-    url, title,
+    url,
+    title,
     `width=${popupWidth},height=${popupHeight},top=${top},left=${left},scrollbars=no,resizable=no,toolbar=no,menubar=no,location=no,status=no`
   );
   newWindow?.focus();

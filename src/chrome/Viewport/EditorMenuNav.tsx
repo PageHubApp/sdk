@@ -6,7 +6,7 @@ export const EDITOR_MENU_NAV_ROW_CLASS =
 
 export function EditorMenuSectionLabel({ children }: { children: string }) {
   return (
-    <div className="px-3 pb-1 pt-3 text-[10px] font-medium uppercase tracking-widest text-neutral-content/60">
+    <div className="text-neutral-content/60 px-3 pt-3 pb-1 text-[10px] font-medium tracking-widest uppercase">
       {children}
     </div>
   );
@@ -16,12 +16,16 @@ const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(na
 
 const formatKbd = (mac: string) => {
   if (isMac) return mac;
-  return mac.replace(/⌘/g, "Ctrl+").replace(/⇧/g, "Shift+").replace(/⌥/g, "Alt+").replace(/\+$/, "");
+  return mac
+    .replace(/⌘/g, "Ctrl+")
+    .replace(/⇧/g, "Shift+")
+    .replace(/⌥/g, "Alt+")
+    .replace(/\+$/, "");
 };
 
 export function EditorMenuKbd({ children, win }: { children: string; win?: string }) {
   return (
-    <kbd className="ml-auto rounded border border-base-300 bg-neutral px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-base-content/80">
+    <kbd className="border-base-300 bg-neutral text-base-content/80 ml-auto rounded border px-1.5 py-0.5 text-[10px] font-medium tracking-wide">
       {win && !isMac ? win : formatKbd(children)}
     </kbd>
   );

@@ -32,7 +32,11 @@ export function VariablePopover({
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (ref.current && !ref.current.contains(target) && !target.closest("[data-headlessui-state]")) {
+      if (
+        ref.current &&
+        !ref.current.contains(target) &&
+        !target.closest("[data-headlessui-state]")
+      ) {
         onClose();
       }
     };
@@ -71,7 +75,7 @@ export function VariablePopover({
 
       <Listbox
         value={currentId}
-        onChange={(newId) => {
+        onChange={newId => {
           onChangeVariable(newId);
           onClose();
         }}
@@ -89,17 +93,14 @@ export function VariablePopover({
           modal={false}
         >
           {variables.map(v => (
-            <ListboxOption
-              key={v.id}
-              value={v.id}
-              className="ph-select-item"
-            >
+            <ListboxOption key={v.id} value={v.id} className="ph-select-item">
               {({ selected }) => (
                 <>
                   <span className="flex w-4 shrink-0 items-center justify-center">
                     {selected && <TbCheck size={12} />}
                   </span>
-                  {v.label} — <span className="font-mono text-[10px] opacity-60">{`{{${v.id}}}`}</span>
+                  {v.label} —{" "}
+                  <span className="font-mono text-[10px] opacity-60">{`{{${v.id}}}`}</span>
                 </>
               )}
             </ListboxOption>
@@ -113,8 +114,8 @@ export function VariablePopover({
             ref={inputRef}
             className="variable-popover-input"
             value={editText}
-            onChange={(e) => setEditText(e.target.value)}
-            onKeyDown={(e) => {
+            onChange={e => setEditText(e.target.value)}
+            onKeyDown={e => {
               if (e.key === "Enter") handleSave();
               if (e.key === "Escape") setEditing(false);
             }}
@@ -123,7 +124,10 @@ export function VariablePopover({
             <button className="variable-popover-btn variable-popover-btn-save" onClick={handleSave}>
               Save
             </button>
-            <button className="variable-popover-btn variable-popover-btn-cancel" onClick={() => setEditing(false)}>
+            <button
+              className="variable-popover-btn variable-popover-btn-cancel"
+              onClick={() => setEditing(false)}
+            >
               Cancel
             </button>
           </div>
@@ -135,7 +139,10 @@ export function VariablePopover({
             {onEditValue && currentId !== "year" && (
               <button
                 className="variable-popover-icon-btn"
-                onClick={() => { setEditText(currentValue); setEditing(true); }}
+                onClick={() => {
+                  setEditText(currentValue);
+                  setEditing(true);
+                }}
                 title="Edit value"
               >
                 <TbPencil size={13} />
@@ -143,7 +150,12 @@ export function VariablePopover({
             )}
             <button
               className="variable-popover-icon-btn variable-popover-icon-btn-danger"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(); onClose(); }}
+              onClick={e => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRemove();
+                onClose();
+              }}
               title="Remove variable"
             >
               <TbTrash size={13} />

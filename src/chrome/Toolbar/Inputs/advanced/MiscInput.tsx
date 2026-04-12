@@ -17,7 +17,12 @@ export const MiscInput = () => (
     <TailwindInput propKey="breakInside" label="Break Inside" prop="breakInside" type="select" />
     <TailwindInput propKey="breakAfter" label="Break After" prop="breakAfter" type="select" />
     <TailwindInput propKey="listStyleType" label="List Style" prop="listStyleType" type="select" />
-    <TailwindInput propKey="listStylePosition" label="List Position" prop="listStylePosition" type="select" />
+    <TailwindInput
+      propKey="listStylePosition"
+      label="List Position"
+      prop="listStylePosition"
+      type="select"
+    />
     <TailwindInput propKey="tableLayout" label="Table Layout" prop="tableLayout" type="select" />
     <TailwindInput propKey="captionSide" label="Caption Side" prop="captionSide" type="select" />
     <TailwindInput propKey="content" label="Content" prop="content" type="select" />

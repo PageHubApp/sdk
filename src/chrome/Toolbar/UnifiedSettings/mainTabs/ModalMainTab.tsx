@@ -18,15 +18,23 @@ export const ModalMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="How and when the modal opens, and close behavior.">
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="How and when the modal opens, and close behavior."
+      >
         {/* View toggle — collapsed/expanded in editor */}
-        <div className="flex gap-1 rounded-lg bg-neutral p-1">
+        <div className="bg-neutral flex gap-1 rounded-lg p-1">
           {VIEW_STATES.map(({ value, label, icon: Icon }) => (
             <button
               key={value}
               type="button"
-              onClick={() => actions.setProp(id, (p: any) => { p.view = value; })}
-              className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+              onClick={() =>
+                actions.setProp(id, (p: any) => {
+                  p.view = value;
+                })
+              }
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
                 currentView === value
                   ? "bg-base-100 text-base-content shadow-sm"
                   : "text-neutral-content hover:text-base-content"
@@ -38,12 +46,7 @@ export const ModalMainTab = () => {
           ))}
         </div>
 
-        <ToolbarItem
-          propKey="trigger.type"
-          propType="component"
-          type="select"
-          label="Trigger"
-        >
+        <ToolbarItem propKey="trigger.type" propType="component" type="select" label="Trigger">
           <option value="click">Click (via Button)</option>
           <option value="load">Page Load</option>
           <option value="delay">After Delay</option>
@@ -99,13 +102,12 @@ export const ModalMainTab = () => {
       </ToolbarSection>
     ),
     Type: (
-      <ToolbarSection title="Type" icon={SECTION_ICONS["Type"]} help="Animation, size, position, and backdrop settings.">
-        <ToolbarItem
-          propKey="modalAnimation"
-          propType="component"
-          type="select"
-          label="Animation"
-        >
+      <ToolbarSection
+        title="Type"
+        icon={SECTION_ICONS["Type"]}
+        help="Animation, size, position, and backdrop settings."
+      >
+        <ToolbarItem propKey="modalAnimation" propType="component" type="select" label="Animation">
           <option value="fade">Fade</option>
           <option value="slide-up">Slide Up</option>
           <option value="slide-down">Slide Down</option>
@@ -113,12 +115,7 @@ export const ModalMainTab = () => {
           <option value="none">None</option>
         </ToolbarItem>
 
-        <ToolbarItem
-          propKey="modalWidth"
-          propType="component"
-          type="select"
-          label="Width"
-        >
+        <ToolbarItem propKey="modalWidth" propType="component" type="select" label="Width">
           <option value="max-w-sm">Small</option>
           <option value="max-w-md">Medium</option>
           <option value="max-w-lg">Large</option>
@@ -127,12 +124,7 @@ export const ModalMainTab = () => {
           <option value="max-w-full">Full Width</option>
         </ToolbarItem>
 
-        <ToolbarItem
-          propKey="modalPosition"
-          propType="component"
-          type="select"
-          label="Position"
-        >
+        <ToolbarItem propKey="modalPosition" propType="component" type="select" label="Position">
           <option value="center">Center</option>
           <option value="top">Top</option>
           <option value="bottom">Bottom</option>

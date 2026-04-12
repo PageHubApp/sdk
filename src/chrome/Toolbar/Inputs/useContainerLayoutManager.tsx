@@ -11,7 +11,7 @@ export const useContainerLayoutManager = () => {
   ) => {
     // Dynamically import Container to avoid circular dependency
     const { Container } = await import("../../../components/Container");
-    
+
     const currentNode = query.node(id).get();
     const currentChildren = currentNode?.data?.nodes || [];
 
@@ -31,7 +31,7 @@ export const useContainerLayoutManager = () => {
               canvas
               is={Container}
               canDelete={true}
-              className="flex flex-col w-full gap-4"
+              className="flex w-full flex-col gap-4"
               custom={{ displayName: "Container" }}
             />
           ),

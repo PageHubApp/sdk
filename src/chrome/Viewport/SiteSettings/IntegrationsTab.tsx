@@ -34,14 +34,16 @@ interface IntegrationsTabProps {
   setIntegrations: React.Dispatch<React.SetStateAction<Record<string, Record<string, string>>>>;
 }
 
-export function IntegrationsTab({ inputClass, integrations, setIntegrations }: IntegrationsTabProps) {
+export function IntegrationsTab({
+  inputClass,
+  integrations,
+  setIntegrations,
+}: IntegrationsTabProps) {
   return (
     <div className="space-y-6">
       <div className="mb-4 space-y-2">
-        <h3 className="text-lg font-semibold text-base-content">
-          Analytics & Tracking
-        </h3>
-        <p className="text-sm text-neutral-content">
+        <h3 className="text-base-content text-lg font-semibold">Analytics & Tracking</h3>
+        <p className="text-neutral-content text-sm">
           Connect analytics, tracking pixels, and site verification. Just paste in your ID.
         </p>
       </div>
@@ -66,21 +68,19 @@ export function IntegrationsTab({ inputClass, integrations, setIntegrations }: I
               className={inputClass}
               placeholder={meta.placeholder}
             />
-            <p className="mt-1 text-xs text-neutral-content">{meta.help}</p>
+            <p className="text-neutral-content mt-1 text-xs">{meta.help}</p>
           </div>
         );
       })}
 
-      <div className="mt-4 rounded-lg border border-base-300 bg-neutral p-4">
+      <div className="border-base-300 bg-neutral mt-4 rounded-lg border p-4">
         <div className="flex gap-3">
-          <TbInfoCircle className="mt-0.5 size-5 shrink-0 text-primary" />
+          <TbInfoCircle className="text-primary mt-0.5 size-5 shrink-0" />
           <div className="space-y-1">
-            <p className="toolbar-label font-medium">
-              Using Google Tag Manager?
-            </p>
-            <p className="text-sm text-neutral-content">
-              GTM can manage GA, Meta Pixel, and most other tags. If you use GTM, you
-              only need the GTM Container ID here — configure individual tags inside GTM.
+            <p className="toolbar-label font-medium">Using Google Tag Manager?</p>
+            <p className="text-neutral-content text-sm">
+              GTM can manage GA, Meta Pixel, and most other tags. If you use GTM, you only need the
+              GTM Container ID here — configure individual tags inside GTM.
             </p>
           </div>
         </div>

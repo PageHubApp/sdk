@@ -9,5 +9,8 @@ export {
   OVERLAY_Z_UNIFIED_DROPDOWN,
 } from "./overlayZIndex";
 export { useAnchoredPopover } from "./useAnchoredPopover";
-export type { AnchoredPopoverDismissOptions, UseAnchoredPopoverOptions } from "./useAnchoredPopover";
+export type {
+  AnchoredPopoverDismissOptions,
+  UseAnchoredPopoverOptions,
+} from "./useAnchoredPopover";
 export { useClampToViewport } from "./useClampToViewport";

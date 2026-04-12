@@ -30,7 +30,7 @@ export class EventEmitter {
     const handlers = this.listeners.get(event);
     if (!handlers) return;
 
-    handlers.forEach((handler) => {
+    handlers.forEach(handler => {
       try {
         handler(...args);
       } catch (err) {
@@ -54,7 +54,7 @@ export class EventEmitter {
     const handlers = this.internalListeners.get(event);
     if (!handlers) return;
 
-    handlers.forEach((handler) => {
+    handlers.forEach(handler => {
       try {
         handler(...args);
       } catch (err) {

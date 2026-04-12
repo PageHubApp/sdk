@@ -136,7 +136,10 @@ export function UniversalInput(props: UniversalInputProps) {
         {/* Label + breakpoint pills */}
         {label && !labelHide && (
           <div className={`flex flex-col items-start gap-0.5 ${labelWidth || "w-20"}`}>
-            <label htmlFor={`input-${propKey}`} className="w-full cursor-pointer truncate whitespace-nowrap text-xs">
+            <label
+              htmlFor={`input-${propKey}`}
+              className="w-full cursor-pointer truncate text-xs whitespace-nowrap"
+            >
               {label}
             </label>
             {propType === "class" && (
@@ -159,104 +162,104 @@ export function UniversalInput(props: UniversalInputProps) {
 
         {/* Input wrapper */}
         <div className={`flex items-center gap-0.5 ${inputWidth || "flex-1"}`}>
-        <BgWrap wrap={wrap}>
-          <div className="flex w-full items-center gap-1">
-            {/* Main input - always visible */}
-            <div className="relative flex-1">
-              <input
-                id={`input-${propKey}`}
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={handleInputChange}
-                onBlur={handleInputBlur}
-                onKeyDown={handleKeyDown}
-                onFocus={handleInputFocus}
-                placeholder={dynamicPlaceholder}
-                className="input-plain h-8 w-full"
-                aria-label={label || propKey}
-                {...toolbarInputNoAutocompleteProps}
-              />
+          <BgWrap wrap={wrap}>
+            <div className="flex w-full items-center gap-1">
+              {/* Main input - always visible */}
+              <div className="relative flex-1">
+                <input
+                  id={`input-${propKey}`}
+                  ref={inputRef}
+                  type="text"
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onBlur={handleInputBlur}
+                  onKeyDown={handleKeyDown}
+                  onFocus={handleInputFocus}
+                  placeholder={dynamicPlaceholder}
+                  className="input-plain h-8 w-full"
+                  aria-label={label || propKey}
+                  {...toolbarInputNoAutocompleteProps}
+                />
 
-              {/* Unified dropdown with design vars + grouped options */}
-              {showAutocomplete && (
-                <UnifiedDropdown
-                  options={organizedOptions}
-                  filteredOptions={filteredOptions}
-                  selectedIndex={selectedIndex}
-                  onSelect={handleAutocompleteSelect}
-                  inputRef={inputRef}
-                  showVarSelector={showVarSelector}
-                  propTag={propTag}
-                  tailwindKey={tailwindKey}
-                  searchValue={inputValue}
-                  currentValue={currentValue}
+                {/* Unified dropdown with design vars + grouped options */}
+                {showAutocomplete && (
+                  <UnifiedDropdown
+                    options={organizedOptions}
+                    filteredOptions={filteredOptions}
+                    selectedIndex={selectedIndex}
+                    onSelect={handleAutocompleteSelect}
+                    inputRef={inputRef}
+                    showVarSelector={showVarSelector}
+                    propTag={propTag}
+                    tailwindKey={tailwindKey}
+                    searchValue={inputValue}
+                    currentValue={currentValue}
+                    selectedType={selectedType}
+                  />
+                )}
+              </div>
+
+              {/* Type selector */}
+              {!hideTypeSelector && (
+                <TypeSelector
+                  ref={typeSelectorRef}
+                  types={availableTypes}
                   selectedType={selectedType}
+                  onCalcClick={() => setShowCalcDialog(true)}
+                  onOpenChange={setIsTypeSelectorOpen}
+                  onTypeChange={type => {
+                    const oldType = selectedType;
+
+                    // If calc is selected from dropdown, open the calc dialog
+                    if (type === "calc") {
+                      setSelectedType("calc");
+                      setShowCalcDialog(true);
+                      return;
+                    }
+
+                    setSelectedType(type);
+                    setIsEditing(false); // Exit editing mode when switching types
+
+                    if (type === "tailwind" || type === "var") {
+                      setShowAutocomplete(true);
+                    }
+
+                    const isOldNumeric = CSS_UNITS.includes(oldType);
+                    const isNewNumeric = CSS_UNITS.includes(type);
+
+                    // When changing type, handle differently based on what kind of types
+                    if (type !== oldType) {
+                      if (isOldNumeric && isNewNumeric) {
+                        // Numeric to numeric: keep the number, just change unit
+                        const numericValue = parsed.numeric?.toString() || "";
+                        if (numericValue) {
+                          setInputValue(numericValue);
+                          handleChange(numericValue, type);
+                        } else {
+                          setInputValue("");
+                          // Don't call handleChange with empty - just clear locally
+                        }
+                      } else if (isNewNumeric && !isOldNumeric) {
+                        // Text to numeric: clear input, let user type the number
+                        setInputValue("");
+                        // Don't save empty value - just clear the input and wait for user to type
+                      } else if (!isNewNumeric && isOldNumeric) {
+                        // Numeric to text (tailwind/calc): clear input
+                        setInputValue("");
+                        // Don't save empty value - wait for user input
+                      } else {
+                        // Text to text (tailwind <-> calc): clear
+                        setInputValue("");
+                        // Don't save empty value - wait for user input
+                      }
+                    }
+                  }}
                 />
               )}
             </div>
-
-            {/* Type selector */}
-            {!hideTypeSelector && <TypeSelector
-              ref={typeSelectorRef}
-              types={availableTypes}
-              selectedType={selectedType}
-              onCalcClick={() => setShowCalcDialog(true)}
-              onOpenChange={setIsTypeSelectorOpen}
-              onTypeChange={type => {
-                const oldType = selectedType;
-
-                // If calc is selected from dropdown, open the calc dialog
-                if (type === "calc") {
-                  setSelectedType("calc");
-                  setShowCalcDialog(true);
-                  return;
-                }
-
-                setSelectedType(type);
-                setIsEditing(false); // Exit editing mode when switching types
-
-                if (type === "tailwind" || type === "var") {
-                  setShowAutocomplete(true);
-                }
-
-                const isOldNumeric = CSS_UNITS.includes(oldType);
-                const isNewNumeric = CSS_UNITS.includes(type);
-
-                // When changing type, handle differently based on what kind of types
-                if (type !== oldType) {
-                  if (isOldNumeric && isNewNumeric) {
-                    // Numeric to numeric: keep the number, just change unit
-                    const numericValue = parsed.numeric?.toString() || "";
-                    if (numericValue) {
-                      setInputValue(numericValue);
-                      handleChange(numericValue, type);
-                    } else {
-                      setInputValue("");
-                      // Don't call handleChange with empty - just clear locally
-                    }
-                  } else if (isNewNumeric && !isOldNumeric) {
-                    // Text to numeric: clear input, let user type the number
-                    setInputValue("");
-                    // Don't save empty value - just clear the input and wait for user to type
-                  } else if (!isNewNumeric && isOldNumeric) {
-                    // Numeric to text (tailwind/calc): clear input
-                    setInputValue("");
-                    // Don't save empty value - wait for user input
-                  } else {
-                    // Text to text (tailwind <-> calc): clear
-                    setInputValue("");
-                    // Don't save empty value - wait for user input
-                  }
-                }
-              }}
-            />}
-          </div>
-        </BgWrap>
-
+          </BgWrap>
         </div>
       </div>
-
 
       {/* Calc Dialog */}
       {showCalcDialog && (

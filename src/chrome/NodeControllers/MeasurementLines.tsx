@@ -318,10 +318,7 @@ export const MeasurementLines = () => {
   return ReactDOM.createPortal(
     <>
       {measurements.map((measurement, i) => (
-        <g
-          key={`measurement-${i}`}
-          style={{ animation: "node-control-in 0.15s ease-out both" }}
-        >
+        <g key={`measurement-${i}`} style={{ animation: "node-control-in 0.15s ease-out both" }}>
           {/* Main line */}
           <line
             x1={measurement.x1}

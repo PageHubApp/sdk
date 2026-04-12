@@ -19,7 +19,7 @@ export const setClonedProps = (props: any, query: any, exclude: string[] = []) =
     const masterProps = { ...masterNode.data.props };
 
     const propsToExclude = ["belongsTo", "relationType", "hasMany", "savedComponentName", "type"];
-    propsToExclude.forEach((key) => {
+    propsToExclude.forEach(key => {
       delete masterProps[key];
     });
 
@@ -36,11 +36,19 @@ export const setClonedProps = (props: any, query: any, exclude: string[] = []) =
 
     if (props.relationType === "content") {
       const contentProps = [
-        "text", "url", "urlTarget", "action", "image", "videoId",
-        "content", "buttonText", "placeholder", "value",
+        "text",
+        "url",
+        "urlTarget",
+        "action",
+        "image",
+        "videoId",
+        "content",
+        "buttonText",
+        "placeholder",
+        "value",
       ];
       const localContent: Record<string, any> = {};
-      contentProps.forEach((key) => {
+      contentProps.forEach(key => {
         if (key in props) {
           localContent[key] = props[key];
         }

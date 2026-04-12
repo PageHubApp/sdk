@@ -97,7 +97,7 @@ export function DesignVarSelector({
             e: getRect(ref.current),
           });
         }}
-        className="flex size-5 items-center justify-center rounded-lg text-neutral-content transition-colors hover:bg-neutral hover:text-base-content"
+        className="text-neutral-content hover:bg-neutral hover:text-base-content flex size-5 items-center justify-center rounded-lg transition-colors"
         title="Bind to design system variable"
       >
         <TbVariable className="size-3.5" />
@@ -180,12 +180,16 @@ function DesignVarDialog({
         onClick={closeDialog}
       />
 
-      <div style={style} className="pagehub-sdk-root pointer-events-auto z-10000" data-design-var-dialog>
+      <div
+        style={style}
+        className="pagehub-sdk-root pointer-events-auto z-10000"
+        data-design-var-dialog
+      >
         <div className="ph-panel overflow-hidden p-0">
           {/* Search input */}
-          <div className="shrink-0 border-b border-base-300 bg-neutral px-2 pb-1 pt-2">
+          <div className="border-base-300 bg-neutral shrink-0 border-b px-2 pt-2 pb-1">
             <div className="relative">
-              <TbSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-content" />
+              <TbSearch className="text-neutral-content absolute top-1/2 left-3 size-4 -translate-y-1/2" />
               <input
                 type="text"
                 className="input-dialog-leading"
@@ -201,13 +205,11 @@ function DesignVarDialog({
           {/* Variable list */}
           <div className="scrollbar-light max-h-80 overflow-y-auto p-2">
             {Object.keys(groupedVars).length === 0 ? (
-              <div className="p-3 text-center text-xs text-neutral-content">
-                No variables found
-              </div>
+              <div className="text-neutral-content p-3 text-center text-xs">No variables found</div>
             ) : (
               Object.entries(groupedVars).map(([category, vars]) => (
                 <div key={category} className="mb-3 last:mb-0">
-                  <div className="rounded bg-neutral/30 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-content">
+                  <div className="bg-neutral/30 text-neutral-content rounded px-2.5 py-1.5 text-[10px] font-semibold tracking-wider uppercase">
                     {CATEGORY_LABELS[category] || category}
                   </div>
                   <div className="mt-1.5 space-y-0.5">
@@ -215,27 +217,25 @@ function DesignVarDialog({
                       <button
                         key={v.varName}
                         onClick={() => handleSelect(v)}
-                        className="group w-full rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-neutral"
+                        className="group hover:bg-neutral w-full rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors"
                       >
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-start justify-between gap-2">
-                            <span className="text-xs font-medium leading-tight text-base-content">
+                            <span className="text-base-content text-xs leading-tight font-medium">
                               {v.label}
                             </span>
                           </div>
                           <div className="flex items-start justify-between gap-2">
-                            <span className="shrink-0 font-mono text-[10px] text-neutral-content">
+                            <span className="text-neutral-content shrink-0 font-mono text-[10px]">
                               {v.varName}
                             </span>
                             {v.category === "palette" && (
                               <div className="flex items-center gap-1.5">
                                 <div
-                                  className="size-3 shrink-0 rounded-lg border border-base-300"
+                                  className="border-base-300 size-3 shrink-0 rounded-lg border"
                                   style={{ backgroundColor: v.value }}
                                 />
-                                <span className="text-[10px] text-neutral-content">
-                                  {v.value}
-                                </span>
+                                <span className="text-neutral-content text-[10px]">{v.value}</span>
                               </div>
                             )}
                           </div>

@@ -7,7 +7,6 @@ import { SaveSubmissions } from "../utils/lib";
 import { Container } from "./Container";
 import { Text } from "./Text";
 
-
 export const Form = ({ children, ...props }: any) => {
   const formType = props.formType || "subscribe";
   const {
@@ -53,7 +52,7 @@ export const Form = ({ children, ...props }: any) => {
         mailto: props.mailto,
         action: props.action,
         method: props.method,
-        timestamp: new Date().toLocaleString()
+        timestamp: new Date().toLocaleString(),
       };
 
       console.log("📋 Form Submission (Editor Mode)", submissionData);
@@ -88,7 +87,10 @@ export const Form = ({ children, ...props }: any) => {
 
     // Fire analytics events if pixels are loaded
     const w = window as any;
-    w.gtag?.("event", "form_submit", { event_category: "forms", event_label: props.formName || "form" });
+    w.gtag?.("event", "form_submit", {
+      event_category: "forms",
+      event_label: props.formName || "form",
+    });
     w.fbq?.("track", "Lead");
     w.dataLayer?.push({ event: "form_submit", formName: props.formName || "form" });
 
@@ -110,7 +112,7 @@ export const Form = ({ children, ...props }: any) => {
     e.stopPropagation();
 
     // Find the form element
-    const formElement = e.currentTarget.querySelector('form') || e.currentTarget;
+    const formElement = e.currentTarget.querySelector("form") || e.currentTarget;
     const formFields = formElement.querySelectorAll("input, select, textarea");
     const formData: any = {};
 
@@ -163,15 +165,20 @@ export const Form = ({ children, ...props }: any) => {
         <div
           aria-hidden="true"
           tabIndex={-1}
-          style={{ position: "absolute", left: "-9999px", top: "-9999px", opacity: 0, height: 0, overflow: "hidden" }}
+          style={{
+            position: "absolute",
+            left: "-9999px",
+            top: "-9999px",
+            opacity: 0,
+            height: 0,
+            overflow: "hidden",
+          }}
         >
           <input type="text" name="_ph_hp" autoComplete="off" tabIndex={-1} />
         </div>
       )}
 
-      {!loading && !loaded && (!enabled || !props.view || props.view === "") && (
-        children
-      )}
+      {!loading && !loaded && (!enabled || !props.view || props.view === "") && children}
 
       {(loading || (enabled && props.view === "loading")) && (
         <Element
@@ -182,7 +189,7 @@ export const Form = ({ children, ...props }: any) => {
           aria-live="polite"
           canDelete={true}
           canEditName={true}
-          className="flex justify-center flex-col w-full gap-3 px-6 py-6 md:flex-row"
+          className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
           custom={{
             displayName: "Loading Text Container",
             id: "loadingTextContainer",
@@ -209,7 +216,7 @@ export const Form = ({ children, ...props }: any) => {
           aria-live="polite"
           canDelete={true}
           canEditName={true}
-          className="flex justify-center flex-col w-full gap-3 px-6 py-6 md:flex-row"
+          className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
           custom={{
             displayName: "Sent Text",
             id: "sentTextContainer",
@@ -229,9 +236,9 @@ export const Form = ({ children, ...props }: any) => {
 
       {/* Debug panel - only shows in editor mode */}
       {enabled && debugData && (
-        <div className="fixed bottom-5 right-5 w-[500px] bg-base-200 text-base-content rounded-lg border border-base-300 shadow-lg z-9999">
+        <div className="bg-base-200 text-base-content border-base-300 fixed right-5 bottom-5 z-9999 w-[500px] rounded-lg border shadow-lg">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-base-300">
+          <div className="border-base-300 flex items-center justify-between border-b p-4">
             <div className="flex items-center gap-2">
               <TbClipboardCheck className="text-lg" />
               <h3 className="text-sm font-semibold">Form Submission (Debug)</h3>
@@ -258,28 +265,28 @@ export const Form = ({ children, ...props }: any) => {
             </button>
           </div>
 
-
-
           {/* Tab Navigation */}
           <div className="px-4 py-3">
-            <div className="flex gap-1 rounded-lg bg-neutral p-1">
+            <div className="bg-neutral flex gap-1 rounded-lg p-1">
               <button
                 type="button"
                 onClick={() => setDebugTab("data")}
-                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${debugTab === "data"
-                  ? "bg-base-100 text-base-content shadow-sm"
-                  : "text-neutral-content hover:text-base-content"
-                  }`}
+                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  debugTab === "data"
+                    ? "bg-base-100 text-base-content shadow-sm"
+                    : "text-neutral-content hover:text-base-content"
+                }`}
               >
                 Form Data
               </button>
               <button
                 type="button"
                 onClick={() => setDebugTab("config")}
-                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${debugTab === "config"
-                  ? "bg-base-100 text-base-content shadow-sm"
-                  : "text-neutral-content hover:text-base-content"
-                  }`}
+                className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  debugTab === "config"
+                    ? "bg-base-100 text-base-content shadow-sm"
+                    : "text-neutral-content hover:text-base-content"
+                }`}
               >
                 Configuration
               </button>
@@ -289,33 +296,33 @@ export const Form = ({ children, ...props }: any) => {
           {/* Tab Content */}
           <div className="px-4 pb-4">
             {debugTab === "data" && (
-              <pre className="text-xs bg-neutral p-3 rounded overflow-auto max-h-96 whitespace-pre-wrap wrap-break-word">
+              <pre className="bg-neutral max-h-96 overflow-auto rounded p-3 text-xs wrap-break-word whitespace-pre-wrap">
                 {JSON.stringify(debugData.formData, null, 2)}
               </pre>
             )}
 
             {debugTab === "config" && (
-              <div className="text-xs bg-neutral p-3 rounded overflow-auto max-h-96 space-y-2">
+              <div className="bg-neutral max-h-96 space-y-2 overflow-auto rounded p-3 text-xs">
                 <div>
-                  <span className="font-semibold text-base-content">Form Type:</span>{" "}
+                  <span className="text-base-content font-semibold">Form Type:</span>{" "}
                   <span className="text-neutral-content">{debugData.formType || "N/A"}</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-base-content">Form Name:</span>{" "}
+                  <span className="text-base-content font-semibold">Form Name:</span>{" "}
                   <span className="text-neutral-content">{debugData.formName || "N/A"}</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-base-content">Action URL:</span>{" "}
+                  <span className="text-base-content font-semibold">Action URL:</span>{" "}
                   <span className="text-neutral-content break-all">
                     {debugData.action || "N/A"}
                   </span>
                 </div>
                 <div>
-                  <span className="font-semibold text-base-content">Method:</span>{" "}
+                  <span className="text-base-content font-semibold">Method:</span>{" "}
                   <span className="text-neutral-content">{debugData.method || "POST"}</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-base-content">Mail To:</span>{" "}
+                  <span className="text-base-content font-semibold">Mail To:</span>{" "}
                   <span className="text-neutral-content">{debugData.mailto || "N/A"}</span>
                 </div>
               </div>

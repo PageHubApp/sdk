@@ -60,7 +60,7 @@ export function ImportExportPanel({ onClose }: ImportExportPanelProps) {
               {handoffExtras ? (
                 handoffExtras()
               ) : (
-                <p className="text-sm text-base-content/70">
+                <p className="text-base-content/70 text-sm">
                   Site downloads are not configured for this editor build.
                 </p>
               )}
@@ -73,16 +73,16 @@ export function ImportExportPanel({ onClose }: ImportExportPanelProps) {
           icon: <TbUpload className="size-4 shrink-0 opacity-80" aria-hidden />,
           content: (
             <div className="p-6">
-              <h4 className="text-sm font-medium text-base-content">Import from backup</h4>
-              <p className="mt-1 text-xs text-base-content/70">
+              <h4 className="text-base-content text-sm font-medium">Import from backup</h4>
+              <p className="text-base-content/70 mt-1 text-xs">
                 Replace this page with the same{" "}
-                <span className="font-medium text-base-content">site JSON</span> you download under
+                <span className="text-base-content font-medium">site JSON</span> you download under
                 Export.
               </p>
 
-              <div className="mt-4 border-t border-base-300 pt-4">
-                <h5 className="text-xs font-semibold text-base-content">Paste backup</h5>
-                <p className="mt-1 text-xs text-base-content/70">
+              <div className="border-base-300 mt-4 border-t pt-4">
+                <h5 className="text-base-content text-xs font-semibold">Paste backup</h5>
+                <p className="text-base-content/70 mt-1 text-xs">
                   Paste the full file contents, then import. This overwrites the current page in the
                   builder.
                 </p>
@@ -93,14 +93,14 @@ export function ImportExportPanel({ onClose }: ImportExportPanelProps) {
                   autoFocus={true}
                   value={stateToLoad}
                   onChange={e => setStateToLoad(e.target.value)}
-                  className="mt-3 w-full min-h-[14rem] resize-y rounded-lg border border-base-300 bg-base-100 p-3 font-mono text-xs leading-relaxed text-base-content focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="border-base-300 bg-base-100 text-base-content focus:ring-primary mt-3 min-h-[14rem] w-full resize-y rounded-lg border p-3 font-mono text-xs leading-relaxed focus:ring-2 focus:outline-none"
                   rows={14}
                   spellCheck={false}
                 />
 
                 <button
                   type="button"
-                  className="btn btn-outline mt-3 w-full border-base-content/30 normal-case disabled:border-base-300 disabled:bg-transparent disabled:text-base-content/30"
+                  className="btn btn-outline border-base-content/30 disabled:border-base-300 disabled:text-base-content/30 mt-3 w-full normal-case disabled:bg-transparent"
                   onClick={handleImport}
                   disabled={!stateToLoad.trim()}
                 >

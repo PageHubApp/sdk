@@ -9,7 +9,7 @@ import { renderComponentSlots, renderAdvancedComponentSlots, SECTION_ICONS } fro
 const CHEVRON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`;
 
 export const AccordionMainTab = () => {
-  const { id, props } = useNode((node) => ({ props: node.data.props }));
+  const { id, props } = useNode(node => ({ props: node.data.props }));
   const { actions, query } = useEditor();
 
   const node = query.node(id).get();
@@ -29,7 +29,7 @@ export const AccordionMainTab = () => {
         is={Container}
         type="details"
         custom={{ displayName: title, rules: { canMoveOut: () => false } }}
-        className="border-b border-base-300 group"
+        className="border-base-300 group border-b"
       >
         <Element
           is={Container}
@@ -37,7 +37,7 @@ export const AccordionMainTab = () => {
           custom={{ displayName: `${title} Header` }}
           canDelete={true}
           canEditName={true}
-          className="flex flex-row items-center justify-between px-4 py-3 cursor-pointer list-none select-none"
+          className="flex cursor-pointer list-none flex-row items-center justify-between px-4 py-3 select-none"
         >
           <Element
             is={Text}
@@ -56,7 +56,7 @@ export const AccordionMainTab = () => {
           custom={{ displayName: `${title} Content` }}
           canDelete={true}
           canEditName={true}
-          className="flex flex-col gap-container px-4 py-3"
+          className="gap-container flex flex-col px-4 py-3"
         >
           <Element
             is={Text}
@@ -83,15 +83,23 @@ export const AccordionMainTab = () => {
 
   // Build dynamic default-open options based on actual item count
   const defaultOpenOptions = [
-    <option key={-1} value={-1}>None</option>,
+    <option key={-1} value={-1}>
+      None
+    </option>,
     ...Array.from({ length: itemCount }, (_, i) => (
-      <option key={i} value={i}>Item {i + 1}</option>
+      <option key={i} value={i}>
+        Item {i + 1}
+      </option>
     )),
   ];
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Accordion behavior settings.">
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="Accordion behavior settings."
+      >
         <ToolbarItem
           propKey="multiOpen"
           propType="component"
@@ -101,33 +109,27 @@ export const AccordionMainTab = () => {
           on={true}
         />
 
-        <ToolbarItem
-          propKey="defaultOpen"
-          propType="component"
-          type="select"
-          label="Default Open"
-        >
+        <ToolbarItem propKey="defaultOpen" propType="component" type="select" label="Default Open">
           {defaultOpenOptions}
         </ToolbarItem>
 
         <div className="flex gap-2">
           <button
-            className="flex items-center justify-center gap-1.5 flex-1 px-3 py-2 text-xs font-medium rounded border border-base-300 hover:bg-neutral transition-colors"
+            className="border-base-300 hover:bg-neutral flex flex-1 items-center justify-center gap-1.5 rounded border px-3 py-2 text-xs font-medium transition-colors"
             onClick={addItem}
           >
-            <TbPlus className="w-3.5 h-3.5" />
+            <TbPlus className="h-3.5 w-3.5" />
             Add Item
           </button>
           <button
-            className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded border border-base-300 hover:bg-neutral transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="border-base-300 hover:bg-neutral flex items-center justify-center gap-1.5 rounded border px-3 py-2 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40"
             onClick={removeLastItem}
             disabled={itemCount <= 1}
           >
-            <TbTrash className="w-3.5 h-3.5" />
+            <TbTrash className="h-3.5 w-3.5" />
           </button>
         </div>
         <SettingsAiSlot />
-
       </ToolbarSection>
     ),
   });

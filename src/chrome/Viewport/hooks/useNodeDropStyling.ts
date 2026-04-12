@@ -40,7 +40,8 @@ export function useNodeDropStyling() {
         if (parentNode) {
           const nodeType = (newNode?.data?.type as any)?.resolvedName || newNode?.data?.type;
           const isContainer = nodeType === "Container";
-          const currentDisplayName = newNode?.data?.custom?.displayName || newNode?.data?.displayName || "";
+          const currentDisplayName =
+            newNode?.data?.custom?.displayName || newNode?.data?.displayName || "";
 
           const isFromTemplate =
             currentDisplayName &&
@@ -62,7 +63,8 @@ export function useNodeDropStyling() {
           // Dropped into Section → Content
           if (parentNode.data.custom?.displayName === "Section" && isContainer && !isFromTemplate) {
             actions.setProp(newNodeId, (props: any) => {
-              props.className = "flex flex-col w-full gap-container items-center py-container-y px-container-x mx-auto max-w-page";
+              props.className =
+                "flex flex-col w-full gap-container items-center py-container-y px-container-x mx-auto max-w-page";
             });
             actions.setCustom(newNodeId, (custom: any) => (custom.displayName = "Content"));
           }
@@ -70,7 +72,8 @@ export function useNodeDropStyling() {
           // Dropped into Content → styled container
           if (parentNode.data.custom?.displayName === "Content" && isContainer && !isFromTemplate) {
             actions.setProp(newNodeId, (props: any) => {
-              props.className = "flex flex-col items-center gap-container w-full max-w-page p-container-y";
+              props.className =
+                "flex flex-col items-center gap-container w-full max-w-page p-container-y";
             });
           }
         }

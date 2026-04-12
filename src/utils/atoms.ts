@@ -54,7 +54,7 @@ export const ClippyModeAtom = atom<ClippyMode>(
       if (saved === "docked" || saved === "popout") return saved;
     } catch {}
     return "popout";
-  })(),
+  })()
 );
 
 /**
@@ -70,26 +70,29 @@ export type AssistantScope = "design" | "text";
 /** Nodes pinned from the canvas or chat for the next assistant message (shared with Clippy UI). */
 export type AiChatAttachedNode = { id: string; displayName: string };
 
-export const ClippyOpenAtom = atom("clippyOpen", null as null | {
-  /** Node to select before chatting */
-  nodeId?: string;
-  /** "edit" pre-fills an edit hint; "create" is default */
-  mode?: "create" | "edit";
-  /** Optional prompt hint shown in the input */
-  promptHint?: string;
-  /** Default assistant scope for the next send (inline text / Text settings → text). */
-  assistantScope?: AssistantScope;
-  /**
-   * When true: clear chat + stream state and pin context to a single node (copy / text flows).
-   * Does not run for generic "open assistant" dispatches.
-   */
-  freshChat?: boolean;
-  /** With `freshChat`, set pinned context to this node only (skips querying Craft). */
-  contextNode?: AiChatAttachedNode;
-  /** Insert position context (for add-section flows) */
-  addAfter?: boolean;
-  parentNodeId?: string;
-  position?: "top" | "bottom";
-});
+export const ClippyOpenAtom = atom(
+  "clippyOpen",
+  null as null | {
+    /** Node to select before chatting */
+    nodeId?: string;
+    /** "edit" pre-fills an edit hint; "create" is default */
+    mode?: "create" | "edit";
+    /** Optional prompt hint shown in the input */
+    promptHint?: string;
+    /** Default assistant scope for the next send (inline text / Text settings → text). */
+    assistantScope?: AssistantScope;
+    /**
+     * When true: clear chat + stream state and pin context to a single node (copy / text flows).
+     * Does not run for generic "open assistant" dispatches.
+     */
+    freshChat?: boolean;
+    /** With `freshChat`, set pinned context to this node only (skips querying Craft). */
+    contextNode?: AiChatAttachedNode;
+    /** Insert position context (for add-section flows) */
+    addAfter?: boolean;
+    parentNodeId?: string;
+    position?: "top" | "bottom";
+  }
+);
 
 export const AiChatAttachedNodesAtom = atom<AiChatAttachedNode[]>("aiChatAttachedNodes", []);

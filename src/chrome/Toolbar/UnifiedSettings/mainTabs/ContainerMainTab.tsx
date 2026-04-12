@@ -31,7 +31,11 @@ export const HeaderFooterToggles = () => {
   if (!showHeaderOption && !showFooterOption) return null;
 
   return (
-    <ToolbarSection title="Container Role" icon={<TbSection />} help="Mark this as the site header or footer.">
+    <ToolbarSection
+      title="Container Role"
+      icon={<TbSection />}
+      help="Mark this as the site header or footer."
+    >
       {showHeaderOption && (
         <ToolbarItem
           propKey="type"
@@ -50,7 +54,7 @@ export const HeaderFooterToggles = () => {
           on="footer"
         />
       )}
-      <p className="mt-2 text-xs text-neutral-content">
+      <p className="text-neutral-content mt-2 text-xs">
         Headers and footers are special containers that appear on all pages.
       </p>
     </ToolbarSection>
@@ -61,12 +65,17 @@ export const ContainerMainTab = () => {
   const node = useGetNode();
   const props = node.data.props;
 
-  const contentSlot = props?.type === "imageContainer" ? (
-    <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="Background image and overlay for this container.">
-      <SettingsAiSlot />
-      <BackgroundSettingsInput />
-    </ToolbarSection>
-  ) : undefined;
+  const contentSlot =
+    props?.type === "imageContainer" ? (
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS["Content"]}
+        help="Background image and overlay for this container."
+      >
+        <SettingsAiSlot />
+        <BackgroundSettingsInput />
+      </ToolbarSection>
+    ) : undefined;
 
   return (
     <>
@@ -78,4 +87,3 @@ export const ContainerMainTab = () => {
     </>
   );
 };
-

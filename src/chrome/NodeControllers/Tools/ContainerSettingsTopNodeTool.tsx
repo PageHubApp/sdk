@@ -118,8 +118,8 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   const { open: openPanel } = usePanelUrl();
 
   const match =
-    (["flex-row", "flex-row-reverse"].includes(value)) ||
-    (["flex-col", "flex-col-reverse"].includes(value));
+    ["flex-row", "flex-row-reverse"].includes(value) ||
+    ["flex-col", "flex-col-reverse"].includes(value);
 
   const pinNodeInAiChat = () => {
     setAttachedNodes(prev => {
@@ -148,11 +148,12 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
         </>
       )}
 
-      {direction === "horizontal" &&
-        !suppressContainerChromeTools &&
-        aiEnabled &&
-        renderNodeAi && (
-        <NodeInlineTooltip variant="container" content="Add something with AI" className={segmentBorder}>
+      {direction === "horizontal" && !suppressContainerChromeTools && aiEnabled && renderNodeAi && (
+        <NodeInlineTooltip
+          variant="container"
+          content="Add something with AI"
+          className={segmentBorder}
+        >
           {renderNodeAi({
             onClick: () => setClippyOpen({ nodeId: id, mode: "create" }),
             className: "tool-button",
@@ -160,7 +161,10 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
         </NodeInlineTooltip>
       )}
 
-      {direction === "horizontal" && aiEnabled && renderNodeContext && id !== "ROOT" &&
+      {direction === "horizontal" &&
+        aiEnabled &&
+        renderNodeContext &&
+        id !== "ROOT" &&
         (compactToolbar ? (
           <NodeInlineTooltip variant="strip-compact" content="Include in AI chat">
             {renderNodeContext({
@@ -169,7 +173,11 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
             })}
           </NodeInlineTooltip>
         ) : (
-          <NodeInlineTooltip variant="container" content="Include in AI chat" className={segmentBorder}>
+          <NodeInlineTooltip
+            variant="container"
+            content="Include in AI chat"
+            className={segmentBorder}
+          >
             {renderNodeContext({
               onClick: pinNodeInAiChat,
               className: "tool-button",
@@ -221,7 +229,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
                 element: (
                   <Container
                     canDelete={true}
-                    className={`flex justify-center w-full ${isRow ? "flex-col" : "flex-row"}`}
+                    className={`flex w-full justify-center ${isRow ? "flex-col" : "flex-row"}`}
                     custom={{ displayName: isRow ? "Column" : "Row" }}
                   />
                 ),
@@ -257,7 +265,11 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
             />
           </NodeInlineTooltip>
         ) : (
-          <NodeInlineTooltip variant="container" content="Delete container" className={deleteSegmentBorder}>
+          <NodeInlineTooltip
+            variant="container"
+            content="Delete container"
+            className={deleteSegmentBorder}
+          >
             <DeleteNodeButton
               title="Delete container"
               titleDisabled="Cannot delete"
@@ -266,8 +278,6 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
             />
           </NodeInlineTooltip>
         ))}
-
     </NodeToolWrapper>
   );
 }
-
