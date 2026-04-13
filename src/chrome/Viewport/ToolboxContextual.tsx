@@ -145,7 +145,8 @@ export const ToolboxContexual = () => {
     Boolean(node) &&
     id !== ROOT_NODE &&
     Boolean(node?.data.parent) &&
-    node?.data.props?.canDelete !== false;
+    node?.data.props?.canDelete !== false &&
+    node?.data.custom?.permissions?.canDelete !== false;
   const canDuplicate = Boolean(node && id !== ROOT_NODE && !isPageOrBackground);
   const displayName =
     (node?.data?.custom?.displayName as string | undefined) ||
@@ -176,7 +177,8 @@ export const ToolboxContexual = () => {
     id !== ROOT_NODE &&
     parentId &&
     !isPageOrBackground &&
-    node?.data.props?.canDelete !== false
+    node?.data.props?.canDelete !== false &&
+    node?.data.custom?.permissions?.canDelete !== false
   );
   const canMoveUp = Boolean(canMoveSiblings && siblingMove?.canMoveUp);
   const canMoveDown = Boolean(canMoveSiblings && siblingMove?.canMoveDown);

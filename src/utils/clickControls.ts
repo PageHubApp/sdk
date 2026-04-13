@@ -2,7 +2,8 @@
  * Runtime action handlers — attaches event listeners to component prop objects
  * based on the unified NodeAction system.
  */
-import type { NodeAction, ShowHideAction } from "./action";
+import type { NodeAction, ShowHideAction, ToggleThemeAction } from "./action";
+import { phStorage } from "./phStorage";
 
 // ─── Legacy type (kept for migration period only) ──────────────────────
 export interface ClickControl {
@@ -104,7 +105,7 @@ function revertShowHide(action: ShowHideAction) {
 // ─── Public API ────────────────────────────────────────────────────────
 
 /**
- * Attach runtime event handlers for actions that need JS (scroll-to, open-modal, show-hide).
+ * Attach runtime event handlers for actions that need JS (scroll-to, open-modal, show-hide, toggle-theme).
  * Link-type actions (link-url, link-page, email, phone) are handled via href — no JS needed.
  */
 export function addActionHandlers(
@@ -130,6 +131,31 @@ export function addActionHandlers(
       e.preventDefault();
       const el = document.getElementById(action.anchor);
       if (el) dispatchModal(el, "toggle");
+    };
+    return;
+  }
+
+  if (action.type === "toggle-theme") {
+    prop.onClick = (e: any) => {
+      if (enabled) return;
+      e.preventDefault();
+      const ta = action as ToggleThemeAction;
+      const next = !document.documentElement.classList.contains("dark");
+      document.documentElement.classList.add("theme-transition");
+      if (next) {
+        document.documentElement.classList.add("dark");
+        phStorage.set("theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        phStorage.set("theme", "light");
+      }
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove("theme-transition");
+      });
+      if (ta.dismissTarget) {
+        const el = document.getElementById(ta.dismissTarget);
+        if (el) hideElement(el as HTMLElement, ta.dismissMethod || "style");
+      }
     };
     return;
   }

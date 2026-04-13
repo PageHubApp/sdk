@@ -45,7 +45,7 @@ export {
   isHandlerAction,
   ACTION_TYPE_OPTIONS,
 } from "./action";
-export type { NodeAction, ActionType, LinkTarget } from "./action";
+export type { NodeAction, ActionType, LinkTarget, ToggleThemeAction } from "./action";
 
 // Design system
 export {

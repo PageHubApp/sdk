@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./theme.css";
 @import "../../daisyui-spatial/src/index.css";
+@import "./css/woh-chain-spotlight.css";
 
 @source "./";
 

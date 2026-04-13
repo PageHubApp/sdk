@@ -16,7 +16,8 @@ export type ActionType =
   | "phone"
   | "show-hide"
   | "copy-to-clipboard"
-  | "download-file";
+  | "download-file"
+  | "toggle-theme";
 
 interface ActionBase {
   type: ActionType;
@@ -76,6 +77,14 @@ export interface DownloadFileAction extends ActionBase {
   filename?: string;
 }
 
+/** Toggle `html.dark` and persist `ph-theme` (same contract as editor chrome + _document bootstrap). */
+export interface ToggleThemeAction extends ActionBase {
+  type: "toggle-theme";
+  /** Optional element id to hide after toggling (e.g. mobile drawer `woh-mobile-nav`). */
+  dismissTarget?: string;
+  dismissMethod?: "class" | "style";
+}
+
 export type NodeAction =
   | LinkUrlAction
   | LinkPageAction
@@ -85,7 +94,8 @@ export type NodeAction =
   | PhoneAction
   | ShowHideAction
   | CopyToClipboardAction
-  | DownloadFileAction;
+  | DownloadFileAction
+  | ToggleThemeAction;
 
 export type LinkTarget = "_self" | "_blank" | "_parent" | "_top";
 
@@ -108,14 +118,14 @@ export function isLinkAction(
 /** Actions that need JS event handlers at runtime */
 export function isHandlerAction(
   action: NodeAction | null | undefined
-): action is OpenModalAction | ShowHideAction {
+): action is OpenModalAction | ShowHideAction | ToggleThemeAction {
   if (!action) return false;
-  return action.type === "open-modal" || action.type === "show-hide";
+  return action.type === "open-modal" || action.type === "show-hide" || action.type === "toggle-theme";
 }
 
 /**
  * Resolve any action to an href string for <a> tags and static HTML.
- * Returns null for actions that only work via JS handlers (open-modal, show-hide).
+ * Returns null for actions that only work via JS handlers (open-modal, show-hide, toggle-theme).
  */
 export function actionToHref(
   action: NodeAction | null | undefined,
@@ -149,6 +159,7 @@ export function actionToHref(
 
     case "open-modal":
     case "show-hide":
+    case "toggle-theme":
       return null; // Handled by JS
   }
 }
@@ -214,4 +225,5 @@ export const ACTION_TYPE_OPTIONS: { value: ActionType; label: string }[] = [
   { value: "show-hide", label: "Show / Hide" },
   { value: "copy-to-clipboard", label: "Copy to Clipboard" },
   { value: "download-file", label: "Download File" },
+  { value: "toggle-theme", label: "Toggle light / dark" },
 ];

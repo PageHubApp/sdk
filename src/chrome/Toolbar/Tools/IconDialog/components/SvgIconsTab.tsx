@@ -87,21 +87,22 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
             if (index >= d.filteredSvgIcons.length) return null;
 
             const icon = d.filteredSvgIcons[index];
-            const iconRef = `ref-icon:${icon}`;
+            // Convert path "/icons/fa/brands/facebook.svg" → "brands/facebook"
+            const key = icon.replace(/^\/icons\/fa\//, "").replace(/\.svg$/, "");
+            const iconRef = `ref-icon:${key}`;
             const isSelected = d.selectedIcon === iconRef;
             const isFocused = d.focusedSvgIconIndex === index;
             const iconName =
-              icon
+              key
                 .split("/")
                 .pop()
-                ?.replace(/\.svg$/, "")
-                .replace(/-/g, " ") || "";
+                ?.replace(/-/g, " ") || "";
 
             return (
               <div style={style}>
                 <button
-                  onClick={() => d.handleSvgIconClick(iconRef, icon)}
-                  onDoubleClick={() => d.handleSvgIconDoubleClick(icon)}
+                  onClick={() => d.handleSvgIconClick(iconRef)}
+                  onDoubleClick={() => d.handleSvgIconDoubleClick(iconRef)}
                   className={`flex size-full cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg border p-1 ${
                     isSelected
                       ? "border-primary bg-primary/10 text-primary"

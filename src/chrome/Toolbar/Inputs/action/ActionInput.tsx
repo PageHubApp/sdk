@@ -14,6 +14,7 @@ import {
   type ActionType,
   type NodeAction,
   type LinkTarget,
+  type ToggleThemeAction,
   migrateAction,
 } from "../../../../utils/action";
 import { useElementPicker, type PickerFilter } from "./useElementPicker";
@@ -28,6 +29,7 @@ const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
   "show-hide": { type: "show-hide", target: "", direction: "toggle", trigger: "click" },
   "copy-to-clipboard": { type: "copy-to-clipboard", text: "" },
   "download-file": { type: "download-file", url: "" },
+  "toggle-theme": { type: "toggle-theme" },
 };
 
 export default function ActionInput() {
@@ -190,9 +192,44 @@ function ActionSubForm({ action, patch }: { action: NodeAction; patch: (p: any) 
       return <CopyToClipboardForm action={action} patch={patch} />;
     case "download-file":
       return <DownloadFileForm action={action} patch={patch} />;
+    case "toggle-theme":
+      return <ToggleThemeForm action={action as ToggleThemeAction} patch={patch} />;
     default:
       return null;
   }
+}
+
+function ToggleThemeForm({
+  action,
+  patch,
+}: {
+  action: ToggleThemeAction;
+  patch: (p: any) => void;
+}) {
+  return (
+    <>
+      <p className="text-neutral-content text-[10px] leading-snug">
+        Toggles the site light/dark preference (stored in <code className="text-[9px]">ph-theme</code>
+        , same as the editor chrome).
+      </p>
+      <ElementPickerForm
+        value={action.dismissTarget || ""}
+        filter="all"
+        label="Hide panel after toggle (optional id)"
+        onChange={(dismissTarget: string) => patch({ dismissTarget: dismissTarget || undefined })}
+      />
+      {action.dismissTarget ? (
+        <ToolbarDropdown
+          value={action.dismissMethod || "style"}
+          onChange={(val: string) => patch({ dismissMethod: val as "class" | "style" })}
+          propKey="toggleThemeDismissMethod"
+        >
+          <option value="style">Hide: style (display:none)</option>
+          <option value="class">Hide: .hidden class</option>
+        </ToolbarDropdown>
+      ) : null}
+    </>
+  );
 }
 
 // ─── Sub-forms ─────────────────────────────────────────────────────────

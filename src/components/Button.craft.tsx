@@ -9,6 +9,7 @@ import {
 } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ButtonMainTab";
 import { defineComponent } from "../define";
 import { migrateAction, actionToHref, actionTarget } from "../utils/action";
+import { iconRegistry } from "../utils/data/icon-registry";
 import { PH_GOOGLE_ICON_DATA_ATTR, PH_MS_FONT_PENDING_CLASS } from "../utils/materialSymbolsReveal";
 import {
   ariaAttrs,
@@ -73,6 +74,16 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         .join(" ");
       collectClasses(ic, ctx);
       iconHTML = `<span class="${escapeAttr(ic)}" ${PH_GOOGLE_ICON_DATA_ATTR}="1" aria-hidden="true">${escapeHTML(name)}</span>`;
+    } else if (icon.value.startsWith("ref-icon:")) {
+      const key = icon.value.replace("ref-icon:", "");
+      const entry = iconRegistry[key];
+      if (entry) {
+        const ic = [icon.size, icon.color || "fill-current", "flex items-center justify-center"]
+          .filter(Boolean)
+          .join(" ");
+        collectClasses(ic, ctx);
+        iconHTML = `<span class="${escapeAttr(ic)}" aria-hidden="true"><svg fill="currentColor" viewBox="${entry.viewBox}" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">${entry.svg}</svg></span>`;
+      }
     } else if (icon.value.startsWith("ref-")) {
       const ic = [icon.size, icon.color || "fill-current", "flex items-center justify-center"]
         .filter(Boolean)

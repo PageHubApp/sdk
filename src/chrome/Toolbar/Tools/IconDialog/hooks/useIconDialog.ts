@@ -4,7 +4,7 @@ import { useAtomState } from "@zedux/react";
 import { GoogleIconDialogAtom } from "../../dialogAtoms";
 import googleIcons from "utils/googleIcons.json";
 import { getMediaContent, getStyleSheets } from "utils/lib";
-import iconList from "utils/icons.json";
+import { iconCategories } from "../../../../../utils/data/icon-registry";
 
 export const GOOGLE_CATEGORIES = [
   { id: "all", label: "All" },
@@ -108,14 +108,16 @@ export function useIconDialog() {
     );
   }, [_icons, searchValue]);
 
+  // Derive FA paths from registry keys for preview rendering
   const svgIcons = useMemo(() => {
+    const toPath = (key: string) => `/icons/fa/${key}.svg`;
     if (svgCategory === "all")
       return [
-        ...(iconList as Record<string, string[]>).regular,
-        ...(iconList as Record<string, string[]>).brands,
-        ...(iconList as Record<string, string[]>).solid,
+        ...(iconCategories.regular || []).map(toPath),
+        ...(iconCategories.brands || []).map(toPath),
+        ...(iconCategories.solid || []).map(toPath),
       ];
-    return (iconList as Record<string, string[]>)[svgCategory] || [];
+    return (iconCategories[svgCategory] || []).map(toPath);
   }, [svgCategory]);
 
   const filteredSvgIcons = useMemo(() => {
@@ -200,28 +202,15 @@ export function useIconDialog() {
 
   const handleIconDoubleClick = (iconName: string) => changed(iconName);
 
-  const handleSvgIconClick = async (iconRef: string, iconPath: string) => {
+  const handleSvgIconClick = (iconRef: string) => {
     setSelectedIcon(iconRef);
-    if (dialog.changed) {
-      try {
-        const response = await fetch(iconPath);
-        dialog.changed(await response.text());
-      } catch (error) {
-        console.error("Error loading SVG:", error);
-      }
-    }
+    dialog.changed?.(iconRef);
   };
 
-  const handleSvgIconDoubleClick = async (icon: string) => {
+  const handleSvgIconDoubleClick = (iconRef: string) => {
     if (dialog.changed) {
-      try {
-        const response = await fetch(icon);
-        const svgText = await response.text();
-        setDialog({ ...dialog, value: svgText, enabled: false });
-        dialog.changed(svgText);
-      } catch (error) {
-        console.error("Error loading SVG:", error);
-      }
+      setDialog({ ...dialog, value: iconRef, enabled: false });
+      dialog.changed(iconRef);
     }
   };
 
@@ -310,8 +299,10 @@ export function useIconDialog() {
             setSelectedIcon(`ref-google:${icons[focusIdx]}`);
             changed(icons[focusIdx]);
           } else if (activeTab === "icons" && icons[focusIdx]) {
-            setSelectedIcon(`ref-icon:${icons[focusIdx]}`);
-            handleSvgIconDoubleClick(icons[focusIdx]);
+            const key = icons[focusIdx].replace(/^\/icons\/fa\//, "").replace(/\.svg$/, "");
+            const iconRef = `ref-icon:${key}`;
+            setSelectedIcon(iconRef);
+            handleSvgIconDoubleClick(iconRef);
           }
           break;
         case "Escape":

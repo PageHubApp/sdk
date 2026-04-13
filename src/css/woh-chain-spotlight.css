@@ -1,0 +1,250 @@
+/* Hero causality row — sequential spotlight (FOUC + main SDK bundle).
+   0% and 100% match (rest) on each card so the infinite loop has no pop at the seam.
+   Linear timing avoids ease-in-out slowing at the repeat boundary. */
+
+@keyframes woh-chain-1 {
+  0%,
+  4% {
+    border-color: color-mix(in oklch, var(--b3, var(--base-300)) 78%, transparent);
+    transform: scale(1);
+  }
+  6%,
+  24% {
+    border-color: var(--primary);
+    transform: scale(1.042);
+  }
+  27%,
+  100% {
+    border-color: color-mix(in oklch, var(--b3, var(--base-300)) 78%, transparent);
+    transform: scale(1);
+  }
+}
+
+@keyframes woh-chain-2 {
+  0%,
+  28% {
+    border-color: color-mix(in oklch, var(--b3, var(--base-300)) 78%, transparent);
+    transform: scale(1);
+  }
+  30%,
+  52% {
+    border-color: var(--primary);
+    transform: scale(1.042);
+  }
+  55%,
+  100% {
+    border-color: color-mix(in oklch, var(--b3, var(--base-300)) 78%, transparent);
+    transform: scale(1);
+  }
+}
+
+@keyframes woh-chain-3 {
+  0%,
+  58% {
+    border-color: color-mix(in oklch, var(--b3, var(--base-300)) 78%, transparent);
+    transform: scale(1);
+  }
+  60%,
+  80% {
+    border-color: var(--primary);
+    transform: scale(1.042);
+  }
+  83%,
+  100% {
+    border-color: color-mix(in oklch, var(--b3, var(--base-300)) 78%, transparent);
+    transform: scale(1);
+  }
+}
+
+.animate-css-woh-chain-1 {
+  animation: woh-chain-1 9s linear infinite;
+}
+.animate-css-woh-chain-2 {
+  animation: woh-chain-2 9s linear infinite;
+}
+.animate-css-woh-chain-3 {
+  animation: woh-chain-3 9s linear infinite;
+}
+
+/* Verbs grid — four cards, same spotlight rhythm (12s, seamless loop). */
+
+/* Inset ring via box-shadow (not border) so tiles can sit in a gap-px grid without doubled strokes. */
+@keyframes woh-verb-1 {
+  0%,
+  3% {
+    box-shadow: inset 0 0 0 0 transparent;
+    background-color: var(--base-100);
+  }
+  5%,
+  20% {
+    box-shadow: inset 0 0 0 2px var(--primary);
+    background-color: color-mix(in oklab, var(--primary) 5%, var(--base-100));
+  }
+  23%,
+  100% {
+    box-shadow: inset 0 0 0 0 transparent;
+    background-color: var(--base-100);
+  }
+}
+
+@keyframes woh-verb-2 {
+  0%,
+  22% {
+    box-shadow: inset 0 0 0 0 transparent;
+    background-color: var(--base-100);
+  }
+  24%,
+  44% {
+    box-shadow: inset 0 0 0 2px var(--primary);
+    background-color: color-mix(in oklab, var(--primary) 5%, var(--base-100));
+  }
+  47%,
+  100% {
+    box-shadow: inset 0 0 0 0 transparent;
+    background-color: var(--base-100);
+  }
+}
+
+@keyframes woh-verb-3 {
+  0%,
+  46% {
+    box-shadow: inset 0 0 0 0 transparent;
+    background-color: var(--base-100);
+  }
+  48%,
+  68% {
+    box-shadow: inset 0 0 0 2px var(--primary);
+    background-color: color-mix(in oklab, var(--primary) 5%, var(--base-100));
+  }
+  71%,
+  100% {
+    box-shadow: inset 0 0 0 0 transparent;
+    background-color: var(--base-100);
+  }
+}
+
+@keyframes woh-verb-4 {
+  0%,
+  70% {
+    box-shadow: inset 0 0 0 0 transparent;
+    background-color: var(--base-100);
+  }
+  72%,
+  92% {
+    box-shadow: inset 0 0 0 2px var(--primary);
+    background-color: color-mix(in oklab, var(--primary) 5%, var(--base-100));
+  }
+  95%,
+  100% {
+    box-shadow: inset 0 0 0 0 transparent;
+    background-color: var(--base-100);
+  }
+}
+
+.animate-css-woh-verb-1 {
+  animation: woh-verb-1 12s linear infinite;
+}
+.animate-css-woh-verb-2 {
+  animation: woh-verb-2 12s linear infinite;
+}
+.animate-css-woh-verb-3 {
+  animation: woh-verb-3 12s linear infinite;
+}
+.animate-css-woh-verb-4 {
+  animation: woh-verb-4 12s linear infinite;
+}
+
+/* Inner “reveal” — same windows as each tile’s border spotlight (not hover-only). */
+
+@keyframes woh-verb-reveal-1 {
+  0%,
+  3% {
+    opacity: 0;
+  }
+  5%,
+  20% {
+    opacity: 1;
+  }
+  23%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes woh-verb-reveal-2 {
+  0%,
+  22% {
+    opacity: 0;
+  }
+  24%,
+  44% {
+    opacity: 1;
+  }
+  47%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes woh-verb-reveal-3 {
+  0%,
+  46% {
+    opacity: 0;
+  }
+  48%,
+  68% {
+    opacity: 1;
+  }
+  71%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes woh-verb-reveal-4 {
+  0%,
+  70% {
+    opacity: 0;
+  }
+  72%,
+  92% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-css-woh-verb-reveal-1 {
+  animation: woh-verb-reveal-1 12s linear infinite;
+}
+.animate-css-woh-verb-reveal-2 {
+  animation: woh-verb-reveal-2 12s linear infinite;
+}
+.animate-css-woh-verb-reveal-3 {
+  animation: woh-verb-reveal-3 12s linear infinite;
+}
+.animate-css-woh-verb-reveal-4 {
+  animation: woh-verb-reveal-4 12s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-css-woh-chain-1,
+  .animate-css-woh-chain-2,
+  .animate-css-woh-chain-3,
+  .animate-css-woh-verb-1,
+  .animate-css-woh-verb-2,
+  .animate-css-woh-verb-3,
+  .animate-css-woh-verb-4 {
+    animation: none !important;
+  }
+
+  .animate-css-woh-verb-reveal-1,
+  .animate-css-woh-verb-reveal-2,
+  .animate-css-woh-verb-reveal-3,
+  .animate-css-woh-verb-reveal-4 {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}

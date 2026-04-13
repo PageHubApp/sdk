@@ -31,6 +31,7 @@ import { ModifiersInput } from "../../Inputs/modifiers/ModifiersInput";
 import { FontInput } from "../../Inputs/typography/FontInput";
 import { ContainerScrollEffectSection } from "../mainTabs/ContainerScrollEffectSection";
 import { NodeAiContextSection } from "../mainTabs/NodeAiContextSection";
+import "./PermissionsSection";
 const ComponentImportExport = React.lazy(() =>
   import("../../Inputs/advanced/ComponentImportExport").then(m => ({
     default: m.ComponentImportExport,

@@ -11,7 +11,9 @@ import { NodeInlineTooltip } from "./Tools/NodeInlineTooltip";
 export const DeleteNodeController = () => {
   const { id, displayName, canDelete } = useNode(node => ({
     id: node.id,
-    canDelete: node.data.props?.canDelete !== false,
+    canDelete:
+      node.data.props?.canDelete !== false &&
+      node.data.custom?.permissions?.canDelete !== false,
     displayName:
       (node.data.custom?.displayName as string | undefined) ||
       (node.data.displayName as string | undefined) ||

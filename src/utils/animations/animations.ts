@@ -138,6 +138,50 @@ export const cssAnimationPresets: Record<string, CSSAnimationPreset> = {
     label: "Wiggle",
     group: "Continuous",
   },
+  /** Three-phase loop for a horizontal “causality” card row (use one preset per card in order). */
+  cssWohChain1: {
+    animateClass: "animate-css-woh-chain-1",
+    trigger: "continuous",
+    label: "Chain spotlight — card 1",
+    group: "Continuous",
+  },
+  cssWohChain2: {
+    animateClass: "animate-css-woh-chain-2",
+    trigger: "continuous",
+    label: "Chain spotlight — card 2",
+    group: "Continuous",
+  },
+  cssWohChain3: {
+    animateClass: "animate-css-woh-chain-3",
+    trigger: "continuous",
+    label: "Chain spotlight — card 3",
+    group: "Continuous",
+  },
+  /** Four-phase loop for verb tiles (grammar row). */
+  cssWohVerb1: {
+    animateClass: "animate-css-woh-verb-1",
+    trigger: "continuous",
+    label: "Verb spotlight — tile 1",
+    group: "Continuous",
+  },
+  cssWohVerb2: {
+    animateClass: "animate-css-woh-verb-2",
+    trigger: "continuous",
+    label: "Verb spotlight — tile 2",
+    group: "Continuous",
+  },
+  cssWohVerb3: {
+    animateClass: "animate-css-woh-verb-3",
+    trigger: "continuous",
+    label: "Verb spotlight — tile 3",
+    group: "Continuous",
+  },
+  cssWohVerb4: {
+    animateClass: "animate-css-woh-verb-4",
+    trigger: "continuous",
+    label: "Verb spotlight — tile 4",
+    group: "Continuous",
+  },
 };
 
 /** Check if an animation key is a CSS preset (starts with "css") */

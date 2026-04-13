@@ -5,7 +5,7 @@ import { IconDialogAtom } from "./dialogAtoms";
 import { Dialog } from "./Dialog";
 import { IconLoader } from "./IconLoader";
 
-import iconList from "utils/icons.json";
+import { iconCategories } from "../../../utils/data/icon-registry";
 
 export { IconDialogAtom } from "./dialogAtoms";
 
@@ -16,29 +16,28 @@ export const IconDialogDialog = () => {
   const [searchValue, setSearchValue] = useState("");
   const gridRef = useRef(null);
 
-  const changed = async value => {
+  const changed = (iconPath: string) => {
     if (dialog.changed) {
-      const response = await fetch(value);
-      const svgText = await response.text();
-      setSvgDataUri(svgText);
-
-      setDialog({ ...dialog, value: svgText, enabled: false });
-      dialog.changed(svgText);
+      // Convert path to ref-icon: format
+      const key = iconPath.replace(/^\/icons\/fa\//, "").replace(/\.svg$/, "");
+      const iconRef = `ref-icon:${key}`;
+      setSvgDataUri(iconRef);
+      setDialog({ ...dialog, value: iconRef, enabled: false });
+      dialog.changed(iconRef);
     }
   };
 
+  // Derive FA paths from registry keys for preview rendering
+  const toPath = (key: string) => `/icons/fa/${key}.svg`;
   const _icons = useMemo(() => {
-    let icons = [];
     if (category === "all") {
-      icons = [...iconList.regular, ...iconList.brands, ...iconList.solid];
-    } else if (category === "regular") {
-      icons = iconList.regular;
-    } else if (category === "brands") {
-      icons = iconList.brands;
-    } else if (category === "solid") {
-      icons = iconList.solid;
+      return [
+        ...(iconCategories.regular || []).map(toPath),
+        ...(iconCategories.brands || []).map(toPath),
+        ...(iconCategories.solid || []).map(toPath),
+      ];
     }
-    return icons;
+    return (iconCategories[category] || []).map(toPath);
   }, [category]);
 
   const filteredIcons = useMemo(() => {
