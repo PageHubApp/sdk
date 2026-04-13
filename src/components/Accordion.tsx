@@ -26,6 +26,7 @@ export const Accordion = ({
     isActive: q.getEvent("selected").contains(id),
   }));
 
+  const wrapperRef = React.useRef<HTMLElement>(null);
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
     setIsMounted(true);
@@ -47,24 +48,19 @@ export const Accordion = ({
     });
   }, [enabled, isMounted, id]);
 
-  // Single-open behavior: close sibling <details> when one opens
+  // Single-open behavior: shared `name` attribute on <details> elements
+  // gives native browser exclusive toggle — no JS event needed, no flash.
   useEffect(() => {
     if (enabled || props.multiOpen) return;
     if (!isMounted) return;
 
-    const el = document.querySelector(`[node-id="${id}"]`) as HTMLElement;
+    const el = wrapperRef.current;
     if (!el) return;
 
-    const handler = (e: Event) => {
-      const target = e.target as HTMLDetailsElement;
-      if (target.tagName !== "DETAILS" || !target.open) return;
-      el.querySelectorAll("details[open]").forEach(d => {
-        if (d !== target) (d as HTMLDetailsElement).open = false;
-      });
-    };
-
-    el.addEventListener("toggle", handler, true);
-    return () => el.removeEventListener("toggle", handler, true);
+    const groupName = `accordion-${id}`;
+    el.querySelectorAll(":scope > * > details, :scope > details").forEach(d => {
+      (d as HTMLDetailsElement).setAttribute("name", groupName);
+    });
   }, [enabled, isMounted, props.multiOpen, id]);
 
   // Default open on viewer mount
@@ -72,17 +68,20 @@ export const Accordion = ({
     if (enabled || !isMounted) return;
     if (props.defaultOpen == null || props.defaultOpen < 0) return;
 
-    const el = document.querySelector(`[node-id="${id}"]`) as HTMLElement;
+    const el = wrapperRef.current;
     if (!el) return;
 
     const details = el.querySelectorAll(":scope > * details, :scope > details");
     if (details[props.defaultOpen]) {
       (details[props.defaultOpen] as HTMLDetailsElement).open = true;
     }
-  }, [enabled, isMounted, props.defaultOpen, id]);
+  }, [enabled, isMounted, props.defaultOpen]);
 
   const prop: any = {
-    ref: (ref: any) => connect(ref),
+    ref: (ref: any) => {
+      wrapperRef.current = ref;
+      connect(ref);
+    },
     className: props.className || "flex flex-col w-full",
     style: props.root?.style ? CSStoObj(props.root.style) : undefined,
   };
