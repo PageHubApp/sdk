@@ -34,6 +34,20 @@ const STYLE_VAR_OVERRIDES: Record<string, string> = {
 /** Keys whose CSS output should be wrapped in calc(<value> * var(--spacing-density)) */
 const DENSITY_SCALED_KEYS = new Set(["spaceXs", "spaceSm", "spaceMd", "spaceLg", "spaceXl"]);
 
+/** Map human-readable spacing density names to numeric multipliers.
+ *  CSS calc() requires a number — `calc(2.5rem * comfortable)` is invalid and resolves to 0. */
+const SPACING_DENSITY_NAMES: Record<string, string> = {
+  minimal: "0.75",
+  tight: "0.75",
+  compact: "0.85",
+  default: "1",
+  normal: "1",
+  comfortable: "1.125",
+  generous: "1.25",
+  spacious: "1.5",
+  ultra: "2.5",
+};
+
 /**
  * Convert a name to a valid CSS variable name
  * "Primary Text" -> "primary-text"
@@ -249,6 +263,17 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
       } else {
         // For non-palette values, resolve Tailwind colors to actual hex values
         resolvedValue = resolveTailwindColor(value);
+      }
+
+      // Normalize spacingDensity: convert word names to numeric multipliers
+      if (key === "spacingDensity") {
+        const lower = resolvedValue.toLowerCase().trim();
+        if (SPACING_DENSITY_NAMES[lower]) {
+          resolvedValue = SPACING_DENSITY_NAMES[lower];
+        } else if (isNaN(Number(resolvedValue))) {
+          // Not a recognized name and not a number — fall back to 1
+          resolvedValue = "1";
+        }
       }
 
       if (key.endsWith("FontFamily")) {
