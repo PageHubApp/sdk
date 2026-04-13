@@ -101,11 +101,7 @@ const THEME_CSS = `
   --radius-2xl: 1rem;
   --radius-3xl: 1.5rem;
 
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite alternate;
-  --animate-slide-up: slide-up 0.8s ease-out forwards;
-  --animate-slide-down: slide-down 0.8s ease-out forwards;
-  --animate-fade-in: fade-in 1s ease-out forwards;
+
 }
 `;
 

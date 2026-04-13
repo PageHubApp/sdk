@@ -138,48 +138,73 @@ export const cssAnimationPresets: Record<string, CSSAnimationPreset> = {
     label: "Wiggle",
     group: "Continuous",
   },
-  /** Three-phase loop for a horizontal “causality” card row (use one preset per card in order). */
-  cssWohChain1: {
-    animateClass: "animate-css-woh-chain-1",
+  cssMarquee: {
+    animateClass: "animate-css-marquee",
     trigger: "continuous",
-    label: "Chain spotlight — card 1",
+    label: "Marquee",
     group: "Continuous",
   },
-  cssWohChain2: {
-    animateClass: "animate-css-woh-chain-2",
+  cssMarqueeSlow: {
+    animateClass: "animate-css-marquee-slow",
     trigger: "continuous",
-    label: "Chain spotlight — card 2",
+    label: "Marquee Slow",
     group: "Continuous",
   },
-  cssWohChain3: {
-    animateClass: "animate-css-woh-chain-3",
+  /** Three-phase loop: sequential border spotlight across a horizontal card row (9s). */
+  cssChainSpotlight1: {
+    animateClass: "animate-css-chain-spotlight-1",
     trigger: "continuous",
-    label: "Chain spotlight — card 3",
+    label: "Chain spotlight \u2014 card 1",
     group: "Continuous",
   },
-  /** Four-phase loop for verb tiles (grammar row). */
-  cssWohVerb1: {
-    animateClass: "animate-css-woh-verb-1",
+  cssChainSpotlight2: {
+    animateClass: "animate-css-chain-spotlight-2",
     trigger: "continuous",
-    label: "Verb spotlight — tile 1",
+    label: "Chain spotlight \u2014 card 2",
     group: "Continuous",
   },
-  cssWohVerb2: {
-    animateClass: "animate-css-woh-verb-2",
+  cssChainSpotlight3: {
+    animateClass: "animate-css-chain-spotlight-3",
     trigger: "continuous",
-    label: "Verb spotlight — tile 2",
+    label: "Chain spotlight \u2014 card 3",
     group: "Continuous",
   },
-  cssWohVerb3: {
-    animateClass: "animate-css-woh-verb-3",
+  /** Edge labels that sync with chain spotlight cards (9s, same loop). */
+  cssChainLabel1: {
+    animateClass: "animate-css-chain-label-1",
     trigger: "continuous",
-    label: "Verb spotlight — tile 3",
+    label: "Chain label \u2014 with card 2",
     group: "Continuous",
   },
-  cssWohVerb4: {
-    animateClass: "animate-css-woh-verb-4",
+  cssChainLabel2: {
+    animateClass: "animate-css-chain-label-2",
     trigger: "continuous",
-    label: "Verb spotlight — tile 4",
+    label: "Chain label \u2014 with card 3",
+    group: "Continuous",
+  },
+  /** Four-phase loop: sequential highlight across a grid of tiles (12s). */
+  cssGridSpotlight1: {
+    animateClass: "animate-css-grid-spotlight-1",
+    trigger: "continuous",
+    label: "Grid spotlight \u2014 tile 1",
+    group: "Continuous",
+  },
+  cssGridSpotlight2: {
+    animateClass: "animate-css-grid-spotlight-2",
+    trigger: "continuous",
+    label: "Grid spotlight \u2014 tile 2",
+    group: "Continuous",
+  },
+  cssGridSpotlight3: {
+    animateClass: "animate-css-grid-spotlight-3",
+    trigger: "continuous",
+    label: "Grid spotlight \u2014 tile 3",
+    group: "Continuous",
+  },
+  cssGridSpotlight4: {
+    animateClass: "animate-css-grid-spotlight-4",
+    trigger: "continuous",
+    label: "Grid spotlight \u2014 tile 4",
     group: "Continuous",
   },
 };

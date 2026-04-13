@@ -333,7 +333,8 @@ Partials that use `@apply` / `@utility` rely on **`editor-partials/tailwind-them
 | Toolbar inputs, buttons, sliders                                  | `editor-partials/toolbar-forms.css`            |
 | Third-party (e.g. Sketch color picker)                            | `editor-partials/third-party.css`              |
 | HeadlessUI listbox (`ph-select-*`)                                | `editor-partials/dropdowns.css`                |
-| Scroll/hover presets + `css-*` keyframes                          | `editor-partials/animations.css`               |
+| Scroll/hover presets + `css-*` keyframes                          | `styles.css` (animation presets section)       |
+| Sequential spotlight presets (chain/grid)                          | `css/spotlight-presets.css`                     |
 
 ### Naming contract (integrators & contributors)
 
