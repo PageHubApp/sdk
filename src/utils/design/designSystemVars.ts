@@ -261,8 +261,9 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
         const parts = resolvedValue.split(" ");
         if (parts.length === 2) {
           variables.push(`  --${varName}: ${resolvedValue};`);
-          variables.push(`  --${varName}-x: ${parts[0]};`);
-          variables.push(`  --${varName}-y: ${parts[1]};`);
+          // CSS shorthand is "Y X" (vertical first, horizontal second)
+          variables.push(`  --${varName}-y: ${parts[0]};`);
+          variables.push(`  --${varName}-x: ${parts[1]};`);
         } else {
           variables.push(`  --${varName}: ${resolvedValue};`);
           variables.push(`  --${varName}-x: ${resolvedValue};`);
@@ -277,12 +278,6 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
     }
   });
 
-  // Backward-compat aliases: map old tokens to new spatial scale.
-  // These come after the direct emissions, so the alias values win in CSS.
-  if (styleGuide.spaceSm) {
-    variables.push(`  --section-gap: var(--space-md);`);
-    variables.push(`  --container-gap: var(--space-sm);`);
-  }
 
   return variables.join("\n");
 }
