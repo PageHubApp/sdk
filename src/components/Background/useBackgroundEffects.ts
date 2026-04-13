@@ -95,57 +95,32 @@ export function useBackgroundEffects({
     const existingStyle = document.getElementById(styleId);
     if (existingStyle) head.removeChild(existingStyle);
 
+    // Link underline/offset settings — injected at @layer base so utilities can override.
+    // Link COLOR is handled by static CSS in styles.css using --link-color / --link-hover-color vars.
     const theme = resolveTheme(props);
     if (theme.styleGuide) {
-      const resolveLinkColor = (colorValue: string | undefined): string => {
-        if (!colorValue) return "inherit";
-        if (colorValue.startsWith("palette:")) {
-          const paletteName = colorValue.replace("palette:", "");
-          const paletteColor = (theme.palette as NamedColor[]).find(p => p.name === paletteName);
-          if (paletteColor) return resolveLinkColor(paletteColor.color);
-        }
-        if (
-          colorValue.includes("-") &&
-          !colorValue.startsWith("#") &&
-          !colorValue.startsWith("rgb")
-        ) {
-          const colorMap: Record<string, string> = {
-            "blue-500": "#3b82f6",
-            "purple-500": "#a855f7",
-            "orange-500": "#f97316",
-            "gray-500": "#6b7280",
-            "gray-900": "#111827",
-            "gray-50": "#f9fafb",
-            "gray-600": "#4b5563",
-            white: "#ffffff",
-            black: "#000000",
-          };
-          return colorMap[colorValue] || colorValue;
-        }
-        return colorValue;
-      };
+      const underline = theme.styleGuide.linkUnderline;
+      const offset = theme.styleGuide.linkUnderlineOffset;
+      const rules: string[] = [];
 
-      const selector = enabled
-        ? 'main[data-renderer="true"] a:not([class*="no-style"]):not([data-button-link])'
-        : '[data-ph-site] a:not([class*="no-style"]):not([data-button-link])';
+      if (underline === "underline") rules.push("text-decoration: underline;");
+      else if (underline === "no-underline") rules.push("text-decoration: none;");
 
-      const linkStyles = `
-        ${selector} {
-          color: ${resolveLinkColor(theme.styleGuide.linkColor)};
-          ${theme.styleGuide.linkUnderline === "underline" ? "text-decoration: underline;" : theme.styleGuide.linkUnderline === "no-underline" ? "text-decoration: none;" : ""};
-          ${theme.styleGuide.linkUnderlineOffset && theme.styleGuide.linkUnderlineOffset !== "underline-offset-auto" ? `text-underline-offset: ${theme.styleGuide.linkUnderlineOffset.replace("underline-offset-", "")}px;` : ""};
-          transition: color 150ms ease-in-out;
-        }
-        ${selector}:hover {
-          color: ${resolveLinkColor(theme.styleGuide.linkHoverColor)};
-          ${theme.styleGuide.linkUnderline === "hover:underline" ? "text-decoration: underline;" : ""};
-        }
-      `;
+      if (offset && offset !== "underline-offset-auto") {
+        rules.push(`text-underline-offset: ${offset.replace("underline-offset-", "")}px;`);
+      }
 
-      const style = document.createElement("style");
-      style.id = styleId;
-      style.textContent = linkStyles;
-      head.appendChild(style);
+      if (rules.length || underline === "hover:underline") {
+        const scope = enabled ? 'main[data-renderer="true"]' : ".pagehub-sdk-root";
+        const linkStyles = `@layer base {
+          ${rules.length ? `${scope} a { ${rules.join(" ")} }` : ""}
+          ${underline === "hover:underline" ? `${scope} a:hover { text-decoration: underline; }` : ""}
+        }`;
+        const style = document.createElement("style");
+        style.id = styleId;
+        style.textContent = linkStyles;
+        head.appendChild(style);
+      }
     }
 
     return () => {

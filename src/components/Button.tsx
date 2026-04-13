@@ -290,9 +290,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
   // Tab button: mark with data attribute for active state tracking
   if (action?.type === "show-hide" && action.direction === "tab") {
     prop["data-tab-button"] = "true";
-    if (!prop["data-tab-active"]) {
-      prop["data-tab-active"] = "true";
-    }
+    prop["data-tab-active"] = props.defaultActive === true ? "true" : "false";
   }
 
   if (enabled) {

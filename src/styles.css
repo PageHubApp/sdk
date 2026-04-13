@@ -38,11 +38,24 @@
   --animate-css-flip-in: css-flip-in 0.6s ease-out both;
   --animate-css-spring: css-spring 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
   --animate-css-bounce-in: css-bounce-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  --animate-css-thud-in: css-thud-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-css-tile-flip: css-tile-flip 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-css-spin: css-spin 2s linear infinite;
   --animate-css-pulse: css-pulse 2s ease-in-out infinite;
   --animate-css-wiggle: css-wiggle 1s ease-in-out infinite;
   --animate-css-marquee: css-marquee 40s linear infinite;
   --animate-css-marquee-slow: css-marquee 60s linear infinite;
+}
+
+/* ─── Link base styles (design-system driven, overridable by any utility) ── */
+@layer base {
+  .pagehub-sdk-root a {
+    color: var(--link-color);
+    transition: color 150ms ease-in-out;
+  }
+  .pagehub-sdk-root a:hover {
+    color: var(--link-hover-color, var(--link-color));
+  }
 }
 
 /* ─── CSS Animation Scroll Trigger ─────────────────────────────────────── */
@@ -249,6 +262,50 @@
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes css-thud-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  58% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  78% {
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes css-tile-flip {
+  0% {
+    opacity: 0;
+    transform: perspective(160px) rotateX(-52deg) scale(0.92);
+    background-color: var(--tile-flip-from, #f3f4f6);
+    color: var(--tile-flip-color-from, #111827);
+  }
+  36% {
+    opacity: 1;
+    transform: perspective(160px) rotateX(0deg) scale(1);
+  }
+  54% {
+    transform: perspective(160px) rotateX(78deg) scale(1);
+  }
+  55% {
+    background-color: var(--tile-flip-to, #787c7e);
+    color: var(--tile-flip-color-to, #ffffff);
+    transform: perspective(160px) rotateX(78deg) scale(1);
+  }
+  100% {
+    transform: perspective(160px) rotateX(0deg) scale(1);
+    background-color: var(--tile-flip-to, #787c7e);
+    color: var(--tile-flip-color-to, #ffffff);
   }
 }
 

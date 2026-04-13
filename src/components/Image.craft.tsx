@@ -16,7 +16,8 @@ import {
 } from "../utils/static-html";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
-  const { videoId, content, type } = props;
+  const { videoId, type } = props;
+  const content = props.src ?? props.content;
   const cls = staticClasses(props, ctx);
   const alt = props.alt || props.title || "";
   const title = props.title || "";

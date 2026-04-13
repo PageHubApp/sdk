@@ -19,13 +19,13 @@ export const buildElementFromStructure = (
 
   // Check if this is an empty Image (no videoId and no content)
   if (structure.type === "Image") {
-    const isEmpty = !structure.props.videoId && !structure.props.content;
+    const isEmpty = !structure.props.videoId && !structure.props.src && !structure.props.content;
     if (isEmpty) {
       structure = {
         ...structure,
         props: {
           ...structure.props,
-          content:
+          src:
             'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect width="800" height="600" fill="%23e5e7eb"/%3E%3C/svg%3E',
         },
       };

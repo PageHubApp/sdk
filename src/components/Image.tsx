@@ -37,6 +37,8 @@ export const ImageDefault = ({ tab, props }) => {
 export interface ImageProps extends BaseSelectorProps {
   videoId?: string;
   type?: string;
+  src?: string;
+  /** @deprecated Use `src` instead. */
   content?: string;
   url?: string;
   priority?: string;
@@ -58,16 +60,17 @@ export const Image = (incomingProps: ImageProps) => {
     isActive: q.getEvent("selected").contains(id),
   }));
 
-  const { videoId, content } = props;
+  const { videoId } = props;
+  const src = props.src ?? props.content;
 
   /** Craft / AI sometimes stores non-strings; guard before string methods. */
-  const contentStr =
-    content == null
+  const srcStr =
+    src == null
       ? ""
-      : typeof content === "string"
-        ? content
-        : typeof content === "number" || typeof content === "boolean"
-          ? String(content)
+      : typeof src === "string"
+        ? src
+        : typeof src === "number" || typeof src === "boolean"
+          ? String(src)
           : "";
 
   props = setClonedProps(props, query);
@@ -154,8 +157,8 @@ export const Image = (incomingProps: ImageProps) => {
     if (videoId && mediaMetadata?.svg) {
       svgContent = mediaMetadata.svg;
     }
-    if (!svgContent && content) {
-      svgContent = content;
+    if (!svgContent && src) {
+      svgContent = src;
     }
 
     if (svgContent) {
@@ -187,14 +190,14 @@ export const Image = (incomingProps: ImageProps) => {
     } else {
       if (
         props.type === "cdn" &&
-        contentStr &&
-        !contentStr.startsWith("http") &&
-        !contentStr.startsWith("/") &&
-        !contentStr.startsWith("data:")
+        srcStr &&
+        !srcStr.startsWith("http") &&
+        !srcStr.startsWith("/") &&
+        !srcStr.startsWith("data:")
       ) {
-        _imgProp.src = getCdnUrl(contentStr, { width: 1280, format: "auto" });
+        _imgProp.src = getCdnUrl(srcStr, { width: 1280, format: "auto" });
       } else {
-        _imgProp.src = contentStr || null;
+        _imgProp.src = srcStr || null;
       }
     }
 
@@ -223,7 +226,7 @@ export const Image = (incomingProps: ImageProps) => {
     }
   }
 
-  const empty = !videoId && !contentStr;
+  const empty = !videoId && !srcStr;
 
   if (enabled) {
     if (empty) {

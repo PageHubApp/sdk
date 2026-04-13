@@ -25,6 +25,9 @@ export interface ImageListProps extends BaseSelectorProps {
   previewInEditor: boolean | string;
   showNavigation: boolean | string;
   showDots: boolean | string;
+  navArrowClass?: string;
+  navDotClass?: string;
+  navDotActiveClass?: string;
 }
 
 export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageListProps) => {
@@ -278,14 +281,14 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
           <>
             <button
               onClick={handlePrev}
-              className="bg-foreground text-background hover:bg-neutral absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full p-2 transition-colors"
+              className={`absolute top-1/2 left-2 z-10 -translate-y-1/2 ${props.navArrowClass || "bg-base-100/80 text-base-content hover:bg-base-100 rounded-full p-2 shadow-md transition-colors"}`}
               aria-label="Previous"
             >
               <TbChevronLeft size={24} />
             </button>
             <button
               onClick={handleNext}
-              className="bg-foreground text-background hover:bg-neutral absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full p-2 transition-colors"
+              className={`absolute top-1/2 right-2 z-10 -translate-y-1/2 ${props.navArrowClass || "bg-base-100/80 text-base-content hover:bg-base-100 rounded-full p-2 shadow-md transition-colors"}`}
               aria-label="Next"
             >
               <TbChevronRight size={24} />
@@ -305,7 +308,7 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`size-2 rounded-full transition-all ${currentIndex === index ? "bg-base-100 w-8" : "bg-neutral"}`}
+                className={`size-2 rounded-full transition-all ${currentIndex === index ? (props.navDotActiveClass || "bg-base-100 w-8") : (props.navDotClass || "bg-base-100/50")}`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}

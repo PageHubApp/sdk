@@ -25,6 +25,13 @@ export const DropdownMainTab = () => {
           <option value="top-start">Above Left</option>
           <option value="top-end">Above Right</option>
         </ToolbarItem>
+
+        <ToolbarItem
+          propKey="closeOnSelect"
+          propType="component"
+          type="switch"
+          label="Close on select"
+        />
         <SettingsAiSlot />
       </ToolbarSection>
     ),

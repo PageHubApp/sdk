@@ -88,6 +88,20 @@ export const cssAnimationPresets: Record<string, CSSAnimationPreset> = {
     label: "Bounce In",
     group: "Entrance",
   },
+  /** Snappy load entrance: slight overshoot scale (workbench / neubrut cards). */
+  cssThudIn: {
+    animateClass: "animate-css-thud-in",
+    trigger: "load",
+    label: "Thud In",
+    group: "Entrance",
+  },
+  /** 3D tile flip with color reveal. Set --tile-flip-from / --tile-flip-to via root.style. Default gray end state matches NYT absent tile (#787c7e). */
+  cssTileFlip: {
+    animateClass: "animate-css-tile-flip",
+    trigger: "load",
+    label: "Tile Flip",
+    group: "Entrance",
+  },
 
   // ── Hover ─────────────────────────────────────────────────────────────
   cssHoverGrow: {
@@ -248,12 +262,12 @@ export function getCSSAnimationProps(
       classes.push("ph-anim-scroll");
     }
 
-    // Duration / delay / easing overrides via inline style
+    // Duration / delay / easing overrides via inline style (camelCase for React)
     if (overrides?.duration != null) {
-      style["animation-duration"] = `${overrides.duration}s`;
+      style["animationDuration"] = `${overrides.duration}s`;
     }
     if (overrides?.delay != null) {
-      style["animation-delay"] = `${overrides.delay}s`;
+      style["animationDelay"] = `${overrides.delay}s`;
     }
     if (overrides?.easing) {
       const easingMap: Record<string, string> = {
@@ -263,7 +277,7 @@ export function getCSSAnimationProps(
         linear: "linear",
         spring: "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
       };
-      style["animation-timing-function"] = easingMap[overrides.easing] || overrides.easing;
+      style["animationTimingFunction"] = easingMap[overrides.easing] || overrides.easing;
     }
 
     // Continuous trigger override: remove scroll pause

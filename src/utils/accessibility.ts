@@ -304,7 +304,7 @@ export const highContrast = {
   },
 };
 
-export default {
+const accessibility = {
   getAccessibilityProps,
   mergeAccessibilityProps,
   getContrastRatio,
@@ -316,3 +316,4 @@ export default {
   motion,
   highContrast,
 };
+export default accessibility;

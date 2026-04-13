@@ -76,6 +76,7 @@ const THEME_CSS = `
   --font-mono: var(--font-mono), monospace;
   --font-heading: var(--heading-font-family), sans-serif;
   --font-body: var(--body-font-family), sans-serif;
+  --font-accent: var(--accent-font-family), sans-serif;
 
   /* Spatial scale: py-space-xl, gap-space-md, px-space-sm, etc. */
   --spacing-space-xs: var(--space-xs);

@@ -44,6 +44,7 @@ function buildTabButton(index: number) {
       custom={{ displayName: `Tab ${index + 1}` }}
       text={`Tab ${index + 1}`}
       url=""
+      defaultActive={isFirst}
       action={{
         type: "show-hide",
         target: `tab-panel-${index}`,
@@ -52,11 +53,7 @@ function buildTabButton(index: number) {
         method: "class",
         group: GROUP_ID,
       }}
-      className={`rounded-none border-b-2 px-4 py-2 text-sm font-medium ${
-        isFirst
-          ? "border-primary text-primary"
-          : "text-neutral-content hover:text-base-content hover:border-base-300 border-transparent"
-      }`}
+      className="rounded-none border-b-2 px-4 py-2 text-sm font-medium border-transparent text-neutral-content data-[tab-active=true]:border-primary data-[tab-active=true]:text-primary"
     />
   );
 }

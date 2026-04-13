@@ -11,9 +11,13 @@ import { applyAnimation } from "../utils/tailwind/tailwind";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
 export interface AudioProps extends BaseSelectorProps {
+  src?: string;
+  /** @deprecated Use `src` instead. */
   audioUrl?: string;
   title?: string;
   controls?: boolean;
+  autoPlay?: boolean;
+  /** @deprecated Use `autoPlay` instead. */
   autoplay?: boolean;
   loop?: boolean;
 }
@@ -21,7 +25,7 @@ export interface AudioProps extends BaseSelectorProps {
 export const Audio = (incomingProps: AudioProps) => {
   let props: AudioProps = {
     controls: true,
-    autoplay: false,
+    autoPlay: false,
     loop: false,
     canDelete: true,
     canEditName: true,
@@ -42,7 +46,8 @@ export const Audio = (incomingProps: AudioProps) => {
     isActive: q.getEvent("selected").contains(id),
   }));
 
-  const { audioUrl } = props;
+  const audioUrl = props.src ?? props.audioUrl;
+  const autoPlay = props.autoPlay ?? props.autoplay;
 
   props = setClonedProps(props, query);
 
@@ -66,7 +71,7 @@ export const Audio = (incomingProps: AudioProps) => {
         className={props.className || ""}
         src={audioUrl}
         controls={props.controls}
-        autoPlay={props.autoplay && !enabled}
+        autoPlay={autoPlay && !enabled}
         loop={props.loop}
         preload="metadata"
         style={{ width: "100%" }}

@@ -8,7 +8,7 @@ export const AudioMainTab = () =>
     Content: (
       <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="URL to the audio file.">
         <ToolbarItem
-          propKey="audioUrl"
+          propKey="src"
           propType="component"
           type="text"
           label="URL"
@@ -30,7 +30,7 @@ export const AudioMainTab = () =>
             inputWidth="w-fit"
           />
           <ToolbarItem
-            propKey="autoplay"
+            propKey="autoPlay"
             propType="component"
             type="checkbox"
             label="Autoplay"

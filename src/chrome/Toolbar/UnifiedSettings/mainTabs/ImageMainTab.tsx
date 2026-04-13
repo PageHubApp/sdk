@@ -15,7 +15,7 @@ export const ImageMainTab = () =>
         <MediaInput
           propKey="videoId"
           typeKey="type"
-          contentKey="content"
+          contentKey="src"
           title=""
           collapsible={false}
         />

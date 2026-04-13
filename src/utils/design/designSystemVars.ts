@@ -231,10 +231,11 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
     // Typography - font families (actual font names for CSS variables)
     "headingFontFamily",
     "bodyFontFamily",
+    "accentFontFamily",
   ];
 
   Object.entries(styleGuide).forEach(([key, value]) => {
-    if (value && typeof value === "string" && cssVarKeys.includes(key)) {
+    if (value && typeof value === "string" && (cssVarKeys.includes(key) || key.endsWith("FontFamily"))) {
       const cssVar = toStyleCSSVarName(key);
       if (!cssVar || cssVar === "--") return;
 
@@ -250,7 +251,7 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
         resolvedValue = resolveTailwindColor(value);
       }
 
-      if (key === "headingFontFamily" || key === "bodyFontFamily") {
+      if (key.endsWith("FontFamily")) {
         resolvedValue = quoteCssFontFamilyValue(resolvedValue);
       }
 

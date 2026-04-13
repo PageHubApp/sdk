@@ -65,6 +65,9 @@ const renderLiveMode = (props: any, query: any, router: any) => {
     const linkProps: any = {
       href: resolvedUrl,
       dangerouslySetInnerHTML: { __html: processedText },
+      // Outer tag also keeps className for layout; inner link must receive it or
+      // browser / theme defaults (blue underline) override typography utilities.
+      className: props.className || "",
     };
     if (target) linkProps.target = target;
     if (/^https?:\/\//.test(resolvedUrl)) {

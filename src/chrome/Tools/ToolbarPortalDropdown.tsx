@@ -85,7 +85,6 @@ export const ToolbarPortalDropdown = ({
   return (
     <div
       ref={setReferenceNode}
-      role="presentation"
       aria-haspopup="menu"
       aria-expanded={isOpen}
       className={openOn === "hover" ? "inline-flex" : undefined}

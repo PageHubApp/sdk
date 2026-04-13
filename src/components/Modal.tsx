@@ -208,6 +208,20 @@ export const Modal = ({ children, ...props }) => {
     };
   }, [enabled, isOpen]);
 
+  // Sync isOpen state with the backdrop element's display.
+  // Handles delay/load triggers and Escape key. The show-hide action system
+  // handles click triggers separately via clickControls.
+  useEffect(() => {
+    if (enabled || !isMounted) return;
+    const backdrop = document.getElementById(modalId);
+    if (!backdrop) return;
+    if (isOpen) {
+      backdrop.classList.remove("hidden");
+    } else {
+      backdrop.classList.add("hidden");
+    }
+  }, [enabled, isOpen, isMounted, modalId]);
+
   // ── Editor mode — just a Container ──────────────────────────────────
 
   if (enabled) {
@@ -242,72 +256,19 @@ export const Modal = ({ children, ...props }) => {
     );
   }
 
-  // ── Viewer mode — portal overlay ─────────────────────────────────────
-
-  const positionClass =
-    props.modalPosition === "top"
-      ? "items-start pt-16"
-      : props.modalPosition === "bottom"
-        ? "items-end pb-16"
-        : "items-center";
-
-  const anim = animationVariants[props.modalAnimation || "fade"] || animationVariants.fade;
-
-  const portalTarget =
-    typeof document !== "undefined"
-      ? document.querySelector(".pagehub-sdk-root") || document.body
-      : null;
-
+  // ── Viewer mode — inline children + isOpen sync ─────────────────────
+  // Children render inline: trigger button visible, backdrop starts hidden (className).
+  // Show-hide actions + the isOpen effect above toggle the backdrop.
   return (
     <>
       <div
         ref={anchorRef}
-        id={props.anchor || undefined}
+        id={props.anchor ? `${props.anchor}-anchor` : undefined}
         data-modal="true"
+        data-modal-id={props.anchor || undefined}
         style={{ display: "none" }}
       />
-
-      {isMounted &&
-        portalTarget &&
-        ReactDOM.createPortal(
-          <AnimatePresence>
-            {isOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className={`fixed inset-0 z-9997 flex justify-center p-4 ${positionClass} ${props.backdropBlur ? "backdrop-blur-sm" : ""}`}
-                style={{ background: "rgba(0,0,0,0.5)" }}
-                onClick={props.closeOnBackdrop !== false ? () => setIsOpen(false) : undefined}
-              >
-                <motion.div
-                  ref={focusTrapRef}
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label="Modal"
-                  {...anim}
-                  transition={{ duration: 0.2 }}
-                  className={`${props.modalWidth || "max-w-lg"} bg-base-100 relative w-full shadow-xl`}
-                  onClick={e => e.stopPropagation()}
-                >
-                  {props.showCloseButton !== false && (
-                    <button
-                      onClick={() => setIsOpen(false)}
-                      className={`text-base-content/60 hover:text-base-content absolute z-10 p-1 text-xl leading-none ${
-                        props.closeButtonPosition === "top-left" ? "top-3 left-3" : "top-3 right-3"
-                      }`}
-                      aria-label="Close modal"
-                    >
-                      <TbX />
-                    </button>
-                  )}
-                  {children}
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>,
-          portalTarget
-        )}
+      {children}
     </>
   );
 };

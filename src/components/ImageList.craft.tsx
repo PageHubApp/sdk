@@ -84,6 +84,12 @@ export const ImageListDef = defineComponent(
         icon: TbPhotoScan,
         props: {
           className: "w-full p-4 flex-row gap-4",
+          showNavigation: true,
+          showDots: true,
+          navArrowClass:
+            "bg-base-100/80 text-base-content hover:bg-base-100 rounded-full p-2 shadow-md transition-colors",
+          navDotClass: "bg-base-100/50",
+          navDotActiveClass: "bg-base-100 w-8",
         },
       },
     ],

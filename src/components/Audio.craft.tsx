@@ -8,7 +8,8 @@ import { Audio } from "./Audio";
 import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
-  const { audioUrl, title, controls = true, loop = false } = props;
+  const audioUrl = props.src ?? props.audioUrl;
+  const { title, controls = true, loop = false } = props;
   if (!audioUrl) return "";
 
   const cls = staticClasses(props, ctx);

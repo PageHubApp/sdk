@@ -59,7 +59,7 @@ export const TabsMainTab = () => {
         tabGroup={groupId}
         canDelete={true}
         canEditName={true}
-        className="gap-container px-container-x py-container-y flex hidden flex-col"
+        className="gap-container px-container-x py-container-y hidden flex-col"
       >
         <Element
           is={Text}

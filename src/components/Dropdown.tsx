@@ -10,6 +10,7 @@ export interface DropdownProps extends BaseSelectorProps {
   trigger?: "click" | "hover";
   position?: "bottom-start" | "bottom-end" | "top-start" | "top-end";
   closeOnClickOutside?: boolean;
+  closeOnSelect?: boolean;
 }
 
 const TRIGGER_CLASSES: Record<string, { show: string; hide: string }> = {
@@ -32,6 +33,7 @@ export const Dropdown = ({
     trigger: "click",
     position: "bottom-start",
     closeOnClickOutside: true,
+    closeOnSelect: true,
     ...incomingProps,
   };
 
@@ -170,6 +172,13 @@ export const Dropdown = ({
     style: props.root?.style ? CSStoObj(props.root.style) : undefined,
     tabIndex: props.trigger === "click" ? 0 : undefined,
     onDoubleClick: handleDoubleClick,
+    onClick: !enabled && props.closeOnSelect !== false ? (e: React.MouseEvent) => {
+      const root = e.currentTarget as HTMLElement;
+      const panel = root.querySelector('[class*="group-focus-within"], [class*="group-hover"]');
+      if (panel?.contains(e.target as Node)) {
+        root.blur();
+      }
+    } : undefined,
   };
 
   if (enabled && isMounted) {

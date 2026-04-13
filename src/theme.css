@@ -167,6 +167,7 @@
   --font-serif: var(--font-serif);
   --font-heading: var(--heading-font-family), sans-serif;
   --font-body: var(--body-font-family), sans-serif;
+  --font-accent: var(--accent-font-family), sans-serif;
 
   /* Border Radius */
   --radius-box: var(--radius-box);

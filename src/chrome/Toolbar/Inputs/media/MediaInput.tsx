@@ -21,7 +21,7 @@ export const MediaInput = propa => {
 
   const { query, actions } = useEditor();
 
-  const { propKey, typeKey, contentKey = "content", title = "Media" } = props;
+  const { propKey, typeKey, contentKey = "src", title = "Media" } = props;
 
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
 

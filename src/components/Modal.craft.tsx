@@ -108,7 +108,7 @@ function buildModalChildren() {
         target: "my-modal",
         direction: "show",
         trigger: "click",
-        method: "style",
+        method: "class",
       }}
       className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y)"
     />,
@@ -121,14 +121,14 @@ function buildModalChildren() {
       custom={{ displayName: "Modal Backdrop" }}
       canDelete={false}
       canEditName={false}
-      className="fixed top-0 left-0 z-50 hidden h-screen w-screen flex-col items-center justify-center bg-black/50 px-4 py-4 md:hidden"
+      className="fixed top-0 left-0 z-50 hidden h-screen w-screen flex-col items-center justify-center bg-black/50 px-4 py-4"
       action={
         {
           type: "show-hide",
           target: "my-modal",
           direction: "hide",
           trigger: "click",
-          method: "style",
+          method: "class",
         } as any
       }
     >
@@ -147,7 +147,7 @@ function buildModalChildren() {
             target: "my-modal",
             direction: "toggle",
             trigger: "click",
-            method: "style",
+            method: "class",
           } as any
         }
       >
