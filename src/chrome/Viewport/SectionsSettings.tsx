@@ -3,14 +3,14 @@ import { useAtomValue } from "@zedux/react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TbLoader2, TbSearch } from "react-icons/tb";
 import { usePanelUrl } from "../../utils/usePanelUrl";
-import { ComponentsAtom } from "utils/lib";
+import { ComponentsAtom } from "../../utils/lib";
 import { useBlockCategories, type BlockCategory } from "../../utils/useBlockCategories";
-import { AutoHideScrollbar } from "../shared/layout";
-import { CategoryCard, CustomSectionCard, BlockPreviewCard } from "./SectionsSettings/components";
-import { CategoryDetailView } from "./SectionsSettings/CategoryDetailView";
-import { SearchResultsView } from "./SectionsSettings/SearchResultsView";
-import { CATEGORY_ORDER } from "./SectionsSettings/blockHelpers";
-import { CustomSectionsGrid } from "./SectionsSettings/CustomSectionsGrid";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout";
+import { CategoryCard, CustomSectionCard, BlockPreviewCard } from "./sections-settings/components";
+import { CategoryDetailView } from "./sections-settings/CategoryDetailView";
+import { SearchResultsView } from "./sections-settings/SearchResultsView";
+import { CATEGORY_ORDER } from "./sections-settings/blockHelpers";
+import { CustomSectionsGrid } from "./sections-settings/CustomSectionsGrid";
 
 export { BlockPreviewCard, CustomSectionCard };
 

@@ -1,4 +1,4 @@
-import { TailwindStyles } from "utils/tailwind";
+import { TailwindStyles } from "@/utils/tailwind";
 import { ToolbarItem } from "../../ToolbarItem";
 
 function getTailwindStyleStringList(prop: string): string[] | null {

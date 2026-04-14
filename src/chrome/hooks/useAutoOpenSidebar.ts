@@ -2,7 +2,7 @@ import { useEditor } from "@craftjs/core";
 import { useEffect, useRef } from "react";
 import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
-import { SideBarOpen } from "utils/lib";
+import { SideBarOpen } from "../../utils/lib";
 
 /**
  * Hook that automatically opens the sidebar when a node is selected

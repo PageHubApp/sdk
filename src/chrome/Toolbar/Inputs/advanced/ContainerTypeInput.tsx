@@ -1,6 +1,6 @@
 import { Element, useEditor } from "@craftjs/core";
-import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
-import { AddElement } from "../../../Viewport/Toolbox/lib";
+import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
+import { AddElement } from "../../../viewport/toolbox/toolboxUtils";
 
 /**
  * Quick-add nested Container — rendered in the Layout tab (LayoutPresetInput) for Container

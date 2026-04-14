@@ -1,5 +1,5 @@
 import { useEditor } from "@craftjs/core";
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import React, { useEffect, useRef, useState } from "react";
 import {
   TbBoxModel2,
@@ -15,7 +15,7 @@ import {
 } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
-import { ComponentsAtom, IsolateAtom, OpenComponentEditorAtom } from "utils/lib";
+import { ComponentsAtom, IsolateAtom, OpenComponentEditorAtom } from "../../utils/lib";
 import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
 
 interface ComponentSelectorProps {
@@ -107,7 +107,6 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
             )
           );
 
-          console.log("✅ Renamed component to:", editingName.trim());
         }
       }
     } catch (e) {
@@ -170,11 +169,6 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
         )
       );
 
-      console.log(
-        "✅ Toggled component type:",
-        component.name,
-        newIsSection ? "Section" : "Component"
-      );
     } catch (e) {
       console.error("Error toggling component type:", e);
     }

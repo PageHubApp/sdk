@@ -1,9 +1,9 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { useState } from "react";
-import { getCdnUrl } from "utils/cdn";
-import { getImageDimensionsFromFile } from "utils/imageDimensions";
-import { registerMediaWithBackground } from "utils/lib";
-import { GetSignedUrl, SaveMedia } from "../../../../Viewport/lib";
+import { getCdnUrl } from "@/utils/cdn";
+import { getImageDimensionsFromFile } from "@/utils/imageDimensions";
+import { registerMediaWithBackground } from "@/utils/lib";
+import { GetSignedUrl, SaveMedia } from "@/chrome/viewport/viewportExports";
 import type { AiUsage, MediaItem } from "../utils/media-helpers";
 
 interface UseAiGenerationOptions {

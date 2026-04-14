@@ -1,9 +1,9 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useState } from "react";
 import { TbPhoto } from "react-icons/tb";
-import { getCdnUrl } from "utils/cdn";
-import { getMediaById, getMediaContent, registerMediaWithBackground } from "utils/lib";
-import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
+import { getCdnUrl } from "@/utils/cdn";
+import { getMediaById, getMediaContent, registerMediaWithBackground } from "@/utils/lib";
+import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { MediaManagerModal } from "./MediaManagerModal";

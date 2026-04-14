@@ -1,0 +1,416 @@
+@import "tailwindcss";
+@import "./theme.css";
+@import "../../../daisyui-spatial/src/index.css";
+@import "./spotlight-presets.css";
+
+@source "../";
+
+@theme inline {
+  /* ─── SDK-specific additions ──────────────────────────────────────────── */
+
+  /* Editor chrome tokens */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Extra fixed radius sizes */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+
+  /* ─── CSS Animation Presets ──────────────────────────────────────────── */
+  --animate-css-fade-in: css-fade-in 0.6s ease-out both;
+  --animate-css-fade-up: css-fade-up 0.6s ease-out both;
+  --animate-css-fade-down: css-fade-down 0.6s ease-out both;
+  --animate-css-fade-left: css-fade-left 0.6s ease-out both;
+  --animate-css-fade-right: css-fade-right 0.6s ease-out both;
+  --animate-css-scale-up: css-scale-up 0.5s ease-out both;
+  --animate-css-blur-in: css-blur-in 0.7s ease-out both;
+  --animate-css-slide-up: css-slide-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  --animate-css-flip-in: css-flip-in 0.6s ease-out both;
+  --animate-css-spring: css-spring 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  --animate-css-bounce-in: css-bounce-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  --animate-css-thud-in: css-thud-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-css-tile-flip: css-tile-flip 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-css-spin: css-spin 2s linear infinite;
+  --animate-css-pulse: css-pulse 2s ease-in-out infinite;
+  --animate-css-wiggle: css-wiggle 1s ease-in-out infinite;
+  --animate-css-marquee: css-marquee 40s linear infinite;
+  --animate-css-marquee-slow: css-marquee 60s linear infinite;
+}
+
+/* ─── Link base styles (design-system driven, overridable by any utility) ── */
+@layer base {
+  .pagehub-sdk-root a {
+    color: var(--link-color);
+    transition: color 150ms ease-in-out;
+  }
+  .pagehub-sdk-root a:hover {
+    color: var(--link-hover-color, var(--link-color));
+  }
+}
+
+/* ─── CSS Animation Scroll Trigger ─────────────────────────────────────── */
+/* Entrance animations are paused until .ph-in-view is added by IntersectionObserver */
+.ph-anim-scroll {
+  animation-play-state: paused;
+}
+.ph-anim-scroll.ph-in-view {
+  animation-play-state: running;
+}
+
+/* ─── CSS Hover Animation Utilities ────────────────────────────────────── */
+@utility ph-hover-grow {
+  transition: transform 0.25s ease-out;
+  &:hover {
+    transform: scale(1.1);
+  }
+  &:active {
+    transform: scale(0.9);
+  }
+}
+@utility ph-hover-lift {
+  transition: transform 0.25s ease-out;
+  &:hover {
+    transform: translateY(-6px);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+}
+@utility ph-hover-glow {
+  transition: box-shadow 0.3s ease-out;
+  &:hover {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+  }
+}
+@utility ph-hover-press {
+  transition: transform 0.2s ease-out;
+  &:hover {
+    transform: scale(1.02);
+  }
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* ─── Height: screen override ──────────────────────────────────────────── */
+@utility h-screen {
+  height: calc(var(--vh) * 100);
+}
+
+/* ─── Shared Keyframes (used by app chrome arbitrary-value syntax) ────── */
+
+@keyframes slide-up {
+  0% {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  0% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ─── CSS Animation Preset Keyframes ─────────────────────────────────── */
+
+@keyframes css-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes css-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes css-fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes css-fade-left {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes css-fade-right {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes css-scale-up {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes css-blur-in {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+@keyframes css-slide-up {
+  from {
+    transform: translateY(60px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes css-flip-in {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateY(90deg);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(400px) rotateY(0deg);
+  }
+}
+
+@keyframes css-spring {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes css-bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes css-thud-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  58% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  78% {
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes css-tile-flip {
+  0% {
+    opacity: 0;
+    transform: perspective(160px) rotateX(-52deg) scale(0.92);
+    background-color: var(--tile-flip-from, #f3f4f6);
+    color: var(--tile-flip-color-from, #111827);
+  }
+  36% {
+    opacity: 1;
+    transform: perspective(160px) rotateX(0deg) scale(1);
+  }
+  54% {
+    transform: perspective(160px) rotateX(78deg) scale(1);
+  }
+  55% {
+    background-color: var(--tile-flip-to, #787c7e);
+    color: var(--tile-flip-color-to, #ffffff);
+    transform: perspective(160px) rotateX(78deg) scale(1);
+  }
+  100% {
+    transform: perspective(160px) rotateX(0deg) scale(1);
+    background-color: var(--tile-flip-to, #787c7e);
+    color: var(--tile-flip-color-to, #ffffff);
+  }
+}
+
+@keyframes css-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes css-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes css-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes css-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ─── Horizontal scroll section ─────────────────────────────────────────── */
+.ph-hscroll-sticky {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  will-change: transform;
+}
+.ph-hscroll-track {
+  display: flex;
+  height: 100%;
+  will-change: transform;
+}
+
+/* ─── PageHub SDK Base Styles ──────────────────────────────────────────── */
+
+.pagehub-sdk-root {
+  --ph-primary: #2563eb;
+  --ph-secondary: #7c3aed;
+  --ph-accent: #06b6d4;
+  --ph-bg: #ffffff;
+  --ph-bg-muted: #f8fafc;
+  --ph-border: #e2e8f0;
+  --ph-text: #0f172a;
+  --ph-text-muted: #64748b;
+
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  color: var(--ph-text);
+  background: var(--ph-bg);
+}
+
+.pagehub-sdk-root[data-color-scheme="dark"] {
+  --ph-bg: #0f172a;
+  --ph-bg-muted: #1e293b;
+  --ph-border: #334155;
+  --ph-text: #f1f5f9;
+  --ph-text-muted: #94a3b8;
+}
+
+/* ─── Viewport content isolation ──────────────────────────────────────
+   The editor chrome uses .dark on <html> for its own theme, but the
+   rendered website inside #viewport must NOT inherit dark-mode vars.
+   Palette vars are set dynamically by generateDesignSystemCSSVariables()
+   at runtime — no hardcoded values here.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* ─── Spinner animation ────────────────────────────────────────────────── */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Settings search highlight — CSS Custom Highlight API */
+::highlight(settings-search) {
+  background-color: oklch(0.8 0.15 85);
+  color: oklch(0.25 0.05 85);
+  border-radius: 2px;
+}

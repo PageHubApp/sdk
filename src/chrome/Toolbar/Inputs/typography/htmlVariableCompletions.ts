@@ -4,7 +4,7 @@ import {
   type CompletionContext,
   type CompletionResult,
 } from "@codemirror/autocomplete";
-import type { EditorVariableOption } from "../../../../utils/editorVariableOptions";
+import type { EditorVariableOption } from "@/utils/editorVariableOptions";
 
 /**
  * After `{{`, suggest site placeholders (company.*, year, variables.* from ROOT).

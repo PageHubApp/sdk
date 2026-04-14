@@ -52,7 +52,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
   return input;
 };
-import { FormElementMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/FormElementMainTab";
+import { FormElementMainTab } from "../chrome/toolbar/unified-settings/mainTabs/FormElementMainTab";
 import { HoverNodeController, NameNodeController } from "./editor-chrome";
 
 export const FormElementDef = defineComponent(

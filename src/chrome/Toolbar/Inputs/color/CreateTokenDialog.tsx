@@ -2,7 +2,7 @@ import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { SketchPicker } from "@hello-pangea/color-picker";
 import { useEffect, useRef, useState } from "react";
 import { TbCheck, TbX } from "react-icons/tb";
-import { resolveTheme } from "../../../../utils/design/resolveTheme";
+import { resolveTheme } from "@/utils/design/resolveTheme";
 
 interface CreateTokenDialogProps {
   onCreated: (name: string) => void;

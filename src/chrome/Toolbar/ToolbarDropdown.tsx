@@ -1,6 +1,6 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { Children, isValidElement, useCallback, useMemo, useRef, useState } from "react";
-import { AutoHideScrollbar } from "../shared/layout/AutoHideScrollbar";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 
 const Label = ({ value }) => <label>{value}</label>;
 

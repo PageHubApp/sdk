@@ -1,9 +1,9 @@
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useMemo } from "react";
-import { resolveColorForDisplay } from "utils/design/colorSystem";
-import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "utils/defaults";
-import { resolveTheme } from "utils/design/resolveTheme";
+import { resolveColorForDisplay } from "@/utils/design/colorSystem";
+import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "@/utils/defaults";
+import { resolveTheme } from "@/utils/design/resolveTheme";
 import {
   FONT_WEIGHT_MAP,
   STYLE_VAR_MAP,

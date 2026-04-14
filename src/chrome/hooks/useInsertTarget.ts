@@ -102,7 +102,6 @@ export const useInsertTarget = () => {
           try {
             const node = query.node(nodeId).get();
             if (node && node.data.props?.type === "page") {
-              console.log("Found page without DOM, using it anyway:", nodeId);
               return nodeId;
             }
           } catch (e) {

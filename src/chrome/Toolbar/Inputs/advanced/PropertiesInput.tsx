@@ -7,7 +7,7 @@ import { useNode } from "@craftjs/core";
 import { useState } from "react";
 import { TbPlus, TbTrash } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
-import { TabAtom } from "../../../Viewport/atoms";
+import { TabAtom } from "../../../viewport/atoms";
 import { scrollToSection } from "../../UnifiedTab";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";

@@ -1,9 +1,9 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import { TailwindStyles } from "utils/tailwind";
-import { changeProp } from "../../../Viewport/lib";
-import { ViewAtom } from "../../../Viewport/atoms";
-import { editorCanvasViewToClassPrefixKey } from "../../../../utils/tailwind/className";
+import { TailwindStyles } from "@/utils/tailwind";
+import { changeProp } from "../../../viewport/viewportExports";
+import { ViewAtom } from "../../../viewport/atoms";
+import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { ColorInput } from "./ColorInput";
 import { useCallback, useMemo } from "react";

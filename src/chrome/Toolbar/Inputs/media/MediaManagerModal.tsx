@@ -1,7 +1,7 @@
-import { ConfirmDialog } from "components/layout/ConfirmDialog";
+import { ConfirmDialog } from "@/chrome/primitives/layout/ConfirmDialog";
 import ReactDOM from "react-dom";
 import { TbAlertTriangle, TbPhoto, TbX } from "react-icons/tb";
-import { ImageCropModal } from "../../Tools/ImageCropModal";
+import { ImageCropModal } from "../../dialogs/ImageCropModal";
 import { MediaEditModal } from "./components/MediaEditModal";
 import { MediaGrid } from "./components/MediaGrid";
 import { MediaPreviewModal } from "./components/MediaPreviewModal";

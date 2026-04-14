@@ -1,7 +1,7 @@
 import { twMerge } from "tailwind-merge";
 import { PH_TOOLBAR_DASHED_BTN_ACTIVE } from "../../phToolbarDashedSelection";
 import type { ResolvedModifier } from "./useModifiers";
-import { Tooltip } from "../../../shared/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 
 export function ExclusivePills({
   mods,

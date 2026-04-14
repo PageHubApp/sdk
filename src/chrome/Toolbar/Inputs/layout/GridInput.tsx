@@ -1,10 +1,10 @@
 import { useNode } from "@craftjs/core";
 import { ToolbarSection } from "../../index";
 import { ToolbarItem } from "../../index";
-import { ViewAtom } from "../../../Viewport/atoms";
+import { ViewAtom } from "../../../viewport/atoms";
 import { useState } from "react";
 import { useAtomValue } from "@zedux/react";
-import { TailwindStyles } from "utils/tailwind";
+import { TailwindStyles } from "@/utils/tailwind";
 
 /**
  * Grid input component with essential grid controls

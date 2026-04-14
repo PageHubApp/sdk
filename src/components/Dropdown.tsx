@@ -2,7 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useState, useCallback } from "react";
 import { Box } from "@pagehub/ui";
 import { TbMenu2 } from "react-icons/tb";
-import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { BaseSelectorProps } from "./selectors";
 import { CSStoObj } from "../utils/tailwind/tailwind";
 

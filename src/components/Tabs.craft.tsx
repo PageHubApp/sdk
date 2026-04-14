@@ -16,7 +16,7 @@ import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "..
 import {
   TabsMainTab,
   TabsMainTabAdvanced,
-} from "../chrome/Toolbar/UnifiedSettings/mainTabs/TabsMainTab";
+} from "../chrome/toolbar/unified-settings/mainTabs/TabsMainTab";
 import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
 
 const TAB_COUNT = 3;

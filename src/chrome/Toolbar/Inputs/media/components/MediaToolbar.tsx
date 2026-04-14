@@ -1,4 +1,4 @@
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import {
   TbArrowDown,
   TbArrowUp,

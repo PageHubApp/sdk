@@ -3,7 +3,7 @@ import { TbContainer, TbLayoutColumns, TbLayoutRows } from "react-icons/tb";
 import {
   ContainerMainTab,
   HeaderFooterToggles,
-} from "../chrome/Toolbar/UnifiedSettings/mainTabs/ContainerMainTab";
+} from "../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab";
 import { defineComponent } from "../define";
 import { ariaAttrs, getInlineStyle, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
 import { Container } from "./Container";

@@ -1,12 +1,12 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { TbCheck, TbLoader2 } from "react-icons/tb";
-import { FloatingPanel } from "../FloatingPanel";
-import { BrandingTab } from "./SiteSettings/BrandingTab";
-import { IntegrationsTab, INTEGRATION_PROVIDERS } from "./SiteSettings/IntegrationsTab";
-import { RedirectsTab } from "./SiteSettings/RedirectsTab";
-import { AITab } from "./SiteSettings/AITab";
-import { CodeTab } from "./SiteSettings/CodeTab";
+import { FloatingPanel } from "../floating/FloatingPanel";
+import { BrandingTab } from "./site-settings/BrandingTab";
+import { IntegrationsTab, INTEGRATION_PROVIDERS } from "./site-settings/IntegrationsTab";
+import { RedirectsTab } from "./site-settings/RedirectsTab";
+import { AITab } from "./site-settings/AITab";
+import { CodeTab } from "./site-settings/CodeTab";
 import { normalizeDesignTags } from "../../utils/normalizeDesignTags";
 
 interface SiteSettingsModalProps {

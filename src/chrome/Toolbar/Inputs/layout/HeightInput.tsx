@@ -1,6 +1,6 @@
 import { atom, useAtomState } from "@zedux/react";
-import { ItemToggle, sizingItems } from "../../Helpers/ItemSelector";
-import { UniversalInput } from "../UniversalInput";
+import { ItemToggle, sizingItems } from "../../helpers/ItemSelector";
+import { UniversalInput } from "../universal-input";
 
 // Module-level atom cache — atoms must NOT be created inside render functions
 const heightAtomCache = new Map<string, any>();

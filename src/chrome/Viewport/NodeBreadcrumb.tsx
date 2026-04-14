@@ -1,10 +1,10 @@
 import { useEditor } from "@craftjs/core";
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import { useState } from "react";
 import { TbChevronRight, TbListTree } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { IsolateAtom } from "utils/lib";
-import { ToolbarPortalDropdown } from "../Tools/ToolbarPortalDropdown";
+import { IsolateAtom } from "../../utils/lib";
+import { ToolbarPortalDropdown } from "../inline-tools/ToolbarPortalDropdown";
 import { TabAtom } from "./atoms";
 
 interface BreadcrumbItem {

@@ -39,7 +39,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   );
 };
 
-import { EmbedMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/EmbedMainTab";
+import { EmbedMainTab } from "../chrome/toolbar/unified-settings/mainTabs/EmbedMainTab";
 import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
 
 export const EmbedDef = defineComponent(

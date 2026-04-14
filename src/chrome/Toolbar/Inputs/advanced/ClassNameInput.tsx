@@ -1,6 +1,6 @@
 import React from "react";
 import { TbCode } from "react-icons/tb";
-import { ClassItem } from "../../Items/ClassItem";
+import { ClassItem } from "../../items/ClassItem";
 import { ToolbarSection } from "../../ToolbarSection";
 const CSSEditorInput = React.lazy(() =>
   import("./CSSEditorInput").then(m => ({ default: m.CSSEditorInput }))

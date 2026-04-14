@@ -1,4 +1,4 @@
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import { useState } from "react";
 import { TbChevronDown, TbChevronRight, TbSelector } from "react-icons/tb";
 import { atom, useAtomState } from "@zedux/react";

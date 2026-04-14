@@ -4,7 +4,7 @@ import ActionInput from "../action/ActionInput";
 import { ColorInput } from "../color/ColorInput";
 import { OpacityInput } from "../color/OpacityInput";
 import { TailwindInput } from "./TailwindInput";
-import { UniversalInput } from "../UniversalInput";
+import { UniversalInput } from "../universal-input";
 
 interface HoverClickInputProps {
   /**

@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbCheck, TbPhoto } from "react-icons/tb";
-import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { Image as UiImage } from "@pagehub/ui";
 import { getCdnUrl } from "../utils/cdn";
 import { migrateAction, actionToHref } from "../utils/action";

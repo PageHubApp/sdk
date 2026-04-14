@@ -2,8 +2,8 @@ import { ROOT_NODE, useEditor } from "@craftjs/core";
 import lz from "lzutf8";
 import { useState } from "react";
 import { TbDownload, TbUpload } from "react-icons/tb";
-import { useSDK } from "../../context";
-import { SidebarTabsPane } from "../shared/SidebarTabsPane";
+import { useSDK } from "../../core/context";
+import { SidebarTabsPane } from "../primitives/SidebarTabsPane";
 
 export interface ImportExportPanelProps {
   onClose: () => void;

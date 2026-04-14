@@ -25,6 +25,21 @@ export interface PageData {
   scrollObserverScript?: string;
 }
 
+/**
+ * Page-level SEO metadata.
+ *
+ * Populated by the editor's SEO panel and included in `PageData.seo`.
+ * Consumers should render these into `<head>` meta tags on the published page.
+ *
+ * - `title` — `<title>` and `og:title` fallback (50-60 chars recommended)
+ * - `description` — `<meta name="description">` (~140 chars recommended)
+ * - `keywords` — `<meta name="keywords">` (comma-separated)
+ * - `ogTitle` — Open Graph title override
+ * - `ogDescription` — Open Graph description override
+ * - `ogImage` — Open Graph image URL (1200x630 recommended)
+ * - `canonicalUrl` — `<link rel="canonical">` for deduplication
+ * - `robots` — `<meta name="robots">` directives (e.g. "noindex, nofollow")
+ */
 export interface PageSeo {
   title?: string;
   description?: string;
@@ -207,9 +222,9 @@ export interface PageHubMediaEditAiActionsContext {
  * When a slot is omitted, that control is not shown.
  */
 export interface PageHubEditorChromeSlots {
-  /** Toolbox tab strip — wand opens assistant (host typically uses `ClippyOpenAtom`). */
+  /** Toolbox tab strip — wand opens assistant (host typically uses `AssistantOpenAtom`). */
   renderToolboxAiButton?: () => ReactNode;
-  /** Rich-text floating toolbar — opens Clippy for copy (text scope). */
+  /** Rich-text floating toolbar — opens assistant for copy (text scope). */
   renderInlineCopyAssistantTrigger?: (ctx: { textNodeId: string; query: unknown }) => ReactNode;
   /** Settings sidebar “Edit with AI” (per selected node). Host should pin `nodeId` to `AiChatAttachedNodesAtom` like “Add to context”. */
   renderSettingsAiButton?: (ctx: {

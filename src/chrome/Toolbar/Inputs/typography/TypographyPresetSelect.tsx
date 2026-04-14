@@ -1,7 +1,7 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import type { CSSProperties } from "react";
 import { useCallback, useRef, useState } from "react";
-import { AutoHideScrollbar } from "../../../shared/layout/AutoHideScrollbar";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 
 /** Same sentinel as ToolbarDropdown — not a real preset name */
 const EMPTY = "__ph_empty__";

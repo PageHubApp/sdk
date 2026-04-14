@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useState } from "react";
 import { TbCopy, TbDownload, TbUpload } from "react-icons/tb";
-import { ToolbarSegmentedControl } from "../../Helpers/ToolbarSegmentedControl";
+import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { CodeEditor } from "../typography/CodeEditor";
 
 export const ComponentImportExport = ({ className = "" }: { className?: string }) => {

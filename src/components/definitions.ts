@@ -1,6 +1,6 @@
 /**
  * Per-component `defineComponent` exports. The **ordered** built-in list used by the editor,
- * viewer processing, and static HTML lives in {@link ../builtins.ts} (`BUILTIN_COMPONENT_DEFS`).
+ * viewer processing, and static HTML lives in {@link ../componentRegistry.ts} (`BUILTIN_COMPONENT_DEFS`).
  */
 
 export { AccordionDef } from "./Accordion.craft";

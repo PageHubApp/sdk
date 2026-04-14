@@ -1,8 +1,9 @@
 /**
- * @pagehub/sdk — Zedux atoms (canonical shared copy)
+ * @pagehub/sdk — Zedux atoms
  *
- * Keys and defaults MUST match the app's utils/atoms.ts exactly,
- * otherwise state won't be shared when the app aliases to this file.
+ * Split into two categories:
+ * - Integration atoms: shared with the host app (SettingsAtom, SessionTokenAtom, UserUsageAtom)
+ * - Internal atoms: editor chrome state, not part of the public API
  */
 import { atom, useAtomState, useAtomValue } from "@zedux/react";
 import { useCallback } from "react";
@@ -20,11 +21,22 @@ export const useSetAtomState = (atomTemplate: any) => {
   return setState;
 };
 
-// ─── Atom exports (match main app's utils/atoms.ts exactly) ─────────────
+// ─── Integration atoms (host app ↔ SDK) ─────────────────────────────────
 
+/** Site settings injected by the host app. */
 export const SettingsAtom = atom("settings", null);
 
+/** Auth token injected by the host app (nullable). */
 export const SessionTokenAtom = atom("sessionToken", null);
+
+/** AI credit usage tracking. */
+export const UserUsageAtom = atom("userUsage", {
+  creditBalance: 1000,
+  totalTokens: 0,
+  lastUsed: null,
+});
+
+// ─── Internal atoms (editor chrome state) ────────────────────────────────
 
 export const SectionPickerDialogAtom = atom("sectionPickerDialog", {
   isOpen: false,
@@ -33,45 +45,34 @@ export const SectionPickerDialogAtom = atom("sectionPickerDialog", {
   parent: null,
 });
 
-export const UserUsageAtom = atom("userUsage", {
-  creditBalance: 1000,
-  totalTokens: 0,
-  lastUsed: null,
-});
-
 export const BatchOperationAtom = atom("batchOperation", false);
 
 export const ShowGridLinesAtom = atom("showGridLines", false);
 
-export const ClippyVisibleAtom = atom("clippyVisible", true);
+export const AssistantVisibleAtom = atom("assistantVisible", true);
 
-export type ClippyMode = "docked" | "popout";
-export const ClippyModeAtom = atom<ClippyMode>(
-  "clippyMode",
+export type AssistantMode = "docked" | "popout";
+export const AssistantModeAtom = atom<AssistantMode>(
+  "assistantMode",
   (() => {
     try {
-      const saved = typeof window !== "undefined" ? phStorage.get("clippy-mode") : null;
+      const saved = typeof window !== "undefined" ? phStorage.get("assistant-mode") : null;
       if (saved === "docked" || saved === "popout") return saved;
     } catch {}
     return "popout";
   })()
 );
-
-/**
- * Dispatch to open Clippy with context.
- * Set to null when consumed / closed.
- */
 /** Save / static HTML issues (e.g. invalid tree). Dismiss sets to null. */
 export const EditorSaveBannerAtom = atom("editorSaveBanner", null as null | { message: string });
 
-/** Clippy + /api/ai/agent — default from entry point; user can override in UI. */
+/** AI assistant scope — default from entry point; user can override in UI. */
 export type AssistantScope = "design" | "text";
 
-/** Nodes pinned from the canvas or chat for the next assistant message (shared with Clippy UI). */
+/** Nodes pinned from the canvas or chat for the next assistant message. */
 export type AiChatAttachedNode = { id: string; displayName: string };
 
-export const ClippyOpenAtom = atom(
-  "clippyOpen",
+export const AssistantOpenAtom = atom(
+  "assistantOpen",
   null as null | {
     /** Node to select before chatting */
     nodeId?: string;

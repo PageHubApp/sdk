@@ -2,7 +2,7 @@ import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { TbCheck, TbChevronDown, TbEdit, TbPlus, TbTrash } from "react-icons/tb";
-import { FloatingPanel } from "../FloatingPanel";
+import { FloatingPanel } from "../floating/FloatingPanel";
 
 interface Modifier {
   name: string;

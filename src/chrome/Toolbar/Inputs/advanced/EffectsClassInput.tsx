@@ -1,7 +1,7 @@
 import { TbBrandTailwind } from "react-icons/tb";
 import { ToolbarSection } from "../../ToolbarSection";
-import { UniversalInput } from "../UniversalInput";
-import type { ValueType } from "../UniversalInput/types";
+import { UniversalInput } from "../universal-input";
+import type { ValueType } from "../universal-input/types";
 
 /** Matches ring/outline pattern: open-ended values + design vars where useful. */
 const EFFECTS_ALLOWED_TYPES: ValueType[] = [

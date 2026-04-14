@@ -5,7 +5,7 @@
  * Provides defaults and validation.
  */
 
-import { setPageHubApiBaseUrl } from "./runtimeApi";
+import { setPageHubApiBaseUrl } from "./core/apiConfig";
 import type { PageHubConfig, PageHubFeatures, PageHubTheme } from "./types";
 
 const DEFAULT_FEATURES: Required<PageHubFeatures> = {

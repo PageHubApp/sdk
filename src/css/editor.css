@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "./editor-partials/tailwind-theme-reference.css";
+@import "./editor-partials/utilities.css";
+@import "./editor-partials/icons-and-mobile-preview.css";
+@import "./editor-partials/canvas-interaction.css";
+@import "./editor-partials/base-and-scrollbars.css";
+@import "./editor-partials/viewport-layout.css";
+@import "./editor-partials/toolbar-forms.css";
+@import "./editor-partials/third-party.css";
+@import "./editor-partials/dropdowns.css";
+
+@import "./editor-partials/modifiers.css";
+@import "./editor-partials/viewport-canvas-chrome-vars.css";
+
+@source "../"; /* scan SDK source (.tsx/.ts) for class usage */

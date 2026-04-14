@@ -1,5 +1,5 @@
 import { TbArrowsMaximize } from "react-icons/tb";
-import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
+import { ItemAdvanceToggle } from "../../helpers/ItemSelector";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { HeightInput } from "./HeightInput";

@@ -13,7 +13,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     ...ariaAttrs(props),
   });
 };
-import { SpacerMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/SpacerMainTab";
+import { SpacerMainTab } from "../chrome/toolbar/unified-settings/mainTabs/SpacerMainTab";
 
 export const SpacerDef = defineComponent(
   {

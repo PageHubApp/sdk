@@ -50,7 +50,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     iframe
   );
 };
-import { VideoMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/VideoMainTab";
+import { VideoMainTab } from "../chrome/toolbar/unified-settings/mainTabs/VideoMainTab";
 import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
 
 export const VideoDef = defineComponent(

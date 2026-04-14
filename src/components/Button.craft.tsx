@@ -6,7 +6,7 @@ import { RxButton } from "react-icons/rx";
 import {
   ButtonMainTab,
   ButtonMainTabAdvanced,
-} from "../chrome/Toolbar/UnifiedSettings/mainTabs/ButtonMainTab";
+} from "../chrome/toolbar/unified-settings/mainTabs/ButtonMainTab";
 import { defineComponent } from "../define";
 import { migrateAction, actionToHref, actionTarget } from "../utils/action";
 import { iconRegistry } from "../utils/data/icon-registry";

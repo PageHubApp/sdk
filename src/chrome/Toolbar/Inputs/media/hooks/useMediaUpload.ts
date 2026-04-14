@@ -1,11 +1,11 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
-import { getCdnUrl } from "utils/cdn";
-import { getImageDimensionsFromFile, getImageDimensionsFromUrl } from "utils/imageDimensions";
-import { registerMediaWithBackground } from "utils/lib";
-import { GetSignedUrl, SaveMedia } from "../../../../Viewport/lib";
-import { useSDK } from "../../../../../context";
-import { useImageDrop } from "../../../../hooks/useImageDrop";
+import { getCdnUrl } from "@/utils/cdn";
+import { getImageDimensionsFromFile, getImageDimensionsFromUrl } from "@/utils/imageDimensions";
+import { registerMediaWithBackground } from "@/utils/lib";
+import { GetSignedUrl, SaveMedia } from "@/chrome/viewport/viewportExports";
+import { useSDK } from "@/core/context";
+import { useImageDrop } from "@/chrome/hooks/useImageDrop";
 import {
   cleanSvg,
   convertAvifToJpeg,

@@ -55,7 +55,6 @@ export const Form = ({ children, ...props }: any) => {
         timestamp: new Date().toLocaleString(),
       };
 
-      console.log("📋 Form Submission (Editor Mode)", submissionData);
       setDebugData(submissionData);
       setLoading(true);
 

@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 import { useAtomState } from "@zedux/react";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
-import { ToolbarPortalDropdown } from "../Tools/ToolbarPortalDropdown";
+import { ToolbarPortalDropdown } from "../inline-tools/ToolbarPortalDropdown";
 import { ViewSelectionAtom, breakpointScopeHasSelection } from "./Label";
 
 const BREAKPOINT_LABELS: Record<string, string> = {

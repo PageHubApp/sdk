@@ -1,5 +1,5 @@
-import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
-import { Tooltip } from "components/layout/Tooltip";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import { useEffect, useState } from "react";
 import { TbChevronRight } from "react-icons/tb";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";

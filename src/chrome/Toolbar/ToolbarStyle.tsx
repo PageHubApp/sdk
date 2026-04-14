@@ -1,5 +1,5 @@
-import { Tooltip } from "components/layout/Tooltip";
-import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { REACT_TOOLTIP_SURFACE_CLASS } from "@/chrome/primitives/layout/tooltipSurface";
 import { useCallback } from "react";
 import { TbInfoCircle } from "react-icons/tb";
 import { Tooltip as ReactTooltip } from "react-tooltip";
@@ -265,9 +265,7 @@ export const Card = ({
       // Regular click: copy to clipboard
       navigator.clipboard
         .writeText(value)
-        .then(() => {
-          console.log(`Copied to clipboard: ${value}`);
-        })
+        .then(() => {})
         .catch(err => {
           console.error("Failed to copy:", err);
         });

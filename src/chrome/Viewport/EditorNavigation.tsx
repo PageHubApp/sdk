@@ -1,5 +1,5 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
-import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 import { useEffect, useRef } from "react";
 import {
   isFlyoutBlockingToolColumn,
@@ -23,11 +23,11 @@ import {
 } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
-import { ClippyOpenAtom, ShowGridLinesAtom } from "utils/atoms";
-import { useAiEnabled } from "utils/hooks/useAiEnabled";
-import { useSDK } from "../../context";
+import { AssistantOpenAtom, ShowGridLinesAtom } from "../../utils/atoms";
+import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
+import { useSDK } from "../../core/context";
 import { EditorMenuKbd, EditorMenuNavRow, EditorMenuSectionLabel } from "./EditorMenuNav";
-import { SidebarFlyoutSurface } from "../shared/SidebarFlyoutSurface";
+import { SidebarFlyoutSurface } from "../primitives/SidebarFlyoutSurface";
 import { ImportExportPanel } from "./ImportExportPanel";
 import { ThemeSettingsPanel } from "./ThemeSettingsPanel";
 import { ToolboxTabs } from "./ToolboxTabs";
@@ -68,7 +68,7 @@ export const EditorNavigation = ({
     selectedId: query.getEvent("selected").first() ?? null,
   }));
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
-  const setClippyOpen = useSetAtomState(ClippyOpenAtom);
+  const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const { config } = useSDK();
   const isAiEnabled = useAiEnabled();
   const renderNavAi = config.editorChromeSlots?.renderNavAiMenuItem;
@@ -255,7 +255,7 @@ export const EditorNavigation = ({
                         renderNavAi &&
                         renderNavAi({
                           onSelect: () => {
-                            setClippyOpen({});
+                            setAssistantOpen({});
                             close();
                           },
                         })}

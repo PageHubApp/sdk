@@ -10,7 +10,7 @@ A drag-and-drop page editor SDK built on [CraftJS](https://craft.js.org/). Inclu
 npm install @pagehub/sdk
 ```
 
-**Developing inside the `pagehub.dev` repo:** this package lives at **`packages/sdk`** and is linked with **`workspace:*`**. Use **pnpm from the repository root** only (`pnpm install`, `pnpm run build`). Do not run install only inside `packages/sdk/`. Every dependency imported from `src/` must be listed in this directory’s **`package.json`**. See root **`README.md`**, **`.cursorrules`**, and **`CLAUDE.md`**.
+**Developing inside the monorepo:** see [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions.
 
 ---
 
@@ -85,7 +85,7 @@ export default function Builder() {
 | ------------ | ----------------------- | --------------------------- | ------------------------------------------------------- |
 | `container`  | `string \| HTMLElement` | —                           | DOM selector or element to mount into (vanilla JS only) |
 | `apiKey`     | `string`                | —                           | PageHub Cloud API key (optional for self-hosted)        |
-| `apiBaseUrl` | `string`                | `"https://pagehub.dev/api"` | API base URL (override for self-hosted)                 |
+| `apiBaseUrl` | `string`                | `""`                        | API base URL (for AI, uploads, forms)                   |
 | `pageId`     | `string`                | —                           | Initial page ID to load                                 |
 | `readOnly`   | `boolean`               | `false`                     | Start in viewer mode                                    |
 | `callbacks`  | `PageHubCallbacks`      | _required_                  | Your integration hooks (see below)                      |
@@ -308,7 +308,7 @@ Import the editor stylesheet in your app:
 import "@pagehub/sdk/editor.css";
 ```
 
-Vite bundles `src/editor.css` into **`dist/editor.css`** (same public path: `@pagehub/sdk/editor.css`). Source is split under `src/editor-partials/*.css` for maintainability; the entry file only wires Tailwind (`@import 'tailwindcss'`), `@reference` / `@source`, and an `@import` chain.
+Vite bundles `src/css/editor.css` into **`dist/editor.css`** (same public path: `@pagehub/sdk/editor.css`). Source is split under `src/css/editor-partials/*.css` for maintainability; the entry file only wires Tailwind (`@import 'tailwindcss'`), `@reference` / `@source`, and an `@import` chain.
 
 **Scoping:** Almost all editor chrome rules are prefixed with **`.pagehub-sdk-root`** so generic selectors (`button`, `.input`, `#viewport`, `[data-enabled]`, scrollbars, etc.) do not hit the host page when the builder is embedded. **`ph-anim-*` / `ph-hover-*` / `css-*` keyframes** stay global so saved page content and static export still work. Mobile preview toggles **`mobile-preview`** on `.pagehub-sdk-root` (not `<html>`). Portaled listboxes set **`pagehub-sdk-root ph-select-content`** on the panel so dropdown styles apply after teleport.
 
@@ -316,25 +316,25 @@ Vite bundles `src/editor.css` into **`dist/editor.css`** (same public path: `@pa
 
 - Prefer **theme tokens** from your host: load shared design CSS (for PageHub apps this is your design system CSS) so `--base-100`, `--primary`, `--border`, etc. match the editor chrome.
 - **`config.theme.cssVariables`** and **`config.theme.customCSS`** still apply on top for integration-specific overrides.
-- **`@tailwindcss/browser`** (used for in-canvas utilities) compiles from live class attributes; `@source` in `editor.css` scans SDK sources (`./`).
+- **`@tailwindcss/browser`** (used for in-canvas utilities) compiles from live class attributes; `@source` in `editor.css` scans SDK sources (`../`).
 
 ### Editor CSS partials (concern → file)
 
-Partials that use `@apply` / `@utility` rely on **`editor-partials/tailwind-theme-reference.css`**, imported immediately after `tailwindcss` in `editor.css`. `@reference` URLs are resolved from **`packages/sdk/src/`** (same as the old monolithic `editor.css`), not from the partial file path. Add new `@import` lines only at the top of `editor.css` (PostCSS requires every `@import` before `@source` / other at-rules).
+Partials that use `@apply` / `@utility` rely on **`css/editor-partials/tailwind-theme-reference.css`**, imported immediately after `tailwindcss` in `editor.css`. `@reference` URLs are resolved from **`packages/sdk/src/css/`**, not from the partial file path. Add new `@import` lines only at the top of `editor.css` (PostCSS requires every `@import` before `@source` / other at-rules).
 
 | Concern                                                           | File                                           |
 | ----------------------------------------------------------------- | ---------------------------------------------- |
-| Tailwind theme `@reference` (single, paths from `src/`)           | `editor-partials/tailwind-theme-reference.css` |
-| Scoped `.btn` / `.input-hover` (not `@utility`)                   | `editor-partials/utilities.css`                |
-| Google icons + mobile preview overrides                           | `editor-partials/icons-and-mobile-preview.css` |
-| Canvas selection, drag/drop, `#viewport` handles                  | `editor-partials/canvas-interaction.css`       |
-| Shell typography on `.pagehub-sdk-root`, scrollbars, range thumbs | `editor-partials/base-and-scrollbars.css`      |
-| `#viewport` / `[data-renderer]` containment                       | `editor-partials/viewport-layout.css`          |
-| Toolbar inputs, buttons, sliders                                  | `editor-partials/toolbar-forms.css`            |
-| Third-party (e.g. Sketch color picker)                            | `editor-partials/third-party.css`              |
-| HeadlessUI listbox (`ph-select-*`)                                | `editor-partials/dropdowns.css`                |
-| Scroll/hover presets + `css-*` keyframes                          | `styles.css` (animation presets section)       |
-| Sequential spotlight presets (chain/grid)                          | `css/spotlight-presets.css`                     |
+| Tailwind theme `@reference` (single, paths from `src/css/`)       | `css/editor-partials/tailwind-theme-reference.css` |
+| Scoped `.btn` / `.input-hover` (not `@utility`)                   | `css/editor-partials/utilities.css`                |
+| Google icons + mobile preview overrides                           | `css/editor-partials/icons-and-mobile-preview.css` |
+| Canvas selection, drag/drop, `#viewport` handles                  | `css/editor-partials/canvas-interaction.css`       |
+| Shell typography on `.pagehub-sdk-root`, scrollbars, range thumbs | `css/editor-partials/base-and-scrollbars.css`      |
+| `#viewport` / `[data-renderer]` containment                       | `css/editor-partials/viewport-layout.css`          |
+| Toolbar inputs, buttons, sliders                                  | `css/editor-partials/toolbar-forms.css`            |
+| Third-party (e.g. Sketch color picker)                            | `css/editor-partials/third-party.css`              |
+| HeadlessUI listbox (`ph-select-*`)                                | `css/editor-partials/dropdowns.css`                |
+| Scroll/hover presets + `css-*` keyframes                          | `css/styles.css` (animation presets section)       |
+| Sequential spotlight presets (chain/grid)                          | `css/spotlight-presets.css`                         |
 
 ### Naming contract (integrators & contributors)
 
@@ -345,7 +345,7 @@ Partials that use `@apply` / `@utility` rely on **`editor-partials/tailwind-them
 ### Dual CSS in this repo
 
 - **`@pagehub/sdk/editor.css`** (SDK dist) — Full editor + Tailwind scan + chrome. Use when embedding the SDK.
-- **`styles/editor.css`** (Next app) — App-specific globals that overlap conceptually but are **not** the same artifact; keep SDK changes in `packages/sdk/src/editor.css` and `packages/sdk/src/editor-partials/`.
+- **`styles/editor.css`** (Next app) — App-specific globals that overlap conceptually but are **not** the same artifact; keep SDK changes in `packages/sdk/src/css/editor.css` and `packages/sdk/src/css/editor-partials/`.
 
 ---
 
@@ -368,7 +368,7 @@ The core editor and viewer work fully offline with just the `onLoad`/`onSave` ca
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or pull request on [GitHub](https://github.com/pagehub-dev/sdk).
+Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup, architecture, and PR guidelines.
 
 ## License
 

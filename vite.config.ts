@@ -35,7 +35,7 @@ export default defineConfig(({ mode, command }) => {
         ? [
             dts({
               include: ["src/**/*.ts", "src/**/*.tsx"],
-              exclude: ["src/vite-editor-css-entry.ts"],
+              exclude: ["src/css/vite-editor-css-entry.ts"],
               outDir: "dist",
               rollupTypes: false,
             }),
@@ -46,19 +46,15 @@ export default defineConfig(({ mode, command }) => {
       alias: {
         "@pagehub/ui": resolve(__dirname, "../ui/src/index.ts"),
         "@": resolve(__dirname, "src"),
-        // Map original main app import patterns to SDK locations
-        "components/layout": resolve(__dirname, "src/chrome/shared/layout"),
-        "utils/icons.json": resolve(__dirname, "src/utils/data/icons.json"),
-        "utils/googleIcons.json": resolve(__dirname, "src/utils/data/googleIcons.json"),
-        utils: resolve(__dirname, "src/utils"),
         lodash: resolve(__dirname, "../../node_modules/lodash-es"),
         // Stub Node.js polyfills pulled in by lzutf8
-        "readable-stream": resolve(__dirname, "src/shims/empty.ts"),
-        stream: resolve(__dirname, "src/shims/empty.ts"),
+        "readable-stream": resolve(__dirname, "src/core/shims/empty.ts"),
+        stream: resolve(__dirname, "src/core/shims/empty.ts"),
         // Framework stubs
-        "next/link": resolve(__dirname, "src/shims/next.tsx"),
-        "next/image": resolve(__dirname, "src/shims/next.tsx"),
-        "next/router": resolve(__dirname, "src/shims/next.tsx"),
+        "next/link": resolve(__dirname, "src/core/shims/next.tsx"),
+        "next/image": resolve(__dirname, "src/core/shims/next.tsx"),
+        "next/router": resolve(__dirname, "src/core/shims/next.tsx"),
+        "next/dynamic": resolve(__dirname, "src/core/shims/next-dynamic.tsx"),
       },
     },
     define: {

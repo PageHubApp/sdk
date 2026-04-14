@@ -4,10 +4,10 @@ import ReactDOM from "react-dom";
 import { TbX } from "react-icons/tb";
 
 import sluggit from "slug";
-import { useSDK } from "../../context";
-import { BasicTab } from "./PageSettings/BasicTab";
-import { SEOTab } from "./PageSettings/SEOTab";
-import { AdvancedTab } from "./PageSettings/AdvancedTab";
+import { useSDK } from "../../core/context";
+import { BasicTab } from "./page-settings/BasicTab";
+import { SEOTab } from "./page-settings/SEOTab";
+import { AdvancedTab } from "./page-settings/AdvancedTab";
 
 interface PageSettingsModalProps {
   isOpen: boolean;

@@ -1,4 +1,4 @@
-import { addHandler, buildClonedTree, saveHandler } from "./lib";
+import { addHandler, buildClonedTree, saveHandler } from "./viewportExports";
 
 /**
  * Duplicate the subtree rooted at `id` (same sequence as DuplicateNodeButton).

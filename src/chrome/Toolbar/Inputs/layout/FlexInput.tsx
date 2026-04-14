@@ -1,4 +1,4 @@
-import { TailwindStyles } from "utils/tailwind";
+import { TailwindStyles } from "@/utils/tailwind";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { FlexDirectionInput } from "./FlexDirectionInput";

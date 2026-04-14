@@ -1,14 +1,14 @@
-import { useView } from "../store";
+import { useView } from "../core/store";
 import { useEditor, useNode } from "@craftjs/core";
 import { motion } from "framer-motion";
 import React from "react";
 import { TbLayoutColumns, TbLayoutRows, TbNote, TbPlus } from "react-icons/tb";
-import { useNodeTypeHelpers } from "../chrome/NodeControllers/hooks/useNodeType";
+import { useNodeTypeHelpers } from "../chrome/canvas/hooks/useNodeType";
 import { ImageDefault } from "./Image";
 
 // Lazy-load AddElementButton — editor-only, keeps chrome out of viewer bundle
 const AddElementButton = React.lazy(() =>
-  import("../chrome/shared/AddElementButton").then(m => ({ default: m.AddElementButton }))
+  import("../chrome/primitives/AddElementButton").then(m => ({ default: m.AddElementButton }))
 );
 
 export const EmptyState = ({

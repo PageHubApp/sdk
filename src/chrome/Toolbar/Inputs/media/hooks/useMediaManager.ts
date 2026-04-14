@@ -1,18 +1,18 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "@zedux/react";
-import { SettingsAtom } from "utils/atoms";
-import { getCdnUrl } from "utils/cdn";
-import { getPageMedia, updateMediaMetadata } from "utils/lib";
-import { DeleteMedia } from "../../../../Viewport/lib";
-import { useResizable } from "../../../../hooks/useResizable";
-import { useSDK } from "../../../../../context";
-import { useAiEnabled } from "../../../../../utils/hooks/useAiEnabled";
+import { SettingsAtom } from "@/utils/atoms";
+import { getCdnUrl } from "@/utils/cdn";
+import { getPageMedia, updateMediaMetadata } from "@/utils/lib";
+import { DeleteMedia } from "@/chrome/viewport/viewportExports";
+import { useResizable } from "@/chrome/hooks/useResizable";
+import { useSDK } from "@/core/context";
+import { useAiEnabled } from "@/utils/hooks/useAiEnabled";
 import type {
   PageHubMediaEditAiActionsContext,
   PageHubMediaManagerAiPanelContext,
   PageHubMediaMetadataSuggestion,
-} from "../../../../../types";
+} from "@/types";
 import {
   cleanSvg,
   sortMedia,
@@ -22,7 +22,7 @@ import {
 } from "../utils/media-helpers";
 import { useMediaUpload } from "./useMediaUpload";
 import { useAiGeneration } from "./useAiGeneration";
-import { phStorage } from "../../../../../utils/phStorage";
+import { phStorage } from "@/utils/phStorage";
 
 interface UseMediaManagerOptions {
   isOpen: boolean;

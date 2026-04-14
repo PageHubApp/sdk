@@ -1,8 +1,8 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbContainer, TbNote } from "react-icons/tb";
-import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
-import { useIsolate, usePreview, useView } from "../store";
+import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
+import { useIsolate, usePreview, useView } from "../core/store";
 import { mergeAccessibilityProps } from "../utils/accessibility";
 import { addActionHandlers } from "../utils/clickControls";
 import { migrateAction, actionToHref, isHandlerAction, type NodeAction } from "../utils/action";
@@ -12,7 +12,7 @@ import { applyBackgroundImage, motionIt } from "../utils/lib";
 
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import { useScrollEffect } from "../utils/hooks/useScrollEffect";
-import { RenderPattern, inlayProps } from "./lib";
+import { RenderPattern, inlayProps } from "./componentHooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 export interface ContainerProps extends BaseSelectorProps {

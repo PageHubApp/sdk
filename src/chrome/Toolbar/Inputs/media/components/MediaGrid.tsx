@@ -14,9 +14,9 @@ import {
   TbTrash,
   TbUpload,
 } from "react-icons/tb";
-import { EditorMenuNavRow, EditorMenuSectionLabel } from "../../../../Viewport/EditorMenuNav";
-import { getCdnUrl } from "utils/cdn";
-import { formatDimensions } from "utils/imageDimensions";
+import { EditorMenuNavRow, EditorMenuSectionLabel } from "@/chrome/viewport/EditorMenuNav";
+import { getCdnUrl } from "@/utils/cdn";
+import { formatDimensions } from "@/utils/imageDimensions";
 import {
   formatFileSize,
   type MediaItem,

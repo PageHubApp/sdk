@@ -19,7 +19,7 @@ const mockDB = {
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const defaultConfig = {
-  apiBaseUrl: "https://pagehub.dev",
+  apiBaseUrl: "",
   apiKey: "",
   siteId: "",
   theme: {
@@ -222,7 +222,7 @@ function initEditor() {
 
 function saveConfig() {
   currentConfig.apiBaseUrl =
-    document.getElementById("cfg-apiBaseUrl").value || "https://pagehub.dev";
+    document.getElementById("cfg-apiBaseUrl").value || "";
   currentConfig.apiKey = (document.getElementById("cfg-apiKey").value || "").trim();
   currentConfig.siteId = (document.getElementById("cfg-siteId").value || "").trim();
   currentConfig.theme.primaryColor = document.getElementById("cfg-primaryColor").value;

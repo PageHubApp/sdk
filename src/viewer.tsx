@@ -10,9 +10,9 @@ import { Editor, Frame, useEditor } from "@craftjs/core";
 import lz from "lzutf8";
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { DEFAULT_CRAFT_RESOLVER } from "./builtins";
-import { EditorStoreProvider } from "./store";
-import { injectTailwindBrowser } from "./tailwindBrowser";
+import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
+import { EditorStoreProvider } from "./core/store";
+import { injectTailwindBrowser } from "./core/tailwindBrowser";
 import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
 import { processForViewer, type ResolvedComponentDef } from "./define";
 

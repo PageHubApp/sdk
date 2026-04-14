@@ -1,6 +1,6 @@
 /**
  * Second pass after the main library build: emit `dist/editor.css` from
- * {@link ./src/vite-editor-css-entry.ts} without importing global CSS from `index.ts`
+ * {@link ./src/css/vite-editor-css-entry.ts} without importing global CSS from `index.ts`
  * (Next.js disallows package global CSS outside `_app`).
  */
 import react from "@vitejs/plugin-react";
@@ -13,7 +13,7 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
 const resolveAliases = {
   "@pagehub/ui": path.resolve(dir, "../ui/src/index.ts"),
   "@": path.resolve(dir, "src"),
-  "components/layout": path.resolve(dir, "src/chrome/shared/layout"),
+  "components/layout": path.resolve(dir, "src/chrome/primitives/layout"),
   "utils/icons.json": path.resolve(dir, "src/utils/data/icons.json"),
   "utils/googleIcons.json": path.resolve(dir, "src/utils/data/googleIcons.json"),
   utils: path.resolve(dir, "src/utils"),
@@ -35,7 +35,7 @@ export default defineConfig({
     emptyOutDir: false,
     minify: true,
     lib: {
-      entry: path.resolve(dir, "src/vite-editor-css-entry.ts"),
+      entry: path.resolve(dir, "src/css/vite-editor-css-entry.ts"),
       name: "PageHubSdkEditorCss",
       formats: ["es"],
       fileName: () => "sdk-editor-css-stub",

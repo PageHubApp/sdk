@@ -19,7 +19,7 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
     children
   );
 };
-import { ContainerGroupMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ContainerGroupMainTab";
+import { ContainerGroupMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ContainerGroupMainTab";
 
 export const ContainerGroupDef = defineComponent(
   {

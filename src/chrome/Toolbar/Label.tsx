@@ -1,10 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { TbTrash } from "react-icons/tb";
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import { atom, useAtomState, useAtomValue } from "@zedux/react";
 
-import { ViewAtom } from "../Viewport/atoms";
-import { changeProp, getPropFinalValue } from "../Viewport/lib";
+import { ViewAtom } from "../viewport/atoms";
+import { changeProp, getPropFinalValue } from "../viewport/viewportExports";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
 
 // Global state for view selection (which Tailwind layers the next edit applies to)
@@ -177,13 +177,6 @@ export const ToolbarLabel = ({
   const handleRemove = e => {
     e.preventDefault();
     e.stopPropagation();
-
-    console.log("Removing font:", {
-      propKey,
-      propType,
-      view,
-      currentValue: resolvedValue,
-    });
 
     changeProp({
       propKey,

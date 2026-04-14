@@ -1,12 +1,12 @@
 import { useAtomValue } from "@zedux/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ComponentsAtom } from "utils/lib";
+import { ComponentsAtom } from "../../utils/lib";
 import { NAV_EXTRA_PRESETS } from "../../components/definitions";
 import { useCustomComponents } from "../../define";
 import { usePanelUrl } from "../../utils/usePanelUrl";
-import { AutoHideScrollbar } from "../shared/layout";
-import { buildCustomToolboxEntries, buildExtraPresetEntries } from "./Toolbox/customComponents";
-import { SavedComponentsToolbox } from "./Toolbox/savedComponents";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout";
+import { buildCustomToolboxEntries, buildExtraPresetEntries } from "./toolbox/customComponents";
+import { SavedComponentsToolbox } from "./toolbox/savedComponents";
 
 // All built-in components now served via defineComponent() toolbox categories.
 // Categories are defined as empty shells here and populated dynamically

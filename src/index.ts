@@ -33,7 +33,7 @@
 
 // Global editor CSS is NOT imported here — Next.js forbids global CSS from packages (see
 // https://nextjs.org/docs/messages/css-global). Vite emits `dist/editor.css` via
-// `vite-editor-css-entry.ts`; npm users `import "@pagehub/sdk/editor.css"`. This app loads
+// `css/vite-editor-css-entry.ts`; npm users `import "@pagehub/sdk/editor.css"`. This app loads
 // editor chrome via `styles/editor.css` in `pages/_app.tsx`.
 
 import lz from "lzutf8";
@@ -43,13 +43,13 @@ import { createRoot } from "react-dom/client";
 import { configureCdn } from "./utils/cdn";
 import { registerSubmissionHandler } from "./utils/lib";
 import { resolveConfig } from "./config";
-import { PageHubProvider } from "./context";
+import { PageHubProvider } from "./core/context";
 import { PageHubEditor } from "./editor";
-import { EventEmitter } from "./events";
+import { EventEmitter } from "./core/events";
 import { renderToHTML } from "./static-renderer";
 import type { RenderToHTMLOptions, RenderToHTMLResult } from "./static-renderer";
-import { injectTailwindBrowser, removeTailwindBrowser } from "./tailwindBrowser";
-import { injectTheme, removeTheme } from "./theme";
+import { injectTailwindBrowser, removeTailwindBrowser } from "./core/tailwindBrowser";
+import { injectTheme, removeTheme } from "./core/theme";
 import type {
   PageData,
   PageHubConfig,
@@ -58,12 +58,12 @@ import type {
   PageHubInstance,
   PageHubTheme,
 } from "./types";
-import { DEFAULT_CRAFT_RESOLVER } from "./builtins";
-import { setPageHubApiBaseUrl } from "./runtimeApi";
+import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
+import { setPageHubApiBaseUrl } from "./core/apiConfig";
 
 // Side-effect import: UnifiedSettings self-registers with LazyUnifiedSettings
-// at module load time. Must come AFTER built-in component graph is loadable (see builtins.ts).
-import "./chrome/Toolbar/UnifiedSettings/UnifiedSettings";
+// at module load time. Must come AFTER built-in component graph is loadable (see componentRegistry.ts).
+import "./chrome/toolbar/unified-settings/UnifiedSettings";
 
 // Add spinner animation
 const SPINNER_CSS = `
@@ -237,13 +237,13 @@ function init(config: PageHubConfig): PageHubInstance {
     },
 
     exportHTML(options: Omit<RenderToHTMLOptions, "compressed"> = {}): RenderToHTMLResult {
-      if (!editorQueryRef) return { html: "", classes: [], fontUrls: [], scrollObserverScript: "" };
+      if (!editorQueryRef) return { html: "", classes: [], fontUrls: [], scrollObserverScript: "", themeCSS: "", iconFontUrl: null, seo: null };
       try {
         const json = editorQueryRef.serialize();
         return renderToHTML(json, { ...options, compressed: false });
       } catch (err) {
         console.error("[PageHub] exportHTML error:", err);
-        return { html: "", classes: [], fontUrls: [], scrollObserverScript: "" };
+        return { html: "", classes: [], fontUrls: [], scrollObserverScript: "", themeCSS: "", iconFontUrl: null, seo: null };
       }
     },
   };
@@ -258,7 +258,7 @@ const PageHub = { init };
 export default PageHub;
 
 // Named exports for React usage
-export { PageHubProvider } from "./context";
+export { PageHubProvider } from "./core/context";
 export { PageHubEditor } from "./editor";
 export { resolveConfig } from "./config";
 export { PageHubViewer, renderViewer } from "./viewer";
@@ -302,11 +302,11 @@ export { init };
 export { configureCdn } from "./utils/cdn";
 
 /** Default Craft resolver map and built-in `defineComponent` defs (extend / merge for custom blocks). */
-export { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./builtins";
-export type { BuiltInCraftResolver } from "./builtins";
+export { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
+export type { BuiltInCraftResolver } from "./core/componentRegistry";
 
 /** API base URL for SDK fetches (set by `resolveConfig` / `PageHubProvider`; host may call `setPageHubApiBaseUrl` early). */
-export { getPageHubApiBaseUrl, setPageHubApiBaseUrl } from "./runtimeApi";
+export { getPageHubApiBaseUrl, setPageHubApiBaseUrl } from "./core/apiConfig";
 
 // Export ported selector components for React users
 export { Accordion } from "./components/Accordion";
@@ -334,9 +334,12 @@ export { Text } from "./components/Text";
 export { Video } from "./components/Video";
 
 // Export store hooks for advanced use
-export { useView, usePreview, useEditorStore } from "./store";
-export type { ViewMode } from "./store";
+export { useView, usePreview, useEditorStore } from "./core/store";
+export type { ViewMode } from "./core/store";
 
-// Static HTML renderer — no React, no DOM, runs anywhere
+// Static rendering
 export { renderToHTML, buildRootThemeCss } from "./static-renderer";
 export type { RenderToHTMLOptions, RenderToHTMLResult } from "./static-renderer";
+
+// CSS compilation — server-side only, import from "@pagehub/sdk/compile-css"
+// NOT re-exported here to avoid Next.js/Turbopack treating readFileSync CSS paths as global imports

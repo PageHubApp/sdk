@@ -15,7 +15,7 @@ import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "..
 import {
   AccordionMainTab,
   AccordionMainTabAdvanced,
-} from "../chrome/Toolbar/UnifiedSettings/mainTabs/AccordionMainTab";
+} from "../chrome/toolbar/unified-settings/mainTabs/AccordionMainTab";
 import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {

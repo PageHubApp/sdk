@@ -5,8 +5,8 @@
  */
 import { useNode } from "@craftjs/core";
 import { TbPointer, TbX } from "react-icons/tb";
-import { PageSelector } from "../../../Viewport/PageSelector";
-import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
+import { PageSelector } from "../../../viewport/PageSelector";
+import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ToolbarSection } from "../../ToolbarSection";
 import {
@@ -16,7 +16,7 @@ import {
   type LinkTarget,
   type ToggleThemeAction,
   migrateAction,
-} from "../../../../utils/action";
+} from "@/utils/action";
 import { useElementPicker, type PickerFilter } from "./useElementPicker";
 
 const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {

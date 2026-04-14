@@ -121,9 +121,9 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
   /** CraftJS rules. */
   rules?: {
     canDrag?: boolean | ((node?: any, helpers?: any) => boolean);
-    canDelete?: boolean | (() => boolean);
+    canDelete?: boolean | ((node?: any) => boolean);
     canMoveIn?: (nodes: any[], into?: any) => boolean;
-    canMoveOut?: boolean | (() => boolean);
+    canMoveOut?: boolean | ((node?: any) => boolean);
   };
 
   /** Inline editor tools (canvas overlays). Auto-generated if omitted. */
@@ -170,9 +170,9 @@ export interface ResolvedComponentDef<P = any> {
   readonly hoverClickVariant: string | undefined;
   readonly rules: {
     canDrag: (node?: any, helpers?: any) => boolean;
-    canDelete: () => boolean;
+    canDelete: (node?: any) => boolean;
     canMoveIn: (nodes: any[], into?: any) => boolean;
-    canMoveOut?: () => boolean;
+    canMoveOut?: (node?: any) => boolean;
   };
   readonly tools: React.ReactNode[] | ((props: any) => React.ReactNode[]) | undefined;
   readonly toolbarExtra: React.ReactNode | undefined;
@@ -416,8 +416,8 @@ function buildAutoSettings(propsSchema: Record<string, PropSchema>): React.Compo
   const loadDeps = () => {
     if (!ToolbarItem) {
       // These are editor-only imports, resolved at render time
-      ToolbarItem = require("./chrome/Toolbar/ToolbarItem").ToolbarItem;
-      ToolbarSection = require("./chrome/Toolbar/ToolbarSection").ToolbarSection;
+      ToolbarItem = require("./chrome/toolbar/ToolbarItem").ToolbarItem;
+      ToolbarSection = require("./chrome/toolbar/ToolbarSection").ToolbarSection;
     }
   };
 
@@ -470,8 +470,8 @@ function buildAutoSettings(propsSchema: Record<string, PropSchema>): React.Compo
  * or explicitly passes an empty list (layout nodes migrated off inline chrome).
  */
 function getMinimalCanvasTools(): (props: any) => React.ReactNode[] {
-  const { NameNodeController } = require("./chrome/NodeControllers/NameNodeController");
-  const { HoverNodeController } = require("./chrome/NodeControllers/HoverNodeController");
+  const { NameNodeController } = require("./chrome/canvas/NameNodeController");
+  const { HoverNodeController } = require("./chrome/canvas/HoverNodeController");
   return () => [
     React.createElement(NameNodeController, {
       key: "ph-name",

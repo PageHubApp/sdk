@@ -1,12 +1,12 @@
 import { useNode } from "@craftjs/core";
-import { ViewAtom } from "../../Viewport/atoms";
-import { changeProp, getProp } from "../../Viewport/lib";
+import { ViewAtom } from "../../viewport/atoms";
+import { changeProp, getProp } from "../../viewport/viewportExports";
 import { SelectedButtonAtom } from "../../../components/settings-stub";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { ColorInput } from "../Inputs/color/ColorInput";
-import { IconDialogInput } from "../Inputs/media/IconDialogInput";
-import ActionInput from "../Inputs/action/ActionInput";
-import { ListEditor } from "../Inputs/preset/ListItemPopover";
+import { ColorInput } from "../inputs/color/ColorInput";
+import { IconDialogInput } from "../inputs/media/IconDialogInput";
+import ActionInput from "../inputs/action/ActionInput";
+import { ListEditor } from "../inputs/preset/ListItemPopover";
 
 import { ToolbarItem, ToolbarItemProps } from "../ToolbarItem";
 import { ToolbarSection } from "../ToolbarSection";

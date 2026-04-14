@@ -15,7 +15,7 @@ import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "..
 import {
   DropdownMainTab,
   DropdownMainTabAdvanced,
-} from "../chrome/Toolbar/UnifiedSettings/mainTabs/DropdownMainTab";
+} from "../chrome/toolbar/unified-settings/mainTabs/DropdownMainTab";
 import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {

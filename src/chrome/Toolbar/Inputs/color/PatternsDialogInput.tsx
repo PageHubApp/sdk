@@ -1,13 +1,13 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { changeProp } from "../../../Viewport/lib";
-import { ViewAtom } from "../../../Viewport/atoms";
+import { changeProp } from "../../../viewport/viewportExports";
+import { ViewAtom } from "../../../viewport/atoms";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
-import { generatePattern } from "utils/lib";
-import { editorCanvasViewToClassPrefixKey } from "../../../../utils/tailwind/className";
+import { generatePattern } from "@/utils/lib";
+import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
-import { getPageHubApiBaseUrl } from "../../../../runtimeApi";
+import { getPageHubApiBaseUrl } from "@/core/apiConfig";
 import { TbSearch, TbX } from "react-icons/tb";
 
 const DEMO_COLORS = {

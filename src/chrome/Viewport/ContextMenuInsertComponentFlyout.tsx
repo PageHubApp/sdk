@@ -2,16 +2,16 @@ import { useEditor } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { useMemo, useState } from "react";
 import { TbLayoutSidebarRightExpand, TbSearch } from "react-icons/tb";
-import { ComponentsAtom } from "utils/lib";
+import { ComponentsAtom } from "../../utils/lib";
 import { useCustomComponents } from "../../define";
 import { usePanelUrl } from "../../utils/usePanelUrl";
-import { AutoHideScrollbar } from "../shared/layout";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout";
 import {
   buildToolboxInsertDescriptors,
   type ToolboxInsertDescriptor,
 } from "./buildToolboxInsertDescriptors";
-import { insertToolboxPresetAfterNode } from "./Toolbox/lib";
-import { resolveToolboxIcon } from "./Toolbox/resolveToolboxIcon";
+import { insertToolboxPresetAfterNode } from "./toolbox/toolboxUtils";
+import { resolveToolboxIcon } from "./toolbox/resolveToolboxIcon";
 
 const FLYOUT_W = 280;
 const FLYOUT_MAX_H = 360;

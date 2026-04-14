@@ -27,9 +27,9 @@ import { motionIt } from "../utils/lib";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
-import { useScrollToSelected } from "./lib";
+import { useScrollToSelected } from "./componentHooks";
 
-import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
@@ -50,6 +50,7 @@ export interface ButtonProps extends BaseSelectorProps {
   type?: string;
   action?: NodeAction;
   click?: any; // Legacy — handled by migrateAction()
+  defaultActive?: boolean;
 }
 
 const defaultIcon = {

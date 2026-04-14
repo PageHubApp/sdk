@@ -1,14 +1,14 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { changeProp } from "../../../Viewport/lib";
+import { changeProp } from "../../../viewport/viewportExports";
 
-import { ViewAtom } from "../../../Viewport/atoms";
-import { LoremIpsum } from "../../../../utils/data/loremIpsum";
+import { ViewAtom } from "../../../viewport/atoms";
+import { LoremIpsum } from "@/utils/data/loremIpsum";
 import { useAtomValue } from "@zedux/react";
-import { editorCanvasViewToClassPrefixKey } from "../../../../utils/tailwind/className";
+import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { TbLetterA, TbMinus, TbAlignLeft } from "react-icons/tb";
 import { Tooltip as ReactTooltip } from "react-tooltip";
-import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
+import { REACT_TOOLTIP_SURFACE_CLASS } from "@/chrome/primitives/layout/tooltipSurface";
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);

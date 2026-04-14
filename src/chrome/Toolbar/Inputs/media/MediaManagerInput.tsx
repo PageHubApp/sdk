@@ -1,7 +1,7 @@
 import { useEditor } from "@craftjs/core";
 import { useEffect, useState } from "react";
 import { TbPhoto } from "react-icons/tb";
-import { getPageMedia } from "utils/lib";
+import { getPageMedia } from "@/utils/lib";
 import { ToolbarSection } from "../../ToolbarSection";
 import { MediaManagerModal } from "./MediaManagerModal";
 

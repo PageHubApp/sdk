@@ -4,23 +4,23 @@
  * Used by .craft.tsx files (editor-only path).
  * The viewer path tree-shakes these out.
  */
-export { InlineToolsRenderer } from "../chrome/InlineToolsRenderer";
-export { HoverNodeController } from "../chrome/NodeControllers/HoverNodeController";
-export { NameNodeController } from "../chrome/NodeControllers/NameNodeController";
-export { DeleteNodeController } from "../chrome/NodeControllers/DeleteNodeController";
-export { ImageMediaTool } from "../chrome/NodeControllers/Tools/ImageMediaTool";
-export { ToolNodeController } from "../chrome/NodeControllers/ToolNodeController";
-export { DragAdjustNodeController } from "../chrome/NodeControllers/DragAdjustNodeController";
-export { AddSectionNodeController } from "../chrome/NodeControllers/AddSectionNodeController";
-export { UniformPaddingNodeController } from "../chrome/NodeControllers/UniformPaddingNodeController";
-export { ToolboxMenu } from "../chrome/RenderNode";
-export { AddElementButton } from "../chrome/shared/AddElementButton";
-export { TiptapProvider } from "../chrome/TiptapContext";
-export { InlineEditToolbar } from "../chrome/Tools/InlineEditToolbar/InlineEditToolbar";
+export { InlineToolsRenderer } from "../chrome/rendering/InlineToolsRenderer";
+export { HoverNodeController } from "../chrome/canvas/HoverNodeController";
+export { NameNodeController } from "../chrome/canvas/NameNodeController";
+export { DeleteNodeController } from "../chrome/canvas/DeleteNodeController";
+export { ImageMediaTool } from "../chrome/canvas/node-tools/ImageMediaTool";
+export { ToolNodeController } from "../chrome/canvas/ToolNodeController";
+export { DragAdjustNodeController } from "../chrome/canvas/DragAdjustNodeController";
+export { AddSectionNodeController } from "../chrome/canvas/AddSectionNodeController";
+export { UniformPaddingNodeController } from "../chrome/canvas/UniformPaddingNodeController";
+export { ToolboxMenu } from "../chrome/rendering/toolboxMenuAtom";
+export { AddElementButton } from "../chrome/primitives/AddElementButton";
+export { TiptapProvider } from "../chrome/inline-tools/TiptapContext";
+export { InlineEditToolbar } from "../chrome/inline-tools/inline-edit-toolbar/InlineEditToolbar";
 /** @deprecated Use InlineEditToolbar instead */
-export { InlineEditToolbar as TiptapToolbar } from "../chrome/Tools/InlineEditToolbar/InlineEditToolbar";
-export { ContainerSettingsTopNodeTool } from "../chrome/NodeControllers/Tools/ContainerSettingsTopNodeTool";
-export { ContainerSettingsNodeTool } from "../chrome/NodeControllers/Tools/ContainerSettingsNodeTool";
-export { SelectButtonListTool } from "../chrome/NodeControllers/Tools/SelectButtonListTool";
-export { SelectImageListTool } from "../chrome/NodeControllers/Tools/SelectImageListTool";
-export { SelectMapTool } from "../chrome/NodeControllers/Tools/SelectMapTool";
+export { InlineEditToolbar as TiptapToolbar } from "../chrome/inline-tools/inline-edit-toolbar/InlineEditToolbar";
+export { ContainerSettingsTopNodeTool } from "../chrome/canvas/node-tools/ContainerSettingsTopNodeTool";
+export { ContainerSettingsNodeTool } from "../chrome/canvas/node-tools/ContainerSettingsNodeTool";
+export { SelectButtonListTool } from "../chrome/canvas/node-tools/SelectButtonListTool";
+export { SelectImageListTool } from "../chrome/canvas/node-tools/SelectImageListTool";
+export { SelectMapTool } from "../chrome/canvas/node-tools/SelectMapTool";

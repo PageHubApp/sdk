@@ -1,6 +1,6 @@
 import { useNode } from "@craftjs/core";
-import { TailwindStyles } from "utils/tailwind";
-import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
+import { TailwindStyles } from "@/utils/tailwind";
+import { ItemAdvanceToggle } from "../../helpers/ItemSelector";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";

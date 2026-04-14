@@ -4,9 +4,9 @@
 import { useEditor } from "@craftjs/core";
 import { useEffect, useRef } from "react";
 import { useAtomValue } from "@zedux/react";
-import { ComponentsAtom } from "utils/lib";
-import { buildClonedTree } from "../Viewport/lib";
-import { setRecursiveBelongsTo } from "../componentUtils";
+import { ComponentsAtom } from "../../utils/lib";
+import { buildClonedTree } from "../viewport/viewportExports";
+import { setRecursiveBelongsTo } from "@/utils/componentUtils";
 
 export const useComponentSync = () => {
   const { query, actions } = useEditor();
@@ -52,7 +52,6 @@ export const useComponentSync = () => {
 
       // If structure changed, rebuild all linked instances
       if (lastSignature && lastSignature !== currentSignature) {
-        console.log("🔄 Master component structure changed:", component.name);
         rebuildLinkedInstances(masterNodeId);
       }
 
@@ -101,8 +100,6 @@ export const useComponentSync = () => {
 
     if (linkedInstances.length === 0) return;
 
-    console.log(`🔄 Rebuilding ${linkedInstances.length} linked instances...`);
-
     // Rebuild each instance
     linkedInstances.forEach(instance => {
       try {
@@ -142,7 +139,6 @@ export const useComponentSync = () => {
           );
         }, 50);
 
-        console.log("✅ Rebuilt instance:", instance.id, "→", clonedTree.rootNodeId);
       } catch (error) {
         console.error("❌ Error rebuilding instance:", instance.id, error);
       }

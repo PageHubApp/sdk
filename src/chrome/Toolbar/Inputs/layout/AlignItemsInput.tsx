@@ -1,4 +1,4 @@
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import { TbAlignCenter, TbAlignLeft, TbAlignRight } from "react-icons/tb";
 import { ToolbarItem } from "../../ToolbarItem";
 

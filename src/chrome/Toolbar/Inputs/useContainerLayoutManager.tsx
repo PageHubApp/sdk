@@ -1,5 +1,5 @@
 import { Element, useEditor, useNode } from "@craftjs/core";
-import { AddElement } from "../../Viewport/Toolbox/lib";
+import { AddElement } from "../../viewport/toolbox/toolboxUtils";
 
 export const useContainerLayoutManager = () => {
   const { actions, query } = useEditor();

@@ -6,7 +6,7 @@ import { Nav as UiNav } from "@pagehub/ui";
 import { motionIt } from "../utils/lib";
 
 import { applyAnimation, CSStoObj } from "../utils/tailwind/tailwind";
-import { useScrollToSelected } from "./lib";
+import { useScrollToSelected } from "./componentHooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 

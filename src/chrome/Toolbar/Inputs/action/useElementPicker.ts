@@ -3,7 +3,7 @@
  * Walks the CraftJS node tree and returns options filtered by type.
  */
 import { useEditor } from "@craftjs/core";
-import { getDisplayName } from "../../Tools/Layers/utils";
+import { getDisplayName } from "../../dialogs/Layers/utils";
 
 export interface PickerOption {
   nodeId: string;

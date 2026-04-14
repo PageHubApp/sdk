@@ -1,5 +1,5 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -21,8 +21,8 @@ import {
   TbPlus,
   TbX,
 } from "react-icons/tb";
-import { SessionTokenAtom, SettingsAtom, ShowGridLinesAtom } from "utils/atoms";
-import { ComponentsAtom, LastctiveAtom, SideBarAtom, ViewModeAtom } from "utils/lib";
+import { SessionTokenAtom, SettingsAtom, ShowGridLinesAtom } from "../../utils/atoms";
+import { ComponentsAtom, LastctiveAtom, SideBarAtom, ViewModeAtom } from "../../utils/lib";
 import { useSetAtomState } from "../../utils/atoms";
 import {
   EDITOR_CANVAS_BREAKPOINT_PX,
@@ -33,10 +33,10 @@ import {
   markToolboxHistorySelectionSync,
   usePanelUrl,
 } from "../../utils/usePanelUrl";
-import { MediaManagerModal } from "../Toolbar/Inputs/media/MediaManagerModal";
-import { LayersDialog } from "../Toolbar/Tools/LayersDialog";
-import { SaveIndicator } from "../Tools/PublishButton";
-import { ToolbarPortalDropdown } from "../Tools/ToolbarPortalDropdown";
+import { MediaManagerModal } from "../toolbar/inputs/media/MediaManagerModal";
+import { LayersDialog } from "../toolbar/dialogs/LayersDialog";
+import { SaveIndicator } from "../inline-tools/PublishButton";
+import { ToolbarPortalDropdown } from "../inline-tools/ToolbarPortalDropdown";
 import { EnabledAtom, PreviewAtom, ViewAtom } from "./atoms";
 import { ComponentSelector } from "./ComponentSelector";
 import { EditorNavigation } from "./EditorNavigation";
@@ -46,14 +46,14 @@ import { PageSelector } from "./PageSelector";
 import { SiteSettingsModal } from "./SiteSettingsModal";
 import { ModifiersModal } from "./ModifiersModal";
 
-import type { ViewMode as CanvasViewMode } from "../../store";
-import { useSDK } from "../../context";
-import { HeaderItem as Item } from "./Header/HeaderItem";
-import { useHeaderShortcuts } from "./Header/useHeaderShortcuts";
+import type { ViewMode as CanvasViewMode } from "../../core/store";
+import { useSDK } from "../../core/context";
+import { HeaderItem as Item } from "./header/HeaderItem";
+import { useHeaderShortcuts } from "./header/useHeaderShortcuts";
 import { phStorage } from "../../utils/phStorage";
 
 // Re-export for external consumers
-export { useComponentVisible } from "./Header/useComponentVisible";
+export { useComponentVisible } from "./header/useComponentVisible";
 
 export const Header = () => {
   const { enabled, canUndo, canRedo, actions, query } = useEditor((state, query) => ({
@@ -428,7 +428,7 @@ export const Header = () => {
                 // Deselect any active node
 
                 // Un-isolate to show all pages
-                import("utils/lib").then(({ isolatePageAlt }) => {
+                import("@/utils/lib").then(({ isolatePageAlt }) => {
                   isolatePageAlt(true, query, null, actions, () => {}, false);
                 });
 

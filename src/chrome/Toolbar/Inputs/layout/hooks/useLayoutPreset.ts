@@ -1,10 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
-import { useSetAtomState } from "../../../../../utils/atoms";
-import { BatchOperationAtom } from "utils/atoms";
-import { UnsavedChangesAtom, ViewAtom } from "../../../../Viewport/atoms";
-import { changeProp, getPropFinalValue } from "../../../../Viewport/lib";
+import { useSetAtomState } from "@/utils/atoms";
+import { BatchOperationAtom } from "@/utils/atoms";
+import { UnsavedChangesAtom, ViewAtom } from "@/chrome/viewport/atoms";
+import { changeProp, getPropFinalValue } from "@/chrome/viewport/viewportExports";
 import { getEffectiveViews, ViewSelectionAtom } from "../../../Label";
 import { useContainerLayoutManager } from "../../useContainerLayoutManager";
 import { getFlexPresets, GRID_PRESETS, type LayoutPreset } from "../presets/layoutPresets";

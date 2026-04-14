@@ -1,7 +1,7 @@
 import { NodeTree, ROOT_NODE, useEditor, useNode } from "@craftjs/core";
-import { checkIfAncestorLinked } from "../componentUtils";
+import { checkIfAncestorLinked } from "@/utils/componentUtils";
 import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   TbCaretUp,
@@ -17,22 +17,22 @@ import {
 } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
-import { AiChatAttachedNodesAtom, ClippyOpenAtom, SettingsAtom } from "utils/atoms";
-import { ComponentsAtom, EDITOR_ALL_PAGES_STORAGE, IsolateAtom, SideBarOpen } from "utils/lib";
-import { useAiEnabled } from "utils/hooks/useAiEnabled";
-import { useSDK } from "../../context";
-import { addHandler, buildClonedTree, saveHandler } from "../Viewport/lib";
+import { AiChatAttachedNodesAtom, AssistantOpenAtom, SettingsAtom } from "../../utils/atoms";
+import { ComponentsAtom, EDITOR_ALL_PAGES_STORAGE, IsolateAtom, SideBarOpen } from "../../utils/lib";
+import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
+import { useSDK } from "../../core/context";
+import { addHandler, buildClonedTree, saveHandler } from "../viewport/viewportExports";
 import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
-import { RenderChildren } from "./Helpers/CloneHelper";
+import { RenderChildren } from "./helpers/CloneHelper";
 import Tab from "./Tab";
 import { UnifiedTab, scrollToSection, setActiveTabFromClick, toSectionId } from "./UnifiedTab";
 import { useAccordionContext } from "./AccordionContext";
-import { TabAtom } from "../Viewport/atoms";
+import { TabAtom } from "../viewport/atoms";
 import { TabBarCollapseToggle } from "./TabBarCollapseToggle";
 import { TabBarDarkModeToggle } from "./TabBarDarkModeToggle";
 import { TabBarBreakpointPicker } from "./TabBarBreakpointPicker";
 import { phStorage } from "../../utils/phStorage";
-import { SettingsSearchAtom, SettingsSearchOpenAtom } from "./UnifiedSettings/registry/atoms";
+import { SettingsSearchAtom, SettingsSearchOpenAtom } from "./unified-settings/registry/atoms";
 
 export const ToolbarWrapper = ({
   children = null,
@@ -153,7 +153,7 @@ export const ToolbarWrapper = ({
 
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const [, setAttachedNodes] = useAtomState(AiChatAttachedNodesAtom);
-  const setClippyOpen = useSetAtomState(ClippyOpenAtom);
+  const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const { config } = useSDK();
   const aiEnabled = useAiEnabled();
   const renderAiContext = config.editorChromeSlots?.renderNodeAiContextButton;
@@ -198,7 +198,7 @@ export const ToolbarWrapper = ({
       if (prev.some(n => n.id === id)) return prev;
       return [...prev, { id, displayName }];
     });
-    setClippyOpen({ nodeId: id });
+    setAssistantOpen({ nodeId: id });
   };
 
   return (

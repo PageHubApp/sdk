@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>`;
 
-import { BUILTIN_COMPONENT_DEFS } from "./builtins";
+import { BUILTIN_COMPONENT_DEFS } from "./core/componentRegistry";
 
 // Header/Footer reuse Container's toHTML
 import { toHTML as containerToHTML } from "./components/Container.craft";
@@ -224,6 +224,17 @@ export interface RenderToHTMLResult {
   fontUrls: string[];
   /** Script tag for CSS scroll animations (non-empty if ph-anim-scroll classes are used) */
   scrollObserverScript: string;
+  /** Design system CSS variables (:root block) — palette colors, spacing, fonts */
+  themeCSS: string;
+  /** Material Symbols icon font URL, if any icons are used on the page */
+  iconFontUrl: string | null;
+  /** SEO metadata extracted from ROOT props */
+  seo: {
+    title: string;
+    description: string;
+    ogImage?: string;
+    jsonLd?: object;
+  } | null;
   /**
    * Set when the tree cannot be rendered (e.g. missing ROOT). Callers should show this
    * to users instead of treating render output as valid static HTML.
@@ -313,9 +324,9 @@ ${extraCSS}
 ${scrollObserverScript}
 </body>
 </html>`;
-    return { html: doc, classes: [], fontUrls: [], scrollObserverScript, renderError };
+    return { html: doc, classes: [], fontUrls: [], scrollObserverScript, themeCSS: themeVars, iconFontUrl: null, seo: null, renderError };
   }
-  return { html: "", classes: [], fontUrls: [], scrollObserverScript, renderError };
+  return { html: "", classes: [], fontUrls: [], scrollObserverScript, themeCSS: "", iconFontUrl: null, seo: null, renderError };
 }
 
 // ─── Public API ─────────────────────────────────────────────────────────────
@@ -402,14 +413,30 @@ export function renderToHTML(
     }
   }
 
+  let iconFontUrl: string | null = null;
   try {
-    const ms = getMaterialSymbolsUrlFromNodes(nodes);
-    if (ms) ctx.fontUrls.add(ms);
+    iconFontUrl = getMaterialSymbolsUrlFromNodes(nodes);
+    if (iconFontUrl) ctx.fontUrls.add(iconFontUrl);
   } catch {
     /* ignore */
   }
 
-  // 8. Detect if scroll observer / GSAP scripts are needed
+  // 8. Compute theme CSS, icon font URL, and SEO data
+  const themeCSS = generateThemeVars(rootProps);
+
+  const seoTitle = rootProps.pageTitle || rootProps.title || "";
+  const seoDescription = rootProps.pageDescription || rootProps.description || "";
+  const seo =
+    seoTitle || seoDescription || rootProps.ogImage || rootProps.jsonLd
+      ? {
+          title: seoTitle,
+          description: seoDescription,
+          ...(rootProps.ogImage ? { ogImage: rootProps.ogImage } : {}),
+          ...(rootProps.jsonLd ? { jsonLd: rootProps.jsonLd } : {}),
+        }
+      : null;
+
+  // 9. Detect if scroll observer / GSAP scripts are needed
   const needsScrollObserver = ctx.classes.has("ph-anim-scroll");
   const needsHorizontalScroll = ctx.classes.has("ph-hscroll");
   const needsScrollTimeline = ctx.classes.has("ph-scroll-timeline");
@@ -420,12 +447,12 @@ export function renderToHTML(
     (needsHorizontalScroll ? PH_HORIZONTAL_SCROLL_SCRIPT : "") +
     (needsScrollTimeline ? PH_SCROLL_TIMELINE_SCRIPT : "");
 
-  // 9. Wrap in document
+  // 10. Wrap in document
   if (wrapDocument) {
     const fontLinks = [...ctx.fontUrls]
       .map(url => `<link rel="stylesheet" href="${url}" />`)
       .join("\n    ");
-    const themeVars = includeThemeVars ? generateThemeVars(rootProps) : "";
+    const themeVars = includeThemeVars ? themeCSS : "";
 
     const doc = `<!DOCTYPE html>
 <html lang="en">
@@ -451,10 +478,13 @@ ${scrollObserverScript}
       classes: [...ctx.classes],
       fontUrls: [...ctx.fontUrls],
       scrollObserverScript,
+      themeCSS,
+      iconFontUrl,
+      seo,
     };
   }
 
-  return { html, classes: [...ctx.classes], fontUrls: [...ctx.fontUrls], scrollObserverScript };
+  return { html, classes: [...ctx.classes], fontUrls: [...ctx.fontUrls], scrollObserverScript, themeCSS, iconFontUrl, seo };
 }
 
 // ─── Theme CSS variables ────────────────────────────────────────────────────

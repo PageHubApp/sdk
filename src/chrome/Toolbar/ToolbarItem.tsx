@@ -1,16 +1,16 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
+import { REACT_TOOLTIP_SURFACE_CLASS } from "@/chrome/primitives/layout/tooltipSurface";
 import React from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { useAtomValue } from "@zedux/react";
-import { ViewAtom } from "../Viewport/atoms";
-import { changeProp, getPropFinalValue } from "../Viewport/lib";
+import { ViewAtom } from "../viewport/atoms";
+import { changeProp, getPropFinalValue } from "../viewport/viewportExports";
 import { getEditorVariableOptions } from "../../utils/editorVariableOptions";
 
 const CodeEditor = React.lazy(() =>
-  import("./Inputs/typography/CodeEditor").then(m => ({ default: m.CodeEditor }))
+  import("./inputs/typography/CodeEditor").then(m => ({ default: m.CodeEditor }))
 );
-import { DesignVarSelector } from "./Inputs/advanced/DesignVarSelector";
+import { DesignVarSelector } from "./inputs/advanced/DesignVarSelector";
 import { getEffectiveViews, ViewSelectionAtom } from "./Label";
 import { ToolbarDropdown } from "./ToolbarDropdown";
 import { BgWrap, Wrap } from "./ToolbarStyle";
@@ -382,6 +382,8 @@ export type ToolbarItemProps = {
   description?: React.ReactNode;
   /** When the stored prop is null/empty, use this for the select UI (matches runtime defaults). */
   valueCoalesce?: string | number;
+  defaultValue?: string | number;
+  suffix?: string;
 };
 
 export const ToolbarItem = (__props: ToolbarItemProps) => {

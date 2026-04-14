@@ -21,23 +21,23 @@ import { Extension, type Editor as TiptapEditorInstance } from "@tiptap/core";
 import { EditorContent, useEditor as useTiptapEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
-import { changeProp } from "../chrome/Viewport/lib";
-import { TiptapProvider } from "../chrome/TiptapContext";
-import { InlineEditToolbar } from "../chrome/Tools/InlineEditToolbar/InlineEditToolbar";
-import { OPEN_LINK_PANEL_EVENT } from "../chrome/Tools/openLinkPanelEvent";
-import { VariableSuggestionPopup } from "../chrome/Tools/VariableSuggestion";
+import { changeProp } from "../chrome/viewport/viewportExports";
+import { TiptapProvider } from "../chrome/inline-tools/TiptapContext";
+import { InlineEditToolbar } from "../chrome/inline-tools/inline-edit-toolbar/InlineEditToolbar";
+import { OPEN_LINK_PANEL_EVENT } from "../chrome/inline-tools/openLinkPanelEvent";
+import { VariableSuggestionPopup } from "../chrome/inline-tools/VariableSuggestion";
 
-import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { replaceVariables, resolveVariable } from "../utils/design/variables";
 import { getEditorVariableOptions } from "../utils/editorVariableOptions";
 import {
   isVisuallyEmptyRichText,
   persistedTextHtmlFromEditor,
 } from "../utils/isVisuallyEmptyRichText";
-import { REACT_TOOLTIP_SURFACE_CLASS } from "components/layout/tooltipSurface";
+import { REACT_TOOLTIP_SURFACE_CLASS } from "../chrome/primitives/layout/tooltipSurface";
 import { Tooltip as ReactTooltip } from "react-tooltip";
-import { VariableNode, preprocessVariables } from "../extensions/VariableNode";
-import type { SuggestionProps } from "../extensions/VariableNode";
+import { VariableNode, preprocessVariables } from "@/core/tiptapExtensions/VariableNode";
+import type { SuggestionProps } from "@/core/tiptapExtensions/VariableNode";
 
 // Helper to check if ancestor is a linked component
 const checkIfAncestorLinked = (nodeId: string, query: any): boolean => {

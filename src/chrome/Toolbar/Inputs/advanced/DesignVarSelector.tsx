@@ -1,13 +1,13 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { changeProp } from "../../../Viewport/lib";
-import { getRect } from "../../../Viewport/useRect";
+import { changeProp } from "../../../viewport/viewportExports";
+import { getRect } from "../../../viewport/useRect";
 import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { TbSearch, TbVariable } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { ViewSelectionAtom } from "../../Label";
-import { DesignVarDialogAtom } from "../../Tools/DesignVarDialog";
-import { useDialog } from "../../Tools/lib";
+import { DesignVarDialogAtom } from "../../dialogs/DesignVarDialog";
+import { useDialog } from "../../dialogs/toolHooks";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { CATEGORY_LABELS } from "./designVarConstants";
 import { useDesignVarOptions, type DesignVar } from "./useDesignVarOptions";

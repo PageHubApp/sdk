@@ -2,10 +2,10 @@ import { useRef, useState, useEffect } from "react";
 import { TbBoxModel2, TbClick, TbLayoutGridAdd, TbPlus, TbPointer } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
-import { ClippyOpenAtom } from "utils/atoms";
-import { ComponentsAtom, OpenComponentEditorAtom, SideBarOpen, ViewModeAtom } from "utils/lib";
-import { useAiEnabled } from "utils/hooks/useAiEnabled";
-import { useSDK } from "../../context";
+import { AssistantOpenAtom } from "../../utils/atoms";
+import { ComponentsAtom, OpenComponentEditorAtom, SideBarOpen, ViewModeAtom } from "../../utils/lib";
+import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
+import { useSDK } from "../../core/context";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 
 interface ActionCardProps {
@@ -43,7 +43,7 @@ export const EditorEmptyState = () => {
   const setOpenComponentEditor = useSetAtomState(OpenComponentEditorAtom);
   const { open: openPanel } = usePanelUrl();
   const setViewMode = useSetAtomState(ViewModeAtom);
-  const setClippyOpen = useSetAtomState(ClippyOpenAtom);
+  const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const { config } = useSDK();
   const isAiEnabled = useAiEnabled();
   const renderEmptyAi = config.editorChromeSlots?.renderEmptyStateAiCard;
@@ -166,7 +166,7 @@ export const EditorEmptyState = () => {
 
                   {isAiEnabled &&
                     renderEmptyAi &&
-                    renderEmptyAi({ onOpenAssistant: () => setClippyOpen({}) })}
+                    renderEmptyAi({ onOpenAssistant: () => setAssistantOpen({}) })}
                 </div>
               </div>
             )}

@@ -4,7 +4,7 @@
  */
 import { useNode } from "@craftjs/core";
 import { TbEyeSearch, TbTrash } from "react-icons/tb";
-import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
+import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useElementPicker } from "../action/useElementPicker";

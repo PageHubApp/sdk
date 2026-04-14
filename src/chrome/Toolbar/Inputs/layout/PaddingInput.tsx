@@ -1,11 +1,11 @@
 import { useNode } from "@craftjs/core";
-import { ViewAtom } from "../../../Viewport/atoms";
+import { ViewAtom } from "../../../viewport/atoms";
 import { TbBoxPadding, TbInfoSquare } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
-import { TailwindStyles } from "utils/tailwind";
-import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
+import { TailwindStyles } from "@/utils/tailwind";
+import { ItemAdvanceToggle } from "../../helpers/ItemSelector";
 import { ToolbarSection } from "../../ToolbarSection";
-import { UniversalInput } from "../UniversalInput";
+import { UniversalInput } from "../universal-input";
 
 export const PaddingInput = ({ propKey = "padding" }) => {
   const { propValues } = useNode(node => ({

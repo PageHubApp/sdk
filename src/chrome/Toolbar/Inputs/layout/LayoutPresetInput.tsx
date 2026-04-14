@@ -1,5 +1,5 @@
 import { useNode } from "@craftjs/core";
-import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 import { twMerge } from "tailwind-merge";
 import { PH_TOOLBAR_DASHED_BTN_ACTIVE } from "../../phToolbarDashedSelection";
 import {
@@ -13,7 +13,7 @@ import {
   TOOLBAR_SEGMENTED_ACTIVE,
   TOOLBAR_SEGMENTED_INACTIVE,
   ToolbarSegmentedControl,
-} from "../../Helpers/ToolbarSegmentedControl";
+} from "../../helpers/ToolbarSegmentedControl";
 import { ContainerTypeInput } from "../advanced/ContainerTypeInput";
 import { ToolbarSection } from "../../ToolbarSection";
 import type { LayoutMode, LayoutPresetHandle } from "./hooks/useLayoutPreset";

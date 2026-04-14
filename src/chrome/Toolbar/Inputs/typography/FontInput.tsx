@@ -1,12 +1,12 @@
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
-import { TailwindStyles } from "utils/tailwind";
-import { getClass, removeClass } from "../../../../utils/tailwind/className";
+import { TailwindStyles } from "@/utils/tailwind";
+import { getClass, removeClass } from "@/utils/tailwind/className";
 import {
   parseGoogleFontFromArbitraryClass,
   tailwindTokenBase,
-} from "../../../../utils/tailwind/fontFamilyClass";
-import { resolveTheme, writeTheme } from "../../../../utils/design/resolveTheme";
+} from "@/utils/tailwind/fontFamilyClass";
+import { resolveTheme, writeTheme } from "@/utils/design/resolveTheme";
 
 import { AiOutlineAlignRight } from "react-icons/ai";
 import {
@@ -18,8 +18,8 @@ import {
   TbPlus,
   TbTypography,
 } from "react-icons/tb";
-import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
-import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
+import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
+import { ItemAdvanceToggle } from "../../helpers/ItemSelector";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { Wrap } from "../../ToolbarStyle";

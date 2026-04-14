@@ -1,5 +1,5 @@
-import { SpacingOverlay } from "../../NodeControllers/SpacingOverlay";
-import { Tooltip } from "components/layout/Tooltip";
+import { SpacingOverlay } from "../../canvas/SpacingOverlay";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import { useEffect, useRef, useState } from "react";
 
 // Tailwind spacing scale in pixels (1 unit = 4px)

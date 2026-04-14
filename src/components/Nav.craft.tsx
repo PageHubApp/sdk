@@ -31,7 +31,7 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
     children
   );
 };
-import { NavMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/NavMainTab";
+import { NavMainTab } from "../chrome/toolbar/unified-settings/mainTabs/NavMainTab";
 import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
 import { Button } from "./Button";
 import { ButtonList } from "./ButtonList";

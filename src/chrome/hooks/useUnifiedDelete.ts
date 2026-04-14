@@ -1,8 +1,8 @@
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useAtomValue } from "@zedux/react";
-import { SettingsAtom } from "utils/atoms";
-import { deleteNode } from "../Viewport/lib";
+import { SettingsAtom } from "../../utils/atoms";
+import { deleteNode } from "../viewport/viewportExports";
 
 /**
  * Unified delete hook that handles node deletion consistently across all delete methods.
@@ -90,7 +90,6 @@ export const useUnifiedDelete = () => {
           // Delete the component container (which contains the master)
           actions.delete(componentContainerId);
 
-          console.log("✅ Deleted component:", component.name);
           return true;
         }
       }

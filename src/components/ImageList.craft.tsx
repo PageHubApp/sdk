@@ -45,7 +45,7 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
     children
   );
 };
-import { ImageListMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ImageListMainTab";
+import { ImageListMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ImageListMainTab";
 import { HoverNodeController, DeleteNodeController, SelectImageListTool } from "./editor-chrome";
 
 export const ImageListDef = defineComponent(

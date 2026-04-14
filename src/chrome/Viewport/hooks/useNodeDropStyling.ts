@@ -2,7 +2,7 @@ import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEffect, useRef } from "react";
 import { useAtomValue, useEcosystem } from "@zedux/react";
-import { BatchOperationAtom } from "utils/atoms";
+import { BatchOperationAtom } from "../../../utils/atoms";
 
 /**
  * Auto-styles containers dropped into the editor tree:

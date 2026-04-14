@@ -1,6 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { getBackgroundUrl } from "utils/lib";
-import { TailwindStyles } from "utils/tailwind";
+import { getBackgroundUrl } from "@/utils/lib";
+import { TailwindStyles } from "@/utils/tailwind";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { BackgroundFocalPointPicker } from "./BackgroundFocalPointPicker";

@@ -1,10 +1,10 @@
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
-import { ViewAtom } from "../../../Viewport/atoms";
-import { changeProp, getPropFinalValue } from "../../../Viewport/lib";
+import { ViewAtom } from "../../../viewport/atoms";
+import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
-import { usePalette } from "utils/design/PaletteContext";
-import { resolveTheme } from "utils/design/resolveTheme";
+import { usePalette } from "@/utils/design/PaletteContext";
+import { resolveTheme } from "@/utils/design/resolveTheme";
 import {
   cssColorShowsTransparency,
   formatColorForStorage,
@@ -12,8 +12,8 @@ import {
   resolveColorForDisplay,
   resolvePaletteReference,
   TRANSPARENT_CHECKER_BG,
-} from "utils/design/colorSystem";
-import { editorCanvasViewToClassPrefixKey } from "../../../../utils/tailwind/className";
+} from "@/utils/design/colorSystem";
+import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
 import { TokenPicker } from "./TokenPicker";

@@ -1,7 +1,7 @@
 import type { ComponentType, ReactElement } from "react";
 import type { ResolvedComponentDef } from "../../define";
 import { NAV_EXTRA_PRESETS } from "../../components/definitions";
-import { SavedComponentLoader } from "./Toolbox/savedComponents";
+import { SavedComponentLoader } from "./toolbox/savedComponents";
 
 export type ToolboxInsertDescriptor = {
   key: string;

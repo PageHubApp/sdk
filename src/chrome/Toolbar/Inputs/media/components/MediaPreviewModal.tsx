@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { TbChevronLeft, TbChevronRight, TbX } from "react-icons/tb";
-import { getCdnUrl } from "utils/cdn";
-import { formatDimensions } from "utils/imageDimensions";
+import { getCdnUrl } from "@/utils/cdn";
+import { formatDimensions } from "@/utils/imageDimensions";
 import { formatFileSize, type MediaItem } from "../utils/media-helpers";
 
 interface MediaPreviewModalProps {

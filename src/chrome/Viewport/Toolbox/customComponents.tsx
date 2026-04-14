@@ -6,7 +6,7 @@
  * defaultProps live on each `*Def` in packages/sdk/src/components/*.craft.*.
  */
 import React from "react";
-import { RenderToolComponent, ToolboxItemDisplay } from "./lib";
+import { RenderToolComponent, ToolboxItemDisplay } from "./toolboxUtils";
 import type { ResolvedComponentDef } from "../../../define";
 import { resolveToolboxIcon } from "./resolveToolboxIcon";
 

@@ -1,6 +1,6 @@
 import { TbArrowsMove } from "react-icons/tb";
 import { ToolbarSection } from "../../ToolbarSection";
-import { UniversalInput } from "../UniversalInput";
+import { UniversalInput } from "../universal-input";
 
 const ALLOWED_TYPES = ["tailwind", "calc", "px", "%", "em", "rem", "vw", "vh"] as const;
 

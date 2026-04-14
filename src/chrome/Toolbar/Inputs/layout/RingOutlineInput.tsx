@@ -3,8 +3,8 @@ import { ToolbarSection } from "../../ToolbarSection";
 import { TbFocus2 } from "react-icons/tb";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { ColorInput } from "../color/ColorInput";
-import { UniversalInput } from "../UniversalInput";
-import type { ValueType } from "../UniversalInput/types";
+import { UniversalInput } from "../universal-input";
+import type { ValueType } from "../universal-input/types";
 
 const RING_OUTLINE_ALLOWED_TYPES: ValueType[] = [
   "tailwind",

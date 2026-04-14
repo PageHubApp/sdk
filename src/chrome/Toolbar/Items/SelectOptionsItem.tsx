@@ -1,9 +1,9 @@
 import { useNode } from "@craftjs/core";
-import { changeProp } from "../../Viewport/lib";
+import { changeProp } from "../../viewport/viewportExports";
 import { atom, useAtomState } from "@zedux/react";
 import { ToolbarItem, ToolbarItemProps } from "../ToolbarItem";
 import { Wrap } from "../ToolbarStyle";
-import { ListEditor } from "../Inputs/preset/ListItemPopover";
+import { ListEditor } from "../inputs/preset/ListItemPopover";
 
 // Create a simple state atom for managing which option is expanded
 const SelectedOptionAtom = atom<any>("selectedOption", null);

@@ -1,5 +1,5 @@
 import { TbAdjustments } from "react-icons/tb";
-import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
+import { ItemAdvanceToggle } from "../../helpers/ItemSelector";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { InteractivityInput } from "../advanced/InteractivityInput";
@@ -7,7 +7,7 @@ import { MiscInput } from "../advanced/MiscInput";
 import { CursorInput } from "../advanced/CursorInput";
 import { OverflowInput } from "./OverflowInput";
 import { PositionOffsetsInput } from "./PositionOffsetsInput";
-import { UniversalInput } from "../UniversalInput";
+import { UniversalInput } from "../universal-input";
 import { OrderInput } from "./OrderInput";
 
 export const DisplayInput = ({ showCursor = true }: { showCursor?: boolean }) => (

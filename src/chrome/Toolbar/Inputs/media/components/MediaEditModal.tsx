@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { TbCheck, TbEdit, TbLoader2, TbX } from "react-icons/tb";
-import { getCdnUrl } from "utils/cdn";
-import { formatDimensions } from "utils/imageDimensions";
+import { getCdnUrl } from "@/utils/cdn";
+import { formatDimensions } from "@/utils/imageDimensions";
 import type { ReactNode } from "react";
-import type { PageHubMediaEditAiActionsContext } from "../../../../../types";
+import type { PageHubMediaEditAiActionsContext } from "@/types";
 import { formatFileSize, type MediaItem } from "../utils/media-helpers";
 
 const BLUR_PLACEHOLDER =

@@ -1,15 +1,15 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { changeProp } from "../../../Viewport/lib";
-import { ViewAtom } from "../../../Viewport/atoms";
-import { getRect } from "../../../Viewport/useRect";
+import { changeProp } from "../../../viewport/viewportExports";
+import { ViewAtom } from "../../../viewport/atoms";
+import { getRect } from "../../../viewport/useRect";
 import { useRef, useState } from "react";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { editorCanvasViewToClassPrefixKey } from "../../../../utils/tailwind/className";
+import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
-import ClientIconLoader from "../../Tools/ClientIconLoader";
-import { GoogleIconDialogAtom } from "../../Tools/GoogleIconDialog";
-import { useDialog } from "../../Tools/lib";
+import ClientIconLoader from "../../dialogs/ClientIconLoader";
+import { GoogleIconDialogAtom } from "../../dialogs/GoogleIconDialog";
+import { useDialog } from "../../dialogs/toolHooks";
 import { MediaManagerModal } from "./MediaManagerModal";
 
 export const IconDialogInput = ({

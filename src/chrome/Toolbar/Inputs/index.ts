@@ -77,4 +77,4 @@ export * from "./LayoutIconGenerator";
 export * from "./Notice";
 
 // UniversalInput
-export * from "./UniversalInput";
+export * from "./universal-input";

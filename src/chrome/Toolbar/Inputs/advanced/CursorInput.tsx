@@ -1,4 +1,4 @@
-import { UniversalInput } from "../UniversalInput";
+import { UniversalInput } from "../universal-input";
 
 // Popular cursors first, then less common ones
 const CURSOR_OPTIONS = {

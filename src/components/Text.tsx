@@ -18,7 +18,7 @@ import { motionIt } from "../utils/lib";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
-import { useScrollToSelected } from "./lib";
+import { useScrollToSelected } from "./componentHooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 

@@ -1,6 +1,6 @@
 import { TbSpacingHorizontal } from "react-icons/tb";
 import { ToolbarSection } from "../../ToolbarSection";
-import { UniversalInput } from "../UniversalInput";
+import { UniversalInput } from "../universal-input";
 
 export const GapInput = () => (
   <>

@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbBrandVimeo, TbBrandYoutube, TbPlayerPlay, TbVideo } from "react-icons/tb";
-import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 
 import { Box } from "@pagehub/ui";

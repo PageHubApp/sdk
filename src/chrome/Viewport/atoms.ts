@@ -1,5 +1,5 @@
 import { atom } from "@zedux/react";
-import type { ViewMode } from "../../store";
+import type { ViewMode } from "../../core/store";
 
 export const TbActiveMenuAtom = atom("TbActiveMenuAtom", null);
 

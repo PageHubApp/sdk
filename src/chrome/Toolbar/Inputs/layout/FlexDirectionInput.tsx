@@ -1,12 +1,12 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import type { ComponentType } from "react";
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import { TbBoxAlignBottom, TbBoxAlignLeft, TbBoxAlignRight, TbBoxAlignTop } from "react-icons/tb";
-import { ViewAtom } from "../../../Viewport/atoms";
-import { changeProp, getPropFinalValue } from "../../../Viewport/lib";
+import { ViewAtom } from "../../../viewport/atoms";
+import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
 import { getEffectiveViews, ViewSelectionAtom } from "../../Label";
-import { ToolbarSegmentedControl } from "../../Helpers/ToolbarSegmentedControl";
+import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { Wrap } from "../../ToolbarStyle";
 
 type FlexMode = "columns" | "rows" | undefined;

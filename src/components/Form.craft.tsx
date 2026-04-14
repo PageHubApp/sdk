@@ -19,7 +19,7 @@ const HONEYPOT_HTML =
 const toHTML: ToHTMLFn = (props, children, ctx) => {
   return containerToHTML({ ...props, type: "form" }, HONEYPOT_HTML + children, ctx);
 };
-import { FormMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/FormMainTab";
+import { FormMainTab } from "../chrome/toolbar/unified-settings/mainTabs/FormMainTab";
 import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
 
 // ─── Child components used in presets ──────────────────────────────────────

@@ -1,6 +1,6 @@
-import { TabAtom } from "../Viewport/atoms";
-import { AutoHideScrollbar } from "components/layout/AutoHideScrollbar";
-import { Tooltip } from "components/layout/Tooltip";
+import { TabAtom } from "../viewport/atoms";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import React, { useEffect, useRef, useState } from "react";
 import { useSetAtomState } from "../../utils/atoms";
 

@@ -1,8 +1,8 @@
-import { TailwindStyles } from "utils/tailwind";
-import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
+import { TailwindStyles } from "@/utils/tailwind";
+import { ItemAdvanceToggle } from "../../helpers/ItemSelector";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { SECTION_ICONS } from "../../UnifiedSettings/helpers";
+import { SECTION_ICONS } from "../../unified-settings/helpers";
 import { ColorInput } from "../color/ColorInput";
 import { IconDialogInput } from "./IconDialogInput";
 import { ShadowInput } from "../color/ShadowInput";

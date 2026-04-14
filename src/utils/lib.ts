@@ -170,7 +170,7 @@ export const useScrollToActiveTab = (
       if (activeTab) {
         const timer = setTimeout(async () => {
           try {
-            const { scrollToSection } = await import("../chrome/Toolbar/UnifiedTab");
+            const { scrollToSection } = await import("../chrome/toolbar/UnifiedTab");
             scrollToSection(activeTab);
           } catch (_) {}
           setActiveSection((prev: string) => (prev !== activeTab ? activeTab : prev));
@@ -213,14 +213,14 @@ export const isJsValid = (code: string): boolean => {
 // ─── Popup ──────────────────────────────────────────────────────────────
 
 export const popupCenter = (url: string, title: string) => {
-  const dualScreenLeft = window.screenLeft ?? window.screenX;
-  const dualScreenTop = window.screenTop ?? window.screenY;
-  const screenWidth = window.screen.availWidth;
-  const screenHeight = window.screen.availHeight;
+  const windowLeft = window.screenLeft ?? window.screenX ?? 0;
+  const windowTop = window.screenTop ?? window.screenY ?? 0;
+  const windowWidth = window.outerWidth || window.innerWidth || window.screen.availWidth;
+  const windowHeight = window.outerHeight || window.innerHeight || window.screen.availHeight;
   const popupWidth = 400;
   const popupHeight = 600;
-  const left = (screenWidth - popupWidth) / 2 + dualScreenLeft;
-  const top = (screenHeight - popupHeight) / 2 + dualScreenTop;
+  const left = Math.round(windowLeft + (windowWidth - popupWidth) / 2);
+  const top = Math.round(windowTop + (windowHeight - popupHeight) / 2);
 
   const newWindow = window.open(
     url,

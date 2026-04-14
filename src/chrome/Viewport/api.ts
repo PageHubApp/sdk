@@ -2,7 +2,7 @@
  * API calls for media, HTML conversion, and saving to server.
  */
 
-import { getPageHubApiBaseUrl } from "../../runtimeApi";
+import { getPageHubApiBaseUrl } from "../../core/apiConfig";
 
 const getApiBase = () => getPageHubApiBaseUrl();
 

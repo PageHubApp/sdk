@@ -7,12 +7,12 @@ import {
   resolveColorForDisplay,
   TRANSPARENT_CHECKER_BG,
   type PaletteColor,
-} from "../../../../utils/design/colorSystem";
-import { toCSSVarName } from "../../../../utils/design/designSystemVars";
-import { Tooltip } from "components/layout/Tooltip";
+} from "@/utils/design/colorSystem";
+import { toCSSVarName } from "@/utils/design/designSystemVars";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import { CreateTokenDialog } from "./CreateTokenDialog";
-import { resolveTheme } from "../../../../utils/design/resolveTheme";
-import { phStorage } from "../../../../utils/phStorage";
+import { resolveTheme } from "@/utils/design/resolveTheme";
+import { phStorage } from "@/utils/phStorage";
 
 const MAX_RECENT = 8;
 

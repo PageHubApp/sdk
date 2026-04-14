@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PageHub SDK — Static HTML Export Demo</title>
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+    .demo-bar { padding: 12px 24px; background: #1e293b; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #334155; }
+    .demo-bar h1 { font-size: 16px; font-weight: 700; }
+    .demo-bar a { color: #94a3b8; font-size: 13px; text-decoration: none; }
+    .demo-bar a:hover { color: #e2e8f0; }
+    .content { display: grid; grid-template-columns: 1fr 1fr; gap: 0; height: calc(100vh - 48px); }
+    .panel { overflow: auto; padding: 24px; }
+    .panel h2 { font-size: 14px; font-weight: 600; color: #94a3b8; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .panel-preview { background: white; padding: 0; }
+    .panel-code { background: #0f172a; border-left: 1px solid #334155; }
+    pre { font-family: 'SF Mono', Monaco, monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; color: #94a3b8; background: #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 16px; max-height: 300px; overflow: auto; }
+    .section { margin-bottom: 24px; }
+    .badge { display: inline-block; padding: 2px 8px; background: #22c55e20; color: #22c55e; border: 1px solid #22c55e40; border-radius: 100px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+    .copy-btn { padding: 4px 10px; background: #334155; border: 1px solid #475569; color: #e2e8f0; border-radius: 4px; cursor: pointer; font-size: 11px; float: right; }
+    .copy-btn:hover { background: #475569; }
+    iframe { width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+  <div class="demo-bar">
+    <h1>Static HTML Export</h1>
+    <a href="./index.html">&larr; Editor</a>
+    <a href="./viewer.html">Viewer &rarr;</a>
+  </div>
+  <div class="content">
+    <div class="panel panel-preview">
+      <iframe id="preview-frame"></iframe>
+    </div>
+    <div class="panel panel-code">
+      <div class="section">
+        <h2>HTML <span class="badge" id="html-size"></span></h2>
+        <button class="copy-btn" onclick="copyToClipboard('html-output')">Copy</button>
+        <pre id="html-output">Loading...</pre>
+      </div>
+      <div class="section">
+        <h2>Theme CSS Variables <span class="badge" id="css-size"></span></h2>
+        <button class="copy-btn" onclick="copyToClipboard('css-output')">Copy</button>
+        <pre id="css-output">Loading...</pre>
+      </div>
+      <div class="section">
+        <h2>Font URLs</h2>
+        <pre id="fonts-output">Loading...</pre>
+      </div>
+      <div class="section">
+        <h2>SEO Metadata</h2>
+        <pre id="seo-output">Loading...</pre>
+      </div>
+      <div class="section">
+        <h2>Animation Scripts</h2>
+        <pre id="scripts-output">Loading...</pre>
+      </div>
+      <div class="section">
+        <h2>CSS Classes Used <span class="badge" id="classes-count"></span></h2>
+        <pre id="classes-output">Loading...</pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="../dist/pagehub.umd.cjs"></script>
+  <script src="./template-data-umd.js"></script>
+  <script>
+    function copyToClipboard(id) {
+      navigator.clipboard.writeText(document.getElementById(id).textContent);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Use the SDK's static renderer
+    var sdk = PageHub.default || PageHub;
+    var result = sdk.renderToHTML(window.DEMO_TEMPLATE || '', {
+      compressed: true,
+      document: false,
+    });
+
+    // Display each piece
+    document.getElementById('html-output').textContent = result.html;
+    document.getElementById('html-size').textContent = (result.html.length / 1024).toFixed(1) + ' KB';
+
+    document.getElementById('css-output').textContent = result.themeCSS || '(no theme data)';
+    document.getElementById('css-size').textContent = ((result.themeCSS || '').length / 1024).toFixed(1) + ' KB';
+
+    document.getElementById('fonts-output').textContent = result.fontUrls.length
+      ? result.fontUrls.join('\n')
+      : '(no fonts)';
+
+    document.getElementById('seo-output').textContent = result.seo
+      ? JSON.stringify(result.seo, null, 2)
+      : '(no SEO data)';
+
+    document.getElementById('scripts-output').textContent = result.scrollObserverScript
+      ? result.scrollObserverScript.substring(0, 500) + (result.scrollObserverScript.length > 500 ? '...' : '')
+      : '(no animation scripts needed)';
+
+    document.getElementById('classes-output').textContent = result.classes.join(' ');
+    document.getElementById('classes-count').textContent = result.classes.length + ' classes';
+
+    // Render preview in iframe using document mode
+    var fullPage = sdk.renderToHTML(window.DEMO_TEMPLATE || '', {
+      compressed: true,
+      document: true,
+      includeThemeVars: true,
+    });
+    var frame = document.getElementById('preview-frame');
+    frame.srcdoc = fullPage.html;
+  </script>
+</body>
+</html>

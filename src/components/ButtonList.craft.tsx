@@ -18,7 +18,7 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
     children
   );
 };
-import { ButtonListMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ButtonListMainTab";
+import { ButtonListMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ButtonListMainTab";
 import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
 
 export const ButtonListDef = defineComponent(

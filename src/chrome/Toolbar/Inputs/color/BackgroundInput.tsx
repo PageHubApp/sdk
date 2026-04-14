@@ -1,5 +1,5 @@
 import { useNode } from "@craftjs/core";
-import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
+import { ItemAdvanceToggle } from "../../helpers/ItemSelector";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { PiImageFill } from "react-icons/pi";

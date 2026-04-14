@@ -4,7 +4,7 @@
 import { BsBodyText } from "react-icons/bs";
 import { FaFont } from "react-icons/fa";
 import { MdShortText } from "react-icons/md";
-import { TextMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/TextMainTab";
+import { TextMainTab } from "../chrome/toolbar/unified-settings/mainTabs/TextMainTab";
 import { defineComponent } from "../define";
 import { LoremIpsum } from "../utils/data/loremIpsum";
 import { migrateAction, actionToHref, actionTarget } from "../utils/action";

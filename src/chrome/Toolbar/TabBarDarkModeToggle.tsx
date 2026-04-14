@@ -1,4 +1,4 @@
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import { TbMoon, TbMoonOff } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { ViewSelectionAtom } from "./Label";

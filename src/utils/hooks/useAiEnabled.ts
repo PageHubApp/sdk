@@ -1,4 +1,4 @@
-import { useSDK } from "../../context";
+import { useSDK } from "../../core/context";
 
 /**
  * Whether AI-related **chrome** is enabled (`features.aiGeneration`).

@@ -88,7 +88,7 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
 import {
   ModalMainTab,
   ModalMainTabAdvanced,
-} from "../chrome/Toolbar/UnifiedSettings/mainTabs/ModalMainTab";
+} from "../chrome/toolbar/unified-settings/mainTabs/ModalMainTab";
 import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
 import { Button } from "./Button";
 import { Container } from "./Container";

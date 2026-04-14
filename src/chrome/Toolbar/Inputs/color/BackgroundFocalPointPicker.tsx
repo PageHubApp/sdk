@@ -1,10 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { changeProp } from "../../../Viewport/lib";
+import { changeProp } from "../../../viewport/viewportExports";
 import { useEffect, useRef, useState } from "react";
 import { TbTarget } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
-import { getBackgroundUrl } from "utils/lib";
-import { ViewAtom } from "../../../Viewport/atoms";
+import { getBackgroundUrl } from "@/utils/lib";
+import { ViewAtom } from "../../../viewport/atoms";
 import { getEffectiveViews, ViewSelectionAtom } from "../../Label";
 
 interface BackgroundFocalPointPickerProps {

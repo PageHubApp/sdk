@@ -18,21 +18,21 @@ import {
   TbPlus,
   TbTrash,
 } from "react-icons/tb";
-import { AiChatAttachedNodesAtom, ClippyOpenAtom, SectionPickerDialogAtom } from "utils/atoms";
-import { useAiEnabled } from "utils/hooks/useAiEnabled";
-import { useSDK } from "../../context";
+import { AiChatAttachedNodesAtom, AssistantOpenAtom, SectionPickerDialogAtom } from "../../utils/atoms";
+import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
+import { useSDK } from "../../core/context";
 import { useSetAtomState } from "../../utils/atoms";
 import generate from "../../utils/data/nameGenerator";
 import { phStorage } from "../../utils/phStorage";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
-import { NodeType, resolveNodeTypeFromQuery } from "../NodeControllers/hooks/useNodeType";
-import { ToolboxMenu, toolboxMenuInitialState } from "../RenderNode";
+import { NodeType, resolveNodeTypeFromQuery } from "../canvas/hooks/useNodeType";
+import { ToolboxMenu, toolboxMenuInitialState } from "../rendering/toolboxMenuAtom";
 import {
   getSiblingMoveState,
   moveNodeDown,
   moveNodeUp,
-} from "../Toolbar/Tools/Layers/siblingMoveOps";
+} from "../toolbar/dialogs/Layers/siblingMoveOps";
 import {
   OVERLAY_Z_CONTEXT_COMPONENT_FLYOUT,
   OVERLAY_Z_CONTEXT_INSERT_PANEL,
@@ -40,8 +40,8 @@ import {
 import { useAnchoredPopover } from "../overlays/useAnchoredPopover";
 import { ContextMenuInsertComponentFlyout } from "./ContextMenuInsertComponentFlyout";
 import { duplicateNodeById } from "./duplicateNodeById";
-import { addHandler, buildClonedTree, saveHandler } from "./lib";
-import { AddElement } from "./Toolbox/lib";
+import { addHandler, buildClonedTree, saveHandler } from "./viewportExports";
+import { AddElement } from "./toolbox/toolboxUtils";
 
 const MENU_W = 220;
 const MENU_H = 420;
@@ -105,7 +105,7 @@ export const ToolboxContexual = () => {
   );
 
   const [, setAttachedNodes] = useAtomState(AiChatAttachedNodesAtom);
-  const setClippyOpen = useSetAtomState(ClippyOpenAtom);
+  const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const { config } = useSDK();
   const aiEnabled = useAiEnabled();
   const renderContext = config.editorChromeSlots?.renderNodeAiContextButton;
@@ -489,7 +489,7 @@ export const ToolboxContexual = () => {
       if (prev.some(n => n.id === id)) return prev;
       return [...prev, { id, displayName }];
     });
-    setClippyOpen({ nodeId: id });
+    setAssistantOpen({ nodeId: id });
   };
 
   if (!menu.enabled || !id) return null;

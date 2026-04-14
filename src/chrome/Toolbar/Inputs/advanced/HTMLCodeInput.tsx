@@ -1,5 +1,5 @@
 import { Diagnostic, linter } from "@codemirror/lint";
-import type { EditorVariableOption } from "../../../../utils/editorVariableOptions";
+import type { EditorVariableOption } from "@/utils/editorVariableOptions";
 import { CodeEditor } from "../typography/CodeEditor";
 
 const htmlLinter = linter(view => {

@@ -148,7 +148,7 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
     actions.addNodeTree(clonedTree, originalParent, originalIndex);
 
     setTimeout(async () => {
-      const { setRecursiveBelongsTo } = await import("../componentUtils");
+      const { setRecursiveBelongsTo } = await import("@/utils/componentUtils");
       setRecursiveBelongsTo(
         clonedTree.rootNodeId,
         id,

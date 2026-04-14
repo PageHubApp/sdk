@@ -1,9 +1,9 @@
 import { useNode } from "@craftjs/core";
-import { ViewAtom } from "../../../Viewport/atoms";
+import { ViewAtom } from "../../../viewport/atoms";
 import React, { useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "@zedux/react";
-import { TailwindStyles } from "utils/tailwind";
-import { getPropFinalValue } from "../../../Viewport/lib";
+import { TailwindStyles } from "@/utils/tailwind";
+import { getPropFinalValue } from "../../../viewport/viewportExports";
 import { Notice } from "../Notice";
 import { FlexDirectionInput } from "./FlexDirectionInput";
 import { GapInput } from "./GapInput";
@@ -22,14 +22,14 @@ import {
   TbArrowLeft,
   TbArrowRight,
 } from "react-icons/tb";
-import { UniversalInput } from "../UniversalInput";
-import { TypeSelector } from "../UniversalInput/TypeSelector";
-import type { ValueType } from "../UniversalInput/types";
+import { UniversalInput } from "../universal-input";
+import { TypeSelector } from "../universal-input/TypeSelector";
+import type { ValueType } from "../universal-input/types";
 import { ViewSelectionAtom } from "../../Label";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
-import { ItemAdvanceToggle } from "../../Helpers/ItemSelector";
+import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
+import { ItemAdvanceToggle } from "../../helpers/ItemSelector";
 
 type LayoutMode = "block" | "flex-row" | "flex-col" | "grid";
 

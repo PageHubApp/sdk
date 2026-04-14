@@ -6,8 +6,8 @@ import { javascript } from "@codemirror/lang-javascript";
 import { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatToolbarCode, type ToolbarFormatLanguage } from "../../../../utils/formatToolbarCode";
-import type { EditorVariableOption } from "../../../../utils/editorVariableOptions";
+import { formatToolbarCode, type ToolbarFormatLanguage } from "@/utils/formatToolbarCode";
+import type { EditorVariableOption } from "@/utils/editorVariableOptions";
 import { htmlVariableAutocompleteExtension } from "./htmlVariableCompletions";
 
 /** Blend a Daisy role toward `--base-content` so tokens stay readable on `bg-base-200` when the role is low-luminance. */

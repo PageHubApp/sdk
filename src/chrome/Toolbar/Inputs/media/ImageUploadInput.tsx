@@ -1,12 +1,12 @@
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
-import { GetSignedUrl, SaveMedia } from "../../../Viewport/lib";
+import { GetSignedUrl, SaveMedia } from "../../../viewport/viewportExports";
 import { useState } from "react";
 import { TbAlertTriangle, TbPhoto, TbUpload } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
-import { SettingsAtom } from "utils/atoms";
-import { getImageDimensionsFromFile } from "utils/imageDimensions";
-import { getMediaContent, registerMediaWithBackground } from "utils/lib";
-import Spinner from "../../Helpers/Spinner";
+import { SettingsAtom } from "@/utils/atoms";
+import { getImageDimensionsFromFile } from "@/utils/imageDimensions";
+import { getMediaContent, registerMediaWithBackground } from "@/utils/lib";
+import Spinner from "../../helpers/Spinner";
 import { MediaManagerModal } from "./MediaManagerModal";
 
 import { Wrap } from "../../ToolbarStyle";
@@ -43,8 +43,6 @@ const uploadFiles = async (files, settings, setErrors, query, actions) => {
           // Extract dimensions and store metadata
           try {
             const dimensions = await getImageDimensionsFromFile(file);
-            console.log(`📐 Extracted dimensions for ${file.name}:`, dimensions);
-
             // Store metadata with dimensions
             actions.setProp(ROOT_NODE, (props: any) => {
               props.pageMedia = props.pageMedia || [];

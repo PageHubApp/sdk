@@ -1,4 +1,4 @@
-import { UniversalInput } from "../UniversalInput";
+import { UniversalInput } from "../universal-input";
 
 /**
  * Overflow is a layout prop (mobile base, desktop = md: overrides) — same as display/position.

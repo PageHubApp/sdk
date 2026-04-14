@@ -1,6 +1,6 @@
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import { useSetAtomState } from "../../utils/atoms";
-import { OnlineAtom } from "utils/lib";
+import { OnlineAtom } from "../../utils/lib";
 
 export const DeviceOffline = () => {
   const setOnline = useSetAtomState(OnlineAtom);

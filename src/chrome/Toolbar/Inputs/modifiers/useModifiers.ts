@@ -1,6 +1,6 @@
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
 import { useMemo } from "react";
-import type { ComponentModifier } from "../../../../define";
+import type { ComponentModifier } from "@/define";
 
 export interface ResolvedModifier extends ComponentModifier {
   origin: "builtin" | "site";

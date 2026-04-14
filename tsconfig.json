@@ -24,14 +24,7 @@
     "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "components/selectors/*": ["./src/components/*"],
-      "components/layout": ["./src/chrome/shared/layout"],
-      "components/layout/*": ["./src/chrome/shared/layout/*"],
-      "components/*": ["../../components/*"],
-      "utils/icons.json": ["./src/utils/data/icons.json"],
-      "utils/googleIcons.json": ["./src/utils/data/googleIcons.json"],
-      "utils/*": ["./src/utils/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

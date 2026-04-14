@@ -15,9 +15,9 @@ import { renderToHTML } from "./static-renderer";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { EcosystemProvider, useAtomState } from "@zedux/react";
 import { useSetAtomState } from "./utils/atoms";
-import { useSDK, useHasSDKProvider, PageHubProvider } from "./context";
+import { useSDK, useHasSDKProvider, PageHubProvider } from "./core/context";
 import { resolveConfig } from "./config";
-import { EventEmitter } from "./events";
+import { EventEmitter } from "./core/events";
 import type {
   PageData,
   PageHubCallbacks,
@@ -28,48 +28,48 @@ import type {
 import { BatchOperationAtom, EditorSaveBannerAtom } from "./utils/atoms";
 import { processForEditor, CustomComponentsContext, type ResolvedComponentDef } from "./define";
 import { LazyUnifiedSettings } from "./components/LazyUnifiedSettings";
-import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./builtins";
+import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 
 // ─── Import the real Viewport, Toolbar, and all dialog components from the editor chrome ──
-import { Viewport } from "./chrome/Viewport";
-import { UnsavedChangesAtom } from "./chrome/Viewport/atoms";
-import { Toolbar } from "./chrome/Toolbar";
-import { EditorSelectionDomProvider } from "./chrome/EditorSelectionDomContext";
-import { RenderNodeNewer } from "./chrome/RenderNodeNewer";
-import CustomEventHandlers from "./chrome/CustomEventHandlers";
-import { AiPanelHost } from "./chrome/AiPanelHost";
-import { EditorLoader } from "./chrome/EditorLoader";
-import { GlobalSectionPickerDialog } from "./chrome/GlobalSectionPickerDialog";
-import { EditorSaveBanner } from "./chrome/EditorSaveBanner";
+import { Viewport } from "./chrome/viewport/ViewportShell";
+import { UnsavedChangesAtom } from "./chrome/viewport/atoms";
+import { Toolbar } from "./chrome/toolbar";
+import { EditorSelectionDomProvider } from "./chrome/shell/EditorSelectionDomContext";
+import { RenderNodeNewer } from "./chrome/rendering/RenderNode";
+import CustomEventHandlers from "./chrome/shell/CustomEventHandlers";
+import { AiPanelHost } from "./chrome/ai/AiPanelHost";
+import { EditorLoader } from "./chrome/shell/EditorLoader";
+import { GlobalSectionPickerDialog } from "./chrome/shell/GlobalSectionPickerDialog";
+import { EditorSaveBanner } from "./chrome/shell/EditorSaveBanner";
 import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
 
 // Lazy-loaded dialogs — only loaded when user opens them
 const ColorPickerDialog = React.lazy(() =>
-  import("./chrome/Toolbar/Tools/ColorPickerDialog").then(m => ({ default: m.ColorPickerDialog }))
+  import("./chrome/toolbar/dialogs/ColorPickerDialog").then(m => ({ default: m.ColorPickerDialog }))
 );
 const ColorPickerSidebarDialog = React.lazy(() =>
-  import("./chrome/Toolbar/Tools/ColorPickerSidebarDialog").then(m => ({
+  import("./chrome/toolbar/dialogs/ColorPickerSidebarDialog").then(m => ({
     default: m.ColorPickerSidebarDialog,
   }))
 );
 const FontFamilyDialog = React.lazy(() =>
-  import("./chrome/Toolbar/Tools/FontFamilyDialog").then(m => ({ default: m.FontFamilyDialog }))
+  import("./chrome/toolbar/dialogs/FontFamilyDialog").then(m => ({ default: m.FontFamilyDialog }))
 );
 const GoogleIconDialog = React.lazy(() =>
-  import("./chrome/Toolbar/Tools/GoogleIconDialog").then(m => ({ default: m.GoogleIconDialog }))
+  import("./chrome/toolbar/dialogs/GoogleIconDialog").then(m => ({ default: m.GoogleIconDialog }))
 );
 const IconDialogDialog = React.lazy(() =>
-  import("./chrome/Toolbar/Tools/IconDialog").then(m => ({ default: m.IconDialogDialog }))
+  import("./chrome/toolbar/dialogs/IconDialog").then(m => ({ default: m.IconDialogDialog }))
 );
 const PatternDialog = React.lazy(() =>
-  import("./chrome/Toolbar/Tools/PatternDialog").then(m => ({ default: m.PatternDialog }))
+  import("./chrome/toolbar/dialogs/PatternDialog").then(m => ({ default: m.PatternDialog }))
 );
 const ToolTipDialog = React.lazy(() =>
-  import("./chrome/Toolbar/Tools/TooltipDialog").then(m => ({ default: m.ToolTipDialog }))
+  import("./chrome/toolbar/dialogs/TooltipDialog").then(m => ({ default: m.ToolTipDialog }))
 );
 
 // Side-effect import: UnifiedSettings self-registers with LazyUnifiedSettings
-import "./chrome/Toolbar/UnifiedSettings/UnifiedSettings";
+import "./chrome/toolbar/unified-settings/UnifiedSettings";
 
 // ─── Internal editor wrapper that handles save/load ──────────────────────────
 
@@ -267,7 +267,7 @@ function PageHubEditorStandalone(props: PageHubEditorProps & { callbacks: PageHu
       callbacks: props.callbacks,
       theme: props.theme,
       features: props.features,
-      apiBaseUrl: props.apiBaseUrl ?? "https://pagehub.dev/api",
+      apiBaseUrl: props.apiBaseUrl ?? "",
       readOnly: props.readOnly,
       renderAiPanel: props.renderAiPanel,
     })

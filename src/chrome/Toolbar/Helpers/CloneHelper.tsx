@@ -1,8 +1,8 @@
-import { getLinkedAncestorNode } from "../../componentUtils";
-import { removeHasManyRelation } from "../../Viewport/lib";
+import { getLinkedAncestorNode } from "@/utils/componentUtils";
+import { removeHasManyRelation } from "../../viewport/viewportExports";
 import { TbBoxModel2, TbLink, TbLinkOff, TbPalette, TbPencil } from "react-icons/tb";
 import { useSetAtomState } from "../../../utils/atoms";
-import { OpenComponentEditorAtom, ViewModeAtom } from "utils/lib";
+import { OpenComponentEditorAtom, ViewModeAtom } from "@/utils/lib";
 
 export const setClonedProps = (props, query, exclude = []) => {
   // If this node doesn't belong to a master component, just return props as-is

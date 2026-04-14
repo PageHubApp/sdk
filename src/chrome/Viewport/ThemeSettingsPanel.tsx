@@ -1,11 +1,11 @@
 import { useEffect, type ReactNode } from "react";
 import { TbPalette, TbRuler, TbTypography } from "react-icons/tb";
 import { usePanelUrl } from "../../utils/usePanelUrl";
-import { SidebarTabsPane } from "../shared/SidebarTabsPane";
-import { ColorsTab } from "./DesignSystem/components/ColorsTab";
-import { StylesTab } from "./DesignSystem/components/StylesTab";
-import { TypographyTab } from "./DesignSystem/components/TypographyTab";
-import { useDesignSystem } from "./DesignSystem/hooks/useDesignSystem";
+import { SidebarTabsPane } from "../primitives/SidebarTabsPane";
+import { ColorsTab } from "./design-system/components/ColorsTab";
+import { StylesTab } from "./design-system/components/StylesTab";
+import { TypographyTab } from "./design-system/components/TypographyTab";
+import { useDesignSystem } from "./design-system/hooks/useDesignSystem";
 
 const THEME_TABS = ["colors", "styles", "typography"] as const;
 type ThemeTabId = (typeof THEME_TABS)[number];

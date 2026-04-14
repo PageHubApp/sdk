@@ -5,7 +5,7 @@ import React from "react";
 import { TbMap, TbMap2, TbMapPin } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Map } from "./Map";
-import { MapMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/MapMainTab";
+import { MapMainTab } from "../chrome/toolbar/unified-settings/mainTabs/MapMainTab";
 import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
 
 export const MapDef = defineComponent(

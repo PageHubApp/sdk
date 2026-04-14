@@ -36,7 +36,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     audio
   );
 };
-import { AudioMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/AudioMainTab";
+import { AudioMainTab } from "../chrome/toolbar/unified-settings/mainTabs/AudioMainTab";
 import { NameNodeController, HoverNodeController, DeleteNodeController } from "./editor-chrome";
 
 export const AudioDef = defineComponent(

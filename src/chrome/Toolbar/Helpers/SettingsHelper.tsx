@@ -3,7 +3,7 @@ import React from "react";
 import { TabBody } from "../Tab";
 import { ToolbarSection } from "../ToolbarSection";
 import { TruncatedLabelTooltip } from "../ToolbarStyle";
-import { ToolbarWrapper } from "../ToolBarWrapper";
+import { ToolbarWrapper } from "../ToolbarWrapper";
 import { NoSettings } from "./CloneHelper";
 
 export const TableBodyStyleControl = ({ children, actions, activeTab, head, tab, query }) => {

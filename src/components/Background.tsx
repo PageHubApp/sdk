@@ -1,10 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { usePreview, useView } from "../store";
+import { usePreview, useView } from "../core/store";
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 
 import React, { useEffect, useRef, useState } from "react";
 import { TbContainer } from "react-icons/tb";
-import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../utils/defaults";
 import { resolveTheme } from "../utils/design/resolveTheme";
 import { useLazyBackground } from "../utils/hooks/useLazyBackground";
@@ -12,7 +12,7 @@ import { useLazyBackground } from "../utils/hooks/useLazyBackground";
 import { Box } from "@pagehub/ui";
 import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../utils/lib";
 import { PaletteProvider } from "../utils/design/PaletteContext";
-import { RenderPattern, inlayProps } from "./lib";
+import { RenderPattern, inlayProps } from "./componentHooks";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import { useBackgroundEffects } from "./Background/useBackgroundEffects";
 

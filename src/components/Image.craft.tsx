@@ -82,7 +82,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
   return imgTag;
 };
-import { ImageMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/ImageMainTab";
+import { ImageMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ImageMainTab";
 import { ImageGroupSettings } from "./ImageGroupSettings";
 
 export const ImageDef = defineComponent(

@@ -1,5 +1,5 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
-import { Tooltip } from "components/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -12,12 +12,12 @@ import {
   TbSettings,
 } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { SettingsAtom } from "utils/atoms";
-import { IsolateAtom, isolatePageAlt } from "utils/lib";
+import { SettingsAtom } from "../../utils/atoms";
+import { IsolateAtom, isolatePageAlt } from "../../utils/lib";
 import { PageSettingsModal } from "./PageSettingsModal";
 import { UnsavedChangesAtom } from "./atoms";
-import { useSDK } from "../../context";
-import { usePageCreation } from "./PageSelector/usePageCreation";
+import { useSDK } from "../../core/context";
+import { usePageCreation } from "./page-selector/usePageCreation";
 
 import sluggit from "slug";
 
@@ -255,7 +255,8 @@ export function PageSelector({
   );
 
   // Get live URL for current page
-  const baseUrl = settings?.draftId ? `https://${settings.draftId}.pagehub.dev/` : "";
+  // Host app should configure sitePreviewUrl in config for external preview links
+  const baseUrl = "";
   const pageSlug = currentPage && !isCurrentHomePage ? sluggit(currentPage.displayName, "-") : "";
   const liveUrl = currentPage ? `${baseUrl}${pageSlug}` : null;
 

@@ -8,7 +8,7 @@ import {
   OpenComponentEditorAtom,
   ViewModeAtom,
   isolatePageAlt,
-} from "utils/lib";
+} from "@/utils/lib";
 
 interface ComponentEditorTab {
   id: string; // The component node ID

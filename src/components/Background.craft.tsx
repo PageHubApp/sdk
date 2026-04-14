@@ -20,7 +20,7 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
     children
   );
 };
-import { BackgroundMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/BackgroundMainTab";
+import { BackgroundMainTab } from "../chrome/toolbar/unified-settings/mainTabs/BackgroundMainTab";
 import {
   HoverNodeController,
   NameNodeController,

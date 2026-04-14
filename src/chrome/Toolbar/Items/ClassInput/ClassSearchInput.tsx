@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { TbSearch } from "react-icons/tb";
-import { AllStyles } from "utils/tailwind";
+import { AllStyles } from "@/utils/tailwind";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { BgWrap, CardLight } from "../../ToolbarStyle";
 import { BREAKPOINT_PREFIXES } from "./classItemUtils";

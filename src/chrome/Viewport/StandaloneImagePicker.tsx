@@ -1,13 +1,13 @@
 import { useEditor } from "@craftjs/core";
-import { GetSignedUrl, SaveMedia } from "./lib";
+import { GetSignedUrl, SaveMedia } from "./viewportExports";
 import Image from "next/image";
 import { useState } from "react";
 import { TbAlertTriangle, TbPhoto, TbTrash, TbUpload } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
-import { SettingsAtom } from "utils/atoms";
-import { getMediaContent } from "utils/lib";
-import Spinner from "../Toolbar/Helpers/Spinner";
-import { MediaManagerModal } from "../Toolbar/Inputs/media/MediaManagerModal";
+import { SettingsAtom } from "../../utils/atoms";
+import { getMediaContent } from "../../utils/lib";
+import Spinner from "../toolbar/helpers/Spinner";
+import { MediaManagerModal } from "../toolbar/inputs/media/MediaManagerModal";
 
 const handleFileSelection = (e, setErrors) => {
   const errors = [];

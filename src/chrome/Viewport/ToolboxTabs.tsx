@@ -1,6 +1,6 @@
-import { useSDK } from "../../context";
-import { SidebarTabsPane } from "../shared/SidebarTabsPane";
-import { useAiEnabled } from "utils/hooks/useAiEnabled";
+import { useSDK } from "../../core/context";
+import { SidebarTabsPane } from "../primitives/SidebarTabsPane";
+import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { ComponentSettings } from "./ComponentSettings";
 import { SectionsSettings } from "./SectionsSettings";

@@ -4,7 +4,7 @@ import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { Divider as UiDivider } from "@pagehub/ui";
 import { motionIt } from "../utils/lib";
 import { applyAnimation } from "../utils/tailwind/tailwind";
-import { useScrollToSelected } from "./lib";
+import { useScrollToSelected } from "./componentHooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 

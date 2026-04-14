@@ -1,7 +1,7 @@
 import { Diagnostic, linter } from "@codemirror/lint";
 import { useEditor, useNode } from "@craftjs/core";
-import { ViewAtom } from "../../../Viewport/atoms";
-import { changeProp, getPropFinalValue } from "../../../Viewport/lib";
+import { ViewAtom } from "../../../viewport/atoms";
+import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
 import { useAtomValue } from "@zedux/react";
 import { ToolbarSection } from "../../ToolbarSection";
 import { CodeEditor } from "../typography/CodeEditor";

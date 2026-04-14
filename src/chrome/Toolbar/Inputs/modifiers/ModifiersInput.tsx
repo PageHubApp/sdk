@@ -2,13 +2,13 @@ import { useState } from "react";
 import { TbStack2 } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import { PH_TOOLBAR_DASHED_BTN_ACTIVE } from "../../phToolbarDashedSelection";
-import { ToolbarDashedButton } from "../../Helpers/ToolbarDashedButton";
+import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useModifiers, type ResolvedModifier, type CategoryMeta } from "./useModifiers";
 import { PatternCards } from "./PatternCards";
 import { ExclusiveDropdown } from "./ExclusiveDropdown";
 import { ExclusivePills } from "./ExclusivePills";
-import { Tooltip } from "../../../shared/layout/Tooltip";
+import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
 
 function ModifierChip({
   mod,

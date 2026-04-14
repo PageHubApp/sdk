@@ -1,20 +1,20 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useRef } from "react";
-import { resolveCSSVariable } from "utils/design/colorSystem";
-import { ViewAtom } from "../../../Viewport/atoms";
-import { changeProp, getPropFinalValue } from "../../../Viewport/lib";
-import { getRect } from "../../../Viewport/useRect";
-import { editorCanvasViewToClassPrefixKey } from "../../../../utils/tailwind/className";
+import { resolveCSSVariable } from "@/utils/design/colorSystem";
+import { ViewAtom } from "../../../viewport/atoms";
+import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
+import { getRect } from "../../../viewport/useRect";
+import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import {
   googleFontNameToClass,
   parseGoogleFontFromArbitraryClass,
   tailwindTokenBase,
-} from "../../../../utils/tailwind/fontFamilyClass";
+} from "@/utils/tailwind/fontFamilyClass";
 import { Wrap } from "../../ToolbarStyle";
 import { ViewSelectionAtom } from "../../Label";
-import { FontFamilyDialogAtom } from "../../Tools/FontFamilyDialog";
-import { useDialog } from "../../Tools/lib";
+import { FontFamilyDialogAtom } from "../../dialogs/FontFamilyDialog";
+import { useDialog } from "../../dialogs/toolHooks";
 
 function displayFontFromToken(token: string, query: any): string {
   if (!token) return "";

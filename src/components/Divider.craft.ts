@@ -13,7 +13,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const cls = staticClasses(props, ctx);
   return `<hr${buildAttrs({ class: cls || undefined, ...ariaAttrs(props) })} />`;
 };
-import { DividerMainTab } from "../chrome/Toolbar/UnifiedSettings/mainTabs/DividerMainTab";
+import { DividerMainTab } from "../chrome/toolbar/unified-settings/mainTabs/DividerMainTab";
 
 export const DividerDef = defineComponent(
   {

@@ -1,12 +1,12 @@
 import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
-import { setRecursiveBelongsTo } from "../../componentUtils";
+import { setRecursiveBelongsTo } from "@/utils/componentUtils";
 import { useEffect, useRef } from "react";
 import { TbBoxModel2, TbTrash } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
-import { ComponentsAtom } from "utils/lib";
-import { buildClonedTree } from "../lib";
-import { RenderToolComponent, ToolboxItemDisplay } from "./lib";
+import { ComponentsAtom } from "../../../utils/lib";
+import { buildClonedTree } from "../viewportExports";
+import { RenderToolComponent, ToolboxItemDisplay } from "./toolboxUtils";
 
 // Track which loaders are currently processing to prevent duplicates
 const processingLoaders = new Set();

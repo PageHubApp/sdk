@@ -9,7 +9,7 @@ export type ToolbarDashedButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonEleme
 
 /**
  * Shared dashed full-width toolbar CTA (same chrome as Actions → Add Action).
- * Styles: `.ph-toolbar-dashed-btn` in `packages/sdk/src/editor-partials/toolbar-forms.css`
+ * Styles: `.ph-toolbar-dashed-btn` in `packages/sdk/src/css/editor-partials/toolbar-forms.css`
  * (SDK `editor.css` bundle) and duplicated in root `styles/editor.css` for the Next app (which does not import SDK toolbar-forms).
  */
 export function ToolbarDashedButton({
