@@ -113,6 +113,36 @@ export const AccordionMainTab = () => {
           {defaultOpenOptions}
         </ToolbarItem>
 
+        <ToolbarItem propKey="animation" propType="component" type="select" label="Animation">
+          <option value="slideFade">Slide + Fade</option>
+          <option value="slide">Slide</option>
+          <option value="fade">Fade</option>
+          <option value="none">None</option>
+        </ToolbarItem>
+
+        {props.animation && props.animation !== "none" && (
+          <>
+            <ToolbarItem
+              propKey="animationDuration"
+              propType="component"
+              type="slider"
+              label="Duration"
+              min={0.1}
+              max={1}
+              step={0.05}
+              defaultValue={0.3}
+              suffix="s"
+            />
+            <ToolbarItem propKey="animationEasing" propType="component" type="select" label="Easing">
+              <option value="ease">Ease</option>
+              <option value="ease-out">Ease Out</option>
+              <option value="ease-in">Ease In</option>
+              <option value="ease-in-out">Ease In-Out</option>
+              <option value="linear">Linear</option>
+            </ToolbarItem>
+          </>
+        )}
+
         <div className="flex gap-2">
           <button
             className="border-base-300 hover:bg-neutral flex flex-1 items-center justify-center gap-1.5 rounded border px-3 py-2 text-xs font-medium transition-colors"

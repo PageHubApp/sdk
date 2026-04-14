@@ -6,16 +6,23 @@ import { EditorEmptyLeafHint } from "../chrome/shared/EditorEmptyLeafHint";
 import { BaseSelectorProps } from "./selectors";
 import { CSStoObj } from "../utils/tailwind/tailwind";
 
+export type AccordionAnimation = "none" | "slide" | "fade" | "slideFade";
+
+export type AccordionEasing = "ease" | "ease-in" | "ease-out" | "ease-in-out" | "linear";
+
 export interface AccordionProps extends BaseSelectorProps {
   multiOpen?: boolean;
   defaultOpen?: number;
+  animation?: AccordionAnimation;
+  animationDuration?: number;
+  animationEasing?: AccordionEasing;
 }
 
 export const Accordion = ({
   children,
   ...incomingProps
 }: Partial<AccordionProps> & { children?: React.ReactNode }) => {
-  const props: AccordionProps = { multiOpen: false, defaultOpen: -1, ...incomingProps };
+  const props: AccordionProps = { multiOpen: false, defaultOpen: -1, animation: "slideFade", ...incomingProps };
   const { query } = useEditor();
   const {
     id,
@@ -77,13 +84,27 @@ export const Accordion = ({
     }
   }, [enabled, isMounted, props.defaultOpen]);
 
+  const animClass =
+    props.animation && props.animation !== "none"
+      ? `ph-accordion-${props.animation === "slideFade" ? "slide-fade" : props.animation}`
+      : "";
+
+  const baseStyle = props.root?.style ? CSStoObj(props.root.style) : {};
+  const animStyle: Record<string, string> = {};
+  if (props.animationDuration != null) {
+    animStyle["--ph-accordion-duration"] = `${props.animationDuration}s`;
+  }
+  if (props.animationEasing) {
+    animStyle["--ph-accordion-easing"] = props.animationEasing;
+  }
+
   const prop: any = {
     ref: (ref: any) => {
       wrapperRef.current = ref;
       connect(ref);
     },
-    className: props.className || "flex flex-col w-full",
-    style: props.root?.style ? CSStoObj(props.root.style) : undefined,
+    className: [props.className || "flex flex-col w-full", animClass].filter(Boolean).join(" "),
+    style: { ...baseStyle, ...animStyle },
   };
 
   if (!props.multiOpen) {

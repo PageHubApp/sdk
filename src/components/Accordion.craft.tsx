@@ -123,6 +123,7 @@ export const AccordionDef = defineComponent(
         props: {
           multiOpen: false,
           defaultOpen: -1,
+          animation: "slideFade",
           className: "flex flex-col w-full",
           custom: {},
         },
