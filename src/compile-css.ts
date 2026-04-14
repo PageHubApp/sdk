@@ -20,6 +20,7 @@ import { readFileSync, statSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, resolve, join } from "path";
 import { renderToHTML, type RenderToHTMLOptions } from "./static-renderer";
+import { buildModifierExpansionMap, expandModifierClassName } from "./utils/modifierUtils";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -96,11 +97,19 @@ function getDaisyUIDir(): string {
     const daisyuiMain = require.resolve("daisyui/package.json", {
       paths: [__dirname],
     });
-    _daisyuiDir = resolve(dirname(daisyuiMain), "components");
+    // Turbopack virtualises __dirname for external modules and can return a
+    // non-filesystem path like "[externals]/daisyui/package.json [external]...".
+    // Reject any path that isn't a real absolute filesystem path.
+    if (daisyuiMain.startsWith("/") && !daisyuiMain.includes("[")) {
+      _daisyuiDir = resolve(dirname(daisyuiMain), "components");
+      return _daisyuiDir;
+    }
   } catch {
-    // Fallback: relative to SDK src → node_modules
-    _daisyuiDir = resolve(__dirname, "../../node_modules/daisyui/components");
+    // require.resolve threw — fall through to cwd fallback
   }
+  // Fallback: process.cwd() is always the Next.js project root under both
+  // Turbopack and webpack, regardless of how __dirname is virtualised.
+  _daisyuiDir = resolve(process.cwd(), "node_modules/daisyui/components");
   return _daisyuiDir;
 }
 
@@ -263,46 +272,25 @@ function getAnimationCSS(): string {
 
 // ── Tailwind compiler singleton ────────────────────────────────────────────
 
-const compilerCache = new Map<string, ReturnType<typeof initCompiler>>();
+let _compiler: ReturnType<typeof initCompiler> | null = null;
 
-async function initCompiler(extraCSS: string = "") {
+async function initCompiler() {
   const { compile } = await import("@tailwindcss/node");
   const theme = getThemeCSS();
   const spatial = getSpatialCSS();
   const animations = getAnimationCSS();
-  const parts = ['@import "tailwindcss";', theme, spatial, animations, extraCSS].filter(
-    Boolean
-  );
+  const parts = ['@import "tailwindcss";', theme, spatial, animations].filter(Boolean);
   return compile(parts.join("\n"), {
     base: __dirname,
     onDependency() {},
   });
 }
 
-function getCompiler(extraCSS: string) {
-  const key = extraCSS ? `modifiers:${extraCSS.length}` : "vanilla";
-  if (!compilerCache.has(key)) {
-    compilerCache.set(key, initCompiler(extraCSS));
+function getCompiler() {
+  if (!_compiler) {
+    _compiler = initCompiler();
   }
-  return compilerCache.get(key)!;
-}
-
-// ── Modifier utilities ────────────────────────────────────────────────────
-
-/** Generate @utility rules from modifier definitions on ROOT.props.modifiers */
-function generateModifierUtilities(nodes: Record<string, any>): string {
-  const modifiers = nodes?.ROOT?.props?.modifiers;
-  if (!modifiers || typeof modifiers !== "object") return "";
-  const rules: string[] = [];
-  for (const mods of Object.values(modifiers) as any[]) {
-    if (!Array.isArray(mods)) continue;
-    for (const mod of mods) {
-      if (mod.name && mod.classes && /^[a-z][\w-]*$/i.test(mod.name)) {
-        rules.push(`@utility ${mod.name} { @apply ${mod.classes}; }`);
-      }
-    }
-  }
-  return rules.join("\n");
+  return _compiler;
 }
 
 // ── Class extraction from Craft.js JSON ──────────────────────────────────
@@ -312,12 +300,21 @@ function extractCandidatesFromNodes(nodes: Record<string, any>): string[] {
   const implicit = ["cursor-pointer", "sr-only", "not-sr-only", "overflow-hidden", "relative", "absolute"];
   for (const c of implicit) candidates.add(c);
 
+  // Build modifier expansion map so modifier names get expanded to real classes
+  const modifiers = nodes?.ROOT?.props?.modifiers;
+  const expansionMap = modifiers && typeof modifiers === "object"
+    ? buildModifierExpansionMap(modifiers)
+    : new Map<string, string>();
+
   for (const node of Object.values(nodes)) {
     const props = (node as any)?.props;
     if (!props) continue;
 
     if (typeof props.className === "string" && props.className.trim()) {
-      for (const cls of props.className.split(/\s+/)) if (cls) candidates.add(cls);
+      const expanded = expansionMap.size > 0
+        ? expandModifierClassName(props.className, expansionMap)
+        : props.className;
+      for (const cls of expanded.split(/\s+/)) if (cls) candidates.add(cls);
     }
     if (Array.isArray(props.className)) {
       for (const cls of props.className) if (typeof cls === "string" && cls.trim()) candidates.add(cls);
@@ -346,6 +343,51 @@ function minifyCSS(css: string): string {
     .trim();
 }
 
+// ── Strip unused @keyframes ───────────────────────────────────────────────
+
+/**
+ * Remove @keyframes blocks whose name is not referenced by any animation-name
+ * in the CSS output. Prevents animation presets from bloating standalone exports.
+ */
+function stripUnusedKeyframes(css: string): string {
+  // Collect all @keyframes names
+  const keyframeBlocks: { name: string; start: number; end: number }[] = [];
+  const kfRe = /@keyframes\s+([\w-]+)\s*\{/g;
+  let m;
+  while ((m = kfRe.exec(css)) !== null) {
+    let depth = 1;
+    let j = m.index + m[0].length;
+    while (j < css.length && depth > 0) {
+      if (css[j] === "{") depth++;
+      else if (css[j] === "}") depth--;
+      j++;
+    }
+    keyframeBlocks.push({ name: m[1], start: m.index, end: j });
+  }
+  if (keyframeBlocks.length === 0) return css;
+
+  // Find which animation names are actually referenced
+  const usedNames = new Set<string>();
+  const animRe = /animation(?:-name)?\s*:\s*([^;{}]+)/g;
+  while ((m = animRe.exec(css)) !== null) {
+    for (const token of m[1].split(/[\s,]+/)) {
+      if (token && token !== "none" && token !== "inherit" && token !== "initial") {
+        usedNames.add(token);
+      }
+    }
+  }
+
+  // Remove unreferenced keyframes (iterate in reverse to preserve indices)
+  let result = css;
+  for (let i = keyframeBlocks.length - 1; i >= 0; i--) {
+    const kb = keyframeBlocks[i];
+    if (!usedNames.has(kb.name)) {
+      result = result.slice(0, kb.start) + result.slice(kb.end);
+    }
+  }
+  return result;
+}
+
 // ── Public API ─────────────────────────────────────────────────────────────
 
 /**
@@ -354,26 +396,26 @@ function minifyCSS(css: string): string {
  *
  * @param options.classes - Tailwind class candidates (from renderToHTML().classes)
  * @param options.themeCSS - Optional theme CSS variables (from renderToHTML().themeCSS)
+ * @param options.lean - Strip unused @keyframes and skip spotlight presets (for standalone exports)
  * @returns Compiled, minified CSS string
  */
 export async function compileCSS(options: {
   classes: string[];
   themeCSS?: string;
-  /** Raw Craft.js node map — used to extract dynamic modifier @utility rules */
+  /** Raw Craft.js node map — used to expand modifier names during candidate extraction */
   nodes?: Record<string, any>;
+  /** Strip unused @keyframes and skip spotlight presets (for standalone exports) */
+  lean?: boolean;
 }): Promise<string> {
-  const { classes, themeCSS, nodes } = options;
+  const { classes, themeCSS, lean = false } = options;
 
   if (classes.length === 0) return themeCSS || "";
-
-  // Generate @utility rules from dynamic modifiers on ROOT
-  const modifierCSS = nodes ? generateModifierUtilities(nodes) : "";
 
   // Collect DaisyUI component CSS for used classes
   const daisyuiCSS = collectDaisyUICSS(classes);
 
   // Compile Tailwind utilities
-  const compiler = await getCompiler(modifierCSS);
+  const compiler = await getCompiler();
   const css = compiler.build(classes);
 
   // Strip @layer base (consumer provides their own reset)
@@ -394,13 +436,20 @@ export async function compileCSS(options: {
     stripped = daisyStripped + " " + stripped;
   }
 
+  // Strip unused @keyframes for lean exports (standalone HTML)
+  if (lean) {
+    stripped = stripUnusedKeyframes(stripped);
+  }
+
   // Minify
   stripped = minifyCSS(stripped);
 
-  // Spotlight presets
-  const spotlightPresets = minifyCSS(getSpotlightPresetsCSS());
-  if (spotlightPresets) {
-    stripped = `${spotlightPresets} ${stripped}`.trim();
+  // Spotlight presets (skip for lean exports)
+  if (!lean) {
+    const spotlightPresets = minifyCSS(getSpotlightPresetsCSS());
+    if (spotlightPresets) {
+      stripped = `${spotlightPresets} ${stripped}`.trim();
+    }
   }
 
   // Prepend theme CSS variables if provided

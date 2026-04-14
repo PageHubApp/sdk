@@ -16,7 +16,8 @@ export function HeaderItem({
   disabled = false,
   className = "",
   ariaLabel = "",
-}: HeaderItemProps) {
+  ...rest
+}: HeaderItemProps & Record<string, unknown>) {
   return (
     <button
       onClick={onClick}
@@ -24,6 +25,7 @@ export function HeaderItem({
       disabled={disabled}
       aria-label={ariaLabel}
       className={`tool-button ${className}`}
+      {...rest}
     >
       {children}
     </button>

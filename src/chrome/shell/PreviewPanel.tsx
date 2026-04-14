@@ -23,6 +23,7 @@ import { resolveTheme } from "../../utils/design/resolveTheme";
 import { getMaterialSymbolsUrlFromNodes } from "../../utils/data/collectGoogleIcons";
 import { sanitizeCraftNodeReferences } from "../../utils/sanitizeNodeMap";
 
+
 type Tab = "review" | "live";
 
 /** When ai-draft JSON is missing ROOT.theme.palette, inherit tokens from the live editor viewport (same list as ComponentPreview). */
@@ -275,34 +276,6 @@ export function PreviewPanel({
       el.remove();
     };
   }, [content]);
-
-  // Inject modifier @utility rules from preview content's ROOT
-  useEffect(() => {
-    const modifiers = content?.ROOT?.props?.modifiers;
-    if (!modifiers || typeof modifiers !== "object") return;
-    const rules: string[] = [];
-    for (const mods of Object.values(modifiers) as any[]) {
-      if (!Array.isArray(mods)) continue;
-      for (const mod of mods) {
-        if (mod.name && mod.classes) {
-          rules.push(`@utility ${mod.name} { @apply ${mod.classes}; }`);
-        }
-      }
-    }
-    if (!rules.length) return;
-    const id = "preview-modifier-utilities";
-    let el = document.getElementById(id) as HTMLStyleElement | null;
-    if (!el) {
-      el = document.createElement("style");
-      el.id = id;
-      el.setAttribute("type", "text/tailwindcss");
-      document.head.appendChild(el);
-    }
-    el.textContent = rules.join("\n");
-    return () => {
-      el?.remove();
-    };
-  }, [content?.ROOT?.props?.modifiers]);
 
   // Theme for the preview iframe: prefer ROOT from ai-draft; if palette missing/stale, match live #viewport (avoids milky editor chrome defaults).
   const previewCSS = useMemo(() => {

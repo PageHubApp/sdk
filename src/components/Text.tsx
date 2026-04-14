@@ -28,6 +28,8 @@ const TextEditorMode = React.lazy(() => import("./TextEditor"));
 export interface TextProps extends BaseSelectorProps {
   text?: string;
   tagName?: string;
+  /** `inline` = TipTap doc with `inline*` only — persisted HTML has no wrapping `<p>`. Default `full`. */
+  richTextMode?: "full" | "inline";
   textFitMode?: "oneline" | "multiline" | "box" | "boxoneline";
   activeTab?: number;
   action?: NodeAction;

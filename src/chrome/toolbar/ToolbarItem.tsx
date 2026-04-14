@@ -1,7 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { REACT_TOOLTIP_SURFACE_CLASS } from "@/chrome/primitives/layout/tooltipSurface";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import React from "react";
-import { Tooltip as ReactTooltip } from "react-tooltip";
 import { useAtomValue } from "@zedux/react";
 import { ViewAtom } from "../viewport/atoms";
 import { changeProp, getPropFinalValue } from "../viewport/viewportExports";
@@ -234,18 +233,12 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
                       ? "bg-primary text-primary-content font-semibold"
                       : "text-neutral-content"
                   }`}
-                  data-tooltip-id={`radio-${propKey}-${key}-tip`}
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                   data-tooltip-content={tip || "None"}
                   data-tooltip-place="bottom"
                 >
                   {_.label}
                 </label>
-                <ReactTooltip
-                  id={`radio-${propKey}-${key}-tip`}
-                  variant="light"
-                  classNameArrow="hidden"
-                  className={REACT_TOOLTIP_SURFACE_CLASS}
-                />
               </div>
             );
           })}

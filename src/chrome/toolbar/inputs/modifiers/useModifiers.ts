@@ -222,11 +222,11 @@ export function useModifiers() {
       props.modifiers[typeName].push({ name, label: label.trim(), classes });
     });
 
-    // Replace node's className with modifier name
+    // Keep expanded classes in className — track modifier as metadata only
     setProp((props: any) => {
-      props.className = name;
       if (!props.root) props.root = {};
       props.root.activeModifiers = [name];
+      props.root.modifierClasses = { [name]: classes };
     });
   };
 

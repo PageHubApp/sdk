@@ -1,7 +1,6 @@
 import { useEditor as useCraftEditor, useNode } from "@craftjs/core";
 import { Editor, useEditorState } from "@tiptap/react";
-import { REACT_TOOLTIP_SURFACE_CLASS } from "@/chrome/primitives/layout/tooltipSurface";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import React, {
   useCallback,
   useEffect,
@@ -10,7 +9,6 @@ import React, {
   useState,
   type CSSProperties,
 } from "react";
-import { Tooltip as ReactTooltip } from "react-tooltip";
 import { useClampToViewport } from "../../overlays/useClampToViewport";
 import {
   MdFormatBold,
@@ -36,6 +34,7 @@ import { OPEN_LINK_PANEL_EVENT } from "../openLinkPanelEvent";
 import { LinkPanel } from "./panels/LinkPanel";
 import { MorePanel } from "./panels/MorePanel";
 import { VariableInsertPanel } from "./panels/VariableInsertPanel";
+import type { PagehubTextRichMode } from "@/core/tiptapExtensions/pagehubTextTiptapExtensions";
 
 type PanelId = "font" | "link" | "more" | "bgcolor" | "textcolor" | null;
 
@@ -51,9 +50,15 @@ interface InlineEditToolbarProps {
   editor: Editor | null;
   className?: string;
   onSave?: () => void;
+  /** When `inline`, hide block-level toolbar controls (lists, headings in font panel, etc.). */
+  richTextMode?: PagehubTextRichMode;
 }
 
-export function InlineEditToolbar({ editor, onSave }: InlineEditToolbarProps) {
+export function InlineEditToolbar({
+  editor,
+  onSave,
+  richTextMode = "full",
+}: InlineEditToolbarProps) {
   const [activePanel, setActivePanel] = useState<PanelId>(null);
   const [linkPanelKey, setLinkPanelKey] = useState(0);
   const [showMediaModal, setShowMediaModal] = useState(false);
@@ -204,28 +209,32 @@ export function InlineEditToolbar({ editor, onSave }: InlineEditToolbarProps) {
 
       <div className="bg-border mx-1 h-5 w-px" />
 
-      <Tooltip content="Font" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-        <button
-          type="button"
-          aria-label="Font"
-          className={`tool-button ${activePanel === "font" ? "bg-base-200 text-base-content" : ""}`}
-          onClick={() => toggle("font")}
-        >
-          <TbAlphabetLatin aria-hidden />
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        aria-label="Font"
+        className={`tool-button ${activePanel === "font" ? "bg-base-200 text-base-content" : ""}`}
+        onClick={() => toggle("font")}
+        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+        data-tooltip-content="Font"
+        data-tooltip-place="top"
+        data-tooltip-offset={10}
+      >
+        <TbAlphabetLatin aria-hidden />
+      </button>
 
       <div className="bg-border mx-1 h-5 w-px" />
 
-      <Tooltip content="Insert Link (⌘K)" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-        <button
-          className={`tool-button ${tipTap.isLink ? "bg-primary/15 text-primary" : activePanel === "link" ? "bg-base-200 text-base-content" : ""}`}
-          onMouseDown={e => e.preventDefault()}
-          onClick={() => toggle("link")}
-        >
-          <MdLink />
-        </button>
-      </Tooltip>
+      <button
+        className={`tool-button ${tipTap.isLink ? "bg-primary/15 text-primary" : activePanel === "link" ? "bg-base-200 text-base-content" : ""}`}
+        onMouseDown={e => e.preventDefault()}
+        onClick={() => toggle("link")}
+        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+        data-tooltip-content="Insert Link (⌘K)"
+        data-tooltip-place="top"
+        data-tooltip-offset={10}
+      >
+        <MdLink />
+      </button>
 
       <div className="bg-border mx-1 h-5 w-px" />
 
@@ -250,14 +259,16 @@ export function InlineEditToolbar({ editor, onSave }: InlineEditToolbarProps) {
 
       <div className="bg-border mx-1 h-5 w-px" />
 
-      <Tooltip content="More" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-        <button
-          className={`tool-button ${activePanel === "more" ? "bg-base-200 text-base-content" : ""}`}
-          onClick={() => toggle("more")}
-        >
-          <TbChevronDown />
-        </button>
-      </Tooltip>
+      <button
+        className={`tool-button ${activePanel === "more" ? "bg-base-200 text-base-content" : ""}`}
+        onClick={() => toggle("more")}
+        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+        data-tooltip-content="More"
+        data-tooltip-place="top"
+        data-tooltip-offset={10}
+      >
+        <TbChevronDown />
+      </button>
     </div>
   );
 
@@ -267,6 +278,7 @@ export function InlineEditToolbar({ editor, onSave }: InlineEditToolbarProps) {
         <div className="rounded-box border-base-300/50 bg-base-100 border shadow-xl">
           <FontPanel
             editor={editor}
+            richTextMode={richTextMode}
             onAction={handleButtonClick}
             onClose={() => setActivePanel(null)}
           />
@@ -276,6 +288,7 @@ export function InlineEditToolbar({ editor, onSave }: InlineEditToolbarProps) {
           <MorePanel
             editor={editor}
             query={query}
+            richTextMode={richTextMode}
             onAction={handleButtonClick}
             onInsertImage={() => {
               setActivePanel(null);
@@ -337,12 +350,6 @@ export function InlineEditToolbar({ editor, onSave }: InlineEditToolbarProps) {
 
   const modals = (
     <>
-      <ReactTooltip
-        id="iet-tip"
-        variant="light"
-        classNameArrow="hidden"
-        className={REACT_TOOLTIP_SURFACE_CLASS}
-      />
 
       <MediaManagerModal
         isOpen={showMediaModal}
@@ -407,9 +414,10 @@ function InlineColorSwatch({
       onClick={onClick}
       className={`relative size-6 cursor-pointer overflow-hidden rounded border-2 transition-colors ${active ? "border-primary" : "border-base-300"} ${!explicit ? "bg-base-200/60" : ""}`}
       style={explicit ? { backgroundColor: fill } : undefined}
-      data-tooltip-id="iet-tip"
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
       data-tooltip-content={label}
       data-tooltip-place="top"
+      data-tooltip-offset={10}
     >
       {!explicit && (
         <span
@@ -442,14 +450,16 @@ function FormatButton({
   onAction: (cb: () => void) => (e: React.MouseEvent) => void;
 }) {
   return (
-    <Tooltip content={tooltip} placement="top" tooltipClassName="text-xs! px-2! py-1!">
-      <button
-        type="button"
-        onClick={onAction(command)}
-        className={`tool-button ${active ? "bg-base-200 text-base-content" : ""}`}
-      >
-        {icon}
-      </button>
-    </Tooltip>
+    <button
+      type="button"
+      onClick={onAction(command)}
+      className={`tool-button ${active ? "bg-base-200 text-base-content" : ""}`}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      data-tooltip-content={tooltip}
+      data-tooltip-place="top"
+      data-tooltip-offset={10}
+    >
+      {icon}
+    </button>
   );
 }

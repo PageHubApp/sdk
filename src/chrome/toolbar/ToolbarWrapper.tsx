@@ -1,7 +1,7 @@
-import { NodeTree, ROOT_NODE, useEditor, useNode } from "@craftjs/core";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { checkIfAncestorLinked } from "@/utils/componentUtils";
-import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { NodeTree, ROOT_NODE, useEditor, useNode } from "@craftjs/core";
+import { useAtomState, useAtomValue } from "@zedux/react";
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   TbCaretUp,
@@ -15,24 +15,33 @@ import {
   TbTrashOff,
   TbX,
 } from "react-icons/tb";
-import { useAtomState, useAtomValue } from "@zedux/react";
-import { useSetAtomState } from "../../utils/atoms";
-import { AiChatAttachedNodesAtom, AssistantOpenAtom, SettingsAtom } from "../../utils/atoms";
-import { ComponentsAtom, EDITOR_ALL_PAGES_STORAGE, IsolateAtom, SideBarOpen } from "../../utils/lib";
-import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
 import { useSDK } from "../../core/context";
+import {
+  AiChatAttachedNodesAtom,
+  AssistantOpenAtom,
+  SettingsAtom,
+  useSetAtomState,
+} from "../../utils/atoms";
+import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
+import {
+  ComponentsAtom,
+  EDITOR_ALL_PAGES_STORAGE,
+  IsolateAtom,
+  SideBarOpen,
+} from "../../utils/lib";
+import { phStorage } from "../../utils/phStorage";
+import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
+import { TabAtom } from "../viewport/atoms";
 import { addHandler, buildClonedTree, saveHandler } from "../viewport/viewportExports";
-import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
+import { useAccordionContext } from "./AccordionContext";
 import { RenderChildren } from "./helpers/CloneHelper";
 import Tab from "./Tab";
-import { UnifiedTab, scrollToSection, setActiveTabFromClick, toSectionId } from "./UnifiedTab";
-import { useAccordionContext } from "./AccordionContext";
-import { TabAtom } from "../viewport/atoms";
+import { TabBarBreakpointPicker } from "./TabBarBreakpointPicker";
 import { TabBarCollapseToggle } from "./TabBarCollapseToggle";
 import { TabBarDarkModeToggle } from "./TabBarDarkModeToggle";
-import { TabBarBreakpointPicker } from "./TabBarBreakpointPicker";
-import { phStorage } from "../../utils/phStorage";
+import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
 import { SettingsSearchAtom, SettingsSearchOpenAtom } from "./unified-settings/registry/atoms";
+import { UnifiedTab, scrollToSection, setActiveTabFromClick, toSectionId } from "./UnifiedTab";
 
 export const ToolbarWrapper = ({
   children = null,
@@ -214,16 +223,18 @@ export const ToolbarWrapper = ({
           {/* ── Left: utilities ── */}
           <div className="flex items-center gap-1">
             <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
-            <Tooltip content="Search settings">
-              <button
-                type="button"
-                onClick={toggleSearch}
-                className={`cursor-pointer rounded-lg p-1.5 transition-colors ${searchOpen ? "text-primary" : "text-secondary-content hover:text-base-content"}`}
-                aria-label="Search settings"
-              >
-                <TbSearch size={14} />
-              </button>
-            </Tooltip>
+            <button
+              type="button"
+              onClick={toggleSearch}
+              className={`cursor-pointer rounded-lg p-1.5 transition-colors ${searchOpen ? "text-primary" : "text-secondary-content hover:text-base-content"}`}
+              aria-label="Search settings"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Search settings"
+              data-tooltip-place="top"
+              data-tooltip-offset={10}
+            >
+              <TbSearch size={14} />
+            </button>
             <div className="bg-border mx-0.5 h-4 w-px shrink-0" />
             <TabBarBreakpointPicker />
             <TabBarDarkModeToggle />
@@ -332,133 +343,135 @@ export const ToolbarWrapper = ({
 
       <div
         id="toolbarFooter"
-        className="border-t-border bg-neutral flex w-full shrink-0 flex-row items-center justify-between border-t px-2.5 py-1.5 text-lg"
+        className="border-t-border bg-neutral box-border flex w-full max-w-none shrink-0 flex-row flex-nowrap items-center justify-between border-t px-2.5 py-1.5 text-lg"
       >
         {foot}
 
-        {id !== ROOT_NODE && parentName !== "Background" && (
-          <Tooltip content="Select Parent">
-            <button
-              className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
-              onClick={() => {
-                actions.selectNode(parent);
-              }}
-            >
-              <TbCaretUp />
-            </button>
-          </Tooltip>
+        {id !== ROOT_NODE && (
+          <button
+            className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
+            onClick={() => {
+              actions.selectNode(null);
+              setSideBarOpen(false);
+            }}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Close"
+            data-tooltip-place="top"
+            data-tooltip-offset={10}
+          >
+            <TbX />
+          </button>
         )}
 
-        {id !== ROOT_NODE && aiEnabled && renderAiContext && (
-          <Tooltip content="Include in AI chat">
-            {renderAiContext({
-              onClick: pinSelectionInAiChat,
-              className:
-                "cursor-pointer rounded-lg p-2 text-neutral-content transition-colors hover:bg-black/7 hover:text-accent-content dark:hover:bg-white/12",
-            })}
-          </Tooltip>
+        {id !== ROOT_NODE && parentName !== "Background" && (
+          <button
+            className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
+            onClick={() => actions.selectNode(parent)}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Select Parent"
+            data-tooltip-place="top"
+            data-tooltip-offset={10}
+          >
+            <TbCaretUp />
+          </button>
         )}
 
         {deletable && (
           <>
-            <Tooltip
-              content={props.canDelete !== false ? "Delete" : "Unable to delete"}
+            <button
+              className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
-
                 if (props.canDelete !== false) deleteSelectedNode();
               }}
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content={props.canDelete !== false ? "Delete" : "Unable to delete"}
+              data-tooltip-place="top"
+              data-tooltip-offset={10}
             >
-              <button className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2">
-                {props.canDelete !== false ? <TbTrash /> : <TbTrashOff />}
-              </button>
-            </Tooltip>
+              {props.canDelete !== false ? <TbTrash /> : <TbTrashOff />}
+            </button>
 
             {/* Hide Clone and Create Component buttons for linked components */}
             {!isLinked && (
               <>
-                <Tooltip
-                  content="Duplicate"
-                  onClick={(e: React.MouseEvent) => {
-                    handleClone(e);
-                  }}
+                <button
+                  className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
+                  onClick={handleClone}
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content="Duplicate"
+                  data-tooltip-place="top"
+                  data-tooltip-offset={10}
                 >
-                  <button className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2">
-                    <TbCopy />
-                  </button>
-                </Tooltip>
+                  <TbCopy />
+                </button>
 
-                <Tooltip
-                  content={id !== ROOT_NODE ? "Copy" : "Copy (select a component)"}
+                <button
+                  className={`rounded-lg p-2 transition-colors active:scale-90 ${
+                    id !== ROOT_NODE
+                      ? "text-neutral-content hover:text-accent-content cursor-pointer"
+                      : "text-neutral-content/50 cursor-not-allowed"
+                  }`}
                   onClick={(e: React.MouseEvent) => {
-                    if (id !== ROOT_NODE) {
-                      handleCopy(e);
-                    }
+                    if (id !== ROOT_NODE) handleCopy(e);
                   }}
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content={id !== ROOT_NODE ? "Copy" : "Copy (select a component)"}
+                  data-tooltip-place="top"
+                  data-tooltip-offset={10}
                 >
-                  <button
-                    className={`rounded-lg p-2 transition-colors active:scale-90 ${
-                      id !== ROOT_NODE
-                        ? "text-neutral-content hover:text-accent-content cursor-pointer"
-                        : "text-neutral-content/50 cursor-not-allowed"
-                    }`}
-                  >
-                    <TbClipboard />
-                  </button>
-                </Tooltip>
+                  <TbClipboard />
+                </button>
 
-                <Tooltip
-                  content="Paste"
+                <button
+                  className={`rounded-lg p-2 transition-colors active:scale-90 ${
+                    phStorage.get("clipboard") && phStorage.get("clipboard") !== "{}"
+                      ? "text-neutral-content hover:text-accent-content cursor-pointer"
+                      : "text-neutral-content/50 cursor-not-allowed"
+                  }`}
                   onClick={(e: React.MouseEvent) => {
                     const clipData = phStorage.get("clipboard");
-                    if (clipData && clipData !== "{}") {
-                      handlePaste(e);
-                    }
+                    if (clipData && clipData !== "{}") handlePaste(e);
                   }}
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content="Paste"
+                  data-tooltip-place="top"
+                  data-tooltip-offset={10}
                 >
-                  <button
-                    className={`rounded-lg p-2 transition-colors active:scale-90 ${
-                      phStorage.get("clipboard") && phStorage.get("clipboard") !== "{}"
-                        ? "text-neutral-content hover:text-accent-content cursor-pointer"
-                        : "text-neutral-content/50 cursor-not-allowed"
-                    }`}
-                  >
-                    <TbClipboardCheck />
-                  </button>
-                </Tooltip>
+                  <TbClipboardCheck />
+                </button>
 
-                <Tooltip
-                  content={`${canMake ? "Convert to Component" : "Component Exists"}`}
+                <button
+                  ref={ref}
+                  className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
                   onClick={async (e: React.MouseEvent) => {
                     const comp = await handleSaveTemplate("component");
-
                     setComponents([...components, comp]);
                   }}
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content={canMake ? "Convert to Component" : "Component Exists"}
+                  data-tooltip-place="top"
+                  data-tooltip-offset={10}
                 >
-                  <button
-                    ref={ref}
-                    className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
-                  >
-                    {canMake ? <TbComponents /> : <TbComponentsOff />}
-                  </button>
-                </Tooltip>
+                  {canMake ? <TbComponents /> : <TbComponentsOff />}
+                </button>
               </>
             )}
           </>
         )}
 
-        {id !== ROOT_NODE && (
-          <Tooltip
-            content="Close"
-            onClick={() => {
-              actions.selectNode(null);
-              setSideBarOpen(false);
-            }}
-          >
-            <button className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2">
-              <TbX />
-            </button>
-          </Tooltip>
+        {id !== ROOT_NODE && aiEnabled && renderAiContext && (
+          <>
+            {renderAiContext({
+              onClick: pinSelectionInAiChat,
+              className:
+                "text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2",
+              "data-tooltip-id": PAGEHUB_RTT_GLOBAL_ID,
+              "data-tooltip-content": "Include in AI chat",
+              "data-tooltip-place": "top",
+              "data-tooltip-offset": 10,
+            })}
+          </>
         )}
 
         {id === ROOT_NODE && (

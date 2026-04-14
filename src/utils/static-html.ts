@@ -8,6 +8,7 @@
 import parse from "style-to-object";
 import { getCdnUrl } from "./cdn";
 import { isCSSAnimation, getCSSAnimationProps } from "./animations";
+import { purifyToTailwind } from "./tailwind/daisyuiToTailwind";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -25,6 +26,8 @@ export interface StaticRenderContext {
   fontUrls: Set<string>;
   /** Render child node IDs to HTML (provided by the tree walker) */
   renderChildren: (nodeIds: string[]) => string;
+  /** When true, replace DaisyUI/spatial classes with pure Tailwind equivalents */
+  pureTailwind?: boolean;
 }
 
 /** Signature every `.craft.toHTML` must implement */
@@ -172,6 +175,11 @@ export function staticClasses(
   // Append helpers (typography preset classes)
   if (props.helpers) {
     cls = [cls, props.helpers].filter(Boolean).join(" ");
+  }
+
+  // Purify DaisyUI/spatial → pure Tailwind when requested
+  if (ctx.pureTailwind && cls) {
+    cls = purifyToTailwind(cls);
   }
 
   // Collect every class for the CSS extraction accumulator

@@ -1,5 +1,5 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -294,16 +294,18 @@ export function PageSelector({
       </button>
 
       {!pickerMode && liveUrl && (
-        <Tooltip content="Open page in a new tab" arrow={false} placement="bottom">
-          <a
-            className="text-neutral-content hover:text-base-content shrink-0 p-0 text-xs transition-colors"
-            href={liveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {settings?.draftId ? <TbExternalLink /> : <TbExternalLinkOff />}
-          </a>
-        </Tooltip>
+        <a
+          className="text-neutral-content hover:text-base-content shrink-0 p-0 text-xs transition-colors"
+          href={liveUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Open page in a new tab"
+          data-tooltip-place="bottom"
+          data-tooltip-offset={10}
+        >
+          {settings?.draftId ? <TbExternalLink /> : <TbExternalLinkOff />}
+        </a>
       )}
 
       {isOpen && (

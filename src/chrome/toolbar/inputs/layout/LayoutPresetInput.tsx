@@ -24,16 +24,13 @@ interface LayoutPresetInputProps {
   lp: LayoutPresetHandle;
 }
 
-function useIsCraftContainer(): boolean {
-  const resolvedName = useNode(node => {
-    const t = node.data.type as { resolvedName?: string } | string | undefined;
-    return typeof t === "string" ? t : t?.resolvedName;
-  }) as unknown as string | undefined;
-  return resolvedName === "Container";
+/** True when the node has a container `type` prop (page/section/component/etc). */
+function useHasContainerType(): boolean {
+  return useNode(node => node.data.props?.type != null) as unknown as boolean;
 }
 
 export function LayoutPresetInput({ lp }: LayoutPresetInputProps) {
-  const isContainer = useIsCraftContainer();
+  const hasContainerType = useHasContainerType();
 
   return (
     <ToolbarSection
@@ -171,7 +168,7 @@ export function LayoutPresetInput({ lp }: LayoutPresetInputProps) {
         </AutoHideScrollbar>
       )}
 
-      {isContainer && <ContainerTypeInput />}
+      {hasContainerType && <ContainerTypeInput />}
     </ToolbarSection>
   );
 }

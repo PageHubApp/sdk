@@ -17,6 +17,7 @@ export { ToolboxMenu } from "../chrome/rendering/toolboxMenuAtom";
 export { AddElementButton } from "../chrome/primitives/AddElementButton";
 export { TiptapProvider } from "../chrome/inline-tools/TiptapContext";
 export { InlineEditToolbar } from "../chrome/inline-tools/inline-edit-toolbar/InlineEditToolbar";
+export type { PagehubTextRichMode } from "../core/tiptapExtensions/pagehubTextTiptapExtensions";
 /** @deprecated Use InlineEditToolbar instead */
 export { InlineEditToolbar as TiptapToolbar } from "../chrome/inline-tools/inline-edit-toolbar/InlineEditToolbar";
 export { ContainerSettingsTopNodeTool } from "../chrome/canvas/node-tools/ContainerSettingsTopNodeTool";

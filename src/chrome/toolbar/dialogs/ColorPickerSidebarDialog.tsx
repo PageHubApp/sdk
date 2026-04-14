@@ -1,4 +1,4 @@
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { BsEyedropper } from "react-icons/bs";
 import { TbCheck, TbColorPicker, TbDeviceFloppy, TbTrash, TbX } from "react-icons/tb";
 import colors from "tailwindcss/colors";
@@ -36,27 +36,31 @@ export function ColorPickerSidebarDialog() {
   const headerRight = (
     <>
       {dialog.showPalette && (
-        <Tooltip content="Save to Palette" placement="bottom">
-          <button
-            onClick={handleSaveToPalette}
-            disabled={!hexInput || !/^#[0-9A-Fa-f]{6}$/.test(hexInput)}
-            className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Save to palette"
-          >
-            <TbDeviceFloppy />
-          </button>
-        </Tooltip>
+        <button
+          onClick={handleSaveToPalette}
+          disabled={!hexInput || !/^#[0-9A-Fa-f]{6}$/.test(hexInput)}
+          className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label="Save to palette"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Save to Palette"
+          data-tooltip-place="bottom"
+          data-tooltip-offset={10}
+        >
+          <TbDeviceFloppy />
+        </button>
       )}
       {isEyeDropperSupported() && (
-        <Tooltip content="Eyedropper" placement="bottom">
-          <button
-            onClick={handleEyeDropper}
-            className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors"
-            aria-label="Pick color from screen"
-          >
-            <BsEyedropper />
-          </button>
-        </Tooltip>
+        <button
+          onClick={handleEyeDropper}
+          className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors"
+          aria-label="Pick color from screen"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Eyedropper"
+          data-tooltip-place="bottom"
+          data-tooltip-offset={10}
+        >
+          <BsEyedropper />
+        </button>
       )}
     </>
   );
@@ -110,33 +114,36 @@ export function ColorPickerSidebarDialog() {
           <span className="text-base-content mb-1.5 block text-xs font-medium">Special</span>
           <div className="grid grid-cols-12 gap-1">
             {SPECIAL_COLORS.map(color => (
-              <Tooltip key={color.value} content={color.name} placement="top">
-                <button
-                  onClick={() => handleColorSelect("class", color.value)}
-                  onDoubleClick={() => handleColorDoubleClick("class", color.value)}
-                  className="group relative aspect-square w-full rounded-lg border-2 transition-all hover:scale-110"
-                  style={{
-                    backgroundColor: color.hex,
-                    borderColor:
-                      selectedColor === color.value ? "var(--primary)" : "var(--base-300)",
-                  }}
-                >
-                  {color.value === "transparent" && (
-                    <div
-                      className="absolute inset-0 rounded-lg"
-                      style={{
-                        background:
-                          "linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)",
-                        backgroundSize: "8px 8px",
-                        backgroundPosition: "0 0, 4px 4px",
-                      }}
-                    />
-                  )}
-                  {selectedColor === color.value && (
-                    <TbCheck className="text-base-content absolute inset-0 m-auto size-5 drop-shadow-lg" />
-                  )}
-                </button>
-              </Tooltip>
+              <button
+                key={color.value}
+                onClick={() => handleColorSelect("class", color.value)}
+                onDoubleClick={() => handleColorDoubleClick("class", color.value)}
+                className="group relative aspect-square w-full rounded-lg border-2 transition-all hover:scale-110"
+                style={{
+                  backgroundColor: color.hex,
+                  borderColor:
+                    selectedColor === color.value ? "var(--primary)" : "var(--base-300)",
+                }}
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content={color.name}
+                data-tooltip-place="top"
+                data-tooltip-offset={10}
+              >
+                {color.value === "transparent" && (
+                  <div
+                    className="absolute inset-0 rounded-lg"
+                    style={{
+                      background:
+                        "linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)",
+                      backgroundSize: "8px 8px",
+                      backgroundPosition: "0 0, 4px 4px",
+                    }}
+                  />
+                )}
+                {selectedColor === color.value && (
+                  <TbCheck className="text-base-content absolute inset-0 m-auto size-5 drop-shadow-lg" />
+                )}
+              </button>
             ))}
           </div>
         </div>
@@ -204,21 +211,23 @@ function PaletteSection({
 
           return (
             <div key={idx} className="group relative">
-              <Tooltip content={paletteColor.name} placement="top">
-                <button
-                  onClick={() => onSelect("palette", paletteValue)}
-                  onDoubleClick={() => onDoubleClick("palette", paletteValue)}
-                  className="relative aspect-square w-full rounded-lg border-2 transition-all hover:scale-105"
-                  style={{
-                    backgroundColor: hexColor,
-                    borderColor: isSelected ? "var(--primary)" : "var(--base-300)",
-                  }}
-                >
-                  {isSelected && (
-                    <TbCheck className="absolute inset-0 m-auto size-5 text-white drop-shadow-lg" />
-                  )}
-                </button>
-              </Tooltip>
+              <button
+                onClick={() => onSelect("palette", paletteValue)}
+                onDoubleClick={() => onDoubleClick("palette", paletteValue)}
+                className="relative aspect-square w-full rounded-lg border-2 transition-all hover:scale-105"
+                style={{
+                  backgroundColor: hexColor,
+                  borderColor: isSelected ? "var(--primary)" : "var(--base-300)",
+                }}
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content={paletteColor.name}
+                data-tooltip-place="top"
+                data-tooltip-offset={10}
+              >
+                {isSelected && (
+                  <TbCheck className="absolute inset-0 m-auto size-5 text-white drop-shadow-lg" />
+                )}
+              </button>
               <button
                 onClick={e => {
                   e.stopPropagation();
@@ -303,26 +312,25 @@ function TailwindColorsSection({
                 const isSelected = selectedColor === colorValue;
 
                 return (
-                  <Tooltip
+                  <button
                     key={shade}
-                    content={`${colorGroup.name.charAt(0).toUpperCase() + colorGroup.name.slice(1)} ${shade}`}
-                    placement="top"
+                    onClick={() => onSelect("class", colorValue)}
+                    onDoubleClick={() => onDoubleClick("class", colorValue)}
+                    className="group relative aspect-square w-full rounded-lg border transition-all hover:scale-110"
+                    style={{
+                      backgroundColor: hexColor,
+                      borderColor: isSelected ? "var(--primary)" : "var(--base-300)",
+                      borderWidth: isSelected ? "2px" : "1px",
+                    }}
+                    data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                    data-tooltip-content={`${colorGroup.name.charAt(0).toUpperCase() + colorGroup.name.slice(1)} ${shade}`}
+                    data-tooltip-place="top"
+                    data-tooltip-offset={10}
                   >
-                    <button
-                      onClick={() => onSelect("class", colorValue)}
-                      onDoubleClick={() => onDoubleClick("class", colorValue)}
-                      className="group relative aspect-square w-full rounded-lg border transition-all hover:scale-110"
-                      style={{
-                        backgroundColor: hexColor,
-                        borderColor: isSelected ? "var(--primary)" : "var(--base-300)",
-                        borderWidth: isSelected ? "2px" : "1px",
-                      }}
-                    >
-                      {isSelected && (
-                        <TbCheck className="absolute inset-0 m-auto size-4 text-white drop-shadow-lg" />
-                      )}
-                    </button>
-                  </Tooltip>
+                    {isSelected && (
+                      <TbCheck className="absolute inset-0 m-auto size-4 text-white drop-shadow-lg" />
+                    )}
+                  </button>
                 );
               })}
             </div>

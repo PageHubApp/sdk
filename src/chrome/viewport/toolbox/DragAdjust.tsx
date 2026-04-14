@@ -1,5 +1,5 @@
 import { SpacingOverlay } from "../../canvas/SpacingOverlay";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useEffect, useRef, useState } from "react";
 
 // Tailwind spacing scale in pixels (1 unit = 4px)
@@ -174,7 +174,7 @@ function DragAdjust({
     }
   };
 
-  const button = (
+  return (
     <>
       <SpacingOverlay
         targetElement={targetElement}
@@ -202,19 +202,17 @@ function DragAdjust({
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
         aria-label="Drag to adjust"
+        {...(tooltip
+          ? {
+              "data-tooltip-id": PAGEHUB_RTT_GLOBAL_ID,
+              "data-tooltip-content": tooltip,
+              "data-tooltip-place": "bottom",
+              "data-tooltip-offset": 10,
+            }
+          : {})}
       />
     </>
   );
-
-  if (tooltip) {
-    return (
-      <Tooltip content={tooltip} placement="bottom">
-        {button}
-      </Tooltip>
-    );
-  }
-
-  return button;
 }
 
 export default DragAdjust;

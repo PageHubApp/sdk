@@ -8,7 +8,7 @@ import { useModifiers, type ResolvedModifier, type CategoryMeta } from "./useMod
 import { PatternCards } from "./PatternCards";
 import { ExclusiveDropdown } from "./ExclusiveDropdown";
 import { ExclusivePills } from "./ExclusivePills";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 
 function ModifierChip({
   mod,
@@ -20,7 +20,7 @@ function ModifierChip({
   onToggle: () => void;
 }) {
   const classCount = mod.classes ? mod.classes.split(/\s+/).filter(Boolean).length : 0;
-  const btn = (
+  return (
     <button
       type="button"
       onClick={onToggle}
@@ -29,20 +29,21 @@ function ModifierChip({
         active && PH_TOOLBAR_DASHED_BTN_ACTIVE
       )}
       title={mod.description ? undefined : mod.classes || mod.name}
+      {...(mod.description
+        ? {
+            "data-tooltip-id": PAGEHUB_RTT_GLOBAL_ID,
+            "data-tooltip-content": mod.description,
+            "data-tooltip-place": "top",
+            "data-tooltip-delay-show": 400,
+            "data-tooltip-offset": 10,
+          }
+        : {})}
     >
       {mod.label}
       {classCount > 0 && <span className="text-[9px] opacity-60">&times;{classCount}</span>}
       {mod.origin === "site" && <span className="text-[9px] opacity-50">custom</span>}
     </button>
   );
-  if (mod.description) {
-    return (
-      <Tooltip content={mod.description} placement="top" delay={400}>
-        {btn}
-      </Tooltip>
-    );
-  }
-  return btn;
 }
 
 function ChipGroup({

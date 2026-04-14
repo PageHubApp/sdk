@@ -23,29 +23,25 @@ export function useElementPicker(filter: PickerFilter): PickerOption[] {
 
       const displayName = node.data.displayName || node.data.name || "";
       const p = node.data.props || {};
-      /** DOM id for targeting (Element ID); Modal still uses `anchor` only */
-      const targetId = displayName === "Modal" ? p.anchor : p.id || p.anchor;
+      const isOverlay = node.data.custom?.overlay === true;
+      const targetId = isOverlay ? p.anchor : p.id || p.anchor;
       const label = getDisplayName(node);
 
+      if (!targetId) continue;
+
       if (filter === "modal") {
-        if (displayName === "Modal" && targetId) {
-          options.push({ nodeId, label, anchor: targetId, componentType: "Modal" });
-        }
+        if (!isOverlay) continue;
       } else if (filter === "section") {
-        // Top-level containers (direct children of a page) with an id or legacy anchor
-        if (displayName === "Container" && targetId) {
-          const parent = node.data.parent ? state.nodes[node.data.parent] : null;
-          const isTopLevel = parent?.data?.props?.type === "page";
-          if (isTopLevel) {
-            options.push({ nodeId, label, anchor: targetId, componentType: "Section" });
-          }
-        }
-      } else {
-        // "all" — any element with a target id (Element ID or legacy anchor; Modal: anchor)
-        if (targetId) {
-          options.push({ nodeId, label, anchor: targetId, componentType: displayName });
-        }
+        const parent = node.data.parent ? state.nodes[node.data.parent] : null;
+        if (parent?.data?.props?.type !== "page") continue;
       }
+
+      options.push({
+        nodeId,
+        label,
+        anchor: targetId,
+        componentType: filter === "section" ? "Section" : displayName,
+      });
     }
 
     return options;

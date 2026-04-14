@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { TbCheck, TbChevronRight, TbCopy, TbLayersSubtract, TbTrash } from "react-icons/tb";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { BreakpointBadge, Card } from "../../ToolbarStyle";
@@ -45,18 +45,20 @@ function ActionButton({
   className: string;
 }) {
   return (
-    <Tooltip content={tooltip} placement="top">
-      <button
-        type="button"
-        onClick={e => {
-          e.stopPropagation();
-          onClick();
-        }}
-        className={`rounded p-1 transition-all hover:scale-110 ${className}`}
-      >
-        {icon}
-      </button>
-    </Tooltip>
+    <button
+      type="button"
+      onClick={e => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className={`rounded p-1 transition-all hover:scale-110 ${className}`}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      data-tooltip-content={tooltip}
+      data-tooltip-place="top"
+      data-tooltip-offset={10}
+    >
+      {icon}
+    </button>
   );
 }
 

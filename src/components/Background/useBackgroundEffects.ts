@@ -14,6 +14,7 @@ import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
 import { injectDesignSystemVars } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
 import { isCssValid, isJsValid } from "../../utils/lib";
+
 import type { ContainerProps, NamedColor } from "../Background";
 import { addElementsToHead } from "./headInjection";
 
@@ -34,7 +35,7 @@ export function useBackgroundEffects({
   nodeId,
 }: UseBackgroundEffectsOptions) {
   const isRootBackground = nodeId === ROOT_NODE;
-  const rootModifiers = (props as { modifiers?: unknown }).modifiers;
+
 
   // ---- Material Symbols icon font loading ----
   const prevFontUrlRef = useRef<string | null>(null);
@@ -142,30 +143,4 @@ export function useBackgroundEffects({
     });
   }, [props.theme, enabled]);
 
-  // ---- Modifier CSS utilities ----
-  useEffect(() => {
-    if (typeof window === "undefined" || !enabled) return;
-    if (!rootModifiers || typeof rootModifiers !== "object") return;
-
-    const rules: string[] = [];
-    for (const mods of Object.values(rootModifiers) as any[]) {
-      if (!Array.isArray(mods)) continue;
-      for (const mod of mods) {
-        if (mod.name && mod.classes && /^[a-z][\w-]*$/i.test(mod.name)) {
-          rules.push(`@utility ${mod.name} { @apply ${mod.classes}; }`);
-        }
-      }
-    }
-    if (rules.length === 0) return;
-
-    const id = "modifier-utilities";
-    let el = document.getElementById(id) as HTMLStyleElement | null;
-    if (!el) {
-      el = document.createElement("style");
-      el.id = id;
-      el.setAttribute("type", "text/tailwindcss");
-      document.head.appendChild(el);
-    }
-    el.textContent = rules.join("\n");
-  }, [rootModifiers, enabled, isRootBackground]);
 }

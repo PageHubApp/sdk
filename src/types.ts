@@ -245,6 +245,11 @@ export interface PageHubEditorChromeSlots {
     disabled?: boolean;
     /** Wand + text row (e.g. canvas context menu); omit for icon-only chip. */
     label?: string;
+    /** Forwarded to host button for `react-tooltip` / `PAGEHUB_RTT_GLOBAL_ID` surface. */
+    "data-tooltip-id"?: string;
+    "data-tooltip-content"?: string;
+    "data-tooltip-place"?: string;
+    "data-tooltip-offset"?: number | string;
   }) => ReactNode;
   /** Empty canvas “Build with AI” card. */
   renderEmptyStateAiCard?: (ctx: { onOpenAssistant: () => void }) => ReactNode;

@@ -2,27 +2,14 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useEffect } from "react";
 import { registerProximityTarget, unregisterProximityTarget } from "./proximityHoverRegistry";
 
+/**
+ * Components opt out of proximity hover via `custom.hoverable = false`.
+ * Everything with a DOM element is hoverable by default.
+ */
 function isInteractiveElementFromNode(node: {
-  data?: { name?: string; displayName?: string };
+  data?: { custom?: Record<string, any> };
 }): boolean {
-  const n = node.data?.name;
-  const d = node.data?.displayName;
-  return (
-    n === "Container" ||
-    d === "Container" ||
-    n === "Button" ||
-    d === "Button" ||
-    n === "Text" ||
-    d === "Text" ||
-    n === "Image" ||
-    d === "Image" ||
-    n === "Nav" ||
-    d === "Nav" ||
-    n === "Header" ||
-    d === "Header" ||
-    n === "Footer" ||
-    d === "Footer"
-  );
+  return node.data?.custom?.hoverable !== false;
 }
 
 /**

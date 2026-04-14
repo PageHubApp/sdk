@@ -1,12 +1,8 @@
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
-import { REACT_TOOLTIP_SURFACE_CLASS } from "@/chrome/primitives/layout/tooltipSurface";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useCallback } from "react";
 import { TbInfoCircle } from "react-icons/tb";
-import { Tooltip as ReactTooltip } from "react-tooltip";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
 import { ToolbarLabel } from "./Label";
-
-const TRUNCATE_TIP_ID = "truncated-label-tip";
 
 export { BreakpointBadge } from "./BreakpointBadge";
 
@@ -15,7 +11,7 @@ function useTruncateRef() {
   return useCallback((el: HTMLElement | null) => {
     if (!el) return;
     if (el.scrollWidth > el.clientWidth) {
-      el.setAttribute("data-tooltip-id", TRUNCATE_TIP_ID);
+      el.setAttribute("data-tooltip-id", PAGEHUB_RTT_GLOBAL_ID);
       el.setAttribute("data-tooltip-content", el.textContent || "");
     } else {
       el.removeAttribute("data-tooltip-id");
@@ -74,16 +70,8 @@ export const MobileDesktopLabels = ({
   );
 };
 
-/** Render once at top-level to power all truncated-label tooltips. */
-export const TruncatedLabelTooltip = () => (
-  <ReactTooltip
-    id={TRUNCATE_TIP_ID}
-    variant="light"
-    classNameArrow="hidden"
-    delayShow={400}
-    className={REACT_TOOLTIP_SURFACE_CLASS}
-  />
-);
+/** @deprecated Global tooltip handles truncated labels — kept for import compat, renders nothing. */
+export const TruncatedLabelTooltip = () => null;
 
 export const BgWrap = ({ children, className = "", wrap = null }) => {
   if (wrap) {
@@ -343,10 +331,12 @@ export const CardLight = ({ value, onClick, className = "" }) => {
     <button
       onClick={onClick}
       className={`bg-base-200 text-base-content inline-flex cursor-pointer rounded-lg px-1 py-0.5 text-xs font-medium ${className}`}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      data-tooltip-content={`Add ${value}`}
+      data-tooltip-place="top"
+      data-tooltip-offset={10}
     >
-      <Tooltip content={`Add ${value}`} placement="top" arrow={false}>
-        {renderDisplayValue()}
-      </Tooltip>
+      {renderDisplayValue()}
     </button>
   );
 };

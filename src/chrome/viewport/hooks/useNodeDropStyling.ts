@@ -38,43 +38,41 @@ export function useNodeDropStyling() {
         const parentNode = newNode?.data?.parent ? query.node(newNode.data.parent).get() : null;
 
         if (parentNode) {
-          const nodeType = (newNode?.data?.type as any)?.resolvedName || newNode?.data?.type;
-          const isContainer = nodeType === "Container";
+          const isCanvas = newNode?.data?.isCanvas === true;
+          // Only auto-style fresh canvas nodes (not pre-named template sections)
           const currentDisplayName =
             newNode?.data?.custom?.displayName || newNode?.data?.displayName || "";
+          const isGeneric = !currentDisplayName || /^(Container|Section|Content|Row|Column)$/.test(currentDisplayName);
 
-          const isFromTemplate =
-            currentDisplayName &&
-            currentDisplayName !== "Container" &&
-            currentDisplayName !== "Section" &&
-            currentDisplayName !== "Content" &&
-            currentDisplayName !== "Row" &&
-            currentDisplayName !== "Column";
+          if (isCanvas && isGeneric) {
+            const parentType = parentNode.data.props?.type;
+            const parentRole = parentNode.data.custom?.displayName;
 
-          // Dropped into Page → Section
-          if (parentNode.data.props?.type === "page" && isContainer && !isFromTemplate) {
-            actions.setProp(newNodeId, (props: any) => {
-              props.className = "w-full flex flex-col";
-              props.type = "section";
-            });
-            actions.setCustom(newNodeId, (custom: any) => (custom.displayName = "Section"));
-          }
+            // Dropped into Page → Section
+            if (parentType === "page") {
+              actions.setProp(newNodeId, (props: any) => {
+                props.className = "w-full flex flex-col";
+                props.type = "section";
+              });
+              actions.setCustom(newNodeId, (custom: any) => (custom.displayName = "Section"));
+            }
 
-          // Dropped into Section → Content
-          if (parentNode.data.custom?.displayName === "Section" && isContainer && !isFromTemplate) {
-            actions.setProp(newNodeId, (props: any) => {
-              props.className =
-                "flex flex-col w-full gap-container items-center py-container-y px-container-x mx-auto max-w-page";
-            });
-            actions.setCustom(newNodeId, (custom: any) => (custom.displayName = "Content"));
-          }
+            // Dropped into Section → Content
+            if (parentRole === "Section" || parentType === "section") {
+              actions.setProp(newNodeId, (props: any) => {
+                props.className =
+                  "flex flex-col w-full gap-container items-center py-container-y px-container-x mx-auto max-w-page";
+              });
+              actions.setCustom(newNodeId, (custom: any) => (custom.displayName = "Content"));
+            }
 
-          // Dropped into Content → styled container
-          if (parentNode.data.custom?.displayName === "Content" && isContainer && !isFromTemplate) {
-            actions.setProp(newNodeId, (props: any) => {
-              props.className =
-                "flex flex-col items-center gap-container w-full max-w-page p-container-y";
-            });
+            // Dropped into Content → styled container
+            if (parentRole === "Content") {
+              actions.setProp(newNodeId, (props: any) => {
+                props.className =
+                  "flex flex-col items-center gap-container w-full max-w-page p-container-y";
+              });
+            }
           }
         }
 

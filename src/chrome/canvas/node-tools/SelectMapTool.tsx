@@ -1,6 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { RenderNodeControlInline } from "../../rendering/RenderNodeControlInline";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { TbMap2 } from "react-icons/tb";
 
 export const SelectMapTool = () => {
@@ -45,11 +45,16 @@ export const SelectMapTool = () => {
       className="pointer-events-auto items-center whitespace-nowrap select-none"
     >
       <div className="node-control" onMouseDown={e => e.stopPropagation()}>
-        <Tooltip content="Select Map">
-          <button type="button" className="tool-button" onClick={handleSelectMap}>
-            <TbMap2 />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          className="tool-button"
+          onClick={handleSelectMap}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Select Map"
+          data-tooltip-offset={10}
+        >
+          <TbMap2 />
+        </button>
       </div>
     </RenderNodeControlInline>
   );

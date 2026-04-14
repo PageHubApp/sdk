@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import type { ComponentType } from "react";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { TbBoxAlignBottom, TbBoxAlignLeft, TbBoxAlignRight, TbBoxAlignTop } from "react-icons/tb";
 import { ViewAtom } from "../../../viewport/atoms";
 import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
@@ -103,9 +103,15 @@ export const FlexDirectionInput = ({ wrap = "", inline = true, mode }: FlexDirec
           return {
             value: o.value,
             label: (
-              <Tooltip content={o.hint}>
+              <span
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content={o.hint}
+                data-tooltip-place="top"
+                data-tooltip-offset={10}
+                className="flex items-center"
+              >
                 <Icon className="size-4 shrink-0" aria-hidden />
-              </Tooltip>
+              </span>
             ),
           };
         })}

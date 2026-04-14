@@ -2,7 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useEffect, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { twMerge } from "tailwind-merge";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import {
   buildVariantPrefix,
   editorCanvasViewToClassPrefixKey,
@@ -177,17 +177,18 @@ export const UniformPaddingNodeController = () => {
           position="all"
           isActive={hovering || dragging}
         />
-        <Tooltip content="Drag to adjust all padding" placement="left">
-          <button
-            type="button"
-            className="pointer-events-auto size-6 cursor-move border-t-4 border-l-[5px] border-current transition-transform hover:scale-110 active:scale-110"
-            style={{ animation: "node-control-in 0.5s ease-out 0.5s both" }}
-            onMouseDown={handleMouseDown}
-            onMouseEnter={() => setHovering(true)}
-            onMouseLeave={() => setHovering(false)}
-            aria-label="Drag to adjust uniform padding"
-          />
-        </Tooltip>
+        <button
+          type="button"
+          className="pointer-events-auto size-6 cursor-move border-t-4 border-l-[5px] border-current transition-transform hover:scale-110 active:scale-110"
+          style={{ animation: "node-control-in 0.5s ease-out 0.5s both" }}
+          onMouseDown={handleMouseDown}
+          onMouseEnter={() => setHovering(true)}
+          onMouseLeave={() => setHovering(false)}
+          aria-label="Drag to adjust uniform padding"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Drag to adjust all padding"
+          data-tooltip-place="left"
+        />
       </>
     </RenderNodeControlInline>
   );

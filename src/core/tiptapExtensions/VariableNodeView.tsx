@@ -4,6 +4,7 @@ import type { NodeViewProps } from "@tiptap/core";
 import { useEditor as useCraftEditor, ROOT_NODE } from "@craftjs/core";
 import { createPortal } from "react-dom";
 import { OPEN_LINK_PANEL_EVENT } from "@/chrome/inline-tools/openLinkPanelEvent";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { VariablePopover } from "@/chrome/inline-tools/VariablePopover";
 import { resolveVariable } from "@/utils/design/variables";
 import type { VariableNodeOptions } from "./VariableNode";
@@ -135,7 +136,7 @@ export function VariableNodeView({
       as="span"
       className="variable-node"
       data-variable={varId}
-      data-tooltip-id="variable-tip"
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
       data-tooltip-content="Double-click to edit"
     >
       <span ref={spanRef} onDoubleClick={handleDoubleClick}>

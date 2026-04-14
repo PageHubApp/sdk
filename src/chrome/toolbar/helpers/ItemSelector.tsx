@@ -1,4 +1,4 @@
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useState } from "react";
 import { TbChevronDown, TbChevronRight, TbSelector } from "react-icons/tb";
 import { atom, useAtomState } from "@zedux/react";
@@ -96,9 +96,18 @@ export const ItemToggle = ({ items = [], children, selected, onChange, option = 
 };
 
 export const ItemSelector = ({ content = null, icon, onClick, selected = false }) => (
-  <Tooltip content={content} className="cursor-pointer" onClick={onClick} placement="bottom">
-    <div className={`flex items-center justify-center text-xs ${selected ? "" : ""}`}>{icon}</div>
-  </Tooltip>
+  <div
+    role="button"
+    tabIndex={0}
+    className="flex cursor-pointer items-center justify-center text-xs"
+    onClick={onClick}
+    data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+    data-tooltip-content={content}
+    data-tooltip-place="bottom"
+    data-tooltip-offset={10}
+  >
+    {icon}
+  </div>
 );
 
 export const ItemAdvanceToggle = ({

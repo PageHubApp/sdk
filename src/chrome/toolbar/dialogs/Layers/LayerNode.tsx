@@ -47,13 +47,11 @@ export function LayerNode({ nodeId, depth }: LayerNodeProps) {
   const isExpanded = state.expanded[nodeId] || false;
   const hasChildren = children.length > 0;
 
-  // Hide Background component from layers panel (but show its children)
-  const displayName =
-    node?.data?.custom?.displayName || node?.data?.displayName || node?.data?.name || "";
-  const isBackground = displayName === "Background";
+  // Hide transparent wrapper components from layers panel (but show their children)
+  const isHiddenInLayers = node?.data?.custom?.hiddenInLayers === true;
 
-  // If this is the Background node, render its children directly without showing the Background itself
-  if (isBackground && hasChildren) {
+  // If hidden, render its children directly without showing the wrapper itself
+  if (isHiddenInLayers && hasChildren) {
     return (
       <>
         {children.map(childId => (
@@ -63,8 +61,8 @@ export function LayerNode({ nodeId, depth }: LayerNodeProps) {
     );
   }
 
-  // If it's Background with no children, hide it completely
-  if (isBackground) {
+  // If hidden wrapper with no children, hide it completely
+  if (isHiddenInLayers) {
     return null;
   }
 

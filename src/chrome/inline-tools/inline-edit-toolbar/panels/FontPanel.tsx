@@ -6,9 +6,11 @@ import { TbCheck, TbChevronDown, TbX } from "react-icons/tb";
 import { FixedSizeList as List } from "react-window";
 import { resolveTheme } from "@/utils/design/resolveTheme";
 import { fonts } from "@/utils/tailwind";
+import type { PagehubTextRichMode } from "@/core/tiptapExtensions/pagehubTextTiptapExtensions";
 
 interface FontPanelProps {
   editor: Editor;
+  richTextMode?: PagehubTextRichMode;
   onAction: (cb: () => void) => (e: React.MouseEvent) => void;
   onClose: () => void;
 }
@@ -31,7 +33,12 @@ const CATEGORIES: Record<string, (f: string[][]) => string[][]> = {
   "All Fonts": f => f,
 };
 
-export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
+export function FontPanel({
+  editor,
+  richTextMode = "full",
+  onAction,
+  onClose,
+}: FontPanelProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [allFonts, setAllFonts] = useState<string[][]>(fonts);
   const [loading, setLoading] = useState(true);
@@ -133,48 +140,50 @@ export function FontPanel({ editor, onAction, onClose }: FontPanelProps) {
           onClick={e => e.stopPropagation()}
           className="border-base-300 bg-base-100 text-base-content placeholder:text-neutral-content focus:border-ring focus:ring-ring min-w-0 flex-1 rounded-md border px-2 py-1.5 text-xs outline-none focus:ring-1"
         />
-        <Listbox
-          value={
-            editor.isActive("paragraph")
-              ? "paragraph"
-              : editor.isActive("heading", { level: 1 })
-                ? "heading1"
-                : editor.isActive("heading", { level: 2 })
-                  ? "heading2"
-                  : editor.isActive("heading", { level: 3 })
-                    ? "heading3"
-                    : editor.isActive("heading", { level: 4 })
-                      ? "heading4"
-                      : "paragraph"
-          }
-          onChange={val => {
-            if (val === "paragraph") editor.chain().focus().setParagraph().run();
-            else {
-              const level = parseInt(val.replace("heading", "")) as 1 | 2 | 3 | 4 | 5 | 6;
-              editor.chain().focus().toggleHeading({ level }).run();
+        {richTextMode !== "inline" && (
+          <Listbox
+            value={
+              editor.isActive("paragraph")
+                ? "paragraph"
+                : editor.isActive("heading", { level: 1 })
+                  ? "heading1"
+                  : editor.isActive("heading", { level: 2 })
+                    ? "heading2"
+                    : editor.isActive("heading", { level: 3 })
+                      ? "heading3"
+                      : editor.isActive("heading", { level: 4 })
+                        ? "heading4"
+                        : "paragraph"
             }
-          }}
-        >
-          <ListboxButton className="border-base-300 bg-base-100 text-neutral-content hover:bg-base-200 aria-expanded:bg-base-200 flex w-auto shrink-0 items-center gap-1 rounded-md border px-2 py-1.5 text-xs outline-none">
-            {({ value }) => (
-              <>
-                <span>{HEADING_OPTIONS.find(o => o.value === value)?.label ?? "Normal"}</span>
-                <TbChevronDown className="size-3 opacity-50" />
-              </>
-            )}
-          </ListboxButton>
-          <ListboxOptions
-            anchor="bottom start"
-            className="pagehub-sdk-root ph-select-content"
-            modal={false}
+            onChange={val => {
+              if (val === "paragraph") editor.chain().focus().setParagraph().run();
+              else {
+                const level = parseInt(val.replace("heading", "")) as 1 | 2 | 3 | 4 | 5 | 6;
+                editor.chain().focus().toggleHeading({ level }).run();
+              }
+            }}
           >
-            {HEADING_OPTIONS.map(o => (
-              <ListboxOption key={o.value} value={o.value} className="ph-select-item">
-                {o.label}
-              </ListboxOption>
-            ))}
-          </ListboxOptions>
-        </Listbox>
+            <ListboxButton className="border-base-300 bg-base-100 text-neutral-content hover:bg-base-200 aria-expanded:bg-base-200 flex w-auto shrink-0 items-center gap-1 rounded-md border px-2 py-1.5 text-xs outline-none">
+              {({ value }) => (
+                <>
+                  <span>{HEADING_OPTIONS.find(o => o.value === value)?.label ?? "Normal"}</span>
+                  <TbChevronDown className="size-3 opacity-50" />
+                </>
+              )}
+            </ListboxButton>
+            <ListboxOptions
+              anchor="bottom start"
+              className="pagehub-sdk-root ph-select-content"
+              modal={false}
+            >
+              {HEADING_OPTIONS.map(o => (
+                <ListboxOption key={o.value} value={o.value} className="ph-select-item">
+                  {o.label}
+                </ListboxOption>
+              ))}
+            </ListboxOptions>
+          </Listbox>
+        )}
         <div className="border-base-300 flex shrink-0 items-center rounded-md border">
           {[
             { label: "S", size: "12px" },

@@ -1,5 +1,5 @@
 import { useEditor } from "@craftjs/core";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useState } from "react";
 import { TbChevronRight, TbListTree } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
@@ -11,6 +11,8 @@ interface BreadcrumbItem {
   id: string;
   name: string;
   type: string;
+  /** Structural role from props.type (e.g. "header", "footer", "section") */
+  role?: string;
 }
 
 export const NodeBreadcrumb = () => {
@@ -74,6 +76,7 @@ export const NodeBreadcrumb = () => {
           id: currentNodeId,
           name,
           type,
+          role: node.data.props?.type || undefined,
         });
 
         currentNodeId = node.data.parent;
@@ -118,9 +121,9 @@ export const NodeBreadcrumb = () => {
   const currentItem = breadcrumb[breadcrumb.length - 1];
   const showOnlyPageContext = isolate && breadcrumb.length === 0;
 
-  // Check if the breadcrumb is within a Header or Footer (root-level components with no page parent)
+  // Check if the breadcrumb is within a Header or Footer (root-level, not page children)
   const isHeaderOrFooter =
-    breadcrumb.length > 0 && (breadcrumb[0].type === "Header" || breadcrumb[0].type === "Footer");
+    breadcrumb.length > 0 && (breadcrumb[0].role === "header" || breadcrumb[0].role === "footer");
 
   // Don't show page context for Header/Footer components (they're not children of pages)
   const showPageContext = !isHeaderOrFooter;
@@ -199,21 +202,20 @@ export const NodeBreadcrumb = () => {
         {/* Page context */}
         {!isEditing && showPageContext && (
           <div className="flex items-center gap-0">
-            <Tooltip
-              content={
+            <button
+              onClick={handlePageClick}
+              className={`bg-neutral text-base-content hover:bg-neutral/80 rounded p-1 text-xs font-medium whitespace-nowrap transition-colors ${
+                showOnlyPageContext ? "min-w-0" : "max-w-[100px] min-w-0 truncate"
+              }`}
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content={
                 pageContext.fullName ? `Select page: ${pageContext.fullName}` : "Viewing all pages"
               }
-              placement="bottom"
+              data-tooltip-place="bottom"
+              data-tooltip-offset={10}
             >
-              <button
-                onClick={handlePageClick}
-                className={`bg-neutral text-base-content hover:bg-neutral/80 rounded p-1 text-xs font-medium whitespace-nowrap transition-colors ${
-                  showOnlyPageContext ? "min-w-0" : "max-w-[100px] min-w-0 truncate"
-                }`}
-              >
-                {showOnlyPageContext ? pageContext.fullName || pageContext.name : pageContext.name}
-              </button>
-            </Tooltip>
+              {showOnlyPageContext ? pageContext.fullName || pageContext.name : pageContext.name}
+            </button>
 
             {!showOnlyPageContext && currentItem && (
               <TbChevronRight className="text-neutral-content/60 ml-1 size-3" />
@@ -224,14 +226,16 @@ export const NodeBreadcrumb = () => {
         {/* Short breadcrumb: Parent > Current */}
         {!isEditing && !showOnlyPageContext && parentItem && (
           <div className="flex items-center gap-0">
-            <Tooltip content={`Select ${parentItem.name} (${parentItem.type})`} placement="bottom">
-              <button
-                onClick={() => handleNodeClick(parentItem.id)}
-                className="text-neutral-content hover:bg-neutral hover:text-base-content max-w-[80px] min-w-0 truncate rounded p-1 text-xs whitespace-nowrap transition-colors"
-              >
-                {parentItem.name}
-              </button>
-            </Tooltip>
+            <button
+              onClick={() => handleNodeClick(parentItem.id)}
+              className="text-neutral-content hover:bg-neutral hover:text-base-content max-w-[80px] min-w-0 truncate rounded p-1 text-xs whitespace-nowrap transition-colors"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content={`Select ${parentItem.name} (${parentItem.type})`}
+              data-tooltip-place="bottom"
+              data-tooltip-offset={10}
+            >
+              {parentItem.name}
+            </button>
             <TbChevronRight className="text-neutral-content/60 size-3" />
           </div>
         )}
@@ -262,14 +266,16 @@ export const NodeBreadcrumb = () => {
                 />
               </div>
             ) : (
-              <Tooltip content={`Click to edit "${currentItem.name}"`} placement="bottom">
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-primary/15 text-primary hover:bg-primary/25 max-w-[120px] min-w-0 truncate rounded p-1 text-xs font-semibold whitespace-nowrap transition-all duration-200 ease-in-out hover:scale-105"
-                >
-                  {currentItem.name}
-                </button>
-              </Tooltip>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="bg-primary/15 text-primary hover:bg-primary/25 max-w-[120px] min-w-0 truncate rounded p-1 text-xs font-semibold whitespace-nowrap transition-all duration-200 ease-in-out hover:scale-105"
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content={`Click to edit "${currentItem.name}"`}
+                data-tooltip-place="bottom"
+                data-tooltip-offset={10}
+              >
+                {currentItem.name}
+              </button>
             )}
           </>
         )}

@@ -1,5 +1,5 @@
 import { useEditor } from "@craftjs/core";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import React, { useEffect, useRef, useState } from "react";
 import {
   TbBoxModel2,
@@ -267,27 +267,25 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
                   ) : (
                     // Normal mode
                     <>
-                      <Tooltip
-                        content={
+                      <button
+                        onClick={e => handleToggleComponentType(component, e)}
+                        className="tool-button shrink-0"
+                        aria-label={
                           component.isSection ? "Convert to Component" : "Convert to Section"
                         }
-                        placement="top"
-                        arrow={false}
+                        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                        data-tooltip-content={
+                          component.isSection ? "Convert to Component" : "Convert to Section"
+                        }
+                        data-tooltip-place="top"
+                        data-tooltip-offset={10}
                       >
-                        <button
-                          onClick={e => handleToggleComponentType(component, e)}
-                          className="tool-button shrink-0"
-                          aria-label={
-                            component.isSection ? "Convert to Component" : "Convert to Section"
-                          }
-                        >
-                          {component.isSection ? (
-                            <TbLayoutGridAdd className="size-5" />
-                          ) : (
-                            <TbBoxModel2 className="size-5" />
-                          )}
-                        </button>
-                      </Tooltip>
+                        {component.isSection ? (
+                          <TbLayoutGridAdd className="size-5" />
+                        ) : (
+                          <TbBoxModel2 className="size-5" />
+                        )}
+                      </button>
                       <button
                         onClick={() => handleComponentClick(component)}
                         className="flex flex-1 items-center gap-2 overflow-hidden text-left"

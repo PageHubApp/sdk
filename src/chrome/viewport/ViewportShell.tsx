@@ -1,7 +1,7 @@
 import sluggit from "slug";
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import Router, { useRouter } from "next/router";
 import React, { useCallback, useEffect, useState } from "react";
 import { TbCode } from "react-icons/tb";
@@ -127,17 +127,18 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const { emitter } = useSDK();
   const setToolboxMenu = useSetAtomState(ToolboxMenu);
 
-  const handleViewportContextMenuCapture = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!enabled) return;
+  /** Same rules as native context menu: opens element menu at pointer; skips text fields. */
+  const tryOpenCanvasNodeContextMenu = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>): boolean => {
+      if (!enabled) return false;
       const target = e.target as HTMLElement;
-      if (target.closest(".ProseMirror")) return;
-      if (target.closest('[contenteditable="true"]')) return;
-      if (target.closest("input, textarea, select")) return;
+      if (target.closest(".ProseMirror")) return false;
+      if (target.closest('[contenteditable="true"]')) return false;
+      if (target.closest("input, textarea, select")) return false;
 
       const nodeEl = target.closest("[node-id]");
       let nodeId = nodeEl?.getAttribute("node-id");
-      if (!nodeId) return;
+      if (!nodeId) return false;
 
       // Letterboxing / short pages: clicks land on ROOT Background instead of the page surface.
       if (nodeId === ROOT_NODE && isolate && isolate !== EDITOR_ALL_PAGES_STORAGE) {
@@ -148,7 +149,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       }
 
       const node = query.node(nodeId).get();
-      if (!node) return;
+      if (!node) return false;
 
       e.preventDefault();
       e.stopPropagation();
@@ -176,8 +177,25 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             }
           : { ...toolboxMenuInitialState.parent },
       });
+      return true;
     },
     [enabled, query, actions, setToolboxMenu, isolate]
+  );
+
+  const handleViewportContextMenuCapture = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      tryOpenCanvasNodeContextMenu(e);
+    },
+    [tryOpenCanvasNodeContextMenu]
+  );
+
+  const handleViewportDoubleClickCapture = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (tryOpenCanvasNodeContextMenu(e)) {
+        handleDoubleClick(e);
+      }
+    },
+    [tryOpenCanvasNodeContextMenu, handleDoubleClick]
   );
 
   // ─── Grid lines ───
@@ -415,11 +433,14 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             storageKey="preview-edit"
             defaultCorner={sideBarLeft ? "top-left" : "top-right"}
           >
-            <Tooltip content="Edit" placement="bottom" arrow={false}>
-              <button
-                className="btn bg-primary text-primary-content cursor-pointer rounded-full p-4 text-2xl shadow-lg select-none"
-                aria-label="Edit page"
-                onClick={() => {
+            <button
+              className="btn bg-primary text-primary-content cursor-pointer rounded-full p-4 text-2xl shadow-lg select-none"
+              aria-label="Edit page"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Edit"
+              data-tooltip-place="bottom"
+              data-tooltip-offset={10}
+              onClick={() => {
                   const viewport = document.getElementById("viewport");
                   const scrollTop = viewport?.scrollTop ?? 0;
                   const scrollLeft = viewport?.scrollLeft ?? 0;
@@ -442,7 +463,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
               >
                 <TbCode />
               </button>
-            </Tooltip>
           </FloatingWidget>
         )}
 
@@ -480,6 +500,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             onKeyDown={handleKeyDown}
             onClick={handleViewportClick}
             onDoubleClick={handleDoubleClick}
+            onDoubleClickCapture={handleViewportDoubleClickCapture}
             onContextMenuCapture={handleViewportContextMenuCapture}
             data-isolated={!!isolated}
             tabIndex={0}

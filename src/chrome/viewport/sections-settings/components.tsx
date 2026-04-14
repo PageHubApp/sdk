@@ -41,17 +41,22 @@ export const BlockPreviewCard = memo(function BlockPreviewCard({
           }
         }}
         onMouseDown={onDismissQuickLook}
-        className={`group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-grab overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing ${
+        className={`group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative flex cursor-grab flex-col overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing ${
           quickLookOpen ? "ring-primary/30 ring-2" : ""
         }`}
       >
-        <ComponentPreview
-          component={block.structure}
-          scale={0.35}
-          resolver={resolver}
-          modifiers={block.modifiers}
-        />
-        <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
+        <div className="relative min-h-[7rem] flex-1 overflow-hidden">
+          <ComponentPreview
+            component={block.structure}
+            scale={0.35}
+            resolver={resolver}
+
+          />
+          <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
+        </div>
+        <div className="border-base-300 bg-base-100 border-t px-2.5 py-2">
+          <p className="text-base-content truncate text-xs font-medium">{block.name}</p>
+        </div>
       </div>
     </ToolboxInsertHintTooltip>
   );
@@ -85,7 +90,7 @@ export const CustomSectionCard = memo(function CustomSectionCard({
     <ToolboxInsertHintTooltip>
       <div
         ref={(ref: any) => createRef(ref, tool)}
-        className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative cursor-grab overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing"
+        className="group border-base-300 bg-base-200 text-base-content hover:border-primary/50 relative flex cursor-grab flex-col overflow-hidden rounded-lg border hover:shadow-sm active:cursor-grabbing"
         onDoubleClick={() => {
           try {
             const masterNode = editorQuery.node(template.rootNodeId).get();
@@ -120,13 +125,20 @@ export const CustomSectionCard = memo(function CustomSectionCard({
           }
         }}
       >
-        {customPreview && (
-          <ComponentPreview component={customPreview} scale={0.35} resolver={resolver} />
-        )}
-        <div className="bg-primary absolute top-2 right-2 z-10 rounded-lg px-2 py-1">
-          <span className="text-primary-content text-xs font-medium">Custom</span>
+        <div className="relative min-h-[7rem] flex-1 overflow-hidden">
+          {customPreview && (
+            <ComponentPreview component={customPreview} scale={0.35} resolver={resolver} />
+          )}
+          <div className="bg-primary absolute top-2 right-2 z-10 rounded-lg px-2 py-1">
+            <span className="text-primary-content text-xs font-medium">Custom</span>
+          </div>
+          <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
         </div>
-        <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
+        <div className="border-base-300 bg-base-100 border-t px-2.5 py-2">
+          <p className="text-base-content truncate text-xs font-medium">
+            {template.name || "My block"}
+          </p>
+        </div>
       </div>
     </ToolboxInsertHintTooltip>
   );
@@ -207,7 +219,7 @@ export function BlockQuickLook({
             component={block.structure}
             scale={0.65}
             resolver={resolver}
-            modifiers={block.modifiers}
+
           />
         </div>
       </div>

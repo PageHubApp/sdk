@@ -1,5 +1,5 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -275,59 +275,70 @@ export const Header = () => {
         className="border-base-300 bg-base-100 text-base-content pointer-events-auto relative z-50 flex flex-row-reverse items-center justify-between border-b px-1.5 py-1"
         data-tutorial="header"
       >
-        <Tooltip content="Add Component" placement="bottom" arrow={false}>
-          <Item
-            ariaLabel="Add Component"
-            onMouseDown={e => e.stopPropagation()}
-            onClick={e => {
-              toggle("components");
-              e.stopPropagation();
-            }}
-          >
-            <TbPlus />
-          </Item>
-        </Tooltip>
+        <Item
+          ariaLabel="Add Component"
+          onMouseDown={e => e.stopPropagation()}
+          onClick={e => {
+            toggle("components");
+            e.stopPropagation();
+          }}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Add Component"
+          data-tooltip-place="bottom"
+          data-tooltip-offset={10}
+        >
+          <TbPlus />
+        </Item>
 
-        <Tooltip content="Redo" placement="bottom" arrow={false}>
-          <Item
-            ariaLabel="Redo"
-            disabled={!canRedo}
-            onClick={() => {
-              markToolboxHistorySelectionSync();
-              actions.history.redo();
+        <Item
+          ariaLabel="Redo"
+          disabled={!canRedo}
+          onClick={() => {
+            markToolboxHistorySelectionSync();
+            actions.history.redo();
 
-              const active = query.getEvent("selected");
-              if (!active) actions.selectNode(ROOT_NODE);
-              finalizeToolboxHistorySelectionSync();
-            }}
-          >
-            <TbArrowForwardUp />
-          </Item>
-        </Tooltip>
+            const active = query.getEvent("selected");
+            if (!active) actions.selectNode(ROOT_NODE);
+            finalizeToolboxHistorySelectionSync();
+          }}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Redo"
+          data-tooltip-place="bottom"
+          data-tooltip-offset={10}
+        >
+          <TbArrowForwardUp />
+        </Item>
 
-        <Tooltip content="Undo" placement="bottom" arrow={false}>
-          <Item
-            ariaLabel="Undo"
-            disabled={!canUndo}
-            onClick={() => {
-              markToolboxHistorySelectionSync();
-              actions.history.undo();
+        <Item
+          ariaLabel="Undo"
+          disabled={!canUndo}
+          onClick={() => {
+            markToolboxHistorySelectionSync();
+            actions.history.undo();
 
-              const active = query.getEvent("selected");
-              if (!active) actions.selectNode(ROOT_NODE);
-              finalizeToolboxHistorySelectionSync();
-            }}
-          >
-            <TbArrowBackUp />
-          </Item>
-        </Tooltip>
+            const active = query.getEvent("selected");
+            if (!active) actions.selectNode(ROOT_NODE);
+            finalizeToolboxHistorySelectionSync();
+          }}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Undo"
+          data-tooltip-place="bottom"
+          data-tooltip-offset={10}
+        >
+          <TbArrowBackUp />
+        </Item>
 
         {animate && (
-          <Tooltip content="Play Animations" placement="bottom" arrow={false}>
-            <Item ariaLabel="Play Animations" onClick={() => {}}>
-              <TbPlayerPlay />
-            </Item>
-          </Tooltip>
+          <Item
+            ariaLabel="Play Animations"
+            onClick={() => {}}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Play Animations"
+            data-tooltip-place="bottom"
+            data-tooltip-offset={10}
+          >
+            <TbPlayerPlay />
+          </Item>
         )}
 
         <ToolbarPortalDropdown
@@ -380,44 +391,45 @@ export const Header = () => {
           </div>
         </ToolbarPortalDropdown>
 
-        <Tooltip content="Preview" placement="bottom" arrow={false}>
-          <Item
-            ariaLabel="Preview"
-            onClick={() => {
-              // Save viewport scroll position before toggling
-              const viewport = document.getElementById("viewport");
-              const scrollTop = viewport?.scrollTop ?? 0;
-              const scrollLeft = viewport?.scrollLeft ?? 0;
+        <Item
+          ariaLabel="Preview"
+          onClick={() => {
+            // Save viewport scroll position before toggling
+            const viewport = document.getElementById("viewport");
+            const scrollTop = viewport?.scrollTop ?? 0;
+            const scrollLeft = viewport?.scrollLeft ?? 0;
 
-              toggleEditorEnabled();
-              setPreview(!preview);
-              // Deselect any active node when toggling preview
-              if (enabled) {
-                actions.selectNode(null);
+            toggleEditorEnabled();
+            setPreview(!preview);
+            // Deselect any active node when toggling preview
+            if (enabled) {
+              actions.selectNode(null);
+            }
+            viewport?.focus({ preventScroll: true });
+
+            // Restore scroll position after layout settles
+            requestAnimationFrame(() => {
+              if (viewport) {
+                viewport.scrollTop = scrollTop;
+                viewport.scrollLeft = scrollLeft;
               }
-              viewport?.focus({ preventScroll: true });
-
-              // Restore scroll position after layout settles
-              requestAnimationFrame(() => {
-                if (viewport) {
-                  viewport.scrollTop = scrollTop;
-                  viewport.scrollLeft = scrollLeft;
-                }
-              });
-            }}
-          >
-            {enabled ? <TbEye /> : <TbCode />}
-          </Item>
-        </Tooltip>
-
-        <Tooltip
-          content={`Switch to ${viewMode === "page" ? "Component" : "Page"} Editor`}
-          placement="bottom"
-          arrow={false}
+            });
+          }}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Preview"
+          data-tooltip-place="bottom"
+          data-tooltip-offset={10}
         >
-          <Item
-            ariaLabel={`Switch to ${viewMode === "page" ? "Component" : "Page"} Editor`}
-            onClick={() => {
+          {enabled ? <TbEye /> : <TbCode />}
+        </Item>
+
+        <Item
+          ariaLabel={`Switch to ${viewMode === "page" ? "Component" : "Page"} Editor`}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content={`Switch to ${viewMode === "page" ? "Component" : "Page"} Editor`}
+          data-tooltip-place="bottom"
+          data-tooltip-offset={10}
+          onClick={() => {
               const newMode = viewMode === "page" ? "component" : "page";
               setViewMode(newMode);
               actions.selectNode(null);
@@ -464,30 +476,36 @@ export const Header = () => {
             }}
           >
             {viewMode === "page" ? <TbBoxModel2 /> : <TbFileText />}
-          </Item>
-        </Tooltip>
+        </Item>
 
-        <Tooltip content="Publish" placement="bottom" arrow={false}>
-          <Item ariaLabel="Publish" onClick={() => open("publish")}>
-            <SaveIndicator />
-          </Item>
-        </Tooltip>
+        <Item
+          ariaLabel="Publish"
+          onClick={() => open("publish")}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Publish"
+          data-tooltip-place="bottom"
+          data-tooltip-offset={10}
+        >
+          <SaveIndicator />
+        </Item>
 
-        <Tooltip content="More Options" placement="bottom" arrow={false}>
-          <Item
-            ariaLabel="More Options"
-            onMouseDown={e => e.stopPropagation()}
-            onClick={() => {
-              if (isOpen) {
-                close();
-              } else {
-                open("menu");
-              }
-            }}
-          >
-            {isOpen ? <TbX /> : <TbMenu2 />}
-          </Item>
-        </Tooltip>
+        <Item
+          ariaLabel="More Options"
+          onMouseDown={e => e.stopPropagation()}
+          onClick={() => {
+            if (isOpen) {
+              close();
+            } else {
+              open("menu");
+            }
+          }}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="More Options"
+          data-tooltip-place="bottom"
+          data-tooltip-offset={10}
+        >
+          {isOpen ? <TbX /> : <TbMenu2 />}
+        </Item>
       </header>
 
       {/* Page/Component Selector Bar - Below Header */}

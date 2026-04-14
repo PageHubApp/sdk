@@ -1,6 +1,6 @@
 import { TabAtom } from "../viewport/atoms";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import React, { useEffect, useRef, useState } from "react";
 import { useSetAtomState } from "../../utils/atoms";
 
@@ -21,19 +21,21 @@ export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
   }, [isActive]);
 
   return (
-    <Tooltip content={title} placement="top" arrow={false}>
-      <div
-        className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-colors ${
-          showActiveColor ? "text-primary" : "text-secondary-content hover:text-base-content"
-        }`}
-        role="tab"
-        aria-selected={isActive}
-        tabIndex={isActive ? 0 : -1}
-        onClick={onClick}
-      >
-        <span className="relative z-10">{icon}</span>
-      </div>
-    </Tooltip>
+    <div
+      className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-colors ${
+        showActiveColor ? "text-primary" : "text-secondary-content hover:text-base-content"
+      }`}
+      role="tab"
+      aria-selected={isActive}
+      tabIndex={isActive ? 0 : -1}
+      onClick={onClick}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      data-tooltip-content={title}
+      data-tooltip-place="top"
+      data-tooltip-offset={10}
+    >
+      <span className="relative z-10">{icon}</span>
+    </div>
   );
 };
 

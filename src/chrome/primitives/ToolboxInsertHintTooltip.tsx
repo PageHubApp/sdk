@@ -1,5 +1,5 @@
-import type { ReactElement } from "react";
-import { Tooltip } from "./layout/Tooltip";
+import React, { type ReactElement } from "react";
+import { PAGEHUB_RTT_GLOBAL_ID } from "./layout/tooltipSurface";
 
 /** Shown after {@link TOOLBOX_INSERT_HINT_DELAY_MS} hover on toolbox tiles and block cards. */
 export const TOOLBOX_INSERT_HINT = "Double-click adds to the selected area; drag to place.";
@@ -16,14 +16,11 @@ export function ToolboxInsertHintTooltip({
   children,
   placement = "right",
 }: ToolboxInsertHintTooltipProps) {
-  return (
-    <Tooltip
-      content={TOOLBOX_INSERT_HINT}
-      delay={TOOLBOX_INSERT_HINT_DELAY_MS}
-      placement={placement}
-      full
-    >
-      {children}
-    </Tooltip>
-  );
+  return React.cloneElement(children as ReactElement<Record<string, unknown>>, {
+    "data-tooltip-id": PAGEHUB_RTT_GLOBAL_ID,
+    "data-tooltip-content": TOOLBOX_INSERT_HINT,
+    "data-tooltip-delay-show": TOOLBOX_INSERT_HINT_DELAY_MS,
+    "data-tooltip-place": placement,
+    className: `flex w-full min-w-0 ${(children as ReactElement<{ className?: string }>).props.className ?? ""}`.trim(),
+  });
 }

@@ -1,7 +1,7 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { SketchPicker } from "@hello-pangea/color-picker";
 import { Popover, PopoverPanel } from "@headlessui/react";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import debounce from "lodash.debounce";
 import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
@@ -212,24 +212,26 @@ export const ColorPickerDialog = () => {
         <div className="border-base-300 bg-accent text-accent-content flex items-center justify-between border-b px-3 py-1.5">
           <div className="flex gap-1.5">
             {colorPicker.propKey !== "theme-design-system" && (
-              <Tooltip content="Save to palette">
-                <button
-                  className="text-accent-content hover:bg-neutral hover:text-base-content flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs transition-colors"
-                  onClick={saveToPallet}
-                >
-                  <TbDeviceFloppy />
-                </button>
-              </Tooltip>
+              <button
+                className="text-accent-content hover:bg-neutral hover:text-base-content flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs transition-colors"
+                onClick={saveToPallet}
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content="Save to palette"
+                data-tooltip-offset={10}
+              >
+                <TbDeviceFloppy />
+              </button>
             )}
             {isSupported() && (
-              <Tooltip content="Eyedropper" arrow={false}>
-                <button
-                  onClick={pickColor}
-                  className="text-accent-content hover:bg-neutral hover:text-base-content flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs transition-colors"
-                >
-                  <BsEyedropper />
-                </button>
-              </Tooltip>
+              <button
+                onClick={pickColor}
+                className="text-accent-content hover:bg-neutral hover:text-base-content flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs transition-colors"
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content="Eyedropper"
+                data-tooltip-offset={10}
+              >
+                <BsEyedropper />
+              </button>
             )}
           </div>
           <button
@@ -258,29 +260,32 @@ export const ColorPickerDialog = () => {
                       : paletteColor.color;
 
                   return (
-                    <Tooltip key={index} content={paletteColor.name} placement="top" arrow={false}>
-                      <button
-                        className="group relative"
-                        onMouseDown={e => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          changed({ type: "palette", value: `palette:${paletteColor.name}` });
+                    <button
+                      key={index}
+                      className="group relative"
+                      onMouseDown={e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        changed({ type: "palette", value: `palette:${paletteColor.name}` });
+                      }}
+                      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                      data-tooltip-content={paletteColor.name}
+                      data-tooltip-place="top"
+                      data-tooltip-offset={10}
+                    >
+                      <div
+                        className={`size-7 rounded-md border-2 transition-all group-hover:scale-110 ${
+                          isSelected ? "border-primary ring-primary/30 ring-1" : "border-base-300"
+                        } ${isTailwindClass ? displayColor : ""}`}
+                        style={{
+                          backgroundColor: !isTailwindClass ? paletteColor.color : undefined,
                         }}
                       >
-                        <div
-                          className={`size-7 rounded-md border-2 transition-all group-hover:scale-110 ${
-                            isSelected ? "border-primary ring-primary/30 ring-1" : "border-base-300"
-                          } ${isTailwindClass ? displayColor : ""}`}
-                          style={{
-                            backgroundColor: !isTailwindClass ? paletteColor.color : undefined,
-                          }}
-                        >
-                          {isSelected && (
-                            <TbCheck className="m-auto mt-0.5 size-4 text-white drop-shadow-md" />
-                          )}
-                        </div>
-                      </button>
-                    </Tooltip>
+                        {isSelected && (
+                          <TbCheck className="m-auto mt-0.5 size-4 text-white drop-shadow-md" />
+                        )}
+                      </div>
+                    </button>
                   );
                 })}
               </div>
@@ -362,24 +367,22 @@ export const ColorPickerDialog = () => {
                               colorGroup.color.find(c => c.key === "500") ||
                               colorGroup.color[Math.floor(colorGroup.color.length / 2)];
                             return (
-                              <Tooltip
+                              <button
                                 key={`color-${rowIndex * 11 + k}`}
-                                content={colorGroup.key}
-                                placement="top"
-                                arrow={false}
-                              >
-                                <button
-                                  className="border-base-300 hover:border-primary size-5 cursor-pointer rounded border transition-all hover:scale-110"
-                                  style={{ backgroundColor: mainShade.color }}
-                                  onClick={e => {
-                                    e.stopPropagation();
-                                    changed({
-                                      type: "class",
-                                      value: `${colorGroup.key}-${mainShade.key}`,
-                                    });
-                                  }}
-                                />
-                              </Tooltip>
+                                className="border-base-300 hover:border-primary size-5 cursor-pointer rounded border transition-all hover:scale-110"
+                                style={{ backgroundColor: mainShade.color }}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  changed({
+                                    type: "class",
+                                    value: `${colorGroup.key}-${mainShade.key}`,
+                                  });
+                                }}
+                                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                                data-tooltip-content={colorGroup.key}
+                                data-tooltip-place="top"
+                                data-tooltip-offset={10}
+                              />
                             );
                           })}
                       </div>

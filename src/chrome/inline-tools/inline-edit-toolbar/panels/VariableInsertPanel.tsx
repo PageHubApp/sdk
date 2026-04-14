@@ -2,7 +2,7 @@ import type { Editor } from "@tiptap/react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { useMemo } from "react";
 import { TbBraces } from "react-icons/tb";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { getEditorVariableOptions } from "@/utils/editorVariableOptions";
 
 interface VariableInsertPanelProps {
@@ -18,11 +18,17 @@ export function VariableInsertPanel({ editor, query }: VariableInsertPanelProps)
 
   return (
     <Popover className="relative">
-      <Tooltip content="Insert variable" placement="top" tooltipClassName="text-xs! px-2! py-1!">
-        <PopoverButton type="button" aria-label="Insert variable" className="tool-button">
-          <TbBraces className="size-4" aria-hidden />
-        </PopoverButton>
-      </Tooltip>
+      <PopoverButton
+        type="button"
+        aria-label="Insert variable"
+        className="tool-button"
+        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+        data-tooltip-content="Insert variable"
+        data-tooltip-place="top"
+        data-tooltip-offset={10}
+      >
+        <TbBraces className="size-4" aria-hidden />
+      </PopoverButton>
       <PopoverPanel
         anchor="bottom start"
         transition

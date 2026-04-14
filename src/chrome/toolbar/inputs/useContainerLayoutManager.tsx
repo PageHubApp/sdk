@@ -15,10 +15,10 @@ export const useContainerLayoutManager = () => {
     const currentNode = query.node(id).get();
     const currentChildren = currentNode?.data?.nodes || [];
 
-    // Count existing containers
+    // Count existing layout containers (stamped with layoutChild on creation)
     const containerCount = currentChildren.filter(nodeId => {
       const node = query.node(nodeId).get();
-      return node?.data?.displayName === "Container";
+      return node?.data?.custom?.layoutChild === true;
     }).length;
 
     if (containerCount < targetColumns) {
@@ -32,7 +32,7 @@ export const useContainerLayoutManager = () => {
               is={Container}
               canDelete={true}
               className="flex w-full flex-col gap-4"
-              custom={{ displayName: "Container" }}
+              custom={{ displayName: "Container", layoutChild: true }}
             />
           ),
           actions,
@@ -44,7 +44,7 @@ export const useContainerLayoutManager = () => {
       // Remove excess containers (keep the first targetColumns containers)
       const containerIds = currentChildren.filter(nodeId => {
         const node = query.node(nodeId).get();
-        return node?.data?.displayName === "Container";
+        return node?.data?.custom?.layoutChild === true;
       });
 
       const containersToRemove = containerIds.slice(targetColumns);

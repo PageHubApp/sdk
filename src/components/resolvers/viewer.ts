@@ -10,6 +10,7 @@ import { Audio } from "../Audio";
 import { Background } from "../Background";
 import { Button } from "../Button";
 import { ButtonList } from "../ButtonList";
+import { CookieConsent } from "../CookieConsent";
 import { Container } from "../Container";
 import { ContainerGroup } from "../ContainerGroup";
 import { Divider } from "../Divider";
@@ -36,6 +37,7 @@ export const viewerResolver = {
   Background,
   Button,
   ButtonList,
+  CookieConsent,
   Container,
   ContainerGroup,
   Divider,

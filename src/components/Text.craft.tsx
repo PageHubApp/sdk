@@ -99,6 +99,9 @@ export const TextDef = defineComponent(
     icon: FaFont,
     category: "Basic",
     settings: TextMainTab,
+    defaultProps: {
+      richTextMode: "full",
+    },
     toHTML,
     disable: [
       "bgColor",

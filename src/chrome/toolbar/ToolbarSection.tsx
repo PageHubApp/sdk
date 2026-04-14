@@ -1,5 +1,5 @@
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useEffect, useState } from "react";
 import { TbChevronRight } from "react-icons/tb";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
@@ -92,6 +92,15 @@ export const ToolbarSection = ({
               }}
               aria-label={title}
               aria-expanded={disabled ? undefined : isOpen}
+              {...(help
+                ? {
+                    "data-tooltip-id": PAGEHUB_RTT_GLOBAL_ID,
+                    "data-tooltip-content": help,
+                    "data-tooltip-place": "left",
+                    "data-tooltip-delay-show": 750,
+                    "data-tooltip-offset": 10,
+                  }
+                : {})}
             >
               <div className={`flex items-center gap-1.5 ${disabled ? "opacity-40" : ""}`}>
                 {nested && collapsible && (
@@ -121,14 +130,7 @@ export const ToolbarSection = ({
               )}
             </div>
           );
-          return help ? (
-            /* `full` = Tooltip layout (flex w-full), not ToolbarSection grid columns — keeps border-b full width */
-            <Tooltip content={help} placement="left" className="text-xxs min-w-0" delay={750} full>
-              {btn}
-            </Tooltip>
-          ) : (
-            btn
-          );
+          return btn;
         })()}
 
       {enabled && !disabled && isOpen && (

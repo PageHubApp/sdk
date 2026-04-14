@@ -36,6 +36,10 @@ export const TextMainTab = () => {
           inline={false}
           label=""
         />
+        <ToolbarItem propKey="richTextMode" propType="component" type="select" label="Editor profile">
+          <option value="full">Full (paragraphs, lists, images)</option>
+          <option value="inline">Inline (no block wrapper in saved HTML)</option>
+        </ToolbarItem>
         <SettingsAiSlot />
         <IpsumGenerator propKey="text" propType="component" />
       </ToolbarSection>

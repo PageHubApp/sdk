@@ -213,6 +213,8 @@ export interface RenderToHTMLOptions {
   resolver?: Record<string, ToHTMLFn>;
   /** Custom components registered via defineComponent() */
   components?: ResolvedComponentDef[];
+  /** Replace DaisyUI/spatial classes with pure Tailwind equivalents in output */
+  pureTailwind?: boolean;
 }
 
 export interface RenderToHTMLResult {
@@ -346,6 +348,7 @@ export function renderToHTML(
     extraHead = "",
     resolver: extraResolver = {},
     components: componentDefs = [],
+    pureTailwind = false,
   } = options;
 
   // 1. Decompress
@@ -396,6 +399,7 @@ export function renderToHTML(
         .map(id => renderNode(id, nodes, resolver, ctx))
         .filter(Boolean)
         .join("\n"),
+    pureTailwind,
   };
 
   // 6. Render from ROOT

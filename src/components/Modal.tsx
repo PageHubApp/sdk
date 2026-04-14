@@ -275,6 +275,7 @@ export const Modal = ({ children, ...props }) => {
 
 Modal.craft = {
   displayName: "Modal",
+  custom: { overlay: true },
   rules: {
     canDrag: () => true,
     canDelete: () => true,

@@ -199,6 +199,7 @@ export function Background({
 
 Background.craft = {
   displayName: "Background",
+  custom: { hiddenInLayers: true },
   rules: {
     canDrag: () => false,
     canMoveIn: (nodes: any[]) => nodes.every((node: any) => node.data?.name === "Container"),

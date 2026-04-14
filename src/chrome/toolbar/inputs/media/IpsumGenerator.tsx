@@ -7,8 +7,7 @@ import { useAtomValue } from "@zedux/react";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { TbLetterA, TbMinus, TbAlignLeft } from "react-icons/tb";
-import { Tooltip as ReactTooltip } from "react-tooltip";
-import { REACT_TOOLTIP_SURFACE_CLASS } from "@/chrome/primitives/layout/tooltipSurface";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -72,7 +71,7 @@ export const IpsumGenerator = ({ propKey, propType }) => {
           <button
             key={label}
             type="button"
-            data-tooltip-id="ipsum-tip"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
             data-tooltip-content={label}
             className="text-neutral-content hover:bg-neutral hover:text-base-content rounded-md p-1.5 transition-colors"
             onClick={() => save(generate())}
@@ -81,12 +80,6 @@ export const IpsumGenerator = ({ propKey, propType }) => {
           </button>
         ))}
       </div>
-      <ReactTooltip
-        id="ipsum-tip"
-        variant="light"
-        classNameArrow="hidden"
-        className={REACT_TOOLTIP_SURFACE_CLASS}
-      />
     </div>
   );
 };

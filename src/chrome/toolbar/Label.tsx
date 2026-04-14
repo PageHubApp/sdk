@@ -1,6 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { TbTrash } from "react-icons/tb";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { atom, useAtomState, useAtomValue } from "@zedux/react";
 
 import { ViewAtom } from "../viewport/atoms";
@@ -227,9 +227,24 @@ export const ToolbarLabel = ({
     );
     const tip = hasValue ? `${bpLabel}: ${valText}` : `${bpLabel}: none`;
     return (
-      <Tooltip content={tip} placement="top" className="text-xxs">
-        {dot}
-      </Tooltip>
+      <span
+        role="button"
+        tabIndex={0}
+        onClick={handleToggle}
+        onKeyDown={e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleToggle(e as any);
+          }
+        }}
+        onContextMenu={hasValue ? handleRemove : undefined}
+        data-has-value={hasValue || undefined}
+        className={`bg-base-content block size-1.5 cursor-pointer rounded-[1px] transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
+        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+        data-tooltip-content={tip}
+        data-tooltip-place="top"
+        data-tooltip-offset={10}
+      />
     );
   }
 
@@ -272,9 +287,15 @@ export const ToolbarLabel = ({
         <>
           {hasValue ? (
             iconOnly ? (
-              <Tooltip content={valText} placement="top" className="text-xxs">
+              <div
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content={valText}
+                data-tooltip-place="top"
+                data-tooltip-offset={10}
+                className="text-xxs"
+              >
                 {renderActiveNode()}
-              </Tooltip>
+              </div>
             ) : (
               renderActiveNode()
             )

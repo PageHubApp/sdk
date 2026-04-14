@@ -30,7 +30,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
 
-  const { displayName, hidden, isSelected, isHovered, actions, query, componentType, nodeType } =
+  const { displayName, hidden, isSelected, isHovered, actions, query, nodeType } =
     useEditor((editorState, query) => {
       const node = editorState.nodes[nodeId];
       const selectedId = query.getEvent("selected").first();
@@ -45,7 +45,6 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
         hidden: node?.data?.hidden || false,
         isSelected: selectedId === nodeId,
         isHovered: hoveredId === nodeId,
-        componentType: node?.data?.displayName || node?.data?.name || "",
         nodeType: node?.data?.props?.type || "",
       };
     });
@@ -53,11 +52,11 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   const isDragging = state.draggedNode === nodeId;
   const isDropTarget = state.dropIndicator?.targetId === nodeId && state.draggedNode !== nodeId;
 
-  // Check component types for different styling
-  const isPage = nodeType === "page" || componentType === "Page";
-  const isHeader = componentType === "Header";
-  const isFooter = componentType === "Footer";
-  const isSection = componentType === "Container" && !isPage && !isHeader && !isFooter;
+  // Structural roles from props.type — no component name checks
+  const isPage = nodeType === "page";
+  const isHeader = nodeType === "header";
+  const isFooter = nodeType === "footer";
+  const isSection = nodeType === "section";
 
   // Extracted hooks for move and drag/drop logic
   const {

@@ -14,6 +14,7 @@ import { Background } from "../components/Background";
 import { Button } from "../components/Button";
 import { ButtonList } from "../components/ButtonList";
 import { Nav } from "../components/Nav";
+import { CookieConsent } from "../components/CookieConsent";
 import { Container } from "../components/Container";
 import { ContainerGroup } from "../components/ContainerGroup";
 import { Divider } from "../components/Divider";
@@ -40,6 +41,7 @@ import {
   BackgroundDef,
   ButtonDef,
   ButtonListDef,
+  CookieConsentDef,
   ContainerDef,
   ContainerGroupDef,
   DividerDef,
@@ -70,6 +72,7 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Background,
   Button,
   ButtonList,
+  CookieConsent,
   Container,
   ContainerGroup,
   Divider,
@@ -103,6 +106,7 @@ export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
   BackgroundDef,
   ButtonDef,
   ButtonListDef,
+  CookieConsentDef,
   ContainerDef,
   ContainerGroupDef,
   DividerDef,

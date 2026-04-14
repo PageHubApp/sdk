@@ -11,6 +11,11 @@ import { EventEmitter } from "./events";
 import { setPageHubApiBaseUrl } from "./apiConfig";
 import { EditorStoreProvider } from "./store";
 import type { PageHubFeatures, PageHubTheme } from "../types";
+import { Tooltip as ReactTooltip } from "react-tooltip";
+import {
+  PAGEHUB_RTT_GLOBAL_ID,
+  REACT_TOOLTIP_SURFACE_CLASS,
+} from "../chrome/primitives/layout/tooltipSurface";
 
 interface SDKContextValue {
   config: ResolvedConfig;
@@ -98,6 +103,12 @@ export function PageHubProvider({ config, emitter, children }: PageHubProviderPr
   return (
     <SDKContext.Provider value={value}>
       <EditorStoreProvider>{children}</EditorStoreProvider>
+      <ReactTooltip
+        id={PAGEHUB_RTT_GLOBAL_ID}
+        variant="light"
+        classNameArrow="hidden"
+        className={REACT_TOOLTIP_SURFACE_CLASS}
+      />
     </SDKContext.Provider>
   );
 }

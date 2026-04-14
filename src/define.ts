@@ -197,6 +197,7 @@ const BUILT_IN_NAMES = new Set([
   "Dropdown",
   "Embed",
   "Footer",
+  "CookieConsent",
   "Form",
   "FormElement",
   "Header",

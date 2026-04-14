@@ -2,6 +2,7 @@ import { Editor, Element, Frame } from "@craftjs/core";
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_STYLE_GUIDE } from "../../../utils/defaults";
 
+
 export const buildElementFromStructure = (
   structure: any,
   resolver: any,
@@ -142,60 +143,20 @@ const PREVIEW_DESIGN_VARS: React.CSSProperties & Record<string, string> = {
   "--space-xl": `calc(${DEFAULT_STYLE_GUIDE.spaceXl} * var(--spacing-density))`,
 };
 
-// Shared registry of modifier @utility rules across all mounted previews.
-// Multiple previews render simultaneously — each adds its rules, and we
-// rebuild the single <style> tag content from the merged set.
-const _modifierRules = new Map<string, string>(); // name → @utility rule
-let _modifierStyleEl: HTMLStyleElement | null = null;
-
-function syncModifierStyleTag() {
-  if (typeof document === "undefined") return;
-  if (_modifierRules.size === 0) {
-    _modifierStyleEl?.remove();
-    _modifierStyleEl = null;
-    return;
-  }
-  if (!_modifierStyleEl) {
-    _modifierStyleEl = document.createElement("style");
-    _modifierStyleEl.id = "component-preview-modifier-utilities";
-    _modifierStyleEl.setAttribute("type", "text/tailwindcss");
-    document.head.appendChild(_modifierStyleEl);
-  }
-  _modifierStyleEl.textContent = [..._modifierRules.values()].join("\n");
-}
 
 interface ComponentPreviewProps {
   component: any;
   scale?: number;
   resolver: any;
-  modifiers?: Record<string, { name: string; classes: string }[]>;
 }
 
 export const ComponentPreview = React.memo(function ComponentPreview({
   component,
   scale = 0.25,
   resolver,
-  modifiers,
 }: ComponentPreviewProps) {
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [scaledHeight, setScaledHeight] = useState<number | null>(null);
-
-  // Register modifier @utility rules into the shared registry
-  useEffect(() => {
-    if (!modifiers || typeof modifiers !== "object") return;
-    const added: string[] = [];
-    for (const mods of Object.values(modifiers)) {
-      if (!Array.isArray(mods)) continue;
-      for (const mod of mods) {
-        if (mod.name && mod.classes && !_modifierRules.has(mod.name)) {
-          _modifierRules.set(mod.name, `@utility ${mod.name} { @apply ${mod.classes}; }`);
-          added.push(mod.name);
-        }
-      }
-    }
-    if (added.length) syncModifierStyleTag();
-    // No cleanup — rules persist for the session (cheap, avoids flicker on re-mount)
-  }, [modifiers]);
 
   // Read the site's design system vars from #viewport so previews match the user's theme
   const siteVars = useMemo(() => {

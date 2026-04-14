@@ -6,20 +6,8 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { TbTypography } from "react-icons/tb";
 import { useEditor } from "@craftjs/core";
-import Color from "@tiptap/extension-color";
-import FontFamily from "@tiptap/extension-font-family";
-import FontSize from "@tiptap/extension-font-size";
-import Highlight from "@tiptap/extension-highlight";
-import Image from "@tiptap/extension-image";
-import { Link as TiptapLink } from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
-import Subscript from "@tiptap/extension-subscript";
-import Superscript from "@tiptap/extension-superscript";
-import TextAlign from "@tiptap/extension-text-align";
-import { TextStyle } from "@tiptap/extension-text-style";
-import { Extension, type Editor as TiptapEditorInstance } from "@tiptap/core";
 import { EditorContent, useEditor as useTiptapEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import type { Editor as TiptapEditorInstance } from "@tiptap/core";
 
 import { changeProp } from "../chrome/viewport/viewportExports";
 import { TiptapProvider } from "../chrome/inline-tools/TiptapContext";
@@ -29,15 +17,16 @@ import { VariableSuggestionPopup } from "../chrome/inline-tools/VariableSuggesti
 
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { replaceVariables, resolveVariable } from "../utils/design/variables";
-import { getEditorVariableOptions } from "../utils/editorVariableOptions";
 import {
   isVisuallyEmptyRichText,
   persistedTextHtmlFromEditor,
 } from "../utils/isVisuallyEmptyRichText";
-import { REACT_TOOLTIP_SURFACE_CLASS } from "../chrome/primitives/layout/tooltipSurface";
-import { Tooltip as ReactTooltip } from "react-tooltip";
-import { VariableNode, preprocessVariables } from "@/core/tiptapExtensions/VariableNode";
+import { preprocessVariables } from "@/core/tiptapExtensions/VariableNode";
 import type { SuggestionProps } from "@/core/tiptapExtensions/VariableNode";
+import {
+  getPagehubTextTiptapExtensions,
+  type PagehubTextRichMode,
+} from "@/core/tiptapExtensions/pagehubTextTiptapExtensions";
 
 // Helper to check if ancestor is a linked component
 const checkIfAncestorLinked = (nodeId: string, query: any): boolean => {
@@ -51,68 +40,6 @@ const checkIfAncestorLinked = (nodeId: string, query: any): boolean => {
   }
   return false;
 };
-
-/** Explicit shortcuts while the TipTap view is focused (PM keymap; no global listeners). */
-const TextEditorInlineKeymap = Extension.create({
-  name: "textEditorInlineKeymap",
-  priority: 1000,
-  addKeyboardShortcuts() {
-    return {
-      "Mod-b": () => this.editor.chain().focus().toggleBold().run(),
-      "Mod-i": () => this.editor.chain().focus().toggleItalic().run(),
-      "Mod-u": () => this.editor.chain().focus().toggleUnderline().run(),
-      "Mod-k": () => {
-        if (this.editor.isActive("link")) {
-          this.editor.chain().focus().extendMarkRange("link").run();
-        }
-        window.dispatchEvent(new CustomEvent(OPEN_LINK_PANEL_EVENT));
-        return true;
-      },
-    };
-  },
-});
-
-const getTiptapExtensions = (
-  onSuggestion?: (props: SuggestionProps | null) => void,
-  queryRef?: { current: any }
-) => [
-  StarterKit.configure({
-    heading: {},
-    codeBlock: false,
-    blockquote: {},
-    horizontalRule: {},
-    bulletList: {},
-    orderedList: {},
-    listItem: {},
-    link: false,
-  }),
-  Placeholder.configure({ placeholder: "Start typing..." }),
-  TextAlign.configure({ types: ["heading", "paragraph"] }),
-  TextStyle,
-  Color.configure({ types: [TextStyle.name] }),
-  FontFamily.configure({ types: [TextStyle.name] }),
-  FontSize.configure({ types: [TextStyle.name] }),
-  Highlight.configure({ multicolor: true }),
-  Superscript,
-  Subscript,
-  TiptapLink.configure({
-    openOnClick: false,
-    /** Selection-on-click is handled in TextEditor `handleDOMEvents.click` (TipTap’s built-in path does not move the caret to the click first). */
-    enableClickSelection: false,
-    HTMLAttributes: { class: "text-primary underline" },
-    protocols: ["ref"],
-  }),
-  Image.configure({
-    HTMLAttributes: { class: "max-w-full h-auto" },
-  }),
-  VariableNode.configure({
-    getVariables: () => getEditorVariableOptions(queryRef?.current),
-    onSuggestion: onSuggestion || null,
-    resolveVariable: (id: string) =>
-      queryRef?.current ? resolveVariable(id, queryRef.current) : id,
-  }),
-  TextEditorInlineKeymap,
-];
 
 function TextEditorMode({
   props,
@@ -149,6 +76,9 @@ function TextEditorMode({
   const isInsideLinkedComponent = checkIfAncestorLinked(id, query);
   const rawText = props.text || "";
   const editorContent = React.useMemo(() => preprocessVariables(rawText), [rawText]);
+
+  const richTextMode: PagehubTextRichMode =
+    props.richTextMode === "inline" ? "inline" : "full";
 
   const [suggestion, setSuggestion] = React.useState<SuggestionProps | null>(null);
 
@@ -207,9 +137,14 @@ function TextEditorMode({
     []
   );
 
+  const tiptapExtensions = useMemo(
+    () => getPagehubTextTiptapExtensions(richTextMode, setSuggestion, queryRef),
+    [richTextMode]
+  );
+
   const tiptapEditor = useTiptapEditor(
     {
-      extensions: enabled ? getTiptapExtensions(setSuggestion, queryRef) : [],
+      extensions: enabled ? tiptapExtensions : [],
       content: editorContent,
       editable: enabled && isEditing && !isInsideLinkedComponent,
       immediatelyRender: false,
@@ -239,7 +174,7 @@ function TextEditorMode({
         });
       },
     },
-    [enabled, isInsideLinkedComponent]
+    [enabled, isInsideLinkedComponent, richTextMode, tiptapExtensions]
   );
 
   useEffect(() => {
@@ -368,6 +303,7 @@ function TextEditorMode({
         <TiptapProvider editor={tiptapEditor}>
           <InlineEditToolbar
             editor={tiptapEditor}
+            richTextMode={richTextMode}
             onSave={() => {
               const ed = tiptapEditorRef.current;
               if (!ed || !enabled) return;
@@ -382,14 +318,6 @@ function TextEditorMode({
         </TiptapProvider>
       )}
       {isEditing && <VariableSuggestionPopup suggestion={suggestion} />}
-      {isEditing && (
-        <ReactTooltip
-          id="variable-tip"
-          variant="light"
-          classNameArrow="hidden"
-          className={REACT_TOOLTIP_SURFACE_CLASS}
-        />
-      )}
     </>
   );
 }

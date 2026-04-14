@@ -1,4 +1,4 @@
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { TbChevronsDown, TbChevronsUp } from "react-icons/tb";
 
 type AccordionCtx = { anyOpen: boolean; toggleAll: () => void };
@@ -12,17 +12,15 @@ export const TabBarCollapseToggle = ({
 }) => {
   if (!unified || !accordionCtx) return <div />;
   return (
-    <Tooltip
-      content={accordionCtx.anyOpen ? "Collapse all" : "Expand all"}
-      placement="top"
-      arrow={false}
+    <button
+      className="text-secondary-content/70 hover:text-base-content flex cursor-pointer items-center justify-center rounded-md p-1 text-sm transition-colors"
+      onClick={accordionCtx.toggleAll}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      data-tooltip-content={accordionCtx.anyOpen ? "Collapse all" : "Expand all"}
+      data-tooltip-place="top"
+      data-tooltip-offset={10}
     >
-      <button
-        className="text-secondary-content/70 hover:text-base-content flex cursor-pointer items-center justify-center rounded-md p-1 text-sm transition-colors"
-        onClick={accordionCtx.toggleAll}
-      >
-        {accordionCtx.anyOpen ? <TbChevronsUp /> : <TbChevronsDown />}
-      </button>
-    </Tooltip>
+      {accordionCtx.anyOpen ? <TbChevronsUp /> : <TbChevronsDown />}
+    </button>
   );
 };

@@ -20,7 +20,7 @@ import {
   unregisterMaterialSymbolIconUsage,
 } from "../utils/materialSymbolsAutoLoad";
 import {
-  materialIconLoadPxForWidthClass,
+  materialSymbolsOutlinedFontSpec,
   PH_MS_FONT_PENDING_CLASS,
 } from "../utils/materialSymbolsReveal";
 import { motionIt } from "../utils/lib";
@@ -165,8 +165,19 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
     setMaterialSymbolsReady(false);
     let cancelled = false;
+    const desc = materialSymbolsOutlinedFontSpec(sizeKey);
+
+    const revealIfCheckPasses = () => {
+      if (cancelled || typeof document === "undefined" || !document.fonts) return false;
+      if (document.fonts.check(desc)) {
+        setMaterialSymbolsReady(true);
+        return true;
+      }
+      return false;
+    };
+
     const timer = window.setTimeout(() => {
-      if (!cancelled) setMaterialSymbolsReady(true);
+      if (!cancelled) revealIfCheckPasses();
     }, 2500);
 
     if (typeof document === "undefined" || !document.fonts) {
@@ -178,15 +189,13 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
       };
     }
 
-    const px = materialIconLoadPxForWidthClass(sizeKey);
     void document.fonts
-      .load(`400 ${px}px "Material Symbols Outlined"`)
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) {
-          setMaterialSymbolsReady(true);
-          window.clearTimeout(timer);
-        }
+      .load(desc)
+      .then(() => {
+        if (revealIfCheckPasses()) window.clearTimeout(timer);
+      })
+      .catch(() => {
+        /* Do not reveal on failure — avoids raw ligature text until load succeeds or timeout check passes. */
       });
 
     return () => {
@@ -194,6 +203,42 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
       window.clearTimeout(timer);
     };
   }, [isGoogleIcon, sizeKey, googleIconName]);
+
+  // Tab background / bfcache: FontFaceSet can report loaded while paint still uses fallback; re-load + check.
+  useEffect(() => {
+    if (!isGoogleIcon || typeof document === "undefined" || !document.fonts) return;
+
+    const desc = materialSymbolsOutlinedFontSpec(sizeKey);
+    let cancelled = false;
+
+    const retryIfFontMissing = () => {
+      if (cancelled || document.visibilityState !== "visible") return;
+      if (document.fonts.check(desc)) {
+        setMaterialSymbolsReady(true);
+        return;
+      }
+      setMaterialSymbolsReady(false);
+      void document.fonts
+        .load(desc)
+        .then(() => {
+          if (!cancelled && document.fonts.check(desc)) setMaterialSymbolsReady(true);
+        })
+        .catch(() => {});
+    };
+
+    const onVisibility = () => retryIfFontMissing();
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) retryIfFontMissing();
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pageshow", onPageShow);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pageshow", onPageShow);
+    };
+  }, [isGoogleIcon, sizeKey]);
 
   useScrollToSelected(id, enabled);
 

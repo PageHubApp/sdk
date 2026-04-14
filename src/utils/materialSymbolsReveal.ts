@@ -1,6 +1,7 @@
 /**
  * Material Symbols (ref-google) — hide ligatures until the font is usable.
- * - React Button uses PH_MS_FONT_PENDING_CLASS until document.fonts.load resolves.
+ * - React Button uses PH_MS_FONT_PENDING_CLASS until document.fonts.load + check() pass
+ *   (and retries on visibility / bfcache restore when the face drops out).
  * - Static HTML from Button.craft adds data-ph-google-icon + pending; FOUC inline script reveals.
  */
 
@@ -49,6 +50,12 @@ export const ICON_SIZE_KEY_TO_MATERIAL_LOAD_PX: Record<string, number> = {
 
 export function materialIconLoadPxForWidthClass(sizeKey: string): number {
   return ICON_SIZE_KEY_TO_MATERIAL_LOAD_PX[sizeKey] ?? 24;
+}
+
+/** Argument shape for `document.fonts.load` / `document.fonts.check` (Material Symbols Outlined). */
+export function materialSymbolsOutlinedFontSpec(sizeKey: string): string {
+  const px = materialIconLoadPxForWidthClass(sizeKey);
+  return `400 ${px}px "Material Symbols Outlined"`;
 }
 
 /**

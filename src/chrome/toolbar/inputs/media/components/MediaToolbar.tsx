@@ -1,4 +1,4 @@
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import {
   TbArrowDown,
   TbArrowUp,
@@ -79,24 +79,28 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
 
         {/* View Mode */}
         <div className={toolClusterClass}>
-          <Tooltip content="Card view" placement="bottom" className="flex h-full items-stretch">
-            <button
-              onClick={() => setViewMode("cards")}
-              type="button"
-              className={`tool-button px-2 ${viewMode === "cards" ? "bg-base-200 text-base-content" : ""}`}
-            >
-              <TbLayoutGrid className="size-[18px]" />
-            </button>
-          </Tooltip>
-          <Tooltip content="List view" placement="bottom" className="flex h-full items-stretch">
-            <button
-              onClick={() => setViewMode("list")}
-              type="button"
-              className={`tool-button px-2 ${viewMode === "list" ? "bg-base-200 text-base-content" : ""}`}
-            >
-              <TbList className="size-[18px]" />
-            </button>
-          </Tooltip>
+          <button
+            onClick={() => setViewMode("cards")}
+            type="button"
+            className={`tool-button flex h-full items-stretch px-2 ${viewMode === "cards" ? "bg-base-200 text-base-content" : ""}`}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Card view"
+            data-tooltip-place="bottom"
+            data-tooltip-offset={10}
+          >
+            <TbLayoutGrid className="size-[18px]" />
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            type="button"
+            className={`tool-button flex h-full items-stretch px-2 ${viewMode === "list" ? "bg-base-200 text-base-content" : ""}`}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="List view"
+            data-tooltip-place="bottom"
+            data-tooltip-offset={10}
+          >
+            <TbList className="size-[18px]" />
+          </button>
         </div>
 
         {/* Sort — ToolbarDropdown (Listbox + ph-select-content), not native <select> */}
@@ -112,26 +116,24 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
                 resortFilteredMedia();
               }}
               append={
-                <Tooltip
-                  content={`Sort ${sortDirection === "asc" ? "ascending" : "descending"}`}
-                  placement="bottom"
-                  className="flex h-full items-stretch"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                    resortFilteredMedia();
+                  }}
+                  className="tool-button flex h-full items-stretch px-1.5"
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content={`Sort ${sortDirection === "asc" ? "ascending" : "descending"}`}
+                  data-tooltip-place="bottom"
+                  data-tooltip-offset={10}
                 >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-                      resortFilteredMedia();
-                    }}
-                    className="tool-button px-1.5"
-                  >
-                    {sortDirection === "asc" ? (
-                      <TbArrowUp className="size-3.5" />
-                    ) : (
-                      <TbArrowDown className="size-3.5" />
-                    )}
-                  </button>
-                </Tooltip>
+                  {sortDirection === "asc" ? (
+                    <TbArrowUp className="size-3.5" />
+                  ) : (
+                    <TbArrowDown className="size-3.5" />
+                  )}
+                </button>
               }
             >
               <option value="createdAt">Date</option>
@@ -178,24 +180,22 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
               onClick={() => setAddMode("ai")}
             />
           )}
-          <Tooltip
-            content={
+          <button
+            type="button"
+            onClick={handlePasteClick}
+            disabled={!hasImageInClipboard || uploading}
+            className="tool-button flex h-full items-stretch px-2"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content={
               hasImageInClipboard
                 ? "Paste image from clipboard (Ctrl+V / Cmd+V)"
                 : "No image in clipboard"
             }
-            placement="bottom"
-            className="flex h-full items-stretch"
+            data-tooltip-place="bottom"
+            data-tooltip-offset={10}
           >
-            <button
-              type="button"
-              onClick={handlePasteClick}
-              disabled={!hasImageInClipboard || uploading}
-              className="tool-button px-2"
-            >
-              <TbClipboard className="size-[18px]" />
-            </button>
-          </Tooltip>
+            <TbClipboard className="size-[18px]" />
+          </button>
         </div>
       </div>
 
@@ -316,15 +316,17 @@ function AddModeButton({
   onClick: () => void;
 }) {
   return (
-    <Tooltip content={tooltip} placement="bottom" className="flex h-full items-stretch">
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-        className={`tool-button px-2 ${activeMode === mode ? "bg-base-200 text-base-content" : ""}`}
-      >
-        {icon}
-      </button>
-    </Tooltip>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`tool-button flex h-full items-stretch px-2 ${activeMode === mode ? "bg-base-200 text-base-content" : ""}`}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      data-tooltip-content={tooltip}
+      data-tooltip-place="bottom"
+      data-tooltip-offset={10}
+    >
+      {icon}
+    </button>
   );
 }

@@ -327,6 +327,7 @@ export { Image } from "./components/Image";
 export { ImageList } from "./components/ImageList";
 export { Map } from "./components/Map";
 export { MapPoint } from "./components/MapPoint";
+export { CookieConsent } from "./components/CookieConsent";
 export { Modal } from "./components/Modal";
 export { Spacer } from "./components/Spacer";
 export { Tabs } from "./components/Tabs";

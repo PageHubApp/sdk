@@ -9,7 +9,7 @@ import {
   type PaletteColor,
 } from "@/utils/design/colorSystem";
 import { toCSSVarName } from "@/utils/design/designSystemVars";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { CreateTokenDialog } from "./CreateTokenDialog";
 import { resolveTheme } from "@/utils/design/resolveTheme";
 import { phStorage } from "@/utils/phStorage";
@@ -132,15 +132,15 @@ export function TokenPicker({
       {/* Swatch row: stable-order recents (or first N palette) + new token + optional expand */}
       <div className="flex min-w-0 items-center gap-1">
         {compactSwatches.map(pc => (
-          <Tooltip key={pc.name} content={pc.name} placement="bottom" arrow={false}>
-            <Swatch
-              color={pc}
-              palette={palette}
-              selected={isPaletteColorSelected(value as any, pc)}
-              onPick={handlePick}
-              size={swatchSize}
-            />
-          </Tooltip>
+          <Swatch
+            key={pc.name}
+            color={pc}
+            palette={palette}
+            selected={isPaletteColorSelected(value as any, pc)}
+            onPick={handlePick}
+            size={swatchSize}
+            tooltip={pc.name}
+          />
         ))}
         <button
           type="button"
@@ -185,15 +185,15 @@ export function TokenPicker({
       {showAll && (
         <div className="border-base-300 flex flex-wrap gap-1 border-t pt-2">
           {palette.map(pc => (
-            <Tooltip key={pc.name} content={pc.name} placement="bottom" arrow={false}>
-              <Swatch
-                color={pc}
-                palette={palette}
-                selected={isPaletteColorSelected(value as any, pc)}
-                onPick={handlePick}
-                size={swatchSize}
-              />
-            </Tooltip>
+            <Swatch
+              key={pc.name}
+              color={pc}
+              palette={palette}
+              selected={isPaletteColorSelected(value as any, pc)}
+              onPick={handlePick}
+              size={swatchSize}
+              tooltip={pc.name}
+            />
           ))}
         </div>
       )}
@@ -259,18 +259,32 @@ function Swatch({
   selected,
   onPick,
   size = "size-6",
+  tooltip,
 }: {
   color: NamedColor;
   palette: NamedColor[];
   selected: boolean;
   onPick: (name: string) => void;
   size?: string;
+  tooltip?: string;
 }) {
   const fill = swatchResolvedFill(color, palette);
   const showChecker = cssColorShowsTransparency(fill);
 
   return (
-    <button type="button" onClick={() => onPick(color.name)} className="group relative">
+    <button
+      type="button"
+      onClick={() => onPick(color.name)}
+      className="group relative"
+      {...(tooltip
+        ? {
+            "data-tooltip-id": PAGEHUB_RTT_GLOBAL_ID,
+            "data-tooltip-content": tooltip,
+            "data-tooltip-place": "bottom",
+            "data-tooltip-offset": 10,
+          }
+        : {})}
+    >
       <div
         className={`relative overflow-hidden ${size} flex items-center justify-center rounded-md border-2 transition-transform hover:scale-110 ${selected ? "border-primary ring-primary/30 ring-1" : "border-base-300"}`}
       >

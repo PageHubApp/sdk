@@ -1,12 +1,13 @@
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import type { ReactNode } from "react";
-import type { PlacesType } from "react-tooltip";
+
+type PlacesType = "top" | "top-start" | "top-end" | "right" | "right-start" | "right-end" | "bottom" | "bottom-start" | "bottom-end" | "left" | "left-start" | "left-end";
 
 export const AnimatedButton = ({ children, className = "", ariaLabel = "", ...props }) => (
   <div className="h-8">
     <button
       type="button"
-      onClick={props.onClick}
+      {...props}
       className={`${className} origin-top cursor-pointer transition-transform active:scale-90`}
       aria-label={ariaLabel}
     >
@@ -28,9 +29,15 @@ export const AnimatedTooltipButton = ({
   className?: string;
   onClick?: () => void;
 }) => (
-  <Tooltip content={content} placement={placement}>
-    <AnimatedButton {...props} className={className} ariaLabel={content}>
-      {children}
-    </AnimatedButton>
-  </Tooltip>
+  <AnimatedButton
+    {...props}
+    className={className}
+    ariaLabel={content}
+    data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+    data-tooltip-content={content}
+    data-tooltip-place={placement}
+    data-tooltip-offset={10}
+  >
+    {children}
+  </AnimatedButton>
 );

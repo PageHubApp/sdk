@@ -86,10 +86,36 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
     const updated = { ...modifiers };
     const list = [...currentList];
     if (editingIndex !== null) {
+      const oldMod = currentList[editingIndex];
       const entry: Modifier = { name: editName.trim(), label: editLabel.trim() };
       if (editClasses.trim()) entry.classes = editClasses.trim();
       if (editDescription.trim()) entry.description = editDescription.trim();
       list[editingIndex] = entry;
+
+      // Propagate class changes to all nodes using this modifier
+      if (oldMod?.classes !== entry.classes) {
+        const oldClasses = (oldMod?.classes || "").split(/\s+/).filter(Boolean);
+        const newClasses = (entry.classes || "").split(/\s+/).filter(Boolean);
+        const nodes = query.getSerializedNodes();
+        for (const [nodeId, node] of Object.entries(nodes)) {
+          if (nodeId === "ROOT") continue;
+          const activeMods: string[] = node?.props?.root?.activeModifiers || [];
+          if (!activeMods.includes(oldMod.name)) continue;
+          actions.setProp(nodeId, (props: any) => {
+            const current = (props.className || "").split(/\s+/).filter(Boolean);
+            // Remove old modifier classes
+            const filtered = current.filter((c: string) => !oldClasses.includes(c));
+            // Add new modifier classes (deduplicated)
+            for (const c of newClasses) {
+              if (!filtered.includes(c)) filtered.push(c);
+            }
+            props.className = filtered.join(" ");
+            if (!props.root) props.root = {};
+            if (!props.root.modifierClasses) props.root.modifierClasses = {};
+            props.root.modifierClasses[entry.name] = entry.classes || "";
+          });
+        }
+      }
     }
     updated[selectedType] = list;
     save(updated);

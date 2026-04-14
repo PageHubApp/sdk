@@ -1,6 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { RenderNodeControlInline } from "../../rendering/RenderNodeControlInline";
-import { Tooltip } from "@/chrome/primitives/layout/Tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { TbPhotoCog } from "react-icons/tb";
 
 export const SelectImageListTool = () => {
@@ -45,11 +45,16 @@ export const SelectImageListTool = () => {
       className="pointer-events-auto items-center whitespace-nowrap select-none"
     >
       <div className="node-control" onMouseDown={e => e.stopPropagation()}>
-        <Tooltip content="Select Image List">
-          <button type="button" className="tool-button" onClick={handleSelectImageList}>
-            <TbPhotoCog />
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          className="tool-button"
+          onClick={handleSelectImageList}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Select Image List"
+          data-tooltip-offset={10}
+        >
+          <TbPhotoCog />
+        </button>
       </div>
     </RenderNodeControlInline>
   );

@@ -80,18 +80,17 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
-  const { nodeProps, id, displayName, craftName } = useNode(node => ({
+  const { nodeProps, id, displayName } = useNode(node => ({
     nodeProps: node.data.props || {},
     id: node.id,
-    craftName: node.data.name as string | undefined,
     displayName:
       (node.data.custom?.displayName as string | undefined) ||
       (node.data.displayName as string | undefined) ||
       String(node.data.name || "Container"),
   }));
 
-  /** Layout `Container` only — keep insert/add-components on `ContainerGroup` etc. */
-  const suppressContainerChromeTools = craftName === "Container";
+  /** Basic layout containers suppress extra chrome (AI, duplicate, add-components). */
+  const suppressContainerChromeTools = !nodeProps.type || nodeProps.type === "container" || nodeProps.type === "section";
   /** Match `DeleteNodeController` strip: tight gap, no segment padding on anchors. */
   const compactToolbar = suppressContainerChromeTools && direction === "horizontal";
   const segmentBorder = "border-r border-base-300 pr-2";

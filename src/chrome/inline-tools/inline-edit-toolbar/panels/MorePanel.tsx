@@ -1,6 +1,5 @@
 import { Editor } from "@tiptap/react";
-import { REACT_TOOLTIP_SURFACE_CLASS } from "@/chrome/primitives/layout/tooltipSurface";
-import { Tooltip as ReactTooltip } from "react-tooltip";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import {
   MdFormatAlignCenter,
   MdFormatAlignLeft,
@@ -17,73 +16,80 @@ import {
 import { TbEraser, TbX } from "react-icons/tb";
 import { DeleteNodeButton } from "../../../canvas/node-tools/DeleteNodeButton";
 import { getEditorVariableOptions } from "@/utils/editorVariableOptions";
+import type { PagehubTextRichMode } from "@/core/tiptapExtensions/pagehubTextTiptapExtensions";
 
 interface MorePanelProps {
   editor: Editor;
   query: any;
+  richTextMode?: PagehubTextRichMode;
   onAction: (cb: () => void) => (e: React.MouseEvent) => void;
   onInsertImage: () => void;
   onClose: () => void;
 }
 
-export function MorePanel({ editor, query, onAction, onInsertImage, onClose }: MorePanelProps) {
+export function MorePanel({
+  editor,
+  query,
+  richTextMode = "full",
+  onAction,
+  onInsertImage,
+  onClose,
+}: MorePanelProps) {
   const variableOptions = getEditorVariableOptions(query);
   return (
     <div className="flex flex-col gap-0.5 px-1 py-1">
-      <ReactTooltip
-        id="more-tip"
-        variant="light"
-        classNameArrow="hidden"
-        className={`${REACT_TOOLTIP_SURFACE_CLASS} z-999999!`}
-      />
-
       <div className="flex items-center">
-        {[
-          { align: "left", icon: <MdFormatAlignLeft />, label: "Align left" },
-          { align: "center", icon: <MdFormatAlignCenter />, label: "Align center" },
-          { align: "right", icon: <MdFormatAlignRight />, label: "Align right" },
-        ].map(a => (
-          <button
-            key={a.align}
-            onClick={onAction(() => editor.chain().focus().setTextAlign(a.align).run())}
-            className={`tool-button ${editor.isActive({ textAlign: a.align }) ? "bg-base-200 text-base-content" : ""}`}
-            data-tooltip-id="more-tip"
-            data-tooltip-content={a.label}
-          >
-            {a.icon}
-          </button>
-        ))}
+        {richTextMode !== "inline" &&
+          [
+            { align: "left", icon: <MdFormatAlignLeft />, label: "Align left" },
+            { align: "center", icon: <MdFormatAlignCenter />, label: "Align center" },
+            { align: "right", icon: <MdFormatAlignRight />, label: "Align right" },
+          ].map(a => (
+            <button
+              key={a.align}
+              onClick={onAction(() => editor.chain().focus().setTextAlign(a.align).run())}
+              className={`tool-button ${editor.isActive({ textAlign: a.align }) ? "bg-base-200 text-base-content" : ""}`}
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content={a.label}
+            >
+              {a.icon}
+            </button>
+          ))}
 
-        <div className="bg-border mx-0.5 h-5 w-px" />
+        {richTextMode !== "inline" && <div className="bg-border mx-0.5 h-5 w-px" />}
 
-        <Btn
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          active={editor.isActive("bulletList")}
-          tip="Bullet list"
-          icon={<MdFormatListBulleted />}
-          onAction={onAction}
-        />
-        <Btn
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          active={editor.isActive("orderedList")}
-          tip="Numbered list"
-          icon={<MdFormatListNumbered />}
-          onAction={onAction}
-        />
-        <Btn
-          onClick={() => editor.chain().focus().liftListItem("listItem").run()}
-          tip="Outdent"
-          icon={<MdFormatIndentIncrease className="rotate-180" />}
-          onAction={onAction}
-        />
-        <Btn
-          onClick={() => editor.chain().focus().sinkListItem("listItem").run()}
-          tip="Indent"
-          icon={<MdFormatIndentIncrease />}
-          onAction={onAction}
-        />
+        {richTextMode !== "inline" && (
+          <>
+            <Btn
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              active={editor.isActive("bulletList")}
+              tip="Bullet list"
+              icon={<MdFormatListBulleted />}
+              onAction={onAction}
+            />
+            <Btn
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              active={editor.isActive("orderedList")}
+              tip="Numbered list"
+              icon={<MdFormatListNumbered />}
+              onAction={onAction}
+            />
+            <Btn
+              onClick={() => editor.chain().focus().liftListItem("listItem").run()}
+              tip="Outdent"
+              icon={<MdFormatIndentIncrease className="rotate-180" />}
+              onAction={onAction}
+            />
+            <Btn
+              onClick={() => editor.chain().focus().sinkListItem("listItem").run()}
+              tip="Indent"
+              icon={<MdFormatIndentIncrease />}
+              onAction={onAction}
+            />
 
-        <div className="bg-border mx-0.5 h-5 w-px" />
+            <div className="bg-border mx-0.5 h-5 w-px" />
+          </>
+        )}
 
         <Btn
           onClick={() => editor.chain().focus().toggleStrike().run()}
@@ -107,17 +113,25 @@ export function MorePanel({ editor, query, onAction, onInsertImage, onClose }: M
           onAction={onAction}
         />
 
-        <div className="bg-border mx-0.5 h-5 w-px" />
+        {richTextMode !== "inline" && (
+          <>
+            <div className="bg-border mx-0.5 h-5 w-px" />
 
-        <Btn onClick={onInsertImage} tip="Insert image" icon={<MdImage />} onAction={onAction} />
+            <Btn onClick={onInsertImage} tip="Insert image" icon={<MdImage />} onAction={onAction} />
+            <Btn
+              onClick={() => editor.chain().focus().setHorizontalRule().run()}
+              tip="Horizontal rule"
+              icon={<MdFormatLineSpacing />}
+              onAction={onAction}
+            />
+          </>
+        )}
         <Btn
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          tip="Horizontal rule"
-          icon={<MdFormatLineSpacing />}
-          onAction={onAction}
-        />
-        <Btn
-          onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
+          onClick={() =>
+            richTextMode === "inline"
+              ? editor.chain().focus().setContent("", { emitUpdate: false }).unsetAllMarks().run()
+              : editor.chain().focus().clearNodes().unsetAllMarks().run()
+          }
           tip="Clear formatting"
           icon={<TbEraser />}
           onAction={onAction}
@@ -131,7 +145,7 @@ export function MorePanel({ editor, query, onAction, onInsertImage, onClose }: M
           aria-label="Close"
           onClick={onClose}
           className="tool-button"
-          data-tooltip-id="more-tip"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
           data-tooltip-content="Close"
         >
           <TbX />
@@ -178,7 +192,7 @@ function Btn({
     <button
       onClick={onAction(onClick)}
       className={`tool-button ${active ? "bg-base-200 text-base-content" : ""}`}
-      data-tooltip-id="more-tip"
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
       data-tooltip-content={tip}
     >
       {icon}

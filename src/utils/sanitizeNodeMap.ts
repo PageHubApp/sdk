@@ -1,3 +1,5 @@
+import { expandModifiersInNodes } from "./modifierUtils";
+
 /**
  * Drop dangling child / linkedNode ids so Craft <Frame> does not traverse missing nodes
  * (can throw "Cannot read properties of undefined (reading 'children')").
@@ -35,7 +37,9 @@ export function sanitizeCraftSerializedContent(
 
   try {
     const parsed = JSON.parse(serialized) as Record<string, any>;
-    return JSON.stringify(sanitizeCraftNodeReferences(parsed));
+    const sanitized = sanitizeCraftNodeReferences(parsed);
+    expandModifiersInNodes(sanitized);
+    return JSON.stringify(sanitized);
   } catch {
     return serialized;
   }
