@@ -113,9 +113,11 @@ export async function isolatePageLazy(
   try {
     const node = query.node(active).get();
     if (node) {
-      // Target the persistent container — #viewport gets unmounted by deserialize
       const container = document.querySelector("[data-container]") as HTMLElement | null;
-      if (container) container.style.opacity = "0";
+      if (container) {
+        container.style.transition = "opacity 80ms ease-out";
+        container.style.opacity = "0";
+      }
 
       actions.selectNode(null);
 
@@ -125,11 +127,14 @@ export async function isolatePageLazy(
 
       isolatePageAlt(active, query, active, actions, setIsolate);
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (container) container.style.opacity = "";
-        });
-      });
+      // Wait for React to flush + paint before revealing
+      setTimeout(() => {
+        if (container) {
+          container.style.opacity = "";
+          // Clean up transition after it completes
+          setTimeout(() => { if (container) container.style.transition = ""; }, 100);
+        }
+      }, 50);
       return false;
     }
   } catch {
@@ -152,9 +157,11 @@ export async function isolatePageLazy(
   try {
     const json = await decompressAsync(pageData.content);
 
-    // Target the persistent container — #viewport gets unmounted by deserialize
     const container = document.querySelector("[data-container]") as HTMLElement | null;
-    if (container) container.style.opacity = "0";
+    if (container) {
+      container.style.transition = "opacity 80ms ease-out";
+      container.style.opacity = "0";
+    }
 
     actions.selectNode(null);
     actions.deserialize(json);
@@ -167,12 +174,14 @@ export async function isolatePageLazy(
         if (container) container.scrollTop = 0;
         const viewport = document.getElementById("viewport");
         if (viewport) viewport.scrollTop = 0;
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            if (container) container.style.opacity = "";
-            resolve();
-          });
-        });
+        // Give React time to render, then fade back in
+        setTimeout(() => {
+          if (container) {
+            container.style.opacity = "";
+            setTimeout(() => { if (container) container.style.transition = ""; }, 100);
+          }
+          resolve();
+        }, 50);
       });
     });
     return true;
