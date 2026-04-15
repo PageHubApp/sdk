@@ -54,6 +54,8 @@ export function PageSelector({
 }: PageSelectorProps) {
   const { query, actions } = useEditor();
   const settings = useAtomValue(SettingsAtom) as { _id?: string; draftId?: string } | null;
+  const router = useRouter();
+  const siteId = settings?._id || (Array.isArray(router.query.slug) ? router.query.slug[0] : router.query.slug) || null;
 
   // Page list from database via SWR
   const { data: pageData, mutate: mutatePages } = useSWR(
@@ -65,7 +67,7 @@ export function PageSelector({
     displayName: p.displayName || "Untitled Page",
   }));
 
-  // Fall back to CraftJS tree if SWR has no data (new site, unmigrated, no _id yet)
+  // Fall back to CraftJS tree if SWR has no data
   const craftPages: Page[] = (() => {
     if (swrPages.length > 0) return [];
     try {
@@ -91,8 +93,6 @@ export function PageSelector({
   const [searchQuery, setSearchQuery] = useState("");
   const [settingsPageId, setSettingsPageId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-  const siteId = settings?._id || (Array.isArray(router.query.slug) ? router.query.slug[0] : router.query.slug) || null;
   const [unsavedChangesRaw, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
   const unsavedChanges = unsavedChangesRaw as unknown as string | null;
   const { emitter, config } = useSDK();
