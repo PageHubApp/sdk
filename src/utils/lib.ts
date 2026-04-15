@@ -57,7 +57,6 @@ export { sanitizeCraftNodeReferences, sanitizeCraftSerializedContent } from "./s
 export {
   EDITOR_ALL_PAGES_STORAGE,
   getDefaultEditorPageId,
-  getPageCount,
   isolatePageAlt,
   isolatePageLazy,
   listPageNodeIds,

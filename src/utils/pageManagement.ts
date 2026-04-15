@@ -11,13 +11,6 @@ export const EDITOR_ALL_PAGES_STORAGE = "__all_pages__";
 
 // ─── Page Count ───
 
-export const getPageCount = (query: any) => {
-  const root = query.node(ROOT_NODE).get();
-  return !root
-    ? []
-    : root?.data?.nodes.filter((_: string) => query.node(_).get().data.props.type === "page") || [];
-};
-
 export function listPageNodeIds(query: any): string[] {
   const root = query.node(ROOT_NODE).get();
   if (!root?.data?.nodes) return [];
@@ -72,19 +65,6 @@ export const isolatePageAlt = (
       actions.setHidden(_, false);
       actions.setProp(_, (prop: any) => (prop.hidden = false));
     });
-
-  if (select && _active) {
-    setTimeout(() => {
-      try {
-        const node = query.node(_active).get();
-        if (node) {
-          // actions.selectNode(_active);
-        }
-      } catch (e) {
-        console.error("Error selecting node:", e);
-      }
-    }, 100);
-  }
 
   setIsolate(active == null ? "" : active);
   if (active == null) {
@@ -153,49 +133,44 @@ export async function isolatePageLazy(
     return;
   }
 
-  // Decompress the fetched shard (shared + page)
-  const json = await decompressAsync(pageData.content);
-  const fetched = JSON.parse(json);
+  // Decompress and merge the fetched shard into the existing tree
+  try {
+    const json = await decompressAsync(pageData.content);
+    const fetched = JSON.parse(json);
 
-  // Get the current tree
-  const currentJson = query.serialize();
-  const current = JSON.parse(currentJson);
+    const currentJson = query.serialize();
+    const current = JSON.parse(currentJson);
 
-  // Merge: add the new page's nodes into the current tree
-  // The fetched tree has ROOT + shared + one page. We only need the page subtree nodes.
-  // Shared nodes (ROOT, header, footer) are already in the current tree.
-  for (const [nodeId, node] of Object.entries(fetched)) {
-    if (nodeId === "ROOT") {
-      // Merge ROOT.nodes to include the new page
-      const fetchedRootNodes = (node as any).nodes || [];
-      const currentRootNodes = current.ROOT?.nodes || [];
-      for (const id of fetchedRootNodes) {
-        if (!currentRootNodes.includes(id)) {
-          // Insert before footer (last shared child)
-          const lastPageIdx = currentRootNodes.reduce((acc: number, nid: string, i: number) => {
-            return current[nid]?.props?.type === "page" ? i : acc;
-          }, -1);
-          const insertAt = lastPageIdx >= 0 ? lastPageIdx + 1 : currentRootNodes.length;
-          currentRootNodes.splice(insertAt, 0, id);
+    // Merge: the fetched tree has ROOT + shared + one page.
+    // We only need the page subtree nodes — shared nodes are already in the tree.
+    for (const [nodeId, node] of Object.entries(fetched)) {
+      if (nodeId === "ROOT") {
+        const fetchedRootNodes = (node as any).nodes || [];
+        const currentRootNodes = current.ROOT?.nodes || [];
+        for (const id of fetchedRootNodes) {
+          if (!currentRootNodes.includes(id)) {
+            const lastPageIdx = currentRootNodes.reduce((acc: number, nid: string, i: number) => {
+              return current[nid]?.props?.type === "page" ? i : acc;
+            }, -1);
+            const insertAt = lastPageIdx >= 0 ? lastPageIdx + 1 : currentRootNodes.length;
+            currentRootNodes.splice(insertAt, 0, id);
+          }
         }
+        continue;
       }
-      continue;
+      if (current[nodeId]) continue;
+      current[nodeId] = node;
     }
-    // Skip shared nodes that already exist (header, footer, etc.)
-    if (current[nodeId]) continue;
-    // Add new page nodes
-    current[nodeId] = node;
+
+    actions.deserialize(JSON.stringify(current));
+    _loadedPages.add(active);
+
+    requestAnimationFrame(() => {
+      isolatePageAlt(active, query, active, actions, setIsolate);
+    });
+  } catch (e) {
+    console.error(`[PageHub] Failed to merge page shard ${active}:`, e);
   }
-
-  // Re-deserialize the merged tree
-  actions.deserialize(JSON.stringify(current));
-  _loadedPages.add(active);
-
-  // Now isolate the newly loaded page
-  // Small delay to let CraftJS process the deserialization
-  requestAnimationFrame(() => {
-    isolatePageAlt(active, query, active, actions, setIsolate);
-  });
 }
 
 // ─── Page Ref Resolution ───
