@@ -88,25 +88,32 @@ export const UniformPaddingNodeController = () => {
   useEffect(() => {
     if (!dragging) return;
 
+    let lastSnapped = initialPadding;
+
     const handleMouseMove = e => {
       if (!dragging || !dom) return;
 
       const deltaY = e.clientY - startY;
       const newPadding = Math.max(0, initialPadding + deltaY);
-
-      // Snap to nearest Tailwind spacing
       const snappedPadding = snapToTailwindSpacing(newPadding);
 
-      // Convert to Tailwind class and update props (no inline styles)
-      const tailwindClass = pixelsToTailwindClass(snappedPadding);
-
-      const prefix = buildVariantPrefix(classPrefixView, classDark);
-      setProp(prop => {
-        prop.className = twMerge(prop.className || "", prefix + tailwindClass);
-      }, 50);
+      // Inline style for instant visual feedback
+      (dom as HTMLElement).style.padding = `${snappedPadding}px`;
+      lastSnapped = snappedPadding;
     };
 
     const handleMouseUp = () => {
+      if (dom) {
+        // Clear inline style
+        (dom as HTMLElement).style.padding = "";
+
+        // Commit to CraftJS once
+        const tailwindClass = pixelsToTailwindClass(lastSnapped);
+        const prefix = buildVariantPrefix(classPrefixView, classDark);
+        setProp(prop => {
+          prop.className = twMerge(prop.className || "", prefix + tailwindClass);
+        });
+      }
       setDragging(false);
       document.body.style.cursor = "auto";
     };
@@ -125,11 +132,11 @@ export const UniformPaddingNodeController = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    setDragging(true);
-    setStartY(e.clientY);
-
     const computedStyle = window.getComputedStyle(dom as HTMLElement);
     const currentPadding = parseFloat(computedStyle.paddingTop) || 0;
+
+    setDragging(true);
+    setStartY(e.clientY);
     setInitialPadding(currentPadding);
 
     document.body.style.cursor = "move";
