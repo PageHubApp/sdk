@@ -53,7 +53,7 @@ export function PageSelector({
   showHashIcon = true,
 }: PageSelectorProps) {
   const { query, actions } = useEditor();
-  const settings = useAtomValue(SettingsAtom) as { _id?: string } | null;
+  const settings = useAtomValue(SettingsAtom) as { _id?: string; draftId?: string } | null;
   const siteId = settings?._id;
 
   // Page list from database via SWR
@@ -355,10 +355,12 @@ export function PageSelector({
                     ) : (
                       <Link
                         href={getPageUrl(page.id)}
-                        shallow
-                        onClick={e => {
-                          e.preventDefault();
-                          handlePageSelect(page.id);
+                        onClick={() => {
+                          // Save before navigating
+                          if (typeof unsavedChanges === "string" && unsavedChanges.length > 0) {
+                            emitter.emit("save", { isDraft: true });
+                          }
+                          setIsOpen(false);
                         }}
                         className="flex flex-1 items-center gap-2 overflow-hidden"
                       >
