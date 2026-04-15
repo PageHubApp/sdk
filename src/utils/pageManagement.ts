@@ -140,8 +140,17 @@ export async function isolatePageLazy(
     clearLoadedPages();
     _loadedPages.add(active);
 
-    requestAnimationFrame(() => {
-      isolatePageAlt(active, query, active, actions, setIsolate);
+    // Wait for CraftJS to render the new tree before signaling done.
+    // This prevents the old page from flashing between overlay hide and new paint.
+    await new Promise<void>(resolve => {
+      requestAnimationFrame(() => {
+        isolatePageAlt(active, query, active, actions, setIsolate);
+        // Reset viewport scroll — the new page may be a different height
+        const viewport = document.getElementById("viewport");
+        if (viewport) viewport.scrollTop = 0;
+        // One more frame for the DOM to paint
+        requestAnimationFrame(resolve);
+      });
     });
     return true;
   } catch (e) {
