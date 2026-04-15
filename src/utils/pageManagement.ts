@@ -110,11 +110,23 @@ export async function isolatePageLazy(
     return false;
   }
 
-  // Page already in tree — just isolate (no fetch, no eviction)
+  // Page already in tree — isolate without fetch
   try {
     const node = query.node(active).get();
     if (node) {
+      const viewport = document.getElementById("viewport");
+      const scrollContainer = viewport?.closest("[class*='overflow']") as HTMLElement | null;
+      const hideTarget = scrollContainer || viewport;
+      if (hideTarget) hideTarget.style.opacity = "0";
+
       isolatePageAlt(active, query, active, actions, setIsolate);
+      if (scrollContainer) scrollContainer.scrollTop = 0;
+      if (viewport) viewport.scrollTop = 0;
+
+      // Reveal after React flushes
+      requestAnimationFrame(() => {
+        if (hideTarget) hideTarget.style.opacity = "";
+      });
       return false;
     }
   } catch {
