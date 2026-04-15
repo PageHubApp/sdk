@@ -23,6 +23,19 @@ export interface PageData {
   seo?: PageSeo;
   /** IntersectionObserver script for CSS scroll animations (inject before </body>) */
   scrollObserverScript?: string;
+  /**
+   * Per-page shard data for granular saves (Phase 5).
+   * When present, the integration layer can use the per-page save endpoint
+   * instead of the full-tree save.
+   */
+  shards?: {
+    /** Compressed shared shard (ROOT + header + footer). Only present if shared nodes changed. */
+    shared?: string;
+    /** Compressed page shards, keyed by pageNodeId. Only dirty pages included. */
+    pages: Record<string, string>;
+    /** Which page node IDs are loaded in the editor (so server doesn't delete unloaded ones). */
+    loadedPageIds: string[];
+  };
 }
 
 /**
@@ -81,6 +94,13 @@ export interface PageHubCallbacks {
 
   /** Called when a user clicks an "Add to Cart" button. Item is the current repeater item context. */
   onAddToCart?: (item: Record<string, any>, quantity: number) => void;
+
+  /**
+   * Called when the editor needs to lazy-load a page shard (selective loading).
+   * Return compressed content for the shared + requested page.
+   * If not provided, the editor loads the full tree on startup.
+   */
+  fetchPage?: (pageNodeId: string) => Promise<PageData | null>;
 }
 
 // ─── Theming ──────────────────────────────────────────────────────────────────

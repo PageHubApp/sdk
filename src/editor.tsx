@@ -11,6 +11,7 @@
 
 import { Editor, Frame, useEditor } from "@craftjs/core";
 import lz from "lzutf8";
+import { compressAsync, decompressAsync, terminateCompressionWorker } from "./utils/compressionAsync";
 import { renderToHTML } from "./static-renderer";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { EcosystemProvider, useAtomState } from "@zedux/react";
@@ -28,6 +29,8 @@ import type {
 import { BatchOperationAtom, EditorSaveBannerAtom } from "./utils/atoms";
 import { processForEditor, CustomComponentsContext, type ResolvedComponentDef } from "./define";
 import { LazyUnifiedSettings } from "./components/LazyUnifiedSettings";
+import { markAllPagesLoaded, clearLoadedPages, getLoadedPages, listPageNodeIds } from "./utils/pageManagement";
+import { extractPageShard, extractSharedShard } from "./utils/treeSharding";
 import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 
 // ─── Import the real Viewport, Toolbar, and all dialog components from the editor chrome ──
@@ -94,11 +97,14 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
 
         if (pageData?.content) {
           setBatchOperation(true);
-          const decompressed = lz.decompress(lz.decodeBase64(pageData.content));
+          const decompressed = await decompressAsync(pageData.content);
           actions.deserialize(sanitizeCraftSerializedContent(decompressed) || "");
-          // Let React process the node changes with batch mode active,
-          // then re-enable auto-selection for normal user interactions
-          requestAnimationFrame(() => setBatchOperation(false));
+          // Track which pages are loaded for selective save optimization
+          clearLoadedPages();
+          requestAnimationFrame(() => {
+            markAllPagesLoaded(query);
+            setBatchOperation(false);
+          });
         }
 
         setLoaded(true);
@@ -121,7 +127,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
     const unsubSave = emitter.on("save", async (meta?: any) => {
       try {
         const json = query.serialize();
-        const compressed = lz.encodeBase64(lz.compress(json));
+        const compressed = await compressAsync(json);
         const { html, classes, scrollObserverScript, renderError } = renderToHTML(json, {
           compressed: false,
         });
@@ -130,7 +136,31 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
         } else {
           setEditorSaveBanner(null);
         }
-        const pageData: PageData = { content: compressed, html, classes, scrollObserverScript };
+
+        // Build per-page shards — each page as its own compressed piece
+        let shards: PageData["shards"] | undefined;
+        try {
+          const flat = JSON.parse(json);
+          const pageIds = listPageNodeIds(query);
+          if (pageIds.length > 0) {
+            const sharedShard = extractSharedShard(flat);
+            const pages: Record<string, string> = {};
+            for (const pageId of pageIds) {
+              if (flat[pageId]) {
+                pages[pageId] = await compressAsync(JSON.stringify(extractPageShard(flat, pageId)));
+              }
+            }
+            shards = {
+              shared: await compressAsync(JSON.stringify(sharedShard)),
+              pages,
+              loadedPageIds: pageIds,
+            };
+          }
+        } catch {
+          // Fall back to full-tree save if shard extraction fails
+        }
+
+        const pageData: PageData = { content: compressed, html, classes, scrollObserverScript, shards };
         await config.callbacks.onSave(pageData, meta);
         setUnsavedChanges(null);
       } catch (err) {
@@ -144,7 +174,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
       try {
         if (pageData?.content) {
           setBatchOperation(true);
-          const decompressed = lz.decompress(lz.decodeBase64(pageData.content));
+          const decompressed = await decompressAsync(pageData.content);
           actions.deserialize(sanitizeCraftSerializedContent(decompressed) || "");
           requestAnimationFrame(() => setBatchOperation(false));
         }
@@ -173,10 +203,10 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
       clearTimeout(saveTimeoutRef.current);
     }
 
-    saveTimeoutRef.current = setTimeout(() => {
+    saveTimeoutRef.current = setTimeout(async () => {
       try {
         const json = query.serialize();
-        const compressed = lz.encodeBase64(lz.compress(json));
+        const compressed = await compressAsync(json);
         const pageData: PageData = { content: compressed };
 
         config.callbacks.onChange?.(pageData);

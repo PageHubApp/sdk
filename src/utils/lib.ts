@@ -60,7 +60,12 @@ export {
   getPageCount,
   isolatePage,
   isolatePageAlt,
+  isolatePageLazy,
   listPageNodeIds,
+  getLoadedPages,
+  markPageLoaded,
+  markAllPagesLoaded,
+  clearLoadedPages,
   resolvePageRef,
   replaceVariables,
 } from "./pageManagement";

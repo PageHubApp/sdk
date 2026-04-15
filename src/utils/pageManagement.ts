@@ -4,6 +4,7 @@
 
 import { ROOT_NODE } from "@craftjs/core";
 import { phStorage } from "./phStorage";
+import { decompressAsync } from "./compressionAsync";
 
 /** Persisted when the editor canvas shows every page (not isolated to one). */
 export const EDITOR_ALL_PAGES_STORAGE = "__all_pages__";
@@ -124,6 +125,116 @@ export const isolatePageAlt = (
     phStorage.set("isolated", active);
   }
 };
+
+// ─── Loaded Pages Tracking (for selective loading / per-page saves) ───
+
+/** Track which page shards are currently loaded in the CraftJS tree. */
+const _loadedPages = new Set<string>();
+
+export function getLoadedPages(): ReadonlySet<string> {
+  return _loadedPages;
+}
+
+export function markPageLoaded(pageNodeId: string): void {
+  _loadedPages.add(pageNodeId);
+}
+
+export function markAllPagesLoaded(query: any): void {
+  for (const id of listPageNodeIds(query)) {
+    _loadedPages.add(id);
+  }
+}
+
+export function clearLoadedPages(): void {
+  _loadedPages.clear();
+}
+
+/**
+ * Isolate a page with lazy loading support.
+ * If the page is not in the CraftJS tree yet, fetches it via `fetchPage`,
+ * merges it into the tree, then isolates.
+ */
+export async function isolatePageLazy(
+  active: string | null,
+  query: any,
+  actions: any,
+  setIsolate: (v: string) => void,
+  fetchPage?: (pageNodeId: string) => Promise<{ content: string } | null>,
+): Promise<void> {
+  if (!active) {
+    // Show all loaded pages
+    isolatePageAlt(false, query, null, actions, setIsolate, false);
+    return;
+  }
+
+  // Check if page is already loaded in the CraftJS tree
+  try {
+    const node = query.node(active).get();
+    if (node) {
+      // Page is loaded — just isolate
+      isolatePageAlt(active, query, active, actions, setIsolate);
+      return;
+    }
+  } catch {
+    // Node not found — need to fetch
+  }
+
+  // Lazy load: fetch the page shard and merge into the tree
+  if (!fetchPage) {
+    console.warn(`[PageHub] Page ${active} not loaded and no fetchPage callback provided`);
+    return;
+  }
+
+  const pageData = await fetchPage(active);
+  if (!pageData?.content) {
+    console.warn(`[PageHub] fetchPage(${active}) returned no content`);
+    return;
+  }
+
+  // Decompress the fetched shard (shared + page)
+  const json = await decompressAsync(pageData.content);
+  const fetched = JSON.parse(json);
+
+  // Get the current tree
+  const currentJson = query.serialize();
+  const current = JSON.parse(currentJson);
+
+  // Merge: add the new page's nodes into the current tree
+  // The fetched tree has ROOT + shared + one page. We only need the page subtree nodes.
+  // Shared nodes (ROOT, header, footer) are already in the current tree.
+  for (const [nodeId, node] of Object.entries(fetched)) {
+    if (nodeId === "ROOT") {
+      // Merge ROOT.nodes to include the new page
+      const fetchedRootNodes = (node as any).nodes || [];
+      const currentRootNodes = current.ROOT?.nodes || [];
+      for (const id of fetchedRootNodes) {
+        if (!currentRootNodes.includes(id)) {
+          // Insert before footer (last shared child)
+          const lastPageIdx = currentRootNodes.reduce((acc: number, nid: string, i: number) => {
+            return current[nid]?.props?.type === "page" ? i : acc;
+          }, -1);
+          const insertAt = lastPageIdx >= 0 ? lastPageIdx + 1 : currentRootNodes.length;
+          currentRootNodes.splice(insertAt, 0, id);
+        }
+      }
+      continue;
+    }
+    // Skip shared nodes that already exist (header, footer, etc.)
+    if (current[nodeId]) continue;
+    // Add new page nodes
+    current[nodeId] = node;
+  }
+
+  // Re-deserialize the merged tree
+  actions.deserialize(JSON.stringify(current));
+  _loadedPages.add(active);
+
+  // Now isolate the newly loaded page
+  // Small delay to let CraftJS process the deserialization
+  requestAnimationFrame(() => {
+    isolatePageAlt(active, query, active, actions, setIsolate);
+  });
+}
 
 // ─── Page Ref Resolution ───
 
