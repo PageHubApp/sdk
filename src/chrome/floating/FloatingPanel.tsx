@@ -35,6 +35,8 @@ interface FloatingPanelProps {
    * Uses current panel width (e.g. after persisted resize). Omit to keep free placement / `initialPosition` only.
    */
   dockToEdge?: "left" | "right";
+  /** Header close button side. Default: right. */
+  closeButtonSide?: "left" | "right";
   /** z-index for the panel (default 999) */
   zIndex?: number;
   children: React.ReactNode;
@@ -58,9 +60,18 @@ export function FloatingPanel({
   edges = ["e", "s", "se"],
   initialPosition,
   dockToEdge,
+  closeButtonSide = "right",
   zIndex = 999,
   children,
 }: FloatingPanelProps) {
+  const [viewport, setViewport] = React.useState(() => ({
+    width: typeof window !== "undefined" ? window.innerWidth : 1200,
+    height: typeof window !== "undefined" ? window.innerHeight : 800,
+  }));
+  const viewportInset = 12;
+  const boundedMaxWidth = Math.max(180, Math.min(maxWidth, viewport.width - viewportInset * 2));
+  const boundedMaxHeight = Math.max(180, Math.min(maxHeight, viewport.height - viewportInset * 2));
+
   const defaultPos = (() => {
     if (initialPosition) return initialPosition;
     const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
@@ -97,9 +108,9 @@ export function FloatingPanel({
     defaultWidth,
     defaultHeight,
     minWidth,
-    maxWidth,
+    maxWidth: boundedMaxWidth,
     minHeight,
-    maxHeight,
+    maxHeight: boundedMaxHeight,
     edges,
   });
 
@@ -108,9 +119,42 @@ export function FloatingPanel({
     const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
     const x = dockToEdge === "right" ? Math.max(8, vw - width - 12) : 8;
     setPosition({ x, y: 40 });
-  }, [isOpen, dockToEdge, setPosition]);
+  }, [isOpen, dockToEdge, setPosition, width, viewport.width]);
+
+  useLayoutEffect(() => {
+    if (!isOpen || dockToEdge) return;
+    setPosition(prev => ({
+      x: Math.max(0, Math.min(prev.x, Math.max(0, viewport.width - width))),
+      y: Math.max(0, Math.min(prev.y, Math.max(0, viewport.height - height))),
+    }));
+  }, [dockToEdge, height, isOpen, setPosition, viewport.height, viewport.width, width]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onResize = () => {
+      setViewport({ width: window.innerWidth, height: window.innerHeight });
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const closeButton = (
+    <button
+      onClick={onClose}
+      className="text-accent-content hover:bg-accent-content/10 rounded p-0.5 transition-colors"
+    >
+      <TbX className="size-3.5" />
+    </button>
+  );
+
+  const titleNode = (
+    <div className="flex items-center gap-1.5">
+      {icon}
+      <span className="text-xs font-semibold">{title}</span>
+    </div>
+  );
 
   return ReactDOM.createPortal(
     <>
@@ -148,16 +192,20 @@ export function FloatingPanel({
               isDragging ? "cursor-grabbing" : "cursor-grab"
             }`}
           >
-            <div className="flex items-center gap-1.5">
-              {icon}
-              <span className="text-xs font-semibold">{title}</span>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-accent-content hover:bg-accent-content/10 rounded p-0.5 transition-colors"
-            >
-              <TbX className="size-3.5" />
-            </button>
+            {closeButtonSide === "left" ? (
+              <>
+                <div className="flex min-w-0 items-center gap-2">
+                  {closeButton}
+                  {titleNode}
+                </div>
+                <span className="size-5" aria-hidden="true" />
+              </>
+            ) : (
+              <>
+                {titleNode}
+                {closeButton}
+              </>
+            )}
           </div>
 
           {children}

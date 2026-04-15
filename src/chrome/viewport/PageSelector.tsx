@@ -94,7 +94,8 @@ export function PageSelector({
   const settings = useAtomValue(SettingsAtom) as { draftId?: string } | null;
   const [unsavedChangesRaw, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
   const unsavedChanges = unsavedChangesRaw as unknown as string | null;
-  const { emitter } = useSDK();
+  const { emitter, config } = useSDK();
+  const pageSettingsExtraTabs = config.editorChromeSlots?.pageSettingsExtraTabs || [];
 
   // If the isolated page was deleted, fall back to home page
   useEffect(() => {
@@ -427,6 +428,7 @@ export function PageSelector({
           isOpen={settingsPageId !== null}
           onClose={() => setSettingsPageId(null)}
           pageId={settingsPageId}
+          extraTabs={pageSettingsExtraTabs}
         />
       )}
     </div>

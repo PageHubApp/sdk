@@ -1,15 +1,17 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TbCode, TbPalette, TbPlug, TbPuzzle, TbRoute, TbSparkles } from "react-icons/tb";
-import debounce from "lodash.debounce";
-import { FloatingPanel } from "../floating/FloatingPanel";
-import { BrandingTab } from "./site-settings/BrandingTab";
-import { IntegrationsTab } from "./site-settings/IntegrationsTab";
-import { RedirectsTab } from "./site-settings/RedirectsTab";
-import { AITab } from "./site-settings/AITab";
-import { CodeTab } from "./site-settings/CodeTab";
 import { normalizeDesignTags } from "../../utils/normalizeDesignTags";
 import { useEditorSidebarDockLeft } from "../../utils/lib";
+import { AITab } from "./site-settings/AITab";
+import { BrandingTab } from "./site-settings/BrandingTab";
+import { CodeTab } from "./site-settings/CodeTab";
+import { IntegrationsTab } from "./site-settings/IntegrationsTab";
+import { RedirectsTab } from "./site-settings/RedirectsTab";
+import { mergeSettingsTabs, visibleSettingsTabs } from "./settings/registry";
+import { SettingsShell } from "./settings/SettingsShell";
+import { type SettingsTabDefinition } from "./settings/types";
+import { useSettingsController } from "./settings/useSettingsController";
 
 type SiteSettingsVariable = { key: string; value: string };
 type SiteSettingsIntegrationMap = Record<string, Record<string, string>>;
@@ -36,10 +38,11 @@ interface SiteSettingsDraft {
   connectors: SiteSettingsConnectorMap;
 }
 
-/** App-injected tab rendered inside the Site Settings modal. */
+/** Backward compatible host tab contract (v1). */
 export interface SiteSettingsExtraTab {
   key: string;
   label: string;
+  order?: number;
   render: (ctx: {
     inputClass: string;
     selectClass: string;
@@ -50,18 +53,19 @@ export interface SiteSettingsExtraTab {
     requestSave?: () => void;
     flushSave?: () => void;
   }) => React.ReactNode;
-  /** Optional: called during flush to let the tab commit props to ROOT. */
   onSave?: (setProp: (cb: (props: any) => void) => void) => void;
 }
 
 interface SiteSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  /** Extra tabs injected by the host app (e.g. Connectors). */
   extraTabs?: SiteSettingsExtraTab[];
 }
 
-/** Wide enough for two-column branding fields; stacks above AI Assistant (z 9999). */
+interface SiteSettingsTabContext {
+  setProp?: (cb: (props: any) => void) => void;
+}
+
 const SITE_SETTINGS_DEFAULT_WIDTH = 920;
 const SITE_SETTINGS_Z = 10050;
 
@@ -207,9 +211,36 @@ function applyDraftToProps(props: Record<string, any>, draft: SiteSettingsDraft)
   props.connectors = Object.keys(cleanConnectors).length ? cleanConnectors : undefined;
 }
 
+function adaptLegacyExtraTabs(
+  extraTabs: SiteSettingsExtraTab[]
+): Array<SettingsTabDefinition<SiteSettingsDraft, SiteSettingsTabContext>> {
+  return extraTabs.map(tab => ({
+    key: tab.key,
+    label: tab.label,
+    order: Number.isFinite(tab.order) ? tab.order : 300,
+    icon: <TbPuzzle />,
+    render: ctx =>
+      tab.render({
+        inputClass: ctx.inputClass,
+        selectClass: ctx.selectClass,
+        query: ctx.query,
+        actions: ctx.actions,
+        draft: ctx.draft as Record<string, any>,
+        setDraft: ctx.setDraft as React.Dispatch<React.SetStateAction<Record<string, any>>>,
+        requestSave: ctx.requestSave,
+        flushSave: ctx.flushSave,
+      }),
+    onSave: ctx => {
+      if (!ctx.setProp || !tab.onSave) return;
+      tab.onSave(ctx.setProp);
+    },
+  }));
+}
+
 export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSettingsModalProps) {
   const { actions, query } = useEditor();
-  /** Same side as the main toolbar — dock left with left toolbar, right with right. */
+  const queryRef = useRef(query);
+
   const toolbarDockedLeft = useEditorSidebarDockLeft();
   const siteSettingsDockRight = !toolbarDockedLeft;
   const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 800;
@@ -217,124 +248,166 @@ export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSetti
   const modalMaxHeight = Math.max(600, Math.min(760, Math.round(viewportHeight * 0.82)));
 
   const [activeTab, setActiveTab] = useState<string>("branding");
-  const [draft, setDraft] = useState<SiteSettingsDraft>(() => createDraftFromRoot({}));
-  const draftRef = useRef(draft);
-  const queryRef = useRef(query);
-  const lastSavedSignatureRef = useRef<string>(getDraftSignature(draft));
-  const flushNowRef = useRef<() => void>(() => {});
-  const requestSaveRef = useRef<ReturnType<typeof debounce> | null>(null);
-
-  const flushNow = useCallback(() => {
-    const snapshot = draftRef.current;
-    const nextSignature = getDraftSignature(snapshot);
-    if (nextSignature === lastSavedSignatureRef.current) return;
-
-    actions.setProp(ROOT_NODE, props => {
-      applyDraftToProps(props, snapshot);
-
-      for (const tab of extraTabs) {
-        tab.onSave?.(cb => cb(props));
-      }
-    });
-
-    lastSavedSignatureRef.current = nextSignature;
-  }, [actions, extraTabs]);
-
-  const requestSave = useMemo(() => debounce(flushNow, 350), [flushNow]);
 
   useEffect(() => {
     queryRef.current = query;
   }, [query]);
 
-  useEffect(() => {
-    flushNowRef.current = flushNow;
-  }, [flushNow]);
-
-  useEffect(() => {
-    requestSaveRef.current = requestSave;
-    return () => {
-      requestSaveRef.current?.cancel();
-    };
-  }, [requestSave]);
-
-  useEffect(() => {
-    draftRef.current = draft;
-  }, [draft]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    try {
-      const root = queryRef.current.node(ROOT_NODE).get();
-      const nextDraft = createDraftFromRoot((root?.data?.props || {}) as Record<string, any>);
-      draftRef.current = nextDraft;
-      setDraft(nextDraft);
-      lastSavedSignatureRef.current = getDraftSignature(nextDraft);
-    } catch (e) {
-      console.error("Error loading site settings:", e);
-    }
-
-    return () => {
-      requestSaveRef.current?.cancel();
-      flushNowRef.current();
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    requestSaveRef.current?.();
-  }, [draft, isOpen]);
-
-  const handleClose = useCallback(() => {
-    requestSaveRef.current?.cancel();
-    flushNowRef.current();
-    onClose();
-  }, [onClose]);
-
-  const updateDraftField = useCallback(
-    <K extends keyof SiteSettingsDraft>(
-      key: K,
-      value: React.SetStateAction<SiteSettingsDraft[K]>
-    ) => {
-      setDraft(prev => {
-        const resolvedValue =
-          typeof value === "function"
-            ? (value as (prevState: SiteSettingsDraft[K]) => SiteSettingsDraft[K])(prev[key])
-            : value;
-        const next = { ...prev, [key]: resolvedValue };
-        draftRef.current = next;
-        return next;
-      });
-    },
+  const builtInTabs = useMemo<Array<SettingsTabDefinition<SiteSettingsDraft, SiteSettingsTabContext>>>(
+    () => [
+      {
+        key: "branding",
+        label: "Branding",
+        order: 100,
+        icon: <TbPalette />,
+        render: ctx => (
+          <BrandingTab
+            inputClass={ctx.inputClass}
+            favicon={ctx.draft.favicon}
+            setFavicon={value => ctx.updateField("favicon", value)}
+            companyName={ctx.draft.companyName}
+            setCompanyName={value => ctx.updateField("companyName", value)}
+            companyTagline={ctx.draft.companyTagline}
+            setCompanyTagline={value => ctx.updateField("companyTagline", value)}
+            companyType={ctx.draft.companyType}
+            setCompanyType={value => ctx.updateField("companyType", value)}
+            companyLocation={ctx.draft.companyLocation}
+            setCompanyLocation={value => ctx.updateField("companyLocation", value)}
+            companyAddress={ctx.draft.companyAddress}
+            setCompanyAddress={value => ctx.updateField("companyAddress", value)}
+            companyPhone={ctx.draft.companyPhone}
+            setCompanyPhone={value => ctx.updateField("companyPhone", value)}
+            companyEmail={ctx.draft.companyEmail}
+            setCompanyEmail={value => ctx.updateField("companyEmail", value)}
+            companyWebsite={ctx.draft.companyWebsite}
+            setCompanyWebsite={value => ctx.updateField("companyWebsite", value)}
+            customVariables={ctx.draft.customVariables}
+            setCustomVariables={value => ctx.updateField("customVariables", value)}
+          />
+        ),
+      },
+      {
+        key: "integrations",
+        label: "Integrations",
+        order: 200,
+        icon: <TbPlug />,
+        render: ctx => (
+          <IntegrationsTab
+            inputClass={ctx.inputClass}
+            integrations={ctx.draft.integrations}
+            setIntegrations={value => ctx.updateField("integrations", value)}
+          />
+        ),
+      },
+      {
+        key: "redirects",
+        label: "Redirects",
+        order: 400,
+        icon: <TbRoute />,
+        render: ctx => (
+          <RedirectsTab
+            inputClass={ctx.inputClass}
+            selectClass={ctx.selectClass}
+            redirects={ctx.draft.redirects}
+            setRedirects={value => ctx.updateField("redirects", value)}
+          />
+        ),
+      },
+      {
+        key: "ai",
+        label: "AI",
+        order: 500,
+        icon: <TbSparkles />,
+        render: ctx => (
+          <AITab
+            inputClass={ctx.inputClass}
+            designNotes={ctx.draft.designNotes}
+            setDesignNotes={value => ctx.updateField("designNotes", value)}
+            designTags={ctx.draft.designTags}
+            setDesignTags={value => ctx.updateField("designTags", value)}
+          />
+        ),
+      },
+      {
+        key: "code",
+        label: "Custom code",
+        order: 600,
+        icon: <TbCode />,
+        render: ctx => (
+          <CodeTab
+            headerCode={ctx.draft.headerCode}
+            setHeaderCode={value => ctx.updateField("headerCode", value)}
+            footerCode={ctx.draft.footerCode}
+            setFooterCode={value => ctx.updateField("footerCode", value)}
+          />
+        ),
+      },
+    ],
     []
   );
 
-  const navBtn = (tab: string, label: string, icon: React.ReactNode) => {
-    const on = activeTab === tab;
-    return (
-      <button
-        type="button"
-        onClick={() => setActiveTab(tab)}
-        className={`flex w-full items-center gap-2 rounded-r-md px-3 py-2 text-left text-sm font-medium transition-colors ${
-          on
-            ? "border-l-2 border-primary bg-base-100 text-primary shadow-sm"
-            : "border-l-2 border-transparent text-neutral-content hover:bg-base-200/80 hover:text-base-content"
-        }`}
-      >
-        <span className="shrink-0 opacity-90 [&>svg]:size-4">{icon}</span>
-        <span className="min-w-0 truncate">{label}</span>
-      </button>
-    );
-  };
+  const injectedTabs = useMemo(() => adaptLegacyExtraTabs(extraTabs), [extraTabs]);
+  const allTabs = useMemo(() => mergeSettingsTabs(builtInTabs, injectedTabs), [builtInTabs, injectedTabs]);
 
-  /** Toolbar-aligned field chrome: lifted surface + visible border (not flat `bg-input`). */
+  const { draft, setDraft, updateField, requestSave, flushSave } = useSettingsController<SiteSettingsDraft>({
+    isOpen,
+    loadDraft: () => {
+      try {
+        const root = queryRef.current.node(ROOT_NODE).get();
+        return createDraftFromRoot((root?.data?.props || {}) as Record<string, any>);
+      } catch (e) {
+        console.error("Error loading site settings:", e);
+        return createDraftFromRoot({});
+      }
+    },
+    getDraftSignature: getDraftSignature,
+    commitDraft: snapshot => {
+      actions.setProp(ROOT_NODE, props => {
+        applyDraftToProps(props, snapshot);
+        for (const tab of allTabs) {
+          tab.onSave?.({
+            query,
+            actions,
+            draft: snapshot,
+            setProp: cb => cb(props),
+          });
+        }
+      });
+    },
+    debounceMs: 350,
+    reloadKey: isOpen,
+  });
+
   const inputClass =
     "w-full rounded-lg border border-base-300 bg-base-200 px-4 py-2 text-sm text-base-content shadow-sm placeholder:text-neutral-content transition-[border-color,box-shadow,background-color] duration-150 ease-out hover:border-primary hover:bg-base-300/25 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50";
   const selectClass =
     "w-full cursor-pointer rounded-lg border border-base-300 bg-base-200 px-2 py-2 text-xs text-base-content shadow-sm transition-[border-color,box-shadow,background-color] duration-150 ease-out hover:border-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50";
 
+  const tabRenderCtx = useMemo(
+    () => ({
+      inputClass,
+      selectClass,
+      query,
+      actions,
+      draft,
+      setDraft,
+      updateField,
+      requestSave,
+      flushSave,
+    }),
+    [actions, draft, flushSave, query, requestSave, selectClass, setDraft, updateField]
+  );
+
+  const tabs = useMemo(() => visibleSettingsTabs(allTabs, tabRenderCtx), [allTabs, tabRenderCtx]);
+  const activeDef = tabs.find(tab => tab.key === activeTab) ?? tabs[0];
+
+  const handleClose = useCallback(() => {
+    flushSave();
+    onClose();
+  }, [flushSave, onClose]);
+
   return (
-    <FloatingPanel
+    <SettingsShell
       isOpen={isOpen}
       onClose={handleClose}
       title="Site Settings"
@@ -347,108 +420,11 @@ export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSetti
       maxHeight={modalMaxHeight}
       dockToEdge={siteSettingsDockRight ? "right" : "left"}
       zIndex={SITE_SETTINGS_Z}
-      edges={["e", "s", "se", "w", "sw"]}
+      tabs={tabs.map(tab => ({ key: tab.key, label: tab.label, icon: tab.icon }))}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
     >
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex min-h-0 flex-1 flex-row overflow-hidden">
-          <nav
-            className="border-base-300 bg-neutral scrollbar-light flex w-52 shrink-0 flex-col gap-0.5 overflow-y-auto border-r py-2 pr-1 pl-2"
-            aria-label="Site settings sections"
-          >
-            {navBtn("branding", "Branding", <TbPalette />)}
-            {navBtn("integrations", "Integrations", <TbPlug />)}
-            {extraTabs.map(tab => (
-              <React.Fragment key={tab.key}>{navBtn(tab.key, tab.label, <TbPuzzle />)}</React.Fragment>
-            ))}
-            {navBtn("redirects", "Redirects", <TbRoute />)}
-            {navBtn("ai", "AI", <TbSparkles />)}
-            {navBtn("code", "Custom code", <TbCode />)}
-          </nav>
-
-          <div className="scrollbar-light bg-base-100 text-base-content flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto p-6">
-            {activeTab === "code" && (
-              <CodeTab
-                headerCode={draft.headerCode}
-                setHeaderCode={value => updateDraftField("headerCode", value)}
-                footerCode={draft.footerCode}
-                setFooterCode={value => updateDraftField("footerCode", value)}
-              />
-            )}
-
-            {activeTab === "branding" && (
-              <BrandingTab
-                inputClass={inputClass}
-                favicon={draft.favicon}
-                setFavicon={value => updateDraftField("favicon", value)}
-                companyName={draft.companyName}
-                setCompanyName={value => updateDraftField("companyName", value)}
-                companyTagline={draft.companyTagline}
-                setCompanyTagline={value => updateDraftField("companyTagline", value)}
-                companyType={draft.companyType}
-                setCompanyType={value => updateDraftField("companyType", value)}
-                companyLocation={draft.companyLocation}
-                setCompanyLocation={value => updateDraftField("companyLocation", value)}
-                companyAddress={draft.companyAddress}
-                setCompanyAddress={value => updateDraftField("companyAddress", value)}
-                companyPhone={draft.companyPhone}
-                setCompanyPhone={value => updateDraftField("companyPhone", value)}
-                companyEmail={draft.companyEmail}
-                setCompanyEmail={value => updateDraftField("companyEmail", value)}
-                companyWebsite={draft.companyWebsite}
-                setCompanyWebsite={value => updateDraftField("companyWebsite", value)}
-                customVariables={draft.customVariables}
-                setCustomVariables={value => updateDraftField("customVariables", value)}
-              />
-            )}
-
-            {activeTab === "integrations" && (
-              <IntegrationsTab
-                inputClass={inputClass}
-                integrations={draft.integrations}
-                setIntegrations={value => updateDraftField("integrations", value)}
-              />
-            )}
-
-            {extraTabs.map(tab =>
-              activeTab === tab.key ? (
-                <React.Fragment key={tab.key}>
-                  {tab.render({
-                    inputClass,
-                    selectClass,
-                    query,
-                    actions,
-                    draft: draft as Record<string, any>,
-                    setDraft: setDraft as React.Dispatch<
-                      React.SetStateAction<Record<string, any>>
-                    >,
-                    requestSave: () => requestSave(),
-                    flushSave: flushNow,
-                  })}
-                </React.Fragment>
-              ) : null
-            )}
-
-            {activeTab === "redirects" && (
-              <RedirectsTab
-                inputClass={inputClass}
-                selectClass={selectClass}
-                redirects={draft.redirects}
-                setRedirects={value => updateDraftField("redirects", value)}
-              />
-            )}
-
-            {activeTab === "ai" && (
-              <AITab
-                inputClass={inputClass}
-                designNotes={draft.designNotes}
-                setDesignNotes={value => updateDraftField("designNotes", value)}
-                designTags={draft.designTags}
-                setDesignTags={value => updateDraftField("designTags", value)}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-    </FloatingPanel>
+      {activeDef ? activeDef.render(tabRenderCtx) : null}
+    </SettingsShell>
   );
 }

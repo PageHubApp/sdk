@@ -74,7 +74,7 @@ export const TabBarBreakpointPicker = () => {
       trigger={
         <button
           type="button"
-          className="hover:bg-accent flex cursor-pointer flex-col gap-px rounded p-1 transition-colors"
+          className="hover:bg-accent flex cursor-pointer flex-col gap-px rounded p-1 transition-[color,background-color,transform] active:scale-90"
           aria-label="Select breakpoint scope"
         >
           {(
@@ -114,7 +114,7 @@ export const TabBarBreakpointPicker = () => {
                 startDrag(key);
               }}
               aria-pressed={isOn}
-              className={`cursor-pointer rounded px-2 py-0.5 text-xs font-semibold transition-colors select-none ${
+              className={`cursor-pointer rounded px-2 py-0.5 text-xs font-semibold transition-[color,background-color,transform] active:scale-95 select-none ${
                 isOn
                   ? BREAKPOINT_PILL.active
                   : BREAKPOINT_PILL.pill + " opacity-60 hover:opacity-100"
@@ -132,7 +132,7 @@ export const TabBarBreakpointPicker = () => {
             const cleared = Object.fromEntries(VIEW_BREAKPOINT_SCOPE_KEYS.map(k => [k, false]));
             setViewSelection(prev => ({ ...prev, ...cleared }));
           }}
-          className="text-neutral-content hover:text-base-content mt-0.5 cursor-pointer rounded px-1 py-0.5 text-[10px]"
+          className="text-neutral-content hover:text-base-content mt-0.5 cursor-pointer rounded px-1 py-0.5 text-[10px] transition-[color,transform] active:scale-90"
         >
           Clear all
         </button>

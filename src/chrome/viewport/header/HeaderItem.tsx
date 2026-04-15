@@ -1,4 +1,5 @@
 import React from "react";
+import { twMerge } from "tailwind-merge";
 
 interface HeaderItemProps {
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -24,7 +25,10 @@ export function HeaderItem({
       onMouseDown={onMouseDown}
       disabled={disabled}
       aria-label={ariaLabel}
-      className={`tool-button ${className}`}
+      className={twMerge(
+        "tool-button text-base-content/70 hover:bg-transparent hover:text-base-content transition-colors",
+        className
+      )}
       {...rest}
     >
       {children}

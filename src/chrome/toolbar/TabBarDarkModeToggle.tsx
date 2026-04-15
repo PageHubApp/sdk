@@ -11,7 +11,7 @@ export const TabBarDarkModeToggle = () => {
     <button
       type="button"
       onClick={() => setViewSelection(prev => ({ ...prev, dark: !prev.dark }))}
-      className={`flex shrink-0 cursor-pointer items-center justify-center rounded p-1 transition-colors ${
+      className={`flex shrink-0 cursor-pointer items-center justify-center rounded p-1 transition-[color,transform] active:scale-90 ${
         darkOn
           ? "bg-violet-600/20 text-violet-800 ring-1 ring-violet-500/30 dark:text-violet-200"
           : "text-neutral-content hover:bg-accent hover:text-base-content"

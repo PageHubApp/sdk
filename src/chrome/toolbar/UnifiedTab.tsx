@@ -22,7 +22,7 @@ export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
 
   return (
     <div
-      className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-colors ${
+      className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-[color,transform] active:scale-90 ${
         showActiveColor ? "text-primary" : "text-secondary-content hover:text-base-content"
       }`}
       role="tab"

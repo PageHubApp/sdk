@@ -53,8 +53,8 @@ export function useResizable(options: UseResizableOptions) {
   } = options;
 
   const clamp = (w: number, h: number) => ({
-    width: Math.max(minWidth, Math.min(maxWidth, Math.round(w))),
-    height: Math.max(minHeight, Math.min(maxHeight, Math.round(h))),
+    width: Math.max(Math.min(minWidth, maxWidth), Math.min(maxWidth, Math.round(w))),
+    height: Math.max(Math.min(minHeight, maxHeight), Math.min(maxHeight, Math.round(h))),
   });
 
   const [size, setSize] = useState(() => {
@@ -94,6 +94,14 @@ export function useResizable(options: UseResizableOptions) {
     },
     [storageKey]
   );
+
+  // When bounds change (e.g. viewport shrinks), keep current size in range.
+  useEffect(() => {
+    setSize(prev => {
+      const next = clamp(prev.width, prev.height);
+      return next.width === prev.width && next.height === prev.height ? prev : next;
+    });
+  }, [minWidth, minHeight, maxWidth, maxHeight]);
 
   // Document-level pointer listeners — attached once
   useEffect(() => {

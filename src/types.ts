@@ -283,6 +283,7 @@ export interface PageHubEditorChromeSlots {
   siteSettingsExtraTabs?: Array<{
     key: string;
     label: string;
+    order?: number;
     render: (ctx: {
       inputClass: string;
       selectClass: string;
@@ -294,6 +295,35 @@ export interface PageHubEditorChromeSlots {
       flushSave?: () => void;
     }) => ReactNode;
     onSave?: (setProp: (cb: (props: any) => void) => void) => void;
+  }>;
+  /**
+   * Extra tabs injected into the Page Settings modal.
+   * Host owns all API calls, auth, and business logic; SDK provides the tab slot.
+   */
+  pageSettingsExtraTabs?: Array<{
+    key: string;
+    label: string;
+    order?: number;
+    render: (ctx: {
+      inputClass: string;
+      selectClass: string;
+      query: any;
+      actions: any;
+      pageId: string | null;
+      allowCustom404Page: boolean;
+      draft?: Record<string, any>;
+      setDraft?: Dispatch<SetStateAction<Record<string, any>>>;
+      updateField?: (key: string, value: any) => void;
+      requestSave?: () => void;
+      flushSave?: () => void;
+    }) => ReactNode;
+    onSave?: (ctx: {
+      pageId: string | null;
+      setProp?: (cb: (props: any) => void) => void;
+      draft?: Record<string, any>;
+      query: any;
+      actions: any;
+    }) => void;
   }>;
 }
 

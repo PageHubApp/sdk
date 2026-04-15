@@ -396,7 +396,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
                   handleTabClick(tab.id);
                 }
               }}
-              className={`group flex min-w-32 cursor-pointer items-center gap-2 rounded-t px-3 py-1.5 transition-colors ${
+              className={`group flex min-w-32 cursor-pointer items-center gap-2 rounded-t px-3 py-1.5 transition-[color,background-color,transform] active:scale-95 ${
                 activeTabId === tab.id
                   ? "bg-neutral text-neutral-content hover:bg-base-200 hover:text-base-content font-bold"
                   : "bg-base-100 text-secondary-content hover:bg-base-200 hover:text-base-content"
@@ -412,7 +412,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
               </span>
               <button
                 onClick={e => handleCloseTab(tab.id, e)}
-                className={`hover:bg-neutral hover:text-neutral-content rounded-lg p-0.5 transition-opacity ${activeTabId === tab.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                className={`hover:bg-neutral hover:text-neutral-content rounded-lg p-0.5 transition-[color,background-color,opacity,transform] active:scale-90 ${activeTabId === tab.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
               >
                 <TbX className="size-3" />
               </button>

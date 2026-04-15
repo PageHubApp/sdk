@@ -148,6 +148,13 @@ export const NodeBreadcrumb = () => {
 
   // Short breadcrumb: just the immediate parent (if any)
   const parentItem = breadcrumb.length >= 2 ? breadcrumb[breadcrumb.length - 2] : null;
+  const breadcrumbButtonClass =
+    "transition-[color,background-color,transform] active:scale-95";
+  const breadcrumbIconButtonClass =
+    "text-neutral-content hover:bg-neutral hover:text-base-content rounded p-1 " +
+    breadcrumbButtonClass;
+  const breadcrumbPillButtonClass =
+    "rounded p-1 text-xs whitespace-nowrap " + breadcrumbButtonClass;
 
   return (
     <div className="bg-base-100 text-base-content flex w-full items-center justify-between px-2 py-1 text-sm">
@@ -162,7 +169,7 @@ export const NodeBreadcrumb = () => {
               <button
                 type="button"
                 aria-label="View ancestry"
-                className="text-neutral-content hover:bg-neutral hover:text-base-content mr-0.5 rounded p-1 transition-colors"
+                className={`mr-0.5 ${breadcrumbIconButtonClass}`}
               >
                 <TbListTree className="size-3.5" />
               </button>
@@ -204,7 +211,7 @@ export const NodeBreadcrumb = () => {
           <div className="flex items-center gap-0">
             <button
               onClick={handlePageClick}
-              className={`bg-neutral text-base-content hover:bg-neutral/80 rounded p-1 text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`bg-neutral text-base-content hover:bg-neutral/80 font-medium ${breadcrumbPillButtonClass} ${
                 showOnlyPageContext ? "min-w-0" : "max-w-[100px] min-w-0 truncate"
               }`}
               data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
@@ -228,7 +235,7 @@ export const NodeBreadcrumb = () => {
           <div className="flex items-center gap-0">
             <button
               onClick={() => handleNodeClick(parentItem.id)}
-              className="text-neutral-content hover:bg-neutral hover:text-base-content max-w-[80px] min-w-0 truncate rounded p-1 text-xs whitespace-nowrap transition-colors"
+              className={`text-neutral-content hover:bg-neutral hover:text-base-content max-w-[80px] min-w-0 truncate ${breadcrumbPillButtonClass}`}
               data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
               data-tooltip-content={`Select ${parentItem.name} (${parentItem.type})`}
               data-tooltip-place="bottom"
@@ -268,7 +275,7 @@ export const NodeBreadcrumb = () => {
             ) : (
               <button
                 onClick={() => setIsEditing(true)}
-                className="bg-primary/15 text-primary hover:bg-primary/25 flex-1 min-w-0 truncate rounded p-1 text-xs font-semibold whitespace-nowrap transition-all duration-200 ease-in-out hover:scale-105"
+                className="bg-primary/15 text-primary hover:bg-primary/25 flex-1 min-w-0 truncate rounded p-1 text-xs font-semibold whitespace-nowrap transition-[color,background-color,transform] active:scale-95"
                 data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                 data-tooltip-content={`Click to edit "${currentItem.name}"`}
                 data-tooltip-place="bottom"

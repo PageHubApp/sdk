@@ -172,6 +172,8 @@ export const ToolbarWrapper = ({
   const [searchQuery, setSearchQuery] = useAtomState(SettingsSearchAtom);
   const [searchOpen, setSearchOpen] = useAtomState(SettingsSearchOpenAtom);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const footerActionClass =
+    "rounded-lg p-2 transition-[color,transform] active:scale-90 cursor-pointer";
 
   const setActiveTab = useSetAtomState(TabAtom);
 
@@ -226,14 +228,18 @@ export const ToolbarWrapper = ({
             <button
               type="button"
               onClick={toggleSearch}
-              className={`cursor-pointer rounded-lg p-1.5 transition-colors ${searchOpen ? "text-primary" : "text-secondary-content hover:text-base-content"}`}
+              className={`inline-flex size-8 cursor-pointer items-center justify-center rounded-lg transition-[color,background-color,transform] active:scale-90 ${
+                searchOpen
+                  ? "text-primary"
+                  : "text-secondary-content hover:text-base-content"
+              }`}
               aria-label="Search settings"
               data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
               data-tooltip-content="Search settings"
               data-tooltip-place="top"
               data-tooltip-offset={10}
             >
-              <TbSearch size={14} />
+              <TbSearch className="size-4" />
             </button>
             <div className="bg-border mx-0.5 h-4 w-px shrink-0" />
             <TabBarBreakpointPicker />
@@ -252,7 +258,7 @@ export const ToolbarWrapper = ({
                   if (e.key === "Escape") toggleSearch();
                 }}
                 placeholder="Search settings..."
-                className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:ring-primary h-7 w-full rounded-md border px-2.5 text-xs focus:ring-1 focus:outline-none"
+                className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:ring-primary h-8 w-full rounded-md border px-2.5 text-xs focus:ring-1 focus:outline-none"
                 autoFocus
                 {...toolbarInputNoAutocompleteProps}
               />
@@ -260,9 +266,9 @@ export const ToolbarWrapper = ({
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="text-neutral-content hover:text-base-content absolute right-1.5 cursor-pointer"
+                  className="text-neutral-content hover:text-base-content absolute right-1.5 top-1/2 flex size-5 -translate-y-1/2 cursor-pointer items-center justify-center"
                 >
-                  <TbX size={12} />
+                  <TbX className="size-3" />
                 </button>
               )}
             </div>
@@ -349,7 +355,7 @@ export const ToolbarWrapper = ({
 
         {id !== ROOT_NODE && (
           <button
-            className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
+            className={`text-neutral-content hover:text-accent-content ${footerActionClass}`}
             onClick={() => {
               actions.selectNode(null);
               setSideBarOpen(false);
@@ -365,7 +371,7 @@ export const ToolbarWrapper = ({
 
         {id !== ROOT_NODE && parentName !== "Background" && (
           <button
-            className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
+            className={`text-neutral-content hover:text-accent-content ${footerActionClass}`}
             onClick={() => actions.selectNode(parent)}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
             data-tooltip-content="Select Parent"
@@ -379,7 +385,7 @@ export const ToolbarWrapper = ({
         {deletable && (
           <>
             <button
-              className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
+              className={`text-neutral-content hover:text-accent-content ${footerActionClass}`}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 if (props.canDelete !== false) deleteSelectedNode();
@@ -396,7 +402,7 @@ export const ToolbarWrapper = ({
             {!isLinked && (
               <>
                 <button
-                  className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
+                  className={`text-neutral-content hover:text-accent-content ${footerActionClass}`}
                   onClick={handleClone}
                   data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                   data-tooltip-content="Duplicate"
@@ -407,7 +413,7 @@ export const ToolbarWrapper = ({
                 </button>
 
                 <button
-                  className={`rounded-lg p-2 transition-colors active:scale-90 ${
+                  className={`${footerActionClass} transition-colors ${
                     id !== ROOT_NODE
                       ? "text-neutral-content hover:text-accent-content cursor-pointer"
                       : "text-neutral-content/50 cursor-not-allowed"
@@ -424,7 +430,7 @@ export const ToolbarWrapper = ({
                 </button>
 
                 <button
-                  className={`rounded-lg p-2 transition-colors active:scale-90 ${
+                  className={`${footerActionClass} transition-colors ${
                     phStorage.get("clipboard") && phStorage.get("clipboard") !== "{}"
                       ? "text-neutral-content hover:text-accent-content cursor-pointer"
                       : "text-neutral-content/50 cursor-not-allowed"
@@ -443,7 +449,7 @@ export const ToolbarWrapper = ({
 
                 <button
                   ref={ref}
-                  className="text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2"
+                  className={`text-neutral-content hover:text-accent-content ${footerActionClass}`}
                   onClick={async (e: React.MouseEvent) => {
                     const comp = await handleSaveTemplate("component");
                     setComponents([...components, comp]);
@@ -464,8 +470,7 @@ export const ToolbarWrapper = ({
           <>
             {renderAiContext({
               onClick: pinSelectionInAiChat,
-              className:
-                "text-neutral-content hover:text-accent-content cursor-pointer rounded-lg p-2",
+              className: `text-neutral-content hover:text-accent-content ${footerActionClass}`,
               "data-tooltip-id": PAGEHUB_RTT_GLOBAL_ID,
               "data-tooltip-content": "Include in AI chat",
               "data-tooltip-place": "top",

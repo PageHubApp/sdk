@@ -250,10 +250,21 @@ export const RENDER_INVALID_TREE_MESSAGE =
 
 // ─── Default resolver ───────────────────────────────────────────────────────
 
+const cartBadgeToHTML: ToHTMLFn = (props, _children, ctx) => {
+  const cls = props.className || "btn btn-ghost btn-circle relative";
+  cls.split(/\s+/).forEach(c => c && ctx.classes.add(c));
+  return `<button class="${cls}" aria-label="Cart" data-action="toggle-cart">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17h-11v-14h-2"/><path d="M6 5l14 1l-1 7h-13"/></svg>` +
+    `</button>`;
+};
+
 const defaultResolver: Record<string, ToHTMLFn> = {
   ...processForStatic(BUILTIN_COMPONENT_DEFS),
   Header: containerToHTML,
   Footer: containerToHTML,
+  CartBadge: cartBadgeToHTML,
+  CartDrawer: containerToHTML,
+  CheckoutBanner: containerToHTML,
 };
 
 // ─── Tree walker ────────────────────────────────────────────────────────────
