@@ -1,4 +1,4 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { useEditor } from "@craftjs/core";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,6 +11,7 @@ import {
   TbPlus,
   TbSettings,
 } from "react-icons/tb";
+import useSWR from "swr";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "../../utils/atoms";
 import { IsolateAtom, isolatePageAlt } from "../../utils/lib";
@@ -51,39 +52,19 @@ export function PageSelector({
   suggestedPageName,
   showHashIcon = true,
 }: PageSelectorProps) {
-  const { query, actions, pages } = useEditor((state, query) => {
-    try {
-      const root = query.node(ROOT_NODE).get();
+  const { query, actions } = useEditor();
+  const settings = useAtomValue(SettingsAtom) as { _id?: string } | null;
+  const siteId = settings?._id;
 
-      if (!root || !root.data || !root.data.nodes) {
-        return { pages: [] };
-      }
-
-      const pageList = root.data.nodes
-        .map(_ => {
-          try {
-            const _props = query.node(_).get();
-
-            return _props?.data?.props?.type === "page"
-              ? {
-                  id: _,
-                  displayName: _props.data.custom?.displayName || "Untitled Page",
-                  custom: _props.data.custom,
-                }
-              : null;
-          } catch (e) {
-            // Node may have been removed
-            return null;
-          }
-        })
-        .filter(_ => _) as Page[];
-
-      return { pages: pageList };
-    } catch (e) {
-      console.error("Error fetching pages:", e);
-      return { pages: [] };
-    }
-  });
+  // Page list from database via SWR
+  const { data: pageData, mutate: mutatePages } = useSWR(
+    siteId ? `/api/v1/sites/${siteId}/pages` : null,
+    (url: string) => fetch(url).then(r => r.json()),
+  );
+  const pages: Page[] = (pageData?.pages || []).map((p: any) => ({
+    id: p.nodeId,
+    displayName: p.displayName || "Untitled Page",
+  }));
 
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const [isOpen, setIsOpen] = useState(false);
@@ -91,29 +72,30 @@ export function PageSelector({
   const [settingsPageId, setSettingsPageId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const settings = useAtomValue(SettingsAtom) as { draftId?: string } | null;
   const [unsavedChangesRaw, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
   const unsavedChanges = unsavedChangesRaw as unknown as string | null;
   const { emitter, config } = useSDK();
   const pageSettingsExtraTabs = config.editorChromeSlots?.pageSettingsExtraTabs || [];
 
+  // Home page ID from SWR data
+  const homePageId = (pageData?.pages || []).find((p: any) => p.isHomePage)?.nodeId || pages[0]?.id;
+
   // If the isolated page was deleted, fall back to home page
   useEffect(() => {
     if (isolate && pages.length > 0) {
       const pageExists = pages.some(p => p.id === isolate);
-      if (!pageExists) {
-        const homeId =
-          pages.find(p => {
-            try {
-              return query.node(p.id).get()?.data?.props?.isHomePage;
-            } catch {
-              return false;
-            }
-          })?.id ?? pages[0]?.id;
-        if (homeId) isolatePageAlt(isolate, query, homeId, actions, setIsolate, true);
+      if (!pageExists && homePageId) {
+        isolatePageAlt(isolate, query, homePageId, actions, setIsolate, true);
       }
     }
-  }, [pages, isolate, query, actions, setIsolate]);
+  }, [pages, isolate, query, actions, setIsolate, homePageId]);
+
+  // Revalidate page list after saves (picks up new/deleted pages)
+  useEffect(() => {
+    const handler = () => mutatePages();
+    window.addEventListener("pagehub:saved", handler);
+    return () => window.removeEventListener("pagehub:saved", handler);
+  }, [mutatePages]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -150,9 +132,7 @@ export function PageSelector({
         // Picker mode: just return the page data
         const page = pages.find(p => p.id === pageId);
         if (page) {
-          const node = query.node(pageId).get();
-          const isHomePage = node?.data?.props?.isHomePage || false;
-          onPagePick({ id: pageId, displayName: page.displayName, isHomePage });
+          onPagePick({ id: pageId, displayName: page.displayName, isHomePage: pageId === homePageId });
         }
         setIsOpen(false);
         return;
@@ -182,8 +162,7 @@ export function PageSelector({
         pathParts.length > 1 ? `/${pathParts[0]}/${pathParts[1]}` : `/${pathParts[0] || ""}`;
 
       // Check if this page is marked as home page
-      const node = query.node(pageId).get();
-      const isHomePage = node?.data?.props?.isHomePage;
+      const isHomePage = pageId === homePageId;
 
       if (isHomePage) {
         return baseUrl || "/";
@@ -214,16 +193,7 @@ export function PageSelector({
   });
 
   // Home page fallback — used when no page is isolated
-  const homePage =
-    pages.find(p => {
-      try {
-        return query.node(p.id).get()?.data?.props?.isHomePage;
-      } catch {
-        return false;
-      }
-    }) ??
-    pages[0] ??
-    null;
+  const homePage = (homePageId ? pages.find(p => p.id === homePageId) : null) ?? pages[0] ?? null;
 
   // Current page: explicit isolation > home page fallback (never "all pages")
   const currentPage = pickerMode
