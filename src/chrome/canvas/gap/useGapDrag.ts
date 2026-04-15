@@ -91,10 +91,8 @@ export function useGapDrag({
         const gapClass = pixelsToGapClass(newGapPx);
         const snappedPx = GAP_CLASS_TO_PX[gapClass] ?? newGapPx;
 
-        const prefix = buildVariantPrefix(classPrefixView, classDark);
-        setProp(prop => {
-          prop.className = twMerge(prop.className || "", prefix + gapClass);
-        }, 300);
+        // Inline style for live feedback — setProp on drop
+        dom.style.gap = `${snappedPx}px`;
 
         // Update control position to follow the gap center
         const children = getVisibleChildren(dom);
@@ -195,6 +193,16 @@ export function useGapDrag({
 
     const handleMouseUp = () => {
       if (isDraggingRef.current) {
+        // Clear inline style and commit to CraftJS
+        dom.style.gap = "";
+        const currentGap = parseFloat(window.getComputedStyle(dom).gap) || 0;
+        const snappedGap = gapHoverInfoRef.current?.currentGap ?? currentGap;
+        const gapClass = pixelsToGapClass(snappedGap);
+        const prefix = buildVariantPrefix(classPrefixView, classDark);
+        setProp(prop => {
+          prop.className = twMerge(prop.className || "", prefix + gapClass);
+        });
+
         setIsDragging(false);
         setDragStartPos(null);
         document.body.style.cursor = "auto";

@@ -182,7 +182,7 @@ export const UniformPaddingNodeController = () => {
           targetElement={dom as HTMLElement | null}
           type="padding"
           position="all"
-          isActive={hovering || dragging}
+          isActive={dragging}
         />
         <button
           type="button"

@@ -180,7 +180,7 @@ function DragAdjust({
         targetElement={targetElement}
         type={spacingType}
         position={spacingPosition}
-        isActive={hovering || dragging}
+        isActive={dragging}
       />
       <button
         data-craft-ignore="true"

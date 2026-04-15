@@ -36,93 +36,55 @@ export function GapDragControl() {
     ? document.getElementById("viewport")
     : null;
 
-  // TODO: positioning/click issues — disabled until fixed
-  if (!shouldShow || !portalTarget) return null;
-  return null;
+  if (!shouldShow || !portalTarget || !gapHoverInfo.gapRect) return null;
 
   const portalRect = portalTarget.getBoundingClientRect();
-  const offsetX = -portalRect.left + portalTarget.scrollLeft;
-  const offsetY = -portalRect.top + portalTarget.scrollTop;
+  const ox = -portalRect.left + portalTarget.scrollLeft;
+  const oy = -portalRect.top + portalTarget.scrollTop;
 
   const isVertical = gapHoverInfo.direction === "vertical";
+  const gr = gapHoverInfo.gapRect;
 
   return createPortal(
-    <>
-      {/* Gap region highlight */}
-      {gapHoverInfo.gapRect && (
-        <div
-          data-exclude-gap-detection
-          style={{
-            position: "absolute",
-            left: gapHoverInfo.gapRect.x + offsetX,
-            top: gapHoverInfo.gapRect.y + offsetY,
-            width: gapHoverInfo.gapRect.width,
-            height: gapHoverInfo.gapRect.height,
-            background: isDragging
-              ? "rgba(59, 130, 246, 0.15)"
-              : "rgba(59, 130, 246, 0.08)",
-            pointerEvents: "none",
-            zIndex: 9998,
-            transition: "background 0.15s ease",
-          }}
-        />
-      )}
-      {/* Drag handle */}
-      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-      <div
-        data-exclude-gap-detection
-        data-craft-ignore="true"
-        onMouseDown={handleMouseDown}
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div
+      data-exclude-gap-detection
+      data-node-control="true"
+      onMouseDown={handleMouseDown}
+      style={{
+        position: "absolute",
+        left: gr.x + ox - (isVertical ? 12 : 0),
+        top: gr.y + oy - (isVertical ? 0 : 4),
+        width: isVertical ? Math.max(gr.width, 8) + 24 : gr.width,
+        height: isVertical ? gr.height : Math.max(gr.height, 8) + 8,
+        backgroundColor: isDragging
+          ? "rgba(59, 130, 246, 0.4)"
+          : "rgba(59, 130, 246, 0.2)",
+        cursor: isVertical ? "ew-resize" : "ns-resize",
+        zIndex: 9998,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: isDragging ? "none" : "background-color 0.15s ease",
+      }}
+    >
+      <span
         style={{
-          position: "absolute",
-          left: gapHoverInfo.x + offsetX - 12,
-          top: gapHoverInfo.y + offsetY - 12,
-          width: 24,
-          height: 24,
-          zIndex: 9999,
-          cursor: isDragging ? "grabbing" : "grab",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#1d4ed8",
+          backgroundColor: "rgba(255, 255, 255, 0.9)",
+          padding: "1px 5px",
+          borderRadius: 3,
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          pointerEvents: "none",
+          userSelect: "none",
+          whiteSpace: "nowrap",
         }}
       >
-        <div
-          style={{
-            width: isDragging ? 20 : 16,
-            height: isDragging ? 20 : 16,
-            borderRadius: "50%",
-            background: isDragging ? "rgb(59, 130, 246)" : "rgba(59, 130, 246, 0.8)",
-            border: "2px solid white",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
-            transition: "all 0.15s ease",
-          }}
-        />
-      </div>
-      {/* Gap value label */}
-      {isDragging && (
-        <div
-          data-exclude-gap-detection
-          style={{
-            position: "absolute",
-            left: gapHoverInfo.x + offsetX + (isVertical ? 16 : 0),
-            top: gapHoverInfo.y + offsetY + (isVertical ? 0 : -28),
-            transform: isVertical ? "translateY(-50%)" : "translateX(-50%)",
-            background: "rgb(59, 130, 246)",
-            color: "white",
-            fontSize: 11,
-            fontWeight: 600,
-            padding: "2px 6px",
-            borderRadius: 4,
-            pointerEvents: "none",
-            zIndex: 9999,
-            whiteSpace: "nowrap",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
-          }}
-        >
-          {Math.round(gapHoverInfo.currentGap)}px
-        </div>
-      )}
-    </>,
+        {Math.round(gapHoverInfo.currentGap)}px
+      </span>
+    </div>,
     portalTarget
   );
 }

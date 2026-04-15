@@ -165,7 +165,7 @@ export const SpacingOverlay = ({
             backgroundColor: color,
             border: `1px dashed ${borderColor}`,
             pointerEvents: "none",
-            zIndex: 9998, // Below controls (9999) but above content
+            zIndex: 90, // Below node controls (z-100) but above content
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
