@@ -10,7 +10,6 @@
 // For Next.js, import styles/globals.css in pages/_app.tsx.
 
 import { Editor, Frame, useEditor } from "@craftjs/core";
-import lz from "lzutf8";
 import { compressAsync, decompressAsync, terminateCompressionWorker } from "./utils/compressionAsync";
 import { renderToHTML } from "./static-renderer";
 import React, { useCallback, useEffect, useRef, useState } from "react";
