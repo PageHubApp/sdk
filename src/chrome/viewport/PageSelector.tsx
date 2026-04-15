@@ -54,7 +54,6 @@ export function PageSelector({
 }: PageSelectorProps) {
   const { query, actions } = useEditor();
   const settings = useAtomValue(SettingsAtom) as { _id?: string; draftId?: string } | null;
-  const siteId = settings?._id;
 
   // Page list from database via SWR
   const { data: pageData, mutate: mutatePages } = useSWR(
@@ -93,6 +92,7 @@ export function PageSelector({
   const [settingsPageId, setSettingsPageId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const siteId = settings?._id || (Array.isArray(router.query.slug) ? router.query.slug[0] : router.query.slug) || null;
   const [unsavedChangesRaw, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
   const unsavedChanges = unsavedChangesRaw as unknown as string | null;
   const { emitter, config } = useSDK();
