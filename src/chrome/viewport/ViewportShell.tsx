@@ -43,6 +43,7 @@ import { useViewportKeyboard } from "./hooks/useViewportKeyboard";
 import { phStorage } from "../../utils/phStorage";
 import { useEditorToolbarOverlayLayout } from "../../utils/hooks/useEditorToolbarOverlayLayout";
 import { initPageNavigation, updateOnIsolate, usePageNavigation } from "../../utils/pageNavigation";
+import { LoadingBar } from "../primitives/LoadingBar";
 
 import {
   PreviewAtom,
@@ -255,11 +256,24 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   // ─── Page navigation store init ───
   const navInitRef = useRef(false);
 
+  // ─── Page loading state ───
+  const [pageLoading, setPageLoading] = useState(false);
+  const [pageLoadDone, setPageLoadDone] = useState(false);
+
   // Build the isolation callback — extracted so it can be refreshed
   const makeOnIsolate = useCallback(
-    () => (pageId: string | null) => {
+    () => async (pageId: string | null) => {
       if (config.callbacks.fetchPage) {
-        return isolatePageLazy(pageId, query, actions, setIsolate, config.callbacks.fetchPage);
+        setPageLoading(true);
+        setPageLoadDone(false);
+        const fetched = await isolatePageLazy(pageId, query, actions, setIsolate, config.callbacks.fetchPage);
+        setPageLoadDone(true);
+        // Let the loading bar animate to 100% before hiding
+        if (!fetched) {
+          setPageLoading(false);
+          setPageLoadDone(false);
+        }
+        return;
       }
       isolatePageAlt(isolate, query, pageId, actions, setIsolate, true);
     },
@@ -488,6 +502,12 @@ export function Viewport({ children }: { children: React.ReactNode }) {
               <div className="h-[30px] w-[105px] rounded-full bg-[#0a0a0a]" />
             </div>
           )}
+          <LoadingBar
+            active={pageLoading}
+            done={pageLoadDone}
+            overlay
+            onComplete={() => { setPageLoading(false); setPageLoadDone(false); }}
+          />
           <div
             id="viewport"
             role="application"

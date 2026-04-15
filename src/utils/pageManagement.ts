@@ -92,9 +92,11 @@ export function clearLoadedPages(): void {
 }
 
 /**
- * Isolate a page with lazy loading support.
- * If the page is not in the CraftJS tree yet, fetches it via `fetchPage`,
- * merges it into the tree, then isolates.
+ * Switch to a page. If the page is not in the CraftJS tree, fetches it
+ * via `fetchPage` and replaces the tree (shared + new page only).
+ * Old page nodes are evicted — only one page lives in the DOM/tree at a time.
+ *
+ * Returns true if a fetch was needed (caller can show/hide loading state).
  */
 export async function isolatePageLazy(
   active: string | null,
@@ -102,74 +104,49 @@ export async function isolatePageLazy(
   actions: any,
   setIsolate: (v: string) => void,
   fetchPage?: (pageNodeId: string) => Promise<{ content: string } | null>,
-): Promise<void> {
+): Promise<boolean> {
   if (!active) {
-    // Show all loaded pages
     isolatePageAlt(false, query, null, actions, setIsolate, false);
-    return;
+    return false;
   }
 
-  // Check if page is already loaded in the CraftJS tree
+  // Page already in tree — just isolate (no fetch, no eviction)
   try {
     const node = query.node(active).get();
     if (node) {
-      // Page is loaded — just isolate
       isolatePageAlt(active, query, active, actions, setIsolate);
-      return;
+      return false;
     }
   } catch {
     // Node not found — need to fetch
   }
 
-  // Lazy load: fetch the page shard and merge into the tree
   if (!fetchPage) {
     console.warn(`[PageHub] Page ${active} not loaded and no fetchPage callback provided`);
-    return;
+    return false;
   }
 
   const pageData = await fetchPage(active);
   if (!pageData?.content) {
     console.warn(`[PageHub] fetchPage(${active}) returned no content`);
-    return;
+    return false;
   }
 
-  // Decompress and merge the fetched shard into the existing tree
+  // Replace the entire tree with shared + new page.
+  // Old page nodes are evicted — keeps memory and DOM lean.
   try {
     const json = await decompressAsync(pageData.content);
-    const fetched = JSON.parse(json);
-
-    const currentJson = query.serialize();
-    const current = JSON.parse(currentJson);
-
-    // Merge: the fetched tree has ROOT + shared + one page.
-    // We only need the page subtree nodes — shared nodes are already in the tree.
-    for (const [nodeId, node] of Object.entries(fetched)) {
-      if (nodeId === "ROOT") {
-        const fetchedRootNodes = (node as any).nodes || [];
-        const currentRootNodes = current.ROOT?.nodes || [];
-        for (const id of fetchedRootNodes) {
-          if (!currentRootNodes.includes(id)) {
-            const lastPageIdx = currentRootNodes.reduce((acc: number, nid: string, i: number) => {
-              return current[nid]?.props?.type === "page" ? i : acc;
-            }, -1);
-            const insertAt = lastPageIdx >= 0 ? lastPageIdx + 1 : currentRootNodes.length;
-            currentRootNodes.splice(insertAt, 0, id);
-          }
-        }
-        continue;
-      }
-      if (current[nodeId]) continue;
-      current[nodeId] = node;
-    }
-
-    actions.deserialize(JSON.stringify(current));
+    actions.deserialize(json);
+    clearLoadedPages();
     _loadedPages.add(active);
 
     requestAnimationFrame(() => {
       isolatePageAlt(active, query, active, actions, setIsolate);
     });
+    return true;
   } catch (e) {
-    console.error(`[PageHub] Failed to merge page shard ${active}:`, e);
+    console.error(`[PageHub] Failed to load page shard ${active}:`, e);
+    return false;
   }
 }
 
