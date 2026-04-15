@@ -119,13 +119,18 @@ export async function isolatePageLazy(
       const hideTarget = scrollContainer || viewport;
       if (hideTarget) hideTarget.style.opacity = "0";
 
-      isolatePageAlt(active, query, active, actions, setIsolate);
+      // Reset scroll BEFORE isolate — prevents browser from recalculating
+      // layout with both pages visible and jumping to accommodate content
       if (scrollContainer) scrollContainer.scrollTop = 0;
       if (viewport) viewport.scrollTop = 0;
 
-      // Reveal after React flushes
+      isolatePageAlt(active, query, active, actions, setIsolate);
+
+      // Reveal after React flushes the new page
       requestAnimationFrame(() => {
-        if (hideTarget) hideTarget.style.opacity = "";
+        requestAnimationFrame(() => {
+          if (hideTarget) hideTarget.style.opacity = "";
+        });
       });
       return false;
     }
