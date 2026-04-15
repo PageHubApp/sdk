@@ -136,20 +136,27 @@ export async function isolatePageLazy(
   // Old page nodes are evicted — keeps memory and DOM lean.
   try {
     const json = await decompressAsync(pageData.content);
+
+    // Hide viewport during the deserialize swap to prevent content flash
+    const viewport = document.getElementById("viewport");
+    if (viewport) viewport.style.visibility = "hidden";
+
     actions.deserialize(json);
     clearLoadedPages();
     _loadedPages.add(active);
 
-    // Wait for CraftJS to render the new tree before signaling done.
-    // This prevents the old page from flashing between overlay hide and new paint.
     await new Promise<void>(resolve => {
       requestAnimationFrame(() => {
         isolatePageAlt(active, query, active, actions, setIsolate);
-        // Reset viewport scroll — the new page may be a different height
-        const viewport = document.getElementById("viewport");
+        // Reset scroll
+        const scrollContainer = viewport?.parentElement;
+        if (scrollContainer) scrollContainer.scrollTop = 0;
         if (viewport) viewport.scrollTop = 0;
-        // One more frame for the DOM to paint
-        requestAnimationFrame(resolve);
+        // Wait for React to flush + DOM to paint, then reveal
+        requestAnimationFrame(() => {
+          if (viewport) viewport.style.visibility = "";
+          requestAnimationFrame(resolve);
+        });
       });
     });
     return true;
