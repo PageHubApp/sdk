@@ -13,6 +13,8 @@ import { applyBackgroundImage, motionIt } from "../utils/lib";
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import { useScrollEffect } from "../utils/hooks/useScrollEffect";
 import { RenderPattern, inlayProps } from "./componentHooks";
+import { getConnectorData } from "../utils/design/variables";
+import { ItemProvider } from "../utils/itemContext";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 export interface ContainerProps extends BaseSelectorProps {
@@ -38,6 +40,12 @@ export interface ContainerProps extends BaseSelectorProps {
   scrollSpeed?: number;
   scrollSmoothing?: number;
   scrollTimelineRunway?: number;
+
+  /** Bind this container to an external data source for scoped variable resolution + repeating. */
+  dataSource?: {
+    provider: string;
+    collection: string;
+  };
 }
 
 export const Container = (incomingProps: Partial<ContainerProps>) => {
@@ -141,6 +149,12 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   const suppressEmptyCanvasHint =
     !!props.backgroundImage || !!props.root?.style || /\bbg-/.test(className.trim());
 
+  // Resolve connector data for repeaters (hoisted so both children and badge can access)
+  const ds = props.dataSource;
+  const connData = getConnectorData();
+  const items = ds && connData ? connData[ds.provider]?.[ds.collection] : null;
+  const hasItems = Array.isArray(items) && items.length > 0;
+
   let prop: any = {
     ref: r => {
       ref.current = r;
@@ -150,32 +164,73 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
       ...(props.root?.style ? CSStoObj(props.root.style) || {} : {}),
     },
     className,
-    children: (
-      <RenderPattern
-        props={props}
-        settings={settings}
-        view={view}
-        enabled={enabled}
-        properties={inlayProps}
-        preview={preview}
-        query={query}
-      >
-        {children ? (
-          children
-        ) : isCanvasNode && !hasChildNodes && enabled && !suppressEmptyCanvasHint ? (
-          <EditorEmptyLeafHint
-            selected={isActive}
-            icon={props.type === "page" ? <TbNote aria-hidden /> : <TbContainer aria-hidden />}
-            idleLabel={props.type === "page" ? "Empty page" : "Empty container"}
-            selectedDetail={
-              props.type === "page"
-                ? "Add sections from the sidebar"
-                : "Drag blocks or components here"
-            }
-          />
-        ) : null}
-      </RenderPattern>
-    ),
+    children: (() => {
+      // Data-bound repeater: repeat children for each item from the connected data source
+      const shouldRepeat = !enabled && hasItems && children;
+
+      if (shouldRepeat) {
+        return (
+          <RenderPattern
+            props={props}
+            settings={settings}
+            view={view}
+            enabled={enabled}
+            properties={inlayProps}
+            preview={preview}
+            query={query}
+          >
+            {items.map((item, idx) => (
+              <ItemProvider key={item.id || idx} item={item} index={idx}>
+                {children}
+              </ItemProvider>
+            ))}
+          </RenderPattern>
+        );
+      }
+
+      // Editor: show live data preview — template card with first item (editable),
+      // plus read-only clones for remaining items (toggleable via props.livePreview)
+      const showLivePreview = props.livePreview !== false; // default on
+      const editorChildren = enabled && hasItems && children
+        ? <>
+            <ItemProvider item={items[0]} index={0}>{children}</ItemProvider>
+            {showLivePreview && items.slice(1).map((item, idx) => (
+              <div key={item.id || idx + 1} style={{ pointerEvents: "none" }} aria-hidden>
+                <ItemProvider item={item} index={idx + 1}>
+                  {children}
+                </ItemProvider>
+              </div>
+            ))}
+          </>
+        : children;
+
+      return (
+        <RenderPattern
+          props={props}
+          settings={settings}
+          view={view}
+          enabled={enabled}
+          properties={inlayProps}
+          preview={preview}
+          query={query}
+        >
+          {editorChildren ? (
+            editorChildren
+          ) : isCanvasNode && !hasChildNodes && enabled && !suppressEmptyCanvasHint ? (
+            <EditorEmptyLeafHint
+              selected={isActive}
+              icon={props.type === "page" ? <TbNote aria-hidden /> : <TbContainer aria-hidden />}
+              idleLabel={props.type === "page" ? "Empty page" : "Empty container"}
+              selectedDetail={
+                props.type === "page"
+                  ? "Add sections from the sidebar"
+                  : "Drag blocks or components here"
+              }
+            />
+          ) : null}
+        </RenderPattern>
+      );
+    })(),
   };
 
   // Unified action system

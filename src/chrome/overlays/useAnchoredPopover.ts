@@ -51,7 +51,7 @@ export function useAnchoredPopover({
   boundary = "clippingAncestors",
   rootBoundary = "viewport",
   maxHeightCeiling,
-  maxHeightMin = 100,
+  maxHeightMin = 0,
   matchReferenceMinMaxWidth,
   middleware: extraMiddleware = [],
   whileElementsMounted = autoUpdate,

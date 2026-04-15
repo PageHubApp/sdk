@@ -192,7 +192,6 @@ export function UniversalInput(props: UniversalInputProps) {
                     showVarSelector={showVarSelector}
                     propTag={propTag}
                     tailwindKey={tailwindKey}
-                    searchValue={inputValue}
                     currentValue={currentValue}
                     selectedType={selectedType}
                   />

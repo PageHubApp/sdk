@@ -69,6 +69,12 @@
   @apply flex items-center justify-center p-4;
 }
 
+/** Light scrim without blur (e.g. docked Site Settings — keeps canvas readable). */
+.pagehub-sdk-root.ph-modal-backdrop--light {
+  animation: backdrop-in 0.15s ease-out both;
+  @apply bg-base-content/15 fixed inset-0 backdrop-blur-none;
+}
+
 /* Dialog / popover search fields — replaces repeated input-dialog + padding/text utilities */
 .pagehub-sdk-root .input-dialog-sm {
   @apply border-base-300 bg-base-200! text-base-content placeholder:text-neutral-content hover:border-primary focus:border-ring active:border-ring w-full cursor-pointer rounded-lg border px-2! py-1! text-xs!;
@@ -105,6 +111,11 @@
 
 .pagehub-sdk-root .tool-bg {
   @apply rounded-box border-base-300/50 bg-base-100 text-base-content flex items-center justify-center gap-2 border p-1 text-sm leading-normal font-normal tracking-normal shadow-xl;
+}
+
+/* Segmented toolbar clusters on a bar (modal strip, dense rows) — same shell as .tool-bg, no elevation */
+.pagehub-sdk-root .tool-bg-flat {
+  @apply rounded-box border-base-300/50 bg-base-100 text-base-content flex items-center justify-center gap-2 border p-1 text-sm leading-normal font-normal tracking-normal shadow-none;
 }
 
 .pagehub-sdk-root .node-control {

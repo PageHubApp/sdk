@@ -8,6 +8,8 @@ import { migrateAction, actionToHref } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { getResponsiveImageAttrs, motionIt } from "../utils/lib";
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
+import { replaceVariables } from "../utils/design/variables";
+import { useItemContext } from "../utils/itemContext";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
@@ -59,19 +61,23 @@ export const Image = (incomingProps: ImageProps) => {
   const { isActive } = useEditor((_, q) => ({
     isActive: q.getEvent("selected").contains(id),
   }));
+  const itemContext = useItemContext();
 
   const { videoId } = props;
-  const src = props.src ?? props.content;
+  const rawSrc = props.src ?? props.content;
 
   /** Craft / AI sometimes stores non-strings; guard before string methods. */
-  const srcStr =
-    src == null
+  const rawSrcStr =
+    rawSrc == null
       ? ""
-      : typeof src === "string"
-        ? src
-        : typeof src === "number" || typeof src === "boolean"
-          ? String(src)
+      : typeof rawSrc === "string"
+        ? rawSrc
+        : typeof rawSrc === "number" || typeof rawSrc === "boolean"
+          ? String(rawSrc)
           : "";
+
+  // Resolve {{item.*}} and {{connector.*}} variables in src
+  const srcStr = rawSrcStr.includes("{{") ? replaceVariables(rawSrcStr, query, itemContext) : rawSrcStr;
 
   props = setClonedProps(props, query);
 
@@ -126,9 +132,10 @@ export const Image = (incomingProps: ImageProps) => {
 
   applyAriaProps(prop, props);
 
-  // Use metadata from media library, fallback to props
-  const altText = mediaMetadata?.alt || props.alt || mediaMetadata?.title || props.title || "";
-  const titleText = mediaMetadata?.title || props.title || "";
+  // Use metadata from media library, fallback to props — resolve {{item.*}} variables
+  const resolveVar = (v: string) => v?.includes("{{") ? replaceVariables(v, query, itemContext) : v;
+  const altText = mediaMetadata?.alt || resolveVar(props.alt) || mediaMetadata?.title || resolveVar(props.title) || "";
+  const titleText = mediaMetadata?.title || resolveVar(props.title) || "";
 
   // Check if objectFit is set in className
   const hasObjectFit = (props.className || "").includes("object-");
@@ -157,8 +164,8 @@ export const Image = (incomingProps: ImageProps) => {
     if (videoId && mediaMetadata?.svg) {
       svgContent = mediaMetadata.svg;
     }
-    if (!svgContent && src) {
-      svgContent = src;
+    if (!svgContent && srcStr) {
+      svgContent = srcStr;
     }
 
     if (svgContent) {

@@ -30,6 +30,9 @@ const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
   "copy-to-clipboard": { type: "copy-to-clipboard", text: "" },
   "download-file": { type: "download-file", url: "" },
   "toggle-theme": { type: "toggle-theme" },
+  "add-to-cart": { type: "add-to-cart" },
+  "toggle-cart": { type: "toggle-cart" },
+  "cart-checkout": { type: "cart-checkout" },
 };
 
 export default function ActionInput() {
@@ -194,6 +197,20 @@ function ActionSubForm({ action, patch }: { action: NodeAction; patch: (p: any) 
       return <DownloadFileForm action={action} patch={patch} />;
     case "toggle-theme":
       return <ToggleThemeForm action={action as ToggleThemeAction} patch={patch} />;
+    case "add-to-cart":
+      return <AddToCartForm action={action} patch={patch} />;
+    case "toggle-cart":
+      return (
+        <p className="text-neutral-content text-[10px] leading-snug">
+          Opens or closes the shopping cart drawer.
+        </p>
+      );
+    case "cart-checkout":
+      return (
+        <p className="text-neutral-content text-[10px] leading-snug">
+          Redirects to Stripe Checkout with the current cart contents.
+        </p>
+      );
     default:
       return null;
   }
@@ -228,6 +245,27 @@ function ToggleThemeForm({
           <option value="class">Hide: .hidden class</option>
         </ToolbarDropdown>
       ) : null}
+    </>
+  );
+}
+
+function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void }) {
+  return (
+    <>
+      <p className="text-neutral-content text-[10px] leading-snug">
+        Adds the current product to the shopping cart. Must be inside a data-bound Container.
+      </p>
+      <div className="input-wrapper">
+        <label className="input-label">Quantity</label>
+        <input
+          type="number"
+          min={1}
+          max={99}
+          value={action.quantity || 1}
+          onChange={e => patch({ quantity: parseInt(e.target.value) || 1 })}
+          className="input-plain w-full text-xs"
+        />
+      </div>
     </>
   );
 }

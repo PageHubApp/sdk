@@ -18,6 +18,7 @@ import { motionIt } from "../utils/lib";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
+import { useItemContext } from "../utils/itemContext";
 import { useScrollToSelected } from "./componentHooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
@@ -53,8 +54,8 @@ const unwrapP = (html: string): string => {
 };
 
 // RENDER MODE - Simple HTML rendering (no editor deps)
-const renderLiveMode = (props: any, query: any, router: any) => {
-  const processedText = replaceVariables(props.text, query);
+const renderLiveMode = (props: any, query: any, router: any, itemContext?: Record<string, any> | null) => {
+  const processedText = replaceVariables(props.text, query, itemContext);
   let tagName = sanitizeTagName(props.tagName);
 
   const action = migrateAction(props);
@@ -98,6 +99,7 @@ export const Text = (incomingProps: Partial<TextProps>) => {
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
   const router = useRouter();
+  const itemContext = useItemContext();
 
   const {
     connectors: { connect, drag },
@@ -151,7 +153,7 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   if (enabled) {
     prop.children = (
       <React.Suspense
-        fallback={<div dangerouslySetInnerHTML={{ __html: replaceVariables(text || "", query) }} />}
+        fallback={<div dangerouslySetInnerHTML={{ __html: replaceVariables(text || "", query, itemContext) }} />}
       >
         <TextEditorMode
           props={props}
@@ -164,7 +166,7 @@ export const Text = (incomingProps: Partial<TextProps>) => {
       </React.Suspense>
     );
   } else {
-    const liveContent = renderLiveMode(props, query, router);
+    const liveContent = renderLiveMode(props, query, router, itemContext);
 
     const liveAction = migrateAction(props);
     const liveHref = actionToHref(liveAction, query, router?.asPath);

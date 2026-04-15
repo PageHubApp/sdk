@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { TbPalette, TbRuler, TbTypography } from "react-icons/tb";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { SidebarTabsPane } from "../primitives/SidebarTabsPane";
 import { ColorsTab } from "./design-system/components/ColorsTab";
@@ -38,26 +39,38 @@ export function ThemeSettingsPanel() {
       id: "colors",
       label: "Colors",
       icon: <TbPalette className="size-4 shrink-0 opacity-80" aria-hidden />,
-      content: <ColorsTab ds={ds} />,
+      content: (
+        <AutoHideScrollbar className="flex-1 min-h-0 bg-base-100 text-base-content">
+          <ColorsTab ds={ds} />
+        </AutoHideScrollbar>
+      ),
     },
     {
       id: "styles",
       label: "Styles",
       icon: <TbRuler className="size-4 shrink-0 opacity-80" aria-hidden />,
-      content: <StylesTab ds={ds} />,
+      content: (
+        <AutoHideScrollbar className="flex-1 min-h-0 bg-base-100 text-base-content">
+          <StylesTab ds={ds} />
+        </AutoHideScrollbar>
+      ),
     },
     {
       id: "typography",
       label: "Types",
       icon: <TbTypography className="size-4 shrink-0 opacity-80" aria-hidden />,
-      content: <TypographyTab ds={ds} />,
+      content: (
+        <AutoHideScrollbar className="flex-1 min-h-0 bg-base-100 text-base-content">
+          <TypographyTab ds={ds} />
+        </AutoHideScrollbar>
+      ),
     },
   ];
 
   return (
     <SidebarTabsPane
       className="h-full"
-      bodyClassName="scrollbar-light min-h-0 flex-1 overflow-y-auto bg-base-100 text-base-content"
+      bodyClassName="min-h-0 flex-1 overflow-hidden bg-base-100 text-base-content"
       ariaLabel="Theme settings tabs"
       value={urlTab}
       onValueChange={id => navigate({ cat: id })}

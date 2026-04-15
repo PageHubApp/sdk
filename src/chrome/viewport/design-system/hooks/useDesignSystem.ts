@@ -4,6 +4,7 @@ import { useAtomState } from "@zedux/react";
 import { resolveColorForDisplay } from "@/utils/design/colorSystem";
 import { colorToOklch, oklchToHex } from "@/utils/design/contentColor";
 import { DEFAULT_PALETTE, DEFAULT_DARK_PALETTE, DEFAULT_STYLE_GUIDE } from "@/utils/defaults";
+import { injectDesignSystemVars } from "@/utils/design/designSystemVars";
 import { resolveTheme, writeTheme } from "@/utils/design/resolveTheme";
 import { getStyleSheets } from "@/utils/lib";
 import { fonts } from "@/utils/tailwind";
@@ -225,6 +226,17 @@ export function useDesignSystem(isOpen: boolean) {
   // ─── Active palette (switches based on colorMode) ───
   const activePalettes = colorMode === "dark" ? darkPalettes : palettes;
   const setActivePalettes = colorMode === "dark" ? setDarkPalettes : setPalettes;
+  const getPalettesForMode = (mode: "light" | "dark") => (mode === "dark" ? darkPalettes : palettes);
+  const setPalettesForMode = (
+    mode: "light" | "dark",
+    next: PaletteColor[] | ((prev: PaletteColor[]) => PaletteColor[])
+  ) => {
+    if (mode === "dark") {
+      setDarkPalettes(next as any);
+    } else {
+      setPalettes(next as any);
+    }
+  };
 
   // ─── Color helpers ───
   const getColorPreview = (colorValue: unknown): string => {
@@ -301,6 +313,81 @@ export function useDesignSystem(isOpen: boolean) {
   const deleteColor = (index: number) =>
     setActivePalettes(activePalettes.filter((_, i) => i !== index));
 
+  const openColorPickerInMode = (mode: "light" | "dark", index: number) => {
+    const buttonRef = colorButtonRefs.current[index];
+    if (!buttonRef) return;
+    const palettesForMode = getPalettesForMode(mode);
+    const rect = buttonRef.getBoundingClientRect();
+    setColorDialog({
+      enabled: true,
+      value: palettesForMode[index].color.startsWith("oklch(")
+        ? oklchToHex(palettesForMode[index].color)
+        : palettesForMode[index].color,
+      prefix: "",
+      changed: (value: unknown) => {
+        const current = getPalettesForMode(mode);
+        const newPalettes = [...current];
+        let colorValue: string;
+        if (typeof value === "string") {
+          colorValue = value;
+        } else if (value && typeof value === "object") {
+          const c = value as Record<string, unknown>;
+          if (c.value) {
+            if (typeof c.value === "string") {
+              if ((c.value as string).startsWith("palette:")) {
+                const paletteName = (c.value as string).replace("palette:", "").trim();
+                const paletteColor = palettes.find(p => p.name === paletteName);
+                colorValue = paletteColor ? paletteColor.color : (c.value as string);
+              } else {
+                colorValue = c.value as string;
+              }
+            } else if ((c.value as Record<string, number>).r !== undefined) {
+              const rgba = c.value as Record<string, number>;
+              colorValue = `rgba(${rgba.r},${rgba.g},${rgba.b},${rgba.a})`;
+            } else {
+              colorValue = String(c.value);
+            }
+          } else if ((c as Record<string, number>).r !== undefined) {
+            const rgba = c as Record<string, number>;
+            colorValue = `rgba(${rgba.r},${rgba.g},${rgba.b},${rgba.a})`;
+          } else {
+            colorValue = String(value);
+          }
+        } else {
+          colorValue = String(value);
+        }
+        newPalettes[index] = { ...newPalettes[index], color: colorToOklch(colorValue) };
+        setPalettesForMode(mode, newPalettes);
+      },
+      e: rect,
+      mode: "picker",
+      propKey: "theme-design-system",
+    });
+  };
+
+  const updateColorNameInMode = (mode: "light" | "dark", index: number, name: string) => {
+    const current = getPalettesForMode(mode);
+    const newPalettes = [...current];
+    newPalettes[index] = { ...newPalettes[index], name };
+    setPalettesForMode(mode, newPalettes);
+  };
+
+  const addColorInMode = (mode: "light" | "dark") => {
+    const current = getPalettesForMode(mode);
+    setPalettesForMode(mode, [
+      { name: "New Color", color: "oklch(62% 0.214 259)" },
+      ...current,
+    ]);
+  };
+
+  const deleteColorInMode = (mode: "light" | "dark", index: number) => {
+    const current = getPalettesForMode(mode);
+    setPalettesForMode(
+      mode,
+      current.filter((_, i) => i !== index)
+    );
+  };
+
   const toggleDarkMode = () => {
     if (!darkModeEnabled) {
       // Enabling dark mode — seed with only core semantic tokens that typically change.
@@ -361,7 +448,6 @@ export function useDesignSystem(isOpen: boolean) {
 
   const addFont = () => {
     setCustomFonts([
-      ...customFonts,
       {
         name: "New Font",
         fontFamily: "Inter",
@@ -371,6 +457,7 @@ export function useDesignSystem(isOpen: boolean) {
         letterSpacing: "normal",
         textTransform: "none",
       },
+      ...customFonts,
     ]);
   };
 
@@ -487,7 +574,8 @@ export function useDesignSystem(isOpen: boolean) {
     const dataChanged =
       rootPaletteJson !== JSON.stringify(lastSavedData.current.palette) ||
       rootDarkPaletteJson !== JSON.stringify(lastSavedData.current.darkPalette) ||
-      rootStyleGuideJson !== JSON.stringify(lastSavedData.current.styleGuide);
+      rootStyleGuideJson !== JSON.stringify(lastSavedData.current.styleGuide) ||
+      rootTypographyJson !== JSON.stringify(lastSavedData.current.typography);
 
     if (dataChanged) {
       // Update lastSavedData BEFORE setting state to prevent re-triggering
@@ -501,6 +589,18 @@ export function useDesignSystem(isOpen: boolean) {
       loadFromRootNode();
     }
   }, [rootPaletteJson, rootDarkPaletteJson, rootStyleGuideJson, rootTypographyJson]);
+
+  // Keep the editor viewport/theme chrome in sync immediately while the panel is open.
+  useEffect(() => {
+    if (!isOpen) return;
+    injectDesignSystemVars({
+      palette: palettes,
+      darkPalette: darkModeEnabled ? darkPalettes : undefined,
+      darkModeEnabled,
+      styleGuide: styles as unknown as Record<string, any>,
+      typography: customFonts,
+    });
+  }, [isOpen, palettes, darkPalettes, darkModeEnabled, customFonts, styles]);
 
   // Debounced auto-save
   useEffect(() => {
@@ -561,6 +661,13 @@ export function useDesignSystem(isOpen: boolean) {
     updateColorName,
     addColor,
     deleteColor,
+    lightPalettes: palettes,
+    darkPalettes,
+    openColorPickerInMode,
+    updateColorNameInMode,
+    addColorInMode,
+    deleteColorInMode,
+    setColorMode,
     // Typography
     customFonts,
     setCustomFonts,

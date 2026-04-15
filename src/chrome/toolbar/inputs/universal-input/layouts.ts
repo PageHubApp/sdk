@@ -10,7 +10,7 @@ export interface DropdownLayoutConfig {
     title: string;
     groups: ("named" | "numeric" | "fractions" | "other")[];
     showHints?: boolean;
-    hintType?: "pixel" | "percentage" | "custom";
+    hintType?: "pixel" | "percentage" | "ms" | "custom";
     showPreview?: "cursor" | "color" | "shadow";
     disableSubgroups?: boolean;
   };
@@ -18,7 +18,7 @@ export interface DropdownLayoutConfig {
     title: string;
     groups: ("named" | "numeric" | "fractions" | "other")[];
     showHints?: boolean;
-    hintType?: "pixel" | "percentage" | "custom";
+    hintType?: "pixel" | "percentage" | "ms" | "custom";
     showPreview?: "cursor" | "color" | "shadow";
     disableSubgroups?: boolean;
   };
@@ -26,7 +26,7 @@ export interface DropdownLayoutConfig {
     title: string;
     groups: ("named" | "numeric" | "fractions" | "other")[];
     showHints?: boolean;
-    hintType?: "pixel" | "percentage" | "custom";
+    hintType?: "pixel" | "percentage" | "ms" | "custom";
     showPreview?: "cursor" | "color" | "shadow";
     disableSubgroups?: boolean;
   };
@@ -72,6 +72,44 @@ export const COMMON_SIZING_LAYOUT: DropdownLayoutConfig = {
 
 /** Named / subgroup column narrow; numeric + hints use the rest (no 50% dead space). */
 const TWO_COL_COMPACT: [string, string] = ["w-auto shrink-0 min-w-11", "min-w-0 flex-1"];
+
+/** Numeric-first layout that still exposes named/fraction/other fallback values. */
+export const COMMON_NUMERIC_LAYOUT: DropdownLayoutConfig = {
+  layout: "left-right",
+  columns: {
+    count: 2,
+    widths: [...TWO_COL_COMPACT],
+  },
+  leftSection: {
+    title: "",
+    groups: ["numeric"],
+    showHints: false,
+  },
+  rightSection: {
+    title: "",
+    groups: ["named", "fractions", "other"],
+    showHints: false,
+  },
+};
+
+/** Named-first split layout that still exposes `other` bucket values. */
+export const COMMON_NAMED_OTHER_SPLIT_LAYOUT: DropdownLayoutConfig = {
+  layout: "left-right",
+  columns: {
+    count: 2,
+    widths: [...TWO_COL_COMPACT],
+  },
+  leftSection: {
+    title: "",
+    groups: ["named"],
+    showHints: false,
+  },
+  rightSection: {
+    title: "",
+    groups: ["other"],
+    showHints: false,
+  },
+};
 
 export const COMMON_SPACING_LAYOUT: DropdownLayoutConfig = {
   layout: "left-right",
@@ -288,6 +326,13 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
       showHints: false,
     },
   },
+  scrollBehavior: COMMON_NAMED_ONLY_LAYOUT,
+  scrollSnapType: COMMON_NAMED_OTHER_SPLIT_LAYOUT,
+  scrollSnapAlign: COMMON_NAMED_OTHER_SPLIT_LAYOUT,
+  scrollSnapStop: COMMON_NAMED_OTHER_SPLIT_LAYOUT,
+  overscrollBehavior: COMMON_NAMED_OTHER_SPLIT_LAYOUT,
+  overscrollBehaviorX: COMMON_NAMED_OTHER_SPLIT_LAYOUT,
+  overscrollBehaviorY: COMMON_NAMED_OTHER_SPLIT_LAYOUT,
 
   // ========== FLEXBOX ==========
   flexDirection: COMMON_NAMED_ONLY_LAYOUT,
@@ -302,37 +347,37 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
   // ========== CLASS EFFECTS (Tailwind transition / transform / filter / backdrop) ==========
   transitionProperty: COMMON_NAMED_OTHER_COLUMN,
   duration: COMMON_NAMED_OTHER_COLUMN,
-  delay: COMMON_NAMED_OTHER_COLUMN,
+  delay: COMMON_NUMERIC_LAYOUT,
   ease: COMMON_NAMED_OTHER_COLUMN,
   twAnimate: COMMON_NAMED_OTHER_COLUMN,
-  scale: COMMON_NAMED_OTHER_COLUMN,
-  scaleX: COMMON_NAMED_OTHER_COLUMN,
-  scaleY: COMMON_NAMED_OTHER_COLUMN,
-  rotate: COMMON_NAMED_OTHER_COLUMN,
-  translateX: COMMON_NAMED_OTHER_COLUMN,
-  translateY: COMMON_NAMED_OTHER_COLUMN,
-  skewX: COMMON_NAMED_OTHER_COLUMN,
-  skewY: COMMON_NAMED_OTHER_COLUMN,
+  scale: COMMON_NUMERIC_LAYOUT,
+  scaleX: COMMON_NUMERIC_LAYOUT,
+  scaleY: COMMON_NUMERIC_LAYOUT,
+  rotate: COMMON_NUMERIC_LAYOUT,
+  translateX: COMMON_NUMERIC_LAYOUT,
+  translateY: COMMON_NUMERIC_LAYOUT,
+  skewX: COMMON_NUMERIC_LAYOUT,
+  skewY: COMMON_NUMERIC_LAYOUT,
   transformOrigin: COMMON_NAMED_OTHER_COLUMN,
   twTransform: COMMON_NAMED_ONLY_LAYOUT,
-  blur: COMMON_NAMED_OTHER_COLUMN,
-  brightness: COMMON_NAMED_OTHER_COLUMN,
-  contrast: COMMON_NAMED_OTHER_COLUMN,
-  grayscale: COMMON_NAMED_OTHER_COLUMN,
-  hueRotate: COMMON_NAMED_OTHER_COLUMN,
-  invert: COMMON_NAMED_OTHER_COLUMN,
-  saturate: COMMON_NAMED_OTHER_COLUMN,
-  sepia: COMMON_NAMED_OTHER_COLUMN,
+  blur: COMMON_NUMERIC_LAYOUT,
+  brightness: COMMON_NUMERIC_LAYOUT,
+  contrast: COMMON_NUMERIC_LAYOUT,
+  grayscale: COMMON_NUMERIC_LAYOUT,
+  hueRotate: COMMON_NUMERIC_LAYOUT,
+  invert: COMMON_NUMERIC_LAYOUT,
+  saturate: COMMON_NUMERIC_LAYOUT,
+  sepia: COMMON_NUMERIC_LAYOUT,
   willChange: COMMON_NAMED_OTHER_COLUMN,
-  backdropBlur: COMMON_NAMED_OTHER_COLUMN,
-  backdropOpacity: COMMON_NAMED_OTHER_COLUMN,
-  backdropBrightness: COMMON_NAMED_OTHER_COLUMN,
-  backdropContrast: COMMON_NAMED_OTHER_COLUMN,
-  backdropGrayscale: COMMON_NAMED_OTHER_COLUMN,
-  backdropHueRotate: COMMON_NAMED_OTHER_COLUMN,
-  backdropInvert: COMMON_NAMED_OTHER_COLUMN,
-  backdropSaturate: COMMON_NAMED_OTHER_COLUMN,
-  backdropSepia: COMMON_NAMED_OTHER_COLUMN,
+  backdropBlur: COMMON_NUMERIC_LAYOUT,
+  backdropOpacity: COMMON_NUMERIC_LAYOUT,
+  backdropBrightness: COMMON_NUMERIC_LAYOUT,
+  backdropContrast: COMMON_NUMERIC_LAYOUT,
+  backdropGrayscale: COMMON_NUMERIC_LAYOUT,
+  backdropHueRotate: COMMON_NUMERIC_LAYOUT,
+  backdropInvert: COMMON_NUMERIC_LAYOUT,
+  backdropSaturate: COMMON_NUMERIC_LAYOUT,
+  backdropSepia: COMMON_NUMERIC_LAYOUT,
 };
 
 // ============================================================================

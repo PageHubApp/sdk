@@ -1,4 +1,5 @@
 import useSWR from "swr";
+import { tryDecompressBase64LzToJson } from "../../../../utils/lz";
 
 export interface BlockItem {
   _id: string;
@@ -12,7 +13,21 @@ export interface BlockItem {
   modifiers?: Record<string, { name: string; classes: string }[]>;
 }
 
-const fetcher = (url: string) => fetch(url).then(r => r.json());
+const fetcher = (url: string) =>
+  fetch(url)
+    .then(r => r.json())
+    .then(data => ({
+      ...data,
+      components: Array.isArray(data?.components)
+        ? data.components.map((component: any) => {
+            const structure =
+              typeof component?.structure === "string"
+                ? tryDecompressBase64LzToJson(component.structure)
+                : component?.structure;
+            return structure ? { ...component, structure } : component;
+          })
+        : [],
+    }));
 
 /**
  * Fetches blocks for a specific category (with full structure) on demand.

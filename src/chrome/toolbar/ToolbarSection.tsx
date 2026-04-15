@@ -26,6 +26,7 @@ export const ToolbarSection = ({
   scrollable = false,
   maxHeight = "150px",
   header,
+  showChevron = false,
   accordionPassive = false,
   disabled = false,
 }: any) => {
@@ -127,6 +128,15 @@ export const ToolbarSection = ({
                       />
                     ))}
                 </div>
+              )}
+
+              {showChevron && collapsible && (
+                <TbChevronRight
+                  className={`text-neutral-content size-4 shrink-0 transition-transform ${
+                    isOpen ? "rotate-90" : ""
+                  }`}
+                  aria-hidden
+                />
               )}
             </div>
           );

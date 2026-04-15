@@ -2,6 +2,7 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface
 import { useCallback } from "react";
 import { TbInfoCircle } from "react-icons/tb";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
+import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 import { ToolbarLabel } from "./Label";
 
 export { BreakpointBadge } from "./BreakpointBadge";
@@ -205,12 +206,6 @@ export const Wrap = ({
   );
 };
 
-// Function to shorten verbose CSS variable classes
-const shortenCSSVar = className => {
-  if (typeof className !== "string") return String(className);
-  return className.replace(/var\(--([^)]+)\)/g, "--$1");
-};
-
 export const Card = ({
   value,
   onClick,
@@ -223,8 +218,7 @@ export const Card = ({
     return null;
   }
 
-  // Shorten the display value for better readability
-  const displayValue = shortenCSSVar(value);
+  const displayValue = formatTailwindDisplayLabel(value);
 
   // Split the value to make the CSS variable part bold
   const renderDisplayValue = () => {
@@ -310,8 +304,7 @@ export const CardLight = ({ value, onClick, className = "" }) => {
     return null;
   }
 
-  // Shorten the display value for better readability
-  const displayValue = shortenCSSVar(value);
+  const displayValue = formatTailwindDisplayLabel(value);
 
   // Split the value to make the CSS variable part bold
   const renderDisplayValue = () => {

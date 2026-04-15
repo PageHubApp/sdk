@@ -17,7 +17,10 @@ export type ActionType =
   | "show-hide"
   | "copy-to-clipboard"
   | "download-file"
-  | "toggle-theme";
+  | "toggle-theme"
+  | "add-to-cart"
+  | "toggle-cart"
+  | "cart-checkout";
 
 interface ActionBase {
   type: ActionType;
@@ -77,6 +80,23 @@ export interface DownloadFileAction extends ActionBase {
   filename?: string;
 }
 
+/** Add item to shopping cart. Fires `config.callbacks.onAddToCart` with the current item context. */
+export interface AddToCartAction extends ActionBase {
+  type: "add-to-cart";
+  /** Quantity to add (default 1) */
+  quantity?: number;
+}
+
+/** Toggle the shopping cart drawer open/closed. */
+export interface ToggleCartAction extends ActionBase {
+  type: "toggle-cart";
+}
+
+/** Trigger Stripe checkout with current cart contents. */
+export interface CartCheckoutAction extends ActionBase {
+  type: "cart-checkout";
+}
+
 /** Toggle `html.dark` and persist `ph-theme` (same contract as editor chrome + _document bootstrap). */
 export interface ToggleThemeAction extends ActionBase {
   type: "toggle-theme";
@@ -95,7 +115,10 @@ export type NodeAction =
   | ShowHideAction
   | CopyToClipboardAction
   | DownloadFileAction
-  | ToggleThemeAction;
+  | ToggleThemeAction
+  | AddToCartAction
+  | ToggleCartAction
+  | CartCheckoutAction;
 
 export type LinkTarget = "_self" | "_blank" | "_parent" | "_top";
 
@@ -118,9 +141,9 @@ export function isLinkAction(
 /** Actions that need JS event handlers at runtime */
 export function isHandlerAction(
   action: NodeAction | null | undefined
-): action is OpenModalAction | ShowHideAction | ToggleThemeAction {
+): action is OpenModalAction | ShowHideAction | ToggleThemeAction | AddToCartAction | ToggleCartAction | CartCheckoutAction {
   if (!action) return false;
-  return action.type === "open-modal" || action.type === "show-hide" || action.type === "toggle-theme";
+  return action.type === "open-modal" || action.type === "show-hide" || action.type === "toggle-theme" || action.type === "add-to-cart" || action.type === "toggle-cart" || action.type === "cart-checkout";
 }
 
 /**
@@ -160,6 +183,9 @@ export function actionToHref(
     case "open-modal":
     case "show-hide":
     case "toggle-theme":
+    case "add-to-cart":
+    case "toggle-cart":
+    case "cart-checkout":
       return null; // Handled by JS
   }
 }
@@ -226,4 +252,7 @@ export const ACTION_TYPE_OPTIONS: { value: ActionType; label: string }[] = [
   { value: "copy-to-clipboard", label: "Copy to Clipboard" },
   { value: "download-file", label: "Download File" },
   { value: "toggle-theme", label: "Toggle light / dark" },
+  { value: "add-to-cart", label: "Add to Cart" },
+  { value: "toggle-cart", label: "Toggle Cart" },
+  { value: "cart-checkout", label: "Checkout Cart" },
 ];

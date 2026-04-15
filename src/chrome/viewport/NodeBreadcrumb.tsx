@@ -151,7 +151,7 @@ export const NodeBreadcrumb = () => {
 
   return (
     <div className="bg-base-100 text-base-content flex w-full items-center justify-between px-2 py-1 text-sm">
-      <div className="flex max-w-[calc(100%-120px)] min-w-0 flex-1 items-center gap-0">
+      <div className="flex min-w-0 flex-1 items-center gap-0">
         {/* Ancestry dropdown — full stack on hover */}
         {!isEditing && !showOnlyPageContext && breadcrumb.length > 1 && (
           <ToolbarPortalDropdown
@@ -268,7 +268,7 @@ export const NodeBreadcrumb = () => {
             ) : (
               <button
                 onClick={() => setIsEditing(true)}
-                className="bg-primary/15 text-primary hover:bg-primary/25 max-w-[120px] min-w-0 truncate rounded p-1 text-xs font-semibold whitespace-nowrap transition-all duration-200 ease-in-out hover:scale-105"
+                className="bg-primary/15 text-primary hover:bg-primary/25 flex-1 min-w-0 truncate rounded p-1 text-xs font-semibold whitespace-nowrap transition-all duration-200 ease-in-out hover:scale-105"
                 data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                 data-tooltip-content={`Click to edit "${currentItem.name}"`}
                 data-tooltip-place="bottom"

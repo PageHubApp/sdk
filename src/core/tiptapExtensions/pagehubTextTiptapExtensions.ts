@@ -57,10 +57,11 @@ const linkExtension = () =>
 
 const variableExtension = (
   onSuggestion: ((props: SuggestionProps | null) => void) | undefined,
-  queryRef: { current: any } | undefined
+  queryRef: { current: any } | undefined,
+  nodeIdRef?: { current: string | undefined }
 ) =>
   VariableNode.configure({
-    getVariables: () => getEditorVariableOptions(queryRef?.current),
+    getVariables: () => getEditorVariableOptions(queryRef?.current, nodeIdRef?.current),
     onSuggestion: onSuggestion || null,
     resolveVariable: (id: string) =>
       queryRef?.current ? resolveVariable(id, queryRef.current) : id,
@@ -69,7 +70,8 @@ const variableExtension = (
 const marksAndShared = (
   onSuggestion: ((props: SuggestionProps | null) => void) | undefined,
   queryRef: { current: any } | undefined,
-  opts: { textAlign: boolean; image: boolean }
+  opts: { textAlign: boolean; image: boolean },
+  nodeIdRef?: { current: string | undefined }
 ): Extensions => [
   Placeholder.configure({ placeholder: "Start typing..." }),
   ...(opts.textAlign
@@ -86,14 +88,15 @@ const marksAndShared = (
   ...(opts.image
     ? [Image.configure({ HTMLAttributes: { class: "max-w-full h-auto" } })]
     : []),
-  variableExtension(onSuggestion, queryRef),
+  variableExtension(onSuggestion, queryRef, nodeIdRef),
   TextEditorInlineKeymap,
 ];
 
 export function getPagehubTextTiptapExtensions(
   mode: PagehubTextRichMode,
   onSuggestion: ((props: SuggestionProps | null) => void) | undefined,
-  queryRef: { current: any } | undefined
+  queryRef: { current: any } | undefined,
+  nodeIdRef?: { current: string | undefined }
 ): Extensions {
   if (mode === "inline") {
     return [
@@ -112,7 +115,7 @@ export function getPagehubTextTiptapExtensions(
         trailingNode: false,
         link: false,
       }),
-      ...marksAndShared(onSuggestion, queryRef, { textAlign: false, image: false }),
+      ...marksAndShared(onSuggestion, queryRef, { textAlign: false, image: false }, nodeIdRef),
     ];
   }
 
@@ -127,6 +130,6 @@ export function getPagehubTextTiptapExtensions(
       listItem: {},
       link: false,
     }),
-    ...marksAndShared(onSuggestion, queryRef, { textAlign: true, image: true }),
+    ...marksAndShared(onSuggestion, queryRef, { textAlign: true, image: true }, nodeIdRef),
   ];
 }

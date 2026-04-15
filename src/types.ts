@@ -5,7 +5,7 @@
  * Customers implement callbacks; we provide the editor.
  */
 
-import type { MouseEvent, ReactNode, WheelEvent } from "react";
+import type { Dispatch, MouseEvent, ReactNode, SetStateAction, WheelEvent } from "react";
 
 // ─── Page data ────────────────────────────────────────────────────────────────
 
@@ -78,6 +78,9 @@ export interface PageHubCallbacks {
 
   /** Called when media should be deleted */
   onMediaDelete?: (url: string) => Promise<void>;
+
+  /** Called when a user clicks an "Add to Cart" button. Item is the current repeater item context. */
+  onAddToCart?: (item: Record<string, any>, quantity: number) => void;
 }
 
 // ─── Theming ──────────────────────────────────────────────────────────────────
@@ -232,6 +235,8 @@ export interface PageHubEditorChromeSlots {
     displayName: string;
     resolvedType?: string;
   }) => ReactNode;
+  /** Data source settings for Container — filter, limit, sort, offset controls. Host-rendered. */
+  renderDataSourceSection?: (ctx: { nodeId: string }) => ReactNode;
   /** Container / add-section wand — opens assistant in create mode. */
   renderNodeAiGenerateButton?: (ctx: {
     onClick: () => void;
@@ -271,6 +276,25 @@ export interface PageHubEditorChromeSlots {
    * Host owns API calls/auth; SDK provides apply callback for metadata fields.
    */
   renderMediaEditAiActions?: (ctx: PageHubMediaEditAiActionsContext) => ReactNode;
+  /**
+   * Extra tabs injected into the Site Settings modal (e.g. Data Connectors).
+   * Host owns all API calls, auth, and business logic; SDK provides the tab slot.
+   */
+  siteSettingsExtraTabs?: Array<{
+    key: string;
+    label: string;
+    render: (ctx: {
+      inputClass: string;
+      selectClass: string;
+      query: any;
+      actions: any;
+      draft?: Record<string, any>;
+      setDraft?: Dispatch<SetStateAction<Record<string, any>>>;
+      requestSave?: () => void;
+      flushSave?: () => void;
+    }) => ReactNode;
+    onSave?: (setProp: (cb: (props: any) => void) => void) => void;
+  }>;
 }
 
 // ─── Main configuration ──────────────────────────────────────────────────────

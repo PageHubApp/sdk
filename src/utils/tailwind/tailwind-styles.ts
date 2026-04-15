@@ -4431,6 +4431,9 @@ export const TailwindStyles = {
     "snap-align-none",
   ],
   scrollSnapStop: ["snap-normal", "snap-always"],
+  overscrollBehavior: ["overscroll-auto", "overscroll-contain", "overscroll-none"],
+  overscrollBehaviorX: ["overscroll-x-auto", "overscroll-x-contain", "overscroll-x-none"],
+  overscrollBehaviorY: ["overscroll-y-auto", "overscroll-y-contain", "overscroll-y-none"],
   appearance: ["appearance-none", "appearance-auto"],
   bgClip: [
     "bg-clip-border",

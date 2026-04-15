@@ -92,24 +92,16 @@ let _daisyuiDir: string | null = null;
 
 function getDaisyUIDir(): string {
   if (_daisyuiDir !== null) return _daisyuiDir;
+  // Try relative from SDK source first (works in dev / monorepo).
+  const fromSource = resolve(__dirname, "../../../node_modules/daisyui/components");
   try {
-    // Try require.resolve from the SDK package
-    const daisyuiMain = require.resolve("daisyui/package.json", {
-      paths: [__dirname],
-    });
-    // Turbopack virtualises __dirname for external modules and can return a
-    // non-filesystem path like "[externals]/daisyui/package.json [external]...".
-    // Reject any path that isn't a real absolute filesystem path.
-    if (daisyuiMain.startsWith("/") && !daisyuiMain.includes("[")) {
-      _daisyuiDir = resolve(dirname(daisyuiMain), "components");
-      return _daisyuiDir;
-    }
+    statSync(fromSource);
+    _daisyuiDir = fromSource;
   } catch {
-    // require.resolve threw — fall through to cwd fallback
+    // Bundled (Vercel): __dirname is the output bundle dir, not the source tree.
+    // process.cwd() is always the project root on Vercel serverless.
+    _daisyuiDir = resolve(process.cwd(), "node_modules/daisyui/components");
   }
-  // Fallback: process.cwd() is always the Next.js project root under both
-  // Turbopack and webpack, regardless of how __dirname is virtualised.
-  _daisyuiDir = resolve(process.cwd(), "node_modules/daisyui/components");
   return _daisyuiDir;
 }
 
@@ -200,23 +192,21 @@ function getThemeCSS(): string {
 
 function getSpatialCSS(): string {
   if (_spatialCSS === null) {
-    try {
-      // Try require.resolve first
-      const spatialMain = require.resolve("@pagehub/daisyui-spatial/src/index.css", {
-        paths: [__dirname],
-      });
-      _spatialCSS = readFileSync(spatialMain, "utf-8");
-    } catch {
-      // Fallback: relative path from SDK
+    // Try workspace source (dev / monorepo), then node_modules relative, then cwd fallback.
+    const candidates = [
+      resolve(__dirname, "../../daisyui-spatial/src/index.css"),
+      resolve(__dirname, "../../../node_modules/@pagehub/daisyui-spatial/src/index.css"),
+      resolve(process.cwd(), "node_modules/@pagehub/daisyui-spatial/src/index.css"),
+    ];
+    for (const p of candidates) {
       try {
-        _spatialCSS = readFileSync(
-          resolve(__dirname, "../../daisyui-spatial/src/index.css"),
-          "utf-8"
-        );
+        _spatialCSS = readFileSync(p, "utf-8");
+        break;
       } catch {
-        _spatialCSS = "";
+        // try next
       }
     }
+    if (_spatialCSS === null) _spatialCSS = "";
   }
   return _spatialCSS;
 }

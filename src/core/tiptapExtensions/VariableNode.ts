@@ -8,7 +8,7 @@ export interface VariableNodeOptions {
   /**
    * Callback to get available variables for suggestions.
    */
-  getVariables: () => { id: string; label: string }[];
+  getVariables: () => { id: string; label: string; group?: string }[];
   /**
    * Called when the suggestion popup should open/close/update.
    */
@@ -21,8 +21,8 @@ export interface VariableNodeOptions {
 
 export interface SuggestionProps {
   query: string;
-  items: { id: string; label: string }[];
-  command: (item: { id: string; label: string }) => void;
+  items: { id: string; label: string; group?: string }[];
+  command: (item: { id: string; label: string; group?: string }) => void;
   clientRect: (() => DOMRect | null) | null;
   decorationId: string | null;
 }

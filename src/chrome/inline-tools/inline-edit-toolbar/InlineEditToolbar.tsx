@@ -21,9 +21,7 @@ import {
 import { TbAlphabetLatin, TbChevronDown } from "react-icons/tb";
 import { getMediaContent } from "../../../utils/lib";
 import { paletteToCSSVar } from "../../../utils/design/palette";
-import { useAiEnabled } from "../../../utils/hooks/useAiEnabled";
 import { useAtomValue } from "@zedux/react";
-import { useSDK } from "../../../core/context";
 import { hasOverflowAncestor } from "@/utils/hasOverflowAncestor";
 import { DeviceAtom, ViewAtom } from "../../viewport/atoms";
 import { PortalToolbarBelowNode } from "./PortalToolbarBelowNode";
@@ -33,7 +31,6 @@ import { FontPanel } from "./panels/FontPanel";
 import { OPEN_LINK_PANEL_EVENT } from "../openLinkPanelEvent";
 import { LinkPanel } from "./panels/LinkPanel";
 import { MorePanel } from "./panels/MorePanel";
-import { VariableInsertPanel } from "./panels/VariableInsertPanel";
 import type { PagehubTextRichMode } from "@/core/tiptapExtensions/pagehubTextTiptapExtensions";
 
 type PanelId = "font" | "link" | "more" | "bgcolor" | "textcolor" | null;
@@ -66,10 +63,6 @@ export function InlineEditToolbar({
   const toolbarRef = useClampToViewport<HTMLDivElement>();
   const { id: textNodeId } = useNode();
   const { query } = useCraftEditor();
-  const { config } = useSDK();
-  const isAiEnabled = useAiEnabled();
-  const renderCopyAi = config.editorChromeSlots?.renderInlineCopyAssistantTrigger;
-
   const tipTap = useEditorState({
     editor,
     selector: ({ editor: ed }) => {
@@ -161,27 +154,8 @@ export function InlineEditToolbar({
     callback();
   };
 
-  const minimalToolbarRow = (
-    <div className="tool-bg flex h-10 flex-row items-center justify-center gap-0">
-      {isAiEnabled && renderCopyAi && (
-        <>
-          {renderCopyAi({ textNodeId, query })}
-          <div className="bg-border mx-1 h-5 w-px" />
-        </>
-      )}
-      <VariableInsertPanel editor={editor} query={query} />
-    </div>
-  );
-
   const fullToolbarRow = (
     <div className="tool-bg flex h-10 flex-row items-center justify-center gap-0">
-      {isAiEnabled && renderCopyAi && (
-        <>
-          {renderCopyAi({ textNodeId, query })}
-          <div className="bg-border mx-1 h-5 w-px" />
-        </>
-      )}
-
       <FormatButton
         editor={editor}
         command={() => editor.chain().focus().toggleBold().run()}
@@ -288,6 +262,7 @@ export function InlineEditToolbar({
           <MorePanel
             editor={editor}
             query={query}
+            nodeId={textNodeId}
             richTextMode={richTextMode}
             onAction={handleButtonClick}
             onInsertImage={() => {
@@ -308,7 +283,7 @@ export function InlineEditToolbar({
         </div>
       ) : (
         <>
-          {tipTap.selectionEmpty ? minimalToolbarRow : fullToolbarRow}
+          {tipTap.selectionEmpty ? null : fullToolbarRow}
 
           {/* === Dropdown panels (colors) === */}
           {(activePanel === "textcolor" || activePanel === "bgcolor") && (

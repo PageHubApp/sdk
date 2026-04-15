@@ -9,6 +9,7 @@
 import { motion } from "framer-motion";
 import React, { useEffect } from "react";
 import { ROOT_NODE } from "@craftjs/core";
+import { useAtomValue } from "@zedux/react";
 import { atom } from "./atoms";
 import { getCdnUrl } from "./cdn";
 
@@ -83,6 +84,14 @@ export const OnlineAtom = atom<boolean>("online", true);
 export const ScreenshotAtom = atom<boolean>("ss", false);
 export const SideBarAtom = atom<boolean>("sidebar", true);
 export const SideBarOpen = atom<boolean>("sidebaropen", true);
+
+/**
+ * `true` = main editor settings toolbar is docked to the **left** of the canvas; `false` = docked to the **right**.
+ * Use for chrome that should align with the toolbar side (e.g. Site Settings docks the same way).
+ */
+export function useEditorSidebarDockLeft(): boolean {
+  return useAtomValue(SideBarAtom);
+}
 /** Canvas scope for component editor / isolation — not the same as responsive viewport `ViewMode` in store.tsx */
 export type EditorCanvasViewMode = "page" | "preview" | "component";
 export const ViewModeAtom = atom<EditorCanvasViewMode>("viewMode", "page");

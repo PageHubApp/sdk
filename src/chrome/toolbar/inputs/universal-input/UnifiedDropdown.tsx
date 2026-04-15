@@ -29,7 +29,7 @@ import { useAnchoredPopover } from "../../../overlays/useAnchoredPopover";
 import { getLayoutConfig, groupFractionsByDenominator, groupNumericByRange } from "./config";
 import { useDesignVars } from "./hooks/useDesignVars";
 import { SubgroupItem } from "./SubgroupComponents";
-import { DesignVar } from "./types";
+import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 
 interface UnifiedDropdownProps {
   options: {
@@ -45,7 +45,6 @@ interface UnifiedDropdownProps {
   showVarSelector?: boolean;
   propTag?: string;
   tailwindKey?: string;
-  searchValue?: string;
   currentValue?: string;
   selectedType?: string;
 }
@@ -59,17 +58,9 @@ export function UnifiedDropdown({
   showVarSelector,
   propTag,
   tailwindKey,
-  searchValue,
   currentValue,
   selectedType,
 }: UnifiedDropdownProps) {
-  const [expandedGroups, setExpandedGroups] = useState({
-    vars: true,
-    named: true,
-    numeric: true,
-    fractions: true,
-    other: true,
-  });
   const [varSearchTerm, setVarSearchTerm] = useState("");
 
   // Get layout configuration for this property type
@@ -97,7 +88,6 @@ export function UnifiedDropdown({
     placement: "bottom-start",
     mainAxisOffset: 4,
     maxHeightCeiling: 400,
-    maxHeightMin: 150,
     matchReferenceMinMaxWidth: { min: 120, max: 200 },
   });
 
@@ -117,19 +107,13 @@ export function UnifiedDropdown({
   const style: React.CSSProperties = {
     ...floating.floatingStyles,
     zIndex: OVERLAY_Z_UNIFIED_DROPDOWN,
-    width: "max-content",
+    width: "fit-content",
     maxWidth: maxPanel,
   };
 
-  const toggleGroup = (group: string) => {
-    setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
-  };
-
-  // Helper to get display label (strip prefix)
+  // Helper to get display label (humanize token)
   const getDisplayLabel = (option: string) => {
-    if (!propTag) return option;
-    const prefix = `${propTag}-`;
-    return option.startsWith(prefix) ? option.replace(prefix, "") : option;
+    return formatTailwindDisplayLabel(option, propTag);
   };
 
   // Helper to render preview icon based on type
@@ -231,7 +215,7 @@ export function UnifiedDropdown({
     groupType: "named" | "numeric" | "fractions" | "other",
     title: string,
     showHints: boolean = false,
-    hintType: "pixel" | "percentage" | "custom" = "custom",
+    hintType: "pixel" | "percentage" | "ms" | "custom" = "custom",
     enableSubgroups: boolean = false,
     showPreview?: "cursor" | "color" | "shadow"
   ) => {
@@ -298,7 +282,7 @@ export function UnifiedDropdown({
         data-unified-dropdown
         style={style}
         ref={floating.refs.setFloating}
-        className="pagehub-sdk-root ph-panel text-base-content flex flex-col"
+        className="pagehub-sdk-root ph-panel text-base-content flex w-fit flex-col"
       >
         <div className="ph-select-item-host flex flex-1 flex-col">
           <button
@@ -469,7 +453,7 @@ export function UnifiedDropdown({
       data-unified-dropdown
       style={style}
       ref={floating.refs.setFloating}
-      className="pagehub-sdk-root ph-panel text-base-content flex h-52 flex-col overflow-hidden"
+      className="pagehub-sdk-root ph-panel text-base-content flex w-fit flex-col overflow-hidden"
     >
       <div className="ph-select-item-host flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* Main Options Section - Configurable Layout */}

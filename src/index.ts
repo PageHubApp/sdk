@@ -338,6 +338,9 @@ export { Video } from "./components/Video";
 export { useView, usePreview, useEditorStore } from "./core/store";
 export type { ViewMode } from "./core/store";
 
+/** Main toolbar dock side + atom for integrations that need to mirror chrome. */
+export { SideBarAtom, useEditorSidebarDockLeft } from "./utils/lib";
+
 // Static rendering
 export { renderToHTML, buildRootThemeCss } from "./static-renderer";
 export type { RenderToHTMLOptions, RenderToHTMLResult } from "./static-renderer";

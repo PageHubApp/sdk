@@ -9,14 +9,18 @@ import { useEditor } from "@craftjs/core";
 import { EditorContent, useEditor as useTiptapEditor } from "@tiptap/react";
 import type { Editor as TiptapEditorInstance } from "@tiptap/core";
 
+import { useSDK } from "../core/context";
+import { useAiEnabled } from "../utils/hooks/useAiEnabled";
 import { changeProp } from "../chrome/viewport/viewportExports";
 import { TiptapProvider } from "../chrome/inline-tools/TiptapContext";
 import { InlineEditToolbar } from "../chrome/inline-tools/inline-edit-toolbar/InlineEditToolbar";
+import { TiptapRichTextContextMenu } from "../chrome/inline-tools/inline-edit-toolbar/TiptapRichTextContextMenu";
 import { OPEN_LINK_PANEL_EVENT } from "../chrome/inline-tools/openLinkPanelEvent";
 import { VariableSuggestionPopup } from "../chrome/inline-tools/VariableSuggestion";
 
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { replaceVariables, resolveVariable } from "../utils/design/variables";
+import { useItemContext } from "../utils/itemContext";
 import {
   isVisuallyEmptyRichText,
   persistedTextHtmlFromEditor,
@@ -58,6 +62,7 @@ function TextEditorMode({
 }) {
   const [isEditing, setIsEditing] = React.useState(false);
   const isEditingRef = React.useRef(isEditing);
+  const itemContext = useItemContext();
 
   useEffect(() => {
     isEditingRef.current = isEditing;
@@ -73,6 +78,10 @@ function TextEditorMode({
     }
   }, [isActive, isEditing]);
 
+  useEffect(() => {
+    if (!isEditing) setRichTextCtxMenu(null);
+  }, [isEditing]);
+
   const isInsideLinkedComponent = checkIfAncestorLinked(id, query);
   const rawText = props.text || "";
   const editorContent = React.useMemo(() => preprocessVariables(rawText), [rawText]);
@@ -81,9 +90,18 @@ function TextEditorMode({
     props.richTextMode === "inline" ? "inline" : "full";
 
   const [suggestion, setSuggestion] = React.useState<SuggestionProps | null>(null);
+  const [richTextCtxMenu, setRichTextCtxMenu] = React.useState<null | { x: number; y: number }>(null);
+
+  const { config } = useSDK();
+  const isAiEnabled = useAiEnabled();
+  const hasInlineAiChrome =
+    isAiEnabled && Boolean(config.editorChromeSlots?.renderInlineCopyAssistantTrigger);
 
   const queryRef = React.useRef(query);
   queryRef.current = query;
+
+  const nodeIdRef = React.useRef<string | undefined>(id);
+  nodeIdRef.current = id;
 
   const tiptapEditorRef = useRef<TiptapEditorInstance | null>(null);
 
@@ -94,6 +112,15 @@ function TextEditorMode({
           "ph-text-editor-root w-full min-h-[1.15em] outline-none focus:outline-none focus-visible:outline-none",
       } as Record<string, string>,
       handleDOMEvents: {
+        contextmenu(_view: unknown, event: Event) {
+          const mouse = event as MouseEvent;
+          const ed = tiptapEditorRef.current;
+          if (!ed?.isEditable) return false;
+          mouse.preventDefault();
+          mouse.stopPropagation();
+          setRichTextCtxMenu({ x: mouse.clientX, y: mouse.clientY });
+          return true;
+        },
         click(_view: unknown, event: Event) {
           const mouse = event as MouseEvent;
           if (mouse.button !== 0) return false;
@@ -138,7 +165,7 @@ function TextEditorMode({
   );
 
   const tiptapExtensions = useMemo(
-    () => getPagehubTextTiptapExtensions(richTextMode, setSuggestion, queryRef),
+    () => getPagehubTextTiptapExtensions(richTextMode, setSuggestion, queryRef, nodeIdRef),
     [richTextMode]
   );
 
@@ -250,7 +277,7 @@ function TextEditorMode({
     }
   };
 
-  const previewHtml = replaceVariables(rawText, query);
+  const previewHtml = replaceVariables(rawText, query, itemContext);
   const previewEmpty = isVisuallyEmptyRichText(previewHtml);
   const showEmptyChrome = enabled && previewEmpty && !isEditing && !isInsideLinkedComponent;
   const showEmptyBlockHint = showEmptyChrome && isActive;
@@ -314,6 +341,15 @@ function TextEditorMode({
                 value: persistedTextHtmlFromEditor(ed.getHTML()),
               });
             }}
+          />
+          <TiptapRichTextContextMenu
+            open={richTextCtxMenu !== null}
+            anchor={richTextCtxMenu}
+            onClose={() => setRichTextCtxMenu(null)}
+            editor={tiptapEditor}
+            query={query}
+            textNodeId={id}
+            showAi={hasInlineAiChrome}
           />
         </TiptapProvider>
       )}

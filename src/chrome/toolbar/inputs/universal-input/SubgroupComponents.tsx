@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
+import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 
 interface SubgroupPopoutProps {
   isVisible: boolean;
@@ -7,7 +8,7 @@ interface SubgroupPopoutProps {
   subgroupName: string;
   options: string[];
   showHints: boolean;
-  hintType: "pixel" | "percentage" | "custom";
+  hintType: "pixel" | "percentage" | "ms" | "custom";
   onSelect: (option: string) => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -29,11 +30,9 @@ export function SubgroupPopout({
 }: SubgroupPopoutProps) {
   if (!isVisible || !anchorElement) return null;
 
-  // Helper to get display label (strip prefix)
+  // Helper to get display label (humanize token)
   const getDisplayLabel = (option: string) => {
-    if (!propTag) return option;
-    const prefix = `${propTag}-`;
-    return option.startsWith(prefix) ? option.replace(prefix, "") : option;
+    return formatTailwindDisplayLabel(option, propTag);
   };
 
   const rect = anchorElement.getBoundingClientRect();
@@ -99,7 +98,7 @@ interface SubgroupItemProps {
   subgroupName: string;
   options: string[];
   showHints: boolean;
-  hintType: "pixel" | "percentage" | "custom";
+  hintType: "pixel" | "percentage" | "ms" | "custom";
   onSelect: (option: string) => void;
   propTag?: string;
 }

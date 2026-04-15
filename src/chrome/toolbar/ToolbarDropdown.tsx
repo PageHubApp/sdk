@@ -1,6 +1,7 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { Children, isValidElement, useCallback, useMemo, useRef, useState } from "react";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
+import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 
 const Label = ({ value }) => <label>{value}</label>;
 
@@ -19,7 +20,7 @@ type OptionItem =
   | { value: string; label: string; group?: undefined }
   | { group: string; value?: undefined; label?: undefined };
 
-const useOptions = (children: any, valueLabels: string[]): OptionItem[] =>
+const useOptions = (children: any, valueLabels: string[], propKey?: string): OptionItem[] =>
   useMemo(() => {
     if (children) {
       const items: OptionItem[] = [];
@@ -42,9 +43,12 @@ const useOptions = (children: any, valueLabels: string[]): OptionItem[] =>
     }
     return [
       { value: EMPTY, label: " " },
-      ...valueLabels.map(v => ({ value: toInternal(v), label: v })),
+      ...valueLabels.map(v => ({
+        value: toInternal(v),
+        label: formatTailwindDisplayLabel(v, propKey),
+      })),
     ];
-  }, [children, valueLabels]);
+  }, [children, valueLabels, propKey]);
 
 const ChevronDown = () => (
   <svg
@@ -163,7 +167,7 @@ export const ToolbarDropdown = ({
   append,
   propKey,
 }: any) => {
-  const options = useOptions(children, valueLabels);
+  const options = useOptions(children, valueLabels, propKey);
   const internalValue = toInternal(String(value ?? ""));
   const selectedLabel =
     internalValue === EMPTY ? null : options.find(o => o.value === internalValue)?.label;

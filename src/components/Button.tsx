@@ -5,6 +5,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { TbPointer } from "react-icons/tb";
 import { Button as UiButton } from "@pagehub/ui";
 import { addActionHandlers } from "../utils/clickControls";
+import { useItemContext } from "../utils/itemContext";
+import { useSDKSafe } from "../core/context";
 import {
   migrateAction,
   actionToHref,
@@ -138,6 +140,8 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
   }));
 
   const router = useRouter();
+  const itemContext = useItemContext();
+  const sdk = useSDKSafe();
 
   props = setClonedProps(props, query);
 
@@ -323,14 +327,20 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   applyAriaProps(prop, props);
 
-  // Attach JS handlers for open-modal, show-hide, scroll-to
+  // Attach JS handlers for open-modal, show-hide, scroll-to, add-to-cart
+  const actionCtx = { itemContext, onAddToCart: sdk?.config.callbacks?.onAddToCart };
   if (isHandlerAction(action)) {
     // For show-hide on buttons, force style method
     const actionForButton =
       action.type === "show-hide" ? { ...action, method: "style" as const } : action;
-    addActionHandlers(prop, actionForButton, enabled);
+    addActionHandlers(prop, actionForButton, enabled, actionCtx);
   } else if (action?.type === "scroll-to") {
-    addActionHandlers(prop, action, enabled);
+    addActionHandlers(prop, action, enabled, actionCtx);
+  }
+
+  // Stamp data-action for runtime discovery (e.g. CartProvider badge injection on toggle-cart)
+  if (action?.type && !enabled) {
+    prop["data-action"] = action.type;
   }
 
   // Tab button: mark with data attribute for active state tracking

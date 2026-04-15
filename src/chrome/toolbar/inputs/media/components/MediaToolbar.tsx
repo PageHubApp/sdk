@@ -56,9 +56,9 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
     mediaManagerAiPanelContext,
   } = manager;
 
-  /** One height for search + segmented controls (tool-bg p-1 was making groups taller than the search field). */
+  /** One height for search + segmented controls; use tool-bg-flat (not tool-bg) so clusters match the bar — no shadow-xl */
   const barH = "h-10";
-  const toolClusterClass = `tool-bg ${barH} shrink-0 !items-stretch !justify-start !gap-0.5 !px-0.5 !py-0 text-neutral-content [&_button.tool-button]:h-full [&_button.tool-button]:min-h-0 [&_button.tool-button]:rounded-md [&_button.tool-button]:px-2`;
+  const toolClusterClass = `tool-bg-flat ${barH} shrink-0 !items-stretch !justify-start !gap-0.5 !px-0.5 !py-0 text-neutral-content [&_button.tool-button]:h-full [&_button.tool-button]:min-h-0 [&_button.tool-button]:rounded-md [&_button.tool-button]:px-2`;
 
   return (
     <div ref={toolbarRef} className="border-base-300 bg-neutral border-b px-4 py-1.5">

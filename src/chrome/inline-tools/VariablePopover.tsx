@@ -3,7 +3,7 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headless
 import { TbCheck, TbChevronDown, TbPencil, TbTrash } from "react-icons/tb";
 
 export interface VariablePopoverProps {
-  variables: { id: string; label: string }[];
+  variables: { id: string; label: string; group?: string }[];
   currentId: string;
   displayValue: string;
   onChangeVariable: (newId: string) => void;
@@ -92,19 +92,33 @@ export function VariablePopover({
           className="pagehub-sdk-root ph-select-content z-999999!"
           modal={false}
         >
-          {variables.map(v => (
-            <ListboxOption key={v.id} value={v.id} className="ph-select-item">
-              {({ selected }) => (
-                <>
-                  <span className="flex w-4 shrink-0 items-center justify-center">
-                    {selected && <TbCheck size={12} />}
-                  </span>
-                  {v.label} —{" "}
-                  <span className="font-mono text-[10px] opacity-60">{`{{${v.id}}}`}</span>
-                </>
-              )}
-            </ListboxOption>
-          ))}
+          {(() => {
+            let lastGroup: string | undefined;
+            return variables.map(v => {
+              const showHeader = v.group && v.group !== lastGroup;
+              lastGroup = v.group;
+              return (
+                <React.Fragment key={v.id}>
+                  {showHeader && (
+                    <div className="bg-base-200/80 text-neutral-content px-2 py-1 text-[10px] font-semibold tracking-wide uppercase">
+                      {v.group}
+                    </div>
+                  )}
+                  <ListboxOption value={v.id} className="ph-select-item">
+                    {({ selected }) => (
+                      <>
+                        <span className="flex w-4 shrink-0 items-center justify-center">
+                          {selected && <TbCheck size={12} />}
+                        </span>
+                        {v.label} —{" "}
+                        <span className="font-mono text-[10px] opacity-60">{`{{${v.id}}}`}</span>
+                      </>
+                    )}
+                  </ListboxOption>
+                </React.Fragment>
+              );
+            });
+          })()}
         </ListboxOptions>
       </Listbox>
 

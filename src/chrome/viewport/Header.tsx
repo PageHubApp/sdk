@@ -126,8 +126,9 @@ export const Header = () => {
 
   const setEnabled = useSetAtomState(EnabledAtom);
 
-  const { features } = useSDK();
+  const { features, config } = useSDK();
   const isTenant = features.directSave;
+  const siteSettingsExtraTabs = config.editorChromeSlots?.siteSettingsExtraTabs;
 
   const [preview, setPreview] = useAtomState(PreviewAtom);
 
@@ -547,6 +548,7 @@ export const Header = () => {
       <SiteSettingsModal
         isOpen={isSiteSettingsModalOpen}
         onClose={() => setIsSiteSettingsModalOpen(false)}
+        extraTabs={siteSettingsExtraTabs}
       />
 
       <ModifiersModal

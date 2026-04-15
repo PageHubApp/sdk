@@ -1,41 +1,10 @@
-import { TbChevronDown, TbChevronRight } from "react-icons/tb";
 import { DENSITY_STEPS } from "@/utils/defaults";
+import { ToolbarDropdown } from "../../../toolbar/ToolbarDropdown";
+import { ToolbarSection } from "../../../toolbar/ToolbarSection";
 import type { UseDesignSystemReturn } from "../hooks/useDesignSystem";
 
 interface StylesTabProps {
   ds: UseDesignSystemReturn;
-}
-
-function CollapsibleSection({
-  title,
-  section,
-  expanded,
-  onToggle,
-  children,
-}: {
-  title: string;
-  section: string;
-  expanded: boolean;
-  onToggle: (section: string) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="border-base-300 border-b last:border-b-0">
-      <button
-        onClick={() => onToggle(section)}
-        className="bg-neutral hover:bg-neutral/80 flex w-full items-center justify-between px-3 py-2 text-left transition-colors"
-        aria-expanded={expanded}
-      >
-        <span className="text-neutral-content text-sm font-semibold">{title}</span>
-        {expanded ? (
-          <TbChevronDown className="text-neutral-content" size={18} />
-        ) : (
-          <TbChevronRight className="text-neutral-content" size={18} />
-        )}
-      </button>
-      {expanded && <div className="bg-base-100 text-base-content space-y-3 p-3">{children}</div>}
-    </div>
-  );
 }
 
 function SelectField({
@@ -56,18 +25,18 @@ function SelectField({
       <label htmlFor={id} className="text-neutral-content mb-1 block text-xs font-medium">
         {label}
       </label>
-      <select
-        id={id}
+      <ToolbarDropdown
         value={value}
-        onChange={e => onChange(e.target.value)}
-        className="border-base-300 bg-base-100 text-base-content focus:ring-ring w-full rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+        onChange={onChange}
+        placeholder={label}
+        propKey={id}
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>
         ))}
-      </select>
+      </ToolbarDropdown>
     </div>
   );
 }
@@ -148,11 +117,12 @@ export function StylesTab({ ds }: StylesTabProps) {
 
   return (
     <div className="space-y-0">
-      <CollapsibleSection
+      <ToolbarSection
+        key={`spacing-${expandedSections.spacing}`}
         title="Spacing & Layout"
-        section="spacing"
-        expanded={!!expandedSections.spacing}
-        onToggle={toggleSection}
+        defaultOpen={!!expandedSections.spacing}
+        showChevron
+        onClick={() => toggleSection("spacing")}
       >
         <DensitySlider
           value={styles.spacingDensity}
@@ -224,13 +194,14 @@ export function StylesTab({ ds }: StylesTabProps) {
             { value: "2rem 1rem", label: "XL" },
           ]}
         />
-      </CollapsibleSection>
+      </ToolbarSection>
 
-      <CollapsibleSection
+      <ToolbarSection
+        key={`spatial-${expandedSections.spatial}`}
         title="Spatial Scale"
-        section="spatial"
-        expanded={!!expandedSections.spatial}
-        onToggle={toggleSection}
+        defaultOpen={!!expandedSections.spatial}
+        showChevron
+        onClick={() => toggleSection("spatial")}
       >
         <SelectField
           id="ds-space-xs"
@@ -287,13 +258,14 @@ export function StylesTab({ ds }: StylesTabProps) {
             { value: "clamp(5rem, 2.5rem + 7.5vw, 8rem)", label: "Loose" },
           ]}
         />
-      </CollapsibleSection>
+      </ToolbarSection>
 
-      <CollapsibleSection
+      <ToolbarSection
+        key={`effects-${expandedSections.effects}`}
         title="Effects & Borders"
-        section="effects"
-        expanded={!!expandedSections.effects}
-        onToggle={toggleSection}
+        defaultOpen={!!expandedSections.effects}
+        showChevron
+        onClick={() => toggleSection("effects")}
       >
         <SelectField
           id="ds-radius-box"
@@ -389,13 +361,14 @@ export function StylesTab({ ds }: StylesTabProps) {
             { value: "1", label: "On" },
           ]}
         />
-      </CollapsibleSection>
+      </ToolbarSection>
 
-      <CollapsibleSection
+      <ToolbarSection
+        key={`sizing-${expandedSections.sizing}`}
         title="Sizing"
-        section="sizing"
-        expanded={!!expandedSections.sizing}
-        onToggle={toggleSection}
+        defaultOpen={!!expandedSections.sizing}
+        showChevron
+        onClick={() => toggleSection("sizing")}
       >
         <SelectField
           id="ds-size-field"
@@ -421,13 +394,14 @@ export function StylesTab({ ds }: StylesTabProps) {
             { value: "0.35rem", label: "Large" },
           ]}
         />
-      </CollapsibleSection>
+      </ToolbarSection>
 
-      <CollapsibleSection
+      <ToolbarSection
+        key={`forms-${expandedSections.forms}`}
         title="Form Inputs"
-        section="forms"
-        expanded={!!expandedSections.forms}
-        onToggle={toggleSection}
+        defaultOpen={!!expandedSections.forms}
+        showChevron
+        onClick={() => toggleSection("forms")}
       >
         <SelectField
           id="ds-input-padding"
@@ -516,13 +490,14 @@ export function StylesTab({ ds }: StylesTabProps) {
             )
           }
         />
-      </CollapsibleSection>
+      </ToolbarSection>
 
-      <CollapsibleSection
+      <ToolbarSection
+        key={`links-${expandedSections.links}`}
         title="Links"
-        section="links"
-        expanded={!!expandedSections.links}
-        onToggle={toggleSection}
+        defaultOpen={!!expandedSections.links}
+        showChevron
+        onClick={() => toggleSection("links")}
       >
         <ColorButton
           id="ds-link-color"
@@ -572,7 +547,7 @@ export function StylesTab({ ds }: StylesTabProps) {
             { value: "underline-offset-8", label: "8px" },
           ]}
         />
-      </CollapsibleSection>
+      </ToolbarSection>
     </div>
   );
 }

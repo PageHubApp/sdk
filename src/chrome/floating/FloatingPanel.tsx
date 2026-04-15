@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useLayoutEffect } from "react";
 import ReactDOM from "react-dom";
 import { TbX } from "react-icons/tb";
+import { twMerge } from "tailwind-merge";
 import { useDraggableWindow } from "../hooks/useDraggableWindow";
 import { useResizable } from "../hooks/useResizable";
 import { useFocusTrap } from "../../utils/hooks/useAccessibility";
@@ -14,6 +15,10 @@ interface FloatingPanelProps {
   icon?: React.ReactNode;
   /** Show a backdrop overlay behind the panel */
   backdrop?: boolean;
+  /** When false, backdrop does not close the panel on click (backdrop still blocks pointer events). Default true. */
+  backdropCloseOnClick?: boolean;
+  /** Extra classes for the backdrop (e.g. `ph-modal-backdrop--light`). */
+  backdropClassName?: string;
   /** useResizable options */
   storageKey: string;
   defaultWidth: number;
@@ -25,6 +30,11 @@ interface FloatingPanelProps {
   edges?: ResizeEdge[];
   /** Initial position — defaults to centered */
   initialPosition?: { x: number; y: number };
+  /**
+   * Snap the panel to a screen edge when opened or when this value changes.
+   * Uses current panel width (e.g. after persisted resize). Omit to keep free placement / `initialPosition` only.
+   */
+  dockToEdge?: "left" | "right";
   /** z-index for the panel (default 999) */
   zIndex?: number;
   children: React.ReactNode;
@@ -36,6 +46,8 @@ export function FloatingPanel({
   title,
   icon,
   backdrop = false,
+  backdropCloseOnClick = true,
+  backdropClassName,
   storageKey,
   defaultWidth,
   defaultHeight,
@@ -45,15 +57,24 @@ export function FloatingPanel({
   maxHeight = Math.round(typeof window !== "undefined" ? window.innerHeight * 0.95 : 800),
   edges = ["e", "s", "se"],
   initialPosition,
+  dockToEdge,
   zIndex = 999,
   children,
 }: FloatingPanelProps) {
-  const defaultPos = initialPosition ?? {
-    x: Math.round(
-      (typeof window !== "undefined" ? window.innerWidth : 1200) / 2 - defaultWidth / 2
-    ),
-    y: 40,
-  };
+  const defaultPos = (() => {
+    if (initialPosition) return initialPosition;
+    const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
+    if (dockToEdge === "right") {
+      return { x: Math.max(8, vw - defaultWidth - 12), y: 40 };
+    }
+    if (dockToEdge === "left") {
+      return { x: 8, y: 40 };
+    }
+    return {
+      x: Math.round(vw / 2 - defaultWidth / 2),
+      y: 40,
+    };
+  })();
 
   const focusTrapRef = useFocusTrap(isOpen);
 
@@ -66,7 +87,7 @@ export function FloatingPanel({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
-  const { position, isDragging, windowRef, handleMouseDown } = useDraggableWindow({
+  const { position, isDragging, windowRef, handleMouseDown, setPosition } = useDraggableWindow({
     initialPosition: defaultPos,
     bounds: { top: 0, right: 0, bottom: 0, left: 0 },
   });
@@ -82,15 +103,23 @@ export function FloatingPanel({
     edges,
   });
 
+  useLayoutEffect(() => {
+    if (!isOpen || !dockToEdge) return;
+    const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
+    const x = dockToEdge === "right" ? Math.max(8, vw - width - 12) : 8;
+    setPosition({ x, y: 40 });
+  }, [isOpen, dockToEdge, setPosition]);
+
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
     <>
       {backdrop && (
         <div
-          className="pagehub-sdk-root ph-modal-backdrop"
+          className={twMerge("pagehub-sdk-root ph-modal-backdrop", backdropClassName)}
           style={{ zIndex: zIndex - 1 }}
-          onClick={onClose}
+          onClick={backdropCloseOnClick ? onClose : undefined}
+          aria-hidden="true"
         />
       )}
 

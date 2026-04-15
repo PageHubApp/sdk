@@ -39,7 +39,7 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
       placement: "bottom-end",
       mainAxisOffset: 4,
       maxHeightCeiling: 300,
-      maxHeightMin: 100,
+      maxHeightMin: 0,
       dismiss: {
         onDismiss: () => setIsOpen(false),
       },

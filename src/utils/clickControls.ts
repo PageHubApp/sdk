@@ -2,7 +2,7 @@
  * Runtime action handlers — attaches event listeners to component prop objects
  * based on the unified NodeAction system.
  */
-import type { NodeAction, ShowHideAction, ToggleThemeAction } from "./action";
+import type { AddToCartAction, NodeAction, ShowHideAction, ToggleThemeAction } from "./action";
 import { phStorage } from "./phStorage";
 
 // ─── Legacy type (kept for migration period only) ──────────────────────
@@ -111,7 +111,8 @@ function revertShowHide(action: ShowHideAction) {
 export function addActionHandlers(
   prop: any,
   action: NodeAction | null | undefined,
-  enabled: boolean
+  enabled: boolean,
+  context?: { itemContext?: Record<string, any> | null; onAddToCart?: (item: Record<string, any>, qty: number) => void }
 ) {
   if (!action) return;
 
@@ -156,6 +157,40 @@ export function addActionHandlers(
         const el = document.getElementById(ta.dismissTarget);
         if (el) hideElement(el as HTMLElement, ta.dismissMethod || "style");
       }
+    };
+    return;
+  }
+
+  if (action.type === "add-to-cart") {
+    prop.onClick = (e: any) => {
+      if (enabled) return;
+      e.preventDefault();
+      const item = context?.itemContext;
+      if (!item) {
+        console.warn("[PageHub] add-to-cart action requires a data-bound Container parent. Place this button inside a Container with a dataSource.");
+        return;
+      }
+      const qty = (action as AddToCartAction).quantity || 1;
+      context?.onAddToCart?.(item, qty);
+      document.dispatchEvent(new CustomEvent("pagehub:add-to-cart", { detail: { item, quantity: qty } }));
+    };
+    return;
+  }
+
+  if (action.type === "toggle-cart") {
+    prop.onClick = (e: any) => {
+      if (enabled) return;
+      e.preventDefault();
+      document.dispatchEvent(new CustomEvent("pagehub:toggle-cart"));
+    };
+    return;
+  }
+
+  if (action.type === "cart-checkout") {
+    prop.onClick = (e: any) => {
+      if (enabled) return;
+      e.preventDefault();
+      document.dispatchEvent(new CustomEvent("pagehub:cart-checkout"));
     };
     return;
   }

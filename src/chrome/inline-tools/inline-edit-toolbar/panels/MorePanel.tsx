@@ -1,4 +1,5 @@
 import { Editor } from "@tiptap/react";
+import { VariableInsertPanel } from "./VariableInsertPanel";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import {
   MdFormatAlignCenter,
@@ -15,12 +16,12 @@ import {
 } from "react-icons/md";
 import { TbEraser, TbX } from "react-icons/tb";
 import { DeleteNodeButton } from "../../../canvas/node-tools/DeleteNodeButton";
-import { getEditorVariableOptions } from "@/utils/editorVariableOptions";
 import type { PagehubTextRichMode } from "@/core/tiptapExtensions/pagehubTextTiptapExtensions";
 
 interface MorePanelProps {
   editor: Editor;
   query: any;
+  nodeId?: string;
   richTextMode?: PagehubTextRichMode;
   onAction: (cb: () => void) => (e: React.MouseEvent) => void;
   onInsertImage: () => void;
@@ -30,12 +31,12 @@ interface MorePanelProps {
 export function MorePanel({
   editor,
   query,
+  nodeId,
   richTextMode = "full",
   onAction,
   onInsertImage,
   onClose,
 }: MorePanelProps) {
-  const variableOptions = getEditorVariableOptions(query);
   return (
     <div className="flex flex-col gap-0.5 px-1 py-1">
       <div className="flex items-center">
@@ -140,6 +141,10 @@ export function MorePanel({
 
         <div className="bg-border mx-0.5 h-5 w-px" />
 
+        <VariableInsertPanel editor={editor} query={query} nodeId={nodeId} onAction={onAction} />
+
+        <div className="bg-border mx-0.5 h-5 w-px" />
+
         <button
           type="button"
           aria-label="Close"
@@ -151,26 +156,6 @@ export function MorePanel({
           <TbX />
         </button>
       </div>
-
-      {variableOptions.length > 0 && (
-        <div className="border-base-300 flex flex-wrap items-center gap-1 border-t pt-1">
-          <span className="text-neutral-content/60 text-[10px] font-semibold tracking-wider uppercase">
-            Vars
-          </span>
-          {variableOptions.map(v => (
-            <button
-              key={v.id}
-              type="button"
-              onClick={onAction(() =>
-                (editor.chain().focus() as any).insertVariable({ id: v.id }).run()
-              )}
-              className="border-base-300 text-base-content hover:bg-base-200 rounded-md border px-1.5 py-0.5 text-xs transition-colors"
-            >
-              {v.label}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

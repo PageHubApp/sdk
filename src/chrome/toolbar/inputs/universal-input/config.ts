@@ -6,7 +6,7 @@ export { getLayoutConfig, type DropdownLayoutConfig } from "./layouts";
 // Helper to get hint text for numeric values
 export const getHintText = (
   option: string,
-  hintType: "pixel" | "percentage" | "custom"
+  hintType: "pixel" | "percentage" | "ms" | "custom"
 ): string => {
   const value = option.replace(/^[a-z]+-/, "");
 
@@ -23,6 +23,9 @@ export const getHintText = (
         return `${Math.round((num / den) * 100)}%`;
       }
       return value;
+
+    case "ms":
+      return `${value}ms`;
 
     default:
       return value;

@@ -41,6 +41,11 @@ export function useSDK(): SDKContextValue {
   return ctx;
 }
 
+/** Returns the SDK context or null if no PageHubProvider exists above in the tree. */
+export function useSDKSafe(): SDKContextValue | null {
+  return useContext(SDKContext);
+}
+
 /** Returns true if a PageHubProvider exists above in the tree. */
 export function useHasSDKProvider(): boolean {
   return useContext(SDKContext) !== null;

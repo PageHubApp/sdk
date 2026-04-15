@@ -20,10 +20,12 @@
 
 #viewport .pagehub-sdk-root,
 #viewport .tool-bg,
+#viewport .tool-bg-flat,
 #viewport .node-control,
 #viewport [data-node-control="true"],
 #device-tools-portal .pagehub-sdk-root,
 #device-tools-portal .tool-bg,
+#device-tools-portal .tool-bg-flat,
 #device-tools-portal .node-control,
 #device-tools-portal [data-node-control="true"] {
   --background: hsl(0 0% 100%);
@@ -105,15 +107,18 @@
 
 .dark #viewport .pagehub-sdk-root,
 .dark #viewport .tool-bg,
+.dark #viewport .tool-bg-flat,
 .dark #viewport .node-control,
 .dark #viewport [data-node-control="true"],
 .dark #device-tools-portal .pagehub-sdk-root,
 .dark #device-tools-portal .tool-bg,
+.dark #device-tools-portal .tool-bg-flat,
 .dark #device-tools-portal .node-control,
 .dark #device-tools-portal [data-node-control="true"],
 /* #viewport itself carries .dark for canvas dark: variants — no .dark ancestor required */
 #viewport.dark .pagehub-sdk-root,
 #viewport.dark .tool-bg,
+#viewport.dark .tool-bg-flat,
 #viewport.dark .node-control,
 #viewport.dark [data-node-control="true"] {
   --background: hsl(0 0% 12%);

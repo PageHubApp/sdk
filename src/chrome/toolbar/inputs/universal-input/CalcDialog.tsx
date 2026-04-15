@@ -57,7 +57,7 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
     placement: "bottom-start",
     mainAxisOffset: 6,
     maxHeightCeiling: 500,
-    maxHeightMin: 150,
+    maxHeightMin: 0,
     dismiss: { onDismiss: onClose },
   });
 
