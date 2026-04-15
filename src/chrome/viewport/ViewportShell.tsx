@@ -326,12 +326,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     }
   }, [editorPageIdsKey, query, actions, setIsolate, isolate, config.urlStrategy, makeOnIsolate]);
 
-  // ─── Sync nav store → CraftJS isolation ───
-  useEffect(() => {
-    if (!activePageId || activePageId === isolate) return;
-    makeOnIsolate()(activePageId);
-  }, [activePageId, makeOnIsolate]);
-
   // ─── Unsaved changes warning ───
   // Page switches use pushState (not Next.js router), so routeChangeStart
   // only fires for genuine navigations away from the editor.

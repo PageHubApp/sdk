@@ -56,7 +56,6 @@ export const isolatePageAlt = (
       const _props = query.node(_).get();
       if (!_props || _props?.data?.props?.type !== "page") return _;
       actions.setHidden(_, !!active);
-      actions.setProp(_, (prop: any) => (prop.hidden = !!active));
       return _;
     })
     .filter((_: string) => _ === _active)
@@ -64,7 +63,6 @@ export const isolatePageAlt = (
       const _props = query.node(_).get();
       if (!_props || _props?.data?.props?.type !== "page") return;
       actions.setHidden(_, false);
-      actions.setProp(_, (prop: any) => (prop.hidden = false));
     });
 
   setIsolate(active == null ? "" : active);
@@ -115,24 +113,21 @@ export async function isolatePageLazy(
   try {
     const node = query.node(active).get();
     if (node) {
-      const viewport = document.getElementById("viewport");
-      const scrollContainer = viewport?.closest("[class*='overflow']") as HTMLElement | null;
-      const hideTarget = scrollContainer || viewport;
-      if (hideTarget) hideTarget.style.opacity = "0";
+      // Target the persistent container — #viewport gets unmounted by deserialize
+      const container = document.querySelector("[data-container]") as HTMLElement | null;
+      if (container) container.style.opacity = "0";
 
-      // Clear selection before swap — prevents useScrollToSelected from
-      // firing scrollIntoView when components re-mount with stale selection
       actions.selectNode(null);
 
-      if (scrollContainer) scrollContainer.scrollTop = 0;
+      const viewport = document.getElementById("viewport");
       if (viewport) viewport.scrollTop = 0;
+      if (container) container.scrollTop = 0;
 
       isolatePageAlt(active, query, active, actions, setIsolate);
 
-      // Reveal after React flushes the new page
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          if (hideTarget) hideTarget.style.opacity = "";
+          if (container) container.style.opacity = "";
         });
       });
       return false;
@@ -157,13 +152,9 @@ export async function isolatePageLazy(
   try {
     const json = await decompressAsync(pageData.content);
 
-    // Hide the entire viewport scroll container during swap to prevent flash.
-    // opacity:0 is composited (no reflow) and hides everything including
-    // React's intermediate renders during deserialize.
-    const viewport = document.getElementById("viewport");
-    const scrollContainer = viewport?.closest("[class*='overflow']") as HTMLElement | null;
-    const hideTarget = scrollContainer || viewport;
-    if (hideTarget) hideTarget.style.opacity = "0";
+    // Target the persistent container — #viewport gets unmounted by deserialize
+    const container = document.querySelector("[data-container]") as HTMLElement | null;
+    if (container) container.style.opacity = "0";
 
     actions.selectNode(null);
     actions.deserialize(json);
@@ -173,13 +164,12 @@ export async function isolatePageLazy(
     await new Promise<void>(resolve => {
       requestAnimationFrame(() => {
         isolatePageAlt(active, query, active, actions, setIsolate);
-        // Reset scroll
-        if (scrollContainer) scrollContainer.scrollTop = 0;
+        if (container) container.scrollTop = 0;
+        const viewport = document.getElementById("viewport");
         if (viewport) viewport.scrollTop = 0;
-        // Wait for React + DOM paint, then reveal
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            if (hideTarget) hideTarget.style.opacity = "";
+            if (container) container.style.opacity = "";
             resolve();
           });
         });
