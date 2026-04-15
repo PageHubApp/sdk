@@ -103,12 +103,6 @@ export interface PageHubCallbacks {
   /** Called when a user clicks an "Add to Cart" button. Item is the current repeater item context. */
   onAddToCart?: (item: Record<string, any>, quantity: number) => void;
 
-  /**
-   * Called when the editor needs to lazy-load a page shard (selective loading).
-   * Return compressed content for the shared + requested page.
-   * If not provided, the editor loads the full tree on startup.
-   */
-  fetchPage?: (pageNodeId: string) => Promise<PageData | null>;
 }
 
 // ─── Theming ──────────────────────────────────────────────────────────────────

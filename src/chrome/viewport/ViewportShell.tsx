@@ -41,7 +41,7 @@ import { useViewportClickDeselect } from "./hooks/useViewportClickDeselect";
 import { useViewportKeyboard } from "./hooks/useViewportKeyboard";
 import { phStorage } from "../../utils/phStorage";
 import { useEditorToolbarOverlayLayout } from "../../utils/hooks/useEditorToolbarOverlayLayout";
-import { initPageNavigation, usePageNavigation } from "../../utils/pageNavigation";
+import { initPageNavigation, updateOnIsolate, usePageNavigation } from "../../utils/pageNavigation";
 
 import {
   PreviewAtom,
@@ -253,6 +253,23 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
   // ─── Page navigation store init ───
   const navInitRef = useRef(false);
+
+  // Build the isolation callback — extracted so it can be refreshed
+  const makeOnIsolate = useCallback(
+    () => (pageId: string | null) => {
+      if (config.callbacks.fetchPage) {
+        return isolatePageLazy(pageId, query, actions, setIsolate, config.callbacks.fetchPage);
+      }
+      isolatePageAlt(isolate, query, pageId, actions, setIsolate, true);
+    },
+    [config.callbacks.fetchPage, query, actions, setIsolate, isolate],
+  );
+
+  // Keep the nav store's onIsolate callback fresh (avoids stale closures)
+  useEffect(() => {
+    if (navInitRef.current) updateOnIsolate(makeOnIsolate());
+  }, [makeOnIsolate]);
+
   useEffect(() => {
     if (navInitRef.current) return;
     const root = query.node(ROOT_NODE).get();
@@ -283,36 +300,22 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         }) || null;
       },
       getHomePageId: () => getDefaultEditorPageId(query),
-      onIsolate: (pageId: string | null) => {
-        if (config.callbacks.fetchPage) {
-          return isolatePageLazy(pageId, query, actions, setIsolate, config.callbacks.fetchPage);
-        }
-        isolatePageAlt(isolate, query, pageId, actions, setIsolate, true);
-      },
+      onIsolate: makeOnIsolate(),
     });
 
     // Prefer: URL page > localStorage page > nav store's pick (home page)
     const targetPage = initialPageId || storedId || getDefaultEditorPageId(query);
     if (targetPage && targetPage !== isolate) {
-      setTimeout(() => {
-        if (config.callbacks.fetchPage) {
-          isolatePageLazy(targetPage, query, actions, setIsolate, config.callbacks.fetchPage);
-        } else {
-          isolatePageAlt(isolate, query, targetPage, actions, setIsolate, true);
-        }
-      }, 0);
+      const onIsolate = makeOnIsolate();
+      setTimeout(() => onIsolate(targetPage), 0);
     }
-  }, [editorPageIdsKey, query, actions, setIsolate, isolate, config.urlStrategy]);
+  }, [editorPageIdsKey, query, actions, setIsolate, isolate, config.urlStrategy, makeOnIsolate]);
 
   // ─── Sync nav store → CraftJS isolation ───
   useEffect(() => {
     if (!activePageId || activePageId === isolate) return;
-    if (config.callbacks.fetchPage) {
-      isolatePageLazy(activePageId, query, actions, setIsolate, config.callbacks.fetchPage);
-    } else {
-      isolatePageAlt(isolate, query, activePageId, actions, setIsolate, true);
-    }
-  }, [activePageId]);
+    makeOnIsolate()(activePageId);
+  }, [activePageId, makeOnIsolate]);
 
   // ─── Unsaved changes warning ───
   // Page switches use pushState (not Next.js router), so routeChangeStart

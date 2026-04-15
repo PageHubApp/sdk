@@ -46,38 +46,6 @@ export function getDefaultEditorPageId(query: any): string | null {
 
 // ─── Page Isolation ───
 
-export const isolatePage = (
-  isolate: string | boolean,
-  query: any,
-  active: any,
-  actions: any,
-  setIsolate: (v: string) => void,
-  select = true
-) => {
-  const root = query.node(ROOT_NODE).get();
-  const _active = active ? active.valueOf() : null;
-
-  root.data.nodes
-    .map((_: string) => {
-      const _props = query.node(_).get();
-      if (!_props || _props?.data?.props?.type !== "page") return _;
-      actions.setHidden(_, false);
-      actions.setProp(_, (prop: any) => (prop.hidden = false));
-      return _;
-    })
-    .filter((_: string) => _ !== _active)
-    .forEach((_: string) => {
-      const _props = query.node(_).get();
-      if (!_props || _props?.data?.props?.type !== "page") return;
-      actions.setHidden(_, !isolate);
-      actions.setProp(_, (prop: any) => (prop.hidden = !isolate));
-    });
-
-  if (select) setTimeout(() => actions.selectNode(_active), 100);
-  setIsolate(!isolate ? _active : "");
-  phStorage.set("isolated", !isolate ? _active : "");
-};
-
 export const isolatePageAlt = (
   _isolate: string | boolean,
   query: any,
@@ -137,12 +105,6 @@ export function getLoadedPages(): ReadonlySet<string> {
 
 export function markPageLoaded(pageNodeId: string): void {
   _loadedPages.add(pageNodeId);
-}
-
-export function markAllPagesLoaded(query: any): void {
-  for (const id of listPageNodeIds(query)) {
-    _loadedPages.add(id);
-  }
 }
 
 export function clearLoadedPages(): void {

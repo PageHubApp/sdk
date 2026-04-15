@@ -4,10 +4,6 @@
  * Module-scoped external store (same pattern as usePanelUrl.ts) that is the
  * single source of truth for which page is active in the editor.
  *
- * Replaces the dual-source problem where ViewportShell watched Next.js
- * router.asPath (stale after pushState) AND PageSelector called isolatePageAlt
- * directly with competing URL management.
- *
  * The host app provides a `urlStrategy` via config so the SDK stays
  * host-agnostic (no Next.js, no /build/ prefix knowledge).
  */
@@ -22,7 +18,7 @@ export interface UrlStrategy {
   buildPageUrl: (ctx: { siteId: string; pageSlug: string; isHomePage: boolean }) => string;
   /** Build a URL path for the site root (home page). */
   buildSiteUrl: (ctx: { siteId: string }) => string;
-  /** Parse the current URL to extract a page slug. null = no page slug. */
+  /** Parse the current URL to extract a page slug. null = no page slug in URL. */
   parsePageSlug: () => string | null;
   /** Parse the current URL to extract the site ID. null = not yet saved. */
   parseSiteId: () => string | null;
@@ -51,6 +47,9 @@ let listeners: Array<() => void> = [];
 let currentSnapshot: PageNavState = { activePageId: null, siteId: null };
 let initOpts: PageNavInit | null = null;
 
+/** Tracks in-flight isolation to prevent races from rapid page switches. */
+let isolationSeq = 0;
+
 // ── External store API (for useSyncExternalStore) ───────────────────────────
 
 function subscribe(listener: () => void): () => void {
@@ -69,9 +68,25 @@ function getServerSnapshot(): PageNavState {
 }
 
 function notify(): void {
-  // Create a new object reference so React sees the change
   currentSnapshot = { ...currentSnapshot };
   for (const l of listeners) l();
+}
+
+/**
+ * Isolate a page with deduplication. If a newer isolation request comes in
+ * while a previous one is still in-flight (async lazy load), the older one
+ * is abandoned when it completes.
+ */
+async function doIsolate(pageId: string | null): Promise<void> {
+  if (!initOpts) return;
+  const seq = ++isolationSeq;
+  try {
+    await initOpts.onIsolate(pageId);
+  } catch (e) {
+    console.error("[PageHub] Page isolation failed:", e);
+  }
+  // If a newer request came in while we were loading, don't update state
+  if (seq !== isolationSeq) return;
 }
 
 // ── Popstate (back/forward) ─────────────────────────────────────────────────
@@ -84,21 +99,18 @@ if (typeof window !== "undefined") {
 
     if (siteId) currentSnapshot.siteId = siteId;
 
+    let targetId: string | null = null;
     if (slug) {
-      const pageId = initOpts.resolvePageIdFromSlug(slug);
-      if (pageId && pageId !== currentSnapshot.activePageId) {
-        currentSnapshot.activePageId = pageId;
-        initOpts.onIsolate(pageId);
-        notify();
-      }
-    } else {
-      // No page slug = home page
-      const homeId = initOpts.getHomePageId();
-      if (homeId && homeId !== currentSnapshot.activePageId) {
-        currentSnapshot.activePageId = homeId;
-        initOpts.onIsolate(homeId);
-        notify();
-      }
+      targetId = initOpts.resolvePageIdFromSlug(slug);
+    }
+    if (!targetId) {
+      targetId = initOpts.getHomePageId();
+    }
+
+    if (targetId && targetId !== currentSnapshot.activePageId) {
+      currentSnapshot.activePageId = targetId;
+      doIsolate(targetId);
+      notify();
     }
   });
 }
@@ -136,6 +148,14 @@ export function initPageNavigation(opts: PageNavInit): string | null {
 }
 
 /**
+ * Update the onIsolate callback. Called when the closure needs refreshing
+ * (e.g., when config.callbacks changes).
+ */
+export function updateOnIsolate(fn: PageNavInit["onIsolate"]): void {
+  if (initOpts) initOpts.onIsolate = fn;
+}
+
+/**
  * Navigate to a page. Updates state, pushes URL, and isolates.
  */
 export function navigateToPage(
@@ -147,7 +167,7 @@ export function navigateToPage(
   if (pageId === currentSnapshot.activePageId) return;
 
   currentSnapshot.activePageId = pageId;
-  initOpts.onIsolate(pageId);
+  doIsolate(pageId);
 
   // Push URL if we have a strategy and a site ID
   if (initOpts.urlStrategy && currentSnapshot.siteId) {
@@ -171,17 +191,13 @@ export function setSiteId(id: string): void {
   const hadSiteId = !!currentSnapshot.siteId;
   currentSnapshot.siteId = id;
 
-  if (initOpts.urlStrategy) {
-    // If we already pushed a page URL, don't clobber it — just update siteId in state.
-    // Only replaceState on the FIRST save (no prior siteId) when no page is navigated.
-    if (!hadSiteId) {
-      // Check if navigateToPage already pushed a URL with this siteId
-      const currentPath = window.location.pathname;
-      const expectedSiteUrl = initOpts.urlStrategy.buildSiteUrl({ siteId: id });
-      // Only replace if the current URL doesn't already contain the site ID
-      if (!currentPath.includes(id)) {
-        window.history.replaceState({ source: "pageNav", siteId: id }, "", expectedSiteUrl);
-      }
+  if (initOpts.urlStrategy && !hadSiteId) {
+    // Only replaceState on the FIRST save (no prior siteId).
+    // Check if navigateToPage already pushed a URL with this siteId.
+    const currentSiteId = initOpts.urlStrategy.parseSiteId();
+    if (currentSiteId !== id) {
+      const url = initOpts.urlStrategy.buildSiteUrl({ siteId: id });
+      window.history.replaceState({ source: "pageNav", siteId: id }, "", url);
     }
   }
 
@@ -199,7 +215,7 @@ export function getActivePageId(): string | null {
 }
 
 /**
- * Set active page ID directly (used by ViewportShell for localStorage restore
+ * Set active page ID directly (used for localStorage restore
  * and initial isolation without URL changes).
  */
 export function setActivePageId(pageId: string | null): void {
