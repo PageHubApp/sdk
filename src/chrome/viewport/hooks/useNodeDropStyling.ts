@@ -85,7 +85,8 @@ export function useNodeDropStyling() {
         if (newNodeId !== ROOT_NODE && !isBatch) {
           setTimeout(() => {
             const node = query.node(newNodeId).get();
-            if (node?.dom) {
+            // Skip page nodes — they're the viewport content, not drop targets
+            if (node?.dom && node?.data?.props?.type !== "page") {
               node.dom.scrollIntoView({ behavior: "smooth", block: "center" });
             }
           }, 100);
