@@ -9,8 +9,7 @@ import { useEditor } from "@craftjs/core";
 import { EditorContent, useEditor as useTiptapEditor } from "@tiptap/react";
 import type { Editor as TiptapEditorInstance } from "@tiptap/core";
 
-import { useSDK } from "../core/context";
-import { useAiEnabled } from "../utils/hooks/useAiEnabled";
+import { useSDKSafe } from "../core/context";
 import { changeProp } from "../chrome/viewport/viewportExports";
 import { TiptapProvider } from "../chrome/inline-tools/TiptapContext";
 import { InlineEditToolbar } from "../chrome/inline-tools/inline-edit-toolbar/InlineEditToolbar";
@@ -92,10 +91,9 @@ function TextEditorMode({
   const [suggestion, setSuggestion] = React.useState<SuggestionProps | null>(null);
   const [richTextCtxMenu, setRichTextCtxMenu] = React.useState<null | { x: number; y: number }>(null);
 
-  const { config } = useSDK();
-  const isAiEnabled = useAiEnabled();
+  const sdk = useSDKSafe();
   const hasInlineAiChrome =
-    isAiEnabled && Boolean(config.editorChromeSlots?.renderInlineCopyAssistantTrigger);
+    sdk?.features.aiGeneration && Boolean(sdk.config.editorChromeSlots?.renderInlineCopyAssistantTrigger);
 
   const queryRef = React.useRef(query);
   queryRef.current = query;

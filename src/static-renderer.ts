@@ -265,6 +265,7 @@ const defaultResolver: Record<string, ToHTMLFn> = {
   CartBadge: cartBadgeToHTML,
   CartDrawer: containerToHTML,
   CheckoutBanner: containerToHTML,
+  ProductDisplay: containerToHTML,
 };
 
 // ─── Tree walker ────────────────────────────────────────────────────────────
