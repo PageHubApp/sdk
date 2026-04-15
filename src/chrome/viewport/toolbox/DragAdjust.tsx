@@ -183,6 +183,7 @@ function DragAdjust({
         isActive={hovering || dragging}
       />
       <button
+        data-craft-ignore="true"
         className={`drag-control group ${className} ${
           isPadding
             ? direction === "vertical"

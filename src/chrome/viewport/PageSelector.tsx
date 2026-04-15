@@ -1,8 +1,6 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import {
   TbChevronDown,
@@ -19,6 +17,7 @@ import { PageSettingsModal } from "./PageSettingsModal";
 import { UnsavedChangesAtom } from "./atoms";
 import { useSDK } from "../../core/context";
 import { usePageCreation } from "./page-selector/usePageCreation";
+import { usePageNavigation } from "../../utils/pageNavigation";
 
 import sluggit from "slug";
 
@@ -54,8 +53,8 @@ export function PageSelector({
 }: PageSelectorProps) {
   const { query, actions } = useEditor();
   const settings = useAtomValue(SettingsAtom) as { _id?: string; draftId?: string } | null;
-  const router = useRouter();
-  const siteId = settings?._id || (Array.isArray(router.query.slug) ? router.query.slug[0] : router.query.slug) || null;
+  const { siteId: navSiteId, navigateToPage } = usePageNavigation();
+  const siteId = settings?._id || navSiteId || null;
 
   // Page list from database via SWR
   const { data: pageData, mutate: mutatePages } = useSWR(
@@ -67,9 +66,8 @@ export function PageSelector({
     displayName: p.displayName || "Untitled Page",
   }));
 
-  // Fall back to CraftJS tree if SWR has no data
+  // Pages from CraftJS tree (source of truth for newly created pages not yet saved)
   const craftPages: Page[] = (() => {
-    if (swrPages.length > 0) return [];
     try {
       const root = query.node(ROOT_NODE).get();
       if (!root?.data?.nodes) return [];
@@ -86,7 +84,11 @@ export function PageSelector({
     } catch { return []; }
   })();
 
-  const pages = swrPages.length > 0 ? swrPages : craftPages;
+  // Merge: SWR pages + any CraftJS pages not yet in SWR (newly created, unsaved)
+  const swrIds = new Set(swrPages.map(p => p.id));
+  const pages = swrPages.length > 0
+    ? [...swrPages, ...craftPages.filter(p => !swrIds.has(p.id))]
+    : craftPages;
 
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const [isOpen, setIsOpen] = useState(false);
@@ -147,10 +149,9 @@ export function PageSelector({
     };
   }, []);
 
-  const handlePageSelect = async (pageId: string) => {
+  const handlePageSelect = (pageId: string) => {
     try {
       if (pickerMode && onPagePick) {
-        // Picker mode: just return the page data
         const page = pages.find(p => p.id === pageId);
         if (page) {
           onPagePick({ id: pageId, displayName: page.displayName, isHomePage: pageId === homePageId });
@@ -159,45 +160,23 @@ export function PageSelector({
         return;
       }
 
-      // Save current changes before switching pages
+      // Save current changes before switching
       if (typeof unsavedChanges === "string" && unsavedChanges.length > 0) {
         emitter.emit("save", { isDraft: true });
         setUnsavedChanged(null);
       }
 
-      // Navigation mode: isolate specific page
-      isolatePageAlt(isolate, query, pageId, actions, setIsolate, true);
+      // Navigate via the store — handles isolation + URL pushState
+      const page = pages.find(p => p.id === pageId);
+      const isHomePage = pageId === homePageId;
+      navigateToPage(pageId, page?.displayName || "Untitled Page", isHomePage);
+
       setIsOpen(false);
       onPageChange?.(pageId);
     } catch (e) {
       console.error("Error selecting page:", e);
       setIsOpen(false);
     }
-  };
-
-  const getPageUrl = (pageId: string): string => {
-    try {
-      const currentPath = router?.asPath?.split("?")[0] || "/";
-      const pathParts = currentPath.split("/").filter(p => p);
-      const baseUrl =
-        pathParts.length > 1 ? `/${pathParts[0]}/${pathParts[1]}` : `/${pathParts[0] || ""}`;
-
-      // Check if this page is marked as home page
-      const isHomePage = pageId === homePageId;
-
-      if (isHomePage) {
-        return baseUrl || "/";
-      }
-
-      const page = pages.find(p => p.id === pageId);
-      if (page) {
-        const pageSlug = sluggit(page.displayName, "-");
-        return `${baseUrl}/${pageSlug}`;
-      }
-    } catch (e) {
-      // ignore
-    }
-    return "#";
   };
 
   const { handleCreatePage } = usePageCreation({
@@ -353,16 +332,9 @@ export function PageSelector({
                         </div>
                       </button>
                     ) : (
-                      <Link
-                        href={getPageUrl(page.id)}
-                        onClick={() => {
-                          // Save before navigating
-                          if (typeof unsavedChanges === "string" && unsavedChanges.length > 0) {
-                            emitter.emit("save", { isDraft: true });
-                          }
-                          setIsOpen(false);
-                        }}
-                        className="flex flex-1 items-center gap-2 overflow-hidden"
+                      <button
+                        onClick={() => handlePageSelect(page.id)}
+                        className="flex flex-1 items-center gap-2 overflow-hidden text-left"
                       >
                         <Image
                           src="/logo.svg"
@@ -377,7 +349,7 @@ export function PageSelector({
                           </span>
                           <span className="text-neutral-content truncate text-xs">{pageRoute}</span>
                         </div>
-                      </Link>
+                      </button>
                     )}
                     {!pickerMode && (
                       <button

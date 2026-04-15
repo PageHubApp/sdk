@@ -1,4 +1,4 @@
-/** Container — Component definition via defineComponent() (no canvas inline tool controllers). */
+/** Container — Component definition via defineComponent(). */
 import { TbContainer, TbLayoutColumns, TbLayoutRows } from "react-icons/tb";
 import {
   ContainerMainTab,
@@ -7,6 +7,8 @@ import {
 import { defineComponent } from "../define";
 import { ariaAttrs, getInlineStyle, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
 import { Container } from "./Container";
+import { DragAdjustNodeController } from "../chrome/canvas/DragAdjustNodeController";
+import { UniformPaddingNodeController } from "../chrome/canvas/UniformPaddingNodeController";
 
 export const toHTML: ToHTMLFn = (props, children, ctx) => {
   if (props.type === "component") return "";
@@ -90,6 +92,49 @@ export const ContainerDef = defineComponent(
     settings: ContainerMainTab,
     toolbarExtra: <HeaderFooterToggles />,
     toHTML,
+    tools: () => [
+      <UniformPaddingNodeController key="padding" />,
+      <DragAdjustNodeController
+        key="drag-pt"
+        position="top"
+        align="center"
+        direction="vertical"
+        propVar="padding"
+        styleToUse="paddingTop"
+        tooltip="Drag to adjust top padding"
+        isPadding
+      />,
+      <DragAdjustNodeController
+        key="drag-pb"
+        position="bottom"
+        align="center"
+        direction="vertical"
+        propVar="padding"
+        styleToUse="paddingBottom"
+        tooltip="Drag to adjust bottom padding"
+        isPadding
+      />,
+      <DragAdjustNodeController
+        key="drag-pl"
+        position="left"
+        align="center"
+        direction="horizontal"
+        propVar="padding"
+        styleToUse="paddingLeft"
+        tooltip="Drag to adjust left padding"
+        isPadding
+      />,
+      <DragAdjustNodeController
+        key="drag-pr"
+        position="right"
+        align="center"
+        direction="horizontal"
+        propVar="padding"
+        styleToUse="paddingRight"
+        tooltip="Drag to adjust right padding"
+        isPadding
+      />,
+    ],
     rules: {
       canDrag: () => true,
       canDelete: () => true,

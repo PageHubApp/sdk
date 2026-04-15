@@ -158,7 +158,7 @@ export const UniformPaddingNodeController = () => {
     return closest;
   };
 
-  if (!isActive || (!isHover && !dragging)) return null;
+  if (!isActive) return null;
 
   return (
     <RenderNodeControlInline
@@ -179,6 +179,7 @@ export const UniformPaddingNodeController = () => {
         />
         <button
           type="button"
+          data-craft-ignore="true"
           className="pointer-events-auto size-6 cursor-move border-t-4 border-l-[5px] border-current transition-transform hover:scale-110 active:scale-110"
           style={{ animation: "node-control-in 0.5s ease-out 0.5s both" }}
           onMouseDown={handleMouseDown}

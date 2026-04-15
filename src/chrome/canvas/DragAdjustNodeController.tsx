@@ -130,7 +130,7 @@ export const DragAdjustNodeController = (props: {
   //        alt={alt}
   // could use it but drl need it ond rag adjusters..
 
-  const showControl = isHover || isDragging;
+  const showControl = true;
 
   // For inline rendering, skip AnimatePresence - it causes issues without portals
   if (isInlineRender && isActive && showControl) {

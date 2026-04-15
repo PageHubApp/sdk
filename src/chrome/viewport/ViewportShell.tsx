@@ -2,8 +2,8 @@ import sluggit from "slug";
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import Router, { useRouter } from "next/router";
-import React, { useCallback, useEffect, useState } from "react";
+import Router from "next/router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { TbCode } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
@@ -40,6 +40,7 @@ import { useViewportClickDeselect } from "./hooks/useViewportClickDeselect";
 import { useViewportKeyboard } from "./hooks/useViewportKeyboard";
 import { phStorage } from "../../utils/phStorage";
 import { useEditorToolbarOverlayLayout } from "../../utils/hooks/useEditorToolbarOverlayLayout";
+import { initPageNavigation, usePageNavigation } from "../../utils/pageNavigation";
 
 import {
   PreviewAtom,
@@ -123,8 +124,8 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const isToolbarOverlayLayout = useEditorToolbarOverlayLayout();
   const sidebarOccupiesLeftGutter = sideBarOpen && sideBarLeft && !isToolbarOverlayLayout;
   const setInitialLoadComplete = useSetAtomState(InitialLoadCompleteAtom);
-  const nextRouter = useRouter();
-  const { emitter } = useSDK();
+  const { emitter, config } = useSDK();
+  const { activePageId } = usePageNavigation();
   const setToolboxMenu = useSetAtomState(ToolboxMenu);
 
   /** Same rules as native context menu: opens element menu at pointer; skips text fields. */
@@ -249,74 +250,61 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // ─── URL-based page isolation + default to home for multi-page sites ───
+  // ─── Page navigation store init ───
+  const navInitRef = useRef(false);
   useEffect(() => {
-    const pathParts = nextRouter.asPath.split("/").filter(p => p && !p.startsWith("?"));
+    if (navInitRef.current) return;
     const root = query.node(ROOT_NODE).get();
     if (!root) return;
-
     const pageIds = listPageNodeIds(query);
+    if (pageIds.length === 0) return;
 
-    const handlePageSwitch = (targetPageId: string | null) => {
-      if (typeof unsavedChanges === "string" && unsavedChanges.length > 0) {
-        emitter.emit("save", { isDraft: true });
-        setUnsavedChanged(null);
-      }
-      isolatePageAlt(isolate, query, targetPageId, actions, setIsolate, true);
-    };
+    navInitRef.current = true;
 
-    const runDeferred = (fn: () => void) => {
-      setTimeout(fn, 0);
-    };
-
-    if (pathParts.length >= 3) {
-      const pageSlug = pathParts[pathParts.length - 1];
-      const matchingPage = root.data.nodes.find((nodeId: string) => {
-        const node = query.node(nodeId).get();
-        if (node?.data?.props?.type === "page") {
-          return sluggit(node.data.custom?.displayName, "-") === pageSlug;
-        }
-        return false;
-      });
-      if (matchingPage && matchingPage !== isolate) {
-        runDeferred(() => handlePageSwitch(matchingPage));
-      }
-      return;
+    // Check localStorage for a previously isolated page
+    const rawStored = phStorage.get("isolated");
+    if (rawStored === EDITOR_ALL_PAGES_STORAGE) {
+      phStorage.remove("isolated");
     }
+    const storedId = rawStored && rawStored !== "null" && pageIds.includes(rawStored) ? rawStored : null;
 
-    // Short URL (e.g. /build/:draftId): after deserialize, isolate home when there are 2+ pages,
-    // unless localStorage says "all pages" or a specific page id (Toolbar restores the atom).
-    if (pageIds.length >= 2) {
-      const rawStored = phStorage.get("isolated");
-      // EDITOR_ALL_PAGES_STORAGE is no longer a valid state — fall through to home page default
-      if (rawStored === EDITOR_ALL_PAGES_STORAGE) {
-        phStorage.remove("isolated");
-      }
-      const storedId = rawStored && rawStored !== "null" ? rawStored : null;
-      if (storedId && pageIds.includes(storedId)) {
-        if (storedId !== isolate) {
-          runDeferred(() => handlePageSwitch(storedId));
-        }
-        return;
-      }
-      const homePageId = getDefaultEditorPageId(query);
-      if (homePageId && homePageId !== isolate) {
-        runDeferred(() => handlePageSwitch(homePageId));
-      }
+    const initialPageId = initPageNavigation({
+      urlStrategy: config.urlStrategy || null,
+      resolvePageIdFromSlug: (slug: string) => {
+        const r = query.node(ROOT_NODE).get();
+        if (!r?.data?.nodes) return null;
+        return r.data.nodes.find((nodeId: string) => {
+          const node = query.node(nodeId).get();
+          if (node?.data?.props?.type === "page") {
+            return sluggit(node.data.custom?.displayName, "-") === slug;
+          }
+          return false;
+        }) || null;
+      },
+      getHomePageId: () => getDefaultEditorPageId(query),
+      onIsolate: (pageId: string | null) => {
+        isolatePageAlt(isolate, query, pageId, actions, setIsolate, true);
+      },
+    });
+
+    // Prefer: URL page > localStorage page > nav store's pick (home page)
+    const targetPage = initialPageId || storedId || getDefaultEditorPageId(query);
+    if (targetPage && targetPage !== isolate) {
+      setTimeout(() => {
+        isolatePageAlt(isolate, query, targetPage, actions, setIsolate, true);
+      }, 0);
     }
-  }, [
-    nextRouter.asPath,
-    editorPageIdsKey,
-    isolate,
-    query,
-    actions,
-    setIsolate,
-    unsavedChanges,
-    emitter,
-    setUnsavedChanged,
-  ]);
+  }, [editorPageIdsKey, query, actions, setIsolate, isolate, config.urlStrategy]);
+
+  // ─── Sync nav store → CraftJS isolation ───
+  useEffect(() => {
+    if (!activePageId || activePageId === isolate) return;
+    isolatePageAlt(isolate, query, activePageId, actions, setIsolate, true);
+  }, [activePageId]);
 
   // ─── Unsaved changes warning ───
+  // Page switches use pushState (not Next.js router), so routeChangeStart
+  // only fires for genuine navigations away from the editor.
   const hasDirtyChanges = typeof unsavedChanges === "string" && unsavedChanges.length > 0;
 
   useEffect(() => {
@@ -327,17 +315,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       e.preventDefault();
       return (e.returnValue = warningText);
     };
-    const handleBrowseAway = (url: string) => {
-      const currentParts = Router.asPath.split("/").filter(p => p && !p.startsWith("?"));
-      const newParts = url.split("/").filter(p => p && !p.startsWith("?"));
-      if (
-        currentParts.length >= 2 &&
-        newParts.length >= 2 &&
-        currentParts[0] === "build" &&
-        newParts[0] === "build" &&
-        currentParts[1] === newParts[1]
-      )
-        return;
+    const handleBrowseAway = () => {
       if (window.confirm(warningText)) return;
       Router.events.emit("routeChangeError");
     };

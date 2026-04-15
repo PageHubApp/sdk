@@ -407,6 +407,14 @@ export interface PageHubConfig {
 
   /** Optional slots for AI (and auth-gated) chrome — implemented by the host app. */
   editorChromeSlots?: PageHubEditorChromeSlots;
+
+  /**
+   * URL strategy for page navigation in the editor.
+   * When provided, the SDK uses pushState/popstate to manage page URLs
+   * (browser back/forward works). When omitted (standalone SDK),
+   * page switching happens in-memory only.
+   */
+  urlStrategy?: import("./utils/pageNavigation").UrlStrategy;
 }
 
 // ─── Instance API — returned by PageHub.init() ───────────────────────────────
