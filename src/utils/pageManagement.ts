@@ -9,6 +9,7 @@ import { decompressAsync } from "./compressionAsync";
 /** Persisted when the editor canvas shows every page (not isolated to one). */
 export const EDITOR_ALL_PAGES_STORAGE = "__all_pages__";
 
+
 // ─── Page Count ───
 
 export function listPageNodeIds(query: any): string[] {
@@ -119,8 +120,10 @@ export async function isolatePageLazy(
       const hideTarget = scrollContainer || viewport;
       if (hideTarget) hideTarget.style.opacity = "0";
 
-      // Reset scroll BEFORE isolate — prevents browser from recalculating
-      // layout with both pages visible and jumping to accommodate content
+      // Clear selection before swap — prevents useScrollToSelected from
+      // firing scrollIntoView when components re-mount with stale selection
+      actions.selectNode(null);
+
       if (scrollContainer) scrollContainer.scrollTop = 0;
       if (viewport) viewport.scrollTop = 0;
 
@@ -162,6 +165,7 @@ export async function isolatePageLazy(
     const hideTarget = scrollContainer || viewport;
     if (hideTarget) hideTarget.style.opacity = "0";
 
+    actions.selectNode(null);
     actions.deserialize(json);
     clearLoadedPages();
     _loadedPages.add(active);
