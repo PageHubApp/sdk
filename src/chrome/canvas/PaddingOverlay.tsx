@@ -3,6 +3,8 @@ import ReactDOM from "react-dom";
 import { twMerge } from "tailwind-merge";
 import { buildVariantPrefix } from "../../utils/tailwind/className";
 
+// ── Tailwind spacing snap ───────────────────────────────────────────────
+
 const TAILWIND_SPACING_MAP: Record<number, string> = {
   0: "0", 1: "px", 2: "0.5", 4: "1", 6: "1.5", 8: "2", 10: "2.5",
   12: "3", 14: "3.5", 16: "4", 20: "5", 24: "6", 28: "7", 32: "8",
@@ -11,30 +13,65 @@ const TAILWIND_SPACING_MAP: Record<number, string> = {
   192: "48", 208: "52", 224: "56", 240: "60", 256: "64", 288: "72",
   320: "80", 384: "96",
 };
-
 const SPACING_VALUES = Object.keys(TAILWIND_SPACING_MAP).map(Number);
 
 function snapToSpacing(px: number): number {
-  const abs = Math.abs(px);
-  if (abs > 404) return px;
-  let closest = 0;
-  let minDiff = abs;
+  const val = Math.max(0, px);
+  if (val > 404) return val;
+  let closest = 0, minDiff = val;
   for (const v of SPACING_VALUES) {
-    const diff = Math.abs(abs - v);
-    if (diff < minDiff) { minDiff = diff; closest = v; }
+    const d = Math.abs(val - v);
+    if (d < minDiff) { minDiff = d; closest = v; }
   }
-  return px < 0 ? 0 : closest;
+  return closest;
 }
 
-function toClass(side: string, px: number): string {
+function paddingClass(side: Side, px: number): string {
   const label = TAILWIND_SPACING_MAP[px];
   const prop = `p${side[0]}`;
   return label != null ? `${prop}-${label}` : `${prop}-[${px}px]`;
 }
 
+// ── Width snap (fractions + Tailwind widths) ────────────────────────────
+
+const WIDTH_FRACTIONS = [
+  { cls: "w-1/4", ratio: 0.25 }, { cls: "w-1/3", ratio: 1/3 },
+  { cls: "w-1/2", ratio: 0.5 }, { cls: "w-2/3", ratio: 2/3 },
+  { cls: "w-3/4", ratio: 0.75 }, { cls: "w-full", ratio: 1 },
+];
+
+function snapWidth(px: number, parentWidth: number): { cls: string; px: number } {
+  if (parentWidth <= 0) return { cls: `w-[${Math.round(px)}px]`, px };
+  const ratio = px / parentWidth;
+  let best = WIDTH_FRACTIONS[0];
+  let minDiff = Math.abs(ratio - best.ratio);
+  for (const f of WIDTH_FRACTIONS) {
+    const d = Math.abs(ratio - f.ratio);
+    if (d < minDiff) { minDiff = d; best = f; }
+  }
+  return { cls: best.cls, px: Math.round(best.ratio * parentWidth) };
+}
+
+function snapHeight(px: number): { cls: string; px: number } {
+  // Snap to common Tailwind heights
+  const snapped = snapToSpacing(px);
+  const label = TAILWIND_SPACING_MAP[snapped];
+  if (label != null) return { cls: `h-${label}`, px: snapped };
+  return { cls: `h-[${Math.round(px)}px]`, px: Math.round(px) };
+}
+
+// ── Types ───────────────────────────────────────────────────────────────
+
 type Side = "top" | "bottom" | "left" | "right";
-const ALL_SIDES: Side[] = ["top", "bottom", "left", "right"];
-const EDGE_ZONE = 40; // px from edge to detect which side the mouse is near
+type DragMode = "padding" | "resize";
+
+interface DragState {
+  side: Side;
+  mode: DragMode;
+  startPos: number;
+  initial: number;
+  parentSize?: number; // for width fraction snapping
+}
 
 interface PaddingOverlayProps {
   targetElement: HTMLElement | null;
@@ -44,22 +81,15 @@ interface PaddingOverlayProps {
   classDark: boolean;
 }
 
-interface PadInfo {
-  side: Side;
-  value: number;
-  // Rect for the draggable edge (thin strip at inner edge of padding)
-  edgeX: number;
-  edgeY: number;
-  edgeW: number;
-  edgeH: number;
-  // Rect for the full padding zone (visual highlight)
-  zoneX: number;
-  zoneY: number;
-  zoneW: number;
-  zoneH: number;
-}
+// ── Detection: is mouse inside (padding) or outside (resize) the container? ──
 
-function computePadInfo(el: HTMLElement): PadInfo[] {
+const RESIZE_ZONE = 8; // px outside the container edge for resize detection
+
+function detectZone(
+  el: HTMLElement,
+  clientX: number,
+  clientY: number
+): { side: Side; mode: DragMode } | null {
   const rect = el.getBoundingClientRect();
   const s = window.getComputedStyle(el);
   const pt = parseFloat(s.paddingTop) || 0;
@@ -67,132 +97,173 @@ function computePadInfo(el: HTMLElement): PadInfo[] {
   const pb = parseFloat(s.paddingBottom) || 0;
   const pl = parseFloat(s.paddingLeft) || 0;
 
-  return [
-    {
-      side: "top", value: pt,
-      zoneX: rect.left, zoneY: rect.top, zoneW: rect.width, zoneH: Math.max(pt, 6),
-      edgeX: rect.left, edgeY: rect.top + pt - 3, edgeW: rect.width, edgeH: 6,
-    },
-    {
-      side: "bottom", value: pb,
-      zoneX: rect.left, zoneY: rect.bottom - Math.max(pb, 6), zoneW: rect.width, zoneH: Math.max(pb, 6),
-      edgeX: rect.left, edgeY: rect.bottom - pb - 3, edgeW: rect.width, edgeH: 6,
-    },
-    {
-      side: "left", value: pl,
-      zoneX: rect.left, zoneY: rect.top, zoneW: Math.max(pl, 6), zoneH: rect.height,
-      edgeX: rect.left + pl - 3, edgeY: rect.top, edgeW: 6, edgeH: rect.height,
-    },
-    {
-      side: "right", value: pr,
-      zoneX: rect.right - Math.max(pr, 6), zoneY: rect.top, zoneW: Math.max(pr, 6), zoneH: rect.height,
-      edgeX: rect.right - pr - 3, edgeY: rect.top, edgeW: 6, edgeH: rect.height,
-    },
-  ];
+  // Outside edges = resize (only right and bottom — left/top are often off-screen or behind sidebar)
+  if (clientY > rect.bottom && clientY <= rect.bottom + RESIZE_ZONE) {
+    if (clientX >= rect.left && clientX <= rect.right) return { side: "bottom", mode: "resize" };
+  }
+  if (clientX > rect.right && clientX <= rect.right + RESIZE_ZONE) {
+    if (clientY >= rect.top && clientY <= rect.bottom) return { side: "right", mode: "resize" };
+  }
+
+  // Inside padding zones — only if the edge is actually visible in the viewport
+  if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+    const fromTop = clientY - rect.top;
+    const fromBottom = rect.bottom - clientY;
+    const fromLeft = clientX - rect.left;
+    const fromRight = rect.right - clientX;
+
+    const padZone = Math.max(pt, 10);
+    const padZoneB = Math.max(pb, 10);
+    const padZoneL = Math.max(pl, 10);
+    const padZoneR = Math.max(pr, 10);
+
+    // Check if edge is reasonably visible (not behind sidebar etc)
+    const viewport = document.getElementById("viewport");
+    const vpLeft = viewport?.getBoundingClientRect().left ?? 0;
+
+    if (fromTop < padZone) return { side: "top", mode: "padding" };
+    if (fromBottom < padZoneB) return { side: "bottom", mode: "padding" };
+    if (fromLeft < padZoneL && rect.left > vpLeft + 10) return { side: "left", mode: "padding" };
+    if (fromRight < padZoneR) return { side: "right", mode: "padding" };
+  }
+
+  return null;
 }
 
-function nearestSide(el: HTMLElement, clientX: number, clientY: number): Side | null {
-  const rect = el.getBoundingClientRect();
-  const fromTop = clientY - rect.top;
-  const fromBottom = rect.bottom - clientY;
-  const fromLeft = clientX - rect.left;
-  const fromRight = rect.right - clientX;
-
-  const min = Math.min(fromTop, fromBottom, fromLeft, fromRight);
-  if (min > EDGE_ZONE) return null;
-  if (min === fromTop) return "top";
-  if (min === fromBottom) return "bottom";
-  if (min === fromLeft) return "left";
-  return "right";
-}
+// ── Component ───────────────────────────────────────────────────────────
 
 export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixView, classDark }: PaddingOverlayProps) {
-  const [padInfo, setPadInfo] = useState<PadInfo[]>([]);
-  const [nearSide, setNearSide] = useState<Side | null>(null);
-  const [dragging, setDragging] = useState<{ side: Side; startPos: number; initial: number } | null>(null);
+  const [zone, setZone] = useState<{ side: Side; mode: DragMode } | null>(null);
+  const [dragging, setDragging] = useState<DragState | null>(null);
   const [dragValue, setDragValue] = useState<number | null>(null);
+  const [overlayRect, setOverlayRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const dragValueRef = useRef<number | null>(null);
   const draggingRef = useRef(dragging);
   draggingRef.current = dragging;
   dragValueRef.current = dragValue;
 
-  const refreshRects = useCallback(() => {
-    if (targetElement) setPadInfo(computePadInfo(targetElement));
-  }, [targetElement]);
-
-  // Update rects periodically
-  useEffect(() => {
-    if (!targetElement || !isActive) { setPadInfo([]); return; }
-
-    refreshRects();
-    const id = setInterval(() => {
-      if (!draggingRef.current) refreshRects();
-    }, 200);
-    const viewport = document.getElementById("viewport");
-    const onScroll = () => { if (!draggingRef.current) refreshRects(); };
-    if (viewport) viewport.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", onScroll);
-
-    return () => {
-      clearInterval(id);
-      if (viewport) viewport.removeEventListener("scroll", onScroll, true);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [targetElement, isActive, refreshRects]);
-
-  // Track mouse position to detect nearest side
+  // Track mouse to detect zone
   useEffect(() => {
     if (!targetElement || !isActive || dragging) return;
-
     const onMove = (e: MouseEvent) => {
-      setNearSide(nearestSide(targetElement, e.clientX, e.clientY));
+      setZone(detectZone(targetElement, e.clientX, e.clientY));
     };
     document.addEventListener("mousemove", onMove);
     return () => document.removeEventListener("mousemove", onMove);
   }, [targetElement, isActive, dragging]);
 
+  // Compute overlay rect for current zone
+  const computeOverlay = useCallback(() => {
+    if (!targetElement) return null;
+    const rect = targetElement.getBoundingClientRect();
+    const s = window.getComputedStyle(targetElement);
+    const z = draggingRef.current || zone;
+    if (!z) return null;
+
+    const pt = parseFloat(s.paddingTop) || 0;
+    const pr = parseFloat(s.paddingRight) || 0;
+    const pb = parseFloat(s.paddingBottom) || 0;
+    const pl = parseFloat(s.paddingLeft) || 0;
+
+    if (z.mode === "padding") {
+      switch (z.side) {
+        case "top": return { x: rect.left, y: rect.top, w: rect.width, h: Math.max(pt, 6) };
+        case "bottom": return { x: rect.left, y: rect.bottom - Math.max(pb, 6), w: rect.width, h: Math.max(pb, 6) };
+        case "left": return { x: rect.left, y: rect.top, w: Math.max(pl, 6), h: rect.height };
+        case "right": return { x: rect.right - Math.max(pr, 6), y: rect.top, w: Math.max(pr, 6), h: rect.height };
+      }
+    } else {
+      // Resize: thin strip outside the edge
+      switch (z.side) {
+        case "top": return { x: rect.left, y: rect.top - RESIZE_ZONE, w: rect.width, h: RESIZE_ZONE };
+        case "bottom": return { x: rect.left, y: rect.bottom, w: rect.width, h: RESIZE_ZONE };
+        case "left": return { x: rect.left - RESIZE_ZONE, y: rect.top, w: RESIZE_ZONE, h: rect.height };
+        case "right": return { x: rect.right, y: rect.top, w: RESIZE_ZONE, h: rect.height };
+      }
+    }
+  }, [targetElement, zone]);
+
+  // Update overlay rect
+  useEffect(() => {
+    if (!targetElement || !isActive) { setOverlayRect(null); return; }
+    const update = () => { if (!draggingRef.current) setOverlayRect(computeOverlay()); };
+    update();
+    const id = setInterval(update, 200);
+    return () => clearInterval(id);
+  }, [targetElement, isActive, computeOverlay]);
+
   // Drag
   useEffect(() => {
     if (!dragging || !targetElement) return;
 
-    const isVertical = dragging.side === "top" || dragging.side === "bottom";
-    // Drag inner edge AWAY from outer edge = increase padding
-    // top: drag down = increase, bottom: drag up = increase
-    // left: drag right = increase, right: drag left = increase
-    const isReverse = dragging.side === "bottom" || dragging.side === "right";
+    const isVert = dragging.side === "top" || dragging.side === "bottom";
 
     const onMove = (e: MouseEvent) => {
-      const pos = isVertical ? e.clientY : e.clientX;
-      const delta = (pos - dragging.startPos) * (isReverse ? -1 : 1);
-      const snapped = snapToSpacing(Math.max(0, dragging.initial + delta));
-      setDragValue(snapped);
+      const pos = isVert ? e.clientY : e.clientX;
+      const delta = pos - dragging.startPos;
 
-      const cssProp = `padding${dragging.side.charAt(0).toUpperCase() + dragging.side.slice(1)}` as any;
-      targetElement.style[cssProp] = `${snapped}px`;
+      if (dragging.mode === "padding") {
+        // top/left: drag inward (down/right) = increase; bottom/right: reversed
+        const sign = (dragging.side === "bottom" || dragging.side === "right") ? -1 : 1;
+        const snapped = snapToSpacing(dragging.initial + delta * sign);
+        setDragValue(snapped);
+        const cssProp = `padding${dragging.side.charAt(0).toUpperCase() + dragging.side.slice(1)}` as any;
+        targetElement.style[cssProp] = `${snapped}px`;
+      } else {
+        // Resize: right/bottom = increase with positive delta, left/top = decrease
+        const sign = (dragging.side === "left" || dragging.side === "top") ? -1 : 1;
+        const newSize = Math.max(0, dragging.initial + delta * sign);
+        if (isVert) {
+          const snapped = snapHeight(newSize);
+          setDragValue(snapped.px);
+          targetElement.style.height = `${snapped.px}px`;
+        } else {
+          const parentW = dragging.parentSize || targetElement.parentElement?.offsetWidth || 0;
+          const snapped = snapWidth(newSize, parentW);
+          setDragValue(snapped.px);
+          targetElement.style.width = `${snapped.px}px`;
+        }
+      }
 
-      // Update rects live so the overlay follows
-      setPadInfo(computePadInfo(targetElement));
+      // Update overlay to follow
+      setOverlayRect(computeOverlay());
     };
 
     const onUp = () => {
-      const cssProp = `padding${dragging.side.charAt(0).toUpperCase() + dragging.side.slice(1)}` as any;
-      targetElement.style[cssProp] = "";
-
       const finalValue = dragValueRef.current;
-      if (finalValue != null) {
-        const cls = toClass(dragging.side, finalValue);
-        const prefix = buildVariantPrefix(classPrefixView, classDark);
-        setProp(prop => {
-          prop.className = twMerge(prop.className || "", prefix + cls);
-        });
+
+      if (dragging.mode === "padding") {
+        const cssProp = `padding${dragging.side.charAt(0).toUpperCase() + dragging.side.slice(1)}` as any;
+        targetElement.style[cssProp] = "";
+        if (finalValue != null) {
+          const cls = paddingClass(dragging.side, finalValue);
+          const prefix = buildVariantPrefix(classPrefixView, classDark);
+          setProp(prop => { prop.className = twMerge(prop.className || "", prefix + cls); });
+        }
+      } else {
+        const isVert = dragging.side === "top" || dragging.side === "bottom";
+        if (isVert) {
+          targetElement.style.height = "";
+          if (finalValue != null) {
+            const snapped = snapHeight(finalValue);
+            const prefix = buildVariantPrefix(classPrefixView, classDark);
+            setProp(prop => { prop.className = twMerge(prop.className || "", prefix + snapped.cls); });
+          }
+        } else {
+          targetElement.style.width = "";
+          if (finalValue != null) {
+            const parentW = dragging.parentSize || targetElement.parentElement?.offsetWidth || 0;
+            const snapped = snapWidth(finalValue, parentW);
+            const prefix = buildVariantPrefix(classPrefixView, classDark);
+            setProp(prop => { prop.className = twMerge(prop.className || "", prefix + snapped.cls); });
+          }
+        }
       }
 
       setDragging(null);
       setDragValue(null);
       document.body.style.cursor = "";
-
-      // Refresh after CraftJS applies
-      requestAnimationFrame(() => refreshRects());
+      requestAnimationFrame(() => setOverlayRect(computeOverlay()));
     };
 
     document.addEventListener("mousemove", onMove);
@@ -201,88 +272,105 @@ export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixVi
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
     };
-  }, [dragging, targetElement, setProp, classPrefixView, classDark, refreshRects]);
+  }, [dragging, targetElement, setProp, classPrefixView, classDark, computeOverlay]);
 
+  // Render
   const portalTarget = typeof document !== "undefined" ? document.getElementById("viewport") : null;
-  if (!portalTarget || padInfo.length === 0) return null;
+  const active = dragging || zone;
+  if (!portalTarget || !active || !overlayRect) return null;
 
   const portalRect = portalTarget.getBoundingClientRect();
   const ox = -portalRect.left + portalTarget.scrollLeft;
   const oy = -portalRect.top + portalTarget.scrollTop;
 
-  return ReactDOM.createPortal(
-    <>
-      {padInfo.map(p => {
-        const isDraggingSide = dragging?.side === p.side;
-        const isNearSide = nearSide === p.side;
-        const active = isDraggingSide || isNearSide;
-        const isVert = p.side === "top" || p.side === "bottom";
-        const cursor = isVert ? "ns-resize" : "ew-resize";
-        const displayValue = isDraggingSide && dragValue != null ? dragValue : p.value;
-        const isZero = p.value === 0 && !isDraggingSide;
+  const currentMode = dragging?.mode || zone?.mode;
+  const currentSide = dragging?.side || zone?.side;
+  const isVert = currentSide === "top" || currentSide === "bottom";
+  const cursor = isVert ? "ns-resize" : "ew-resize";
 
-        return (
-          // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-          <div
-            key={p.side}
-            data-node-control="true"
-            onMouseDown={e => {
-              e.preventDefault();
-              e.stopPropagation();
-              setDragging({
-                side: p.side,
-                startPos: isVert ? e.clientY : e.clientX,
-                initial: p.value,
-              });
-              document.body.style.cursor = cursor;
-            }}
-            style={{
-              position: "absolute",
-              left: p.zoneX + ox,
-              top: p.zoneY + oy,
-              width: p.zoneW,
-              height: p.zoneH,
-              backgroundColor: active
-                ? isDraggingSide
-                  ? "rgba(147, 196, 125, 0.5)"
-                  : "rgba(147, 196, 125, 0.3)"
-                : "transparent",
-              cursor: active ? cursor : "default",
-              zIndex: 9998,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: isDraggingSide ? "none" : "all 0.15s ease",
-              pointerEvents: active ? "auto" : "none",
-              // At zero padding, show a thin colored line so user knows they can drag
-              ...(isZero && isNearSide ? {
-                backgroundColor: "rgba(147, 196, 125, 0.6)",
-                pointerEvents: "auto" as const,
-              } : {}),
-            }}
-          >
-            {active && (
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: "#15803d",
-                  backgroundColor: "rgba(255, 255, 255, 0.9)",
-                  padding: "1px 5px",
-                  borderRadius: 3,
-                  fontFamily: "system-ui, -apple-system, sans-serif",
-                  pointerEvents: "none",
-                  userSelect: "none",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {Math.round(displayValue)}px
-              </span>
-            )}
-          </div>
-        );
-      })}
-    </>,
+  const isPadding = currentMode === "padding";
+  const bgColor = isPadding
+    ? (dragging ? "rgba(147, 196, 125, 0.5)" : "rgba(147, 196, 125, 0.3)")
+    : (dragging ? "rgba(59, 130, 246, 0.4)" : "rgba(59, 130, 246, 0.2)");
+  const labelColor = isPadding ? "#15803d" : "#1d4ed8";
+
+  let label = "";
+  if (dragging && dragValue != null) {
+    label = `${Math.round(dragValue)}px`;
+  } else if (zone && targetElement) {
+    const s = window.getComputedStyle(targetElement);
+    if (isPadding) {
+      const vals = { top: s.paddingTop, bottom: s.paddingBottom, left: s.paddingLeft, right: s.paddingRight };
+      label = `${Math.round(parseFloat(vals[zone.side]) || 0)}px`;
+    } else {
+      label = isVert
+        ? `${Math.round(targetElement.offsetHeight)}px`
+        : `${Math.round(targetElement.offsetWidth)}px`;
+    }
+  }
+
+  return ReactDOM.createPortal(
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div
+      data-node-control="true"
+      onMouseDown={e => {
+        if (!targetElement || !zone) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const rect = targetElement.getBoundingClientRect();
+        const s = window.getComputedStyle(targetElement);
+        let initial: number;
+        let parentSize: number | undefined;
+
+        if (zone.mode === "padding") {
+          const vals = { top: s.paddingTop, bottom: s.paddingBottom, left: s.paddingLeft, right: s.paddingRight };
+          initial = parseFloat(vals[zone.side]) || 0;
+        } else {
+          initial = isVert ? rect.height : rect.width;
+          if (!isVert) parentSize = targetElement.parentElement?.offsetWidth || 0;
+        }
+
+        setDragging({
+          side: zone.side,
+          mode: zone.mode,
+          startPos: isVert ? e.clientY : e.clientX,
+          initial,
+          parentSize,
+        });
+        document.body.style.cursor = cursor;
+      }}
+      style={{
+        position: "absolute",
+        left: overlayRect.x + ox,
+        top: overlayRect.y + oy,
+        width: overlayRect.w,
+        height: overlayRect.h,
+        backgroundColor: bgColor,
+        cursor,
+        zIndex: 9998,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: dragging ? "none" : "all 0.15s ease",
+      }}
+    >
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: labelColor,
+          backgroundColor: "rgba(255, 255, 255, 0.9)",
+          padding: "1px 5px",
+          borderRadius: 3,
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          pointerEvents: "none",
+          userSelect: "none",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {label}
+      </span>
+    </div>,
     portalTarget
   );
 }
