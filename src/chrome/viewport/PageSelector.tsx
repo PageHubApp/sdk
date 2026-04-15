@@ -1,4 +1,4 @@
-import { useEditor } from "@craftjs/core";
+import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import Image from "next/image";
 import Link from "next/link";
@@ -61,10 +61,31 @@ export function PageSelector({
     siteId ? `/api/v1/sites/${siteId}/pages` : null,
     (url: string) => fetch(url).then(r => r.json()),
   );
-  const pages: Page[] = (pageData?.pages || []).map((p: any) => ({
+  const swrPages: Page[] = (pageData?.pages || []).map((p: any) => ({
     id: p.nodeId,
     displayName: p.displayName || "Untitled Page",
   }));
+
+  // Fall back to CraftJS tree if SWR has no data (new site, unmigrated, no _id yet)
+  const craftPages: Page[] = (() => {
+    if (swrPages.length > 0) return [];
+    try {
+      const root = query.node(ROOT_NODE).get();
+      if (!root?.data?.nodes) return [];
+      return root.data.nodes
+        .map((_: string) => {
+          try {
+            const n = query.node(_).get();
+            return n?.data?.props?.type === "page"
+              ? { id: _, displayName: n.data.custom?.displayName || "Untitled Page" }
+              : null;
+          } catch { return null; }
+        })
+        .filter(Boolean) as Page[];
+    } catch { return []; }
+  })();
+
+  const pages = swrPages.length > 0 ? swrPages : craftPages;
 
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const [isOpen, setIsOpen] = useState(false);
