@@ -2,7 +2,7 @@ import { useEditor } from "@craftjs/core";
 import { useCallback } from "react";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
-import { LastctiveAtom } from "../../../utils/lib";
+import { LastActiveAtom } from "../../../utils/lib";
 import { useUnifiedDelete } from "../../hooks/useUnifiedDelete";
 import { PreviewAtom, EnabledAtom, TabAtom } from "../atoms";
 import {
@@ -32,7 +32,7 @@ export function useViewportKeyboard() {
   const { deleteSelectedNode } = useUnifiedDelete();
   const [preview, setPreview] = useAtomState(PreviewAtom);
   const setEnabled = useSetAtomState(EnabledAtom);
-  const lastActive = useAtomValue(LastctiveAtom);
+  const lastActive = useAtomValue(LastActiveAtom);
   const setActiveTab = useSetAtomState(TabAtom);
 
   const handleDoubleClick = useCallback(

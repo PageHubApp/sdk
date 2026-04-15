@@ -22,7 +22,7 @@ import {
   TbX,
 } from "react-icons/tb";
 import { SessionTokenAtom, SettingsAtom, ShowGridLinesAtom } from "../../utils/atoms";
-import { ComponentsAtom, LastctiveAtom, SideBarAtom, ViewModeAtom } from "../../utils/lib";
+import { ComponentsAtom, LastActiveAtom, SideBarAtom, ViewModeAtom } from "../../utils/lib";
 import { useSetAtomState } from "../../utils/atoms";
 import {
   EDITOR_CANVAS_BREAKPOINT_PX,
@@ -116,7 +116,7 @@ export const Header = () => {
     }
   }, [query, enabled, setComponents]);
 
-  const setActive = useSetAtomState(LastctiveAtom);
+  const setActive = useSetAtomState(LastActiveAtom);
 
   const { isOpen, toggle, open, close } = usePanelUrl();
   const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useState(false);

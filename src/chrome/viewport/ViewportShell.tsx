@@ -13,6 +13,7 @@ import { ShowGridLinesAtom } from "../../utils/atoms";
 import {
   EDITOR_ALL_PAGES_STORAGE,
   IsolateAtom,
+  LastActiveAtom,
   OnlineAtom,
   ScreenshotAtom,
   SideBarAtom,
@@ -117,7 +118,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const [preview, setPreview] = useAtomState(PreviewAtom);
   const setEnabled = useSetAtomState(EnabledAtom);
   const isolated = useAtomValue(IsolateAtom);
-  const lastActive = useAtomValue(require("@/utils/lib").LastctiveAtom);
+  const lastActive = useAtomValue(LastActiveAtom);
   const screenshot = useAtomValue(ScreenshotAtom);
   const [online, setOnline] = useAtomState(OnlineAtom);
   const sideBarOpen = useAtomValue(SideBarOpen);

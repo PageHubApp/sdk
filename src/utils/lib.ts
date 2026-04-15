@@ -103,7 +103,7 @@ export type OpenComponentEditorState = null | {
   draftId?: string;
 };
 export const OpenComponentEditorAtom = atom<any>("openComponentEditor", null);
-export const LastctiveAtom = atom<string>("lastActive", "");
+export const LastActiveAtom = atom<string>("lastActive", "");
 export const ActiveAtom = atom<string>("active", "");
 export const SelectedSectionAtom = atom<string | null>("selectedSection", null);
 
