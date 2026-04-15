@@ -29,7 +29,7 @@ import type {
 import { BatchOperationAtom, EditorSaveBannerAtom } from "./utils/atoms";
 import { processForEditor, CustomComponentsContext, type ResolvedComponentDef } from "./define";
 import { LazyUnifiedSettings } from "./components/LazyUnifiedSettings";
-import { markAllPagesLoaded, clearLoadedPages, getLoadedPages, listPageNodeIds } from "./utils/pageManagement";
+import { markPageLoaded, clearLoadedPages, getLoadedPages, listPageNodeIds } from "./utils/pageManagement";
 import { extractPageShard, extractSharedShard } from "./utils/treeSharding";
 import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 
@@ -99,10 +99,12 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
           setBatchOperation(true);
           const decompressed = await decompressAsync(pageData.content);
           actions.deserialize(sanitizeCraftSerializedContent(decompressed) || "");
-          // Track which pages are loaded for selective save optimization
+          // Track which pages are actually in the deserialized tree.
+          // SSR may have assembled only one page + shared shard —
+          // unloaded pages will be fetched on demand via isolatePageLazy.
           clearLoadedPages();
           requestAnimationFrame(() => {
-            markAllPagesLoaded(query);
+            for (const id of listPageNodeIds(query)) markPageLoaded(id);
             setBatchOperation(false);
           });
         }

@@ -83,6 +83,14 @@ export interface PageHubCallbacks {
   /** Emitted on every editor state change (debounced). Useful for auto-save. */
   onChange?: (pageData: PageData) => void;
 
+  /**
+   * Fetch a single page shard for lazy loading.
+   * Called when the user switches to a page not yet in the CraftJS tree.
+   * Return compressed assembled content (shared + page), or null if unavailable.
+   * When omitted, SDK assumes all pages are in-tree (standalone mode).
+   */
+  fetchPage?: (pageNodeId: string) => Promise<{ content: string } | null>;
+
   /** Called when the user publishes (promotes draft → live). */
   onPublish?: (pageData: PageData) => Promise<void> | void;
 

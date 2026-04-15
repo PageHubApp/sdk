@@ -5,6 +5,7 @@ import { AddElement } from "../toolbox/toolboxUtils";
 import generate from "../../../utils/data/nameGenerator";
 import sluggit from "slug";
 import { usePageNavigation, getSiteId } from "../../../utils/pageNavigation";
+import { markPageLoaded } from "../../../utils/pageManagement";
 import { useSDK } from "../../../core/context";
 
 interface UsePageCreationOptions {
@@ -112,6 +113,7 @@ export function usePageCreation({
 
       if (newElement?.rootNodeId) {
         const newNodeId = newElement.rootNodeId;
+        markPageLoaded(newNodeId);
 
         // CraftJS addNodeTree is synchronous — one rAF is enough for React to flush
         requestAnimationFrame(() => {

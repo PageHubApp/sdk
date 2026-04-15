@@ -20,6 +20,7 @@ import {
   ViewModeAtom,
   getDefaultEditorPageId,
   isolatePageAlt,
+  isolatePageLazy,
   listPageNodeIds,
 } from "../../utils/lib";
 import { FloatingWidget } from "../floating/FloatingWidget";
@@ -283,6 +284,9 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       },
       getHomePageId: () => getDefaultEditorPageId(query),
       onIsolate: (pageId: string | null) => {
+        if (config.callbacks.fetchPage) {
+          return isolatePageLazy(pageId, query, actions, setIsolate, config.callbacks.fetchPage);
+        }
         isolatePageAlt(isolate, query, pageId, actions, setIsolate, true);
       },
     });
@@ -291,7 +295,11 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     const targetPage = initialPageId || storedId || getDefaultEditorPageId(query);
     if (targetPage && targetPage !== isolate) {
       setTimeout(() => {
-        isolatePageAlt(isolate, query, targetPage, actions, setIsolate, true);
+        if (config.callbacks.fetchPage) {
+          isolatePageLazy(targetPage, query, actions, setIsolate, config.callbacks.fetchPage);
+        } else {
+          isolatePageAlt(isolate, query, targetPage, actions, setIsolate, true);
+        }
       }, 0);
     }
   }, [editorPageIdsKey, query, actions, setIsolate, isolate, config.urlStrategy]);
@@ -299,7 +307,11 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   // ─── Sync nav store → CraftJS isolation ───
   useEffect(() => {
     if (!activePageId || activePageId === isolate) return;
-    isolatePageAlt(isolate, query, activePageId, actions, setIsolate, true);
+    if (config.callbacks.fetchPage) {
+      isolatePageLazy(activePageId, query, actions, setIsolate, config.callbacks.fetchPage);
+    } else {
+      isolatePageAlt(isolate, query, activePageId, actions, setIsolate, true);
+    }
   }, [activePageId]);
 
   // ─── Unsaved changes warning ───

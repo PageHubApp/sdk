@@ -41,8 +41,8 @@ interface PageNavInit {
   resolvePageIdFromSlug: (slug: string) => string | null;
   /** Get the home page node ID. */
   getHomePageId: () => string | null;
-  /** Called when the store wants to isolate a page in CraftJS. */
-  onIsolate: (pageId: string | null) => void;
+  /** Called when the store wants to isolate a page in CraftJS. May be async for lazy loading. */
+  onIsolate: (pageId: string | null) => void | Promise<void>;
 }
 
 // ── Module-scoped state ─────────────────────────────────────────────────────
