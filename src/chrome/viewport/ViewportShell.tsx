@@ -428,13 +428,19 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       <ViewportMeta />
       {enabled && <ProximityHoverManager />}
       <div
-        className={`flex h-full w-full min-w-0 flex-1 overflow-hidden ${
+        className={`relative flex h-full w-full min-w-0 flex-1 overflow-hidden ${
           (device && view === "mobile") || isEditorCanvasBreakpointView(view)
             ? "bg-neutral/50 items-center justify-center"
             : "flex-row"
         }`}
         data-container={true}
       >
+        <LoadingBar
+          active={pageLoading}
+          done={pageLoadDone}
+          overlay
+          onComplete={() => { setPageLoading(false); setPageLoadDone(false); }}
+        />
         {/* Preview edit button */}
         {!enabled && !screenshot && (
           <FloatingWidget
@@ -502,12 +508,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
               <div className="h-[30px] w-[105px] rounded-full bg-[#0a0a0a]" />
             </div>
           )}
-          <LoadingBar
-            active={pageLoading}
-            done={pageLoadDone}
-            overlay
-            onComplete={() => { setPageLoading(false); setPageLoadDone(false); }}
-          />
           <div
             id="viewport"
             role="application"

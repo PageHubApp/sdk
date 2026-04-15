@@ -137,9 +137,13 @@ export async function isolatePageLazy(
   try {
     const json = await decompressAsync(pageData.content);
 
-    // Hide viewport during the deserialize swap to prevent content flash
+    // Hide the entire viewport scroll container during swap to prevent flash.
+    // opacity:0 is composited (no reflow) and hides everything including
+    // React's intermediate renders during deserialize.
     const viewport = document.getElementById("viewport");
-    if (viewport) viewport.style.visibility = "hidden";
+    const scrollContainer = viewport?.closest("[class*='overflow']") as HTMLElement | null;
+    const hideTarget = scrollContainer || viewport;
+    if (hideTarget) hideTarget.style.opacity = "0";
 
     actions.deserialize(json);
     clearLoadedPages();
@@ -149,13 +153,14 @@ export async function isolatePageLazy(
       requestAnimationFrame(() => {
         isolatePageAlt(active, query, active, actions, setIsolate);
         // Reset scroll
-        const scrollContainer = viewport?.parentElement;
         if (scrollContainer) scrollContainer.scrollTop = 0;
         if (viewport) viewport.scrollTop = 0;
-        // Wait for React to flush + DOM to paint, then reveal
+        // Wait for React + DOM paint, then reveal
         requestAnimationFrame(() => {
-          if (viewport) viewport.style.visibility = "";
-          requestAnimationFrame(resolve);
+          requestAnimationFrame(() => {
+            if (hideTarget) hideTarget.style.opacity = "";
+            resolve();
+          });
         });
       });
     });
