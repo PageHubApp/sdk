@@ -21,6 +21,7 @@ export interface PageSettingsFieldDef {
  */
 export const PAGE_SETTINGS_FIELDS: readonly PageSettingsFieldDef[] = [
   // Basic
+  { key: "pageSlug", defaultValue: "" },
   { key: "pageImage", defaultValue: "" },
   // SEO
   { key: "pageTitle", defaultValue: "" },

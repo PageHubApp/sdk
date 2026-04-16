@@ -2,7 +2,6 @@ import { Element, ROOT_NODE } from "@craftjs/core";
 import React from "react";
 import { Container } from "../../../components/Container";
 import { AddElement } from "../toolbox/toolboxUtils";
-import generate from "../../../utils/data/nameGenerator";
 import sluggit from "slug";
 import { usePageNavigation } from "../../../utils/pageNavigation";
 import { useSDK } from "../../../core/context";
@@ -14,7 +13,6 @@ interface UsePageCreationOptions {
   isolate: any;
   setIsolate: any;
   setIsOpen: (v: boolean) => void;
-  suggestedPageName?: string;
   pickerMode: boolean;
   onPagePick?: (page: { id: string; displayName: string; isHomePage: boolean }) => void;
   onPageChange?: (pageId: string) => void;
@@ -51,7 +49,6 @@ export function usePageCreation({
   isolate,
   setIsolate,
   setIsOpen,
-  suggestedPageName,
   pickerMode,
   onPagePick,
   onPageChange,
@@ -59,33 +56,29 @@ export function usePageCreation({
   const { navigateToPage } = usePageNavigation();
   const { emitter, config } = useSDK();
 
-  function resolvePageName(): string {
-    let pageName = suggestedPageName || generate().spaced;
+  /** Ensure the name doesn't collide with existing page slugs. */
+  function deduplicateName(name: string): string {
+    const baseSlug = sluggit(name, "-");
+    const existingSlugs = pages.map(page => sluggit(page.displayName, "-"));
 
-    if (suggestedPageName) {
-      const baseSlug = sluggit(suggestedPageName, "-");
-      const existingSlugs = pages.map(page => sluggit(page.displayName, "-"));
+    if (!existingSlugs.includes(baseSlug)) return name;
 
-      if (existingSlugs.includes(baseSlug)) {
-        let counter = 2;
-        let uniqueSlug = `${baseSlug}-${counter}`;
-        while (existingSlugs.includes(uniqueSlug)) {
-          counter++;
-          uniqueSlug = `${baseSlug}-${counter}`;
-        }
-        pageName = `${suggestedPageName} ${counter}`;
-      }
-    }
-
-    return pageName;
+    let counter = 2;
+    while (existingSlugs.includes(`${baseSlug}-${counter}`)) counter++;
+    return `${name} ${counter}`;
   }
 
-  async function handleCreatePage() {
+  async function handleCreatePage(pageName: string, extra?: { pageSlug?: string; pageTitle?: string; pageDescription?: string }) {
     try {
       setIsOpen(false);
-      const pageName = resolvePageName();
+      const finalName = deduplicateName(pageName);
 
       // Create the page node in CraftJS
+      const extraProps: Record<string, string> = {};
+      if (extra?.pageSlug) extraProps.pageSlug = extra.pageSlug;
+      if (extra?.pageTitle) extraProps.pageTitle = extra.pageTitle;
+      if (extra?.pageDescription) extraProps.pageDescription = extra.pageDescription;
+
       const newPage = React.createElement(Element, {
         canvas: true,
         is: Container,
@@ -94,7 +87,8 @@ export function usePageCreation({
         canDelete: true,
         canEditName: true,
         className: "bg-base-100 text-base-content flex flex-col w-full flex-1 min-h-0",
-        custom: { displayName: pageName },
+        custom: { displayName: finalName },
+        ...extraProps,
       } as any);
 
       const newElement = AddElement({
@@ -129,7 +123,8 @@ export function usePageCreation({
 
       const node = query.node(newNodeId).get();
       const displayName = node?.data?.custom?.displayName || "Untitled Page";
-      navigateToPage(newNodeId, displayName, false);
+      const customSlug = node?.data?.props?.pageSlug || "";
+      navigateToPage(newNodeId, displayName, false, customSlug);
       onPageChange?.(newNodeId);
     } catch (e) {
       console.error("Error creating page:", e);

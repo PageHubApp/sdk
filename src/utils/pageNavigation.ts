@@ -169,6 +169,7 @@ export function navigateToPage(
   pageId: string,
   displayName: string,
   isHomePage: boolean,
+  customSlug?: string,
 ): void {
   if (!initOpts) return;
   if (pageId === currentSnapshot.activePageId) return;
@@ -180,7 +181,7 @@ export function navigateToPage(
   if (initOpts.urlStrategy && currentSnapshot.siteId) {
     const url = initOpts.urlStrategy.buildPageUrl({
       siteId: currentSnapshot.siteId,
-      pageSlug: sluggit(displayName, "-"),
+      pageSlug: customSlug || sluggit(displayName, "-"),
       isHomePage,
     });
     window.history.pushState({ source: "pageNav", pageId }, "", withCurrentSearch(url));

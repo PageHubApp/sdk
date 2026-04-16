@@ -173,8 +173,9 @@ export function PageSettingsModal({
   }, [config]);
 
   const applySlugDefaults = useCallback((nextDraft: PageSettingsDraft) => {
-    setPageSlug(sluggit(nextDraft.pageName || "untitled-page", "-"));
-    setAutoSlug(true);
+    const customSlug = nextDraft.pageSlug;
+    setPageSlug(customSlug || sluggit(nextDraft.pageName || "untitled-page", "-"));
+    setAutoSlug(!customSlug);
     setShowDeleteConfirm(false);
   }, []);
 
@@ -191,13 +192,16 @@ export function PageSettingsModal({
             onPageNameChange={newName => {
               ctx.updateField("pageName", newName);
               if (autoSlug) {
-                setPageSlug(sluggit(newName || "untitled-page", "-"));
+                const slug = sluggit(newName || "untitled-page", "-");
+                setPageSlug(slug);
+                ctx.updateField("pageSlug", "");
               }
             }}
             pageSlug={pageSlug}
             onSlugChange={newSlug => {
               setPageSlug(newSlug);
               setAutoSlug(false);
+              ctx.updateField("pageSlug", newSlug);
             }}
             isHomePage={ctx.draft.isHomePage}
             setIsHomePage={value => ctx.updateField("isHomePage", value)}

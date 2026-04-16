@@ -306,7 +306,8 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         return r.data.nodes.find((nodeId: string) => {
           const node = query.node(nodeId).get();
           if (node?.data?.props?.type === "page") {
-            return sluggit(node.data.custom?.displayName, "-") === slug;
+            const customSlug = node.data.props?.pageSlug;
+            return (customSlug || sluggit(node.data.custom?.displayName, "-")) === slug;
           }
           return false;
         }) || null;

@@ -21,15 +21,17 @@ import { usePageNavigation } from "../../utils/pageNavigation";
 
 import sluggit from "slug";
 
-/** Derive the URL route for a page (e.g. "/about-us"), or "/" for the home page. */
-function pageRoute(displayName: string, isHomePage: boolean): string {
-  return isHomePage ? "/" : `/${sluggit(displayName, "-")}`;
+/** Derive the URL route for a page. Uses custom pageSlug when set, otherwise slugifies displayName. */
+function pageRoute(displayName: string, isHomePage: boolean, pageSlug?: string): string {
+  if (isHomePage) return "/";
+  return `/${pageSlug || sluggit(displayName, "-")}`;
 }
 
 interface Page {
   id: string;
   displayName: string;
   isHomePage?: boolean;
+  pageSlug?: string;
 }
 
 interface PageSelectorProps {
@@ -40,7 +42,6 @@ interface PageSelectorProps {
   onPagePick?: (page: { id: string; displayName: string; isHomePage: boolean }) => void;
   selectedPageId?: string;
   buttonClassName?: string;
-  suggestedPageName?: string;
   showHashIcon?: boolean;
 }
 
@@ -51,7 +52,6 @@ export function PageSelector({
   onPagePick,
   selectedPageId,
   buttonClassName,
-  suggestedPageName,
   showHashIcon = true,
 }: PageSelectorProps) {
   const { query, actions } = useEditor();
@@ -68,6 +68,7 @@ export function PageSelector({
     id: p.nodeId,
     displayName: p.displayName || "Untitled Page",
     isHomePage: !!p.isHomePage,
+    pageSlug: p.pageSlug || "",
   }));
 
   // Pages from CraftJS tree (source of truth for newly created pages not yet saved)
@@ -80,7 +81,7 @@ export function PageSelector({
           try {
             const n = query.node(_).get();
             return n?.data?.props?.type === "page"
-              ? { id: _, displayName: n.data.custom?.displayName || "Untitled Page" }
+              ? { id: _, displayName: n.data.custom?.displayName || "Untitled Page", pageSlug: n.data.props?.pageSlug || "" }
               : null;
           } catch { return null; }
         })
@@ -130,6 +131,7 @@ export function PageSelector({
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        resetCreateDialog();
       }
     };
 
@@ -168,7 +170,7 @@ export function PageSelector({
       // Navigate via the store — handles isolation + URL pushState
       const page = pages.find(p => p.id === pageId);
       const isHomePage = pageId === homePageId;
-      navigateToPage(pageId, page?.displayName || "Untitled Page", isHomePage);
+      navigateToPage(pageId, page?.displayName || "Untitled Page", isHomePage, page?.pageSlug);
 
       setIsOpen(false);
       onPageChange?.(pageId);
@@ -185,11 +187,40 @@ export function PageSelector({
     isolate,
     setIsolate,
     setIsOpen,
-    suggestedPageName,
     pickerMode,
     onPagePick,
     onPageChange,
   });
+
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newPageName, setNewPageName] = useState("");
+  const [newPageSlug, setNewPageSlug] = useState("");
+  const [newPageTitle, setNewPageTitle] = useState("");
+  const [newPageDescription, setNewPageDescription] = useState("");
+  const [autoSlug, setAutoSlug] = useState(true);
+  const [autoTitle, setAutoTitle] = useState(true);
+
+  const resetCreateDialog = () => {
+    setNewPageName("");
+    setNewPageSlug("");
+    setNewPageTitle("");
+    setNewPageDescription("");
+    setAutoSlug(true);
+    setAutoTitle(true);
+    setShowCreateDialog(false);
+  };
+
+  const handleCreateSubmit = () => {
+    const name = newPageName.trim();
+    if (!name) return;
+    const slug = newPageSlug.trim();
+    handleCreatePage(name, {
+      pageSlug: autoSlug ? "" : slug,
+      pageTitle: newPageTitle.trim(),
+      pageDescription: newPageDescription.trim(),
+    });
+    resetCreateDialog();
+  };
 
   // Home page fallback — used when no page is isolated
   const homePage = (homePageId ? pages.find(p => p.id === homePageId) : null) ?? pages[0] ?? null;
@@ -213,7 +244,7 @@ export function PageSelector({
   const displayRoute = pickerMode
     ? null // Don't show route in picker mode
     : currentPage
-      ? pageRoute(currentPage.displayName, !!isCurrentHomePage)
+      ? pageRoute(currentPage.displayName, !!isCurrentHomePage, currentPage.pageSlug)
       : null;
 
   // Filter pages based on search query and reverse order
@@ -224,7 +255,7 @@ export function PageSelector({
   // Get live URL for current page
   // Host app should configure sitePreviewUrl in config for external preview links
   const liveUrl = currentPage
-    ? pageRoute(currentPage.displayName, !!isCurrentHomePage).slice(1) // strip leading "/"
+    ? pageRoute(currentPage.displayName, !!isCurrentHomePage, currentPage.pageSlug).slice(1) // strip leading "/"
     : null;
 
   return (
@@ -295,7 +326,7 @@ export function PageSelector({
             {filteredPages.length > 0 ? (
               filteredPages.map(page => {
                 const isPageHomePage = page.isHomePage || page.id === homePageId;
-                const route = pageRoute(page.displayName, isPageHomePage);
+                const route = pageRoute(page.displayName, isPageHomePage, page.pageSlug);
                 const isSelected = pickerMode ? selectedPageId === page.id : isolate === page.id;
 
                 return (
@@ -369,15 +400,108 @@ export function PageSelector({
             ) : null}
           </div>
 
-          {/* Footer - Fixed */}
+          {/* Footer - Create Page */}
           <div className="border-base-300 border-t">
-            <button
-              onClick={handleCreatePage}
-              className="text-primary hover:bg-neutral hover:text-primary flex w-full items-center gap-2 px-3 py-2 transition-colors"
-            >
-              <TbPlus />
-              <span className="text-sm font-medium">Create New Page</span>
-            </button>
+            {showCreateDialog ? (
+              <div className="flex flex-col gap-3 p-3">
+                {/* Name + Slug */}
+                <div className="flex items-end gap-2">
+                  <div className="min-w-0 flex-1">
+                    <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">Name</label>
+                    <input
+                      type="text"
+                      placeholder="About Us"
+                      value={newPageName}
+                      onChange={e => {
+                        setNewPageName(e.target.value);
+                        if (autoSlug) setNewPageSlug(sluggit(e.target.value || "", "-"));
+                        if (autoTitle) setNewPageTitle(e.target.value);
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") handleCreateSubmit();
+                        if (e.key === "Escape") resetCreateDialog();
+                      }}
+                      className="input-transparent"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">URL</label>
+                    <div className="border-base-300 flex items-center gap-0.5 rounded-lg border px-2 py-1.5">
+                      <span className="text-neutral-content/50 text-xs">/</span>
+                      <input
+                        type="text"
+                        value={newPageSlug}
+                        placeholder="page-url"
+                        onChange={e => {
+                          setNewPageSlug(e.target.value.replace(/\s+/g, "-").toLowerCase());
+                          setAutoSlug(false);
+                        }}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") handleCreateSubmit();
+                          if (e.key === "Escape") resetCreateDialog();
+                        }}
+                        className="text-base-content min-w-0 flex-1 border-none bg-transparent p-0 text-xs outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* SEO — Title + Description */}
+                <div>
+                  <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">Page Title</label>
+                  <input
+                    type="text"
+                    placeholder="SEO title (optional)"
+                    value={newPageTitle}
+                    onChange={e => { setNewPageTitle(e.target.value); setAutoTitle(false); }}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") handleCreateSubmit();
+                      if (e.key === "Escape") resetCreateDialog();
+                    }}
+                    className="input-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">Description</label>
+                  <textarea
+                    placeholder="Brief page description (optional)"
+                    value={newPageDescription}
+                    onChange={e => setNewPageDescription(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Escape") resetCreateDialog();
+                    }}
+                    rows={2}
+                    className="input-transparent resize-none"
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    onClick={resetCreateDialog}
+                    className="text-neutral-content hover:text-base-content text-xs transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleCreateSubmit}
+                    disabled={!newPageName.trim()}
+                    className="btn btn-primary btn-xs px-3 disabled:opacity-40"
+                  >
+                    Create
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowCreateDialog(true)}
+                className="text-primary hover:bg-primary/10 flex w-full items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors"
+              >
+                <TbPlus className="size-3.5" />
+                New Page
+              </button>
+            )}
           </div>
         </div>
       )}
