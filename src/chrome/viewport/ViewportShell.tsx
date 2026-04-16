@@ -12,6 +12,7 @@ import { ToolboxContexual } from "./ToolboxContextual";
 import { ShowGridLinesAtom } from "../../utils/atoms";
 import {
   EDITOR_ALL_PAGES_STORAGE,
+  hasPageIsolation,
   IsolateAtom,
   LastActiveAtom,
   OnlineAtom,
@@ -20,7 +21,7 @@ import {
   SideBarOpen,
   ViewModeAtom,
   getDefaultEditorPageId,
-  isolatePageAlt,
+  isolatePageInTree,
   isolatePageLazy,
   listPageNodeIds,
 } from "../../utils/lib";
@@ -90,17 +91,11 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const { handleViewportClick } = useViewportClickDeselect();
   useEditorDocumentKeydown();
 
-  // ─── Init ───
+  // Enable CraftJS editing after initial paint settles (avoids flash of unstyled nodes)
   useEffect(() => {
     if (!window) return;
     window.requestAnimationFrame(() => {
-      setTimeout(
-        () =>
-          setOptions(options => {
-            options.enabled = true;
-          }),
-        200
-      );
+      setTimeout(() => setOptions(options => { options.enabled = true; }), 200);
     });
   }, [setOptions]);
 
@@ -145,7 +140,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       if (!nodeId) return false;
 
       // Letterboxing / short pages: clicks land on ROOT Background instead of the page surface.
-      if (nodeId === ROOT_NODE && isolate && isolate !== EDITOR_ALL_PAGES_STORAGE) {
+      if (nodeId === ROOT_NODE && hasPageIsolation(isolate)) {
         const iso = query.node(isolate).get();
         if (iso?.data?.props?.type === "page") {
           nodeId = isolate;
@@ -256,53 +251,36 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   // ─── Page navigation store init ───
   const navInitRef = useRef(false);
 
-  // ─── Page loading state ───
-  const [pageLoading, setPageLoading] = useState(false);
-  const [pageLoadDone, setPageLoadDone] = useState(false);
+  // ─── Page loading state (single enum instead of two booleans) ───
+  const [pageLoad, setPageLoad] = useState<"idle" | "loading" | "done">("idle");
 
-  // Stable callback for LoadingBar completion — avoids stale closure in useEffect deps
-  const handleLoadComplete = useCallback(() => {
-    setPageLoading(false);
-    setPageLoadDone(false);
-  }, []);
+  const handleLoadComplete = useCallback(() => setPageLoad("idle"), []);
 
-  // Safety net: if pageLoadDone is true but LoadingBar's onComplete never fires
-  // (e.g. component unmounted mid-animation), reset after 2s.
+  // Safety net: reset if LoadingBar's onComplete never fires (unmount mid-animation)
   useEffect(() => {
-    if (!pageLoadDone) return;
-    const id = setTimeout(() => {
-      setPageLoading(false);
-      setPageLoadDone(false);
-    }, 2000);
+    if (pageLoad !== "done") return;
+    const id = setTimeout(() => setPageLoad("idle"), 2000);
     return () => clearTimeout(id);
-  }, [pageLoadDone]);
+  }, [pageLoad]);
 
-  // Build the isolation callback — extracted so it can be refreshed
-  const makeOnIsolate = useCallback(
-    () => async (pageId: string | null) => {
-      console.log(`[ViewportShell] onIsolate called for ${pageId}, fetchPage=${!!config.callbacks.fetchPage}`);
+  // Isolation callback — called by the nav store when a page switch is requested
+  const onIsolate = useCallback(
+    async (pageId: string | null) => {
       if (config.callbacks.fetchPage) {
-        setPageLoading(true);
-        setPageLoadDone(false);
+        setPageLoad("loading");
         const fetched = await isolatePageLazy(pageId, query, actions, setIsolate, config.callbacks.fetchPage);
-        console.log(`[ViewportShell] isolatePageLazy returned, fetched=${fetched}`);
-        setPageLoadDone(true);
-        if (!fetched) {
-          setPageLoading(false);
-          setPageLoadDone(false);
-        }
+        setPageLoad(fetched ? "done" : "idle");
         return;
       }
-      console.log(`[ViewportShell] using isolatePageAlt (no fetchPage)`);
-      isolatePageAlt(isolate, query, pageId, actions, setIsolate, true);
+      isolatePageInTree(query, actions, pageId, setIsolate);
     },
     [config.callbacks.fetchPage, query, actions, setIsolate, isolate],
   );
 
-  // Keep the nav store's onIsolate callback fresh (avoids stale closures)
+  // Keep the nav store's callback fresh (avoids stale closures)
   useEffect(() => {
-    if (navInitRef.current) updateOnIsolate(makeOnIsolate());
-  }, [makeOnIsolate]);
+    if (navInitRef.current) updateOnIsolate(onIsolate);
+  }, [onIsolate]);
 
   useEffect(() => {
     if (navInitRef.current) return;
@@ -334,21 +312,19 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         }) || null;
       },
       getHomePageId: () => getDefaultEditorPageId(query),
-      onIsolate: makeOnIsolate(),
+      onIsolate,
     });
 
     // Prefer: URL page > localStorage page > nav store's pick (home page).
     // Initial page is already in the tree from SSR — just isolate, don't fetch.
     const targetPage = initialPageId || storedId || getDefaultEditorPageId(query);
-    console.log(`[ViewportShell] init: targetPage=${targetPage}, isolate=${isolate}, initialPageId=${initialPageId}, storedId=${storedId}`);
     if (targetPage && targetPage !== isolate) {
-      console.log(`[ViewportShell] init: isolating ${targetPage} via isolatePageAlt`);
+      // Defer to next tick so CraftJS tree is fully mounted before hiding pages
       setTimeout(() => {
-        console.log(`[ViewportShell] init: setTimeout fired, calling isolatePageAlt(${targetPage})`);
-        isolatePageAlt(isolate, query, targetPage, actions, setIsolate, true);
+        isolatePageInTree(query, actions, targetPage, setIsolate);
       }, 0);
     }
-  }, [editorPageIdsKey, query, actions, setIsolate, isolate, config.urlStrategy, makeOnIsolate]);
+  }, [editorPageIdsKey, query, actions, setIsolate, isolate, config.urlStrategy, onIsolate]);
 
   // ─── Unsaved changes warning ───
   // Page switches use pushState (not Next.js router), so routeChangeStart
@@ -428,8 +404,9 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   if (device) viewClasses = deviceClasses;
   const activeClass = viewClasses[view] ?? viewClasses.desktop;
 
-  const bezelX = (6 + 3) * 2;
-  const bezelY = (6 + 3) * 2;
+  // Device bezel: border (3px) + padding (6px) on each side
+  const bezelX = 18;
+  const bezelY = 18;
   const deviceStyles =
     device && view === "mobile"
       ? ({
@@ -454,8 +431,8 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         data-container={true}
       >
         <LoadingBar
-          active={pageLoading}
-          done={pageLoadDone}
+          active={pageLoad !== "idle"}
+          done={pageLoad === "done"}
           overlay
           onComplete={handleLoadComplete}
         />

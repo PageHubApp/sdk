@@ -25,41 +25,39 @@ export function useSettingsController<TDraft>({
   debounceMs = 350,
   reloadKey,
 }: UseSettingsControllerOptions<TDraft>) {
-  const [initState] = useState(() => {
-    const result = loadDraft();
-    if (isThenable(result)) return { draft: undefined as unknown as TDraft, async: true };
-    return { draft: result, async: false };
+  // Probe once on mount: sync → use value immediately, async → start loading.
+  const [initResult] = useState(() => {
+    const r = loadDraft();
+    return isThenable(r)
+      ? { draft: undefined as unknown as TDraft, loading: true, pending: r }
+      : { draft: r, loading: false, pending: null };
   });
-  const [draft, setDraft] = useState<TDraft>(initState.draft);
-  const [loading, setLoading] = useState(initState.async);
-  const draftRef = useRef(draft);
-  const lastSavedSignatureRef = useRef<string>("");
+
+  const [draft, setDraft] = useState<TDraft>(initResult.draft);
+  const [loading, setLoading] = useState(initResult.loading);
+  const draftRef = useRef<TDraft>(initResult.draft);
+  const lastSavedSignatureRef = useRef(
+    initResult.loading ? "" : getDraftSignature(initResult.draft),
+  );
+  const isFirstRunRef = useRef(true);
+
   const flushNowRef = useRef<() => void>(() => {});
   const requestSaveRef = useRef<ReturnType<typeof debounce> | null>(null);
   const loadDraftRef = useRef(loadDraft);
   const getDraftSignatureRef = useRef(getDraftSignature);
   const commitDraftRef = useRef(commitDraft);
 
-  useEffect(() => {
-    loadDraftRef.current = loadDraft;
-  }, [loadDraft]);
-
-  useEffect(() => {
-    getDraftSignatureRef.current = getDraftSignature;
-  }, [getDraftSignature]);
-
-  useEffect(() => {
-    commitDraftRef.current = commitDraft;
-  }, [commitDraft]);
+  useEffect(() => { loadDraftRef.current = loadDraft; }, [loadDraft]);
+  useEffect(() => { getDraftSignatureRef.current = getDraftSignature; }, [getDraftSignature]);
+  useEffect(() => { commitDraftRef.current = commitDraft; }, [commitDraft]);
 
   const flushNow = useCallback(() => {
     const snapshot = draftRef.current;
-    if (snapshot === undefined) return; // async load not yet resolved
+    if (snapshot === undefined) return;
     const nextSignature = getDraftSignatureRef.current(snapshot);
     if (nextSignature === lastSavedSignatureRef.current) return;
     const result = commitDraftRef.current(snapshot);
     lastSavedSignatureRef.current = nextSignature;
-    // Fire-and-forget async commits — log errors but don't block
     if (isThenable(result)) {
       result.catch(e => console.error("Error saving settings:", e));
     }
@@ -67,41 +65,53 @@ export function useSettingsController<TDraft>({
 
   const requestSave = useMemo(() => debounce(flushNow, debounceMs), [flushNow, debounceMs]);
 
-  useEffect(() => {
-    flushNowRef.current = flushNow;
-  }, [flushNow]);
-
+  useEffect(() => { flushNowRef.current = flushNow; }, [flushNow]);
   useEffect(() => {
     requestSaveRef.current = requestSave;
     return () => requestSaveRef.current?.cancel();
   }, [requestSave]);
+  useEffect(() => { draftRef.current = draft; }, [draft]);
 
+  const applyDraft = useCallback((nextDraft: TDraft) => {
+    draftRef.current = nextDraft;
+    setDraft(nextDraft);
+    lastSavedSignatureRef.current = getDraftSignatureRef.current(nextDraft);
+    setLoading(false);
+  }, []);
+
+  // Resolve async init (mount-only).
   useEffect(() => {
-    draftRef.current = draft;
-  }, [draft]);
+    if (!initResult.pending) return;
+    let cancelled = false;
+    initResult.pending
+      .then(resolved => { if (!cancelled) applyDraft(resolved); })
+      .catch(e => {
+        console.error("Error loading settings:", e);
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Load draft when modal opens or reloadKey changes
+  // Reload draft on reopen or reloadKey change (skip first run — init handled above).
   useEffect(() => {
     if (!isOpen) return;
+    if (isFirstRunRef.current) {
+      isFirstRunRef.current = false;
+      return;
+    }
 
     let cancelled = false;
-
-    const applyDraft = (nextDraft: TDraft) => {
-      if (cancelled) return;
-      draftRef.current = nextDraft;
-      setDraft(nextDraft);
-      lastSavedSignatureRef.current = getDraftSignatureRef.current(nextDraft);
-      setLoading(false);
-    };
-
     const result = loadDraftRef.current();
 
     if (isThenable(result)) {
       setLoading(true);
-      result.then(applyDraft).catch(e => {
-        console.error("Error loading settings:", e);
-        if (!cancelled) setLoading(false);
-      });
+      result
+        .then(resolved => { if (!cancelled) applyDraft(resolved); })
+        .catch(e => {
+          console.error("Error loading settings:", e);
+          if (!cancelled) setLoading(false);
+        });
     } else {
       applyDraft(result);
     }
@@ -111,12 +121,13 @@ export function useSettingsController<TDraft>({
       requestSaveRef.current?.cancel();
       flushNowRef.current();
     };
-  }, [isOpen, reloadKey]);
+  }, [isOpen, reloadKey, applyDraft]);
 
+  // Auto-save on draft changes.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || loading) return;
     requestSaveRef.current?.();
-  }, [draft, isOpen]);
+  }, [draft, isOpen, loading]);
 
   const flushSave = useCallback(() => {
     requestSaveRef.current?.cancel();
@@ -142,13 +153,5 @@ export function useSettingsController<TDraft>({
     []
   );
 
-  return {
-    draft,
-    setDraft,
-    updateField,
-    loading,
-    requestSave: () => requestSaveRef.current?.(),
-    flushSave,
-    cancelSave,
-  };
+  return { draft, setDraft, updateField, loading, requestSave: () => requestSaveRef.current?.(), flushSave, cancelSave };
 }

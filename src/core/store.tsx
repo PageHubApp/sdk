@@ -13,6 +13,7 @@
  */
 
 import React, { createContext, useContext, useLayoutEffect, useMemo, useState } from "react";
+import { EDITOR_ALL_PAGES_STORAGE } from "../utils/pageManagement";
 
 export type ViewMode = "mobile" | "desktop" | "tablet" | "sm" | "md" | "lg" | "xl" | "2xl";
 
@@ -80,7 +81,7 @@ export function EditorStoreProvider({
 }: EditorStoreProviderProps) {
   const [view, setView] = useState<ViewMode>(initialView);
   const [preview, setPreview] = useState(initialPreview);
-  const [isolate, setIsolate] = useState("");
+  const [isolate, setIsolate] = useState(EDITOR_ALL_PAGES_STORAGE);
   const [settings, setSettings] = useState<Record<string, any>>({});
 
   // Props like blocks library `initialView={view}` must flow into state; useState only uses the prop on first mount.

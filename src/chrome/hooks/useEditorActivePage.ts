@@ -1,7 +1,7 @@
 import { useEditor } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { useMemo } from "react";
-import { IsolateAtom } from "../../utils/lib";
+import { IsolateAtom, hasPageIsolation } from "../../utils/lib";
 
 export interface ActivePage {
   pageNodeId: string;
@@ -16,10 +16,9 @@ export function useEditorActivePage(): ActivePage | undefined {
   const isolate = useAtomValue(IsolateAtom);
   const { query } = useEditor();
   return useMemo(() => {
-    const raw = typeof isolate === "string" ? isolate.trim() : "";
-    if (!raw) return undefined;
+    if (!hasPageIsolation(isolate)) return undefined;
     try {
-      let id = raw;
+      let id = isolate;
       for (let d = 0; d < 25; d++) {
         const node = query.node(id).get();
         if (!node?.data) return undefined;

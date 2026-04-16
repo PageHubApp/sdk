@@ -168,7 +168,7 @@ export function Background({
               selected={isActive}
               icon={<TbContainer aria-hidden />}
               idleLabel="Empty canvas"
-              selectedDetail="Add header, sections, or footer from the sidebar"
+              selectedLabel="Drop here or right-click"
             />
           ) : null)}
       </RenderPattern>

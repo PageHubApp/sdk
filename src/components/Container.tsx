@@ -1,8 +1,9 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
-import { TbContainer, TbNote } from "react-icons/tb";
+import { TbArrowDown, TbContainer, TbNote } from "react-icons/tb";
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { useIsolate, usePreview, useView } from "../core/store";
+import { hasPageIsolation } from "../utils/pageManagement";
 import { mergeAccessibilityProps } from "../utils/accessibility";
 import { addActionHandlers } from "../utils/clickControls";
 import { migrateAction, actionToHref, isHandlerAction, type NodeAction } from "../utils/action";
@@ -140,7 +141,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
       className = `${className} hidden`;
     }
     // In component mode, only show if this specific component is isolated
-    else if (viewMode === "component" && isolate && isolate !== id) {
+    else if (viewMode === "component" && hasPageIsolation(isolate) && isolate !== id) {
       className = `${className} hidden`;
     }
   }
@@ -220,11 +221,12 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
             <EditorEmptyLeafHint
               selected={isActive}
               icon={props.type === "page" ? <TbNote aria-hidden /> : <TbContainer aria-hidden />}
+              selectedIcon={<TbArrowDown aria-hidden />}
               idleLabel={props.type === "page" ? "Empty page" : "Empty container"}
-              selectedDetail={
+              selectedLabel={
                 props.type === "page"
-                  ? "Add sections from the sidebar"
-                  : "Drag blocks or components here"
+                  ? "Drop sections or right-click"
+                  : "Drop here or right-click"
               }
             />
           ) : null}

@@ -7,7 +7,7 @@ import {
   IsolateAtom,
   OpenComponentEditorAtom,
   ViewModeAtom,
-  isolatePageAlt,
+  isolatePageInTree,
 } from "@/utils/lib";
 
 interface ComponentEditorTab {
@@ -120,7 +120,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
 
           // Isolate the component container and hide header/footer
           setTimeout(() => {
-            isolatePageAlt(isolate, query, componentContainerId, actions, setIsolate, true);
+            isolatePageInTree(query, actions, componentContainerId, setIsolate);
             actions.setHidden(componentContainerId, false);
             actions.setProp(componentContainerId, prop => (prop.hidden = false));
             hideHeaderFooter(query, actions, true);
@@ -139,7 +139,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
       if (existingTab) {
         // Tab exists, just switch to it
         setActiveTabId(existingTab.id);
-        isolatePageAlt(isolate, query, existingTab.id, actions, setIsolate, true);
+        isolatePageInTree(query, actions, existingTab.id, setIsolate);
         actions.setHidden(existingTab.id, false);
         actions.setProp(existingTab.id, prop => (prop.hidden = false));
         hideHeaderFooter(query, actions, true);
@@ -181,7 +181,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
 
           // Isolate the component container and hide header/footer, but select the content node
           setTimeout(() => {
-            isolatePageAlt(isolate, query, componentContainerId, actions, setIsolate, false); // Don't auto-select
+            isolatePageInTree(query, actions, componentContainerId, setIsolate); // Don't auto-select
             actions.setHidden(componentContainerId, false);
             actions.setProp(componentContainerId, prop => (prop.hidden = false));
             hideHeaderFooter(query, actions, true);
@@ -285,11 +285,11 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
       if (activeTabId && !existingComponentIds.has(activeTabId)) {
         if (newActiveTab) {
           setActiveTabId(newActiveTab);
-          isolatePageAlt(isolate, query, newActiveTab, actions, setIsolate, true);
+          isolatePageInTree(query, actions, newActiveTab, setIsolate);
           hideHeaderFooter(query, actions, true);
         } else {
           setActiveTabId(null);
-          isolatePageAlt(isolate, query, null, actions, setIsolate, false);
+          isolatePageInTree(query, actions, null, setIsolate);
           hideHeaderFooter(query, actions, false);
         }
       }
@@ -300,7 +300,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
   useEffect(() => {
     if (viewMode === "component" && activeTabId && tabs.length > 0) {
       // Re-isolate the active component
-      isolatePageAlt(isolate, query, activeTabId, actions, setIsolate, true);
+      isolatePageInTree(query, actions, activeTabId, setIsolate);
 
       // Make sure the component container is visible
       actions.setHidden(activeTabId, false);
@@ -316,7 +316,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
     setActiveTabId(tabId);
 
     // Isolate the component for this tab
-    isolatePageAlt(isolate, query, tabId, actions, setIsolate, true);
+    isolatePageInTree(query, actions, tabId, setIsolate);
 
     // Make sure this component container is visible
     actions.setHidden(tabId, false);
@@ -340,7 +340,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
         // Switch to the previous tab, or the first one
         const newActiveTab = newTabs[Math.max(0, tabIndex - 1)];
         setActiveTabId(newActiveTab.id);
-        isolatePageAlt(isolate, query, newActiveTab.id, actions, setIsolate, true);
+        isolatePageInTree(query, actions, newActiveTab.id, setIsolate);
         actions.setHidden(newActiveTab.id, false);
         actions.setProp(newActiveTab.id, prop => (prop.hidden = false));
         hideHeaderFooter(query, actions, true);
@@ -351,7 +351,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
         actions.setHidden(tabId, true);
         actions.setProp(tabId, prop => (prop.hidden = true));
 
-        isolatePageAlt(isolate, query, null, actions, setIsolate, true);
+        isolatePageInTree(query, actions, null, setIsolate);
         hideHeaderFooter(query, actions, true);
 
         setTimeout(() => {

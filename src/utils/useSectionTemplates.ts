@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { tryDecompressBase64LzToJson } from "../../../../utils/lz";
+import { tryDecompressBase64LzToJson } from "./lz";
 
 interface SectionTemplate {
   slug: string;

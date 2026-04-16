@@ -19,6 +19,14 @@ const BESIDE_MIN_WIDTH = 160;
 const SKIP_TYPES = new Set(["page", "header", "footer"]);
 const ROW_CLASSNAME = "flex flex-row flex-wrap gap-space-md items-start min-w-0 w-full";
 const WRAPPER_CLASSNAME = "flex min-w-0 flex-1 basis-0 flex-col gap-4";
+const CENTER_ALIGNMENT_TOKENS = [
+  "items-center",
+  "justify-center",
+  "text-center",
+  "mx-auto",
+  "place-items-center",
+  "content-center",
+];
 
 type BesideSide = "beside-left" | "beside-right";
 
@@ -36,10 +44,58 @@ function hasFullWidthClass(className: string) {
   return /(^|\s)(w-full|min-w-full)(\s|$)/.test(className);
 }
 
+function hasToken(className: string, token: string) {
+  const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|\\s)${escaped}(\\s|$)`).test(className);
+}
+
+function getCenterAlignmentScore(node: Pick<Node, "data"> | undefined | null) {
+  const className = getClassName(node);
+  return CENTER_ALIGNMENT_TOKENS.reduce((score, token) => score + (hasToken(className, token) ? 1 : 0), 0);
+}
+
+function shouldPreserveCenteredContent(node: Pick<Node, "data"> | undefined | null) {
+  return getCenterAlignmentScore(node) >= 2;
+}
+
+function buildWrapperClassName(node: Pick<Node, "data"> | undefined | null) {
+  if (!shouldPreserveCenteredContent(node)) return WRAPPER_CLASSNAME;
+  return `${WRAPPER_CLASSNAME} items-center text-center`;
+}
+
+function buildRowClassName(...nodes: Array<Pick<Node, "data"> | undefined | null>) {
+  const centeredNodes = nodes.filter((node) => shouldPreserveCenteredContent(node)).length;
+  if (centeredNodes < 2) return ROW_CLASSNAME;
+  return ROW_CLASSNAME.replace("items-start", "items-center");
+}
+
 function shouldWrapBesideChild(node: Pick<Node, "data"> | undefined | null) {
   if (!node?.data) return true;
   if (!isContainerLike(node)) return true;
   return hasFullWidthClass(getClassName(node));
+}
+
+function isSimpleBesideRow(node: Pick<Node, "data"> | undefined | null) {
+  if (!node?.data) return false;
+  const className = getClassName(node);
+  const childCount = node.data.nodes?.length || 0;
+  return (
+    isContainerLike(node) &&
+    hasToken(className, "flex") &&
+    hasToken(className, "flex-row") &&
+    childCount >= 2 &&
+    childCount <= 3
+  );
+}
+
+function getReusableRowContext(query: any, parentNode: Node, targetNode: Node) {
+  if (!parentNode?.data?.parent) return null;
+  const rowNode = query.node(parentNode.data.parent).get();
+  if (!isSimpleBesideRow(rowNode)) return null;
+  const wrapperChildCount = parentNode.data.nodes?.length || 0;
+  if (wrapperChildCount !== 1) return null;
+  if (parentNode.id !== targetNode.data.parent) return null;
+  return { rowNode, anchorNode: parentNode };
 }
 
 function makeContainerTree(
@@ -94,16 +150,16 @@ function addNewTreeIntoSlot(
   tree: any,
   rowId: NodeId,
   slotIndex: number,
-  wrapInItem: boolean,
+  wrapperClassName: string | null,
   query: any,
   ContainerComponent: React.ComponentType<any>
 ) {
-  if (!wrapInItem) {
+  if (!wrapperClassName) {
     addTree(actions, tree, rowId, slotIndex, merged, isFirstRef);
     return;
   }
 
-  const wrapperTree = makeContainerTree(query, ContainerComponent, WRAPPER_CLASSNAME, "Item");
+  const wrapperTree = makeContainerTree(query, ContainerComponent, wrapperClassName, "Item");
   addTree(actions, wrapperTree, rowId, slotIndex, merged, isFirstRef);
   addTree(actions, tree, wrapperTree.rootNodeId, 0, merged, isFirstRef);
 }
@@ -115,16 +171,16 @@ function moveExistingIntoSlot(
   nodeIds: NodeId[],
   rowId: NodeId,
   slotIndex: number,
-  wrapInItem: boolean,
+  wrapperClassName: string | null,
   query: any,
   ContainerComponent: React.ComponentType<any>
 ) {
-  if (!wrapInItem) {
+  if (!wrapperClassName) {
     moveNode(actions, nodeIds, rowId, slotIndex, merged, isFirstRef);
     return;
   }
 
-  const wrapperTree = makeContainerTree(query, ContainerComponent, WRAPPER_CLASSNAME, "Item");
+  const wrapperTree = makeContainerTree(query, ContainerComponent, wrapperClassName, "Item");
   addTree(actions, wrapperTree, rowId, slotIndex, merged, isFirstRef);
   moveNode(actions, nodeIds, wrapperTree.rootNodeId, 0, merged, isFirstRef);
 }
@@ -197,10 +253,60 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
     }
 
     const parentNode = query.node(parentId).get();
+    const reusableRow = getReusableRowContext(query, parentNode, targetNode);
+    const draggedPreviewNode =
+      dragTarget.type === "existing"
+        ? dragTarget.nodes.map((nodeId) => query.node(nodeId).get()).filter(Boolean)[0]
+        : dragTarget.tree?.nodes?.[dragTarget.tree.rootNodeId];
+
+    if (reusableRow) {
+      const rowId = reusableRow.rowNode.id;
+      const anchorIndex = (reusableRow.rowNode.data.nodes || []).indexOf(reusableRow.anchorNode.id);
+      if (anchorIndex < 0) return;
+
+      const insertIndex = side === "beside-left" ? anchorIndex : anchorIndex + 1;
+      const merged = actions.history.merge();
+      const isFirstRef = { value: true };
+
+      if (dragTarget.type === "existing") {
+        moveExistingIntoSlot(
+          actions,
+          merged,
+          isFirstRef,
+          dragTarget.nodes,
+          rowId,
+          insertIndex,
+          shouldWrapBesideChild(draggedPreviewNode) ? buildWrapperClassName(draggedPreviewNode) : null,
+          query,
+          ContainerComponent
+        );
+      } else {
+        addNewTreeIntoSlot(
+          actions,
+          merged,
+          isFirstRef,
+          dragTarget.tree,
+          rowId,
+          insertIndex,
+          shouldWrapBesideChild(draggedPreviewNode) ? buildWrapperClassName(draggedPreviewNode) : null,
+          query,
+          ContainerComponent
+        );
+      }
+
+      actions.selectNode(rowId);
+      return;
+    }
+
     const targetIndex = (parentNode.data.nodes || []).indexOf(targetNode.id);
     if (targetIndex < 0) return;
 
-    const rowTree = makeContainerTree(query, ContainerComponent, ROW_CLASSNAME, "Row");
+    const rowTree = makeContainerTree(
+      query,
+      ContainerComponent,
+      buildRowClassName(parentNode, targetNode, draggedPreviewNode),
+      "Row"
+    );
     const rowId = rowTree.rootNodeId;
     const merged = actions.history.merge();
     const isFirstRef = { value: true };
@@ -217,7 +323,7 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
       [targetNode.id],
       rowId,
       targetSlotIndex,
-      shouldWrapBesideChild(targetNode),
+      shouldWrapBesideChild(targetNode) ? buildWrapperClassName(targetNode) : null,
       query,
       ContainerComponent
     );
@@ -236,7 +342,7 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
         dragTarget.nodes,
         rowId,
         draggedSlotIndex,
-        shouldWrapDragged,
+        shouldWrapDragged ? buildWrapperClassName(draggedNodes[0]) : null,
         query,
         ContainerComponent
       );
@@ -249,7 +355,7 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
         dragTarget.tree,
         rowId,
         draggedSlotIndex,
-        shouldWrapBesideChild(draggedRoot),
+        shouldWrapBesideChild(draggedRoot) ? buildWrapperClassName(draggedRoot) : null,
         query,
         ContainerComponent
       );

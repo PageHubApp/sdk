@@ -1,4 +1,5 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import type { MouseEvent } from "react";
 import { useCallback } from "react";
 import { TbInfoCircle } from "react-icons/tb";
 import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
@@ -208,21 +209,33 @@ export const Wrap = ({
 
 export const Card = ({
   value,
+  displayValue,
   onClick,
   bgColor = "bg-primary text-primary-content",
   onDragStart,
   onDragEnd,
   draggable = true,
+  tooltipValue,
+}: {
+  value: string;
+  displayValue?: string;
+  onClick: (e: MouseEvent, options?: { deleteLinked?: boolean }) => void;
+  bgColor?: string;
+  onDragStart: (e: any, data: any) => void;
+  onDragEnd: (e?: any) => void;
+  draggable?: boolean;
+  tooltipValue?: string;
 }) => {
   if (!value) {
     return null;
   }
 
-  const displayValue = formatTailwindDisplayLabel(value);
+  const resolvedDisplayValue = displayValue || formatTailwindDisplayLabel(value);
+  const resolvedTooltipValue = tooltipValue || value;
 
   // Split the value to make the CSS variable part bold
   const renderDisplayValue = () => {
-    const parts = displayValue.split("--");
+    const parts = resolvedDisplayValue.split("--");
     if (parts.length > 1) {
       return (
         <>
@@ -231,7 +244,7 @@ export const Card = ({
         </>
       );
     }
-    return displayValue;
+    return resolvedDisplayValue;
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -293,6 +306,10 @@ export const Card = ({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       className={`${bgColor} inline-flex rounded-lg px-1.5 py-0.5 text-xs font-medium whitespace-nowrap hover:brightness-110 ${draggable ? "cursor-grab transition-transform hover:scale-105 active:cursor-grabbing" : "cursor-pointer"}`}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      data-tooltip-content={resolvedTooltipValue}
+      data-tooltip-place="top"
+      data-tooltip-offset={10}
     >
       {renderDisplayValue()}
     </button>

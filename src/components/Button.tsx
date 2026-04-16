@@ -409,7 +409,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
       selected={isActive}
       icon={<TbPointer aria-hidden />}
       idleLabel="Empty button"
-      selectedDetail="Add label or icon in settings"
+      selectedLabel="Drop here or right-click"
     />
   ) : (
     <>

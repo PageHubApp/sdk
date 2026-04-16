@@ -1,9 +1,12 @@
 /**
  * Client-side tree decomposition for per-page saves.
- * Minimal version of lib/sharding.js — pure functions, no DB.
+ * Minimal subset of lib/sharding.js — pure functions, no DB.
+ *
+ * Only extractPageShard + extractSharedShard are used (by editor.tsx save handler).
+ * The server-side lib/sharding.js owns the full decompose/assemble logic.
  */
 
-/** Collect a node and all its descendants into `out`. */
+/** Collect a node and all its descendants (nodes + linkedNodes) into `out`. */
 function collectSubtree(flat: Record<string, any>, nodeId: string, out: Record<string, any>): void {
   if (!flat[nodeId] || out[nodeId]) return;
   out[nodeId] = flat[nodeId];
@@ -13,22 +16,6 @@ function collectSubtree(flat: Record<string, any>, nodeId: string, out: Record<s
   for (const linkedId of Object.values(flat[nodeId].linkedNodes || {})) {
     collectSubtree(flat, linkedId as string, out);
   }
-}
-
-/**
- * Find which page a node belongs to by walking up the parent chain.
- * Returns the page node ID, or null if the node is shared (ROOT, header, footer).
- */
-export function findOwningPage(flat: Record<string, any>, nodeId: string): string | null {
-  let cur = nodeId;
-  let depth = 0;
-  while (cur && depth++ < 100) {
-    const node = flat[cur];
-    if (!node) return null;
-    if (node.props?.type === "page" && node.parent === "ROOT") return cur;
-    cur = node.parent;
-  }
-  return null;
 }
 
 /**
@@ -60,50 +47,4 @@ export function extractSharedShard(flat: Record<string, any>): Record<string, an
     collectSubtree(flat, childId, shared);
   }
   return shared;
-}
-
-/**
- * Assemble a full flat map from shared shard + page shards.
- * Restores the original ROOT.nodes order (header, pages, footer).
- */
-export function assembleFromShards(
-  shared: Record<string, any>,
-  pages: Record<string, Record<string, any>>,
-): Record<string, any> {
-  const flat: Record<string, any> = { ...shared };
-
-  // Merge page subtrees
-  for (const subtree of Object.values(pages)) {
-    Object.assign(flat, subtree);
-  }
-
-  // Rebuild ROOT.nodes preserving original order
-  const originalOrder: string[] | undefined = shared.ROOT?._originalNodeOrder;
-  const orderedPageIds = Object.keys(pages);
-  const pageIdSet = new Set(orderedPageIds);
-
-  let rebuiltNodes: string[];
-  if (originalOrder?.length) {
-    rebuiltNodes = [];
-    for (const nodeId of originalOrder) {
-      if (pageIdSet.has(nodeId)) {
-        rebuiltNodes.push(nodeId);
-        pageIdSet.delete(nodeId);
-      } else if (flat[nodeId]) {
-        rebuiltNodes.push(nodeId);
-      }
-    }
-    // Append new pages not in original order
-    for (const id of orderedPageIds) {
-      if (pageIdSet.has(id)) rebuiltNodes.push(id);
-    }
-  } else {
-    const sharedChildIds = shared.ROOT?.nodes || [];
-    rebuiltNodes = [...sharedChildIds, ...orderedPageIds];
-  }
-
-  flat.ROOT = { ...flat.ROOT, nodes: rebuiltNodes };
-  delete flat.ROOT._originalNodeOrder;
-
-  return flat;
 }

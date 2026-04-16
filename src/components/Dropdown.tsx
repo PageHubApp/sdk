@@ -195,7 +195,7 @@ export const Dropdown = ({
           selected={isActive}
           icon={<TbMenu2 aria-hidden />}
           idleLabel="Empty dropdown"
-          selectedDetail="Drop trigger and panel here"
+          selectedLabel="Drop trigger here"
         />
       ) : null)
   );

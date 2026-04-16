@@ -5,10 +5,11 @@ export type EditorEmptyLeafHintProps = {
   /** This node is the Craft selection (stronger chrome). */
   selected: boolean;
   icon: ReactNode;
-  /** Short label (idle row uses uppercase tracking). */
+  selectedIcon?: ReactNode;
+  /** Short label (kept compact so the hint footprint stays stable). */
   idleLabel: string;
-  /** Shown after an em dash when selected, e.g. "Click to edit". */
-  selectedDetail: string;
+  /** Alternate compact label shown when selected. */
+  selectedLabel: string;
   className?: string;
 };
 
@@ -16,27 +17,32 @@ export type EditorEmptyLeafHintProps = {
 export function EditorEmptyLeafHint({
   selected,
   icon,
+  selectedIcon,
   idleLabel,
-  selectedDetail,
+  selectedLabel,
   className,
 }: EditorEmptyLeafHintProps) {
+  const activeIcon = selected && selectedIcon ? selectedIcon : icon;
+  const activeLabel = selected ? selectedLabel : idleLabel;
+
+  const baseClassName =
+    "flex min-h-8 w-full items-center justify-center gap-1.5 border border-dashed px-2 py-1.5 text-[10px] font-medium uppercase";
+
   if (selected) {
     return (
       <div
         className={twMerge(
-          "border-base-300/70 bg-base-200/50 text-neutral-content/80 flex min-h-8 w-full items-center gap-2 rounded-md border border-dashed px-2 py-2 text-left text-xs",
+          `${baseClassName} border-base-300/70 bg-base-200/45 text-neutral-content/80`,
           className
         )}
       >
         <span
-          className="flex size-4 shrink-0 items-center justify-center opacity-70 [&>svg]:size-4"
+          className="flex size-3.5 shrink-0 items-center justify-center opacity-75 [&>svg]:size-3.5"
           aria-hidden
         >
-          {icon}
+          {activeIcon}
         </span>
-        <span className="italic">
-          {idleLabel} — {selectedDetail}
-        </span>
+        <span className="truncate whitespace-nowrap">{activeLabel}</span>
       </div>
     );
   }
@@ -44,7 +50,7 @@ export function EditorEmptyLeafHint({
   return (
     <div
       className={twMerge(
-        "border-base-300/45 bg-base-200/35 text-neutral-content/55 flex min-h-8 w-full items-center justify-center gap-1.5 rounded-md border border-dashed px-2 py-1.5 text-[10px] font-medium tracking-wide uppercase",
+        `${baseClassName} border-base-300/45 bg-base-200/35 text-neutral-content/55`,
         className
       )}
     >
@@ -52,9 +58,9 @@ export function EditorEmptyLeafHint({
         className="flex size-3.5 shrink-0 items-center justify-center opacity-60 [&>svg]:size-3.5"
         aria-hidden
       >
-        {icon}
+        {activeIcon}
       </span>
-      <span>{idleLabel}</span>
+      <span className="truncate whitespace-nowrap">{activeLabel}</span>
     </div>
   );
 }

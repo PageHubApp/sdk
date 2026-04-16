@@ -83,7 +83,7 @@ export const Audio = (incomingProps: AudioProps) => {
         selected={isActive}
         icon={<TbMusic aria-hidden />}
         idleLabel="Empty audio"
-        selectedDetail="Add audio URL in settings"
+        selectedLabel="Drop here or right-click"
       />
     ) : null,
   };

@@ -93,7 +93,7 @@ export function usePageCreation({
         isHomePage: false,
         canDelete: true,
         canEditName: true,
-        className: "mx-auto flex flex-col items-center w-full h-full gap-8 py-6 px-3",
+        className: "bg-base-100 text-base-content flex flex-col w-full flex-1 min-h-0",
         custom: { displayName: pageName },
       } as any);
 

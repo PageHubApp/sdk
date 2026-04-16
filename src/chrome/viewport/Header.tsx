@@ -441,8 +441,8 @@ export const Header = () => {
                 // Deselect any active node
 
                 // Un-isolate to show all pages
-                import("@/utils/lib").then(({ isolatePageAlt }) => {
-                  isolatePageAlt(true, query, null, actions, () => {}, false);
+                import("@/utils/lib").then(({ isolatePageInTree }) => {
+                  isolatePageInTree(query, actions, null, () => {});
                 });
 
                 // Show headers, footers, and pages

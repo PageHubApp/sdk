@@ -12,7 +12,7 @@ import {
   TbTrash,
 } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
-import { IsolateAtom, isolatePageAlt } from "@/utils/lib";
+import { IsolateAtom, isolatePageInTree } from "@/utils/lib";
 import { useLayerManager } from "./LayerManager";
 import { useLayerMove } from "./hooks/useLayerMove";
 import { useLayerDragDrop } from "./hooks/useLayerDragDrop";
@@ -118,7 +118,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   const handleSelect = useCallback(() => {
     // If clicking on a page, isolate it
     if (isPage) {
-      isolatePageAlt(isolate, query, nodeId, actions, setIsolate, true);
+      isolatePageInTree(query, actions, nodeId, setIsolate);
     } else {
       actions.selectNode(nodeId);
     }

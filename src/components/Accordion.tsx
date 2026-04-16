@@ -125,7 +125,7 @@ export const Accordion = ({
           selected={isActive}
           icon={<TbLayoutList aria-hidden />}
           idleLabel="Empty accordion"
-          selectedDetail="Drop items or panels here"
+          selectedLabel="Drop items here"
         />
       ) : null)
   );

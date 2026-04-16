@@ -3,7 +3,7 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface
 import { useState } from "react";
 import { TbChevronRight, TbListTree } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { IsolateAtom } from "../../utils/lib";
+import { IsolateAtom, hasPageIsolation } from "../../utils/lib";
 import { ToolbarPortalDropdown } from "../inline-tools/ToolbarPortalDropdown";
 import { TabAtom } from "./atoms";
 
@@ -91,7 +91,7 @@ export const NodeBreadcrumb = () => {
 
   // Get page context
   const getPageContext = () => {
-    if (!isolate) {
+    if (!hasPageIsolation(isolate)) {
       return { name: "All", id: "all" };
     }
 
@@ -119,7 +119,7 @@ export const NodeBreadcrumb = () => {
   if (!selectedId) return null;
 
   const currentItem = breadcrumb[breadcrumb.length - 1];
-  const showOnlyPageContext = isolate && breadcrumb.length === 0;
+  const showOnlyPageContext = hasPageIsolation(isolate) && breadcrumb.length === 0;
 
   // Check if the breadcrumb is within a Header or Footer (root-level, not page children)
   const isHeaderOrFooter =
@@ -133,7 +133,7 @@ export const NodeBreadcrumb = () => {
   };
 
   const handlePageClick = () => {
-    if (!isolate) {
+    if (!hasPageIsolation(isolate)) {
       // No specific page selected, can't select page node
       return;
     }

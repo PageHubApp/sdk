@@ -41,6 +41,14 @@ interface PageNavInit {
   onIsolate: (pageId: string | null) => void | Promise<void>;
 }
 
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Build a full URL preserving existing query params (panel state, etc.). */
+function withCurrentSearch(pathname: string): string {
+  const qs = typeof window !== "undefined" ? window.location.search : "";
+  return pathname + qs;
+}
+
 // ── Module-scoped state ─────────────────────────────────────────────────────
 
 let listeners: Array<() => void> = [];
@@ -80,10 +88,8 @@ function notify(): void {
 async function doIsolate(pageId: string | null): Promise<void> {
   if (!initOpts) return;
   const seq = ++isolationSeq;
-  console.log(`[NavStore] doIsolate(${pageId}) seq=${seq}`);
   try {
     await initOpts.onIsolate(pageId);
-    console.log(`[NavStore] doIsolate(${pageId}) completed seq=${seq}, current=${isolationSeq}`);
   } catch (e) {
     console.error("[PageHub] Page isolation failed:", e);
   }
@@ -165,12 +171,8 @@ export function navigateToPage(
   isHomePage: boolean,
 ): void {
   if (!initOpts) return;
-  if (pageId === currentSnapshot.activePageId) {
-    console.log(`[NavStore] navigateToPage(${pageId}) skipped — already active`);
-    return;
-  }
+  if (pageId === currentSnapshot.activePageId) return;
 
-  console.log(`[NavStore] navigateToPage(${pageId})`);
   currentSnapshot.activePageId = pageId;
   doIsolate(pageId);
 
@@ -181,7 +183,7 @@ export function navigateToPage(
       pageSlug: sluggit(displayName, "-"),
       isHomePage,
     });
-    window.history.pushState({ source: "pageNav", pageId }, "", url);
+    window.history.pushState({ source: "pageNav", pageId }, "", withCurrentSearch(url));
   }
 
   notify();
@@ -202,7 +204,7 @@ export function setSiteId(id: string): void {
     const currentSiteId = initOpts.urlStrategy.parseSiteId();
     if (currentSiteId !== id) {
       const url = initOpts.urlStrategy.buildSiteUrl({ siteId: id });
-      window.history.replaceState({ source: "pageNav", siteId: id }, "", url);
+      window.history.replaceState({ source: "pageNav", siteId: id }, "", withCurrentSearch(url));
     }
   }
 

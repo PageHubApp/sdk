@@ -9,6 +9,11 @@ import { decompressAsync } from "./compressionAsync";
 /** Persisted when the editor canvas shows every page (not isolated to one). */
 export const EDITOR_ALL_PAGES_STORAGE = "__all_pages__";
 
+/** Returns true when the isolate value points to an actual page (not "show all"). */
+export function hasPageIsolation(value: string | null | undefined): value is string {
+  return !!value && value !== EDITOR_ALL_PAGES_STORAGE;
+}
+
 
 // ─── Page Count ───
 
@@ -40,38 +45,31 @@ export function getDefaultEditorPageId(query: any): string | null {
 
 // ─── Page Isolation ───
 
-export const isolatePageAlt = (
-  _isolate: string | boolean,
+/**
+ * Show only one page in the CraftJS tree by hiding all other page nodes.
+ * Pass `pageId = null` to show all pages (un-isolate).
+ *
+ * This is the in-tree isolation path (all pages loaded in memory).
+ * For per-page sharding (fetch + deserialize), use `isolatePageLazy`.
+ */
+export function isolatePageInTree(
   query: any,
-  active: any,
   actions: any,
+  pageId: string | null,
   setIsolate: (v: string) => void,
-  select = true
-) => {
+) {
   const root = query.node(ROOT_NODE).get();
-  const _active = active ? active.valueOf() : null;
-
-  root.data.nodes
-    .map((_: string) => {
-      const _props = query.node(_).get();
-      if (!_props || _props?.data?.props?.type !== "page") return _;
-      actions.setHidden(_, !!active);
-      return _;
-    })
-    .filter((_: string) => _ === _active)
-    .forEach((_: string) => {
-      const _props = query.node(_).get();
-      if (!_props || _props?.data?.props?.type !== "page") return;
-      actions.setHidden(_, false);
-    });
-
-  setIsolate(active == null ? "" : active);
-  if (active == null) {
-    phStorage.set("isolated", EDITOR_ALL_PAGES_STORAGE);
-  } else {
-    phStorage.set("isolated", active);
+  for (const nodeId of root.data.nodes) {
+    const node = query.node(nodeId).get();
+    if (!node || node.data?.props?.type !== "page") continue;
+    actions.setHidden(nodeId, pageId != null && nodeId !== pageId);
   }
-};
+
+  const value = pageId ?? EDITOR_ALL_PAGES_STORAGE;
+  setIsolate(value);
+  phStorage.set("isolated", value);
+}
+
 
 // ─── Loaded Pages Tracking (for selective loading / per-page saves) ───
 
@@ -105,34 +103,29 @@ export async function isolatePageLazy(
   fetchPage?: (pageNodeId: string) => Promise<{ content: string } | null>,
 ): Promise<boolean> {
   if (!active) {
-    isolatePageAlt(false, query, null, actions, setIsolate, false);
+    isolatePageInTree(query, actions, null, setIsolate);
     return false;
   }
 
   if (!fetchPage) {
     // No fetchPage = standalone SDK, all pages in tree — just isolate
-    isolatePageAlt(active, query, active, actions, setIsolate);
+    isolatePageInTree(query, actions, active, setIsolate);
     return false;
   }
 
-  console.log(`[PageSwitch] fetching page ${active}`);
   const pageData = await fetchPage(active);
   if (!pageData?.content) {
-    console.warn(`[PageSwitch] fetchPage(${active}) returned no content`);
+    console.warn(`[PageHub] fetchPage(${active}) returned no content`);
     return false;
   }
 
   try {
-    console.log(`[PageSwitch] decompressing`);
     const json = await decompressAsync(pageData.content);
-    console.log(`[PageSwitch] deserializing`);
     actions.deserialize(json);
-    console.log(`[PageSwitch] deserialized, setting isolate`);
     clearLoadedPages();
     _loadedPages.add(active);
     setIsolate(active);
     phStorage.set("isolated", active);
-    console.log(`[PageSwitch] done`);
     return true;
   } catch (e) {
     console.error(`[PageHub] Failed to load page shard ${active}:`, e);
@@ -180,25 +173,6 @@ export const resolvePageRef = (url: string, query: any, currentPath?: string): s
 };
 
 // ─── Template Variables ───
-
-export const replaceVariables = (text: string, query: any): string => {
-  if (!text || typeof text !== "string") return text || "";
-
-  return text.replace(/\{\{([^}]+)\}\}/g, (match, varName) => {
-    const trimmed = varName.trim();
-    try {
-      if (trimmed.startsWith("company.")) {
-        const field = trimmed.replace("company.", "");
-        const root = query?.node(ROOT_NODE)?.get();
-        if (root?.data?.props) {
-          if (field === "name" && root.data.props.pageTitle) {
-            return root.data.props.pageTitle;
-          }
-        }
-      }
-    } catch {
-      // Silently fail
-    }
-    return match;
-  });
-};
+// Re-export from the canonical source — utils/design/variables.ts handles all
+// variable types (company.*, year, item.*, connector.*, variables.*).
+export { replaceVariables } from "../utils/design/variables";

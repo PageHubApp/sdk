@@ -12,7 +12,7 @@ import {
 import useSWR from "swr";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "../../utils/atoms";
-import { IsolateAtom, isolatePageAlt } from "../../utils/lib";
+import { IsolateAtom, isolatePageInTree, hasPageIsolation } from "../../utils/lib";
 import { PageSettingsModal } from "./PageSettingsModal";
 import { UnsavedChangesAtom } from "./atoms";
 import { useSDK } from "../../core/context";
@@ -20,6 +20,11 @@ import { usePageCreation } from "./page-selector/usePageCreation";
 import { usePageNavigation } from "../../utils/pageNavigation";
 
 import sluggit from "slug";
+
+/** Derive the URL route for a page (e.g. "/about-us"), or "/" for the home page. */
+function pageRoute(displayName: string, isHomePage: boolean): string {
+  return isHomePage ? "/" : `/${sluggit(displayName, "-")}`;
+}
 
 interface Page {
   id: string;
@@ -105,10 +110,10 @@ export function PageSelector({
 
   // If the isolated page was deleted, fall back to home page
   useEffect(() => {
-    if (isolate && pages.length > 0) {
+    if (hasPageIsolation(isolate) && pages.length > 0) {
       const pageExists = pages.some(p => p.id === isolate);
       if (!pageExists && homePageId) {
-        isolatePageAlt(isolate, query, homePageId, actions, setIsolate, true);
+        isolatePageInTree(query, actions, homePageId, setIsolate);
       }
     }
   }, [pages, isolate, query, actions, setIsolate, homePageId]);
@@ -192,7 +197,7 @@ export function PageSelector({
   // Current page: explicit isolation > home page fallback (never "all pages")
   const currentPage = pickerMode
     ? ((selectedPageId ? pages.find(p => p.id === selectedPageId) : null) ?? null)
-    : ((isolate ? pages.find(p => p.id === isolate) : null) ?? homePage);
+    : ((hasPageIsolation(isolate) ? pages.find(p => p.id === isolate) : null) ?? homePage);
 
   const displayText = pickerMode
     ? currentPage
@@ -208,9 +213,7 @@ export function PageSelector({
   const displayRoute = pickerMode
     ? null // Don't show route in picker mode
     : currentPage
-      ? isCurrentHomePage
-        ? "/"
-        : `/${sluggit(currentPage.displayName, "-")}`
+      ? pageRoute(currentPage.displayName, !!isCurrentHomePage)
       : null;
 
   // Filter pages based on search query and reverse order
@@ -220,9 +223,9 @@ export function PageSelector({
 
   // Get live URL for current page
   // Host app should configure sitePreviewUrl in config for external preview links
-  const baseUrl = "";
-  const pageSlug = currentPage && !isCurrentHomePage ? sluggit(currentPage.displayName, "-") : "";
-  const liveUrl = currentPage ? `${baseUrl}${pageSlug}` : null;
+  const liveUrl = currentPage
+    ? pageRoute(currentPage.displayName, !!isCurrentHomePage).slice(1) // strip leading "/"
+    : null;
 
   return (
     <div className={`relative ${className} flex items-center gap-2`} ref={dropdownRef}>
@@ -292,7 +295,7 @@ export function PageSelector({
             {filteredPages.length > 0 ? (
               filteredPages.map(page => {
                 const isPageHomePage = page.isHomePage || page.id === homePageId;
-                const pageRoute = isPageHomePage ? "/" : `/${sluggit(page.displayName, "-")}`;
+                const route = pageRoute(page.displayName, isPageHomePage);
                 const isSelected = pickerMode ? selectedPageId === page.id : isolate === page.id;
 
                 return (
@@ -339,7 +342,7 @@ export function PageSelector({
                           <span className="text-base-content truncate text-sm">
                             {page.displayName}
                           </span>
-                          <span className="text-neutral-content truncate text-xs">{pageRoute}</span>
+                          <span className="text-neutral-content truncate text-xs">{route}</span>
                         </div>
                       </button>
                     )}

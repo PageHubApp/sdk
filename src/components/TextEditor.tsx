@@ -315,7 +315,7 @@ function TextEditorMode({
               selected={!!showEmptyBlockHint}
               icon={<TbTypography aria-hidden />}
               idleLabel="Empty text"
-              selectedDetail="Click to edit"
+              selectedLabel="Click to edit"
             />
           ) : (
             <div dangerouslySetInnerHTML={{ __html: previewHtml }} />

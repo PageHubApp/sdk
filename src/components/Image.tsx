@@ -244,7 +244,7 @@ export const Image = (incomingProps: ImageProps) => {
           selected={isActive}
           icon={<TbPhoto aria-hidden />}
           idleLabel="Empty image"
-          selectedDetail="Pick a file in settings"
+          selectedLabel="Drop here or right-click"
         />
       );
     }

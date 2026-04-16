@@ -39,6 +39,7 @@ import { Toolbar } from "./chrome/toolbar";
 import { EditorSelectionDomProvider } from "./chrome/shell/EditorSelectionDomContext";
 import { RenderNodeNewer } from "./chrome/rendering/RenderNode";
 import CustomEventHandlers from "./chrome/shell/CustomEventHandlers";
+import { BesideDropIndicator } from "./chrome/shell/BesideDropIndicator";
 import { besideDetector, onBesideDrop } from "./chrome/shell/layoutInference";
 import { AiPanelHost } from "./chrome/ai/AiPanelHost";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
@@ -393,6 +394,7 @@ function PageHubEditorInner({
             }}
           >
             <EditorSelectionDomProvider>
+              <BesideDropIndicator />
               <div
                 className="bg-neutral text-neutral-content relative flex h-full min-h-0 w-full flex-col overflow-hidden"
                 data-base={true}

@@ -247,7 +247,7 @@ export const Embed = (incomingProps: EmbedProps) => {
           selected={isActive}
           icon={<TbCode aria-hidden />}
           idleLabel="Empty embed"
-          selectedDetail="Add URL or code in settings"
+          selectedLabel="Drop here or right-click"
         />
       );
     }

@@ -15,6 +15,7 @@ import {
 interface BreakpointBucketsProps {
   bucketLists: Record<string, string[]>;
   otherClasses: string[];
+  rawTokenDisplay?: boolean;
   selectedViews: Record<string, boolean>;
   toggleView: (view: string) => void;
   dragOverCategory: string | null;
@@ -65,6 +66,7 @@ function ActionButton({
 function DropZone({
   id,
   classes,
+  rawTokenDisplay = false,
   dragOverCategory,
   isDragging,
   borderIdle,
@@ -79,6 +81,7 @@ function DropZone({
 }: {
   id: string;
   classes: string[];
+  rawTokenDisplay?: boolean;
   dragOverCategory: string | null;
   isDragging: boolean;
   borderIdle: string;
@@ -113,6 +116,7 @@ function DropZone({
         <Card
           key={`${id}-${cls}-${key}`}
           value={cls}
+          displayValue={rawTokenDisplay ? cls : undefined}
           onClick={(e: any, options: any) => onDelete(cls, id, options?.deleteLinked)}
           bgColor={CARD_BG_BY_BUCKET[id] || "bg-neutral text-base-content"}
           onDragStart={(e: any, data: any) => onDragStart(e, { ...data, sourceCategory: id })}
@@ -138,6 +142,7 @@ export function ClearAllStylesButton({ onClick }: { onClick: () => void }) {
 export function BreakpointBuckets({
   bucketLists,
   otherClasses,
+  rawTokenDisplay = false,
   selectedViews,
   toggleView,
   dragOverCategory,
@@ -247,6 +252,7 @@ export function BreakpointBuckets({
               <DropZone
                 id={row.id}
                 classes={list}
+                rawTokenDisplay={rawTokenDisplay}
                 dragOverCategory={dragOverCategory}
                 isDragging={isDragging}
                 borderIdle={row.borderIdle}
@@ -313,6 +319,7 @@ export function BreakpointBuckets({
               <Card
                 key={`other-${cls}-${key}`}
                 value={cls}
+                displayValue={rawTokenDisplay ? cls : undefined}
                 onClick={(e: any, options: any) => onDelete(cls, "other", options?.deleteLinked)}
                 bgColor="bg-neutral text-base-content"
                 onDragStart={(e: any, data: any) =>

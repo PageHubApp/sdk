@@ -32,6 +32,7 @@ const Input = ({
   canvasView,
   children,
   clearAllPlacement = "in-buckets",
+  rawTokenDisplay = false,
 }: {
   value: any;
   changed: (v: any) => void;
@@ -40,6 +41,7 @@ const Input = ({
   canvasView: string;
   children?: ReactNode;
   clearAllPlacement?: "in-buckets" | "after-append";
+  rawTokenDisplay?: boolean;
 }) => {
   const [selectedViews, setSelectedViews] = useAtomState(ViewSelectionAtom);
   const classDark = selectedViews.dark ?? false;
@@ -200,6 +202,7 @@ const Input = ({
       <BreakpointBuckets
         bucketLists={{ mobile, sm, desktop, lg, xl, "2xl": twoxl }}
         otherClasses={other}
+        rawTokenDisplay={rawTokenDisplay}
         selectedViews={selectedViews}
         toggleView={toggleView}
         dragOverCategory={dragOverCategory}
@@ -300,6 +303,7 @@ export function ClassItem({
         setProp={setProp}
         canvasView={view}
         clearAllPlacement={clearAllPlacement}
+        rawTokenDisplay={props.type === "className" || propKey === "className"}
       >
         {children}
       </Input>

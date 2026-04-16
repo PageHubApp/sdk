@@ -15,7 +15,7 @@ import {
 } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
-import { ComponentsAtom, IsolateAtom, OpenComponentEditorAtom } from "../../utils/lib";
+import { ComponentsAtom, IsolateAtom, OpenComponentEditorAtom, hasPageIsolation } from "../../utils/lib";
 import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
 
 interface ComponentSelectorProps {
@@ -177,7 +177,7 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
   // Find the currently editing component based on isolate ID
   // The isolate ID is the component container, but rootNodeId is the content node
   // So we need to check if the content node's parent matches the isolate
-  const currentComponent = isolate
+  const currentComponent = hasPageIsolation(isolate)
     ? components.find(c => {
         const contentNode = query.node(c.rootNodeId).get();
         return contentNode?.data?.parent === isolate;

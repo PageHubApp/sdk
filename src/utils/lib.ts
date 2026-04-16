@@ -12,6 +12,7 @@ import { ROOT_NODE } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { atom } from "./atoms";
 import { getCdnUrl } from "./cdn";
+import { EDITOR_ALL_PAGES_STORAGE, hasPageIsolation } from "./pageManagement";
 
 // NOTE: Do NOT add static imports for "./tailwind" or "slug" here.
 // tailwind.ts imports from ./lib — a static import creates a circular dependency
@@ -54,10 +55,10 @@ export {
 export { sanitizeCraftNodeReferences, sanitizeCraftSerializedContent } from "./sanitizeNodeMap";
 
 // Page management (isolation, counting, ref resolution, variables)
+export { EDITOR_ALL_PAGES_STORAGE, hasPageIsolation };
 export {
-  EDITOR_ALL_PAGES_STORAGE,
   getDefaultEditorPageId,
-  isolatePageAlt,
+  isolatePageInTree,
   isolatePageLazy,
   listPageNodeIds,
   getLoadedPages,
@@ -80,7 +81,7 @@ export const siteDescription =
 
 // ─── Atoms ──────────────────────────────────────────────────────────────
 
-export const IsolateAtom = atom<string>("isolate", "");
+export const IsolateAtom = atom<string>("isolate", EDITOR_ALL_PAGES_STORAGE);
 export const ComponentsAtom = atom<any[]>("components", []);
 export const OnlineAtom = atom<boolean>("online", true);
 export const ScreenshotAtom = atom<boolean>("ss", false);

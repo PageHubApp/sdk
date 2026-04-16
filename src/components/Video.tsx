@@ -123,7 +123,7 @@ export const Video = (incomingProps: VideoProps) => {
           selected={isActive}
           icon={getProviderIcon()}
           idleLabel="Empty video"
-          selectedDetail="Add a link or ID in settings"
+          selectedLabel="Drop here or right-click"
         />
       ) : null;
     }

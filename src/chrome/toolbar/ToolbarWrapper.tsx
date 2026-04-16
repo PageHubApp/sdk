@@ -189,11 +189,7 @@ export const ToolbarWrapper = ({
 
   useEffect(() => {
     const iso = phStorage.get("isolated");
-    if (iso === EDITOR_ALL_PAGES_STORAGE) {
-      setIsolate("");
-      return;
-    }
-    if (iso && iso !== "null") setIsolate(iso);
+    if (iso && iso !== "null" && iso !== EDITOR_ALL_PAGES_STORAGE) setIsolate(iso);
   }, [setIsolate]);
 
   const ref = useRef<HTMLButtonElement | null>(null);

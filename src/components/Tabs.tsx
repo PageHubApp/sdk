@@ -127,7 +127,7 @@ export const Tabs = ({
           selected={isActive}
           icon={<TbLayout aria-hidden />}
           idleLabel="Empty tabs"
-          selectedDetail="Drop tab bar and panels here"
+          selectedLabel="Drop tab content here"
         />
       ) : null)
   );
