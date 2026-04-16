@@ -4,8 +4,7 @@ import { Container } from "../../../components/Container";
 import { AddElement } from "../toolbox/toolboxUtils";
 import generate from "../../../utils/data/nameGenerator";
 import sluggit from "slug";
-import { usePageNavigation, getSiteId } from "../../../utils/pageNavigation";
-import { markPageLoaded } from "../../../utils/pageManagement";
+import { usePageNavigation } from "../../../utils/pageNavigation";
 import { useSDK } from "../../../core/context";
 
 interface UsePageCreationOptions {
@@ -22,14 +21,10 @@ interface UsePageCreationOptions {
 }
 
 /**
- * Wait for a site ID to appear (first save must complete before we can navigate).
- * Emits a save, then listens for `pagehub:saved` which means the host pushed
- * the site ID via `setSiteId()`.
+ * Trigger a save and wait for it to complete (pagehub:saved event).
+ * Used to ensure pages/siteId exist in the DB before navigating.
  */
-function waitForSiteId(emitter: any, timeoutMs = 15000): Promise<void> {
-  // Already have a site ID? No wait needed.
-  if (getSiteId()) return Promise.resolve();
-
+function saveAndWait(emitter: any, timeoutMs = 15000): Promise<void> {
   return new Promise((resolve, reject) => {
     const onSaved = () => {
       clearTimeout(timer);
@@ -37,9 +32,7 @@ function waitForSiteId(emitter: any, timeoutMs = 15000): Promise<void> {
     };
     const timer = setTimeout(() => {
       window.removeEventListener("pagehub:saved", onSaved);
-      // Last-chance check
-      if (getSiteId()) resolve();
-      else reject(new Error("Timed out waiting for first save"));
+      reject(new Error("Timed out waiting for save"));
     }, timeoutMs);
     window.addEventListener("pagehub:saved", onSaved, { once: true });
     emitter.emit("save", { isDraft: true });
@@ -87,11 +80,6 @@ export function usePageCreation({
       setIsOpen(false);
       const pageName = resolvePageName();
 
-      // If no site ID yet (fresh /build), trigger save and wait for it
-      if (!getSiteId()) {
-        await waitForSiteId(emitter);
-      }
-
       // Create the page node in CraftJS
       const newPage = React.createElement(Element, {
         canvas: true,
@@ -111,33 +99,33 @@ export function usePageCreation({
         addTo: ROOT_NODE,
       });
 
-      if (newElement?.rootNodeId) {
-        const newNodeId = newElement.rootNodeId;
-        markPageLoaded(newNodeId);
+      if (!newElement?.rootNodeId) return;
+      const newNodeId = newElement.rootNodeId;
 
-        // CraftJS addNodeTree is synchronous — one rAF is enough for React to flush
+      if (pickerMode && onPagePick) {
         requestAnimationFrame(() => {
-          try {
-            const node = query.node(newNodeId).get();
-            if (node) {
-              const displayName = node.data.custom?.displayName || "Untitled Page";
-              if (pickerMode && onPagePick) {
-                onPagePick({
-                  id: newNodeId,
-                  displayName,
-                  isHomePage: false,
-                });
-              } else {
-                // Navigate via the store — handles isolation + URL
-                navigateToPage(newNodeId, displayName, false);
-                onPageChange?.(newNodeId);
-              }
-            }
-          } catch (e) {
-            console.error("Error selecting new page:", e);
+          const node = query.node(newNodeId).get();
+          if (node) {
+            onPagePick({
+              id: newNodeId,
+              displayName: node.data.custom?.displayName || "Untitled Page",
+              isHomePage: false,
+            });
           }
         });
+        return;
       }
+
+      // Save so the new page shard + siteId exist in DB, then navigate.
+      // The save serializes the tree which now includes the new page node,
+      // so the SitePage record gets created. navigateToPage → fetchPage
+      // needs that record to exist.
+      await saveAndWait(emitter);
+
+      const node = query.node(newNodeId).get();
+      const displayName = node?.data?.custom?.displayName || "Untitled Page";
+      navigateToPage(newNodeId, displayName, false);
+      onPageChange?.(newNodeId);
     } catch (e) {
       console.error("Error creating page:", e);
     }

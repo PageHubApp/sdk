@@ -115,14 +115,6 @@ export async function isolatePageLazy(
     return false;
   }
 
-  // If the page is already loaded (just created, or from initial SSR), isolate it directly.
-  // Only fetch if the page isn't in the tree.
-  if (_loadedPages.has(active)) {
-    console.log(`[PageSwitch] page ${active} already loaded, isolating directly`);
-    isolatePageAlt(active, query, active, actions, setIsolate);
-    return false;
-  }
-
   console.log(`[PageSwitch] fetching page ${active}`);
   const pageData = await fetchPage(active);
   if (!pageData?.content) {
