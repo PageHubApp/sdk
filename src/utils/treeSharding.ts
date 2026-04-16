@@ -69,7 +69,6 @@ export function extractSharedShard(flat: Record<string, any>): Record<string, an
 export function assembleFromShards(
   shared: Record<string, any>,
   pages: Record<string, Record<string, any>>,
-  pageOrder?: string[],
 ): Record<string, any> {
   const flat: Record<string, any> = { ...shared };
 
@@ -80,7 +79,7 @@ export function assembleFromShards(
 
   // Rebuild ROOT.nodes preserving original order
   const originalOrder: string[] | undefined = shared.ROOT?._originalNodeOrder;
-  const orderedPageIds = pageOrder || Object.keys(pages);
+  const orderedPageIds = Object.keys(pages);
   const pageIdSet = new Set(orderedPageIds);
 
   let rebuiltNodes: string[];

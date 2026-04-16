@@ -26,11 +26,16 @@ interface UsePageCreationOptions {
  */
 function saveAndWait(emitter: any, timeoutMs = 15000): Promise<void> {
   return new Promise((resolve, reject) => {
+    let settled = false;
     const onSaved = () => {
+      if (settled) return;
+      settled = true;
       clearTimeout(timer);
       resolve();
     };
     const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
       window.removeEventListener("pagehub:saved", onSaved);
       reject(new Error("Timed out waiting for save"));
     }, timeoutMs);
