@@ -260,6 +260,23 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const [pageLoading, setPageLoading] = useState(false);
   const [pageLoadDone, setPageLoadDone] = useState(false);
 
+  // Stable callback for LoadingBar completion — avoids stale closure in useEffect deps
+  const handleLoadComplete = useCallback(() => {
+    setPageLoading(false);
+    setPageLoadDone(false);
+  }, []);
+
+  // Safety net: if pageLoadDone is true but LoadingBar's onComplete never fires
+  // (e.g. component unmounted mid-animation), reset after 2s.
+  useEffect(() => {
+    if (!pageLoadDone) return;
+    const id = setTimeout(() => {
+      setPageLoading(false);
+      setPageLoadDone(false);
+    }, 2000);
+    return () => clearTimeout(id);
+  }, [pageLoadDone]);
+
   // Build the isolation callback — extracted so it can be refreshed
   const makeOnIsolate = useCallback(
     () => async (pageId: string | null) => {
@@ -440,7 +457,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           active={pageLoading}
           done={pageLoadDone}
           overlay
-          onComplete={() => { setPageLoading(false); setPageLoadDone(false); }}
+          onComplete={handleLoadComplete}
         />
         {/* Preview edit button */}
         {!enabled && !screenshot && (

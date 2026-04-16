@@ -50,7 +50,7 @@ export function LoadingBar({ active, done, onComplete, overlay }: LoadingBarProp
       setProgress(p);
     }, 45);
     return () => window.clearInterval(id);
-  }, [active, done, overlay]);
+  }, [active, done, overlay, onComplete]);
 
   if (!active) return null;
 
