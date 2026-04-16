@@ -226,7 +226,10 @@ export function PageSettingsModal({
             onDeletePage={() => {
               if (!ctx.pageId) return;
               try {
-                actions.delete(ctx.pageId);
+                // Delete from CraftJS tree if present
+                try { actions.delete(ctx.pageId); } catch { /* not in tree */ }
+                // Notify host app to delete the SitePage record from DB
+                window.dispatchEvent(new CustomEvent("pagehub:page-deleted", { detail: { pageId: ctx.pageId } }));
                 onClose();
               } catch (e) {
                 console.error("Error deleting page:", e);

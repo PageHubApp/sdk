@@ -201,9 +201,8 @@ export function PageSelector({
       ? currentPage.displayName
       : "No Pages";
 
-  // Check if current page is home page
-  const currentNode = currentPage ? query.node(currentPage.id).get() : null;
-  const isCurrentHomePage = currentNode?.data?.props?.isHomePage;
+  // Check if current page is home page — use page data, not CraftJS tree
+  const isCurrentHomePage = currentPage?.isHomePage || currentPage?.id === homePageId;
 
   const displayRoute = pickerMode
     ? null // Don't show route in picker mode
