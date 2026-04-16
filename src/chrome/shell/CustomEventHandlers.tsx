@@ -72,6 +72,10 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
               applyAlignmentOnDrop(actions, targetId, ctx.intent, ctx.view, ctx.classDark, query, origParent);
               clearAlignmentIntent();
             });
+          } else {
+            // No alignment zone was detected — still clear drag origin
+            // so it doesn't leak into the next drag session.
+            clearAlignmentIntent();
           }
         });
 

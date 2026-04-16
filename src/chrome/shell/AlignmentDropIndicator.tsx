@@ -20,7 +20,6 @@ import {
   detectAlignmentIntent,
   getAlignmentPreviewLabel,
   setAlignmentIntent,
-  clearAlignmentIntent,
   type AlignmentIntent,
 } from "./alignmentInference";
 
