@@ -15,6 +15,13 @@ import { type Node, type NodeId } from "@craftjs/core";
 import { Container } from "../../components/Container";
 import { SKIP_TYPES, makeContainerTree } from "./layoutInference";
 
+// ── Debug logging (dev only) ──────────────────────────────────────────
+
+const isDev = process.env.NODE_ENV === "development";
+const log = isDev
+  ? (label: string, data?: Record<string, any>) => console.log(`[align] ${label}`, data ?? "")
+  : () => {};
+
 // ── Types ──────────────────────────────────────────────────────────────
 
 export type AlignmentZone = "start" | "center" | "end";
@@ -166,8 +173,11 @@ export function applyAlignmentOnDrop(
   const node = query.node(nodeId).get();
   if (!node?.data) return;
 
+  log("apply", { nodeId, zone: intent.zone, axis: intent.axis, view, previousParentId });
+
   // If the dragged node IS an Align wrapper, just update its className directly
   if (isAlignWrapper(node)) {
+    log("update-wrapper", { nodeId, zone: intent.zone });
     actions.setProp(nodeId, (props: Record<string, any>) => {
       props.className = WRAPPER_CLASS[intent.zone];
     });
@@ -181,13 +191,17 @@ export function applyAlignmentOnDrop(
   if (!parentNode?.data) return;
 
   const parentType = parentNode.data.props?.type;
-  if (SKIP_TYPES.has(parentType)) return;
+  if (SKIP_TYPES.has(parentType)) {
+    log("skip", { reason: "parent-is-skip-type", parentType });
+    return;
+  }
 
   const parentClassName = parentNode.data.props?.className || "";
   const wrapperClassName = WRAPPER_CLASS[intent.zone];
 
   // If already inside an Align wrapper, just update its className
   if (isAlignWrapper(parentNode)) {
+    log("update-parent-wrapper", { parentId, zone: intent.zone });
     actions.setProp(parentId, (props: Record<string, any>) => {
       props.className = wrapperClassName;
     });
@@ -199,17 +213,21 @@ export function applyAlignmentOnDrop(
     const prevParent = query.node(previousParentId).get();
     const prevChildren = prevParent?.data?.nodes || [];
     if (isAlignWrapper(prevParent) && prevChildren.length === 0) {
+      log("cleanup-empty-wrapper", { previousParentId });
       actions.delete(previousParentId);
     }
   }
 
   // If center and parent already centers, nothing to do
   if (intent.zone === "center" && /\bitems-center\b/.test(parentClassName)) {
+    log("skip", { reason: "already-centered" });
     return;
   }
 
   const nodeIndex = (parentNode.data.nodes || []).indexOf(nodeId);
   if (nodeIndex < 0) return;
+
+  log("create-wrapper", { nodeId, parentId, nodeIndex, wrapperClassName });
 
   // Create wrapper, insert at node's position, move node into it
   const wrapperTree = makeContainerTree(query, Container, wrapperClassName, "Align");

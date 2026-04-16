@@ -10,6 +10,13 @@
 import React from "react";
 import { Element, type Node, type NodeId, type NodeInfo } from "@craftjs/core";
 
+// ── Debug logging (dev only) ──────────────────────────────────────────
+
+const isDev = process.env.NODE_ENV === "development";
+const log = isDev
+  ? (label: string, data?: Record<string, any>) => console.log(`[beside] ${label}`, data ?? "")
+  : () => {};
+
 // ── Types ─────────────────────────────────────────────────────────────
 
 export type BesideSide = "beside-left" | "beside-right";
@@ -163,9 +170,19 @@ export function resolveBesideTargetContext(query: any, parentNode: Node, targetN
   while (currentParentNode?.data?.parent) {
     const promotable = isLayoutRootCandidate(query, currentParentNode, currentTargetNode);
 
+    log("promotion-check", {
+      parentId: currentParentNode.id,
+      targetId: currentTargetNode.id,
+      parentType: currentParentNode.data?.props?.type ?? null,
+      childCount: currentParentNode.data?.nodes?.length ?? 0,
+      className: getClassName(currentParentNode),
+      promotable,
+    });
+
     if (promotable) {
       const nextParentId = currentParentNode.data.parent;
       const nextParentNode = nextParentId ? query.node(nextParentId).get() : null;
+      log("promoted", { to: currentParentNode.id, newParent: nextParentNode?.id ?? null });
       return {
         targetNode: currentParentNode,
         parentNode: nextParentNode?.data ? nextParentNode : parentNode,

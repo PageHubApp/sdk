@@ -71,7 +71,7 @@ export function BesideDropIndicator() {
           width: `${overlayWidth}px`,
           height: `${nodeInfo.outerHeight}px`,
           backgroundColor: color,
-          opacity: indicator.error ? 0.18 : 0.14,
+          opacity: indicator.error ? 0.18 : 0.02,
           borderRadius: 0,
           borderColor: color,
           borderStyle: "dashed",

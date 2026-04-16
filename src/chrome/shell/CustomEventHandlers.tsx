@@ -7,6 +7,11 @@ import {
   getDragOrigin,
 } from "./alignmentInference";
 
+const isDev = process.env.NODE_ENV === "development";
+const log = isDev
+  ? (label: string, data?: Record<string, any>) => console.log(`[drag] ${label}`, data ?? "")
+  : () => {};
+
 export default class CustomEventHandlers extends DefaultEventHandlers {
   handlers() {
     const defaultEventHandlers = super.handlers();
@@ -50,6 +55,7 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
           originalParentId = node?.data?.parent;
           setDragOrigin(id, originalParentId);
           const nodeType = node?.data?.props?.type || "";
+          log("start", { nodeId: id, parentId: originalParentId, nodeType: nodeType || null });
           if (nodeType) {
             document.body.setAttribute("data-dragging-type", nodeType);
           }
@@ -67,14 +73,14 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
             const origin = getDragOrigin();
             const targetId = origin?.nodeId || id;
             const origParent = origin?.parentId || originalParentId;
+            log("end-with-alignment", { targetId, zone: ctx.intent.zone, axis: ctx.intent.axis, origParent });
 
             requestAnimationFrame(() => {
               applyAlignmentOnDrop(actions, targetId, ctx.intent, ctx.view, ctx.classDark, query, origParent);
               clearAlignmentIntent();
             });
           } else {
-            // No alignment zone was detected — still clear drag origin
-            // so it doesn't leak into the next drag session.
+            log("end", { nodeId: id });
             clearAlignmentIntent();
           }
         });

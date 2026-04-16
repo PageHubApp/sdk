@@ -20,6 +20,13 @@ import {
   getReusableRowContext,
 } from "./layoutInference";
 
+// ── Debug logging (dev only) ──────────────────────────────────────────
+
+const isDev = process.env.NODE_ENV === "development";
+const log = isDev
+  ? (label: string, data?: Record<string, any>) => console.log(`[beside] ${label}`, data ?? "")
+  : () => {};
+
 // ── Row / wrapper class constants ─────────────────────────────────────
 
 const ROW_CLASSNAME = "flex flex-row flex-wrap gap-space-md items-start min-w-0 w-full";
@@ -219,14 +226,18 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
     const targetNode = query.node(currentNode.id).get();
     if (!targetNode) return;
 
+    log("drop-start", { side, dragType: dragTarget.type, parentId, targetId: targetNode.id });
+
     // Guard: can't drop a node beside itself or inside its own descendants
     if (dragTarget.type === "existing" && dragTarget.nodes.includes(targetNode.id)) {
+      log("drop-abort", { reason: "self-drop" });
       return;
     }
     if (
       dragTarget.type === "existing" &&
       dragTarget.nodes.some((nodeId: NodeId) => query.node(nodeId).descendants(true).includes(targetNode.id))
     ) {
+      log("drop-abort", { reason: "descendant-drop" });
       return;
     }
 
@@ -246,6 +257,16 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
         ? dragTarget.nodes.map((nodeId: NodeId) => query.node(nodeId).get()).filter(Boolean)[0]
         : dragTarget.tree?.nodes?.[dragTarget.tree.rootNodeId];
 
+    log("resolved", {
+      effectiveTargetId: effectiveTargetNode.id,
+      effectiveParentId,
+      usedPromotedTarget,
+      rejectedPromotion: shouldRejectPromotion,
+      reusableRowId: reusableRow?.rowNode?.id ?? null,
+      targetClassName: getClassName(effectiveTargetNode),
+      parentClassName: getClassName(parentNode),
+    });
+
     // ── Reuse existing row ──────────────────────────────────────────
 
     if (reusableRow) {
@@ -259,6 +280,8 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
         ? buildWrapperClassName(draggedPreviewNode, side, usedPromotedTarget ? "promoted-dragged" : "default")
         : null;
 
+      log("reuse-row", { rowId, anchorId: reusableRow.anchorNode.id, insertIndex, wrapperCls });
+
       if (dragTarget.type === "existing") {
         moveExistingIntoSlot(batch, dragTarget.nodes, rowId, insertIndex, wrapperCls, query, ContainerComponent);
       } else {
@@ -266,6 +289,7 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
       }
 
       actions.selectNode(rowId);
+      log("reuse-row-done", { rowId });
       return;
     }
 
@@ -274,18 +298,16 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
     const targetIndex = (parentNode.data.nodes || []).indexOf(effectiveTargetNode.id);
     if (targetIndex < 0) return;
 
-    const rowTree = makeContainerTree(
-      query,
-      ContainerComponent,
-      buildRowClassName(
-        side,
-        [parentNode, effectiveTargetNode, draggedPreviewNode],
-        usedPromotedTarget ? "promoted" : "default"
-      ),
-      "Row"
+    const rowClassName = buildRowClassName(
+      side,
+      [parentNode, effectiveTargetNode, draggedPreviewNode],
+      usedPromotedTarget ? "promoted" : "default"
     );
+    const rowTree = makeContainerTree(query, ContainerComponent, rowClassName, "Row");
     const rowId = rowTree.rootNodeId;
     const batch = createMergedActions(actions);
+
+    log("create-row", { rowId, effectiveParentId, targetIndex, rowClassName });
 
     batch.addNodeTree(rowTree, effectiveParentId, targetIndex);
 
@@ -294,18 +316,25 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
 
     // Place the target content into its slot
     if (usedPromotedTarget) {
+      log("promoted-target", {
+        targetId: effectiveTargetNode.id,
+        childCount: effectiveTargetNode.data.nodes?.length ?? 0,
+        slotIndex: targetSlotIndex,
+      });
       movePromotedTargetIntoFreshSlot(
         batch, effectiveTargetNode, rowId, targetSlotIndex, side, query, ContainerComponent
       );
     } else {
+      const targetWrapCls = shouldWrapBesideChild(effectiveTargetNode)
+        ? buildWrapperClassName(effectiveTargetNode, side, "default")
+        : null;
+      log("target-slot", { targetId: effectiveTargetNode.id, slotIndex: targetSlotIndex, wrapperCls: targetWrapCls });
       moveExistingIntoSlot(
         batch,
         [effectiveTargetNode.id],
         rowId,
         targetSlotIndex,
-        shouldWrapBesideChild(effectiveTargetNode)
-          ? buildWrapperClassName(effectiveTargetNode, side, "default")
-          : null,
+        targetWrapCls,
         query,
         ContainerComponent
       );
@@ -316,32 +345,21 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
       const draggedNodes = dragTarget.nodes.map((nodeId: NodeId) => query.node(nodeId).get()).filter(Boolean);
       if (draggedNodes.length === 0) return;
 
-      moveExistingIntoSlot(
-        batch,
-        dragTarget.nodes,
-        rowId,
-        draggedSlotIndex,
-        draggedNodes.length > 1 || shouldWrapBesideChild(draggedNodes[0])
-          ? buildWrapperClassName(draggedNodes[0], side, usedPromotedTarget ? "promoted-dragged" : "default")
-          : null,
-        query,
-        ContainerComponent
-      );
+      const draggedWrapCls = draggedNodes.length > 1 || shouldWrapBesideChild(draggedNodes[0])
+        ? buildWrapperClassName(draggedNodes[0], side, usedPromotedTarget ? "promoted-dragged" : "default")
+        : null;
+      log("dragged-existing", { nodeIds: dragTarget.nodes, slotIndex: draggedSlotIndex, wrapperCls: draggedWrapCls });
+      moveExistingIntoSlot(batch, dragTarget.nodes, rowId, draggedSlotIndex, draggedWrapCls, query, ContainerComponent);
     } else {
       const draggedRoot = dragTarget.tree?.nodes?.[dragTarget.tree.rootNodeId];
-      addNewTreeIntoSlot(
-        batch,
-        dragTarget.tree,
-        rowId,
-        draggedSlotIndex,
-        shouldWrapBesideChild(draggedRoot)
-          ? buildWrapperClassName(draggedRoot, side, usedPromotedTarget ? "promoted-dragged" : "default")
-          : null,
-        query,
-        ContainerComponent
-      );
+      const draggedWrapCls = shouldWrapBesideChild(draggedRoot)
+        ? buildWrapperClassName(draggedRoot, side, usedPromotedTarget ? "promoted-dragged" : "default")
+        : null;
+      log("dragged-new", { rootId: draggedRoot?.id ?? null, slotIndex: draggedSlotIndex, wrapperCls: draggedWrapCls });
+      addNewTreeIntoSlot(batch, dragTarget.tree, rowId, draggedSlotIndex, draggedWrapCls, query, ContainerComponent);
     }
 
+    log("done", { rowId });
     actions.selectNode(rowId);
   };
 }
