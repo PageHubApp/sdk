@@ -39,11 +39,13 @@ import { Toolbar } from "./chrome/toolbar";
 import { EditorSelectionDomProvider } from "./chrome/shell/EditorSelectionDomContext";
 import { RenderNodeNewer } from "./chrome/rendering/RenderNode";
 import CustomEventHandlers from "./chrome/shell/CustomEventHandlers";
+import { besideDetector, onBesideDrop } from "./chrome/shell/layoutInference";
 import { AiPanelHost } from "./chrome/ai/AiPanelHost";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
 import { GlobalSectionPickerDialog } from "./chrome/shell/GlobalSectionPickerDialog";
 import { EditorSaveBanner } from "./chrome/shell/EditorSaveBanner";
 import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
+import { Container } from "./components/Container";
 
 // Lazy-loaded dialogs — only loaded when user opens them
 const ColorPickerDialog = React.lazy(() =>
@@ -371,6 +373,8 @@ function PageHubEditorInner({
               emitter.emitInternal("_nodes_changed");
               if (onNodesChange) onNodesChange(query);
             }}
+            besideDetector={besideDetector}
+            onBesideDrop={onBesideDrop(Container)}
             handlers={store =>
               new CustomEventHandlers({
                 store,
