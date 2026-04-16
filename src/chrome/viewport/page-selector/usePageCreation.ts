@@ -57,7 +57,7 @@ export function usePageCreation({
   onPageChange,
 }: UsePageCreationOptions) {
   const { navigateToPage } = usePageNavigation();
-  const { emitter } = useSDK();
+  const { emitter, config } = useSDK();
 
   function resolvePageName(): string {
     let pageName = suggestedPageName || generate().spaced;
@@ -121,15 +121,15 @@ export function usePageCreation({
         return;
       }
 
-      // Save so the new page shard + siteId exist in DB, then navigate.
-      // The save serializes the tree which now includes the new page node,
-      // so the SitePage record gets created. navigateToPage → fetchPage
-      // needs that record to exist.
-      try {
-        await saveAndWait(emitter);
-      } catch (saveErr) {
-        console.warn("[PageHub] Save before page navigation failed:", saveErr);
-        // Continue — page node exists in CraftJS tree, navigation may still work
+      // In sharded mode (fetchPage provided), save first so the SitePage
+      // record exists in DB before navigateToPage → fetchPage fires.
+      // In standalone mode (no fetchPage), all pages live in the tree — no wait needed.
+      if (config.callbacks.fetchPage) {
+        try {
+          await saveAndWait(emitter);
+        } catch (saveErr) {
+          console.warn("[PageHub] Save before page navigation failed:", saveErr);
+        }
       }
 
       const node = query.node(newNodeId).get();
