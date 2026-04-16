@@ -1,6 +1,4 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { ToolbarItem } from "../../toolbar/ToolbarItem";
-import { FlexDirectionInput } from "../../toolbar/inputs/layout/FlexDirectionInput";
 import { NodeToolWrapper } from "../../inline-tools/NodeDialog";
 import { ViewSelectionAtom } from "../../toolbar/Label";
 import { ViewAtom } from "../../viewport/atoms";
@@ -8,15 +6,9 @@ import { getPropFinalValue } from "../../viewport/viewportExports";
 import { AddElement } from "../../viewport/toolbox/toolboxUtils";
 import { NodeInlineTooltip } from "./NodeInlineTooltip";
 import {
-  TbLayoutAlignBottom,
-  TbLayoutAlignCenter,
-  TbLayoutAlignLeft,
-  TbLayoutAlignMiddle,
-  TbLayoutAlignRight,
-  TbLayoutAlignTop,
+  TbContainer,
   TbNavigation,
   TbPlus,
-  TbRowInsertTop,
 } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { useAtomState } from "@zedux/react";
@@ -28,48 +20,6 @@ import { useAiEnabled } from "../../../utils/hooks/useAiEnabled";
 import { DeleteNodeButton } from "./DeleteNodeButton";
 import { DuplicateNodeButton } from "./DuplicateNodeButton";
 import SelectParentNodeTool from "./SelectParentNodeTool";
-
-// Helper function to get alignment options based on direction and value
-const getAlignmentOptions = (direction, value) => {
-  const isHorizontal = direction === "horizontal";
-  const horizontal = isHorizontal ? "items" : "justify";
-  const vertical = isHorizontal ? "justify" : "items";
-
-  if (isHorizontal) {
-    return [
-      {
-        value: `${horizontal}-start`,
-        label: value === "flex-row-reverse" ? <TbLayoutAlignRight /> : <TbLayoutAlignLeft />,
-      },
-      { value: `${horizontal}-center`, label: <TbLayoutAlignCenter /> },
-      {
-        value: `${horizontal}-end`,
-        label: value === "flex-row-reverse" ? <TbLayoutAlignLeft /> : <TbLayoutAlignRight />,
-      },
-    ];
-  } else {
-    return [
-      {
-        value: `${vertical}-start`,
-        label: value === "flex-col-reverse" ? <TbLayoutAlignBottom /> : <TbLayoutAlignTop />,
-      },
-      { value: `${vertical}-center`, label: <TbLayoutAlignMiddle /> },
-      {
-        value: `${vertical}-end`,
-        label: value === "flex-col-reverse" ? <TbLayoutAlignTop /> : <TbLayoutAlignBottom />,
-      },
-    ];
-  }
-};
-
-// Helper function to determine the propKey based on direction and value
-const determinePropKey = (direction, value) => {
-  if (direction === "horizontal") {
-    return ["flex-row", "flex-row-reverse"].includes(value) ? "justifyContent" : "alignItems";
-  } else {
-    return ["flex-row", "flex-row-reverse"].includes(value) ? "alignItems" : "justifyContent";
-  }
-};
 
 export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   const { config } = useSDK();
@@ -106,19 +56,35 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
     classDark
   );
 
-  const propKey = determinePropKey(direction, value);
-  const options = getAlignmentOptions(direction, value);
-
   const { actions, query } = useEditor();
-  const {
-    actions: { setProp },
-  } = useEditor();
 
   const { open: openPanel } = usePanelUrl();
 
   const match =
     ["flex-row", "flex-row-reverse"].includes(value) ||
     ["flex-col", "flex-col-reverse"].includes(value);
+  const isSideBySide = ["flex-row", "flex-row-reverse"].includes(value);
+
+  const addStructureChild = async () => {
+    const { Container } = await import("../../../components/Container");
+
+    const childDisplayName = isSideBySide ? "Column" : "Block";
+    const childClassName = isSideBySide
+      ? "flex min-w-0 w-full flex-col gap-4"
+      : "flex w-full flex-col gap-4";
+
+    AddElement({
+      element: (
+        <Container
+          canDelete={true}
+          className={childClassName}
+          custom={{ displayName: childDisplayName, layoutChild: true }}
+        />
+      ),
+      actions,
+      query,
+    });
+  };
 
   const pinNodeInAiChat = () => {
     setAttachedNodes(prev => {
@@ -190,65 +156,24 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
         </NodeInlineTooltip>
       )}
 
-      {!suppressContainerChromeTools && (
-        <div className="hidden">
-          <div className="tool-button">
-            <ToolbarItem
-              propKey={propKey}
-              type="toggleNext"
-              label=""
-              labelHide={true}
-              cols={direction === "horizontal"}
-              wrap="control"
-              options={options}
-              propType="class"
-              inline={false}
-            />
-          </div>
-        </div>
-      )}
-
-      {direction == "horizontal" && (
-        <div className="tool-button hidden">
-          <FlexDirectionInput wrap="control" inline={false} />
-        </div>
-      )}
-
-      {match && !suppressContainerChromeTools && (
+      {match && (
         <NodeInlineTooltip
           variant="container"
-          content={`Add ${["flex-row", "flex-row-reverse"].includes(value) ? "column" : "row"} container`}
+          content={isSideBySide ? "Add another column" : "Add another block"}
         >
-          <button
-            className={`tool-button ${["flex-row", "flex-row-reverse"].includes(value) ? "-rotate-90" : ""}`}
-            onClick={async () => {
-              const { Container } = await import("../../../components/Container");
-              const isRow = ["flex-row", "flex-row-reverse"].includes(value);
-              AddElement({
-                element: (
-                  <Container
-                    canDelete={true}
-                    className={`flex w-full justify-center ${isRow ? "flex-col" : "flex-row"}`}
-                    custom={{ displayName: isRow ? "Column" : "Row" }}
-                  />
-                ),
-                actions,
-                query,
-              });
-            }}
-          >
-            <TbRowInsertTop />
+          <button className="tool-button" onClick={addStructureChild}>
+            <TbPlus />
           </button>
         </NodeInlineTooltip>
       )}
 
-      {match && !suppressContainerChromeTools && (
-        <NodeInlineTooltip variant="container" content="Add components">
+      {match && (
+        <NodeInlineTooltip variant="container" content="Insert from components">
           <button
-            className={`tool-button ${direction == "horizontal" ? "-rotate-90" : ""}`}
+            className="tool-button"
             onClick={() => openPanel("components")}
           >
-            <TbPlus />
+            <TbContainer />
           </button>
         </NodeInlineTooltip>
       )}
