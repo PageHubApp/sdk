@@ -112,19 +112,21 @@ function detectZone(
     const fromLeft = clientX - rect.left;
     const fromRight = rect.right - clientX;
 
-    const padZone = Math.max(pt, 10);
-    const padZoneB = Math.max(pb, 10);
-    const padZoneL = Math.max(pl, 10);
-    const padZoneR = Math.max(pr, 10);
+    const BORDER_TRIGGER = 12;
 
-    // Check if edge is reasonably visible (not behind sidebar etc)
     const viewport = document.getElementById("viewport");
     const vpLeft = viewport?.getBoundingClientRect().left ?? 0;
 
-    if (fromTop < padZone) return { side: "top", mode: "padding" };
-    if (fromBottom < padZoneB) return { side: "bottom", mode: "padding" };
-    if (fromLeft < padZoneL && rect.left > vpLeft + 10) return { side: "left", mode: "padding" };
-    if (fromRight < padZoneR) return { side: "right", mode: "padding" };
+    // Only trigger near the container's outer border, not the whole padding zone
+    if (fromTop < BORDER_TRIGGER && pt > 0) return { side: "top", mode: "padding" };
+    if (fromBottom < BORDER_TRIGGER && pb > 0) return { side: "bottom", mode: "padding" };
+    if (fromLeft < BORDER_TRIGGER && pl > 0) return { side: "left", mode: "padding" };
+    if (fromRight < BORDER_TRIGGER && pr > 0) return { side: "right", mode: "padding" };
+    // Zero padding — still allow trigger at outer edge
+    if (fromTop < BORDER_TRIGGER && pt === 0) return { side: "top", mode: "padding" };
+    if (fromBottom < BORDER_TRIGGER && pb === 0) return { side: "bottom", mode: "padding" };
+    if (fromLeft < BORDER_TRIGGER && pl === 0) return { side: "left", mode: "padding" };
+    if (fromRight < BORDER_TRIGGER && pr === 0) return { side: "right", mode: "padding" };
   }
 
   return null;
