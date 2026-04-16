@@ -24,9 +24,7 @@ import sluggit from "slug";
 interface Page {
   id: string;
   displayName: string;
-  custom?: {
-    displayName?: string;
-  };
+  isHomePage?: boolean;
 }
 
 interface PageSelectorProps {
@@ -64,6 +62,7 @@ export function PageSelector({
   const swrPages: Page[] = (pageData?.pages || []).map((p: any) => ({
     id: p.nodeId,
     displayName: p.displayName || "Untitled Page",
+    isHomePage: !!p.isHomePage,
   }));
 
   // Pages from CraftJS tree (source of truth for newly created pages not yet saved)
@@ -292,8 +291,7 @@ export function PageSelector({
             {/* Page List */}
             {filteredPages.length > 0 ? (
               filteredPages.map(page => {
-                const pageNode = query.node(page.id).get();
-                const isPageHomePage = pageNode?.data?.props?.isHomePage;
+                const isPageHomePage = page.isHomePage || page.id === homePageId;
                 const pageRoute = isPageHomePage ? "/" : `/${sluggit(page.displayName, "-")}`;
                 const isSelected = pickerMode ? selectedPageId === page.id : isolate === page.id;
 
