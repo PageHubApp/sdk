@@ -224,7 +224,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
               selected={isActive}
               icon={props.type === "page" ? <TbNote aria-hidden /> : <TbContainer aria-hidden />}
               selectedIcon={<TbArrowDown aria-hidden />}
-              idleLabel={props.type === "page" ? "Empty page" : "Empty container"}
+              idleLabel={props.type === "page" ? "Empty page" : props.type === "header" ? "Global header" : props.type === "footer" ? "Global footer" : "Empty container"}
               selectedLabel={
                 props.type === "page"
                   ? "Drop sections or right-click"
