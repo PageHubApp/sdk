@@ -15,6 +15,7 @@ import { Button } from "../components/Button";
 import { ButtonList } from "../components/ButtonList";
 import { Nav } from "../components/Nav";
 import { CookieConsent } from "../components/CookieConsent";
+import { ConditionalContainer } from "../components/ConditionalContainer";
 import { Container } from "../components/Container";
 import { ContainerGroup } from "../components/ContainerGroup";
 import { Divider } from "../components/Divider";
@@ -41,6 +42,7 @@ import {
   BackgroundDef,
   ButtonDef,
   ButtonListDef,
+  ConditionalContainerDef,
   CookieConsentDef,
   ContainerDef,
   ContainerGroupDef,
@@ -62,37 +64,42 @@ import {
 } from "../components/definitions";
 
 import type { ResolvedComponentDef } from "../define";
+import { withConditionalVisibility } from "../utils/conditions/withConditionalVisibility";
 
 /** Craft / viewer resolver: `resolvedName` from serialized nodes → React component. */
 export type BuiltInCraftResolver = Record<string, ComponentType<any>>;
 
+/** Wrap every component with conditional visibility so it works in any CraftJS context. */
+const cv = withConditionalVisibility;
+
 export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
-  Accordion,
-  Audio,
+  Accordion: cv(Accordion),
+  Audio: cv(Audio),
   Background,
-  Button,
-  ButtonList,
-  CookieConsent,
-  Container,
-  ContainerGroup,
-  Divider,
-  Dropdown,
-  Embed,
-  Footer,
-  Form,
-  FormElement,
-  OnlyFormElement,
-  Header,
-  Image,
-  ImageList,
-  Map,
-  MapPoint,
-  Modal,
-  Nav,
-  Spacer,
-  Tabs,
-  Text,
-  Video,
+  Button: cv(Button),
+  ButtonList: cv(ButtonList),
+  ConditionalContainer: cv(ConditionalContainer),
+  CookieConsent: cv(CookieConsent),
+  Container: cv(Container),
+  ContainerGroup: cv(ContainerGroup),
+  Divider: cv(Divider),
+  Dropdown: cv(Dropdown),
+  Embed: cv(Embed),
+  Footer: cv(Footer),
+  Form: cv(Form),
+  FormElement: cv(FormElement),
+  OnlyFormElement: cv(OnlyFormElement),
+  Header: cv(Header),
+  Image: cv(Image),
+  ImageList: cv(ImageList),
+  Map: cv(Map),
+  MapPoint: cv(MapPoint),
+  Modal: cv(Modal),
+  Nav: cv(Nav),
+  Spacer: cv(Spacer),
+  Tabs: cv(Tabs),
+  Text: cv(Text),
+  Video: cv(Video),
   SavedComponentLoader,
 };
 
@@ -106,6 +113,7 @@ export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
   BackgroundDef,
   ButtonDef,
   ButtonListDef,
+  ConditionalContainerDef,
   CookieConsentDef,
   ContainerDef,
   ContainerGroupDef,

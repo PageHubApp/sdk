@@ -20,6 +20,9 @@ import { processForStatic, type ResolvedComponentDef } from "./define";
 import { toCSSVarName, toPaletteCSSVarName } from "./utils/design/designSystemVars";
 import { resolveTheme } from "./utils/design/resolveTheme";
 import { getMaterialSymbolsUrlFromNodes } from "./utils/data/collectGoogleIcons";
+import { buildStaticContext } from "./utils/conditions/context";
+import { evaluateConditionGroups, evaluateConditions } from "./utils/conditions/evaluate";
+import { CONDITION_EVAL_SCRIPT } from "./utils/conditions/clientScript";
 
 const TAILWIND_FONT_WEIGHT_CLASS =
   /^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/i;
@@ -284,6 +287,47 @@ function renderNode(
   const node = nodes[nodeId];
   if (!node || node.hidden) return "";
 
+  // Evaluate per-node conditions
+  const conditionGroups = node.props?.conditionGroups;
+  const conditions = node.props?.conditions;
+  const hasConditions =
+    (conditionGroups && conditionGroups.length > 0) || (conditions && conditions.length > 0);
+
+  if (hasConditions) {
+    const rootProps = nodes["ROOT"]?.props || {};
+    const condCtx = buildStaticContext(rootProps);
+
+    // Prefer conditionGroups (new format), fall back to flat conditions
+    const result =
+      conditionGroups && conditionGroups.length > 0
+        ? evaluateConditionGroups(conditionGroups, condCtx)
+        : evaluateConditions(conditions, node.props.conditionLogic || "all", condCtx);
+
+    if (result === false) return ""; // definitively hidden
+
+    if (result === null) {
+      // Client-only conditions: render content but wrap hidden for client eval
+      ctx.hasClientConditions = true;
+      const typeName = resolveType(node);
+      const toHTML = resolver[typeName];
+      const childIds = [...(node.nodes || []), ...Object.values(node.linkedNodes || {})];
+      const childrenHTML = childIds
+        .map(id => renderNode(id as string, nodes, resolver, ctx))
+        .filter(Boolean)
+        .join("\n");
+      const inner = toHTML
+        ? toHTML(node.props || {}, childrenHTML, ctx)
+        : childrenHTML
+          ? `<div>${childrenHTML}</div>`
+          : "";
+      if (!inner) return "";
+      const condData = JSON.stringify(conditions || []).replace(/"/g, "&quot;");
+      const logic = node.props.conditionLogic || "all";
+      return `<div data-ph-conditions="${condData}" data-ph-condition-logic="${logic}" style="display:none">${inner}</div>`;
+    }
+    // result === true: render normally, fall through
+  }
+
   const typeName = resolveType(node);
   const toHTML = resolver[typeName];
 
@@ -461,7 +505,8 @@ export function renderToHTML(
     (needsScrollObserver ? PH_SCROLL_OBSERVER_SCRIPT : "") +
     (needsGSAP ? PH_GSAP_CDN : "") +
     (needsHorizontalScroll ? PH_HORIZONTAL_SCROLL_SCRIPT : "") +
-    (needsScrollTimeline ? PH_SCROLL_TIMELINE_SCRIPT : "");
+    (needsScrollTimeline ? PH_SCROLL_TIMELINE_SCRIPT : "") +
+    (ctx.hasClientConditions ? CONDITION_EVAL_SCRIPT : "");
 
   // 10. Wrap in document
   if (wrapDocument) {

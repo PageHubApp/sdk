@@ -1,6 +1,6 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { TbCheck, TbChevronDown, TbPlus } from "react-icons/tb";
+import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
+import { TbCheck, TbChevronDown, TbEraser, TbPlus } from "react-icons/tb";
 import {
   cssColorShowsTransparency,
   isPaletteColorSelected,
@@ -12,6 +12,7 @@ import { toCSSVarName } from "@/utils/design/designSystemVars";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { CreateTokenDialog } from "./CreateTokenDialog";
 import { resolveTheme } from "@/utils/design/resolveTheme";
+import { useHorizontalDragScroll } from "@/utils/hooks/useHorizontalDragScroll";
 import { phStorage } from "@/utils/phStorage";
 
 const MAX_RECENT = 8;
@@ -57,6 +58,25 @@ function saveRecentToken(name: string): string[] {
   const updated = [...recent, name].slice(-MAX_RECENT);
   phStorage.set("recent-tokens", updated);
   return updated;
+}
+
+/** Recents first (stable order), then palette order, deduped by name — fills `max` slots. */
+function mergeRecentAndPalette(
+  recent: NamedColor[],
+  fullPalette: NamedColor[],
+  max: number
+): NamedColor[] {
+  const seen = new Set<string>();
+  const out: NamedColor[] = [];
+  const push = (pc: NamedColor) => {
+    if (out.length >= max) return;
+    if (seen.has(pc.name)) return;
+    seen.add(pc.name);
+    out.push(pc);
+  };
+  for (const pc of recent) push(pc);
+  for (const pc of fullPalette) push(pc);
+  return out;
 }
 
 export function TokenPicker({
@@ -113,73 +133,96 @@ export function TokenPicker({
 
   const isInline = variant === "inline";
   const swatchSize = isInline ? "size-6" : "size-8";
-  /** Max swatches in the top row so the panel (~240px) / toolbar (~360px) does not overflow. */
-  const maxCompactRow = isInline ? 8 : 4;
-  const compactPool = recentPalette.length > 0 ? recentPalette : palette;
-  const compactSwatches = compactPool.slice(0, maxCompactRow);
-  const hasMoreToShow =
-    palette.length > compactSwatches.length || compactPool.length > maxCompactRow;
+  /** Max swatches in the top row so the panel (~240px) / toolbar row does not overflow. */
+  const maxCompactRow = isInline ? 11 : 4;
+  const compactSwatches = mergeRecentAndPalette(recentPalette, palette, maxCompactRow);
+  const compactNames = new Set(compactSwatches.map(s => s.name));
+  const hasMoreToShow = palette.some(p => !compactNames.has(p.name));
+
+  const { scrollRef, onDragPointerDown, dragMoved } = useHorizontalDragScroll({
+    deps: [compactSwatches.length, palette.length],
+  });
 
   return (
     <div
       ref={containerRef}
       className={
         isInline
-          ? "relative flex w-[360px] max-w-[min(360px,100vw-2rem)] flex-col gap-2 p-2"
+          ? "relative flex w-full max-w-[min(280px,100vw-2rem)] flex-col gap-2 p-2"
           : "relative flex w-[240px] max-w-[min(240px,100vw-2rem)] flex-col gap-3 p-3"
       }
     >
-      {/* Swatch row: stable-order recents (or first N palette) + new token + optional expand */}
+      {/* Swatches scroll; + / clear / chevron stay pinned (ThemeReel-style drag + wheel). */}
       <div className="flex min-w-0 items-center gap-1">
-        {compactSwatches.map(pc => (
-          <Swatch
-            key={pc.name}
-            color={pc}
-            palette={palette}
-            selected={isPaletteColorSelected(value as any, pc)}
-            onPick={handlePick}
-            size={swatchSize}
-            tooltip={pc.name}
-          />
-        ))}
-        <button
-          type="button"
-          onClick={() => setShowCreateDialog(true)}
-          className={`${swatchSize} border-base-300 text-neutral-content hover:border-foreground hover:text-base-content flex shrink-0 items-center justify-center rounded-md border-2 border-dashed transition-colors`}
-          title="New token"
+        <div
+          ref={scrollRef}
+          onMouseDown={onDragPointerDown}
+          className="scrollbar-hide no-scrollbar flex min-w-0 flex-1 cursor-grab flex-row gap-1 overflow-x-auto"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          <TbPlus className="size-3" />
-        </button>
-        {hasMoreToShow && (
-          <button
-            type="button"
-            onClick={() => setShowAll(prev => !prev)}
-            className="text-neutral-content hover:text-base-content ml-auto flex shrink-0 items-center"
-            title={showAll ? "Less" : "All tokens"}
-          >
-            <TbChevronDown
-              className={`size-3.5 transition-transform ${showAll ? "rotate-180" : ""}`}
+          {compactSwatches.map(pc => (
+            <Swatch
+              key={pc.name}
+              color={pc}
+              palette={palette}
+              selected={isPaletteColorSelected(value as any, pc)}
+              onPick={handlePick}
+              dragMovedRef={dragMoved}
+              size={swatchSize}
+              tooltip={pc.name}
             />
-          </button>
-        )}
-      </div>
-
-      {onClear != null && (
-        <div className="border-base-300 border-t pt-2">
+          ))}
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
-            disabled={!hasClearableValue(value)}
-            onClick={e => {
-              e.preventDefault();
-              e.stopPropagation();
-              onClear();
-            }}
-            className="text-neutral-content hover:bg-neutral hover:text-base-content w-full rounded-md px-2 py-1.5 text-center text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-40"
+            onClick={() => setShowCreateDialog(true)}
+            className={`${swatchSize} border-base-300 text-neutral-content hover:border-foreground hover:text-base-content flex shrink-0 items-center justify-center rounded-md border-2 border-dashed transition-colors`}
+            title="New token"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="New token"
+            data-tooltip-place="bottom"
+            data-tooltip-offset={10}
           >
-            Remove color
+            <TbPlus className="size-3" />
           </button>
+          {onClear != null && (
+            <button
+              type="button"
+              disabled={!hasClearableValue(value)}
+              onClick={e => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClear();
+              }}
+              className={`${swatchSize} border-base-300 text-neutral-content hover:border-primary hover:text-base-content flex shrink-0 items-center justify-center rounded-md border-2 transition-colors disabled:pointer-events-none disabled:opacity-40`}
+              aria-label="Remove color"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Remove color"
+              data-tooltip-place="bottom"
+              data-tooltip-offset={10}
+            >
+              <TbEraser className="size-3.5" />
+            </button>
+          )}
+          {hasMoreToShow && (
+            <button
+              type="button"
+              onClick={() => setShowAll(prev => !prev)}
+              className="text-neutral-content hover:text-base-content flex shrink-0 items-center"
+              title={showAll ? "Less" : "All tokens"}
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content={showAll ? "Less" : "All tokens"}
+              data-tooltip-place="bottom"
+              data-tooltip-offset={10}
+            >
+              <TbChevronDown
+                className={`size-3.5 transition-transform ${showAll ? "rotate-180" : ""}`}
+              />
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Expanded: all tokens */}
       {showAll && (
@@ -258,6 +301,7 @@ function Swatch({
   palette,
   selected,
   onPick,
+  dragMovedRef,
   size = "size-6",
   tooltip,
 }: {
@@ -265,6 +309,8 @@ function Swatch({
   palette: NamedColor[];
   selected: boolean;
   onPick: (name: string) => void;
+  /** When set, ignore click if user was drag-scrolling the strip (`useHorizontalDragScroll`). */
+  dragMovedRef?: MutableRefObject<boolean>;
   size?: string;
   tooltip?: string;
 }) {
@@ -274,8 +320,11 @@ function Swatch({
   return (
     <button
       type="button"
-      onClick={() => onPick(color.name)}
-      className="group relative"
+      onClick={() => {
+        if (dragMovedRef?.current) return;
+        onPick(color.name);
+      }}
+      className="group relative shrink-0"
       {...(tooltip
         ? {
             "data-tooltip-id": PAGEHUB_RTT_GLOBAL_ID,

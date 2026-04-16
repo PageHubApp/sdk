@@ -1,0 +1,80 @@
+/** Condition source categories */
+export type ConditionType = "url-param" | "form-field" | "connector" | "company" | "device";
+
+/** Comparison operators */
+export type Operator =
+  | "equals"
+  | "not-equals"
+  | "contains"
+  | "not-contains"
+  | "exists"
+  | "not-exists"
+  | "greater-than"
+  | "less-than";
+
+/** A single condition rule */
+export interface Condition {
+  type: ConditionType;
+  /** Dot-path key — meaning depends on type:
+   *  - url-param: param name (e.g. "ref")
+   *  - form-field: field name
+   *  - connector: dot-path like "stripe.products"
+   *  - company: field name like "name", "email", "phone"
+   *  - device: always "viewport" */
+  key: string;
+  operator: Operator;
+  /** Comparison value. For device: "mobile" | "desktop". Ignored for exists/not-exists. */
+  value: string;
+  /** For form-field: the element anchor/ID to watch */
+  target?: string;
+}
+
+/** AND / OR logic for combining conditions within a group */
+export type ConditionLogic = "all" | "any";
+
+/** A group of conditions with shared logic (AND/OR).
+ *  Multiple groups are OR'd together (Elementor-style). */
+export interface ConditionGroup {
+  conditions: Condition[];
+  logic: ConditionLogic;
+}
+
+/** Runtime context for evaluating conditions */
+export interface ConditionContext {
+  urlParams: URLSearchParams | null;
+  formFields: Record<string, string> | null;
+  connectorData: Record<string, Record<string, any[]>> | null;
+  company: Record<string, any> | null;
+  viewportWidth: number | null;
+}
+
+/** Branch definition for ConditionalContainer */
+export interface ConditionBranch {
+  label: string;
+  conditions: Condition[];
+  conditionLogic: ConditionLogic;
+}
+
+/** Operators that don't need a comparison value */
+export const NO_VALUE_OPERATORS: Operator[] = ["exists", "not-exists"];
+
+/** Operators available per condition type */
+export const OPERATORS_BY_TYPE: Record<ConditionType, Operator[]> = {
+  "url-param": ["equals", "not-equals", "contains", "not-contains", "exists", "not-exists"],
+  "form-field": ["equals", "not-equals", "contains", "not-contains", "exists", "not-exists"],
+  connector: ["exists", "not-exists", "greater-than", "less-than", "equals"],
+  company: ["exists", "not-exists", "equals", "not-equals"],
+  device: ["equals"],
+};
+
+/** Human-readable labels for operators */
+export const OPERATOR_LABELS: Record<Operator, string> = {
+  equals: "Equals",
+  "not-equals": "Not equals",
+  contains: "Contains",
+  "not-contains": "Doesn't contain",
+  exists: "Exists",
+  "not-exists": "Doesn't exist",
+  "greater-than": "Greater than",
+  "less-than": "Less than",
+};

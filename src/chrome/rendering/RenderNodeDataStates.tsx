@@ -3,10 +3,13 @@ import { useLayoutEffect } from "react";
 import { useSelectionDom } from "../shell/EditorSelectionDomContext";
 
 export const RenderNodeDataStates = () => {
-  const { isHover, name, dom, id } = useNode(node => ({
+  const { isHover, name, dom, id, hasConditions } = useNode(node => ({
     isHover: node.events.hovered,
     dom: node.dom,
     name: node.data.custom.displayName || node.data.displayName,
+    hasConditions:
+      ((node.data.props.conditionGroups as any[]) || []).length > 0 ||
+      ((node.data.props.conditions as any[]) || []).length > 0,
   }));
 
   const { enabled } = useEditor(state => ({
@@ -22,6 +25,12 @@ export const RenderNodeDataStates = () => {
     if (!enabled) return;
 
     dom.setAttribute("data-enabled", "true");
+
+    if (hasConditions) {
+      dom.setAttribute("data-has-conditions", "true");
+    } else {
+      dom.removeAttribute("data-has-conditions");
+    }
 
     if (dom && name !== "Background") {
       if (isActive) {
@@ -53,7 +62,7 @@ export const RenderNodeDataStates = () => {
       if (isHover && !isActive) dom.setAttribute("data-hover", "true");
       else dom.removeAttribute("data-hover");
     }
-  }, [isActive, isHover, isAncestorOfSelected, enabled, dom, name]);
+  }, [isActive, isHover, isAncestorOfSelected, enabled, dom, name, hasConditions]);
 
   return null;
 };

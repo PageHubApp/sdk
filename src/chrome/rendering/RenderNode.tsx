@@ -1,6 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useMemo, useState } from "react";
 
+
 function resolveCraftComponent(
   type: unknown,
   resolver: Record<string, React.ComponentType<any>> | undefined
@@ -17,6 +18,7 @@ function resolveCraftComponent(
 import { InlineToolsRenderer } from "./InlineToolsRenderer";
 import { GapDragControl } from "../canvas/GapDragControl";
 import { ProximityHover } from "../canvas/ProximityHover";
+import { ConditionBadgeController } from "../canvas/ConditionBadgeController";
 import { RenderNodeDataStates } from "./RenderNodeDataStates";
 
 class NodeErrorBoundary extends React.Component<{ children?: React.ReactNode }> {
@@ -91,7 +93,9 @@ export const RenderNodeNewer = ({ render }) => {
       {render}
       {isClient && (
         <>
-          <InlineToolsRenderer craftComponent={craftComponent ?? undefined} props={nodeProps} />
+          <InlineToolsRenderer craftComponent={craftComponent ?? undefined} props={nodeProps}>
+            <ConditionBadgeController />
+          </InlineToolsRenderer>
           <RenderNodeDataStates />
           <ProximityHover />
           <GapDragControl />

@@ -28,6 +28,8 @@ export interface StaticRenderContext {
   renderChildren: (nodeIds: string[]) => string;
   /** When true, replace DaisyUI/spatial classes with pure Tailwind equivalents */
   pureTailwind?: boolean;
+  /** Set to true by the tree walker when a node has client-only conditions */
+  hasClientConditions?: boolean;
 }
 
 /** Signature every `.craft.toHTML` must implement */

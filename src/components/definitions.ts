@@ -9,6 +9,7 @@ export { BackgroundDef } from "./Background.craft";
 export { ButtonDef } from "./Button.craft";
 export { ButtonListDef } from "./ButtonList.craft";
 export { CookieConsentDef } from "./CookieConsent.craft";
+export { ConditionalContainerDef } from "./ConditionalContainer.craft";
 export { ContainerDef } from "./Container.craft";
 export { ContainerGroupDef } from "./ContainerGroup.craft";
 export { DividerDef } from "./Divider.craft";

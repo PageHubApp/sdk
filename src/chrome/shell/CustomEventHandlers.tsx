@@ -5,6 +5,7 @@ import {
   applyAlignmentOnDrop,
   setDragOrigin,
   getDragOrigin,
+  didBesideDropFire,
 } from "./alignmentInference";
 
 export default class CustomEventHandlers extends DefaultEventHandlers {
@@ -49,6 +50,13 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
           const node = query.node(id).get();
           originalParentId = node?.data?.parent;
           setDragOrigin(id, originalParentId);
+          console.log("[alignment-dragstart]", {
+            id,
+            name: node?.data?.name,
+            displayName: node?.data?.custom?.displayName,
+            parent: originalParentId,
+            isAlignWrapper: node?.data?.custom?.displayName === "Align",
+          });
           const nodeType = node?.data?.props?.type || "";
           if (nodeType) {
             document.body.setAttribute("data-dragging-type", nodeType);
@@ -61,17 +69,31 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
           document.body.removeAttribute("data-dragging-type");
 
           // Apply alignment intent if one was detected during drag
-          // Use drag origin (first/innermost node) — CraftJS may promote drag to wrapper
+          // Skip if a beside-drop already handled the structural change
           const ctx = getAlignmentDropContext();
-          if (ctx) {
-            const origin = getDragOrigin();
-            const targetId = origin?.nodeId || id;
-            const origParent = origin?.parentId || originalParentId;
+          const besideFired = didBesideDropFire();
+          const origin = getDragOrigin();
+          const targetId = origin?.nodeId || id;
+          const origParent = origin?.parentId || originalParentId;
 
+          console.log("[alignment-dragend]", {
+            handlerId: id,
+            targetId,
+            origParent,
+            hasCtx: !!ctx,
+            h: ctx?.intent?.horizontal,
+            v: ctx?.intent?.vertical,
+            besideFired,
+          });
+
+          if (ctx && !besideFired) {
+            clearAlignmentIntent();
             requestAnimationFrame(() => {
               applyAlignmentOnDrop(actions, targetId, ctx.intent, ctx.view, ctx.classDark, query, origParent);
-              clearAlignmentIntent();
             });
+          } else if (ctx) {
+            console.log("[alignment-dragend] skipped — beside drop handled it");
+            clearAlignmentIntent();
           }
         });
 
