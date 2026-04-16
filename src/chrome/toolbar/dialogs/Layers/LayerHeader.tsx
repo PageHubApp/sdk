@@ -124,11 +124,12 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
     }
   }, [nodeId, actions, isPage, isolate, query, setIsolate]);
 
-  // Handle name editing
+  // Handle name editing (pages are renamed via page settings, not layers)
   const handleNameDoubleClick = useCallback((e: React.MouseEvent) => {
+    if (isPage) return;
     e.stopPropagation();
     setIsEditingName(true);
-  }, []);
+  }, [isPage]);
 
   const handleNameChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -291,7 +292,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
                 isSelected ? "font-medium text-white" : "text-gray-900 dark:text-gray-100"
               }`}
             >
-              {displayName}
+              {isPage ? "Page" : displayName}
             </span>
           )}
         </div>

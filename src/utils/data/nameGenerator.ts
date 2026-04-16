@@ -85,7 +85,8 @@ const nouns = [
 ];
 
 const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function generateName() {
-  return { spaced: `${pick(adjectives)} ${pick(nouns)}` };
+  return { spaced: `${titleCase(pick(adjectives))} ${titleCase(pick(nouns))}` };
 }

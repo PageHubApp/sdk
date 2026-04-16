@@ -230,7 +230,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
                   ? "Drop sections or right-click"
                   : "Drop here or right-click"
               }
-              fill={props.type === "page"}
+
             />
           ) : null}
         </RenderPattern>

@@ -12,9 +12,10 @@ export enum NodeType {
 }
 
 export const useNodeType = (): NodeType | null => {
-  const { parent, currentNodeType } = useNode(node => ({
+  const { parent, currentNodeType, isCanvas } = useNode(node => ({
     parent: node.data.parent,
     currentNodeType: node.data.props?.type,
+    isCanvas: node.data.isCanvas,
   }));
 
   const { query } = useEditor();
@@ -29,6 +30,8 @@ export const useNodeType = (): NodeType | null => {
   // For sections inside pages
   if (propType === "page") return NodeType.Section;
 
+  // Canvas containers that aren't a named type are generic containers
+  if (isCanvas) return NodeType.Container;
   return null;
 };
 
@@ -52,6 +55,9 @@ export function resolveNodeTypeFromQuery(
       return currentNodeType as NodeType;
     }
     if (propType === "page") return NodeType.Section;
+
+    // Canvas containers that aren't a named type are generic containers
+    if (node.data.isCanvas) return NodeType.Container;
     return null;
   } catch {
     return null;

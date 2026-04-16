@@ -11,11 +11,9 @@ export type EditorEmptyLeafHintProps = {
   /** Alternate compact label shown when selected. */
   selectedLabel: string;
   className?: string;
-  /** When true, the hint fills available space and centers the label. */
-  fill?: boolean;
 };
 
-/** Canvas empty-state for leaf components: subtle when unselected, clearer when selected (same pattern as Text). */
+/** Canvas empty-state for leaf components: fills available space and centers a compact label. */
 export function EditorEmptyLeafHint({
   selected,
   icon,
@@ -23,13 +21,9 @@ export function EditorEmptyLeafHint({
   idleLabel,
   selectedLabel,
   className,
-  fill,
 }: EditorEmptyLeafHintProps) {
   const activeIcon = selected && selectedIcon ? selectedIcon : icon;
   const activeLabel = selected ? selectedLabel : idleLabel;
-
-  const baseClassName =
-    "flex min-h-8 items-center justify-center gap-1.5 border border-dashed px-2 py-1.5 text-[10px] font-medium uppercase";
 
   const colorClassName = selected
     ? "border-base-300/70 bg-base-200/45 text-neutral-content/80"
@@ -37,25 +31,19 @@ export function EditorEmptyLeafHint({
 
   const iconOpacity = selected ? "opacity-75" : "opacity-60";
 
-  const hint = (
-    <div className={twMerge(`${baseClassName} ${fill ? "" : "w-full"} ${colorClassName}`, className)}>
-      <span
-        className={`flex size-3.5 shrink-0 items-center justify-center ${iconOpacity} [&>svg]:size-3.5`}
-        aria-hidden
+  return (
+    <div className={twMerge("flex flex-1 w-full items-center justify-center", className)}>
+      <div
+        className={`flex min-h-8 items-center justify-center gap-1.5 border border-dashed px-2 py-1.5 text-[10px] font-medium uppercase ${colorClassName}`}
       >
-        {activeIcon}
-      </span>
-      <span className="truncate whitespace-nowrap">{activeLabel}</span>
+        <span
+          className={`flex size-3.5 shrink-0 items-center justify-center ${iconOpacity} [&>svg]:size-3.5`}
+          aria-hidden
+        >
+          {activeIcon}
+        </span>
+        <span className="truncate whitespace-nowrap">{activeLabel}</span>
+      </div>
     </div>
   );
-
-  if (fill) {
-    return (
-      <div className="flex flex-1 w-full items-center justify-center">
-        {hint}
-      </div>
-    );
-  }
-
-  return hint;
 }
