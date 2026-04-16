@@ -105,8 +105,8 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
           // SSR may have assembled only one page + shared shard —
           // unloaded pages will be fetched on demand via isolatePageLazy.
           clearLoadedPages();
+          for (const id of listPageNodeIds(query)) markPageLoaded(id);
           requestAnimationFrame(() => {
-            for (const id of listPageNodeIds(query)) markPageLoaded(id);
             setBatchOperation(false);
           });
         }

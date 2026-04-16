@@ -349,7 +349,7 @@ export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSetti
   const injectedTabs = useMemo(() => adaptLegacyExtraTabs(extraTabs), [extraTabs]);
   const allTabs = useMemo(() => mergeSettingsTabs(builtInTabs, injectedTabs), [builtInTabs, injectedTabs]);
 
-  const { draft, setDraft, updateField, requestSave, flushSave } = useSettingsController<SiteSettingsDraft>({
+  const { draft, setDraft, updateField, loading, requestSave, flushSave } = useSettingsController<SiteSettingsDraft>({
     isOpen,
     loadDraft: () => {
       try {
@@ -406,6 +406,8 @@ export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSetti
     onClose();
   }, [flushSave, onClose]);
 
+  if (!isOpen) return null;
+
   return (
     <SettingsShell
       isOpen={isOpen}
@@ -424,7 +426,11 @@ export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSetti
       activeTab={activeTab}
       setActiveTab={setActiveTab}
     >
-      {activeDef ? activeDef.render(tabRenderCtx) : null}
+      {loading ? (
+        <div className="flex h-full items-center justify-center">
+          <span className="loading loading-spinner loading-md text-primary" />
+        </div>
+      ) : activeDef ? activeDef.render(tabRenderCtx) : null}
     </SettingsShell>
   );
 }

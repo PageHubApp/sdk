@@ -25,21 +25,10 @@ export function useSettingsController<TDraft>({
   debounceMs = 350,
   reloadKey,
 }: UseSettingsControllerOptions<TDraft>) {
-  // Probe once on mount: sync → use value immediately, async → start loading.
-  const [initResult] = useState(() => {
-    const r = loadDraft();
-    return isThenable(r)
-      ? { draft: undefined as unknown as TDraft, loading: true, pending: r }
-      : { draft: r, loading: false, pending: null };
-  });
-
-  const [draft, setDraft] = useState<TDraft>(initResult.draft);
-  const [loading, setLoading] = useState(initResult.loading);
-  const draftRef = useRef<TDraft>(initResult.draft);
-  const lastSavedSignatureRef = useRef(
-    initResult.loading ? "" : getDraftSignature(initResult.draft),
-  );
-  const isFirstRunRef = useRef(true);
+  const [draft, setDraft] = useState<TDraft>(undefined as unknown as TDraft);
+  const [loading, setLoading] = useState(true);
+  const draftRef = useRef<TDraft>(undefined as unknown as TDraft);
+  const lastSavedSignatureRef = useRef("");
 
   const flushNowRef = useRef<() => void>(() => {});
   const requestSaveRef = useRef<ReturnType<typeof debounce> | null>(null);
@@ -79,33 +68,18 @@ export function useSettingsController<TDraft>({
     setLoading(false);
   }, []);
 
-  // Resolve async init (mount-only).
-  useEffect(() => {
-    if (!initResult.pending) return;
-    let cancelled = false;
-    initResult.pending
-      .then(resolved => { if (!cancelled) applyDraft(resolved); })
-      .catch(e => {
-        console.error("Error loading settings:", e);
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Reload draft on reopen or reloadKey change (skip first run — init handled above).
+  // Load draft on open / reloadKey change. Always runs in an effect (never in
+  // useState initializer) so it's immune to React 18 strict-mode double-firing
+  // and always reads the latest tree / config state.
   useEffect(() => {
     if (!isOpen) return;
-    if (isFirstRunRef.current) {
-      isFirstRunRef.current = false;
-      return;
-    }
 
     let cancelled = false;
+    setLoading(true);
+
     const result = loadDraftRef.current();
 
     if (isThenable(result)) {
-      setLoading(true);
       result
         .then(resolved => { if (!cancelled) applyDraft(resolved); })
         .catch(e => {
@@ -113,7 +87,7 @@ export function useSettingsController<TDraft>({
           if (!cancelled) setLoading(false);
         });
     } else {
-      applyDraft(result);
+      if (!cancelled) applyDraft(result);
     }
 
     return () => {
