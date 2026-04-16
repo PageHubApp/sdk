@@ -138,11 +138,23 @@ export function getAlignmentPreviewLabel(intent: AlignmentIntent): string {
 
 // ── Wrapper classNames ─────────────────────────────────────────────────
 
-const WRAPPER_CLASS: Record<AlignmentZone, string> = {
+// Horizontal axis (parent is flex-col): wrapper spans full width, justify positions child
+const WRAPPER_CLASS_HORIZONTAL: Record<AlignmentZone, string> = {
   start: "flex w-full justify-start",
   center: "flex w-full justify-center",
   end: "flex w-full justify-end",
 };
+
+// Vertical axis (parent is flex-row): wrapper stretches to row height, items positions child
+const WRAPPER_CLASS_VERTICAL: Record<AlignmentZone, string> = {
+  start: "flex flex-col self-stretch items-start justify-start",
+  center: "flex flex-col self-stretch items-center justify-center",
+  end: "flex flex-col self-stretch items-end justify-end",
+};
+
+function getWrapperClass(zone: AlignmentZone, axis: "horizontal" | "vertical") {
+  return axis === "vertical" ? WRAPPER_CLASS_VERTICAL[zone] : WRAPPER_CLASS_HORIZONTAL[zone];
+}
 
 // ── Drop handler ───────────────────────────────────────────────────────
 
@@ -177,9 +189,9 @@ export function applyAlignmentOnDrop(
 
   // If the dragged node IS an Align wrapper, just update its className directly
   if (isAlignWrapper(node)) {
-    log("update-wrapper", { nodeId, zone: intent.zone });
+    log("update-wrapper", { nodeId, zone: intent.zone, axis: intent.axis });
     actions.setProp(nodeId, (props: Record<string, any>) => {
-      props.className = WRAPPER_CLASS[intent.zone];
+      props.className = getWrapperClass(intent.zone, intent.axis);
     });
     return;
   }
@@ -197,11 +209,11 @@ export function applyAlignmentOnDrop(
   }
 
   const parentClassName = parentNode.data.props?.className || "";
-  const wrapperClassName = WRAPPER_CLASS[intent.zone];
+  const wrapperClassName = getWrapperClass(intent.zone, intent.axis);
 
   // If already inside an Align wrapper, just update its className
   if (isAlignWrapper(parentNode)) {
-    log("update-parent-wrapper", { parentId, zone: intent.zone });
+    log("update-parent-wrapper", { parentId, zone: intent.zone, axis: intent.axis });
     actions.setProp(parentId, (props: Record<string, any>) => {
       props.className = wrapperClassName;
     });
