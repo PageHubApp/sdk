@@ -117,6 +117,18 @@ export interface PageHubCallbacks {
    */
   savePageSettings?: (pageNodeId: string, settings: PageSettingsPayload) => Promise<void>;
 
+  /**
+   * Create a new page in the database (sharding mode).
+   * Called instead of tree-first AddElement when fetchPage is available.
+   */
+  createPage?: (params: {
+    pageNodeId: string;
+    displayName: string;
+    pageSlug?: string;
+    pageTitle?: string;
+    pageDescription?: string;
+  }) => Promise<{ nodeId: string }>;
+
 }
 
 /** Shape exchanged between SDK and host for remote page settings. */

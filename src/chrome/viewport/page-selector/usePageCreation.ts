@@ -18,9 +18,14 @@ interface UsePageCreationOptions {
   onPageChange?: (pageId: string) => void;
 }
 
+/** Deterministic page node ID from a display name (matches MCP add_page format). */
+function nameToPageNodeId(name: string): string {
+  return `page_${sluggit(name, "-").replace(/-/g, "_")}`;
+}
+
 /**
  * Trigger a save and wait for it to complete (pagehub:saved event).
- * Used to ensure pages/siteId exist in the DB before navigating.
+ * Only used in standalone (non-sharding) mode.
  */
 function saveAndWait(emitter: any, timeoutMs = 15000): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -72,8 +77,35 @@ export function usePageCreation({
     try {
       setIsOpen(false);
       const finalName = deduplicateName(pageName);
+      const { createPage, fetchPage } = config.callbacks;
 
-      // Create the page node in CraftJS
+      // ── Sharding mode: create via API, then navigate ──
+      if (createPage && fetchPage) {
+        const pageNodeId = nameToPageNodeId(finalName);
+        const customSlug = extra?.pageSlug || "";
+
+        await createPage({
+          pageNodeId,
+          displayName: finalName,
+          pageSlug: customSlug,
+          pageTitle: extra?.pageTitle || "",
+          pageDescription: extra?.pageDescription || "",
+        });
+
+        // Revalidate page list so the new page appears in PageSelector
+        window.dispatchEvent(new CustomEvent("pagehub:saved"));
+
+        if (pickerMode && onPagePick) {
+          onPagePick({ id: pageNodeId, displayName: finalName, isHomePage: false });
+          return;
+        }
+
+        navigateToPage(pageNodeId, finalName, false, customSlug);
+        onPageChange?.(pageNodeId);
+        return;
+      }
+
+      // ── Standalone mode: tree-first (no sharding) ──
       const extraProps: Record<string, string> = {};
       if (extra?.pageSlug) extraProps.pageSlug = extra.pageSlug;
       if (extra?.pageTitle) extraProps.pageTitle = extra.pageTitle;
@@ -100,16 +132,6 @@ export function usePageCreation({
 
       if (!newElement?.rootNodeId) return;
       const newNodeId = newElement.rootNodeId;
-
-      // Save so the SitePage shard exists in DB before navigating or picking.
-      // Standalone mode (no fetchPage) skips — all pages live in the tree.
-      if (config.callbacks.fetchPage) {
-        try {
-          await saveAndWait(emitter);
-        } catch (saveErr) {
-          console.warn("[PageHub] Save before page navigation failed:", saveErr);
-        }
-      }
 
       if (pickerMode && onPagePick) {
         const node = query.node(newNodeId).get();

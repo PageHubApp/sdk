@@ -2,15 +2,17 @@ import { useEditor } from "@craftjs/core";
 import { RenderIndicator, getDOMInfo } from "@craftjs/utils";
 import React from "react";
 import ReactDOM from "react-dom";
+import { getBesidePreviewLabel } from "./layoutInference";
 
 function getIndicatorColor(indicator: any, indicatorOptions: any) {
   return indicator?.error ? indicatorOptions?.error || "rgb(153 27 27)" : indicatorOptions?.success || "currentColor";
 }
 
 export function BesideDropIndicator() {
-  const { indicator, indicatorOptions } = useEditor((state) => ({
+  const { indicator, indicatorOptions, query } = useEditor((state, query) => ({
     indicator: state.indicator,
     indicatorOptions: state.options.indicator,
+    query,
   }));
 
   if (!indicator) return null;
@@ -22,38 +24,41 @@ export function BesideDropIndicator() {
 
   const nodeInfo = getDOMInfo(currentNode.dom);
   const color = getIndicatorColor(indicator, indicatorOptions);
+  const labelText = parent?.id && currentNode?.id
+    ? getBesidePreviewLabel(query, query.node(parent.id).get(), query.node(currentNode.id).get())
+    : "Place beside";
   const overlayWidth = Math.max(72, Math.min(nodeInfo.outerWidth * 0.42, 220));
   const overlayLeft =
     where === "beside-left" ? nodeInfo.left : nodeInfo.left + nodeInfo.outerWidth - overlayWidth;
   const barLeft = where === "beside-left" ? nodeInfo.left : nodeInfo.left + nodeInfo.outerWidth - 4;
-  const labelLeft =
-    where === "beside-left"
-      ? Math.min(nodeInfo.left + 16, nodeInfo.left + nodeInfo.outerWidth - 110)
-      : Math.max(nodeInfo.left + nodeInfo.outerWidth - 110, nodeInfo.left + 16);
-
   const label = (
     <div
       className="pagehub-beside-indicator-label"
       style={{
         position: "fixed",
         top: nodeInfo.top + 12,
-        left: labelLeft,
+        left: overlayLeft + 12,
         zIndex: 100000,
         pointerEvents: "none",
-        background: color,
-        color: "#fff",
+        background: "rgba(255,255,255,0.96)",
+        color: "#111",
         borderRadius: 0,
-        padding: "6px 10px",
-        fontSize: 11,
+        border: `1px solid ${color}`,
+        padding: "6px 8px",
+        fontSize: 12,
         fontWeight: 700,
         letterSpacing: "0.02em",
-        boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+        boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
+        width: `${Math.max(48, overlayWidth - 24)}px`,
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        textAlign: "center",
       }}
     >
-      Place beside
+      {labelText}
     </div>
   );
-
   const labelRoot = parent?.dom?.ownerDocument?.body || document.body;
 
   return (

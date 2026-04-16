@@ -20,11 +20,15 @@ export const DeleteNodeButton = ({
   useSimpleDelete = false,
   label,
 }: DeleteNodeButtonProps) => {
-  const { canDelete } = useNode(node => ({
-    canDelete:
-      node.data.props?.canDelete !== false &&
-      node.data.custom?.permissions?.canDelete !== false,
-  }));
+  const { canDelete } = useNode(node => {
+    const t = node.data.props?.type;
+    return {
+      canDelete:
+        node.data.props?.canDelete !== false &&
+        node.data.custom?.permissions?.canDelete !== false &&
+        t !== "page" && t !== "header" && t !== "footer",
+    };
+  });
 
   const { deleteSelectedNode } = useUnifiedDelete();
 

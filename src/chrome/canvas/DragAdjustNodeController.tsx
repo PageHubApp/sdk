@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge";
 import {
   buildVariantPrefix,
   editorCanvasViewToClassPrefixKey,
+  removeClassForView,
 } from "../../utils/tailwind/className";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { useIsInlineRender } from "../inline-tools/InlineRenderContext";
@@ -131,6 +132,12 @@ export const DragAdjustNodeController = (props: {
   // could use it but drl need it ond rag adjusters..
 
   const showControl = true;
+  const writeWidthClass = React.useCallback((prop: { className?: string }, nextClass: string) => {
+    const classNameWithoutWidth = removeClassForView(prop.className || "", "width", classPrefixView, {
+      classDark,
+    });
+    prop.className = twMerge(classNameWithoutWidth, nextClass);
+  }, [classDark, classPrefixView]);
 
   // For inline rendering, skip AnimatePresence - it causes issues without portals
   if (isInlineRender && isActive && showControl) {
@@ -178,7 +185,7 @@ export const DragAdjustNodeController = (props: {
                     1,
                     Math.min(gridSnap, Math.round((percentage / 100) * gridSnap))
                   );
-                  prop.className = twMerge(prop.className || "", prefix + `w-${gridFraction}/12`);
+                  writeWidthClass(prop, prefix + `w-${gridFraction}/12`);
                 }
               } else {
                 const numericValue = parseFloat(value);
@@ -186,13 +193,10 @@ export const DragAdjustNodeController = (props: {
 
                 if (unit === "px") {
                   const tailwindClass = pixelsToTailwindClass(numericValue, propVar);
-                  prop.className = twMerge(prop.className || "", prefix + tailwindClass);
+                  writeWidthClass(prop, prefix + tailwindClass);
                 } else {
                   const tailwindProp = PROP_VAR_MAP[propVar] || propVar;
-                  prop.className = twMerge(
-                    prop.className || "",
-                    prefix + `${tailwindProp}-[${numericValue}${unit}]`
-                  );
+                  writeWidthClass(prop, prefix + `${tailwindProp}-[${numericValue}${unit}]`);
                 }
               }
             }, 50);
@@ -255,7 +259,7 @@ export const DragAdjustNodeController = (props: {
                       Math.min(gridSnap, Math.round((percentage / 100) * gridSnap))
                     );
 
-                    prop.className = twMerge(prop.className || "", prefix + `w-${gridFraction}/12`);
+                    writeWidthClass(prop, prefix + `w-${gridFraction}/12`);
                   }
                 } else {
                   // Convert snapped pixel value to Tailwind class
@@ -265,14 +269,11 @@ export const DragAdjustNodeController = (props: {
                   if (unit === "px") {
                     // Convert to Tailwind spacing class
                     const tailwindClass = pixelsToTailwindClass(numericValue, propVar);
-                    prop.className = twMerge(prop.className || "", prefix + tailwindClass);
+                    writeWidthClass(prop, prefix + tailwindClass);
                   } else {
                     // Map propVar to Tailwind abbreviation for non-px units too
                     const tailwindProp = PROP_VAR_MAP[propVar] || propVar;
-                    prop.className = twMerge(
-                      prop.className || "",
-                      prefix + `${tailwindProp}-[${numericValue}${unit}]`
-                    );
+                    writeWidthClass(prop, prefix + `${tailwindProp}-[${numericValue}${unit}]`);
                   }
                 }
               }, 50);

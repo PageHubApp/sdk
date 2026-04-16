@@ -8,7 +8,7 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import { buildVariantPrefix } from "../../../utils/tailwind/className";
+import { buildVariantPrefix, removeClassForView } from "../../../utils/tailwind/className";
 import { GAP_CLASS_TO_PX, pixelsToGapClass } from "./gapScale";
 
 const GAP_DETECTION_THRESHOLD = 40; // px — circular radius around the gap control
@@ -200,7 +200,10 @@ export function useGapDrag({
         const gapClass = pixelsToGapClass(snappedGap);
         const prefix = buildVariantPrefix(classPrefixView, classDark);
         setProp(prop => {
-          prop.className = twMerge(prop.className || "", prefix + gapClass);
+          const withoutExistingGap = removeClassForView(prop.className || "", "gap", classPrefixView, {
+            classDark,
+          });
+          prop.className = twMerge(withoutExistingGap, prefix + gapClass);
         });
 
         setIsDragging(false);
