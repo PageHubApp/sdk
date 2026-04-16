@@ -1,10 +1,15 @@
 import { DefaultEventHandlers, NodeId } from "@craftjs/core";
+import {
+  getAlignmentDropContext,
+  clearAlignmentIntent,
+  applyAlignmentOnDrop,
+} from "./alignmentInference";
 
 export default class CustomEventHandlers extends DefaultEventHandlers {
   handlers() {
     const defaultEventHandlers = super.handlers();
     const {
-      store: { query },
+      store: { query, actions },
     } = this.options;
 
     return {
@@ -47,6 +52,26 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
           el.removeAttribute("data-dragging");
           document.body.removeAttribute("data-is-dragging");
           document.body.removeAttribute("data-dragging-type");
+
+          // Apply alignment intent if one was detected during drag
+          const ctx = getAlignmentDropContext();
+          if (ctx) {
+            // Capture previous parent BEFORE CraftJS move completes
+            const prevNode = query.node(id).get();
+            const prevParentId = prevNode?.data?.parent;
+            ctx.previousParentId = prevParentId;
+
+            console.log("[alignment-dragend]", {
+              zone: ctx.intent.zone,
+              draggedNodeId: id,
+              prevParentId,
+            });
+
+            requestAnimationFrame(() => {
+              applyAlignmentOnDrop(actions, id, ctx.intent, ctx.view, ctx.classDark, query, ctx.previousParentId);
+              clearAlignmentIntent();
+            });
+          }
         });
 
         return () => {

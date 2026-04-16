@@ -1,0 +1,230 @@
+/**
+ * Alignment inference: drag-to-align detection.
+ *
+ * During drag, reads cursor position relative to the drop-target container
+ * and infers alignment intent from which zone the cursor is in.
+ *
+ * flex-col: X axis = alignment (left/center/right)
+ * flex-row: Y axis = alignment (top/center/bottom)
+ *
+ * Orthogonal to CraftJS reorder (which handles the other axis).
+ * Suppressed when beside detection is active.
+ */
+
+import React from "react";
+import { Element, type Node, type NodeId } from "@craftjs/core";
+import { Container } from "../../components/Container";
+
+// ── Types ──────────────────────────────────────────────────────────────
+
+export type AlignmentZone = "start" | "center" | "end";
+
+export interface AlignmentIntent {
+  zone: AlignmentZone;
+  axis: "horizontal" | "vertical";
+}
+
+/** Full drop context — intent + view info needed by the class writer. */
+export interface AlignmentDropContext {
+  intent: AlignmentIntent;
+  view: string;
+  classDark: boolean;
+  /** Parent ID before CraftJS move — captured at dragend before rAF. */
+  previousParentId?: NodeId;
+}
+
+// ── Module-level state (shared between indicator component + drop handler) ──
+
+let _current: AlignmentDropContext | null = null;
+
+export function setAlignmentIntent(intent: AlignmentIntent | null, view?: string, classDark?: boolean) {
+  const prev = _current;
+  _current = intent ? { intent, view: view || "mobile", classDark: classDark ?? false } : null;
+  if (!intent && prev) {
+    console.log("[alignment-intent] CLEARED", new Error().stack?.split("\n").slice(1, 4).join(" <- "));
+  }
+}
+
+export function getAlignmentDropContext(): AlignmentDropContext | null {
+  console.log("[alignment-intent] get()", { hasCurrent: !!_current, zone: _current?.intent?.zone });
+  return _current;
+}
+
+export function clearAlignmentIntent() {
+  console.log("[alignment-intent] clear()");
+  _current = null;
+}
+
+// ── Zone thresholds ────────────────────────────────────────────────────
+
+const START_ZONE = 0.30;
+const END_ZONE = 0.70;
+const MIN_CONTAINER_SIZE = 200; // px — skip detection if container is too narrow/short
+
+const SKIP_TYPES = new Set(["page", "header", "footer", "section"]);
+
+// ── Detection ──────────────────────────────────────────────────────────
+
+/**
+ * Detect alignment intent from cursor position relative to the parent container.
+ * Returns null if detection shouldn't activate (wrong container type, too small, etc).
+ */
+export function detectAlignmentIntent(
+  parentDom: HTMLElement,
+  parentNode: Node,
+  posX: number,
+  posY: number
+): AlignmentIntent | null {
+  if (!parentDom) return null;
+
+  const parentType = parentNode?.data?.props?.type;
+  if (SKIP_TYPES.has(parentType)) return null;
+
+  const style = window.getComputedStyle(parentDom);
+  const display = style.display;
+  if (!display.includes("flex")) return null;
+
+  const dir = style.flexDirection;
+  const isCol = dir === "column" || dir === "column-reverse";
+  const isRow = dir === "row" || dir === "row-reverse";
+  if (!isCol && !isRow) return null;
+
+  const rect = parentDom.getBoundingClientRect();
+
+  if (isCol) {
+    // flex-col: cross-axis is horizontal → X determines alignment
+    if (rect.width < MIN_CONTAINER_SIZE) return null;
+    const relX = posX - rect.left;
+    const ratio = relX / rect.width;
+    return {
+      zone: ratio < START_ZONE ? "start" : ratio > END_ZONE ? "end" : "center",
+      axis: "horizontal",
+    };
+  }
+
+  // flex-row: cross-axis is vertical → Y determines alignment
+  if (rect.height < MIN_CONTAINER_SIZE) return null;
+  const relY = posY - rect.top;
+  const ratio = relY / rect.height;
+  return {
+    zone: ratio < START_ZONE ? "start" : ratio > END_ZONE ? "end" : "center",
+    axis: "vertical",
+  };
+}
+
+// ── Labels ─────────────────────────────────────────────────────────────
+
+const LABELS: Record<string, Record<AlignmentZone, string>> = {
+  horizontal: { start: "Align left", center: "Align center", end: "Align right" },
+  vertical: { start: "Align top", center: "Align middle", end: "Align bottom" },
+};
+
+export function getAlignmentPreviewLabel(intent: AlignmentIntent): string {
+  return LABELS[intent.axis]?.[intent.zone] || "Align";
+}
+
+// ── Wrapper classNames ─────────────────────────────────────────────────
+
+const WRAPPER_CLASS: Record<AlignmentZone, string> = {
+  start: "flex w-full justify-start",
+  center: "flex w-full justify-center",
+  end: "flex w-full justify-end",
+};
+
+// ── Drop handler ───────────────────────────────────────────────────────
+
+/**
+ * Wrap the dragged node in an alignment container.
+ *
+ * In a flex-col parent, a child can't move left/right on its own.
+ * We wrap it in a full-width flex row with justify-start/center/end
+ * so it positions within the row. Same structural pattern as beside/split.
+ *
+ * For "center" zone: skip if parent already has items-center (node is already centered).
+ *
+ * Needs ContainerComponent to create wrapper nodes via CraftJS.
+ */
+function isAlignWrapper(node: any): boolean {
+  return node?.data?.custom?.displayName === "Align" && node?.data?.name === "Container";
+}
+
+export function applyAlignmentOnDrop(
+  actions: any,
+  nodeId: NodeId,
+  intent: AlignmentIntent,
+  view: string,
+  classDark: boolean,
+  query: any,
+  previousParentId?: NodeId
+) {
+  const node = query.node(nodeId).get();
+  if (!node?.data) return;
+
+  const parentId = node.data.parent;
+  if (!parentId) return;
+
+  const parentNode = query.node(parentId).get();
+  if (!parentNode?.data) return;
+
+  const parentType = parentNode.data.props?.type;
+  if (SKIP_TYPES.has(parentType)) return;
+
+  const parentClassName = parentNode.data.props?.className || "";
+  const wrapperClassName = WRAPPER_CLASS[intent.zone];
+
+  // If already inside an Align wrapper, just update its className
+  if (isAlignWrapper(parentNode)) {
+    console.log("[alignment-drop] reuse wrapper", { parentId, wrapperClassName });
+    actions.setProp(parentId, (props: Record<string, any>) => {
+      props.className = wrapperClassName;
+    });
+    return;
+  }
+
+  // Clean up old Align wrapper if it's now empty (node moved out of it)
+  if (previousParentId && previousParentId !== parentId) {
+    const prevParent = query.node(previousParentId).get();
+    if (isAlignWrapper(prevParent)) {
+      const prevChildren = prevParent?.data?.nodes || [];
+      if (prevChildren.length === 0) {
+        console.log("[alignment-drop] delete empty wrapper", { previousParentId });
+        actions.delete(previousParentId);
+      }
+    }
+  }
+
+  // If center and parent already centers, nothing to do
+  if (intent.zone === "center" && /\bitems-center\b/.test(parentClassName)) {
+    console.log("[alignment-drop] skip — already centered");
+    return;
+  }
+
+  const nodeIndex = (parentNode.data.nodes || []).indexOf(nodeId);
+  if (nodeIndex < 0) return;
+
+  console.log("[alignment-drop] wrap", {
+    nodeId,
+    parentId,
+    zone: intent.zone,
+    nodeIndex,
+    wrapperClassName,
+  });
+
+  // Create wrapper, insert at node's position, move node into it
+  const wrapperTree = query
+    .parseReactElement(
+      React.createElement(Element, {
+        canvas: true,
+        is: Container,
+        canDelete: true,
+        canEditName: true,
+        className: wrapperClassName,
+        custom: { displayName: "Align" },
+      })
+    )
+    .toNodeTree();
+
+  const merged = actions.history.merge();
+  actions.addNodeTree(wrapperTree, parentId, nodeIndex);
+  merged.move([nodeId], wrapperTree.rootNodeId, 0);
+}
