@@ -4,6 +4,7 @@ import sluggit from "slug";
 import { TbAdjustments, TbSearch, TbSettings } from "react-icons/tb";
 import { useSDK } from "../../core/context";
 import { useEditorSidebarDockLeft } from "../../utils/lib";
+import { getLoadedPages } from "../../utils/pageManagement";
 import { AdvancedTab } from "./page-settings/AdvancedTab";
 import { BasicTab } from "./page-settings/BasicTab";
 import { SEOTab } from "./page-settings/SEOTab";
@@ -11,6 +12,7 @@ import { mergeSettingsTabs, visibleSettingsTabs } from "./settings/registry";
 import { SettingsShell } from "./settings/SettingsShell";
 import { type SettingsTabDefinition } from "./settings/types";
 import { useSettingsController } from "./settings/useSettingsController";
+import type { PageSettingsPayload } from "../../types";
 
 interface PageSettingsModalProps {
   isOpen: boolean;
@@ -129,6 +131,65 @@ function createDraftFromPageNode(node: any, allowCustom404Page: boolean): PageSe
   };
 }
 
+function createDraftFromRemoteSettings(
+  remote: PageSettingsPayload,
+  allowCustom404Page: boolean,
+): PageSettingsDraft {
+  const p = remote.props || {};
+  return {
+    pageName: remote.displayName || "Untitled Page",
+    isHomePage: !!remote.isHomePage,
+    is404Page: allowCustom404Page ? !!remote.is404Page : false,
+    pageTitle: p.pageTitle || "",
+    pageDescription: p.pageDescription || "",
+    pageKeywords: p.pageKeywords || "",
+    pageAuthor: p.pageAuthor || "",
+    pageImage: p.pageImage || "",
+    ogTitle: p.ogTitle || "",
+    ogDescription: p.ogDescription || "",
+    ogImage: p.ogImage || "",
+    ogType: p.ogType || "website",
+    twitterCard: p.twitterCard || "summary_large_image",
+    twitterSite: p.twitterSite || "",
+    twitterCreator: p.twitterCreator || "",
+    canonicalUrl: p.canonicalUrl || "",
+    headCode: p.headCode || "",
+    bodyClass: p.bodyClass || "",
+    jsonLd: p.jsonLd || "",
+    pagePassword: p.pagePassword || "",
+    themeOverrides: p.themeOverrides || [],
+  };
+}
+
+/** Convert a PageSettingsDraft back to the remote payload shape. */
+function draftToPayload(snapshot: PageSettingsDraft, allowCustom404Page: boolean): PageSettingsPayload {
+  return {
+    displayName: snapshot.pageName,
+    isHomePage: snapshot.isHomePage,
+    is404Page: allowCustom404Page && snapshot.is404Page,
+    props: {
+      pageTitle: snapshot.pageTitle,
+      pageDescription: snapshot.pageDescription,
+      pageKeywords: snapshot.pageKeywords,
+      pageAuthor: snapshot.pageAuthor,
+      pageImage: snapshot.pageImage,
+      ogTitle: snapshot.ogTitle,
+      ogDescription: snapshot.ogDescription,
+      ogImage: snapshot.ogImage,
+      ogType: snapshot.ogType,
+      twitterCard: snapshot.twitterCard,
+      twitterSite: snapshot.twitterSite,
+      twitterCreator: snapshot.twitterCreator,
+      canonicalUrl: snapshot.canonicalUrl,
+      headCode: snapshot.headCode,
+      bodyClass: snapshot.bodyClass,
+      jsonLd: snapshot.jsonLd,
+      pagePassword: snapshot.pagePassword,
+      themeOverrides: snapshot.themeOverrides,
+    },
+  };
+}
+
 function getDraftSignature(draft: PageSettingsDraft): string {
   return JSON.stringify(draft);
 }
@@ -173,8 +234,12 @@ export function PageSettingsModal({
 }: PageSettingsModalProps) {
   const { actions, query } = useEditor();
   const queryRef = useRef(query);
-  const { features } = useSDK();
+  const { config, features } = useSDK();
+  const configRef = useRef(config);
   const allowCustom404Page = !!features.custom404Page;
+
+  // Tracks whether the current draft came from a remote fetch (page not in tree)
+  const isRemoteRef = useRef(false);
 
   const toolbarDockedLeft = useEditorSidebarDockLeft();
   const dockRight = !toolbarDockedLeft;
@@ -192,6 +257,15 @@ export function PageSettingsModal({
   useEffect(() => {
     queryRef.current = query;
   }, [query]);
+
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  // Reset remote flag when pageId changes
+  useEffect(() => {
+    isRemoteRef.current = false;
+  }, [pageId]);
 
   const builtInTabs = useMemo<Array<SettingsTabDefinition<PageSettingsDraft, PageSettingsTabContext>>>(
     () => [
@@ -303,26 +377,55 @@ export function PageSettingsModal({
   const injectedTabs = useMemo(() => adaptLegacyExtraTabs(extraTabs), [extraTabs]);
   const allTabs = useMemo(() => mergeSettingsTabs(builtInTabs, injectedTabs), [builtInTabs, injectedTabs]);
 
-  const { draft, setDraft, updateField, requestSave, flushSave } =
+  const { draft, setDraft, updateField, loading, requestSave, flushSave } =
     useSettingsController<PageSettingsDraft>({
       isOpen,
-      loadDraft: () => {
+      loadDraft: (): PageSettingsDraft | Promise<PageSettingsDraft> => {
         if (!pageId) return createEmptyPageDraft();
-        try {
+
+        // Page is in the CraftJS tree — read directly (sync)
+        if (getLoadedPages().has(pageId)) {
           const node = queryRef.current.node(pageId).get();
           const nextDraft = createDraftFromPageNode(node, allowCustom404Page);
           setPageSlug(sluggit(nextDraft.pageName || "untitled-page", "-"));
           setAutoSlug(true);
           setShowDeleteConfirm(false);
+          isRemoteRef.current = false;
           return nextDraft;
-        } catch (e) {
-          console.error("Error loading page settings:", e);
-          return createEmptyPageDraft();
         }
+
+        // Page is NOT in the tree — fetch from host via callback (async)
+        const { fetchPageSettings } = configRef.current.callbacks;
+        if (fetchPageSettings) {
+          return fetchPageSettings(pageId).then(remote => {
+            if (remote) {
+              const nextDraft = createDraftFromRemoteSettings(remote, allowCustom404Page);
+              setPageSlug(sluggit(nextDraft.pageName || "untitled-page", "-"));
+              setAutoSlug(true);
+              setShowDeleteConfirm(false);
+              isRemoteRef.current = true;
+              return nextDraft;
+            }
+            return createEmptyPageDraft();
+          });
+        }
+
+        return createEmptyPageDraft();
       },
       getDraftSignature,
-      commitDraft: snapshot => {
+      commitDraft: async snapshot => {
         if (!pageId) return;
+
+        // Remote page — save via host callback
+        if (isRemoteRef.current) {
+          const { savePageSettings } = configRef.current.callbacks;
+          if (savePageSettings) {
+            await savePageSettings(pageId, draftToPayload(snapshot, allowCustom404Page));
+          }
+          return;
+        }
+
+        // In-tree page — write to CraftJS
         try {
           const effective404 = allowCustom404Page && snapshot.is404Page;
 
@@ -450,7 +553,13 @@ export function PageSettingsModal({
       activeTab={activeTab}
       setActiveTab={setActiveTab}
     >
-      {activeDef ? activeDef.render(tabRenderCtx) : null}
+      {loading ? (
+        <div className="flex h-full items-center justify-center">
+          <span className="loading loading-spinner loading-md text-primary" />
+        </div>
+      ) : activeDef ? (
+        activeDef.render(tabRenderCtx)
+      ) : null}
     </SettingsShell>
   );
 }

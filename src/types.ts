@@ -103,6 +103,28 @@ export interface PageHubCallbacks {
   /** Called when a user clicks an "Add to Cart" button. Item is the current repeater item context. */
   onAddToCart?: (item: Record<string, any>, quantity: number) => void;
 
+  /**
+   * Fetch page settings (props + metadata) for a page not currently in the CraftJS tree.
+   * Called when opening the page settings modal for an unloaded page shard.
+   * When omitted, settings are only readable for in-tree pages.
+   */
+  fetchPageSettings?: (pageNodeId: string) => Promise<PageSettingsPayload | null>;
+
+  /**
+   * Save page settings for a page not currently in the CraftJS tree.
+   * Called when committing settings changes for an unloaded page shard.
+   * When omitted, settings are only writable for in-tree pages.
+   */
+  savePageSettings?: (pageNodeId: string, settings: PageSettingsPayload) => Promise<void>;
+
+}
+
+/** Shape exchanged between SDK and host for remote page settings. */
+export interface PageSettingsPayload {
+  displayName: string;
+  isHomePage: boolean;
+  is404Page: boolean;
+  props: Record<string, any>;
 }
 
 // ─── Theming ──────────────────────────────────────────────────────────────────
