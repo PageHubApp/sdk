@@ -172,6 +172,7 @@ export function AlignmentDropIndicator() {
           borderColor: "currentColor",
           borderStyle: "dashed",
           borderWidth: "1px",
+          pointerEvents: "none",
         }}
         parentDom={parentDom}
       />

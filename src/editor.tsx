@@ -392,6 +392,7 @@ function PageHubEditorInner({
               sectionThickness: 40,
               sectionParentTypes: ["page", "header", "footer"],
               className: "drop-zone-active",
+              fullWidth: true,
             }}
           >
             <EditorSelectionDomProvider>
