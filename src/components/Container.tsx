@@ -146,9 +146,11 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     }
   }
 
-  /** Skip dashed empty hint when this canvas already has a background (image, inline style, or Tailwind `bg-*`). */
+  /** Skip dashed empty hint when this canvas already has a background (image, inline style, or Tailwind `bg-*`).
+   *  Page containers always show the hint — their `bg-base-100` is the default surface, not decorative. */
   const suppressEmptyCanvasHint =
-    !!props.backgroundImage || !!props.root?.style || /\bbg-/.test(className.trim());
+    props.type !== "page" &&
+    (!!props.backgroundImage || !!props.root?.style || /\bbg-/.test(className.trim()));
 
   // Resolve connector data for repeaters (hoisted so both children and badge can access)
   const ds = props.dataSource;
@@ -228,6 +230,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
                   ? "Drop sections or right-click"
                   : "Drop here or right-click"
               }
+              fill={props.type === "page"}
             />
           ) : null}
         </RenderPattern>
