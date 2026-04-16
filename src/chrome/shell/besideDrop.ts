@@ -19,6 +19,7 @@ import {
   resolveBesideTargetContext,
   getReusableRowContext,
 } from "./layoutInference";
+import { clearAlignmentIntent } from "./alignmentInference";
 
 // ── Debug logging (dev only) ──────────────────────────────────────────
 
@@ -225,6 +226,10 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
     const parentId = parent.id;
     const targetNode = query.node(currentNode.id).get();
     if (!targetNode) return;
+
+    // Beside drop wins over alignment — clear any stale alignment intent
+    // so the dragend handler in CustomEventHandlers doesn't double-apply.
+    clearAlignmentIntent();
 
     log("drop-start", { side, dragType: dragTarget.type, parentId, targetId: targetNode.id });
 
