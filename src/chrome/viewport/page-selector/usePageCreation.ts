@@ -107,29 +107,24 @@ export function usePageCreation({
       if (!newElement?.rootNodeId) return;
       const newNodeId = newElement.rootNodeId;
 
-      if (pickerMode && onPagePick) {
-        requestAnimationFrame(() => {
-          const node = query.node(newNodeId).get();
-          if (node) {
-            onPagePick({
-              id: newNodeId,
-              displayName: node.data.custom?.displayName || "Untitled Page",
-              isHomePage: false,
-            });
-          }
-        });
-        return;
-      }
-
-      // In sharded mode (fetchPage provided), save first so the SitePage
-      // record exists in DB before navigateToPage → fetchPage fires.
-      // In standalone mode (no fetchPage), all pages live in the tree — no wait needed.
+      // Save so the SitePage shard exists in DB before navigating or picking.
+      // Standalone mode (no fetchPage) skips — all pages live in the tree.
       if (config.callbacks.fetchPage) {
         try {
           await saveAndWait(emitter);
         } catch (saveErr) {
           console.warn("[PageHub] Save before page navigation failed:", saveErr);
         }
+      }
+
+      if (pickerMode && onPagePick) {
+        const node = query.node(newNodeId).get();
+        onPagePick({
+          id: newNodeId,
+          displayName: node?.data?.custom?.displayName || "Untitled Page",
+          isHomePage: false,
+        });
+        return;
       }
 
       const node = query.node(newNodeId).get();
