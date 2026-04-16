@@ -10,7 +10,6 @@
 
 import React from "react";
 import { Element, type DragTarget, type Indicator, type Node, type NodeId, type NodeInfo } from "@craftjs/core";
-import { setBesideDropFired } from "./alignmentInference";
 
 const BESIDE_ZONE = 0.22;
 const BESIDE_MIN_EDGE_PX = 28;
@@ -128,10 +127,7 @@ function buildRowClassName(
 
 function shouldWrapBesideChild(node: Pick<Node, "data"> | undefined | null) {
   if (!node?.data) return true;
-  // Leaf components (Button, Text, Image, etc.) should always be wrapped
-  // even if they're canvas nodes (e.g. Button is canvas for icon children)
-  const name = node.data.name;
-  if (name !== "Container") return true;
+  if (!isContainerLike(node)) return true;
   return hasFullWidthClass(getClassName(node));
 }
 
@@ -546,7 +542,6 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
     if (where !== "beside-left" && where !== "beside-right") return;
 
     const side = where as BesideSide;
-    setBesideDropFired();
     const parentId = parent.id;
     const targetNode = query.node(currentNode.id).get();
     if (!targetNode) return;
@@ -733,10 +728,6 @@ export function onBesideDrop(ContainerComponent: React.ComponentType<any>) {
 
       console.log("[beside-drop] existing-dragged", {
         draggedNodeIds: dragTarget.nodes,
-        draggedName: draggedNodes[0]?.data?.name,
-        draggedDisplayName: draggedNodes[0]?.data?.custom?.displayName,
-        draggedClassName: getClassName(draggedNodes[0]),
-        isContainerLike: isContainerLike(draggedNodes[0]),
         shouldWrapDragged,
       });
 
