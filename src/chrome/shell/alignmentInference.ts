@@ -11,9 +11,9 @@
  * Suppressed when beside detection is active.
  */
 
-import React from "react";
-import { Element, type Node, type NodeId } from "@craftjs/core";
+import { type Node, type NodeId } from "@craftjs/core";
 import { Container } from "../../components/Container";
+import { SKIP_TYPES, makeContainerTree } from "./layoutInference";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -68,7 +68,6 @@ const START_ZONE = 0.30;
 const END_ZONE = 0.70;
 const MIN_CONTAINER_SIZE = 200; // px — skip detection if container is too narrow/short
 
-const SKIP_TYPES = new Set(["page", "header", "footer", "section"]);
 
 // ── Detection ──────────────────────────────────────────────────────────
 
@@ -213,18 +212,7 @@ export function applyAlignmentOnDrop(
   if (nodeIndex < 0) return;
 
   // Create wrapper, insert at node's position, move node into it
-  const wrapperTree = query
-    .parseReactElement(
-      React.createElement(Element, {
-        canvas: true,
-        is: Container,
-        canDelete: true,
-        canEditName: true,
-        className: wrapperClassName,
-        custom: { displayName: "Align" },
-      })
-    )
-    .toNodeTree();
+  const wrapperTree = makeContainerTree(query, Container, wrapperClassName, "Align");
 
   const merged = actions.history.merge();
   actions.addNodeTree(wrapperTree, parentId, nodeIndex);
