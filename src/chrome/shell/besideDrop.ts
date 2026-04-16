@@ -63,10 +63,10 @@ function stripCenteredLayoutTokens(className: string) {
     .join(" ");
 }
 
-function shouldWrapBesideChild(node: Pick<Node, "data"> | undefined | null) {
-  if (!node?.data) return true;
-  if (!isContainerLike(node)) return true;
-  return hasFullWidthClass(getClassName(node));
+function shouldWrapBesideChild(_node: Pick<Node, "data"> | undefined | null) {
+  // Always wrap — the Item wrapper provides flex-1 basis-0 h-full for
+  // equal width distribution and full-height alignment in the row.
+  return true;
 }
 
 function buildWrapperClassName(
