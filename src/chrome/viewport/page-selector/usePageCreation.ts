@@ -125,7 +125,12 @@ export function usePageCreation({
       // The save serializes the tree which now includes the new page node,
       // so the SitePage record gets created. navigateToPage → fetchPage
       // needs that record to exist.
-      await saveAndWait(emitter);
+      try {
+        await saveAndWait(emitter);
+      } catch (saveErr) {
+        console.warn("[PageHub] Save before page navigation failed:", saveErr);
+        // Continue — page node exists in CraftJS tree, navigation may still work
+      }
 
       const node = query.node(newNodeId).get();
       const displayName = node?.data?.custom?.displayName || "Untitled Page";

@@ -85,7 +85,8 @@ export function PageSelector({
 
   // Merge: SWR pages + any CraftJS pages not yet in SWR (newly created, unsaved)
   const swrIds = new Set(swrPages.map(p => p.id));
-  const pages = swrPages.length > 0
+  // Use SWR data if the fetch has completed (pageData exists), otherwise fall back to CraftJS tree
+  const pages = pageData?.pages
     ? [...swrPages, ...craftPages.filter(p => !swrIds.has(p.id))]
     : craftPages;
 

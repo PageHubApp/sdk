@@ -159,8 +159,8 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
               loadedPageIds: pageIds,
             };
           }
-        } catch {
-          // Fall back to full-tree save if shard extraction fails
+        } catch (shardErr) {
+          console.warn("[PageHub] Shard extraction failed, falling back to full-tree save:", shardErr);
         }
 
         const pageData: PageData = { content: compressed, html, classes, scrollObserverScript, shards };
