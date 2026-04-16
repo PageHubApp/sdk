@@ -33,26 +33,36 @@ export interface AlignmentDropContext {
   previousParentId?: NodeId;
 }
 
-// ── Module-level state (shared between indicator component + drop handler) ──
+// ── Shared state (survives HMR/module splits via window) ──
 
-let _current: AlignmentDropContext | null = null;
+const INTENT_KEY = "__pagehub_alignment_intent__";
+const DRAG_ORIGIN_KEY = "__pagehub_alignment_drag_origin__";
 
 export function setAlignmentIntent(intent: AlignmentIntent | null, view?: string, classDark?: boolean) {
-  const prev = _current;
-  _current = intent ? { intent, view: view || "mobile", classDark: classDark ?? false } : null;
-  if (!intent && prev) {
-    console.log("[alignment-intent] CLEARED", new Error().stack?.split("\n").slice(1, 4).join(" <- "));
-  }
+  (window as any)[INTENT_KEY] = intent ? { intent, view: view || "mobile", classDark: classDark ?? false } : null;
 }
 
 export function getAlignmentDropContext(): AlignmentDropContext | null {
-  console.log("[alignment-intent] get()", { hasCurrent: !!_current, zone: _current?.intent?.zone });
-  return _current;
+  const ctx = (window as any)[INTENT_KEY] as AlignmentDropContext | null;
+  console.log("[alignment-intent] get()", { hasCurrent: !!ctx, zone: ctx?.intent?.zone });
+  return ctx;
 }
 
 export function clearAlignmentIntent() {
   console.log("[alignment-intent] clear()");
-  _current = null;
+  (window as any)[INTENT_KEY] = null;
+  (window as any)[DRAG_ORIGIN_KEY] = null;
+}
+
+/** Store the first node that starts dragging (innermost = the actual content node). */
+export function setDragOrigin(nodeId: NodeId, parentId: NodeId | undefined) {
+  if (!(window as any)[DRAG_ORIGIN_KEY]) {
+    (window as any)[DRAG_ORIGIN_KEY] = { nodeId, parentId };
+  }
+}
+
+export function getDragOrigin(): { nodeId: NodeId; parentId: NodeId | undefined } | null {
+  return (window as any)[DRAG_ORIGIN_KEY] || null;
 }
 
 // ── Zone thresholds ────────────────────────────────────────────────────
@@ -159,6 +169,36 @@ export function applyAlignmentOnDrop(
 ) {
   const node = query.node(nodeId).get();
   if (!node?.data) return;
+
+  // If the dragged node IS an Align wrapper, just update its className directly
+  if (isAlignWrapper(node)) {
+    const wrapperClassName = WRAPPER_CLASS[intent.zone];
+    const currentClassName = node.data.props?.className || "";
+    const newParentId = node.data.parent;
+    const newParent = newParentId ? query.node(newParentId).get() : null;
+    console.log("[alignment-drop] update dragged wrapper", {
+      nodeId,
+      currentClassName,
+      wrapperClassName,
+      newParentId,
+      newParentClassName: newParent?.data?.props?.className,
+      newParentType: newParent?.data?.props?.type,
+      childIds: node.data.nodes,
+    });
+    actions.setProp(nodeId, (props: Record<string, any>) => {
+      props.className = wrapperClassName;
+    });
+    // Verify after write
+    requestAnimationFrame(() => {
+      const updated = query.node(nodeId).get();
+      console.log("[alignment-drop] verify wrapper after write", {
+        nodeId,
+        className: updated?.data?.props?.className,
+        parentId: updated?.data?.parent,
+      });
+    });
+    return;
+  }
 
   const parentId = node.data.parent;
   if (!parentId) return;

@@ -3,6 +3,8 @@ import {
   getAlignmentDropContext,
   clearAlignmentIntent,
   applyAlignmentOnDrop,
+  setDragOrigin,
+  getDragOrigin,
 } from "./alignmentInference";
 
 export default class CustomEventHandlers extends DefaultEventHandlers {
@@ -18,6 +20,10 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
         if (!query.node(id)?.isDraggable()) return () => {};
 
         const unbindDefaultDragHandlers = defaultEventHandlers.drag(el, id);
+
+        // Capture original state at drag start (before CraftJS moves the node)
+        let originalParentId: NodeId | undefined;
+        let originalNodeId: NodeId = id;
 
         const unbindDragStart = this.addCraftEventListener(el, "dragstart", e => {
           const nativeEvent = (e as any).nativeEvent || e;
@@ -42,6 +48,14 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
           document.body.setAttribute("data-is-dragging", "true");
 
           const node = query.node(id).get();
+          originalParentId = node?.data?.parent;
+          setDragOrigin(id, originalParentId);
+          console.log("[alignment-dragstart]", {
+            id,
+            nodeName: node?.data?.name,
+            displayName: node?.data?.custom?.displayName,
+            parent: originalParentId,
+          });
           const nodeType = node?.data?.props?.type || "";
           if (nodeType) {
             document.body.setAttribute("data-dragging-type", nodeType);
@@ -54,21 +68,22 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
           document.body.removeAttribute("data-dragging-type");
 
           // Apply alignment intent if one was detected during drag
+          // Use drag origin (first/innermost node) — CraftJS may promote drag to wrapper
           const ctx = getAlignmentDropContext();
           if (ctx) {
-            // Capture previous parent BEFORE CraftJS move completes
-            const prevNode = query.node(id).get();
-            const prevParentId = prevNode?.data?.parent;
-            ctx.previousParentId = prevParentId;
+            const origin = getDragOrigin();
+            const targetId = origin?.nodeId || id;
+            const origParent = origin?.parentId || originalParentId;
 
             console.log("[alignment-dragend]", {
               zone: ctx.intent.zone,
-              draggedNodeId: id,
-              prevParentId,
+              handlerId: id,
+              targetId,
+              origParent,
             });
 
             requestAnimationFrame(() => {
-              applyAlignmentOnDrop(actions, id, ctx.intent, ctx.view, ctx.classDark, query, ctx.previousParentId);
+              applyAlignmentOnDrop(actions, targetId, ctx.intent, ctx.view, ctx.classDark, query, origParent);
               clearAlignmentIntent();
             });
           }
