@@ -30,11 +30,11 @@ const log = isDev
 
 // ── Row / wrapper class constants ─────────────────────────────────────
 
-const ROW_CLASSNAME = "flex flex-row flex-wrap gap-space-md items-start min-w-0 w-full";
-const PROMOTED_ROW_CLASSNAME = "flex flex-row flex-nowrap gap-space-md items-start min-w-0 w-full";
-const WRAPPER_CLASSNAME = "flex min-w-0 flex-1 basis-0 flex-col gap-4";
-const PROMOTED_TARGET_WRAPPER_CLASSNAME = "flex min-w-0 flex-1 basis-0 flex-col gap-4";
-const PROMOTED_DRAGGED_WRAPPER_CLASSNAME = "flex min-w-0 shrink-0 flex-col gap-4";
+const ROW_CLASSNAME = "flex flex-row flex-wrap gap-space-md items-stretch min-w-0 w-full";
+const PROMOTED_ROW_CLASSNAME = "flex flex-row flex-nowrap gap-space-md items-stretch min-w-0 w-full";
+const WRAPPER_CLASSNAME = "flex min-w-0 flex-1 basis-0 h-full flex-col gap-4";
+const PROMOTED_TARGET_WRAPPER_CLASSNAME = "flex min-w-0 flex-1 basis-0 h-full flex-col gap-4";
+const PROMOTED_DRAGGED_WRAPPER_CLASSNAME = "flex min-w-0 shrink-0 h-full flex-col gap-4";
 const SIDE_ALIGNMENT_CLASSNAME: Record<BesideSide, string> = {
   "beside-left": "items-start text-left",
   "beside-right": "items-end text-right",
@@ -94,9 +94,9 @@ function buildRowClassName(
   const baseClassName = mode === "promoted" ? PROMOTED_ROW_CLASSNAME : ROW_CLASSNAME;
   const centeredNodes = nodes.filter((node) => shouldPreserveCenteredContent(node)).length;
   if (centeredNodes < 2) return baseClassName;
-  if (side === "beside-right") return baseClassName.replace("items-start", "items-end");
+  if (side === "beside-right") return baseClassName.replace("items-stretch", "items-end");
   if (side === "beside-left") return baseClassName;
-  return baseClassName.replace("items-start", "items-center");
+  return baseClassName.replace("items-stretch", "items-center");
 }
 
 // ── Batched action dispatch ───────────────────────────────────────────
