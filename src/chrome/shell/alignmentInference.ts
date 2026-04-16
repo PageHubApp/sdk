@@ -43,13 +43,10 @@ export function setAlignmentIntent(intent: AlignmentIntent | null, view?: string
 }
 
 export function getAlignmentDropContext(): AlignmentDropContext | null {
-  const ctx = (window as any)[INTENT_KEY] as AlignmentDropContext | null;
-  console.log("[alignment-intent] get()", { hasCurrent: !!ctx, zone: ctx?.intent?.zone });
-  return ctx;
+  return (window as any)[INTENT_KEY] as AlignmentDropContext | null;
 }
 
 export function clearAlignmentIntent() {
-  console.log("[alignment-intent] clear()");
   (window as any)[INTENT_KEY] = null;
   (window as any)[DRAG_ORIGIN_KEY] = null;
 }
@@ -172,30 +169,8 @@ export function applyAlignmentOnDrop(
 
   // If the dragged node IS an Align wrapper, just update its className directly
   if (isAlignWrapper(node)) {
-    const wrapperClassName = WRAPPER_CLASS[intent.zone];
-    const currentClassName = node.data.props?.className || "";
-    const newParentId = node.data.parent;
-    const newParent = newParentId ? query.node(newParentId).get() : null;
-    console.log("[alignment-drop] update dragged wrapper", {
-      nodeId,
-      currentClassName,
-      wrapperClassName,
-      newParentId,
-      newParentClassName: newParent?.data?.props?.className,
-      newParentType: newParent?.data?.props?.type,
-      childIds: node.data.nodes,
-    });
     actions.setProp(nodeId, (props: Record<string, any>) => {
-      props.className = wrapperClassName;
-    });
-    // Verify after write
-    requestAnimationFrame(() => {
-      const updated = query.node(nodeId).get();
-      console.log("[alignment-drop] verify wrapper after write", {
-        nodeId,
-        className: updated?.data?.props?.className,
-        parentId: updated?.data?.parent,
-      });
+      props.className = WRAPPER_CLASS[intent.zone];
     });
     return;
   }
@@ -214,7 +189,6 @@ export function applyAlignmentOnDrop(
 
   // If already inside an Align wrapper, just update its className
   if (isAlignWrapper(parentNode)) {
-    console.log("[alignment-drop] reuse wrapper", { parentId, wrapperClassName });
     actions.setProp(parentId, (props: Record<string, any>) => {
       props.className = wrapperClassName;
     });
@@ -224,31 +198,19 @@ export function applyAlignmentOnDrop(
   // Clean up old Align wrapper if it's now empty (node moved out of it)
   if (previousParentId && previousParentId !== parentId) {
     const prevParent = query.node(previousParentId).get();
-    if (isAlignWrapper(prevParent)) {
-      const prevChildren = prevParent?.data?.nodes || [];
-      if (prevChildren.length === 0) {
-        console.log("[alignment-drop] delete empty wrapper", { previousParentId });
-        actions.delete(previousParentId);
-      }
+    const prevChildren = prevParent?.data?.nodes || [];
+    if (isAlignWrapper(prevParent) && prevChildren.length === 0) {
+      actions.delete(previousParentId);
     }
   }
 
   // If center and parent already centers, nothing to do
   if (intent.zone === "center" && /\bitems-center\b/.test(parentClassName)) {
-    console.log("[alignment-drop] skip — already centered");
     return;
   }
 
   const nodeIndex = (parentNode.data.nodes || []).indexOf(nodeId);
   if (nodeIndex < 0) return;
-
-  console.log("[alignment-drop] wrap", {
-    nodeId,
-    parentId,
-    zone: intent.zone,
-    nodeIndex,
-    wrapperClassName,
-  });
 
   // Create wrapper, insert at node's position, move node into it
   const wrapperTree = query

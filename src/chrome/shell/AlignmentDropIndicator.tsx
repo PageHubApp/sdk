@@ -61,9 +61,6 @@ export function AlignmentDropIndicator() {
       // Only update state when zone actually changes
       const prev = intentRef.current;
       if (next?.zone !== prev?.zone || next?.axis !== prev?.axis) {
-        if (next) {
-          console.log("[alignment-detect]", next.zone, next.axis, { parentId: parentNode?.id, view: classPrefixView });
-        }
         intentRef.current = next;
         setAlignmentIntent(next, classPrefixView, classDark);
         setIntent(next);

@@ -23,7 +23,6 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
 
         // Capture original state at drag start (before CraftJS moves the node)
         let originalParentId: NodeId | undefined;
-        let originalNodeId: NodeId = id;
 
         const unbindDragStart = this.addCraftEventListener(el, "dragstart", e => {
           const nativeEvent = (e as any).nativeEvent || e;
@@ -50,12 +49,6 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
           const node = query.node(id).get();
           originalParentId = node?.data?.parent;
           setDragOrigin(id, originalParentId);
-          console.log("[alignment-dragstart]", {
-            id,
-            nodeName: node?.data?.name,
-            displayName: node?.data?.custom?.displayName,
-            parent: originalParentId,
-          });
           const nodeType = node?.data?.props?.type || "";
           if (nodeType) {
             document.body.setAttribute("data-dragging-type", nodeType);
@@ -74,13 +67,6 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
             const origin = getDragOrigin();
             const targetId = origin?.nodeId || id;
             const origParent = origin?.parentId || originalParentId;
-
-            console.log("[alignment-dragend]", {
-              zone: ctx.intent.zone,
-              handlerId: id,
-              targetId,
-              origParent,
-            });
 
             requestAnimationFrame(() => {
               applyAlignmentOnDrop(actions, targetId, ctx.intent, ctx.view, ctx.classDark, query, origParent);
