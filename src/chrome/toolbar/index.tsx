@@ -8,6 +8,7 @@ import { PreviewAtom } from "../viewport/atoms";
 import { isFlyoutBlockingToolColumn, usePanelUrl } from "../../utils/usePanelUrl";
 import { Header } from "../viewport/Header";
 import { EditorEmptyState } from "./EditorEmptyState";
+import { SidebarLayersPanel } from "./SidebarLayersPanel";
 
 export * from "./helpers/ToolbarDashedButton";
 export * from "./helpers/ToolbarSegmentedControl";
@@ -80,12 +81,17 @@ export const Toolbar = () => {
     >
       <Header />
       <div
-        className={`bg-sidebar text-sidebar-foreground z-0 flex w-full flex-1 flex-col overflow-hidden antialiased select-none ${
-          flyoutBlockingToolColumn ? "pointer-events-none" : ""
-        }`}
+        className="bg-sidebar text-sidebar-foreground z-0 flex w-full flex-1 flex-col overflow-hidden antialiased select-none"
         aria-expanded={isOpen ? "true" : "false"}
       >
-        {tool}
+        <div
+          className={`flex min-h-0 flex-1 flex-col overflow-hidden${
+            flyoutBlockingToolColumn ? " pointer-events-none" : ""
+          }`}
+        >
+          {tool}
+        </div>
+        <SidebarLayersPanel />
       </div>
     </aside>
   );

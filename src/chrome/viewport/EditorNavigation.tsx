@@ -23,7 +23,8 @@ import {
 } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
-import { AssistantOpenAtom, ShowGridLinesAtom } from "../../utils/atoms";
+import { AssistantOpenAtom, ShowGridLinesAtom, SidebarLayersPanelAtom } from "../../utils/atoms";
+import { phStorage } from "../../utils/phStorage";
 import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
 import { useSDK } from "../../core/context";
 import { EditorMenuKbd, EditorMenuNavRow, EditorMenuSectionLabel } from "./EditorMenuNav";
@@ -68,6 +69,7 @@ export const EditorNavigation = ({
     selectedId: query.getEvent("selected").first() ?? null,
   }));
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
+  const [sidebarLayersOpen, setSidebarLayersOpen] = useAtomState(SidebarLayersPanelAtom);
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const { config } = useSDK();
   const isAiEnabled = useAiEnabled();
@@ -127,8 +129,11 @@ export const EditorNavigation = ({
         ref={navRef}
         role="navigation"
         aria-label="Editor menu"
-        className="bg-base-100 text-base-content pointer-events-auto absolute bottom-0 z-50 flex w-full flex-col"
-        style={{ top: "var(--editor-nav-height, 3rem)" }}
+        className="bg-base-100 text-base-content pointer-events-auto absolute z-50 flex w-full flex-col"
+        style={{
+          top: "var(--editor-nav-height, 3rem)",
+          bottom: "var(--sidebar-layers-height, 0px)",
+        }}
       >
         <SidebarFlyoutSurface>
           {panel === "components" || panel === "blocks" ? (
@@ -207,10 +212,27 @@ export const EditorNavigation = ({
 
                       <EditorMenuNavRow
                         icon={<TbLayoutGrid />}
-                        label={<div className="text-sm">Show Layers</div>}
+                        label={<div className="text-sm">Pop Out Layers</div>}
                         kbd={<EditorMenuKbd>⌘⇧L</EditorMenuKbd>}
                         onClick={() => {
                           setIsLayersDialogOpen(true);
+                          close();
+                        }}
+                      />
+
+                      <EditorMenuNavRow
+                        icon={<TbLayoutGrid />}
+                        label={
+                          <div className="text-sm">
+                            {sidebarLayersOpen ? "Hide" : "Dock"} Layers Panel
+                          </div>
+                        }
+                        onClick={() => {
+                          setSidebarLayersOpen(prev => {
+                            const next = !prev;
+                            phStorage.set("sidebar-layers-panel", String(next));
+                            return next;
+                          });
                           close();
                         }}
                       />

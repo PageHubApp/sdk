@@ -21,7 +21,7 @@ import {
   TbPlus,
   TbX,
 } from "react-icons/tb";
-import { SessionTokenAtom, SettingsAtom, ShowGridLinesAtom } from "../../utils/atoms";
+import { LayersDialogOpenAtom, SessionTokenAtom, SettingsAtom, ShowGridLinesAtom } from "../../utils/atoms";
 import { ComponentsAtom, LastActiveAtom, SideBarAtom, ViewModeAtom } from "../../utils/lib";
 import { useSetAtomState } from "../../utils/atoms";
 import {
@@ -120,7 +120,7 @@ export const Header = () => {
 
   const { isOpen, toggle, open, close } = usePanelUrl();
   const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useState(false);
-  const [isLayersDialogOpen, setIsLayersDialogOpen] = useState(false);
+  const [isLayersDialogOpen, setIsLayersDialogOpen] = useAtomState(LayersDialogOpenAtom);
   const [isSiteSettingsModalOpen, setIsSiteSettingsModalOpen] = useState(false);
   const [isModifiersModalOpen, setIsModifiersModalOpen] = useState(false);
 

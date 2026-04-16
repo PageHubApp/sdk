@@ -165,8 +165,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
       {/* Drop indicator - before (with spacing) */}
       {isDropTarget && state.dropIndicator?.position === "before" && (
         <div
-          className="animate-in fade-in zoom-in relative w-full py-3 duration-200"
-          style={{ marginLeft: `${depth * 16}px` }}
+          className="animate-in fade-in zoom-in relative w-full py-1.5 duration-200"
+          style={{ marginLeft: `${depth * 12}px` }}
         >
           <div className="h-1 w-full animate-pulse rounded-full bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 shadow-lg shadow-blue-500/50" />
           <div className="absolute -top-1.5 left-0 size-5 rounded-full border-3 border-white bg-linear-to-br from-blue-400 to-blue-600 shadow-lg" />
@@ -178,9 +178,9 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
 
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div
-        className={`group relative flex cursor-pointer items-center gap-2.5 border-l-2 px-3 py-2 ${
-          isHeader ? "mb-3" : ""
-        } ${isFooter ? "mt-3" : ""} ${
+        className={`group relative flex cursor-pointer items-center gap-1.5 border-l-2 px-2 py-1 ${
+          isHeader ? "mb-1.5" : ""
+        } ${isFooter ? "mt-1.5" : ""} ${
           isSelected
             ? isPage
               ? "border-l-orange-700 bg-linear-to-r from-orange-500 to-orange-600 font-medium text-white shadow-lg"
@@ -207,7 +207,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             ? "scale-[1.02] border-l-blue-500 bg-linear-to-r from-blue-50 to-blue-100 ring-2 ring-blue-400 ring-inset dark:from-blue-950 dark:to-blue-900 dark:ring-blue-600"
             : ""
         } ${isDropTarget ? "my-1" : ""}`}
-        style={{ paddingLeft: `${depth * 16 + 8}px` }}
+        style={{ paddingLeft: `${depth * 12 + 6}px` }}
         onClick={handleSelect}
         draggable
         onDragStart={handleDragStart}
@@ -220,7 +220,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
           className={`${isDragging ? "animate-pulse" : ""} transition-transform hover:scale-110`}
         >
           <TbGripVertical
-            className={`size-4 shrink-0 cursor-grab transition-colors active:cursor-grabbing ${
+            className={`size-3 shrink-0 cursor-grab transition-colors active:cursor-grabbing ${
               isSelected
                 ? "text-white"
                 : "text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -229,7 +229,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
         </div>
 
         {/* Expand/collapse chevron */}
-        <div className="flex size-4 shrink-0 items-center justify-center">
+        <div className="flex size-3.5 shrink-0 items-center justify-center">
           {hasChildren ? (
             <button
               onClick={handleToggleExpand}
@@ -237,33 +237,33 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
               aria-expanded={isExpanded}
             >
               <TbChevronRight
-                className={`size-3.5 transition-all duration-200 ${
+                className={`size-3 transition-all duration-200 ${
                   isExpanded ? "rotate-90" : ""
                 } ${isSelected ? "text-white" : "text-gray-600 dark:text-gray-400"}`}
               />
             </button>
           ) : (
-            <div className="size-3.5" />
+            <div className="size-3" />
           )}
         </div>
 
         {/* Visibility toggle */}
         <button
           onClick={handleToggleVisibility}
-          className="rounded p-1 transition-all hover:scale-110 hover:bg-white/20 dark:hover:bg-black/20"
+          className="rounded p-0.5 transition-all hover:scale-110 hover:bg-white/20 dark:hover:bg-black/20"
           title={hidden ? "Show" : "Hide"}
           aria-label="Toggle visibility"
           aria-pressed={!hidden}
         >
           {hidden ? (
             <TbEyeOff
-              className={`size-4 transition-colors ${
+              className={`size-3.5 transition-colors ${
                 isSelected ? "text-white/70" : "text-gray-400 hover:text-red-500"
               }`}
             />
           ) : (
             <TbEye
-              className={`size-4 transition-colors ${
+              className={`size-3.5 transition-colors ${
                 isSelected
                   ? "text-white"
                   : "text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
@@ -283,12 +283,12 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
               onChange={handleNameChange}
               onBlur={handleNameBlur}
               onKeyDown={handleNameKeyDown}
-              className="w-full rounded border border-blue-500 bg-white px-1 py-0 text-sm text-gray-900 outline-none dark:bg-gray-800 dark:text-gray-100"
+              className="w-full rounded border border-blue-500 bg-white px-1 py-0 text-xs text-gray-900 outline-none dark:bg-gray-800 dark:text-gray-100"
               onClick={e => e.stopPropagation()}
             />
           ) : (
             <span
-              className={`block truncate text-sm ${
+              className={`block truncate text-xs ${
                 isSelected ? "font-medium text-white" : "text-gray-900 dark:text-gray-100"
               }`}
             >
@@ -309,7 +309,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             <button
               onClick={handleMoveUp}
               disabled={!canMoveUp}
-              className={`rounded p-1 transition-all ${
+              className={`rounded p-0.5 transition-all ${
                 canMoveUp
                   ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
                   : "cursor-not-allowed opacity-20"
@@ -317,7 +317,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
               title="Move up (↑)"
             >
               <TbArrowUp
-                className={`size-3.5 transition-colors ${
+                className={`size-3 transition-colors ${
                   isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
                 }`}
               />
@@ -325,7 +325,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             <button
               onClick={handleMoveDown}
               disabled={!canMoveDown}
-              className={`rounded p-1 transition-all ${
+              className={`rounded p-0.5 transition-all ${
                 canMoveDown
                   ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
                   : "cursor-not-allowed opacity-20"
@@ -333,16 +333,16 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
               title="Move down (↓)"
             >
               <TbArrowDown
-                className={`size-3.5 transition-colors ${
+                className={`size-3 transition-colors ${
                   isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
                 }`}
               />
             </button>
-            <div className="h-4 w-px bg-white/20 dark:bg-black/20" />
+            <div className="h-3 w-px bg-white/20 dark:bg-black/20" />
             <button
               onClick={handleMoveOut}
               disabled={!canMoveOut}
-              className={`rounded p-1 transition-all ${
+              className={`rounded p-0.5 transition-all ${
                 canMoveOut
                   ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
                   : "cursor-not-allowed opacity-20"
@@ -350,7 +350,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
               title="Move out (←)"
             >
               <TbArrowLeft
-                className={`size-3.5 transition-colors ${
+                className={`size-3 transition-colors ${
                   isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
                 }`}
               />
@@ -358,7 +358,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             <button
               onClick={handleMoveIn}
               disabled={!canMoveIn}
-              className={`rounded p-1 transition-all ${
+              className={`rounded p-0.5 transition-all ${
                 canMoveIn
                   ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
                   : "cursor-not-allowed opacity-20"
@@ -366,21 +366,21 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
               title="Move in (→)"
             >
               <TbArrowRight
-                className={`size-3.5 transition-colors ${
+                className={`size-3 transition-colors ${
                   isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
                 }`}
               />
             </button>
             {canDelete && (
               <>
-                <div className="h-4 w-px bg-white/20 dark:bg-black/20" />
+                <div className="h-3 w-px bg-white/20 dark:bg-black/20" />
                 <button
                   onClick={handleDelete}
-                  className="rounded p-1 transition-all hover:scale-110 hover:bg-red-500/20 dark:hover:bg-red-500/30"
+                  className="rounded p-0.5 transition-all hover:scale-110 hover:bg-red-500/20 dark:hover:bg-red-500/30"
                   title="Delete"
                 >
                   <TbTrash
-                    className={`size-3.5 transition-colors ${
+                    className={`size-3 transition-colors ${
                       isSelected
                         ? "text-white hover:text-red-300"
                         : "text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"
@@ -396,8 +396,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
       {/* Drop indicator - after (with spacing) */}
       {isDropTarget && state.dropIndicator?.position === "after" && (
         <div
-          className="animate-in fade-in zoom-in relative w-full py-3 duration-200"
-          style={{ marginLeft: `${depth * 16}px` }}
+          className="animate-in fade-in zoom-in relative w-full py-1.5 duration-200"
+          style={{ marginLeft: `${depth * 12}px` }}
         >
           <div className="h-1 w-full animate-pulse rounded-full bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 shadow-lg shadow-blue-500/50" />
           <div className="absolute -top-1.5 left-0 size-5 rounded-full border-3 border-white bg-linear-to-br from-blue-400 to-blue-600 shadow-lg" />

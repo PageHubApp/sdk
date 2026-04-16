@@ -97,3 +97,18 @@ export const AssistantOpenAtom = atom(
 );
 
 export const AiChatAttachedNodesAtom = atom<AiChatAttachedNode[]>("aiChatAttachedNodes", []);
+
+/** Whether the docked Layers panel at the bottom of the sidebar is expanded. */
+export const SidebarLayersPanelAtom = atom<boolean>(
+  "sidebarLayersPanel",
+  (() => {
+    try {
+      const saved = typeof window !== "undefined" ? phStorage.get("sidebar-layers-panel") : null;
+      return saved === "true";
+    } catch {}
+    return false;
+  })()
+);
+
+/** Whether the floating Layers dialog is open. Shared atom so both Header and SidebarLayersPanel can control it. */
+export const LayersDialogOpenAtom = atom("layersDialogOpen", false);
