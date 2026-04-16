@@ -263,18 +263,20 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   // Build the isolation callback — extracted so it can be refreshed
   const makeOnIsolate = useCallback(
     () => async (pageId: string | null) => {
+      console.log(`[ViewportShell] onIsolate called for ${pageId}, fetchPage=${!!config.callbacks.fetchPage}`);
       if (config.callbacks.fetchPage) {
         setPageLoading(true);
         setPageLoadDone(false);
         const fetched = await isolatePageLazy(pageId, query, actions, setIsolate, config.callbacks.fetchPage);
+        console.log(`[ViewportShell] isolatePageLazy returned, fetched=${fetched}`);
         setPageLoadDone(true);
-        // Let the loading bar animate to 100% before hiding
         if (!fetched) {
           setPageLoading(false);
           setPageLoadDone(false);
         }
         return;
       }
+      console.log(`[ViewportShell] using isolatePageAlt (no fetchPage)`);
       isolatePageAlt(isolate, query, pageId, actions, setIsolate, true);
     },
     [config.callbacks.fetchPage, query, actions, setIsolate, isolate],
@@ -318,11 +320,16 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       onIsolate: makeOnIsolate(),
     });
 
-    // Prefer: URL page > localStorage page > nav store's pick (home page)
+    // Prefer: URL page > localStorage page > nav store's pick (home page).
+    // Initial page is already in the tree from SSR — just isolate, don't fetch.
     const targetPage = initialPageId || storedId || getDefaultEditorPageId(query);
+    console.log(`[ViewportShell] init: targetPage=${targetPage}, isolate=${isolate}, initialPageId=${initialPageId}, storedId=${storedId}`);
     if (targetPage && targetPage !== isolate) {
-      const onIsolate = makeOnIsolate();
-      setTimeout(() => onIsolate(targetPage), 0);
+      console.log(`[ViewportShell] init: isolating ${targetPage} via isolatePageAlt`);
+      setTimeout(() => {
+        console.log(`[ViewportShell] init: setTimeout fired, calling isolatePageAlt(${targetPage})`);
+        isolatePageAlt(isolate, query, targetPage, actions, setIsolate, true);
+      }, 0);
     }
   }, [editorPageIdsKey, query, actions, setIsolate, isolate, config.urlStrategy, makeOnIsolate]);
 

@@ -160,12 +160,6 @@ export function PageSelector({
         return;
       }
 
-      // Save current changes before switching
-      if (typeof unsavedChanges === "string" && unsavedChanges.length > 0) {
-        emitter.emit("save", { isDraft: true });
-        setUnsavedChanged(null);
-      }
-
       // Navigate via the store — handles isolation + URL pushState
       const page = pages.find(p => p.id === pageId);
       const isHomePage = pageId === homePageId;

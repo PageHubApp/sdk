@@ -109,81 +109,38 @@ export async function isolatePageLazy(
     return false;
   }
 
-  // Page already in tree — isolate without fetch
-  try {
-    const node = query.node(active).get();
-    if (node) {
-      const container = document.querySelector("[data-container]") as HTMLElement | null;
-      if (container) {
-        container.style.transition = "opacity 80ms ease-out";
-        container.style.opacity = "0";
-      }
-
-      actions.selectNode(null);
-
-      const viewport = document.getElementById("viewport");
-      if (viewport) viewport.scrollTop = 0;
-      if (container) container.scrollTop = 0;
-
-      isolatePageAlt(active, query, active, actions, setIsolate);
-
-      // Wait for React to flush + paint before revealing
-      setTimeout(() => {
-        if (container) {
-          container.style.opacity = "";
-          // Clean up transition after it completes
-          setTimeout(() => { if (container) container.style.transition = ""; }, 100);
-        }
-      }, 50);
-      return false;
-    }
-  } catch {
-    // Node not found — need to fetch
-  }
-
   if (!fetchPage) {
-    console.warn(`[PageHub] Page ${active} not loaded and no fetchPage callback provided`);
+    // No fetchPage = standalone SDK, all pages in tree — just isolate
+    isolatePageAlt(active, query, active, actions, setIsolate);
     return false;
   }
 
+  // If the page is already loaded (just created, or from initial SSR), isolate it directly.
+  // Only fetch if the page isn't in the tree.
+  if (_loadedPages.has(active)) {
+    console.log(`[PageSwitch] page ${active} already loaded, isolating directly`);
+    isolatePageAlt(active, query, active, actions, setIsolate);
+    return false;
+  }
+
+  console.log(`[PageSwitch] fetching page ${active}`);
   const pageData = await fetchPage(active);
   if (!pageData?.content) {
-    console.warn(`[PageHub] fetchPage(${active}) returned no content`);
+    console.warn(`[PageSwitch] fetchPage(${active}) returned no content`);
     return false;
   }
 
-  // Replace the entire tree with shared + new page.
-  // Old page nodes are evicted — keeps memory and DOM lean.
   try {
+    console.log(`[PageSwitch] decompressing`);
     const json = await decompressAsync(pageData.content);
-
-    const container = document.querySelector("[data-container]") as HTMLElement | null;
-    if (container) {
-      container.style.transition = "opacity 80ms ease-out";
-      container.style.opacity = "0";
-    }
-
-    actions.selectNode(null);
+    console.log(`[PageSwitch] deserializing`);
     actions.deserialize(json);
+    console.log(`[PageSwitch] deserialized, setting isolate`);
     clearLoadedPages();
     _loadedPages.add(active);
-
-    await new Promise<void>(resolve => {
-      requestAnimationFrame(() => {
-        isolatePageAlt(active, query, active, actions, setIsolate);
-        if (container) container.scrollTop = 0;
-        const viewport = document.getElementById("viewport");
-        if (viewport) viewport.scrollTop = 0;
-        // Give React time to render, then fade back in
-        setTimeout(() => {
-          if (container) {
-            container.style.opacity = "";
-            setTimeout(() => { if (container) container.style.transition = ""; }, 100);
-          }
-          resolve();
-        }, 50);
-      });
-    });
+    setIsolate(active);
+    phStorage.set("isolated", active);
+    console.log(`[PageSwitch] done`);
     return true;
   } catch (e) {
     console.error(`[PageHub] Failed to load page shard ${active}:`, e);

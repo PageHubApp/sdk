@@ -80,12 +80,13 @@ function notify(): void {
 async function doIsolate(pageId: string | null): Promise<void> {
   if (!initOpts) return;
   const seq = ++isolationSeq;
+  console.log(`[NavStore] doIsolate(${pageId}) seq=${seq}`);
   try {
     await initOpts.onIsolate(pageId);
+    console.log(`[NavStore] doIsolate(${pageId}) completed seq=${seq}, current=${isolationSeq}`);
   } catch (e) {
     console.error("[PageHub] Page isolation failed:", e);
   }
-  // If a newer request came in while we were loading, don't update state
   if (seq !== isolationSeq) return;
 }
 
@@ -164,8 +165,12 @@ export function navigateToPage(
   isHomePage: boolean,
 ): void {
   if (!initOpts) return;
-  if (pageId === currentSnapshot.activePageId) return;
+  if (pageId === currentSnapshot.activePageId) {
+    console.log(`[NavStore] navigateToPage(${pageId}) skipped — already active`);
+    return;
+  }
 
+  console.log(`[NavStore] navigateToPage(${pageId})`);
   currentSnapshot.activePageId = pageId;
   doIsolate(pageId);
 
