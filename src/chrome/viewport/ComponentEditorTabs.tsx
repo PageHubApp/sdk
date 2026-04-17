@@ -4,12 +4,12 @@ import { TbBoxModel2, TbLayoutGridAdd, TbX } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import {
   ComponentsAtom,
-  IsolateAtom,
   OpenComponentEditorAtom,
   ViewModeAtom,
   isolatePageInTree,
 } from "@/utils/lib";
 import { Container } from "../../components/Container";
+import { useEditorStore } from "../../core/store";
 import { Text } from "../../components/Text";
 
 interface ComponentEditorTab {
@@ -29,13 +29,12 @@ const isolateForComponentEditing = (query, actions, targetContainerId, setIsolat
     const node = query.node(nodeId).get();
     const t = node?.data?.props?.type;
     if (t === "header" || t === "footer" || t === "page" || t === "component") {
-      actions.setHidden(nodeId, true);
-      actions.setProp(nodeId, prop => (prop.hidden = true));
+      const hide = nodeId !== targetContainerId;
+      actions.setHidden(nodeId, hide);
+      actions.setProp(nodeId, prop => (prop.hidden = hide));
     }
   });
-  actions.setHidden(targetContainerId, false);
-  actions.setProp(targetContainerId, prop => (prop.hidden = false));
-  isolatePageInTree(query, actions, null, setIsolate);
+  setIsolate(targetContainerId);
 };
 
 /** Show pages/headers/footers, hide all components. */
@@ -57,7 +56,7 @@ const restorePageMode = (query, actions, setIsolate) => {
 
 export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps) {
   const { query, actions } = useEditor();
-  const [isolate, setIsolate] = useAtomState(IsolateAtom);
+  const { isolate, setIsolate } = useEditorStore();
   const [tabs, setTabs] = useState<ComponentEditorTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [openComponentEditorRaw, setOpenComponentEditor] = useAtomState(OpenComponentEditorAtom);

@@ -345,7 +345,7 @@ export const ToolbarWrapper = ({
 
       <div
         id="toolbarFooter"
-        className="border-base-300 box-border flex w-full max-w-none shrink-0 flex-row flex-nowrap items-center justify-between border-t px-2.5 py-1 text-base"
+        className="border-base-300 bg-sidebar box-border flex w-full max-w-none shrink-0 flex-row flex-nowrap items-center justify-between border-y px-2.5 py-1 text-base"
       >
         {foot}
 

@@ -81,7 +81,6 @@ export function SidebarLayersPanel() {
   if (!isOpen) {
     return (
       <button
-        ref={panelRef as React.RefObject<HTMLButtonElement>}
         type="button"
         onClick={toggle}
         className="text-sidebar-foreground/70 hover:text-sidebar-foreground flex w-full shrink-0 items-center gap-1.5 px-3 py-2.5 text-[11px] font-semibold uppercase leading-none tracking-wide transition-colors"

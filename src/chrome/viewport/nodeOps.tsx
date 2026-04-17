@@ -19,7 +19,7 @@ export const removeHasManyRelation = (node: any, query: any, actions: any) => {
     if (belongsTo) {
       actions.setProp(
         node.data.props.belongsTo,
-        (prop: any) => (prop.hasMany = prop.hasMany.filter((_: string) => _ !== node.id))
+        (prop: any) => (prop.hasMany = (prop.hasMany || []).filter((_: string) => _ !== node.id))
       );
     }
   }
@@ -145,6 +145,15 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
     const { Container } = await import("../../components/Container");
     const Element = (await import("@craftjs/core")).Element;
 
+    // Serialize the original tree BEFORE any mutations
+    const masterTree = query.node(id).toNodeTree();
+    const masterPairs = Object.keys(masterTree.nodes).map((nid: string) => [
+      nid,
+      query.node(nid).toSerializedNode(),
+    ]);
+
+    // Create the component wrapper and add the serialized tree into it
+    // (avoids actions.move which fails for pages/headers due to canMoveIn rules)
     const componentWrapper = query
       .parseReactElement(
         <Element
@@ -160,21 +169,36 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
     actions.addNodeTree(componentWrapper, ROOT_NODE);
     const componentId = componentWrapper.rootNodeId;
 
-    actions.move(id, componentId, 0);
-
-    const clonedTree = buildClonedTree({
-      tree: query.node(id).toNodeTree(),
+    // Build the master copy and add it inside the component container
+    const masterCopy = buildClonedTree({
+      tree: masterTree,
       query,
       setProp: actions.setProp,
-      createLinks: true,
+      createLinks: false,
     });
+    actions.addNodeTree(masterCopy, componentId, 0);
+    const masterContentId = masterCopy.rootNodeId;
+
+    // Build the linked clone and put it where the original was
+    const clonedTree = buildClonedTree({
+      tree: masterTree,
+      query,
+      setProp: actions.setProp,
+      createLinks: false,
+    });
+
+    // Remove the original node, then insert the clone at its position
+    actions.delete(id);
     actions.addNodeTree(clonedTree, originalParent, originalIndex);
 
-    setTimeout(async () => {
+    // Link clone nodes to master nodes
+    requestAnimationFrame(async () => {
       const { setRecursiveBelongsTo } = await import("@/utils/componentUtils");
+
+      // Add master content ID to hasMany for each clone
       setRecursiveBelongsTo(
         clonedTree.rootNodeId,
-        id,
+        masterContentId,
         query,
         actions,
         (clonedNodeId: string, prop: any) => {
@@ -182,15 +206,11 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
         }
       );
       actions.selectNode(clonedTree.rootNodeId);
-    }, 50);
+    });
 
-    const componentTreePairs = Object.keys(tree.nodes).map((nodeId: string) => [
-      nodeId,
-      query.node(nodeId).toSerializedNode(),
-    ]);
     return {
-      rootNodeId: id,
-      nodes: JSON.stringify(fromEntries(componentTreePairs as [string, any][])),
+      rootNodeId: masterContentId,
+      nodes: JSON.stringify(fromEntries(masterPairs as [string, any][])),
       name: componentName,
     };
   }
