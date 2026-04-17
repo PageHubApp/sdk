@@ -64,7 +64,7 @@ export const ToolbarSection = ({
 
   const titleClasses = nested
     ? `flex w-full items-center justify-between gap-1 ${collapsible ? `${cursorClass} -mx-3 px-3 py-1.5` : "pb-2 pt-1"} text-[11px] font-semibold text-neutral-content transition-colors ${disabled ? "" : "hover:text-base-content"} ${className}`
-    : `flex w-full items-center justify-between gap-2 ${collapsible ? `${cursorClass} border-b border-base-300 bg-sidebar px-3 py-2` : "pb-2 pt-1"} text-sm font-bold text-sidebar-foreground transition-colors ${className}`;
+    : `flex w-full items-center justify-between gap-2 ${collapsible ? `${cursorClass} border-b border-base-300 bg-sidebar px-3 py-1.5` : "pb-2 pt-1"} text-[11px] font-semibold uppercase tracking-wide text-sidebar-foreground/70 transition-colors ${className}`;
 
   // When scrollable, we remove padding from body and add it inside the scrollbar wrapper
   const bodyClasses = nested

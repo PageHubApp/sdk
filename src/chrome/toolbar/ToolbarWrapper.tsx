@@ -173,7 +173,7 @@ export const ToolbarWrapper = ({
   const [searchOpen, setSearchOpen] = useAtomState(SettingsSearchOpenAtom);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const footerActionClass =
-    "rounded-lg p-2 transition-[color,transform] active:scale-90 cursor-pointer";
+    "rounded-lg p-1.5 transition-[color,transform] active:scale-90 cursor-pointer";
 
   const setActiveTab = useSetAtomState(TabAtom);
 
@@ -345,7 +345,7 @@ export const ToolbarWrapper = ({
 
       <div
         id="toolbarFooter"
-        className="border-t-border bg-neutral box-border flex w-full max-w-none shrink-0 flex-row flex-nowrap items-center justify-between border-t px-2.5 py-1.5 text-lg"
+        className="border-base-300 box-border flex w-full max-w-none shrink-0 flex-row flex-nowrap items-center justify-between border-t px-2.5 py-1 text-base"
       >
         {foot}
 

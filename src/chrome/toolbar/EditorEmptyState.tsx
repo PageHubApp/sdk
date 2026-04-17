@@ -20,17 +20,14 @@ const ActionCard = ({ icon, title, description, onClick }: ActionCardProps) => {
     <button
       type="button"
       onClick={onClick}
-      className="group border-base-300 bg-base-200 hover:bg-neutral/50 relative overflow-hidden rounded-xl border p-6 text-left transition-colors duration-200 active:scale-[0.99]"
+      className="group hover:bg-base-200 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors active:scale-[0.99]"
     >
-      <div className="from-primary/5 absolute inset-0 bg-linear-to-br to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-      <div className="relative flex flex-row items-center justify-start gap-4">
-        <div className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-content flex size-12 shrink-0 items-center justify-center rounded-lg transition-colors duration-200">
-          {icon}
-        </div>
-        <div className="flex flex-col items-start justify-center">
-          <h3 className="text-base-content font-semibold">{title}</h3>
-          <p className="text-neutral-content text-xs">{description}</p>
-        </div>
+      <div className="text-base-content/50 group-hover:text-primary flex size-8 shrink-0 items-center justify-center transition-colors">
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-base-content text-sm font-medium">{title}</h3>
+        <p className="text-neutral-content truncate text-[11px]">{description}</p>
       </div>
     </button>
   );
@@ -142,7 +139,7 @@ export const EditorEmptyState = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-1">
                   <ActionCard
                     icon={<TbLayoutGridAdd className="size-6" />}
                     title="Add Blocks"

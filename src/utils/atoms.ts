@@ -104,9 +104,9 @@ export const SidebarLayersPanelAtom = atom<boolean>(
   (() => {
     try {
       const saved = typeof window !== "undefined" ? phStorage.get("sidebar-layers-panel") : null;
-      return saved === "true";
+      if (saved !== null) return saved === "true";
     } catch {}
-    return false;
+    return true;
   })()
 );
 

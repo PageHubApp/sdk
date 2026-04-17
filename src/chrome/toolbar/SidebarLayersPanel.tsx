@@ -80,17 +80,16 @@ export function SidebarLayersPanel() {
 
   if (!isOpen) {
     return (
-      <div ref={panelRef}>
-        <button
-          type="button"
-          onClick={toggle}
-          className="border-base-300 bg-base-200 text-base-content hover:bg-base-300 flex w-full items-center gap-1.5 border-t px-3 py-1.5 text-xs font-medium transition-colors"
-        >
-          <TbLayoutGrid className="size-3.5 shrink-0 opacity-70" />
-          <span>Layers</span>
-          <TbChevronUp className="ml-auto size-3 opacity-50" />
-        </button>
-      </div>
+      <button
+        ref={panelRef as React.RefObject<HTMLButtonElement>}
+        type="button"
+        onClick={toggle}
+        className="text-base-content/50 hover:text-base-content/80 flex w-full shrink-0 items-center gap-1 px-2.5 py-2.5 text-[10px] font-medium uppercase leading-none tracking-wide transition-colors"
+      >
+        <TbLayoutGrid className="size-3 shrink-0" />
+        <span>Layers</span>
+        <TbChevronUp className="ml-auto size-3" />
+      </button>
     );
   }
 
@@ -110,26 +109,26 @@ export function SidebarLayersPanel() {
       </div>
 
       {/* Header */}
-      <div className="bg-base-200 text-base-content flex shrink-0 items-center gap-1.5 px-3 py-1">
-        <TbLayoutGrid className="size-3.5 shrink-0 opacity-70" />
-        <span className="text-xs font-semibold">Layers</span>
+      <div className="text-base-content/60 flex shrink-0 items-center gap-1 px-2.5 pt-1 pb-2">
+        <TbLayoutGrid className="size-3 shrink-0" />
+        <span className="text-[10px] font-medium uppercase tracking-wide">Layers</span>
 
-        <div className="ml-auto flex items-center gap-0.5">
+        <div className="ml-auto flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => setDialogOpen(true)}
-            className="hover:bg-base-300 rounded p-0.5 opacity-60 transition-colors hover:opacity-100"
+            className="hover:bg-base-200 hover:text-base-content rounded p-0.5 transition-colors"
             aria-label="Pop out layers"
           >
-            <TbExternalLink className="size-3.5" />
+            <TbExternalLink className="size-3" />
           </button>
           <button
             type="button"
             onClick={toggle}
-            className="hover:bg-base-300 rounded p-0.5 opacity-60 transition-colors hover:opacity-100"
+            className="hover:bg-base-200 hover:text-base-content rounded p-0.5 transition-colors"
             aria-label="Collapse layers panel"
           >
-            <TbChevronDown className="size-3.5" />
+            <TbChevronDown className="size-3" />
           </button>
         </div>
       </div>
