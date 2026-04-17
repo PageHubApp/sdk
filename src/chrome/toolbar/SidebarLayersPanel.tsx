@@ -84,9 +84,9 @@ export function SidebarLayersPanel() {
         ref={panelRef as React.RefObject<HTMLButtonElement>}
         type="button"
         onClick={toggle}
-        className="text-base-content/50 hover:text-base-content/80 flex w-full shrink-0 items-center gap-1 px-2.5 py-2.5 text-[10px] font-medium uppercase leading-none tracking-wide transition-colors"
+        className="text-sidebar-foreground/70 hover:text-sidebar-foreground flex w-full shrink-0 items-center gap-1.5 px-3 py-2.5 text-[11px] font-semibold uppercase leading-none tracking-wide transition-colors"
       >
-        <TbLayoutGrid className="size-3 shrink-0" />
+        <TbLayoutGrid className="size-3 shrink-0 opacity-70" />
         <span>Layers</span>
         <TbChevronUp className="ml-auto size-3" />
       </button>
@@ -109,9 +109,9 @@ export function SidebarLayersPanel() {
       </div>
 
       {/* Header */}
-      <div className="text-base-content/60 flex shrink-0 items-center gap-1 px-2.5 pt-1 pb-2">
-        <TbLayoutGrid className="size-3 shrink-0" />
-        <span className="text-[10px] font-medium uppercase tracking-wide">Layers</span>
+      <div className="text-sidebar-foreground/70 flex shrink-0 items-center gap-1.5 px-3 pt-1 pb-2">
+        <TbLayoutGrid className="size-3 shrink-0 opacity-70" />
+        <span className="text-[11px] font-semibold uppercase tracking-wide">Layers</span>
 
         <div className="ml-auto flex items-center gap-1.5">
           <button

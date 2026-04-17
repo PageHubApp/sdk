@@ -7,31 +7,7 @@ import { ComponentsAtom, OpenComponentEditorAtom, SideBarOpen, ViewModeAtom } fr
 import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
 import { useSDK } from "../../core/context";
 import { usePanelUrl } from "../../utils/usePanelUrl";
-
-interface ActionCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  onClick: (e: React.MouseEvent) => void;
-}
-
-const ActionCard = ({ icon, title, description, onClick }: ActionCardProps) => {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group hover:bg-base-200 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors active:scale-[0.99]"
-    >
-      <div className="text-base-content/50 group-hover:text-primary flex size-8 shrink-0 items-center justify-center transition-colors">
-        {icon}
-      </div>
-      <div className="min-w-0 flex-1">
-        <h3 className="text-base-content text-sm font-medium">{title}</h3>
-        <p className="text-neutral-content truncate text-[11px]">{description}</p>
-      </div>
-    </button>
-  );
-};
+import { ActionRow } from "./helpers/ActionRow";
 
 export const EditorEmptyState = () => {
   const viewMode = useAtomValue(ViewModeAtom);
@@ -140,21 +116,21 @@ export const EditorEmptyState = () => {
                 )}
 
                 <div className="grid grid-cols-1 gap-1">
-                  <ActionCard
+                  <ActionRow
                     icon={<TbLayoutGridAdd className="size-6" />}
                     title="Add Blocks"
                     description="Like heros, ctas, cards, and more..."
                     onClick={handleAddSectionClick}
                   />
 
-                  <ActionCard
+                  <ActionRow
                     icon={<TbPlus className="size-6" />}
                     title="Add Components"
                     description="Like buttons, images, and text..."
                     onClick={handleComponentsClick}
                   />
 
-                  <ActionCard
+                  <ActionRow
                     icon={<TbBoxModel2 className="size-6" />}
                     title="Create Components"
                     description="Don't repeat yourself..."

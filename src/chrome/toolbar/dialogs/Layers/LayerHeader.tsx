@@ -283,7 +283,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
               onChange={handleNameChange}
               onBlur={handleNameBlur}
               onKeyDown={handleNameKeyDown}
-              className="w-full rounded border border-blue-500 bg-white px-1 py-0 text-xs text-gray-900 outline-none dark:bg-gray-800 dark:text-gray-100"
+              className="w-full rounded border border-blue-500 bg-white px-0.5 py-0 text-xs leading-none text-gray-900 outline-none dark:bg-gray-800 dark:text-gray-100"
               onClick={e => e.stopPropagation()}
             />
           ) : (

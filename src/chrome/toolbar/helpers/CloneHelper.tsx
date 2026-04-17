@@ -3,6 +3,7 @@ import { removeHasManyRelation } from "../../viewport/viewportExports";
 import { TbBoxModel2, TbLink, TbLinkOff, TbPalette, TbPencil } from "react-icons/tb";
 import { useSetAtomState } from "../../../utils/atoms";
 import { OpenComponentEditorAtom, ViewModeAtom } from "@/utils/lib";
+import { ActionRow } from "./ActionRow";
 
 export const setClonedProps = (props, query, exclude = []) => {
   // If this node doesn't belong to a master component, just return props as-is
@@ -83,53 +84,14 @@ export const setClonedProps = (props, query, exclude = []) => {
   }
 };
 
-const LinkedActionCard = ({
-  icon,
-  title,
-  description,
-  onClick,
-  delay = 0,
-  variant = "default",
-}) => {
-  const variantStyles = {
-    default: "border-base-300 bg-base-200 hover:bg-neutral/50",
-    primary: "border-primary/20 bg-primary/5 hover:bg-primary/10",
-    destructive: "border-error/20 bg-error/5 hover:bg-error/10",
-  };
-  const iconStyles = {
-    default:
-      "bg-secondary text-secondary-content group-hover:bg-foreground group-hover:text-background",
-    primary: "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-content",
-    destructive: "bg-error/10 text-error group-hover:bg-error group-hover:text-error-content",
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      className={`group relative overflow-hidden rounded-xl border ${variantStyles[variant]} p-4 text-left`}
-    >
-      <div className="relative flex flex-row items-center gap-3">
-        <div
-          className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-colors ${iconStyles[variant]}`}
-        >
-          {icon}
-        </div>
-        <div className="flex flex-col">
-          <span className="toolbar-label font-semibold">{title}</span>
-          <span className="text-neutral-content text-xs">{description}</span>
-        </div>
-      </div>
-    </button>
-  );
-};
 
 export const ConvertToRegularComponent = ({ query, actions, id }) => (
-  <LinkedActionCard
+  <ActionRow
     icon={<TbLinkOff className="size-5" />}
     title="Unlink Component"
     description="Make independent with all settings editable"
     variant="destructive"
-    delay={0.25}
+
     onClick={() => {
       const node = query.node(id).get();
       removeHasManyRelation(node, query, actions);
@@ -161,21 +123,21 @@ export const NoSettings = ({ actions, id, query }) => (
 );
 
 export const ConvertToStyledComponent = ({ actions, id }) => (
-  <LinkedActionCard
+  <ActionRow
     icon={<TbPalette className="size-5" />}
     title="Style Only Mode"
     description="Edit styles while keeping other settings linked"
-    delay={0.15}
+
     onClick={() => actions.setProp(id, prop => (prop.relationType = "style"))}
   />
 );
 
 export const ConvertToContentComponent = ({ actions, id }) => (
-  <LinkedActionCard
+  <ActionRow
     icon={<TbPencil className="size-5" />}
     title="Content Only Mode"
     description="Edit text and content while keeping styles linked"
-    delay={0.2}
+
     onClick={() => actions.setProp(id, prop => (prop.relationType = "content"))}
   />
 );
@@ -219,23 +181,23 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
       };
 
       return (
-        <div className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-2 p-3">
           {/* Component identity header */}
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg">
+          <div className="flex items-center gap-3 px-3 py-1">
+            <div className="text-primary flex size-8 shrink-0 items-center justify-center">
               <TbLink className="size-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-neutral-content text-xs">Linked instance of</span>
-              <span className="toolbar-label font-semibold">{componentName}</span>
+              <span className="text-neutral-content text-[11px]">Linked instance of</span>
+              <span className="text-base-content text-sm font-medium">{componentName}</span>
             </div>
           </div>
 
-          <div className="bg-border h-px" />
+          <div className="bg-base-300 h-px" />
 
           {/* Action cards */}
-          <div className="flex flex-col gap-3">
-            <LinkedActionCard
+          <div className="flex flex-col gap-1">
+            <ActionRow
               icon={<TbBoxModel2 className="size-5" />}
               title="Edit Linked Instance"
               description="Change the main component"
