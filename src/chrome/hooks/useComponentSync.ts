@@ -1,5 +1,7 @@
 /**
- * Hook to sync linked component instances when master components change
+ * Hook to sync linked component instances when master component structure changes.
+ * Prop sync is handled by the useEditor collector in getClonedState — this hook
+ * only handles structural changes (children added/removed/reordered).
  */
 import { useEditor } from "@craftjs/core";
 import { useEffect, useRef } from "react";
@@ -7,6 +9,11 @@ import { useAtomValue } from "@zedux/react";
 import { ComponentsAtom } from "../../utils/lib";
 import { buildClonedTree } from "../viewport/viewportExports";
 import { setRecursiveBelongsTo } from "@/utils/componentUtils";
+
+const CONTENT_PROPS = [
+  "text", "url", "urlTarget", "action", "image",
+  "videoId", "content", "buttonText", "placeholder", "value",
+];
 
 export const useComponentSync = () => {
   const { query, actions } = useEditor();
@@ -16,132 +23,118 @@ export const useComponentSync = () => {
   useEffect(() => {
     if (!components || components.length === 0) return;
 
-    // Check each master component for structural changes
     components.forEach(component => {
       const masterNodeId = component.rootNodeId;
-      const masterNode = query.node(masterNodeId).get();
+      try {
+        const masterNode = query.node(masterNodeId).get();
+        if (!masterNode) return;
 
-      if (!masterNode) return;
+        const currentSignature = getStructureSignature(masterNodeId, query);
+        const lastSignature = lastStructureRef.current.get(masterNodeId);
 
-      // Get current structure signature (children IDs + their types)
-      const getStructureSignature = (nodeId: string): string => {
-        const node = query.node(nodeId).get();
-        if (!node) return "";
+        if (lastSignature && lastSignature !== currentSignature) {
+          rebuildLinkedInstances(masterNodeId, query, actions);
+        }
 
-        const children = node.data.nodes || [];
-        const childSignatures = children
-          .map(childId => {
-            const child = query.node(childId).get();
-            if (!child) return "";
-            // Handle type being either a string or an object with resolvedName
-            const typeValue = child.data.type;
-            const type =
-              typeof typeValue === "string"
-                ? typeValue
-                : (typeValue as any)?.resolvedName || child.data.displayName || "";
-            const childStructure = getStructureSignature(childId);
-            return `${type}:${childStructure}`;
-          })
-          .join(",");
-
-        return `${children.length}:[${childSignatures}]`;
-      };
-
-      const currentSignature = getStructureSignature(masterNodeId);
-      const lastSignature = lastStructureRef.current.get(masterNodeId);
-
-      // If structure changed, rebuild all linked instances
-      if (lastSignature && lastSignature !== currentSignature) {
-        rebuildLinkedInstances(masterNodeId);
-      }
-
-      // Update stored signature
-      lastStructureRef.current.set(masterNodeId, currentSignature);
+        lastStructureRef.current.set(masterNodeId, currentSignature);
+      } catch {}
     });
   }, [components, query, actions]);
-
-  const rebuildLinkedInstances = (masterNodeId: string) => {
-    // Find all nodes that belong to this master
-    const allNodes = query.getSerializedNodes();
-    const linkedInstances: Array<{
-      id: string;
-      parentId: string;
-      index: number;
-      relationType: string;
-      customStyles?: any;
-    }> = [];
-
-    Object.entries(allNodes).forEach(([nodeId, serializedNode]: [string, any]) => {
-      if (serializedNode.props?.belongsTo === masterNodeId) {
-        const node = query.node(nodeId).get();
-        if (!node) return;
-
-        const parentId = node.data.parent;
-        const parent = query.node(parentId).get();
-        if (!parent) return;
-
-        const index = parent.data.nodes.indexOf(nodeId);
-
-        linkedInstances.push({
-          id: nodeId,
-          parentId,
-          index,
-          relationType: serializedNode.props.relationType,
-          customStyles:
-            serializedNode.props.relationType === "style"
-              ? {
-                  root: serializedNode.props.root,
-                  className: serializedNode.props.className,
-                }
-              : undefined,
-        });
-      }
-    });
-
-    if (linkedInstances.length === 0) return;
-
-    // Rebuild each instance
-    linkedInstances.forEach(instance => {
-      try {
-        // Get the master's current tree
-        const masterTree = query.node(masterNodeId).toNodeTree();
-
-        // Build a fresh clone
-        const clonedTree = buildClonedTree({
-          tree: masterTree,
-          query,
-          setProp: actions.setProp,
-          createLinks: false, // Don't create hasMany links during rebuild
-        });
-
-        // Delete the old instance
-        actions.delete(instance.id);
-
-        // Add the new clone at the same position
-        actions.addNodeTree(clonedTree, instance.parentId, instance.index);
-
-        // Set belongsTo on all nodes in the new tree
-        setTimeout(() => {
-          setRecursiveBelongsTo(
-            clonedTree.rootNodeId,
-            masterNodeId,
-            query,
-            actions,
-            (clonedNodeId, prop) => {
-              prop.relationType = instance.relationType;
-
-              // For style-only instances, restore custom styles
-              if (instance.customStyles && clonedNodeId === clonedTree.rootNodeId) {
-                prop.root = instance.customStyles.root;
-                prop.className = instance.customStyles.className;
-              }
-            }
-          );
-        }, 50);
-
-      } catch (error) {
-        console.error("❌ Error rebuilding instance:", instance.id, error);
-      }
-    });
-  };
 };
+
+function getStructureSignature(nodeId: string, query: any): string {
+  try {
+    const node = query.node(nodeId).get();
+    if (!node) return "";
+    const children = node.data.nodes || [];
+    const childSigs = children.map(childId => {
+      const child = query.node(childId).get();
+      if (!child) return "";
+      const typeValue = child.data.type;
+      const type =
+        typeof typeValue === "string"
+          ? typeValue
+          : (typeValue as any)?.resolvedName || child.data.displayName || "";
+      return `${type}:${getStructureSignature(childId, query)}`;
+    }).join(",");
+    return `${children.length}:[${childSigs}]`;
+  } catch {
+    return "";
+  }
+}
+
+function rebuildLinkedInstances(masterNodeId: string, query: any, actions: any) {
+  const allNodes = query.getSerializedNodes();
+  const instances: Array<{
+    id: string;
+    parentId: string;
+    index: number;
+    relationType: string;
+    overrides?: Record<string, any>;
+  }> = [];
+
+  Object.entries(allNodes).forEach(([nodeId, serializedNode]: [string, any]) => {
+    if (serializedNode.props?.belongsTo !== masterNodeId) return;
+    try {
+      const node = query.node(nodeId).get();
+      if (!node) return;
+      const parentId = node.data.parent;
+      const parent = query.node(parentId).get();
+      if (!parent) return;
+
+      const rel = serializedNode.props.relationType;
+      let overrides: Record<string, any> | undefined;
+
+      if (rel === "style") {
+        overrides = { root: serializedNode.props.root, className: serializedNode.props.className };
+      } else if (rel === "content") {
+        overrides = {};
+        CONTENT_PROPS.forEach(key => {
+          if (key in serializedNode.props) overrides![key] = serializedNode.props[key];
+        });
+      }
+
+      instances.push({
+        id: nodeId,
+        parentId,
+        index: parent.data.nodes.indexOf(nodeId),
+        relationType: rel,
+        overrides,
+      });
+    } catch {}
+  });
+
+  if (instances.length === 0) return;
+
+  instances.forEach(instance => {
+    try {
+      const masterTree = query.node(masterNodeId).toNodeTree();
+      const clonedTree = buildClonedTree({
+        tree: masterTree,
+        query,
+        setProp: actions.setProp,
+        createLinks: false,
+      });
+
+      actions.delete(instance.id);
+      actions.addNodeTree(clonedTree, instance.parentId, instance.index);
+
+      requestAnimationFrame(() => {
+        setRecursiveBelongsTo(
+          clonedTree.rootNodeId,
+          masterNodeId,
+          query,
+          actions,
+          (clonedNodeId, prop) => {
+            prop.relationType = instance.relationType;
+            if (instance.overrides && clonedNodeId === clonedTree.rootNodeId) {
+              Object.assign(prop, instance.overrides);
+            }
+          }
+        );
+      });
+    } catch (error) {
+      console.error("Error rebuilding instance:", instance.id, error);
+    }
+  });
+}

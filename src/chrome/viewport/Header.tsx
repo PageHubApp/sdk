@@ -56,11 +56,24 @@ import { phStorage } from "../../utils/phStorage";
 export { useComponentVisible } from "./header/useComponentVisible";
 
 export const Header = () => {
-  const { enabled, canUndo, canRedo, actions, query } = useEditor((state, query) => ({
-    enabled: state.options.enabled,
-    canUndo: query.history.canUndo(),
-    canRedo: query.history.canRedo(),
-  }));
+  const { enabled, canUndo, canRedo, actions, query, componentFingerprint } = useEditor(
+    (state, query) => {
+      const root = state.nodes[ROOT_NODE];
+      const fp = root?.data?.nodes
+        ?.filter(id => state.nodes[id]?.data?.props?.type === "component")
+        .map(id => {
+          const cid = state.nodes[id]?.data?.nodes?.[0];
+          return `${id}:${cid ? state.nodes[cid]?.data?.nodes?.length ?? 0 : 0}`;
+        })
+        .join(",") || "";
+      return {
+        enabled: state.options.enabled,
+        canUndo: query.history.canUndo(),
+        canRedo: query.history.canRedo(),
+        componentFingerprint: fp,
+      };
+    }
+  );
   const { emitter } = useSDK();
 
   const setComponents = useSetAtomState(ComponentsAtom);
@@ -114,7 +127,7 @@ export const Header = () => {
     } catch (e) {
       console.error("❌ Error loading components:", e);
     }
-  }, [query, enabled, setComponents]);
+  }, [query, enabled, setComponents, componentFingerprint]);
 
   const setActive = useSetAtomState(LastActiveAtom);
 

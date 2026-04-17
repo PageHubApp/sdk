@@ -38,9 +38,32 @@ export const deleteNode = async (
   if (node.data.props.canDelete === false) return;
 
   if (node.data.props?.hasMany?.length) {
-    node.data.props.hasMany.forEach((hasId: string) => {
-      const has = query.node(hasId).get();
-      if (has) actions.setProp(hasId, (prop: any) => (prop.belongsTo = null));
+    node.data.props.hasMany.forEach((cloneId: string) => {
+      try {
+        const clone = query.node(cloneId).get();
+        if (!clone) return;
+        // Unlink the clone root
+        actions.setProp(cloneId, (prop: any) => {
+          prop.belongsTo = null;
+          prop.relationType = "";
+          prop.savedComponentName = "";
+        });
+        // Recursively unlink descendants
+        const unlinkDescendants = (parentId: string) => {
+          const parent = query.node(parentId).get();
+          (parent?.data?.nodes || []).forEach((childId: string) => {
+            const child = query.node(childId).get();
+            if (child?.data?.props?.belongsTo) {
+              actions.setProp(childId, (p: any) => {
+                p.belongsTo = null;
+                p.relationType = "";
+              });
+            }
+            unlinkDescendants(childId);
+          });
+        };
+        unlinkDescendants(cloneId);
+      } catch {}
     });
   }
 
