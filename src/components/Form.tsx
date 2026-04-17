@@ -76,13 +76,25 @@ export const Form = ({ children, ...props }: any) => {
     setLoading(true);
     if (props.submissionType === "iframe") return;
 
-    const additional: any = {
-      mailTo: props.mailto,
-      formName: props.formName,
-      webhookUrl: props.webhookEnabled ? props.webhookUrl : undefined,
-    };
+    if (props.submissionType === "custom" && props.action) {
+      try {
+        await fetch(props.action, {
+          method: props.method || "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+      } catch (err) {
+        console.error("Custom form submission failed:", err);
+      }
+    } else {
+      const additional: any = {
+        mailTo: props.mailto,
+        formName: props.formName,
+        webhookUrl: props.webhookEnabled ? props.webhookUrl : undefined,
+      };
 
-    SaveSubmissions(formData, settings, additional);
+      SaveSubmissions(formData, settings, additional);
+    }
 
     // Fire analytics events if pixels are loaded
     const w = window as any;

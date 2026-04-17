@@ -14,7 +14,7 @@ import { applyBackgroundImage, motionIt } from "../utils/lib";
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import { useScrollEffect } from "../utils/hooks/useScrollEffect";
 import { RenderPattern, inlayProps } from "./componentHooks";
-import { getConnectorData } from "../utils/design/variables";
+import { getConnectorData, getClientDataFetcher } from "../utils/design/variables";
 import { ItemProvider } from "../utils/itemContext";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
@@ -158,6 +158,29 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   const items = ds && connData ? connData[ds.provider]?.[ds.collection] : null;
   const hasItems = Array.isArray(items) && items.length > 0;
 
+  // ── Client-side data source ──────────────────────────────────────────────
+  const [clientItems, setClientItems] = useState<any[] | null>(null);
+
+  useEffect(() => {
+    if (!ds || enabled || hasItems) return;
+    const fetcher = getClientDataFetcher();
+    if (!fetcher) return;
+
+    let cancelled = false;
+    fetcher(ds.provider, ds.collection)
+      .then(result => {
+        if (!cancelled && Array.isArray(result) && result.length > 0) {
+          setClientItems(result);
+        }
+      })
+      .catch(err => console.error("[Container] Client data fetch failed:", err));
+
+    return () => { cancelled = true; };
+  }, [ds?.provider, ds?.collection, enabled, hasItems]);
+
+  const resolvedItems = hasItems ? items : clientItems;
+  const hasResolvedItems = Array.isArray(resolvedItems) && resolvedItems.length > 0;
+
   let prop: any = {
     ref: r => {
       ref.current = r;
@@ -169,7 +192,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     className,
     children: (() => {
       // Data-bound repeater: repeat children for each item from the connected data source
-      const shouldRepeat = !enabled && hasItems && children;
+      const shouldRepeat = !enabled && hasResolvedItems && children;
 
       if (shouldRepeat) {
         return (
@@ -182,7 +205,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
             preview={preview}
             query={query}
           >
-            {items.map((item, idx) => (
+            {resolvedItems.map((item, idx) => (
               <ItemProvider key={item.id || idx} item={item} index={idx}>
                 {children}
               </ItemProvider>

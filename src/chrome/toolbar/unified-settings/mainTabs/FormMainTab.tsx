@@ -29,42 +29,44 @@ export const FormMainTab = () => {
     case "emailSave":
       help = "Save your data and email you upon submission.";
       break;
+    case "custom":
+      help = "POST form data as JSON to a custom URL.";
+      break;
   }
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Preview the form, loading, and submitted states."
-      >
-        <div className="bg-neutral flex gap-1 rounded-lg p-1">
-          {VIEW_STATES.map(({ value, label, icon: Icon }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() =>
-                actions.setProp(id, (p: any) => {
-                  p.view = value;
-                })
-              }
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
-                currentView === value
-                  ? "bg-base-100 text-base-content shadow-sm"
-                  : "text-neutral-content hover:text-base-content"
-              }`}
-            >
-              <Icon className="size-3.5" />
-              {label}
-            </button>
-          ))}
-        </div>
-        <SettingsAiSlot />
-      </ToolbarSection>
-    ),
-    Properties: (
       <>
-        <ToolbarSection title="Properties" icon={SECTION_ICONS["Properties"]} help={help}>
+        <ToolbarSection
+          title="Content"
+          icon={SECTION_ICONS["Content"]}
+          help="Preview the form, loading, and submitted states."
+        >
+          <div className="bg-neutral flex gap-1 rounded-lg p-1">
+            {VIEW_STATES.map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() =>
+                  actions.setProp(id, (p: any) => {
+                    p.view = value;
+                  })
+                }
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+                  currentView === value
+                    ? "bg-base-100 text-base-content shadow-sm"
+                    : "text-neutral-content hover:text-base-content"
+                }`}
+              >
+                <Icon className="size-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+          <SettingsAiSlot />
+        </ToolbarSection>
+
+        <ToolbarSection title="Submission" icon={SECTION_ICONS["Properties"]} help={help}>
           <ToolbarItem
             propKey="formName"
             propType="component"
@@ -85,36 +87,37 @@ export const FormMainTab = () => {
             <option>iframe</option>
             <option value="save">Save</option>
             <option value="emailSave">Email &amp; Save</option>
+            <option value="custom">Custom URL</option>
           </ToolbarItem>
-        </ToolbarSection>
 
-        {formType === "emailSave" && (
-          <ToolbarItem
-            propKey="mailto"
-            propType="component"
-            type="text"
-            label="Mail to"
-            placeholder="you@domain.com"
-            labelHide={true}
-          />
-        )}
-
-        {formType === "iframe" && (
-          <>
+          {formType === "emailSave" && (
             <ToolbarItem
-              propKey="action"
+              propKey="mailto"
               propType="component"
               type="text"
-              label="Action"
-              placeholder="https://..."
+              label="Mail to"
+              placeholder="you@domain.com"
               labelHide={true}
             />
-            <ToolbarItem propKey="method" propType="component" type="select" label="method">
-              <option value="POST">POST</option>
-              <option value="GET">GET</option>
-            </ToolbarItem>
-          </>
-        )}
+          )}
+
+          {(formType === "iframe" || formType === "custom") && (
+            <>
+              <ToolbarItem
+                propKey="action"
+                propType="component"
+                type="text"
+                label="Action"
+                placeholder="https://..."
+                labelHide={true}
+              />
+              <ToolbarItem propKey="method" propType="component" type="select" label="method">
+                <option value="POST">POST</option>
+                <option value="GET">GET</option>
+              </ToolbarItem>
+            </>
+          )}
+        </ToolbarSection>
 
         <ToolbarSection
           title="After Submit"

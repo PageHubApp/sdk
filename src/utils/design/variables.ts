@@ -14,6 +14,20 @@ export function getConnectorData() {
   return _connectorData;
 }
 
+// ── Client-side data fetcher (registerable handler) ───────────────────────────
+
+type ClientDataFetcher = (provider: string, collection: string) => Promise<any[] | null>;
+
+let _clientDataFetcher: ClientDataFetcher | null = null;
+
+export function registerClientDataFetcher(fn: ClientDataFetcher) {
+  _clientDataFetcher = fn;
+}
+
+export function getClientDataFetcher(): ClientDataFetcher | null {
+  return _clientDataFetcher;
+}
+
 /** Walk a dot-separated path into a nested object, supporting array indices. */
 function walkPath(obj: any, parts: string[]): any {
   let value = obj;
