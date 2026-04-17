@@ -18,7 +18,6 @@ export {
   getPropFinalValue,
   setPropOnView,
   changeProp,
-  propagatePropsToClones,
   type PropType,
 } from "./propSystem";
 

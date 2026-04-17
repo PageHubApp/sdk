@@ -445,7 +445,7 @@ export const Header = () => {
                   isolatePageInTree(query, actions, null, () => {});
                 });
 
-                // Show headers, footers, and pages
+                // Show headers, footers, pages — hide components
                 rootNode.data.nodes.forEach(nodeId => {
                   const node = query.node(nodeId).get();
                   const nodeType = node?.data?.props?.type;
@@ -453,6 +453,9 @@ export const Header = () => {
                   if (nodeType === "header" || nodeType === "footer" || nodeType === "page") {
                     actions.setHidden(nodeId, false);
                     actions.setProp(nodeId, prop => (prop.hidden = false));
+                  } else if (nodeType === "component") {
+                    actions.setHidden(nodeId, true);
+                    actions.setProp(nodeId, prop => (prop.hidden = true));
                   }
                 });
               } else {

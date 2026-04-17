@@ -192,70 +192,6 @@ export const setPropOnView = (
   }
 };
 
-// ─── Clone propagation ───
-
-export const propagatePropsToClones = (
-  originalId: string,
-  propKey: string,
-  value: any,
-  view: string,
-  query: any,
-  actions: any,
-  index: any = null,
-  propItemKey: string | null = null,
-  classDark = false
-) => {
-  try {
-    const original = query.node(originalId).get();
-    if (!original?.data?.props?.hasMany) return;
-
-    original.data.props.hasMany.forEach((cloneId: string) => {
-      const clone = query.node(cloneId).get();
-      if (!clone) return;
-
-      const rel = clone.data.props.relationType;
-      if (rel === "style") {
-        const styleViews = [
-          "root",
-          "mobile",
-          "sm",
-          "tablet",
-          "desktop",
-          "md",
-          "lg",
-          "xl",
-          "2xl",
-          "hover",
-        ];
-        if (view !== "component" && !styleViews.includes(view)) return;
-        if (view === "component") return;
-      }
-
-      actions.setProp(
-        cloneId,
-        (props: any) => {
-          if (view !== "component" && !["root"].includes(view)) {
-            const prefix = buildVariantPrefix(view, classDark);
-            if (!value || value === "") {
-              props.className = removeClassForView(props.className || "", propKey, view, {
-                classDark,
-              });
-            } else {
-              props.className = twMerge(props.className || "", prefix + value);
-            }
-            return;
-          }
-          const setting = view === "component" ? props : (props[view] = props[view] || {});
-          setting[propKey] = value;
-        },
-        0
-      );
-    });
-  } catch (e) {
-    console.error("Error propagating props to clones:", e);
-  }
-};
-
 // ─── Main entry point ───
 
 export const changeProp = (props: PropType, delay = 2000) => {
@@ -270,21 +206,4 @@ export const changeProp = (props: PropType, delay = 2000) => {
 
   const classDark = props.classDark ?? false;
   setPropOnView({ ...props, view, classDark }, delay);
-
-  if (props.query && props.actions && props.nodeId) {
-    const node = props.query.node(props.nodeId).get();
-    if (node?.data?.props?.hasMany?.length) {
-      propagatePropsToClones(
-        props.nodeId,
-        props.propKey,
-        props.value,
-        view!,
-        props.query,
-        props.actions,
-        props.index,
-        props.propItemKey,
-        classDark
-      );
-    }
-  }
 };

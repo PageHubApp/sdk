@@ -78,12 +78,14 @@ export const setClonedProps = (props: any, query: any, exclude: string[] = []) =
 
 export const getClonedState = (props: any, state: any) => {
   if (!props.belongsTo) {
-    return {
-      enabled: state.options.enabled,
-    };
+    return { enabled: state.options.enabled };
   }
+  // Return master's props/children references — CraftJS re-renders the clone
+  // when these references change (Immer creates new objects on mutation).
+  const masterNode = state.nodes[props.belongsTo];
   return {
     enabled: state.options.enabled,
-    state,
+    masterProps: masterNode?.data?.props,
+    masterChildren: masterNode?.data?.nodes,
   };
 };

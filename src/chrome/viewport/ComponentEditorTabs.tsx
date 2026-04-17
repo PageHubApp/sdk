@@ -1,4 +1,4 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { Element, ROOT_NODE, useEditor } from "@craftjs/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { TbBoxModel2, TbLayoutGridAdd, TbX } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
@@ -9,6 +9,8 @@ import {
   ViewModeAtom,
   isolatePageInTree,
 } from "@/utils/lib";
+import { Container } from "../../components/Container";
+import { Text } from "../../components/Text";
 
 interface ComponentEditorTab {
   id: string; // The component node ID
@@ -20,19 +22,37 @@ interface ComponentEditorTabsProps {
   className?: string;
 }
 
-// Helper function to hide/show header, footer, and pages
-const hideHeaderFooter = (query, actions, hide: boolean) => {
+/** Hide all ROOT children (pages, headers, footers, components), then show only the target. */
+const isolateForComponentEditing = (query, actions, targetContainerId, setIsolate) => {
   const root = query.node(ROOT_NODE).get();
-
   root.data.nodes.forEach(nodeId => {
     const node = query.node(nodeId).get();
-    const nodeType = node?.data?.props?.type;
-
-    if (nodeType === "header" || nodeType === "footer" || nodeType === "page") {
-      actions.setHidden(nodeId, hide);
-      actions.setProp(nodeId, prop => (prop.hidden = hide));
+    const t = node?.data?.props?.type;
+    if (t === "header" || t === "footer" || t === "page" || t === "component") {
+      actions.setHidden(nodeId, true);
+      actions.setProp(nodeId, prop => (prop.hidden = true));
     }
   });
+  actions.setHidden(targetContainerId, false);
+  actions.setProp(targetContainerId, prop => (prop.hidden = false));
+  isolatePageInTree(query, actions, null, setIsolate);
+};
+
+/** Show pages/headers/footers, hide all components. */
+const restorePageMode = (query, actions, setIsolate) => {
+  const root = query.node(ROOT_NODE).get();
+  root.data.nodes.forEach(nodeId => {
+    const node = query.node(nodeId).get();
+    const t = node?.data?.props?.type;
+    if (t === "header" || t === "footer" || t === "page") {
+      actions.setHidden(nodeId, false);
+      actions.setProp(nodeId, prop => (prop.hidden = false));
+    } else if (t === "component") {
+      actions.setHidden(nodeId, true);
+      actions.setProp(nodeId, prop => (prop.hidden = true));
+    }
+  });
+  isolatePageInTree(query, actions, null, setIsolate);
 };
 
 export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps) {
@@ -49,18 +69,13 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
   const processingRef = useRef<string | null>(null);
   const viewMode = useAtomValue(ViewModeAtom);
 
-  // Open or switch to a component editor
+  // Open or switch to a component editor.
+  // componentId is the CONTAINER node ID (type="component"), or null for a new component.
   const handleOpenComponent = useCallback(
-    async (componentId: string | null, componentName: string) => {
-      // If componentId is null, create a new blank component
+    (componentId: string | null, componentName: string) => {
+      // Create a new blank component
       if (componentId === null) {
         try {
-          // Dynamically import Container and Element
-          const { Container } = await import("../../components/Container");
-          const { Element } = await import("@craftjs/core");
-          const { Text } = await import("../../components/Text");
-
-          // Create a new component container with a default Text element inside
           const componentWrapper = query
             .parseReactElement(
               <Element
@@ -75,57 +90,28 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
             )
             .toNodeTree();
 
-          // Add to ROOT
           actions.addNodeTree(componentWrapper, ROOT_NODE);
-          const componentContainerId = componentWrapper.rootNodeId;
+          const containerId = componentWrapper.rootNodeId;
+          const contentNodeId = componentWrapper.nodes[containerId].data.nodes[0];
 
-          // Get the first child (the Text node) which will be the actual component root
-          const contentNodeId = componentWrapper.nodes[componentContainerId].data.nodes[0];
-
-          // Wait a moment for the tree to be fully added, then serialize it
-          await new Promise(resolve => setTimeout(resolve, 50));
-
-          // Get the content node's tree and serialize it
-          const contentTree = query.node(contentNodeId).toNodeTree();
-          const serializedNodePairs = Object.keys(contentTree.nodes).map(nodeId => [
-            nodeId,
-            query.node(nodeId).toSerializedNode(),
-          ]);
-          const serializedEntries = Object.fromEntries(serializedNodePairs);
-          const serializedJSON = JSON.stringify(serializedEntries);
-
-          // Update components list
-          const newComponent = {
-            rootNodeId: contentNodeId, // The Text node inside the container
-            nodes: serializedJSON,
-            name: componentName,
-          };
-          setComponents([...components, newComponent]);
-
-          // Check if tab already exists (shouldn't happen for new components, but just in case)
-          const existingTab = tabs.find(t => t.id === componentContainerId);
-
-          if (!existingTab) {
-            // Add tab and open for editing
-            const newTab: ComponentEditorTab = {
-              id: componentContainerId,
-              name: componentName,
-              isDirty: false,
-            };
-
-            setTabs([...tabs, newTab]);
+          if (!tabs.find(t => t.id === containerId)) {
+            setTabs([...tabs, { id: containerId, name: componentName, isDirty: false }]);
           }
+          setActiveTabId(containerId);
 
-          setActiveTabId(componentContainerId);
-
-          // Isolate the component container and hide header/footer
-          setTimeout(() => {
-            isolatePageInTree(query, actions, componentContainerId, setIsolate);
-            actions.setHidden(componentContainerId, false);
-            actions.setProp(componentContainerId, prop => (prop.hidden = false));
-            hideHeaderFooter(query, actions, true);
-          }, 100);
-
+          // Defer serialization + isolation until tree is committed
+          requestAnimationFrame(() => {
+            const contentTree = query.node(contentNodeId).toNodeTree();
+            const nodePairs = Object.keys(contentTree.nodes).map(id => [
+              id,
+              query.node(id).toSerializedNode(),
+            ]);
+            setComponents([
+              ...components,
+              { rootNodeId: contentNodeId, nodes: JSON.stringify(Object.fromEntries(nodePairs)), name: componentName },
+            ]);
+            isolateForComponentEditing(query, actions, containerId, setIsolate);
+          });
           return;
         } catch (e) {
           console.error("Error creating new component:", e);
@@ -133,66 +119,32 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
         }
       }
 
-      // Check if tab already exists for this component
-      const existingTab = tabs.find(tab => tab.id === componentId);
+      // Resolve container ID — callers may pass either a container ID or a content node ID
+      let containerId = componentId;
+      const node = query.node(componentId).get();
+      if (!node) return;
 
-      if (existingTab) {
-        // Tab exists, just switch to it
-        setActiveTabId(existingTab.id);
-        isolatePageInTree(query, actions, existingTab.id, setIsolate);
-        actions.setHidden(existingTab.id, false);
-        actions.setProp(existingTab.id, prop => (prop.hidden = false));
-        hideHeaderFooter(query, actions, true);
-      } else {
-        // NEW APPROACH: Just isolate the component node directly!
-        try {
-          // The componentId is the content node - we need to find its parent (the component container)
-          const contentNode = query.node(componentId).get();
-          if (!contentNode) {
-            console.error("❌ Content node not found:", componentId);
-            return;
-          }
-
-          const componentContainerId = contentNode.data.parent;
-          const componentContainer = query.node(componentContainerId).get();
-
-          if (!componentContainer || componentContainer.data.props?.type !== "component") {
-            console.error("❌ Component container not found or invalid");
-            return;
-          }
-
-          // Check if tab already exists
-          const existingTab = tabs.find(t => t.id === componentContainerId);
-
-          if (existingTab) {
-            // Tab exists, just switch to it
-            setActiveTabId(componentContainerId);
-          } else {
-            // Add a new tab for this component - use the container ID
-            const newTab: ComponentEditorTab = {
-              id: componentContainerId, // Use the component container ID
-              name: componentName,
-              isDirty: false,
-            };
-
-            setTabs([...tabs, newTab]);
-            setActiveTabId(componentContainerId);
-          }
-
-          // Isolate the component container and hide header/footer, but select the content node
-          setTimeout(() => {
-            isolatePageInTree(query, actions, componentContainerId, setIsolate); // Don't auto-select
-            actions.setHidden(componentContainerId, false);
-            actions.setProp(componentContainerId, prop => (prop.hidden = false));
-            hideHeaderFooter(query, actions, true);
-
-            // Select the content node (the actual component data), not the wrapper
-            actions.selectNode(null);
-          }, 100);
-        } catch (e) {
-          console.error("Error opening component in editor:", e);
-        }
+      if (node.data.props?.type !== "component") {
+        // Caller passed a content node ID — walk up to the container
+        const parentId = node.data.parent;
+        const parent = parentId ? query.node(parentId).get() : null;
+        if (!parent || parent.data.props?.type !== "component") return;
+        containerId = parentId;
       }
+
+      // Check if tab already exists
+      const existingTab = tabs.find(t => t.id === containerId);
+      if (existingTab) {
+        setActiveTabId(containerId);
+      } else {
+        setTabs([...tabs, { id: containerId, name: componentName, isDirty: false }]);
+        setActiveTabId(containerId);
+      }
+
+      requestAnimationFrame(() => {
+        isolateForComponentEditing(query, actions, containerId, setIsolate);
+        actions.selectNode(null);
+      });
     },
     [tabs, isolate, query, actions, setTabs, setActiveTabId, setIsolate, setComponents, components]
   );
@@ -215,14 +167,14 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
       setOpenComponentEditor(null);
 
       // Then handle opening the component
-      handleOpenComponent(componentId, componentName).finally(() => {
-        // Clear processing flag after a delay
-        setTimeout(() => {
-          if (processingRef.current === requestKey) {
-            processingRef.current = null;
-          }
-        }, 500);
-      });
+      handleOpenComponent(componentId, componentName);
+
+      // Clear processing flag after a delay
+      setTimeout(() => {
+        if (processingRef.current === requestKey) {
+          processingRef.current = null;
+        }
+      }, 500);
     }
   }, [openComponentEditor, setOpenComponentEditor, handleOpenComponent]);
 
@@ -285,12 +237,10 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
       if (activeTabId && !existingComponentIds.has(activeTabId)) {
         if (newActiveTab) {
           setActiveTabId(newActiveTab);
-          isolatePageInTree(query, actions, newActiveTab, setIsolate);
-          hideHeaderFooter(query, actions, true);
+          isolateForComponentEditing(query, actions, newActiveTab, setIsolate);
         } else {
           setActiveTabId(null);
-          isolatePageInTree(query, actions, null, setIsolate);
-          hideHeaderFooter(query, actions, false);
+          restorePageMode(query, actions, setIsolate);
         }
       }
     }
@@ -299,31 +249,14 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
   // Restore active tab when switching back to component mode
   useEffect(() => {
     if (viewMode === "component" && activeTabId && tabs.length > 0) {
-      // Re-isolate the active component
-      isolatePageInTree(query, actions, activeTabId, setIsolate);
-
-      // Make sure the component container is visible
-      actions.setHidden(activeTabId, false);
-      actions.setProp(activeTabId, prop => (prop.hidden = false));
-
-      // Hide pages, headers, and footers
-      hideHeaderFooter(query, actions, true);
+      isolateForComponentEditing(query, actions, activeTabId, setIsolate);
     }
   }, [viewMode, activeTabId, tabs.length, isolate, query, actions, setIsolate]);
 
   // Switch to a different tab
   const handleTabClick = (tabId: string) => {
     setActiveTabId(tabId);
-
-    // Isolate the component for this tab
-    isolatePageInTree(query, actions, tabId, setIsolate);
-
-    // Make sure this component container is visible
-    actions.setHidden(tabId, false);
-    actions.setProp(tabId, prop => (prop.hidden = false));
-
-    // Hide pages, headers, and footers
-    hideHeaderFooter(query, actions, true);
+    isolateForComponentEditing(query, actions, tabId, setIsolate);
   };
 
   // Close a tab
@@ -337,26 +270,15 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
     // If closing the active tab, switch to another one
     if (activeTabId === tabId) {
       if (newTabs.length > 0) {
-        // Switch to the previous tab, or the first one
         const newActiveTab = newTabs[Math.max(0, tabIndex - 1)];
         setActiveTabId(newActiveTab.id);
-        isolatePageInTree(query, actions, newActiveTab.id, setIsolate);
-        actions.setHidden(newActiveTab.id, false);
-        actions.setProp(newActiveTab.id, prop => (prop.hidden = false));
-        hideHeaderFooter(query, actions, true);
+        isolateForComponentEditing(query, actions, newActiveTab.id, setIsolate);
       } else {
-        // No more tabs, clear selection and keep everything hidden
         setActiveTabId(null);
-
         actions.setHidden(tabId, true);
         actions.setProp(tabId, prop => (prop.hidden = true));
-
-        isolatePageInTree(query, actions, null, setIsolate);
-        hideHeaderFooter(query, actions, true);
-
-        setTimeout(() => {
-          actions.selectNode(null);
-        }, 100);
+        restorePageMode(query, actions, setIsolate);
+        requestAnimationFrame(() => actions.selectNode(null));
       }
     }
 

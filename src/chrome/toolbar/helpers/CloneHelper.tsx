@@ -5,86 +5,6 @@ import { useSetAtomState } from "../../../utils/atoms";
 import { OpenComponentEditorAtom, ViewModeAtom } from "@/utils/lib";
 import { ActionRow } from "./ActionRow";
 
-export const setClonedProps = (props, query, exclude = []) => {
-  // If this node doesn't belong to a master component, just return props as-is
-  if (!props.belongsTo) {
-    return props;
-  }
-
-  try {
-    // Get the master node
-    const masterNode = query.node(props.belongsTo).get();
-    if (!masterNode) {
-      return props;
-    }
-
-    const masterProps = { ...masterNode.data.props };
-
-    // Always exclude these props from syncing
-    const propsToExclude = ["belongsTo", "relationType", "hasMany", "savedComponentName", "type"];
-    propsToExclude.forEach(key => {
-      delete masterProps[key];
-    });
-
-    // If it's a "style" relation type, sync everything EXCEPT styles
-    if (props.relationType === "style") {
-      // Clone keeps its own styles (root, className)
-      // but gets everything else from master
-      return {
-        ...props,
-        ...masterProps,
-        root: props.root,
-        className: props.className,
-        belongsTo: props.belongsTo,
-        relationType: props.relationType,
-      };
-    }
-
-    // If it's a "content" relation type, sync styles but keep content local
-    if (props.relationType === "content") {
-      // Clone keeps its own content props (text, url, image, etc.)
-      // but gets styles and layout from master
-      const contentProps = [
-        "text",
-        "url",
-        "urlTarget",
-        "image",
-        "videoId",
-        "content",
-        "buttonText",
-        "placeholder",
-        "value",
-      ];
-      const localContent = {};
-      contentProps.forEach(key => {
-        if (key in props) {
-          localContent[key] = props[key];
-        }
-      });
-
-      return {
-        ...props,
-        ...masterProps,
-        ...localContent, // Override with local content
-        belongsTo: props.belongsTo,
-        relationType: props.relationType,
-      };
-    }
-
-    // For "full" relation type, sync everything from master
-    return {
-      ...props,
-      ...masterProps,
-      belongsTo: props.belongsTo,
-      relationType: props.relationType,
-    };
-  } catch (error) {
-    console.error("Error syncing cloned props:", error);
-    return props;
-  }
-};
-
-
 export const ConvertToRegularComponent = ({ query, actions, id }) => (
   <ActionRow
     icon={<TbLinkOff className="size-5" />}
@@ -102,18 +22,6 @@ export const ConvertToRegularComponent = ({ query, actions, id }) => (
     }}
   />
 );
-
-export const getClonedState = (props, state) => {
-  if (!props.belongsTo) {
-    return {
-      enabled: state.options.enabled,
-    };
-  }
-  return {
-    enabled: state.options.enabled,
-    state,
-  };
-};
 
 export const NoSettings = ({ actions, id, query }) => (
   <div className="flex flex-col gap-4 p-4">
@@ -168,16 +76,15 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
         "Master Component";
 
       const handleEditComponent = () => {
-        // Switch to component mode
-        setViewMode("component");
+        // Find the component container
+        const masterNode = query.node(contentNodeId).get();
+        const containerId = masterNode?.data?.parent;
+        const container = containerId ? query.node(containerId).get() : null;
+        if (!container || container.data.props?.type !== "component") return;
 
-        // Open the component for editing
-        setTimeout(() => {
-          setOpenComponentEditor({
-            componentId: contentNodeId,
-            componentName: componentName,
-          });
-        }, 100);
+        actions.selectNode(null);
+        setViewMode("component");
+        setOpenComponentEditor({ componentId: containerId, componentName });
       };
 
       return (
@@ -202,7 +109,6 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
               title="Edit Linked Instance"
               description="Change the main component"
               variant="primary"
-              delay={0.1}
               onClick={handleEditComponent}
             />
 
