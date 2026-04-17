@@ -25,6 +25,7 @@ interface ComponentEditorTabsProps {
 /** Hide all ROOT children (pages, headers, footers, components), then show only the target. */
 const isolateForComponentEditing = (query, actions, targetContainerId, setIsolate) => {
   const root = query.node(ROOT_NODE).get();
+  console.log("[isolate] target:", targetContainerId, "root children:", root.data.nodes);
   root.data.nodes.forEach(nodeId => {
     const node = query.node(nodeId).get();
     const t = node?.data?.props?.type;
@@ -32,8 +33,25 @@ const isolateForComponentEditing = (query, actions, targetContainerId, setIsolat
       const hide = nodeId !== targetContainerId;
       actions.setHidden(nodeId, hide);
       actions.setProp(nodeId, prop => (prop.hidden = hide));
+      console.log("[isolate]", nodeId, t, hide ? "HIDDEN" : "VISIBLE");
     }
   });
+  const target = query.node(targetContainerId).get();
+  console.log("[isolate] target node:", {
+    type: target?.data?.props?.type,
+    hidden: target?.data?.hidden,
+    children: target?.data?.nodes,
+    childCount: target?.data?.nodes?.length
+  });
+  if (target?.data?.nodes?.[0]) {
+    const child = query.node(target.data.nodes[0]).get();
+    console.log("[isolate] target first child:", {
+      id: target.data.nodes[0],
+      type: child?.data?.type?.resolvedName || child?.data?.displayName,
+      hidden: child?.data?.hidden,
+      props: child?.data?.props
+    });
+  }
   setIsolate(targetContainerId);
 };
 
@@ -121,15 +139,20 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
       // Resolve container ID — callers may pass either a container ID or a content node ID
       let containerId = componentId;
       const node = query.node(componentId).get();
+      console.log("[openComponent] componentId:", componentId, "node:", node ? { type: node.data.props?.type, parent: node.data.parent } : "NOT FOUND");
       if (!node) return;
 
       if (node.data.props?.type !== "component") {
-        // Caller passed a content node ID — walk up to the container
         const parentId = node.data.parent;
         const parent = parentId ? query.node(parentId).get() : null;
-        if (!parent || parent.data.props?.type !== "component") return;
+        console.log("[openComponent] walking up:", parentId, parent?.data?.props?.type);
+        if (!parent || parent.data.props?.type !== "component") {
+          console.log("[openComponent] BAIL — parent is not a component container");
+          return;
+        }
         containerId = parentId;
       }
+      console.log("[openComponent] resolved containerId:", containerId);
 
       // Check if tab already exists
       const existingTab = tabs.find(t => t.id === containerId);

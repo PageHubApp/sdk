@@ -187,15 +187,13 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
       createLinks: false,
     });
 
-    // Remove the original node, then insert the clone at its position
-    actions.delete(id);
     actions.addNodeTree(clonedTree, originalParent, originalIndex);
+    actions.delete(id);
 
     // Link clone nodes to master nodes
     requestAnimationFrame(async () => {
       const { setRecursiveBelongsTo } = await import("@/utils/componentUtils");
 
-      // Add master content ID to hasMany for each clone
       setRecursiveBelongsTo(
         clonedTree.rootNodeId,
         masterContentId,
@@ -205,6 +203,8 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
           if (clonedNodeId === clonedTree.rootNodeId) prop.savedComponentName = componentName;
         }
       );
+      const cloneNode = query.node(clonedTree.rootNodeId).get();
+      console.log("[saveHandler] after link:", { belongsTo: cloneNode?.data?.props?.belongsTo, relationType: cloneNode?.data?.props?.relationType });
       actions.selectNode(clonedTree.rootNodeId);
     });
 

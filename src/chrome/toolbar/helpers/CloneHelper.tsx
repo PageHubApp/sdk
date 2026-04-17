@@ -76,11 +76,14 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
         "Master Component";
 
       const handleEditComponent = () => {
-        // Find the component container
         const masterNode = query.node(contentNodeId).get();
         const containerId = masterNode?.data?.parent;
         const container = containerId ? query.node(containerId).get() : null;
-        if (!container || container.data.props?.type !== "component") return;
+        console.log("[editLinked] contentNodeId:", contentNodeId, "containerId:", containerId, "container type:", container?.data?.props?.type, "container children:", container?.data?.nodes);
+        if (!container || container.data.props?.type !== "component") {
+          console.log("[editLinked] BAIL — no valid container");
+          return;
+        }
 
         actions.selectNode(null);
         setViewMode("component");

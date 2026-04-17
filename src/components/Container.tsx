@@ -1,8 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
+import { useAtomValue } from "@zedux/react";
 import { TbArrowDown, TbContainer, TbNote } from "react-icons/tb";
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { useIsolate, usePreview, useView } from "../core/store";
+import { ViewModeAtom } from "../utils/lib";
 import { hasPageIsolation } from "../utils/pageManagement";
 import { mergeAccessibilityProps } from "../utils/accessibility";
 import { addActionHandlers } from "../utils/clickControls";
@@ -60,7 +62,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   };
 
   const view = useView();
-  const viewMode = "page";
+  const viewMode = useAtomValue(ViewModeAtom);
   const isolate = useIsolate();
   const preview = usePreview();
   const settings = null;
@@ -132,18 +134,18 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   // Hide component containers from the main viewport
   // Only show them when being actively edited
   if (props.type === "component") {
-    // Always hide in preview mode (not editing)
+    let hideReason = null;
     if (!enabled) {
+      hideReason = "preview";
+      className = `${className} hidden`;
+    } else if (viewMode === "page") {
+      hideReason = "page-mode";
+      className = `${className} hidden`;
+    } else if (viewMode === "component" && hasPageIsolation(isolate) && isolate !== id) {
+      hideReason = `isolate-mismatch (isolate=${isolate}, id=${id})`;
       className = `${className} hidden`;
     }
-    // Hide in page mode (only show when editing components)
-    else if (viewMode === "page") {
-      className = `${className} hidden`;
-    }
-    // In component mode, only show if this specific component is isolated
-    else if (viewMode === "component" && hasPageIsolation(isolate) && isolate !== id) {
-      className = `${className} hidden`;
-    }
+    console.log("[Container type=component]", id, hideReason || "VISIBLE", { viewMode, isolate, enabled });
   }
 
   /** Skip dashed empty hint when this canvas already has a background (image, inline style, or Tailwind `bg-*`).
