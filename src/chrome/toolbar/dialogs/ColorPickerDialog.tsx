@@ -74,7 +74,7 @@ export const ColorPickerDialog = () => {
   useEffect(() => {
     const node = query.node(ROOT_NODE).get();
     if (!node) return;
-    const themePalette = resolveTheme(node.data.props || {}).palette;
+    const themePalette = resolveTheme(node.data?.props || {}).palette;
 
     if (Array.isArray(themePalette) && themePalette.length > 0) {
       const palette = themePalette.filter(p => p && typeof p === "object" && p.name && p.color);

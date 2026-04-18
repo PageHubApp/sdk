@@ -42,6 +42,11 @@ export const PAGE_SETTINGS_FIELDS: readonly PageSettingsFieldDef[] = [
   { key: "jsonLd", defaultValue: "" },
   { key: "pagePassword", defaultValue: "" },
   { key: "themeOverrides", defaultValue: [] },
+  // Access Control (conditionGroups is the same prop used by node-level conditions)
+  { key: "conditionGroups", defaultValue: [] },
+  { key: "pageConditionFailAction", defaultValue: "" },
+  { key: "pageConditionRedirectUrl", defaultValue: "" },
+  { key: "pageConditionFallbackPageId", defaultValue: "" },
 ] as const;
 
 /** Just the keys, for iteration / allowlisting. */

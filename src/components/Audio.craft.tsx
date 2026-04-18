@@ -42,6 +42,7 @@ import { NameNodeController, HoverNodeController, DeleteNodeController } from ".
 export const AudioDef = defineComponent(
   {
     name: "Audio",
+    description: "Audio player with URL or upload.",
     component: Audio,
     icon: TbMusic,
     category: "Media",
@@ -59,18 +60,6 @@ export const AudioDef = defineComponent(
     ],
     tools: props => [
       <NameNodeController key="audioNameController" position="top" align="end" placement="start" />,
-      <HoverNodeController
-        key="audioHoverController"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{
-          position: "bottom",
-          align: "start",
-          placement: "start",
-        }}
-      />,
-      <DeleteNodeController key="audioDelete" />,
     ],
     presets: [
       {

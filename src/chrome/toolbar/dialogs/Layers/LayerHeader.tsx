@@ -30,8 +30,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
 
-  const { displayName, hidden, isSelected, isHovered, actions, query, nodeType } =
-    useEditor((editorState, query) => {
+  const { displayName, hidden, isSelected, isHovered, actions, query, nodeType } = useEditor(
+    (editorState, query) => {
       const node = editorState.nodes[nodeId];
       const selectedId = query.getEvent("selected").first();
       const hoveredId = query.getEvent("hovered").first();
@@ -47,7 +47,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
         isHovered: hoveredId === nodeId,
         nodeType: node?.data?.props?.type || "",
       };
-    });
+    }
+  );
 
   const isDragging = state.draggedNode === nodeId;
   const isDropTarget = state.dropIndicator?.targetId === nodeId && state.draggedNode !== nodeId;
@@ -125,11 +126,14 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   }, [nodeId, actions, isPage, isolate, query, setIsolate]);
 
   // Handle name editing (pages are renamed via page settings, not layers)
-  const handleNameDoubleClick = useCallback((e: React.MouseEvent) => {
-    if (isPage) return;
-    e.stopPropagation();
-    setIsEditingName(true);
-  }, [isPage]);
+  const handleNameDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (isPage) return;
+      e.stopPropagation();
+      setIsEditingName(true);
+    },
+    [isPage]
+  );
 
   const handleNameChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

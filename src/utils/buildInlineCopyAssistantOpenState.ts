@@ -22,6 +22,7 @@ export function buildInlineCopyAssistantOpenState(
   assistantScope: AssistantScope;
   promptHint: string;
   freshChat: boolean;
+  revealPanel: boolean;
   contextNode?: { id: string; displayName: string };
 } {
   const scope: AssistantScope = "text";
@@ -37,6 +38,7 @@ export function buildInlineCopyAssistantOpenState(
     assistantScope: scope,
     promptHint: "",
     freshChat: true,
+    revealPanel: true,
     ...(textNodeId && textNodeId !== "ROOT"
       ? { contextNode: { id: textNodeId, displayName } }
       : {}),

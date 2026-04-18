@@ -25,12 +25,7 @@ function SelectField({
       <label htmlFor={id} className="text-neutral-content mb-1 block text-xs font-medium">
         {label}
       </label>
-      <ToolbarDropdown
-        value={value}
-        onChange={onChange}
-        placeholder={label}
-        propKey={id}
-      >
+      <ToolbarDropdown value={value} onChange={onChange} placeholder={label} propKey={id}>
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>
             {opt.label}

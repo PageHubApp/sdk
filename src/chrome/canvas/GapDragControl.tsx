@@ -32,9 +32,7 @@ export function GapDragControl() {
 
   const shouldShow = (gapHoverInfo?.show || isDragging) && gapHoverInfo;
 
-  const portalTarget = typeof document !== "undefined"
-    ? document.getElementById("viewport")
-    : null;
+  const portalTarget = typeof document !== "undefined" ? document.getElementById("viewport") : null;
 
   if (!shouldShow || !portalTarget || !gapHoverInfo.gapRect) return null;
 
@@ -57,9 +55,7 @@ export function GapDragControl() {
         top: gr.y + oy - (isVertical ? 0 : 4),
         width: isVertical ? Math.max(gr.width, 8) + 24 : gr.width,
         height: isVertical ? gr.height : Math.max(gr.height, 8) + 8,
-        backgroundColor: isDragging
-          ? "rgba(59, 130, 246, 0.4)"
-          : "rgba(59, 130, 246, 0.2)",
+        backgroundColor: isDragging ? "rgba(59, 130, 246, 0.4)" : "rgba(59, 130, 246, 0.2)",
         cursor: isVertical ? "ew-resize" : "ns-resize",
         zIndex: 9998,
         display: "flex",

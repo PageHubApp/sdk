@@ -81,18 +81,18 @@ export default function Builder() {
 
 ### `resolveConfig(config)`
 
-| Option       | Type                    | Default                     | Description                                             |
-| ------------ | ----------------------- | --------------------------- | ------------------------------------------------------- |
-| `container`  | `string \| HTMLElement` | —                           | DOM selector or element to mount into (vanilla JS only) |
-| `apiKey`     | `string`                | —                           | PageHub Cloud API key (optional for self-hosted)        |
-| `apiBaseUrl` | `string`                | `""`                        | API base URL (for AI, uploads, forms)                   |
-| `pageId`     | `string`                | —                           | Initial page ID to load                                 |
-| `readOnly`   | `boolean`               | `false`                     | Start in viewer mode                                    |
-| `callbacks`  | `PageHubCallbacks`      | _required_                  | Your integration hooks (see below)                      |
-| `theme`      | `PageHubTheme`          | —                           | Visual theming                                          |
-| `features`   | `PageHubFeatures`       | —                           | Feature toggles                                         |
-| `ai`         | `PageHubAIConfig`       | —                           | AI generation config                                    |
-| `locale`     | `PageHubLocale`         | —                           | Localization overrides                                  |
+| Option       | Type                    | Default    | Description                                             |
+| ------------ | ----------------------- | ---------- | ------------------------------------------------------- |
+| `container`  | `string \| HTMLElement` | —          | DOM selector or element to mount into (vanilla JS only) |
+| `apiKey`     | `string`                | —          | PageHub Cloud API key (optional for self-hosted)        |
+| `apiBaseUrl` | `string`                | `""`       | API base URL (for AI, uploads, forms)                   |
+| `pageId`     | `string`                | —          | Initial page ID to load                                 |
+| `readOnly`   | `boolean`               | `false`    | Start in viewer mode                                    |
+| `callbacks`  | `PageHubCallbacks`      | _required_ | Your integration hooks (see below)                      |
+| `theme`      | `PageHubTheme`          | —          | Visual theming                                          |
+| `features`   | `PageHubFeatures`       | —          | Feature toggles                                         |
+| `ai`         | `PageHubAIConfig`       | —          | AI generation config                                    |
+| `locale`     | `PageHubLocale`         | —          | Localization overrides                                  |
 
 ### Callbacks
 
@@ -322,8 +322,8 @@ Vite bundles `src/css/editor.css` into **`dist/editor.css`** (same public path: 
 
 Partials that use `@apply` / `@utility` rely on **`css/editor-partials/tailwind-theme-reference.css`**, imported immediately after `tailwindcss` in `editor.css`. `@reference` URLs are resolved from **`packages/sdk/src/css/`**, not from the partial file path. Add new `@import` lines only at the top of `editor.css` (PostCSS requires every `@import` before `@source` / other at-rules).
 
-| Concern                                                           | File                                           |
-| ----------------------------------------------------------------- | ---------------------------------------------- |
+| Concern                                                           | File                                               |
+| ----------------------------------------------------------------- | -------------------------------------------------- |
 | Tailwind theme `@reference` (single, paths from `src/css/`)       | `css/editor-partials/tailwind-theme-reference.css` |
 | Scoped `.btn` / `.input-hover` (not `@utility`)                   | `css/editor-partials/utilities.css`                |
 | Google icons + mobile preview overrides                           | `css/editor-partials/icons-and-mobile-preview.css` |
@@ -334,7 +334,7 @@ Partials that use `@apply` / `@utility` rely on **`css/editor-partials/tailwind-
 | Third-party (e.g. Sketch color picker)                            | `css/editor-partials/third-party.css`              |
 | HeadlessUI listbox (`ph-select-*`)                                | `css/editor-partials/dropdowns.css`                |
 | Scroll/hover presets + `css-*` keyframes                          | `css/styles.css` (animation presets section)       |
-| Sequential spotlight presets (chain/grid)                          | `css/spotlight-presets.css`                         |
+| Sequential spotlight presets (chain/grid)                         | `css/spotlight-presets.css`                        |
 
 ### Naming contract (integrators & contributors)
 

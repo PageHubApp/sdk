@@ -12,7 +12,10 @@ export const AccordionProvider = ({ children }) => {
     return phStorage.getJSON("accordion-state", {}) as Record<string, boolean>;
   });
 
-  const registeredSections = useRef(new Set<string>());
+  /** Map<title, { defaultOpen, primary }>. Only `primary` sections are toggled by toggleAll. */
+  const registeredSections = useRef(
+    new Map<string, { defaultOpen: boolean; primary: boolean }>()
+  );
 
   const persist = state => {
     try {
@@ -20,25 +23,37 @@ export const AccordionProvider = ({ children }) => {
     } catch {}
   };
 
-  const getIsOpen = useCallback(
-    title => {
-      if (title in openSections) return openSections[title];
-      return title === DEFAULT_OPEN_SECTION;
-    },
-    [openSections]
+  const sectionDefault = useCallback(
+    (title: string, hint?: boolean) =>
+      hint ??
+      registeredSections.current.get(title)?.defaultOpen ??
+      title === DEFAULT_OPEN_SECTION,
+    []
   );
 
-  const toggle = useCallback(title => {
-    setOpenSections(prev => {
-      const currentlyOpen = title in prev ? prev[title] : title === DEFAULT_OPEN_SECTION;
-      const next = { ...prev, [title]: !currentlyOpen };
-      persist(next);
-      return next;
-    });
-  }, []);
+  const getIsOpen = useCallback(
+    (title, defaultOpenHint?: boolean) => {
+      if (title in openSections) return openSections[title];
+      return sectionDefault(title, defaultOpenHint);
+    },
+    [openSections, sectionDefault]
+  );
 
-  const register = useCallback(title => {
-    registeredSections.current.add(title);
+  const toggle = useCallback(
+    (title, defaultOpenHint?: boolean) => {
+      setOpenSections(prev => {
+        const currentlyOpen =
+          title in prev ? prev[title] : sectionDefault(title, defaultOpenHint);
+        const next = { ...prev, [title]: !currentlyOpen };
+        persist(next);
+        return next;
+      });
+    },
+    [sectionDefault]
+  );
+
+  const register = useCallback((title, defaultOpen = false, primary = false) => {
+    registeredSections.current.set(title, { defaultOpen: !!defaultOpen, primary: !!primary });
   }, []);
 
   const unregister = useCallback(title => {
@@ -49,19 +64,21 @@ export const AccordionProvider = ({ children }) => {
     setOpenSections(prev => {
       const sections = registeredSections.current;
       let hasAnyOpen = false;
-      sections.forEach(title => {
-        const isOpen = title in prev ? prev[title] : title === DEFAULT_OPEN_SECTION;
+      sections.forEach((meta, title) => {
+        if (!meta.primary) return;
+        const isOpen = title in prev ? prev[title] : sectionDefault(title);
         if (isOpen) hasAnyOpen = true;
       });
 
-      const next = {};
-      sections.forEach(title => {
+      const next = { ...prev };
+      sections.forEach((meta, title) => {
+        if (!meta.primary) return;
         next[title] = !hasAnyOpen;
       });
       persist(next);
       return next;
     });
-  }, []);
+  }, [sectionDefault]);
 
   const openOnly = useCallback((titles: string[]) => {
     setOpenSections(() => {
@@ -76,9 +93,9 @@ export const AccordionProvider = ({ children }) => {
   }, []);
 
   const openAll = useCallback(() => {
-    setOpenSections(() => {
-      const next = {};
-      registeredSections.current.forEach(title => {
+    setOpenSections(prev => {
+      const next = { ...prev };
+      registeredSections.current.forEach((_, title) => {
         next[title] = true;
       });
       // Don't persist search-triggered open state
@@ -87,6 +104,16 @@ export const AccordionProvider = ({ children }) => {
   }, []);
 
   const anyOpen = useMemo(() => {
+    const sections = registeredSections.current;
+    let sawPrimary = false;
+    for (const [title, meta] of sections) {
+      if (!meta.primary) continue;
+      sawPrimary = true;
+      const isOpen = title in openSections ? openSections[title] : meta.defaultOpen;
+      if (isOpen) return true;
+    }
+    if (sawPrimary) return false;
+    // Fallback (no primary sections registered yet — first render)
     const hasExplicitlyOpen = Object.values(openSections).some(v => v === true);
     const contentDefaultOpen = !(DEFAULT_OPEN_SECTION in openSections);
     return hasExplicitlyOpen || contentDefaultOpen;

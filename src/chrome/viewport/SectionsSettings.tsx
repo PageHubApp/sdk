@@ -8,9 +8,13 @@ import { useBlockCategories, type BlockCategory } from "../../utils/useBlockCate
 import { AutoHideScrollbar } from "@/chrome/primitives/layout";
 import { CategoryCard, CustomSectionCard, BlockPreviewCard } from "./sections-settings/components";
 import { CategoryDetailView } from "./sections-settings/CategoryDetailView";
+import { MyBlocksCategoryView } from "./sections-settings/MyBlocksCategoryView";
 import { SearchResultsView } from "./sections-settings/SearchResultsView";
-import { CATEGORY_ORDER } from "./sections-settings/blockHelpers";
-import { CustomSectionsGrid } from "./sections-settings/CustomSectionsGrid";
+import {
+  buildWorkspaceBlockCategory,
+  CATEGORY_ORDER,
+  WORKSPACE_BLOCKS_CATEGORY_ID,
+} from "./sections-settings/blockHelpers";
 
 export { BlockPreviewCard, CustomSectionCard };
 
@@ -49,12 +53,6 @@ export function SectionsSettings() {
     return [...ordered.filter(Boolean), ...remaining];
   }, [categories]);
 
-  // Derive selectedCategory from URL params
-  const selectedCategory = useMemo(() => {
-    if (!params.cat) return null;
-    return sortedCategories.find(c => c.id === params.cat) ?? null;
-  }, [params.cat, sortedCategories]);
-
   // Custom sections from current page
   const customSections = useMemo(() => {
     return components
@@ -66,6 +64,28 @@ export function SectionsSettings() {
         rootNodeId: component.rootNodeId,
       }));
   }, [components]);
+
+  const workspaceCategory = useMemo(
+    () => (customSections.length > 0 ? buildWorkspaceBlockCategory(customSections.length) : null),
+    [customSections.length]
+  );
+
+  // Derive selectedCategory from URL params (API categories + client-only workspace category)
+  const selectedCategory = useMemo(() => {
+    if (!params.cat) return null;
+    if (params.cat === WORKSPACE_BLOCKS_CATEGORY_ID) {
+      if (customSections.length === 0) return null;
+      return workspaceCategory;
+    }
+    return sortedCategories.find(c => c.id === params.cat) ?? null;
+  }, [params.cat, sortedCategories, customSections.length, workspaceCategory]);
+
+  // Deep-link / bookmark: clear reserved cat when there are no saved blocks
+  useEffect(() => {
+    if (params.cat === WORKSPACE_BLOCKS_CATEGORY_ID && customSections.length === 0) {
+      panelUpdate({ cat: null });
+    }
+  }, [params.cat, customSections.length, panelUpdate]);
 
   useEffect(() => {
     const time = setTimeout(() => focusRef?.current?.focus(), 50);
@@ -100,6 +120,13 @@ export function SectionsSettings() {
 
   // Category drill-in view
   if (selectedCategory && !isSearchMode) {
+    if (selectedCategory.id === WORKSPACE_BLOCKS_CATEGORY_ID) {
+      return (
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <MyBlocksCategoryView sections={customSections} onBack={() => history.back()} />
+        </div>
+      );
+    }
     return (
       <div className="flex flex-1 flex-col overflow-hidden">
         <CategoryDetailView
@@ -140,23 +167,26 @@ export function SectionsSettings() {
       ) : (
         <AutoHideScrollbar className="flex-1">
           <div className="p-3">
-            {/* Custom sections */}
-            {customSections.length > 0 && (
-              <div className="mb-4">
-                <div className="text-neutral-content mb-2 text-xs font-medium tracking-wider uppercase">
-                  My Blocks ({customSections.length})
-                </div>
-                <CustomSectionsGrid sections={customSections} />
-              </div>
-            )}
-
-            {/* Category grid */}
             {isLoading ? (
               <div className="flex h-32 items-center justify-center">
                 <TbLoader2 className="text-neutral-content size-5 animate-spin" />
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2.5">
+                {workspaceCategory ? (
+                  <CategoryCard
+                    key={WORKSPACE_BLOCKS_CATEGORY_ID}
+                    category={workspaceCategory}
+                    onClick={() =>
+                      panelNavigate({
+                        cat: WORKSPACE_BLOCKS_CATEGORY_ID,
+                        sub: null,
+                        sty: null,
+                        q: null,
+                      })
+                    }
+                  />
+                ) : null}
                 {sortedCategories.map(cat => (
                   <CategoryCard
                     key={cat.id}

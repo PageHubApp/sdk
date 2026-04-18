@@ -277,7 +277,7 @@ export const EditorNavigation = ({
                         renderNavAi &&
                         renderNavAi({
                           onSelect: () => {
-                            setAssistantOpen({});
+                            setAssistantOpen({ revealPanel: true });
                             close();
                           },
                         })}

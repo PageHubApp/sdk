@@ -1,8 +1,22 @@
 import React from "react";
 import { TbChevronDown } from "react-icons/tb";
 import { StandaloneImagePicker } from "../StandaloneImagePicker";
+import {
+  SettingsFormCard,
+  SettingsFormField,
+  SettingsTabIntro,
+  settingsCollapsibleShellClass,
+  settingsCollapsibleTriggerClass,
+  settingsTabRootClass,
+} from "../settings/SettingsTabChrome";
+import {
+  settingsModalSelectClass,
+  settingsMultilineInputClass,
+} from "../settings/settingsControlClasses";
 
 interface SEOTabProps {
+  inputClass: string;
+  selectClass: string;
   pageTitle: string;
   setPageTitle: (v: string) => void;
   pageDescription: string;
@@ -32,6 +46,8 @@ interface SEOTabProps {
 }
 
 export function SEOTab({
+  inputClass,
+  selectClass,
   pageTitle,
   setPageTitle,
   pageDescription,
@@ -59,217 +75,199 @@ export function SEOTab({
   twitterCreator,
   setTwitterCreator,
 }: SEOTabProps) {
+  const multiline = settingsMultilineInputClass(inputClass);
+  const selectField = settingsModalSelectClass(selectClass);
+
   return (
-    <div className="space-y-6">
-      {/* Basic SEO */}
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="meta-title" className="toolbar-label mb-2 block font-medium">
-            Meta Title
-          </label>
+    <div className={settingsTabRootClass}>
+      <SettingsTabIntro
+        title="SEO"
+        description="Defaults for search and sharing. Open Graph and Twitter blocks override meta fields when expanded and filled."
+      />
+
+      <SettingsFormCard title="Search">
+        <SettingsFormField
+          label="Meta title"
+          htmlFor="meta-title"
+          hint="Roughly 50–60 characters works well in results."
+        >
           <textarea
             id="meta-title"
             value={pageTitle}
             onChange={e => setPageTitle(e.target.value)}
             rows={2}
-            className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
-            placeholder="Page title (50-60 characters)"
+            className={multiline}
+            placeholder="Page title"
           />
-        </div>
+        </SettingsFormField>
 
-        <div>
-          <label htmlFor="meta-description" className="toolbar-label mb-2 block font-medium">
-            Meta Description
-          </label>
+        <SettingsFormField
+          label="Meta description"
+          htmlFor="meta-description"
+          hint="Roughly 150–160 characters for snippets."
+        >
           <textarea
             id="meta-description"
             value={pageDescription}
             onChange={e => setPageDescription(e.target.value)}
             rows={3}
-            className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
-            placeholder="Meta description (150-160 characters)"
+            className={multiline}
+            placeholder="Meta description"
           />
-        </div>
+        </SettingsFormField>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="page-keywords" className="toolbar-label mb-2 block font-medium">
-              Keywords
-            </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SettingsFormField label="Keywords" htmlFor="page-keywords">
             <input
               id="page-keywords"
               type="text"
               value={pageKeywords}
               onChange={e => setPageKeywords(e.target.value)}
-              className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
+              className={inputClass}
               placeholder="keyword1, keyword2"
             />
-          </div>
-
-          <div>
-            <label htmlFor="page-author" className="toolbar-label mb-2 block font-medium">
-              Author
-            </label>
+          </SettingsFormField>
+          <SettingsFormField label="Author" htmlFor="page-author">
             <input
               id="page-author"
               type="text"
               value={pageAuthor}
               onChange={e => setPageAuthor(e.target.value)}
-              className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
+              className={inputClass}
               placeholder="Author name"
             />
-          </div>
+          </SettingsFormField>
         </div>
-      </div>
+      </SettingsFormCard>
 
-      {/* Open Graph - Collapsible */}
-      <div className="border-base-300 overflow-hidden rounded-lg border">
+      <div className={settingsCollapsibleShellClass}>
         <button
           type="button"
           onClick={() => setOgExpanded(!ogExpanded)}
-          className="bg-neutral hover:bg-neutral/80 flex w-full items-center justify-between p-4 transition-colors"
+          className={settingsCollapsibleTriggerClass}
         >
-          <div className="flex items-center gap-2">
-            <span className="toolbar-label font-medium">Open Graph (Social Media)</span>
-            <span className="bg-neutral text-neutral-content rounded-full px-2 py-1 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-base-content text-sm font-semibold">Open Graph</span>
+            <span className="bg-base-300/60 text-neutral-content rounded-full px-2 py-0.5 text-xs font-medium">
               Optional
             </span>
           </div>
           <TbChevronDown
-            className={`text-neutral-content transition-transform ${
-              ogExpanded ? "rotate-180" : ""
-            }`}
+            className={`text-neutral-content size-5 shrink-0 transition-transform ${ogExpanded ? "rotate-180" : ""}`}
           />
         </button>
 
-        {ogExpanded && (
-          <div className="border-base-300 bg-base-100 space-y-4 border-t p-4">
-            <div>
-              <label htmlFor="og-title" className="toolbar-label mb-2 block font-medium">
-                OG Title
-              </label>
+        {ogExpanded ? (
+          <div className="border-base-300 bg-base-100 space-y-4 border-t p-5">
+            <SettingsFormField
+              label="OG title"
+              htmlFor="og-title"
+              hint="Leave empty to reuse meta title."
+            >
               <input
                 id="og-title"
                 type="text"
                 value={ogTitle}
                 onChange={e => setOgTitle(e.target.value)}
-                className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
-                placeholder="Leave empty to use page title"
+                className={inputClass}
+                placeholder="Social title"
               />
-            </div>
+            </SettingsFormField>
 
-            <div>
-              <label htmlFor="og-description" className="toolbar-label mb-2 block font-medium">
-                OG Description
-              </label>
+            <SettingsFormField label="OG description" htmlFor="og-description">
               <textarea
                 id="og-description"
                 value={ogDescription}
                 onChange={e => setOgDescription(e.target.value)}
                 rows={2}
-                className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
-                placeholder="Leave empty to use page description"
+                className={multiline}
+                placeholder="Leave empty to reuse meta description"
               />
-            </div>
+            </SettingsFormField>
 
-            <div>
-              <p className="toolbar-label mb-2 block font-medium">OG Image</p>
+            <SettingsFormField label="OG image">
               <StandaloneImagePicker
                 value={ogImage}
                 onChange={setOgImage}
-                label="Upload OG Image"
-                help="Recommended: 1200x630px"
+                label="Upload OG image"
+                help="Recommended 1200×630px."
               />
-            </div>
+            </SettingsFormField>
 
-            <div>
-              <label htmlFor="og-type" className="toolbar-label mb-2 block font-medium">
-                OG Type
-              </label>
+            <SettingsFormField label="OG type" htmlFor="og-type">
               <select
                 id="og-type"
                 value={ogType}
                 onChange={e => setOgType(e.target.value)}
-                className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
+                className={selectField}
               >
                 <option value="website">Website</option>
                 <option value="article">Article</option>
                 <option value="product">Product</option>
                 <option value="profile">Profile</option>
               </select>
-            </div>
+            </SettingsFormField>
           </div>
-        )}
+        ) : null}
       </div>
 
-      {/* Twitter - Collapsible */}
-      <div className="border-base-300 overflow-hidden rounded-lg border">
+      <div className={settingsCollapsibleShellClass}>
         <button
           type="button"
           onClick={() => setTwitterExpanded(!twitterExpanded)}
-          className="bg-neutral hover:bg-neutral/80 flex w-full items-center justify-between p-4 transition-colors"
+          className={settingsCollapsibleTriggerClass}
         >
-          <div className="flex items-center gap-2">
-            <span className="toolbar-label font-medium">Twitter/X Card</span>
-            <span className="bg-neutral text-neutral-content rounded-full px-2 py-1 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-base-content text-sm font-semibold">Twitter / X card</span>
+            <span className="bg-base-300/60 text-neutral-content rounded-full px-2 py-0.5 text-xs font-medium">
               Optional
             </span>
           </div>
           <TbChevronDown
-            className={`text-neutral-content transition-transform ${
+            className={`text-neutral-content size-5 shrink-0 transition-transform ${
               twitterExpanded ? "rotate-180" : ""
             }`}
           />
         </button>
 
-        {twitterExpanded && (
-          <div className="border-base-300 bg-base-100 space-y-4 border-t p-4">
-            <div>
-              <label htmlFor="twitter-card" className="toolbar-label mb-2 block font-medium">
-                Card Type
-              </label>
+        {twitterExpanded ? (
+          <div className="border-base-300 bg-base-100 space-y-4 border-t p-5">
+            <SettingsFormField label="Card type" htmlFor="twitter-card">
               <select
                 id="twitter-card"
                 value={twitterCard}
                 onChange={e => setTwitterCard(e.target.value)}
-                className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
+                className={selectField}
               >
-                <option value="summary_large_image">Summary Large Image</option>
+                <option value="summary_large_image">Summary large image</option>
                 <option value="summary">Summary</option>
               </select>
-            </div>
+            </SettingsFormField>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="twitter-site" className="toolbar-label mb-2 block font-medium">
-                  Site
-                </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <SettingsFormField label="Site" htmlFor="twitter-site">
                 <input
                   id="twitter-site"
                   type="text"
                   value={twitterSite}
                   onChange={e => setTwitterSite(e.target.value)}
-                  className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
+                  className={inputClass}
                   placeholder="@yourusername"
                 />
-              </div>
-
-              <div>
-                <label htmlFor="twitter-creator" className="toolbar-label mb-2 block font-medium">
-                  Creator
-                </label>
+              </SettingsFormField>
+              <SettingsFormField label="Creator" htmlFor="twitter-creator">
                 <input
                   id="twitter-creator"
                   type="text"
                   value={twitterCreator}
                   onChange={e => setTwitterCreator(e.target.value)}
-                  className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
+                  className={inputClass}
                   placeholder="@authorusername"
                 />
-              </div>
+              </SettingsFormField>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

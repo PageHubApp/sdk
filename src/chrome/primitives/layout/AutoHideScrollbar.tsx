@@ -134,17 +134,19 @@ export function AutoHideScrollbar({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Sticky scrollbar track — floated right, zero-height so it takes no layout space */}
+      {/* Sticky scrollbar track — full-width, zero-height wrapper so the inner `right: 0` aligns
+          to the scroll viewport's right edge. `float: right` is ignored when `position: sticky` is
+          set (per CSS spec), so we use width:100% + absolute children instead. */}
       {hasThumb && (
         <div
           aria-hidden="true"
           style={{
             position: "sticky",
             top: 0,
-            float: "right",
             height: 0,
-            width: 0,
+            width: "100%",
             overflow: "visible",
+            pointerEvents: "none",
             zIndex: 50,
           }}
         >

@@ -60,6 +60,8 @@ export function useGapDrag({
   const isDraggingRef = useRef(false);
   const dragStartPosRef = useRef(dragStartPos);
   const gapHoverInfoRef = useRef(gapHoverInfo);
+  const gapDwellKeyRef = useRef<string | null>(null);
+  const gapDwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   isDraggingRef.current = isDragging;
   dragStartPosRef.current = dragStartPos;
@@ -182,11 +184,19 @@ export function useGapDrag({
             i
           );
           if (detected) {
-            setGapHoverInfo(detected);
+            // Dwell: only commit hover after 300ms in the same gap
+            const key = `${detected.childIndex}`;
+            if (key !== gapDwellKeyRef.current) {
+              gapDwellKeyRef.current = key;
+              if (gapDwellTimerRef.current) clearTimeout(gapDwellTimerRef.current);
+              gapDwellTimerRef.current = setTimeout(() => setGapHoverInfo(detected), 400);
+            }
             return;
           }
         }
 
+        gapDwellKeyRef.current = null;
+        if (gapDwellTimerRef.current) clearTimeout(gapDwellTimerRef.current);
         setGapHoverInfo(null);
       });
     };
@@ -200,9 +210,14 @@ export function useGapDrag({
         const gapClass = pixelsToGapClass(snappedGap);
         const prefix = buildVariantPrefix(classPrefixView, classDark);
         setProp(prop => {
-          const withoutExistingGap = removeClassForView(prop.className || "", "gap", classPrefixView, {
-            classDark,
-          });
+          const withoutExistingGap = removeClassForView(
+            prop.className || "",
+            "gap",
+            classPrefixView,
+            {
+              classDark,
+            }
+          );
           prop.className = twMerge(withoutExistingGap, prefix + gapClass);
         });
 

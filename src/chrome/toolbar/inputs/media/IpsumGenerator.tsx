@@ -35,7 +35,7 @@ export const IpsumGenerator = ({ propKey, propType }) => {
     propValues,
     id,
   } = useNode(node => ({
-    propValues: node.data.props,
+    propValues: node.data?.props,
     id: node.id,
   }));
 

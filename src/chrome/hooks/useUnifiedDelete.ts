@@ -33,7 +33,9 @@ export const useUnifiedDelete = () => {
       if (
         node.data.props?.canDelete === false ||
         node.data.custom?.permissions?.canDelete === false ||
-        nodeType === "page" || nodeType === "header" || nodeType === "footer"
+        nodeType === "page" ||
+        nodeType === "header" ||
+        nodeType === "footer"
       ) {
         console.warn("Node cannot be deleted:", selected);
         return false;

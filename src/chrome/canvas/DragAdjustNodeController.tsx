@@ -132,12 +132,20 @@ export const DragAdjustNodeController = (props: {
   // could use it but drl need it ond rag adjusters..
 
   const showControl = true;
-  const writeWidthClass = React.useCallback((prop: { className?: string }, nextClass: string) => {
-    const classNameWithoutWidth = removeClassForView(prop.className || "", "width", classPrefixView, {
-      classDark,
-    });
-    prop.className = twMerge(classNameWithoutWidth, nextClass);
-  }, [classDark, classPrefixView]);
+  const writeWidthClass = React.useCallback(
+    (prop: { className?: string }, nextClass: string) => {
+      const classNameWithoutWidth = removeClassForView(
+        prop.className || "",
+        "width",
+        classPrefixView,
+        {
+          classDark,
+        }
+      );
+      prop.className = twMerge(classNameWithoutWidth, nextClass);
+    },
+    [classDark, classPrefixView]
+  );
 
   // For inline rendering, skip AnimatePresence - it causes issues without portals
   if (isInlineRender && isActive && showControl) {

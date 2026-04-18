@@ -22,7 +22,7 @@ export function useElementPicker(filter: PickerFilter): PickerOption[] {
       if (!node?.data) continue;
 
       const displayName = node.data.displayName || node.data.name || "";
-      const p = node.data.props || {};
+      const p = node.data?.props || {};
       const isOverlay = node.data.custom?.overlay === true;
       const targetId = isOverlay ? p.anchor : p.id || p.anchor;
       const label = getDisplayName(node);

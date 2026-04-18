@@ -2,6 +2,8 @@ import { useNode } from "@craftjs/core";
 import { TbSection } from "react-icons/tb";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { BackgroundSettingsInput } from "../../inputs/color/BackgroundSettingsInput";
+import { LayoutPresetInput } from "../../inputs/layout/LayoutPresetInput";
+import { useLayoutPreset } from "../../inputs/layout/hooks/useLayoutPreset";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useGetNode } from "../../dialogs/toolHooks";
@@ -74,7 +76,23 @@ const DataSourceSlot = () => {
 
 export const ContainerMainTab = () => {
   const node = useGetNode();
-  const props = node.data.props;
+  const props = node.data?.props;
+  const layoutPreset = useLayoutPreset({ propKey: "layoutPreset" });
+  /** Same pattern as List/ButtonList: primary slot uses title "Content" so AccordionContext defaults it open. */
+  const layoutSection =
+    props?.type === "imageContainer" ? (
+      <LayoutPresetInput lp={layoutPreset} />
+    ) : (
+      <ToolbarSection
+        title="Content"
+        icon={SECTION_ICONS.Content}
+        propKey="display"
+        help="Layout mode, presets, and display (flex, grid, block)."
+        defaultOpen
+      >
+        <LayoutPresetInput lp={layoutPreset} sectionWrapper={false} />
+      </ToolbarSection>
+    );
 
   const contentSlot =
     props?.type === "imageContainer" ? (
@@ -86,14 +104,18 @@ export const ContainerMainTab = () => {
         <SettingsAiSlot />
         <BackgroundSettingsInput />
       </ToolbarSection>
-    ) : undefined;
+    ) : (
+      layoutSection
+    );
 
   return (
     <>
       {renderComponentSlots({
         Content: contentSlot,
-        /** Add nested container lives under Layout (after presets), dashed control — see LayoutPresetInput. */
-        Type: null,
+        Type:
+          props?.type === "imageContainer" ? (
+            <LayoutPresetInput lp={layoutPreset} />
+          ) : null,
       })}
       <DataSourceSlot />
     </>

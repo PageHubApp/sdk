@@ -23,7 +23,6 @@ import { resolveTheme } from "../../utils/design/resolveTheme";
 import { getMaterialSymbolsUrlFromNodes } from "../../utils/data/collectGoogleIcons";
 import { sanitizeCraftNodeReferences } from "../../utils/sanitizeNodeMap";
 
-
 type Tab = "review" | "live";
 
 /** When ai-draft JSON is missing ROOT.theme.palette, inherit tokens from the live editor viewport (same list as ComponentPreview). */

@@ -8,11 +8,7 @@ export type {
   Operator,
 } from "./types";
 
-export {
-  NO_VALUE_OPERATORS,
-  OPERATOR_LABELS,
-  OPERATORS_BY_TYPE,
-} from "./types";
+export { NO_VALUE_OPERATORS, OPERATOR_LABELS, OPERATORS_BY_TYPE } from "./types";
 
 export {
   evaluateBranches,

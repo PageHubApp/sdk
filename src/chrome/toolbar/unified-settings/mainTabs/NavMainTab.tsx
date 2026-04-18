@@ -19,7 +19,7 @@ const NAV_VIEW_STATES = [
 
 export const NavMainTab = () => {
   const { actions, query } = useEditor();
-  const { id, props: nodeProps } = useNode(node => ({ props: node.data.props }));
+  const { id, props: nodeProps } = useNode(node => ({ props: node.data?.props }));
   const [activeIndex, setActiveIndex] = useAtomState(SelectedNavItemAtom) as unknown as [
     number | null,
     (v: number | null) => void,
@@ -30,7 +30,7 @@ export const NavMainTab = () => {
   const { menu } = useEditor((_, q) => {
     try {
       const node = q.node(id).get();
-      return { menu: node.data.props?.menu || {} };
+      return { menu: node.data?.props?.menu || {} };
     } catch {
       return { menu: {} };
     }

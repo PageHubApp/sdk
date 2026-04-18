@@ -11,7 +11,7 @@ import { MediaManagerModal } from "./MediaManagerModal";
 export const MediaInput = propa => {
   const props = { ...propa };
   const { props: nodeProps, id: componentId } = useNode(node => ({
-    props: node.data.props,
+    props: node.data?.props,
     id: node.id,
   }));
 
@@ -21,7 +21,13 @@ export const MediaInput = propa => {
 
   const { query, actions } = useEditor();
 
-  const { propKey, typeKey, contentKey = "src", title = "Media" } = props;
+  const {
+    propKey,
+    typeKey,
+    contentKey = "src",
+    title = "Media",
+    showObjectProperties = true,
+  } = props;
 
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
 
@@ -94,69 +100,69 @@ export const MediaInput = propa => {
     });
   };
 
-  return (
+  const body = (
     <>
-      <ToolbarSection title={title} full={1} collapsible={props.collapsible}>
-        <div className="space-y-2">
-          {/* Preview if media exists or content URL exists */}
-          {(hasMedia && (svgContent || imageUrl)) || (hasContentUrl && imageUrl) ? (
-            <div className="relative">
-              <div className="bg-base-100 flex aspect-video items-center justify-center overflow-hidden rounded-lg p-2">
-                {svgContent ? (
-                  <div
-                    className="text-base-content flex size-full items-center justify-center [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
-                    dangerouslySetInnerHTML={{ __html: svgContent }}
-                  />
-                ) : imageUrl ? (
-                  <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="size-full rounded-lg object-cover"
-                    loading="lazy"
-                  />
-                ) : null}
-              </div>
-
-              {/* Clear button - only show when media is set or content URL exists */}
-              <button
-                onClick={handleClear}
-                className="bg-error text-error-content hover:bg-error/90 absolute top-1 right-1 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-                title="Clear media"
-              >
-                ×
-              </button>
+      <div className="space-y-2">
+        {/* Preview if media exists or content URL exists */}
+        {(hasMedia && (svgContent || imageUrl)) || (hasContentUrl && imageUrl) ? (
+          <div className="relative">
+            <div className="bg-base-100 flex aspect-video items-center justify-center overflow-hidden rounded-lg p-2">
+              {svgContent ? (
+                <div
+                  className="text-base-content flex size-full items-center justify-center [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
+                  dangerouslySetInnerHTML={{ __html: svgContent }}
+                />
+              ) : imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt="Preview"
+                  className="size-full rounded-lg object-cover"
+                  loading="lazy"
+                />
+              ) : null}
             </div>
-          ) : null}
 
-          {/* URL Input Field - only show when there's a content URL */}
-          {hasContentUrl && (
-            <div className="space-y-2">
-              <label htmlFor="media-input-url" className="toolbar-label block font-medium">
-                Image URL
-              </label>
-              <input
-                id="media-input-url"
-                type="url"
-                value={contentUrl || ""}
-                onChange={e => handleContentUrlChange(e.target.value)}
-                placeholder="https://example.com/image.jpg"
-                className="input placeholder:text-neutral-content px-3! py-2!"
-              />
-              <p className="text-neutral-content text-xs">
-                Enter a direct image URL or use the media library below
-              </p>
-            </div>
-          )}
+            {/* Clear button - only show when media is set or content URL exists */}
+            <button
+              onClick={handleClear}
+              className="bg-error text-error-content hover:bg-error/90 absolute top-1 right-1 flex size-4 items-center justify-center rounded-full text-xs font-bold"
+              title="Clear media"
+            >
+              ×
+            </button>
+          </div>
+        ) : null}
 
-          {/* Browse Media Library — dashed control (matches Add Action / font preset) */}
-          <ToolbarDashedButton
-            onClick={() => setShowMediaBrowser(true)}
-            icon={<TbPhoto size={12} aria-hidden />}
-          >
-            {hasMedia ? "Change Media" : "Browse Media Library"}
-          </ToolbarDashedButton>
-        </div>
+        {/* URL Input Field - only show when there's a content URL */}
+        {hasContentUrl && (
+          <div className="space-y-2">
+            <label htmlFor="media-input-url" className="toolbar-label block font-medium">
+              Image URL
+            </label>
+            <input
+              id="media-input-url"
+              type="url"
+              value={contentUrl || ""}
+              onChange={e => handleContentUrlChange(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              className="input placeholder:text-neutral-content px-3! py-2!"
+            />
+            <p className="text-neutral-content text-xs">
+              Enter a direct image URL or use the media library below
+            </p>
+          </div>
+        )}
 
+        {/* Browse Media Library — dashed control (matches Add Action / font preset) */}
+        <ToolbarDashedButton
+          onClick={() => setShowMediaBrowser(true)}
+          icon={<TbPhoto size={12} aria-hidden />}
+        >
+          {hasMedia ? "Change Media" : "Browse Media Library"}
+        </ToolbarDashedButton>
+      </div>
+
+      {showObjectProperties && (
         <ToolbarSection
           title="Object Properties"
           nested
@@ -172,14 +178,22 @@ export const MediaInput = propa => {
             type="select"
           />
         </ToolbarSection>
+      )}
 
-        <MediaManagerModal
-          isOpen={showMediaBrowser}
-          onClose={() => setShowMediaBrowser(false)}
-          onSelect={handleBrowseSelect}
-          selectionMode={true}
-        />
-      </ToolbarSection>
+      <MediaManagerModal
+        isOpen={showMediaBrowser}
+        onClose={() => setShowMediaBrowser(false)}
+        onSelect={handleBrowseSelect}
+        selectionMode={true}
+      />
     </>
+  );
+
+  if (!title) return body;
+
+  return (
+    <ToolbarSection title={title} full={1} collapsible={props.collapsible}>
+      {body}
+    </ToolbarSection>
   );
 };

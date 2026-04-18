@@ -26,7 +26,7 @@ export function HeaderItem({
       disabled={disabled}
       aria-label={ariaLabel}
       className={twMerge(
-        "tool-button text-base-content/70 hover:bg-transparent hover:text-base-content transition-colors",
+        "tool-button text-base-content/70 hover:text-base-content transition-colors hover:bg-transparent",
         className
       )}
       {...rest}

@@ -33,6 +33,7 @@ const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
   "add-to-cart": { type: "add-to-cart" },
   "toggle-cart": { type: "toggle-cart" },
   "cart-checkout": { type: "cart-checkout" },
+  "manage-subscription": { type: "manage-subscription" },
 };
 
 export default function ActionInput() {
@@ -94,11 +95,7 @@ export default function ActionInput() {
   };
 
   return (
-    <ToolbarSection
-      title="Action"
-      icon={<TbPointer />}
-      help="What happens when someone clicks this element. Add multiple actions to chain them."
-    >
+    <>
       {actionList.map((action, i) => (
         <div
           key={i}
@@ -157,7 +154,7 @@ export default function ActionInput() {
       >
         {actionList.length === 0 ? "Add Action" : "Chain Another Action"}
       </ToolbarDashedButton>
-    </ToolbarSection>
+    </>
   );
 }
 
@@ -211,6 +208,12 @@ function ActionSubForm({ action, patch }: { action: NodeAction; patch: (p: any) 
           Redirects to Stripe Checkout with the current cart contents.
         </p>
       );
+    case "manage-subscription":
+      return (
+        <p className="text-neutral-content text-[10px] leading-snug">
+          Redirects logged-in customers to the Stripe customer portal to manage subscriptions.
+        </p>
+      );
     default:
       return null;
   }
@@ -226,8 +229,8 @@ function ToggleThemeForm({
   return (
     <>
       <p className="text-neutral-content text-[10px] leading-snug">
-        Toggles the site light/dark preference (stored in <code className="text-[9px]">ph-theme</code>
-        , same as the editor chrome).
+        Toggles the site light/dark preference (stored in{" "}
+        <code className="text-[9px]">ph-theme</code>, same as the editor chrome).
       </p>
       <ElementPickerForm
         value={action.dismissTarget || ""}

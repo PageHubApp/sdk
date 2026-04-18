@@ -2,6 +2,12 @@ import React from "react";
 import { TbInfoCircle } from "react-icons/tb";
 import { normalizeDesignTags } from "../../../utils/normalizeDesignTags";
 import { BgWrap } from "../../toolbar/ToolbarStyle";
+import {
+  SettingsCallout,
+  SettingsFormField,
+  SettingsTabIntro,
+} from "../settings/SettingsTabChrome";
+import { settingsMultilineInputClass } from "../settings/settingsControlClasses";
 
 export const SITE_AI_TONE_SUGGESTED_TAGS = [
   "engaging",
@@ -64,13 +70,10 @@ export function SiteAiToneForm({
   return (
     <div className="space-y-4">
       {showIntroHeading ? (
-        <div className="mb-2 space-y-2">
-          <h3 className="text-base-content text-lg font-semibold">Site AI tone</h3>
-          <p className="text-neutral-content text-sm">
-            Notes and tags apply everywhere AI touches this site: assistant, section fills, text
-            wand, and image tools. Nothing here appears on the published site.
-          </p>
-        </div>
+        <SettingsTabIntro
+          title="Site AI tone"
+          description="Notes and tags apply everywhere AI touches this site: assistant, section fills, text wand, and image tools. Nothing here appears on the published site."
+        />
       ) : (
         <p className="text-neutral-content text-xs">
           Applies site-wide to AI tools. Not shown on the live site.
@@ -78,79 +81,97 @@ export function SiteAiToneForm({
       )}
 
       <div>
-        <label htmlFor={idNotes} className="toolbar-label mb-2 block font-medium">
-          Design notes
-        </label>
         {inputClass ? (
-          <textarea
-            id={idNotes}
-            value={notes}
-            onChange={e => setDesignNotes(e.target.value)}
-            rows={showIntroHeading ? 5 : 4}
-            maxLength={1200}
-            className={`${inputClass} min-h-[4.5rem] resize-y`}
-            placeholder="e.g. Dark editorial SaaS, generous whitespace, copy tone: confident but not hype…"
-          />
+          <SettingsFormField
+            label="Design notes"
+            htmlFor={idNotes}
+            hint="Up to 1200 characters. Be specific about voice, audience, and layout preferences."
+          >
+            <textarea
+              id={idNotes}
+              value={notes}
+              onChange={e => setDesignNotes(e.target.value)}
+              rows={showIntroHeading ? 5 : 4}
+              maxLength={1200}
+              className={settingsMultilineInputClass(inputClass)}
+              placeholder="e.g. Dark editorial SaaS, generous whitespace, copy tone: confident but not hype…"
+            />
+          </SettingsFormField>
         ) : (
-          <BgWrap>
-            <div className="flex w-full items-start gap-2">
-              <textarea
-                id={idNotes}
-                value={notes}
-                onChange={e => setDesignNotes(e.target.value)}
-                rows={showIntroHeading ? 5 : 4}
-                maxLength={1200}
-                className="input-plain placeholder:text-neutral-content min-h-[4.5rem] w-full flex-1 resize-y py-2 text-sm"
-                placeholder="e.g. Dark editorial SaaS, generous whitespace, copy tone: confident but not hype…"
-              />
-            </div>
-          </BgWrap>
+          <>
+            <label htmlFor={idNotes} className="toolbar-label mb-2 block font-medium">
+              Design notes
+            </label>
+            <BgWrap>
+              <div className="flex w-full items-start gap-2">
+                <textarea
+                  id={idNotes}
+                  value={notes}
+                  onChange={e => setDesignNotes(e.target.value)}
+                  rows={showIntroHeading ? 5 : 4}
+                  maxLength={1200}
+                  className="input-plain placeholder:text-neutral-content min-h-[4.5rem] w-full flex-1 resize-y py-2 text-sm"
+                  placeholder="e.g. Dark editorial SaaS, generous whitespace, copy tone: confident but not hype…"
+                />
+              </div>
+            </BgWrap>
+          </>
         )}
         <p className="text-neutral-content mt-1 text-right text-xs">{notes.length}/1200</p>
       </div>
 
       <div>
-        <label htmlFor={idTags} className="toolbar-label mb-2 block font-medium">
-          Tags
-        </label>
         {inputClass ? (
-          <input
-            id={idTags}
-            type="text"
-            value={tags.join(", ")}
-            onChange={e => {
-              const parsed = e.target.value
-                .split(/[,]+/)
-                .map(s => s.trim())
-                .filter(Boolean);
-              setDesignTags(normalizeDesignTags(parsed));
-            }}
-            className={inputClass}
-            placeholder="comma-separated: dark, minimal, fintech"
-          />
+          <SettingsFormField
+            label="Tags"
+            htmlFor={idTags}
+            hint="Up to 24 tags; combined with the quick picks below."
+          >
+            <input
+              id={idTags}
+              type="text"
+              value={tags.join(", ")}
+              onChange={e => {
+                const parsed = e.target.value
+                  .split(/[,]+/)
+                  .map(s => s.trim())
+                  .filter(Boolean);
+                setDesignTags(normalizeDesignTags(parsed));
+              }}
+              className={inputClass}
+              placeholder="comma-separated: dark, minimal, fintech"
+            />
+          </SettingsFormField>
         ) : (
-          <BgWrap>
-            <div className="flex w-full items-center gap-2">
-              <input
-                id={idTags}
-                type="text"
-                value={tags.join(", ")}
-                onChange={e => {
-                  const parsed = e.target.value
-                    .split(/[,]+/)
-                    .map(s => s.trim())
-                    .filter(Boolean);
-                  setDesignTags(normalizeDesignTags(parsed));
-                }}
-                className="input-plain placeholder:text-neutral-content h-8 min-h-8 w-full flex-1 text-sm"
-                placeholder="comma-separated: dark, minimal, fintech"
-              />
-            </div>
-          </BgWrap>
+          <>
+            <label htmlFor={idTags} className="toolbar-label mb-2 block font-medium">
+              Tags
+            </label>
+            <BgWrap>
+              <div className="flex w-full items-center gap-2">
+                <input
+                  id={idTags}
+                  type="text"
+                  value={tags.join(", ")}
+                  onChange={e => {
+                    const parsed = e.target.value
+                      .split(/[,]+/)
+                      .map(s => s.trim())
+                      .filter(Boolean);
+                    setDesignTags(normalizeDesignTags(parsed));
+                  }}
+                  className="input-plain placeholder:text-neutral-content h-8 min-h-8 w-full flex-1 text-sm"
+                  placeholder="comma-separated: dark, minimal, fintech"
+                />
+              </div>
+            </BgWrap>
+          </>
         )}
-        <p className="text-neutral-content mt-1 text-xs">
-          Up to 24 tags; combined with the quick picks below.
-        </p>
+        {!inputClass ? (
+          <p className="text-neutral-content mt-1 text-xs">
+            Up to 24 tags; combined with the quick picks below.
+          </p>
+        ) : null}
       </div>
 
       <div>
@@ -177,17 +198,12 @@ export function SiteAiToneForm({
       </div>
 
       {showIntroHeading ? (
-        <div className="border-base-300 bg-neutral rounded-lg border p-4">
-          <div className="flex gap-3">
-            <TbInfoCircle className="text-primary mt-0.5 size-5 shrink-0" />
-            <div>
-              <p className="text-neutral-content text-sm">
-                Edit anytime. There is no separate &quot;legacy&quot; AI block — this is the only
-                site-wide tone store.
-              </p>
-            </div>
-          </div>
-        </div>
+        <SettingsCallout icon={<TbInfoCircle />}>
+          <p>
+            Edit anytime. There is no separate &quot;legacy&quot; AI block — this is the only
+            site-wide tone store.
+          </p>
+        </SettingsCallout>
       ) : null}
     </div>
   );

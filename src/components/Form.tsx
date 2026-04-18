@@ -192,57 +192,69 @@ export const Form = ({ children, ...props }: any) => {
       {!loading && !loaded && (!enabled || !props.view || props.view === "") && children}
 
       {(loading || (enabled && props.view === "loading")) && (
-        <Element
-          canvas
-          id="loadingTextContainer"
-          is={Container}
-          role="status"
-          aria-live="polite"
-          canDelete={true}
-          canEditName={true}
-          className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
-          custom={{
-            displayName: "Loading Text Container",
-            id: "loadingTextContainer",
-          }}
-        >
+        enabled ? (
           <Element
             canvas
-            id="loadingText"
-            is={Text}
-            custom={{ displayName: "Loading Text", id: "loadingText" }}
+            id="loadingTextContainer"
+            is={Container}
+            role="status"
+            aria-live="polite"
             canDelete={true}
             canEditName={true}
-            text={props.loading || "Sending..."}
-          />
-        </Element>
+            className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
+            custom={{
+              displayName: "Loading Text Container",
+              id: "loadingTextContainer",
+            }}
+          >
+            <Element
+              canvas
+              id="loadingText"
+              is={Text}
+              custom={{ displayName: "Loading Text", id: "loadingText" }}
+              canDelete={true}
+              canEditName={true}
+              text={props.loading || "Sending..."}
+            />
+          </Element>
+        ) : (
+          <div className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row" role="status" aria-live="polite">
+            <p>{props.loading || "Sending..."}</p>
+          </div>
+        )
       )}
 
       {(loaded || (enabled && props.view === "loaded")) && (
-        <Element
-          canvas
-          id="sentTextContainer"
-          is={Container}
-          role="status"
-          aria-live="polite"
-          canDelete={true}
-          canEditName={true}
-          className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
-          custom={{
-            displayName: "Sent Text",
-            id: "sentTextContainer",
-          }}
-        >
+        enabled ? (
           <Element
             canvas
-            id="sentText"
-            is={Text}
-            custom={{ displayName: "Text", id: "sentText" }}
+            id="sentTextContainer"
+            is={Container}
+            role="status"
+            aria-live="polite"
             canDelete={true}
             canEditName={true}
-            text={"Thank you!"}
-          />
-        </Element>
+            className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
+            custom={{
+              displayName: "Sent Text",
+              id: "sentTextContainer",
+            }}
+          >
+            <Element
+              canvas
+              id="sentText"
+              is={Text}
+              custom={{ displayName: "Text", id: "sentText" }}
+              canDelete={true}
+              canEditName={true}
+              text={"Thank you!"}
+            />
+          </Element>
+        ) : (
+          <div className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row" role="status" aria-live="polite">
+            <p>{props.success || "Thank you!"}</p>
+          </div>
+        )
       )}
 
       {/* Debug panel - only shows in editor mode */}

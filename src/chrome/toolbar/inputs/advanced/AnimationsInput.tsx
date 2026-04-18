@@ -83,7 +83,7 @@ export const AnimationsInput = () => {
     props,
     actions: { setProp },
   } = useNode(node => ({
-    props: node.data.props,
+    props: node.data?.props,
   }));
 
   const isInScrollTimeline = useParentScrollTimeline();
@@ -178,12 +178,7 @@ export const AnimationsInput = () => {
         </ToolbarSection>
       )}
 
-      <ToolbarSection
-        enabled={true}
-        title="Animation"
-        icon={<TbBolt />}
-        help="Animate this element when it scrolls into view."
-      >
+      <>
         <div className="mb-2">
           <ToolbarSegmentedControl
             dense
@@ -362,7 +357,7 @@ export const AnimationsInput = () => {
               </div>
             );
           })()}
-      </ToolbarSection>
+      </>
     </>
   );
 };

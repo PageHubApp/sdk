@@ -253,12 +253,21 @@ export const RENDER_INVALID_TREE_MESSAGE =
 
 // ─── Default resolver ───────────────────────────────────────────────────────
 
-const cartBadgeToHTML: ToHTMLFn = (props, _children, ctx) => {
+const cartBadgeToHTML: ToHTMLFn = (props, children, ctx) => {
+  // New path: canvas CartBadge with children
+  if (children) {
+    const cls = props.className || "relative";
+    cls.split(/\s+/).forEach(c => c && ctx.classes.add(c));
+    return `<div class="${cls}">${children}</div>`;
+  }
+  // Legacy fallback: old CartBadge without children
   const cls = props.className || "btn btn-ghost btn-circle relative";
   cls.split(/\s+/).forEach(c => c && ctx.classes.add(c));
-  return `<button class="${cls}" aria-label="Cart" data-action="toggle-cart">` +
+  return (
+    `<button class="${cls}" aria-label="Cart" data-action="toggle-cart">` +
     `<svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17h-11v-14h-2"/><path d="M6 5l14 1l-1 7h-13"/></svg>` +
-    `</button>`;
+    `</button>`
+  );
 };
 
 const defaultResolver: Record<string, ToHTMLFn> = {
@@ -267,6 +276,8 @@ const defaultResolver: Record<string, ToHTMLFn> = {
   Footer: containerToHTML,
   CartBadge: cartBadgeToHTML,
   CartDrawer: containerToHTML,
+  CartItems: containerToHTML,
+  CartSubtotal: containerToHTML,
   CheckoutBanner: containerToHTML,
   ProductDisplay: containerToHTML,
 };
@@ -315,11 +326,18 @@ function renderNode(
         .map(id => renderNode(id as string, nodes, resolver, ctx))
         .filter(Boolean)
         .join("\n");
-      const inner = toHTML
-        ? toHTML(node.props || {}, childrenHTML, ctx)
-        : childrenHTML
-          ? `<div>${childrenHTML}</div>`
-          : "";
+      let inner = "";
+      if (toHTML) {
+        const prevId = ctx.renderingNodeId;
+        ctx.renderingNodeId = nodeId;
+        try {
+          inner = toHTML(node.props || {}, childrenHTML, ctx);
+        } finally {
+          ctx.renderingNodeId = prevId;
+        }
+      } else if (childrenHTML) {
+        inner = `<div>${childrenHTML}</div>`;
+      }
       if (!inner) return "";
       const condData = JSON.stringify(conditions || []).replace(/"/g, "&quot;");
       const logic = node.props.conditionLogic || "all";
@@ -339,7 +357,13 @@ function renderNode(
     .join("\n");
 
   if (toHTML) {
-    return toHTML(node.props || {}, childrenHTML, ctx);
+    const prevId = ctx.renderingNodeId;
+    ctx.renderingNodeId = nodeId;
+    try {
+      return toHTML(node.props || {}, childrenHTML, ctx);
+    } finally {
+      ctx.renderingNodeId = prevId;
+    }
   }
 
   // Fallback: unknown component
@@ -382,9 +406,27 @@ ${extraCSS}
 ${scrollObserverScript}
 </body>
 </html>`;
-    return { html: doc, classes: [], fontUrls: [], scrollObserverScript, themeCSS: themeVars, iconFontUrl: null, seo: null, renderError };
+    return {
+      html: doc,
+      classes: [],
+      fontUrls: [],
+      scrollObserverScript,
+      themeCSS: themeVars,
+      iconFontUrl: null,
+      seo: null,
+      renderError,
+    };
   }
-  return { html: "", classes: [], fontUrls: [], scrollObserverScript, themeCSS: "", iconFontUrl: null, seo: null, renderError };
+  return {
+    html: "",
+    classes: [],
+    fontUrls: [],
+    scrollObserverScript,
+    themeCSS: "",
+    iconFontUrl: null,
+    seo: null,
+    renderError,
+  };
 }
 
 // ─── Public API ─────────────────────────────────────────────────────────────
@@ -545,7 +587,15 @@ ${scrollObserverScript}
     };
   }
 
-  return { html, classes: [...ctx.classes], fontUrls: [...ctx.fontUrls], scrollObserverScript, themeCSS, iconFontUrl, seo };
+  return {
+    html,
+    classes: [...ctx.classes],
+    fontUrls: [...ctx.fontUrls],
+    scrollObserverScript,
+    themeCSS,
+    iconFontUrl,
+    seo,
+  };
 }
 
 // ─── Theme CSS variables ────────────────────────────────────────────────────

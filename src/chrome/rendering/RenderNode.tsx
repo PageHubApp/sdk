@@ -1,7 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useMemo, useState } from "react";
 
-
 function resolveCraftComponent(
   type: unknown,
   resolver: Record<string, React.ComponentType<any>> | undefined

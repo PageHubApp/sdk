@@ -1,5 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { ROOT_NODE, useEditor } from "@craftjs/core";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -8,11 +8,9 @@ import {
   TbArrowBackUp,
   TbArrowForwardUp,
   TbBoxModel2,
-  TbCheck,
   TbChevronDown,
   TbCode,
   TbDeviceDesktop,
-  TbDeviceFloppy,
   TbDeviceMobile,
   TbEye,
   TbFileText,
@@ -21,9 +19,14 @@ import {
   TbPlus,
   TbX,
 } from "react-icons/tb";
-import { LayersDialogOpenAtom, SessionTokenAtom, SettingsAtom, ShowGridLinesAtom } from "../../utils/atoms";
+import {
+  LayersDialogOpenAtom,
+  SessionTokenAtom,
+  SettingsAtom,
+  ShowGridLinesAtom,
+  useSetAtomState,
+} from "../../utils/atoms";
 import { ComponentsAtom, LastActiveAtom, SideBarAtom, ViewModeAtom } from "../../utils/lib";
-import { useSetAtomState } from "../../utils/atoms";
 import {
   EDITOR_CANVAS_BREAKPOINT_PX,
   isEditorCanvasBreakpointView,
@@ -33,24 +36,32 @@ import {
   markToolboxHistorySelectionSync,
   usePanelUrl,
 } from "../../utils/usePanelUrl";
-import { MediaManagerModal } from "../toolbar/inputs/media/MediaManagerModal";
-import { LayersDialog } from "../toolbar/dialogs/LayersDialog";
 import { SaveIndicator } from "../inline-tools/PublishButton";
 import { ToolbarPortalDropdown } from "../inline-tools/ToolbarPortalDropdown";
-import { EnabledAtom, PreviewAtom, ViewAtom } from "./atoms";
+import { LayersDialog } from "../toolbar/dialogs/LayersDialog";
+import { MediaManagerModal } from "../toolbar/inputs/media/MediaManagerModal";
+import {
+  BreakpointZoomAtom,
+  DeviceAtom,
+  DeviceDimensionsAtom,
+  DeviceZoomAtom,
+  EnabledAtom,
+  PreviewAtom,
+  ViewAtom,
+} from "./atoms";
+import { CanvasZoom } from "./CanvasZoom";
 import { ComponentSelector } from "./ComponentSelector";
 import { EditorNavigation } from "./EditorNavigation";
 
-import { NodeBreadcrumb } from "./NodeBreadcrumb";
-import { PageSelector } from "./PageSelector";
-import { SiteSettingsModal } from "./SiteSettingsModal";
 import { ModifiersModal } from "./ModifiersModal";
+import { NodeBreadcrumb } from "./NodeBreadcrumb";
+import { SiteSettingsModal } from "./SiteSettingsModal";
 
-import type { ViewMode as CanvasViewMode } from "../../core/store";
 import { useSDK } from "../../core/context";
+import type { ViewMode as CanvasViewMode } from "../../core/store";
+import { phStorage } from "../../utils/phStorage";
 import { HeaderItem as Item } from "./header/HeaderItem";
 import { useHeaderShortcuts } from "./header/useHeaderShortcuts";
-import { phStorage } from "../../utils/phStorage";
 
 // Re-export for external consumers
 export { useComponentVisible } from "./header/useComponentVisible";
@@ -59,13 +70,14 @@ export const Header = () => {
   const { enabled, canUndo, canRedo, actions, query, componentFingerprint } = useEditor(
     (state, query) => {
       const root = state.nodes[ROOT_NODE];
-      const fp = root?.data?.nodes
-        ?.filter(id => state.nodes[id]?.data?.props?.type === "component")
-        .map(id => {
-          const cid = state.nodes[id]?.data?.nodes?.[0];
-          return `${id}:${cid ? state.nodes[cid]?.data?.nodes?.length ?? 0 : 0}`;
-        })
-        .join(",") || "";
+      const fp =
+        root?.data?.nodes
+          ?.filter(id => state.nodes[id]?.data?.props?.type === "component")
+          .map(id => {
+            const cid = state.nodes[id]?.data?.nodes?.[0];
+            return `${id}:${cid ? (state.nodes[cid]?.data?.nodes?.length ?? 0) : 0}`;
+          })
+          .join(",") || "";
       return {
         enabled: state.options.enabled,
         canUndo: query.history.canUndo(),
@@ -227,20 +239,24 @@ export const Header = () => {
     }, 200);
   };
 
-  const headerCanvasRows = [
+  const headerCanvasDeviceRows = [
     { id: "desktop", label: "Full width", sub: "Fluid canvas" },
     { id: "mobile", label: "Device", sub: "Phone frame" },
+  ];
+  const headerCanvasBreakpointRows = [
     {
       id: "sm",
       label: "SM",
-      sub: `Tablet preview · ${EDITOR_CANVAS_BREAKPOINT_PX.sm}px wide`,
+      sub: `Tablet · ${EDITOR_CANVAS_BREAKPOINT_PX.sm}px`,
     },
     ...["md", "lg", "xl", "2xl"].map(bp => ({
       id: bp,
       label: bp === "2xl" ? "2XL" : bp.toUpperCase(),
-      sub: `${EDITOR_CANVAS_BREAKPOINT_PX[bp]}px · full height`,
+      sub: `${EDITOR_CANVAS_BREAKPOINT_PX[bp]}px`,
     })),
   ];
+  const device = useAtomValue(DeviceAtom);
+  const deviceDimensions = useAtomValue(DeviceDimensionsAtom);
   const [settings, setSettings] = useAtomState(SettingsAtom);
   const sessionToken = useAtomValue(SessionTokenAtom);
 
@@ -286,7 +302,7 @@ export const Header = () => {
       <header
         ref={editorChromeNavRef}
         role="banner"
-        className="border-base-300 bg-base-100 text-base-content pointer-events-auto relative z-50 flex flex-row-reverse items-center justify-between border-b px-1.5 py-1"
+        className="border-base-300 bg-base-100 text-base-content pointer-events-auto relative z-50 flex flex-row-reverse items-center justify-between border-b px-1 py-1"
         data-tutorial="header"
       >
         <Item
@@ -358,7 +374,7 @@ export const Header = () => {
         <ToolbarPortalDropdown
           openOn="hover"
           align="center"
-          className="border-base-300 bg-base-100 min-w-[12rem] rounded-lg border p-1 py-1.5 shadow-xl"
+          className="border-base-300 bg-base-100 w-[18rem] rounded-lg border p-2 shadow-xl"
           trigger={
             <button
               type="button"
@@ -366,42 +382,111 @@ export const Header = () => {
               aria-haspopup="menu"
               className="tool-button gap-0.5!"
             >
-              {view === "mobile" && <TbDeviceMobile />}
-              {(view === "desktop" || view === "tablet") && <TbDeviceDesktop />}
-              {isEditorCanvasBreakpointView(view) && (
-                <span className="font-mono text-xs leading-none font-bold tracking-tight">
-                  {view === "2xl" ? "2XL" : view.toUpperCase()}
-                </span>
-              )}
+              <span className="inline-flex h-4 w-6 items-center justify-center">
+                {view === "mobile" && <TbDeviceMobile className="size-4" />}
+                {(view === "desktop" || view === "tablet") && (
+                  <TbDeviceDesktop className="size-4" />
+                )}
+                {isEditorCanvasBreakpointView(view) && (
+                  <span className="font-mono text-[11px] leading-none font-bold tracking-tight">
+                    {view === "2xl" ? "2XL" : view.toUpperCase()}
+                  </span>
+                )}
+              </span>
               <TbChevronDown className="size-3 shrink-0 opacity-60" aria-hidden />
             </button>
           }
         >
-          <div className="text-neutral-content px-2 pb-1 text-[10px] font-semibold tracking-wide uppercase">
-            Canvas width
+          <div className="mb-2 grid grid-cols-2 gap-1.5">
+            {headerCanvasDeviceRows.map(row => {
+              const selected = view === row.id;
+              return (
+                <button
+                  key={row.id}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={selected}
+                  onClick={() => {
+                    setView(row.id as CanvasViewMode);
+                    scrollSelectedNodeIntoView();
+                  }}
+                  className={`flex items-center gap-2 rounded-md border px-2.5 py-2 text-left text-xs transition ${
+                    selected
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-base-300 hover:bg-base-200 text-base-content"
+                  }`}
+                >
+                  {row.id === "desktop" ? (
+                    <TbDeviceDesktop className="size-4 shrink-0" />
+                  ) : (
+                    <TbDeviceMobile className="size-4 shrink-0" />
+                  )}
+                  <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                    <span className="font-medium">{row.label}</span>
+                    <span className="text-neutral-content text-[10px]">{row.sub}</span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          <div className="ph-select-item-host">
-            {headerCanvasRows.map(row => (
-              <button
-                key={row.id}
-                type="button"
-                role="menuitemradio"
-                aria-checked={view === row.id}
-                onClick={() => {
-                  setView(row.id as CanvasViewMode);
-                  scrollSelectedNodeIntoView();
+
+          <div className="text-neutral-content mt-1 mb-1 px-0.5 text-[10px] font-semibold tracking-wide uppercase">
+            Breakpoints
+          </div>
+          <div className="grid grid-cols-5 gap-1">
+            {headerCanvasBreakpointRows.map(row => {
+              const selected = view === row.id;
+              return (
+                <button
+                  key={row.id}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={selected}
+                  title={`${row.label} · ${row.sub}`}
+                  onClick={() => {
+                    setView(row.id as CanvasViewMode);
+                    scrollSelectedNodeIntoView();
+                  }}
+                  className={`flex flex-col items-center justify-center rounded-md border px-1 py-1.5 text-center transition ${
+                    selected
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-base-300 hover:bg-base-200 text-base-content"
+                  }`}
+                >
+                  <span className="font-mono text-[11px] leading-none font-bold tracking-tight">
+                    {row.label}
+                  </span>
+                  <span className="text-neutral-content mt-0.5 text-[9px] leading-none">
+                    {row.sub.replace("px", "")}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="border-base-300 mt-2 flex items-center justify-between gap-2 border-t pt-2">
+            <span className="text-neutral-content px-0.5 text-[10px] font-semibold tracking-wide uppercase">
+              Zoom
+            </span>
+            {device && view === "mobile" ? (
+              <CanvasZoom
+                zoomAtom={DeviceZoomAtom}
+                fitMode={{ kind: "height", target: deviceDimensions.height, chromeOffset: 350 }}
+                activeKey="device-menu"
+              />
+            ) : (
+              <CanvasZoom
+                zoomAtom={BreakpointZoomAtom}
+                fitMode={{
+                  kind: "width",
+                  target: (EDITOR_CANVAS_BREAKPOINT_PX as Record<string, number>)[view] ?? 1024,
+                  chromeOffset: 420,
+                  max: 1,
                 }}
-                className="ph-select-item items-start gap-2 text-xs"
-              >
-                <span className="text-primary flex size-4 shrink-0 items-center justify-center">
-                  {view === row.id ? <TbCheck className="size-3.5" /> : null}
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col leading-tight">
-                  <span className="font-medium">{row.label}</span>
-                  <span className="text-neutral-content text-[10px]">{row.sub}</span>
-                </span>
-              </button>
-            ))}
+                activeKey="breakpoint-menu"
+                disabled={!isEditorCanvasBreakpointView(view)}
+              />
+            )}
           </div>
         </ToolbarPortalDropdown>
 
@@ -444,55 +529,53 @@ export const Header = () => {
           data-tooltip-place="bottom"
           data-tooltip-offset={10}
           onClick={() => {
-              const newMode = viewMode === "page" ? "component" : "page";
-              setViewMode(newMode);
-              actions.selectNode(null);
-              const rootNode = query.node(ROOT_NODE).get();
+            const newMode = viewMode === "page" ? "component" : "page";
+            setViewMode(newMode);
+            actions.selectNode(null);
+            const rootNode = query.node(ROOT_NODE).get();
 
-              if (newMode === "page") {
-                // Switching to page view - restore normal state
-                // Deselect any active node
+            if (newMode === "page") {
+              // Switching to page view - restore normal state
+              // Deselect any active node
 
-                // Un-isolate to show all pages
-                import("@/utils/lib").then(({ isolatePageInTree }) => {
-                  isolatePageInTree(query, actions, null, () => {});
-                });
+              // Un-isolate to show all pages
+              import("@/utils/lib").then(({ isolatePageInTree }) => {
+                isolatePageInTree(query, actions, null, () => {});
+              });
 
-                // Show headers, footers, pages — hide components
-                rootNode.data.nodes.forEach(nodeId => {
-                  const node = query.node(nodeId).get();
-                  const nodeType = node?.data?.props?.type;
+              // Show headers, footers, pages — hide components
+              rootNode.data.nodes.forEach(nodeId => {
+                const node = query.node(nodeId).get();
+                const nodeType = node?.data?.props?.type;
 
-                  if (nodeType === "header" || nodeType === "footer" || nodeType === "page") {
-                    actions.setHidden(nodeId, false);
-                    actions.setProp(nodeId, prop => (prop.hidden = false));
-                  } else if (nodeType === "component") {
-                    actions.setHidden(nodeId, true);
-                    actions.setProp(nodeId, prop => (prop.hidden = true));
-                  }
-                });
-              } else {
-                // Switching to component view - hide pages, headers, footers, AND component containers
-                rootNode.data.nodes.forEach(nodeId => {
-                  const node = query.node(nodeId).get();
-                  const nodeType = node?.data?.props?.type;
+                if (nodeType === "header" || nodeType === "footer" || nodeType === "page") {
+                  actions.setHidden(nodeId, false);
+                  actions.setProp(nodeId, prop => (prop.hidden = false));
+                } else if (nodeType === "component") {
+                  actions.setHidden(nodeId, true);
+                  actions.setProp(nodeId, prop => (prop.hidden = true));
+                }
+              });
+            } else {
+              // Switching to component view — keep pages visible by default (mirrors
+              // close-last-tab behavior). ComponentEditorTabs' effect will isolate
+              // the active tab if there is one, hiding pages at that point.
+              rootNode.data.nodes.forEach(nodeId => {
+                const node = query.node(nodeId).get();
+                const nodeType = node?.data?.props?.type;
 
-                  if (
-                    nodeType === "header" ||
-                    nodeType === "footer" ||
-                    nodeType === "page" ||
-                    nodeType === "component"
-                  ) {
-                    actions.setHidden(nodeId, true);
-                    actions.setProp(nodeId, prop => (prop.hidden = true));
-                  }
-                });
-
-                // ComponentEditorTabs will handle showing the active component if there's a tab
-              }
-            }}
-          >
-            {viewMode === "page" ? <TbBoxModel2 /> : <TbFileText />}
+                if (nodeType === "header" || nodeType === "footer" || nodeType === "page") {
+                  actions.setHidden(nodeId, false);
+                  actions.setProp(nodeId, prop => (prop.hidden = false));
+                } else if (nodeType === "component") {
+                  actions.setHidden(nodeId, true);
+                  actions.setProp(nodeId, prop => (prop.hidden = true));
+                }
+              });
+            }
+          }}
+        >
+          {viewMode === "page" ? <TbBoxModel2 /> : <TbFileText />}
         </Item>
 
         <Item
@@ -525,18 +608,15 @@ export const Header = () => {
         </Item>
       </header>
 
-      {/* Page/Component Selector Bar - Below Header */}
-      <div className="border-base-300 bg-base-100 pointer-events-auto border-b px-3 py-2">
-        {viewMode === "page" ? (
-          <PageSelector className="w-full" />
-        ) : (
-          <ComponentSelector className="w-full" />
-        )}
-      </div>
-
-      {/* Node Breadcrumb - Below Page/Component Selector */}
+      {/* Combined breadcrumb / page selector row - Below Header */}
       <div className="bg-base-100 pointer-events-auto">
-        <NodeBreadcrumb />
+        {viewMode === "component" ? (
+          <div className="border-base-300 flex h-10 min-h-10 shrink-0 items-center border-b px-3 py-0">
+            <ComponentSelector className="w-full" />
+          </div>
+        ) : (
+          <NodeBreadcrumb />
+        )}
       </div>
 
       <EditorNavigation

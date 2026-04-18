@@ -49,6 +49,8 @@ export interface PropSchema {
 export interface ComponentPreset {
   /** Label shown in the toolbox */
   label: string;
+  /** Short description for the toolbox tooltip */
+  description?: string;
   /** Override icon for this preset */
   icon?: string | React.ReactElement | React.ComponentType;
   /** Props applied when this preset is dropped */
@@ -76,6 +78,19 @@ export interface ComponentModifier {
   expands?: string;
   /** Optional help text shown in the editor to explain what the modifier does. */
   description?: string;
+  /**
+   * Peer copy from sibling (e.g. new Button in ButtonList): `true` = participate when active on reference;
+   * `false` = never (e.g. State modifiers). Omit = participate unless category is State (see applyPeerClassInherit).
+   */
+  peerInherit?: boolean;
+}
+
+/** When set on a component def, new nodes can inherit className chrome from a sibling (schema-driven). */
+export interface PeerInheritConfig {
+  /** Parent `name` values that enable this behavior (e.g. `["ButtonList"]`). */
+  whenParentIs: string[];
+  /** Pick reference sibling: left neighbor first, else right. */
+  reference: "left-neighbor" | "right-neighbor";
 }
 
 export interface PageHubComponentDef<P extends Record<string, any> = Record<string, any>> {
@@ -84,6 +99,9 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
 
   /** Display name in the toolbox and settings. Defaults to spaced name. */
   displayName?: string;
+
+  /** Short description for the toolbox tooltip (used when no presets define their own). */
+  description?: string;
 
   /** The React component that renders this element. */
   component: React.ComponentType<P>;
@@ -146,6 +164,9 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
 
   /** Modifiers — composable className toggles shown in the Design tab. */
   modifiers?: ComponentModifier[];
+
+  /** Optional: inherit visual chrome from a sibling when inserting into matching parents (e.g. Button in ButtonList). */
+  peerInherit?: PeerInheritConfig;
 }
 
 // ─── Resolved descriptor (internal) ────────────────────────────────────────
@@ -157,6 +178,7 @@ export interface ResolvedComponentDef<P = any> {
   readonly [COMPONENT_DEF_BRAND]: true;
   readonly name: string;
   readonly displayName: string;
+  readonly description: string | undefined;
   readonly component: React.ComponentType<P>;
   readonly toHTML: ToHTMLFn;
   readonly icon: string | React.ReactElement | React.ComponentType | undefined;
@@ -181,6 +203,7 @@ export interface ResolvedComponentDef<P = any> {
   readonly craftProps: Record<string, any>;
   readonly presets: ComponentPreset[];
   readonly modifiers: ComponentModifier[];
+  readonly peerInherit: PeerInheritConfig | undefined;
 }
 
 // ─── Built-in component names (for collision detection) ────────────────────
@@ -188,6 +211,7 @@ export interface ResolvedComponentDef<P = any> {
 const BUILT_IN_NAMES = new Set([
   "Accordion",
   "Audio",
+  "Automatic",
   "Background",
   "Button",
   "ButtonList",
@@ -292,9 +316,12 @@ function normalizeRules(
   const staticCanMoveIn =
     typeof r.canMoveIn === "function" ? r.canMoveIn : canvas ? () => true : () => false;
 
-  const staticCanMoveOut = r.canMoveOut != null
-    ? typeof r.canMoveOut === "function" ? r.canMoveOut : () => r.canMoveOut as boolean
-    : undefined;
+  const staticCanMoveOut =
+    r.canMoveOut != null
+      ? typeof r.canMoveOut === "function"
+        ? r.canMoveOut
+        : () => r.canMoveOut as boolean
+      : undefined;
 
   // Wrap with per-node permissions check (custom.permissions overrides static rules)
   return {
@@ -367,6 +394,7 @@ export function defineComponent<P extends Record<string, any> = Record<string, a
     [COMPONENT_DEF_BRAND]: true,
     name: def.name,
     displayName: def.displayName || humanize(def.name),
+    description: def.description,
     component: def.component,
     toHTML: def.toHTML || buildFallbackToHTML(canvas),
     icon: def.icon,
@@ -386,6 +414,7 @@ export function defineComponent<P extends Record<string, any> = Record<string, a
     craftProps: def.craftProps || {},
     presets: def.presets || [],
     modifiers: def.modifiers || [],
+    peerInherit: def.peerInherit,
   };
 
   return Object.freeze(resolved);
@@ -467,29 +496,6 @@ function buildAutoSettings(propsSchema: Record<string, PropSchema>): React.Compo
 }
 
 /**
- * Selected name chip + hover name chip when a canvas component has no tools
- * or explicitly passes an empty list (layout nodes migrated off inline chrome).
- */
-function getMinimalCanvasTools(): (props: any) => React.ReactNode[] {
-  const { NameNodeController } = require("./chrome/canvas/NameNodeController");
-  const { HoverNodeController } = require("./chrome/canvas/HoverNodeController");
-  return () => [
-    React.createElement(NameNodeController, {
-      key: "ph-name",
-      position: "top",
-      align: "end",
-      placement: "start",
-    }),
-    React.createElement(HoverNodeController, {
-      key: "ph-hover",
-      position: "top",
-      align: "end",
-      placement: "start",
-    }),
-  ];
-}
-
-/**
  * Attach .craft config to a component based on its definition.
  * This is the editor-only step that wires up toolbar, tools, rules, etc.
  */
@@ -539,30 +545,16 @@ function attachCraft(
     craft.related.groupSettings = def.groupSettings;
   }
 
-  // Inline tools (canvas nodes: empty tools → name + hover labels; omitted → same)
-  if (def.canvas) {
-    const minimal = getMinimalCanvasTools();
-    if (def.tools) {
-      if (typeof def.tools === "function") {
-        craft.props.tools = (props: any) => {
-          const out = (def.tools as (p: any) => React.ReactNode[])(props);
-          if (Array.isArray(out) && out.length === 0) return minimal(props);
-          return out;
-        };
-      } else if (Array.isArray(def.tools) && def.tools.length === 0) {
-        craft.props.tools = minimal;
-      } else {
-        craft.props.tools = def.tools;
-      }
-    } else if (defaultTools) {
-      craft.props.tools = defaultTools(def.canvas);
-    } else {
-      craft.props.tools = minimal;
-    }
-  } else if (def.tools) {
+  // Inline tools — always normalize to `(props) => ReactNode[]` so callers never branch.
+  if (typeof def.tools === "function") {
     craft.props.tools = def.tools;
+  } else if (Array.isArray(def.tools)) {
+    const arr = def.tools;
+    craft.props.tools = () => arr;
   } else if (defaultTools) {
     craft.props.tools = defaultTools(def.canvas);
+  } else {
+    craft.props.tools = () => [];
   }
 
   // Modifiers

@@ -14,7 +14,6 @@ export function hasPageIsolation(value: string | null | undefined): value is str
   return !!value && value !== EDITOR_ALL_PAGES_STORAGE;
 }
 
-
 // ─── Page Count ───
 
 export function listPageNodeIds(query: any): string[] {
@@ -56,7 +55,7 @@ export function isolatePageInTree(
   query: any,
   actions: any,
   pageId: string | null,
-  setIsolate: (v: string) => void,
+  setIsolate: (v: string) => void
 ) {
   const root = query.node(ROOT_NODE).get();
   for (const nodeId of root.data.nodes) {
@@ -69,7 +68,6 @@ export function isolatePageInTree(
   setIsolate(value);
   phStorage.set("isolated", value);
 }
-
 
 // ─── Loaded Pages Tracking (for selective loading / per-page saves) ───
 
@@ -100,7 +98,7 @@ export async function isolatePageLazy(
   query: any,
   actions: any,
   setIsolate: (v: string) => void,
-  fetchPage?: (pageNodeId: string) => Promise<{ content: string } | null>,
+  fetchPage?: (pageNodeId: string) => Promise<{ content: string } | null>
 ): Promise<boolean> {
   if (!active) {
     isolatePageInTree(query, actions, null, setIsolate);
@@ -141,11 +139,36 @@ export const resolvePageRef = (url: string, query: any, currentPath?: string): s
 
   try {
     const pageId = url.replace("ref:", "");
-    const pageNode = query.node(pageId).get();
-    if (!pageNode || pageNode.data?.props?.type !== "page") return "#";
 
-    const isHomePage = pageNode.data?.props?.isHomePage;
-    const displayName = pageNode.data?.custom?.displayName || "Untitled";
+    // Try CraftJS node first (works when all pages are loaded, e.g. editor)
+    let isHomePage: boolean | undefined;
+    let displayName: string | undefined;
+    try {
+      const pageNode = query.node(pageId).get();
+      if (pageNode?.data?.props?.type === "page") {
+        isHomePage = pageNode.data.props.isHomePage;
+        displayName = pageNode.data.custom?.displayName || "Untitled";
+      }
+    } catch {
+      // Node not in tree — expected for sharded single-page loads
+    }
+
+    // Fallback: check _pageIndex injected by server for SSR routes
+    if (displayName === undefined) {
+      try {
+        const rootNode = query.node(ROOT_NODE).get();
+        const pageIndex = rootNode?.data?.props?._pageIndex;
+        const entry = pageIndex?.[pageId];
+        if (entry) {
+          isHomePage = entry.isHomePage;
+          displayName = entry.displayName || "Untitled";
+        }
+      } catch {
+        // ROOT not available
+      }
+    }
+
+    if (displayName === undefined) return "#";
 
     let baseUrl = "";
     if (currentPath) {

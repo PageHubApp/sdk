@@ -23,14 +23,21 @@ import { Embed } from "../Embed";
 import { Footer } from "../Footer";
 import { Form } from "../Form";
 import { FormElement, OnlyFormElement } from "../FormElement";
+import { Grid } from "../Grid";
 import { Header } from "../Header";
 import { Image } from "../Image";
 import { ImageList } from "../ImageList";
+import { List } from "../List";
+import { ListItem } from "../ListItem";
 import { Map } from "../Map";
 import { Modal } from "../Modal";
 import { MapPoint } from "../MapPoint";
 import { Nav } from "../Nav";
 import { Spacer } from "../Spacer";
+import { Table } from "../Table";
+import { TableSection } from "../TableSection";
+import { TableRow } from "../TableRow";
+import { TableCell } from "../TableCell";
 import { Tabs } from "../Tabs";
 import { Text } from "../Text";
 import { Video } from "../Video";
@@ -41,6 +48,7 @@ const cv = withConditionalVisibility;
 export const viewerResolver = {
   Accordion: cv(Accordion),
   Audio: cv(Audio),
+  Automatic: cv(Container),
   Background,
   Button: cv(Button),
   ButtonList: cv(ButtonList),
@@ -54,15 +62,22 @@ export const viewerResolver = {
   Footer: cv(Footer),
   Form: cv(Form),
   FormElement: cv(FormElement),
+  Grid: cv(Grid),
   OnlyFormElement: cv(OnlyFormElement),
   Header: cv(Header),
   Image: cv(Image),
   ImageList: cv(ImageList),
+  List: cv(List),
+  ListItem: cv(ListItem),
   Map: cv(Map),
   MapPoint: cv(MapPoint),
   Modal: cv(Modal),
   Nav: cv(Nav),
   Spacer: cv(Spacer),
+  Table: cv(Table),
+  TableSection: cv(TableSection),
+  TableRow: cv(TableRow),
+  TableCell: cv(TableCell),
   Tabs: cv(Tabs),
   Text: cv(Text),
   Video: cv(Video),

@@ -24,8 +24,7 @@ export function useConditionalVisibility(): {
     rootProps: query.node(ROOT_NODE).get()?.data?.props || {},
   }));
 
-  const hasConditions =
-    (conditionGroups && conditionGroups.length > 0) || conditions.length > 0;
+  const hasConditions = (conditionGroups && conditionGroups.length > 0) || conditions.length > 0;
 
   const [visible, setVisible] = useState(true);
   const conditionsRef = useRef(conditions);
@@ -58,10 +57,12 @@ export function useConditionalVisibility(): {
 
     window.addEventListener("popstate", evaluate);
     window.addEventListener("resize", evaluate);
+    window.addEventListener("pagehub:auth-changed", evaluate);
 
     return () => {
       window.removeEventListener("popstate", evaluate);
       window.removeEventListener("resize", evaluate);
+      window.removeEventListener("pagehub:auth-changed", evaluate);
     };
   }, [hasConditions, enabled, rootProps]);
 

@@ -184,12 +184,7 @@ function FontSelect({
       <label htmlFor={id} className={lb}>
         {label}
       </label>
-      <ToolbarDropdown
-        value={value}
-        onChange={v => onChange?.(v)}
-        placeholder={label}
-        propKey={id}
-      >
+      <ToolbarDropdown value={value} onChange={v => onChange?.(v)} placeholder={label} propKey={id}>
         {options.map(opt => {
           const [val, lbl] = opt.split(":");
           return (

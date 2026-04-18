@@ -56,7 +56,10 @@ function DataAttributesEditor() {
     dataAttributes,
     actions: { setProp },
   } = useNode(node => ({
-    dataAttributes: (node.data.props.dataAttributes || []) as Array<{ key: string; value: string }>,
+    dataAttributes: (node.data?.props?.dataAttributes || []) as Array<{
+      key: string;
+      value: string;
+    }>,
   }));
 
   const [newKey, setNewKey] = useState("");

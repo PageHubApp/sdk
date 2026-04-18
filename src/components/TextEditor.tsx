@@ -85,15 +85,17 @@ function TextEditorMode({
   const rawText = props.text || "";
   const editorContent = React.useMemo(() => preprocessVariables(rawText), [rawText]);
 
-  const richTextMode: PagehubTextRichMode =
-    props.richTextMode === "inline" ? "inline" : "full";
+  const richTextMode: PagehubTextRichMode = props.richTextMode === "inline" ? "inline" : "full";
 
   const [suggestion, setSuggestion] = React.useState<SuggestionProps | null>(null);
-  const [richTextCtxMenu, setRichTextCtxMenu] = React.useState<null | { x: number; y: number }>(null);
+  const [richTextCtxMenu, setRichTextCtxMenu] = React.useState<null | { x: number; y: number }>(
+    null
+  );
 
   const sdk = useSDKSafe();
   const hasInlineAiChrome =
-    sdk?.features.aiGeneration && Boolean(sdk.config.editorChromeSlots?.renderInlineCopyAssistantTrigger);
+    sdk?.features.aiGeneration &&
+    Boolean(sdk.config.editorChromeSlots?.renderInlineCopyAssistantTrigger);
 
   const queryRef = React.useRef(query);
   queryRef.current = query;

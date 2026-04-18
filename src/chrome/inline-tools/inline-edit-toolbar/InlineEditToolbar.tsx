@@ -325,7 +325,6 @@ export function InlineEditToolbar({
 
   const modals = (
     <>
-
       <MediaManagerModal
         isOpen={showMediaModal}
         onClose={() => setShowMediaModal(false)}

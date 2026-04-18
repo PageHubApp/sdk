@@ -74,9 +74,7 @@ const marksAndShared = (
   nodeIdRef?: { current: string | undefined }
 ): Extensions => [
   Placeholder.configure({ placeholder: "Start typing..." }),
-  ...(opts.textAlign
-    ? [TextAlign.configure({ types: ["heading", "paragraph"] as const })]
-    : []),
+  ...(opts.textAlign ? [TextAlign.configure({ types: ["heading", "paragraph"] as const })] : []),
   TextStyle,
   Color.configure({ types: [TextStyle.name] }),
   FontFamily.configure({ types: [TextStyle.name] }),
@@ -85,9 +83,7 @@ const marksAndShared = (
   Superscript,
   Subscript,
   linkExtension(),
-  ...(opts.image
-    ? [Image.configure({ HTMLAttributes: { class: "max-w-full h-auto" } })]
-    : []),
+  ...(opts.image ? [Image.configure({ HTMLAttributes: { class: "max-w-full h-auto" } })] : []),
   variableExtension(onSuggestion, queryRef, nodeIdRef),
   TextEditorInlineKeymap,
 ];

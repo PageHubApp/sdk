@@ -105,7 +105,7 @@ export const ButtonDef = defineComponent(
     name: "Button",
     component: Button,
     icon: RxButton,
-    category: "Basic",
+    category: "Content",
     settings: ButtonMainTab,
     advancedSettings: ButtonMainTabAdvanced,
     toHTML,
@@ -118,15 +118,17 @@ export const ButtonDef = defineComponent(
     presets: [
       {
         label: "Button",
+        description: "Primary CTA button with spatial padding and theme colors.",
         props: {
           text: "Button",
           className:
-            "flex-row items-center justify-center gap-2 px-6 py-3 w-auto flex cursor-pointer border border-base-300 rounded-lg",
+            "btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold self-start",
         },
       },
       {
         label: "Icon",
         icon: LuImage,
+        description: "Circular icon-only button.",
         props: {
           text: "Icon",
           icon: {
@@ -134,7 +136,7 @@ export const ButtonDef = defineComponent(
             only: true,
           },
           className:
-            "flex-row items-center justify-center gap-2 px-6 py-3 w-auto flex cursor-pointer",
+            "btn btn-primary btn-circle w-12 h-12",
         },
       },
     ],
@@ -319,6 +321,7 @@ export const ButtonDef = defineComponent(
         category: "State",
         description: "Visually muted and non-interactive",
         requires: "btn",
+        peerInherit: false,
       },
       {
         name: "loading",
@@ -326,8 +329,13 @@ export const ButtonDef = defineComponent(
         category: "State",
         description: "Shows a loading spinner inside the button",
         requires: "btn",
+        peerInherit: false,
       },
     ],
+    peerInherit: {
+      whenParentIs: ["ButtonList"],
+      reference: "left-neighbor",
+    },
   },
   { __internal: true }
 );

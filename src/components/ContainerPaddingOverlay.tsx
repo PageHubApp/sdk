@@ -10,7 +10,9 @@ export function ContainerPaddingOverlay() {
   const { isSelected } = useEditor((_, query) => ({
     isSelected: query.getEvent("selected").contains(id),
   }));
-  const { actions: { setProp } } = useNode();
+  const {
+    actions: { setProp },
+  } = useNode();
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
   const classPrefixView = editorCanvasViewToClassPrefixKey(view);

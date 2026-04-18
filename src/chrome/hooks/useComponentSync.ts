@@ -11,8 +11,16 @@ import { buildClonedTree } from "../viewport/viewportExports";
 import { setRecursiveBelongsTo } from "@/utils/componentUtils";
 
 const CONTENT_PROPS = [
-  "text", "url", "urlTarget", "action", "image",
-  "videoId", "content", "buttonText", "placeholder", "value",
+  "text",
+  "url",
+  "urlTarget",
+  "action",
+  "image",
+  "videoId",
+  "content",
+  "buttonText",
+  "placeholder",
+  "value",
 ];
 
 export const useComponentSync = () => {
@@ -47,16 +55,18 @@ function getStructureSignature(nodeId: string, query: any): string {
     const node = query.node(nodeId).get();
     if (!node) return "";
     const children = node.data.nodes || [];
-    const childSigs = children.map(childId => {
-      const child = query.node(childId).get();
-      if (!child) return "";
-      const typeValue = child.data.type;
-      const type =
-        typeof typeValue === "string"
-          ? typeValue
-          : (typeValue as any)?.resolvedName || child.data.displayName || "";
-      return `${type}:${getStructureSignature(childId, query)}`;
-    }).join(",");
+    const childSigs = children
+      .map(childId => {
+        const child = query.node(childId).get();
+        if (!child) return "";
+        const typeValue = child.data.type;
+        const type =
+          typeof typeValue === "string"
+            ? typeValue
+            : (typeValue as any)?.resolvedName || child.data.displayName || "";
+        return `${type}:${getStructureSignature(childId, query)}`;
+      })
+      .join(",");
     return `${children.length}:[${childSigs}]`;
   } catch {
     return "";

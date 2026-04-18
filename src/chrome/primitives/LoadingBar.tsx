@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { twMerge } from "tailwind-merge";
+
+export type LoadingBarSize = "default" | "sm";
 
 interface LoadingBarProps {
   /** Whether the loading bar is active. Resets to 0 when false. */
@@ -9,6 +12,10 @@ interface LoadingBarProps {
   done?: boolean;
   /** Overlay mode: renders a blurred overlay with the bar centered. */
   overlay?: boolean;
+  /** `sm`: thin full-width bar for sidebar / Suspense fallbacks. */
+  size?: LoadingBarSize;
+  /** Merged onto the track element (non-overlay). */
+  className?: string;
 }
 
 /**
@@ -16,7 +23,14 @@ interface LoadingBarProps {
  * then snaps to 100% when `done` is set. Reusable across page switching,
  * template loading, etc.
  */
-export function LoadingBar({ active, done, onComplete, overlay }: LoadingBarProps) {
+export function LoadingBar({
+  active,
+  done,
+  onComplete,
+  overlay,
+  size = "default",
+  className,
+}: LoadingBarProps) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -54,19 +68,26 @@ export function LoadingBar({ active, done, onComplete, overlay }: LoadingBarProp
 
   if (!active) return null;
 
+  const trackClass =
+    size === "sm"
+      ? "h-1 w-full max-w-none overflow-hidden rounded-full bg-base-300/90 dark:bg-white/10"
+      : "h-2 w-full max-w-xs overflow-hidden rounded-full bg-gray-200 dark:bg-white/12";
+
+  const fillClass =
+    size === "sm"
+      ? "h-full rounded-full bg-base-content/45 transition-[width] duration-150 ease-out will-change-[width] dark:bg-white/55"
+      : "h-full rounded-full bg-gray-700 transition-[width] duration-150 ease-out will-change-[width] dark:bg-white/80";
+
   const bar = (
     <div
-      className="h-2 w-full max-w-xs overflow-hidden rounded-full bg-gray-200 dark:bg-white/12"
+      className={twMerge(trackClass, className)}
       role="progressbar"
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.round(progress)}
       aria-label="Loading"
     >
-      <div
-        className="h-full rounded-full bg-gray-700 transition-[width] duration-150 ease-out will-change-[width] dark:bg-white/80"
-        style={{ width: `${Math.max(2, progress)}%` }}
-      />
+      <div className={fillClass} style={{ width: `${Math.max(2, progress)}%` }} />
     </div>
   );
 
@@ -83,4 +104,16 @@ export function LoadingBar({ active, done, onComplete, overlay }: LoadingBarProp
   }
 
   return bar;
+}
+
+/**
+ * Shallow placeholder for `React.Suspense` around lazy toolbar inputs.
+ * Uses the same ramping bar as `LoadingBar` in a thin, full-width variant.
+ */
+export function LoadingBarSuspenseFallback() {
+  return (
+    <div className="py-2" aria-busy="true" aria-label="Loading controls">
+      <LoadingBar active done={false} size="sm" />
+    </div>
+  );
 }

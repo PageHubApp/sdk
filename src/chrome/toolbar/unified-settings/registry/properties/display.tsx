@@ -1,0 +1,476 @@
+/**
+ * Display property definitions + Custom CSS section.
+ *
+ * Main: display, position, cursor, overflow, z-index, order
+ * Position offsets: only when absolute/fixed/sticky
+ * Advanced: visibility, pointer events, user select, float, vertical align,
+ *           font smoothing, interactivity, CSS utilities
+ * Custom CSS: own section (className code editor)
+ */
+import React from "react";
+import { LoadingBarSuspenseFallback } from "../../../../primitives/LoadingBar";
+import type { PropertyDef } from "../propertyDefs";
+import type { ValueType } from "../../../inputs/universal-input/types";
+
+const LazyClassNameInput = React.lazy(() =>
+  import("../../../inputs/advanced/ClassNameInput").then(m => ({ default: m.ClassNameInput }))
+);
+
+const OFFSET_TYPES: ValueType[] = ["tailwind", "calc", "px", "%", "em", "rem", "vw", "vh"];
+
+const CURSOR_OPTIONS: string[] = [
+  "cursor-auto",
+  "cursor-default",
+  "cursor-pointer",
+  "cursor-wait",
+  "cursor-text",
+  "cursor-move",
+  "cursor-not-allowed",
+  "cursor-grab",
+  "cursor-grabbing",
+  "cursor-help",
+  "cursor-none",
+  "cursor-context-menu",
+  "cursor-progress",
+  "cursor-cell",
+  "cursor-crosshair",
+  "cursor-vertical-text",
+  "cursor-alias",
+  "cursor-copy",
+  "cursor-no-drop",
+  "cursor-all-scroll",
+  "cursor-col-resize",
+  "cursor-row-resize",
+  "cursor-n-resize",
+  "cursor-e-resize",
+  "cursor-s-resize",
+  "cursor-w-resize",
+  "cursor-ne-resize",
+  "cursor-nw-resize",
+  "cursor-se-resize",
+  "cursor-sw-resize",
+  "cursor-ew-resize",
+  "cursor-ns-resize",
+  "cursor-nesw-resize",
+  "cursor-nwse-resize",
+  "cursor-zoom-in",
+  "cursor-zoom-out",
+];
+
+/** Position offsets only show when position is absolute, fixed, or sticky */
+const hasPositioning = (className: string) => /\b(absolute|fixed|sticky)\b/.test(className);
+
+export const displayProperties: PropertyDef[] = [
+  // ─── Main ────────────────────────────────────────────────────────
+  {
+    id: "display",
+    label: "Display",
+    section: "display",
+    keywords: ["display", "block", "flex", "grid", "inline", "hidden", "none"],
+    input: {
+      type: "universal",
+      propTag: "block",
+      allowedTypes: ["tailwind", "calc"],
+      showVarSelector: true,
+    },
+    sortOrder: 0,
+  },
+  {
+    id: "position",
+    label: "Position",
+    section: "display",
+    keywords: ["position", "relative", "absolute", "fixed", "sticky", "static"],
+    input: {
+      type: "universal",
+      propTag: "relative",
+      allowedTypes: ["tailwind", "calc"],
+      showVarSelector: true,
+    },
+    sortOrder: 1,
+  },
+  {
+    id: "cursor",
+    label: "Cursor",
+    section: "display",
+    keywords: ["cursor", "pointer", "grab", "default", "not-allowed", "wait", "move"],
+    input: {
+      type: "universal",
+      propTag: "cursor",
+      tailwindOptions: CURSOR_OPTIONS,
+      allowedTypes: ["tailwind", "calc"],
+      showVarSelector: true,
+    },
+    hideKey: "cursor",
+    sortOrder: 2,
+    inline: true,
+  },
+  {
+    id: "overflow",
+    label: "Overflow",
+    section: "display",
+    keywords: ["overflow", "hidden", "scroll", "auto", "clip", "visible"],
+    input: {
+      type: "universal",
+      propTag: "overflow",
+      tailwindKey: "overflow",
+      allowedTypes: ["tailwind", "calc"],
+      showVarSelector: true,
+    },
+    sortOrder: 3,
+  },
+  {
+    id: "zIndex",
+    label: "Z-Index",
+    section: "display",
+    keywords: ["z-index", "z", "layer", "stack", "depth", "order"],
+    input: {
+      type: "universal",
+      propTag: "z",
+      tailwindKey: "zIndex",
+      allowedTypes: ["tailwind", "calc"],
+      showVarSelector: true,
+    },
+    sortOrder: 4,
+    inline: true,
+  },
+  {
+    id: "order",
+    label: "Order",
+    section: "display",
+    keywords: ["order", "flex", "grid", "position", "sequence"],
+    input: { type: "tailwind-select", tailwindKey: "order" },
+    sortOrder: 5,
+    inline: true,
+  },
+
+  // ─── Position offsets (only when absolute/fixed/sticky) ──────────
+  {
+    id: "inset",
+    label: "Inset",
+    section: "display",
+    keywords: ["inset", "all", "offset", "position"],
+    input: {
+      type: "universal",
+      propTag: "inset",
+      tailwindKey: "inset",
+      allowedTypes: OFFSET_TYPES,
+      showVarSelector: true,
+    },
+    showWhen: hasPositioning,
+    sortOrder: 10,
+    inline: true,
+  },
+  {
+    id: "top",
+    label: "Top",
+    section: "display",
+    keywords: ["top", "offset", "position", "y"],
+    input: {
+      type: "universal",
+      propTag: "top",
+      tailwindKey: "top",
+      allowedTypes: OFFSET_TYPES,
+      showVarSelector: true,
+    },
+    showWhen: hasPositioning,
+    sortOrder: 11,
+    inline: true,
+  },
+  {
+    id: "right",
+    label: "Right",
+    section: "display",
+    keywords: ["right", "offset", "position", "x"],
+    input: {
+      type: "universal",
+      propTag: "right",
+      tailwindKey: "right",
+      allowedTypes: OFFSET_TYPES,
+      showVarSelector: true,
+    },
+    showWhen: hasPositioning,
+    sortOrder: 12,
+    inline: true,
+  },
+  {
+    id: "bottom",
+    label: "Bottom",
+    section: "display",
+    keywords: ["bottom", "offset", "position", "y"],
+    input: {
+      type: "universal",
+      propTag: "bottom",
+      tailwindKey: "bottom",
+      allowedTypes: OFFSET_TYPES,
+      showVarSelector: true,
+    },
+    showWhen: hasPositioning,
+    sortOrder: 13,
+    inline: true,
+  },
+  {
+    id: "left",
+    label: "Left",
+    section: "display",
+    keywords: ["left", "offset", "position", "x"],
+    input: {
+      type: "universal",
+      propTag: "left",
+      tailwindKey: "left",
+      allowedTypes: OFFSET_TYPES,
+      showVarSelector: true,
+    },
+    showWhen: hasPositioning,
+    sortOrder: 14,
+    inline: true,
+  },
+
+  // ─── Advanced: Behavior ──────────────────────────────────────────
+  {
+    id: "visibility",
+    label: "Visibility",
+    section: "display",
+    keywords: ["visibility", "visible", "invisible", "hidden", "collapse"],
+    input: { type: "tailwind-select", tailwindKey: "visibility" },
+    advancedGroup: "behavior",
+    sortOrder: 100,
+  },
+  {
+    id: "pointerEvents",
+    label: "Pointer Events",
+    section: "display",
+    keywords: ["pointer", "events", "click", "none", "auto"],
+    input: { type: "tailwind-select", tailwindKey: "pointerEvents" },
+    advancedGroup: "behavior",
+    sortOrder: 101,
+  },
+  {
+    id: "userSelect",
+    label: "User Select",
+    section: "display",
+    keywords: ["user", "select", "text", "selection", "none", "all"],
+    input: { type: "tailwind-select", tailwindKey: "userSelect" },
+    advancedGroup: "behavior",
+    sortOrder: 102,
+  },
+  {
+    id: "float",
+    label: "Float",
+    section: "display",
+    keywords: ["float", "left", "right", "none", "clear"],
+    input: { type: "tailwind-select", tailwindKey: "float" },
+    advancedGroup: "behavior",
+    sortOrder: 103,
+  },
+  {
+    id: "verticalAlign",
+    label: "Vertical Align",
+    section: "display",
+    keywords: ["vertical", "align", "baseline", "top", "middle", "bottom"],
+    input: { type: "tailwind-select", tailwindKey: "verticalAlign" },
+    advancedGroup: "behavior",
+    sortOrder: 104,
+  },
+  {
+    id: "fontSmoothing",
+    label: "Font Smoothing",
+    section: "display",
+    keywords: ["smoothing", "antialiased", "subpixel", "rendering"],
+    input: { type: "tailwind-select", tailwindKey: "fontSmoothing" },
+    advancedGroup: "behavior",
+    sortOrder: 105,
+  },
+  {
+    id: "resize",
+    label: "Resize",
+    section: "display",
+    keywords: ["resize", "drag", "handle", "grow"],
+    input: { type: "tailwind-select", tailwindKey: "resize" },
+    advancedGroup: "behavior",
+    sortOrder: 110,
+  },
+  {
+    id: "touchAction",
+    label: "Touch Action",
+    section: "display",
+    keywords: ["touch", "action", "pan", "pinch", "zoom"],
+    input: { type: "tailwind-select", tailwindKey: "touchAction" },
+    advancedGroup: "behavior",
+    sortOrder: 111,
+  },
+  {
+    id: "cssAppearance",
+    label: "Appearance",
+    section: "display",
+    keywords: ["appearance", "native", "none", "auto"],
+    input: { type: "tailwind-select", tailwindKey: "appearance" },
+    advancedGroup: "behavior",
+    propKey: "appearance",
+    sortOrder: 112,
+  },
+
+  // ─── Advanced: CSS ───────────────────────────────────────────────
+  {
+    id: "boxSizing",
+    label: "Box Sizing",
+    section: "display",
+    keywords: ["box", "sizing", "border-box", "content-box"],
+    input: { type: "tailwind-select", tailwindKey: "boxSizing" },
+    advancedGroup: "css",
+    sortOrder: 200,
+  },
+  {
+    id: "isolation",
+    label: "Isolation",
+    section: "display",
+    keywords: ["isolation", "isolate", "stacking"],
+    input: { type: "tailwind-select", tailwindKey: "isolation" },
+    advancedGroup: "css",
+    sortOrder: 201,
+  },
+  {
+    id: "columns",
+    label: "Columns",
+    section: "display",
+    keywords: ["columns", "multi-column", "newspaper"],
+    input: { type: "tailwind-select", tailwindKey: "columns" },
+    advancedGroup: "css",
+    sortOrder: 202,
+  },
+
+  // ─── Advanced: Page Breaks ───────────────────────────────────────
+  {
+    id: "breakBefore",
+    label: "Before",
+    section: "display",
+    keywords: ["break", "before", "page", "column"],
+    input: { type: "tailwind-select", tailwindKey: "breakBefore" },
+    advancedGroup: "breaks",
+    sortOrder: 203,
+  },
+  {
+    id: "breakInside",
+    label: "Inside",
+    section: "display",
+    keywords: ["break", "inside", "avoid"],
+    input: { type: "tailwind-select", tailwindKey: "breakInside" },
+    advancedGroup: "breaks",
+    sortOrder: 204,
+  },
+  {
+    id: "breakAfter",
+    label: "After",
+    section: "display",
+    keywords: ["break", "after", "page", "column"],
+    input: { type: "tailwind-select", tailwindKey: "breakAfter" },
+    advancedGroup: "breaks",
+    sortOrder: 205,
+  },
+
+  // ─── Advanced: List ──────────────────────────────────────────────
+  {
+    id: "listStyleType",
+    label: "Style",
+    section: "display",
+    keywords: ["list", "style", "disc", "decimal", "none"],
+    input: { type: "tailwind-select", tailwindKey: "listStyleType" },
+    advancedGroup: "list",
+    sortOrder: 206,
+  },
+  {
+    id: "listStylePosition",
+    label: "Position",
+    section: "display",
+    keywords: ["list", "position", "inside", "outside"],
+    input: { type: "tailwind-select", tailwindKey: "listStylePosition" },
+    advancedGroup: "list",
+    sortOrder: 207,
+  },
+
+  // ─── Advanced: Table ─────────────────────────────────────────────
+  {
+    id: "tableLayout",
+    label: "Layout",
+    section: "display",
+    keywords: ["table", "layout", "auto", "fixed"],
+    input: { type: "tailwind-select", tailwindKey: "tableLayout" },
+    advancedGroup: "table",
+    sortOrder: 208,
+  },
+  {
+    id: "captionSide",
+    label: "Caption Side",
+    section: "display",
+    keywords: ["caption", "side", "top", "bottom"],
+    input: { type: "tailwind-select", tailwindKey: "captionSide" },
+    advancedGroup: "table",
+    sortOrder: 209,
+  },
+
+  // ─── Advanced: SVG ───────────────────────────────────────────────
+  {
+    id: "fill",
+    label: "Fill",
+    section: "display",
+    keywords: ["svg", "fill", "color", "icon"],
+    input: { type: "tailwind-select", tailwindKey: "fill" },
+    advancedGroup: "svg",
+    sortOrder: 212,
+  },
+  {
+    id: "stroke",
+    label: "Stroke",
+    section: "display",
+    keywords: ["svg", "stroke", "outline", "icon"],
+    input: { type: "tailwind-select", tailwindKey: "stroke" },
+    advancedGroup: "svg",
+    sortOrder: 213,
+  },
+  {
+    id: "strokeWidth",
+    label: "Width",
+    section: "display",
+    keywords: ["svg", "stroke", "width", "thickness"],
+    input: { type: "tailwind-select", tailwindKey: "strokeWidth" },
+    advancedGroup: "svg",
+    sortOrder: 214,
+  },
+
+  // ─── Advanced: Other ─────────────────────────────────────────────
+  {
+    id: "cssContent",
+    label: "Content",
+    section: "display",
+    keywords: ["content", "pseudo", "before", "after"],
+    input: { type: "tailwind-select", tailwindKey: "content" },
+    advancedGroup: "other",
+    propKey: "content",
+    sortOrder: 210,
+  },
+  {
+    id: "srOnly",
+    label: "Screen Reader",
+    section: "display",
+    keywords: ["screen", "reader", "sr-only", "accessibility", "hidden"],
+    input: { type: "tailwind-select", tailwindKey: "srOnly" },
+    advancedGroup: "other",
+    sortOrder: 211,
+  },
+
+  // ─── Custom CSS (own section in Advanced tab) ────────────────────
+  {
+    id: "className",
+    label: "Custom CSS",
+    section: "custom-css",
+    keywords: ["css", "class", "className", "tailwind", "custom", "code"],
+    input: {
+      type: "custom",
+      component: () => (
+        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
+          <LazyClassNameInput />
+        </React.Suspense>
+      ),
+    },
+    sortOrder: 0,
+  },
+];

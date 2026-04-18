@@ -28,6 +28,32 @@ export function getClientDataFetcher(): ClientDataFetcher | null {
   return _clientDataFetcher;
 }
 
+// ── Auth state (set by app, read by condition evaluator) ──────────────────────
+
+export interface AuthCustomer {
+  email?: string;
+  name?: string;
+  orderCount?: number;
+  totalSpent?: number;
+  hasSubscription?: boolean;
+  currency?: string;
+}
+
+export interface AuthState {
+  status: "logged-in" | "logged-out";
+  customer?: AuthCustomer | null;
+}
+
+let _authState: AuthState | null = null;
+
+export function setAuthState(state: AuthState | null) {
+  _authState = state;
+}
+
+export function getAuthState(): AuthState | null {
+  return _authState;
+}
+
 /** Walk a dot-separated path into a nested object, supporting array indices. */
 function walkPath(obj: any, parts: string[]): any {
   let value = obj;
@@ -68,7 +94,11 @@ const DEFAULT_VALUES: Record<string, string> = {
  * @param query - The Craft.js query object to access ROOT_NODE
  * @returns Text with variables replaced by actual values or defaults
  */
-export const replaceVariables = (text: string | undefined, query: any, itemContext?: Record<string, any> | null): string => {
+export const replaceVariables = (
+  text: string | undefined,
+  query: any,
+  itemContext?: Record<string, any> | null
+): string => {
   // Ensure text is a string and not null/undefined
   if (!text || typeof text !== "string") {
     return "";
@@ -87,58 +117,95 @@ export const replaceVariables = (text: string | undefined, query: any, itemConte
       (_, varName) => `{{${varName}}}`
     );
 
-    // Replace variables like {{company.name}}, {{connector.stripe.products.0.title}}, etc.
-    // This handles both plain text and HTML content
-    return processed.replace(/\{\{([^}]+)\}\}/g, (match, variable) => {
-      const trimmedVar = variable.trim();
+    // Resolve a single variable key to its string value (or undefined if not found).
+    // Shared by normal replacement and ternary branch evaluation.
+    const resolveVar = (key: string): string | undefined => {
+      if (key === "year") return new Date().getFullYear().toString();
 
-      // Handle special dynamic variables
-      if (trimmedVar === "year") {
-        return new Date().getFullYear().toString();
+      // auth.* — e.g. auth.status, auth.customer.email
+      if (key.startsWith("auth.")) {
+        const auth = getAuthState();
+        if (!auth) return undefined;
+        const parts = key.slice("auth.".length).split(".");
+        const value = walkPath(auth, parts);
+        if (value !== undefined && value !== null && value !== "") return String(value);
+        return undefined;
       }
 
-      // Handle item.* variables (scoped inside a data-bound repeater)
-      if (trimmedVar.startsWith("item.") && itemContext) {
-        const parts = trimmedVar.slice("item.".length).split(".");
+      if (key.startsWith("item.") && itemContext) {
+        const parts = key.slice("item.".length).split(".");
         const value = walkPath(itemContext, parts);
         if (value !== undefined && value !== null && value !== "") return String(value);
-        return match;
+        return undefined;
       }
 
-      // Handle connector.* variables (e.g. connector.stripe.products.0.title)
-      if (trimmedVar.startsWith("connector.") && _connectorData) {
-        const parts = trimmedVar.slice("connector.".length).split(".");
+      if (key.startsWith("connector.") && _connectorData) {
+        const parts = key.slice("connector.".length).split(".");
         const value = walkPath(_connectorData, parts);
         if (value !== undefined && value !== null && value !== "") return String(value);
-        // Support .length on arrays
         if (parts[parts.length - 1] === "length") {
           const parent = walkPath(_connectorData, parts.slice(0, -1));
           if (Array.isArray(parent)) return String(parent.length);
         }
-        return match;
+        return undefined;
       }
 
-      // Handle custom variables (variables.myKey -> lookup in rootProps.variables array)
-      if (trimmedVar.startsWith("variables.")) {
-        const varKey = trimmedVar.slice("variables.".length);
+      if (key.startsWith("variables.")) {
+        const varKey = key.slice("variables.".length);
         const customVars = rootProps.variables;
         if (Array.isArray(customVars)) {
           const found = customVars.find((v: any) => v.key === varKey);
           if (found?.value) return String(found.value);
         }
-        return match;
+        return undefined;
       }
 
-      // Parse nested properties (e.g., "company.name" -> rootProps.company.name)
-      const parts = trimmedVar.split(".");
+      const parts = key.split(".");
       const value = walkPath(rootProps, parts);
+      if (value !== undefined && value !== null && value !== "") return String(value);
+      return undefined;
+    };
 
-      // Return the value if found and not empty, otherwise use default
-      if (value !== undefined && value !== null && value !== "") {
-        return String(value);
+    // Replace variables like {{company.name}}, {{auth.status == logged-in ? /account : /login}}, etc.
+    return processed.replace(/\{\{([^}]+)\}\}/g, (match, variable) => {
+      let trimmedVar = variable.trim();
+
+      // ── Ternary: {{key == value ? ifTrue : ifFalse}} ──
+      // Requires spaces around the else `:` to avoid matching ref: or https:
+      const ternaryMatch = trimmedVar.match(
+        /^(.+?)\s*(==|!=)\s*(.+?)\s*\?\s*(.+?)\s+:\s+(.+)$/
+      );
+      if (ternaryMatch) {
+        const [, lhsRaw, op, rhsRaw, ifTrue, ifFalse] = ternaryMatch;
+        const lhs = resolveVar(lhsRaw.trim()) ?? "";
+        const rhs = rhsRaw.trim().replace(/^["']|["']$/g, "");
+        const passes = op === "==" ? lhs === rhs : lhs !== rhs;
+        return (passes ? ifTrue : ifFalse).trim().replace(/^["']|["']$/g, "");
+      }
+      // Bare truthiness: {{auth.status ? /yes : /no}}
+      const truthyMatch = trimmedVar.match(/^(.+?)\s*\?\s*(.+?)\s+:\s+(.+)$/);
+      if (truthyMatch) {
+        const [, keyRaw, ifTrue, ifFalse] = truthyMatch;
+        const value = resolveVar(keyRaw.trim());
+        const passes = value !== undefined && value !== "" && value !== "false";
+        return (passes ? ifTrue : ifFalse).trim().replace(/^["']|["']$/g, "");
       }
 
-      // Use default placeholder if available, otherwise return original
+      // ── Standard variable with optional || fallback ──
+      let fallback: string | null = null;
+      const pipeIdx = trimmedVar.indexOf("||");
+      if (pipeIdx !== -1) {
+        fallback = trimmedVar
+          .slice(pipeIdx + 2)
+          .trim()
+          .replace(/^["']|["']$/g, "");
+        trimmedVar = trimmedVar.slice(0, pipeIdx).trim();
+      }
+
+      const resolved = resolveVar(trimmedVar);
+      if (resolved !== undefined) return resolved;
+      if (fallback !== null) return fallback;
+
       const defaultValue = DEFAULT_VALUES[trimmedVar];
       return defaultValue !== undefined ? defaultValue : match;
     });
@@ -159,6 +226,16 @@ export const resolveVariable = (varId: string, query: any): string => {
     // Handle dynamic variables
     if (varId === "year") {
       return new Date().getFullYear().toString();
+    }
+
+    // Handle auth.* variables
+    if (varId.startsWith("auth.")) {
+      const auth = getAuthState();
+      if (!auth) return varId;
+      const parts = varId.slice("auth.".length).split(".");
+      const value = walkPath(auth, parts);
+      if (value !== undefined && value !== null && value !== "") return String(value);
+      return varId;
     }
 
     // Handle item.* variables (show first item as preview in editor)
@@ -227,6 +304,17 @@ export const getAvailableVariables = (query: any): string[] => {
 
     const rootProps = root.data.props;
     const variables: string[] = [];
+
+    // Add auth variables
+    const auth = getAuthState();
+    if (auth) {
+      variables.push("auth.status");
+      if (auth.customer) {
+        for (const key of Object.keys(auth.customer)) {
+          variables.push(`auth.customer.${key}`);
+        }
+      }
+    }
 
     // Add company variables if they exist
     if (rootProps.company && typeof rootProps.company === "object") {

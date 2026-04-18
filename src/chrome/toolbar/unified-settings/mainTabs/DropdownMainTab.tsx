@@ -5,7 +5,7 @@ import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, renderAdvancedComponentSlots, SECTION_ICONS } from "../helpers";
 
 export const DropdownMainTab = () => {
-  const { props } = useNode(node => ({ props: node.data.props }));
+  const { props } = useNode(node => ({ props: node.data?.props }));
 
   return renderComponentSlots({
     Content: (

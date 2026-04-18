@@ -13,7 +13,7 @@ export const SelectedImageListItemAtom = atom<any>("selectedimagelistitem_unifie
 
 export const ImageListMainTab = () => {
   const { actions, query } = useEditor();
-  const { id, props } = useNode(node => ({ props: node.data.props }));
+  const { id, props } = useNode(node => ({ props: node.data?.props }));
   const [activeIndex, setActiveIndex] = useAtomState(SelectedImageListItemAtom) as unknown as [
     number | null,
     (v: number | null) => void,
@@ -131,13 +131,61 @@ export const ImageListMainTab = () => {
               icon={SECTION_ICONS["Properties"]}
               help="Carousel navigation and autoplay settings."
             >
-              <ToolbarItem propKey="showNavigation" propType="component" type="toggle" label="Show Arrows" labelWidth="w-24" />
-              <ToolbarItem propKey="showDots" propType="component" type="toggle" label="Show Dots" labelWidth="w-24" />
-              <ToolbarItem propKey="autoScroll" propType="component" type="toggle" label="Auto Scroll" labelWidth="w-24" />
-              <ToolbarItem propKey="autoScrollInterval" propType="component" type="number" label="Interval (ms)" labelWidth="w-24" min={1000} max={10000} step={500} />
-              <ToolbarItem propKey="navArrowClass" propType="component" type="text" label="Arrow Classes" labelWidth="w-24" placeholder="bg-base-100/80 text-base-content..." />
-              <ToolbarItem propKey="navDotClass" propType="component" type="text" label="Dot Classes" labelWidth="w-24" placeholder="bg-base-100/50" />
-              <ToolbarItem propKey="navDotActiveClass" propType="component" type="text" label="Active Dot" labelWidth="w-24" placeholder="bg-base-100 w-8" />
+              <ToolbarItem
+                propKey="showNavigation"
+                propType="component"
+                type="toggle"
+                label="Show Arrows"
+                labelWidth="w-24"
+              />
+              <ToolbarItem
+                propKey="showDots"
+                propType="component"
+                type="toggle"
+                label="Show Dots"
+                labelWidth="w-24"
+              />
+              <ToolbarItem
+                propKey="autoScroll"
+                propType="component"
+                type="toggle"
+                label="Auto Scroll"
+                labelWidth="w-24"
+              />
+              <ToolbarItem
+                propKey="autoScrollInterval"
+                propType="component"
+                type="number"
+                label="Interval (ms)"
+                labelWidth="w-24"
+                min={1000}
+                max={10000}
+                step={500}
+              />
+              <ToolbarItem
+                propKey="navArrowClass"
+                propType="component"
+                type="text"
+                label="Arrow Classes"
+                labelWidth="w-24"
+                placeholder="bg-base-100/80 text-base-content..."
+              />
+              <ToolbarItem
+                propKey="navDotClass"
+                propType="component"
+                type="text"
+                label="Dot Classes"
+                labelWidth="w-24"
+                placeholder="bg-base-100/50"
+              />
+              <ToolbarItem
+                propKey="navDotActiveClass"
+                propType="component"
+                type="text"
+                label="Active Dot"
+                labelWidth="w-24"
+                placeholder="bg-base-100 w-8"
+              />
             </ToolbarSection>
           ),
         }

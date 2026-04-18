@@ -8,7 +8,12 @@ import {
   isModChord,
   shouldDelegateCraftChordToBrowser,
 } from "./editorShortcutGuards";
-import { GetHtmlToComponent, addHandler, buildClonedTree, saveHandler } from "../viewport/viewportExports";
+import {
+  GetHtmlToComponent,
+  addHandler,
+  buildClonedTree,
+  saveHandler,
+} from "../viewport/viewportExports";
 
 async function readHtmlFromSystemClipboard(): Promise<string | null> {
   let text = await navigator.clipboard.readText();

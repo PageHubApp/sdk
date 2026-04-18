@@ -36,7 +36,7 @@ function getWorker(): Worker | null {
     `;
     const blob = new Blob([code], { type: "application/javascript" });
     worker = new Worker(URL.createObjectURL(blob));
-    worker.onmessage = (e) => {
+    worker.onmessage = e => {
       const { id, result, error } = e.data;
       const p = pending.get(id);
       if (!p) return;

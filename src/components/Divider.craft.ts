@@ -20,7 +20,7 @@ export const DividerDef = defineComponent(
     name: "Divider",
     component: Divider,
     icon: TbMinus,
-    category: "Basic",
+    category: "Content",
     settings: DividerMainTab,
     toHTML,
     disable: [
@@ -37,8 +37,9 @@ export const DividerDef = defineComponent(
     presets: [
       {
         label: "Line Divider",
+        description: "Horizontal rule to separate content.",
         props: {
-          className: "h-2 my-3 w-full bg-accent border-0",
+          className: "h-2 my-space-xs w-full bg-accent border-0",
         },
       },
     ],

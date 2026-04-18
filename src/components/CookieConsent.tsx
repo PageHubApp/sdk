@@ -104,8 +104,7 @@ export const CookieConsent = ({ children, ...props }) => {
 
     bannerEl.classList.remove("hidden");
     // In editor, render inline so users can see and edit content
-    bannerEl.style.cssText =
-      "display:flex;width:100%;padding:1rem;";
+    bannerEl.style.cssText = "display:flex;width:100%;padding:1rem;";
   }, [enabled, isMounted, bannerId]);
 
   // ── Viewer: auto-show on load ────────────────────────────────────────

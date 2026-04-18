@@ -204,7 +204,10 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
         }
       );
       const cloneNode = query.node(clonedTree.rootNodeId).get();
-      console.log("[saveHandler] after link:", { belongsTo: cloneNode?.data?.props?.belongsTo, relationType: cloneNode?.data?.props?.relationType });
+      console.log("[saveHandler] after link:", {
+        belongsTo: cloneNode?.data?.props?.belongsTo,
+        relationType: cloneNode?.data?.props?.relationType,
+      });
       actions.selectNode(clonedTree.rootNodeId);
     });
 

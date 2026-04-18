@@ -54,7 +54,12 @@ export function getRegisteredConnectorProviders(): Array<{
   return Object.entries(_fieldDefs).map(([key, def]) => ({
     key,
     label: def.label,
-    collections: def.collections.map(c => ({ key: c.key, label: c.label, description: c.description, icon: c.icon })),
+    collections: def.collections.map(c => ({
+      key: c.key,
+      label: c.label,
+      description: c.description,
+      icon: c.icon,
+    })),
   }));
 }
 
@@ -83,10 +88,7 @@ export function getConnectorCollectionLabel(provider: string, collection: string
  * Walk up the node tree from `nodeId` to find the first ancestor with a `dataSource` prop.
  * Returns the dataSource binding or null if not inside a data-bound Container.
  */
-export function findAncestorDataSource(
-  nodeId: string,
-  query: any
-): DataSourceBinding | null {
+export function findAncestorDataSource(nodeId: string, query: any): DataSourceBinding | null {
   try {
     const node = query.node(nodeId).get();
     if (!node) return null;

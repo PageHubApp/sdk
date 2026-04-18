@@ -92,11 +92,7 @@ export function SvgIconsTab({ d }: SvgIconsTabProps) {
             const iconRef = `ref-icon:${key}`;
             const isSelected = d.selectedIcon === iconRef;
             const isFocused = d.focusedSvgIconIndex === index;
-            const iconName =
-              key
-                .split("/")
-                .pop()
-                ?.replace(/-/g, " ") || "";
+            const iconName = key.split("/").pop()?.replace(/-/g, " ") || "";
 
             return (
               <div style={style}>

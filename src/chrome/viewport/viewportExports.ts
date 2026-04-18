@@ -13,13 +13,7 @@
 export { GetHtmlToComponent, GetSignedUrl, SaveMedia, DeleteMedia } from "./api";
 
 // Prop system
-export {
-  getProp,
-  getPropFinalValue,
-  setPropOnView,
-  changeProp,
-  type PropType,
-} from "./propSystem";
+export { getProp, getPropFinalValue, setPropOnView, changeProp, type PropType } from "./propSystem";
 
 // Node operations
 export {

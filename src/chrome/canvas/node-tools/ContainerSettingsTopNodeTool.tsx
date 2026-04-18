@@ -5,11 +5,7 @@ import { ViewAtom } from "../../viewport/atoms";
 import { getPropFinalValue } from "../../viewport/viewportExports";
 import { AddElement } from "../../viewport/toolbox/toolboxUtils";
 import { NodeInlineTooltip } from "./NodeInlineTooltip";
-import {
-  TbContainer,
-  TbNavigation,
-  TbPlus,
-} from "react-icons/tb";
+import { TbContainer, TbNavigation, TbPlus } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { useAtomState } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
@@ -40,7 +36,8 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   }));
 
   /** Basic layout containers suppress extra chrome (AI, duplicate, add-components). */
-  const suppressContainerChromeTools = !nodeProps.type || nodeProps.type === "container" || nodeProps.type === "section";
+  const suppressContainerChromeTools =
+    !nodeProps.type || nodeProps.type === "container" || nodeProps.type === "section";
   /** Match `DeleteNodeController` strip: tight gap, no segment padding on anchors. */
   const compactToolbar = suppressContainerChromeTools && direction === "horizontal";
   const segmentBorder = "border-r border-base-300 pr-2";
@@ -91,7 +88,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
       if (prev.some(n => n.id === id)) return prev;
       return [...prev, { id, displayName }];
     });
-    setAssistantOpen({ nodeId: id });
+    setAssistantOpen({ nodeId: id, revealPanel: true });
   };
 
   return (
@@ -120,7 +117,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
           className={segmentBorder}
         >
           {renderNodeAi({
-            onClick: () => setAssistantOpen({ nodeId: id, mode: "create" }),
+            onClick: () => setAssistantOpen({ nodeId: id, mode: "create", revealPanel: true }),
             className: "tool-button",
           })}
         </NodeInlineTooltip>
@@ -169,10 +166,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
 
       {match && (
         <NodeInlineTooltip variant="container" content="Insert from components">
-          <button
-            className="tool-button"
-            onClick={() => openPanel("components")}
-          >
+          <button className="tool-button" onClick={() => openPanel("components")}>
             <TbContainer />
           </button>
         </NodeInlineTooltip>

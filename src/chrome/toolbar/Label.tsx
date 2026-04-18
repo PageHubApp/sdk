@@ -123,7 +123,7 @@ export const ToolbarLabel = ({
     nodeProps,
   } = useNode(node => ({
     id: node.id,
-    nodeProps: node.data.props,
+    nodeProps: node.data?.props,
   }));
 
   const { query, actions } = useEditor();

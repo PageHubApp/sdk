@@ -116,6 +116,7 @@ export const ContainerGroup = (props: ContainerGroupProps) => {
             icon={<TbContainer aria-hidden />}
             idleLabel="Empty group"
             selectedLabel="Drop here or right-click"
+            showActionIcons
           />
         ) : null}
       </>

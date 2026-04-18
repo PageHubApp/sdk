@@ -22,7 +22,7 @@ export function BackgroundFocalPointPicker({ imageUrl }: BackgroundFocalPointPic
     props,
   } = useNode(node => ({
     id: node.id,
-    props: node.data.props,
+    props: node.data?.props,
   }));
 
   const [isPickerOpen, setIsPickerOpen] = useState(false);

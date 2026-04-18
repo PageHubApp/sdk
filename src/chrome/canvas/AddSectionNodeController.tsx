@@ -132,6 +132,7 @@ export const AddSectionNodeController = (props: { position; align }) => {
               addAfter: true,
               parentNodeId: parent,
               position,
+              revealPanel: true,
             }),
           className: "btn-primary btn-sm z-99999",
         })}

@@ -1,5 +1,12 @@
 import React, { useState } from "react";
 import { ToolbarDashedButton } from "../../toolbar/helpers/ToolbarDashedButton";
+import {
+  SettingsFormCard,
+  SettingsFormField,
+  SettingsTabIntro,
+  settingsTabRootClass,
+} from "../settings/SettingsTabChrome";
+import { settingsMultilineInputClass } from "../settings/settingsControlClasses";
 
 interface ThemeOverride {
   varName: string;
@@ -7,6 +14,7 @@ interface ThemeOverride {
 }
 
 interface AdvancedTabProps {
+  inputClass: string;
   canonicalUrl: string;
   setCanonicalUrl: (v: string) => void;
   headCode: string;
@@ -30,7 +38,10 @@ async function hashPassword(password: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+const mono = "font-mono text-xs";
+
 export function AdvancedTab({
+  inputClass,
   canonicalUrl,
   setCanonicalUrl,
   headCode,
@@ -45,6 +56,7 @@ export function AdvancedTab({
   setThemeOverrides,
 }: AdvancedTabProps) {
   const [rawPassword, setRawPassword] = useState("");
+  const multiline = settingsMultilineInputClass(inputClass);
 
   const handlePasswordSet = async () => {
     if (!rawPassword.trim()) {
@@ -76,160 +88,162 @@ export function AdvancedTab({
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <label htmlFor="canonical-url" className="toolbar-label mb-2 block font-medium">
-          Canonical URL
-        </label>
-        <input
-          id="canonical-url"
-          type="text"
-          value={canonicalUrl}
-          onChange={e => setCanonicalUrl(e.target.value)}
-          className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
-          placeholder="Leave empty for auto-generated"
-        />
-        <p className="text-neutral-content mt-2 text-xs">
-          Specify a canonical URL to prevent duplicate content issues
-        </p>
-      </div>
+    <div className={settingsTabRootClass}>
+      <SettingsTabIntro
+        title="Advanced"
+        description="Canonical URL, per-page head snippets, body class, JSON-LD, optional password hash, and CSS variable overrides."
+      />
 
-      <div>
-        <label htmlFor="body-class" className="toolbar-label mb-2 block font-medium">
-          Body Class
-        </label>
-        <input
-          id="body-class"
-          type="text"
-          value={bodyClass}
-          onChange={e => setBodyClass(e.target.value)}
-          className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
-          placeholder="e.g. dark overflow-hidden"
-        />
-        <p className="text-neutral-content mt-2 text-xs">
-          Custom CSS classes added to the body tag for this page
-        </p>
-      </div>
+      <SettingsFormCard title="URLs and body">
+        <SettingsFormField
+          label="Canonical URL"
+          htmlFor="canonical-url"
+          hint="Leave empty to use the auto-generated canonical for this page."
+        >
+          <input
+            id="canonical-url"
+            type="text"
+            value={canonicalUrl}
+            onChange={e => setCanonicalUrl(e.target.value)}
+            className={inputClass}
+            placeholder="https://…"
+          />
+        </SettingsFormField>
 
-      <div>
-        <label htmlFor="head-code" className="toolbar-label mb-2 block font-medium">
-          Custom Head Code
-        </label>
-        <textarea
-          id="head-code"
-          value={headCode}
-          onChange={e => setHeadCode(e.target.value)}
-          className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
-          rows={6}
-          placeholder={
-            '<script>...</script>\n<link rel="stylesheet" href="...">\n<meta name="..." content="...">'
+        <SettingsFormField
+          label="Body class"
+          htmlFor="body-class"
+          hint="Extra classes on the body element for this page only."
+        >
+          <input
+            id="body-class"
+            type="text"
+            value={bodyClass}
+            onChange={e => setBodyClass(e.target.value)}
+            className={`${inputClass} ${mono}`}
+            placeholder="e.g. dark overflow-hidden"
+          />
+        </SettingsFormField>
+      </SettingsFormCard>
+
+      <SettingsFormCard title="Head and structured data">
+        <SettingsFormField
+          label="Custom head code"
+          htmlFor="head-code"
+          hint="HTML injected into <head> for this page only."
+        >
+          <textarea
+            id="head-code"
+            value={headCode}
+            onChange={e => setHeadCode(e.target.value)}
+            className={`${multiline} ${mono}`}
+            rows={6}
+            placeholder={'<script>…</script>\n<link rel="stylesheet" href="…">'}
+          />
+        </SettingsFormField>
+
+        <SettingsFormField
+          label="JSON-LD"
+          htmlFor="json-ld"
+          hint={
+            <>
+              Injected as{" "}
+              <code className="bg-base-300/60 rounded px-1 py-0.5 text-[11px]">
+                &lt;script type=&quot;application/ld+json&quot;&gt;
+              </code>
+              .
+            </>
           }
-        />
-        <p className="text-neutral-content mt-2 text-xs">
-          Custom HTML injected into the &lt;head&gt; for this page only. Use for page-specific
-          scripts, styles, or meta tags.
-        </p>
-      </div>
+        >
+          <textarea
+            id="json-ld"
+            value={jsonLd}
+            onChange={e => setJsonLd(e.target.value)}
+            className={`${multiline} ${mono}`}
+            rows={8}
+            placeholder={'{\n  "@context": "https://schema.org",\n  "@type": "WebPage"\n}'}
+          />
+        </SettingsFormField>
+      </SettingsFormCard>
 
-      <div>
-        <label htmlFor="json-ld" className="toolbar-label mb-2 block font-medium">
-          JSON-LD Structured Data
-        </label>
-        <textarea
-          id="json-ld"
-          value={jsonLd}
-          onChange={e => setJsonLd(e.target.value)}
-          className="border-base-300 focus:ring-primary w-full rounded-lg border px-4 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
-          rows={8}
-          placeholder={
-            '{\n  "@context": "https://schema.org",\n  "@type": "WebPage",\n  "name": "My Page"\n}'
-          }
-        />
-        <p className="text-neutral-content mt-2 text-xs">
-          JSON-LD schema for this page. Helps search engines understand your content. Will be
-          injected as{" "}
-          <code className="bg-neutral rounded px-1 text-[11px]">
-            &lt;script type=&quot;application/ld+json&quot;&gt;
-          </code>
-          .
-        </p>
-      </div>
-
-      <div>
-        <label className="toolbar-label mb-2 block font-medium">Password Protection</label>
+      <SettingsFormCard title="Password protection">
         {pagePassword ? (
-          <div className="flex items-center gap-2">
-            <span className="border-base-300 bg-neutral text-neutral-content flex-1 truncate rounded-lg border px-4 py-2 font-mono text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`${inputClass} text-neutral-content flex-1 truncate ${mono} py-2 text-xs`}
+            >
               Protected (SHA-256)
             </span>
-            <button
-              type="button"
-              onClick={handlePasswordClear}
-              className="btn btn-secondary text-xs"
-            >
+            <button type="button" onClick={handlePasswordClear} className="btn btn-ghost btn-sm">
               Remove
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-2">
-            <input
-              type="password"
-              value={rawPassword}
-              onChange={e => setRawPassword(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handlePasswordSet()}
-              className="border-base-300 focus:ring-primary flex-1 rounded-lg border px-4 py-2 text-sm focus:ring-2 focus:outline-none"
-              placeholder="Enter page password"
-            />
+          <div className="flex flex-wrap items-end gap-2">
+            <div className="min-w-0 flex-1">
+              <SettingsFormField label="Set password" htmlFor="page-password-inline">
+                <input
+                  id="page-password-inline"
+                  type="password"
+                  value={rawPassword}
+                  onChange={e => setRawPassword(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && void handlePasswordSet()}
+                  className={inputClass}
+                  placeholder="Page password"
+                />
+              </SettingsFormField>
+            </div>
             <button
               type="button"
-              onClick={handlePasswordSet}
-              className="btn btn-primary text-xs"
+              onClick={() => void handlePasswordSet()}
+              className="btn btn-primary btn-sm shrink-0"
               disabled={!rawPassword.trim()}
             >
               Set
             </button>
           </div>
         )}
-        <p className="text-neutral-content mt-2 text-xs">
-          Password is stored as a SHA-256 hash — the raw password is never saved.
+        <p className="text-neutral-content text-xs">
+          Only a SHA-256 hash is stored — not the raw password.
         </p>
-      </div>
+      </SettingsFormCard>
 
-      <div>
-        <label className="toolbar-label mb-2 block font-medium">Theme Overrides</label>
-        <p className="text-neutral-content mb-3 text-xs">
-          Override design system CSS variables for this page only.
+      <SettingsFormCard title="Theme overrides">
+        <p className="text-neutral-content text-sm">
+          Override design tokens for this page only. Use CSS variable names without the leading{" "}
+          <code className="font-mono text-xs">--</code>.
         </p>
         <div className="space-y-2">
           {themeOverrides.map((override, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span className="text-neutral-content text-xs">--</span>
+            <div key={i} className="flex flex-wrap items-center gap-2">
+              <span className="text-neutral-content font-mono text-xs">--</span>
               <input
                 type="text"
                 value={override.varName}
                 onChange={e => updateOverride(i, "varName", e.target.value)}
-                className="border-base-300 focus:ring-primary w-32 rounded border px-2 py-1.5 font-mono text-xs focus:ring-2 focus:outline-none"
+                className={`${inputClass} w-32 shrink-0 ${mono} py-2`}
                 placeholder="var-name"
               />
               <input
                 type="text"
                 value={override.value}
                 onChange={e => updateOverride(i, "value", e.target.value)}
-                className="border-base-300 focus:ring-primary flex-1 rounded border px-2 py-1.5 font-mono text-xs focus:ring-2 focus:outline-none"
+                className={`${inputClass} min-w-0 flex-1 ${mono} py-2`}
                 placeholder="#fff or 1rem"
               />
               <button
                 type="button"
                 onClick={() => removeOverride(i)}
-                className="text-neutral-content hover:bg-error hover:text-error-content rounded p-1"
+                className="text-neutral-content hover:bg-error/15 hover:text-error shrink-0 rounded-lg px-2 py-1 text-sm"
+                aria-label="Remove override"
               >
                 ×
               </button>
             </div>
           ))}
-          <ToolbarDashedButton onClick={addOverride}>Add Override</ToolbarDashedButton>
+          <ToolbarDashedButton onClick={addOverride}>Add override</ToolbarDashedButton>
         </div>
-      </div>
+      </SettingsFormCard>
     </div>
   );
 }

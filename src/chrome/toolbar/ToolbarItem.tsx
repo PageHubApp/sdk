@@ -36,8 +36,8 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
     const hasOption = !!props.option;
     return (
       <label
-        className={`relative flex w-full cursor-pointer transition-transform active:scale-[0.98] ${
-          hasOption ? "flex-row items-center justify-between gap-3" : "flex-col items-center"
+        className={`relative flex h-8 w-full cursor-pointer items-center transition-transform active:scale-[0.98] ${
+          hasOption ? "flex-row justify-between gap-3" : "justify-center"
         }`}
       >
         {props.option && (
@@ -409,7 +409,7 @@ export const ToolbarItem = (__props: ToolbarItemProps) => {
     nodeProps,
     id,
   } = useNode(node => ({
-    nodeProps: node.data.props || {},
+    nodeProps: node.data?.props || {},
     id: node.id,
   }));
 

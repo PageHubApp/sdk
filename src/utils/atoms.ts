@@ -93,6 +93,12 @@ export const AssistantOpenAtom = atom(
     addAfter?: boolean;
     parentNodeId?: string;
     position?: "top" | "bottom";
+    /**
+     * When true: user explicitly requested the assistant panel (nav, wand, pin, etc.).
+     * If the user previously closed Clippy (`ph-clippy-open` is "false"), the panel still opens.
+     * Omit or false when the dispatch must not override a dismissed panel.
+     */
+    revealPanel?: boolean;
   }
 );
 
@@ -104,6 +110,19 @@ export const SidebarLayersPanelAtom = atom<boolean>(
   (() => {
     try {
       const saved = typeof window !== "undefined" ? phStorage.get("sidebar-layers-panel") : null;
+      if (saved !== null) return saved === "true";
+    } catch {}
+    return true;
+  })()
+);
+
+/** Whether the pinned inspector sections dock (above Layers) is expanded. */
+export const InspectorPinDockOpenAtom = atom<boolean>(
+  "inspectorPinDockOpen",
+  (() => {
+    try {
+      const saved =
+        typeof window !== "undefined" ? phStorage.get("sidebar-inspector-pin-dock") : null;
       if (saved !== null) return saved === "true";
     } catch {}
     return true;

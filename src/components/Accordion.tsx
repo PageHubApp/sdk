@@ -22,7 +22,12 @@ export const Accordion = ({
   children,
   ...incomingProps
 }: Partial<AccordionProps> & { children?: React.ReactNode }) => {
-  const props: AccordionProps = { multiOpen: false, defaultOpen: -1, animation: "slideFade", ...incomingProps };
+  const props: AccordionProps = {
+    multiOpen: false,
+    defaultOpen: -1,
+    animation: "slideFade",
+    ...incomingProps,
+  };
   const { query } = useEditor();
   const {
     id,

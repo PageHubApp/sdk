@@ -23,8 +23,7 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
     ""
   );
 
-  const positionClasses =
-    position === "top" ? "top-0 left-0 right-0" : "bottom-0 left-0 right-0";
+  const positionClasses = position === "top" ? "top-0 left-0 right-0" : "bottom-0 left-0 right-0";
 
   const barClass = [staticClasses(props, ctx), `fixed ${positionClasses} z-[9998]`]
     .filter(Boolean)
@@ -97,7 +96,7 @@ function buildCookieConsentChildren() {
       custom={{ displayName: "Cookie Banner" }}
       canDelete={false}
       canEditName={false}
-      className="fixed bottom-0 left-0 right-0 z-[9998] bg-base-200 text-base-content shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
+      className="bg-base-200 text-base-content fixed right-0 bottom-0 left-0 z-[9998] shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
     >
       {/* Content row */}
       <Element
@@ -105,13 +104,13 @@ function buildCookieConsentChildren() {
         is={Container}
         custom={{ displayName: "Banner Content" }}
         canDelete={false}
-        className="flex flex-col sm:flex-row items-center justify-between gap-space-sm px-space-md py-space-sm max-w-page mx-auto"
+        className="gap-space-sm px-space-md py-space-sm max-w-page mx-auto flex flex-col items-center justify-between sm:flex-row"
       >
         <Element
           is={Text}
           custom={{ displayName: "Consent Text" }}
           text="<p>We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.</p>"
-          className="text-sm text-base-content/80"
+          className="text-base-content/80 text-sm"
           canDelete={true}
           canEditName={true}
         />
@@ -120,7 +119,7 @@ function buildCookieConsentChildren() {
           canvas
           is={Container}
           custom={{ displayName: "Button Group" }}
-          className="flex flex-row items-center gap-space-xs shrink-0"
+          className="gap-space-xs flex shrink-0 flex-row items-center"
           canDelete={true}
         >
           <Element
@@ -160,6 +159,7 @@ function buildCookieConsentChildren() {
 export const CookieConsentDef = defineComponent(
   {
     name: "CookieConsent",
+    description: "GDPR cookie consent banner with accept/decline.",
     component: CookieConsent,
     icon: TbCookie,
     category: "Interactive",
@@ -181,14 +181,6 @@ export const CookieConsentDef = defineComponent(
         placement="end"
         alt={{ position: "bottom", align: "start", placement: "start" }}
       />,
-      <HoverNodeController
-        key="consentHover"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{ position: "bottom", align: "start", placement: "start" }}
-      />,
-      <DeleteNodeController key="consentDelete" />,
     ],
     presets: [
       {

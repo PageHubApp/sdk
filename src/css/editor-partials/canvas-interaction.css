@@ -8,6 +8,14 @@
 .pagehub-sdk-root {
   /* Inset outlines: #viewport uses overflow-x-hidden; positive offset clips full-bleed nodes. */
   --pagehub-editor-outline-offset: -1px;
+  /* Contrast halo behind outlines — ensures visibility on any background.
+     Inset to match the negative outline-offset so it doesn't clip. */
+  --pagehub-outline-halo: inset 0 0 0 2px rgba(255,255,255,0.45), inset 0 0 0 2px rgba(0,0,0,0.15);
+}
+
+/* Shift+duplicate drag: keep source fully visible (browsers often dim the drag source). */
+body[data-ph-drag-copy="true"] .pagehub-sdk-root [data-dragging="true"] {
+  opacity: 1 !important;
 }
 
 .pagehub-sdk-root .drag-control {
@@ -60,11 +68,13 @@ body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="component"
 .pagehub-sdk-root [data-enabled="true"][data-hover="true"]:not([data-selected="true"]) {
   outline: 1px dashed currentColor !important;
   outline-offset: var(--pagehub-editor-outline-offset, -1px);
+  box-shadow: var(--pagehub-outline-halo);
 }
 
 .pagehub-sdk-root [data-enabled="true"][data-hover="true"]:not([data-selected="true"]):not(:hover) {
   outline: 1px dotted currentColor !important;
   outline-offset: var(--pagehub-editor-outline-offset, -1px);
+  box-shadow: var(--pagehub-outline-halo);
 }
 
 .pagehub-sdk-root
@@ -72,11 +82,13 @@ body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="component"
   [data-enabled="true"][node-id]:not([data-selected="true"]) {
   outline: 1px dashed currentColor !important;
   outline-offset: var(--pagehub-editor-outline-offset, -1px);
+  box-shadow: var(--pagehub-outline-halo);
 }
 
 .pagehub-sdk-root [data-enabled="true"][data-selected="true"] {
   outline: 1px solid currentColor !important;
   outline-offset: var(--pagehub-editor-outline-offset, -1px);
+  box-shadow: var(--pagehub-outline-halo);
 }
 
 .pagehub-sdk-root [data-enabled="true"][data-ancestor="true"] {
@@ -87,12 +99,14 @@ body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="component"
 .pagehub-sdk-root img[data-enabled="true"][data-hover="true"]:not([data-selected="true"]) {
   outline: 1px dashed currentColor !important;
   outline-offset: var(--pagehub-editor-outline-offset, -1px);
+  box-shadow: var(--pagehub-outline-halo);
 }
 
 .pagehub-sdk-root img[data-enabled="true"][data-selected="true"] {
   outline: 2px solid currentColor !important;
   /* Match 2px outline width so the ring stays inside the box (same overflow clip as above). */
   outline-offset: -2px;
+  box-shadow: var(--pagehub-outline-halo);
 }
 
 .pagehub-sdk-root [data-show-hidden="true"] .hidden {

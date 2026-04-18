@@ -145,7 +145,7 @@ export const ButtonItem = (__props: ToolbarItemProps) => {
     actions: { setProp },
     nodeProps,
   } = useNode(node => ({
-    nodeProps: node.data.props,
+    nodeProps: node.data?.props,
   }));
 
   const value = getProp(__props, view, nodeProps, classDark);

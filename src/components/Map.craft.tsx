@@ -11,6 +11,7 @@ import { HoverNodeController, NameNodeController, DeleteNodeController } from ".
 export const MapDef = defineComponent(
   {
     name: "Map",
+    description: "Interactive map embed with markers.",
     component: Map,
     icon: TbMap,
     category: "Media",
@@ -23,18 +24,6 @@ export const MapDef = defineComponent(
     },
     tools: props => [
       <NameNodeController key="mapNameController" position="top" align="end" placement="start" />,
-      <HoverNodeController
-        key="mapHoverController"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{
-          position: "bottom",
-          align: "start",
-          placement: "start",
-        }}
-      />,
-      <DeleteNodeController key="mapDelete" />,
     ],
     presets: [
       {

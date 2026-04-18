@@ -169,7 +169,7 @@ export function navigateToPage(
   pageId: string,
   displayName: string,
   isHomePage: boolean,
-  customSlug?: string,
+  customSlug?: string
 ): void {
   if (!initOpts) return;
   if (pageId === currentSnapshot.activePageId) return;

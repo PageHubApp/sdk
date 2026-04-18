@@ -2,8 +2,15 @@ import React from "react";
 import Link from "next/link";
 import { TbTrash } from "react-icons/tb";
 import { StandaloneImagePicker } from "../StandaloneImagePicker";
+import {
+  SettingsFormCard,
+  SettingsFormField,
+  SettingsTabIntro,
+  settingsTabRootClass,
+} from "../settings/SettingsTabChrome";
 
 interface BasicTabProps {
+  inputClass: string;
   pageName: string;
   onPageNameChange: (name: string) => void;
   pageSlug: string;
@@ -21,7 +28,11 @@ interface BasicTabProps {
   onDeletePage: () => void;
 }
 
+const disabledInput =
+  "disabled:cursor-not-allowed disabled:border-base-300/50 disabled:bg-base-300/30 disabled:text-neutral-content/70";
+
 export function BasicTab({
+  inputClass,
   pageName,
   onPageNameChange,
   pageSlug,
@@ -38,159 +49,153 @@ export function BasicTab({
   onDeletePage,
 }: BasicTabProps) {
   return (
-    <div className="space-y-6">
-      {/* Page Name & URL - Same Line */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="page-name" className="toolbar-label mb-2 block font-medium">
-            Page Name
-          </label>
-          <input
-            id="page-name"
-            type="text"
-            value={pageName}
-            onChange={e => onPageNameChange(e.target.value)}
-            className="border-base-300 focus:ring-ring w-full rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
-            placeholder="Enter page name"
-          />
-        </div>
+    <div className={settingsTabRootClass}>
+      <SettingsTabIntro
+        title="Page basics"
+        description="Name, URL, featured image, and whether this canvas is your home or custom 404 page."
+      />
 
-        <div>
-          <label htmlFor="page-slug" className="toolbar-label mb-2 block font-medium">
-            URL Slug
-          </label>
-          <div className="flex items-center gap-2">
-            <span className="text-neutral-content text-sm">/</span>
+      <SettingsFormCard title="Name and URL">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SettingsFormField label="Page name" htmlFor="page-name">
             <input
-              id="page-slug"
+              id="page-name"
               type="text"
-              value={isHomePage ? "" : pageSlug}
-              onChange={e => onSlugChange(e.target.value)}
-              disabled={isHomePage}
-              className="border-base-300 focus:ring-primary disabled:bg-neutral disabled:text-neutral-content flex-1 rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
-              placeholder={isHomePage ? "home" : "page-url"}
+              value={pageName}
+              onChange={e => onPageNameChange(e.target.value)}
+              className={inputClass}
+              placeholder="Enter page name"
             />
-          </div>
+          </SettingsFormField>
+          <SettingsFormField
+            label="URL slug"
+            htmlFor="page-slug"
+            hint={isHomePage ? "Home uses / — no slug." : "Path segment after your domain."}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-content shrink-0 text-sm">/</span>
+              <input
+                id="page-slug"
+                type="text"
+                value={isHomePage ? "" : pageSlug}
+                onChange={e => onSlugChange(e.target.value)}
+                disabled={isHomePage}
+                className={`${inputClass} min-w-0 flex-1 ${disabledInput}`}
+                placeholder={isHomePage ? "home" : "page-url"}
+              />
+            </div>
+          </SettingsFormField>
         </div>
-      </div>
+      </SettingsFormCard>
 
-      {/* Page Image */}
-      <div>
-        <p className="toolbar-label mb-2 block font-medium">Page Image</p>
+      <SettingsFormCard title="Featured image">
         <StandaloneImagePicker
           value={pageImage}
           onChange={setPageImage}
-          label="Upload Image"
-          help="Featured image for this page"
+          label="Upload image"
+          help="Used as this page’s featured image where the theme expects one."
         />
-      </div>
+      </SettingsFormCard>
 
-      <div className="flex gap-2">
-        {/* Home Page Toggle */}
-        <div className="border-base-300 bg-neutral flex w-full items-center justify-between rounded-lg border p-4">
-          <div>
-            <div className="toolbar-label font-medium">Home Page</div>
-            <div className="text-neutral-content mt-1 text-xs">Set as root URL (/)</div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsHomePage(!isHomePage)}
-            className={`focus:ring-ring relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
-              isHomePage ? "bg-primary" : "bg-neutral"
-            }`}
-          >
-            <span
-              className={`bg-base-100 inline-block size-4 rounded-full transition-transform ${
-                isHomePage ? "translate-x-6" : "translate-x-1"
-              }`}
-            />
-          </button>
-        </div>
-
-        {/* 404 Page — paid */}
-        <div
-          className={`border-base-300 bg-neutral flex w-full flex-col justify-between rounded-lg border p-4 ${
-            !allowCustom404Page ? "opacity-80" : ""
-          }`}
-        >
-          <div className="flex w-full items-center justify-between gap-3">
+      <SettingsFormCard title="Behavior">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="border-base-300 bg-base-200/20 flex flex-col justify-between gap-3 rounded-xl border p-4">
             <div>
-              <div className="toolbar-label font-medium">404 Page</div>
-              <div className="text-neutral-content mt-1 text-xs">
-                {allowCustom404Page
-                  ? "Show this page when the URL does not match any page"
-                  : "Available on paid plans — custom page for broken or unknown links"}
-              </div>
+              <p className="text-base-content text-sm font-semibold">Home page</p>
+              <p className="text-neutral-content mt-1 text-xs">
+                Serve this canvas at the site root (/).
+              </p>
             </div>
-            {allowCustom404Page ? (
-              <button
-                type="button"
-                onClick={() => setIs404Page(!is404Page)}
-                className={`focus:ring-ring relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
-                  is404Page ? "bg-primary" : "bg-neutral"
-                }`}
-              >
-                <span
-                  className={`bg-base-100 inline-block size-4 rounded-full transition-transform ${
-                    is404Page ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            ) : null}
-          </div>
-          {!allowCustom404Page ? (
-            <Link href="/pricing" className="text-primary mt-3 text-sm font-medium hover:underline">
-              View plans
-            </Link>
-          ) : null}
-        </div>
-      </div>
-
-      {/* Delete Page Section */}
-      <div className="border-base-300 border-t pt-6">
-        <div className="border-error/20 bg-error/5 rounded-lg border p-4">
-          <div className="mb-3">
-            <h3 className="text-error text-sm font-medium">Danger Zone</h3>
-            <p className="text-neutral-content mt-1 text-xs">
-              Once you delete a page, there is no going back.
-            </p>
-          </div>
-
-          {!showDeleteConfirm ? (
             <button
               type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="border-error text-error hover:bg-error hover:text-error-content flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
+              onClick={() => setIsHomePage(!isHomePage)}
+              className={`focus:ring-ring relative ml-auto inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                isHomePage ? "bg-primary" : "bg-base-300"
+              }`}
+              aria-pressed={isHomePage}
             >
-              <TbTrash className="size-4" />
-              Delete Page
+              <span
+                className={`bg-base-100 inline-block size-4 rounded-full transition-transform ${
+                  isHomePage ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
             </button>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-neutral-content text-sm">
-                Are you sure you want to delete &ldquo;{pageName}&rdquo;? This action cannot be
-                undone.
-              </p>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="border-base-300 text-base-content hover:bg-neutral rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={onDeletePage}
-                  className="bg-error text-error-content hover:bg-error/90 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-                >
-                  Yes, Delete Page
-                </button>
+          </div>
+
+          <div
+            className={`border-base-300 bg-base-200/20 flex flex-col justify-between gap-3 rounded-xl border p-4 ${
+              !allowCustom404Page ? "opacity-85" : ""
+            }`}
+          >
+            <div className="flex w-full items-start justify-between gap-3">
+              <div>
+                <p className="text-base-content text-sm font-semibold">404 page</p>
+                <p className="text-neutral-content mt-1 text-xs">
+                  {allowCustom404Page
+                    ? "Show this page when no other URL matches."
+                    : "Available on paid plans — custom page for unknown links."}
+                </p>
               </div>
+              {allowCustom404Page ? (
+                <button
+                  type="button"
+                  onClick={() => setIs404Page(!is404Page)}
+                  className={`focus:ring-ring relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                    is404Page ? "bg-primary" : "bg-base-300"
+                  }`}
+                  aria-pressed={is404Page}
+                >
+                  <span
+                    className={`bg-base-100 inline-block size-4 rounded-full transition-transform ${
+                      is404Page ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              ) : null}
             </div>
-          )}
+            {!allowCustom404Page ? (
+              <Link href="/pricing" className="text-primary text-sm font-medium hover:underline">
+                View plans
+              </Link>
+            ) : null}
+          </div>
         </div>
-      </div>
+      </SettingsFormCard>
+
+      <SettingsFormCard title="Danger zone" className="border-error/25 bg-error/5">
+        <p className="text-neutral-content text-sm">
+          Deleting a page cannot be undone. Linked navigation and published URLs may break.
+        </p>
+
+        {!showDeleteConfirm ? (
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="btn btn-outline btn-error btn-sm gap-2"
+          >
+            <TbTrash className="size-4" />
+            Delete page
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-base-content text-sm">
+              Delete &ldquo;{pageName}&rdquo;? This cannot be undone.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="btn btn-ghost btn-sm"
+              >
+                Cancel
+              </button>
+              <button type="button" onClick={onDeletePage} className="btn btn-error btn-sm">
+                Yes, delete page
+              </button>
+            </div>
+          </div>
+        )}
+      </SettingsFormCard>
     </div>
   );
 }

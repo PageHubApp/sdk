@@ -108,10 +108,10 @@ export const IconDialogInput = ({
                 e: getRect(ref.current),
               });
             }}
-            className="input h-12 w-[70px]!"
+            className="input flex h-12 w-[70px]! items-center justify-center overflow-hidden px-1"
           >
             <div
-              className="google-icons pointer-events-none mx-auto flex size-4 items-center gap-3"
+              className="google-icons pointer-events-none flex max-h-full w-full min-w-0 items-center justify-center text-2xl leading-none"
               aria-hidden="true"
             >
               <ClientIconLoader value={value} />

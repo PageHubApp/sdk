@@ -13,7 +13,7 @@ export const useTypeProps = () => {
     actions: { setProp },
     nodeProps,
   } = useNode(node => ({
-    nodeProps: node.data.props || {},
+    nodeProps: node.data?.props || {},
   }));
 
   return { setProp, nodeProps };

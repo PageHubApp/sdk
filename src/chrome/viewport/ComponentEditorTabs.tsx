@@ -41,7 +41,7 @@ const isolateForComponentEditing = (query, actions, targetContainerId, setIsolat
     type: target?.data?.props?.type,
     hidden: target?.data?.hidden,
     children: target?.data?.nodes,
-    childCount: target?.data?.nodes?.length
+    childCount: target?.data?.nodes?.length,
   });
   if (target?.data?.nodes?.[0]) {
     const child = query.node(target.data.nodes[0]).get();
@@ -49,7 +49,7 @@ const isolateForComponentEditing = (query, actions, targetContainerId, setIsolat
       id: target.data.nodes[0],
       type: child?.data?.type?.resolvedName || child?.data?.displayName,
       hidden: child?.data?.hidden,
-      props: child?.data?.props
+      props: child?.data?.props,
     });
   }
   setIsolate(targetContainerId);
@@ -100,7 +100,7 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
                 is={Container}
                 type="component"
                 custom={{ displayName: componentName }}
-                className="flex flex-col gap-4 bg-transparent p-6"
+                className="flex flex-col items-start gap-4 bg-transparent p-6"
               >
                 <Text text="Start editing your component..." />
               </Element>
@@ -125,7 +125,11 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
             ]);
             setComponents([
               ...components,
-              { rootNodeId: contentNodeId, nodes: JSON.stringify(Object.fromEntries(nodePairs)), name: componentName },
+              {
+                rootNodeId: contentNodeId,
+                nodes: JSON.stringify(Object.fromEntries(nodePairs)),
+                name: componentName,
+              },
             ]);
             isolateForComponentEditing(query, actions, containerId, setIsolate);
           });
@@ -139,7 +143,12 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
       // Resolve container ID — callers may pass either a container ID or a content node ID
       let containerId = componentId;
       const node = query.node(componentId).get();
-      console.log("[openComponent] componentId:", componentId, "node:", node ? { type: node.data.props?.type, parent: node.data.parent } : "NOT FOUND");
+      console.log(
+        "[openComponent] componentId:",
+        componentId,
+        "node:",
+        node ? { type: node.data.props?.type, parent: node.data.parent } : "NOT FOUND"
+      );
       if (!node) return;
 
       if (node.data.props?.type !== "component") {
@@ -309,11 +318,12 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
 
   return (
     <div
-      className={`border-base-300 bg-secondary relative flex h-10 items-center gap-2 border-b px-3 pt-2 ${className}`}
+      className={`border-base-300 bg-base-100 text-base-content flex h-10 shrink-0 items-center border-b ${className}`}
+      role="region"
+      aria-label="Open components"
     >
-      {/* Tabs */}
       <div
-        className="scrollbar-hide flex min-w-0 flex-1 items-center gap-1 overflow-x-auto"
+        className="scrollbar-hide flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-2"
         role="tablist"
       >
         {tabs.map(tab => {
@@ -327,11 +337,13 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
             }
           });
 
+          const isActive = activeTabId === tab.id;
+
           return (
             <div
               key={tab.id}
               role="tab"
-              aria-selected={activeTabId === tab.id}
+              aria-selected={isActive}
               tabIndex={0}
               onClick={() => handleTabClick(tab.id)}
               onKeyDown={e => {
@@ -340,25 +352,29 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
                   handleTabClick(tab.id);
                 }
               }}
-              className={`group flex min-w-32 cursor-pointer items-center gap-2 rounded-t px-3 py-1.5 transition-[color,background-color,transform] active:scale-95 ${
-                activeTabId === tab.id
-                  ? "bg-neutral text-neutral-content hover:bg-base-200 hover:text-base-content font-bold"
-                  : "bg-base-100 text-secondary-content hover:bg-base-200 hover:text-base-content"
-              } `}
+              className={`group flex h-8 max-w-[14rem] min-w-[7rem] shrink-0 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 transition-colors duration-150 ${
+                isActive
+                  ? "border-base-300/80 bg-base-200/90 text-base-content dark:border-base-300/50 dark:bg-base-300/35 font-medium shadow-sm"
+                  : "text-base-content/60 hover:border-base-300/40 hover:bg-base-200/45 hover:text-base-content border-transparent"
+              }`}
             >
               {component?.isSection ? (
-                <TbLayoutGridAdd className="size-3.5 shrink-0" />
+                <TbLayoutGridAdd className="size-3.5 shrink-0 opacity-80" />
               ) : (
-                <TbBoxModel2 className="size-3.5 shrink-0" />
+                <TbBoxModel2 className="size-3.5 shrink-0 opacity-80" />
               )}
-              <span className="min-w-0 truncate text-sm" title={tab.name}>
+              <span className="min-w-0 flex-1 truncate text-sm leading-none" title={tab.name}>
                 {tab.name}
               </span>
               <button
+                type="button"
+                aria-label={`Close ${tab.name}`}
                 onClick={e => handleCloseTab(tab.id, e)}
-                className={`hover:bg-neutral hover:text-neutral-content rounded-lg p-0.5 transition-[color,background-color,opacity,transform] active:scale-90 ${activeTabId === tab.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                className={`text-base-content/45 hover:bg-base-300/55 hover:text-base-content rounded p-0.5 transition-[background-color,color,opacity] ${
+                  isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                }`}
               >
-                <TbX className="size-3" />
+                <TbX className="size-3.5" />
               </button>
             </div>
           );

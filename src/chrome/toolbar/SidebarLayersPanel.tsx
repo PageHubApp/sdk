@@ -1,11 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useAtomState } from "@zedux/react";
-import {
-  TbChevronDown,
-  TbChevronUp,
-  TbExternalLink,
-  TbLayoutGrid,
-} from "react-icons/tb";
+import { TbChevronDown, TbChevronUp, TbExternalLink, TbLayoutGrid } from "react-icons/tb";
 import { LayersDialogOpenAtom, SidebarLayersPanelAtom } from "../../utils/atoms";
 import { phStorage } from "../../utils/phStorage";
 import { Layers } from "./dialogs/Layers";
@@ -60,9 +55,7 @@ export function SidebarLayersPanel() {
 
     const onMove = (ev: PointerEvent) => {
       const toolbar = document.getElementById("toolbar");
-      const maxH = toolbar
-        ? Math.floor(toolbar.getBoundingClientRect().height * MAX_RATIO)
-        : 600;
+      const maxH = toolbar ? Math.floor(toolbar.getBoundingClientRect().height * MAX_RATIO) : 600;
       const next = Math.max(MIN_HEIGHT, Math.min(maxH, startH + (startY - ev.clientY)));
       setHeight(next);
       heightRef.current = next;
@@ -83,7 +76,7 @@ export function SidebarLayersPanel() {
       <button
         type="button"
         onClick={toggle}
-        className="text-sidebar-foreground/70 hover:text-sidebar-foreground flex w-full shrink-0 items-center gap-1.5 px-3 py-2.5 text-[11px] font-semibold uppercase leading-none tracking-wide transition-colors"
+        className="border-base-300 text-sidebar-foreground/70 hover:text-sidebar-foreground flex w-full shrink-0 items-center gap-1.5 border-t px-3 py-2.5 text-[11px] leading-none font-semibold tracking-wide uppercase transition-colors"
       >
         <TbLayoutGrid className="size-3 shrink-0 opacity-70" />
         <span>Layers</span>
@@ -93,11 +86,7 @@ export function SidebarLayersPanel() {
   }
 
   return (
-    <div
-      ref={panelRef}
-      className="relative z-[51] flex shrink-0 flex-col"
-      style={{ height }}
-    >
+    <div ref={panelRef} className="relative z-[51] flex shrink-0 flex-col" style={{ height }}>
       {/* Resize handle */}
       <div
         onPointerDown={onPointerDown}
@@ -110,7 +99,7 @@ export function SidebarLayersPanel() {
       {/* Header */}
       <div className="text-sidebar-foreground/70 flex shrink-0 items-center gap-1.5 px-3 pt-1 pb-2">
         <TbLayoutGrid className="size-3 shrink-0 opacity-70" />
-        <span className="text-[11px] font-semibold uppercase tracking-wide">Layers</span>
+        <span className="text-[11px] font-semibold tracking-wide uppercase">Layers</span>
 
         <div className="ml-auto flex items-center gap-1.5">
           <button

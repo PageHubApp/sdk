@@ -6,6 +6,7 @@ import { ListEditor } from "../../inputs/preset/ListItemPopover";
 import { ToolbarSection } from "../../ToolbarSection";
 import { atom, useAtomState, useAtomInstance } from "@zedux/react";
 import { BatchOperationAtom } from "@/utils/atoms";
+import { applyPeerClassInherit } from "../../../shell/peerInherit/applyPeerClassInherit";
 import { TbEdit, TbPlus } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
@@ -24,7 +25,9 @@ export const ButtonListMainTab = () => {
   const { childButtons } = useEditor((_, q) => {
     try {
       const node = q.node(id).get();
-      const buttons = node.data.nodes
+      const childIds = node?.data?.nodes;
+      if (!Array.isArray(childIds)) return { childButtons: [] };
+      const buttons = childIds
         .map((childId: string) => {
           try {
             const childNode = q.node(childId).get();
@@ -65,12 +68,13 @@ export const ButtonListMainTab = () => {
             const Button = query.getOptions().resolver.Button;
             if (Button) {
               batchOp.setState(true);
-              actions.addNodeTree(
-                query.parseReactElement(<Button text="New Button" />).toNodeTree(),
-                id
-              );
-              setActiveIndex(childButtons.length);
-              requestAnimationFrame(() => batchOp.setState(false));
+              const tree = query.parseReactElement(<Button text="New Button" />).toNodeTree();
+              actions.addNodeTree(tree, id);
+              if (tree?.rootNodeId) {
+                applyPeerClassInherit(actions, query, tree.rootNodeId, id);
+              }
+              setActiveIndex((childButtons ?? []).length);
+              batchOp.setState(false);
             }
           }}
           extraButtons={button => [

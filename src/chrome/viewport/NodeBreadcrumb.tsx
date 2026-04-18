@@ -1,10 +1,11 @@
-import { useEditor } from "@craftjs/core";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { useState } from "react";
-import { TbChevronRight, TbListTree } from "react-icons/tb";
+import { useEditor } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
+import { useState } from "react";
+import { TbChevronRight, TbDots, TbFileText, TbHome } from "react-icons/tb";
 import { IsolateAtom, hasPageIsolation } from "../../utils/lib";
 import { ToolbarPortalDropdown } from "../inline-tools/ToolbarPortalDropdown";
+import { PageSelector } from "./PageSelector";
 import { TabAtom } from "./atoms";
 
 interface BreadcrumbItem {
@@ -90,7 +91,12 @@ export const NodeBreadcrumb = () => {
   };
 
   // Get page context
-  const getPageContext = () => {
+  const getPageContext = (): {
+    name: string;
+    id: string;
+    fullName?: string;
+    isHomePage?: boolean;
+  } => {
     if (!hasPageIsolation(isolate)) {
       return { name: "All", id: "all" };
     }
@@ -104,6 +110,7 @@ export const NodeBreadcrumb = () => {
           name: pageName,
           id: isolate,
           fullName: pageName,
+          isHomePage: !!pageNode.data.props?.isHomePage,
         };
       }
     } catch (e) {
@@ -114,9 +121,8 @@ export const NodeBreadcrumb = () => {
   };
 
   const pageContext = getPageContext();
+  const pageContextIsConcretePage = pageContext.id !== "all";
   const breadcrumb = selectedId ? buildBreadcrumb(selectedId) : [];
-
-  if (!selectedId) return null;
 
   const currentItem = breadcrumb[breadcrumb.length - 1];
   const showOnlyPageContext = hasPageIsolation(isolate) && breadcrumb.length === 0;
@@ -148,30 +154,39 @@ export const NodeBreadcrumb = () => {
 
   // Short breadcrumb: just the immediate parent (if any)
   const parentItem = breadcrumb.length >= 2 ? breadcrumb[breadcrumb.length - 2] : null;
-  const breadcrumbButtonClass =
-    "transition-[color,background-color,transform] active:scale-95";
+  const breadcrumbButtonClass = "transition-[color,background-color,transform] active:scale-95";
   const breadcrumbIconButtonClass =
     "text-neutral-content hover:bg-neutral hover:text-base-content rounded p-1 " +
     breadcrumbButtonClass;
-  const breadcrumbPillButtonClass =
-    "rounded p-1 text-xs whitespace-nowrap " + breadcrumbButtonClass;
+
+  /** Same outline width/style on every crumb control so selection never changes box metrics (no layout shift). */
+  const crumbOutlineIdle = "outline-1 -outline-offset-1 outline-dashed outline-transparent";
+  const crumbTextSegment =
+    "box-border inline-flex max-w-full min-w-0 items-center truncate whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium leading-snug transition-[color,outline-color,transform]";
 
   return (
-    <div className="bg-base-100 text-base-content flex w-full items-center justify-between px-2 py-1 text-sm">
-      <div className="flex min-w-0 flex-1 items-center gap-0">
-        {/* Ancestry dropdown — full stack on hover */}
+    <div
+      className={`bg-base-100 text-base-content border-base-300 flex w-full items-center justify-between border-b px-3 text-sm ${
+        isEditing ? "min-h-10 py-1.5" : "h-10 shrink-0 py-0"
+      }`}
+    >
+      <div className="flex min-h-0 min-w-0 flex-1 items-center gap-1">
+        {/* Page selector — always visible, acts as the page context + navigation */}
+        {!isEditing && <PageSelector inlineTrigger />}
+
+        {/* Ancestry dropdown — sits between home and breadcrumbs, replacing the first chevron */}
         {!isEditing && !showOnlyPageContext && breadcrumb.length > 1 && (
           <ToolbarPortalDropdown
             openOn="hover"
             align="left"
-            className="border-base-300 bg-base-100 min-w-[10rem] rounded-lg border p-1 py-1.5 shadow-xl"
+            className="border-base-300 bg-base-100 min-w-[16rem] rounded-lg border p-1 py-1.5 shadow-xl"
             trigger={
               <button
                 type="button"
                 aria-label="View ancestry"
-                className={`mr-0.5 ${breadcrumbIconButtonClass}`}
+                className={`${breadcrumbIconButtonClass} ml-1`}
               >
-                <TbListTree className="size-3.5" />
+                <TbDots className="size-3.5" />
               </button>
             }
           >
@@ -185,7 +200,20 @@ export const NodeBreadcrumb = () => {
                   onClick={handlePageClick}
                   className="ph-select-item items-center gap-2 text-xs"
                 >
-                  <span className="text-neutral-content/40">⌂</span>
+                  {pageContextIsConcretePage ? (
+                    pageContext.isHomePage ? (
+                      <TbHome className="text-neutral-content/70 size-3.5 shrink-0" aria-hidden />
+                    ) : (
+                      <TbFileText
+                        className="text-neutral-content/60 size-3.5 shrink-0"
+                        aria-hidden
+                      />
+                    )
+                  ) : (
+                    <span className="text-neutral-content/40" aria-hidden>
+                      ⌂
+                    </span>
+                  )}
                   <span className="font-medium">{pageContext.name}</span>
                 </button>
               )}
@@ -206,36 +234,28 @@ export const NodeBreadcrumb = () => {
           </ToolbarPortalDropdown>
         )}
 
-        {/* Page context */}
-        {!isEditing && showPageContext && (
-          <div className="flex items-center gap-0">
-            <button
-              onClick={handlePageClick}
-              className={`bg-neutral text-base-content hover:bg-neutral/80 font-medium ${breadcrumbPillButtonClass} ${
-                showOnlyPageContext ? "min-w-0" : "max-w-[100px] min-w-0 truncate"
-              }`}
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content={
-                pageContext.fullName ? `Select page: ${pageContext.fullName}` : "Viewing all pages"
-              }
-              data-tooltip-place="bottom"
-              data-tooltip-offset={10}
-            >
-              {showOnlyPageContext ? pageContext.fullName || pageContext.name : pageContext.name}
-            </button>
+        {/* Chevron separating page/ancestry from the breadcrumb chain */}
+        {!isEditing && !showOnlyPageContext && currentItem && (
+          <TbChevronRight
+            className="text-neutral-content/45 pointer-events-none size-3.5 shrink-0"
+            aria-hidden
+          />
+        )}
 
-            {!showOnlyPageContext && currentItem && (
-              <TbChevronRight className="text-neutral-content/60 ml-1 size-3" />
-            )}
-          </div>
+        {/* Placeholder when no node is selected — orients the user without competing with real crumbs */}
+        {!isEditing && !currentItem && (
+          <span className="text-neutral-content/60 ml-2 truncate text-xs italic">
+            Viewing {pageContext.fullName || pageContext.name || "page"}
+          </span>
         )}
 
         {/* Short breadcrumb: Parent > Current */}
         {!isEditing && !showOnlyPageContext && parentItem && (
-          <div className="flex items-center gap-0">
+          <div className="flex min-w-0 items-center gap-1">
             <button
+              type="button"
               onClick={() => handleNodeClick(parentItem.id)}
-              className={`text-neutral-content hover:bg-neutral hover:text-base-content max-w-[80px] min-w-0 truncate ${breadcrumbPillButtonClass}`}
+              className={`text-neutral-content hover:text-base-content max-w-[80px] min-w-0 ${crumbTextSegment} ${crumbOutlineIdle} hover:bg-base-200/80 active:scale-95`}
               data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
               data-tooltip-content={`Select ${parentItem.name} (${parentItem.type})`}
               data-tooltip-place="bottom"
@@ -243,7 +263,10 @@ export const NodeBreadcrumb = () => {
             >
               {parentItem.name}
             </button>
-            <TbChevronRight className="text-neutral-content/60 size-3" />
+            <TbChevronRight
+              className="text-neutral-content/45 pointer-events-none size-3.5 shrink-0"
+              aria-hidden
+            />
           </div>
         )}
 
@@ -274,8 +297,9 @@ export const NodeBreadcrumb = () => {
               </div>
             ) : (
               <button
+                type="button"
                 onClick={() => setIsEditing(true)}
-                className="bg-primary/15 text-primary hover:bg-primary/25 flex-1 min-w-0 truncate rounded p-1 text-xs font-semibold whitespace-nowrap transition-[color,background-color,transform] active:scale-95"
+                className={`text-base-content hover:outline-base-content/40 inline-flex w-fit max-w-full min-w-0 shrink ${crumbTextSegment} outline-base-content/25 bg-transparent outline-1 -outline-offset-1 outline-dashed active:scale-95`}
                 data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                 data-tooltip-content={`Click to edit "${currentItem.name}"`}
                 data-tooltip-place="bottom"

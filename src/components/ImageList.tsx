@@ -308,7 +308,7 @@ export const ImageList: UserComponent<ImageListProps> = (incomingProps: ImageLis
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`size-2 rounded-full transition-all ${currentIndex === index ? (props.navDotActiveClass || "bg-base-100 w-8") : (props.navDotClass || "bg-base-100/50")}`}
+                className={`size-2 rounded-full transition-all ${currentIndex === index ? props.navDotActiveClass || "bg-base-100 w-8" : props.navDotClass || "bg-base-100/50"}`}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}

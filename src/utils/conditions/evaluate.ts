@@ -82,7 +82,9 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
       // Arrays with numeric operators: compare length
       if (
         Array.isArray(val) &&
-        (cond.operator === "greater-than" || cond.operator === "less-than" || cond.operator === "equals")
+        (cond.operator === "greater-than" ||
+          cond.operator === "less-than" ||
+          cond.operator === "equals")
       ) {
         return applyOperator(String(val.length), cond.operator, cond.value);
       }
@@ -101,6 +103,12 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
       const isMobile = ctx.viewportWidth < MOBILE_BREAKPOINT;
       const expected = cond.value === "mobile";
       return cond.operator === "equals" ? isMobile === expected : isMobile !== expected;
+    }
+
+    case "auth": {
+      if (!ctx.auth) return null;
+      const val = walkPath(ctx.auth, cond.key.split("."));
+      return applyOperator(val == null ? null : String(val), cond.operator, cond.value);
     }
   }
 

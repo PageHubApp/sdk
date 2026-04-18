@@ -4,7 +4,7 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import Router from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { TbCode } from "react-icons/tb";
+import { TbPencil } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
 import { ToolboxMenu, toolboxMenuInitialState } from "../rendering/toolboxMenuAtom";
@@ -34,19 +34,18 @@ import { DeviceOffline } from "../toolbar/DeviceOffline";
 import { ComponentEditorTabs } from "./ComponentEditorTabs";
 import { DeviceScrollbar } from "./DeviceScrollbar";
 import { DeviceSelector } from "./DeviceSelector";
-import { DeviceZoom } from "./DeviceZoom";
+import { CanvasZoom } from "./CanvasZoom";
 import { useSDK } from "../../core/context";
 import { ViewportMeta } from "./ViewportMeta";
-import { useNodeDropStyling } from "./hooks/useNodeDropStyling";
 import { useEditorDocumentKeydown } from "../hooks/useEditorDocumentKeydown";
 import { useViewportClickDeselect } from "./hooks/useViewportClickDeselect";
 import { useViewportKeyboard } from "./hooks/useViewportKeyboard";
 import { phStorage } from "../../utils/phStorage";
-import { useEditorToolbarOverlayLayout } from "../../utils/hooks/useEditorToolbarOverlayLayout";
 import { initPageNavigation, updateOnIsolate, usePageNavigation } from "../../utils/pageNavigation";
 import { LoadingBar } from "../primitives/LoadingBar";
 
 import {
+  BreakpointZoomAtom,
   PreviewAtom,
   ViewAtom,
   DeviceAtom,
@@ -86,7 +85,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   // ─── Composed hooks ───
   useComponentSync();
   useAutoOpenSidebar();
-  useNodeDropStyling();
   const { handleKeyDown, handleDoubleClick, handleBodyKeyDown } = useViewportKeyboard();
   const { handleViewportClick } = useViewportClickDeselect();
   useEditorDocumentKeydown();
@@ -95,7 +93,13 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!window) return;
     window.requestAnimationFrame(() => {
-      setTimeout(() => setOptions(options => { options.enabled = true; }), 200);
+      setTimeout(
+        () =>
+          setOptions(options => {
+            options.enabled = true;
+          }),
+        200
+      );
     });
   }, [setOptions]);
 
@@ -111,6 +115,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const [device, setDevice] = useAtomState(DeviceAtom);
   const deviceDimensions = useAtomValue(DeviceDimensionsAtom);
   const deviceZoom = useAtomValue(DeviceZoomAtom);
+  const [breakpointZoom, setBreakpointZoom] = useAtomState(BreakpointZoomAtom);
   const [preview, setPreview] = useAtomState(PreviewAtom);
   const setEnabled = useSetAtomState(EnabledAtom);
   const isolated = useAtomValue(IsolateAtom);
@@ -119,8 +124,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const [online, setOnline] = useAtomState(OnlineAtom);
   const sideBarOpen = useAtomValue(SideBarOpen);
   const sideBarLeft = useAtomValue(SideBarAtom);
-  const isToolbarOverlayLayout = useEditorToolbarOverlayLayout();
-  const sidebarOccupiesLeftGutter = sideBarOpen && sideBarLeft && !isToolbarOverlayLayout;
   const setInitialLoadComplete = useSetAtomState(InitialLoadCompleteAtom);
   const { emitter, config } = useSDK();
   const { activePageId } = usePageNavigation();
@@ -268,13 +271,19 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     async (pageId: string | null) => {
       if (config.callbacks.fetchPage) {
         setPageLoad("loading");
-        const fetched = await isolatePageLazy(pageId, query, actions, setIsolate, config.callbacks.fetchPage);
+        const fetched = await isolatePageLazy(
+          pageId,
+          query,
+          actions,
+          setIsolate,
+          config.callbacks.fetchPage
+        );
         setPageLoad(fetched ? "done" : "idle");
         return;
       }
       isolatePageInTree(query, actions, pageId, setIsolate);
     },
-    [config.callbacks.fetchPage, query, actions, setIsolate, isolate],
+    [config.callbacks.fetchPage, query, actions, setIsolate, isolate]
   );
 
   // Keep the nav store's callback fresh (avoids stale closures)
@@ -296,21 +305,24 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     if (rawStored === EDITOR_ALL_PAGES_STORAGE) {
       phStorage.remove("isolated");
     }
-    const storedId = rawStored && rawStored !== "null" && pageIds.includes(rawStored) ? rawStored : null;
+    const storedId =
+      rawStored && rawStored !== "null" && pageIds.includes(rawStored) ? rawStored : null;
 
     const initialPageId = initPageNavigation({
       urlStrategy: config.urlStrategy || null,
       resolvePageIdFromSlug: (slug: string) => {
         const r = query.node(ROOT_NODE).get();
         if (!r?.data?.nodes) return null;
-        return r.data.nodes.find((nodeId: string) => {
-          const node = query.node(nodeId).get();
-          if (node?.data?.props?.type === "page") {
-            const customSlug = node.data.props?.pageSlug;
-            return (customSlug || sluggit(node.data.custom?.displayName, "-")) === slug;
-          }
-          return false;
-        }) || null;
+        return (
+          r.data.nodes.find((nodeId: string) => {
+            const node = query.node(nodeId).get();
+            if (node?.data?.props?.type === "page") {
+              const customSlug = node.data.props?.pageSlug;
+              return (customSlug || sluggit(node.data.custom?.displayName, "-")) === slug;
+            }
+            return false;
+          }) || null
+        );
       },
       getHomePageId: () => getDefaultEditorPageId(query),
       onIsolate,
@@ -359,6 +371,12 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("keydown", handleBodyKeyDown);
   }, []);
 
+  // ─── Reset breakpoint zoom when view changes ───
+  // A 50% zoom set for 2XL would shrink MD unnecessarily — start each view fresh.
+  useEffect(() => {
+    setBreakpointZoom(1);
+  }, [view, setBreakpointZoom]);
+
   // ─── View classes ───
   const desktopOuter = enabled
     ? "flex h-full overflow-hidden flex-row flex-1 min-w-0"
@@ -377,7 +395,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         ? "flex h-full overflow-hidden flex-row w-full absolute top-0 left-0 right-0 bottom-0"
         : "",
       enabled
-        ? `w-full h-full overflow-auto ${viewMode === "component" ? "mt-[49px]" : ""} `
+        ? `w-full h-full overflow-auto ${viewMode === "component" ? "mt-[var(--ph-component-tab-strip-h,2.5rem)]" : ""} `
         : "w-full h-full overflow-auto",
     ],
   };
@@ -408,7 +426,8 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   // Device bezel: border (3px) + padding (6px) on each side
   const bezelX = 18;
   const bezelY = 18;
-  const deviceStyles =
+  const breakpointActive = !device && isEditorCanvasBreakpointView(view);
+  const deviceStyles: React.CSSProperties =
     device && view === "mobile"
       ? ({
           width: `${deviceDimensions.width + bezelX}px`,
@@ -416,7 +435,9 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           zoom: deviceZoom,
           "--device-zoom-inverse": 1 / deviceZoom,
         } as React.CSSProperties)
-      : {};
+      : breakpointActive && breakpointZoom !== 1
+        ? ({ zoom: breakpointZoom } as React.CSSProperties)
+        : {};
 
   // ─── Render ───
   return (
@@ -430,6 +451,11 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             : "flex-row"
         }`}
         data-container={true}
+        style={
+          enabled && viewMode === "component" && !device && !preview
+            ? ({ ["--ph-component-tab-strip-h" as string]: "2.5rem" } as React.CSSProperties)
+            : undefined
+        }
       >
         <LoadingBar
           active={pageLoad !== "idle"}
@@ -444,56 +470,56 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             defaultCorner={sideBarLeft ? "top-left" : "top-right"}
           >
             <button
-              className="btn bg-primary text-primary-content cursor-pointer rounded-full p-4 text-2xl shadow-lg select-none"
+              className="bg-neutral text-neutral-content hover:bg-neutral/90 inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg transition-colors select-none [&_svg]:size-[14px]"
               aria-label="Edit page"
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Edit"
-              data-tooltip-place="bottom"
-              data-tooltip-offset={10}
               onClick={() => {
-                  const viewport = document.getElementById("viewport");
-                  const scrollTop = viewport?.scrollTop ?? 0;
-                  const scrollLeft = viewport?.scrollLeft ?? 0;
-                  setOptions(options => {
-                    options.enabled = true;
-                    setPreview(false);
-                    setTimeout(() => {
-                      if (!lastActive) return;
-                      const node = query.node(lastActive).get();
-                      if (node) actions.selectNode(lastActive);
-                    }, 0);
-                  });
-                  requestAnimationFrame(() => {
-                    if (viewport) {
-                      viewport.scrollTop = scrollTop;
-                      viewport.scrollLeft = scrollLeft;
-                    }
-                  });
-                }}
-              >
-                <TbCode />
-              </button>
+                const viewport = document.getElementById("viewport");
+                const scrollTop = viewport?.scrollTop ?? 0;
+                const scrollLeft = viewport?.scrollLeft ?? 0;
+                setOptions(options => {
+                  options.enabled = true;
+                  setPreview(false);
+                  setTimeout(() => {
+                    if (!lastActive) return;
+                    const node = query.node(lastActive).get();
+                    if (node) actions.selectNode(lastActive);
+                  }, 0);
+                });
+                requestAnimationFrame(() => {
+                  if (viewport) {
+                    viewport.scrollTop = scrollTop;
+                    viewport.scrollLeft = scrollLeft;
+                  }
+                });
+              }}
+            >
+              <TbPencil />
+              Edit
+            </button>
           </FloatingWidget>
         )}
 
         {enabled && !online && <DeviceOffline />}
 
+        {/* Canvas column is already right of the sidebar — do not offset left again (was left-[360px]). */}
         {enabled && (
           <div
-            className={`absolute top-0 ${sidebarOccupiesLeftGutter ? "left-[360px]" : "left-0"} right-0 z-40 ${viewMode === "component" ? "" : "hidden"}`}
+            className={`absolute inset-x-0 top-0 z-40 ${viewMode === "component" ? "" : "hidden"}`}
           >
             <ComponentEditorTabs />
           </div>
         )}
 
         {enabled && device && view === "mobile" && (
-          <div
-            className={`absolute top-4 ${sidebarOccupiesLeftGutter ? "left-[360px]" : "left-0"} right-0 z-50`}
-          >
+          <div className="absolute top-4 right-0 left-0 z-50">
             <div className="bg-neutral/95 mx-auto flex w-fit items-center gap-4 rounded-lg px-4 py-2 shadow-lg backdrop-blur-sm">
               <DeviceSelector onClose={() => setDevice(false)} />
               <div className="bg-border h-4 w-px" />
-              <DeviceZoom />
+              <CanvasZoom
+                zoomAtom={DeviceZoomAtom}
+                fitMode={{ kind: "height", target: deviceDimensions.height, chromeOffset: 350 }}
+                activeKey="device"
+              />
             </div>
           </div>
         )}
@@ -517,7 +543,9 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             className={`${activeClass[1]} w-full${classDarkEdit ? "dark" : ""}`}
             ref={(ref: any) => connectors.select(connectors.hover(ref, null), null)}
             style={
-              viewMode === "component" && !device && !preview ? { marginTop: "49px" } : undefined
+              viewMode === "component" && !device && !preview
+                ? { marginTop: "var(--ph-component-tab-strip-h, 2.5rem)" }
+                : undefined
             }
           >
             {children}

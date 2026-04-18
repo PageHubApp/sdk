@@ -19,10 +19,14 @@ const PERM_LABELS: { key: keyof NodePermissions; label: string; description: str
   { key: "canDrag", label: "Can drag", description: "Allow this node to be dragged" },
   { key: "canDelete", label: "Can delete", description: "Allow this node to be deleted" },
   { key: "canMoveIn", label: "Can drop into", description: "Allow children to be dropped in" },
-  { key: "canMoveOut", label: "Can move children out", description: "Allow children to be moved out" },
+  {
+    key: "canMoveOut",
+    label: "Can move children out",
+    description: "Allow children to be moved out",
+  },
 ];
 
-function PermissionsSection() {
+export function PermissionsSection() {
   const { id, permissions, isCanvas } = useNode(node => ({
     id: node.id,
     permissions: (node.data.custom?.permissions || {}) as NodePermissions,
@@ -61,39 +65,35 @@ function PermissionsSection() {
   const anyLocked = visiblePerms.some(p => permissions[p.key] === false);
 
   return (
-    <ToolbarSection
-      title="Permissions"
-      icon={<TbLock />}
-      help="Lock down what can be done with this node — prevent dragging, deleting, or dropping children."
-    >
-      <div className="flex flex-col gap-1">
-        {anyLocked && (
-          <p className="text-warning text-[10px] leading-tight mb-1">
-            Some actions are locked on this node.
-          </p>
-        )}
-        {visiblePerms.map(p => {
-          const locked = permissions[p.key] === false;
-          return (
-            <label
-              key={p.key}
-              className="flex items-center justify-between gap-2 cursor-pointer rounded px-1.5 py-1 hover:bg-base-200/60 transition-colors"
-              title={p.description}
+    <div className="flex flex-col gap-1">
+      {anyLocked && (
+        <p className="text-warning mb-1 text-[10px] leading-tight">
+          Some actions are locked on this node.
+        </p>
+      )}
+      {visiblePerms.map(p => {
+        const locked = permissions[p.key] === false;
+        return (
+          <label
+            key={p.key}
+            className="hover:bg-base-200/60 flex cursor-pointer items-center justify-between gap-2 rounded px-1.5 py-1 transition-colors"
+            title={p.description}
+          >
+            <span
+              className={`text-xs select-none ${locked ? "text-base-content/50 line-through" : "text-base-content"}`}
             >
-              <span className={`text-xs select-none ${locked ? "text-base-content/50 line-through" : "text-base-content"}`}>
-                {p.label}
-              </span>
-              <input
-                type="checkbox"
-                checked={!locked}
-                onChange={() => toggle(p.key)}
-                className="toggle toggle-xs toggle-primary"
-              />
-            </label>
-          );
-        })}
-      </div>
-    </ToolbarSection>
+              {p.label}
+            </span>
+            <input
+              type="checkbox"
+              checked={!locked}
+              onChange={() => toggle(p.key)}
+              className="toggle toggle-xs toggle-primary"
+            />
+          </label>
+        );
+      })}
+    </div>
   );
 }
 

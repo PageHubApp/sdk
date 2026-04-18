@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { phStorage } from "../../utils/phStorage";
 
 type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -110,6 +110,7 @@ export function FloatingWidget({
   useEffect(() => {
     let pos: { x: number; y: number };
     let savedCorner: Corner | null = null;
+    let hadSavedFreeform = false;
 
     try {
       const parsed = phStorage.getJSON<SavedPos>("floating-" + storageKey, null);
@@ -121,32 +122,44 @@ export function FloatingWidget({
             pos = getCornerPos(savedCorner, margin);
           } else {
             pos = { x: parsed.x, y: parsed.y };
+            hadSavedFreeform = true;
           }
         } else if (typeof parsed === "string" && CORNERS.includes(parsed as Corner)) {
           // Migrate old corner-only format
           savedCorner = parsed as Corner;
           pos = getCornerPos(savedCorner, margin);
         } else {
+          savedCorner = defaultCorner;
           pos = getCornerPos(defaultCorner, margin);
         }
       } else {
+        savedCorner = defaultCorner;
         pos = getCornerPos(defaultCorner, margin);
       }
     } catch {
+      savedCorner = defaultCorner;
       pos = getCornerPos(defaultCorner, margin);
     }
 
-    // Clamp to viewport
+    // Clamp to viewport, keeping margin on every edge
     if (typeof window !== "undefined") {
-      pos.x = Math.max(0, Math.min(window.innerWidth - 56, pos.x));
-      pos.y = Math.max(0, Math.min(window.innerHeight - 56, pos.y));
+      pos.x = Math.max(margin, Math.min(window.innerWidth - 56 - margin, pos.x));
+      pos.y = Math.max(margin, Math.min(window.innerHeight - 56 - margin, pos.y));
     }
 
     posRef.current = pos;
-    cornerRef.current = savedCorner || defaultCorner;
+    cornerRef.current = hadSavedFreeform ? null : savedCorner;
     if (elRef.current) setTransform(elRef.current, pos.x, pos.y);
     setMounted(true);
   }, [storageKey, defaultCorner, margin]);
+
+  // Apply saved transform after the element actually attaches (first render
+  // returns null, so the mount effect above runs before elRef is populated).
+  useLayoutEffect(() => {
+    if (mounted && elRef.current) {
+      setTransform(elRef.current, posRef.current.x, posRef.current.y);
+    }
+  }, [mounted]);
 
   // ── Document-level pointer listeners ──────────────────────────
   // Attached once on mount to `document` so the drag NEVER disconnects
@@ -169,8 +182,15 @@ export function FloatingWidget({
       const el = elRef.current;
       if (!el) return;
 
-      const x = Math.max(0, Math.min(window.innerWidth - el.offsetWidth, e.clientX - ds.offsetX));
-      const y = Math.max(0, Math.min(window.innerHeight - el.offsetHeight, e.clientY - ds.offsetY));
+      const { margin } = stableRef.current;
+      const x = Math.max(
+        margin,
+        Math.min(window.innerWidth - el.offsetWidth - margin, e.clientX - ds.offsetX)
+      );
+      const y = Math.max(
+        margin,
+        Math.min(window.innerHeight - el.offsetHeight - margin, e.clientY - ds.offsetY)
+      );
 
       posRef.current = { x, y };
 

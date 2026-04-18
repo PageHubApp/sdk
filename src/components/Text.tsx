@@ -54,7 +54,12 @@ const unwrapP = (html: string): string => {
 };
 
 // RENDER MODE - Simple HTML rendering (no editor deps)
-const renderLiveMode = (props: any, query: any, router: any, itemContext?: Record<string, any> | null) => {
+const renderLiveMode = (
+  props: any,
+  query: any,
+  router: any,
+  itemContext?: Record<string, any> | null
+) => {
   const processedText = replaceVariables(props.text, query, itemContext);
   let tagName = sanitizeTagName(props.tagName);
 
@@ -153,7 +158,11 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   if (enabled) {
     prop.children = (
       <React.Suspense
-        fallback={<div dangerouslySetInnerHTML={{ __html: replaceVariables(text || "", query, itemContext) }} />}
+        fallback={
+          <div
+            dangerouslySetInnerHTML={{ __html: replaceVariables(text || "", query, itemContext) }}
+          />
+        }
       >
         <TextEditorMode
           props={props}

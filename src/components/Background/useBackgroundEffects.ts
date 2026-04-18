@@ -36,26 +36,33 @@ export function useBackgroundEffects({
 }: UseBackgroundEffectsOptions) {
   const isRootBackground = nodeId === ROOT_NODE;
 
-
   // ---- Material Symbols icon font loading ----
   const prevFontUrlRef = useRef<string | null>(null);
   useEffect(() => {
     if (!enabled || !isRootBackground) return;
 
     try {
-      const nodes = query.getSerializedNodes();
-      const fontUrl = getMaterialSymbolsUrlFromNodes(nodes);
+      // Use raw editor state instead of getSerializedNodes() to avoid
+      // CraftJS invariant error when a node has an undefined component type.
+      const rawNodes = query.getState().nodes;
+      const propsMap: Record<string, { props?: Record<string, any> }> = {};
+      for (const [id, node] of Object.entries(rawNodes)) {
+        if ((node as any)?.data?.props) {
+          propsMap[id] = { props: (node as any).data.props };
+        }
+      }
+      const fontUrl = getMaterialSymbolsUrlFromNodes(propsMap);
 
       if (fontUrl && fontUrl !== prevFontUrlRef.current) {
         const fontId = "google-icons";
-        const existingFont = document.getElementById(fontId);
-        if (existingFont) existingFont.remove();
-
-        const link = document.createElement("link");
-        link.id = fontId;
-        link.rel = "stylesheet";
-        link.href = fontUrl;
-        document.head.appendChild(link);
+        let link = document.getElementById(fontId) as HTMLLinkElement | null;
+        if (!link) {
+          link = document.createElement("link");
+          link.id = fontId;
+          link.rel = "stylesheet";
+          document.head.appendChild(link);
+        }
+        if (link.getAttribute("href") !== fontUrl) link.href = fontUrl;
         prevFontUrlRef.current = fontUrl;
       } else if (!fontUrl && prevFontUrlRef.current) {
         const existingFont = document.getElementById("google-icons");
@@ -142,5 +149,4 @@ export function useBackgroundEffects({
         t.styleGuide && Object.keys(t.styleGuide).length ? t.styleGuide : DEFAULT_STYLE_GUIDE,
     });
   }, [props.theme, enabled]);
-
 }

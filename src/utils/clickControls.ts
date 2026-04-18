@@ -112,7 +112,10 @@ export function addActionHandlers(
   prop: any,
   action: NodeAction | null | undefined,
   enabled: boolean,
-  context?: { itemContext?: Record<string, any> | null; onAddToCart?: (item: Record<string, any>, qty: number) => void }
+  context?: {
+    itemContext?: Record<string, any> | null;
+    onAddToCart?: (item: Record<string, any>, qty: number) => void;
+  }
 ) {
   if (!action) return;
 
@@ -167,12 +170,16 @@ export function addActionHandlers(
       e.preventDefault();
       const item = context?.itemContext;
       if (!item) {
-        console.warn("[PageHub] add-to-cart action requires a data-bound Container parent. Place this button inside a Container with a dataSource.");
+        console.warn(
+          "[PageHub] add-to-cart action requires a data-bound Container parent. Place this button inside a Container with a dataSource."
+        );
         return;
       }
       const qty = (action as AddToCartAction).quantity || 1;
       context?.onAddToCart?.(item, qty);
-      document.dispatchEvent(new CustomEvent("pagehub:add-to-cart", { detail: { item, quantity: qty } }));
+      document.dispatchEvent(
+        new CustomEvent("pagehub:add-to-cart", { detail: { item, quantity: qty } })
+      );
     };
     return;
   }
@@ -191,6 +198,24 @@ export function addActionHandlers(
       if (enabled) return;
       e.preventDefault();
       document.dispatchEvent(new CustomEvent("pagehub:cart-checkout"));
+    };
+    return;
+  }
+
+  if (action.type === "manage-subscription") {
+    prop.onClick = async (e: any) => {
+      if (enabled) return;
+      e.preventDefault();
+      try {
+        const res = await fetch("/api/customer/portal", {
+          method: "POST",
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+      } catch {
+        /* silently fail */
+      }
     };
     return;
   }

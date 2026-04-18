@@ -92,7 +92,9 @@ export function SettingsShell({
                 onClick={() => setActiveTab(tab.key)}
                 className={tabButtonClass(activeTab === tab.key)}
               >
-                {tab.icon ? <span className="shrink-0 opacity-90 [&>svg]:size-4">{tab.icon}</span> : null}
+                {tab.icon ? (
+                  <span className="shrink-0 opacity-90 [&>svg]:size-4">{tab.icon}</span>
+                ) : null}
                 <span className="min-w-0 truncate">{tab.label}</span>
               </button>
             ))}

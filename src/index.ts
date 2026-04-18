@@ -61,9 +61,9 @@ import type {
 import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { setPageHubApiBaseUrl } from "./core/apiConfig";
 
-// Side-effect import: UnifiedSettings self-registers with LazyUnifiedSettings
+// Side-effect import: RegistrySettings self-registers with LazyUnifiedSettings
 // at module load time. Must come AFTER built-in component graph is loadable (see componentRegistry.ts).
-import "./chrome/toolbar/unified-settings/UnifiedSettings";
+import "./chrome/toolbar/unified-settings/RegistrySettings";
 
 // Add spinner animation
 const SPINNER_CSS = `
@@ -237,13 +237,30 @@ function init(config: PageHubConfig): PageHubInstance {
     },
 
     exportHTML(options: Omit<RenderToHTMLOptions, "compressed"> = {}): RenderToHTMLResult {
-      if (!editorQueryRef) return { html: "", classes: [], fontUrls: [], scrollObserverScript: "", themeCSS: "", iconFontUrl: null, seo: null };
+      if (!editorQueryRef)
+        return {
+          html: "",
+          classes: [],
+          fontUrls: [],
+          scrollObserverScript: "",
+          themeCSS: "",
+          iconFontUrl: null,
+          seo: null,
+        };
       try {
         const json = editorQueryRef.serialize();
         return renderToHTML(json, { ...options, compressed: false });
       } catch (err) {
         console.error("[PageHub] exportHTML error:", err);
-        return { html: "", classes: [], fontUrls: [], scrollObserverScript: "", themeCSS: "", iconFontUrl: null, seo: null };
+        return {
+          html: "",
+          classes: [],
+          fontUrls: [],
+          scrollObserverScript: "",
+          themeCSS: "",
+          iconFontUrl: null,
+          seo: null,
+        };
       }
     },
   };
@@ -270,6 +287,7 @@ export type {
   PropSchema,
   ComponentPreset,
   ComponentModifier,
+  PeerInheritConfig,
 } from "./define";
 
 // Type exports
@@ -302,7 +320,11 @@ export { init };
 export { configureCdn } from "./utils/cdn";
 
 /** Default Craft resolver map and built-in `defineComponent` defs (extend / merge for custom blocks). */
-export { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
+export {
+  BUILTIN_COMPONENT_DEFS,
+  DEFAULT_CRAFT_RESOLVER,
+  getBuiltinComponentDef,
+} from "./core/componentRegistry";
 export type { BuiltInCraftResolver } from "./core/componentRegistry";
 
 /** API base URL for SDK fetches (set by `resolveConfig` / `PageHubProvider`; host may call `setPageHubApiBaseUrl` early). */
@@ -325,11 +347,17 @@ export { FormElement } from "./components/FormElement";
 export { Header } from "./components/Header";
 export { Image } from "./components/Image";
 export { ImageList } from "./components/ImageList";
+export { List } from "./components/List";
+export { ListItem } from "./components/ListItem";
 export { Map } from "./components/Map";
 export { MapPoint } from "./components/MapPoint";
 export { CookieConsent } from "./components/CookieConsent";
 export { Modal } from "./components/Modal";
 export { Spacer } from "./components/Spacer";
+export { Table } from "./components/Table";
+export { TableSection } from "./components/TableSection";
+export { TableRow } from "./components/TableRow";
+export { TableCell } from "./components/TableCell";
 export { Tabs } from "./components/Tabs";
 export { Text } from "./components/Text";
 export { Video } from "./components/Video";
@@ -344,6 +372,27 @@ export { SideBarAtom, useEditorSidebarDockLeft } from "./utils/lib";
 // Static rendering
 export { renderToHTML, buildRootThemeCss } from "./static-renderer";
 export type { RenderToHTMLOptions, RenderToHTMLResult } from "./static-renderer";
+
+// ─── Property Registry — public API for extending the settings sidebar ─────
+export {
+  registerProperties,
+  overrideProperty,
+  unregisterProperty,
+  registerSectionDef,
+  unregisterSectionDef,
+  getSectionDefs,
+  getSectionDef,
+  getProperties,
+  searchProperties,
+} from "./chrome/toolbar/unified-settings/registry/propertyRegistry";
+
+export type {
+  PropertyDef,
+  PropertyInput,
+  SectionDef,
+  SectionId,
+  PropertyInputProps,
+} from "./chrome/toolbar/unified-settings/registry/propertyDefs";
 
 // CSS compilation — server-side only, import from "@pagehub/sdk/compile-css"
 // NOT re-exported here to avoid Next.js/Turbopack treating readFileSync CSS paths as global imports

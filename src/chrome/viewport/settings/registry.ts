@@ -53,4 +53,3 @@ export function visibleSettingsTabs<TDraft, TContext>(
 ): Array<SettingsTabDefinition<TDraft, TContext>> {
   return tabs.filter(tab => (tab.isVisible ? tab.isVisible(ctx) : true));
 }
-

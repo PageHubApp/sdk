@@ -46,27 +46,15 @@ export function NodeAiContextSection() {
 
   if (id === ROOT_NODE) {
     return (
-      <ToolbarSection
-        title="AI context"
-        icon={<TbWand />}
-        defaultOpen={false}
-        help="Page-wide tone lives in Site Settings (AI tab)."
-      >
-        <p className="text-neutral-content text-sm">
-          Page-wide design notes and tags are edited in{" "}
-          <span className="text-base-content font-medium">Site Settings → AI</span>.
-        </p>
-      </ToolbarSection>
+      <p className="text-neutral-content text-sm">
+        Page-wide design notes and tags are edited in{" "}
+        <span className="text-base-content font-medium">Site Settings → AI</span>.
+      </p>
     );
   }
 
   return (
-    <ToolbarSection
-      title="AI context"
-      icon={<TbWand />}
-      defaultOpen={false}
-      help="Describe this component for AI (assistant, fills, text tools). Not shown on the published site."
-    >
+    <>
       <p className="text-neutral-content mb-3 text-xs">
         Optional brief for models when this node is in scope. Page-wide defaults still apply from
         Site Settings → AI.
@@ -79,6 +67,6 @@ export function NodeAiContextSection() {
         setDesignTags={setDesignTags}
         showIntroHeading={false}
       />
-    </ToolbarSection>
+    </>
   );
 }

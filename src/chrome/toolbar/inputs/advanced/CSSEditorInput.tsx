@@ -59,7 +59,7 @@ export const CSSEditorInput = () => {
     nodeProps,
     id,
   } = useNode(node => ({
-    nodeProps: node.data.props || {},
+    nodeProps: node.data?.props || {},
     id: node.id,
   }));
 

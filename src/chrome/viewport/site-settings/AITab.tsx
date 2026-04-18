@@ -1,4 +1,5 @@
 import React from "react";
+import { settingsTabRootClass } from "../settings/SettingsTabChrome";
 import { SiteAiToneForm } from "./SiteAiToneForm";
 
 interface AITabProps {
@@ -11,7 +12,7 @@ interface AITabProps {
 
 export function AITab(props: AITabProps) {
   return (
-    <div className="space-y-6">
+    <div className={settingsTabRootClass}>
       <SiteAiToneForm {...props} showIntroHeading />
     </div>
   );

@@ -129,7 +129,7 @@ export const ImageUploadInput: any = ({
     nodeProps,
     id: componentId,
   } = useNode(node => ({
-    nodeProps: node.data.props,
+    nodeProps: node.data?.props,
   }));
 
   const { query, actions } = useEditor();

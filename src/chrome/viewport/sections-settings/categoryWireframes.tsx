@@ -8,6 +8,59 @@ const c = {
 };
 
 export const CATEGORY_WIREFRAMES: Record<string, React.ReactNode> = {
+  "ph-workspace-blocks": (
+    <svg viewBox="0 0 320 180" fill="none" className="h-full w-full">
+      <rect
+        x="96"
+        y="50"
+        width="56"
+        height="42"
+        rx="6"
+        stroke={c.dark}
+        strokeWidth="1.5"
+        strokeDasharray="5 4"
+        fill={c.block}
+        opacity="0.35"
+      />
+      <rect
+        x="168"
+        y="50"
+        width="56"
+        height="42"
+        rx="6"
+        stroke={c.dark}
+        strokeWidth="1.5"
+        strokeDasharray="5 4"
+        fill="none"
+        opacity="0.55"
+      />
+      <rect
+        x="96"
+        y="102"
+        width="56"
+        height="42"
+        rx="6"
+        stroke={c.dark}
+        strokeWidth="1.5"
+        strokeDasharray="5 4"
+        fill="none"
+        opacity="0.55"
+      />
+      <rect
+        x="168"
+        y="102"
+        width="56"
+        height="42"
+        rx="6"
+        stroke={c.accent}
+        strokeWidth="1.5"
+        strokeDasharray="5 4"
+        fill={c.accent}
+        opacity="0.12"
+      />
+      <circle cx="252" cy="44" r="5" fill={c.accent} opacity="0.4" />
+    </svg>
+  ),
   hero: (
     <svg viewBox="0 0 320 180" fill="none" className="h-full w-full">
       <rect x="80" y="30" width="160" height="10" rx="3" fill={c.dark} />

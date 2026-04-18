@@ -20,6 +20,7 @@ export const SizeInput = () => (
             full={1}
             help="Maximum size this component can be."
             collapsible={false}
+            nested
           >
             <WidthInput
               propKey="maxWidth"
@@ -42,6 +43,7 @@ export const SizeInput = () => (
             full={1}
             help="Minium size this component can be."
             collapsible={false}
+            nested
           >
             <WidthInput
               propKey="minWidth"
@@ -58,7 +60,7 @@ export const SizeInput = () => (
             />
           </ToolbarSection>
 
-          <ToolbarSection title="Aspect Ratio" subtitle={true} full={1} collapsible={false}>
+          <ToolbarSection title="Aspect Ratio" subtitle={true} full={1} collapsible={false} nested>
             <TailwindInput propKey="aspectRatio" label="Ratio" prop="aspectRatio" type="select" />
           </ToolbarSection>
         </ItemAdvanceToggle>

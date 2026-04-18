@@ -2,7 +2,14 @@ import type { Editor } from "@tiptap/react";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { TbBraces, TbBuilding, TbCalendar, TbChevronRight, TbShoppingCart, TbVariable } from "react-icons/tb";
+import {
+  TbBraces,
+  TbBuilding,
+  TbCalendar,
+  TbChevronRight,
+  TbShoppingCart,
+  TbVariable,
+} from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { getEditorVariableOptions } from "@/utils/editorVariableOptions";
 import { useAnchoredPopover } from "@/chrome/overlays/useAnchoredPopover";
@@ -82,7 +89,7 @@ function GroupSubmenu({
     <div
       ref={floating.refs.setFloating}
       style={{ ...floating.floatingStyles, zIndex: 100000 }}
-      className="rounded-box border-base-300/50 bg-base-100 text-base-content min-w-[13rem] max-w-[20rem] overflow-y-auto border py-1 shadow-xl select-none"
+      className="rounded-box border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto border py-1 shadow-xl select-none"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -99,7 +106,7 @@ function GroupSubmenu({
         >
           <GroupIcon className="size-4 shrink-0 opacity-70" aria-hidden />
           <span className="flex-1 truncate">{item.label}</span>
-          <span className="text-neutral-content/50 font-mono text-[10px] truncate max-w-[7rem]">
+          <span className="text-neutral-content/50 max-w-[7rem] truncate font-mono text-[10px]">
             {item.id}
           </span>
         </button>
@@ -177,7 +184,7 @@ export function VariableInsertDropdownBody({
             <button key={o.id} type="button" className={CTX_ITEM} onClick={e => insertVar(o, e)}>
               <GroupIcon className="size-4 shrink-0 opacity-70" aria-hidden />
               <span className="flex-1 truncate">{o.label}</span>
-              <span className="text-neutral-content/50 font-mono text-[10px] truncate max-w-[7rem]">
+              <span className="text-neutral-content/50 max-w-[7rem] truncate font-mono text-[10px]">
                 {o.id}
               </span>
             </button>
@@ -257,9 +264,14 @@ export function VariableInsertPanel({ editor, query, nodeId, onAction }: Variabl
         <PopoverPanel
           anchor="bottom start"
           transition
-          className="pagehub-sdk-root rounded-box border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 min-w-[14rem] max-w-[20rem] overflow-hidden border shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
+          className="pagehub-sdk-root rounded-box border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 max-w-[20rem] min-w-[14rem] overflow-hidden border shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
         >
-          <VariableInsertDropdownBody editor={editor} query={query} nodeId={nodeId} onAction={onAction} />
+          <VariableInsertDropdownBody
+            editor={editor}
+            query={query}
+            nodeId={nodeId}
+            onAction={onAction}
+          />
         </PopoverPanel>
       </Popover>
     );
@@ -283,7 +295,12 @@ export function VariableInsertPanel({ editor, query, nodeId, onAction }: Variabl
         transition
         className="pagehub-sdk-root rounded-box border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 min-w-[12rem] overflow-visible border py-1 shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
       >
-        <VariableInsertDropdownBody editor={editor} query={query} nodeId={nodeId} onAction={onAction} />
+        <VariableInsertDropdownBody
+          editor={editor}
+          query={query}
+          nodeId={nodeId}
+          onAction={onAction}
+        />
       </PopoverPanel>
     </Popover>
   );

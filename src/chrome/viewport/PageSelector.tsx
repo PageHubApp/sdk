@@ -1,23 +1,26 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { useAtomState, useAtomValue } from "@zedux/react";
+import { useEffect, useState } from "react";
 import {
   TbChevronDown,
   TbExternalLink,
   TbExternalLinkOff,
+  TbFileText,
+  TbHome,
   TbPlus,
   TbSettings,
 } from "react-icons/tb";
 import useSWR from "swr";
-import { useAtomState, useAtomValue } from "@zedux/react";
+import { useSDK } from "../../core/context";
 import { SettingsAtom } from "../../utils/atoms";
-import { IsolateAtom, isolatePageInTree, hasPageIsolation } from "../../utils/lib";
+import { hasPageIsolation, IsolateAtom, isolatePageInTree } from "../../utils/lib";
+import { usePageNavigation } from "../../utils/pageNavigation";
+import { EditorSidebarPrimaryCta } from "../primitives/EditorSidebarPrimaryCta";
+import { EditorListPicker } from "./EditorListPicker";
 import { PageSettingsModal } from "./PageSettingsModal";
 import { UnsavedChangesAtom } from "./atoms";
-import { useSDK } from "../../core/context";
 import { usePageCreation } from "./page-selector/usePageCreation";
-import { usePageNavigation } from "../../utils/pageNavigation";
 
 import sluggit from "slug";
 
@@ -25,6 +28,14 @@ import sluggit from "slug";
 function pageRoute(displayName: string, isHomePage: boolean, pageSlug?: string): string {
   if (isHomePage) return "/";
   return `/${pageSlug || sluggit(displayName, "-")}`;
+}
+
+/** Collapse nested routes so only the final segment shows. `/foo/bar` -> `.../bar`, `/about` -> `/about`, `/` -> `/`. */
+function finalSlugSegment(route: string): string {
+  if (route === "/" || !route) return "/";
+  const parts = route.replace(/^\/+/, "").split("/").filter(Boolean);
+  if (parts.length <= 1) return `/${parts[0] ?? ""}`;
+  return `.../${parts[parts.length - 1]}`;
 }
 
 interface Page {
@@ -37,6 +48,8 @@ interface Page {
 interface PageSelectorProps {
   onPageChange?: (pageId: string) => void;
   className?: string;
+  /** Render as a compact inline trigger (for breadcrumb row embedding) rather than a full-width row control. */
+  inlineTrigger?: boolean;
   // Picker mode: just select a page without navigation/isolation
   pickerMode?: boolean;
   onPagePick?: (page: { id: string; displayName: string; isHomePage: boolean }) => void;
@@ -48,6 +61,7 @@ interface PageSelectorProps {
 export function PageSelector({
   onPageChange,
   className = "",
+  inlineTrigger = false,
   pickerMode = false,
   onPagePick,
   selectedPageId,
@@ -62,7 +76,7 @@ export function PageSelector({
   // Page list from database via SWR
   const { data: pageData, mutate: mutatePages } = useSWR(
     siteId ? `/api/v1/sites/${siteId}/pages` : null,
-    (url: string) => fetch(url).then(r => r.json()),
+    (url: string) => fetch(url).then(r => r.json())
   );
   const swrPages: Page[] = (pageData?.pages || []).map((p: any) => ({
     id: p.nodeId,
@@ -81,12 +95,20 @@ export function PageSelector({
           try {
             const n = query.node(_).get();
             return n?.data?.props?.type === "page"
-              ? { id: _, displayName: n.data.custom?.displayName || "Untitled Page", pageSlug: n.data.props?.pageSlug || "" }
+              ? {
+                  id: _,
+                  displayName: n.data.custom?.displayName || "Untitled Page",
+                  pageSlug: n.data.props?.pageSlug || "",
+                }
               : null;
-          } catch { return null; }
+          } catch {
+            return null;
+          }
         })
         .filter(Boolean) as Page[];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   })();
 
   // Merge: SWR pages + any CraftJS pages not yet in SWR (newly created, unsaved)
@@ -100,7 +122,6 @@ export function PageSelector({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [settingsPageId, setSettingsPageId] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const [unsavedChangesRaw, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
   const unsavedChanges = unsavedChangesRaw as unknown as string | null;
   const { emitter, config } = useSDK();
@@ -126,21 +147,6 @@ export function PageSelector({
     return () => window.removeEventListener("pagehub:saved", handler);
   }, [mutatePages]);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        resetCreateDialog();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [isOpen]);
-
   // Listen for custom event to open page settings
   useEffect(() => {
     const handleOpenPageSettings = (event: CustomEvent) => {
@@ -161,7 +167,11 @@ export function PageSelector({
       if (pickerMode && onPagePick) {
         const page = pages.find(p => p.id === pageId);
         if (page) {
-          onPagePick({ id: pageId, displayName: page.displayName, isHomePage: pageId === homePageId });
+          onPagePick({
+            id: pageId,
+            displayName: page.displayName,
+            isHomePage: pageId === homePageId,
+          });
         }
         setIsOpen(false);
         return;
@@ -241,11 +251,10 @@ export function PageSelector({
   // Check if current page is home page — use page data, not CraftJS tree
   const isCurrentHomePage = currentPage?.isHomePage || currentPage?.id === homePageId;
 
-  const displayRoute = pickerMode
-    ? null // Don't show route in picker mode
-    : currentPage
-      ? pageRoute(currentPage.displayName, !!isCurrentHomePage, currentPage.pageSlug)
-      : null;
+  const currentPageRoute = currentPage
+    ? pageRoute(currentPage.displayName, !!isCurrentHomePage, currentPage.pageSlug)
+    : null;
+  const displayRoute = pickerMode ? null : currentPageRoute;
 
   // Filter pages based on search query and reverse order
   const filteredPages = pages.filter(page =>
@@ -259,262 +268,266 @@ export function PageSelector({
     : null;
 
   return (
-    <div className={`relative ${className} flex items-center gap-2`} ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={buttonClassName || "ph-menu-trigger py-1.5 text-sm"}
-        aria-label="Page selector"
-      >
-        <div className="flex flex-1 items-center gap-2 overflow-hidden">
-          {/* PageHub Logo */}
-          <div className="shrink-0">
-            <Image src="/logo.svg" alt="PageHub" width={16} height={16} className="opacity-70" />
-          </div>
-
-          {/* URL Bar Layout */}
-          <div className="flex flex-1 items-center gap-1 overflow-hidden">
-            {/* Path */}
-            {displayRoute && (
-              <span className="text-neutral-content truncate font-mono text-xs">
-                {displayRoute}
-              </span>
+    <>
+      <EditorListPicker
+        className={`${className} flex items-center gap-2`.trim()}
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        onDismiss={resetCreateDialog}
+        trigger={
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className={
+              buttonClassName ||
+              (inlineTrigger
+                ? "hover:bg-base-200/80 text-neutral-content hover:text-base-content inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md py-1.5 pr-1.5 pl-0 text-xs font-medium transition-[color,background-color,transform] active:scale-95"
+                : "ph-menu-trigger py-1.5 text-sm")
+            }
+            aria-label="Page selector"
+            aria-expanded={isOpen}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content={
+              pickerMode && !currentPage
+                ? "Select a page"
+                : currentPage
+                  ? `${currentPage.displayName} — ${currentPageRoute}`
+                  : "Select a page"
+            }
+            data-tooltip-place="bottom"
+            data-tooltip-offset={10}
+          >
+            {pickerMode && !currentPage ? (
+              <span className="truncate text-xs">{displayText}</span>
+            ) : (
+              <>
+                {isCurrentHomePage ? (
+                  <TbHome className="size-4 shrink-0" aria-hidden />
+                ) : (
+                  <TbFileText className="size-4 shrink-0" aria-hidden />
+                )}
+                {!isCurrentHomePage && currentPageRoute ? (
+                  <span className="max-w-[120px] truncate font-mono text-xs">
+                    {finalSlugSegment(currentPageRoute)}
+                  </span>
+                ) : null}
+              </>
             )}
-
-            {/* Page name — right-aligned, monospace */}
-            {displayText && (
-              <span className="text-neutral-content/60 ml-auto shrink-0 font-mono text-[10px]">
-                {displayText}
-              </span>
-            )}
-          </div>
-        </div>
-        <TbChevronDown className={`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-      </button>
-
-      {!pickerMode && liveUrl && (
-        <a
-          className="text-neutral-content hover:text-base-content shrink-0 p-0 text-xs transition-colors"
-          href={liveUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content="Open page in a new tab"
-          data-tooltip-place="bottom"
-          data-tooltip-offset={10}
-        >
-          {settings?.draftId ? <TbExternalLink /> : <TbExternalLinkOff />}
-        </a>
-      )}
-
-      {isOpen && (
-        <div className="ph-panel absolute inset-x-0 top-full z-50 mt-1 flex max-h-[500px] min-w-[220px] flex-col overflow-hidden">
-          {/* Search Header - Fixed */}
-          <div className="border-base-300 border-b p-3">
-            <input
-              type="text"
-              placeholder="Search pages..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="input-transparent"
-              autoFocus
+            <TbChevronDown
+              className={`size-3.5 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
             />
-          </div>
-
-          {/* Scrollable Content */}
-          <div className="scrollbar bg-base-100 text-base-content flex-1 overflow-y-auto">
-            {/* Page List */}
-            {filteredPages.length > 0 ? (
-              filteredPages.map(page => {
-                const isPageHomePage = page.isHomePage || page.id === homePageId;
-                const route = pageRoute(page.displayName, isPageHomePage, page.pageSlug);
-                const isSelected = pickerMode ? selectedPageId === page.id : isolate === page.id;
-
-                return (
-                  <div
-                    key={page.id}
-                    className={`group hover:bg-neutral flex w-full items-center gap-2 px-3 py-2 transition-colors ${
-                      isSelected ? "bg-accent text-accent-content font-medium" : ""
-                    }`}
-                  >
-                    {pickerMode ? (
-                      <button
-                        onClick={() => handlePageSelect(page.id)}
-                        className="flex flex-1 items-center gap-2 overflow-hidden text-left"
-                      >
-                        <Image
-                          src="/logo.svg"
-                          alt="PageHub"
-                          width={16}
-                          height={16}
-                          className="opacity-70"
-                        />
-                        <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
-                          <span className="text-base-content truncate text-sm">
-                            {page.displayName}
-                          </span>
-                          {isPageHomePage && (
-                            <span className="text-neutral-content truncate text-xs">(Home)</span>
-                          )}
-                        </div>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handlePageSelect(page.id)}
-                        className="flex flex-1 items-center gap-2 overflow-hidden text-left"
-                      >
-                        <Image
-                          src="/logo.svg"
-                          alt="PageHub"
-                          width={16}
-                          height={16}
-                          className="opacity-70"
-                        />
-                        <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
-                          <span className="text-base-content truncate text-sm">
-                            {page.displayName}
-                          </span>
-                          <span className="text-neutral-content truncate text-xs">{route}</span>
-                        </div>
-                      </button>
-                    )}
-                    {!pickerMode && (
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          setSettingsPageId(page.id);
-                          setIsOpen(false);
-                        }}
-                        className="text-neutral-content hover:text-base-content shrink-0 p-1 opacity-0 transition-opacity group-hover:opacity-100"
-                        aria-label="Page settings"
-                      >
-                        <TbSettings size={16} />
-                      </button>
-                    )}
-                  </div>
-                );
-              })
-            ) : searchQuery ? (
-              <div className="text-neutral-content px-3 py-4 text-center text-sm">
-                No pages found
-              </div>
-            ) : null}
-          </div>
-
-          {/* Footer - Create Page */}
-          <div className="border-base-300 border-t">
-            {showCreateDialog ? (
-              <div className="flex flex-col gap-3 p-3">
-                {/* Name + Slug */}
-                <div className="flex items-end gap-2">
-                  <div className="min-w-0 flex-1">
-                    <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">Name</label>
-                    <input
-                      type="text"
-                      placeholder="About Us"
-                      value={newPageName}
-                      onChange={e => {
-                        setNewPageName(e.target.value);
-                        if (autoSlug) setNewPageSlug(sluggit(e.target.value || "", "-"));
-                        if (autoTitle) setNewPageTitle(e.target.value);
-                      }}
-                      onKeyDown={e => {
-                        if (e.key === "Enter") handleCreateSubmit();
-                        if (e.key === "Escape") resetCreateDialog();
-                      }}
-                      className="input-transparent"
-                      autoFocus
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">URL</label>
-                    <div className="border-base-300 flex items-center gap-0.5 rounded-lg border px-2 py-1.5">
-                      <span className="text-neutral-content/50 text-xs">/</span>
-                      <input
-                        type="text"
-                        value={newPageSlug}
-                        placeholder="page-url"
-                        onChange={e => {
-                          setNewPageSlug(e.target.value.replace(/\s+/g, "-").toLowerCase());
-                          setAutoSlug(false);
-                        }}
-                        onKeyDown={e => {
-                          if (e.key === "Enter") handleCreateSubmit();
-                          if (e.key === "Escape") resetCreateDialog();
-                        }}
-                        className="text-base-content min-w-0 flex-1 border-none bg-transparent p-0 text-xs outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* SEO — Title + Description */}
-                <div>
-                  <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">Page Title</label>
+          </button>
+        }
+        afterTrigger={
+          !pickerMode && liveUrl ? (
+            <a
+              className="text-neutral-content hover:text-base-content shrink-0 p-0 text-xs transition-colors"
+              href={liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Open page in a new tab"
+              data-tooltip-place="bottom"
+              data-tooltip-offset={10}
+            >
+              {settings?.draftId ? <TbExternalLink /> : <TbExternalLinkOff />}
+            </a>
+          ) : undefined
+        }
+        searchPlaceholder="Search pages..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        footer={
+          pickerMode ? null : showCreateDialog ? (
+            <div className="flex flex-col gap-3 p-3">
+              <div className="flex items-end gap-2">
+                <div className="min-w-0 flex-1">
+                  <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">
+                    Name
+                  </label>
                   <input
                     type="text"
-                    placeholder="SEO title (optional)"
-                    value={newPageTitle}
-                    onChange={e => { setNewPageTitle(e.target.value); setAutoTitle(false); }}
+                    placeholder="About Us"
+                    value={newPageName}
+                    onChange={e => {
+                      setNewPageName(e.target.value);
+                      if (autoSlug) setNewPageSlug(sluggit(e.target.value || "", "-"));
+                      if (autoTitle) setNewPageTitle(e.target.value);
+                    }}
                     onKeyDown={e => {
                       if (e.key === "Enter") handleCreateSubmit();
                       if (e.key === "Escape") resetCreateDialog();
                     }}
                     className="input-transparent"
+                    autoFocus
                   />
                 </div>
-                <div>
-                  <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">Description</label>
-                  <textarea
-                    placeholder="Brief page description (optional)"
-                    value={newPageDescription}
-                    onChange={e => setNewPageDescription(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === "Escape") resetCreateDialog();
-                    }}
-                    rows={2}
-                    className="input-transparent resize-none"
-                  />
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center justify-end gap-2">
-                  <button
-                    onClick={resetCreateDialog}
-                    className="text-neutral-content hover:text-base-content text-xs transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleCreateSubmit}
-                    disabled={!newPageName.trim()}
-                    className="btn btn-primary btn-xs px-3 disabled:opacity-40"
-                  >
-                    Create
-                  </button>
+                <div className="min-w-0 flex-1">
+                  <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">
+                    URL
+                  </label>
+                  <div className="border-base-300 flex items-center gap-0.5 rounded-lg border px-2 py-1.5">
+                    <span className="text-neutral-content/50 text-xs">/</span>
+                    <input
+                      type="text"
+                      value={newPageSlug}
+                      placeholder="page-url"
+                      onChange={e => {
+                        setNewPageSlug(e.target.value.replace(/\s+/g, "-").toLowerCase());
+                        setAutoSlug(false);
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") handleCreateSubmit();
+                        if (e.key === "Escape") resetCreateDialog();
+                      }}
+                      className="text-base-content min-w-0 flex-1 border-none bg-transparent p-0 text-xs outline-none"
+                    />
+                  </div>
                 </div>
               </div>
-            ) : (
-              <button
-                onClick={() => setShowCreateDialog(true)}
-                className="text-primary hover:bg-primary/10 flex w-full items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors"
-              >
-                <TbPlus className="size-3.5" />
-                New Page
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* Page Settings Modal - Only in navigation mode */}
-      {!pickerMode && (
+              <div>
+                <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">
+                  Page Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="SEO title (optional)"
+                  value={newPageTitle}
+                  onChange={e => {
+                    setNewPageTitle(e.target.value);
+                    setAutoTitle(false);
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === "Enter") handleCreateSubmit();
+                    if (e.key === "Escape") resetCreateDialog();
+                  }}
+                  className="input-transparent"
+                />
+              </div>
+              <div>
+                <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">
+                  Description
+                </label>
+                <textarea
+                  placeholder="Brief page description (optional)"
+                  value={newPageDescription}
+                  onChange={e => setNewPageDescription(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Escape") resetCreateDialog();
+                  }}
+                  rows={2}
+                  className="input-transparent resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={resetCreateDialog}
+                  className="text-neutral-content hover:text-base-content text-xs transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateSubmit}
+                  disabled={!newPageName.trim()}
+                  className="btn btn-primary btn-xs px-3 disabled:opacity-40"
+                >
+                  Create
+                </button>
+              </div>
+            </div>
+          ) : (
+            <EditorSidebarPrimaryCta
+              variant="ghost"
+              onClick={() => setShowCreateDialog(true)}
+              leading={<TbPlus className="size-3.5" />}
+            >
+              New Page
+            </EditorSidebarPrimaryCta>
+          )
+        }
+      >
+        {filteredPages.length > 0 ? (
+          filteredPages.map(page => {
+            const isPageHomePage = page.isHomePage || page.id === homePageId;
+            const route = pageRoute(page.displayName, isPageHomePage, page.pageSlug);
+            const isSelected = pickerMode ? selectedPageId === page.id : isolate === page.id;
+
+            return (
+              <div
+                key={page.id}
+                className={`group hover:bg-neutral flex w-full items-center gap-2 px-3 py-2 transition-colors ${
+                  isSelected ? "bg-accent text-accent-content font-medium" : ""
+                }`}
+              >
+                {pickerMode ? (
+                  <button
+                    type="button"
+                    onClick={() => handlePageSelect(page.id)}
+                    className="flex flex-1 items-center gap-2 overflow-hidden text-left"
+                  >
+                    {isPageHomePage ? (
+                      <TbHome className="text-base-content size-4 shrink-0" aria-hidden />
+                    ) : (
+                      <TbFileText className="text-base-content size-4 shrink-0 opacity-80" aria-hidden />
+                    )}
+                    <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
+                      <span className="text-base-content truncate text-sm">{page.displayName}</span>
+                      {isPageHomePage ? (
+                        <span className="text-neutral-content truncate text-xs">(Home)</span>
+                      ) : null}
+                    </div>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handlePageSelect(page.id)}
+                    className="flex flex-1 items-center gap-2 overflow-hidden text-left"
+                  >
+                    {isPageHomePage ? (
+                      <TbHome className="text-base-content size-4 shrink-0" aria-hidden />
+                    ) : (
+                      <TbFileText className="text-base-content size-4 shrink-0 opacity-80" aria-hidden />
+                    )}
+                    <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
+                      <span className="text-base-content truncate text-sm">{page.displayName}</span>
+                      <span className="text-neutral-content truncate text-xs">{route}</span>
+                    </div>
+                  </button>
+                )}
+                {!pickerMode ? (
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setSettingsPageId(page.id);
+                      setIsOpen(false);
+                    }}
+                    className="text-neutral-content hover:text-base-content shrink-0 p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-label="Page settings"
+                  >
+                    <TbSettings size={16} />
+                  </button>
+                ) : null}
+              </div>
+            );
+          })
+        ) : searchQuery ? (
+          <div className="text-neutral-content px-3 py-4 text-center text-sm">No pages found</div>
+        ) : null}
+      </EditorListPicker>
+
+      {!pickerMode ? (
         <PageSettingsModal
           isOpen={settingsPageId !== null}
           onClose={() => setSettingsPageId(null)}
           pageId={settingsPageId}
           extraTabs={pageSettingsExtraTabs}
         />
-      )}
-    </div>
+      ) : null}
+    </>
   );
 }

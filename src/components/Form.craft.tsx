@@ -37,7 +37,7 @@ const inputBaseStyles = {
 const submitButtonProps = {
   type: "submit",
   className:
-    "px-(--button-padding-x) py-(--button-padding-y) font-bold text-center flex justify-center items-center gap-2 w-full md:w-full bg-transparent text-primary rounded-box border border-primary",
+    "btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold w-full",
   canDelete: true,
   canEditName: true,
 };
@@ -146,30 +146,19 @@ export const FormDef = defineComponent(
       canMoveIn: nodes =>
         nodes.every(node => node.data?.type !== "Form" && node.data?.props?.type !== "form"),
     },
-    tools: () => [
-      <HoverNodeController
-        key="formHoverController"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{
-          position: "bottom",
-          align: "start",
-          placement: "start",
-        }}
-      />,
-      <DeleteNodeController key="formDelete" />,
-    ],
+    tools: [],
     presets: [
       {
         label: "Subscribe Form",
         icon: TbMail,
+        description: "Email opt-in form with a single input.",
         props: { formType: "subscribe" },
         children: buildSubscribeChildren,
       },
       {
         label: "Contact Form",
         icon: TbForms,
+        description: "Name, email, and message contact form.",
         props: { formType: "contact" },
         children: buildContactChildren,
       },

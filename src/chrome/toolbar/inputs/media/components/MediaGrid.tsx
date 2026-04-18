@@ -209,7 +209,7 @@ function EmptyState({
   fileInputRef: React.RefObject<HTMLInputElement>;
 }) {
   return (
-    <div className="animate-[slide-up_0.8s_ease-out_forwards] flex max-w-2xl flex-col items-center">
+    <div className="flex max-w-2xl animate-[slide-up_0.8s_ease-out_forwards] flex-col items-center">
       <h3 className="text-base-content mb-2 text-2xl font-bold">Your media library is empty</h3>
       <p className="text-neutral-content mb-8 text-sm">
         Start building your visual content collection

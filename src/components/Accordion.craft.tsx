@@ -48,7 +48,7 @@ export function buildAccordionItem(index: number) {
         custom={{ displayName: `${title} Header` }}
         canDelete={true}
         canEditName={true}
-        className="flex cursor-pointer list-none flex-row items-center justify-between px-4 py-3 select-none"
+        className="flex cursor-pointer list-none flex-row items-center justify-between px-space-sm py-space-xs select-none"
       >
         <Element
           is={Text}
@@ -67,7 +67,7 @@ export function buildAccordionItem(index: number) {
         custom={{ displayName: `${title} Content` }}
         canDelete={true}
         canEditName={true}
-        className="gap-container flex flex-col px-4 py-3"
+        className="gap-container flex flex-col px-space-sm py-space-xs"
       >
         <Element
           is={Text}
@@ -108,18 +108,11 @@ export const AccordionDef = defineComponent(
         placement="end"
         alt={{ position: "bottom", align: "start", placement: "start" }}
       />,
-      <HoverNodeController
-        key="accordionHover"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{ position: "bottom", align: "start", placement: "start" }}
-      />,
-      <DeleteNodeController key="accordionDelete" />,
     ],
     presets: [
       {
         label: "Accordion",
+        description: "Collapsible content panels using native details/summary.",
         props: {
           multiOpen: false,
           defaultOpen: -1,

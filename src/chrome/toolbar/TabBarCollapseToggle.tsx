@@ -13,7 +13,7 @@ export const TabBarCollapseToggle = ({
   if (!unified || !accordionCtx) return <div />;
   return (
     <button
-      className="text-secondary-content/70 hover:text-base-content flex cursor-pointer items-center justify-center rounded-md p-1 text-sm transition-[color,transform] active:scale-90"
+      className="text-secondary-content/70 hover:text-base-content flex size-10 cursor-pointer items-center justify-center rounded-md p-0 text-sm transition-[color,transform] active:scale-90"
       onClick={accordionCtx.toggleAll}
       data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
       data-tooltip-content={accordionCtx.anyOpen ? "Collapse all" : "Expand all"}

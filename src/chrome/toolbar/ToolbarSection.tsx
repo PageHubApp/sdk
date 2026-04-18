@@ -37,18 +37,18 @@ export const ToolbarSection = ({
 
   useEffect(() => {
     if (managed) {
-      accordionCtx.register(title);
+      accordionCtx.register(title, defaultOpen, !nested);
       return () => accordionCtx.unregister(title);
     }
-  }, [managed, title]);
+  }, [managed, title, defaultOpen, nested]);
 
-  const isOpen = managed ? accordionCtx.getIsOpen(title) : localIsOpen;
+  const isOpen = managed ? accordionCtx.getIsOpen(title, defaultOpen) : localIsOpen;
 
   const handleClick = (e: React.MouseEvent) => {
     if (disabled) return;
     if (collapsible) {
       if (managed) {
-        accordionCtx.toggle(title);
+        accordionCtx.toggle(title, defaultOpen);
       } else {
         setLocalIsOpen(!localIsOpen);
       }
@@ -62,14 +62,16 @@ export const ToolbarSection = ({
 
   const cursorClass = disabled ? "cursor-default" : collapsible ? "cursor-pointer" : "";
 
+  // Non-collapsible sections still use the same header/body chrome as collapsible ones;
+  // only the chevron/toggle behavior differs (otherwise body loses p-3 and looks flush).
   const titleClasses = nested
-    ? `flex w-full items-center justify-between gap-1 ${collapsible ? `${cursorClass} -mx-3 px-3 py-1.5` : "pb-2 pt-1"} text-[11px] font-semibold text-neutral-content transition-colors ${disabled ? "" : "hover:text-base-content"} ${className}`
-    : `flex w-full items-center justify-between gap-2 ${collapsible ? `${cursorClass} border-b border-base-300 bg-sidebar px-3 py-1.5` : "pb-2 pt-1"} text-[11px] font-semibold uppercase tracking-wide text-sidebar-foreground/70 transition-colors ${className}`;
+    ? `flex w-full items-center justify-between gap-1 ${collapsible ? `${cursorClass} -mx-3 px-3 py-1.5` : "-mx-3 px-3 py-1.5"} text-[11px] font-semibold text-neutral-content transition-colors ${disabled ? "" : "hover:text-base-content"} ${className}`
+    : `group flex w-full items-center justify-between gap-2 border-b border-base-300 bg-sidebar px-3 py-1.5 ${collapsible ? cursorClass : "cursor-default"} text-[11px] font-semibold uppercase tracking-wide text-sidebar-foreground/70 transition-colors ${className}`;
 
   // When scrollable, we remove padding from body and add it inside the scrollbar wrapper
   const bodyClasses = nested
-    ? `grid items-end gap-2 ${collapsible ? `${scrollable ? "" : "-mx-3 px-3 pb-2"}` : ""} ${bodyClassName}`
-    : `grid items-end gap-3 ${collapsible ? `border-b border-base-300 bg-base-200 text-base-content ${scrollable ? "" : "p-3 pt-2"}` : ""} ${bodyClassName}`;
+    ? `grid items-end gap-2 ${scrollable ? "" : "-mx-3 px-3 pb-2"} ${bodyClassName}`
+    : `grid items-end gap-3 border-b border-base-300 bg-base-200 text-base-content ${scrollable ? "" : "p-3 pt-2"} ${bodyClassName}`;
 
   // Inner padding classes for when scrollable is enabled
   const scrollableInnerClasses = nested ? "p-2" : "p-3";
@@ -113,10 +115,8 @@ export const ToolbarSection = ({
                 {title}
               </div>
 
-              {header && <div className="flex flex-1 items-center justify-end">{header}</div>}
-
-              {!header && (
-                <div className="flex max-w-[min(100%,11rem)] flex-wrap items-center justify-end gap-1">
+              {(propKey || header) && (
+                <div className="flex max-w-[min(100%,20rem)] flex-1 flex-wrap items-center justify-end gap-1">
                   {propKey &&
                     VIEW_BREAKPOINT_SCOPE_KEYS.map(bp => (
                       <ToolbarLabel
@@ -127,6 +127,7 @@ export const ToolbarSection = ({
                         iconOnly
                       />
                     ))}
+                  {header}
                 </div>
               )}
 

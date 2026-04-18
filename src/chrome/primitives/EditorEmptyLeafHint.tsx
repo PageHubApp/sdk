@@ -1,5 +1,23 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { TbHandGrab, TbHandClick, TbHandTwoFingers } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
+
+const TT_STYLE: CSSProperties = {
+  zIndex: 100000,
+  maxWidth: 220,
+  borderRadius: 8,
+  border: "1px solid rgba(0,0,0,0.12)",
+  background: "#fff",
+  color: "#1f2937",
+  padding: "4px 8px",
+  fontSize: 12,
+  fontWeight: 400,
+  lineHeight: 1.4,
+  boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+  whiteSpace: "nowrap",
+  textTransform: "none",
+  letterSpacing: "normal",
+};
 
 export type EditorEmptyLeafHintProps = {
   /** This node is the Craft selection (stronger chrome). */
@@ -10,6 +28,10 @@ export type EditorEmptyLeafHintProps = {
   idleLabel: string;
   /** Alternate compact label shown when selected. */
   selectedLabel: string;
+  /** When true, selected state shows action icons instead of text. */
+  showActionIcons?: boolean;
+  /** Optional tiny type label rendered under action icons in selected mode (e.g. "Section", "Page Header"). */
+  typeLabel?: string;
   className?: string;
 };
 
@@ -20,6 +42,8 @@ export function EditorEmptyLeafHint({
   selectedIcon,
   idleLabel,
   selectedLabel,
+  showActionIcons,
+  typeLabel,
   className,
 }: EditorEmptyLeafHintProps) {
   const activeIcon = selected && selectedIcon ? selectedIcon : icon;
@@ -32,17 +56,52 @@ export function EditorEmptyLeafHint({
   const iconOpacity = selected ? "opacity-75" : "opacity-60";
 
   return (
-    <div className={twMerge("flex flex-1 w-full items-center justify-center", className)}>
+    <div className={twMerge("flex w-full flex-1 items-center justify-center", className)}>
       <div
-        className={`flex min-h-8 items-center justify-center gap-1.5 border border-dashed px-2 py-1.5 text-[10px] font-medium uppercase ${colorClassName}`}
+        className={`flex min-h-8 items-center justify-center gap-1.5 border border-dashed px-2 py-1 text-[10px] font-medium uppercase ${colorClassName}`}
       >
-        <span
-          className={`flex size-3.5 shrink-0 items-center justify-center ${iconOpacity} [&>svg]:size-3.5`}
-          aria-hidden
-        >
-          {activeIcon}
-        </span>
-        <span className="truncate whitespace-nowrap">{activeLabel}</span>
+        {selected && showActionIcons ? (
+          <div className="flex flex-col items-center gap-0.5 leading-none">
+            <div
+              className="flex items-center gap-2"
+              aria-label="Drop, double-click, or right-click to insert"
+            >
+              <span className="tooltip tooltip-top">
+                <span className="tooltip-content" style={TT_STYLE}>
+                  Drag from the sidebar
+                </span>
+                <TbHandGrab className="size-3 opacity-70" aria-hidden />
+              </span>
+              <span className="text-neutral-content/30 text-[7px]">·</span>
+              <span className="tooltip tooltip-top">
+                <span className="tooltip-content" style={TT_STYLE}>
+                  Double-click to add
+                </span>
+                <TbHandClick className="size-3 opacity-70" aria-hidden />
+              </span>
+              <span className="text-neutral-content/30 text-[7px]">·</span>
+              <span className="tooltip tooltip-top">
+                <span className="tooltip-content" style={TT_STYLE}>
+                  Right-click to add
+                </span>
+                <TbHandTwoFingers className="size-3 opacity-70" aria-hidden />
+              </span>
+            </div>
+            {typeLabel && (
+              <span className="truncate text-[8px] tracking-wide opacity-70">{typeLabel}</span>
+            )}
+          </div>
+        ) : (
+          <>
+            <span
+              className={`flex size-3.5 shrink-0 items-center justify-center ${iconOpacity} [&>svg]:size-3.5`}
+              aria-hidden
+            >
+              {activeIcon}
+            </span>
+            <span className="truncate whitespace-nowrap">{activeLabel}</span>
+          </>
+        )}
       </div>
     </div>
   );

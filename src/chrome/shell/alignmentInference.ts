@@ -1,19 +1,14 @@
 /**
- * Alignment inference: drag-to-align detection.
+ * Alignment on drop: applyAlignmentOnDrop, inner/wrapper class resolution, labels.
  *
- * During drag, reads cursor position relative to the drop-target container
- * and infers alignment intent from which zone the cursor is in.
- *
- * flex-col: X axis = alignment (left/center/right)
- * flex-row: Y axis = alignment (top/center/bottom)
- *
- * Orthogonal to CraftJS reorder (which handles the other axis).
- * Suppressed when beside detection is active.
+ * **Intent during drag** is owned by the spatial engine (`findPosition2D` →
+ * `spatial/detectAlignCrossFromDrag` → `spatialSession`). Do not add a second
+ * detector here — that caused drift vs DropZoneIndicator.
  */
 
 import { type Node, type NodeId } from "@craftjs/core";
 import { Container } from "../../components/Container";
-import { SKIP_TYPES, makeContainerTree } from "./layoutInference";
+import { SKIP_TYPES, makeContainerTree, getClassName, hasToken } from "./layoutInference";
 
 // ── Debug logging (dev only) ──────────────────────────────────────────
 
@@ -40,91 +35,6 @@ export interface AlignmentDropContext {
   previousParentId?: NodeId;
 }
 
-// ── Shared state (survives HMR/module splits via window) ──
-
-const INTENT_KEY = "__pagehub_alignment_intent__";
-const DRAG_ORIGIN_KEY = "__pagehub_alignment_drag_origin__";
-
-export function setAlignmentIntent(intent: AlignmentIntent | null, view?: string, classDark?: boolean) {
-  (window as any)[INTENT_KEY] = intent ? { intent, view: view || "mobile", classDark: classDark ?? false } : null;
-}
-
-export function getAlignmentDropContext(): AlignmentDropContext | null {
-  return (window as any)[INTENT_KEY] as AlignmentDropContext | null;
-}
-
-export function clearAlignmentIntent() {
-  (window as any)[INTENT_KEY] = null;
-  (window as any)[DRAG_ORIGIN_KEY] = null;
-}
-
-/** Store the first node that starts dragging (innermost = the actual content node). */
-export function setDragOrigin(nodeId: NodeId, parentId: NodeId | undefined) {
-  if (!(window as any)[DRAG_ORIGIN_KEY]) {
-    (window as any)[DRAG_ORIGIN_KEY] = { nodeId, parentId };
-  }
-}
-
-export function getDragOrigin(): { nodeId: NodeId; parentId: NodeId | undefined } | null {
-  return (window as any)[DRAG_ORIGIN_KEY] || null;
-}
-
-// ── Zone thresholds ────────────────────────────────────────────────────
-
-const START_ZONE = 0.30;
-const END_ZONE = 0.70;
-const MIN_CONTAINER_SIZE = 200; // px — skip detection if container is too narrow/short
-
-
-// ── Detection ──────────────────────────────────────────────────────────
-
-/**
- * Detect alignment intent from cursor position relative to the parent container.
- * Returns null if detection shouldn't activate (wrong container type, too small, etc).
- */
-export function detectAlignmentIntent(
-  parentDom: HTMLElement,
-  parentNode: Node,
-  posX: number,
-  posY: number
-): AlignmentIntent | null {
-  if (!parentDom) return null;
-
-  const parentType = parentNode?.data?.props?.type;
-  if (SKIP_TYPES.has(parentType)) return null;
-
-  const style = window.getComputedStyle(parentDom);
-  const display = style.display;
-  if (!display.includes("flex")) return null;
-
-  const dir = style.flexDirection;
-  const isCol = dir === "column" || dir === "column-reverse";
-  const isRow = dir === "row" || dir === "row-reverse";
-  if (!isCol && !isRow) return null;
-
-  const rect = parentDom.getBoundingClientRect();
-
-  if (isCol) {
-    // flex-col: cross-axis is horizontal → X determines alignment
-    if (rect.width < MIN_CONTAINER_SIZE) return null;
-    const relX = posX - rect.left;
-    const ratio = relX / rect.width;
-    return {
-      zone: ratio < START_ZONE ? "start" : ratio > END_ZONE ? "end" : "center",
-      axis: "horizontal",
-    };
-  }
-
-  // flex-row: cross-axis is vertical → Y determines alignment
-  if (rect.height < MIN_CONTAINER_SIZE) return null;
-  const relY = posY - rect.top;
-  const ratio = relY / rect.height;
-  return {
-    zone: ratio < START_ZONE ? "start" : ratio > END_ZONE ? "end" : "center",
-    axis: "vertical",
-  };
-}
-
 // ── Labels ─────────────────────────────────────────────────────────────
 
 const LABELS: Record<string, Record<AlignmentZone, string>> = {
@@ -132,8 +42,14 @@ const LABELS: Record<string, Record<AlignmentZone, string>> = {
   vertical: { start: "Align top", center: "Align middle", end: "Align bottom" },
 };
 
-export function getAlignmentPreviewLabel(intent: AlignmentIntent): string {
-  return LABELS[intent.axis]?.[intent.zone] || "Align";
+const INNER_LABELS: Record<string, Record<AlignmentZone, string>> = {
+  horizontal: { start: "Align left", center: "Center", end: "Align right" },
+  vertical: { start: "Align top", center: "Center", end: "Align bottom" },
+};
+
+export function getAlignmentPreviewLabel(intent: AlignmentIntent, isInner?: boolean): string {
+  const labels = isInner ? INNER_LABELS : LABELS;
+  return labels[intent.axis]?.[intent.zone] || "Align";
 }
 
 // ── Wrapper classNames ─────────────────────────────────────────────────
@@ -154,6 +70,80 @@ const WRAPPER_CLASS_VERTICAL: Record<AlignmentZone, string> = {
 
 function getWrapperClass(zone: AlignmentZone, axis: "horizontal" | "vertical") {
   return axis === "vertical" ? WRAPPER_CLASS_VERTICAL[zone] : WRAPPER_CLASS_HORIZONTAL[zone];
+}
+
+// ── Inner alignment (no-wrapper mode) ────────────────────────────────
+
+const ITEMS_TOKENS = [
+  "items-start",
+  "items-center",
+  "items-end",
+  "items-baseline",
+  "items-stretch",
+];
+const JUSTIFY_TOKENS = [
+  "justify-start",
+  "justify-center",
+  "justify-end",
+  "justify-between",
+  "justify-around",
+  "justify-evenly",
+  "justify-stretch",
+];
+const SELF_TOKENS = [
+  "self-auto",
+  "self-start",
+  "self-center",
+  "self-end",
+  "self-stretch",
+  "self-baseline",
+];
+
+function getInnerAlignmentTarget(
+  node: Node,
+  parentNode: Node
+): { mode: "parent" | "self"; targetId: NodeId; parentDirection: "row" | "col" } | null {
+  const parentClassName = getClassName(parentNode);
+  if (!hasToken(parentClassName, "flex")) return null;
+  const parentType = parentNode.data?.props?.type;
+  if (SKIP_TYPES.has(parentType)) return null;
+
+  const isRow = hasToken(parentClassName, "flex-row");
+  const dir = isRow ? ("row" as const) : ("col" as const);
+  const siblingCount = (parentNode.data.nodes || []).length;
+
+  if (siblingCount <= 1) {
+    return { mode: "parent", targetId: parentNode.id, parentDirection: dir };
+  }
+  return { mode: "self", targetId: node.id, parentDirection: dir };
+}
+
+function resolveInnerAlignmentClass(
+  zone: AlignmentZone,
+  axis: "horizontal" | "vertical",
+  mode: "parent" | "self",
+  parentDirection: "row" | "col"
+): { className: string; tokensToStrip: string[]; alwaysParent: boolean } {
+  const v = zone; // "start" | "center" | "end"
+
+  // Is this the cross-axis or main-axis relative to parent direction?
+  const isCrossAxis =
+    (parentDirection === "col" && axis === "horizontal") ||
+    (parentDirection === "row" && axis === "vertical");
+
+  // Cross-axis: always use self-* on the node — works regardless of parent constraints
+  if (isCrossAxis) {
+    return { className: `self-${v}`, tokensToStrip: SELF_TOKENS, alwaysParent: false };
+  }
+  // Main-axis — always modify parent's justify-* (no self equivalent in flex)
+  return { className: `justify-${v}`, tokensToStrip: JUSTIFY_TOKENS, alwaysParent: true };
+}
+
+export function wouldUseInnerAlignment(query: any, parentNodeId: NodeId, nodeId: NodeId): boolean {
+  const node = query.node(nodeId).get();
+  const parentNode = query.node(parentNodeId).get();
+  if (!node?.data || !parentNode?.data) return false;
+  return getInnerAlignmentTarget(node, parentNode) !== null;
 }
 
 // ── Drop handler ───────────────────────────────────────────────────────
@@ -220,13 +210,57 @@ export function applyAlignmentOnDrop(
     return;
   }
 
-  // Clean up old Align wrapper if it's now empty (node moved out of it)
-  if (previousParentId && previousParentId !== parentId) {
-    const prevParent = query.node(previousParentId).get();
-    const prevChildren = prevParent?.data?.nodes || [];
-    if (isAlignWrapper(prevParent) && prevChildren.length === 0) {
-      log("cleanup-empty-wrapper", { previousParentId });
-      actions.delete(previousParentId);
+  // Inner alignment: node is in a flex container — modify classes instead of wrapping.
+  // Only runs when the indicator detected align-inner (not align-wrap).
+  // CraftJS may have moved the node before we run (rAF), so check the ORIGINAL
+  // parent (previousParentId) first — that's the container the user was aligning within.
+  // Inner alignment — only when the indicator detected align-inner, not align-wrap
+  const intentType = (intent as any).type;
+  if (intentType !== "align-wrap") {
+    let innerParentNode = parentNode;
+    let innerParentId = parentId;
+
+    if (previousParentId && previousParentId !== parentId) {
+      const origParent = query.node(previousParentId).get();
+      if (origParent?.data && getInnerAlignmentTarget(node, origParent)) {
+        innerParentNode = origParent;
+        innerParentId = previousParentId;
+      }
+    }
+
+    const innerTarget = getInnerAlignmentTarget(node, innerParentNode);
+    if (innerTarget) {
+      const resolved = resolveInnerAlignmentClass(
+        intent.zone,
+        intent.axis,
+        innerTarget.mode,
+        innerTarget.parentDirection
+      );
+      // Cross-axis (self-*) always targets the node; main-axis (justify-*) targets the parent
+      const effectiveTargetId = resolved.alwaysParent ? innerParentId : nodeId;
+
+      if (innerParentId !== parentId) {
+        log("inner-align-restore", { from: parentId, to: innerParentId });
+        actions.move([nodeId], innerParentId, 0);
+      }
+
+      const batch = innerParentId !== parentId ? actions.history.merge() : actions;
+      log("inner-align", {
+        mode: innerTarget.mode,
+        targetId: effectiveTargetId,
+        className: resolved.className,
+        axis: intent.axis,
+        parentDir: innerTarget.parentDirection,
+      });
+
+      batch.setProp(effectiveTargetId, (props: Record<string, any>) => {
+        const tokens = (props.className || "")
+          .split(/\s+/)
+          .filter((t: string) => t && !resolved.tokensToStrip.includes(t));
+        tokens.push(resolved.className);
+        props.className = tokens.join(" ");
+      });
+      return true;
     }
   }
 
@@ -247,4 +281,14 @@ export function applyAlignmentOnDrop(
   const merged = actions.history.merge();
   actions.addNodeTree(wrapperTree, parentId, nodeIndex);
   merged.move([nodeId], wrapperTree.rootNodeId, 0);
+
+  // Clean up old Align wrapper if it's now empty (node moved out of it)
+  if (previousParentId) {
+    const prevParent = query.node(previousParentId).get();
+    const prevChildren = prevParent?.data?.nodes || [];
+    if (isAlignWrapper(prevParent) && prevChildren.length === 0) {
+      log("cleanup-empty-wrapper", { previousParentId });
+      merged.delete(previousParentId);
+    }
+  }
 }

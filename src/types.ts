@@ -128,7 +128,6 @@ export interface PageHubCallbacks {
     pageTitle?: string;
     pageDescription?: string;
   }) => Promise<{ nodeId: string }>;
-
 }
 
 /** Shape exchanged between SDK and host for remote page settings. */

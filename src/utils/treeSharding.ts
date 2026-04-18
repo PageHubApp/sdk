@@ -21,7 +21,10 @@ function collectSubtree(flat: Record<string, any>, nodeId: string, out: Record<s
 /**
  * Extract a single page's subtree from the full flat map.
  */
-export function extractPageShard(flat: Record<string, any>, pageNodeId: string): Record<string, any> {
+export function extractPageShard(
+  flat: Record<string, any>,
+  pageNodeId: string
+): Record<string, any> {
   const shard: Record<string, any> = {};
   collectSubtree(flat, pageNodeId, shard);
   return shard;
@@ -34,9 +37,7 @@ export function extractSharedShard(flat: Record<string, any>): Record<string, an
   if (!flat.ROOT) return {};
   const shared: Record<string, any> = {};
   const rootChildren = flat.ROOT.nodes || [];
-  const sharedChildIds = rootChildren.filter(
-    (id: string) => flat[id]?.props?.type !== "page"
-  );
+  const sharedChildIds = rootChildren.filter((id: string) => flat[id]?.props?.type !== "page");
 
   shared.ROOT = {
     ...flat.ROOT,

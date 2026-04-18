@@ -31,6 +31,24 @@ const CATEGORY_OPTIONS: { value: ConditionType; label: string }[] = [
   { value: "connector", label: "Connector" },
   { value: "company", label: "Company Variable" },
   { value: "device", label: "Device / Viewport" },
+  { value: "auth", label: "Auth Status" },
+];
+
+const AUTH_FIELDS = [
+  { value: "status", label: "Login status" },
+  { value: "customer.hasSubscription", label: "Has subscription" },
+  { value: "customer.orderCount", label: "Order count" },
+  { value: "customer.totalSpent", label: "Total spent" },
+];
+
+const AUTH_STATUS_VALUES = [
+  { value: "logged-in", label: "Logged in" },
+  { value: "logged-out", label: "Logged out" },
+];
+
+const AUTH_BOOL_VALUES = [
+  { value: "true", label: "Yes" },
+  { value: "false", label: "No" },
 ];
 
 const DEVICE_OPTIONS = [
@@ -62,7 +80,7 @@ function useConnectorOptions(): { provider: string; collections: string[] }[] {
 
 /** Parse a flat conditions array + conditionLogic into condition groups.
  *  Legacy format (flat array) becomes a single group. */
-function parseGroups(
+export function parseGroups(
   conditions: Condition[],
   conditionGroups: ConditionGroup[] | undefined
 ): ConditionGroup[] {
@@ -74,10 +92,12 @@ function parseGroups(
 }
 
 /** Create a default condition for a given type */
-function defaultCondition(type: ConditionType): Condition {
+export function defaultCondition(type: ConditionType): Condition {
   switch (type) {
     case "device":
       return { type: "device", key: "viewport", operator: "equals", value: "mobile" };
+    case "auth":
+      return { type: "auth", key: "status", operator: "equals", value: "logged-in" };
     case "connector":
       return { type: "connector", key: "", operator: "exists", value: "" };
     case "company":
@@ -143,6 +163,28 @@ function ConditionRow({
           propKey="condDevice"
         >
           {DEVICE_OPTIONS.map(opt => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </ToolbarDropdown>
+      )}
+
+      {cond.type === "auth" && (
+        <ToolbarDropdown
+          value={cond.key || "status"}
+          onChange={(val: string) => {
+            const defaults: Record<string, Partial<Condition>> = {
+              status: { operator: "equals", value: "logged-in" },
+              "customer.hasSubscription": { operator: "equals", value: "true" },
+              "customer.orderCount": { operator: "greater-than", value: "0" },
+              "customer.totalSpent": { operator: "greater-than", value: "0" },
+            };
+            onChange({ key: val, ...(defaults[val] || { operator: "equals", value: "" }) });
+          }}
+          propKey="condAuthField"
+        >
+          {AUTH_FIELDS.map(opt => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
@@ -251,24 +293,50 @@ function ConditionRow({
       )}
 
       {/* Value — hidden for exists/not-exists and device */}
-      {cond.type !== "device" && !NO_VALUE_OPERATORS.includes(cond.operator) && (
-        <div className="input-wrapper">
-          <input
-            type="text"
-            value={cond.value}
-            onChange={e => onChange({ value: e.target.value })}
-            placeholder="expected value"
-            className="input-plain w-full font-mono text-xs"
-          />
-        </div>
-      )}
+      {cond.type !== "device" &&
+        !NO_VALUE_OPERATORS.includes(cond.operator) &&
+        (cond.type === "auth" && cond.key === "status" ? (
+          <ToolbarDropdown
+            value={cond.value || "logged-in"}
+            onChange={(val: string) => onChange({ value: val })}
+            propKey="condAuthValue"
+          >
+            {AUTH_STATUS_VALUES.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </ToolbarDropdown>
+        ) : cond.type === "auth" && cond.key === "customer.hasSubscription" ? (
+          <ToolbarDropdown
+            value={cond.value || "true"}
+            onChange={(val: string) => onChange({ value: val })}
+            propKey="condAuthBoolValue"
+          >
+            {AUTH_BOOL_VALUES.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </ToolbarDropdown>
+        ) : (
+          <div className="input-wrapper">
+            <input
+              type="text"
+              value={cond.value}
+              onChange={e => onChange({ value: e.target.value })}
+              placeholder="expected value"
+              className="input-plain w-full font-mono text-xs"
+            />
+          </div>
+        ))}
     </div>
   );
 }
 
 // ── Condition Group ──────────────────────────────────────────────────────────
 
-function ConditionGroupUI({
+export function ConditionGroupUI({
   group,
   groupIndex,
   onChange,
@@ -360,9 +428,9 @@ export const ConditionsInput = () => {
     conditionGroups,
     actions: { setProp },
   } = useNode(node => ({
-    conditions: (node.data.props.conditions || []) as Condition[],
-    conditionLogic: (node.data.props.conditionLogic || "all") as ConditionLogic,
-    conditionGroups: node.data.props.conditionGroups as ConditionGroup[] | undefined,
+    conditions: (node.data?.props.conditions || []) as Condition[],
+    conditionLogic: (node.data?.props.conditionLogic || "all") as ConditionLogic,
+    conditionGroups: node.data?.props.conditionGroups as ConditionGroup[] | undefined,
   }));
 
   const rawFormElements = useElementPicker("all");
@@ -406,11 +474,7 @@ export const ConditionsInput = () => {
   };
 
   return (
-    <ToolbarSection
-      title="Conditions"
-      icon={<TbEyeSearch />}
-      help="Show or hide this element based on conditions. Conditions within a group use AND logic. Multiple groups use OR logic (any group can match)."
-    >
+    <>
       {groups.length === 0 && (
         <p className="text-neutral-content mb-2 text-[11px]">
           No conditions set. This element is always visible.
@@ -422,7 +486,7 @@ export const ConditionsInput = () => {
           {gi > 0 && (
             <div className="my-2 flex items-center gap-2">
               <div className="bg-base-300 h-px flex-1" />
-              <span className="text-neutral-content text-[10px] font-bold uppercase tracking-wider">
+              <span className="text-neutral-content text-[10px] font-bold tracking-wider uppercase">
                 OR
               </span>
               <div className="bg-base-300 h-px flex-1" />
@@ -448,6 +512,6 @@ export const ConditionsInput = () => {
           </ToolbarDashedButton>
         )}
       </div>
-    </ToolbarSection>
+    </>
   );
 };

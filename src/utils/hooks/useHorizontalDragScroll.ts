@@ -56,7 +56,7 @@ export function useHorizontalDragScroll(
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const onMove = (e: MouseEvent) => {
+    const onMove = (e: globalThis.MouseEvent) => {
       if (!dragActive.current) return;
       const dx = e.clientX - dragStartX.current;
       if (Math.abs(dx) > 3) dragMoved.current = true;

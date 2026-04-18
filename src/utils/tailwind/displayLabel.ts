@@ -40,6 +40,8 @@ const STEMS_BY_PROP: Record<string, string[]> = {
 };
 
 const WORDS_BY_TOKEN: Record<string, string> = {
+  "3xs": "3X Small",
+  "2xs": "2X Small",
   xs: "Extra Small",
   sm: "Small",
   md: "Medium",
@@ -53,7 +55,9 @@ const WORDS_BY_TOKEN: Record<string, string> = {
   reverse: "Reverse",
 };
 
-const KNOWN_STEMS = [...new Set(Object.values(STEMS_BY_PROP).flat())].sort((a, b) => b.length - a.length);
+const KNOWN_STEMS = [...new Set(Object.values(STEMS_BY_PROP).flat())].sort(
+  (a, b) => b.length - a.length
+);
 
 function titleCaseToken(token: string): string {
   const trimmed = token.trim();

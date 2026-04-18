@@ -12,7 +12,7 @@ const VIEW_STATES = [
 
 export const ModalMainTab = () => {
   const { actions } = useEditor();
-  const { id, props } = useNode(node => ({ props: node.data.props }));
+  const { id, props } = useNode(node => ({ props: node.data?.props }));
   const currentView = props.view || "";
   const trigger = props.trigger || {};
 

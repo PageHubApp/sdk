@@ -1,7 +1,7 @@
 /**
  * Material Symbols (ref-google) — hide ligatures until the font is usable.
- * - React Button uses PH_MS_FONT_PENDING_CLASS until document.fonts.load + check() pass
- *   (and retries on visibility / bfcache restore when the face drops out).
+ * - React Button uses PH_MS_FONT_PENDING_CLASS until isMaterialSymbolsFontReady + markMaterialSymbolsFontLoadedIfReady
+ *   (bfcache: pageshow persisted only — not every visibility toggle).
  * - Static HTML from Button.craft adds data-ph-google-icon + pending; FOUC inline script reveals.
  */
 
@@ -58,6 +58,49 @@ export function materialSymbolsOutlinedFontSpec(sizeKey: string): string {
   return `400 ${px}px "Material Symbols Outlined"`;
 }
 
+/** Normalize FontFace.family (browsers may quote or trim differently). */
+function isMaterialSymbolsOutlinedFamily(family: string): boolean {
+  const t = family.trim().replace(/^["']+|["']+$/g, "");
+  return t === "Material Symbols Outlined";
+}
+
+/**
+ * Check if Material Symbols is genuinely loaded — not just document.fonts.check().
+ * fonts.check() returns true when NO matching @font-face exists (vacuous truth),
+ * so we also verify at least one loaded FontFace is in the registry.
+ */
+export function isMaterialSymbolsFontReady(desc: string): boolean {
+  if (typeof document === "undefined" || !document.fonts) return false;
+  const hasLoadedFace = [...document.fonts].some(
+    f => isMaterialSymbolsOutlinedFamily(f.family) && f.status === "loaded"
+  );
+  return hasLoadedFace && document.fonts.check(desc);
+}
+
+/**
+ * Shared flag — once ANY Button confirms the font is loaded, all future mounts
+ * skip the pending state entirely. Prevents ligature flash when conditional
+ * visibility swaps which Button is rendered (e.g. auth-gated nav icons).
+ *
+ * Only set via markMaterialSymbolsFontLoadedIfReady (or after isMaterialSymbolsFontReady
+ * is true). Do not use this to mean "UI timed out" — that poisons later mounts.
+ */
+let _materialSymbolsFontLoaded = false;
+export function isMaterialSymbolsFontLoaded(): boolean {
+  return _materialSymbolsFontLoaded;
+}
+
+export function markMaterialSymbolsFontLoaded(): void {
+  _materialSymbolsFontLoaded = true;
+}
+
+/** Sets the global loaded flag only when the face is actually ready (avoids timeout false positives). */
+export function markMaterialSymbolsFontLoadedIfReady(desc: string): boolean {
+  if (!isMaterialSymbolsFontReady(desc)) return false;
+  _materialSymbolsFontLoaded = true;
+  return true;
+}
+
 /**
  * Inline IIFE for FOUC <Head>: inject pending style, non-blocking Material Symbols link,
  * then reveal [data-ph-google-icon].ph-ms-font-pending after load + fonts.ready (+ fallbacks).
@@ -108,6 +151,9 @@ export function buildMaterialSymbolsFoucInlineScript(fontHref: string): string {
     "setTimeout(R,2000)" +
     "}" +
     "S();" +
+    "var x=document.getElementById('pagehub-auto-material-symbols');" +
+    "if(x&&x.media!=='print'){L();return}" +
+    "if(x)x.parentNode.removeChild(x);" +
     "var l=document.createElement('link');" +
     "l.id='pagehub-auto-material-symbols';" +
     "l.rel='stylesheet';" +

@@ -1,15 +1,21 @@
 import { ROOT_NODE, useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import sluggit from "slug";
-import { TbAdjustments, TbSearch, TbSettings } from "react-icons/tb";
+import { TbAdjustments, TbLock, TbSearch, TbSettings } from "react-icons/tb";
 import { useSDK } from "../../core/context";
 import { useEditorSidebarDockLeft } from "../../utils/lib";
-import { getLoadedPages } from "../../utils/pageManagement";
+import { getLoadedPages, listPageNodeIds } from "../../utils/pageManagement";
+import { AccessTab } from "./page-settings/AccessTab";
 import { AdvancedTab } from "./page-settings/AdvancedTab";
 import { BasicTab } from "./page-settings/BasicTab";
 import { SEOTab } from "./page-settings/SEOTab";
-import { PAGE_SETTINGS_FIELDS, pageSettingsDefaults, readSettingsProps } from "./page-settings/fields";
+import {
+  PAGE_SETTINGS_FIELDS,
+  pageSettingsDefaults,
+  readSettingsProps,
+} from "./page-settings/fields";
 import { mergeSettingsTabs, visibleSettingsTabs } from "./settings/registry";
+import { SETTINGS_INPUT_CLASS, SETTINGS_SELECT_CLASS } from "./settings/settingsControlClasses";
 import { SettingsShell } from "./settings/SettingsShell";
 import { type SettingsTabDefinition } from "./settings/types";
 import { useSettingsController } from "./settings/useSettingsController";
@@ -66,7 +72,13 @@ export interface PageSettingsExtraTab {
 // ── Draft helpers (derived from PAGE_SETTINGS_FIELDS) ─────────────────────────
 
 function createEmptyPageDraft(): PageSettingsDraft {
-  return { _remote: false, pageName: "", isHomePage: false, is404Page: false, ...pageSettingsDefaults() };
+  return {
+    _remote: false,
+    pageName: "",
+    isHomePage: false,
+    is404Page: false,
+    ...pageSettingsDefaults(),
+  };
 }
 
 function createDraftFromProps(
@@ -75,7 +87,7 @@ function createDraftFromProps(
   is404Page: boolean,
   source: Record<string, any>,
   allowCustom404Page: boolean,
-  remote: boolean,
+  remote: boolean
 ): PageSettingsDraft {
   return {
     _remote: remote,
@@ -86,7 +98,10 @@ function createDraftFromProps(
   };
 }
 
-function draftToPayload(snapshot: PageSettingsDraft, allowCustom404Page: boolean): PageSettingsPayload {
+function draftToPayload(
+  snapshot: PageSettingsDraft,
+  allowCustom404Page: boolean
+): PageSettingsPayload {
   const props: Record<string, any> = {};
   for (const f of PAGE_SETTINGS_FIELDS) props[f.key] = snapshot[f.key];
   return {
@@ -179,7 +194,9 @@ export function PageSettingsModal({
     setShowDeleteConfirm(false);
   }, []);
 
-  const builtInTabs = useMemo<Array<SettingsTabDefinition<PageSettingsDraft, PageSettingsTabContext>>>(
+  const builtInTabs = useMemo<
+    Array<SettingsTabDefinition<PageSettingsDraft, PageSettingsTabContext>>
+  >(
     () => [
       {
         key: "basic",
@@ -188,6 +205,7 @@ export function PageSettingsModal({
         icon: <TbSettings />,
         render: ctx => (
           <BasicTab
+            inputClass={ctx.inputClass}
             pageName={ctx.draft.pageName}
             onPageNameChange={newName => {
               ctx.updateField("pageName", newName);
@@ -214,8 +232,14 @@ export function PageSettingsModal({
             setShowDeleteConfirm={setShowDeleteConfirm}
             onDeletePage={() => {
               if (!ctx.pageId) return;
-              try { actions.delete(ctx.pageId); } catch { /* not in tree */ }
-              window.dispatchEvent(new CustomEvent("pagehub:page-deleted", { detail: { pageId: ctx.pageId } }));
+              try {
+                actions.delete(ctx.pageId);
+              } catch {
+                /* not in tree */
+              }
+              window.dispatchEvent(
+                new CustomEvent("pagehub:page-deleted", { detail: { pageId: ctx.pageId } })
+              );
               onClose();
             }}
           />
@@ -228,6 +252,8 @@ export function PageSettingsModal({
         icon: <TbSearch />,
         render: ctx => (
           <SEOTab
+            inputClass={ctx.inputClass}
+            selectClass={ctx.selectClass}
             pageTitle={ctx.draft.pageTitle}
             setPageTitle={value => ctx.updateField("pageTitle", value)}
             pageDescription={ctx.draft.pageDescription}
@@ -264,6 +290,7 @@ export function PageSettingsModal({
         icon: <TbAdjustments />,
         render: ctx => (
           <AdvancedTab
+            inputClass={ctx.inputClass}
             canonicalUrl={ctx.draft.canonicalUrl}
             setCanonicalUrl={value => ctx.updateField("canonicalUrl", value)}
             headCode={ctx.draft.headCode}
@@ -279,12 +306,51 @@ export function PageSettingsModal({
           />
         ),
       },
+      {
+        key: "access",
+        label: "Access",
+        order: 400,
+        icon: <TbLock />,
+        render: ctx => {
+          const pageIds = listPageNodeIds(query);
+          const pages = pageIds
+            .filter(id => id !== ctx.pageId)
+            .map(id => {
+              const node = query.node(id).get();
+              return { id, name: node?.data?.custom?.displayName || id };
+            });
+          return (
+            <AccessTab
+              inputClass={ctx.inputClass}
+              selectClass={ctx.selectClass}
+              conditionGroups={ctx.draft.conditionGroups || []}
+              setConditionGroups={value => ctx.updateField("conditionGroups", value)}
+              pageConditionFailAction={ctx.draft.pageConditionFailAction || ""}
+              setPageConditionFailAction={value =>
+                ctx.updateField("pageConditionFailAction", value)
+              }
+              pageConditionRedirectUrl={ctx.draft.pageConditionRedirectUrl || ""}
+              setPageConditionRedirectUrl={value =>
+                ctx.updateField("pageConditionRedirectUrl", value)
+              }
+              pageConditionFallbackPageId={ctx.draft.pageConditionFallbackPageId || ""}
+              setPageConditionFallbackPageId={value =>
+                ctx.updateField("pageConditionFallbackPageId", value)
+              }
+              pages={pages}
+            />
+          );
+        },
+      },
     ],
     [actions, autoSlug, ogExpanded, onClose, pageSlug, showDeleteConfirm, twitterExpanded]
   );
 
   const injectedTabs = useMemo(() => adaptLegacyExtraTabs(extraTabs), [extraTabs]);
-  const allTabs = useMemo(() => mergeSettingsTabs(builtInTabs, injectedTabs), [builtInTabs, injectedTabs]);
+  const allTabs = useMemo(
+    () => mergeSettingsTabs(builtInTabs, injectedTabs),
+    [builtInTabs, injectedTabs]
+  );
 
   const { draft, setDraft, updateField, loading, requestSave, flushSave } =
     useSettingsController<PageSettingsDraft>({
@@ -298,7 +364,12 @@ export function PageSettingsModal({
           const props = node?.data?.props || {};
           const custom = node?.data?.custom || {};
           const nextDraft = createDraftFromProps(
-            custom.displayName, props.isHomePage, props.is404Page, props, allowCustom404Page, false,
+            custom.displayName,
+            props.isHomePage,
+            props.is404Page,
+            props,
+            allowCustom404Page,
+            false
           );
           applySlugDefaults(nextDraft);
           return nextDraft;
@@ -310,7 +381,12 @@ export function PageSettingsModal({
           return fetchPageSettings(pageId).then(remote => {
             if (remote) {
               const nextDraft = createDraftFromProps(
-                remote.displayName, remote.isHomePage, remote.is404Page, remote.props || {}, allowCustom404Page, true,
+                remote.displayName,
+                remote.isHomePage,
+                remote.is404Page,
+                remote.props || {},
+                allowCustom404Page,
+                true
               );
               applySlugDefaults(nextDraft);
               return nextDraft;
@@ -344,12 +420,16 @@ export function PageSettingsModal({
               if (id === pageId) continue;
               const child = query.node(id).get();
               if (child?.data?.props?.type === "page" && child?.data?.props?.is404Page) {
-                actions.setProp(id, p => { p.is404Page = false; });
+                actions.setProp(id, p => {
+                  p.is404Page = false;
+                });
               }
             }
           }
 
-          actions.setCustom(pageId, custom => { custom.displayName = snapshot.pageName; });
+          actions.setCustom(pageId, custom => {
+            custom.displayName = snapshot.pageName;
+          });
 
           actions.setProp(pageId, p => {
             p.isHomePage = snapshot.isHomePage;
@@ -358,7 +438,11 @@ export function PageSettingsModal({
 
             for (const tab of allTabs) {
               tab.onSave?.({
-                query, actions, draft: snapshot, pageId, allowCustom404Page,
+                query,
+                actions,
+                draft: snapshot,
+                pageId,
+                allowCustom404Page,
                 setProp: cb => cb(p),
               });
             }
@@ -371,10 +455,8 @@ export function PageSettingsModal({
       reloadKey: pageId,
     });
 
-  const inputClass =
-    "w-full rounded-lg border border-base-300 bg-base-200 px-4 py-2 text-sm text-base-content shadow-sm placeholder:text-neutral-content transition-[border-color,box-shadow,background-color] duration-150 ease-out hover:border-primary hover:bg-base-300/25 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50";
-  const selectClass =
-    "w-full cursor-pointer rounded-lg border border-base-300 bg-base-200 px-2 py-2 text-xs text-base-content shadow-sm transition-[border-color,box-shadow,background-color] duration-150 ease-out hover:border-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50";
+  const inputClass = SETTINGS_INPUT_CLASS;
+  const selectClass = SETTINGS_SELECT_CLASS;
 
   const tabRenderCtx = useMemo(
     () => ({
@@ -390,7 +472,17 @@ export function PageSettingsModal({
       pageId,
       allowCustom404Page,
     }),
-    [actions, allowCustom404Page, draft, flushSave, pageId, query, requestSave, setDraft, updateField]
+    [
+      actions,
+      allowCustom404Page,
+      draft,
+      flushSave,
+      pageId,
+      query,
+      requestSave,
+      setDraft,
+      updateField,
+    ]
   );
 
   const tabs = useMemo(() => visibleSettingsTabs(allTabs, tabRenderCtx), [allTabs, tabRenderCtx]);

@@ -43,7 +43,7 @@ export interface ToolbarConfig {
   override?: Record<string, ReactNode>;
   /** Hover variant (default "container") */
   hover?: "text" | "container" | "button" | "link";
-  /** Custom layout JSX (default is <LayoutInput />) */
+  /** Custom layout JSX override (unified settings use the registry by default) */
   layout?: ReactNode | (() => ReactNode) | "spacing" | "hidden";
   /** Composable className modifiers from defineComponent() */
   modifiers?: ComponentModifier[];

@@ -1,5 +1,16 @@
 /** Container — Component definition via defineComponent(). */
-import { TbContainer, TbLayoutColumns, TbLayoutRows } from "react-icons/tb";
+import React from "react";
+import { Element } from "@craftjs/core";
+import {
+  TbAlertTriangle,
+  TbBadge,
+  TbChartBar,
+  TbContainer,
+  TbLayoutColumns,
+  TbLayoutRows,
+  TbSection,
+  TbUserCircle,
+} from "react-icons/tb";
 import {
   ContainerMainTab,
   HeaderFooterToggles,
@@ -7,7 +18,10 @@ import {
 import { defineComponent } from "../define";
 import { ariaAttrs, getInlineStyle, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
 import { Container } from "./Container";
+import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
 import { ContainerPaddingOverlay } from "./ContainerPaddingOverlay";
+import { Text } from "./Text";
+import { Image } from "./Image";
 
 export const toHTML: ToHTMLFn = (props, children, ctx) => {
   if (props.type === "component") return "";
@@ -62,24 +76,126 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   return tag(t, attrs, children);
 };
 
-const SECTION_PARENTS = new Set(["page", "component", "header", "footer"]);
+function buildSectionChildren() {
+  return [
+    <Element
+      key="content"
+      canvas
+      is={Container}
+      custom={{ displayName: "Content" }}
+      canDelete={true}
+      canEditName={true}
+      className="flex flex-col gap-space-md w-full max-w-page mx-auto"
+    />,
+  ];
+}
 
-const canMoveIn = (nodes: any[], into: any) => {
-  if (!into?.data) return true;
-  return nodes.every(node => {
-    if (node?.data?.props?.type === "form") {
-      if (into.data?.props?.type === "form") return false;
-    }
-    if (node?.data?.props?.type === "page") {
-      return into.id === "ROOT";
-    }
-    // Blocks/sections can only go into pages, components, headers, or footers
-    if (node?.data?.props?.type === "section") {
-      return SECTION_PARENTS.has(into.data?.props?.type);
-    }
-    return true;
-  });
-};
+function buildAvatarChildren() {
+  return [
+    <Element
+      key="img"
+      is={Image}
+      custom={{ displayName: "Photo" }}
+      canDelete={true}
+      canEditName={true}
+      className="w-full h-full object-cover"
+    />,
+  ];
+}
+
+const alertSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+function buildAlertChildren() {
+  return [
+    <Element
+      key="icon"
+      is={Text}
+      custom={{ displayName: "Icon" }}
+      text={`<span class="shrink-0">${alertSvg}</span>`}
+      canDelete={true}
+      canEditName={true}
+    />,
+    <Element
+      key="text"
+      is={Text}
+      custom={{ displayName: "Message" }}
+      text="<span>This is an important message for your visitors.</span>"
+      canDelete={true}
+      canEditName={true}
+    />,
+  ];
+}
+
+function buildStatChildren() {
+  return [
+    <Element
+      key="value"
+      is={Text}
+      custom={{ displayName: "Value" }}
+      text="2,400+"
+      className="text-4xl font-bold font-heading text-primary"
+      canDelete={true}
+      canEditName={true}
+    />,
+    <Element
+      key="label"
+      is={Text}
+      custom={{ displayName: "Label" }}
+      text="Happy Customers"
+      className="text-sm text-base-content/60"
+      canDelete={true}
+      canEditName={true}
+    />,
+  ];
+}
+
+/**
+ * Extra Container-based presets for the "Components" toolbox category.
+ * Same pattern as NAV_EXTRA_PRESETS — Container element, separate category.
+ */
+export const COMPONENT_EXTRA_PRESETS = [
+  {
+    label: "Badge",
+    description: "Small label pill for tags, status, or categories.",
+    icon: TbBadge,
+    element: Container,
+    props: { className: "badge badge-primary font-medium self-start" },
+    children: () => [
+      <Element
+        key="label"
+        is={Text}
+        custom={{ displayName: "Label" }}
+        text="New"
+        canDelete={true}
+        canEditName={true}
+      />,
+    ],
+  },
+  {
+    label: "Avatar",
+    description: "Circular image for profile photos or team members.",
+    icon: TbUserCircle,
+    element: Container,
+    props: { className: "w-16 h-16 rounded-full overflow-hidden shrink-0" },
+    children: buildAvatarChildren,
+  },
+  {
+    label: "Alert",
+    description: "Notification banner with icon and message.",
+    icon: TbAlertTriangle,
+    element: Container,
+    props: { className: "alert alert-info flex flex-row items-center gap-space-xs w-full" },
+    children: buildAlertChildren,
+  },
+  {
+    label: "Stat",
+    description: "Number + label pair for counters and metrics.",
+    icon: TbChartBar,
+    element: Container,
+    props: { className: "flex flex-col items-center gap-space-xs text-center" },
+    children: buildStatChildren,
+  },
+];
 
 export const ContainerDef = defineComponent(
   {
@@ -91,18 +207,28 @@ export const ContainerDef = defineComponent(
     settings: ContainerMainTab,
     toolbarExtra: <HeaderFooterToggles />,
     toHTML,
-    tools: () => [
-      <ContainerPaddingOverlay key="padding-overlay" />,
-    ],
+    tools: () => [<ContainerPaddingOverlay key="padding-overlay" />],
     rules: {
       canDrag: () => true,
       canDelete: () => true,
-      canMoveIn: (node, into) => canMoveIn(node, into),
+      canMoveIn: (node, into) => layoutCanvasCanMoveIn(node, into),
     },
     presets: [
       {
+        label: "Section",
+        icon: TbSection,
+        description: "Full-width page section with padding and a centered content wrapper.",
+        props: {
+          type: "section",
+          className:
+            "bg-base-100 text-base-content w-full flex flex-col items-center py-space-lg px-container-x",
+        },
+        children: buildSectionChildren,
+      },
+      {
         label: "Row",
         icon: TbLayoutColumns,
+        description: "Horizontal flex layout. Smart defaults based on where you drop it.",
         props: {
           className: "flex flex-row flex-wrap gap-space-md items-start min-w-0 w-full",
         },
@@ -110,6 +236,7 @@ export const ContainerDef = defineComponent(
       {
         label: "Column",
         icon: TbLayoutRows,
+        description: "Vertical flex layout. Smart defaults based on where you drop it.",
         props: { className: "flex flex-col gap-space-md w-full" },
       },
     ],

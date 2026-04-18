@@ -6,7 +6,7 @@ import { PatternsDialogInput } from "./PatternsDialogInput";
 
 export const PatternInput = () => {
   const { props } = useNode(node => ({
-    props: node.data.props,
+    props: node.data?.props,
   }));
 
   const pattern = props.root?.pattern || {};

@@ -1,4 +1,4 @@
-import { useEditor } from "@craftjs/core";
+import { NodeProvider, useEditor } from "@craftjs/core";
 import React, { useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { useAtomState, useAtomValue } from "@zedux/react";
@@ -7,6 +7,7 @@ import { useEditorToolbarOverlayLayout } from "../../utils/hooks/useEditorToolba
 import { PreviewAtom } from "../viewport/atoms";
 import { isFlyoutBlockingToolColumn, usePanelUrl } from "../../utils/usePanelUrl";
 import { Header } from "../viewport/Header";
+import { LazyUnifiedSettings } from "../../components/LazyUnifiedSettings";
 import { EditorEmptyState } from "./EditorEmptyState";
 import { SidebarLayersPanel } from "./SidebarLayersPanel";
 
@@ -40,15 +41,21 @@ export const Toolbar = () => {
   const { panel } = usePanelUrl();
   const flyoutBlockingToolColumn = isFlyoutBlockingToolColumn(panel);
 
-  const { related } = useEditor((state, query) => {
-    const currentlySelectedNodeId = query.getEvent("selected").first();
-
-    return {
-      related: currentlySelectedNodeId && state.nodes[currentlySelectedNodeId].related,
-    };
+  const { selectedNodeId } = useEditor((state, query) => {
+    const id = query.getEvent("selected").first() || null;
+    if (id && !state.nodes[id]?.data) return { selectedNodeId: null };
+    return { selectedNodeId: id };
   });
 
-  const tool = related?.toolbar ? React.createElement(related.toolbar) : <EditorEmptyState />;
+  // Mount LazyUnifiedSettings ONCE. NodeProvider swaps the context id without
+  // remounting children — useNode() inside picks up the new id reactively.
+  const tool = selectedNodeId ? (
+    <NodeProvider id={selectedNodeId}>
+      <LazyUnifiedSettings />
+    </NodeProvider>
+  ) : (
+    <EditorEmptyState />
+  );
 
   // Right sidebar: push to end of the flex row via CSS order (docked only)
   const orderClass = !isOverlayLayout && !sideBarLeft ? "order-last" : "";
@@ -72,7 +79,7 @@ export const Toolbar = () => {
       key="sideMenu"
       id="toolbar"
       className={twMerge(
-        "border-base-300 bg-sidebar text-sidebar-foreground flex flex-col overflow-hidden border-x shadow-lg transition-[width,opacity] duration-200",
+        "bg-sidebar text-sidebar-foreground border-sidebar-border flex flex-col overflow-hidden border-x border-b-2 shadow-lg transition-[width,opacity] duration-200",
         layoutClass,
         orderClass,
         sizeClass
@@ -86,7 +93,7 @@ export const Toolbar = () => {
       >
         <div
           className={`flex min-h-0 flex-1 flex-col overflow-hidden${
-            flyoutBlockingToolColumn ? " pointer-events-none" : ""
+            flyoutBlockingToolColumn ? "pointer-events-none" : ""
           }`}
         >
           {tool}

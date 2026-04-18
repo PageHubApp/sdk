@@ -97,7 +97,7 @@ export const SelectOptionsItem = (__props: ToolbarItemProps) => {
     actions: { setProp },
     options,
   } = useNode(node => {
-    const opts = node.data.props?.options || [];
+    const opts = node.data?.props?.options || [];
     // Ensure options is an array
     const optionsArray = Array.isArray(opts) ? opts : Object.values(opts);
     return {

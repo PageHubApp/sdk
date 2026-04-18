@@ -39,7 +39,7 @@ export const IconInput = ({
       collapsible={collapsible}
       footer={
         <ItemAdvanceToggle propKey="border" title="More icon properties">
-          <ToolbarSection full={1} collapsible={false}>
+          <ToolbarSection full={1} collapsible={false} nested>
             <ColorInput
               propKey="icon.color"
               propType="component"

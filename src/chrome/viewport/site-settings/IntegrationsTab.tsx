@@ -1,5 +1,12 @@
 import React from "react";
 import { TbInfoCircle } from "react-icons/tb";
+import {
+  SettingsCallout,
+  SettingsFormCard,
+  SettingsFormField,
+  SettingsTabIntro,
+  settingsTabRootClass,
+} from "../settings/SettingsTabChrome";
 
 export const INTEGRATION_PROVIDERS = {
   googleAnalytics: {
@@ -40,51 +47,46 @@ export function IntegrationsTab({
   setIntegrations,
 }: IntegrationsTabProps) {
   return (
-    <div className="space-y-6">
-      <div className="mb-4 space-y-2">
-        <h3 className="text-base-content text-lg font-semibold">Analytics & Tracking</h3>
-        <p className="text-neutral-content text-sm">
-          Connect analytics, tracking pixels, and site verification. Just paste in your ID.
+    <div className={settingsTabRootClass}>
+      <SettingsTabIntro
+        title="Integrations"
+        description="Connect analytics, verification, and tracking. Paste IDs only — no raw script tags here."
+      />
+
+      <SettingsFormCard title="Analytics and tracking">
+        {Object.entries(INTEGRATION_PROVIDERS).map(([key, meta]) => {
+          const value = integrations[key]?.[meta.field] || "";
+          return (
+            <SettingsFormField
+              key={key}
+              label={meta.label}
+              htmlFor={`integration-${key}`}
+              hint={meta.help}
+            >
+              <input
+                id={`integration-${key}`}
+                type="text"
+                value={value}
+                onChange={e => {
+                  setIntegrations(prev => ({
+                    ...prev,
+                    [key]: { [meta.field]: e.target.value },
+                  }));
+                }}
+                className={inputClass}
+                placeholder={meta.placeholder}
+              />
+            </SettingsFormField>
+          );
+        })}
+      </SettingsFormCard>
+
+      <SettingsCallout icon={<TbInfoCircle />} title="Using Google Tag Manager?">
+        <p>
+          GTM can manage GA, Meta Pixel, and most other tags. If you use GTM, you only need the GTM
+          Container ID here — configure individual tags inside GTM.
         </p>
-      </div>
-
-      {Object.entries(INTEGRATION_PROVIDERS).map(([key, meta]) => {
-        const value = integrations[key]?.[meta.field] || "";
-        return (
-          <div key={key}>
-            <label htmlFor={`integration-${key}`} className="toolbar-label mb-2 block font-medium">
-              {meta.label}
-            </label>
-            <input
-              id={`integration-${key}`}
-              type="text"
-              value={value}
-              onChange={e => {
-                setIntegrations(prev => ({
-                  ...prev,
-                  [key]: { [meta.field]: e.target.value },
-                }));
-              }}
-              className={inputClass}
-              placeholder={meta.placeholder}
-            />
-            <p className="text-neutral-content mt-1 text-xs">{meta.help}</p>
-          </div>
-        );
-      })}
-
-      <div className="border-base-300 bg-neutral mt-4 rounded-lg border p-4">
-        <div className="flex gap-3">
-          <TbInfoCircle className="text-primary mt-0.5 size-5 shrink-0" />
-          <div className="space-y-1">
-            <p className="toolbar-label font-medium">Using Google Tag Manager?</p>
-            <p className="text-neutral-content text-sm">
-              GTM can manage GA, Meta Pixel, and most other tags. If you use GTM, you only need the
-              GTM Container ID here — configure individual tags inside GTM.
-            </p>
-          </div>
-        </div>
-      </div>
+      </SettingsCallout>
     </div>
   );
 }

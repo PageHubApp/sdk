@@ -5,7 +5,9 @@ import ReactDOM from "react-dom";
 import { getBesidePreviewLabel } from "./layoutInference";
 
 function getIndicatorColor(indicator: any, indicatorOptions: any) {
-  return indicator?.error ? indicatorOptions?.error || "rgb(153 27 27)" : indicatorOptions?.success || "currentColor";
+  return indicator?.error
+    ? indicatorOptions?.error || "rgb(153 27 27)"
+    : indicatorOptions?.success || "currentColor";
 }
 
 export function BesideDropIndicator() {
@@ -24,10 +26,11 @@ export function BesideDropIndicator() {
 
   const nodeInfo = getDOMInfo(currentNode.dom);
   const color = getIndicatorColor(indicator, indicatorOptions);
-  const labelText = parent?.id && currentNode?.id
-    ? getBesidePreviewLabel(query, query.node(parent.id).get(), query.node(currentNode.id).get())
-    : "Place beside";
-  const overlayWidth = Math.max(72, Math.min(nodeInfo.outerWidth * 0.42, 220));
+  const labelText =
+    parent?.id && currentNode?.id
+      ? getBesidePreviewLabel(query, query.node(parent.id).get(), query.node(currentNode.id).get())
+      : "Place beside";
+  const overlayWidth = 32;
   const overlayLeft =
     where === "beside-left" ? nodeInfo.left : nodeInfo.left + nodeInfo.outerWidth - overlayWidth;
   const barLeft = where === "beside-left" ? nodeInfo.left : nodeInfo.left + nodeInfo.outerWidth - 4;
@@ -71,7 +74,7 @@ export function BesideDropIndicator() {
           width: `${overlayWidth}px`,
           height: `${nodeInfo.outerHeight}px`,
           backgroundColor: color,
-          opacity: indicator.error ? 0.18 : 0.02,
+          opacity: indicator.error ? 0.18 : 0.07,
           borderRadius: 0,
           borderColor: color,
           borderStyle: "dashed",

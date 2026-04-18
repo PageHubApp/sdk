@@ -12,16 +12,19 @@ export const DeleteNodeController = () => {
   const { id, displayName, canDelete } = useNode(node => {
     const t = node.data.props?.type;
     return {
-    id: node.id,
-    canDelete:
-      node.data.props?.canDelete !== false &&
-      node.data.custom?.permissions?.canDelete !== false &&
-      t !== "page" && t !== "header" && t !== "footer",
-    displayName:
-      (node.data.custom?.displayName as string | undefined) ||
-      (node.data.displayName as string | undefined) ||
-      String(node.data.name || "Element"),
-  }; });
+      id: node.id,
+      canDelete:
+        node.data.props?.canDelete !== false &&
+        node.data.custom?.permissions?.canDelete !== false &&
+        t !== "page" &&
+        t !== "header" &&
+        t !== "footer",
+      displayName:
+        (node.data.custom?.displayName as string | undefined) ||
+        (node.data.displayName as string | undefined) ||
+        String(node.data.name || "Element"),
+    };
+  });
 
   const { config } = useSDK();
   const aiEnabled = useAiEnabled();
@@ -41,7 +44,7 @@ export const DeleteNodeController = () => {
       if (prev.some(n => n.id === id)) return prev;
       return [...prev, { id, displayName }];
     });
-    setAssistantOpen({ nodeId: id });
+    setAssistantOpen({ nodeId: id, revealPanel: true });
   };
 
   if (!isActive) return null;

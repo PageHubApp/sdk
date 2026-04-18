@@ -6,9 +6,7 @@ import { registerProximityTarget, unregisterProximityTarget } from "./proximityH
  * Components opt out of proximity hover via `custom.hoverable = false`.
  * Everything with a DOM element is hoverable by default.
  */
-function isInteractiveElementFromNode(node: {
-  data?: { custom?: Record<string, any> };
-}): boolean {
+function isInteractiveElementFromNode(node: { data?: { custom?: Record<string, any> } }): boolean {
   return node.data?.custom?.hoverable !== false;
 }
 

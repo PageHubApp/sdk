@@ -9,6 +9,7 @@ import { CodeTab } from "./site-settings/CodeTab";
 import { IntegrationsTab } from "./site-settings/IntegrationsTab";
 import { RedirectsTab } from "./site-settings/RedirectsTab";
 import { mergeSettingsTabs, visibleSettingsTabs } from "./settings/registry";
+import { SETTINGS_INPUT_CLASS, SETTINGS_SELECT_CLASS } from "./settings/settingsControlClasses";
 import { SettingsShell } from "./settings/SettingsShell";
 import { type SettingsTabDefinition } from "./settings/types";
 import { useSettingsController } from "./settings/useSettingsController";
@@ -122,7 +123,9 @@ function normalizeConnectors(input: unknown): SiteSettingsConnectorMap {
 function createDraftFromRoot(props: Record<string, any>): SiteSettingsDraft {
   const company = props.company || {};
   const designTags = Array.isArray(props.designTags)
-    ? normalizeDesignTags(props.designTags.filter((t: unknown): t is string => typeof t === "string"))
+    ? normalizeDesignTags(
+        props.designTags.filter((t: unknown): t is string => typeof t === "string")
+      )
     : [];
 
   return {
@@ -253,7 +256,9 @@ export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSetti
     queryRef.current = query;
   }, [query]);
 
-  const builtInTabs = useMemo<Array<SettingsTabDefinition<SiteSettingsDraft, SiteSettingsTabContext>>>(
+  const builtInTabs = useMemo<
+    Array<SettingsTabDefinition<SiteSettingsDraft, SiteSettingsTabContext>>
+  >(
     () => [
       {
         key: "branding",
@@ -347,41 +352,43 @@ export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSetti
   );
 
   const injectedTabs = useMemo(() => adaptLegacyExtraTabs(extraTabs), [extraTabs]);
-  const allTabs = useMemo(() => mergeSettingsTabs(builtInTabs, injectedTabs), [builtInTabs, injectedTabs]);
+  const allTabs = useMemo(
+    () => mergeSettingsTabs(builtInTabs, injectedTabs),
+    [builtInTabs, injectedTabs]
+  );
 
-  const { draft, setDraft, updateField, loading, requestSave, flushSave } = useSettingsController<SiteSettingsDraft>({
-    isOpen,
-    loadDraft: () => {
-      try {
-        const root = queryRef.current.node(ROOT_NODE).get();
-        return createDraftFromRoot((root?.data?.props || {}) as Record<string, any>);
-      } catch (e) {
-        console.error("Error loading site settings:", e);
-        return createDraftFromRoot({});
-      }
-    },
-    getDraftSignature: getDraftSignature,
-    commitDraft: snapshot => {
-      actions.setProp(ROOT_NODE, props => {
-        applyDraftToProps(props, snapshot);
-        for (const tab of allTabs) {
-          tab.onSave?.({
-            query,
-            actions,
-            draft: snapshot,
-            setProp: cb => cb(props),
-          });
+  const { draft, setDraft, updateField, loading, requestSave, flushSave } =
+    useSettingsController<SiteSettingsDraft>({
+      isOpen,
+      loadDraft: () => {
+        try {
+          const root = queryRef.current.node(ROOT_NODE).get();
+          return createDraftFromRoot((root?.data?.props || {}) as Record<string, any>);
+        } catch (e) {
+          console.error("Error loading site settings:", e);
+          return createDraftFromRoot({});
         }
-      });
-    },
-    debounceMs: 350,
-    reloadKey: isOpen,
-  });
+      },
+      getDraftSignature: getDraftSignature,
+      commitDraft: snapshot => {
+        actions.setProp(ROOT_NODE, props => {
+          applyDraftToProps(props, snapshot);
+          for (const tab of allTabs) {
+            tab.onSave?.({
+              query,
+              actions,
+              draft: snapshot,
+              setProp: cb => cb(props),
+            });
+          }
+        });
+      },
+      debounceMs: 350,
+      reloadKey: isOpen,
+    });
 
-  const inputClass =
-    "w-full rounded-lg border border-base-300 bg-base-200 px-4 py-2 text-sm text-base-content shadow-sm placeholder:text-neutral-content transition-[border-color,box-shadow,background-color] duration-150 ease-out hover:border-primary hover:bg-base-300/25 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50";
-  const selectClass =
-    "w-full cursor-pointer rounded-lg border border-base-300 bg-base-200 px-2 py-2 text-xs text-base-content shadow-sm transition-[border-color,box-shadow,background-color] duration-150 ease-out hover:border-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/50";
+  const inputClass = SETTINGS_INPUT_CLASS;
+  const selectClass = SETTINGS_SELECT_CLASS;
 
   const tabRenderCtx = useMemo(
     () => ({
@@ -430,7 +437,9 @@ export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSetti
         <div className="flex h-full items-center justify-center">
           <span className="loading loading-spinner loading-md text-primary" />
         </div>
-      ) : activeDef ? activeDef.render(tabRenderCtx) : null}
+      ) : activeDef ? (
+        activeDef.render(tabRenderCtx)
+      ) : null}
     </SettingsShell>
   );
 }

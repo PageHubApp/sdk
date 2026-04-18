@@ -1,5 +1,13 @@
 import { expandModifiersInNodes } from "./modifierUtils";
 
+/** Craft's renderer expects every node to have a plain object `props`; missing props crashes DefaultRender. */
+function ensurePlainCraftProps(node: Record<string, any>) {
+  const p = node.props;
+  if (p == null || typeof p !== "object" || Array.isArray(p)) {
+    node.props = {};
+  }
+}
+
 /**
  * Drop dangling child / linkedNode ids so Craft <Frame> does not traverse missing nodes
  * (can throw "Cannot read properties of undefined (reading 'children')").
@@ -10,7 +18,8 @@ export function sanitizeCraftNodeReferences(
   if (!nodes || typeof nodes !== "object") return {};
   const copy = JSON.parse(JSON.stringify(nodes)) as Record<string, any>;
   for (const node of Object.values(copy)) {
-    if (!node || typeof node !== "object") continue;
+    if (!node || typeof node !== "object" || Array.isArray(node)) continue;
+    ensurePlainCraftProps(node);
     if (Array.isArray(node.nodes)) {
       node.nodes = node.nodes.filter((id: string) => typeof id === "string" && id && copy[id]);
     }

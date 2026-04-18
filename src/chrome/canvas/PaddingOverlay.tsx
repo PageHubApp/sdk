@@ -6,22 +6,55 @@ import { buildVariantPrefix } from "../../utils/tailwind/className";
 // ── Tailwind spacing snap ───────────────────────────────────────────────
 
 const TAILWIND_SPACING_MAP: Record<number, string> = {
-  0: "0", 1: "px", 2: "0.5", 4: "1", 6: "1.5", 8: "2", 10: "2.5",
-  12: "3", 14: "3.5", 16: "4", 20: "5", 24: "6", 28: "7", 32: "8",
-  36: "9", 40: "10", 44: "11", 48: "12", 56: "14", 64: "16", 80: "20",
-  96: "24", 112: "28", 128: "32", 144: "36", 160: "40", 176: "44",
-  192: "48", 208: "52", 224: "56", 240: "60", 256: "64", 288: "72",
-  320: "80", 384: "96",
+  0: "0",
+  1: "px",
+  2: "0.5",
+  4: "1",
+  6: "1.5",
+  8: "2",
+  10: "2.5",
+  12: "3",
+  14: "3.5",
+  16: "4",
+  20: "5",
+  24: "6",
+  28: "7",
+  32: "8",
+  36: "9",
+  40: "10",
+  44: "11",
+  48: "12",
+  56: "14",
+  64: "16",
+  80: "20",
+  96: "24",
+  112: "28",
+  128: "32",
+  144: "36",
+  160: "40",
+  176: "44",
+  192: "48",
+  208: "52",
+  224: "56",
+  240: "60",
+  256: "64",
+  288: "72",
+  320: "80",
+  384: "96",
 };
 const SPACING_VALUES = Object.keys(TAILWIND_SPACING_MAP).map(Number);
 
 function snapToSpacing(px: number): number {
   const val = Math.max(0, px);
   if (val > 404) return val;
-  let closest = 0, minDiff = val;
+  let closest = 0,
+    minDiff = val;
   for (const v of SPACING_VALUES) {
     const d = Math.abs(val - v);
-    if (d < minDiff) { minDiff = d; closest = v; }
+    if (d < minDiff) {
+      minDiff = d;
+      closest = v;
+    }
   }
   return closest;
 }
@@ -35,9 +68,12 @@ function paddingClass(side: Side, px: number): string {
 // ── Width snap (fractions + Tailwind widths) ────────────────────────────
 
 const WIDTH_FRACTIONS = [
-  { cls: "w-1/4", ratio: 0.25 }, { cls: "w-1/3", ratio: 1/3 },
-  { cls: "w-1/2", ratio: 0.5 }, { cls: "w-2/3", ratio: 2/3 },
-  { cls: "w-3/4", ratio: 0.75 }, { cls: "w-full", ratio: 1 },
+  { cls: "w-1/4", ratio: 0.25 },
+  { cls: "w-1/3", ratio: 1 / 3 },
+  { cls: "w-1/2", ratio: 0.5 },
+  { cls: "w-2/3", ratio: 2 / 3 },
+  { cls: "w-3/4", ratio: 0.75 },
+  { cls: "w-full", ratio: 1 },
 ];
 
 function snapWidth(px: number, parentWidth: number): { cls: string; px: number } {
@@ -47,7 +83,10 @@ function snapWidth(px: number, parentWidth: number): { cls: string; px: number }
   let minDiff = Math.abs(ratio - best.ratio);
   for (const f of WIDTH_FRACTIONS) {
     const d = Math.abs(ratio - f.ratio);
-    if (d < minDiff) { minDiff = d; best = f; }
+    if (d < minDiff) {
+      minDiff = d;
+      best = f;
+    }
   }
   return { cls: best.cls, px: Math.round(best.ratio * parentWidth) };
 }
@@ -106,7 +145,12 @@ function detectZone(
   }
 
   // Inside padding zones — only if the edge is actually visible in the viewport
-  if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+  if (
+    clientX >= rect.left &&
+    clientX <= rect.right &&
+    clientY >= rect.top &&
+    clientY <= rect.bottom
+  ) {
     const fromTop = clientY - rect.top;
     const fromBottom = rect.bottom - clientY;
     const fromLeft = clientX - rect.left;
@@ -134,24 +178,51 @@ function detectZone(
 
 // ── Component ───────────────────────────────────────────────────────────
 
-export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixView, classDark }: PaddingOverlayProps) {
+export function PaddingOverlay({
+  targetElement,
+  isActive,
+  setProp,
+  classPrefixView,
+  classDark,
+}: PaddingOverlayProps) {
   const [zone, setZone] = useState<{ side: Side; mode: DragMode } | null>(null);
   const [dragging, setDragging] = useState<DragState | null>(null);
   const [dragValue, setDragValue] = useState<number | null>(null);
-  const [overlayRect, setOverlayRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [overlayRect, setOverlayRect] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
   const dragValueRef = useRef<number | null>(null);
   const draggingRef = useRef(dragging);
   draggingRef.current = dragging;
   dragValueRef.current = dragValue;
 
-  // Track mouse to detect zone
+  // Track mouse to detect zone — requires 300ms dwell before showing
+  const zoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingZoneRef = useRef<string | null>(null);
   useEffect(() => {
     if (!targetElement || !isActive || dragging) return;
     const onMove = (e: MouseEvent) => {
-      setZone(detectZone(targetElement, e.clientX, e.clientY));
+      const next = detectZone(targetElement, e.clientX, e.clientY);
+      const key = next ? `${next.side}:${next.mode}` : null;
+      if (key !== pendingZoneRef.current) {
+        pendingZoneRef.current = key;
+        if (zoneTimerRef.current) clearTimeout(zoneTimerRef.current);
+        if (!next) {
+          setZone(null);
+          return;
+        }
+        zoneTimerRef.current = setTimeout(() => setZone(next), 400);
+      }
     };
     document.addEventListener("mousemove", onMove);
-    return () => document.removeEventListener("mousemove", onMove);
+    return () => {
+      document.removeEventListener("mousemove", onMove);
+      if (zoneTimerRef.current) clearTimeout(zoneTimerRef.current);
+      pendingZoneRef.current = null;
+    };
   }, [targetElement, isActive, dragging]);
 
   // Compute overlay rect for current zone
@@ -169,26 +240,49 @@ export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixVi
 
     if (z.mode === "padding") {
       switch (z.side) {
-        case "top": return { x: rect.left, y: rect.top, w: rect.width, h: Math.max(pt, 6) };
-        case "bottom": return { x: rect.left, y: rect.bottom - Math.max(pb, 6), w: rect.width, h: Math.max(pb, 6) };
-        case "left": return { x: rect.left, y: rect.top, w: Math.max(pl, 6), h: rect.height };
-        case "right": return { x: rect.right - Math.max(pr, 6), y: rect.top, w: Math.max(pr, 6), h: rect.height };
+        case "top":
+          return { x: rect.left, y: rect.top, w: rect.width, h: Math.max(pt, 6) };
+        case "bottom":
+          return {
+            x: rect.left,
+            y: rect.bottom - Math.max(pb, 6),
+            w: rect.width,
+            h: Math.max(pb, 6),
+          };
+        case "left":
+          return { x: rect.left, y: rect.top, w: Math.max(pl, 6), h: rect.height };
+        case "right":
+          return {
+            x: rect.right - Math.max(pr, 6),
+            y: rect.top,
+            w: Math.max(pr, 6),
+            h: rect.height,
+          };
       }
     } else {
       // Resize: thin strip outside the edge
       switch (z.side) {
-        case "top": return { x: rect.left, y: rect.top - RESIZE_ZONE, w: rect.width, h: RESIZE_ZONE };
-        case "bottom": return { x: rect.left, y: rect.bottom, w: rect.width, h: RESIZE_ZONE };
-        case "left": return { x: rect.left - RESIZE_ZONE, y: rect.top, w: RESIZE_ZONE, h: rect.height };
-        case "right": return { x: rect.right, y: rect.top, w: RESIZE_ZONE, h: rect.height };
+        case "top":
+          return { x: rect.left, y: rect.top - RESIZE_ZONE, w: rect.width, h: RESIZE_ZONE };
+        case "bottom":
+          return { x: rect.left, y: rect.bottom, w: rect.width, h: RESIZE_ZONE };
+        case "left":
+          return { x: rect.left - RESIZE_ZONE, y: rect.top, w: RESIZE_ZONE, h: rect.height };
+        case "right":
+          return { x: rect.right, y: rect.top, w: RESIZE_ZONE, h: rect.height };
       }
     }
   }, [targetElement, zone]);
 
   // Update overlay rect
   useEffect(() => {
-    if (!targetElement || !isActive) { setOverlayRect(null); return; }
-    const update = () => { if (!draggingRef.current) setOverlayRect(computeOverlay()); };
+    if (!targetElement || !isActive) {
+      setOverlayRect(null);
+      return;
+    }
+    const update = () => {
+      if (!draggingRef.current) setOverlayRect(computeOverlay());
+    };
     update();
     const id = setInterval(update, 200);
     return () => clearInterval(id);
@@ -206,14 +300,15 @@ export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixVi
 
       if (dragging.mode === "padding") {
         // top/left: drag inward (down/right) = increase; bottom/right: reversed
-        const sign = (dragging.side === "bottom" || dragging.side === "right") ? -1 : 1;
+        const sign = dragging.side === "bottom" || dragging.side === "right" ? -1 : 1;
         const snapped = snapToSpacing(dragging.initial + delta * sign);
         setDragValue(snapped);
-        const cssProp = `padding${dragging.side.charAt(0).toUpperCase() + dragging.side.slice(1)}` as any;
+        const cssProp =
+          `padding${dragging.side.charAt(0).toUpperCase() + dragging.side.slice(1)}` as any;
         targetElement.style[cssProp] = `${snapped}px`;
       } else {
         // Resize: right/bottom = increase with positive delta, left/top = decrease
-        const sign = (dragging.side === "left" || dragging.side === "top") ? -1 : 1;
+        const sign = dragging.side === "left" || dragging.side === "top" ? -1 : 1;
         const newSize = Math.max(0, dragging.initial + delta * sign);
         if (isVert) {
           const snapped = snapHeight(newSize);
@@ -235,12 +330,15 @@ export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixVi
       const finalValue = dragValueRef.current;
 
       if (dragging.mode === "padding") {
-        const cssProp = `padding${dragging.side.charAt(0).toUpperCase() + dragging.side.slice(1)}` as any;
+        const cssProp =
+          `padding${dragging.side.charAt(0).toUpperCase() + dragging.side.slice(1)}` as any;
         targetElement.style[cssProp] = "";
         if (finalValue != null) {
           const cls = paddingClass(dragging.side, finalValue);
           const prefix = buildVariantPrefix(classPrefixView, classDark);
-          setProp(prop => { prop.className = twMerge(prop.className || "", prefix + cls); });
+          setProp(prop => {
+            prop.className = twMerge(prop.className || "", prefix + cls);
+          });
         }
       } else {
         const isVert = dragging.side === "top" || dragging.side === "bottom";
@@ -249,7 +347,9 @@ export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixVi
           if (finalValue != null) {
             const snapped = snapHeight(finalValue);
             const prefix = buildVariantPrefix(classPrefixView, classDark);
-            setProp(prop => { prop.className = twMerge(prop.className || "", prefix + snapped.cls); });
+            setProp(prop => {
+              prop.className = twMerge(prop.className || "", prefix + snapped.cls);
+            });
           }
         } else {
           targetElement.style.width = "";
@@ -257,7 +357,9 @@ export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixVi
             const parentW = dragging.parentSize || targetElement.parentElement?.offsetWidth || 0;
             const snapped = snapWidth(finalValue, parentW);
             const prefix = buildVariantPrefix(classPrefixView, classDark);
-            setProp(prop => { prop.className = twMerge(prop.className || "", prefix + snapped.cls); });
+            setProp(prop => {
+              prop.className = twMerge(prop.className || "", prefix + snapped.cls);
+            });
           }
         }
       }
@@ -292,8 +394,12 @@ export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixVi
 
   const isPadding = currentMode === "padding";
   const bgColor = isPadding
-    ? (dragging ? "rgba(147, 196, 125, 0.5)" : "rgba(147, 196, 125, 0.3)")
-    : (dragging ? "rgba(59, 130, 246, 0.4)" : "rgba(59, 130, 246, 0.2)");
+    ? dragging
+      ? "rgba(147, 196, 125, 0.5)"
+      : "rgba(147, 196, 125, 0.3)"
+    : dragging
+      ? "rgba(59, 130, 246, 0.4)"
+      : "rgba(59, 130, 246, 0.2)";
   const labelColor = isPadding ? "#15803d" : "#1d4ed8";
 
   let label = "";
@@ -302,7 +408,12 @@ export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixVi
   } else if (zone && targetElement) {
     const s = window.getComputedStyle(targetElement);
     if (isPadding) {
-      const vals = { top: s.paddingTop, bottom: s.paddingBottom, left: s.paddingLeft, right: s.paddingRight };
+      const vals = {
+        top: s.paddingTop,
+        bottom: s.paddingBottom,
+        left: s.paddingLeft,
+        right: s.paddingRight,
+      };
       label = `${Math.round(parseFloat(vals[zone.side]) || 0)}px`;
     } else {
       label = isVert
@@ -325,7 +436,12 @@ export function PaddingOverlay({ targetElement, isActive, setProp, classPrefixVi
         let parentSize: number | undefined;
 
         if (zone.mode === "padding") {
-          const vals = { top: s.paddingTop, bottom: s.paddingBottom, left: s.paddingLeft, right: s.paddingRight };
+          const vals = {
+            top: s.paddingTop,
+            bottom: s.paddingBottom,
+            left: s.paddingLeft,
+            right: s.paddingRight,
+          };
           initial = parseFloat(vals[zone.side]) || 0;
         } else {
           initial = isVert ? rect.height : rect.width;

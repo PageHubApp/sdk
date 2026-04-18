@@ -1,5 +1,23 @@
 import { Element } from "@craftjs/core";
 import React from "react";
+import type { BlockCategory } from "../../../utils/useBlockCategories";
+
+/**
+ * Reserved `cat` query value for user-saved blocks in the Blocks toolbox.
+ * Must not be returned by `/api/v1/components/categories` (client-only virtual category).
+ */
+export const WORKSPACE_BLOCKS_CATEGORY_ID = "ph-workspace-blocks";
+
+/** Virtual `BlockCategory` for URL-driven “My blocks” drill-in. */
+export function buildWorkspaceBlockCategory(total: number): BlockCategory {
+  return {
+    id: WORKSPACE_BLOCKS_CATEGORY_ID,
+    name: "My blocks",
+    total,
+    subcategories: [],
+    styles: [],
+  };
+}
 
 export const CATEGORY_ORDER = [
   "hero",

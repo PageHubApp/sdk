@@ -7,22 +7,30 @@ import { createPortal } from "react-dom";
 import type { Placement } from "@floating-ui/react-dom";
 import {
   TbBrush,
+  TbCaretUp,
   TbChevronDown,
   TbChevronRight,
   TbChevronUp,
   TbClipboard,
   TbClipboardCheck,
   TbComponents,
+  TbComponentsOff,
   TbCopy,
   TbLayoutGridAdd,
   TbPlus,
   TbTrash,
+  TbX,
 } from "react-icons/tb";
-import { AiChatAttachedNodesAtom, AssistantOpenAtom, SectionPickerDialogAtom } from "../../utils/atoms";
+import {
+  AiChatAttachedNodesAtom,
+  AssistantOpenAtom,
+  SectionPickerDialogAtom,
+} from "../../utils/atoms";
+import { checkIfAncestorLinked } from "../../utils/componentUtils";
 import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
 import { useSDK } from "../../core/context";
 import { useSetAtomState } from "../../utils/atoms";
-import generate from "../../utils/data/nameGenerator";
+import { ComponentsAtom, SideBarOpen } from "../../utils/lib";
 import { phStorage } from "../../utils/phStorage";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
@@ -43,8 +51,8 @@ import { duplicateNodeById } from "./duplicateNodeById";
 import { addHandler, buildClonedTree, saveHandler } from "./viewportExports";
 import { AddElement } from "./toolbox/toolboxUtils";
 
+/** Fallback width before the menu node is measured (matches min-w ~12rem). */
 const MENU_W = 220;
-const MENU_H = 420;
 const CANVAS_CLASS_CLIPBOARD = "canvas-class-clipboard";
 
 /** Same interaction as `.ph-select-item` (dropdowns.css): accent fill reads on base-100 menus. */
@@ -84,12 +92,15 @@ function readClassClipboard(): { className: string; activeModifiers: string[] } 
 }
 
 /**
- * Canvas right-click menu: clipboard, move, classes, Insert submenu, duplicate, delete, AI.
+ * Canvas right-click menu: Deselect; copy/paste (node + classes); structure; Insert; duplicate;
+ * convert to component; delete; AI. Mutate/clipboard actions match legacy toolbar footer gates
+ * (isDeletable, not linked).
  */
 export const ToolboxContexual = () => {
   const [menu, setMenu] = useAtomState(ToolboxMenu);
   const ref = useRef<HTMLDivElement>(null);
   const insertLeaveTimer = useRef<number | null>(null);
+  const componentFlyoutLeaveTimer = useRef<number | null>(null);
 
   const { actions, query } = useEditor();
   const { setProp } = actions;
@@ -105,7 +116,9 @@ export const ToolboxContexual = () => {
   );
 
   const [, setAttachedNodes] = useAtomState(AiChatAttachedNodesAtom);
+  const [components, setComponents] = useAtomState(ComponentsAtom);
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
+  const setSideBarOpen = useSetAtomState(SideBarOpen);
   const { config } = useSDK();
   const aiEnabled = useAiEnabled();
   const renderContext = config.editorChromeSlots?.renderNodeAiContextButton;
@@ -117,6 +130,10 @@ export const ToolboxContexual = () => {
     if (insertLeaveTimer.current) {
       window.clearTimeout(insertLeaveTimer.current);
       insertLeaveTimer.current = null;
+    }
+    if (componentFlyoutLeaveTimer.current) {
+      window.clearTimeout(componentFlyoutLeaveTimer.current);
+      componentFlyoutLeaveTimer.current = null;
     }
   };
 
@@ -136,10 +153,36 @@ export const ToolboxContexual = () => {
     }, 160);
   };
 
+  /** Closing the nested component flyout only — not the whole Insert panel (sibling items like Add empty section). */
+  const scheduleCloseComponentFlyoutOnly = () => {
+    if (componentFlyoutLeaveTimer.current) {
+      window.clearTimeout(componentFlyoutLeaveTimer.current);
+      componentFlyoutLeaveTimer.current = null;
+    }
+    componentFlyoutLeaveTimer.current = window.setTimeout(() => {
+      setComponentFlyoutOpen(false);
+      componentFlyoutLeaveTimer.current = null;
+    }, 160);
+  };
+
   const node = menu.enabled && id ? query.node(id).get() : null;
   const parentId = node?.data?.parent as string | undefined;
+  const parentNode = parentId ? query.node(parentId).get() : null;
+  const parentDisplayName =
+    (parentNode?.data?.custom?.displayName as string | undefined) ||
+    (parentNode?.data?.displayName as string | undefined) ||
+    null;
+  const showSelectParent = Boolean(
+    id && id !== ROOT_NODE && parentId && parentDisplayName !== "Background"
+  );
   const nodeType = node?.data?.props?.type as string | undefined;
   const isPageOrBackground = nodeType === "page" || nodeType === "background";
+
+  const nodeDeletable = Boolean(id && query.node(id).isDeletable());
+  const isLinked = Boolean(id && checkIfAncestorLinked(id, query));
+  /** Same gate as legacy toolbar footer: clipboard + duplicate + convert */
+  const mutateClipboardAllowed = nodeDeletable && !isLinked;
+  const canMake = !((components || []) as { rootNodeId?: string }[]).find(c => c.rootNodeId === id);
 
   const canDelete =
     Boolean(node) &&
@@ -147,7 +190,10 @@ export const ToolboxContexual = () => {
     Boolean(node?.data.parent) &&
     node?.data.props?.canDelete !== false &&
     node?.data.custom?.permissions?.canDelete !== false;
-  const canDuplicate = Boolean(node && id !== ROOT_NODE && !isPageOrBackground);
+  const canDeleteVisible = Boolean(canDelete && nodeDeletable);
+  const canDuplicate = Boolean(
+    node && id !== ROOT_NODE && !isPageOrBackground && mutateClipboardAllowed
+  );
   const displayName =
     (node?.data?.custom?.displayName as string | undefined) ||
     (node?.data?.displayName as string | undefined) ||
@@ -155,20 +201,21 @@ export const ToolboxContexual = () => {
   const canPinAi = Boolean(id && id !== ROOT_NODE && aiEnabled && renderContext);
 
   const isCanvas = Boolean(node?.data?.isCanvas);
-  const canCopy = Boolean(id && id !== ROOT_NODE && !isPageOrBackground);
-  const canPasteHere = Boolean(id && id !== ROOT_NODE && !isPageOrBackground);
+  const canCopy = Boolean(id && id !== ROOT_NODE && !isPageOrBackground && mutateClipboardAllowed);
+  const canPasteHere = Boolean(id && id !== ROOT_NODE && !isPageOrBackground && mutateClipboardAllowed);
   const showPaste = canPasteHere && hasCraftClipboardPaste();
 
   const resolvedCraftType = menu.enabled && id ? resolveNodeTypeFromQuery(query, id) : null;
   const showAddSection = Boolean(isCanvas && nodeType === "page");
   const showAddContainer = Boolean(isCanvas && nodeType !== "page" && nodeType !== "background");
   const showBlockInsert = resolvedCraftType === NodeType.Section;
-  const showAddPage = resolvedCraftType === NodeType.Page;
   const showInsertComponentRow =
-    resolvedCraftType === NodeType.Section || resolvedCraftType === NodeType.Container;
+    resolvedCraftType === NodeType.Section ||
+    resolvedCraftType === NodeType.Container ||
+    resolvedCraftType === NodeType.Page;
 
   const hasInsertSubmenu = Boolean(
-    showAddSection || showAddContainer || showBlockInsert || showAddPage || showInsertComponentRow
+    showAddSection || showAddContainer || showBlockInsert || showInsertComponentRow
   );
 
   const siblingMove = id && id !== ROOT_NODE && parentId ? getSiblingMoveState(query, id) : null;
@@ -185,27 +232,38 @@ export const ToolboxContexual = () => {
 
   const classClipboard = readClassClipboard();
   const canPasteClasses = Boolean(
-    canPasteHere && classClipboard?.className != null && id && !isPageOrBackground
+    id &&
+    !isPageOrBackground &&
+    mutateClipboardAllowed &&
+    classClipboard?.className != null
   );
 
   const showCopyBtn = canCopy;
   const showMoveUpBtn = canMoveUp;
   const showMoveDownBtn = canMoveDown;
   const showMoveSection = showMoveUpBtn || showMoveDownBtn;
+  const showNavSection = showSelectParent || showMoveSection;
   const showCopyClassesBtn = canCopy;
   const showPasteClassesBtn = canPasteClasses;
-  const showClassesSection = showCopyClassesBtn || showPasteClassesBtn;
+  /** Convert row visible when footer would have shown the control (not page/bg, not root). */
+  const showConvertRow = Boolean(
+    id && id !== ROOT_NODE && !isPageOrBackground && mutateClipboardAllowed
+  );
+  /** Clipboard + class clipboard in one visual group (Copy next to Copy classes). */
+  const showCopyPasteSection =
+    showCopyBtn || showPaste || showCopyClassesBtn || showPasteClassesBtn;
   const showDuplicateBtn = canDuplicate;
-  const showDeleteBtn = canDelete;
-  const showDupDelSection = showDuplicateBtn || showDeleteBtn;
+  const showDeleteBtn = canDeleteVisible;
+  const showDupDelSection = showDuplicateBtn || showDeleteBtn || showConvertRow;
+  const showDeselect = Boolean(menu.enabled && id);
 
   const hasAnyMenuItems = Boolean(
-    showCopyBtn ||
-    showPaste ||
-    showMoveSection ||
-    showClassesSection ||
+    showDeselect ||
+    showCopyPasteSection ||
+    showNavSection ||
     hasInsertSubmenu ||
     showDupDelSection ||
+    showConvertRow ||
     (canPinAi && renderContext)
   );
 
@@ -241,23 +299,36 @@ export const ToolboxContexual = () => {
     setComponentFlyoutOpen(false);
   }, [menu.enabled, menu.id]);
 
-  useEffect(() => {
-    if (!menu.enabled) return;
+  useLayoutEffect(() => {
+    if (!menu.enabled) {
+      setStyle({});
+      return;
+    }
+    if (!hasAnyMenuItems) return;
+
+    const PAD = 8;
     const winH = window.innerHeight;
     const winW = window.innerWidth;
     const { x, y } = menu;
-    const sty: CSSProperties = { left: x, top: y, position: "fixed" };
 
-    if (y + MENU_H > winH) {
-      delete sty.top;
-      sty.bottom = 8;
+    const clamp = (width: number, height: number) => {
+      let left = x;
+      let top = y;
+      if (left + width > winW - PAD) left = Math.max(PAD, winW - PAD - width);
+      if (top + height > winH - PAD) top = Math.max(PAD, winH - PAD - height);
+      if (left < PAD) left = PAD;
+      if (top < PAD) top = PAD;
+      setStyle({ left, top, position: "fixed" });
+    };
+
+    const el = ref.current;
+    if (el) {
+      const { width, height } = el.getBoundingClientRect();
+      clamp(width, height);
+    } else {
+      clamp(MENU_W, 280);
     }
-    if (x + MENU_W > winW) {
-      delete sty.left;
-      sty.right = 8;
-    }
-    setStyle(sty);
-  }, [menu]);
+  }, [menu.enabled, menu.x, menu.y, menu.id, hasAnyMenuItems]);
 
   useEffect(() => {
     if (!menu.enabled) return;
@@ -309,12 +380,30 @@ export const ToolboxContexual = () => {
   }, [menu.enabled, id, hasAnyMenuItems, setMenu]);
 
   const handleDelete = () => {
-    if (!canDelete || !id) return;
+    if (!canDeleteVisible || !id) return;
     close();
     actions.selectNode(id);
     setTimeout(() => {
       void deleteSelectedNode(false);
     }, 10);
+  };
+
+  const handleDeselect = () => {
+    if (!showDeselect) return;
+    close();
+    actions.selectNode(null);
+    setSideBarOpen(false);
+  };
+
+  const handleConvertToComponent = async () => {
+    if (!showConvertRow || !id || !canMake) return;
+    close();
+    try {
+      const comp = await saveHandler({ query, id, component: "component", actions });
+      setComponents((prev: unknown[]) => [...prev, comp]);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleCopy = async () => {
@@ -358,6 +447,12 @@ export const ToolboxContexual = () => {
       if (!props.root) props.root = {};
       props.root.activeModifiers = [...(classClipboard.activeModifiers || [])];
     });
+  };
+
+  const handleSelectParent = () => {
+    if (!showSelectParent || !parentId) return;
+    close();
+    actions.selectNode(parentId);
   };
 
   const handleMoveUp = () => {
@@ -434,44 +529,6 @@ export const ToolboxContexual = () => {
     openPanel("blocks");
   };
 
-  const handleAddPage = async () => {
-    if (!showAddPage || !id) return;
-    close();
-    const { Element } = await import("@craftjs/core");
-    const liveResolver = query.getOptions().resolver;
-    const ContainerComp = liveResolver?.["Container"];
-    if (!ContainerComp) return;
-    const rootNode = query.node(ROOT_NODE).get();
-    const currentPageIndex = rootNode.data.nodes.indexOf(id);
-    const newIndex = currentPageIndex + 1;
-    const newPage = (
-      <Element
-        canvas
-        is={ContainerComp}
-        type="page"
-        canDelete={true}
-        canEditName={true}
-        className="mx-auto flex h-full w-full flex-col items-center gap-8 px-3 py-6"
-        custom={{ displayName: generate().spaced }}
-      />
-    );
-    const newElement = AddElement({
-      element: newPage,
-      actions,
-      query,
-      addTo: ROOT_NODE,
-      index: newIndex,
-    });
-    if (newElement?.rootNodeId) {
-      setTimeout(() => {
-        const added = query.node(newElement.rootNodeId).get();
-        if (added?.dom) {
-          added.dom.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      }, 100);
-    }
-  };
-
   const handleDuplicate = async () => {
     if (!canDuplicate || !id) return;
     close();
@@ -489,21 +546,20 @@ export const ToolboxContexual = () => {
       if (prev.some(n => n.id === id)) return prev;
       return [...prev, { id, displayName }];
     });
-    setAssistantOpen({ nodeId: id });
+    setAssistantOpen({ nodeId: id, revealPanel: true });
   };
 
   if (!menu.enabled || !id) return null;
   if (!hasAnyMenuItems) return null;
 
-  const dividerBeforeMove = showCopyBtn || showPaste;
-  const dividerBeforeClasses = dividerBeforeMove || showMoveSection;
-  const dividerBeforeInsert = dividerBeforeClasses || showClassesSection;
+  const dividerBeforeCopy = showDeselect;
+  const dividerBeforeNav = showDeselect || showCopyPasteSection;
+  const dividerBeforeInsert = dividerBeforeNav || showNavSection;
   const dividerBeforeDupDel = dividerBeforeInsert || hasInsertSubmenu;
   const anyAboveAi =
-    showCopyBtn ||
-    showPaste ||
-    showMoveSection ||
-    showClassesSection ||
+    showDeselect ||
+    showCopyPasteSection ||
+    showNavSection ||
     hasInsertSubmenu ||
     showDupDelSection;
 
@@ -513,29 +569,77 @@ export const ToolboxContexual = () => {
       ref={ref}
       role="menu"
       aria-label="Element actions"
-      style={style}
+      style={{
+        position: "fixed",
+        left: (style.left as number | undefined) ?? menu.x,
+        top: (style.top as number | undefined) ?? menu.y,
+      }}
       className="rounded-box border-base-300/50 bg-base-100 text-base-content z-10050 min-w-[12rem] overflow-visible border py-1 shadow-xl select-none"
     >
-      {showCopyBtn ? (
-        <button
-          type="button"
-          role="menuitem"
-          className={CTX_MENU_ITEM}
-          onClick={() => void handleCopy()}
-        >
-          <TbClipboard className="size-4 shrink-0 opacity-80" aria-hidden />
-          Copy
-        </button>
-      ) : null}
-      {showPaste ? (
-        <button type="button" role="menuitem" className={CTX_MENU_ITEM} onClick={handlePaste}>
-          <TbClipboardCheck className="size-4 shrink-0 opacity-80" aria-hidden />
-          Paste
+      {showDeselect ? (
+        <button type="button" role="menuitem" className={CTX_MENU_ITEM} onClick={handleDeselect}>
+          <TbX className="size-4 shrink-0 opacity-80" aria-hidden />
+          Deselect
         </button>
       ) : null}
 
-      {showMoveSection ? (
-        <div className={dividerBeforeMove ? "border-base-200 border-t pt-1" : ""}>
+      {showCopyPasteSection ? (
+        <div className={dividerBeforeCopy ? "border-base-200 border-t pt-1" : ""}>
+          {showCopyBtn ? (
+            <button
+              type="button"
+              role="menuitem"
+              className={CTX_MENU_ITEM}
+              onClick={() => void handleCopy()}
+            >
+              <TbClipboard className="size-4 shrink-0 opacity-80" aria-hidden />
+              Copy
+            </button>
+          ) : null}
+          {showCopyClassesBtn ? (
+            <button
+              type="button"
+              role="menuitem"
+              className={CTX_MENU_ITEM}
+              onClick={handleCopyClasses}
+            >
+              <TbBrush className="size-4 shrink-0 opacity-80" aria-hidden />
+              Copy classes
+            </button>
+          ) : null}
+          {showPaste ? (
+            <button type="button" role="menuitem" className={CTX_MENU_ITEM} onClick={handlePaste}>
+              <TbClipboardCheck className="size-4 shrink-0 opacity-80" aria-hidden />
+              Paste
+            </button>
+          ) : null}
+          {showPasteClassesBtn ? (
+            <button
+              type="button"
+              role="menuitem"
+              className={CTX_MENU_ITEM}
+              onClick={handlePasteClasses}
+            >
+              <TbBrush className="size-4 shrink-0 opacity-80" aria-hidden />
+              Paste classes
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {showNavSection ? (
+        <div className={dividerBeforeNav ? "border-base-200 border-t pt-1" : ""}>
+          {showSelectParent ? (
+            <button
+              type="button"
+              role="menuitem"
+              className={CTX_MENU_ITEM}
+              onClick={handleSelectParent}
+            >
+              <TbCaretUp className="size-4 shrink-0 opacity-80" aria-hidden />
+              Select parent
+            </button>
+          ) : null}
           {showMoveUpBtn ? (
             <button type="button" role="menuitem" className={CTX_MENU_ITEM} onClick={handleMoveUp}>
               <TbChevronUp className="size-4 shrink-0 opacity-80" aria-hidden />
@@ -551,33 +655,6 @@ export const ToolboxContexual = () => {
             >
               <TbChevronDown className="size-4 shrink-0 opacity-80" aria-hidden />
               Move down
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-
-      {showClassesSection ? (
-        <div className={dividerBeforeClasses ? "border-base-200 border-t pt-1" : ""}>
-          {showCopyClassesBtn ? (
-            <button
-              type="button"
-              role="menuitem"
-              className={CTX_MENU_ITEM}
-              onClick={handleCopyClasses}
-            >
-              <TbBrush className="size-4 shrink-0 opacity-80" aria-hidden />
-              Copy classes
-            </button>
-          ) : null}
-          {showPasteClassesBtn ? (
-            <button
-              type="button"
-              role="menuitem"
-              className={CTX_MENU_ITEM}
-              onClick={handlePasteClasses}
-            >
-              <TbBrush className="size-4 shrink-0 opacity-80" aria-hidden />
-              Paste classes
             </button>
           ) : null}
         </div>
@@ -640,7 +717,7 @@ export const ToolboxContexual = () => {
                         cancelInsertLeaveTimer();
                         setComponentFlyoutOpen(true);
                       }}
-                      onMouseLeave={scheduleCloseInsertPanels}
+                      onMouseLeave={scheduleCloseComponentFlyoutOnly}
                     >
                       <div className={CTX_MENU_SUBMENU_TRIGGER}>
                         <span className="flex items-center gap-2">
@@ -650,16 +727,6 @@ export const ToolboxContexual = () => {
                         <TbChevronRight className="size-4 shrink-0 opacity-60" aria-hidden />
                       </div>
                     </div>
-                  ) : null}
-                  {showAddPage ? (
-                    <button
-                      type="button"
-                      className={CTX_MENU_ITEM}
-                      onClick={() => void handleAddPage()}
-                    >
-                      <TbLayoutGridAdd className="size-4 shrink-0 opacity-80" aria-hidden />
-                      Add page
-                    </button>
                   ) : null}
                   {showAddSection ? (
                     <button
@@ -694,7 +761,7 @@ export const ToolboxContexual = () => {
                     zIndex: OVERLAY_Z_CONTEXT_COMPONENT_FLYOUT,
                   }}
                   onMouseEnter={cancelInsertLeaveTimer}
-                  onMouseLeave={scheduleCloseInsertPanels}
+                  onMouseLeave={scheduleCloseComponentFlyoutOnly}
                 >
                   <ContextMenuInsertComponentFlyout
                     targetNodeId={id}
@@ -719,6 +786,22 @@ export const ToolboxContexual = () => {
             >
               <TbCopy className="size-4 shrink-0 opacity-80" aria-hidden />
               Duplicate
+            </button>
+          ) : null}
+          {showConvertRow ? (
+            <button
+              type="button"
+              role="menuitem"
+              className={`${CTX_MENU_ITEM} ${!canMake ? "cursor-not-allowed opacity-50" : ""}`}
+              disabled={!canMake}
+              onClick={() => void handleConvertToComponent()}
+            >
+              {canMake ? (
+                <TbComponents className="size-4 shrink-0 opacity-80" aria-hidden />
+              ) : (
+                <TbComponentsOff className="size-4 shrink-0 opacity-80" aria-hidden />
+              )}
+              {canMake ? "Convert to component" : "Component exists"}
             </button>
           ) : null}
           {showDeleteBtn ? (

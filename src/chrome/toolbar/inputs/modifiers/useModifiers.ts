@@ -70,8 +70,8 @@ export function useModifiers() {
     toolbarModifiers,
   } = useNode(node => ({
     componentName: node.data.displayName || node.data.name || "",
-    activeModifiers: (node.data.props?.root?.activeModifiers as string[]) || [],
-    currentClassName: (node.data.props?.className as string) || "",
+    activeModifiers: (node.data?.props?.root?.activeModifiers as string[]) || [],
+    currentClassName: (node.data?.props?.className as string) || "",
     toolbarModifiers: (node.data.type as any)?.craft?.toolbar?.modifiers as
       | ComponentModifier[]
       | undefined,

@@ -19,14 +19,13 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
   );
 };
 import { ButtonListMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ButtonListMainTab";
-import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
 
 export const ButtonListDef = defineComponent(
   {
     name: "ButtonList",
     component: ButtonList,
     icon: RxButton,
-    category: "Basic",
+    category: "Content",
     canvas: true,
     settings: ButtonListMainTab,
     toHTML,
@@ -35,26 +34,14 @@ export const ButtonListDef = defineComponent(
       canDrag: () => true,
       canMoveIn: nodes => nodes.every(node => node.data?.name === "Button"),
     },
-    tools: props => [
-      <HoverNodeController
-        key="buttonListHoverController"
-        position="top"
-        align="end"
-        placement="end"
-        alt={{
-          position: "bottom",
-          align: "start",
-          placement: "start",
-        }}
-      />,
-      <DeleteNodeController key="buttonListDelete" />,
-    ],
+    tools: [],
     presets: [
       {
         label: "Button List",
+        description: "Group of buttons in a row or column.",
         props: {
           className:
-            "flex-col items-center justify-start gap-2 px-4 py-2 w-auto flex md:flex-row md:items-center md:justify-start md:gap-2 border border-base-300 rounded-lg",
+            "flex flex-col items-center justify-start gap-space-xs md:flex-row md:items-center md:justify-start w-auto",
           buttons: [{ text: "Button 1" }, { text: "Button 2" }],
         },
       },

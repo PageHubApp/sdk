@@ -11,7 +11,6 @@ export const ConvertToRegularComponent = ({ query, actions, id }) => (
     title="Unlink Component"
     description="Make independent with all settings editable"
     variant="destructive"
-
     onClick={() => {
       const node = query.node(id).get();
       removeHasManyRelation(node, query, actions);
@@ -35,7 +34,6 @@ export const ConvertToStyledComponent = ({ actions, id }) => (
     icon={<TbPalette className="size-5" />}
     title="Style Only Mode"
     description="Edit styles while keeping other settings linked"
-
     onClick={() => actions.setProp(id, prop => (prop.relationType = "style"))}
   />
 );
@@ -45,7 +43,6 @@ export const ConvertToContentComponent = ({ actions, id }) => (
     icon={<TbPencil className="size-5" />}
     title="Content Only Mode"
     description="Edit text and content while keeping styles linked"
-
     onClick={() => actions.setProp(id, prop => (prop.relationType = "content"))}
   />
 );
@@ -79,7 +76,16 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
         const masterNode = query.node(contentNodeId).get();
         const containerId = masterNode?.data?.parent;
         const container = containerId ? query.node(containerId).get() : null;
-        console.log("[editLinked] contentNodeId:", contentNodeId, "containerId:", containerId, "container type:", container?.data?.props?.type, "container children:", container?.data?.nodes);
+        console.log(
+          "[editLinked] contentNodeId:",
+          contentNodeId,
+          "containerId:",
+          containerId,
+          "container type:",
+          container?.data?.props?.type,
+          "container children:",
+          container?.data?.nodes
+        );
         if (!container || container.data.props?.type !== "component") {
           console.log("[editLinked] BAIL — no valid container");
           return;

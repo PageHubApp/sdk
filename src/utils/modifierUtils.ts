@@ -82,9 +82,7 @@ export function expandModifierClassName(
  *
  * Mutates and returns the same object (no deep clone — caller owns the data).
  */
-export function expandModifiersInNodes(
-  nodes: Record<string, any>
-): Record<string, any> {
+export function expandModifiersInNodes(nodes: Record<string, any>): Record<string, any> {
   const modifiers = nodes?.ROOT?.props?.modifiers;
   if (!modifiers || typeof modifiers !== "object") return nodes;
 

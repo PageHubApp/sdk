@@ -36,7 +36,9 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
 
   // Get child node IDs from the node tree
   const nodeId = Object.keys(ctx.nodes).find(
-    nid => ctx.nodes[nid]?.type?.resolvedName === "ConditionalContainer" && ctx.nodes[nid]?.props === props
+    nid =>
+      ctx.nodes[nid]?.type?.resolvedName === "ConditionalContainer" &&
+      ctx.nodes[nid]?.props === props
   );
   const childIds = nodeId ? ctx.nodes[nodeId]?.nodes || [] : [];
 
@@ -95,6 +97,8 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
 export const ConditionalContainerDef = defineComponent(
   {
     name: "ConditionalContainer",
+    displayName: "Conditional",
+    description: "Show or hide content based on conditions.",
     component: ConditionalContainer,
     icon: TbGitBranch,
     category: "Layout",

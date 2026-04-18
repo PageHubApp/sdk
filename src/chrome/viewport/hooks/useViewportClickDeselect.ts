@@ -116,7 +116,7 @@ export function useViewportClickDeselect() {
       }
 
       pendingRef.current = null;
-      actions.selectNode(null);
+      // actions.selectNode(null);
     },
     [enabled, actions, query]
   );

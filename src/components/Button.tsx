@@ -1,7 +1,7 @@
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { TbPointer } from "react-icons/tb";
 import { Button as UiButton } from "@pagehub/ui";
 import { addActionHandlers } from "../utils/clickControls";
@@ -24,11 +24,15 @@ import {
 import {
   materialSymbolsOutlinedFontSpec,
   PH_MS_FONT_PENDING_CLASS,
+  isMaterialSymbolsFontLoaded,
+  markMaterialSymbolsFontLoadedIfReady,
+  isMaterialSymbolsFontReady,
 } from "../utils/materialSymbolsReveal";
 import { motionIt } from "../utils/lib";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
+import { resolvePageRef } from "../utils/pageManagement";
 import { useScrollToSelected } from "./componentHooks";
 
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
@@ -155,91 +159,122 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   const [isMounted, setIsMounted] = useState(false);
   /** Google ligature icons: hide until Font Loading API reports the face (keeps slot via size classes). */
-  const [materialSymbolsReady, setMaterialSymbolsReady] = useState(false);
+  // Start true if any prior Button already confirmed the font is loaded (e.g. conditional visibility swap).
+  // Otherwise start false for Google icons — must match SSR (no document.fonts on server).
+  const sharedFlagAtMount = isGoogleIcon && isMaterialSymbolsFontLoaded();
+  const [materialSymbolsReady, setMaterialSymbolsReady] = useState(
+    !isGoogleIcon || sharedFlagAtMount
+  );
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
+  // Viewer/static: ensure Material Symbols stylesheet exists before font detection (sync with FOUC #pagehub-auto-material-symbols).
+  useLayoutEffect(() => {
+    if (enabled || !googleIconName) return;
+    registerMaterialSymbolIconUsage(googleIconName);
+    return () => unregisterMaterialSymbolIconUsage(googleIconName);
+  }, [enabled, googleIconName]);
+
+  // useLayoutEffect: runs before paint so the pending class is removed before the browser renders
+  useLayoutEffect(() => {
     if (!isGoogleIcon) {
       setMaterialSymbolsReady(true);
       return;
     }
 
-    setMaterialSymbolsReady(false);
-    let cancelled = false;
+    // Already confirmed loaded (shared flag) — skip all checks.
+    if (isMaterialSymbolsFontLoaded()) {
+      setMaterialSymbolsReady(true);
+      return;
+    }
+
     const desc = materialSymbolsOutlinedFontSpec(sizeKey);
 
-    const revealIfCheckPasses = () => {
-      if (cancelled || typeof document === "undefined" || !document.fonts) return false;
-      if (document.fonts.check(desc)) {
+    // Fast path: font actually loaded (registered face + check passes).
+    if (markMaterialSymbolsFontLoadedIfReady(desc)) {
+      setMaterialSymbolsReady(true);
+      return;
+    }
+
+    // Slow path: font CSS may not have loaded yet (@font-face not registered).
+    // Use multiple detection strategies since document.fonts.load() resolves
+    // immediately with no result when no matching @font-face exists.
+    setMaterialSymbolsReady(false);
+    let cancelled = false;
+
+    const reveal = () => {
+      if (cancelled) return false;
+      if (markMaterialSymbolsFontLoadedIfReady(desc)) {
         setMaterialSymbolsReady(true);
         return true;
       }
       return false;
     };
 
-    const timer = window.setTimeout(() => {
-      if (!cancelled) revealIfCheckPasses();
-    }, 2500);
+    // 1. Listen for font loading completions — catches delayed CSS → @font-face registration
+    const onLoadingDone = () => {
+      if (reveal()) cleanup();
+    };
+    if (typeof document !== "undefined" && document.fonts) {
+      document.fonts.addEventListener("loadingdone", onLoadingDone);
 
-    if (typeof document === "undefined" || !document.fonts) {
-      setMaterialSymbolsReady(true);
-      window.clearTimeout(timer);
-      return () => {
-        cancelled = true;
-        window.clearTimeout(timer);
-      };
+      // 2. Try direct load (works when @font-face already registered; empty result until CSS registers faces)
+      void document.fonts
+        .load(desc)
+        .then(loaded => {
+          if (loaded.length === 0 && !isMaterialSymbolsFontReady(desc)) return;
+          if (reveal()) cleanup();
+        })
+        .catch(() => {});
     }
 
-    void document.fonts
-      .load(desc)
-      .then(() => {
-        if (revealIfCheckPasses()) window.clearTimeout(timer);
-      })
-      .catch(() => {
-        /* Do not reveal on failure — avoids raw ligature text until load succeeds or timeout check passes. */
-      });
+    // 3. Local fallback: show ligatures so icon-only buttons are not blank forever — do NOT mark global loaded
+    const timer = window.setTimeout(() => {
+      if (!cancelled) {
+        setMaterialSymbolsReady(true);
+        cleanup();
+      }
+    }, 2500);
 
-    return () => {
+    const cleanup = () => {
       cancelled = true;
       window.clearTimeout(timer);
+      if (typeof document !== "undefined" && document.fonts) {
+        document.fonts.removeEventListener("loadingdone", onLoadingDone);
+      }
     };
+
+    return cleanup;
   }, [isGoogleIcon, sizeKey, googleIconName]);
 
-  // Tab background / bfcache: FontFaceSet can report loaded while paint still uses fallback; re-load + check.
+  // bfcache restore: re-check FontFaceSet without toggling pending on every visibility change
   useEffect(() => {
     if (!isGoogleIcon || typeof document === "undefined" || !document.fonts) return;
 
     const desc = materialSymbolsOutlinedFontSpec(sizeKey);
     let cancelled = false;
 
-    const retryIfFontMissing = () => {
-      if (cancelled || document.visibilityState !== "visible") return;
-      if (document.fonts.check(desc)) {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (cancelled || !e.persisted) return;
+      if (markMaterialSymbolsFontLoadedIfReady(desc)) {
         setMaterialSymbolsReady(true);
         return;
       }
-      setMaterialSymbolsReady(false);
       void document.fonts
         .load(desc)
         .then(() => {
-          if (!cancelled && document.fonts.check(desc)) setMaterialSymbolsReady(true);
+          if (!cancelled && markMaterialSymbolsFontLoadedIfReady(desc)) {
+            setMaterialSymbolsReady(true);
+          }
         })
         .catch(() => {});
     };
 
-    const onVisibility = () => retryIfFontMissing();
-    const onPageShow = (e: PageTransitionEvent) => {
-      if (e.persisted) retryIfFontMissing();
-    };
-
-    document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("pageshow", onPageShow);
     return () => {
       cancelled = true;
-      document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pageshow", onPageShow);
     };
   }, [isGoogleIcon, sizeKey]);
@@ -283,7 +318,12 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   // Resolve action to href (handles link-url, link-page, email, phone, scroll-to)
   const action = migrateAction(props);
-  const resolvedUrl = actionToHref(action, query, router?.asPath);
+  const rawUrl = actionToHref(action, query, router?.asPath);
+  let resolvedUrl = rawUrl ? replaceVariables(rawUrl, query, itemContext) : rawUrl;
+  // If variable interpolation produced a ref: page link (e.g. ternary), resolve it now
+  if (resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("ref:")) {
+    resolvedUrl = resolvePageRef(resolvedUrl, query, router?.asPath);
+  }
   const target = actionTarget(action);
 
   const isInternalLink =
@@ -366,14 +406,6 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     [props.icon?.value, query]
   );
 
-  // Marketing / static-style previews (Frame enabled={false}) never run Background's font loader.
-  // Register icon usage so one shared stylesheet covers all Buttons on the page.
-  useEffect(() => {
-    if (enabled || !googleIconName) return;
-    registerMaterialSymbolIconUsage(googleIconName);
-    return () => unregisterMaterialSymbolIconUsage(googleIconName);
-  }, [enabled, googleIconName]);
-
   // Memoize icon class to avoid re-joining on every render
   const iconClass = useMemo(
     () =>
@@ -393,9 +425,15 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     [iconSize, fontSize, props.icon?.color, props.icon?.shadow, isGoogleIcon, materialSymbolsReady]
   );
 
-  // Always mount icon span for Google icons so width/height utilities reserve space
+  // Google icons: always render text so the browser applies the font in the background.
+  // Use color:transparent to hide raw ligature text — when font loads and we reveal,
+  // the glyph is already rendered. No insertion = no fallback-font-first-frame flash.
+  const iconPendingStyle = isGoogleIcon && !materialSymbolsReady
+    ? { color: "transparent" }
+    : undefined;
+
   const iconSpan = iconElement && (
-    <span className={iconClass} aria-hidden="true">
+    <span className={iconClass} style={iconPendingStyle} aria-hidden="true">
       {iconElement}
     </span>
   );

@@ -112,7 +112,7 @@ function ColorAccordion({
       }
     >
       {isDark && (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-base-300 bg-base-200/40 px-3 py-2 text-sm">
+        <div className="border-base-300 bg-base-200/40 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">
           <div className="text-neutral-content">
             {darkAvailable ? "Dark mode is enabled." : "Dark mode is disabled."}
           </div>

@@ -40,7 +40,7 @@ export function ThemeSettingsPanel() {
       label: "Colors",
       icon: <TbPalette className="size-4 shrink-0 opacity-80" aria-hidden />,
       content: (
-        <AutoHideScrollbar className="flex-1 min-h-0 bg-base-100 text-base-content">
+        <AutoHideScrollbar className="bg-base-100 text-base-content min-h-0 flex-1">
           <ColorsTab ds={ds} />
         </AutoHideScrollbar>
       ),
@@ -50,7 +50,7 @@ export function ThemeSettingsPanel() {
       label: "Styles",
       icon: <TbRuler className="size-4 shrink-0 opacity-80" aria-hidden />,
       content: (
-        <AutoHideScrollbar className="flex-1 min-h-0 bg-base-100 text-base-content">
+        <AutoHideScrollbar className="bg-base-100 text-base-content min-h-0 flex-1">
           <StylesTab ds={ds} />
         </AutoHideScrollbar>
       ),
@@ -60,7 +60,7 @@ export function ThemeSettingsPanel() {
       label: "Types",
       icon: <TbTypography className="size-4 shrink-0 opacity-80" aria-hidden />,
       content: (
-        <AutoHideScrollbar className="flex-1 min-h-0 bg-base-100 text-base-content">
+        <AutoHideScrollbar className="bg-base-100 text-base-content min-h-0 flex-1">
           <TypographyTab ds={ds} />
         </AutoHideScrollbar>
       ),

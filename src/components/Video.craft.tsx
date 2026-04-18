@@ -64,22 +64,11 @@ export const VideoDef = defineComponent(
     disable: ["textColor", "bgColor", "background", "pattern", "font", "opacity", "hoverClick"],
     tools: props => [
       <NameNodeController key="videoNameController" position="top" align="end" placement="start" />,
-      <HoverNodeController
-        key="videoHoverController"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{
-          position: "bottom",
-          align: "start",
-          placement: "start",
-        }}
-      />,
-      <DeleteNodeController key="videoDelete" />,
     ],
     presets: [
       {
         label: "Video",
+        description: "Embed YouTube, Vimeo, or other video players.",
         props: {
           className: "w-full h-full flex overflow-hidden",
         },

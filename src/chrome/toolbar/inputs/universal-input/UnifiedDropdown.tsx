@@ -36,6 +36,7 @@ interface UnifiedDropdownProps {
     named: string[];
     numeric: string[];
     fractions: string[];
+    tokens: string[];
     other: string[];
   } | null;
   filteredOptions: string[] | null;
@@ -78,6 +79,7 @@ export function UnifiedDropdown({
     (options.named.length > 0 ||
       options.numeric.length > 0 ||
       options.fractions.length > 0 ||
+      options.tokens.length > 0 ||
       options.other.length > 0);
   const hasDesignVars = showVarSelector && realDesignVars.length > 0;
 
@@ -212,7 +214,7 @@ export function UnifiedDropdown({
 
   // Render options group with optional subgrouping
   const renderOptionsGroup = (
-    groupType: "named" | "numeric" | "fractions" | "other",
+    groupType: "named" | "numeric" | "fractions" | "tokens" | "other",
     title: string,
     showHints: boolean = false,
     hintType: "pixel" | "percentage" | "ms" | "custom" = "custom",
@@ -419,6 +421,19 @@ export function UnifiedDropdown({
                           col.section?.showHints,
                           col.section?.hintType || "percentage",
                           !col.section?.disableSubgroups, // Enable subgroups unless disabled
+                          col.section?.showPreview
+                        )}
+                      </div>
+                    );
+                  } else if (groupType === "tokens") {
+                    return (
+                      <div key="tokens" className={containerClass}>
+                        {renderOptionsGroup(
+                          "tokens",
+                          col.section!.title,
+                          false,
+                          col.section?.hintType || "custom",
+                          false,
                           col.section?.showPreview
                         )}
                       </div>

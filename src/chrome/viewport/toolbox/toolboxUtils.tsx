@@ -6,6 +6,8 @@ import { Element, ROOT_NODE, useEditor } from "@craftjs/core";
 import { atom, useAtomValue } from "@zedux/react";
 import React, { cloneElement, isValidElement, useMemo, useState } from "react";
 import { ToolboxInsertHintTooltip } from "../../primitives/ToolboxInsertHintTooltip";
+import { applySmartDefaultsForNewNode } from "../../shell/spatial/executeSpatialDrop";
+import { createMergedActions } from "../../shell/spatial/mergedActions";
 
 /**
  * Allowed `props.root` keys (non-class styling). Must stay aligned with
@@ -134,7 +136,9 @@ export function buildToolboxCanvasElement(
   return resolver ? normalizeElementRefs(raw, resolver) : raw;
 }
 
-/** Insert a toolbox preset immediately after the given node (context menu / one-click insert). */
+/** Insert a toolbox preset into or after the given node (context menu / one-click insert).
+ *  If the target is a canvas (droppable container), inserts inside it as the last child.
+ *  Otherwise inserts as a sibling after the target. */
 export function insertToolboxPresetAfterNode(
   query: any,
   actions: any,
@@ -142,13 +146,27 @@ export function insertToolboxPresetAfterNode(
   toolProps: { element: any; className?: string; root?: any; [key: string]: any }
 ) {
   const tool = buildToolboxCanvasElement(query, toolProps);
-  AddElement({
-    element: tool,
-    actions,
-    query,
-    selected: targetNodeId,
-    position: "after",
-  });
+  const targetNode = query.node(targetNodeId).get();
+  const isCanvas = targetNode?.data?.isCanvas;
+
+  if (isCanvas) {
+    const childCount = targetNode.data.nodes?.length ?? 0;
+    AddElement({
+      element: tool,
+      actions,
+      query,
+      addTo: targetNodeId,
+      index: childCount,
+    });
+  } else {
+    AddElement({
+      element: tool,
+      actions,
+      query,
+      selected: targetNodeId,
+      position: "after",
+    });
+  }
 }
 
 export const AddElement = ({
@@ -205,7 +223,15 @@ export const AddElement = ({
       return false;
     }
 
-    actions.addNodeTree(newElement, addTo || activeNode.id, index);
+    const targetParentId = addTo || activeNode.id;
+    // Batch insert + smart morph into one undo step.
+    const batch = createMergedActions(actions);
+    batch.addNodeTree(newElement, targetParentId, index);
+
+    const newNodeId = newElement?.rootNodeId;
+    if (newNodeId) {
+      applySmartDefaultsForNewNode(batch, query, newNodeId, targetParentId);
+    }
 
     return newElement;
   } catch (e) {
@@ -231,6 +257,7 @@ export const RenderToolComponent = ({
   className = "",
   renderer = null,
   display = null,
+  description = undefined,
   ...incoming
 }) => {
   const { root, ...rest } = incoming || {};
@@ -254,7 +281,7 @@ export const RenderToolComponent = ({
     display && isValidElement(display) ? cloneElement(display, { isDragging } as any) : display;
 
   return (
-    <ToolboxInsertHintTooltip>
+    <ToolboxInsertHintTooltip description={description}>
       <div
         className="w-full cursor-grab active:cursor-grabbing"
         ref={(ref: any) => create(ref, tool)}

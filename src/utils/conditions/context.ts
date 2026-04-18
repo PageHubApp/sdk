@@ -1,4 +1,4 @@
-import { getConnectorData } from "../design/variables";
+import { getConnectorData, getAuthState } from "../design/variables";
 import type { ConditionContext } from "./types";
 
 /** Build a ConditionContext for client-side (viewer/editor) use. */
@@ -9,6 +9,7 @@ export function buildClientContext(rootProps: any): ConditionContext {
     connectorData: getConnectorData(),
     company: rootProps?.company || null,
     viewportWidth: typeof window !== "undefined" ? window.innerWidth : null,
+    auth: getAuthState(),
   };
 }
 
@@ -20,5 +21,6 @@ export function buildStaticContext(rootProps: Record<string, any> | null): Condi
     connectorData: null,
     company: rootProps?.company || null,
     viewportWidth: null,
+    auth: null,
   };
 }

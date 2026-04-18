@@ -76,7 +76,7 @@ function getServiceHelp(service: EmbedService): string {
 
 export const EmbedMainTab = () => {
   const { props } = useNode(node => ({
-    props: node.data.props,
+    props: node.data?.props,
   }));
 
   const service: EmbedService = props.service || "custom";

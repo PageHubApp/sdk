@@ -110,7 +110,7 @@ function buildModalChildren() {
         trigger: "click",
         method: "class",
       }}
-      className="bg-primary text-primary-content rounded-box px-(--button-padding-x) py-(--button-padding-y)"
+      className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold"
     />,
     // Backdrop
     <Element
@@ -121,7 +121,7 @@ function buildModalChildren() {
       custom={{ displayName: "Modal Backdrop" }}
       canDelete={false}
       canEditName={false}
-      className="fixed top-0 left-0 z-50 hidden h-screen w-screen flex-col items-center justify-center bg-black/50 px-4 py-4"
+      className="fixed top-0 left-0 z-50 hidden h-screen w-screen flex-col items-center justify-center bg-black/50 px-space-sm py-space-sm"
       action={
         {
           type: "show-hide",
@@ -194,18 +194,11 @@ export const ModalDef = defineComponent(
         placement="end"
         alt={{ position: "bottom", align: "start", placement: "start" }}
       />,
-      <HoverNodeController
-        key="modalHover"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{ position: "bottom", align: "start", placement: "start" }}
-      />,
-      <DeleteNodeController key="modalDelete" />,
     ],
     presets: [
       {
         label: "Modal",
+        description: "Popup dialog with trigger button and backdrop.",
         props: {
           anchor: "my-modal",
           trigger: { type: "click", delay: 3, showOnce: false },

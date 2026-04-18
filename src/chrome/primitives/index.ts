@@ -1,8 +1,9 @@
+export { EditorSidebarPrimaryCta } from "./EditorSidebarPrimaryCta";
+export type { EditorSidebarPrimaryCtaProps } from "./EditorSidebarPrimaryCta";
 export { AddElementButton } from "./AddElementButton";
 export { EditorEmptyLeafHint } from "./EditorEmptyLeafHint";
 export {
   ToolboxInsertHintTooltip,
-  TOOLBOX_INSERT_HINT,
   TOOLBOX_INSERT_HINT_DELAY_MS,
 } from "./ToolboxInsertHintTooltip";
 export { SidebarFlyoutSurface } from "./SidebarFlyoutSurface";

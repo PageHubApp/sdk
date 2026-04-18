@@ -68,7 +68,7 @@ export const GradientInput = () => {
     actions: { setProp },
     props,
     id,
-  } = useNode(node => ({ props: node.data.props, id: node.id }));
+  } = useNode(node => ({ props: node.data?.props, id: node.id }));
 
   const className = props?.className || "";
   const direction = useMemo(() => parseDirection(className), [className]);

@@ -16,7 +16,6 @@ import { RenderPattern, inlayProps } from "./componentHooks";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import { useBackgroundEffects } from "./Background/useBackgroundEffects";
 
-
 export interface NamedColor {
   name: string;
   color: string;

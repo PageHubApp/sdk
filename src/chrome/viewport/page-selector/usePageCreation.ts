@@ -73,7 +73,10 @@ export function usePageCreation({
     return `${name} ${counter}`;
   }
 
-  async function handleCreatePage(pageName: string, extra?: { pageSlug?: string; pageTitle?: string; pageDescription?: string }) {
+  async function handleCreatePage(
+    pageName: string,
+    extra?: { pageSlug?: string; pageTitle?: string; pageDescription?: string }
+  ) {
     try {
       setIsOpen(false);
       const finalName = deduplicateName(pageName);

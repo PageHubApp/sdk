@@ -2,7 +2,6 @@ import { Editor, Element, Frame } from "@craftjs/core";
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_STYLE_GUIDE } from "../../../utils/defaults";
 
-
 export const buildElementFromStructure = (
   structure: any,
   resolver: any,
@@ -26,8 +25,7 @@ export const buildElementFromStructure = (
         ...structure,
         props: {
           ...structure.props,
-          src:
-            'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect width="800" height="600" fill="%23e5e7eb"/%3E%3C/svg%3E',
+          src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect width="800" height="600" fill="%23e5e7eb"/%3E%3C/svg%3E',
         },
       };
     }
@@ -142,7 +140,6 @@ const PREVIEW_DESIGN_VARS: React.CSSProperties & Record<string, string> = {
   "--space-lg": `calc(${DEFAULT_STYLE_GUIDE.spaceLg} * var(--spacing-density))`,
   "--space-xl": `calc(${DEFAULT_STYLE_GUIDE.spaceXl} * var(--spacing-density))`,
 };
-
 
 interface ComponentPreviewProps {
   component: any;

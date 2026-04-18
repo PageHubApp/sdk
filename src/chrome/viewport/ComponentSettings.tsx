@@ -1,7 +1,7 @@
 import { useAtomValue } from "@zedux/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ComponentsAtom } from "../../utils/lib";
-import { NAV_EXTRA_PRESETS } from "../../components/definitions";
+import { NAV_EXTRA_PRESETS, COMPONENT_EXTRA_PRESETS } from "../../components/definitions";
 import { useCustomComponents } from "../../define";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout";
@@ -13,12 +13,14 @@ import { SavedComponentsToolbox } from "./toolbox/savedComponents";
 // from the CustomComponentsContext merge below.
 const baseItems = [
   { title: "Layout", content: [] as any[] },
-  { title: "Basic", content: [] as any[] },
-  { title: "Navigation", content: [] as any[] },
-  { title: "Media", content: [] as any[] },
+  { title: "Content", content: [] as any[] },
+  { title: "List", content: [] as any[] },
+  { title: "Grid", content: [] as any[] },
+  { title: "Components", content: [] as any[] },
   { title: "Forms", content: [] as any[] },
   { title: "Interactive", content: [] as any[] },
-  { title: "Embeds", content: [] as any[] },
+  { title: "Media", content: [] as any[] },
+  { title: "Navigation", content: [] as any[] },
 ];
 
 export const ComponentSettings = () => {
@@ -44,6 +46,7 @@ export const ComponentSettings = () => {
   // Nav extra presets (Social Nav, Plain Nav, etc.) — ButtonList-based, not Nav-based.
   // Built once and injected into the Navigation category.
   const navExtras = useMemo(() => buildExtraPresetEntries(NAV_EXTRA_PRESETS), []);
+  const componentExtras = useMemo(() => buildExtraPresetEntries(COMPONENT_EXTRA_PRESETS), []);
 
   // Merge defineComponent categories into matching base categories,
   // or append as new categories if no match. Then add saved components.
@@ -51,6 +54,7 @@ export const ComponentSettings = () => {
     const merged = baseItems.map(item => ({ ...item, content: [...item.content] }));
 
     for (const custom of customItems) {
+      if (custom.title.startsWith("__")) continue;
       const existing = merged.find(item => item.title === custom.title);
       if (existing) {
         existing.content.push(...custom.content);
@@ -63,6 +67,12 @@ export const ComponentSettings = () => {
     const navCategory = merged.find(item => item.title === "Navigation");
     if (navCategory) {
       navCategory.content.push(...navExtras);
+    }
+
+    // Inject Component extra presets (Badge, Avatar, Alert — Container-based) into Components
+    const compCategory = merged.find(item => item.title === "Components");
+    if (compCategory) {
+      compCategory.content.push(...componentExtras);
     }
 
     if (components?.filter(component => !component.isSection)?.length) {

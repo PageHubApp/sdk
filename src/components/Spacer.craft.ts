@@ -20,7 +20,7 @@ export const SpacerDef = defineComponent(
     name: "Spacer",
     component: Spacer,
     icon: TbSpace,
-    category: "Basic",
+    category: "Content",
     settings: SpacerMainTab,
     toHTML,
     disable: [
@@ -37,7 +37,7 @@ export const SpacerDef = defineComponent(
     defaultProps: {
       className: "w-full py-space-md bg-transparent",
     },
-    presets: [{ label: "Spacer", props: {} }],
+    presets: [{ label: "Spacer", description: "Empty space between elements.", props: {} }],
   },
   { __internal: true }
 );

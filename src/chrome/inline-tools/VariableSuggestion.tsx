@@ -87,7 +87,7 @@ function GroupSubmenu({
     <div
       ref={floating.refs.setFloating}
       style={{ ...floating.floatingStyles, zIndex: 100000 }}
-      className="rounded-box border-base-300/50 bg-base-100 text-base-content min-w-[13rem] max-w-[20rem] overflow-y-auto border py-1 shadow-xl select-none"
+      className="rounded-box border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto border py-1 shadow-xl select-none"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -104,7 +104,7 @@ function GroupSubmenu({
         >
           <GroupIcon className="size-4 shrink-0 opacity-70" aria-hidden />
           <span className="flex-1 truncate">{item.label}</span>
-          <span className="text-neutral-content/50 font-mono text-[10px] truncate max-w-[7rem]">
+          <span className="text-neutral-content/50 max-w-[7rem] truncate font-mono text-[10px]">
             {item.id}
           </span>
         </button>
@@ -171,7 +171,7 @@ export function VariableSuggestionPopup({ suggestion }: { suggestion: Suggestion
         className="pagehub-sdk-root"
         style={{ position: "fixed", top: rect.bottom + 6, left: rect.left, zIndex: 99999 }}
       >
-        <div className="rounded-box border-base-300/50 bg-base-100 text-base-content min-w-[14rem] max-w-[20rem] overflow-hidden border py-1 shadow-xl">
+        <div className="rounded-box border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[14rem] overflow-hidden border py-1 shadow-xl">
           <div className="bg-base-200/80 text-neutral-content px-3 py-1 text-[10px] font-semibold tracking-wide uppercase">
             {group}
           </div>
@@ -189,7 +189,7 @@ export function VariableSuggestionPopup({ suggestion }: { suggestion: Suggestion
               >
                 <GroupIcon className="size-4 shrink-0 opacity-70" aria-hidden />
                 <span className="flex-1 truncate">{item.label}</span>
-                <span className="text-neutral-content/50 font-mono text-[10px] truncate max-w-[7rem]">
+                <span className="text-neutral-content/50 max-w-[7rem] truncate font-mono text-[10px]">
                   {item.id}
                 </span>
               </button>

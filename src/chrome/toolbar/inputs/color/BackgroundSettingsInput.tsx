@@ -10,7 +10,7 @@ import { MediaInput } from "../media/MediaInput";
 export const BackgroundSettingsInput = () => {
   const { query } = useEditor();
   const { props } = useNode(node => ({
-    props: node.data.props,
+    props: node.data?.props,
   }));
 
   return (
@@ -20,7 +20,9 @@ export const BackgroundSettingsInput = () => {
         propKey="backgroundImage"
         typeKey="backgroundImageType"
         contentKey="backgroundImage"
+        title=""
         collapsible={false}
+        showObjectProperties={false}
       />
 
       {props?.backgroundImage && (

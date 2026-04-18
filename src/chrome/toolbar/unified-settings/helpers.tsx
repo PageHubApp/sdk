@@ -25,6 +25,7 @@ import {
   TbLock,
   TbLockOpen,
   TbPalette,
+  TbPointFilled,
   TbPointer,
   TbSettings2,
   TbChevronsDown,
@@ -43,6 +44,7 @@ export const SECTION_ICONS: Record<string, React.ReactNode> = {
   Content: <TbFileText />,
   Icon: <TbIcons />,
   Type: <TbCategory />,
+  Marker: <TbPointFilled />,
   Properties: <TbSettings2 />,
   /** Modal open-target id (Actions); not a generic "anchor" section */
   ModalTarget: <TbAnchor />,
@@ -86,7 +88,7 @@ export const renderNA = (title: string) => (
  * Every MainTab MUST render these sections in this exact order.
  * Missing sections become "not available" placeholders.
  */
-const COMPONENT_SECTIONS = ["Content", "Type"] as const;
+const COMPONENT_SECTIONS = ["Content", "Type", "Marker"] as const;
 
 /**
  * Sections that render in the Advanced tab instead of the Component tab.

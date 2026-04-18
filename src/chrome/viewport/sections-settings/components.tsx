@@ -46,12 +46,7 @@ export const BlockPreviewCard = memo(function BlockPreviewCard({
         }`}
       >
         <div className="relative min-h-[7rem] flex-1 overflow-hidden">
-          <ComponentPreview
-            component={block.structure}
-            scale={0.35}
-            resolver={resolver}
-
-          />
+          <ComponentPreview component={block.structure} scale={0.35} resolver={resolver} />
           <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
         </div>
         <div className="border-base-300 bg-base-100 border-t px-2.5 py-2">
@@ -129,9 +124,9 @@ export const CustomSectionCard = memo(function CustomSectionCard({
           {customPreview && (
             <ComponentPreview component={customPreview} scale={0.35} resolver={resolver} />
           )}
-          <div className="bg-primary absolute top-2 right-2 z-10 rounded-lg px-2 py-1">
-            <span className="text-primary-content text-xs font-medium">Custom</span>
-          </div>
+          <kbd className="text-neutral-content/60 border-base-content/18 bg-base-200/95 absolute top-2 right-2 z-10 rounded-sm border border-dashed px-1 py-px font-mono text-[9px] leading-none tracking-normal">
+            custom
+          </kbd>
           <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
         </div>
         <div className="border-base-300 bg-base-100 border-t px-2.5 py-2">
@@ -215,12 +210,7 @@ export function BlockQuickLook({
           </kbd>
         </div>
         <div className="overflow-hidden">
-          <ComponentPreview
-            component={block.structure}
-            scale={0.65}
-            resolver={resolver}
-
-          />
+          <ComponentPreview component={block.structure} scale={0.65} resolver={resolver} />
         </div>
       </div>
     </div>

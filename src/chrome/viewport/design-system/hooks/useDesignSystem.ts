@@ -226,7 +226,8 @@ export function useDesignSystem(isOpen: boolean) {
   // ─── Active palette (switches based on colorMode) ───
   const activePalettes = colorMode === "dark" ? darkPalettes : palettes;
   const setActivePalettes = colorMode === "dark" ? setDarkPalettes : setPalettes;
-  const getPalettesForMode = (mode: "light" | "dark") => (mode === "dark" ? darkPalettes : palettes);
+  const getPalettesForMode = (mode: "light" | "dark") =>
+    mode === "dark" ? darkPalettes : palettes;
   const setPalettesForMode = (
     mode: "light" | "dark",
     next: PaletteColor[] | ((prev: PaletteColor[]) => PaletteColor[])
@@ -374,10 +375,7 @@ export function useDesignSystem(isOpen: boolean) {
 
   const addColorInMode = (mode: "light" | "dark") => {
     const current = getPalettesForMode(mode);
-    setPalettesForMode(mode, [
-      { name: "New Color", color: "oklch(62% 0.214 259)" },
-      ...current,
-    ]);
+    setPalettesForMode(mode, [{ name: "New Color", color: "oklch(62% 0.214 259)" }, ...current]);
   };
 
   const deleteColorInMode = (mode: "light" | "dark", index: number) => {

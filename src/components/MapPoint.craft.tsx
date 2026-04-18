@@ -12,6 +12,7 @@ export const MapPointDef = defineComponent(
   {
     name: "MapPoint",
     displayName: "MapPoint",
+    description: "Pin marker for a Map component.",
     component: MapPoint,
     icon: TbMapPin,
     category: "Media",

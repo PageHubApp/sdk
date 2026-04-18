@@ -97,7 +97,7 @@ export const TextDef = defineComponent(
     name: "Text",
     component: Text,
     icon: FaFont,
-    category: "Basic",
+    category: "Content",
     settings: TextMainTab,
     defaultProps: {
       richTextMode: "full",
@@ -119,23 +119,12 @@ export const TextDef = defineComponent(
       canDrag: () => true,
       canMoveIn: () => false,
     },
-    tools: props => [
-      <HoverNodeController
-        key="textHoverController"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{
-          position: "bottom",
-          align: "start",
-          placement: "start",
-        }}
-      />,
-    ],
+    tools: [],
     presets: [
       {
         label: "Title",
         icon: MdShortText,
+        description: "Large heading text.",
         props: {
           text: lorem.generateSentences(1),
           className: "text-2xl md:text-4xl",
@@ -144,6 +133,7 @@ export const TextDef = defineComponent(
       {
         label: "Sub-title",
         icon: MdShortText,
+        description: "Secondary heading text.",
         props: {
           text: lorem.generateSentences(1),
           className: "text-lg md:text-xl",
@@ -152,6 +142,7 @@ export const TextDef = defineComponent(
       {
         label: "Paragraph",
         icon: BsBodyText,
+        description: "Body text block.",
         props: {
           tagName: "p",
           text: lorem.generateParagraphs(1),

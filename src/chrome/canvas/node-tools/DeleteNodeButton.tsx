@@ -26,7 +26,9 @@ export const DeleteNodeButton = ({
       canDelete:
         node.data.props?.canDelete !== false &&
         node.data.custom?.permissions?.canDelete !== false &&
-        t !== "page" && t !== "header" && t !== "footer",
+        t !== "page" &&
+        t !== "header" &&
+        t !== "footer",
     };
   });
 

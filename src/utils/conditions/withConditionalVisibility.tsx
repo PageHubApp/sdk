@@ -3,6 +3,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { buildClientContext } from "./context";
 import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
+import { replaceVariables } from "../design/variables";
 import type { Condition, ConditionGroup, ConditionLogic } from "./types";
 
 /**
@@ -14,7 +15,7 @@ import type { Condition, ConditionGroup, ConditionLogic } from "./types";
 export function withConditionalVisibility<P extends object>(
   WrappedComponent: React.ComponentType<P>
 ): React.ComponentType<P> {
-  const WithConditions = React.forwardRef<any, P>((props, ref) => {
+  const WithConditions = React.forwardRef<any, P>(function WithConditions(props, ref) {
     return <VisibilityGate wrappedProps={props} wrappedRef={ref} Component={WrappedComponent} />;
   });
 
@@ -26,25 +27,41 @@ export function withConditionalVisibility<P extends object>(
 }
 
 function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
-  const { conditions, conditionLogic, conditionGroups } = useNode(node => ({
+  const {
+    conditions,
+    conditionLogic,
+    conditionGroups,
+    nodeType,
+    nodeId,
+    displayName,
+    pageConditionFailAction,
+    pageConditionRedirectUrl,
+    pageConditionFallbackPageId,
+  } = useNode(node => ({
     conditions: (node.data.props.conditions || []) as Condition[],
     conditionLogic: (node.data.props.conditionLogic || "all") as ConditionLogic,
     conditionGroups: (node.data.props.conditionGroups || null) as ConditionGroup[] | null,
+    nodeType: node.data.props.type as string | undefined,
+    nodeId: node.id,
+    displayName: node.data.props.custom?.displayName || node.data.displayName || node.id,
+    pageConditionFailAction: (node.data.props.pageConditionFailAction || "") as string,
+    pageConditionRedirectUrl: (node.data.props.pageConditionRedirectUrl || "") as string,
+    pageConditionFallbackPageId: (node.data.props.pageConditionFallbackPageId || "") as string,
   }));
 
-  const { enabled, rootProps } = useEditor((state, query) => {
+  const { enabled, rootProps, query } = useEditor((state, query) => {
     try {
       return {
         enabled: state.options.enabled,
         rootProps: query.node("ROOT").get()?.data?.props || {},
+        query,
       };
     } catch {
-      return { enabled: state.options.enabled, rootProps: {} };
+      return { enabled: state.options.enabled, rootProps: {}, query };
     }
   });
 
-  const hasConditions =
-    (conditionGroups && conditionGroups.length > 0) || conditions.length > 0;
+  const hasConditions = (conditionGroups && conditionGroups.length > 0) || conditions.length > 0;
 
   const [visible, setVisible] = useState(true);
   const conditionsRef = useRef(conditions);
@@ -68,7 +85,7 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     }
 
     // Viewer mode: evaluate conditions
-    const evaluate = () => {
+    const evaluate = (source?: string) => {
       const ctx = buildClientContext(rootProps);
       let result: boolean | null;
       if (groupsRef.current && groupsRef.current.length > 0) {
@@ -76,17 +93,60 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
       } else {
         result = evaluateConditions(conditionsRef.current, logicRef.current, ctx);
       }
-      setVisible(result !== false);
+      const newVisible = result !== false;
+      console.log(`[Visibility] node=${nodeId} name="${displayName}" visible=${newVisible} source=${source || "mount"} authCtx=${JSON.stringify(ctx.auth)} t=${typeof performance !== "undefined" ? performance.now().toFixed(1) : "?"}`);
+      setVisible(newVisible);
     };
 
-    evaluate();
-    window.addEventListener("popstate", evaluate);
-    window.addEventListener("resize", evaluate);
+    evaluate("initial");
+    const onPop = () => evaluate("popstate");
+    const onResize = () => evaluate("resize");
+    const onAuth = () => evaluate("auth-changed");
+    window.addEventListener("popstate", onPop);
+    window.addEventListener("resize", onResize);
+    window.addEventListener("pagehub:auth-changed", onAuth);
     return () => {
-      window.removeEventListener("popstate", evaluate);
-      window.removeEventListener("resize", evaluate);
+      window.removeEventListener("popstate", onPop);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("pagehub:auth-changed", onAuth);
     };
   }, [hasConditions, enabled, rootProps]);
+
+  // Page-level fail actions (redirect or show another page)
+  const didRedirect = useRef(false);
+  useEffect(() => {
+    if (visible || enabled || nodeType !== "page" || didRedirect.current) return;
+
+    // Resolve a relative path against the current route context.
+    // On /view/siteId or /build/siteId, prepend the base so "/login" → "/view/siteId/login".
+    // On custom domains (no prefix), leave as-is.
+    const resolveUrl = (url: string) => {
+      if (!url.startsWith("/") || /^https?:\/\//.test(url)) return url;
+      const pathOnly = window.location.pathname.split(/[?#]/)[0];
+      const parts = pathOnly.split("/").filter(Boolean);
+      if (parts.length >= 2 && (parts[0] === "build" || parts[0] === "view")) {
+        return `/${parts[0]}/${parts[1]}${url}`;
+      }
+      return url;
+    };
+
+    if (pageConditionFailAction === "redirect" && pageConditionRedirectUrl) {
+      didRedirect.current = true;
+      const interpolated = replaceVariables(pageConditionRedirectUrl, query);
+      window.location.href = resolveUrl(interpolated);
+    } else if (pageConditionFailAction === "show-page" && pageConditionFallbackPageId) {
+      didRedirect.current = true;
+      window.location.href = resolveUrl(`/${pageConditionFallbackPageId}`);
+    }
+  }, [
+    visible,
+    enabled,
+    nodeType,
+    pageConditionFailAction,
+    pageConditionRedirectUrl,
+    pageConditionFallbackPageId,
+    query,
+  ]);
 
   if (!visible) return null;
 

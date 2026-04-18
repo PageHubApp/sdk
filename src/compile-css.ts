@@ -222,8 +222,7 @@ function getAnimationCSS(): string {
       if (themeMatch) {
         const lines = themeMatch[0].split("\n");
         const animLines = lines.filter(
-          (l) =>
-            l.includes("--animate-css-") || l.includes("@theme") || l.trim() === "}"
+          l => l.includes("--animate-css-") || l.includes("@theme") || l.trim() === "}"
         );
         if (animLines.length > 2) parts.push(animLines.join("\n"));
       }
@@ -287,27 +286,37 @@ function getCompiler() {
 
 function extractCandidatesFromNodes(nodes: Record<string, any>): string[] {
   const candidates = new Set<string>();
-  const implicit = ["cursor-pointer", "sr-only", "not-sr-only", "overflow-hidden", "relative", "absolute"];
+  const implicit = [
+    "cursor-pointer",
+    "sr-only",
+    "not-sr-only",
+    "overflow-hidden",
+    "relative",
+    "absolute",
+  ];
   for (const c of implicit) candidates.add(c);
 
   // Build modifier expansion map so modifier names get expanded to real classes
   const modifiers = nodes?.ROOT?.props?.modifiers;
-  const expansionMap = modifiers && typeof modifiers === "object"
-    ? buildModifierExpansionMap(modifiers)
-    : new Map<string, string>();
+  const expansionMap =
+    modifiers && typeof modifiers === "object"
+      ? buildModifierExpansionMap(modifiers)
+      : new Map<string, string>();
 
   for (const node of Object.values(nodes)) {
     const props = (node as any)?.props;
     if (!props) continue;
 
     if (typeof props.className === "string" && props.className.trim()) {
-      const expanded = expansionMap.size > 0
-        ? expandModifierClassName(props.className, expansionMap)
-        : props.className;
+      const expanded =
+        expansionMap.size > 0
+          ? expandModifierClassName(props.className, expansionMap)
+          : props.className;
       for (const cls of expanded.split(/\s+/)) if (cls) candidates.add(cls);
     }
     if (Array.isArray(props.className)) {
-      for (const cls of props.className) if (typeof cls === "string" && cls.trim()) candidates.add(cls);
+      for (const cls of props.className)
+        if (typeof cls === "string" && cls.trim()) candidates.add(cls);
     }
     if (typeof props.helpers === "string" && props.helpers.trim()) {
       for (const cls of props.helpers.split(/\s+/)) if (cls) candidates.add(cls);
@@ -492,20 +501,14 @@ export async function buildStaticPage(
   // 3. Optionally wrap in a complete HTML document
   if (wrapDocument) {
     const fontLinks = renderResult.fontUrls
-      .map(
-        (url) =>
-          `<link rel="stylesheet" href="${url}" media="print" onload="this.media='all'" />`
-      )
+      .map(url => `<link rel="stylesheet" href="${url}" media="print" onload="this.media='all'" />`)
       .join("\n    ");
 
     const iconLink = renderResult.iconFontUrl
       ? `<link rel="stylesheet" href="${renderResult.iconFontUrl}" media="print" onload="this.media='all'" id="pagehub-auto-material-symbols" />`
       : "";
 
-    const pageTitle =
-      title ||
-      renderResult.seo?.title ||
-      "";
+    const pageTitle = title || renderResult.seo?.title || "";
 
     const metaDesc = renderResult.seo?.description
       ? `<meta name="description" content="${renderResult.seo.description.replace(/"/g, "&quot;")}" />`

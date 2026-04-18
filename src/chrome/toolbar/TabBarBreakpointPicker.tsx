@@ -114,7 +114,7 @@ export const TabBarBreakpointPicker = () => {
                 startDrag(key);
               }}
               aria-pressed={isOn}
-              className={`cursor-pointer rounded px-2 py-0.5 text-xs font-semibold transition-[color,background-color,transform] active:scale-95 select-none ${
+              className={`cursor-pointer rounded px-2 py-0.5 text-xs font-semibold transition-[color,background-color,transform] select-none active:scale-95 ${
                 isOn
                   ? BREAKPOINT_PILL.active
                   : BREAKPOINT_PILL.pill + " opacity-60 hover:opacity-100"

@@ -241,7 +241,7 @@ export function ClassItem({
     actions: { setProp },
     nodeProps,
     id,
-  } = useNode(node => ({ nodeProps: node.data.props, id: node.id }));
+  } = useNode(node => ({ nodeProps: node.data?.props, id: node.id }));
   const { query, actions } = useEditor();
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;

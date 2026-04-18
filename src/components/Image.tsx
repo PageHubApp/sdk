@@ -77,7 +77,9 @@ export const Image = (incomingProps: ImageProps) => {
           : "";
 
   // Resolve {{item.*}} and {{connector.*}} variables in src
-  const srcStr = rawSrcStr.includes("{{") ? replaceVariables(rawSrcStr, query, itemContext) : rawSrcStr;
+  const srcStr = rawSrcStr.includes("{{")
+    ? replaceVariables(rawSrcStr, query, itemContext)
+    : rawSrcStr;
 
   props = setClonedProps(props, query);
 
@@ -133,8 +135,14 @@ export const Image = (incomingProps: ImageProps) => {
   applyAriaProps(prop, props);
 
   // Use metadata from media library, fallback to props — resolve {{item.*}} variables
-  const resolveVar = (v: string) => v?.includes("{{") ? replaceVariables(v, query, itemContext) : v;
-  const altText = mediaMetadata?.alt || resolveVar(props.alt) || mediaMetadata?.title || resolveVar(props.title) || "";
+  const resolveVar = (v: string) =>
+    v?.includes("{{") ? replaceVariables(v, query, itemContext) : v;
+  const altText =
+    mediaMetadata?.alt ||
+    resolveVar(props.alt) ||
+    mediaMetadata?.title ||
+    resolveVar(props.title) ||
+    "";
   const titleText = mediaMetadata?.title || resolveVar(props.title) || "";
 
   // Check if objectFit is set in className

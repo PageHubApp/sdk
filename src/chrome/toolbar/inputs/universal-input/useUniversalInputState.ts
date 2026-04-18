@@ -5,6 +5,7 @@ import { AllStyles, TailwindStyles } from "@/utils/tailwind";
 import { ViewAtom } from "../../../viewport/atoms";
 import { changeProp, getProp, getPropFinalValue } from "../../../viewport/viewportExports";
 import { getEffectiveViews, ViewSelectionAtom } from "../../Label";
+import { isDesignTokenClass } from "./designTokens";
 import { CSS_UNITS, UniversalInputProps, ValueType } from "./types";
 import { formatValue, parseValue } from "./utils";
 
@@ -34,7 +35,7 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
     id,
   } = useNode(node => {
     let value;
-    const nodeProps = node.data.props || {};
+    const nodeProps = node.data?.props || {};
 
     if (propType === "class") {
       value = getPropFinalValue(
@@ -154,6 +155,7 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
       named: [] as string[],
       numeric: [] as string[],
       fractions: [] as string[],
+      tokens: [] as string[],
       other: [] as string[],
     };
 
@@ -188,7 +190,12 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
       // If option has no prefix (value unchanged), it's a keyword — treat as named
       const hasNoPrefix = value === option;
 
-      if (hasNoPrefix || ["full", "screen", "auto", "min", "max", "fit", "none"].includes(value)) {
+      if (isDesignTokenClass(option, prefix)) {
+        groups.tokens.push(option);
+      } else if (
+        hasNoPrefix
+        || ["full", "screen", "auto", "min", "max", "fit", "none"].includes(value)
+      ) {
         groups.named.push(option);
       } else if (value.includes("/")) {
         groups.fractions.push(option);

@@ -1,5 +1,11 @@
 /** Condition source categories */
-export type ConditionType = "url-param" | "form-field" | "connector" | "company" | "device";
+export type ConditionType =
+  | "url-param"
+  | "form-field"
+  | "connector"
+  | "company"
+  | "device"
+  | "auth";
 
 /** Comparison operators */
 export type Operator =
@@ -20,7 +26,8 @@ export interface Condition {
    *  - form-field: field name
    *  - connector: dot-path like "stripe.products"
    *  - company: field name like "name", "email", "phone"
-   *  - device: always "viewport" */
+   *  - device: always "viewport"
+   *  - auth: dot-path like "status", "customer.hasSubscription", "customer.orderCount" */
   key: string;
   operator: Operator;
   /** Comparison value. For device: "mobile" | "desktop". Ignored for exists/not-exists. */
@@ -46,6 +53,7 @@ export interface ConditionContext {
   connectorData: Record<string, Record<string, any[]>> | null;
   company: Record<string, any> | null;
   viewportWidth: number | null;
+  auth: import("../design/variables").AuthState | null;
 }
 
 /** Branch definition for ConditionalContainer */
@@ -65,6 +73,7 @@ export const OPERATORS_BY_TYPE: Record<ConditionType, Operator[]> = {
   connector: ["exists", "not-exists", "greater-than", "less-than", "equals"],
   company: ["exists", "not-exists", "equals", "not-equals"],
   device: ["equals"],
+  auth: ["equals", "not-equals", "exists", "not-exists", "greater-than", "less-than"],
 };
 
 /** Human-readable labels for operators */

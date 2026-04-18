@@ -68,8 +68,10 @@ const DAISYUI_MAP: Record<string, string> = {
   "footer-title": "font-bold uppercase tracking-wide text-xs opacity-60 mb-2",
 
   // Divider
-  divider: "flex items-center gap-2 before:flex-1 before:border-t before:border-base-300 after:flex-1 after:border-t after:border-base-300",
-  "divider-horizontal": "flex-col before:border-l before:border-t-0 after:border-l after:border-t-0",
+  divider:
+    "flex items-center gap-2 before:flex-1 before:border-t before:border-base-300 after:flex-1 after:border-t after:border-base-300",
+  "divider-horizontal":
+    "flex-col before:border-l before:border-t-0 after:border-l after:border-t-0",
 
   // Join (input groups)
   join: "inline-flex [&>*:not(:first-child)]:rounded-l-none [&>*:not(:last-child)]:rounded-r-none",
@@ -78,7 +80,8 @@ const DAISYUI_MAP: Record<string, string> = {
     "flex-col [&>*:not(:first-child)]:rounded-l-none [&>*:not(:last-child)]:rounded-r-none [&>*:not(:first-child)]:rounded-t-none [&>*:not(:last-child)]:rounded-b-none",
 
   // Stats
-  stats: "inline-grid grid-flow-col divide-x divide-base-300 rounded-2xl overflow-hidden bg-base-100",
+  stats:
+    "inline-grid grid-flow-col divide-x divide-base-300 rounded-2xl overflow-hidden bg-base-100",
   stat: "flex flex-col gap-0.5 px-6 py-4",
   "stat-title": "text-sm opacity-60",
   "stat-value": "text-2xl font-bold",
@@ -188,13 +191,43 @@ const SPATIAL_SUFFIX_MAP: Record<string, string> = {
 
 // Tailwind utility prefixes that can take spatial tokens
 const SPATIAL_PREFIXES = [
-  "gap", "gap-x", "gap-y",
-  "p", "px", "py", "pt", "pr", "pb", "pl", "ps", "pe",
-  "m", "mx", "my", "mt", "mr", "mb", "ml", "ms", "me",
-  "w", "min-w", "max-w", "h", "min-h", "max-h",
-  "top", "right", "bottom", "left",
-  "inset", "inset-x", "inset-y",
-  "basis", "scroll-m", "scroll-p",
+  "gap",
+  "gap-x",
+  "gap-y",
+  "p",
+  "px",
+  "py",
+  "pt",
+  "pr",
+  "pb",
+  "pl",
+  "ps",
+  "pe",
+  "m",
+  "mx",
+  "my",
+  "mt",
+  "mr",
+  "mb",
+  "ml",
+  "ms",
+  "me",
+  "w",
+  "min-w",
+  "max-w",
+  "h",
+  "min-h",
+  "max-h",
+  "top",
+  "right",
+  "bottom",
+  "left",
+  "inset",
+  "inset-x",
+  "inset-y",
+  "basis",
+  "scroll-m",
+  "scroll-p",
 ];
 
 // ── Radius token → standard Tailwind ──────────────────────────────────────

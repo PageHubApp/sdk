@@ -221,8 +221,7 @@ function initEditor() {
 // ─── Config modal ───────────────────────────────────────────────────────────
 
 function saveConfig() {
-  currentConfig.apiBaseUrl =
-    document.getElementById("cfg-apiBaseUrl").value || "";
+  currentConfig.apiBaseUrl = document.getElementById("cfg-apiBaseUrl").value || "";
   currentConfig.apiKey = (document.getElementById("cfg-apiKey").value || "").trim();
   currentConfig.siteId = (document.getElementById("cfg-siteId").value || "").trim();
   currentConfig.theme.primaryColor = document.getElementById("cfg-primaryColor").value;

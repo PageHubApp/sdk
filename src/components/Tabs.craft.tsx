@@ -53,7 +53,7 @@ function buildTabButton(index: number) {
         method: "class",
         group: GROUP_ID,
       }}
-      className="rounded-none border-b-2 px-4 py-2 text-sm font-medium border-transparent text-neutral-content data-[tab-active=true]:border-primary data-[tab-active=true]:text-primary"
+      className="text-neutral-content data-[tab-active=true]:border-primary data-[tab-active=true]:text-primary rounded-none border-b-2 border-transparent px-space-sm py-space-xs text-sm font-medium"
     />
   );
 }
@@ -133,18 +133,11 @@ export const TabsDef = defineComponent(
         placement="end"
         alt={{ position: "bottom", align: "start", placement: "start" }}
       />,
-      <HoverNodeController
-        key="tabsHover"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{ position: "bottom", align: "start", placement: "start" }}
-      />,
-      <DeleteNodeController key="tabsDelete" />,
     ],
     presets: [
       {
         label: "Tabs",
+        description: "Tabbed content panels with a switchable tab bar.",
         props: {
           defaultTab: 0,
           orientation: "horizontal",

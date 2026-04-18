@@ -50,7 +50,7 @@ export const PatternsDialogInput = ({
     nodeProps,
     id,
   } = useNode(node => ({
-    nodeProps: node.data.props || {},
+    nodeProps: node.data?.props || {},
     id: node.id,
   }));
 

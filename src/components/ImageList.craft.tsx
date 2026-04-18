@@ -54,7 +54,7 @@ export const ImageListDef = defineComponent(
     displayName: "Image List",
     component: ImageList,
     icon: TbPhoto,
-    category: "Media",
+    category: "Content",
     canvas: true,
     settings: ImageListMainTab,
     toHTML,
@@ -81,9 +81,10 @@ export const ImageListDef = defineComponent(
     presets: [
       {
         label: "Image Gallery",
+        description: "Grid, masonry, or carousel image gallery.",
         icon: TbPhotoScan,
         props: {
-          className: "w-full p-4 flex-row gap-4",
+          className: "w-full p-space-sm flex-row gap-space-sm",
           showNavigation: true,
           showDots: true,
           navArrowClass:

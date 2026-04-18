@@ -118,7 +118,12 @@ export function MorePanel({
           <>
             <div className="bg-border mx-0.5 h-5 w-px" />
 
-            <Btn onClick={onInsertImage} tip="Insert image" icon={<MdImage />} onAction={onAction} />
+            <Btn
+              onClick={onInsertImage}
+              tip="Insert image"
+              icon={<MdImage />}
+              onAction={onAction}
+            />
             <Btn
               onClick={() => editor.chain().focus().setHorizontalRule().run()}
               tip="Horizontal rule"

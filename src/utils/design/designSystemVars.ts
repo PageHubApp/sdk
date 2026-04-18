@@ -249,7 +249,11 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
   ];
 
   Object.entries(styleGuide).forEach(([key, value]) => {
-    if (value && typeof value === "string" && (cssVarKeys.includes(key) || key.endsWith("FontFamily"))) {
+    if (
+      value &&
+      typeof value === "string" &&
+      (cssVarKeys.includes(key) || key.endsWith("FontFamily"))
+    ) {
       const cssVar = toStyleCSSVarName(key);
       if (!cssVar || cssVar === "--") return;
 
@@ -302,7 +306,6 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
       }
     }
   });
-
 
   return variables.join("\n");
 }
@@ -445,17 +448,14 @@ export function injectDesignSystemVars(designSystem: DesignSystemVars): void {
   const scope = document.getElementById("viewport") ? "#viewport" : ":root";
   const cssText = generateDesignSystemCSSVariables(designSystem, scope);
 
-  // Remove existing design system styles
-  const existingStyle = document.getElementById("design-system-vars");
-  if (existingStyle) {
-    existingStyle.remove();
+  // In-place update: never remove+add to avoid FOUC
+  let el = document.getElementById("design-system-vars") as HTMLStyleElement | null;
+  if (!el) {
+    el = document.createElement("style");
+    el.id = "design-system-vars";
+    document.head.appendChild(el);
   }
-
-  // Create new style element
-  const style = document.createElement("style");
-  style.id = "design-system-vars";
-  style.textContent = cssText;
-
-  // Inject into document head
-  document.head.appendChild(style);
+  if (el.textContent !== cssText) {
+    el.textContent = cssText;
+  }
 }

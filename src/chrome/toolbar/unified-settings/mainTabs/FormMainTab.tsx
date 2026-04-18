@@ -13,7 +13,7 @@ const VIEW_STATES = [
 ] as const;
 
 export const FormMainTab = () => {
-  const { id, props } = useNode(node => ({ props: node.data.props }));
+  const { id, props } = useNode(node => ({ props: node.data?.props }));
   const { actions } = useEditor();
   const [formType, setFormType] = useState(props.submissionType);
   const currentView = props.view || "";

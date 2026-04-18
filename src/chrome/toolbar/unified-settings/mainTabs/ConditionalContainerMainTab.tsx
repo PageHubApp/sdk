@@ -10,8 +10,18 @@ import { ToolbarSection } from "../../ToolbarSection";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
-import type { Condition, ConditionBranch, ConditionLogic, ConditionType, Operator } from "../../../../utils/conditions/types";
-import { OPERATOR_LABELS, OPERATORS_BY_TYPE, NO_VALUE_OPERATORS } from "../../../../utils/conditions/types";
+import type {
+  Condition,
+  ConditionBranch,
+  ConditionLogic,
+  ConditionType,
+  Operator,
+} from "../../../../utils/conditions/types";
+import {
+  OPERATOR_LABELS,
+  OPERATORS_BY_TYPE,
+  NO_VALUE_OPERATORS,
+} from "../../../../utils/conditions/types";
 
 const CATEGORY_OPTIONS: { value: ConditionType; label: string }[] = [
   { value: "url-param", label: "URL" },
@@ -26,13 +36,15 @@ export const ConditionalContainerMainTab = () => {
     id,
     props,
     actions: { setProp },
-  } = useNode(node => ({ props: node.data.props }));
+  } = useNode(node => ({ props: node.data?.props }));
   const { actions, query } = useEditor();
 
   let childIds: string[] = [];
   try {
     childIds = query.node(id).get()?.data?.nodes || [];
-  } catch { /* node not ready */ }
+  } catch {
+    /* node not ready */
+  }
   const branches: ConditionBranch[] = props.branches || [];
 
   const updateBranch = (index: number, patch: Partial<ConditionBranch>) => {
@@ -55,7 +67,7 @@ export const ConditionalContainerMainTab = () => {
         canvas
         is={Container}
         custom={{ displayName: label }}
-        className="flex flex-col gap-space-sm p-space-md"
+        className="gap-space-sm p-space-md flex flex-col"
       >
         <Element
           is={Text}
@@ -107,7 +119,7 @@ export const ConditionalContainerMainTab = () => {
               {/* Branch header */}
               <div className="bg-neutral/30 flex items-center justify-between rounded-t-lg px-2 py-1.5">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider">
+                  <span className="text-[10px] font-bold tracking-wider uppercase">
                     {i === 0 && !isFallback ? "IF" : isFallback ? "ELSE" : "ELSE IF"}
                   </span>
                   <input
@@ -213,7 +225,10 @@ function BranchConditions({
 
   const addCondition = () => {
     onChange(
-      [...conditions, { type: "url-param" as ConditionType, key: "", operator: "equals" as Operator, value: "" }],
+      [
+        ...conditions,
+        { type: "url-param" as ConditionType, key: "", operator: "equals" as Operator, value: "" },
+      ],
       logic
     );
   };
@@ -226,9 +241,7 @@ function BranchConditions({
             type="button"
             onClick={() => onChange(conditions, "all")}
             className={`flex-1 rounded px-2 py-0.5 text-[10px] font-medium ${
-              logic === "all"
-                ? "bg-base-100 text-base-content shadow-sm"
-                : "text-neutral-content"
+              logic === "all" ? "bg-base-100 text-base-content shadow-sm" : "text-neutral-content"
             }`}
           >
             AND
@@ -237,9 +250,7 @@ function BranchConditions({
             type="button"
             onClick={() => onChange(conditions, "any")}
             className={`flex-1 rounded px-2 py-0.5 text-[10px] font-medium ${
-              logic === "any"
-                ? "bg-base-100 text-base-content shadow-sm"
-                : "text-neutral-content"
+              logic === "any" ? "bg-base-100 text-base-content shadow-sm" : "text-neutral-content"
             }`}
           >
             OR
@@ -343,7 +354,11 @@ function MiniConditionRow({
         </>
       )}
 
-      <button type="button" onClick={onRemove} className="text-neutral-content hover:text-error p-0.5">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="text-neutral-content hover:text-error p-0.5"
+      >
         <TbTrash size={10} />
       </button>
     </div>

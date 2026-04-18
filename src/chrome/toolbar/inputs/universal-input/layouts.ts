@@ -8,7 +8,7 @@ export interface DropdownLayoutConfig {
   };
   leftSection?: {
     title: string;
-    groups: ("named" | "numeric" | "fractions" | "other")[];
+    groups: ("named" | "numeric" | "fractions" | "tokens" | "other")[];
     showHints?: boolean;
     hintType?: "pixel" | "percentage" | "ms" | "custom";
     showPreview?: "cursor" | "color" | "shadow";
@@ -16,7 +16,7 @@ export interface DropdownLayoutConfig {
   };
   middleSection?: {
     title: string;
-    groups: ("named" | "numeric" | "fractions" | "other")[];
+    groups: ("named" | "numeric" | "fractions" | "tokens" | "other")[];
     showHints?: boolean;
     hintType?: "pixel" | "percentage" | "ms" | "custom";
     showPreview?: "cursor" | "color" | "shadow";
@@ -24,7 +24,7 @@ export interface DropdownLayoutConfig {
   };
   rightSection?: {
     title: string;
-    groups: ("named" | "numeric" | "fractions" | "other")[];
+    groups: ("named" | "numeric" | "fractions" | "tokens" | "other")[];
     showHints?: boolean;
     hintType?: "pixel" | "percentage" | "ms" | "custom";
     showPreview?: "cursor" | "color" | "shadow";
@@ -119,7 +119,7 @@ export const COMMON_SPACING_LAYOUT: DropdownLayoutConfig = {
   },
   leftSection: {
     title: "",
-    groups: ["named"],
+    groups: ["tokens", "named"],
     showHints: true,
     hintType: "pixel",
   },

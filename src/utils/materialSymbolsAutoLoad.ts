@@ -9,7 +9,6 @@ import { generateOptimizedMaterialSymbolsUrl } from "./data/collectGoogleIcons";
 const LINK_ID = "pagehub-auto-material-symbols";
 
 const usageCounts = new Map<string, number>();
-let flushScheduled = false;
 
 function applyStylesheetLink() {
   if (typeof document === "undefined") return;
@@ -29,7 +28,11 @@ function applyStylesheetLink() {
     return;
   }
 
-  if (existing) existing.remove();
+  if (existing) {
+    if (existing.getAttribute("href") !== url) existing.href = url;
+    if (existing.media === "print") existing.media = "all";
+    return;
+  }
   const link = document.createElement("link");
   link.id = LINK_ID;
   link.rel = "stylesheet";
@@ -37,20 +40,11 @@ function applyStylesheetLink() {
   document.head.appendChild(link);
 }
 
-function scheduleFlush() {
-  if (flushScheduled) return;
-  flushScheduled = true;
-  queueMicrotask(() => {
-    flushScheduled = false;
-    applyStylesheetLink();
-  });
-}
-
 /** Call when a mounted node uses ref-google:{iconName} (non-editor contexts). */
 export function registerMaterialSymbolIconUsage(iconName: string) {
   if (!iconName) return;
   usageCounts.set(iconName, (usageCounts.get(iconName) || 0) + 1);
-  scheduleFlush();
+  applyStylesheetLink();
 }
 
 /** Pair with register when the node unmounts. */
@@ -58,5 +52,5 @@ export function unregisterMaterialSymbolIconUsage(iconName: string) {
   const next = (usageCounts.get(iconName) || 0) - 1;
   if (next <= 0) usageCounts.delete(iconName);
   else usageCounts.set(iconName, next);
-  scheduleFlush();
+  applyStylesheetLink();
 }

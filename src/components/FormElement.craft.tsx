@@ -59,6 +59,7 @@ export const FormElementDef = defineComponent(
   {
     name: "FormElement",
     displayName: "Form Item",
+    description: "Form input field — text, email, select, checkbox, etc.",
     component: FormElement,
     icon: TbInputSearch,
     category: "Forms",
@@ -75,17 +76,6 @@ export const FormElementDef = defineComponent(
         position="top"
         align="end"
         placement="end"
-      />,
-      <HoverNodeController
-        key="formElementHoverController"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{
-          position: "bottom",
-          align: "start",
-          placement: "start",
-        }}
       />,
     ],
     presets: (() => {
@@ -152,7 +142,7 @@ export const FormElementDef = defineComponent(
             type: "file",
             name: "file",
             className:
-              "w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-(--input-bg-color) file:px-4 file:py-2 file:text-sm file:font-medium",
+              "w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-(--input-bg-color) file:px-space-sm file:py-space-xs file:text-sm file:font-medium",
           },
         },
         {

@@ -11,7 +11,7 @@ import { SECTION_ICONS } from "../helpers";
 export function ContainerScrollEffectSection() {
   /** Primitives only — Craft mutates `props` in place; `useNode(() => ({ props }))` does not re-render (lodash isEqual short-circuits on same ref). */
   const { id, craftName, containerType, scrollEffect } = useNode(node => {
-    const p = node.data.props || {};
+    const p = node.data?.props || {};
     const meta = node.data;
     return {
       id: node.id,
@@ -145,13 +145,5 @@ export function ContainerScrollEffectSection() {
     </>
   );
 
-  return (
-    <ToolbarSection
-      title="Scroll Effect"
-      icon={SECTION_ICONS["ScrollEffect"]}
-      help={isSection ? sectionHelp : nonSectionHelp}
-    >
-      {isSection ? sectionInner : nonSectionInner}
-    </ToolbarSection>
-  );
+  return <>{isSection ? sectionInner : nonSectionInner}</>;
 }

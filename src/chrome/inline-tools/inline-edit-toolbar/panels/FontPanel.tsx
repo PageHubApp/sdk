@@ -33,12 +33,7 @@ const CATEGORIES: Record<string, (f: string[][]) => string[][]> = {
   "All Fonts": f => f,
 };
 
-export function FontPanel({
-  editor,
-  richTextMode = "full",
-  onAction,
-  onClose,
-}: FontPanelProps) {
+export function FontPanel({ editor, richTextMode = "full", onAction, onClose }: FontPanelProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [allFonts, setAllFonts] = useState<string[][]>(fonts);
   const [loading, setLoading] = useState(true);

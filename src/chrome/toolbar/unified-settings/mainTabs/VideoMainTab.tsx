@@ -5,7 +5,7 @@ import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 export const VideoMainTab = () => {
-  const { provider } = useNode(node => ({ provider: node.data.props.provider }));
+  const { provider } = useNode(node => ({ provider: node.data?.props.provider }));
 
   const getProviderInstructions = () => {
     switch (provider) {

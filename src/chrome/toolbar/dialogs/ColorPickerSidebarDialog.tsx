@@ -121,8 +121,7 @@ export function ColorPickerSidebarDialog() {
                 className="group relative aspect-square w-full rounded-lg border-2 transition-all hover:scale-110"
                 style={{
                   backgroundColor: color.hex,
-                  borderColor:
-                    selectedColor === color.value ? "var(--primary)" : "var(--base-300)",
+                  borderColor: selectedColor === color.value ? "var(--primary)" : "var(--base-300)",
                 }}
                 data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                 data-tooltip-content={color.name}

@@ -50,7 +50,7 @@ function buildDropdownChildren() {
       icon={{ value: chevronSvg, position: "right", only: false }}
       canDelete={true}
       canEditName={true}
-      className="bg-primary text-primary-content rounded-box flex items-center gap-1 px-(--button-padding-x) py-(--button-padding-y)"
+      className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold"
     />,
     // Dropdown Panel
     <Element
@@ -60,28 +60,28 @@ function buildDropdownChildren() {
       custom={{ displayName: "Dropdown Panel" }}
       canDelete={true}
       canEditName={true}
-      className="bg-base-200 text-base-content rounded-box border-base-300 absolute top-full left-0 z-50 mt-1 hidden min-w-48 flex-col overflow-hidden border py-1 shadow-lg group-focus-within:flex"
+      className="bg-base-200 text-base-content rounded-box border-base-300 absolute top-full left-0 z-50 mt-1 hidden min-w-48 flex-col overflow-hidden border py-space-xs shadow-lg group-focus-within:flex"
     >
       <Element
         is={Button}
         custom={{ displayName: "Option 1" }}
         text="Option 1"
         url="#"
-        className="hover:bg-neutral w-full rounded-none border-0 px-4 py-2 text-left text-sm"
+        className="hover:bg-neutral w-full rounded-none border-0 px-space-sm py-space-xs text-left text-sm"
       />
       <Element
         is={Button}
         custom={{ displayName: "Option 2" }}
         text="Option 2"
         url="#"
-        className="hover:bg-neutral w-full rounded-none border-0 px-4 py-2 text-left text-sm"
+        className="hover:bg-neutral w-full rounded-none border-0 px-space-sm py-space-xs text-left text-sm"
       />
       <Element
         is={Button}
         custom={{ displayName: "Option 3" }}
         text="Option 3"
         url="#"
-        className="hover:bg-neutral w-full rounded-none border-0 px-4 py-2 text-left text-sm"
+        className="hover:bg-neutral w-full rounded-none border-0 px-space-sm py-space-xs text-left text-sm"
       />
     </Element>,
   ];
@@ -112,18 +112,11 @@ export const DropdownDef = defineComponent(
         placement="end"
         alt={{ position: "bottom", align: "start", placement: "start" }}
       />,
-      <HoverNodeController
-        key="dropdownHover"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{ position: "bottom", align: "start", placement: "start" }}
-      />,
-      <DeleteNodeController key="dropdownDelete" />,
     ],
     presets: [
       {
         label: "Dropdown",
+        description: "CSS-powered dropdown menu with customizable options.",
         props: {
           trigger: "click",
           position: "bottom-start",

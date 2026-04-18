@@ -16,6 +16,8 @@ import { purifyToTailwind } from "./tailwind/daisyuiToTailwind";
 export interface StaticRenderContext {
   /** All nodes in the tree (for child lookup, query shims, etc.) */
   nodes: Record<string, any>;
+  /** Set by the static HTML tree walker around each `toHTML` call (for parent lookups). */
+  renderingNodeId?: string;
   /** Viewport mode */
   view: "desktop" | "mobile";
   /** Palette from ROOT node */

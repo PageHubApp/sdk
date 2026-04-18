@@ -28,6 +28,8 @@ export const DeviceDimensionsAtom = atom("deviceDimensions", { width: 390, heigh
 
 export const DeviceZoomAtom = atom("deviceZoom", 0.75);
 
+export const BreakpointZoomAtom = atom("breakpointZoom", 1);
+
 export const EnabledAtom = atom("enabled", true);
 
 export const InitialLoadCompleteAtom = atom("initialLoadComplete", false);

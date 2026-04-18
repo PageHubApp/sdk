@@ -10,14 +10,15 @@
 // For Next.js, import styles/globals.css in pages/_app.tsx.
 
 import { Editor, Frame, useEditor } from "@craftjs/core";
-import { compressAsync, decompressAsync, terminateCompressionWorker } from "./utils/compressionAsync";
-import { renderToHTML } from "./static-renderer";
-import React, { useCallback, useEffect, useRef, useState } from "react";
 import { EcosystemProvider, useAtomState } from "@zedux/react";
-import { useSetAtomState } from "./utils/atoms";
-import { useSDK, useHasSDKProvider, PageHubProvider } from "./core/context";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { LazyUnifiedSettings } from "./components/LazyUnifiedSettings";
 import { resolveConfig } from "./config";
+import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
+import { PageHubProvider, useHasSDKProvider, useSDK } from "./core/context";
 import { EventEmitter } from "./core/events";
+import { CustomComponentsContext, processForEditor, type ResolvedComponentDef } from "./define";
+import { renderToHTML } from "./static-renderer";
 import type {
   PageData,
   PageHubCallbacks,
@@ -25,30 +26,27 @@ import type {
   PageHubFeatures,
   PageHubTheme,
 } from "./types";
-import { BatchOperationAtom, EditorSaveBannerAtom } from "./utils/atoms";
-import { processForEditor, CustomComponentsContext, type ResolvedComponentDef } from "./define";
-import { LazyUnifiedSettings } from "./components/LazyUnifiedSettings";
-import { markPageLoaded, clearLoadedPages, getLoadedPages, listPageNodeIds } from "./utils/pageManagement";
+import { BatchOperationAtom, EditorSaveBannerAtom, useSetAtomState } from "./utils/atoms";
+import { compressAsync, decompressAsync } from "./utils/compressionAsync";
+import { clearLoadedPages, listPageNodeIds, markPageLoaded } from "./utils/pageManagement";
 import { extractPageShard, extractSharedShard } from "./utils/treeSharding";
-import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 
 // ─── Import the real Viewport, Toolbar, and all dialog components from the editor chrome ──
-import { Viewport } from "./chrome/viewport/ViewportShell";
-import { UnsavedChangesAtom } from "./chrome/viewport/atoms";
-import { Toolbar } from "./chrome/toolbar";
-import { EditorSelectionDomProvider } from "./chrome/shell/EditorSelectionDomContext";
+import { AiPanelHost } from "./chrome/ai/AiPanelHost";
 import { RenderNodeNewer } from "./chrome/rendering/RenderNode";
 import CustomEventHandlers from "./chrome/shell/CustomEventHandlers";
-import { BesideDropIndicator } from "./chrome/shell/BesideDropIndicator";
-import { AlignmentDropIndicator } from "./chrome/shell/AlignmentDropIndicator";
-import { besideDetector } from "./chrome/shell/layoutInference";
-import { onBesideDrop } from "./chrome/shell/besideDrop";
-import { AiPanelHost } from "./chrome/ai/AiPanelHost";
+import { DropZoneIndicator } from "./chrome/shell/DropZoneIndicator";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
-import { GlobalSectionPickerDialog } from "./chrome/shell/GlobalSectionPickerDialog";
 import { EditorSaveBanner } from "./chrome/shell/EditorSaveBanner";
-import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
+import { EditorSelectionDomProvider } from "./chrome/shell/EditorSelectionDomContext";
+import { GlobalSectionPickerDialog } from "./chrome/shell/GlobalSectionPickerDialog";
+import { onBesideDrop } from "./chrome/shell/besideDrop";
+import { findPosition2D } from "./chrome/shell/findPosition2D";
+import { Toolbar } from "./chrome/toolbar";
+import { Viewport } from "./chrome/viewport/ViewportShell";
+import { UnsavedChangesAtom } from "./chrome/viewport/atoms";
 import { Container } from "./components/Container";
+import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
 
 // Lazy-loaded dialogs — only loaded when user opens them
 const ColorPickerDialog = React.lazy(() =>
@@ -75,8 +73,17 @@ const ToolTipDialog = React.lazy(() =>
   import("./chrome/toolbar/dialogs/TooltipDialog").then(m => ({ default: m.ToolTipDialog }))
 );
 
-// Side-effect import: UnifiedSettings self-registers with LazyUnifiedSettings
-import "./chrome/toolbar/unified-settings/UnifiedSettings";
+// Side-effect import: RegistrySettings self-registers with LazyUnifiedSettings
+import "./chrome/toolbar/unified-settings/RegistrySettings";
+
+// ─── Safe serialize — catches CraftJS invariant when nodes have unresolved types ─
+function safeSerialize(query: any): string | null {
+  try {
+    return query.serialize();
+  } catch {
+    return null;
+  }
+}
 
 // ─── Internal editor wrapper that handles save/load ──────────────────────────
 
@@ -132,7 +139,8 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
   useEffect(() => {
     const unsubSave = emitter.on("save", async (meta?: any) => {
       try {
-        const json = query.serialize();
+        const json = safeSerialize(query);
+        if (!json) return;
         const compressed = await compressAsync(json);
         const { html, classes, scrollObserverScript, renderError } = renderToHTML(json, {
           compressed: false,
@@ -163,10 +171,19 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
             };
           }
         } catch (shardErr) {
-          console.warn("[PageHub] Shard extraction failed, falling back to full-tree save:", shardErr);
+          console.warn(
+            "[PageHub] Shard extraction failed, falling back to full-tree save:",
+            shardErr
+          );
         }
 
-        const pageData: PageData = { content: compressed, html, classes, scrollObserverScript, shards };
+        const pageData: PageData = {
+          content: compressed,
+          html,
+          classes,
+          scrollObserverScript,
+          shards,
+        };
         await config.callbacks.onSave(pageData, meta);
         setUnsavedChanges(null);
       } catch (err) {
@@ -191,7 +208,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
     });
 
     const unsubUnsaved = emitter.on("unsaved_changes", (hasChanges: boolean) => {
-      setUnsavedChanges((hasChanges ? query.serialize() : null) as any);
+      setUnsavedChanges((hasChanges ? safeSerialize(query) : null) as any);
     });
 
     return () => {
@@ -211,7 +228,8 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
 
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        const json = query.serialize();
+        const json = safeSerialize(query);
+        if (!json) return;
         const compressed = await compressAsync(json);
         const pageData: PageData = { content: compressed };
 
@@ -376,8 +394,20 @@ function PageHubEditorInner({
               emitter.emitInternal("_nodes_changed");
               if (onNodesChange) onNodesChange(query);
             }}
-            besideDetector={besideDetector}
+            findPosition={findPosition2D}
             onBesideDrop={onBesideDrop(Container)}
+            shouldPromoteToParent={(node, parent) => {
+              // Don't promote out of Row/Item containers — stay in the layout context
+              const displayName = node.data?.custom?.displayName;
+              if (displayName === "Row" || displayName === "Item") return false;
+              // Don't promote out of flex-row containers
+              const dom = node.dom as HTMLElement | undefined;
+              if (dom) {
+                const dir = window.getComputedStyle(dom).flexDirection;
+                if (dir === "row" || dir === "row-reverse") return false;
+              }
+              return true;
+            }}
             handlers={store =>
               new CustomEventHandlers({
                 store,
@@ -386,6 +416,7 @@ function PageHubEditorInner({
               })
             }
             indicator={{
+              enabled: false,
               success: "currentColor",
               error: "rgb(153 27 27)",
               transition: "0.15s ease",
@@ -397,8 +428,7 @@ function PageHubEditorInner({
             }}
           >
             <EditorSelectionDomProvider>
-              <BesideDropIndicator />
-              <AlignmentDropIndicator />
+              <DropZoneIndicator />
               <div
                 className="bg-neutral text-neutral-content relative flex h-full min-h-0 w-full flex-col overflow-hidden"
                 data-base={true}

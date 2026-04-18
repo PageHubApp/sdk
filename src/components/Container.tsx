@@ -26,7 +26,7 @@ export interface ContainerProps extends BaseSelectorProps {
   is404Page?: boolean;
   anchor?: string;
   tabGroup?: string;
-  action?: string;
+  action?: string | NodeAction;
   method?: string;
   onSubmit?: any;
   target?: any;
@@ -145,7 +145,11 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
       hideReason = `isolate-mismatch (isolate=${isolate}, id=${id})`;
       className = `${className} hidden`;
     }
-    console.log("[Container type=component]", id, hideReason || "VISIBLE", { viewMode, isolate, enabled });
+    console.log("[Container type=component]", id, hideReason || "VISIBLE", {
+      viewMode,
+      isolate,
+      enabled,
+    });
   }
 
   /** Skip dashed empty hint when this canvas already has a background (image, inline style, or Tailwind `bg-*`).
@@ -177,7 +181,9 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
       })
       .catch(err => console.error("[Container] Client data fetch failed:", err));
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [ds?.provider, ds?.collection, enabled, hasItems]);
 
   const resolvedItems = hasItems ? items : clientItems;
@@ -219,18 +225,24 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
       // Editor: show live data preview — template card with first item (editable),
       // plus read-only clones for remaining items (toggleable via props.livePreview)
       const showLivePreview = props.livePreview !== false; // default on
-      const editorChildren = enabled && hasItems && children
-        ? <>
-            <ItemProvider item={items[0]} index={0}>{children}</ItemProvider>
-            {showLivePreview && items.slice(1).map((item, idx) => (
-              <div key={item.id || idx + 1} style={{ pointerEvents: "none" }} aria-hidden>
-                <ItemProvider item={item} index={idx + 1}>
-                  {children}
-                </ItemProvider>
-              </div>
-            ))}
+      const editorChildren =
+        enabled && hasItems && children ? (
+          <>
+            <ItemProvider item={items[0]} index={0}>
+              {children}
+            </ItemProvider>
+            {showLivePreview &&
+              items.slice(1).map((item, idx) => (
+                <div key={item.id || idx + 1} style={{ pointerEvents: "none" }} aria-hidden>
+                  <ItemProvider item={item} index={idx + 1}>
+                    {children}
+                  </ItemProvider>
+                </div>
+              ))}
           </>
-        : children;
+        ) : (
+          children
+        );
 
       return (
         <RenderPattern
@@ -249,13 +261,20 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
               selected={isActive}
               icon={props.type === "page" ? <TbNote aria-hidden /> : <TbContainer aria-hidden />}
               selectedIcon={<TbArrowDown aria-hidden />}
-              idleLabel={props.type === "page" ? "Empty page" : props.type === "header" ? "Global header" : props.type === "footer" ? "Global footer" : "Empty container"}
-              selectedLabel={
+              idleLabel={
                 props.type === "page"
-                  ? "Drop sections or right-click"
-                  : "Drop here or right-click"
+                  ? "Empty page"
+                  : props.type === "header"
+                    ? "Global header"
+                    : props.type === "footer"
+                      ? "Global footer"
+                      : "Empty container"
               }
-
+              selectedLabel={
+                props.type === "page" ? "Drop sections or right-click" : "Drop here or right-click"
+              }
+              typeLabel={name}
+              showActionIcons
             />
           ) : null}
         </RenderPattern>
@@ -285,7 +304,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   }
 
   if (props.type === "form") {
-    prop.action = props.action || "";
+    prop.action = typeof props.action === "string" ? props.action : "";
     prop.method = props.method || "POST";
     prop.onSubmit = props.onSubmit;
     prop.target = props.target || "iframe";

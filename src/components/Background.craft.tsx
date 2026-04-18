@@ -31,9 +31,10 @@ import {
 export const BackgroundDef = defineComponent(
   {
     name: "Background",
+    description: "Root page wrapper with theme colors and font.",
     component: Background,
     icon: TbContainer,
-    category: "Layout",
+    category: "__internal",
     canvas: true,
     settings: BackgroundMainTab,
     toHTML,

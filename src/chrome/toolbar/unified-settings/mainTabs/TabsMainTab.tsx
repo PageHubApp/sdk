@@ -7,7 +7,7 @@ import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, renderAdvancedComponentSlots, SECTION_ICONS } from "../helpers";
 
 export const TabsMainTab = () => {
-  const { id, props } = useNode(node => ({ props: node.data.props }));
+  const { id, props } = useNode(node => ({ props: node.data?.props }));
   const { actions, query } = useEditor();
 
   const node = query.node(id).get();

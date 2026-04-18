@@ -2,13 +2,27 @@ import { TabAtom } from "../viewport/atoms";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import React, { useEffect, useRef, useState } from "react";
+import { twMerge } from "tailwind-merge";
 import { useSetAtomState } from "../../utils/atoms";
+import { InspectorPinDock } from "./unified-settings/inspectorPin/InspectorPinDock";
 
 // Convert tab title to valid HTML ID
 export const toSectionId = (title: string) =>
   `section-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
-export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
+export const UnifiedTab = ({
+  icon,
+  title,
+  onClick,
+  isActive,
+  className = "",
+}: {
+  icon: React.ReactNode;
+  title: string;
+  onClick: () => void;
+  isActive: boolean;
+  className?: string;
+}) => {
   const [showActiveColor, setShowActiveColor] = useState(isActive);
 
   useEffect(() => {
@@ -22,9 +36,13 @@ export const UnifiedTab = ({ icon, title, onClick, isActive }) => {
 
   return (
     <div
-      className={`relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-[color,transform] active:scale-90 ${
-        showActiveColor ? "text-primary" : "text-secondary-content hover:text-base-content"
-      }`}
+      className={twMerge(
+        "relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-[color,opacity,transform] active:scale-90",
+        showActiveColor
+          ? "text-primary opacity-100"
+          : "text-secondary-content hover:text-base-content opacity-45 hover:opacity-100",
+        className
+      )}
       role="tab"
       aria-selected={isActive}
       tabIndex={isActive ? 0 : -1}
@@ -166,24 +184,27 @@ export const UnifiedTabBody = ({ sections, isInitialMount = false }: UnifiedTabB
   };
 
   return (
-    <AutoHideScrollbar
-      id="toolbarContents"
-      className="flex min-h-0 flex-1 flex-col overflow-x-hidden"
-      hideDelay={2000}
-    >
-      {sections.map((section, index) => (
-        <UnifiedSection
-          key={index}
-          stackIndex={index}
-          title={section.title}
-          onVisibilityChange={visible => handleVisibilityChange(index, visible)}
-        >
-          {section.children}
-        </UnifiedSection>
-      ))}
-      {/* Spacer so the last section can scroll fully to the top */}
-      <div className="shrink-0" style={{ minHeight: "70vh" }} />
-    </AutoHideScrollbar>
+    <>
+      <AutoHideScrollbar
+        id="toolbarContents"
+        className="flex min-h-0 flex-1 flex-col overflow-x-hidden"
+        hideDelay={2000}
+      >
+        {sections.map((section, index) => (
+          <UnifiedSection
+            key={index}
+            stackIndex={index}
+            title={section.title}
+            onVisibilityChange={visible => handleVisibilityChange(index, visible)}
+          >
+            {section.children}
+          </UnifiedSection>
+        ))}
+        {/* Spacer so the last section can scroll fully to the top */}
+        <div className="shrink-0" style={{ minHeight: "70vh" }} />
+      </AutoHideScrollbar>
+      <InspectorPinDock />
+    </>
   );
 };
 

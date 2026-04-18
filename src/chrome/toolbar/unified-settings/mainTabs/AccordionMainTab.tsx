@@ -9,7 +9,7 @@ import { renderComponentSlots, renderAdvancedComponentSlots, SECTION_ICONS } fro
 const CHEVRON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`;
 
 export const AccordionMainTab = () => {
-  const { id, props } = useNode(node => ({ props: node.data.props }));
+  const { id, props } = useNode(node => ({ props: node.data?.props }));
   const { actions, query } = useEditor();
 
   const node = query.node(id).get();
@@ -133,7 +133,12 @@ export const AccordionMainTab = () => {
               defaultValue={0.3}
               suffix="s"
             />
-            <ToolbarItem propKey="animationEasing" propType="component" type="select" label="Easing">
+            <ToolbarItem
+              propKey="animationEasing"
+              propType="component"
+              type="select"
+              label="Easing"
+            >
               <option value="ease">Ease</option>
               <option value="ease-out">Ease Out</option>
               <option value="ease-in">Ease In</option>

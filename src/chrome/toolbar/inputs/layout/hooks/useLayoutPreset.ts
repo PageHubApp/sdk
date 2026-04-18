@@ -14,11 +14,13 @@ export type LayoutMode = "flex-row" | "flex-col" | "grid" | "block";
 interface UseLayoutPresetOptions {
   propKey: string;
   onLayoutChange?: (preset: LayoutPreset) => void;
+  /** When set, layout mode cannot be switched away (e.g. Grid component always uses CSS grid). */
+  lockMode?: LayoutMode;
 }
 
 export type LayoutPresetHandle = ReturnType<typeof useLayoutPreset>;
 
-export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOptions) {
+export function useLayoutPreset({ propKey, onLayoutChange, lockMode }: UseLayoutPresetOptions) {
   const { actions, query } = useEditor();
   const view = useAtomValue(ViewAtom);
   const viewSelection = useAtomValue(ViewSelectionAtom);
@@ -33,10 +35,10 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
     classNameStr,
   } = useNode(node => ({
     id: node.id,
-    currentLayoutMode: node.data.props.root?.layoutMode,
-    currentLayoutColumns: node.data.props.root?.layoutColumns,
-    currentPresetLayout: node.data.props.root?.[propKey || "presetLayout"],
-    classNameStr: node.data.props.className || "",
+    currentLayoutMode: node.data?.props.root?.layoutMode,
+    currentLayoutColumns: node.data?.props.root?.layoutColumns,
+    currentPresetLayout: node.data?.props.root?.[propKey || "presetLayout"],
+    classNameStr: node.data?.props.className || "",
   }));
 
   const nodePropsForRead = { className: classNameStr };
@@ -54,9 +56,10 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
   );
 
   const detectMode = (): LayoutMode => {
+    if (lockMode) return lockMode;
     if (currentDisplay.includes("grid")) return "grid";
     if (currentDisplay.includes("flex")) {
-      // Align with LayoutInput: default flex axis is row unless flex-col* is set.
+      // Match AlignmentBody / flex detection: default flex axis is row unless flex-col* is set.
       if (currentFlexDirection.includes("flex-col")) return "flex-col";
       return "flex-row";
     }
@@ -64,7 +67,9 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
     return (currentLayoutMode as LayoutMode) || "flex-col";
   };
 
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>(detectMode());
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>(() =>
+    lockMode != null ? lockMode : detectMode()
+  );
   const [showDisplayDropdown, setShowDisplayDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -74,9 +79,13 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
 
   // Sync local state with saved props
   useEffect(() => {
+    if (lockMode) {
+      if (layoutMode !== lockMode) setLayoutMode(lockMode);
+      return;
+    }
     const newMode = detectMode();
     if (newMode !== layoutMode) setLayoutMode(newMode);
-  }, [currentLayoutMode, currentDisplay, currentFlexDirection]);
+  }, [currentLayoutMode, currentDisplay, currentFlexDirection, lockMode, layoutMode]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -147,7 +156,7 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
   // ─── Current presets ───
 
   const currentPresets = (() => {
-    if (layoutMode === "grid") return GRID_PRESETS;
+    if (lockMode === "grid" || layoutMode === "grid") return GRID_PRESETS;
     if (layoutMode === "flex-row") return getFlexPresets("column");
     return getFlexPresets("row");
   })();
@@ -178,7 +187,7 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
 
     // Save preset metadata
     cp(propKey, preset.name.toLowerCase().replace(/\s+/g, "-"), "mobile", "root");
-    cp("layoutMode", layoutMode, "mobile", "root");
+    cp("layoutMode", lockMode ?? layoutMode, "mobile", "root");
     if (preset.columns) cp("layoutColumns", String(preset.columns), "mobile", "root");
 
     // Auto-adjust containers
@@ -192,7 +201,11 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
       } finally {
         setTimeout(() => {
           setBatchOperation(false);
-          setUnsavedChanged(query.serialize());
+          try {
+            setUnsavedChanged(query.serialize());
+          } catch {
+            /* node type not yet resolved */
+          }
         }, 150);
       }
     }
@@ -232,6 +245,7 @@ export function useLayoutPreset({ propKey, onLayoutChange }: UseLayoutPresetOpti
   // ─── Mode switch handlers ───
 
   const switchToMode = (mode: LayoutMode) => {
+    if (lockMode && mode !== lockMode) return;
     const effectiveViews = getEffectiveViews(viewSelection, view);
     setLayoutMode(mode);
     clearLayoutProps(effectiveViews);

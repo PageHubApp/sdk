@@ -36,9 +36,15 @@ export function useSettingsController<TDraft>({
   const getDraftSignatureRef = useRef(getDraftSignature);
   const commitDraftRef = useRef(commitDraft);
 
-  useEffect(() => { loadDraftRef.current = loadDraft; }, [loadDraft]);
-  useEffect(() => { getDraftSignatureRef.current = getDraftSignature; }, [getDraftSignature]);
-  useEffect(() => { commitDraftRef.current = commitDraft; }, [commitDraft]);
+  useEffect(() => {
+    loadDraftRef.current = loadDraft;
+  }, [loadDraft]);
+  useEffect(() => {
+    getDraftSignatureRef.current = getDraftSignature;
+  }, [getDraftSignature]);
+  useEffect(() => {
+    commitDraftRef.current = commitDraft;
+  }, [commitDraft]);
 
   const flushNow = useCallback(() => {
     const snapshot = draftRef.current;
@@ -54,12 +60,16 @@ export function useSettingsController<TDraft>({
 
   const requestSave = useMemo(() => debounce(flushNow, debounceMs), [flushNow, debounceMs]);
 
-  useEffect(() => { flushNowRef.current = flushNow; }, [flushNow]);
+  useEffect(() => {
+    flushNowRef.current = flushNow;
+  }, [flushNow]);
   useEffect(() => {
     requestSaveRef.current = requestSave;
     return () => requestSaveRef.current?.cancel();
   }, [requestSave]);
-  useEffect(() => { draftRef.current = draft; }, [draft]);
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
 
   const applyDraft = useCallback((nextDraft: TDraft) => {
     draftRef.current = nextDraft;
@@ -81,7 +91,9 @@ export function useSettingsController<TDraft>({
 
     if (isThenable(result)) {
       result
-        .then(resolved => { if (!cancelled) applyDraft(resolved); })
+        .then(resolved => {
+          if (!cancelled) applyDraft(resolved);
+        })
         .catch(e => {
           console.error("Error loading settings:", e);
           if (!cancelled) setLoading(false);
@@ -127,5 +139,13 @@ export function useSettingsController<TDraft>({
     []
   );
 
-  return { draft, setDraft, updateField, loading, requestSave: () => requestSaveRef.current?.(), flushSave, cancelSave };
+  return {
+    draft,
+    setDraft,
+    updateField,
+    loading,
+    requestSave: () => requestSaveRef.current?.(),
+    flushSave,
+    cancelSave,
+  };
 }

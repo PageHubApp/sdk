@@ -45,6 +45,7 @@ import { HoverNodeController, NameNodeController, DeleteNodeController } from ".
 export const EmbedDef = defineComponent(
   {
     name: "Embed",
+    description: "Embed a third-party service or custom HTML.",
     component: Embed,
     icon: TbCode,
     category: "Embeds",
@@ -67,18 +68,6 @@ export const EmbedDef = defineComponent(
     },
     tools: props => [
       <NameNodeController key="embedNameController" position="top" align="end" placement="start" />,
-      <HoverNodeController
-        key="emebedHoverController"
-        position="top"
-        align="start"
-        placement="end"
-        alt={{
-          position: "bottom",
-          align: "start",
-          placement: "start",
-        }}
-      />,
-      <DeleteNodeController key="embedDelete" />,
     ],
     presets: [
       {

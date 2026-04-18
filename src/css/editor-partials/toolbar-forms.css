@@ -35,6 +35,10 @@
 .pagehub-sdk-root .ph-menu-trigger {
   @apply border-base-300 bg-base-200 text-base-content hover:bg-neutral flex w-full items-center justify-between gap-2 rounded-lg border px-3 transition-colors disabled:cursor-not-allowed disabled:opacity-50;
 }
+/* Sidebar chrome: parent row already uses px-3 — tighter trigger padding so labels align with toolbar / header controls */
+.pagehub-sdk-root .ph-menu-trigger.ph-menu-trigger--chrome-rail {
+  @apply !px-2;
+}
 /* Floating panels — design-system radius + border + bg; pick shadow tier */
 .pagehub-sdk-root .ph-panel {
   @apply border-base-300 bg-base-100 rounded-lg border shadow-xl;

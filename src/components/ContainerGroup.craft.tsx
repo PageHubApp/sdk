@@ -24,6 +24,7 @@ import { ContainerGroupMainTab } from "../chrome/toolbar/unified-settings/mainTa
 export const ContainerGroupDef = defineComponent(
   {
     name: "ContainerGroup",
+    description: "Linked containers that share layout settings.",
     component: ContainerGroup,
     icon: TbContainer,
     category: "Layout",

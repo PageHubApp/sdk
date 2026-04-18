@@ -262,20 +262,12 @@ export const NavDef = defineComponent(
       canDrag: () => true,
       canMoveIn: nodes => nodes.every(node => ["Button", "Container"].includes(node.data?.name)),
     },
-    tools: props => [
-      <HoverNodeController
-        key="navHoverController"
-        position="top"
-        align="end"
-        placement="end"
-        alt={{ position: "bottom", align: "start", placement: "start" }}
-      />,
-      <DeleteNodeController key="navDelete" />,
-    ],
+    tools: [],
     presets: [
       {
         label: "Mobile Menu",
         icon: TbDeviceMobile,
+        description: "Responsive nav with hamburger menu and slide-out panel.",
         props: {
           menu: {
             enabled: true,
@@ -304,6 +296,7 @@ export const NavDef = defineComponent(
 export const NAV_EXTRA_PRESETS = [
   {
     label: "Social Nav",
+    description: "Social media icon buttons with brand fills.",
     icon: TbBrandTwitter,
     element: ButtonList,
     props: { className: navListClassName },
@@ -311,6 +304,7 @@ export const NAV_EXTRA_PRESETS = [
   },
   {
     label: "Social Icons",
+    description: "Social media icon buttons with brand colors.",
     icon: TbBrandTwitter,
     element: ButtonList,
     props: { className: navListClassName },
@@ -318,6 +312,7 @@ export const NAV_EXTRA_PRESETS = [
   },
   {
     label: "Plain Nav",
+    description: "Simple text navigation links.",
     icon: TbMinus,
     element: ButtonList,
     props: { className: navListClassName },
@@ -325,6 +320,7 @@ export const NAV_EXTRA_PRESETS = [
   },
   {
     label: "Minimal Nav",
+    description: "Nav links with primary background fills.",
     icon: TbLayoutNavbar,
     element: ButtonList,
     props: { className: navListClassName },
@@ -332,11 +328,12 @@ export const NAV_EXTRA_PRESETS = [
   },
   {
     label: "Pill Nav",
+    description: "Compact pill-shaped navigation bar.",
     icon: TbPill,
     element: ButtonList,
     props: {
       className:
-        "flex flex-row items-center gap-1 md:flex md:flex-row md:items-center md:gap-1 bg-primary rounded-full px-2 py-1",
+        "flex flex-row items-center gap-space-xs md:flex md:flex-row md:items-center md:gap-space-xs bg-primary rounded-full px-space-xs py-space-xs",
     },
     children: buildPillNavButtons,
   },

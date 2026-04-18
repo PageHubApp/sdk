@@ -17,6 +17,7 @@ import { resolveToolboxIcon } from "./resolveToolboxIcon";
 export function buildExtraPresetEntries(
   presets: Array<{
     label: string;
+    description?: string;
     icon?: any;
     element: any;
     props?: Record<string, any>;
@@ -31,6 +32,7 @@ export function buildExtraPresetEntries(
         key={`extra-preset-${i}`}
         element={preset.element}
         display={<ToolboxItemDisplay icon={IconComp} label={preset.label} />}
+        description={preset.description}
         custom={{ displayName: preset.label }}
         {...(preset.props || {})}
       >
@@ -48,7 +50,7 @@ export function buildCustomToolboxEntries(def: ResolvedComponentDef): React.Reac
   const presets =
     def.presets.length > 0
       ? def.presets
-      : [{ label: def.displayName, icon: def.icon, props: def.defaultProps }];
+      : [{ label: def.displayName, description: def.description, icon: def.icon, props: def.defaultProps }];
 
   return presets.map((preset, i) => {
     const IconComp = resolveToolboxIcon(preset.icon || def.icon);
@@ -59,6 +61,7 @@ export function buildCustomToolboxEntries(def: ResolvedComponentDef): React.Reac
         key={`${def.name}-preset-${i}`}
         element={def.component}
         display={<ToolboxItemDisplay icon={IconComp} label={preset.label} />}
+        description={preset.description || def.description}
         custom={{ displayName: preset.label }}
         {...def.defaultProps}
         {...(preset.props || {})}

@@ -24,8 +24,7 @@ export const ConditionBadgeController = () => {
       if (parentId) {
         try {
           const parentNode = query.node(parentId).get();
-          const parentType =
-            parentNode?.data?.type?.resolvedName || parentNode?.data?.type;
+          const parentType = (parentNode?.data?.type as any)?.resolvedName || parentNode?.data?.type;
           if (parentType === "ConditionalContainer") {
             parentIsCond = true;
             branchList = parentNode?.data?.props?.branches || [];
@@ -80,11 +79,13 @@ export const ConditionBadgeController = () => {
       >
         <div className="pointer-events-auto flex items-center gap-0.5 rounded-sm bg-violet-600 px-1 py-0.5 text-[10px] font-semibold text-white shadow-sm">
           <TbGitBranch size={11} />
-          <button type="button" onClick={prev} className="hover:bg-white/20 rounded px-0.5">
+          <button type="button" onClick={prev} className="rounded px-0.5 hover:bg-white/20">
             <TbChevronLeft size={10} />
           </button>
-          <span className="px-1">{label} ({myIndex + 1}/{total})</span>
-          <button type="button" onClick={fwd} className="hover:bg-white/20 rounded px-0.5">
+          <span className="px-1">
+            {label} ({myIndex + 1}/{total})
+          </span>
+          <button type="button" onClick={fwd} className="rounded px-0.5 hover:bg-white/20">
             <TbChevronRight size={10} />
           </button>
         </div>

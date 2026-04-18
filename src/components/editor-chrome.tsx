@@ -24,4 +24,8 @@ export { ContainerSettingsTopNodeTool } from "../chrome/canvas/node-tools/Contai
 export { ContainerSettingsNodeTool } from "../chrome/canvas/node-tools/ContainerSettingsNodeTool";
 export { SelectButtonListTool } from "../chrome/canvas/node-tools/SelectButtonListTool";
 export { SelectImageListTool } from "../chrome/canvas/node-tools/SelectImageListTool";
+export { SelectListTool } from "../chrome/canvas/node-tools/SelectListTool";
+export { SelectTableTool } from "../chrome/canvas/node-tools/SelectTableTool";
+export { SelectTableSectionTool } from "../chrome/canvas/node-tools/SelectTableSectionTool";
+export { SelectTableRowTool } from "../chrome/canvas/node-tools/SelectTableRowTool";
 export { SelectMapTool } from "../chrome/canvas/node-tools/SelectMapTool";
