@@ -46,11 +46,20 @@ const sanitizeTagName = (tag: unknown): string | undefined => {
 };
 
 // Strip wrapping <p> from TipTap content to avoid invalid nesting
-// (e.g. <h1><p>...</p></h1> or <p><p>...</p></p> breaks hydration)
+// (e.g. <h1><p>...</p></h1> or <p><p>...</p></p> breaks hydration).
+// Multi-paragraph content (<p>A</p><p>B</p>) collapses to <br/><br/> so the
+// outer tagName (often <p>) doesn't end up with invalid <p>-in-<p> nesting —
+// TipTap always wraps in <p>, and we often do too, so we can't auto-promote.
 const unwrapP = (html: string): string => {
   const trimmed = html.trim();
-  const match = trimmed.match(/^<p>([\s\S]*)<\/p>$/);
-  return match ? match[1] : trimmed;
+  if (!/^<p>[\s\S]*<\/p>$/.test(trimmed)) return trimmed;
+  if (/<\/p>\s*<p>/.test(trimmed)) {
+    return trimmed
+      .replace(/^<p>/, "")
+      .replace(/<\/p>$/, "")
+      .replace(/<\/p>\s*<p>/g, "<br/><br/>");
+  }
+  return trimmed.replace(/^<p>/, "").replace(/<\/p>$/, "");
 };
 
 // RENDER MODE - Simple HTML rendering (no editor deps)
@@ -72,7 +81,7 @@ const renderLiveMode = (
     const target = actionTarget(action);
     const linkProps: any = {
       href: resolvedUrl,
-      dangerouslySetInnerHTML: { __html: processedText },
+      dangerouslySetInnerHTML: { __html: unwrapP(processedText) },
       // Outer tag also keeps className for layout; inner link must receive it or
       // browser / theme defaults (blue underline) override typography utilities.
       className: props.className || "",

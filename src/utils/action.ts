@@ -36,6 +36,11 @@ export interface LinkUrlAction extends ActionBase {
 export interface LinkPageAction extends ActionBase {
   type: "link-page";
   pageId: string; // CraftJS node ID
+  /**
+   * Optional path segments to append after the resolved page URL (e.g. "/{{item.slug}}"
+   * for a PDP in a storefront). Interpolated against the current item context downstream.
+   */
+  path?: string;
   target?: LinkTarget;
 }
 
@@ -191,9 +196,13 @@ export function actionToHref(
     case "link" as any:
       return (action as any).url || (action as any).href || null;
 
-    case "link-page":
+    case "link-page": {
       if (!action.pageId) return null;
-      return resolvePageRef(`ref:${action.pageId}`, query, routerPath);
+      const base = resolvePageRef(`ref:${action.pageId}`, query, routerPath);
+      if (!action.path) return base;
+      const suffix = action.path.startsWith("/") ? action.path : `/${action.path}`;
+      return base === "/" ? suffix : `${base}${suffix}`;
+    }
 
     case "scroll-to":
       return action.anchor ? `#${action.anchor}` : null;
