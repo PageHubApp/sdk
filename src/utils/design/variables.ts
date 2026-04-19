@@ -1,11 +1,11 @@
 import { ROOT_NODE } from "@craftjs/core";
 
 // ── Connector data context (set by editor when connector data is loaded) ────
-
-let _connectorData: Record<string, Record<string, any[]>> | null = null;
+/** Matches ConnectorDataMap: provider → { bindings: { [bindingId]: items[] } }. */
+let _connectorData: Record<string, { bindings: Record<string, any[]> }> | null = null;
 
 /** Set connector data for variable resolution in the editor. */
-export function setConnectorData(data: Record<string, Record<string, any[]>> | null) {
+export function setConnectorData(data: Record<string, { bindings: Record<string, any[]> }> | null) {
   _connectorData = data;
 }
 
@@ -249,10 +249,11 @@ export const resolveVariable = (varId: string, query: any): string => {
 
     // Handle item.* variables (show first item as preview in editor)
     if (varId.startsWith("item.") && _connectorData) {
-      // Find the first collection with data and resolve against item[0]
       const parts = varId.slice("item.".length).split(".");
       for (const provider of Object.values(_connectorData)) {
-        for (const items of Object.values(provider)) {
+        const bindings = provider?.bindings;
+        if (!bindings) continue;
+        for (const items of Object.values(bindings)) {
           if (Array.isArray(items) && items.length > 0) {
             const value = walkPath(items[0], parts);
             if (value !== undefined && value !== null && value !== "") return String(value);
@@ -343,24 +344,25 @@ export const getAvailableVariables = (query: any): string[] => {
       });
     }
 
-    // Add connector variables from loaded connector data
+    // Add connector variables — paths: connector.<provider>.bindings.<bindingId>.0.*
     if (_connectorData) {
-      for (const [provider, collections] of Object.entries(_connectorData)) {
-        for (const [collection, items] of Object.entries(collections)) {
+      for (const [provider, pdata] of Object.entries(_connectorData)) {
+        const bindings = pdata?.bindings;
+        if (!bindings) continue;
+        for (const [bindingId, items] of Object.entries(bindings)) {
           if (Array.isArray(items) && items.length > 0) {
-            variables.push(`connector.${provider}.${collection}.length`);
-            // Add field paths from the first item as examples
+            const base = `connector.${provider}.bindings.${bindingId}`;
+            variables.push(`${base}.length`);
             const first = items[0];
             if (first && typeof first === "object") {
               for (const field of Object.keys(first)) {
                 const val = first[field];
                 if (val && typeof val === "object" && !Array.isArray(val)) {
-                  // Nested object (e.g. price.formatted)
                   for (const subfield of Object.keys(val)) {
-                    variables.push(`connector.${provider}.${collection}.0.${field}.${subfield}`);
+                    variables.push(`${base}.0.${field}.${subfield}`);
                   }
                 } else {
-                  variables.push(`connector.${provider}.${collection}.0.${field}`);
+                  variables.push(`${base}.0.${field}`);
                 }
               }
             }

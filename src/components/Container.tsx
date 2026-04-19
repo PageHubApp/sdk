@@ -19,6 +19,11 @@ import { useHorizontalDragScroll } from "../utils/hooks/useHorizontalDragScroll"
 import { HorizontalOverflowThumbOverlay } from "./primitives/HorizontalOverflowThumbOverlay";
 import { RenderPattern, inlayProps } from "./componentHooks";
 import { getConnectorData, getClientDataFetcher } from "../utils/design/variables";
+import { useStorefrontUrlQuery } from "../utils/StorefrontUrlQueryContext";
+import {
+  applyStorefrontUrlToDataSource,
+  dataSourceBindingId,
+} from "../utils/storefrontDataSource";
 import { ItemProvider, useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
 import { resolveNestedItems } from "../utils/resolveNestedItems";
@@ -84,6 +89,8 @@ export interface ContainerProps extends BaseSelectorProps {
      * should only use SSR/hydrated connector data.
      */
     refetchOnUrlChange?: boolean;
+    /** Optional stable label for variable paths; included in binding id. */
+    bindingKey?: string;
   };
 }
 
@@ -147,6 +154,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   } = useNode();
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
+  const storefrontUrlQuery = useStorefrontUrlQuery();
 
   const { name, id, isHovered, hasChildNodes, isCanvasNode, isActive } = useNode(node => ({
     name: node.data.custom.displayName || node.data.displayName,
@@ -261,12 +269,17 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   const ds = props.dataSource;
   const parentItem = useItemContext();
   const connData = getConnectorData();
+  const mergedDs =
+    ds && !ds.scope ? applyStorefrontUrlToDataSource(ds, storefrontUrlQuery) : null;
+  const bindingId = mergedDs ? dataSourceBindingId(mergedDs) : null;
   // `scope` → nested repeater: read from parent item, split if needed.
-  // Otherwise → top-level repeater: read from the connector data store.
+  // Otherwise → top-level repeater: read from connectorData[provider].bindings[id].
   const rawItems: any[] | null = ds
     ? ds.scope
       ? resolveNestedItems(parentItem, ds.scope, ds.splitBy)
-      : (connData?.[ds.provider]?.[ds.collection] ?? null)
+      : bindingId
+        ? (connData?.[ds.provider]?.bindings?.[bindingId] ?? null)
+        : null
     : null;
   const items = ds ? applyDataSourceScope(rawItems, ds) : rawItems;
   const hasItems = Array.isArray(items) && items.length > 0;

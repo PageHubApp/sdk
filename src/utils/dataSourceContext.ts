@@ -3,7 +3,7 @@
  * ancestor Container with a `dataSource` prop.
  *
  * Used by the variable picker to show scoped fields (e.g. "Title" instead
- * of "connector.stripe.products.0.title") when editing inside a data-bound section.
+ * of "connector.stripe.bindings.<bindingId>.0.title") when editing inside a data-bound section.
  *
  * Field definitions are injected by the app at startup via registerConnectorFieldDefs().
  */

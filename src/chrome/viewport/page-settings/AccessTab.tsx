@@ -35,9 +35,9 @@ interface AccessTabProps {
 function useConnectorOptions() {
   const data = getConnectorData();
   if (!data) return [];
-  return Object.entries(data).map(([provider, collections]) => ({
+  return Object.entries(data).map(([provider, pdata]) => ({
     provider,
-    collections: Object.keys(collections),
+    collections: Object.keys(pdata?.bindings || {}),
   }));
 }
 

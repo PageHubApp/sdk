@@ -52,7 +52,7 @@ export interface ConditionGroup {
 export interface ConditionContext {
   urlParams: URLSearchParams | null;
   formFields: Record<string, string> | null;
-  connectorData: Record<string, Record<string, any[]>> | null;
+  connectorData: Record<string, { bindings: Record<string, any[]> }> | null;
   company: Record<string, any> | null;
   viewportWidth: number | null;
   auth: import("../design/variables").AuthState | null;
