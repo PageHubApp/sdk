@@ -23,7 +23,10 @@ import { useStorefrontUrlQuery } from "../utils/StorefrontUrlQueryContext";
 import {
   applyStorefrontUrlToDataSource,
   dataSourceBindingId,
+  parseStorefrontUrlQuery,
 } from "../utils/storefrontDataSource";
+import { applyRouteParamsToDataSource } from "../utils/routeParamsDataSource";
+import { useRouteParams } from "../utils/RouteParamsContext";
 import { ItemProvider, useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
 import { resolveNestedItems } from "../utils/resolveNestedItems";
@@ -155,6 +158,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
   const storefrontUrlQuery = useStorefrontUrlQuery();
+  const routeParams = useRouteParams();
 
   const { name, id, isHovered, hasChildNodes, isCanvasNode, isActive } = useNode(node => ({
     name: node.data.custom.displayName || node.data.displayName,
@@ -270,7 +274,12 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   const parentItem = useItemContext();
   const connData = getConnectorData();
   const mergedDs =
-    ds && !ds.scope ? applyStorefrontUrlToDataSource(ds, storefrontUrlQuery) : null;
+    ds && !ds.scope
+      ? applyStorefrontUrlToDataSource(
+          applyRouteParamsToDataSource(ds, routeParams),
+          storefrontUrlQuery
+        )
+      : null;
   const bindingId = mergedDs ? dataSourceBindingId(mergedDs) : null;
   // `scope` → nested repeater: read from parent item, split if needed.
   // Otherwise → top-level repeater: read from connectorData[provider].bindings[id].
@@ -311,24 +320,44 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     // Read current URL params for client refetch (search/filter/pagination, etc.).
     let options: Record<string, any> | undefined;
     if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
+      const searchParams = new URLSearchParams(window.location.search);
+      const flat: Record<string, string | string[] | undefined> = {};
+      searchParams.forEach((v, k) => {
+        flat[k] = v;
+      });
+      const urlQ = parseStorefrontUrlQuery(flat);
+      const mergedForFetch = applyStorefrontUrlToDataSource(
+        applyRouteParamsToDataSource(ds, routeParams),
+        urlQ
+      );
       options = {
-        ...(params.get("q") ? { q: params.get("q") } : {}),
-        ...(params.get("category") ? { category: params.get("category") } : {}),
-        ...(params.get("sort") ? { sort: params.get("sort") } : {}),
-        ...(params.get("page") ? { page: params.get("page") } : {}),
-        ...(params.get("minPrice") ? { minPrice: params.get("minPrice") } : {}),
-        ...(params.get("maxPrice") ? { maxPrice: params.get("maxPrice") } : {}),
-        ...(params.get("slug") ? { slug: params.get("slug") } : {}),
-        ...(ds.filter ? { filter: ds.filter } : {}),
-        ...(ds.limit ? { limit: ds.limit } : {}),
+        ...(mergedForFetch.query ? { q: mergedForFetch.query } : {}),
+        ...(mergedForFetch.category ? { category: mergedForFetch.category } : {}),
+        ...(mergedForFetch.sort ? { sort: mergedForFetch.sort } : {}),
+        ...(typeof mergedForFetch.page === "number" ? { page: String(mergedForFetch.page) } : {}),
+        ...(typeof mergedForFetch.priceMin === "number"
+          ? { minPrice: String(mergedForFetch.priceMin) }
+          : {}),
+        ...(typeof mergedForFetch.priceMax === "number"
+          ? { maxPrice: String(mergedForFetch.priceMax) }
+          : {}),
+        ...(mergedForFetch.slug ? { slug: mergedForFetch.slug } : {}),
+        ...(mergedForFetch.filter ? { filter: mergedForFetch.filter } : {}),
+        ...(mergedForFetch.limit ? { limit: mergedForFetch.limit } : {}),
       };
     }
 
     // Only skip when we have SSR items AND no user-driven URL query overriding them.
     const hasQueryOverride =
       options &&
-      (options.q || options.category || options.page || options.minPrice || options.maxPrice || options.slug || options.sort);
+      (options.q ||
+        options.category ||
+        options.page ||
+        options.minPrice ||
+        options.maxPrice ||
+        options.slug ||
+        options.sort ||
+        (options.filter && Object.keys(options.filter).length > 0));
     if (hasItems && !hasQueryOverride && refetchKey === 0) return;
 
     let cancelled = false;
@@ -349,6 +378,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     ds?.refetchOnUrlChange,
     ds?.limit,
     JSON.stringify(ds?.filter ?? null),
+    JSON.stringify(routeParams),
     enabled,
     hasItems,
     refetchKey,
