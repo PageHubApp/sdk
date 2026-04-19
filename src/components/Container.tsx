@@ -1,4 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { TbArrowDown, TbContainer, TbNote } from "react-icons/tb";
@@ -157,6 +159,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   } = useNode();
 
   const { query, enabled } = useEditor(state => getClonedState(props, state));
+  const router = useRouter();
   const storefrontUrlQuery = useStorefrontUrlQuery();
   const routeParams = useRouteParams();
 
@@ -429,6 +432,25 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
         );
       }
 
+      // Connector-backed repeater with no items (empty result or past-last-page):
+      // render nothing rather than falling through to raw children, which would
+      // emit the template card once with unresolved `{{item.*}}` literals.
+      if (!enabled && ds && !hasResolvedItems) {
+        return (
+          <RenderPattern
+            props={props}
+            settings={settings}
+            view={view}
+            enabled={enabled}
+            properties={inlayProps}
+            preview={preview}
+            query={query}
+          >
+            {null}
+          </RenderPattern>
+        );
+      }
+
       // Editor: show live data preview — template card with first item (editable),
       // plus read-only clones for remaining items (toggleable via props.livePreview)
       const showLivePreview = props.livePreview !== false; // default on
@@ -491,7 +513,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
 
   // Unified action system
   const action = migrateAction(props);
-  const rawUrl = actionToHref(action, null, undefined);
+  const rawUrl = actionToHref(action, query, router?.asPath);
   const resolvedUrl =
     rawUrl && query
       ? (() => {
@@ -502,17 +524,31 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
           }
         })()
       : rawUrl;
+  const isLinkAction = action?.type === "link-url" || action?.type === "link-page";
+  const isInternalLink =
+    isLinkAction && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
+  const linkTarget = isLinkAction ? (action as any).target : undefined;
 
-  if (resolvedUrl) {
+  if (resolvedUrl && isLinkAction && !enabled) {
+    // Real link — href + optional target/rel. tagName is swapped to `<a>` below.
+    prop.href = resolvedUrl;
+    if (linkTarget) prop.target = linkTarget;
+    if (/^https?:\/\//.test(resolvedUrl)) prop.rel = "noopener noreferrer";
+    // Internal same-window links → SPA navigation via Next router (matches Link).
+    if (isInternalLink && !linkTarget) {
+      prop.onClick = (e: any) => {
+        // Let modifier-clicks and middle-clicks use native navigation
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
+        e.preventDefault();
+        router.push(resolvedUrl).catch(() => {});
+      };
+    }
+  } else if (resolvedUrl) {
+    // Non-link action with resolved URL (shouldn't really happen) or editor
+    // mode — keep the legacy onClick fallback so clicks still do something.
     prop.onClick = (e: any) => {
       e.preventDefault();
-      if (!enabled) {
-        const target =
-          action?.type === "link-url" || action?.type === "link-page"
-            ? (action as any).target
-            : undefined;
-        window.open(resolvedUrl, target || "_self");
-      }
+      if (!enabled) window.open(resolvedUrl, linkTarget || "_self");
     };
   }
 
@@ -531,6 +567,19 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   if (props.id || props.anchor) prop.id = props.id || props.anchor;
   if (props.tabGroup) prop["data-tab-group"] = props.tabGroup;
   if (props.type === "details" && props.open) prop.open = true;
+  // Connector-backed repeaters expose binding info so external hooks (app-side
+  // pagination/empty-state) can query the DOM. SDK-namespaced, vendor-neutral —
+  // storefront vocabulary lives in the app hook, not here.
+  if (ds && bindingId && !ds.scope) {
+    prop["data-ph-connector-provider"] = ds.provider;
+    prop["data-ph-connector-binding-id"] = bindingId;
+    prop["data-ph-connector-count"] = String(
+      Array.isArray(resolvedItems) ? resolvedItems.length : 0
+    );
+    if (typeof mergedDs?.page === "number") {
+      prop["data-ph-connector-page"] = String(mergedDs.page);
+    }
+  }
   applyAriaProps(prop, props);
 
   // Pass through plain string attrs (data-*, role, autocomplete, etc.) so
@@ -690,9 +739,15 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     prop["data-ph-overflow-hide-delay"] = String(props.overflowScrollbarHideDelay ?? 1000);
   }
 
+  // If this Container has a link action and would otherwise render as a plain
+  // <div>, swap the tag to <a> so the card is a real, right-clickable link.
+  // Don't override semantic tags (section/article/header/footer/etc).
+  const renderTag =
+    resolvedUrl && isLinkAction && !enabled && tagName === "div" ? "a" : tagName;
+
   const container = React.createElement(motionIt(props, UiComponent, enabled), {
     ...prop,
-    as: tagName,
+    as: renderTag,
   });
 
   return container;

@@ -1,17 +1,33 @@
 import { ROOT_NODE } from "@craftjs/core";
 
 // ── Connector data context (set by editor when connector data is loaded) ────
-/** Matches ConnectorDataMap: provider → { bindings: { [bindingId]: items[] } }. */
-let _connectorData: Record<string, { bindings: Record<string, any[]> }> | null = null;
+export interface SdkBindingMeta {
+  totalCount?: number;
+  totalPages?: number;
+  hasMore?: boolean;
+}
+
+export interface SdkConnectorProviderData {
+  bindings: Record<string, any[]>;
+  bindingsMeta?: Record<string, SdkBindingMeta>;
+}
+
+/** Matches ConnectorDataMap: provider → { bindings, bindingsMeta }. */
+let _connectorData: Record<string, SdkConnectorProviderData> | null = null;
 
 /** Set connector data for variable resolution in the editor. */
-export function setConnectorData(data: Record<string, { bindings: Record<string, any[]> }> | null) {
+export function setConnectorData(data: Record<string, SdkConnectorProviderData> | null) {
   _connectorData = data;
 }
 
 /** Get current connector data. */
 export function getConnectorData() {
   return _connectorData;
+}
+
+/** Meta for a single binding (pagination totals, hasMore). Null if unknown. */
+export function getBindingMeta(provider: string, bindingId: string): SdkBindingMeta | null {
+  return _connectorData?.[provider]?.bindingsMeta?.[bindingId] ?? null;
 }
 
 // ── Client-side data fetcher (registerable handler) ───────────────────────────

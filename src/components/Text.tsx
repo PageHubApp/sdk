@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { Text as UiText } from "@pagehub/ui";
 import { addActionHandlers } from "../utils/clickControls";
+import { applyAttrs } from "../utils/applyAttrs";
 import {
   migrateAction,
   actionToHref,
@@ -149,6 +150,9 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   };
 
   applyAriaProps(prop, props);
+  // Pass through plain string attrs (data-*, role, etc.) — matches Container/Button/FormElement.
+  // Text-nodes needing runtime hooks (e.g. data-storefront-page-indicator) rely on this.
+  applyAttrs(prop, props.attrs);
   const action = migrateAction(props);
   if (isHandlerAction(action) || action?.type === "scroll-to") {
     addActionHandlers(prop, action, enabled);
