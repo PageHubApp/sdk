@@ -83,8 +83,8 @@ export const AccordionProvider = ({ children }) => {
   const openOnly = useCallback((titles: string[]) => {
     setOpenSections(() => {
       const toOpen = new Set(titles);
-      const next = {};
-      registeredSections.current.forEach(title => {
+      const next: Record<string, boolean> = {};
+      registeredSections.current.forEach((_meta, title) => {
         next[title] = toOpen.has(title);
       });
       persist(next);

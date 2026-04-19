@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { buildClientContext } from "./context";
 import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
 import { replaceVariables } from "../design/variables";
+import { useItemContext } from "../itemContext";
 import type { Condition, ConditionGroup, ConditionLogic } from "./types";
 
 /**
@@ -63,13 +64,18 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
 
   const hasConditions = (conditionGroups && conditionGroups.length > 0) || conditions.length > 0;
 
+  // Current repeater item (null outside ItemProvider) — drives `item` conditions.
+  const itemContext = useItemContext();
+
   const [visible, setVisible] = useState(true);
   const conditionsRef = useRef(conditions);
   const logicRef = useRef(conditionLogic);
   const groupsRef = useRef(conditionGroups);
+  const itemRef = useRef(itemContext);
   conditionsRef.current = conditions;
   logicRef.current = conditionLogic;
   groupsRef.current = conditionGroups;
+  itemRef.current = itemContext;
 
   useEffect(() => {
     // Editor mode: always visible
@@ -85,8 +91,8 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     }
 
     // Viewer mode: evaluate conditions
-    const evaluate = (source?: string) => {
-      const ctx = buildClientContext(rootProps);
+    const evaluate = () => {
+      const ctx = buildClientContext(rootProps, itemRef.current);
       let result: boolean | null;
       if (groupsRef.current && groupsRef.current.length > 0) {
         result = evaluateConditionGroups(groupsRef.current, ctx);
@@ -94,14 +100,13 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
         result = evaluateConditions(conditionsRef.current, logicRef.current, ctx);
       }
       const newVisible = result !== false;
-      console.log(`[Visibility] node=${nodeId} name="${displayName}" visible=${newVisible} source=${source || "mount"} authCtx=${JSON.stringify(ctx.auth)} t=${typeof performance !== "undefined" ? performance.now().toFixed(1) : "?"}`);
       setVisible(newVisible);
     };
 
-    evaluate("initial");
-    const onPop = () => evaluate("popstate");
-    const onResize = () => evaluate("resize");
-    const onAuth = () => evaluate("auth-changed");
+    evaluate();
+    const onPop = () => evaluate();
+    const onResize = () => evaluate();
+    const onAuth = () => evaluate();
     window.addEventListener("popstate", onPop);
     window.addEventListener("resize", onResize);
     window.addEventListener("pagehub:auth-changed", onAuth);
@@ -110,7 +115,7 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pagehub:auth-changed", onAuth);
     };
-  }, [hasConditions, enabled, rootProps]);
+  }, [hasConditions, enabled, rootProps, itemContext]);
 
   // Page-level fail actions (redirect or show another page)
   const didRedirect = useRef(false);

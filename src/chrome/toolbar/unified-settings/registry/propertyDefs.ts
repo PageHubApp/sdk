@@ -30,6 +30,7 @@ export type SectionId =
   | "animations"
   | "effects"
   | "scroll-effect"
+  | "overflow-scroll"
   | "properties"
   | "aria"
   | "display"

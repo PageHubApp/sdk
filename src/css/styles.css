@@ -408,6 +408,23 @@
   }
 }
 
+/* Container overflow UX — hide native bar when custom thumb is shown */
+.ph-overflow-hide-native-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ph-overflow-hide-native-scrollbar::-webkit-scrollbar {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+/* Let pointer-drag scroll win over native image drag inside horizontal strips */
+[data-ph-overflow-drag] :is(img, picture img) {
+  -webkit-user-drag: none;
+}
+
 /* Settings search highlight — CSS Custom Highlight API */
 ::highlight(settings-search) {
   background-color: oklch(0.8 0.15 85);

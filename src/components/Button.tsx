@@ -6,6 +6,7 @@ import { TbPointer } from "react-icons/tb";
 import { Button as UiButton } from "@pagehub/ui";
 import { addActionHandlers } from "../utils/clickControls";
 import { useItemContext } from "../utils/itemContext";
+import { applyAttrs } from "../utils/applyAttrs";
 import { useSDKSafe } from "../core/context";
 import {
   migrateAction,
@@ -355,6 +356,15 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     prop["aria-label"] = props.text || "Button";
   }
 
+  // Pass through plain string attrs (data-*, role, etc.) so app URL/commerce hooks
+  // and other runtime wiring can query the DOM. Resolves {{item.*}} templates
+  // against the current item context so chips in a repeater get unique hrefs.
+  applyAttrs(prop, props.attrs, v => replaceVariables(v, query, itemContext));
+  // Also interpolate item vars into the href (action.href patterns like "?category={{item.slug}}")
+  if (typeof prop.href === "string" && prop.href.includes("{{")) {
+    prop.href = replaceVariables(prop.href, query, itemContext);
+  }
+
   if (enabled && ele === "a") ele = "span";
 
   // Use Next.js Link for internal page links (SPA navigation)
@@ -438,7 +448,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     </span>
   );
 
-  const labelHtml = replaceVariables(String(props.text ?? ""), query);
+  const labelHtml = replaceVariables(String(props.text ?? ""), query, itemContext);
   const hasIconValue = !!props.icon?.value;
   const isLeafEmpty = enabled && isMounted && !hasIconValue && isVisuallyEmptyRichText(labelHtml);
 
@@ -453,7 +463,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     <>
       {(props.icon?.position === "left" || props.icon?.position === "top") && iconSpan}
 
-      {!props.icon?.only && props.text && replaceVariables(props.text, query)}
+      {!props.icon?.only && props.text && replaceVariables(props.text, query, itemContext)}
 
       {(props.icon?.position === "right" || props.icon?.position === "bottom") && iconSpan}
     </>

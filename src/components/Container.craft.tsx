@@ -73,6 +73,35 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     return tag(t, attrs, children);
   }
 
+  const overflowUx =
+    (props.overflowDragScroll || props.overflowAutoHideScrollbar) &&
+    props.scrollEffect !== "horizontal-scroll";
+  if (overflowUx) {
+    const baseClass = attrs.class || "";
+    if (!/\boverflow-x-[^\s]+/.test(baseClass)) {
+      attrs.class = [baseClass, "overflow-x-auto"].filter(Boolean).join(" ");
+      ctx.classes.add("overflow-x-auto");
+    }
+    ctx.classes.add("ph-overflow-site");
+    if (props.overflowDragScroll) {
+      attrs["data-ph-overflow-drag"] = "";
+      const rawS = props.overflowDragScrollSmoothing;
+      const n =
+        typeof rawS === "number" ? rawS : typeof rawS === "string" ? parseFloat(rawS) : NaN;
+      const sm = Number.isNaN(n) ? 0 : Math.min(0.5, Math.max(0, n));
+      if (sm > 0) attrs["data-ph-overflow-smooth"] = String(sm);
+    }
+    if (props.overflowAutoHideScrollbar) {
+      attrs["data-ph-overflow-autohide"] = "";
+      ctx.classes.add("ph-overflow-hide-native-scrollbar");
+      attrs.class = [attrs.class, "ph-overflow-hide-native-scrollbar"].filter(Boolean).join(" ");
+    }
+    if (props.overflowDragScroll && props.overflowWheelScrollsHorizontal !== false) {
+      attrs["data-ph-overflow-wheel"] = "";
+    }
+    attrs["data-ph-overflow-hide-delay"] = String(props.overflowScrollbarHideDelay ?? 1000);
+  }
+
   return tag(t, attrs, children);
 };
 

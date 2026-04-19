@@ -175,7 +175,19 @@ export function addActionHandlers(
         );
         return;
       }
-      const qty = (action as AddToCartAction).quantity || 1;
+      const cartAction = action as AddToCartAction;
+      let qty = cartAction.quantity || 1;
+      // When quantityField is set, resolve live from the closest form input
+      // with that name — lets users pick a quantity before adding to cart.
+      if (cartAction.quantityField) {
+        const btn = e.currentTarget as HTMLElement | null;
+        const scope = btn?.closest("form, [data-storefront-root], section, body");
+        const field = scope?.querySelector(
+          `[name="${cartAction.quantityField}"]`
+        ) as HTMLInputElement | null;
+        const parsed = field ? Number(field.value) : NaN;
+        if (Number.isFinite(parsed) && parsed > 0) qty = Math.floor(parsed);
+      }
       context?.onAddToCart?.(item, qty);
       document.dispatchEvent(
         new CustomEvent("pagehub:add-to-cart", { detail: { item, quantity: qty } })

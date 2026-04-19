@@ -110,6 +110,30 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
       const val = walkPath(ctx.auth, cond.key.split("."));
       return applyOperator(val == null ? null : String(val), cond.operator, cond.value);
     }
+
+    case "item": {
+      // Null item context = not inside a repeater → can't evaluate. Hide by
+      // default for non-exists operators; for "exists" the answer is false.
+      if (!ctx.item) {
+        if (cond.operator === "not-exists") return true;
+        if (cond.operator === "exists") return false;
+        return null;
+      }
+      const val = walkPath(ctx.item, cond.key.split("."));
+      // Arrays: length-aware for exists/numeric operators.
+      if (Array.isArray(val) && (cond.operator === "exists" || cond.operator === "not-exists")) {
+        return applyOperator(val.length > 0 ? "true" : null, cond.operator, cond.value);
+      }
+      if (
+        Array.isArray(val) &&
+        (cond.operator === "greater-than" ||
+          cond.operator === "less-than" ||
+          cond.operator === "equals")
+      ) {
+        return applyOperator(String(val.length), cond.operator, cond.value);
+      }
+      return applyOperator(val == null ? null : String(val), cond.operator, cond.value);
+    }
   }
 
   return null;

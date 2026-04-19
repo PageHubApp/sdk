@@ -5,7 +5,8 @@ export type ConditionType =
   | "connector"
   | "company"
   | "device"
-  | "auth";
+  | "auth"
+  | "item";
 
 /** Comparison operators */
 export type Operator =
@@ -27,7 +28,8 @@ export interface Condition {
    *  - connector: dot-path like "stripe.products"
    *  - company: field name like "name", "email", "phone"
    *  - device: always "viewport"
-   *  - auth: dot-path like "status", "customer.hasSubscription", "customer.orderCount" */
+   *  - auth: dot-path like "status", "customer.hasSubscription", "customer.orderCount"
+   *  - item: dot-path into the current repeater item (e.g. "description", "metadata.sizes", "priceRange") */
   key: string;
   operator: Operator;
   /** Comparison value. For device: "mobile" | "desktop". Ignored for exists/not-exists. */
@@ -54,6 +56,8 @@ export interface ConditionContext {
   company: Record<string, any> | null;
   viewportWidth: number | null;
   auth: import("../design/variables").AuthState | null;
+  /** Current repeater item (populated inside ItemProvider). Null at top level. */
+  item: Record<string, any> | null;
 }
 
 /** Branch definition for ConditionalContainer */
@@ -74,6 +78,7 @@ export const OPERATORS_BY_TYPE: Record<ConditionType, Operator[]> = {
   company: ["exists", "not-exists", "equals", "not-equals"],
   device: ["equals"],
   auth: ["equals", "not-equals", "exists", "not-exists", "greater-than", "less-than"],
+  item: ["exists", "not-exists", "equals", "not-equals", "contains", "greater-than", "less-than"],
 };
 
 /** Human-readable labels for operators */

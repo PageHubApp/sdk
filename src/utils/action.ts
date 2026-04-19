@@ -84,8 +84,14 @@ export interface DownloadFileAction extends ActionBase {
 /** Add item to shopping cart. Fires `config.callbacks.onAddToCart` with the current item context. */
 export interface AddToCartAction extends ActionBase {
   type: "add-to-cart";
-  /** Quantity to add (default 1) */
+  /** Static quantity to add (default 1). Overridden by quantityField when set. */
   quantity?: number;
+  /**
+   * Name of a form field (e.g. an `<input name="quantity">`) to read at click
+   * time. The field is located via a closest-ancestor search from the button.
+   * Falls back to `quantity` (static) if the field is missing or non-numeric.
+   */
+  quantityField?: string;
 }
 
 /** Toggle the shopping cart drawer open/closed. */
@@ -181,7 +187,9 @@ export function actionToHref(
 
   switch (action.type) {
     case "link-url":
-      return action.url || null;
+    // Alias for block-authoring convenience: "link" accepts either `url` or `href`.
+    case "link" as any:
+      return (action as any).url || (action as any).href || null;
 
     case "link-page":
       if (!action.pageId) return null;

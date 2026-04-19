@@ -16,7 +16,16 @@ export function getConnectorData() {
 
 // ── Client-side data fetcher (registerable handler) ───────────────────────────
 
-type ClientDataFetcher = (provider: string, collection: string) => Promise<any[] | null>;
+export interface ClientDataFetchOptions {
+  /** Arbitrary keys passed through to the server (query, category, sort, etc.). */
+  [key: string]: any;
+}
+
+type ClientDataFetcher = (
+  provider: string,
+  collection: string,
+  options?: ClientDataFetchOptions
+) => Promise<any[] | null>;
 
 let _clientDataFetcher: ClientDataFetcher | null = null;
 

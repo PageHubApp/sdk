@@ -1,5 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
+import { applyAttrs } from "../utils/applyAttrs";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { motionIt } from "../utils/lib";
 import { FormField } from "@pagehub/ui";
@@ -204,6 +205,9 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   if (props.type === "email") prop["aria-describedby"] = `${inputId}-desc`;
   if (props.type === "tel") prop["aria-describedby"] = `${inputId}-desc`;
   if (props.type === "url") prop["aria-describedby"] = `${inputId}-desc`;
+
+  // Pass through plain string attrs (data-*, etc.) so app hooks can wire DOM contracts.
+  applyAttrs(prop, props.attrs);
 
   // Required attribute
   if (props.required) {

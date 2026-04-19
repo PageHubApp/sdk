@@ -41,6 +41,16 @@ const LazyScrollEffectSection = React.lazy(() =>
     default: m.ContainerScrollEffectSection,
   }))
 );
+const LazyContainerOverflowSection = React.lazy(() =>
+  import("../../mainTabs/ContainerOverflowSection").then(m => ({
+    default: m.ContainerOverflowSection,
+  }))
+);
+const LazyDataSourceSectionSlot = React.lazy(() =>
+  import("../../mainTabs/DataSourceSectionSlot").then(m => ({
+    default: m.DataSourceSectionSlot,
+  }))
+);
 
 export const advancedProperties: PropertyDef[] = [
   // ─── Alignment section (custom — mode-dependent flex/grid/block) ─
@@ -218,6 +228,52 @@ export const advancedProperties: PropertyDef[] = [
       ),
     },
     showWhen: (_cls, props) => props._craftName === "Container",
+    sortOrder: 0,
+  },
+
+  // ─── Overflow (CSS horizontal strip) ───────────────────────────────
+  {
+    id: "containerOverflow",
+    label: "Overflow",
+    section: "overflow-scroll",
+    keywords: ["overflow", "scroll", "drag", "scrollbar", "horizontal", "carousel"],
+    input: {
+      type: "custom",
+      component: () => (
+        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
+          <LazyContainerOverflowSection />
+        </React.Suspense>
+      ),
+    },
+    showWhen: (_cls, props) => props._craftName === "Container",
+    sortOrder: 0,
+  },
+
+  // ─── Data source section (visible only when dataSource is set) ──────
+  {
+    id: "dataSource",
+    label: "Data source",
+    section: "data-source",
+    keywords: [
+      "data",
+      "source",
+      "stripe",
+      "connector",
+      "products",
+      "category",
+      "search",
+      "query",
+      "repeater",
+    ],
+    input: {
+      type: "custom",
+      component: () => (
+        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
+          <LazyDataSourceSectionSlot />
+        </React.Suspense>
+      ),
+    },
+    showWhen: (_cls, props) => !!props.dataSource,
     sortOrder: 0,
   },
 ];
