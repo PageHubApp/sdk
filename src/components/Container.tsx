@@ -18,7 +18,7 @@ import { useScrollEffect } from "../utils/hooks/useScrollEffect";
 import { useHorizontalDragScroll } from "../utils/hooks/useHorizontalDragScroll";
 import { HorizontalOverflowThumbOverlay } from "./primitives/HorizontalOverflowThumbOverlay";
 import { RenderPattern, inlayProps } from "./componentHooks";
-import { getConnectorData, getClientDataFetcher } from "../utils/design/variables";
+import { getConnectorData, getClientDataFetcher, replaceVariables } from "../utils/design/variables";
 import { useStorefrontUrlQuery } from "../utils/StorefrontUrlQueryContext";
 import {
   applyStorefrontUrlToDataSource,
@@ -290,7 +290,7 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
         ? (connData?.[ds.provider]?.bindings?.[bindingId] ?? null)
         : null
     : null;
-  const items = ds ? applyDataSourceScope(rawItems, ds) : rawItems;
+  const items = ds ? applyDataSourceScope(rawItems, mergedDs ?? ds) : rawItems;
   const hasItems = Array.isArray(items) && items.length > 0;
 
   // ── Client-side data source ──────────────────────────────────────────────
@@ -341,7 +341,6 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
         ...(typeof mergedForFetch.priceMax === "number"
           ? { maxPrice: String(mergedForFetch.priceMax) }
           : {}),
-        ...(mergedForFetch.slug ? { slug: mergedForFetch.slug } : {}),
         ...(mergedForFetch.filter ? { filter: mergedForFetch.filter } : {}),
         ...(mergedForFetch.limit ? { limit: mergedForFetch.limit } : {}),
       };
@@ -355,7 +354,6 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
         options.page ||
         options.minPrice ||
         options.maxPrice ||
-        options.slug ||
         options.sort ||
         (options.filter && Object.keys(options.filter).length > 0));
     if (hasItems && !hasQueryOverride && refetchKey === 0) return;
@@ -384,7 +382,8 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     refetchKey,
   ]);
 
-  const scopedClientItems = ds && clientItems ? applyDataSourceScope(clientItems, ds) : clientItems;
+  const scopedClientItems =
+    ds && clientItems ? applyDataSourceScope(clientItems, mergedDs ?? ds) : clientItems;
   // clientItems wins when present — fresher URL-driven fetch. Falls back to SSR.
   const resolvedItems = scopedClientItems != null ? scopedClientItems : items;
   const hasResolvedItems = Array.isArray(resolvedItems) && resolvedItems.length > 0;
@@ -492,7 +491,17 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
 
   // Unified action system
   const action = migrateAction(props);
-  const resolvedUrl = actionToHref(action, null, undefined);
+  const rawUrl = actionToHref(action, null, undefined);
+  const resolvedUrl =
+    rawUrl && query
+      ? (() => {
+          try {
+            return replaceVariables(rawUrl, query, parentItem);
+          } catch {
+            return rawUrl;
+          }
+        })()
+      : rawUrl;
 
   if (resolvedUrl) {
     prop.onClick = (e: any) => {

@@ -11,7 +11,6 @@ export interface StorefrontUrlQuery {
   page?: number;
   minPrice?: number;
   maxPrice?: number;
-  slug?: string;
 }
 
 const STOREFRONT_COLLECTIONS = new Set([
@@ -20,20 +19,11 @@ const STOREFRONT_COLLECTIONS = new Set([
   "product",
 ]);
 
-/**
- * Parse Next.js router / request query into StorefrontUrlQuery.
- */
-/**
- * Next.js catch-all routes put path segments in `query.slug` as an array —
- * strip before parsing so `?slug=` PDP param is not confused.
- */
+/** Parse Next.js router / request query into StorefrontUrlQuery. */
 export function storefrontQueryFromRouterQuery(
   query: Record<string, string | string[] | undefined> | undefined
 ): StorefrontUrlQuery {
-  if (!query) return {};
-  const q = { ...query };
-  if (Array.isArray(q.slug)) delete q.slug;
-  return parseStorefrontUrlQuery(q);
+  return parseStorefrontUrlQuery(query);
 }
 
 export function parseStorefrontUrlQuery(
@@ -63,8 +53,6 @@ export function parseStorefrontUrlQuery(
   if (minPrice !== undefined) out.minPrice = minPrice;
   const maxPrice = num("maxPrice");
   if (maxPrice !== undefined) out.maxPrice = maxPrice;
-  const slug = pick("slug");
-  if (slug) out.slug = slug;
   return out;
 }
 
@@ -82,9 +70,6 @@ export function applyStorefrontUrlToDataSource(ds: any, url: StorefrontUrlQuery)
   if (typeof url.page === "number" && !merged.page) merged.page = url.page;
   if (typeof url.minPrice === "number" && merged.priceMin == null) merged.priceMin = url.minPrice;
   if (typeof url.maxPrice === "number" && merged.priceMax == null) merged.priceMax = url.maxPrice;
-  if (ds.collection === "product" && url.slug && !merged.filter?.slug && !merged.ids?.length) {
-    merged.filter = { ...(merged.filter || {}), slug: url.slug };
-  }
   return merged;
 }
 
