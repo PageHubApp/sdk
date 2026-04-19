@@ -2,7 +2,7 @@
  * Page management utilities — isolation, counting, ref resolution, variables
  */
 
-import { ROOT_NODE } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
 import { phStorage } from "./phStorage";
 import { decompressAsync } from "./compressionAsync";
 

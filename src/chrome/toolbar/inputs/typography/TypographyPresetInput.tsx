@@ -8,7 +8,8 @@
  * preset picked here looks identical to one applied via the inline
  * text toolbar.
  */
-import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor, useNode } from "@craftjs/core";
 import { useMemo } from "react";
 import { TbDeviceFloppy } from "react-icons/tb";
 import { toCSSVarName } from "@/utils/design/designSystemVars";

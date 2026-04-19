@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "@/utils/atoms";

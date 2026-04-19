@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import { useEffect, useState } from "react";
 import { useAtomState } from "@zedux/react";
 import colors from "tailwindcss/colors";

@@ -1,5 +1,6 @@
 import { Editor } from "@tiptap/react";
-import { ROOT_NODE, useEditor as useCraftEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor as useCraftEditor } from "@craftjs/core";
 import { resolveTheme } from "@/utils/design/resolveTheme";
 
 interface StylesPanelProps {

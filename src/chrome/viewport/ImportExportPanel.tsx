@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import lz from "lzutf8";
 import { useState } from "react";
 import { TbDownload, TbUpload } from "react-icons/tb";

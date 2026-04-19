@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
 import { getImageDimensionsFromFile, getImageDimensionsFromUrl } from "@/utils/imageDimensions";

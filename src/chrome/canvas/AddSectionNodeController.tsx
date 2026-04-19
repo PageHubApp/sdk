@@ -1,4 +1,5 @@
-import { Element, ROOT_NODE, useEditor, useNode } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { Element, useEditor, useNode } from "@craftjs/core";
 import { useRef, useState } from "react";
 import { TbLayoutGridAdd } from "react-icons/tb";
 import { AssistantOpenAtom, SectionPickerDialogAtom } from "../../utils/atoms";

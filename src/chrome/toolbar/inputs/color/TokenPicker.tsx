@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
 import { TbCheck, TbChevronDown, TbEraser, TbPlus } from "react-icons/tb";
 import {

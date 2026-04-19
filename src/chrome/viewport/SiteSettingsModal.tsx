@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TbCode, TbPalette, TbPlug, TbPuzzle, TbRoute, TbSparkles } from "react-icons/tb";
 import { normalizeDesignTags } from "../../utils/normalizeDesignTags";

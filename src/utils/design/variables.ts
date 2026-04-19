@@ -1,4 +1,7 @@
-import { ROOT_NODE } from "@craftjs/core";
+// Import directly from @craftjs/utils to avoid the broken ESM re-export
+// chain in @craftjs/core that breaks tsx/Node ESM resolution in CLI scripts
+// (e.g. backfill-template-previews.mjs). Same symbol, same value.
+import { ROOT_NODE } from "@craftjs/utils";
 
 // ── Connector data context (set by editor when connector data is loaded) ────
 export interface SdkBindingMeta {

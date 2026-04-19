@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { ROOT_NODE } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
 import colors from "tailwindcss/colors";
 import { DEFAULT_STYLE_GUIDE } from "../defaults";
 import { oklchToHex } from "./contentColor";

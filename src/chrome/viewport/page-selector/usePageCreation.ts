@@ -1,4 +1,5 @@
-import { Element, ROOT_NODE } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { Element } from "@craftjs/core";
 import React from "react";
 import { Container } from "../../../components/Container";
 import { AddElement } from "../toolbox/toolboxUtils";

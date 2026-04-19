@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtomState } from "@zedux/react";
 import { resolveColorForDisplay } from "@/utils/design/colorSystem";

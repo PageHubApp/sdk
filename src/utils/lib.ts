@@ -8,7 +8,7 @@
 
 import { motion } from "framer-motion";
 import React, { useEffect } from "react";
-import { ROOT_NODE } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
 import { useAtomValue } from "@zedux/react";
 import { atom } from "./atoms";
 import { getCdnUrl } from "./cdn";

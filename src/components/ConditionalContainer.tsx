@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useMemo, useState } from "react";
 import { TbGitBranch } from "react-icons/tb";
 import { Box } from "@pagehub/ui";

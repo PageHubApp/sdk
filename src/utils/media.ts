@@ -2,7 +2,7 @@
  * Media management utilities — CRUD for pageMedia on ROOT_NODE
  */
 
-import { ROOT_NODE } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
 import { getCdnUrl, generateSrcSet, generateSizes } from "./cdn";
 
 // ─── Internal helpers ───

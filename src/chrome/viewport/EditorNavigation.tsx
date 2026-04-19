@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 import { useEffect, useRef } from "react";
 import {

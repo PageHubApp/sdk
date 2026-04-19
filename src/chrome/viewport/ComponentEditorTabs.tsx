@@ -1,4 +1,5 @@
-import { Element, ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { Element, useEditor } from "@craftjs/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { TbBoxModel2, TbLayoutGridAdd, TbX } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";

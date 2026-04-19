@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor, useNode } from "@craftjs/core";
 import { GetSignedUrl, SaveMedia } from "../../../viewport/viewportExports";
 import { useState } from "react";
 import { TbAlertTriangle, TbPhoto, TbUpload } from "react-icons/tb";

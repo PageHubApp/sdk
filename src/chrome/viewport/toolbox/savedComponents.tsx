@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor, useNode } from "@craftjs/core";
 import { setRecursiveBelongsTo } from "@/utils/componentUtils";
 import { useEffect, useRef } from "react";
 import { TbBoxModel2, TbTrash } from "react-icons/tb";

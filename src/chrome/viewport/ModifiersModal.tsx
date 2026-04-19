@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { TbCheck, TbChevronDown, TbEdit, TbPlus, TbTrash } from "react-icons/tb";

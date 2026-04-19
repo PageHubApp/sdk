@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor as useCraftEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor as useCraftEditor } from "@craftjs/core";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { Editor } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";

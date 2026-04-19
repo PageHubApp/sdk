@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
 import { SketchPicker } from "@hello-pangea/color-picker";
 import { useEffect, useRef, useState } from "react";
 import { TbCheck, TbX } from "react-icons/tb";

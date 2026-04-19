@@ -3,7 +3,8 @@
  * Supports: URL params, form fields, connectors, company variables, device/viewport.
  * AND within groups, OR between groups (Elementor-style condition groups).
  */
-import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor, useNode } from "@craftjs/core";
 import { TbEyeSearch, TbPlus, TbTrash } from "react-icons/tb";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";

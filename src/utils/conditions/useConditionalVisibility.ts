@@ -1,4 +1,5 @@
-import { ROOT_NODE, useEditor, useNode } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor, useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { buildClientContext } from "./context";
 import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
