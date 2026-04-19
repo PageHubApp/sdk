@@ -59,6 +59,7 @@ export interface FormElementProps extends BaseSelectorProps {
   placeholder?: string;
   name?: string;
   label?: string;
+  defaultValue?: string;
   required?: boolean;
   disabled?: boolean;
   readOnly?: boolean;
@@ -124,7 +125,7 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
     defaultValue:
       (!enabled && props.prefillFromUrl && props.name && typeof window !== "undefined"
         ? new URLSearchParams(window.location.search).get(props.name)
-        : "") || "",
+        : null) ?? props.defaultValue ?? "",
     "aria-label": props.label || props.placeholder || props.name || `${props.type || "text"} input`,
   };
 
@@ -208,6 +209,17 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
 
   // Pass through plain string attrs (data-*, etc.) so app hooks can wire DOM contracts.
   applyAttrs(prop, props.attrs);
+
+  // Safety net: if a block passed `value` via attrs, treat it as the initial
+  // value. A bare `value` with no `onChange` makes React warn (read-only) and
+  // conflicts with `defaultValue`. Validator migrates this at save time; this
+  // guards already-saved blocks that still carry it.
+  if (prop.value !== undefined && prop.onChange === undefined) {
+    if (prop.defaultValue === "" || prop.defaultValue == null) {
+      prop.defaultValue = prop.value;
+    }
+    delete prop.value;
+  }
 
   // Required attribute
   if (props.required) {
