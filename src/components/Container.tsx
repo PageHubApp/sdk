@@ -24,6 +24,7 @@ import { useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
+import type { OverflowProps } from "./types";
 export interface ContainerProps extends BaseSelectorProps {
   type: string;
   isHomePage?: boolean;
@@ -48,19 +49,8 @@ export interface ContainerProps extends BaseSelectorProps {
   scrollSmoothing?: number;
   scrollTimelineRunway?: number;
 
-  /** CSS overflow UX (not GSAP scroll effects): pointer-drag to scroll on published/preview only. */
-  overflowDragScroll?: boolean;
-  /** Hide native horizontal scrollbar and show auto-hiding thumb. */
-  overflowAutoHideScrollbar?: boolean;
-  /** When drag scroll is on: map vertical wheel to horizontal scroll. Default true. Ignored when drag is off. */
-  overflowWheelScrollsHorizontal?: boolean;
-  /** Ms before hiding the custom scrollbar thumb. */
-  overflowScrollbarHideDelay?: number;
-  /**
-   * Drag scroll only: 0 = 1:1 with pointer (default). ~0.12–0.28 = ease toward target each frame
-   * (more fluid; too high feels floaty). Does not affect wheel scrolling.
-   */
-  overflowDragScrollSmoothing?: number;
+  /** Pointer-drag scroll UX (not GSAP scroll effects) on published/preview. See {@link OverflowProps}. */
+  overflow?: OverflowProps;
 }
 
 /**
@@ -90,8 +80,11 @@ export function useContainerRender(
     canDelete: true,
     canEditName: true,
     isHomePage: false,
-    backgroundFetchPriority: "low",
     ...incomingProps,
+    background: {
+      fetchPriority: "low",
+      ...(incomingProps?.background ?? {}),
+    },
   };
 
   const view = useView();
@@ -119,14 +112,14 @@ export function useContainerRender(
   props = setClonedProps(props, query, ["order"]);
 
   const isGsaponHorizontalStrip = props.scrollEffect === "horizontal-scroll";
+  const overflow: OverflowProps = props.overflow ?? {};
   const overflowUxActive =
-    !!(props.overflowDragScroll || props.overflowAutoHideScrollbar) && !isGsaponHorizontalStrip;
+    !!(overflow.dragScroll || overflow.autoHide) && !isGsaponHorizontalStrip;
 
-  const dragDisabled = !props.overflowDragScroll || enabled || !overflowUxActive;
-  const wheelMaps =
-    !!props.overflowDragScroll && props.overflowWheelScrollsHorizontal !== false;
+  const dragDisabled = !overflow.dragScroll || enabled || !overflowUxActive;
+  const wheelMaps = !!overflow.dragScroll && overflow.wheelHorizontal !== false;
 
-  const rawSmooth = props.overflowDragScrollSmoothing;
+  const rawSmooth = overflow.smoothing;
   const dragSmooth = (() => {
     const n =
       typeof rawSmooth === "number"
@@ -211,7 +204,7 @@ export function useContainerRender(
    *  Page containers always show the hint — their `bg-base-100` is the default surface, not decorative. */
   const suppressEmptyCanvasHint =
     props.type !== "page" &&
-    (!!props.backgroundImage || !!props.root?.style || /\bbg-/.test(className.trim()));
+    (!!props.background?.image || !!props.root?.style || /\bbg-/.test(className.trim()));
 
   if (overflowUxActive) {
     if (!/\boverflow-x-[^\s]+/.test(className)) {
@@ -455,13 +448,13 @@ export function useContainerRender(
   }
 
   // ─── CSS overflow UX (horizontal drag + autohide thumb; not GSAP horizontal-scroll) ──
-  if (overflowUxActive && props.overflowAutoHideScrollbar) {
+  if (overflowUxActive && overflow.autoHide) {
     const inner = prop.children;
     prop.children = (
       <>
         <HorizontalOverflowThumbOverlay
           scrollEl={overflowScrollEl}
-          hideDelay={props.overflowScrollbarHideDelay ?? 1000}
+          hideDelay={overflow.hideDelay ?? 1000}
         />
         {inner}
       </>
@@ -473,7 +466,7 @@ export function useContainerRender(
       msOverflowStyle: "none",
     };
   }
-  if (overflowUxActive && props.overflowDragScroll && !enabled) {
+  if (overflowUxActive && overflow.dragScroll && !enabled) {
     prop.onPointerDown = onDragPointerDown;
     prop.className = `${prop.className || ""} cursor-grab`.trim();
     /** Native `<img>` drag steals pointer gestures; block so horizontal drag-scroll works on cards. */
@@ -487,15 +480,15 @@ export function useContainerRender(
     };
   }
   if (overflowUxActive) {
-    if (props.overflowDragScroll) {
+    if (overflow.dragScroll) {
       prop["data-ph-overflow-drag"] = "";
       if (dragSmooth > 0) {
         prop["data-ph-overflow-smooth"] = String(dragSmooth);
       }
     }
-    if (props.overflowAutoHideScrollbar) prop["data-ph-overflow-autohide"] = "";
+    if (overflow.autoHide) prop["data-ph-overflow-autohide"] = "";
     if (wheelMaps) prop["data-ph-overflow-wheel"] = "";
-    prop["data-ph-overflow-hide-delay"] = String(props.overflowScrollbarHideDelay ?? 1000);
+    prop["data-ph-overflow-hide-delay"] = String(overflow.hideDelay ?? 1000);
   }
 
   // If this Container has a link action and would otherwise render as a plain

@@ -35,7 +35,7 @@ import {
 const checkIfAncestorLinked = (nodeId: string, query: any): boolean => {
   const node = query.node(nodeId).get();
   if (!node) return false;
-  if (node.data.props?.belongsTo && node.data.props?.relationType !== "style") {
+  if (node.data.props?.relation?.belongsTo && node.data.props?.relation?.relationType !== "style") {
     return true;
   }
   if (node.data.parent) {
@@ -85,7 +85,7 @@ function TextEditorMode({
   const rawText = props.text || "";
   const editorContent = React.useMemo(() => preprocessVariables(rawText), [rawText]);
 
-  const richTextMode: PagehubTextRichMode = props.richTextMode === "inline" ? "inline" : "full";
+  const richTextMode: PagehubTextRichMode = props.richText?.mode === "inline" ? "inline" : "full";
 
   const [suggestion, setSuggestion] = React.useState<SuggestionProps | null>(null);
   const [richTextCtxMenu, setRichTextCtxMenu] = React.useState<null | { x: number; y: number }>(

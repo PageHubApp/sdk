@@ -77,19 +77,21 @@ export interface ContainerProps extends BaseSelectorProps {
 
 export function Background({
   type = "background",
-  backgroundFetchPriority = "low",
-  backgroundPlaceholder = "rgba(0, 0, 0, 0.05)",
   pageMedia = [],
   savedComponents = [],
+  background,
   ...rest
 }: Partial<ContainerProps>) {
   let props: any = {
     type,
-    backgroundFetchPriority,
-    backgroundPlaceholder,
     pageMedia,
     savedComponents,
     ...rest,
+    background: {
+      fetchPriority: "low",
+      placeholder: "rgba(0, 0, 0, 0.05)",
+      ...(background ?? {}),
+    },
   };
   const { children } = props;
 
@@ -113,8 +115,8 @@ export function Background({
     ref: lazyRef,
     isLoaded,
     backgroundImage,
-  } = useLazyBackground(props.backgroundImage ? getBackgroundUrl(props, query) : null, {
-    enabled: props.backgroundLazy && !enabled,
+  } = useLazyBackground(props.background?.image ? getBackgroundUrl(props, query) : null, {
+    enabled: props.background?.lazy && !enabled,
   });
 
   const view = useView();
@@ -156,7 +158,7 @@ export function Background({
 
   prop.children = (
     <PaletteProvider palette={resolveTheme(props).palette}>
-      {isRoot && props.header ? <InjectedHeadTags html={props.header} /> : null}
+      {isRoot && props.inject?.head ? <InjectedHeadTags html={props.inject.head} /> : null}
       <RenderPattern
         props={props}
         settings={settings}
@@ -176,7 +178,9 @@ export function Background({
             />
           ) : null)}
       </RenderPattern>
-      {isRoot && props.footer ? <InjectedBodyTags html={props.footer} /> : null}
+      {isRoot && props.inject?.footer ? (
+        <InjectedBodyTags html={props.inject.footer} />
+      ) : null}
     </PaletteProvider>
   );
 
@@ -185,7 +189,7 @@ export function Background({
   // for all descendant sections.
 
   // Apply background image with lazy loading support
-  if (props.backgroundLazy && !enabled) {
+  if (props.background?.lazy && !enabled) {
     applyLazyBackgroundImage(prop, props, settings, query, lazyRef);
     if (isLoaded && backgroundImage) {
       prop.style = prop.style || {};

@@ -17,28 +17,28 @@ export const BackgroundSettingsInput = () => {
     <>
       <MediaInput
         props={props}
-        propKey="backgroundImage"
-        typeKey="backgroundImageType"
-        contentKey="backgroundImage"
+        propKey="background.image"
+        typeKey="background.imageType"
+        contentKey="background.image"
         title=""
         collapsible={false}
         showObjectProperties={false}
       />
 
-      {props?.backgroundImage && (
+      {props?.background?.image && (
         <>
           <BackgroundFocalPointPicker imageUrl={getBackgroundUrl(props, query)} />
 
           <ToolbarSection title="Image Settings" subtitle={true}>
             <ColorInput
-              propKey="backgroundPlaceholder"
+              propKey="background.placeholder"
               label="Loading Color"
               prefix=""
               propType="component"
               inline
             />
             <ToolbarItem
-              propKey="backgroundPriority"
+              propKey="background.priority"
               propType="component"
               type="checkbox"
               option=""
@@ -49,7 +49,7 @@ export const BackgroundSettingsInput = () => {
               labelWidth="w-full"
             />
             <ToolbarItem
-              propKey="backgroundLazy"
+              propKey="background.lazy"
               propType="component"
               type="checkbox"
               option=""
@@ -60,7 +60,7 @@ export const BackgroundSettingsInput = () => {
               labelWidth="w-full"
             />
             <ToolbarItem
-              propKey="backgroundFetchPriority"
+              propKey="background.fetchPriority"
               propType="component"
               type="select"
               label="Fetch Priority"

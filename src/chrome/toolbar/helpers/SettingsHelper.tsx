@@ -10,12 +10,12 @@ export const TableBodyStyleControl = ({ children, actions, activeTab, head, tab,
   const { id } = useNode();
   const propValues = query.node(id).get().data.props;
 
-  if (propValues.belongsTo) {
-    if (propValues.relationType !== "style") {
+  if (propValues.relation?.belongsTo) {
+    if (propValues.relation?.relationType !== "style") {
       return <TBNoSettings query={query} actions={actions} id={id} />;
     }
 
-    if (propValues.relationType === "style") {
+    if (propValues.relation?.relationType === "style") {
       if (activeTab === head[0].title) {
         return tab;
       }

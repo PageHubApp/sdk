@@ -244,7 +244,6 @@ function init(config: PageHubConfig): PageHubInstance {
           fontUrls: [],
           scrollObserverScript: "",
           themeCSS: "",
-          iconFontUrl: null,
           seo: null,
         };
       try {
@@ -258,7 +257,6 @@ function init(config: PageHubConfig): PageHubInstance {
           fontUrls: [],
           scrollObserverScript: "",
           themeCSS: "",
-          iconFontUrl: null,
           seo: null,
         };
       }
@@ -312,6 +310,17 @@ export type {
 
 // Alias
 export type { PageSeo as PageHubSeo } from "./types";
+
+// Nested node-prop namespaces — typed shapes for background, overflow, design, etc.
+// `seo: PageSeo` (from "./types") is the canonical shape for seo.* props on ROOT + page Containers.
+export type {
+  BackgroundProps,
+  OverflowProps,
+  DesignProps,
+  InjectProps,
+  RelationProps,
+  RichTextProps,
+} from "./components/types";
 
 // Make init available at top-level too
 export { init };

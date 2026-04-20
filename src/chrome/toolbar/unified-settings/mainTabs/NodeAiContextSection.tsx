@@ -14,22 +14,25 @@ export function NodeAiContextSection() {
   const { actions } = useEditor();
 
   const designNotes = useEditor(state => {
-    const p = state.nodes[id]?.data?.props;
-    return typeof p?.designNotes === "string" ? p.designNotes : "";
+    const design = state.nodes[id]?.data?.props?.design;
+    return typeof design?.notes === "string" ? design.notes : "";
   });
 
   const designTags = useEditor(state => {
-    const p = state.nodes[id]?.data?.props;
-    const dt = Array.isArray(p?.designTags) ? p.designTags : [];
-    return normalizeDesignTags(dt.filter((t): t is string => typeof t === "string"));
+    const design = state.nodes[id]?.data?.props?.design;
+    const dt = Array.isArray(design?.tags) ? design.tags : [];
+    return normalizeDesignTags(dt.filter((t: unknown): t is string => typeof t === "string"));
   });
 
   const setDesignNotes = useCallback(
     (v: string) => {
       const next = v.slice(0, 1200);
-      actions.setProp(id, (props: Record<string, unknown>) => {
+      actions.setProp(id, (props: Record<string, any>) => {
         const t = next.trim();
-        props.designNotes = t ? t : undefined;
+        if (!props.design) props.design = {};
+        if (t) props.design.notes = t;
+        else delete props.design.notes;
+        if (Object.keys(props.design).length === 0) delete props.design;
       });
     },
     [actions, id]
@@ -38,8 +41,11 @@ export function NodeAiContextSection() {
   const setDesignTags = useCallback(
     (tags: string[]) => {
       const normalized = normalizeDesignTags(tags);
-      actions.setProp(id, (props: Record<string, unknown>) => {
-        props.designTags = normalized.length ? normalized : undefined;
+      actions.setProp(id, (props: Record<string, any>) => {
+        if (!props.design) props.design = {};
+        if (normalized.length) props.design.tags = normalized;
+        else delete props.design.tags;
+        if (Object.keys(props.design).length === 0) delete props.design;
       });
     },
     [actions, id]

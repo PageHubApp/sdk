@@ -62,6 +62,17 @@ export interface PageSeo {
   ogImage?: string;
   canonicalUrl?: string;
   robots?: string;
+  /** Structured data rendered as `<script type="application/ld+json">` (e.g. Organization / WebSite). */
+  jsonLd?: Record<string, unknown>;
+  /** Site favicon. ROOT-only — per-page favicon overrides fall back to ROOT. */
+  favicon?: {
+    /** Favicon href (URL or media library id). */
+    href?: string;
+    /** MIME type (e.g. "image/png", "image/svg+xml"). */
+    type?: string;
+    /** Inline SVG content when favicon is stored as SVG markup. */
+    content?: string;
+  };
 }
 
 // ─── Callbacks — the customer's integration points ────────────────────────────

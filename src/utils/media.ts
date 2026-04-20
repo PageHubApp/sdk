@@ -7,7 +7,7 @@ import { getCdnUrl, generateSrcSet, generateSizes } from "./cdn";
 
 // ─── Internal helpers ───
 
-/** Bare Cloudflare-style image id when backgroundImageType was not persisted */
+/** Bare Cloudflare-style image id when background.imageType was not persisted */
 export const looksLikeCdnImageId = (content: string): boolean => {
   if (!content || typeof content !== "string") return false;
   const s = content.trim();
@@ -175,7 +175,6 @@ export const syncPageMedia = (query: any, actions: any) => {
       "ico",
       "image",
       "videoId",
-      "backgroundImage",
       "src",
       "imageDesktop",
       "imageTablet",
@@ -189,6 +188,9 @@ export const syncPageMedia = (query: any, actions: any) => {
           usedMediaIds.add(props[propKey]);
         }
       });
+      // Nested: background.image (CDN media id for section/container backgrounds)
+      const bgImage = props?.background?.image;
+      if (bgImage && typeof bgImage === "string") usedMediaIds.add(bgImage);
     });
 
     actions.setProp(ROOT_NODE, (props: any) => {

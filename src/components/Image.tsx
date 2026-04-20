@@ -43,7 +43,6 @@ export interface ImageProps extends BaseSelectorProps {
   /** @deprecated Use `src` instead. */
   content?: string;
   url?: string;
-  priority?: string;
   fetchPriority?: "high" | "low" | "auto" | "";
   loading?: string;
   alt?: string;
@@ -221,8 +220,8 @@ export const Image = (incomingProps: ImageProps) => {
       _imgProp.fetchPriority = props.fetchPriority;
     }
 
-    // Add preload link to document head when priority is enabled
-    if (props.priority && typeof document !== "undefined" && _imgProp.src) {
+    // Add preload link to document head when loading="eager" (migrated from retired `priority` flag)
+    if (props.loading === "eager" && typeof document !== "undefined" && _imgProp.src) {
       const link = document.createElement("link");
 
       link.rel = "preload";

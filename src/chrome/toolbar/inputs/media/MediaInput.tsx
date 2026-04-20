@@ -8,6 +8,28 @@ import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { MediaManagerModal } from "./MediaManagerModal";
 
+/** Read a value by dot-path (e.g. "background.image") from an object. */
+function getPath(obj: any, path: string): any {
+  if (!path.includes(".")) return obj?.[path];
+  return path.split(".").reduce((acc, seg) => (acc == null ? acc : acc[seg]), obj);
+}
+
+/** Write a value by dot-path, creating intermediate objects as needed. */
+function setPath(obj: any, path: string, value: any): void {
+  if (!path.includes(".")) {
+    obj[path] = value;
+    return;
+  }
+  const segs = path.split(".");
+  let cursor = obj;
+  for (let i = 0; i < segs.length - 1; i++) {
+    const seg = segs[i];
+    if (cursor[seg] == null || typeof cursor[seg] !== "object") cursor[seg] = {};
+    cursor = cursor[seg];
+  }
+  cursor[segs[segs.length - 1]] = value;
+}
+
 export const MediaInput = propa => {
   const props = { ...propa };
   const { props: nodeProps, id: componentId } = useNode(node => ({
@@ -37,11 +59,11 @@ export const MediaInput = propa => {
     const selectedMedia = getMediaById(query, selectedMediaId);
 
     setProp(_props => {
-      _props[propKey] = selectedMediaId;
-      _props[typeKey] = selectedMedia?.type || "cdn";
+      setPath(_props, propKey, selectedMediaId);
+      setPath(_props, typeKey, selectedMedia?.type || "cdn");
       // Clear direct URL / inline content when switching to library (mirrors handleContentUrlChange)
       if (contentKey !== propKey) {
-        _props[contentKey] = null;
+        setPath(_props, contentKey, null);
       }
     });
 
@@ -58,8 +80,8 @@ export const MediaInput = propa => {
     setShowMediaBrowser(false);
   };
 
-  const mediaId = nodeProps[propKey];
-  const contentUrl = nodeProps[contentKey];
+  const mediaId = getPath(nodeProps, propKey);
+  const contentUrl = getPath(nodeProps, contentKey);
   const hasMedia = !!mediaId;
   const hasContentUrl =
     !!contentUrl && typeof contentUrl === "string" && contentUrl.startsWith("http");
@@ -83,19 +105,19 @@ export const MediaInput = propa => {
 
   const handleClear = () => {
     setProp(_props => {
-      _props[propKey] = null;
-      _props[typeKey] = "cdn";
-      _props[contentKey] = null; // Also clear content URL
+      setPath(_props, propKey, null);
+      setPath(_props, typeKey, "cdn");
+      setPath(_props, contentKey, null); // Also clear content URL
     });
   };
 
   const handleContentUrlChange = (newUrl: string) => {
     setProp(_props => {
-      _props[contentKey] = newUrl || null;
+      setPath(_props, contentKey, newUrl || null);
       // Clear media library selection when setting content URL
       if (newUrl) {
-        _props[propKey] = null;
-        _props[typeKey] = "cdn";
+        setPath(_props, propKey, null);
+        setPath(_props, typeKey, "cdn");
       }
     });
   };

@@ -29,17 +29,6 @@ export const ImageMainTab = () =>
         icon={SECTION_ICONS["Properties"]}
         help="Preload important images, like the first ones on the page. Lazy load images that are below the first page."
       >
-        <ToolbarItem
-          propKey="priority"
-          propType="component"
-          type="checkbox"
-          option=""
-          on="priority"
-          cols={true}
-          labelHide={true}
-          label="Preload"
-          labelWidth="w-full"
-        />
         <ToolbarItem propKey="loading" propType="component" type="select" label="Loading">
           <option value="lazy">lazy</option>
           <option value="eager">eager</option>

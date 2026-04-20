@@ -6,17 +6,16 @@ import { ToolbarItem } from "../../ToolbarItem";
  * Distinct from GSAP "Scroll Effect" (pin / horizontal-scroll section).
  */
 export function ContainerOverflowSection() {
-  const { craftName, scrollEffect, overflowDragScroll, overflowAutoHideScrollbar } = useNode(
-    node => {
-      const p = node.data?.props || {};
-      return {
-        craftName: node.data?.name || node.data?.displayName,
-        scrollEffect: p.scrollEffect,
-        overflowDragScroll: p.overflowDragScroll,
-        overflowAutoHideScrollbar: p.overflowAutoHideScrollbar,
-      };
-    }
-  );
+  const { craftName, scrollEffect, dragScroll, autoHide } = useNode(node => {
+    const p = node.data?.props || {};
+    const overflow = p.overflow || {};
+    return {
+      craftName: node.data?.name || node.data?.displayName,
+      scrollEffect: p.scrollEffect,
+      dragScroll: overflow.dragScroll,
+      autoHide: overflow.autoHide,
+    };
+  });
 
   if (craftName !== "Container") return null;
 
@@ -35,7 +34,7 @@ export function ContainerOverflowSection() {
   return (
     <>
       <ToolbarItem
-        propKey="overflowDragScroll"
+        propKey="overflow.dragScroll"
         propType="component"
         type="toggle"
         label="Drag to scroll (published)"
@@ -43,19 +42,19 @@ export function ContainerOverflowSection() {
         on={true}
       />
       <ToolbarItem
-        propKey="overflowAutoHideScrollbar"
+        propKey="overflow.autoHide"
         propType="component"
         type="toggle"
         label="Auto-hide scrollbar"
         labelWidth="w-56"
         on={true}
       />
-      {(overflowDragScroll || overflowAutoHideScrollbar) && (
+      {(dragScroll || autoHide) && (
         <>
-          {overflowDragScroll && (
+          {dragScroll && (
             <>
               <ToolbarItem
-                propKey="overflowDragScrollSmoothing"
+                propKey="overflow.smoothing"
                 propType="component"
                 type="select"
                 label="Drag feel"
@@ -68,7 +67,7 @@ export function ContainerOverflowSection() {
                 <option value="0.28">Very fluid</option>
               </ToolbarItem>
               <ToolbarItem
-                propKey="overflowWheelScrollsHorizontal"
+                propKey="overflow.wheelHorizontal"
                 propType="component"
                 type="toggle"
                 label="Vertical wheel scrolls horizontally"
@@ -77,9 +76,9 @@ export function ContainerOverflowSection() {
               />
             </>
           )}
-          {overflowAutoHideScrollbar && (
+          {autoHide && (
             <ToolbarItem
-              propKey="overflowScrollbarHideDelay"
+              propKey="overflow.hideDelay"
               propType="component"
               type="number"
               label="Scrollbar hide delay (ms)"

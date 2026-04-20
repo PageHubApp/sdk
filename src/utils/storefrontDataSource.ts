@@ -11,6 +11,8 @@ export interface StorefrontUrlQuery {
   page?: number;
   minPrice?: number;
   maxPrice?: number;
+  /** Product detail page slug — merged into `dataSource.filter.slug` for `product` collection. */
+  slug?: string;
 }
 
 const STOREFRONT_COLLECTIONS = new Set([
@@ -53,6 +55,8 @@ export function parseStorefrontUrlQuery(
   if (minPrice !== undefined) out.minPrice = minPrice;
   const maxPrice = num("maxPrice");
   if (maxPrice !== undefined) out.maxPrice = maxPrice;
+  const slug = pick("slug")?.trim();
+  if (slug) out.slug = slug;
   return out;
 }
 
@@ -64,6 +68,10 @@ export function applyStorefrontUrlToDataSource(ds: any, url: StorefrontUrlQuery)
   if (!STOREFRONT_COLLECTIONS.has(ds?.collection)) return ds;
   if (ds.collection === "products.categories") return ds;
   const merged = { ...ds };
+  if (ds.collection === "product" && url.slug && !merged.filter?.slug) {
+    merged.filter = { ...(merged.filter || {}), slug: url.slug };
+    return merged;
+  }
   if (url.q && !merged.query) merged.query = url.q;
   if (url.category && !merged.category) merged.category = url.category;
   if (url.sort && !merged.sort) merged.sort = url.sort;

@@ -165,10 +165,11 @@ export const generatePattern = (props: any) => {
 // ─── Background URL ───
 
 export const getBackgroundUrl = (props: any, query: any = null) => {
-  if (!props.backgroundImage) return null;
+  const bg = props.background;
+  if (!bg?.image) return null;
 
-  const type = props.backgroundImageType;
-  const content = props.backgroundImage;
+  const type = bg.imageType;
+  const content = bg.image;
 
   if (content.startsWith("http") || content.startsWith("/") || content.startsWith("data:")) {
     return content;
@@ -206,7 +207,8 @@ export const applyPattern = (prop: any, props: any, settings: any) => {
 };
 
 export const applyBackgroundImage = (prop: any, props: any, settings: any, query: any = null) => {
-  if (!props.backgroundImage) return prop;
+  const bg = props.background;
+  if (!bg?.image) return prop;
 
   const _imgProp = { src: getBackgroundUrl(props, query) };
   if (!_imgProp.src) return prop;
@@ -214,13 +216,13 @@ export const applyBackgroundImage = (prop: any, props: any, settings: any, query
   prop.style = prop.style || {};
   prop.style.backgroundImage = `url(${_imgProp.src})`;
 
-  if (props.backgroundPriority) {
+  if (bg.priority) {
     const existingChildren = prop.children;
     const preloadImageElement = React.createElement("img", {
       src: _imgProp.src,
       alt: "",
       loading: "eager",
-      fetchPriority: props.backgroundFetchPriority || "high",
+      fetchPriority: bg.fetchPriority || "high",
       style: {
         position: "absolute",
         width: "1px",
@@ -244,28 +246,29 @@ export const applyLazyBackgroundImage = (
   query: any = null,
   lazyRef: any = null
 ) => {
-  if (!props.backgroundImage) return prop;
+  const bg = props.background;
+  if (!bg?.image) return prop;
 
   const _imgProp = { src: getBackgroundUrl(props, query) };
   if (!_imgProp.src) return prop;
 
   prop.style = prop.style || {};
 
-  if (props.backgroundLazy) {
+  if (bg.lazy) {
     prop["data-bg"] = _imgProp.src;
     prop["data-bg-loaded"] = "false";
-    if (props.backgroundPlaceholder) prop.style.backgroundColor = props.backgroundPlaceholder;
+    if (bg.placeholder) prop.style.backgroundColor = bg.placeholder;
     if (lazyRef) prop.ref = lazyRef;
   } else {
     prop.style.backgroundImage = `url(${_imgProp.src})`;
 
-    if (props.backgroundPriority) {
+    if (bg.priority) {
       const existingChildren = prop.children;
       const preloadImageElement = React.createElement("img", {
         src: _imgProp.src,
         alt: "",
         loading: "eager",
-        fetchPriority: props.backgroundFetchPriority || "high",
+        fetchPriority: bg.fetchPriority || "high",
         style: {
           position: "absolute",
           width: "1px",

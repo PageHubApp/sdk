@@ -14,6 +14,7 @@ import {
   PAGE_SETTINGS_FIELDS,
   pageSettingsDefaults,
   readSettingsProps,
+  writeSettingsProps,
 } from "./page-settings/fields";
 import { mergeSettingsTabs, visibleSettingsTabs } from "./settings/registry";
 import { SETTINGS_INPUT_CLASS, SETTINGS_SELECT_CLASS } from "./settings/settingsControlClasses";
@@ -104,7 +105,7 @@ function draftToPayload(
   allowCustom404Page: boolean
 ): PageSettingsPayload {
   const props: Record<string, any> = {};
-  for (const f of PAGE_SETTINGS_FIELDS) props[f.key] = snapshot[f.key];
+  writeSettingsProps(props, snapshot);
   return {
     displayName: snapshot.pageName,
     isHomePage: snapshot.isHomePage,
@@ -435,7 +436,7 @@ export function PageSettingsModal({
           actions.setProp(pageId, p => {
             p.isHomePage = snapshot.isHomePage;
             p.is404Page = effective404;
-            for (const f of PAGE_SETTINGS_FIELDS) p[f.key] = snapshot[f.key];
+            writeSettingsProps(p, snapshot);
 
             for (const tab of allTabs) {
               tab.onSave?.({

@@ -594,15 +594,16 @@ export function renderToHTML(
   // 8. Compute theme CSS and SEO data
   const themeCSS = generateThemeVars(rootProps);
 
-  const seoTitle = rootProps.pageTitle || rootProps.title || "";
-  const seoDescription = rootProps.pageDescription || rootProps.description || "";
+  const rootSeo = rootProps.seo || {};
+  const seoTitle = rootSeo.title || rootProps.title || "";
+  const seoDescription = rootSeo.description || rootProps.description || "";
   const seo =
-    seoTitle || seoDescription || rootProps.ogImage || rootProps.jsonLd
+    seoTitle || seoDescription || rootSeo.ogImage || rootSeo.jsonLd
       ? {
           title: seoTitle,
           description: seoDescription,
-          ...(rootProps.ogImage ? { ogImage: rootProps.ogImage } : {}),
-          ...(rootProps.jsonLd ? { jsonLd: rootProps.jsonLd } : {}),
+          ...(rootSeo.ogImage ? { ogImage: rootSeo.ogImage } : {}),
+          ...(rootSeo.jsonLd ? { jsonLd: rootSeo.jsonLd } : {}),
         }
       : null;
 
@@ -632,7 +633,7 @@ export function renderToHTML(
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${escapeHTML(title || rootProps.pageTitle || "")}</title>
+    <title>${escapeHTML(title || rootProps.seo?.title || "")}</title>
     ${fontLinks}
     ${extraHead}
     <style>

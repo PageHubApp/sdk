@@ -1,6 +1,6 @@
 /**
  * Parse a raw HTML string into a list of head-legal React-emittable tags.
- * Used by Embed.headCode/footCode and Background.props.header/footer to
+ * Used by Embed.headCode/footCode and Background.props.inject.{head,footer} to
  * hoist scripts/styles/etc. into the document head via next/head during SSR.
  */
 

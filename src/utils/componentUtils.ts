@@ -2,6 +2,8 @@
  * Utility functions for managing linked components
  */
 
+import { getBelongsTo, getRelationType, setRelationField } from "./relation";
+
 /**
  * Recursively set belongsTo relationship on all nodes in a cloned tree
  * Maps each cloned node to its corresponding master node
@@ -18,10 +20,9 @@ export const setRecursiveBelongsTo = (
 
   if (!clonedNode || !masterNode) return;
 
-  // Set belongsTo on this node
   actions.setProp(clonedNodeId, (prop: any) => {
-    prop.belongsTo = masterNodeId;
-    prop.relationType = "full";
+    setRelationField(prop, "belongsTo", masterNodeId);
+    setRelationField(prop, "relationType", "full");
 
     // Allow caller to set additional props (e.g., savedComponentName on root)
     if (additionalProps) {
@@ -29,7 +30,6 @@ export const setRecursiveBelongsTo = (
     }
   });
 
-  // Recursively set on children
   const clonedChildren = clonedNode.data.nodes || [];
   const masterChildren = masterNode.data.nodes || [];
 
@@ -49,12 +49,10 @@ export const checkIfAncestorLinked = (nodeId: string, query: any): boolean => {
   const node = query.node(nodeId).get();
   if (!node) return false;
 
-  // If this node is fully linked, return true
-  if (node.data.props?.belongsTo && node.data.props?.relationType !== "style") {
+  if (getBelongsTo(node.data.props) && getRelationType(node.data.props) !== "style") {
     return true;
   }
 
-  // Check parent
   if (node.data.parent) {
     return checkIfAncestorLinked(node.data.parent, query);
   }
@@ -70,12 +68,10 @@ export const getLinkedAncestorNode = (nodeId: string, query: any): any => {
   const node = query.node(nodeId).get();
   if (!node) return null;
 
-  // If this node is fully linked, return it
-  if (node.data.props?.belongsTo && node.data.props?.relationType !== "style") {
+  if (getBelongsTo(node.data.props) && getRelationType(node.data.props) !== "style") {
     return node;
   }
 
-  // Check parent
   if (node.data.parent) {
     return getLinkedAncestorNode(node.data.parent, query);
   }

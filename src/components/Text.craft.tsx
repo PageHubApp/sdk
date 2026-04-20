@@ -112,7 +112,7 @@ export const TextDef = defineComponent(
     category: "Content",
     settings: TextMainTab,
     defaultProps: {
-      richTextMode: "full",
+      richText: { mode: "full" },
     },
     toHTML,
     disable: [

@@ -246,8 +246,8 @@ export function collectClasses(className: string, ctx: StaticRenderContext): voi
 
 export function getInlineStyle(props: Record<string, any>): string {
   let styleObj = props.root?.style ? cssStringToObj(props.root.style) : null;
-  if (props.backgroundImage) {
-    styleObj = { ...(styleObj || {}), "background-image": `url(${props.backgroundImage})` };
+  if (props.background?.image) {
+    styleObj = { ...(styleObj || {}), "background-image": `url(${props.background.image})` };
   }
 
   // ── CSS animation inline style overrides ────────────────────────────

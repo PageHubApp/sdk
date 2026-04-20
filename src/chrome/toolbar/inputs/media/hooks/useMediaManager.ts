@@ -109,12 +109,11 @@ export function useMediaManager({
   });
 
   const rootNode = query.node(ROOT_NODE).get();
-  const rootProps = rootNode?.data?.props as Record<string, unknown> | undefined;
+  const rootProps = rootNode?.data?.props as Record<string, any> | undefined;
+  const design = rootProps?.design as { notes?: unknown; tags?: unknown } | undefined;
   const designContext = {
-    designNotes: typeof rootProps?.designNotes === "string" ? rootProps.designNotes : undefined,
-    designTags: Array.isArray(rootProps?.designTags)
-      ? (rootProps.designTags as string[])
-      : undefined,
+    designNotes: typeof design?.notes === "string" ? design.notes : undefined,
+    designTags: Array.isArray(design?.tags) ? (design.tags as string[]) : undefined,
   };
 
   const handleSearch = (q: string) => {

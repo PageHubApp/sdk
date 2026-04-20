@@ -123,16 +123,20 @@ function normalizeConnectors(input: unknown): SiteSettingsConnectorMap {
 
 function createDraftFromRoot(props: Record<string, any>): SiteSettingsDraft {
   const company = props.company || {};
-  const designTags = Array.isArray(props.designTags)
+  const design = props.design || {};
+  const seo = props.seo || {};
+  const inject = props.inject || {};
+  const favicon = seo.favicon || {};
+  const designTags = Array.isArray(design.tags)
     ? normalizeDesignTags(
-        props.designTags.filter((t: unknown): t is string => typeof t === "string")
+        design.tags.filter((t: unknown): t is string => typeof t === "string")
       )
     : [];
 
   return {
-    favicon: props.ico || "",
-    headerCode: props.header || "",
-    footerCode: props.footer || "",
+    favicon: favicon.href || "",
+    headerCode: inject.head || "",
+    footerCode: inject.footer || "",
     companyName: company.name || "",
     companyTagline: company.tagline || "",
     companyType: company.type || "",
@@ -141,7 +145,7 @@ function createDraftFromRoot(props: Record<string, any>): SiteSettingsDraft {
     companyPhone: company.phone || "",
     companyEmail: company.email || "",
     companyWebsite: company.website || "",
-    designNotes: typeof props.designNotes === "string" ? props.designNotes : "",
+    designNotes: typeof design.notes === "string" ? design.notes : "",
     designTags,
     customVariables: normalizeVariables(props.variables),
     integrations: normalizeIntegrations(props.integrations),
@@ -167,15 +171,25 @@ function getDraftSignature(draft: SiteSettingsDraft): string {
 }
 
 function applyDraftToProps(props: Record<string, any>, draft: SiteSettingsDraft) {
-  props.ico = draft.favicon || undefined;
+  // Favicon lives at seo.favicon.{href, type, content}. Keep existing seo.* fields (title/description/etc) intact.
+  const seo: Record<string, any> = { ...(props.seo || {}) };
+  const existingFavicon = seo.favicon || {};
   if (draft.favicon) {
-    props.icoType = "cdn";
+    seo.favicon = { ...existingFavicon, href: draft.favicon, type: "cdn" };
   } else {
-    delete props.icoType;
+    const nextFavicon = { ...existingFavicon };
+    delete nextFavicon.href;
+    delete nextFavicon.type;
+    if (Object.keys(nextFavicon).length) seo.favicon = nextFavicon;
+    else delete seo.favicon;
   }
+  props.seo = Object.keys(seo).length ? seo : undefined;
 
-  props.header = draft.headerCode;
-  props.footer = draft.footerCode;
+  // HTML head/body injection now lives under inject.{head, footer}.
+  const inject: Record<string, any> = {};
+  if (draft.headerCode) inject.head = draft.headerCode;
+  if (draft.footerCode) inject.footer = draft.footerCode;
+  props.inject = Object.keys(inject).length ? inject : undefined;
 
   props.company = {
     name: draft.companyName,
@@ -191,11 +205,12 @@ function applyDraftToProps(props: Record<string, any>, draft: SiteSettingsDraft)
 
   delete props.ai;
 
+  const design: Record<string, any> = {};
   const notesTrim = draft.designNotes.trim();
-  props.designNotes = notesTrim ? notesTrim.slice(0, 1200) : undefined;
-
+  if (notesTrim) design.notes = notesTrim.slice(0, 1200);
   const tagList = normalizeDesignTags(draft.designTags);
-  props.designTags = tagList.length ? tagList : undefined;
+  if (tagList.length) design.tags = tagList;
+  props.design = Object.keys(design).length ? design : undefined;
 
   const cleanVariables = draft.customVariables
     .map(variable => ({

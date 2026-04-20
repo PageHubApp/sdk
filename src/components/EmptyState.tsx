@@ -59,7 +59,7 @@ export const EmptyState = ({
 
   let addIcon = <TbPlus />;
 
-  if (nodeProps.type === "imageContainer" && !nodeProps.backgroundImage) {
+  if (nodeProps.type === "imageContainer" && !nodeProps.background?.image) {
     const ico = <ImageDefault tab="Container" props={nodeProps} />;
     icon = ico;
     addIcon = ico;

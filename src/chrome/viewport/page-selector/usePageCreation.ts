@@ -110,10 +110,14 @@ export function usePageCreation({
       }
 
       // ── Standalone mode: tree-first (no sharding) ──
-      const extraProps: Record<string, string> = {};
+      const extraProps: Record<string, any> = {};
       if (extra?.pageSlug) extraProps.pageSlug = extra.pageSlug;
-      if (extra?.pageTitle) extraProps.pageTitle = extra.pageTitle;
-      if (extra?.pageDescription) extraProps.pageDescription = extra.pageDescription;
+      if (extra?.pageTitle || extra?.pageDescription) {
+        extraProps.seo = {
+          ...(extra?.pageTitle ? { title: extra.pageTitle } : {}),
+          ...(extra?.pageDescription ? { description: extra.pageDescription } : {}),
+        };
+      }
 
       const newPage = React.createElement(Element, {
         canvas: true,

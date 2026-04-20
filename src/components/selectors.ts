@@ -1,3 +1,5 @@
+import type { BackgroundProps, DesignProps, RelationProps } from "./types";
+
 /** @deprecated Style props are now className tokens. Kept for hover pseudo-state typing. */
 export interface BaseStyleProps {
   flexDirection?: string;
@@ -87,9 +89,8 @@ export interface RootStyleProps {
 }
 
 export interface BaseSelectorProps {
-  belongsTo?: string;
-  hasMany?: string[];
-  relationType?: string;
+  /** Relationship graph for linked component instances. See {@link RelationProps}. */
+  relation?: RelationProps;
   url?: string;
   urlTarget?: string;
   className?: string;
@@ -104,15 +105,8 @@ export interface BaseSelectorProps {
   displayName?: string;
   canDelete?: boolean;
   canEditName?: boolean;
-  backgroundImage?: string;
-  backgroundImageType?: string;
-  backgroundPriority?: string;
-  backgroundFetchPriority?: "high" | "low" | "auto" | "";
-  backgroundLazy?: boolean;
-  backgroundPlaceholder?: string;
-
-  isLoading?: boolean;
-  loaded?: boolean;
+  /** Background image configuration. See {@link BackgroundProps}. */
+  background?: BackgroundProps;
 
   // Accessibility
   role?: string;
@@ -121,10 +115,8 @@ export interface BaseSelectorProps {
   "aria-describedby"?: string;
   "aria-live"?: "polite" | "assertive" | "off";
 
-  /** Editor/AI only — prose brief for models (merged with ROOT/ancestors in prompts). Not rendered. */
-  designNotes?: string;
-  /** Editor/AI only — semantic tags (not Tailwind). Not rendered. */
-  designTags?: string[];
+  /** Editor/AI only — design intent (notes + tags), merged with ROOT/ancestors in prompts. Not rendered. */
+  design?: DesignProps;
 }
 
 /**

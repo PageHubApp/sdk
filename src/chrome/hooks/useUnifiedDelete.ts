@@ -88,7 +88,7 @@ export const useUnifiedDelete = () => {
           // Delete all instances (clones) of this component first
           const allNodes = query.getSerializedNodes();
           Object.entries(allNodes).forEach(([nodeId, node]: [string, any]) => {
-            if (node.props?.belongsTo === component.rootNodeId) {
+            if (node.props?.relation?.belongsTo === component.rootNodeId) {
               // This is a clone instance - delete it
               actions.delete(nodeId);
             }

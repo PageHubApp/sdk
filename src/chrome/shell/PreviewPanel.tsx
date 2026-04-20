@@ -231,9 +231,9 @@ export function PreviewPanel({
         }))
     : [];
 
-  // Load Google Fonts from the preview content's ROOT header
+  // Load Google Fonts from the preview content's ROOT injected <head>
   useEffect(() => {
-    const header = content?.ROOT?.props?.header;
+    const header = content?.ROOT?.props?.inject?.head;
     if (!header) return;
     const parser = new DOMParser();
     const doc = parser.parseFromString(header, "text/html");
@@ -254,7 +254,7 @@ export function PreviewPanel({
     return () => {
       added.forEach(el => el.remove());
     };
-  }, [content?.ROOT?.props?.header]);
+  }, [content?.ROOT?.props?.inject?.head]);
 
   // Theme for the preview iframe: prefer ROOT from ai-draft; if palette missing/stale, match live #viewport (avoids milky editor chrome defaults).
   const previewCSS = useMemo(() => {

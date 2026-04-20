@@ -1,4 +1,5 @@
 import { getLinkedAncestorNode } from "@/utils/componentUtils";
+import { clearRelation, getBelongsTo, setRelationField } from "@/utils/relation";
 import { removeHasManyRelation } from "../../viewport/viewportExports";
 import { TbBoxModel2, TbLink, TbLinkOff, TbPalette, TbPencil } from "react-icons/tb";
 import { useSetAtomState } from "../../../utils/atoms";
@@ -14,10 +15,7 @@ export const ConvertToRegularComponent = ({ query, actions, id }) => (
     onClick={() => {
       const node = query.node(id).get();
       removeHasManyRelation(node, query, actions);
-      actions.setProp(id, prop => {
-        prop.belongsTo = "";
-        prop.relationType = "";
-      });
+      actions.setProp(id, prop => clearRelation(prop));
     }}
   />
 );
@@ -34,7 +32,7 @@ export const ConvertToStyledComponent = ({ actions, id }) => (
     icon={<TbPalette className="size-5" />}
     title="Style Only Mode"
     description="Edit styles while keeping other settings linked"
-    onClick={() => actions.setProp(id, prop => (prop.relationType = "style"))}
+    onClick={() => actions.setProp(id, prop => setRelationField(prop, "relationType", "style"))}
   />
 );
 
@@ -43,7 +41,7 @@ export const ConvertToContentComponent = ({ actions, id }) => (
     icon={<TbPencil className="size-5" />}
     title="Content Only Mode"
     description="Edit text and content while keeping styles linked"
-    onClick={() => actions.setProp(id, prop => (prop.relationType = "content"))}
+    onClick={() => actions.setProp(id, prop => setRelationField(prop, "relationType", "content"))}
   />
 );
 
@@ -55,7 +53,7 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
   const linkedNode = getLinkedAncestorNode(id, query);
 
   if (linkedNode) {
-    const linkedNodeId = linkedNode.data.props.belongsTo;
+    const linkedNodeId = getBelongsTo(linkedNode.data.props);
     const parent = query.node(linkedNodeId).get();
     if (parent) {
       // Get the component container (parent's parent if it's inside a component)
@@ -65,7 +63,7 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
       // Get the first child of the component container (the actual content node)
       const contentNodeId = isInComponentContainer
         ? componentContainer.data.nodes?.[0]
-        : props.belongsTo;
+        : getBelongsTo(props);
       const componentName =
         componentContainer?.data?.custom?.displayName ||
         parent.data.custom?.displayName ||

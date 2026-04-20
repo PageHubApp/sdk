@@ -6,35 +6,36 @@
  */
 
 export const setClonedProps = (props: any, query: any, exclude: string[] = []) => {
-  if (!props.belongsTo) {
+  const relation = props.relation;
+  if (!relation?.belongsTo) {
     return props;
   }
 
   try {
-    const masterNode = query.node(props.belongsTo).get();
+    const masterNode = query.node(relation.belongsTo).get();
     if (!masterNode) {
       return props;
     }
 
     const masterProps = { ...masterNode.data.props };
 
-    const propsToExclude = ["belongsTo", "relationType", "hasMany", "savedComponentName", "type"];
+    // The master's relation namespace is stripped; clone keeps its own.
+    const propsToExclude = ["relation", "savedComponentName", "type"];
     propsToExclude.forEach(key => {
       delete masterProps[key];
     });
 
-    if (props.relationType === "style") {
+    if (relation.relationType === "style") {
       return {
         ...props,
         ...masterProps,
         root: props.root,
         className: props.className,
-        belongsTo: props.belongsTo,
-        relationType: props.relationType,
+        relation: props.relation,
       };
     }
 
-    if (props.relationType === "content") {
+    if (relation.relationType === "content") {
       const contentProps = [
         "text",
         "url",
@@ -58,8 +59,7 @@ export const setClonedProps = (props: any, query: any, exclude: string[] = []) =
         ...props,
         ...masterProps,
         ...localContent,
-        belongsTo: props.belongsTo,
-        relationType: props.relationType,
+        relation: props.relation,
       };
     }
 
@@ -67,8 +67,7 @@ export const setClonedProps = (props: any, query: any, exclude: string[] = []) =
     return {
       ...props,
       ...masterProps,
-      belongsTo: props.belongsTo,
-      relationType: props.relationType,
+      relation: props.relation,
     };
   } catch (error) {
     console.error("[PageHub SDK] Error syncing cloned props:", error);
@@ -77,12 +76,13 @@ export const setClonedProps = (props: any, query: any, exclude: string[] = []) =
 };
 
 export const getClonedState = (props: any, state: any) => {
-  if (!props.belongsTo) {
+  const belongsTo = props.relation?.belongsTo;
+  if (!belongsTo) {
     return { enabled: state.options.enabled };
   }
   // Return master's props/children references — CraftJS re-renders the clone
   // when these references change (Immer creates new objects on mutation).
-  const masterNode = state.nodes[props.belongsTo];
+  const masterNode = state.nodes[belongsTo];
   return {
     enabled: state.options.enabled,
     masterProps: masterNode?.data?.props,

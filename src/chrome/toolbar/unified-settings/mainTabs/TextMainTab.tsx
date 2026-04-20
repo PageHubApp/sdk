@@ -37,7 +37,7 @@ export const TextMainTab = () => {
           label=""
         />
         <ToolbarItem
-          propKey="richTextMode"
+          propKey="richText.mode"
           propType="component"
           type="select"
           label="Editor profile"

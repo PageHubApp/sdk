@@ -12,7 +12,7 @@ export const DividerMainTab = () => {
   const propValues = useGetNode().data.props;
   const { actions, query } = useEditor();
 
-  if (propValues.relationType === "style") {
+  if (propValues.relation?.relationType === "style") {
     return (
       <ToolbarSection>
         <NoSettings query={query} actions={actions} id={id} />

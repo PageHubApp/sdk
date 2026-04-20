@@ -7,6 +7,14 @@ import React from "react";
 import generate from "../../utils/data/nameGenerator";
 import { DeleteMedia } from "./api";
 import { phStorage } from "../../utils/phStorage";
+import {
+  addHasMany,
+  clearRelation,
+  getBelongsTo,
+  getHasMany,
+  removeHasMany,
+  setRelationField,
+} from "../../utils/relation";
 
 const fromEntries = (pairs: [string, any][]) => {
   if (Object.fromEntries) return Object.fromEntries(pairs);
@@ -14,15 +22,11 @@ const fromEntries = (pairs: [string, any][]) => {
 };
 
 export const removeHasManyRelation = (node: any, query: any, actions: any) => {
-  if (node.data.props?.belongsTo) {
-    const belongsTo = query.node(node.data.props.belongsTo).get();
-    if (belongsTo) {
-      actions.setProp(
-        node.data.props.belongsTo,
-        (prop: any) => (prop.hasMany = (prop.hasMany || []).filter((_: string) => _ !== node.id))
-      );
-    }
-  }
+  const belongsToId = getBelongsTo(node.data.props);
+  if (!belongsToId) return;
+  const belongsTo = query.node(belongsToId).get();
+  if (!belongsTo) return;
+  actions.setProp(belongsToId, (prop: any) => removeHasMany(prop, node.id));
 };
 
 export const deleteNode = async (
@@ -37,15 +41,15 @@ export const deleteNode = async (
   const node = query.node(selected).get();
   if (node.data.props.canDelete === false) return;
 
-  if (node.data.props?.hasMany?.length) {
-    node.data.props.hasMany.forEach((cloneId: string) => {
+  const hasManyIds = getHasMany(node.data.props);
+  if (hasManyIds.length) {
+    hasManyIds.forEach((cloneId: string) => {
       try {
         const clone = query.node(cloneId).get();
         if (!clone) return;
         // Unlink the clone root
         actions.setProp(cloneId, (prop: any) => {
-          prop.belongsTo = null;
-          prop.relationType = "";
+          clearRelation(prop);
           prop.savedComponentName = "";
         });
         // Recursively unlink descendants
@@ -53,11 +57,8 @@ export const deleteNode = async (
           const parent = query.node(parentId).get();
           (parent?.data?.nodes || []).forEach((childId: string) => {
             const child = query.node(childId).get();
-            if (child?.data?.props?.belongsTo) {
-              actions.setProp(childId, (p: any) => {
-                p.belongsTo = null;
-                p.relationType = "";
-              });
+            if (getBelongsTo(child?.data?.props)) {
+              actions.setProp(childId, (p: any) => clearRelation(p));
             }
             unlinkDescendants(childId);
           });
@@ -205,8 +206,8 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
       );
       const cloneNode = query.node(clonedTree.rootNodeId).get();
       console.log("[saveHandler] after link:", {
-        belongsTo: cloneNode?.data?.props?.belongsTo,
-        relationType: cloneNode?.data?.props?.relationType,
+        belongsTo: cloneNode?.data?.props?.relation?.belongsTo,
+        relationType: cloneNode?.data?.props?.relation?.relationType,
       });
       actions.selectNode(clonedTree.rootNodeId);
     });
@@ -297,10 +298,7 @@ export const buildClonedTree = ({ tree, query, setProp, createLinks = true }: an
   if (linksToCreate.length > 0) {
     requestAnimationFrame(() => {
       linksToCreate.forEach(({ oldid, newNodeId }) => {
-        setProp(oldid, (prop: any) => {
-          prop.hasMany = prop.hasMany || [];
-          prop.hasMany.push(newNodeId);
-        });
+        setProp(oldid, (prop: any) => addHasMany(prop, newNodeId));
       });
     });
   }

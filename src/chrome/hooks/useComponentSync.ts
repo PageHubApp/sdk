@@ -9,6 +9,7 @@ import { useAtomValue } from "@zedux/react";
 import { ComponentsAtom } from "../../utils/lib";
 import { buildClonedTree } from "../viewport/viewportExports";
 import { setRecursiveBelongsTo } from "@/utils/componentUtils";
+import { setRelationField } from "../../utils/relation";
 
 const CONTENT_PROPS = [
   "text",
@@ -84,7 +85,7 @@ function rebuildLinkedInstances(masterNodeId: string, query: any, actions: any) 
   }> = [];
 
   Object.entries(allNodes).forEach(([nodeId, serializedNode]: [string, any]) => {
-    if (serializedNode.props?.belongsTo !== masterNodeId) return;
+    if (serializedNode.props?.relation?.belongsTo !== masterNodeId) return;
     try {
       const node = query.node(nodeId).get();
       if (!node) return;
@@ -92,7 +93,7 @@ function rebuildLinkedInstances(masterNodeId: string, query: any, actions: any) 
       const parent = query.node(parentId).get();
       if (!parent) return;
 
-      const rel = serializedNode.props.relationType;
+      const rel = serializedNode.props.relation?.relationType;
       let overrides: Record<string, any> | undefined;
 
       if (rel === "style") {
@@ -136,7 +137,7 @@ function rebuildLinkedInstances(masterNodeId: string, query: any, actions: any) 
           query,
           actions,
           (clonedNodeId, prop) => {
-            prop.relationType = instance.relationType;
+            setRelationField(prop, "relationType", instance.relationType);
             if (instance.overrides && clonedNodeId === clonedTree.rootNodeId) {
               Object.assign(prop, instance.overrides);
             }
