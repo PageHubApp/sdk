@@ -20,7 +20,6 @@ class PreviewErrorBoundary extends Component<{ children: React.ReactNode }, { er
 import { useResizable } from "../hooks/useResizable";
 import { generateDesignSystemCSSVariables } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
-import { getMaterialSymbolsUrlFromNodes } from "../../utils/data/collectGoogleIcons";
 import { sanitizeCraftNodeReferences } from "../../utils/sanitizeNodeMap";
 
 type Tab = "review" | "live";
@@ -256,25 +255,6 @@ export function PreviewPanel({
       added.forEach(el => el.remove());
     };
   }, [content?.ROOT?.props?.header]);
-
-  // Load Material Symbols font for Google icons used in preview
-  useEffect(() => {
-    const iconsUrl = getMaterialSymbolsUrlFromNodes(content);
-    if (!iconsUrl) return;
-    const existing = document.getElementById("google-icons-preview");
-    if (existing) {
-      (existing as HTMLLinkElement).href = iconsUrl;
-      return;
-    }
-    const el = document.createElement("link");
-    el.id = "google-icons-preview";
-    el.rel = "stylesheet";
-    el.href = iconsUrl;
-    document.head.appendChild(el);
-    return () => {
-      el.remove();
-    };
-  }, [content]);
 
   // Theme for the preview iframe: prefer ROOT from ai-draft; if palette missing/stale, match live #viewport (avoids milky editor chrome defaults).
   const previewCSS = useMemo(() => {

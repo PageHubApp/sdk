@@ -33,7 +33,7 @@ export const FontFamilyDialogAtom = atom("fontFamily", {
   originalValue: null,
 } as any);
 
-export const GoogleIconDialogAtom = atom("googleIconDialog", {
+export const IconPickerDialogAtom = atom("iconPickerDialog", {
   enabled: false,
   prefix: "",
   changed: null,

@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { Text as UiText } from "@pagehub/ui";
-import { addActionHandlers } from "../utils/clickControls";
+import { addActionHandlers, addCustomHandlers } from "../utils/clickControls";
 import { applyAttrs } from "../utils/applyAttrs";
 import {
   migrateAction,
@@ -157,6 +157,8 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   if (isHandlerAction(action) || action?.type === "scroll-to") {
     addActionHandlers(prop, action, enabled);
   }
+
+  addCustomHandlers(prop, props.handlers, enabled);
 
   if (enabled) {
     prop["data-bounding-box"] = enabled;

@@ -9,7 +9,7 @@ import { useIsolate, usePreview, useView } from "../core/store";
 import { ViewModeAtom } from "../utils/lib";
 import { hasPageIsolation } from "../utils/pageManagement";
 import { mergeAccessibilityProps } from "../utils/accessibility";
-import { addActionHandlers } from "../utils/clickControls";
+import { addActionHandlers, addCustomHandlers } from "../utils/clickControls";
 import { migrateAction, actionToHref, isHandlerAction, type NodeAction } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { Section, Box } from "@pagehub/ui";
@@ -571,6 +571,10 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
     prop.onSubmit = props.onSubmit;
     prop.target = props.target || "iframe";
   }
+
+  // After action + form setup so `handlers.onSubmit` composes with the form
+  // submit handler instead of being overwritten by it.
+  addCustomHandlers(prop, props.handlers, enabled);
 
   if (props.scrollEffect) prop["data-scroll-effect"] = props.scrollEffect;
   if (props.id || props.anchor) prop.id = props.id || props.anchor;

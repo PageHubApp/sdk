@@ -1,10 +1,10 @@
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { TbPointer } from "react-icons/tb";
 import { Button as UiButton } from "@pagehub/ui";
-import { addActionHandlers } from "../utils/clickControls";
+import { addActionHandlers, addCustomHandlers } from "../utils/clickControls";
 import { useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
 import { useSDKSafe } from "../core/context";
@@ -17,18 +17,7 @@ import {
   type NodeAction,
 } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
-import { resolveIcon } from "../utils/iconResolver";
-import {
-  registerMaterialSymbolIconUsage,
-  unregisterMaterialSymbolIconUsage,
-} from "../utils/materialSymbolsAutoLoad";
-import {
-  materialSymbolsOutlinedFontSpec,
-  PH_MS_FONT_PENDING_CLASS,
-  isMaterialSymbolsFontLoaded,
-  markMaterialSymbolsFontLoadedIfReady,
-  isMaterialSymbolsFontReady,
-} from "../utils/materialSymbolsReveal";
+import { useResolvedIcon } from "../utils/iconResolver";
 import { motionIt } from "../utils/lib";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
@@ -64,45 +53,6 @@ const defaultIcon = {
   position: "left" as const,
   size: "w-6 h-6",
   gap: "gap-2",
-};
-
-/** Tailwind width token on icon.size → text-* for Material Symbols glyph scale */
-const iconFontSizeMap: Record<string, string> = {
-  "w-0": "text-[0px]",
-  "w-px": "text-[1px]",
-  "w-0.5": "text-[2px]",
-  "w-1": "text-[4px]",
-  "w-1.5": "text-[6px]",
-  "w-2": "text-[8px]",
-  "w-2.5": "text-[10px]",
-  "w-3": "text-xs",
-  "w-3.5": "text-[14px]",
-  "w-4": "text-sm",
-  "w-5": "text-base",
-  "w-6": "text-xl",
-  "w-7": "text-2xl",
-  "w-8": "text-3xl",
-  "w-9": "text-[36px]",
-  "w-10": "text-4xl",
-  "w-11": "text-[44px]",
-  "w-12": "text-5xl",
-  "w-14": "text-[56px]",
-  "w-16": "text-6xl",
-  "w-20": "text-7xl",
-  "w-24": "text-8xl",
-  "w-28": "text-[112px]",
-  "w-32": "text-[128px]",
-  "w-36": "text-[144px]",
-  "w-40": "text-[160px]",
-  "w-44": "text-[176px]",
-  "w-48": "text-[192px]",
-  "w-52": "text-[208px]",
-  "w-56": "text-[224px]",
-  "w-60": "text-[240px]",
-  "w-64": "text-[256px]",
-  "w-72": "text-[288px]",
-  "w-80": "text-[320px]",
-  "w-96": "text-[384px]",
 };
 
 export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) => {
@@ -150,135 +100,11 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   props = setClonedProps(props, query);
 
-  const iconSizeEarly = props.icon?.size || "w-6 h-6";
-  const sizeKey = iconSizeEarly.split(" ")[0];
-  const isGoogleIcon = props.icon?.value?.startsWith("ref-google:");
-  const googleIconName =
-    isGoogleIcon && typeof props.icon?.value === "string"
-      ? props.icon.value.replace("ref-google:", "")
-      : null;
-
   const [isMounted, setIsMounted] = useState(false);
-  /** Google ligature icons: hide until Font Loading API reports the face (keeps slot via size classes). */
-  // Start true if any prior Button already confirmed the font is loaded (e.g. conditional visibility swap).
-  // Otherwise start false for Google icons — must match SSR (no document.fonts on server).
-  const sharedFlagAtMount = isGoogleIcon && isMaterialSymbolsFontLoaded();
-  const [materialSymbolsReady, setMaterialSymbolsReady] = useState(
-    !isGoogleIcon || sharedFlagAtMount
-  );
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  // Viewer/static: ensure Material Symbols stylesheet exists before font detection (sync with FOUC #pagehub-auto-material-symbols).
-  useLayoutEffect(() => {
-    if (enabled || !googleIconName) return;
-    registerMaterialSymbolIconUsage(googleIconName);
-    return () => unregisterMaterialSymbolIconUsage(googleIconName);
-  }, [enabled, googleIconName]);
-
-  // useLayoutEffect: runs before paint so the pending class is removed before the browser renders
-  useLayoutEffect(() => {
-    if (!isGoogleIcon) {
-      setMaterialSymbolsReady(true);
-      return;
-    }
-
-    // Already confirmed loaded (shared flag) — skip all checks.
-    if (isMaterialSymbolsFontLoaded()) {
-      setMaterialSymbolsReady(true);
-      return;
-    }
-
-    const desc = materialSymbolsOutlinedFontSpec(sizeKey);
-
-    // Fast path: font actually loaded (registered face + check passes).
-    if (markMaterialSymbolsFontLoadedIfReady(desc)) {
-      setMaterialSymbolsReady(true);
-      return;
-    }
-
-    // Slow path: font CSS may not have loaded yet (@font-face not registered).
-    // Use multiple detection strategies since document.fonts.load() resolves
-    // immediately with no result when no matching @font-face exists.
-    setMaterialSymbolsReady(false);
-    let cancelled = false;
-
-    const reveal = () => {
-      if (cancelled) return false;
-      if (markMaterialSymbolsFontLoadedIfReady(desc)) {
-        setMaterialSymbolsReady(true);
-        return true;
-      }
-      return false;
-    };
-
-    // 1. Listen for font loading completions — catches delayed CSS → @font-face registration
-    const onLoadingDone = () => {
-      if (reveal()) cleanup();
-    };
-    if (typeof document !== "undefined" && document.fonts) {
-      document.fonts.addEventListener("loadingdone", onLoadingDone);
-
-      // 2. Try direct load (works when @font-face already registered; empty result until CSS registers faces)
-      void document.fonts
-        .load(desc)
-        .then(loaded => {
-          if (loaded.length === 0 && !isMaterialSymbolsFontReady(desc)) return;
-          if (reveal()) cleanup();
-        })
-        .catch(() => {});
-    }
-
-    // 3. Local fallback: show ligatures so icon-only buttons are not blank forever — do NOT mark global loaded
-    const timer = window.setTimeout(() => {
-      if (!cancelled) {
-        setMaterialSymbolsReady(true);
-        cleanup();
-      }
-    }, 2500);
-
-    const cleanup = () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-      if (typeof document !== "undefined" && document.fonts) {
-        document.fonts.removeEventListener("loadingdone", onLoadingDone);
-      }
-    };
-
-    return cleanup;
-  }, [isGoogleIcon, sizeKey, googleIconName]);
-
-  // bfcache restore: re-check FontFaceSet without toggling pending on every visibility change
-  useEffect(() => {
-    if (!isGoogleIcon || typeof document === "undefined" || !document.fonts) return;
-
-    const desc = materialSymbolsOutlinedFontSpec(sizeKey);
-    let cancelled = false;
-
-    const onPageShow = (e: PageTransitionEvent) => {
-      if (cancelled || !e.persisted) return;
-      if (markMaterialSymbolsFontLoadedIfReady(desc)) {
-        setMaterialSymbolsReady(true);
-        return;
-      }
-      void document.fonts
-        .load(desc)
-        .then(() => {
-          if (!cancelled && markMaterialSymbolsFontLoadedIfReady(desc)) {
-            setMaterialSymbolsReady(true);
-          }
-        })
-        .catch(() => {});
-    };
-
-    window.addEventListener("pageshow", onPageShow);
-    return () => {
-      cancelled = true;
-      window.removeEventListener("pageshow", onPageShow);
-    };
-  }, [isGoogleIcon, sizeKey]);
 
   useScrollToSelected(id, enabled);
 
@@ -388,6 +214,8 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     addActionHandlers(prop, action, enabled, actionCtx);
   }
 
+  addCustomHandlers(prop, props.handlers, enabled);
+
   // Stamp data-action for runtime discovery (e.g. CartProvider badge injection on toggle-cart)
   if (action?.type && !enabled) {
     prop["data-action"] = action.type;
@@ -407,43 +235,26 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     }
   }
 
-  const iconSize = iconSizeEarly;
-  const fontSize = iconFontSizeMap[sizeKey] || "text-xl";
+  const iconSize = props.icon?.size || "w-6 h-6";
+  const iconElement = useResolvedIcon(props.icon?.value, query);
 
-  // Memoize icon resolution to avoid unnecessary calls
-  const iconElement = useMemo(
-    () => (props.icon?.value ? resolveIcon(props.icon.value, query) : null),
-    [props.icon?.value, query]
-  );
-
-  // Memoize icon class to avoid re-joining on every render
   const iconClass = useMemo(
     () =>
       [
         iconSize,
-        fontSize, // Add font-size for Material Symbols
         props.icon?.color || "fill-current",
         props.icon?.shadow,
         "flex",
         "items-center",
         "justify-center",
-        isGoogleIcon && "google-icons", // Add google-icons class for Material Symbols
-        isGoogleIcon && !materialSymbolsReady && PH_MS_FONT_PENDING_CLASS,
       ]
         .filter(Boolean)
         .join(" "),
-    [iconSize, fontSize, props.icon?.color, props.icon?.shadow, isGoogleIcon, materialSymbolsReady]
+    [iconSize, props.icon?.color, props.icon?.shadow],
   );
 
-  // Google icons: always render text so the browser applies the font in the background.
-  // Use color:transparent to hide raw ligature text — when font loads and we reveal,
-  // the glyph is already rendered. No insertion = no fallback-font-first-frame flash.
-  const iconPendingStyle = isGoogleIcon && !materialSymbolsReady
-    ? { color: "transparent" }
-    : undefined;
-
   const iconSpan = iconElement && (
-    <span className={iconClass} style={iconPendingStyle} aria-hidden="true">
+    <span className={iconClass} aria-hidden="true">
       {iconElement}
     </span>
   );

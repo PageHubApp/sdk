@@ -9,13 +9,13 @@ import {
 } from "../chrome/toolbar/unified-settings/mainTabs/ButtonMainTab";
 import { defineComponent } from "../define";
 import { migrateAction, actionToHref, actionTarget } from "../utils/action";
-import { iconRegistry } from "../utils/data/icon-registry";
-import { PH_GOOGLE_ICON_DATA_ATTR, PH_MS_FONT_PENDING_CLASS } from "../utils/materialSymbolsReveal";
+import { resolveIconSvgSync } from "../utils/icons/serverResolve";
 import {
   ariaAttrs,
   collectClasses,
   escapeAttr,
   escapeHTML,
+  handlerAttrs,
   staticClasses,
   tag,
   type ToHTMLFn,
@@ -49,7 +49,11 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const target = actionTarget(action);
   const t = href ? "a" : "button";
 
-  const attrs: Record<string, any> = { class: fullCls || undefined, ...ariaAttrs(props) };
+  const attrs: Record<string, any> = {
+    class: fullCls || undefined,
+    ...ariaAttrs(props),
+    ...handlerAttrs(props),
+  };
   if (t === "a" && href) {
     attrs.href = href;
     if (target) attrs.target = target;
@@ -60,36 +64,14 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   if (icon?.only && !attrs["aria-label"]) attrs["aria-label"] = props.text || "Button";
 
   let iconHTML = "";
-  if (icon?.value) {
-    const isGoogle = icon.value.startsWith("ref-google:");
-    if (isGoogle) {
-      const name = icon.value.replace("ref-google:", "");
-      const ic = [
-        icon.size,
-        icon.color || "fill-current",
-        "flex items-center justify-center google-icons",
-        PH_MS_FONT_PENDING_CLASS,
-      ]
-        .filter(Boolean)
-        .join(" ");
-      collectClasses(ic, ctx);
-      iconHTML = `<span class="${escapeAttr(ic)}" ${PH_GOOGLE_ICON_DATA_ATTR}="1" aria-hidden="true">${escapeHTML(name)}</span>`;
-    } else if (icon.value.startsWith("ref-icon:")) {
-      const key = icon.value.replace("ref-icon:", "");
-      const entry = iconRegistry[key];
-      if (entry) {
-        const ic = [icon.size, icon.color || "fill-current", "flex items-center justify-center"]
-          .filter(Boolean)
-          .join(" ");
-        collectClasses(ic, ctx);
-        iconHTML = `<span class="${escapeAttr(ic)}" aria-hidden="true"><svg fill="currentColor" viewBox="${entry.viewBox}" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">${entry.svg}</svg></span>`;
-      }
-    } else if (icon.value.startsWith("ref-")) {
+  if (icon?.value && icon.value.startsWith("ref-icon:")) {
+    const entry = resolveIconSvgSync(icon.value);
+    if (entry) {
       const ic = [icon.size, icon.color || "fill-current", "flex items-center justify-center"]
         .filter(Boolean)
         .join(" ");
       collectClasses(ic, ctx);
-      iconHTML = `<span class="${escapeAttr(ic)}"></span>`;
+      iconHTML = `<span class="${escapeAttr(ic)}" aria-hidden="true"><svg fill="currentColor" viewBox="${entry.viewBox}" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">${entry.svg}</svg></span>`;
     }
   }
 
@@ -132,7 +114,7 @@ export const ButtonDef = defineComponent(
         props: {
           text: "Icon",
           icon: {
-            value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>`,
+            value: "ref-icon:tb/TbStar",
             only: true,
           },
           className:

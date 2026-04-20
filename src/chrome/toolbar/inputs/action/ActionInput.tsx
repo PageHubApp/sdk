@@ -17,6 +17,7 @@ import {
   type ToggleThemeAction,
   migrateAction,
 } from "@/utils/action";
+import HandlersInput from "./HandlersInput";
 import { useElementPicker, type PickerFilter } from "./useElementPicker";
 
 const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
@@ -154,6 +155,8 @@ export default function ActionInput() {
       >
         {actionList.length === 0 ? "Add Action" : "Chain Another Action"}
       </ToolbarDashedButton>
+
+      <HandlersInput />
     </>
   );
 }

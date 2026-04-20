@@ -1,9 +1,9 @@
 import { useEditor } from "@craftjs/core";
-import { resolveIcon } from "../../../utils/iconResolver";
+import { useResolvedIcon } from "../../../utils/iconResolver";
 
 const ClientIconLoader = ({ value }) => {
   const { query } = useEditor();
-  return resolveIcon(value, query);
+  return useResolvedIcon(value, query);
 };
 
 export default ClientIconLoader;

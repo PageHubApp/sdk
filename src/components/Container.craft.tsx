@@ -16,7 +16,14 @@ import {
   HeaderFooterToggles,
 } from "../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab";
 import { defineComponent } from "../define";
-import { ariaAttrs, getInlineStyle, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
+import {
+  ariaAttrs,
+  getInlineStyle,
+  handlerAttrs,
+  staticClasses,
+  tag,
+  type ToHTMLFn,
+} from "../utils/static-html";
 import { Container } from "./Container";
 import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
 import { ContainerPaddingOverlay } from "./ContainerPaddingOverlay";
@@ -43,6 +50,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     style: getInlineStyle(props) || undefined,
     id: props.id || props.anchor || undefined,
     ...ariaAttrs(props),
+    ...handlerAttrs(props),
     action: t === "form" ? props.action || "" : undefined,
     method: t === "form" ? props.method || "POST" : undefined,
     open: t === "details" && props.open ? "" : undefined,

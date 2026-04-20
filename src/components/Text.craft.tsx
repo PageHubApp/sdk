@@ -8,7 +8,14 @@ import { TextMainTab } from "../chrome/toolbar/unified-settings/mainTabs/TextMai
 import { defineComponent } from "../define";
 import { LoremIpsum } from "../utils/data/loremIpsum";
 import { migrateAction, actionToHref, actionTarget } from "../utils/action";
-import { ariaAttrs, getInlineStyle, staticClasses, tag, type ToHTMLFn } from "../utils/static-html";
+import {
+  ariaAttrs,
+  getInlineStyle,
+  handlerAttrs,
+  staticClasses,
+  tag,
+  type ToHTMLFn,
+} from "../utils/static-html";
 import { HoverNodeController } from "./editor-chrome";
 import { Text } from "./Text";
 
@@ -47,6 +54,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         class: cls || undefined,
         style: style || undefined,
         ...ariaAttrs(props),
+        ...handlerAttrs(props),
       },
       linkTag
     );
@@ -73,6 +81,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         class: fitCls || undefined,
         style: fitStyle,
         ...ariaAttrs(props),
+        ...handlerAttrs(props),
       },
       text
     );
@@ -84,6 +93,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
       class: cls || undefined,
       style: style || undefined,
       ...ariaAttrs(props),
+      ...handlerAttrs(props),
     },
     text
   );

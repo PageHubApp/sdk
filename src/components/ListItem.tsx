@@ -1,19 +1,8 @@
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
-import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { TbCheck, TbTypography } from "react-icons/tb";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
-import { resolveIcon } from "../utils/iconResolver";
-import {
-  registerMaterialSymbolIconUsage,
-  unregisterMaterialSymbolIconUsage,
-} from "../utils/materialSymbolsAutoLoad";
-import {
-  materialSymbolsOutlinedFontSpec,
-  PH_MS_FONT_PENDING_CLASS,
-  isMaterialSymbolsFontLoaded,
-  markMaterialSymbolsFontLoadedIfReady,
-  isMaterialSymbolsFontReady,
-} from "../utils/materialSymbolsReveal";
+import { useResolvedIcon } from "../utils/iconResolver";
 import { motionIt } from "../utils/lib";
 import { applyAnimation, CSStoObj } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
@@ -22,16 +11,6 @@ import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import type { ListMarkerIconProps, ListMarkerStyle } from "./List";
-
-const iconFontSizeMap: Record<string, string> = {
-  "w-3": "text-xs",
-  "w-3.5": "text-[14px]",
-  "w-4": "text-sm",
-  "w-5": "text-base",
-  "w-6": "text-xl",
-  "w-7": "text-2xl",
-  "w-8": "text-3xl",
-};
 
 export interface ListItemProps extends BaseSelectorProps {
   text?: string;
@@ -52,7 +31,7 @@ function useParentListProps(id: string) {
         ordered: !!p.ordered,
         markerStyle: (p.markerStyle || "check") as ListMarkerStyle,
         markerIcon: (p.markerIcon || {
-          value: "ref-google:check",
+          value: "ref-icon:tb/TbCheck",
           size: "w-5 h-5",
         }) as ListMarkerIconProps,
       };
@@ -92,7 +71,7 @@ export const ListItem: UserComponent<ListItemProps> = (incomingProps: ListItemPr
 
   const ordered = parentList?.ordered === true;
   const inheritedMarker = parentList?.markerStyle || "check";
-  const inheritedIcon = parentList?.markerIcon || { value: "ref-google:check", size: "w-5 h-5" };
+  const inheritedIcon = parentList?.markerIcon || { value: "ref-icon:tb/TbCheck", size: "w-5 h-5" };
 
   const rawOverride = props.markerStyle;
   const effectiveMarker: ListMarkerStyle =
@@ -103,99 +82,19 @@ export const ListItem: UserComponent<ListItemProps> = (incomingProps: ListItemPr
   };
 
   const iconSizeEarly = effectiveIcon.size || "w-5 h-5";
-  const sizeKey = iconSizeEarly.split(/\s+/)[0] || "w-5 h-5";
-  const fontSize = iconFontSizeMap[sizeKey] || "text-xl";
-  const isGoogleIcon = effectiveIcon.value?.startsWith("ref-google:");
-  const googleIconName =
-    isGoogleIcon && typeof effectiveIcon.value === "string"
-      ? effectiveIcon.value.replace("ref-google:", "")
-      : null;
-
-  const sharedFlagAtMount = isGoogleIcon && isMaterialSymbolsFontLoaded();
-  const [materialSymbolsReady, setMaterialSymbolsReady] = useState(
-    !isGoogleIcon || sharedFlagAtMount
-  );
-
-  useLayoutEffect(() => {
-    if (enabled || !googleIconName) return;
-    registerMaterialSymbolIconUsage(googleIconName);
-    return () => unregisterMaterialSymbolIconUsage(googleIconName);
-  }, [enabled, googleIconName]);
-
-  useLayoutEffect(() => {
-    if (!isGoogleIcon || effectiveMarker !== "icon") {
-      setMaterialSymbolsReady(true);
-      return;
-    }
-    if (isMaterialSymbolsFontLoaded()) {
-      setMaterialSymbolsReady(true);
-      return;
-    }
-    const desc = materialSymbolsOutlinedFontSpec(sizeKey);
-    if (markMaterialSymbolsFontLoadedIfReady(desc)) {
-      setMaterialSymbolsReady(true);
-      return;
-    }
-    setMaterialSymbolsReady(false);
-    let cancelled = false;
-    const reveal = () => {
-      if (cancelled) return false;
-      if (markMaterialSymbolsFontLoadedIfReady(desc)) {
-        setMaterialSymbolsReady(true);
-        return true;
-      }
-      return false;
-    };
-    const onLoadingDone = () => {
-      if (reveal()) cleanup();
-    };
-    if (typeof document !== "undefined" && document.fonts) {
-      document.fonts.addEventListener("loadingdone", onLoadingDone);
-      void document.fonts
-        .load(desc)
-        .then(loaded => {
-          if (loaded.length === 0 && !isMaterialSymbolsFontReady(desc)) return;
-          if (reveal()) cleanup();
-        })
-        .catch(() => {});
-    }
-    const timer = window.setTimeout(() => {
-      if (!cancelled) {
-        setMaterialSymbolsReady(true);
-        cleanup();
-      }
-    }, 2500);
-    const cleanup = () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-      if (typeof document !== "undefined" && document.fonts) {
-        document.fonts.removeEventListener("loadingdone", onLoadingDone);
-      }
-    };
-    return cleanup;
-  }, [isGoogleIcon, sizeKey, googleIconName, effectiveMarker]);
-
-  const iconElement = useMemo(
-    () => (effectiveIcon.value ? resolveIcon(effectiveIcon.value, query) : null),
-    [effectiveIcon.value, query]
-  );
+  const iconElement = useResolvedIcon(effectiveIcon.value, query);
 
   const iconClass = useMemo(
     () =>
       [
         iconSizeEarly,
-        fontSize,
         "fill-current text-primary shrink-0",
         "flex items-center justify-center",
-        isGoogleIcon && "google-icons",
-        isGoogleIcon && !materialSymbolsReady && PH_MS_FONT_PENDING_CLASS,
       ]
         .filter(Boolean)
         .join(" "),
-    [iconSizeEarly, fontSize, isGoogleIcon, materialSymbolsReady]
+    [iconSizeEarly],
   );
-
-  const iconPendingStyle = isGoogleIcon && !materialSymbolsReady ? { color: "transparent" } : undefined;
 
   const renderMarker = () => {
     if (ordered) return null;
@@ -216,7 +115,7 @@ export const ListItem: UserComponent<ListItemProps> = (incomingProps: ListItemPr
         return <TbCheck className="text-primary mt-0.5 h-5 w-5 shrink-0" aria-hidden />;
       case "icon":
         return iconElement ? (
-          <span className={iconClass} style={iconPendingStyle} aria-hidden="true">
+          <span className={iconClass} aria-hidden="true">
             {iconElement}
           </span>
         ) : (

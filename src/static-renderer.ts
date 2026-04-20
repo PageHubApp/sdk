@@ -19,7 +19,8 @@ import type { StaticRenderContext, ToHTMLFn } from "./utils/static-html";
 import { processForStatic, type ResolvedComponentDef } from "./define";
 import { toCSSVarName, toPaletteCSSVarName } from "./utils/design/designSystemVars";
 import { resolveTheme } from "./utils/design/resolveTheme";
-import { getMaterialSymbolsUrlFromNodes } from "./utils/data/collectGoogleIcons";
+import { collectIconRefs } from "./utils/icons/collectIconRefs";
+import { preloadIcons } from "./utils/icons/serverResolve";
 import { buildStaticContext } from "./utils/conditions/context";
 import { evaluateConditionGroups, evaluateConditions } from "./utils/conditions/evaluate";
 import { CONDITION_EVAL_SCRIPT } from "./utils/conditions/clientScript";
@@ -300,8 +301,6 @@ export interface RenderToHTMLResult {
   scrollObserverScript: string;
   /** Design system CSS variables (:root block) — palette colors, spacing, fonts */
   themeCSS: string;
-  /** Material Symbols icon font URL, if any icons are used on the page */
-  iconFontUrl: string | null;
   /** SEO metadata extracted from ROOT props */
   seo: {
     title: string;
@@ -481,7 +480,6 @@ ${scrollObserverScript}
       fontUrls: [],
       scrollObserverScript,
       themeCSS: themeVars,
-      iconFontUrl: null,
       seo: null,
       renderError,
     };
@@ -492,7 +490,6 @@ ${scrollObserverScript}
     fontUrls: [],
     scrollObserverScript,
     themeCSS: "",
-    iconFontUrl: null,
     seo: null,
     renderError,
   };
@@ -569,6 +566,16 @@ export function renderToHTML(
     pureTailwind,
   };
 
+  // 5a. Preload referenced icon SVGs so Button.craft / ListItem.craft can
+  // resolve them via resolveIconSvgSync. preloadIcons uses sync fs reads
+  // internally, so cache population completes synchronously.
+  try {
+    const refs = collectIconRefs(nodes as any);
+    if (refs.length) void preloadIcons(refs);
+  } catch {
+    /* ignore */
+  }
+
   // 6. Render from ROOT
   const html = renderNode("ROOT", nodes, resolver, ctx);
 
@@ -584,15 +591,7 @@ export function renderToHTML(
     }
   }
 
-  let iconFontUrl: string | null = null;
-  try {
-    iconFontUrl = getMaterialSymbolsUrlFromNodes(nodes);
-    if (iconFontUrl) ctx.fontUrls.add(iconFontUrl);
-  } catch {
-    /* ignore */
-  }
-
-  // 8. Compute theme CSS, icon font URL, and SEO data
+  // 8. Compute theme CSS and SEO data
   const themeCSS = generateThemeVars(rootProps);
 
   const seoTitle = rootProps.pageTitle || rootProps.title || "";
@@ -653,7 +652,6 @@ ${scrollObserverScript}
       fontUrls: [...ctx.fontUrls],
       scrollObserverScript,
       themeCSS,
-      iconFontUrl,
       seo,
     };
   }
@@ -664,7 +662,6 @@ ${scrollObserverScript}
     fontUrls: [...ctx.fontUrls],
     scrollObserverScript,
     themeCSS,
-    iconFontUrl,
     seo,
   };
 }

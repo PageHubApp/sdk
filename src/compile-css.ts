@@ -474,7 +474,6 @@ export async function buildStaticPage(
   html: string;
   css: string;
   fontUrls: string[];
-  iconFontUrl: string | null;
   scrollObserverScript: string;
   seo: {
     title: string;
@@ -504,10 +503,6 @@ export async function buildStaticPage(
       .map(url => `<link rel="stylesheet" href="${url}" media="print" onload="this.media='all'" />`)
       .join("\n    ");
 
-    const iconLink = renderResult.iconFontUrl
-      ? `<link rel="stylesheet" href="${renderResult.iconFontUrl}" media="print" onload="this.media='all'" id="pagehub-auto-material-symbols" />`
-      : "";
-
     const pageTitle = title || renderResult.seo?.title || "";
 
     const metaDesc = renderResult.seo?.description
@@ -531,7 +526,6 @@ export async function buildStaticPage(
     ${metaDesc}
     ${ogImageMeta}
     ${fontLinks}
-    ${iconLink}
     ${jsonLdScript}
     <style>
 ${css}
@@ -547,7 +541,6 @@ ${renderResult.scrollObserverScript}
       html: doc,
       css,
       fontUrls: renderResult.fontUrls,
-      iconFontUrl: renderResult.iconFontUrl,
       scrollObserverScript: renderResult.scrollObserverScript,
       seo: renderResult.seo,
     };
@@ -557,7 +550,6 @@ ${renderResult.scrollObserverScript}
     html: renderResult.html,
     css,
     fontUrls: renderResult.fontUrls,
-    iconFontUrl: renderResult.iconFontUrl,
     scrollObserverScript: renderResult.scrollObserverScript,
     seo: renderResult.seo,
   };

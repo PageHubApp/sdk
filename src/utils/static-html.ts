@@ -143,6 +143,33 @@ export function ariaAttrs(props: Record<string, any>): Record<string, string | u
   return attrs;
 }
 
+// ─── Custom JS handlers (props.handlers) ───────────────────────────────────
+
+// React synthetic event names → native HTML event handler attributes. Most are
+// a simple lowercase; only onDoubleClick deviates (`dblclick`).
+const REACT_EVENT_TO_HTML: Record<string, string> = {
+  onDoubleClick: "ondblclick",
+};
+
+/**
+ * Emit author-declared `props.handlers` as native HTML event attributes
+ * (`onclick="..."`, `onmouseenter="..."`, ...) on the element. Browsers run
+ * these without any framework runtime. Mirrors `addCustomHandlers` on the
+ * React path so exported static HTML has the same behavior as hydrated pages.
+ */
+export function handlerAttrs(props: Record<string, any>): Record<string, string | undefined> {
+  const h = props.handlers;
+  if (!h || typeof h !== "object") return {};
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(h as Record<string, unknown>)) {
+    if (typeof v !== "string" || !v.trim()) continue;
+    if (!/^on[A-Z]/.test(k)) continue;
+    const attr = REACT_EVENT_TO_HTML[k] ?? k.toLowerCase();
+    out[attr] = v;
+  }
+  return out;
+}
+
 // ─── Class resolution ───────────────────────────────────────────────────────
 
 /** Responsive prefix regex — matches md:, lg:, xl:, 2xl: */

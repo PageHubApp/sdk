@@ -5,11 +5,13 @@ import React from "react";
 import { TbListDetails } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { ListItem } from "./ListItem";
+import { resolveIconSvgSync } from "../utils/icons/serverResolve";
 import {
   staticClasses,
   getInlineStyle,
   tag,
   ariaAttrs,
+  escapeAttr,
   escapeHTML,
   type ToHTMLFn,
   type StaticRenderContext,
@@ -37,10 +39,15 @@ function staticMarkerHtml(
     case "check":
       return `<span aria-hidden="true" class="text-primary mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center font-sans" style="line-height:1">&check;</span>`;
     case "icon": {
-      const raw = icon?.value || "ref-google:check";
-      const lig = raw.startsWith("ref-google:") ? raw.replace("ref-google:", "") : "check";
-      const sz = (icon?.size || "w-5 h-5").split(/\s+/)[0];
-      return `<span aria-hidden="true" class="material-symbols-outlined google-icons ${escapeHTML(sz)} shrink-0 text-primary">${escapeHTML(lig)}</span>`;
+      const raw = icon?.value;
+      const sz = (icon?.size || "w-5 h-5");
+      if (raw && raw.startsWith("ref-icon:")) {
+        const entry = resolveIconSvgSync(raw);
+        if (entry) {
+          return `<span aria-hidden="true" class="${escapeAttr(sz)} shrink-0 text-primary flex items-center justify-center fill-current"><svg fill="currentColor" viewBox="${entry.viewBox}" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">${entry.svg}</svg></span>`;
+        }
+      }
+      return `<span aria-hidden="true" class="text-primary mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center font-sans" style="line-height:1">&check;</span>`;
     }
     default:
       return "";
@@ -74,7 +81,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const parentList = parentListFromCtx(ctx);
   const ordered = parentList?.ordered === true;
   const inheritedMarker = (parentList?.markerStyle || "check") as ListMarkerStyle;
-  const inheritedIcon = parentList?.markerIcon || { value: "ref-google:check", size: "w-5 h-5" };
+  const inheritedIcon = parentList?.markerIcon || { value: "ref-icon:tb/TbCheck", size: "w-5 h-5" };
   const effectiveMarker = (
     props.markerStyle && props.markerStyle !== "inherit" ? props.markerStyle : inheritedMarker
   ) as ListMarkerStyle;

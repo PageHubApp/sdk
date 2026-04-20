@@ -1,43 +1,17 @@
 import { useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtomState } from "@zedux/react";
-import { GoogleIconDialogAtom } from "../../dialogAtoms";
-import googleIcons from "@/utils/data/googleIcons.json";
-import { getMediaContent, getStyleSheets } from "@/utils/lib";
-import { iconCategories } from "@/utils/data/icon-registry";
+import { IconPickerDialogAtom } from "../../dialogAtoms";
+import { getMediaContent } from "@/utils/lib";
 
-export const GOOGLE_CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "action", label: "Action" },
-  { id: "alert", label: "Alert" },
-  { id: "av", label: "Audio/Video" },
-  { id: "communication", label: "Communication" },
-  { id: "content", label: "Content" },
-  { id: "device", label: "Device" },
-  { id: "editor", label: "Editor" },
-  { id: "file", label: "File" },
-  { id: "hardware", label: "Hardware" },
-  { id: "home", label: "Home" },
-  { id: "image", label: "Image" },
-  { id: "maps", label: "Maps" },
-  { id: "navigation", label: "Navigation" },
-  { id: "notification", label: "Notification" },
-  { id: "places", label: "Places" },
-  { id: "social", label: "Social" },
-  { id: "toggle", label: "Toggle" },
-];
-
-export const ICON_STYLES = [
-  { id: "outlined", label: "Outlined", fill: 0 },
-  { id: "filled", label: "Filled", fill: 1 },
-];
-
-export const SVG_CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "solid", label: "Solid" },
-  { id: "regular", label: "Regular" },
-  { id: "brands", label: "Brands" },
-];
+export interface IconSetMeta {
+  id: string;
+  name: string;
+  projectUrl: string;
+  license: string;
+  licenseUrl: string;
+  count: number;
+}
 
 // Grid config
 export const COLUMN_COUNT = 5;
@@ -46,213 +20,160 @@ export const ROW_HEIGHT = 70;
 export const CONTAINER_WIDTH = 359;
 export const VISIBLE_ROWS = 6;
 
+// In-memory caches — shared across dialog opens.
+const setIndexCache: { data: IconSetMeta[] | null } = { data: null };
+const setNamesCache = new Map<string, string[]>();
+
+async function loadSetIndex(): Promise<IconSetMeta[]> {
+  if (setIndexCache.data) return setIndexCache.data;
+  const res = await fetch("/api/icon-manifest");
+  if (!res.ok) throw new Error("Failed to load icon set index");
+  const data = (await res.json()) as IconSetMeta[];
+  setIndexCache.data = data;
+  return data;
+}
+
+async function loadSetNames(setId: string): Promise<string[]> {
+  const cached = setNamesCache.get(setId);
+  if (cached) return cached;
+  const res = await fetch(`/api/icon-manifest?set=${encodeURIComponent(setId)}`);
+  if (!res.ok) throw new Error(`Failed to load manifest for set "${setId}"`);
+  const data = (await res.json()) as string[];
+  setNamesCache.set(setId, data);
+  return data;
+}
+
 export function useIconDialog() {
-  const [dialog, setDialog] = useAtomState(GoogleIconDialogAtom);
+  const [dialog, setDialog] = useAtomState(IconPickerDialogAtom);
   const { query } = useEditor();
 
-  const getInitialTab = (): "google" | "media" | "icons" => {
+  const getInitialTab = (): "media" | "icons" => {
     if (dialog.value?.startsWith("ref-image:")) return "media";
-    if (dialog.value?.startsWith("ref-icon:")) return "icons";
-    return "google";
+    return "icons";
   };
 
-  const [activeTab, setActiveTab] = useState<"google" | "media" | "icons">(getInitialTab());
+  const [activeTab, setActiveTab] = useState<"media" | "icons">(getInitialTab());
   const [selectedIcon, setSelectedIcon] = useState(dialog.value);
 
-  // Google state
-  const [category, setCategory] = useState("all");
-  const [searchValue, setSearchValue] = useState("");
-  const [iconStyle, setIconStyle] = useState("outlined");
-  const [fill, setFill] = useState(0);
-  const [weight, setWeight] = useState(400);
-  const [grade, setGrade] = useState(0);
-  const [opticalSize, setOpticalSize] = useState(24);
-  const [fontLoaded, setFontLoaded] = useState(false);
-
-  // SVG state
-  const [svgCategory, setSvgCategory] = useState("all");
-  const [svgSearchValue, setSvgSearchValue] = useState("");
-
-  // Media state
+  const [set, setSet] = useState<string>(() => {
+    if (dialog.value?.startsWith("ref-icon:")) {
+      const body = dialog.value.replace("ref-icon:", "");
+      const slash = body.indexOf("/");
+      if (slash > 0) return body.slice(0, slash);
+    }
+    return "tb";
+  });
+  const [search, setSearch] = useState("");
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
 
-  // Keyboard nav
-  const [focusedIconIndex, setFocusedIconIndex] = useState(0);
-  const [focusedSvgIconIndex, setFocusedSvgIconIndex] = useState(0);
-  const gridRef = useRef<any>(null);
-  const svgGridRef = useRef<any>(null);
+  const [setIndex, setSetIndex] = useState<IconSetMeta[] | null>(setIndexCache.data);
+  const [setNames, setSetNames] = useState<string[] | null>(setNamesCache.get(set) || null);
+  const [loadingNames, setLoadingNames] = useState(false);
 
-  // Client hydration guard
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const gridRef = useRef<any>(null);
+
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // ─── Filtered icons ───
+  useEffect(() => {
+    if (!dialog.enabled) return;
+    if (setIndex) return;
+    loadSetIndex().then(setSetIndex).catch(console.error);
+  }, [dialog.enabled, setIndex]);
 
-  const _icons = useMemo(() => {
-    if (category === "all") {
-      let all: string[] = [];
-      Object.values(googleIcons).forEach(cat => {
-        all = [...all, ...cat];
-      });
-      return all;
+  useEffect(() => {
+    if (!dialog.enabled) return;
+    const cached = setNamesCache.get(set);
+    if (cached) {
+      setSetNames(cached);
+      return;
     }
-    return (googleIcons as Record<string, string[]>)[category] || [];
-  }, [category]);
+    setLoadingNames(true);
+    loadSetNames(set)
+      .then(names => {
+        setSetNames(names);
+        setLoadingNames(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setSetNames([]);
+        setLoadingNames(false);
+      });
+  }, [set, dialog.enabled]);
 
   const filteredIcons = useMemo(() => {
-    if (!searchValue) return _icons;
-    return _icons.filter(
-      icon => icon.search(new RegExp(searchValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")) > -1
-    );
-  }, [_icons, searchValue]);
-
-  // Derive FA paths from registry keys for preview rendering
-  const svgIcons = useMemo(() => {
-    const toPath = (key: string) => `/icons/fa/${key}.svg`;
-    if (svgCategory === "all")
-      return [
-        ...(iconCategories.regular || []).map(toPath),
-        ...(iconCategories.brands || []).map(toPath),
-        ...(iconCategories.solid || []).map(toPath),
-      ];
-    return (iconCategories[svgCategory] || []).map(toPath);
-  }, [svgCategory]);
-
-  const filteredSvgIcons = useMemo(() => {
-    if (!svgSearchValue) return svgIcons;
-    return svgIcons.filter(
-      i => i.search(new RegExp(svgSearchValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")) > -1
-    );
-  }, [svgIcons, svgSearchValue]);
+    const names = setNames || [];
+    if (!search) return names;
+    const re = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    return names.filter(n => re.test(n));
+  }, [setNames, search]);
 
   const rowCount = Math.ceil(filteredIcons.length / COLUMN_COUNT);
-  const svgRowCount = Math.ceil(filteredSvgIcons.length / COLUMN_COUNT);
-
-  // ─── Effects ───
 
   useEffect(() => {
     if (dialog.enabled) setActiveTab(getInitialTab());
   }, [dialog.value, dialog.enabled]);
 
   useEffect(() => {
-    if (dialog.enabled) setSelectedIcon(dialog.value);
-    else {
-      setFontLoaded(false);
-      setActiveTab("google");
-      setSearchValue("");
-      setSvgSearchValue("");
+    if (dialog.enabled) {
+      setSelectedIcon(dialog.value);
+    } else {
+      setActiveTab("icons");
+      setSearch("");
       setShowMediaBrowser(false);
     }
   }, [dialog.enabled, dialog.value]);
 
-  // Load Google Material Symbols font
   useEffect(() => {
-    if (!dialog.enabled) return;
-    const href =
-      "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap";
-    const sheetrefs = getStyleSheets();
-    if (!sheetrefs.includes(href)) {
-      const preloadLink = document.createElement("link");
-      preloadLink.rel = "preload";
-      preloadLink.as = "style";
-      preloadLink.href = href;
-      preloadLink.onload = function () {
-        (this as HTMLLinkElement).onload = null;
-        (this as HTMLLinkElement).rel = "stylesheet";
-        if ("fonts" in document) {
-          document.fonts.ready.then(() => {
-            document.fonts
-              .load("400 24px Material Symbols Outlined")
-              .then(() => setFontLoaded(true))
-              .catch(() => setFontLoaded(true));
-          });
-        } else {
-          setTimeout(() => setFontLoaded(true), 1000);
-        }
-      };
-      document.getElementsByTagName("HEAD")[0].appendChild(preloadLink);
-    } else {
-      setFontLoaded(true);
-    }
-  }, [dialog.enabled]);
+    setFocusedIndex(0);
+  }, [activeTab, set, search]);
 
-  // Reset focus on filter changes
-  useEffect(() => {
-    setFocusedIconIndex(0);
-    setFocusedSvgIconIndex(0);
-  }, [activeTab, category, searchValue, svgCategory, svgSearchValue]);
+  const closeDialog = () => setDialog({ ...dialog, enabled: false });
 
-  // ─── Handlers ───
-
-  const changed = (iconName: string) => {
-    if (dialog.changed) {
-      const iconRef = `ref-google:${iconName}`;
-      setDialog({ ...dialog, value: iconRef, enabled: false });
-      dialog.changed(iconRef);
-    }
+  const emitChange = (iconRef: string) => {
+    if (!dialog.changed) return;
+    setDialog({ ...dialog, value: iconRef, enabled: false });
+    dialog.changed(iconRef);
   };
 
-  const handleIconClick = (iconName: string) => {
-    const iconRef = `ref-google:${iconName}`;
+  const handleIconClick = (name: string) => {
+    const iconRef = `ref-icon:${set}/${name}`;
     setSelectedIcon(iconRef);
     dialog.changed?.(iconRef);
   };
 
-  const handleIconDoubleClick = (iconName: string) => changed(iconName);
-
-  const handleSvgIconClick = (iconRef: string) => {
-    setSelectedIcon(iconRef);
-    dialog.changed?.(iconRef);
-  };
-
-  const handleSvgIconDoubleClick = (iconRef: string) => {
-    if (dialog.changed) {
-      setDialog({ ...dialog, value: iconRef, enabled: false });
-      dialog.changed(iconRef);
-    }
+  const handleIconDoubleClick = (name: string) => {
+    emitChange(`ref-icon:${set}/${name}`);
   };
 
   const handleMediaSelect = (mediaId: string) => {
-    if (!mediaId || !dialog.changed) return;
-    const imageRef = `ref-image:${mediaId}`;
-    setDialog({ ...dialog, value: imageRef, enabled: false });
-    dialog.changed(imageRef);
+    if (!mediaId) return;
+    emitChange(`ref-image:${mediaId}`);
     setShowMediaBrowser(false);
   };
 
   const handleSearch = (value: string) => {
-    setSearchValue(value);
+    setSearch(value);
     gridRef.current?.scrollTo({ scrollLeft: 0, scrollTop: 0 });
   };
 
-  const handleCategoryChange = (newCategory: string) => {
-    setCategory(newCategory);
+  const handleSetChange = (nextSet: string) => {
+    setSet(nextSet);
+    setSearch("");
     gridRef.current?.scrollTo({ scrollLeft: 0, scrollTop: 0 });
   };
-
-  const handleStyleChange = (style: string, fillValue: number) => {
-    setIconStyle(style);
-    setFill(fillValue);
-  };
-
-  const closeDialog = () => setDialog({ ...dialog, enabled: false });
-
-  // ─── Keyboard navigation ───
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!dialog.enabled) return;
-      const icons = activeTab === "google" ? filteredIcons : filteredSvgIcons;
-      const focusIdx = activeTab === "google" ? focusedIconIndex : focusedSvgIconIndex;
-      const ref = activeTab === "google" ? gridRef : svgGridRef;
-      const setIdx = activeTab === "google" ? setFocusedIconIndex : setFocusedSvgIconIndex;
-
+      if (!dialog.enabled || activeTab !== "icons") return;
+      const icons = filteredIcons;
       if (icons.length === 0) return;
 
       const scrollTo = (idx: number) => {
-        ref.current?.scrollToItem({
+        gridRef.current?.scrollToItem({
           rowIndex: Math.floor(idx / COLUMN_COUNT),
           columnIndex: idx % COLUMN_COUNT,
         });
@@ -261,24 +182,24 @@ export function useIconDialog() {
       switch (e.key) {
         case "ArrowRight":
           e.preventDefault();
-          if (focusIdx < icons.length - 1) {
-            setIdx(focusIdx + 1);
-            scrollTo(focusIdx + 1);
+          if (focusedIndex < icons.length - 1) {
+            setFocusedIndex(focusedIndex + 1);
+            scrollTo(focusedIndex + 1);
           }
           break;
         case "ArrowLeft":
           e.preventDefault();
-          if (focusIdx > 0) {
-            setIdx(focusIdx - 1);
-            scrollTo(focusIdx - 1);
+          if (focusedIndex > 0) {
+            setFocusedIndex(focusedIndex - 1);
+            scrollTo(focusedIndex - 1);
           }
           break;
         case "ArrowDown":
           e.preventDefault();
           {
-            const n = focusIdx + COLUMN_COUNT;
+            const n = focusedIndex + COLUMN_COUNT;
             if (n < icons.length) {
-              setIdx(n);
+              setFocusedIndex(n);
               scrollTo(n);
             }
           }
@@ -286,23 +207,17 @@ export function useIconDialog() {
         case "ArrowUp":
           e.preventDefault();
           {
-            const n = focusIdx - COLUMN_COUNT;
+            const n = focusedIndex - COLUMN_COUNT;
             if (n >= 0) {
-              setIdx(n);
+              setFocusedIndex(n);
               scrollTo(n);
             }
           }
           break;
         case "Enter":
           e.preventDefault();
-          if (activeTab === "google" && icons[focusIdx]) {
-            setSelectedIcon(`ref-google:${icons[focusIdx]}`);
-            changed(icons[focusIdx]);
-          } else if (activeTab === "icons" && icons[focusIdx]) {
-            const key = icons[focusIdx].replace(/^\/icons\/fa\//, "").replace(/\.svg$/, "");
-            const iconRef = `ref-icon:${key}`;
-            setSelectedIcon(iconRef);
-            handleSvgIconDoubleClick(iconRef);
+          if (icons[focusedIndex]) {
+            handleIconDoubleClick(icons[focusedIndex]);
           }
           break;
         case "Escape":
@@ -311,7 +226,7 @@ export function useIconDialog() {
           break;
       }
     },
-    [dialog, activeTab, filteredIcons, filteredSvgIcons, focusedIconIndex, focusedSvgIconIndex]
+    [dialog.enabled, activeTab, filteredIcons, focusedIndex, set],
   );
 
   useEffect(() => {
@@ -321,46 +236,27 @@ export function useIconDialog() {
   }, [dialog.enabled, handleKeyDown]);
 
   return {
-    // Dialog
     dialog,
     closeDialog,
     isClient,
-    // Tabs
     activeTab,
     setActiveTab,
-    // Google
-    category,
-    searchValue,
-    iconStyle,
-    fill,
-    weight,
-    grade,
-    opticalSize,
-    fontLoaded,
+    // Set selector
+    set,
+    setIndex,
+    handleSetChange,
+    // Icons grid
+    search,
+    setSearch,
     filteredIcons,
     rowCount,
     selectedIcon,
-    focusedIconIndex,
+    focusedIndex,
     gridRef,
+    loadingNames,
     handleSearch,
-    handleCategoryChange,
-    handleStyleChange,
     handleIconClick,
     handleIconDoubleClick,
-    setWeight,
-    setGrade,
-    setOpticalSize,
-    // SVG
-    svgCategory,
-    setSvgCategory,
-    svgSearchValue,
-    setSvgSearchValue,
-    filteredSvgIcons,
-    svgRowCount,
-    focusedSvgIconIndex,
-    svgGridRef,
-    handleSvgIconClick,
-    handleSvgIconDoubleClick,
     // Media
     showMediaBrowser,
     setShowMediaBrowser,

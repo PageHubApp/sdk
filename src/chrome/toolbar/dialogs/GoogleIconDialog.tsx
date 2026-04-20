@@ -1,14 +1,13 @@
-import { TbBrandGoogle, TbIcons, TbPhoto } from "react-icons/tb";
+import { TbIcons, TbPhoto } from "react-icons/tb";
 import { MediaManagerModal } from "../inputs/media/MediaManagerModal";
 import { LeftSidebarDialog } from "./LeftSidebarDialog";
-import { GoogleTab } from "./IconDialog/components/GoogleTab";
 import { MediaTab } from "./IconDialog/components/MediaTab";
-import { SvgIconsTab } from "./IconDialog/components/SvgIconsTab";
+import { IconsTab } from "./IconDialog/components/IconsTab";
 import { useIconDialog } from "./IconDialog/hooks/useIconDialog";
 
-export { GoogleIconDialogAtom } from "./dialogAtoms";
+export { IconPickerDialogAtom } from "./dialogAtoms";
 
-export function GoogleIconDialog() {
+export function IconPickerDialog() {
   const d = useIconDialog();
 
   if (typeof document === "undefined" || !d.isClient) return null;
@@ -21,18 +20,17 @@ export function GoogleIconDialog() {
         title="Select Icon"
         icon={<TbIcons />}
       >
-        {/* Tabs */}
         <div
           className="border-base-300 bg-neutral flex border-b"
           role="tablist"
           aria-label="Icon selection tabs"
         >
           <TabButton
-            active={d.activeTab === "google"}
-            onClick={() => d.setActiveTab("google")}
-            icon={<TbBrandGoogle size={18} />}
-            label="Google"
-            id="google"
+            active={d.activeTab === "icons"}
+            onClick={() => d.setActiveTab("icons")}
+            icon={<TbIcons size={18} />}
+            label="Icons"
+            id="icons"
           />
           <TabButton
             active={d.activeTab === "media"}
@@ -41,18 +39,10 @@ export function GoogleIconDialog() {
             label="Media"
             id="media"
           />
-          <TabButton
-            active={d.activeTab === "icons"}
-            onClick={() => d.setActiveTab("icons")}
-            icon={<TbIcons size={18} />}
-            label="Icons"
-            id="icons"
-          />
         </div>
 
-        {d.activeTab === "google" && <GoogleTab d={d} />}
+        {d.activeTab === "icons" && <IconsTab d={d} />}
         {d.activeTab === "media" && <MediaTab d={d} />}
-        {d.activeTab === "icons" && <SvgIconsTab d={d} />}
       </LeftSidebarDialog>
 
       {d.showMediaBrowser && (
@@ -66,6 +56,9 @@ export function GoogleIconDialog() {
     </>
   );
 }
+
+// Backwards-compat re-export so existing imports keep working during migration.
+export const GoogleIconDialog = IconPickerDialog;
 
 function TabButton({
   active,

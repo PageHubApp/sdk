@@ -1,6 +1,5 @@
 /**
  * Hook that manages all side-effects for the Background component:
- *  - Material Symbols icon font loading
  *  - Header / footer snippet injection
  *  - Global link styles
  *  - Design-system CSS variable injection
@@ -8,8 +7,7 @@
  * Extracted from Background.tsx.
  */
 import { ROOT_NODE } from "@craftjs/utils";
-import { useEffect, useRef } from "react";
-import { getMaterialSymbolsUrlFromNodes } from "../../utils/data/collectGoogleIcons";
+import { useEffect } from "react";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
 import { injectDesignSystemVars } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
@@ -35,44 +33,6 @@ export function useBackgroundEffects({
   nodeId,
 }: UseBackgroundEffectsOptions) {
   const isRootBackground = nodeId === ROOT_NODE;
-
-  // ---- Material Symbols icon font loading ----
-  const prevFontUrlRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!enabled || !isRootBackground) return;
-
-    try {
-      // Use raw editor state instead of getSerializedNodes() to avoid
-      // CraftJS invariant error when a node has an undefined component type.
-      const rawNodes = query.getState().nodes;
-      const propsMap: Record<string, { props?: Record<string, any> }> = {};
-      for (const [id, node] of Object.entries(rawNodes)) {
-        if ((node as any)?.data?.props) {
-          propsMap[id] = { props: (node as any).data.props };
-        }
-      }
-      const fontUrl = getMaterialSymbolsUrlFromNodes(propsMap);
-
-      if (fontUrl && fontUrl !== prevFontUrlRef.current) {
-        const fontId = "google-icons";
-        let link = document.getElementById(fontId) as HTMLLinkElement | null;
-        if (!link) {
-          link = document.createElement("link");
-          link.id = fontId;
-          link.rel = "stylesheet";
-          document.head.appendChild(link);
-        }
-        if (link.getAttribute("href") !== fontUrl) link.href = fontUrl;
-        prevFontUrlRef.current = fontUrl;
-      } else if (!fontUrl && prevFontUrlRef.current) {
-        const existingFont = document.getElementById("google-icons");
-        if (existingFont) existingFont.remove();
-        prevFontUrlRef.current = null;
-      }
-    } catch (error) {
-      console.error("Error loading Material Symbols:", error);
-    }
-  }, [enabled, query, nodeCount, isRootBackground]);
 
   // ---- Header snippet injection ----
   useEffect(() => {

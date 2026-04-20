@@ -8,7 +8,7 @@ import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
 import ClientIconLoader from "../../dialogs/ClientIconLoader";
-import { GoogleIconDialogAtom } from "../../dialogs/GoogleIconDialog";
+import { IconPickerDialogAtom } from "../../dialogs/GoogleIconDialog";
 import { useDialog } from "../../dialogs/toolHooks";
 import { MediaManagerModal } from "./MediaManagerModal";
 
@@ -23,7 +23,7 @@ export const IconDialogInput = ({
   labelWidth = "",
   inputWidth = "",
 }) => {
-  const [dialog, setDialog] = useAtomState(GoogleIconDialogAtom);
+  const [dialog, setDialog] = useAtomState(IconPickerDialogAtom);
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
   const { actions, query } = useEditor();
   const canvasView = useAtomValue(ViewAtom);
@@ -111,7 +111,7 @@ export const IconDialogInput = ({
             className="input flex h-12 w-[70px]! items-center justify-center overflow-hidden px-1"
           >
             <div
-              className="google-icons pointer-events-none flex max-h-full w-full min-w-0 items-center justify-center text-2xl leading-none"
+              className="pointer-events-none flex h-6 w-6 items-center justify-center text-base-content"
               aria-hidden="true"
             >
               <ClientIconLoader value={value} />
