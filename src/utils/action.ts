@@ -200,7 +200,10 @@ export function actionToHref(
       if (!action.pageId) return null;
       const base = resolvePageRef(`ref:${action.pageId}`, query, routerPath);
       if (!action.path) return base;
-      const suffix = action.path.startsWith("/") ? action.path : `/${action.path}`;
+      const p = action.path;
+      const isQueryOrHash = p.startsWith("?") || p.startsWith("#");
+      const suffix = p.startsWith("/") || isQueryOrHash ? p : `/${p}`;
+      if (isQueryOrHash) return `${base}${suffix}`;
       return base === "/" ? suffix : `${base}${suffix}`;
     }
 
