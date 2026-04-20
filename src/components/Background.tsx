@@ -33,13 +33,6 @@ export interface ContainerProps extends BaseSelectorProps {
     styleGuide?: Record<string, any>;
     typography?: any[];
   };
-  header?: string;
-  footer?: string;
-  pageTitle?: string;
-  pageDescription?: string;
-  ico?: string;
-  icoType?: string;
-  icoContent?: string;
   pageMedia?: Array<{
     id: string;
     type: string;
@@ -71,8 +64,6 @@ export interface ContainerProps extends BaseSelectorProps {
   integrations?: Record<string, Record<string, string>>;
   /** Server-side redirect rules */
   redirects?: Array<{ from: string; to: string; permanent?: boolean }>;
-  /** Default structured data for the site */
-  jsonLd?: Record<string, unknown>;
 }
 
 export function Background({
