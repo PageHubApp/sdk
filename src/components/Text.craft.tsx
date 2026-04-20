@@ -59,12 +59,12 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     // AutoTextSize is JS-only. Use cqw so text scales with the preview container
     // (ancestor needs container-type: inline-size — set on the preview wrapper).
     // Heuristic targets the live AutoTextSize behavior: shorter words get
-    // proportionally larger fonts so they fill the width. Cap is tuned for the
-    // strip variant (~1440px inner container) — at 11cqw a 2-char word is
-    // ~160px, closer to what live JS measurement produces.
+    // proportionally larger fonts so they fill the width. Cap kept low because
+    // Textfit nodes often live inside half-width columns — a single short word
+    // at high cqw overflows the column and wraps mid-word.
     const plainText = text.replace(/<[^>]*>/g, "").trim();
     const charCount = plainText.length || 1;
-    const cqw = Math.min(80 / charCount, 11).toFixed(1);
+    const cqw = Math.min(50 / charCount, 7).toFixed(1);
     const fitStyle = [style, `font-size: ${cqw}cqw; width: 100%`].filter(Boolean).join("; ");
 
     return tag(

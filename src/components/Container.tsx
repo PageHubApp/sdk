@@ -316,9 +316,12 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
   useEffect(() => {
     if (!ds || enabled) return;
     if (ds.scope) return;
-    if (ds.refetchOnUrlChange !== true) return;
     const fetcher = getClientDataFetcher();
     if (!fetcher) return;
+    // `refetchOnUrlChange` only gates the URL-listener effect above. Initial
+    // mount fetch runs for any connector ds whenever SSR didn't produce items
+    // (customer/me, customer/orders, or anything that can't be fetched on the
+    // server). Line ~362 guards against redundant fetches when SSR DID hydrate.
 
     // Read current URL params for client refetch (search/filter/pagination, etc.).
     let options: Record<string, any> | undefined;
@@ -432,10 +435,16 @@ export const Container = (incomingProps: Partial<ContainerProps>) => {
         );
       }
 
-      // Connector-backed repeater with no items (empty result or past-last-page):
-      // render nothing rather than falling through to raw children, which would
-      // emit the template card once with unresolved `{{item.*}}` literals.
-      if (!enabled && ds && !hasResolvedItems) {
+      // Connector-backed repeater with no items: render nothing only when we
+      // know the fetch produced nothing (server returned an empty array, or
+      // URL page is past the last page). For bindings that haven't fetched yet
+      // (server `items` is `null`, client fetcher still pending), fall through
+      // so the template card renders with `{{item.x || Fallback}}` literals —
+      // this is how customer-profile / customer-orders show a skeleton before
+      // client data lands, and how product templates preview in the editor.
+      const serverFetchedEmpty = Array.isArray(items) && items.length === 0;
+      const pastLastPage = (mergedDs?.page ?? 1) > 1;
+      if (!enabled && ds && !hasResolvedItems && (serverFetchedEmpty || pastLastPage)) {
         return (
           <RenderPattern
             props={props}

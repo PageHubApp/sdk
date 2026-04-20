@@ -235,7 +235,21 @@ export const replaceVariables = (
       if (fallback !== null) return fallback;
 
       const defaultValue = DEFAULT_VALUES[trimmedVar];
-      return defaultValue !== undefined ? defaultValue : match;
+      if (defaultValue !== undefined) return defaultValue;
+
+      // Unresolved `item.*` / `connector.*` / `auth.*` are context-dependent
+      // and leaking the raw `{{...}}` literal looks broken on live sites.
+      // Render as empty string so empty templates at least render cleanly
+      // (customer skeletons, pre-client-fetch repeater cards, etc.).
+      if (
+        trimmedVar.startsWith("item.") ||
+        trimmedVar.startsWith("connector.") ||
+        trimmedVar.startsWith("auth.")
+      ) {
+        return "";
+      }
+
+      return match;
     });
   } catch (e) {
     console.error("Error replacing variables:", e);
