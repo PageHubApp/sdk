@@ -21,6 +21,7 @@ export { FormElementDef } from "./FormElement.craft";
 export { GridDef } from "./Grid.craft";
 export { ImageDef } from "./Image.craft";
 export { ImageListDef } from "./ImageList.craft";
+export { LinkDef } from "./Link.craft";
 export { ListDef } from "./List.craft";
 export { ListItemDef } from "./ListItem.craft";
 export { MapDef } from "./Map.craft";

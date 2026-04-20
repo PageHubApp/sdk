@@ -28,6 +28,7 @@ import { Grid } from "../components/Grid";
 import { Header } from "../components/Header";
 import { Image } from "../components/Image";
 import { ImageList } from "../components/ImageList";
+import { Link } from "../components/Link";
 import { List } from "../components/List";
 import { ListItem } from "../components/ListItem";
 import { Map } from "../components/Map";
@@ -62,6 +63,7 @@ import {
   GridDef,
   ImageDef,
   ImageListDef,
+  LinkDef,
   ListDef,
   ListItemDef,
   MapDef,
@@ -109,6 +111,7 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Header: cv(Header),
   Image: cv(Image),
   ImageList: cv(ImageList),
+  Link: cv(Link),
   List: cv(List),
   ListItem: cv(ListItem),
   Map: cv(Map),
@@ -144,6 +147,7 @@ export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
   ImageListDef,
   ButtonDef,
   ButtonListDef,
+  LinkDef,
   ListDef,
   ListItemDef,
   TableDef,

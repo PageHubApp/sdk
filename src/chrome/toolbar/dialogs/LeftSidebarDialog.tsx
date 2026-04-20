@@ -19,6 +19,8 @@ interface LeftSidebarDialogProps {
   width?: string;
   position?: "fixed" | "absolute";
   top?: string;
+  /** Default true. Set false when the dialog should only close via the X button, Escape, or upstream state change (e.g. selected-node change). */
+  closeOnOutsideClick?: boolean;
 }
 
 /**
@@ -51,6 +53,7 @@ export function LeftSidebarDialog({
   width,
   position = "fixed",
   top,
+  closeOnOutsideClick = true,
 }: LeftSidebarDialogProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const focusTrapRef = useFocusTrap(isOpen);
@@ -76,6 +79,7 @@ export function LeftSidebarDialog({
   // Handle click outside
   useEffect(() => {
     if (!isOpen) return;
+    if (!closeOnOutsideClick) return;
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
@@ -94,7 +98,7 @@ export function LeftSidebarDialog({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, closeOnOutsideClick]);
 
   if (!isOpen) return null;
 

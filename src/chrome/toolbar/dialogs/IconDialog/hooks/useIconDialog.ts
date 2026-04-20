@@ -3,6 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAtomState } from "@zedux/react";
 import { IconPickerDialogAtom } from "../../dialogAtoms";
 import { getMediaContent } from "@/utils/lib";
+import { phStorage } from "../../../../../utils/phStorage";
+import { loadIconSprite } from "../../../../../utils/icons/IconSvgMapContext";
+import { deriveCategories, type IconCategory } from "../utils/deriveCategories";
 
 export interface IconSetMeta {
   id: string;
@@ -13,14 +16,17 @@ export interface IconSetMeta {
   count: number;
 }
 
-// Grid config
 export const COLUMN_COUNT = 5;
 export const COLUMN_WIDTH = 68;
 export const ROW_HEIGHT = 70;
 export const CONTAINER_WIDTH = 359;
 export const VISIBLE_ROWS = 6;
 
-// In-memory caches — shared across dialog opens.
+const RECENTS_KEY = "icon-recents";
+const FAVORITES_KEY = "icon-favorites";
+const RECENTS_CAP = 30;
+const FAVORITES_CAP = 100;
+
 const setIndexCache: { data: IconSetMeta[] | null } = { data: null };
 const setNamesCache = new Map<string, string[]>();
 
@@ -41,6 +47,11 @@ async function loadSetNames(setId: string): Promise<string[]> {
   const data = (await res.json()) as string[];
   setNamesCache.set(setId, data);
   return data;
+}
+
+function setIdFromRef(ref: string): string | null {
+  const slash = ref.indexOf("/");
+  return slash > 0 ? ref.slice(0, slash) : null;
 }
 
 export function useIconDialog() {
@@ -69,6 +80,9 @@ export function useIconDialog() {
   const [setIndex, setSetIndex] = useState<IconSetMeta[] | null>(setIndexCache.data);
   const [setNames, setSetNames] = useState<string[] | null>(setNamesCache.get(set) || null);
   const [loadingNames, setLoadingNames] = useState(false);
+
+  const [recents, setRecents] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   const [focusedIndex, setFocusedIndex] = useState(0);
   const gridRef = useRef<any>(null);
@@ -104,12 +118,45 @@ export function useIconDialog() {
       });
   }, [set, dialog.enabled]);
 
+  // Load recents/favorites from storage on dialog open
+  useEffect(() => {
+    if (!dialog.enabled) return;
+    const storedRecents = phStorage.getJSON<string[]>(RECENTS_KEY, []);
+    const storedFavorites = phStorage.getJSON<string[]>(FAVORITES_KEY, []);
+    if (Array.isArray(storedRecents)) setRecents(storedRecents);
+    if (Array.isArray(storedFavorites)) setFavorites(storedFavorites);
+  }, [dialog.enabled]);
+
+  // Prefetch the default set + any sets referenced by recents/favorites so
+  // cross-set cells render without a sprite fetch flicker.
+  useEffect(() => {
+    if (!dialog.enabled) return;
+    const sets = new Set<string>(["tb"]);
+    for (const r of recents) {
+      const s = setIdFromRef(r);
+      if (s) sets.add(s);
+    }
+    for (const f of favorites) {
+      const s = setIdFromRef(f);
+      if (s) sets.add(s);
+    }
+    for (const s of sets) {
+      loadIconSprite(s);
+      loadSetNames(s).catch(() => {});
+    }
+  }, [dialog.enabled, recents, favorites]);
+
   const filteredIcons = useMemo(() => {
     const names = setNames || [];
     if (!search) return names;
     const re = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     return names.filter(n => re.test(n));
   }, [setNames, search]);
+
+  const categories: IconCategory[] = useMemo(
+    () => deriveCategories(set, setNames || []),
+    [set, setNames],
+  );
 
   const rowCount = Math.ceil(filteredIcons.length / COLUMN_COUNT);
 
@@ -133,25 +180,58 @@ export function useIconDialog() {
 
   const closeDialog = () => setDialog({ ...dialog, enabled: false });
 
-  const emitChange = (iconRef: string) => {
-    if (!dialog.changed) return;
-    setDialog({ ...dialog, value: iconRef, enabled: false });
-    dialog.changed(iconRef);
-  };
+  const recordUse = useCallback((iconRef: string) => {
+    setRecents(prev => {
+      const updated = [iconRef, ...prev.filter(r => r !== iconRef)].slice(0, RECENTS_CAP);
+      phStorage.set(RECENTS_KEY, updated);
+      return updated;
+    });
+  }, []);
 
-  const handleIconClick = (name: string) => {
-    const iconRef = `ref-icon:${set}/${name}`;
-    setSelectedIcon(iconRef);
-    dialog.changed?.(iconRef);
-  };
+  const toggleFavorite = useCallback((iconRef: string) => {
+    setFavorites(prev => {
+      const has = prev.includes(iconRef);
+      const updated = has
+        ? prev.filter(r => r !== iconRef)
+        : [iconRef, ...prev].slice(0, FAVORITES_CAP);
+      phStorage.set(FAVORITES_KEY, updated);
+      return updated;
+    });
+  }, []);
 
-  const handleIconDoubleClick = (name: string) => {
-    emitChange(`ref-icon:${set}/${name}`);
-  };
+  const emitChange = useCallback(
+    (iconRef: string) => {
+      const fullRef = `ref-icon:${iconRef}`;
+      recordUse(iconRef);
+      if (!dialog.changed) return;
+      setDialog({ ...dialog, value: fullRef, enabled: false });
+      dialog.changed(fullRef);
+    },
+    [dialog, recordUse, setDialog],
+  );
+
+  const handleIconClick = useCallback(
+    (iconRef: string) => {
+      const fullRef = `ref-icon:${iconRef}`;
+      setSelectedIcon(fullRef);
+      dialog.changed?.(fullRef);
+    },
+    [dialog],
+  );
+
+  const handleIconDoubleClick = useCallback(
+    (iconRef: string) => {
+      emitChange(iconRef);
+    },
+    [emitChange],
+  );
 
   const handleMediaSelect = (mediaId: string) => {
     if (!mediaId) return;
-    emitChange(`ref-image:${mediaId}`);
+    if (!dialog.changed) return;
+    const fullRef = `ref-image:${mediaId}`;
+    setDialog({ ...dialog, value: fullRef, enabled: false });
+    dialog.changed(fullRef);
     setShowMediaBrowser(false);
   };
 
@@ -217,7 +297,7 @@ export function useIconDialog() {
         case "Enter":
           e.preventDefault();
           if (icons[focusedIndex]) {
-            handleIconDoubleClick(icons[focusedIndex]);
+            emitChange(`${set}/${icons[focusedIndex]}`);
           }
           break;
         case "Escape":
@@ -226,7 +306,7 @@ export function useIconDialog() {
           break;
       }
     },
-    [dialog.enabled, activeTab, filteredIcons, focusedIndex, set],
+    [dialog.enabled, activeTab, filteredIcons, focusedIndex, set, emitChange],
   );
 
   useEffect(() => {
@@ -241,11 +321,10 @@ export function useIconDialog() {
     isClient,
     activeTab,
     setActiveTab,
-    // Set selector
     set,
     setIndex,
+    setNames,
     handleSetChange,
-    // Icons grid
     search,
     setSearch,
     filteredIcons,
@@ -257,11 +336,13 @@ export function useIconDialog() {
     handleSearch,
     handleIconClick,
     handleIconDoubleClick,
-    // Media
+    recents,
+    favorites,
+    toggleFavorite,
+    categories,
     showMediaBrowser,
     setShowMediaBrowser,
     handleMediaSelect,
-    // Helpers
     query,
     getMediaContent,
   };

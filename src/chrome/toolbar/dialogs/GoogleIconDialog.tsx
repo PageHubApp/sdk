@@ -19,6 +19,7 @@ export function IconPickerDialog() {
         onClose={d.closeDialog}
         title="Select Icon"
         icon={<TbIcons />}
+        closeOnOutsideClick={false}
       >
         <div
           className="border-base-300 bg-neutral flex border-b"

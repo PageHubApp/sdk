@@ -347,6 +347,7 @@ export { FormElement } from "./components/FormElement";
 export { Header } from "./components/Header";
 export { Image } from "./components/Image";
 export { ImageList } from "./components/ImageList";
+export { Link } from "./components/Link";
 export { List } from "./components/List";
 export { ListItem } from "./components/ListItem";
 export { Map } from "./components/Map";
