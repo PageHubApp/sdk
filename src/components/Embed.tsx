@@ -7,6 +7,7 @@ import { Box } from "@pagehub/ui";
 import { motionIt } from "../utils/lib";
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { useScrollToSelected } from "./componentHooks";
+import { InjectedHeadTags, InjectedBodyTags } from "./InjectedHeadTags";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
@@ -176,6 +177,23 @@ export interface EmbedProps extends BaseSelectorProps {
   /** @deprecated Use `code` instead. Kept for backward compatibility. */
   videoId?: string;
   title?: string;
+  /**
+   * HTML hoisted into the document <head> during SSR. Scripts, styles,
+   * meta, link, title tags are parsed into real React elements so <script>
+   * actually executes (unlike `code`, which renders via innerHTML).
+   * Identical snippets across multiple Embeds are deduped by next/head.
+   */
+  headCode?: string;
+  /**
+   * HTML rendered inline where the Embed sits. Scripts emitted as real
+   * React elements so they execute at HTML-parse time.
+   */
+  footCode?: string;
+  /**
+   * When true, headCode/footCode emit during editor mode too. Default false
+   * so third-party widgets (Cal popups, Intercom, etc.) don't fire while designing.
+   */
+  runInEditor?: boolean;
 }
 
 /**
@@ -258,9 +276,20 @@ export const Embed = (incomingProps: EmbedProps) => {
     }
   }
 
-  return React.createElement(
+  const shouldInject = !enabled || props.runInEditor === true;
+  const box = React.createElement(
     motionIt(props, Box, enabled),
     applyAnimation({ ...prop, key: id }, props, null, enabled)
+  );
+
+  if (!shouldInject || (!props.headCode && !props.footCode)) return box;
+
+  return (
+    <>
+      {props.headCode ? <InjectedHeadTags html={props.headCode} /> : null}
+      {box}
+      {props.footCode ? <InjectedBodyTags html={props.footCode} /> : null}
+    </>
   );
 };
 

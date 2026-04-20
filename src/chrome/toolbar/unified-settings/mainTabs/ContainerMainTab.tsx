@@ -1,4 +1,3 @@
-import { useNode } from "@craftjs/core";
 import { TbSection } from "react-icons/tb";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { BackgroundSettingsInput } from "../../inputs/color/BackgroundSettingsInput";
@@ -8,7 +7,6 @@ import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useGetNode } from "../../dialogs/toolHooks";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
-import { useSDK } from "../../../../core/context";
 
 import { useNodeTypeHelpers } from "@/chrome/canvas/hooks/useNodeType";
 import { useEditor } from "@craftjs/core";
@@ -65,15 +63,6 @@ export const HeaderFooterToggles = () => {
   );
 };
 
-/** Renders the host-provided data source section via editorChromeSlots. */
-const DataSourceSlot = () => {
-  const { id } = useNode();
-  const { config } = useSDK();
-  const render = config.editorChromeSlots?.renderDataSourceSection;
-  if (!render) return null;
-  return <>{render({ nodeId: id })}</>;
-};
-
 export const ContainerMainTab = () => {
   const node = useGetNode();
   const props = node.data?.props;
@@ -117,7 +106,6 @@ export const ContainerMainTab = () => {
             <LayoutPresetInput lp={layoutPreset} />
           ) : null,
       })}
-      <DataSourceSlot />
     </>
   );
 };

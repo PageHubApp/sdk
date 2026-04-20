@@ -1,4 +1,5 @@
 import { useEditor, useNode } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
 import { usePreview, useView } from "../core/store";
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 
@@ -15,6 +16,7 @@ import { PaletteProvider } from "../utils/design/PaletteContext";
 import { RenderPattern, inlayProps } from "./componentHooks";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import { useBackgroundEffects } from "./Background/useBackgroundEffects";
+import { InjectedHeadTags, InjectedBodyTags } from "./InjectedHeadTags";
 
 export interface NamedColor {
   name: string;
@@ -150,8 +152,11 @@ export function Background({
     prop["main-node"] = "true";
   }
 
+  const isRoot = id === ROOT_NODE;
+
   prop.children = (
     <PaletteProvider palette={resolveTheme(props).palette}>
+      {isRoot && props.header ? <InjectedHeadTags html={props.header} /> : null}
       <RenderPattern
         props={props}
         settings={settings}
@@ -171,6 +176,7 @@ export function Background({
             />
           ) : null)}
       </RenderPattern>
+      {isRoot && props.footer ? <InjectedBodyTags html={props.footer} /> : null}
     </PaletteProvider>
   );
 

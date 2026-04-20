@@ -217,6 +217,7 @@ const BUILT_IN_NAMES = new Set([
   "ButtonList",
   "Container",
   "ContainerGroup",
+  "Data",
   "Divider",
   "Dropdown",
   "Embed",

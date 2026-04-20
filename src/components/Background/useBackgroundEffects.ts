@@ -1,8 +1,10 @@
 /**
  * Hook that manages all side-effects for the Background component:
- *  - Header / footer snippet injection
  *  - Global link styles
  *  - Design-system CSS variable injection
+ *
+ * Header/footer snippet injection is now emitted via next/head in Background.tsx
+ * (InjectedHeadTags / InjectedBodyTags) so scripts land in initial SSR HTML.
  *
  * Extracted from Background.tsx.
  */
@@ -11,10 +13,8 @@ import { useEffect } from "react";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
 import { injectDesignSystemVars } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
-import { isCssValid, isJsValid } from "../../utils/lib";
 
 import type { ContainerProps, NamedColor } from "../Background";
-import { addElementsToHead } from "./headInjection";
 
 interface UseBackgroundEffectsOptions {
   enabled: boolean;
@@ -33,26 +33,6 @@ export function useBackgroundEffects({
   nodeId,
 }: UseBackgroundEffectsOptions) {
   const isRootBackground = nodeId === ROOT_NODE;
-
-  // ---- Header snippet injection ----
-  useEffect(() => {
-    if (!enabled || !isRootBackground) return;
-    const head = document.getElementsByTagName("head")[0];
-    const elements = addElementsToHead(props.header, head, isCssValid, isJsValid);
-    return () => {
-      elements?.forEach(el => head.removeChild(el));
-    };
-  }, [props.header, enabled, isRootBackground]);
-
-  // ---- Footer snippet injection ----
-  useEffect(() => {
-    if (!enabled || !isRootBackground) return;
-    const head = (document.querySelector(".pagehub-sdk-root") || document.body) as HTMLElement;
-    const elements = addElementsToHead(props.footer, head, isCssValid, isJsValid);
-    return () => {
-      elements?.forEach(el => head.removeChild(el));
-    };
-  }, [props.footer, enabled, isRootBackground]);
 
   // ---- Global link styles ----
   useEffect(() => {

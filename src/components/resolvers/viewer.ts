@@ -17,6 +17,7 @@ import { ConditionalContainer } from "../ConditionalContainer";
 import { CookieConsent } from "../CookieConsent";
 import { Container } from "../Container";
 import { ContainerGroup } from "../ContainerGroup";
+import { Data } from "../Data";
 import { Divider } from "../Divider";
 import { Dropdown } from "../Dropdown";
 import { Embed } from "../Embed";
@@ -58,6 +59,7 @@ export const viewerResolver = {
   CookieConsent: cv(CookieConsent),
   Container: cv(Container),
   ContainerGroup: cv(ContainerGroup),
+  Data: cv(Data),
   Divider: cv(Divider),
   Dropdown: cv(Dropdown),
   Embed: cv(Embed),

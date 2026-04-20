@@ -18,6 +18,7 @@ import { CookieConsent } from "../components/CookieConsent";
 import { ConditionalContainer } from "../components/ConditionalContainer";
 import { Container } from "../components/Container";
 import { ContainerGroup } from "../components/ContainerGroup";
+import { Data } from "../components/Data";
 import { Divider } from "../components/Divider";
 import { Dropdown } from "../components/Dropdown";
 import { Embed } from "../components/Embed";
@@ -56,6 +57,7 @@ import {
   CookieConsentDef,
   ContainerDef,
   ContainerGroupDef,
+  DataDef,
   DividerDef,
   DropdownDef,
   EmbedDef,
@@ -102,6 +104,7 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   CookieConsent: cv(CookieConsent),
   Container: cv(Container),
   ContainerGroup: cv(ContainerGroup),
+  Data: cv(Data),
   Divider: cv(Divider),
   Dropdown: cv(Dropdown),
   Embed: cv(Embed),

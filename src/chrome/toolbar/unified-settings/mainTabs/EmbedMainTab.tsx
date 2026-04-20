@@ -189,6 +189,32 @@ export const EmbedMainTab = () => {
             description="Override the auto-generated embed code."
           />
         )}
+        <ToolbarItem
+          propKey="headCode"
+          propType="component"
+          type="codemirror"
+          rows={6}
+          label="Head code"
+          labelHide={false}
+          description="Scripts, styles, meta tags rendered into <head> during SSR. Deduped across Embeds — paste the same snippet in multiple blocks, emitted once."
+        />
+        <ToolbarItem
+          propKey="footCode"
+          propType="component"
+          type="codemirror"
+          rows={6}
+          label="Footer code"
+          labelHide={false}
+          description="Scripts rendered inline where this Embed sits. Useful when the widget needs surrounding DOM to exist before init."
+        />
+        <ToolbarItem
+          propKey="runInEditor"
+          propType="component"
+          type="checkbox"
+          label="Run in editor"
+          labelHide={false}
+          description="Let head/footer scripts execute while editing. Off by default — prevents popups and widgets firing during design."
+        />
       </ToolbarSection>
     ),
   });

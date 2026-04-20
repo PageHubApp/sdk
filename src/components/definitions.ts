@@ -13,6 +13,7 @@ export { CookieConsentDef } from "./CookieConsent.craft";
 export { ConditionalContainerDef } from "./ConditionalContainer.craft";
 export { ContainerDef, COMPONENT_EXTRA_PRESETS } from "./Container.craft";
 export { ContainerGroupDef } from "./ContainerGroup.craft";
+export { DataDef } from "./Data.craft";
 export { DividerDef } from "./Divider.craft";
 export { DropdownDef } from "./Dropdown.craft";
 export { EmbedDef } from "./Embed.craft";

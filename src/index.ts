@@ -338,6 +338,7 @@ export { Button } from "./components/Button";
 export { ButtonList } from "./components/ButtonList";
 export { Container } from "./components/Container";
 export { ContainerGroup } from "./components/ContainerGroup";
+export { Data } from "./components/Data";
 export { Divider } from "./components/Divider";
 export { Dropdown } from "./components/Dropdown";
 export { Embed } from "./components/Embed";
