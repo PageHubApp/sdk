@@ -49,6 +49,31 @@ const SPACING_DENSITY_NAMES: Record<string, string> = {
 };
 
 /**
+ * Split a CSS shorthand value on top-level whitespace, treating balanced
+ * parentheses as atomic. So `"0rem clamp(1rem, 4vw, 2rem)"` yields
+ * `["0rem", "clamp(1rem, 4vw, 2rem)"]`, not 4 pieces.
+ */
+function splitTopLevel(value: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let buf = "";
+  for (const ch of value) {
+    if (ch === "(") depth++;
+    else if (ch === ")") depth = Math.max(0, depth - 1);
+    if (depth === 0 && /\s/.test(ch)) {
+      if (buf) {
+        parts.push(buf);
+        buf = "";
+      }
+      continue;
+    }
+    buf += ch;
+  }
+  if (buf) parts.push(buf);
+  return parts;
+}
+
+/**
  * Convert a name to a valid CSS variable name
  * "Primary Text" -> "primary-text"
  * "inputBorder" -> "input-border"
@@ -287,14 +312,22 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
       // Special handling for padding values that need to be split into x and y
       if (key === "containerPadding" || key === "buttonPadding" || key === "inputPadding") {
         const varName = toCSSVarName(key);
-        const parts = resolvedValue.split(" ");
+        const parts = splitTopLevel(resolvedValue);
+        variables.push(`  --${varName}: ${resolvedValue};`);
+        // CSS shorthand: 1=all, 2="Y X", 3="T X B", 4="T R B L"
         if (parts.length === 2) {
-          variables.push(`  --${varName}: ${resolvedValue};`);
-          // CSS shorthand is "Y X" (vertical first, horizontal second)
           variables.push(`  --${varName}-y: ${parts[0]};`);
           variables.push(`  --${varName}-x: ${parts[1]};`);
+        } else if (parts.length === 1) {
+          variables.push(`  --${varName}-y: ${parts[0]};`);
+          variables.push(`  --${varName}-x: ${parts[0]};`);
+        } else if (parts.length === 3) {
+          variables.push(`  --${varName}-y: ${parts[0]};`); // top (vertical approximation)
+          variables.push(`  --${varName}-x: ${parts[1]};`);
+        } else if (parts.length === 4) {
+          variables.push(`  --${varName}-y: ${parts[0]};`); // top (vertical approximation)
+          variables.push(`  --${varName}-x: ${parts[1]};`); // right (horizontal approximation)
         } else {
-          variables.push(`  --${varName}: ${resolvedValue};`);
           variables.push(`  --${varName}-x: ${resolvedValue};`);
           variables.push(`  --${varName}-y: ${resolvedValue};`);
         }

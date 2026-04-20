@@ -63,9 +63,6 @@ const FontFamilyDialog = React.lazy(() =>
 const GoogleIconDialog = React.lazy(() =>
   import("./chrome/toolbar/dialogs/GoogleIconDialog").then(m => ({ default: m.GoogleIconDialog }))
 );
-const IconDialogDialog = React.lazy(() =>
-  import("./chrome/toolbar/dialogs/IconDialog").then(m => ({ default: m.IconDialogDialog }))
-);
 const PatternDialog = React.lazy(() =>
   import("./chrome/toolbar/dialogs/PatternDialog").then(m => ({ default: m.PatternDialog }))
 );
@@ -445,7 +442,6 @@ function PageHubEditorInner({
                       <ColorPickerSidebarDialog />
                       <FontFamilyDialog />
                       <GoogleIconDialog />
-                      <IconDialogDialog />
                       <PatternDialog />
                       <GlobalSectionPickerDialog />
                     </>

@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { FixedSizeGrid as Grid } from "react-window";
-import { useIconSvg } from "../../../../../utils/icons/IconSvgMapContext";
+import { loadIconSprite } from "../../../../../utils/icons/IconSvgMapContext";
 import {
   COLUMN_COUNT,
   COLUMN_WIDTH,
@@ -14,6 +15,10 @@ interface IconsTabProps {
 }
 
 export function IconsTab({ d }: IconsTabProps) {
+  useEffect(() => {
+    loadIconSprite(d.set);
+  }, [d.set]);
+
   return (
     <div
       role="tabpanel"
@@ -100,7 +105,9 @@ export function IconsTab({ d }: IconsTabProps) {
                   role="gridcell"
                   aria-selected={isSelected}
                 >
-                  <IconPreview iconRef={iconRef} />
+                  <svg className="h-6 w-6" aria-hidden="true" fill="currentColor">
+                    <use href={`#${name}`} />
+                  </svg>
                   <span className="text-neutral-content w-full truncate text-center text-[8px] leading-tight">
                     {name}
                   </span>
@@ -111,22 +118,5 @@ export function IconsTab({ d }: IconsTabProps) {
         </Grid>
       </div>
     </div>
-  );
-}
-
-function IconPreview({ iconRef }: { iconRef: string }) {
-  const entry = useIconSvg(iconRef);
-  if (!entry) {
-    return <div className="h-6 w-6 opacity-30" aria-hidden="true" />;
-  }
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox={entry.viewBox}
-      fill="currentColor"
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-6 w-6"
-      dangerouslySetInnerHTML={{ __html: entry.svg }}
-    />
   );
 }

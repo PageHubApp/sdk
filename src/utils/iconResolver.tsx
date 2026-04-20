@@ -1,9 +1,15 @@
 import React from "react";
 import { getMediaContent } from "./lib";
-import { useIconSvg, type IconSvgEntry, type IconSvgMap } from "./icons/IconSvgMapContext";
+import {
+  useIconSvg,
+  useIconSprite,
+  type IconSvgEntry,
+  type IconSvgMap,
+} from "./icons/IconSvgMapContext";
+import { parseIconRef } from "./icons/collectIconRefs";
 
 /**
- * Resolve an icon reference to a renderable node using a pre-built iconMap.
+ * Sync resolver — used when caller already has the iconMap (SSR static HTML path).
  * Supports:
  *   ref-icon:<set>/<Name>  — e.g. ref-icon:tb/TbShoppingCart
  *   ref-image:<id>         — image from media library (requires query)
@@ -43,8 +49,8 @@ export function renderIconSvg(entry: IconSvgEntry): React.ReactElement {
 }
 
 /**
- * React hook form — resolves icon via context + client fetch fallback for refs
- * that aren't pre-seeded (e.g. newly picked in the editor).
+ * React hook form — prefers the SSR-seeded map (inline SVG) and falls back to
+ * a sprite-sheet `<use href>` reference for icons picked post-SSR in the editor.
  */
 export function useResolvedIcon(
   value: string | undefined,
@@ -52,6 +58,7 @@ export function useResolvedIcon(
 ): React.ReactNode {
   const iconRef = value?.startsWith("ref-icon:") ? value : undefined;
   const entry = useIconSvg(iconRef);
+  const spriteReady = useIconSprite(entry ? undefined : iconRef);
 
   if (!value || typeof value !== "string") return null;
 
@@ -63,8 +70,15 @@ export function useResolvedIcon(
   }
 
   if (value.startsWith("ref-icon:")) {
-    if (!entry) return null;
-    return renderIconSvg(entry);
+    if (entry) return renderIconSvg(entry);
+    const parsed = parseIconRef(value);
+    if (!parsed) return null;
+    if (!spriteReady) return null;
+    return (
+      <svg fill="currentColor" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <use href={`#${parsed.name}`} />
+      </svg>
+    );
   }
 
   return null;

@@ -17,7 +17,6 @@ let _dataDir: string | null | undefined;
 function getDataDir(): string | null {
   if (_dataDir !== undefined) return _dataDir;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const path = require("node:path");
     // Always resolved from the repo root — data is generated to a stable path.
     _dataDir = path.resolve(process.cwd(), "packages/sdk/src/data/icon-svgs");
@@ -33,9 +32,7 @@ function loadSetSync(set: string): Record<string, IconSvgEntry> | null {
   const dir = getDataDir();
   if (!dir) return null;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const fs = require("node:fs");
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const path = require("node:path");
     const file = path.join(dir, `${set}.json`);
     const text = fs.readFileSync(file, "utf8");

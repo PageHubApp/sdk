@@ -41,13 +41,6 @@ export const IconPickerDialogAtom = atom("iconPickerDialog", {
   e: null,
 } as any);
 
-export const IconDialogAtom = atom("iconDialog", {
-  enabled: false,
-  prefix: "",
-  changed: null,
-  e: null,
-} as any);
-
 export const PatternDialogAtom = atom("patternDialog", {
   enabled: false,
   prefix: "",
