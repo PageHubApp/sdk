@@ -254,7 +254,7 @@ const { html } = renderToHTML(savedContent, {
 });
 ```
 
-When a **Container** uses **`overflowDragScroll`**, **`overflowAutoHideScrollbar`**, **`overflowWheelScrollsHorizontal`**, **`overflowDragScrollSmoothing`**, or **`overflowScrollbarHideDelay`**, the runtime and static HTML output add **`overflow-x-auto`** to **`className`** if there is no other **`overflow-x-*`** utility (so you can override in Classes). **`overflowDragScrollSmoothing`** (0–0.5) optionally eases scroll toward the pointer each frame for a more fluid drag (0 = 1:1). `renderToHTML` may append a small script (alongside `scrollObserverScript`) that enables pointer-drag scrolling and wheel-to-horizontal behavior in the exported HTML. Layout the strip with a horizontal row (e.g. flex). These options are **CSS overflow UX**, not the GSAP **`scrollEffect`** (`horizontal-scroll` / `scroll-timeline`).
+When a **Container** uses **`overflow.dragScroll`**, **`overflow.autoHide`**, **`overflow.wheelHorizontal`**, **`overflow.smoothing`**, or **`overflow.hideDelay`** (all nested under `props.overflow`), the runtime and static HTML output add **`overflow-x-auto`** to **`className`** if there is no other **`overflow-x-*`** utility (so you can override in Classes). **`overflow.smoothing`** (0–0.5) optionally eases scroll toward the pointer each frame for a more fluid drag (0 = 1:1). `renderToHTML` may append a small script (alongside `scrollObserverScript`) that enables pointer-drag scrolling and wheel-to-horizontal behavior in the exported HTML. Layout the strip with a horizontal row (e.g. flex). These options are **CSS overflow UX**, not the GSAP **`scrollEffect`** (`horizontal-scroll` / `scroll-timeline`).
 
 ---
 
