@@ -1,0 +1,108 @@
+import { useEditor, useNode, UserComponent } from "@craftjs/core";
+import React, { useEffect, useState } from "react";
+import { TbIcons } from "react-icons/tb";
+
+import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
+import { getClonedState, setClonedProps } from "../utils/cloneHelper";
+import { useResolvedIcon } from "../utils/iconResolver";
+import { motionIt } from "../utils/lib";
+import { applyAnimation } from "../utils/tailwind/tailwind";
+import { useScrollToSelected } from "./componentHooks";
+import { BaseSelectorProps } from "./selectors";
+
+export interface IconProps extends BaseSelectorProps {
+  /** Icon reference — `ref-icon:<set>/<ExportName>` or `ref-image:<mediaId>`. */
+  value?: string;
+  /** Tailwind width/height classes (e.g. `w-6 h-6`). Default `w-6 h-6`. */
+  size?: string;
+  /** Tailwind text color class (e.g. `text-primary`). Defaults to inheriting from parent. */
+  color?: string;
+  /** Optional accessible name — when omitted, the icon is treated as decorative (`aria-hidden`). */
+  "aria-label"?: string;
+}
+
+export const Icon: UserComponent<IconProps> = (incomingProps: IconProps) => {
+  let props: any = {
+    canDelete: true,
+    canEditName: true,
+    size: "w-6 h-6",
+    ...incomingProps,
+  };
+
+  const {
+    connectors: { connect, drag },
+    id,
+  } = useNode();
+
+  const { query, enabled } = useEditor(state => getClonedState(props, state));
+  const { isActive } = useEditor((_, q) => ({
+    isActive: q.getEvent("selected").contains(id),
+  }));
+
+  props = setClonedProps(props, query);
+
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useScrollToSelected(id, enabled);
+
+  const iconElement = useResolvedIcon(props.value, query);
+
+  const sizeClass = props.size || "w-6 h-6";
+  const colorClass = props.color || "";
+  const className = [
+    sizeClass,
+    colorClass || "fill-current",
+    "inline-flex",
+    "items-center",
+    "justify-center",
+    props.className || "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const hasLabel = typeof props["aria-label"] === "string" && props["aria-label"].length > 0;
+
+  const prop: any = {
+    ref: r => connect(drag(r)),
+    className,
+  };
+
+  if (hasLabel) {
+    prop.role = "img";
+    prop["aria-label"] = props["aria-label"];
+  } else {
+    prop["aria-hidden"] = "true";
+  }
+
+  if (enabled) {
+    prop["data-bounding-box"] = enabled;
+    if (isMounted) prop["node-id"] = id;
+  }
+
+  const isLeafEmpty = enabled && isMounted && !iconElement;
+
+  prop.children = isLeafEmpty ? (
+    <EditorEmptyLeafHint
+      selected={isActive}
+      icon={<TbIcons aria-hidden />}
+      idleLabel="Empty icon"
+      selectedLabel="Pick an icon"
+    />
+  ) : (
+    iconElement
+  );
+
+  const final = applyAnimation({ ...prop, key: `${id}` }, props, null, enabled);
+
+  return React.createElement(motionIt(props, "span", enabled), final);
+};
+
+Icon.craft = {
+  displayName: "Icon",
+  rules: {
+    canDrag: () => true,
+  },
+};

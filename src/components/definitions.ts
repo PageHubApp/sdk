@@ -19,6 +19,7 @@ export { EmbedDef } from "./Embed.craft";
 export { FormDef } from "./Form.craft";
 export { FormElementDef } from "./FormElement.craft";
 export { GridDef } from "./Grid.craft";
+export { IconDef } from "./Icon.craft";
 export { ImageDef } from "./Image.craft";
 export { ImageListDef } from "./ImageList.craft";
 export { LinkDef } from "./Link.craft";

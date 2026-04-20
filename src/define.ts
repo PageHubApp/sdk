@@ -225,6 +225,7 @@ const BUILT_IN_NAMES = new Set([
   "Form",
   "FormElement",
   "Header",
+  "Icon",
   "Image",
   "ImageList",
   "Link",

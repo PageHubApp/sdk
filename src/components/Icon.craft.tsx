@@ -1,0 +1,86 @@
+/**
+ * Icon — Standalone decorative/semantic icon. Renders inline SVG (react-icons) or
+ * a media-library image. No actions — if clickable is needed, wrap in Container/Button.
+ */
+import { TbIcons } from "react-icons/tb";
+import { IconMainTab } from "../chrome/toolbar/unified-settings/mainTabs/IconMainTab";
+import { defineComponent } from "../define";
+import { resolveIconSvgSync } from "../utils/icons/serverResolve";
+import {
+  ariaAttrs,
+  collectClasses,
+  escapeAttr,
+  staticClasses,
+  tag,
+  type ToHTMLFn,
+} from "../utils/static-html";
+import { Icon } from "./Icon";
+
+const toHTML: ToHTMLFn = (props, _children, ctx) => {
+  const value: string | undefined = props.value;
+  const size = props.size || "w-6 h-6";
+  const color = props.color || "fill-current";
+  const wrapCls = [size, color, "inline-flex", "items-center", "justify-center", staticClasses(props, ctx)]
+    .filter(Boolean)
+    .join(" ");
+  collectClasses(wrapCls, ctx);
+
+  const aria = ariaAttrs(props);
+  const hasLabel = typeof aria["aria-label"] === "string" && aria["aria-label"].length > 0;
+
+  const attrs: Record<string, any> = {
+    class: wrapCls || undefined,
+    ...aria,
+  };
+  if (hasLabel) {
+    attrs.role = "img";
+  } else {
+    attrs["aria-hidden"] = "true";
+  }
+
+  let inner = "";
+  if (value && typeof value === "string" && value.startsWith("ref-icon:")) {
+    const entry = resolveIconSvgSync(value);
+    if (entry) {
+      inner = `<svg fill="currentColor" viewBox="${escapeAttr(entry.viewBox)}" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">${entry.svg}</svg>`;
+    }
+  }
+  // ref-image: static export relies on runtime media resolution — skipped here, matching Button.craft toHTML parity.
+
+  return tag("span", attrs, inner);
+};
+
+export const IconDef = defineComponent(
+  {
+    name: "Icon",
+    component: Icon,
+    icon: TbIcons,
+    category: "Content",
+    settings: IconMainTab,
+    toHTML,
+    disable: ["opacity"],
+    rules: {
+      canDrag: () => true,
+    },
+    presets: [
+      {
+        label: "Icon",
+        description: "Standalone decorative icon — renders inline SVG at the chosen size/color.",
+        props: {
+          value: "ref-icon:tb/TbStar",
+          size: "w-6 h-6",
+        },
+      },
+      {
+        label: "Large Icon",
+        description: "Feature-tile sized icon — use in hero badges, feature grids.",
+        props: {
+          value: "ref-icon:tb/TbBolt",
+          size: "w-12 h-12",
+          color: "text-primary",
+        },
+      },
+    ],
+  },
+  { __internal: true },
+);

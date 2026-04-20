@@ -1,7 +1,6 @@
 /**
  * Button — Component definition via defineComponent()
  */
-import { LuImage } from "react-icons/lu";
 import { RxButton } from "react-icons/rx";
 import {
   ButtonMainTab,
@@ -105,20 +104,6 @@ export const ButtonDef = defineComponent(
           text: "Button",
           className:
             "btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold self-start",
-        },
-      },
-      {
-        label: "Icon",
-        icon: LuImage,
-        description: "Circular icon-only button.",
-        props: {
-          text: "Icon",
-          icon: {
-            value: "ref-icon:tb/TbStar",
-            only: true,
-          },
-          className:
-            "btn btn-primary btn-circle w-12 h-12",
         },
       },
     ],

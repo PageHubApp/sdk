@@ -26,6 +26,7 @@ import { Form } from "../components/Form";
 import { FormElement, OnlyFormElement } from "../components/FormElement";
 import { Grid } from "../components/Grid";
 import { Header } from "../components/Header";
+import { Icon } from "../components/Icon";
 import { Image } from "../components/Image";
 import { ImageList } from "../components/ImageList";
 import { Link } from "../components/Link";
@@ -61,6 +62,7 @@ import {
   FormDef,
   FormElementDef,
   GridDef,
+  IconDef,
   ImageDef,
   ImageListDef,
   LinkDef,
@@ -109,6 +111,7 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Grid: cv(Grid),
   OnlyFormElement: cv(OnlyFormElement),
   Header: cv(Header),
+  Icon: cv(Icon),
   Image: cv(Image),
   ImageList: cv(ImageList),
   Link: cv(Link),
@@ -145,6 +148,7 @@ export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
   TextDef,
   ImageDef,
   ImageListDef,
+  IconDef,
   ButtonDef,
   ButtonListDef,
   LinkDef,
