@@ -3,6 +3,9 @@ import { parseIconRef } from "./collectIconRefs";
 export interface IconSvgEntry {
   viewBox: string;
   svg: string;
+  /** Preserved outer <svg> presentation attrs from react-icons (stroke, fill, stroke-width, etc.).
+   *  Undefined for older registries — renderer falls back to fill="currentColor". */
+  attrs?: Record<string, string>;
 }
 
 export type IconSvgMap = Record<string, IconSvgEntry>;

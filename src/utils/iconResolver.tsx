@@ -37,10 +37,35 @@ export function resolveIcon(
   return null;
 }
 
+// Convert kebab-case SVG attrs (stroke-width) to React camelCase (strokeWidth).
+const SVG_ATTR_MAP: Record<string, string> = {
+  "stroke-width": "strokeWidth",
+  "stroke-linecap": "strokeLinecap",
+  "stroke-linejoin": "strokeLinejoin",
+  "stroke-miterlimit": "strokeMiterlimit",
+  "stroke-dasharray": "strokeDasharray",
+  "fill-rule": "fillRule",
+  "clip-rule": "clipRule",
+};
+
+function toReactSvgAttrs(attrs: Record<string, string> | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!attrs) return out;
+  for (const [k, v] of Object.entries(attrs)) {
+    out[SVG_ATTR_MAP[k] ?? k] = v;
+  }
+  return out;
+}
+
 export function renderIconSvg(entry: IconSvgEntry): React.ReactElement {
+  // Preserved attrs (stroke/fill/stroke-width/etc.) from the original react-icons
+  // component. If absent (older registry), fall back to fill="currentColor" for
+  // compatibility with solid icon sets.
+  const preserved = toReactSvgAttrs(entry.attrs);
+  const hasPreserved = Object.keys(preserved).length > 0;
   return React.createElement("svg", {
     dangerouslySetInnerHTML: { __html: entry.svg },
-    fill: "currentColor",
+    ...(hasPreserved ? preserved : { fill: "currentColor" }),
     width: "100%",
     height: "100%",
     viewBox: entry.viewBox,
@@ -74,8 +99,12 @@ export function useResolvedIcon(
     const parsed = parseIconRef(value);
     if (!parsed) return null;
     if (!spriteReady) return null;
+    // Sprite sheet: the <symbol> carries the stroke/fill attrs (per updated
+    // generator), so the outer <svg> here doesn't need to hardcode fill —
+    // inherit from the symbol. Keep fill="currentColor" as a safe fallback for
+    // older sprites rebuilt pre-fix.
     return (
-      <svg fill="currentColor" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
         <use href={`#${parsed.name}`} />
       </svg>
     );

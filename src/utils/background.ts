@@ -220,7 +220,7 @@ export const applyBackgroundImage = (prop: any, props: any, settings: any, query
       src: _imgProp.src,
       alt: "",
       loading: "eager",
-      fetchpriority: props.backgroundFetchPriority || "high",
+      fetchPriority: props.backgroundFetchPriority || "high",
       style: {
         position: "absolute",
         width: "1px",
@@ -265,7 +265,7 @@ export const applyLazyBackgroundImage = (
         src: _imgProp.src,
         alt: "",
         loading: "eager",
-        fetchpriority: props.backgroundFetchPriority || "high",
+        fetchPriority: props.backgroundFetchPriority || "high",
         style: {
           position: "absolute",
           width: "1px",
