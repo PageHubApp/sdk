@@ -49,7 +49,7 @@ export interface ContainerProps extends BaseSelectorProps {
   scrollSmoothing?: number;
   scrollTimelineRunway?: number;
 
-  /** Pointer-drag scroll UX (not GSAP scroll effects) on published/preview. See {@link OverflowProps}. */
+  /** Pointer-drag scroll UX (not GSAP scroll effects) on published/view/static routes. See {@link OverflowProps}. */
   overflow?: OverflowProps;
 }
 

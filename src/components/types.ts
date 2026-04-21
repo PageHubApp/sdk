@@ -148,7 +148,7 @@ export interface BackgroundProps {
  * data attributes that the runtime script reads to wire event listeners.
  */
 export interface OverflowProps {
-  /** Enable pointer-drag horizontal scrolling on published/preview (not in editor). */
+  /** Enable pointer-drag horizontal scrolling on published/view/static routes (not in editor). */
   dragScroll?: boolean;
   /** 0 = 1:1 with pointer. 0.12–0.28 eases toward the target each frame (fluid). */
   smoothing?: number;
