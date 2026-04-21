@@ -4,13 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
 import { getImageDimensionsFromFile, getImageDimensionsFromUrl } from "@/utils/imageDimensions";
 import { registerMediaWithBackground } from "@/utils/lib";
-import { GetSignedUrl, SaveMedia } from "@/chrome/viewport/viewportExports";
+import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import { useSDK } from "@/core/context";
 import { useImageDrop } from "@/chrome/hooks/useImageDrop";
 import {
   cleanSvg,
-  convertAvifToJpeg,
-  resizeImageIfNeeded,
   type AddMode,
   type MediaItem,
   type UploadProgress,
@@ -34,10 +32,6 @@ export function useMediaUpload({
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [conversionDialog, setConversionDialog] = useState<{
-    isOpen: boolean;
-    file: File | null;
-  }>({ isOpen: false, file: null });
   const [replacingMedia, setReplacingMedia] = useState<string | null>(null);
 
   // ─── Input mode state ───
@@ -115,38 +109,17 @@ export function useMediaUpload({
         setUploadProgress(prev => (prev ? { ...prev, current: i, currentFile: file.name } : null));
 
         try {
-          const processedFile = file.type.startsWith("image/")
-            ? await resizeImageIfNeeded(file)
-            : file;
-
-          const geturl = await GetSignedUrl();
-          const signedURL = (geturl as Record<string, Record<string, string>>)?.result?.uploadURL;
-          if (!signedURL) {
-            failedFiles.push({ name: file.name, error: "Failed to get upload URL" });
-            continue;
-          }
-
-          const res = await SaveMedia(processedFile, signedURL);
-          const mediaId = (res as Record<string, Record<string, string>>)?.result?.id;
-          if (!mediaId) {
-            failedFiles.push({ name: file.name, error: "No media ID returned from CDN" });
-            continue;
-          }
+          const { mediaId, file: uploadedFile } = await uploadImageToCdn(file);
 
           setUploadProgress(prev =>
             prev ? { ...prev, completedFiles: [...prev.completedFiles, file.name] } : null
           );
 
-          await registerUploadedMedia(mediaId, processedFile, "upload");
+          await registerUploadedMedia(mediaId, uploadedFile, "upload");
         } catch (error: unknown) {
-          const err = error as Error;
-          if (err.message?.includes("415") && file.type === "image/avif") {
-            setUploadProgress(null);
-            setUploading(false);
-            setConversionDialog({ isOpen: true, file });
-            return;
-          }
-          failedFiles.push({ name: file.name, error: err.message || "Unknown error" });
+          const message =
+            error instanceof MediaUploadError ? error.message : (error as Error)?.message;
+          failedFiles.push({ name: file.name, error: message || "Unknown error" });
         }
       }
 
@@ -167,34 +140,6 @@ export function useMediaUpload({
     }
   };
 
-  const handleConvertAndUpload = async () => {
-    if (!conversionDialog.file) return;
-    const file = conversionDialog.file;
-    setConversionDialog({ isOpen: false, file: null });
-    setUploading(true);
-    setUploadError(null);
-    setUploadProgress({ current: 0, total: 1, currentFile: file.name, completedFiles: [] });
-
-    try {
-      const convertedFile = await convertAvifToJpeg(file);
-      const geturl = await GetSignedUrl();
-      const signedURL = (geturl as Record<string, Record<string, string>>)?.result?.uploadURL;
-      if (!signedURL) throw new Error("Failed to get upload URL");
-
-      const res = await SaveMedia(convertedFile, signedURL);
-      const mediaId = (res as Record<string, Record<string, string>>)?.result?.id;
-      if (!mediaId) throw new Error("No media ID returned from CDN");
-
-      await registerUploadedMedia(mediaId, convertedFile, "upload");
-      refreshMediaList();
-    } catch (error: unknown) {
-      setUploadError(`Failed to convert and upload ${file.name}: ${(error as Error).message}`);
-    } finally {
-      setUploading(false);
-      setUploadProgress(null);
-    }
-  };
-
   const handleReplaceMedia = async (files: FileList | null) => {
     if (!files || files.length === 0 || !replacingMedia) return;
     setUploading(true);
@@ -202,13 +147,7 @@ export function useMediaUpload({
 
     try {
       const file = files[0];
-      const geturl = await GetSignedUrl();
-      const signedURL = (geturl as Record<string, Record<string, string>>)?.result?.uploadURL;
-      if (!signedURL) throw new Error("Failed to get upload URL");
-
-      const res = await SaveMedia(file, signedURL);
-      const newCdnId = (res as Record<string, Record<string, string>>)?.result?.id;
-      if (!newCdnId) throw new Error("No media ID returned from CDN");
+      const { mediaId: newCdnId, file: uploaded } = await uploadImageToCdn(file);
 
       actions.setProp("ROOT", (props: Record<string, unknown>) => {
         const pageMedia = props.pageMedia as MediaItem[] | undefined;
@@ -218,8 +157,8 @@ export function useMediaUpload({
           mediaItem.cdnId = newCdnId;
           mediaItem.uploadedAt = Date.now();
           if (mediaItem.metadata) {
-            mediaItem.metadata.title = file.name;
-            mediaItem.metadata.size = file.size;
+            mediaItem.metadata.title = uploaded.name;
+            mediaItem.metadata.size = uploaded.size;
           }
         }
       });
@@ -227,7 +166,9 @@ export function useMediaUpload({
       refreshMediaList();
       setReplacingMedia(null);
     } catch (error) {
-      console.error("Replace failed:", error);
+      const message =
+        error instanceof MediaUploadError ? error.message : (error as Error)?.message;
+      setUploadError(`Replace failed: ${message || "Unknown error"}`);
     } finally {
       setUploading(false);
       setUploadProgress(null);
@@ -419,19 +360,13 @@ export function useMediaUpload({
         });
 
         try {
-          const processedFile = await resizeImageIfNeeded(file);
-          const geturl = await GetSignedUrl();
-          const signedURL = (geturl as Record<string, Record<string, string>>)?.result?.uploadURL;
-          if (!signedURL) throw new Error("Failed to get upload URL");
-
-          const res = await SaveMedia(processedFile, signedURL);
-          const mediaId = (res as Record<string, Record<string, string>>)?.result?.id;
-          if (!mediaId) throw new Error("Failed to upload to CDN");
-
-          await registerUploadedMedia(mediaId, processedFile, "paste");
+          const { mediaId, file: uploaded } = await uploadImageToCdn(file);
+          await registerUploadedMedia(mediaId, uploaded, "paste");
           refreshMediaList();
         } catch (error: unknown) {
-          alert(`Failed to upload pasted image: ${(error as Error).message}`);
+          const message =
+            error instanceof MediaUploadError ? error.message : (error as Error)?.message;
+          alert(`Failed to upload pasted image: ${message}`);
         } finally {
           setUploading(false);
           setUploadProgress(null);
@@ -456,15 +391,7 @@ export function useMediaUpload({
 
             setUploading(true);
             try {
-              const geturl = await GetSignedUrl();
-              const signedURL = (geturl as Record<string, Record<string, string>>)?.result
-                ?.uploadURL;
-              if (!signedURL) throw new Error("Failed to get upload URL");
-
-              const res = await SaveMedia(file, signedURL);
-              const mediaId = (res as Record<string, Record<string, string>>)?.result?.id;
-              if (!mediaId) throw new Error("Failed to upload to CDN");
-
+              const { mediaId, file: uploaded } = await uploadImageToCdn(file);
               registerMediaWithBackground(query, actions, mediaId, "cdn", "media-manager");
               actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
                 const pageMedia = (props.pageMedia || []) as MediaItem[];
@@ -472,16 +399,18 @@ export function useMediaUpload({
                 if (existingMedia) {
                   existingMedia.metadata = {
                     ...existingMedia.metadata,
-                    title: file.name,
-                    alt: file.name.replace(/\.[^/.]+$/, ""),
-                    size: file.size,
+                    title: uploaded.name,
+                    alt: uploaded.name.replace(/\.[^/.]+$/, ""),
+                    size: uploaded.size,
                     source: "paste",
                   };
                 }
               });
               refreshMediaList();
             } catch (error: unknown) {
-              alert(`Failed to upload pasted image: ${(error as Error).message}`);
+              const message =
+                error instanceof MediaUploadError ? error.message : (error as Error)?.message;
+              alert(`Failed to upload pasted image: ${message}`);
             } finally {
               setUploading(false);
             }
@@ -537,7 +466,6 @@ export function useMediaUpload({
     uploading,
     uploadProgress,
     uploadError,
-    conversionDialog,
     addMode,
     urlInput,
     svgInput,
@@ -552,11 +480,9 @@ export function useMediaUpload({
     setSaveUrlToCdn,
     setUploading,
     setUploadError,
-    setConversionDialog,
     setReplacingMedia,
     // Handlers
     handleUpload,
-    handleConvertAndUpload,
     handleReplaceMedia,
     handleAddUrl,
     handleAddSvg,

@@ -1,5 +1,9 @@
 /**
  * API calls for media, HTML conversion, and saving to server.
+ *
+ * Image uploads go through `utils/media/upload.ts` (`uploadImageToCdn`) — it
+ * owns the signed-URL request, CDN POST, preprocess, and error typing. This
+ * file only keeps the low-level helpers that don't have a unified replacement.
  */
 
 import { getPageHubApiBaseUrl } from "../../core/apiConfig";
@@ -16,40 +20,6 @@ export const GetHtmlToComponent = async (html: string) => {
     return res.json();
   } catch (e) {
     console.error(e);
-  }
-};
-
-export const GetSignedUrl = async () => {
-  try {
-    const res = await fetch(`${getApiBase()}/api/media/get`, {
-      method: "POST",
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    });
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Failed to get signed URL: ${res.status} ${res.statusText}`);
-    }
-    return await res.json();
-  } catch (e) {
-    console.error("GetSignedUrl error:", e);
-    throw e;
-  }
-};
-
-export const SaveMedia = async (media: File, url: string) => {
-  const formData = new FormData();
-  formData.append("file", media);
-  try {
-    const res = await fetch(url, { method: "POST", body: formData });
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Upload failed: ${res.status} ${res.statusText}`);
-    }
-    return await res.json();
-  } catch (e) {
-    console.error("SaveMedia error:", e);
-    throw e;
   }
 };
 

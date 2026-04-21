@@ -1,11 +1,11 @@
 import { useEditor } from "@craftjs/core";
-import { GetSignedUrl, SaveMedia } from "./viewportExports";
 import Image from "next/image";
 import { useState } from "react";
 import { TbAlertTriangle, TbPhoto, TbTrash, TbUpload } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "../../utils/atoms";
 import { getMediaContent } from "../../utils/lib";
+import { MediaUploadError, uploadImageToCdn } from "../../utils/media/upload";
 import Spinner from "../toolbar/helpers/Spinner";
 import { MediaManagerModal } from "../toolbar/inputs/media/MediaManagerModal";
 
@@ -22,21 +22,18 @@ const handleFileSelection = (e, setErrors) => {
   return files;
 };
 
-const uploadFiles = async (files, settings, setErrors) => {
+const uploadFiles = async (files, _settings, setErrors) => {
   const _saved = [];
-
-  const geturl = await GetSignedUrl();
-  const signedURL = geturl?.result?.uploadURL;
-
-  if (!signedURL) {
-    setErrors([{ error: "Failed to upload", file: files[0] }]);
-  } else {
-    for (const file of files) {
-      const res = await SaveMedia(file, signedURL);
-      if (res?.result?.id) _saved.push(res.result.id);
+  for (const file of files) {
+    try {
+      const { mediaId } = await uploadImageToCdn(file);
+      _saved.push(mediaId);
+    } catch (error) {
+      const message =
+        error instanceof MediaUploadError ? error.message : `Failed to upload ${file.name}`;
+      setErrors([{ error: message, file }]);
     }
   }
-
   return _saved;
 };
 

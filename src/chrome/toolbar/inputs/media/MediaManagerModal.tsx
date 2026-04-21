@@ -178,18 +178,6 @@ export function MediaManagerModal({
         cancelText="Cancel"
         variant="danger"
       />
-
-      {/* AVIF Conversion */}
-      <ConfirmDialog
-        key="avif-convert-dialog"
-        isOpen={manager.conversionDialog.isOpen}
-        onClose={() => manager.setConversionDialog({ isOpen: false, file: null })}
-        onConfirm={manager.handleConvertAndUpload}
-        title="Convert AVIF to JPEG?"
-        message={`Your CDN doesn't support AVIF uploads. Would you like to convert "${manager.conversionDialog.file?.name}" to JPEG and upload it?`}
-        confirmText="Convert & Upload"
-        cancelText="Cancel"
-      />
     </>,
     document.querySelector(".pagehub-sdk-root") || document.body
   );

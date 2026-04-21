@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
-import { DeleteMedia, GetSignedUrl, SaveMedia } from "@/chrome/viewport/viewportExports";
+import { DeleteMedia } from "@/chrome/viewport/viewportExports";
+import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 
 // ─── Types ───
 
@@ -403,14 +404,11 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
     try {
       const croppedFile = await processCroppedImage();
 
-      const geturl = await GetSignedUrl();
-      const signedURL = (geturl as any)?.result?.uploadURL;
-      if (!signedURL) throw new Error("Failed to get upload URL");
-
-      const uploadResult = await SaveMedia(croppedFile, signedURL);
-      if (!(uploadResult as any)?.result?.id) throw new Error("Failed to upload image to CDN");
-
-      let finalMediaId = (uploadResult as any).result.id;
+      // Crop output is already sized to the user's target dims — skip preprocess
+      // (resize/AVIF-convert) so we don't touch the canvas bytes again.
+      const { mediaId: finalMediaId } = await uploadImageToCdn(croppedFile, {
+        skipPreprocess: true,
+      });
 
       if (saveMode === "override") {
         try {
@@ -451,7 +449,13 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
       setSaveSuccess(true);
       setTimeout(() => onClose(), 1500);
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Failed to save image");
+      const message =
+        error instanceof MediaUploadError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : "Failed to save image";
+      setSaveError(message);
     } finally {
       setIsSaving(false);
     }

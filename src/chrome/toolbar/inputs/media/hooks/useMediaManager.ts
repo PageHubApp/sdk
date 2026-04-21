@@ -370,7 +370,6 @@ export function useMediaManager({
     uploading: upload.uploading,
     uploadProgress: upload.uploadProgress,
     uploadError: upload.uploadError,
-    conversionDialog: upload.conversionDialog,
     addMode: upload.addMode,
     urlInput: upload.urlInput,
     svgInput: upload.svgInput,
@@ -402,7 +401,6 @@ export function useMediaManager({
     setSvgInput: upload.setSvgInput,
     setSaveUrlToCdn: upload.setSaveUrlToCdn,
     setUploadError: upload.setUploadError,
-    setConversionDialog: upload.setConversionDialog,
     setReplacingMedia: upload.setReplacingMedia,
     setDeleteConfirm,
 
@@ -417,7 +415,6 @@ export function useMediaManager({
     closeEditModal,
     saveEditedMetadata,
     handleUpload: upload.handleUpload,
-    handleConvertAndUpload: upload.handleConvertAndUpload,
     handleReplaceMedia: upload.handleReplaceMedia,
     handleAddUrl: upload.handleAddUrl,
     handleAddSvg: upload.handleAddSvg,

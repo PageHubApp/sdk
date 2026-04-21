@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
 
+export type ImageDropRejectReason = "bad_mime" | "too_large" | "over_max_count";
+
 interface UseImageDropOptions {
   /** Called with accepted files */
   onFiles: (files: File[]) => void;
@@ -7,6 +9,10 @@ interface UseImageDropOptions {
   accept?: string;
   /** Max files to accept per drop (default: 10) */
   max?: number;
+  /** Per-file size ceiling in bytes — rejected files never reach onFiles. */
+  maxSizeBytes?: number;
+  /** Called once per rejected file so callers can surface a toast / inline error. */
+  onRejected?: (file: File, reason: ImageDropRejectReason) => void;
   /** Whether drop is disabled */
   disabled?: boolean;
 }
@@ -19,6 +25,8 @@ export function useImageDrop({
   onFiles,
   accept = "image/",
   max = 10,
+  maxSizeBytes,
+  onRejected,
   disabled = false,
 }: UseImageDropOptions) {
   const [isDragOver, setIsDragOver] = useState(false);
@@ -53,13 +61,26 @@ export function useImageDrop({
       setIsDragOver(false);
       if (disabled) return;
 
-      const files = Array.from(e.dataTransfer.files)
-        .filter(f => accept === "*" || f.type.startsWith(accept))
-        .slice(0, max);
+      const accepted: File[] = [];
+      for (const f of Array.from(e.dataTransfer.files)) {
+        if (accept !== "*" && !f.type.startsWith(accept)) {
+          onRejected?.(f, "bad_mime");
+          continue;
+        }
+        if (maxSizeBytes && f.size > maxSizeBytes) {
+          onRejected?.(f, "too_large");
+          continue;
+        }
+        if (accepted.length >= max) {
+          onRejected?.(f, "over_max_count");
+          continue;
+        }
+        accepted.push(f);
+      }
 
-      if (files.length > 0) onFiles(files);
+      if (accepted.length > 0) onFiles(accepted);
     },
-    [onFiles, max, disabled]
+    [onFiles, accept, max, maxSizeBytes, onRejected, disabled]
   );
 
   return {

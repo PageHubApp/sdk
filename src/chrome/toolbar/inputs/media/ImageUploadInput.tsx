@@ -1,12 +1,11 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
-import { GetSignedUrl, SaveMedia } from "../../../viewport/viewportExports";
 import { useState } from "react";
 import { TbAlertTriangle, TbPhoto, TbUpload } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "@/utils/atoms";
-import { getImageDimensionsFromFile } from "@/utils/imageDimensions";
 import { getMediaContent, registerMediaWithBackground } from "@/utils/lib";
+import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import Spinner from "../../helpers/Spinner";
 import { MediaManagerModal } from "./MediaManagerModal";
 
@@ -28,63 +27,31 @@ const handleFileSelection = (e, setErrors) => {
 const uploadFiles = async (files, settings, setErrors, query, actions) => {
   const _saved = [];
 
-  const geturl = await GetSignedUrl();
-  const signedURL = geturl?.result?.uploadURL;
+  for (const file of files) {
+    try {
+      const { mediaId, file: uploaded, width, height } = await uploadImageToCdn(file);
+      _saved.push(mediaId);
 
-  if (!signedURL) {
-    setErrors([{ error: "Failed to upload", file: files[0] }]);
-  } else {
-    for (const file of files) {
-      try {
-        const res = await SaveMedia(file, signedURL);
-        if (res?.result?.id) {
-          const mediaId = res.result.id;
-          _saved.push(mediaId);
-
-          // Extract dimensions and store metadata
-          try {
-            const dimensions = await getImageDimensionsFromFile(file);
-            // Store metadata with dimensions
-            actions.setProp(ROOT_NODE, (props: any) => {
-              props.pageMedia = props.pageMedia || [];
-              const existingMedia = props.pageMedia.find((m: any) => m.id === mediaId);
-
-              if (existingMedia) {
-                existingMedia.metadata = {
-                  ...existingMedia.metadata,
-                  title: file.name,
-                  alt: file.name.replace(/\.[^/.]+$/, ""),
-                  size: file.size,
-                  dimensions: {
-                    width: dimensions.width,
-                    height: dimensions.height,
-                    aspectRatio: dimensions.aspectRatio,
-                  },
-                };
-              }
-            });
-          } catch (dimensionError) {
-            console.warn(`Failed to extract dimensions for ${file.name}:`, dimensionError);
-            // Still save without dimensions
-            actions.setProp(ROOT_NODE, (props: any) => {
-              props.pageMedia = props.pageMedia || [];
-              const existingMedia = props.pageMedia.find((m: any) => m.id === mediaId);
-
-              if (existingMedia) {
-                existingMedia.metadata = {
-                  ...existingMedia.metadata,
-                  title: file.name,
-                  alt: file.name.replace(/\.[^/.]+$/, ""),
-                  size: file.size,
-                };
-              }
-            });
-          }
+      actions.setProp(ROOT_NODE, (props: any) => {
+        props.pageMedia = props.pageMedia || [];
+        const existingMedia = props.pageMedia.find((m: any) => m.id === mediaId);
+        if (existingMedia) {
+          existingMedia.metadata = {
+            ...existingMedia.metadata,
+            title: uploaded.name,
+            alt: uploaded.name.replace(/\.[^/.]+$/, ""),
+            size: uploaded.size,
+            ...(width && height
+              ? { dimensions: { width, height, aspectRatio: width / height } }
+              : {}),
+          };
         }
-      } catch (error) {
-        console.error(`Failed to upload ${file.name}:`, error);
-        setErrors([{ error: `Failed to upload ${file.name}`, file }]);
-      }
+      });
+    } catch (error) {
+      const message =
+        error instanceof MediaUploadError ? error.message : `Failed to upload ${file.name}`;
+      console.error(`Failed to upload ${file.name}:`, error);
+      setErrors([{ error: message, file }]);
     }
   }
 

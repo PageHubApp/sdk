@@ -2,15 +2,14 @@
  * Viewport utilities — re-export barrel.
  *
  * The actual implementations live in domain-specific modules:
- *   - api.ts       — network operations (GetSignedUrl, SaveMedia, etc.)
+ *   - api.ts       — network operations (GetHtmlToComponent, DeleteMedia).
+ *     Image uploads go through `@/utils/media/upload` (`uploadImageToCdn`).
  *   - propSystem.ts — prop read/write engine (changeProp, getProp, etc.)
  *   - nodeOps.tsx  — tree manipulation (deleteNode, buildClonedTree, etc.)
- *
- * This barrel re-exports everything so existing imports keep working.
  */
 
 // API calls
-export { GetHtmlToComponent, GetSignedUrl, SaveMedia, DeleteMedia } from "./api";
+export { GetHtmlToComponent, DeleteMedia } from "./api";
 
 // Prop system
 export { getProp, getPropFinalValue, setPropOnView, changeProp, type PropType } from "./propSystem";

@@ -2,9 +2,8 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
 import { useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
-import { getImageDimensionsFromFile } from "@/utils/imageDimensions";
 import { registerMediaWithBackground } from "@/utils/lib";
-import { GetSignedUrl, SaveMedia } from "@/chrome/viewport/viewportExports";
+import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import type { AiUsage, MediaItem } from "../utils/media-helpers";
 
 interface UseAiGenerationOptions {
@@ -62,53 +61,27 @@ export function useAiGeneration({
       const blob = await response.blob();
       const file = new File([blob], `ai-generated-${Date.now()}.png`, { type: "image/png" });
 
-      const geturl = await GetSignedUrl();
-      const signedURL = (geturl as Record<string, Record<string, string>>)?.result?.uploadURL;
-      if (!signedURL) throw new Error("Failed to get upload URL");
-
-      const res = await SaveMedia(file, signedURL);
-      const mediaId = (res as Record<string, Record<string, string>>)?.result?.id;
-      if (!mediaId) throw new Error("Failed to upload to CDN");
+      const { mediaId, file: uploaded, width, height } = await uploadImageToCdn(file);
 
       registerMediaWithBackground(query, actions, mediaId, "cdn", "media-manager");
 
-      try {
-        const dimensions = await getImageDimensionsFromFile(file);
-        actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-          const pageMedia = (props.pageMedia || []) as MediaItem[];
-          const existingMedia = pageMedia.find(m => m.id === mediaId);
-          if (existingMedia) {
-            existingMedia.metadata = {
-              ...existingMedia.metadata,
-              title: prompt ? `AI Generated: ${prompt}` : "AI Generated Image",
-              alt: prompt || "AI generated image",
-              size: file.size,
-              dimensions: {
-                width: dimensions.width,
-                height: dimensions.height,
-                aspectRatio: dimensions.aspectRatio,
-              },
-              aiGenerated: true,
-              aiPrompt: prompt || undefined,
-            };
-          }
-        });
-      } catch {
-        actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
-          const pageMedia = (props.pageMedia || []) as MediaItem[];
-          const existingMedia = pageMedia.find(m => m.id === mediaId);
-          if (existingMedia) {
-            existingMedia.metadata = {
-              ...existingMedia.metadata,
-              title: prompt ? `AI Generated: ${prompt}` : "AI Generated Image",
-              alt: prompt || "AI generated image",
-              size: file.size,
-              aiGenerated: true,
-              aiPrompt: prompt || undefined,
-            };
-          }
-        });
-      }
+      actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
+        const pageMedia = (props.pageMedia || []) as MediaItem[];
+        const existingMedia = pageMedia.find(m => m.id === mediaId);
+        if (existingMedia) {
+          existingMedia.metadata = {
+            ...existingMedia.metadata,
+            title: prompt ? `AI Generated: ${prompt}` : "AI Generated Image",
+            alt: prompt || "AI generated image",
+            size: uploaded.size,
+            ...(width && height
+              ? { dimensions: { width, height, aspectRatio: width / height } }
+              : {}),
+            aiGenerated: true,
+            aiPrompt: prompt || undefined,
+          };
+        }
+      });
 
       const savedImageUrl = getCdnUrl(mediaId, { width: 800, format: "auto" });
       generateMetadataForImage(mediaId, savedImageUrl);
@@ -117,7 +90,9 @@ export function useAiGeneration({
       setAiSuccess("Image saved successfully!");
       setTimeout(() => setAiSuccess(""), 3000);
     } catch (error: unknown) {
-      setAiError(`Failed to save image: ${(error as Error).message}`);
+      const message =
+        error instanceof MediaUploadError ? error.message : (error as Error)?.message;
+      setAiError(`Failed to save image: ${message}`);
     } finally {
       setUploading(false);
     }
