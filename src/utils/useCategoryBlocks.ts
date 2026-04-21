@@ -7,7 +7,7 @@ export interface BlockItem {
   name: string;
   category: string;
   subcategory?: string;
-  style?: string;
+  styles?: string[];
   description?: string;
   structure: any;
   modifiers?: Record<string, { name: string; classes: string }[]>;
@@ -70,11 +70,17 @@ export function useCategoryBlocks(
  * Search blocks across all categories by query string.
  * Returns blocks with structure for preview.
  */
-export function useBlockSearch(query: string | null) {
-  const key =
-    query && query.trim().length >= 2
-      ? `/api/v1/components?q=${encodeURIComponent(query.trim())}&include=structure&limit=30&sort=name`
-      : null;
+export function useBlockSearch(query: string | null, style?: string | null) {
+  const trimmed = query?.trim() ?? "";
+  const params = new URLSearchParams();
+  if (trimmed.length >= 2) {
+    params.set("q", trimmed);
+    params.set("include", "structure");
+    params.set("limit", "30");
+    params.set("sort", "name");
+    if (style) params.set("style", style);
+  }
+  const key = trimmed.length >= 2 ? `/api/v1/components?${params.toString()}` : null;
 
   const { data, isLoading } = useSWR(key, fetcher, {
     revalidateOnFocus: false,

@@ -3,11 +3,10 @@ import { useAtomValue } from "@zedux/react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   TbArrowLeft,
-  TbChevronDown,
   TbChevronLeft,
   TbChevronRight,
   TbLoader2,
-  TbX,
+  TbPalette,
 } from "react-icons/tb";
 import { SectionPickerDialogAtom } from "../../../utils/atoms";
 import { useSetAtomState } from "../../../utils/atoms";
@@ -16,77 +15,10 @@ import { useCategoryBlocks, type BlockItem } from "../../../utils/useCategoryBlo
 import { useInsertTarget } from "../../hooks/useInsertTarget";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout";
 import { AddElement } from "../toolbox/toolboxUtils";
-import { BlockPreviewCard, BlockQuickLook } from "./components";
+import { BlockPreviewCard, BlockQuickLook, FilterDropdown } from "./components";
 import { buildElementFromStructure } from "./blockHelpers";
 
 const PAGE_SIZE = 6;
-
-function FilterDropdown({
-  label,
-  activeValue,
-  isOpen,
-  onToggle,
-  onClose,
-  onClear,
-  items,
-  activeKey,
-  onSelect,
-}: {
-  label: string;
-  activeValue: string | null;
-  isOpen: boolean;
-  onToggle: () => void;
-  onClose: () => void;
-  onClear: () => void;
-  items: { name: string; count: number }[];
-  activeKey: string | null;
-  onSelect: (name: string) => void;
-}) {
-  return (
-    <div className="relative">
-      {activeValue ? (
-        <div className="flex items-center gap-1">
-          <span className="bg-primary text-primary-content rounded-full px-2 py-0.5 text-xs font-medium">
-            {activeValue}
-          </span>
-          <button
-            onClick={onClear}
-            className="hover:bg-neutral cursor-pointer rounded-full p-0.5 transition-colors"
-          >
-            <TbX className="text-neutral-content size-3" />
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={onToggle}
-          className="text-neutral-content hover:bg-neutral flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors"
-        >
-          {label}
-          <TbChevronDown className={`size-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-        </button>
-      )}
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={onClose} />
-          <div className="border-base-300 bg-base-100 absolute top-full right-0 z-50 mt-1 min-w-[140px] rounded-lg border py-1 shadow-lg">
-            {items.map(item => (
-              <button
-                key={item.name}
-                onClick={() => onSelect(item.name)}
-                className={`hover:bg-neutral flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-xs transition-colors ${
-                  activeKey === item.name ? "text-primary font-medium" : "text-base-content"
-                }`}
-              >
-                <span>{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</span>
-                <span className="text-neutral-content">{item.count}</span>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
 
 interface CategoryDetailViewProps {
   category: BlockCategory;
@@ -94,6 +26,9 @@ interface CategoryDetailViewProps {
   onBack: () => void;
   activeSubcategory: string | null;
   activeStyle: string | null;
+  /** The site's own buildStyle (ROOT.props.buildStyle). When set and this category has blocks
+   *  tagged with that style, the filter auto-applies on mount for visual cohesion. */
+  siteStyle?: string | null;
   onSubcategoryChange: (sub: string | null) => void;
   onStyleChange: (style: string | null) => void;
   onCategoryChange: (catId: string) => void;
@@ -105,6 +40,7 @@ export function CategoryDetailView({
   onBack,
   activeSubcategory,
   activeStyle,
+  siteStyle,
   onSubcategoryChange,
   onStyleChange,
   onCategoryChange,
@@ -166,6 +102,21 @@ export function CategoryDetailView({
   const hoveredRef = useRef<{ block: BlockItem; rect: DOMRect } | null>(null);
   const hasSubcategories = category.subcategories.length > 0;
   const hasStyles = category.styles?.length > 0;
+
+  // Auto-apply the site's buildStyle when the user enters a category, as long as that category
+  // actually has blocks tagged with that style. Only fires when no style is already active, and
+  // only once per (category, siteStyle) pair — so the user can still clear it manually.
+  const autoAppliedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!siteStyle || activeStyle) return;
+    if (!hasStyles) return;
+    const match = category.styles.find(s => s.name === siteStyle);
+    if (!match) return;
+    const key = `${category.id}:${siteStyle}`;
+    if (autoAppliedRef.current === key) return;
+    autoAppliedRef.current = key;
+    onStyleChange(siteStyle);
+  }, [siteStyle, activeStyle, hasStyles, category.id, category.styles, onStyleChange]);
 
   const hasUsedQuickLook = useRef(false);
 
@@ -248,11 +199,13 @@ export function CategoryDetailView({
           <span className="text-neutral-content text-xs">{category.total}</span>
         </div>
 
-        {/* Style dropdown */}
+        {/* Style dropdown (palette) */}
         {hasStyles && (
           <FilterDropdown
             label="Style"
+            icon={TbPalette}
             activeValue={styleLabel}
+            isAutoApplied={!!activeStyle && activeStyle === siteStyle}
             isOpen={styleOpen}
             onToggle={() => {
               setStyleOpen(!styleOpen);

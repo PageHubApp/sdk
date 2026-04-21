@@ -13,7 +13,13 @@ import { buildElementFromStructure } from "./blockHelpers";
 
 const PAGE_SIZE = 6;
 
-export function SearchResultsView({ query: searchQuery }: { query: string }) {
+export function SearchResultsView({
+  query: searchQuery,
+  style,
+}: {
+  query: string;
+  style?: string | null;
+}) {
   const { actions, query: editorQuery } = useEditor();
   const {
     connectors: { create },
@@ -30,7 +36,7 @@ export function SearchResultsView({ query: searchQuery }: { query: string }) {
   const setPositionInfo = useSetAtomState(SectionPickerDialogAtom);
   const { getTargetPageId } = useInsertTarget();
 
-  const { blocks, isLoading } = useBlockSearch(searchQuery);
+  const { blocks, isLoading } = useBlockSearch(searchQuery, style);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
