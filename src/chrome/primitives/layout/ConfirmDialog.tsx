@@ -106,7 +106,8 @@ export const ConfirmDialog = ({
 
   return ReactDOM.createPortal(
     <div
-      className="pagehub-sdk-root ph-modal-backdrop ph-modal-backdrop--center z-9997"
+      className="pagehub-sdk-root ph-modal-backdrop ph-modal-backdrop--center"
+      style={{ zIndex: 2147483000 }}
       onClick={onClose}
     >
       <div

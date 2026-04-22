@@ -19,7 +19,8 @@ export function ImageCropModal({ isOpen, onClose, media, onSave, settings }: Ima
 
   return ReactDOM.createPortal(
     <div
-      className="pagehub-sdk-root ph-modal-backdrop ph-modal-backdrop--center z-9999"
+      className="pagehub-sdk-root ph-modal-backdrop ph-modal-backdrop--center"
+      style={{ zIndex: 2147483000 }}
       onClick={onClose}
     >
       <div

@@ -219,18 +219,20 @@ export function MediaManagerModal({
 
           {folderNameMode && !selectionMode && (
             <div className="border-base-300 bg-base-100 flex items-center gap-2 border-b px-3 py-2">
-              <input
-                type="text"
-                value={folderNameValue}
-                onChange={e => setFolderNameValue(e.target.value)}
-                placeholder={folderNameMode === "create" ? "New folder name" : "Rename folder"}
-                className="input-dialog h-8 min-h-8 flex-1"
-                autoFocus
-                onKeyDown={e => {
-                  if (e.key === "Enter") handleSubmitFolderName();
-                  if (e.key === "Escape") handleCancelFolderName();
-                }}
-              />
+              <div className="input-wrapper input-hover relative flex h-8 min-h-0 flex-1 items-center">
+                <input
+                  type="text"
+                  value={folderNameValue}
+                  onChange={e => setFolderNameValue(e.target.value)}
+                  placeholder={folderNameMode === "create" ? "New folder name" : "Rename folder"}
+                  className="input-plain-search h-full! min-h-0 px-3"
+                  autoFocus
+                  onKeyDown={e => {
+                    if (e.key === "Enter") handleSubmitFolderName();
+                    if (e.key === "Escape") handleCancelFolderName();
+                  }}
+                />
+              </div>
               <button
                 type="button"
                 onClick={handleSubmitFolderName}

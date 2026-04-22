@@ -1,4 +1,5 @@
 import { TbLock, TbLockOpen } from "react-icons/tb";
+import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 import { PRESET_SIZES, type UseImageCropReturn } from "../hooks/useImageCrop";
 
 interface CropControlsPanelProps {
@@ -70,26 +71,28 @@ function ScaleControl({
 
 export function CropControlsPanel({ crop }: CropControlsPanelProps) {
   return (
-    <div className="scrollbar-dark border-base-300 from-muted/20 to-muted/40 w-full overflow-y-auto bg-linear-to-b p-4 pb-20 sm:w-64 md:w-72 lg:w-80 lg:border-r lg:p-6">
+    <AutoHideScrollbar className="border-base-300 from-muted/20 to-muted/40 w-full bg-linear-to-b p-4 pb-20 sm:w-64 md:w-72 lg:w-80 lg:border-r lg:p-6">
       <div className="space-y-6">
         {/* Presets */}
         <Card title="Aspect Ratios">
-          <div className="scrollbar-dark grid h-32 grid-cols-2 gap-2 overflow-y-auto">
-            {PRESET_SIZES.map(preset => (
-              <button
-                key={preset.name}
-                onClick={() => crop.handlePresetSelect(preset)}
-                className="group border-base-300 bg-base-200 hover:border-primary/30 hover:bg-primary/5 rounded-lg border p-2 text-left text-xs hover:shadow-sm"
-              >
-                <div className="text-base-content group-hover:text-primary font-semibold transition-colors">
-                  {preset.name}
-                </div>
-                <div className="text-neutral-content text-xs">
-                  {preset.width} × {preset.height}
-                </div>
-              </button>
-            ))}
-          </div>
+          <AutoHideScrollbar className="h-32 pr-1">
+            <div className="grid grid-cols-2 gap-2">
+              {PRESET_SIZES.map(preset => (
+                <button
+                  key={preset.name}
+                  onClick={() => crop.handlePresetSelect(preset)}
+                  className="group border-base-300 bg-base-200 hover:border-primary/30 hover:bg-primary/5 rounded-lg border p-2 text-left text-xs hover:shadow-sm"
+                >
+                  <div className="text-base-content group-hover:text-primary font-semibold transition-colors">
+                    {preset.name}
+                  </div>
+                  <div className="text-neutral-content text-xs">
+                    {preset.width} × {preset.height}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </AutoHideScrollbar>
         </Card>
 
         {/* Dimensions */}
@@ -247,6 +250,6 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
           </div>
         </Card>
       </div>
-    </div>
+    </AutoHideScrollbar>
   );
 }

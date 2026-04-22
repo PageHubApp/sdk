@@ -1,4 +1,5 @@
 import Image from "next/image";
+import ReactDOM from "react-dom";
 import { useState } from "react";
 import { TbChevronLeft, TbChevronRight, TbCopy, TbDownload, TbX } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
@@ -39,9 +40,10 @@ export function MediaPreviewModal({
           : undefined;
   const downloadName = media.metadata?.title || media.id;
 
-  return (
+  return ReactDOM.createPortal(
     <div
-      className="animate-backdrop-in fixed inset-0 z-9999 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      className="animate-backdrop-in fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      style={{ zIndex: 2147483000 }}
       onClick={onClose}
     >
       {/* Header actions */}
@@ -191,7 +193,8 @@ export function MediaPreviewModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.querySelector(".pagehub-sdk-root") || document.body
   );
 }
 

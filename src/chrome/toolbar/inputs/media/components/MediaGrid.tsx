@@ -27,6 +27,8 @@ import {
 
 const BLUR_PLACEHOLDER =
   "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
+const LIST_GRID_COLS =
+  "grid-cols-[2rem_minmax(0,2.4fr)_minmax(4.5rem,.7fr)_minmax(4.8rem,.75fr)_minmax(6.2rem,.9fr)_minmax(6rem,.8fr)]";
 
 interface MediaGridProps {
   filteredMedia: MediaItem[];
@@ -142,7 +144,9 @@ export function MediaGrid({
       ) : (
         <>
           {viewMode === "list" && (
-            <div className="text-neutral-content mb-2 grid grid-cols-[2rem_minmax(0,1fr)_6rem_7rem_7rem_8rem] items-center gap-3 px-3 text-[11px] font-semibold uppercase tracking-wide">
+            <div
+              className={`text-base-content/60 border-base-300/70 bg-base-100/80 mb-1 grid ${LIST_GRID_COLS} items-center gap-3 rounded-md border px-4 py-2 text-[10px] font-semibold tracking-[0.08em] uppercase`}
+            >
               <span />
               <span>Name</span>
               <span>Type</span>
@@ -155,7 +159,7 @@ export function MediaGrid({
             className={
               viewMode === "cards"
                 ? "grid grid-cols-[repeat(auto-fill,minmax(11.5rem,1fr))] gap-3"
-                : "flex flex-col"
+                : "border-base-300/70 bg-base-100 overflow-hidden rounded-md border"
             }
           >
             {filteredMedia.map(media => {
@@ -308,8 +312,8 @@ function MediaItemRow({
           ? `border-base-300 bg-base-200 overflow-hidden rounded-lg border ${
               isSelected ? "ring-primary ring-offset-background ring-2 ring-offset-2" : "hover:border-primary"
             }`
-          : `border-base-300 grid grid-cols-[2rem_minmax(0,1fr)_6rem_7rem_7rem_8rem] items-center gap-3 border-b px-3 py-1.5 ${
-              isSelected ? "bg-primary/8" : "hover:bg-neutral/40"
+          : `border-base-300/70 grid ${LIST_GRID_COLS} items-center gap-3 border-b px-4 py-2 ${
+              isSelected ? "bg-primary/10" : "hover:bg-base-200/55"
             }`
       } ${isDeleting ? "pointer-events-none opacity-60" : ""}`}
       onClick={handleClick}
@@ -327,6 +331,22 @@ function MediaItemRow({
             <TbLoader2 className="text-error size-8 animate-spin" />
             <span className="text-error text-xs font-medium">Deleting...</span>
           </div>
+        </div>
+      )}
+
+      {!selectionMode && viewMode === "list" && (
+        <div className="flex items-center" onClick={e => e.stopPropagation()}>
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => {}}
+            onClick={e => {
+              e.stopPropagation();
+              onSelect({ shiftKey: e.shiftKey, metaKey: true });
+            }}
+            className="checkbox checkbox-sm border-base-300 bg-base-100/95"
+            aria-label="Select media item"
+          />
         </div>
       )}
 
@@ -353,7 +373,7 @@ function MediaItemRow({
               className="checkbox checkbox-sm border-base-300 bg-base-100/95"
               aria-label="Select media item"
             />
-          ) : (
+          ) : viewMode === "cards" ? (
             <input
               type="checkbox"
               checked={isSelected}
@@ -365,7 +385,7 @@ function MediaItemRow({
               className="checkbox checkbox-sm border-base-300 bg-base-100/95"
               aria-label="Select media item"
             />
-          )}
+          ) : null}
         </div>
       )}
 
@@ -489,7 +509,7 @@ function ListView({
     <>
       {showLeadingSpacer ? <span /> : null}
       <div className="flex min-w-0 items-center gap-3">
-        <div className="border-base-300 bg-neutral flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border">
+        <div className="border-base-300 bg-neutral flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md border">
           {media.type === "url" ? (
             <div className="bg-neutral relative size-full">
               <Image
@@ -540,18 +560,18 @@ function ListView({
 
         <div className="min-w-0">
           <p className="text-base-content truncate text-sm font-medium">{media.metadata?.title || media.id}</p>
-          <p className="text-neutral-content truncate text-[11px]">{media.id}</p>
+          <p className="text-neutral-content truncate text-[10px]">{media.id}</p>
         </div>
       </div>
 
-      <div className="text-neutral-content truncate text-xs">{MEDIA_KIND_LABELS[kind]}</div>
-      <div className="text-neutral-content truncate text-xs">
+      <div className="text-base-content/70 truncate text-xs font-medium">{MEDIA_KIND_LABELS[kind]}</div>
+      <div className="text-base-content/75 truncate text-xs font-medium">
         {media.metadata?.size ? formatFileSize(media.metadata.size) : "--"}
       </div>
-      <div className="text-neutral-content truncate text-xs">
+      <div className="text-base-content/70 truncate text-xs">
         {media.uploadedAt ? new Date(media.uploadedAt).toLocaleDateString() : "--"}
       </div>
-      <div className="text-neutral-content truncate text-xs">{folderLabel}</div>
+      <div className="text-base-content/70 truncate text-xs">{folderLabel}</div>
     </>
   );
 }
