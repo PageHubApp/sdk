@@ -6,6 +6,7 @@ import { AddElement } from "../toolbox/toolboxUtils";
 import sluggit from "slug";
 import { usePageNavigation } from "../../../utils/pageNavigation";
 import { useSDK } from "../../../core/context";
+import { saveAndWait } from "../../../utils/saveAndWait";
 
 interface UsePageCreationOptions {
   pages: Array<{ id: string; displayName: string }>;
@@ -22,30 +23,6 @@ interface UsePageCreationOptions {
 /** Deterministic page node ID from a display name (matches MCP add_page format). */
 function nameToPageNodeId(name: string): string {
   return `page_${sluggit(name, "-").replace(/-/g, "_")}`;
-}
-
-/**
- * Trigger a save and wait for it to complete (pagehub:saved event).
- * Only used in standalone (non-sharding) mode.
- */
-function saveAndWait(emitter: any, timeoutMs = 15000): Promise<void> {
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const onSaved = () => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      resolve();
-    };
-    const timer = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      window.removeEventListener("pagehub:saved", onSaved);
-      reject(new Error("Timed out waiting for save"));
-    }, timeoutMs);
-    window.addEventListener("pagehub:saved", onSaved, { once: true });
-    emitter.emit("save", { isDraft: true });
-  });
 }
 
 export function usePageCreation({

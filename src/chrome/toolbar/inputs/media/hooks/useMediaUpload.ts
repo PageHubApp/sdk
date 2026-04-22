@@ -7,6 +7,8 @@ import { registerMediaWithBackground } from "@/utils/lib";
 import { getUploadAccept, MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import { useSDK } from "@/core/context";
 import { useImageDrop } from "@/chrome/hooks/useImageDrop";
+import { getSiteId } from "@/utils/pageNavigation";
+import { saveAndWait } from "@/utils/saveAndWait";
 import {
   cleanSvg,
   type AddMode,
@@ -26,7 +28,28 @@ export function useMediaUpload({
   generateMetadataForImage,
 }: UseMediaUploadOptions) {
   const { query, actions } = useEditor();
-  const { config } = useSDK();
+  const { config, emitter } = useSDK();
+
+  /** Ensure the current page has been persisted (has a `_id` + URL) before
+   *  attaching media. On `/build` (brand new page), this triggers the host
+   *  app's save flow so the resulting URL update + page record exist before
+   *  we mutate `pageMedia`. No-op when already saved. Concurrent callers
+   *  (e.g. multi-file upload, upload while paste pending) share one in-flight
+   *  promise so we don't fire `emit("save")` multiple times in parallel. */
+  const ensureSavePromiseRef = useRef<Promise<void> | null>(null);
+  const ensureSavedPage = async () => {
+    if (getSiteId()) return;
+    if (!ensureSavePromiseRef.current) {
+      ensureSavePromiseRef.current = saveAndWait(emitter)
+        .catch(e => {
+          console.warn("[MediaManager] page save before upload failed:", e);
+        })
+        .finally(() => {
+          ensureSavePromiseRef.current = null;
+        });
+    }
+    await ensureSavePromiseRef.current;
+  };
 
   // ─── Upload state ───
   const [uploading, setUploading] = useState(false);
@@ -137,6 +160,8 @@ export function useMediaUpload({
     setUploadError(null);
     setUploadProgress({ current: 0, total: files.length, currentFile: "", completedFiles: [] });
 
+    await ensureSavedPage();
+
     const failedFiles: Array<{ name: string; error: string }> = [];
 
     try {
@@ -181,6 +206,8 @@ export function useMediaUpload({
     if (!files || files.length === 0 || !replacingMedia) return;
     setUploading(true);
     setUploadProgress({ current: 0, total: 1, currentFile: files[0].name, completedFiles: [] });
+
+    await ensureSavedPage();
 
     try {
       const file = files[0];
@@ -234,6 +261,8 @@ export function useMediaUpload({
     if (!urlInput.trim()) return;
     setUploading(true);
     setUploadProgress({ current: 0, total: 1, currentFile: urlInput, completedFiles: [] });
+
+    await ensureSavedPage();
 
     try {
       if (saveUrlToCdn) {
@@ -344,10 +373,12 @@ export function useMediaUpload({
     }
   };
 
-  const handleAddSvg = () => {
+  const handleAddSvg = async () => {
     if (!svgInput.trim()) return;
     setUploading(true);
     setUploadProgress({ current: 0, total: 1, currentFile: "SVG Image", completedFiles: [] });
+
+    await ensureSavedPage();
 
     try {
       const cleanedSvg = cleanSvg(svgInput);
@@ -412,6 +443,8 @@ export function useMediaUpload({
           completedFiles: [],
         });
 
+        await ensureSavedPage();
+
         try {
           const { mediaId, file: uploaded } = await uploadImageToCdn(file);
           await registerUploadedMedia(mediaId, uploaded, "paste");
@@ -443,6 +476,7 @@ export function useMediaUpload({
             });
 
             setUploading(true);
+            await ensureSavedPage();
             try {
               const { mediaId, file: uploaded } = await uploadImageToCdn(file);
               registerMediaWithBackground(query, actions, mediaId, "cdn", "media-manager");
