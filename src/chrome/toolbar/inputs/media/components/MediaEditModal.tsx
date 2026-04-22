@@ -1,4 +1,5 @@
 import Image from "next/image";
+import ReactDOM from "react-dom";
 import { TbCheck, TbEdit, TbLoader2, TbX } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
@@ -37,11 +38,12 @@ export function MediaEditModal({
     });
   };
 
-  return (
+  return ReactDOM.createPortal(
     <div
       role="button"
       tabIndex={0}
-      className="bg-base-100/60 text-neutral-content absolute inset-0 flex items-center justify-center backdrop-blur-sm"
+      className="bg-base-100/60 text-neutral-content fixed inset-0 flex items-center justify-center backdrop-blur-sm"
+      style={{ zIndex: 2147483000 }}
       onClick={onClose}
       onKeyDown={e => {
         if (e.key === "Enter" || e.key === " ") {
@@ -245,6 +247,7 @@ export function MediaEditModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.querySelector(".pagehub-sdk-root") || document.body
   );
 }
