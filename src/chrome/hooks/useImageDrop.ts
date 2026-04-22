@@ -2,10 +2,31 @@ import { useCallback, useState } from "react";
 
 export type ImageDropRejectReason = "bad_mime" | "too_large" | "over_max_count";
 
+/** Match a file's MIME against an HTML-style `accept` value. */
+function matchesAccept(fileType: string, accept: string): boolean {
+  const a = accept.trim();
+  if (!a || a === "*" || a === "*/*") return true;
+  // Legacy single prefix (e.g. "image/")
+  if (!a.includes(",") && a.endsWith("/")) return fileType.startsWith(a);
+  return a.split(",").some(raw => {
+    const p = raw.trim();
+    if (!p) return false;
+    if (p === "*" || p === "*/*") return true;
+    if (p.endsWith("/*")) return fileType.startsWith(p.slice(0, -1));
+    if (p.endsWith("/")) return fileType.startsWith(p);
+    return fileType === p;
+  });
+}
+
 interface UseImageDropOptions {
   /** Called with accepted files */
   onFiles: (files: File[]) => void;
-  /** MIME prefix filter — e.g. "image/" (default). Pass "*" to accept all files. */
+  /**
+   * Accept filter. Supports the same shapes as HTML `<input accept>`:
+   * - `"*"` or `"*\/*"` — accept everything
+   * - single MIME prefix — `"image/"` (legacy default)
+   * - comma-separated MIME list with wildcards — `"image/png,video/*,application/pdf"`
+   */
   accept?: string;
   /** Max files to accept per drop (default: 10) */
   max?: number;
@@ -63,7 +84,7 @@ export function useImageDrop({
 
       const accepted: File[] = [];
       for (const f of Array.from(e.dataTransfer.files)) {
-        if (accept !== "*" && !f.type.startsWith(accept)) {
+        if (!matchesAccept(f.type, accept)) {
           onRejected?.(f, "bad_mime");
           continue;
         }

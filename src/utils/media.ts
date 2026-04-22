@@ -96,6 +96,9 @@ export const getMediaContent = (query: any, mediaId: string): string | null => {
       const svgContent = media.metadata?.svg || "";
       return `data:image/svg+xml;base64,${btoa(svgContent)}`;
     }
+    // R2 objects (video/audio/pdf/etc) — no CDN variant transforms, just the
+    // stored public URL. deliveryURL is written at upload time.
+    if (media.type === "r2") return media.metadata?.deliveryURL || null;
 
     const cdnId = media.cdnId || media.id;
     return getCdnUrl(cdnId, { width: calculateOptimalBackgroundSize(), format: "auto" });
@@ -114,7 +117,8 @@ export const getResponsiveImageAttrs = (query: any, mediaId: string) => {
     const pageMedia = backgroundNode.data.props.pageMedia || [];
     const media = pageMedia.find((m: any) => m.id === mediaId);
 
-    if (!media || media.type === "url" || media.type === "svg") {
+    if (!media || media.type === "url" || media.type === "svg" || media.type === "r2") {
+      // No responsive variants for URL / SVG / R2 — just the raw src.
       return { src: getMediaContent(query, mediaId), srcset: null, sizes: null };
     }
 

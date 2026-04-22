@@ -1,11 +1,36 @@
 import { useNode } from "@craftjs/core";
+import { useEffect, useRef } from "react";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { MediaInput } from "../../inputs/media/MediaInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 export const VideoMainTab = () => {
-  const { provider } = useNode(node => ({ provider: node.data?.props.provider }));
+  const {
+    provider,
+    videoId,
+    actions: { setProp },
+  } = useNode(node => ({
+    provider: node.data?.props.provider,
+    videoId: node.data?.props.videoId,
+  }));
+
+  // Clear `videoId` when crossing the r2 boundary — R2 mediaIds are not
+  // valid for remote providers (and vice versa), so a stale value would
+  // make the rendered embed silently break.
+  const prevProviderRef = useRef<string | undefined>(provider);
+  useEffect(() => {
+    const prev = prevProviderRef.current;
+    prevProviderRef.current = provider;
+    if (prev === provider) return;
+    const crossed = (prev === "r2") !== (provider === "r2");
+    if (crossed && videoId) {
+      setProp((props: Record<string, unknown>) => {
+        props.videoId = "";
+      });
+    }
+  }, [provider, videoId, setProp]);
 
   const getProviderInstructions = () => {
     switch (provider) {
@@ -23,6 +48,8 @@ export const VideoMainTab = () => {
         return "Copy the Video ID from the Twitch video URL (e.g., '1234567890' from twitch.tv/videos/1234567890)";
       case "url":
         return "Paste the direct video file URL (must be publicly accessible)";
+      case "r2":
+        return "Pick a video file from your media library.";
       default:
         return "Enter the video ID or URL";
     }
@@ -43,6 +70,7 @@ export const VideoMainTab = () => {
             label="Video Provider"
             labelHide={false}
           >
+            <option value="r2">Uploaded</option>
             <option value="youtube">YouTube</option>
             <option value="vimeo">Vimeo</option>
             <option value="dailymotion">Dailymotion</option>
@@ -57,18 +85,32 @@ export const VideoMainTab = () => {
           {getProviderInstructions()}
         </p>
 
-        <ToolbarSection title="">
-          <ToolbarItem
-            propKey="videoId"
-            propType="component"
-            type="text"
-            label={provider === "url" || provider === "facebook" ? "Video URL" : "Video ID"}
-            labelHide={true}
-            placeholder={
-              provider === "url" || provider === "facebook" ? "https://..." : "Enter video ID"
-            }
-          />
-        </ToolbarSection>
+        {provider === "r2" ? (
+          <ToolbarSection title="">
+            <MediaInput
+              propKey="videoId"
+              typeKey="provider"
+              contentKey="videoId"
+              title=""
+              kindFilter="video"
+              defaultTypeValue="r2"
+              showObjectProperties={false}
+            />
+          </ToolbarSection>
+        ) : (
+          <ToolbarSection title="">
+            <ToolbarItem
+              propKey="videoId"
+              propType="component"
+              type="text"
+              label={provider === "url" || provider === "facebook" ? "Video URL" : "Video ID"}
+              labelHide={true}
+              placeholder={
+                provider === "url" || provider === "facebook" ? "https://..." : "Enter video ID"
+              }
+            />
+          </ToolbarSection>
+        )}
 
         <SettingsAiSlot />
       </>

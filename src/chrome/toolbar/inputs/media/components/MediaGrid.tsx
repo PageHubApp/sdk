@@ -5,6 +5,8 @@ import {
   TbCrop,
   TbEdit,
   TbExternalLink,
+  TbFile,
+  TbFileMusic,
   TbFolder,
   TbInfoCircle,
   TbLoader2,
@@ -19,6 +21,8 @@ import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
 import {
   formatFileSize,
+  getMediaKind,
+  MEDIA_KIND_LABELS,
   type MediaItem,
   type SortField,
   type UploadProgress,
@@ -388,6 +392,12 @@ function ActionButton({
 }
 
 function CardView({ media, sortField }: { media: MediaItem; sortField: SortField }) {
+  const isR2 = media.type === "r2";
+  const contentType = media.metadata?.contentType || "";
+  const isVideo = isR2 && contentType.startsWith("video/");
+  const isAudio = isR2 && contentType.startsWith("audio/");
+  const deliveryURL = media.metadata?.deliveryURL;
+  const kind = getMediaKind(media);
   return (
     <div className="flex flex-col">
       <div
@@ -397,7 +407,7 @@ function CardView({ media, sortField }: { media: MediaItem; sortField: SortField
           backgroundImage:
             media.type === "url"
               ? `url("${media.metadata?.url}")`
-              : media.type === "svg"
+              : media.type === "svg" || isR2
                 ? undefined
                 : `url(${getCdnUrl(media.cdnId || media.id, { width: 400, format: "auto" })})`,
         }}
@@ -417,11 +427,35 @@ function CardView({ media, sortField }: { media: MediaItem; sortField: SortField
             <TbCrop className="size-3" />
           </div>
         )}
+        {kind !== "image" && (
+          <div className="bg-primary/90 text-primary-content absolute top-1 left-1 rounded px-1.5 py-0.5 text-[10px] font-medium">
+            {MEDIA_KIND_LABELS[kind]}
+          </div>
+        )}
         {media.type === "svg" && (
           <div
             className="flex size-full items-center justify-center p-2"
             dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }}
           />
+        )}
+        {isVideo && deliveryURL && (
+          <video
+            src={deliveryURL}
+            className="size-full object-cover"
+            preload="metadata"
+            muted
+            playsInline
+          />
+        )}
+        {isR2 && !isVideo && (
+          <div className="text-base-content/70 flex size-full flex-col items-center justify-center gap-1 p-2">
+            {isAudio ? (
+              <TbFileMusic className="size-8" />
+            ) : (
+              <TbFile className="size-8" />
+            )}
+            <span className="truncate text-[10px]">{contentType || "file"}</span>
+          </div>
         )}
       </div>
 
@@ -444,6 +478,12 @@ function CardView({ media, sortField }: { media: MediaItem; sortField: SortField
 }
 
 function ListView({ media, sortField }: { media: MediaItem; sortField: SortField }) {
+  const isR2 = media.type === "r2";
+  const contentType = media.metadata?.contentType || "";
+  const isVideo = isR2 && contentType.startsWith("video/");
+  const isAudio = isR2 && contentType.startsWith("audio/");
+  const deliveryURL = media.metadata?.deliveryURL;
+  const kind = getMediaKind(media);
   return (
     <div className="flex items-center gap-4 px-3 py-2">
       {/* Thumbnail */}
@@ -468,6 +508,18 @@ function ListView({ media, sortField }: { media: MediaItem; sortField: SortField
             className="size-full p-1"
             dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }}
           />
+        ) : isVideo && deliveryURL ? (
+          <video
+            src={deliveryURL}
+            className="size-full object-cover"
+            preload="metadata"
+            muted
+            playsInline
+          />
+        ) : isR2 ? (
+          <div className="text-base-content/70 flex size-full items-center justify-center">
+            {isAudio ? <TbFileMusic className="size-6" /> : <TbFile className="size-6" />}
+          </div>
         ) : (
           <div className="bg-neutral relative size-full">
             <Image
@@ -492,6 +544,11 @@ function ListView({ media, sortField }: { media: MediaItem; sortField: SortField
         <p className="text-base-content min-w-0 flex-1 truncate text-sm font-medium">
           {media.metadata?.title || media.id}
         </p>
+        {kind !== "image" && (
+          <span className="bg-primary/10 text-primary shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium">
+            {MEDIA_KIND_LABELS[kind]}
+          </span>
+        )}
         {media.metadata?.isVariant && (
           <span className="bg-primary/10 text-primary shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium">
             Variant

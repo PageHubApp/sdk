@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { TbBrandVimeo, TbBrandYoutube, TbPlayerPlay, TbVideo } from "react-icons/tb";
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
+import { getMediaContent } from "../utils/media";
 
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../utils/lib";
@@ -63,7 +64,11 @@ export type VideoProvider =
   | "wistia"
   | "facebook"
   | "twitch"
-  | "url";
+  | "url"
+  /** Self-hosted video stored in the host's R2 bucket via Media Manager.
+   *  `videoId` is the R2 mediaId; the renderer resolves it through
+   *  `getMediaContent` to the public delivery URL. */
+  | "r2";
 
 export interface VideoProps extends BaseSelectorProps {
   provider?: VideoProvider;
@@ -140,6 +145,31 @@ export const Video = (incomingProps: VideoProps) => {
             height: "100%",
           }}
           title={props.title || `YouTube video ${videoId}`}
+        />
+      );
+    }
+
+    if (provider === "r2") {
+      // videoId is a Media Manager mediaId; resolve to the R2 public URL.
+      const src = getMediaContent(query, videoId);
+      if (!src) {
+        return enabled ? (
+          <EditorEmptyLeafHint
+            selected={isActive}
+            icon={getProviderIcon()}
+            idleLabel="Video not found in media library"
+            selectedLabel="Pick a file from Media Manager"
+          />
+        ) : null;
+      }
+      return (
+        <video
+          className={videoClassName}
+          src={src}
+          controls
+          playsInline
+          preload="metadata"
+          title={props.title}
         />
       );
     }

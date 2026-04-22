@@ -7,6 +7,7 @@ import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { MediaManagerModal } from "./MediaManagerModal";
+import { getMediaKind } from "./utils/media-helpers";
 
 /** Read a value by dot-path (e.g. "background.image") from an object. */
 function getPath(obj: any, path: string): any {
@@ -49,6 +50,12 @@ export const MediaInput = propa => {
     contentKey = "src",
     title = "Media",
     showObjectProperties = true,
+    kindFilter,
+    /** Value written to `typeKey` on clear (and as the fallback when a
+     *  selected item has no `type`). Defaults to "cdn" — Image's expected
+     *  reset state. Video passes "r2" so clear doesn't stomp `provider` to
+     *  an invalid value. */
+    defaultTypeValue = "cdn",
   } = props;
 
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
@@ -60,7 +67,7 @@ export const MediaInput = propa => {
 
     setProp(_props => {
       setPath(_props, propKey, selectedMediaId);
-      setPath(_props, typeKey, selectedMedia?.type || "cdn");
+      setPath(_props, typeKey, selectedMedia?.type || defaultTypeValue);
       // Clear direct URL / inline content when switching to library (mirrors handleContentUrlChange)
       if (contentKey !== propKey) {
         setPath(_props, contentKey, null);
@@ -103,10 +110,13 @@ export const MediaInput = propa => {
     imageUrl = contentUrl;
   }
 
+  const selectedKind = selectedMedia ? getMediaKind(selectedMedia) : null;
+  const isVideoPreview = selectedKind === "video" && !!imageUrl;
+
   const handleClear = () => {
     setProp(_props => {
       setPath(_props, propKey, null);
-      setPath(_props, typeKey, "cdn");
+      setPath(_props, typeKey, defaultTypeValue);
       setPath(_props, contentKey, null); // Also clear content URL
     });
   };
@@ -117,7 +127,7 @@ export const MediaInput = propa => {
       // Clear media library selection when setting content URL
       if (newUrl) {
         setPath(_props, propKey, null);
-        setPath(_props, typeKey, "cdn");
+        setPath(_props, typeKey, defaultTypeValue);
       }
     });
   };
@@ -133,6 +143,14 @@ export const MediaInput = propa => {
                 <div
                   className="text-base-content flex size-full items-center justify-center [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
                   dangerouslySetInnerHTML={{ __html: svgContent }}
+                />
+              ) : isVideoPreview ? (
+                <video
+                  src={imageUrl}
+                  className="size-full rounded-lg object-cover"
+                  preload="metadata"
+                  muted
+                  playsInline
                 />
               ) : imageUrl ? (
                 <img
@@ -207,6 +225,7 @@ export const MediaInput = propa => {
         onClose={() => setShowMediaBrowser(false)}
         onSelect={handleBrowseSelect}
         selectionMode={true}
+        kindFilter={kindFilter}
       />
     </>
   );

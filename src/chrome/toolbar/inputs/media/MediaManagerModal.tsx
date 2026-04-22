@@ -1,151 +1,190 @@
 import { ConfirmDialog } from "@/chrome/primitives/layout/ConfirmDialog";
-import ReactDOM from "react-dom";
-import { TbAlertTriangle, TbPhoto, TbX } from "react-icons/tb";
+import { SettingsShell } from "@/chrome/viewport/settings/SettingsShell";
+import { useEditorSidebarDockLeft } from "@/utils/lib";
+import { useEffect, useMemo } from "react";
+import {
+  TbAlertTriangle,
+  TbArchive,
+  TbFile,
+  TbFileMusic,
+  TbFileTypePdf,
+  TbPhoto,
+  TbStack2,
+  TbVideo,
+  TbX,
+} from "react-icons/tb";
 import { ImageCropModal } from "../../dialogs/ImageCropModal";
 import { MediaEditModal } from "./components/MediaEditModal";
 import { MediaGrid } from "./components/MediaGrid";
 import { MediaPreviewModal } from "./components/MediaPreviewModal";
 import { MediaToolbar } from "./components/MediaToolbar";
 import { useMediaManager } from "./hooks/useMediaManager";
+import {
+  getMediaKind,
+  getReplaceAccept,
+  MEDIA_KIND_LABELS,
+  type MediaKind,
+} from "./utils/media-helpers";
 
 interface MediaManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect?: (mediaId: string) => void;
   selectionMode?: boolean;
+  /** Restrict the picker to a single media kind (e.g. only videos for a Video
+   *  component picker). User can still flip the "All" tab to widen. */
+  kindFilter?: MediaKind;
 }
+
+const MEDIA_MANAGER_DEFAULT_WIDTH = 960;
+const MEDIA_MANAGER_Z = 10050;
+const KIND_ORDER: MediaKind[] = ["image", "video", "audio", "pdf", "archive", "other"];
+const KIND_ICONS: Record<MediaKind, React.ReactNode> = {
+  image: <TbPhoto />,
+  video: <TbVideo />,
+  audio: <TbFileMusic />,
+  pdf: <TbFileTypePdf />,
+  archive: <TbArchive />,
+  other: <TbFile />,
+};
 
 export function MediaManagerModal({
   isOpen,
   onClose,
   onSelect,
   selectionMode = false,
+  kindFilter,
 }: MediaManagerModalProps) {
   const manager = useMediaManager({ isOpen, onClose, onSelect, selectionMode });
 
-  if (!isOpen) return null;
+  // Match SiteSettings: panel docks to the SAME side as the sidebar toolbar.
+  const toolbarDockedLeft = useEditorSidebarDockLeft();
+  const dockEdge: "left" | "right" = toolbarDockedLeft ? "left" : "right";
+  const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 800;
+  const defaultHeight = Math.max(520, Math.min(680, Math.round(viewportHeight * 0.72)));
+  const maxHeight = Math.max(600, Math.min(820, Math.round(viewportHeight * 0.86)));
 
-  return ReactDOM.createPortal(
+  useEffect(() => {
+    if (isOpen && kindFilter) manager.setKindFilter(kindFilter);
+  }, [isOpen, kindFilter]);
+
+  // Kind tabs: "All" + each present kind. Counts shown inline.
+  const kindTabs = useMemo(() => {
+    const counts = new Map<MediaKind, number>();
+    for (const m of manager.mediaList) {
+      const k = getMediaKind(m);
+      counts.set(k, (counts.get(k) ?? 0) + 1);
+    }
+    const present = KIND_ORDER.filter(k => (counts.get(k) ?? 0) > 0);
+    return [
+      {
+        key: "all",
+        label: `All (${manager.mediaList.length})`,
+        icon: <TbStack2 />,
+      },
+      ...present.map(k => ({
+        key: k,
+        label: `${MEDIA_KIND_LABELS[k]} (${counts.get(k)})`,
+        icon: KIND_ICONS[k],
+      })),
+    ];
+  }, [manager.mediaList]);
+
+  return (
     <>
-      {/* Backdrop */}
-      <div
-        className="pagehub-sdk-root ph-modal-backdrop ph-modal-backdrop--center z-9997"
-        onClick={onClose}
+      <SettingsShell
+        isOpen={isOpen}
+        onClose={onClose}
+        title={selectionMode ? "Select Media" : "Media Manager"}
+        storageKey="media-manager-v2"
+        tabs={kindTabs}
+        activeTab={manager.kindFilter}
+        setActiveTab={key => manager.setKindFilter(key as MediaKind | "all")}
+        defaultWidth={MEDIA_MANAGER_DEFAULT_WIDTH}
+        defaultHeight={defaultHeight}
+        minWidth={640}
+        maxWidth={1280}
+        minHeight={420}
+        maxHeight={maxHeight}
+        dockToEdge={dockEdge}
+        zIndex={MEDIA_MANAGER_Z}
       >
-        {/* Modal */}
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="pagehub-sdk-root ph-modal-surface relative overflow-hidden"
-          style={{
-            width: manager.mmWidth,
-            height: manager.mmHeight,
-          }}
-          onClick={e => e.stopPropagation()}
-          onKeyDown={e => {
-            if (
-              (e.key === "Backspace" || e.key === "Escape") &&
-              (e.target as HTMLElement).tagName === "INPUT"
-            ) {
-              e.stopPropagation();
-            }
-          }}
-        >
-          {/* Resize handles */}
-          {manager.mmHandleProps.e && <div {...manager.mmHandleProps.e} />}
-          {manager.mmHandleProps.s && <div {...manager.mmHandleProps.s} />}
-          {manager.mmHandleProps.se && <div {...manager.mmHandleProps.se} />}
-          {manager.mmHandleProps.w && <div {...manager.mmHandleProps.w} />}
-          {manager.mmHandleProps.sw && <div {...manager.mmHandleProps.sw} />}
-
-          <div className="flex h-full flex-col">
-            {/* Header */}
-            <div className="border-base-300 bg-accent text-accent-content flex items-center justify-between border-b px-3 py-1.5">
-              <div className="flex items-center gap-2">
-                <TbPhoto className="text-primary size-4" />
-                <span className="text-base-content text-xs font-semibold">
-                  {selectionMode ? "Select Media" : "Media Manager"}
-                </span>
-                <span className="text-neutral-content text-[10px]">
-                  {selectionMode
-                    ? "Click an image to select it"
-                    : `${manager.filteredMedia.length} ${manager.filteredMedia.length === 1 ? "item" : "items"}${manager.searchQuery ? ` (filtered from ${manager.mediaList.length})` : ""}`}
-                </span>
-              </div>
-              <button
-                onClick={onClose}
-                className="text-neutral-content hover:bg-neutral hover:text-base-content rounded p-0.5"
-                title="Close"
-              >
-                <TbX className="size-3.5" />
-              </button>
-            </div>
-
-            {/* Upload Error Banner */}
-            {manager.uploadError && (
-              <div className="border-error bg-error/10 border-b px-6 py-3">
-                <div className="flex items-start gap-3">
-                  <TbAlertTriangle className="text-error mt-0.5 size-5 shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-error text-sm whitespace-pre-line">{manager.uploadError}</p>
-                  </div>
-                  <button
-                    onClick={() => manager.setUploadError(null)}
-                    className="hover:bg-error/20 shrink-0 rounded p-1 transition-colors"
-                  >
-                    <TbX className="text-error size-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Toolbar */}
-            <MediaToolbar manager={manager} />
-
-            {/* Content Grid */}
-            <MediaGrid
-              filteredMedia={manager.filteredMedia}
-              mediaList={manager.mediaList}
-              viewMode={manager.viewMode}
-              sortField={manager.sortField}
-              selectedMedia={manager.selectedMedia}
-              deletingMedia={manager.deletingMedia}
-              searchQuery={manager.searchQuery}
-              uploadProgress={manager.uploadProgress}
-              isDragOver={manager.isDragOver}
-              dropProps={manager.dropProps}
-              selectionMode={selectionMode}
-              onSelect={onSelect}
-              onClose={onClose}
-              onSetSelected={manager.setSelectedMedia}
-              onPreview={id => manager.setPreviewMedia(id)}
-              onCrop={media => manager.setCropMedia(media)}
-              onReplace={id => {
-                manager.setReplacingMedia(id);
-                manager.replaceInputRef.current?.click();
-              }}
-              onEdit={media => manager.openEditModal(media)}
-              onDelete={id => manager.handleDelete(id)}
-              onSetAddMode={manager.setAddMode}
-              fileInputRef={manager.fileInputRef}
-            />
+        <div className="-mx-6 -my-6 flex min-h-0 flex-1 flex-col overflow-hidden">
+          {/* Subheader — count / filtered hint */}
+          <div className="border-base-300 bg-neutral text-neutral-content flex items-center gap-2 border-b px-4 py-1.5 text-[11px]">
+            {selectionMode
+              ? "Click an item to select it"
+              : `${manager.filteredMedia.length} ${manager.filteredMedia.length === 1 ? "item" : "items"}${manager.searchQuery ? ` (filtered from ${manager.mediaList.length})` : ""}`}
           </div>
 
-          {/* Edit Metadata Modal */}
-          {manager.editingMedia && (
-            <MediaEditModal
-              editingMedia={manager.editingMedia}
-              savingMetadata={manager.savingMetadata}
-              canUseImageAnalyze={manager.canUseImageAnalyze}
-              mediaEditAiActionsContext={manager.mediaEditAiActionsContext}
-              renderMediaEditAiActions={manager.renderMediaEditAiActions}
-              onClose={manager.closeEditModal}
-              onSave={manager.saveEditedMetadata}
-              onUpdate={manager.setEditingMedia}
-            />
+          {/* Upload Error Banner */}
+          {manager.uploadError && (
+            <div className="border-error bg-error/10 border-b px-6 py-3">
+              <div className="flex items-start gap-3">
+                <TbAlertTriangle className="text-error mt-0.5 size-5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-error text-sm whitespace-pre-line">{manager.uploadError}</p>
+                </div>
+                <button
+                  onClick={() => manager.setUploadError(null)}
+                  className="hover:bg-error/20 shrink-0 rounded p-1 transition-colors"
+                >
+                  <TbX className="text-error size-4" />
+                </button>
+              </div>
+            </div>
           )}
+
+          {/* Toolbar */}
+          <MediaToolbar manager={manager} />
+
+          {/* Content Grid */}
+          <MediaGrid
+            filteredMedia={manager.filteredMedia}
+            mediaList={manager.mediaList}
+            viewMode={manager.viewMode}
+            sortField={manager.sortField}
+            selectedMedia={manager.selectedMedia}
+            deletingMedia={manager.deletingMedia}
+            searchQuery={manager.searchQuery}
+            uploadProgress={manager.uploadProgress}
+            isDragOver={manager.isDragOver}
+            dropProps={manager.dropProps}
+            selectionMode={selectionMode}
+            onSelect={onSelect}
+            onClose={onClose}
+            onSetSelected={manager.setSelectedMedia}
+            onPreview={id => manager.setPreviewMedia(id)}
+            onCrop={media => manager.setCropMedia(media)}
+            onReplace={id => {
+              manager.setReplacingMedia(id);
+              const target = manager.mediaList.find(m => m.id === id);
+              const input = manager.replaceInputRef.current;
+              if (input) {
+                input.accept = target ? getReplaceAccept(target) : "*/*";
+                input.click();
+              }
+            }}
+            onEdit={media => manager.openEditModal(media)}
+            onDelete={id => manager.handleDelete(id)}
+            onSetAddMode={manager.setAddMode}
+            fileInputRef={manager.fileInputRef}
+          />
         </div>
-      </div>
+
+        {manager.editingMedia && (
+          <MediaEditModal
+            editingMedia={manager.editingMedia}
+            savingMetadata={manager.savingMetadata}
+            canUseImageAnalyze={manager.canUseImageAnalyze}
+            mediaEditAiActionsContext={manager.mediaEditAiActionsContext}
+            renderMediaEditAiActions={manager.renderMediaEditAiActions}
+            onClose={manager.closeEditModal}
+            onSave={manager.saveEditedMetadata}
+            onUpdate={manager.setEditingMedia}
+          />
+        )}
+      </SettingsShell>
 
       {/* Preview Modal */}
       <MediaPreviewModal
@@ -178,7 +217,6 @@ export function MediaManagerModal({
         cancelText="Cancel"
         variant="danger"
       />
-    </>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    </>
   );
 }

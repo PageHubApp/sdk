@@ -265,7 +265,7 @@ export interface PageHubMediaManagerAiPanelContext {
 export interface PageHubMediaEditAiActionsContext {
   media: {
     id: string;
-    type?: "cdn" | "url" | "svg";
+    type?: "cdn" | "url" | "svg" | "r2";
     cdnId?: string;
     metadata?: {
       title?: string;

@@ -12,8 +12,9 @@ import {
   TbLayoutGrid,
   TbList,
 } from "react-icons/tb";
+import { getUploadAccept } from "@/utils/media/upload";
 import { ToolbarDropdown } from "../../../ToolbarDropdown";
-import type { AddMode, SortField } from "../utils/media-helpers";
+import { getReplaceAccept, type AddMode, type SortField } from "../utils/media-helpers";
 import type { UseMediaManagerReturn } from "../hooks/useMediaManager";
 
 interface MediaToolbarProps {
@@ -36,6 +37,8 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
     toolbarRef,
     fileInputRef,
     replaceInputRef,
+    mediaList,
+    replacingMedia,
     // Setters
     setViewMode,
     setSortField,
@@ -55,6 +58,9 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
     renderMediaManagerAiPanel,
     mediaManagerAiPanelContext,
   } = manager;
+
+  const replaceTarget = replacingMedia ? mediaList.find(m => m.id === replacingMedia) : null;
+  const replaceAccept = replaceTarget ? getReplaceAccept(replaceTarget) : getUploadAccept();
 
   /** One height for search + segmented controls; use tool-bg-flat (not tool-bg) so clusters match the bar — no shadow-xl */
   const barH = "h-10";
@@ -284,7 +290,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,image/avif,image/svg+xml"
+        accept={getUploadAccept()}
         multiple
         onChange={e => handleUpload(e.target.files)}
         className="hidden"
@@ -292,7 +298,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
       <input
         ref={replaceInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,image/avif,image/svg+xml"
+        accept={replaceAccept}
         onChange={e => handleReplaceMedia(e.target.files)}
         className="hidden"
       />

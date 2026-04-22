@@ -1,7 +1,7 @@
 import { getImageDimensionsFromFile } from "../imageDimensions";
 import { MediaUploadError } from "./errors";
 import { prepareImageForUpload } from "./preprocess";
-import { getMediaUploadHandler } from "./registry";
+import { getMediaUploadHandler, type MediaUploadDestination } from "./registry";
 
 export { MediaUploadError } from "./errors";
 export type { MediaUploadErrorCode } from "./errors";
@@ -10,13 +10,22 @@ export { prepareImageForUpload } from "./preprocess";
 export {
   registerMediaUploadHandler,
   getMediaUploadHandler,
+  registerMediaUploadAccept,
+  getUploadAccept,
+  DEFAULT_IMAGE_ACCEPT,
   type MediaUploadHandler,
   type MediaUploadHandlerInput,
   type MediaUploadHandlerResult,
+  type MediaUploadDestination,
+  type MediaAcceptProvider,
 } from "./registry";
 
 export interface UploadImageResult {
   mediaId: string;
+  /** Which storage tier got the file — drives render/delete branching. */
+  destination: MediaUploadDestination;
+  /** Ready-to-use public URL of the stored asset. */
+  deliveryURL: string;
   /** Post-preprocessing file that was actually sent to the host CDN. */
   file: File;
   width?: number;
@@ -60,7 +69,10 @@ export async function uploadImageToCdn(
 
   const prepared = opts.skipPreprocess ? file : await prepareImageForUpload(file);
 
-  const { mediaId } = await handler({ file: prepared, signal: opts.signal });
+  const { mediaId, destination, deliveryURL } = await handler({
+    file: prepared,
+    signal: opts.signal,
+  });
   if (!mediaId) {
     throw new MediaUploadError("unknown", "Media upload handler returned no mediaId");
   }
@@ -77,5 +89,5 @@ export async function uploadImageToCdn(
     }
   }
 
-  return { mediaId, file: prepared, width, height };
+  return { mediaId, destination, deliveryURL, file: prepared, width, height };
 }

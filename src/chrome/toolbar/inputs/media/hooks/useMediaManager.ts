@@ -6,7 +6,6 @@ import { SettingsAtom } from "@/utils/atoms";
 import { getCdnUrl } from "@/utils/cdn";
 import { getPageMedia, updateMediaMetadata } from "@/utils/lib";
 import { DeleteMedia } from "@/chrome/viewport/viewportExports";
-import { useResizable } from "@/chrome/hooks/useResizable";
 import { useSDK } from "@/core/context";
 import { useAiEnabled } from "@/utils/hooks/useAiEnabled";
 import type {
@@ -16,8 +15,10 @@ import type {
 } from "@/types";
 import {
   cleanSvg,
+  getMediaKind,
   sortMedia,
   type MediaItem,
+  type MediaKind,
   type SortDirection,
   type SortField,
 } from "../utils/media-helpers";
@@ -49,22 +50,6 @@ export function useMediaManager({
   const canUseImageGenerate = aiEnabled && typeof mediaManagerAiPanelSlot === "function";
   const canUseImageAnalyze = aiEnabled && typeof mediaEditAiActionsSlot === "function";
 
-  // Resizable modal
-  const {
-    width: mmWidth,
-    height: mmHeight,
-    handleProps: mmHandleProps,
-  } = useResizable({
-    storageKey: "media-manager",
-    defaultWidth: 896,
-    defaultHeight: Math.round(window.innerHeight * 0.9),
-    minWidth: 500,
-    maxWidth: 1200,
-    minHeight: 400,
-    maxHeight: Math.round(window.innerHeight * 0.95),
-    edges: ["e", "s", "se", "w", "sw"],
-  });
-
   // ─── Core media state ───
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
   const [filteredMedia, setFilteredMedia] = useState<MediaItem[]>([]);
@@ -83,6 +68,7 @@ export function useMediaManager({
   });
   const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [kindFilter, setKindFilter] = useState<MediaKind | "all">("all");
   const [previewMedia, setPreviewMedia] = useState<string | null>(null);
 
   // ─── Delete state ───
@@ -95,11 +81,38 @@ export function useMediaManager({
   // ─── Metadata editing state ───
   const [savingMetadata, setSavingMetadata] = useState<"idle" | "saving" | "saved">("idle");
 
+  /** Apply current (or overridden) filter+sort state to a media list. The
+   *  override params let click handlers compute results synchronously without
+   *  waiting for React state to settle. */
+  const applyFilters = useCallback(
+    (
+      media: MediaItem[],
+      override?: { kind?: MediaKind | "all"; search?: string }
+    ): MediaItem[] => {
+      const k = override?.kind ?? kindFilter;
+      const s = override?.search ?? searchQuery;
+      let out = media;
+      if (k !== "all") out = out.filter(m => getMediaKind(m) === k);
+      if (s.trim()) {
+        const q = s.toLowerCase();
+        out = out.filter(
+          m =>
+            m.id.toLowerCase().includes(q) ||
+            m.metadata?.title?.toLowerCase().includes(q) ||
+            m.metadata?.alt?.toLowerCase().includes(q) ||
+            m.metadata?.description?.toLowerCase().includes(q)
+        );
+      }
+      return sortMedia(out, sortField, sortDirection);
+    },
+    [kindFilter, searchQuery, sortField, sortDirection]
+  );
+
   const refreshMediaList = useCallback(() => {
     const media = getPageMedia(query);
     setMediaList(media);
-    setFilteredMedia(sortMedia(media, sortField, sortDirection));
-  }, [query, sortField, sortDirection]);
+    setFilteredMedia(applyFilters(media));
+  }, [query, applyFilters]);
 
   const upload = useMediaUpload({ isOpen, refreshMediaList, generateMetadataForImage: () => {} });
   const ai = useAiGeneration({
@@ -118,19 +131,12 @@ export function useMediaManager({
 
   const handleSearch = (q: string) => {
     setSearchQuery(q);
-    if (!q.trim()) {
-      setFilteredMedia(sortMedia(mediaList, sortField, sortDirection));
-      return;
-    }
-    const searchLower = q.toLowerCase();
-    const filtered = mediaList.filter(
-      media =>
-        media.id.toLowerCase().includes(searchLower) ||
-        media.metadata?.title?.toLowerCase().includes(searchLower) ||
-        media.metadata?.alt?.toLowerCase().includes(searchLower) ||
-        media.metadata?.description?.toLowerCase().includes(searchLower)
-    );
-    setFilteredMedia(sortMedia(filtered, sortField, sortDirection));
+    setFilteredMedia(applyFilters(mediaList, { search: q }));
+  };
+
+  const handleKindFilterChange = (next: MediaKind | "all") => {
+    setKindFilter(next);
+    setFilteredMedia(applyFilters(mediaList, { kind: next }));
   };
 
   const handleDelete = (mediaId: string) => {
@@ -350,9 +356,6 @@ export function useMediaManager({
   }, [previewMedia, filteredMedia]);
 
   return {
-    mmWidth,
-    mmHeight,
-    mmHandleProps,
     mediaList,
     filteredMedia,
     searchQuery,
@@ -362,6 +365,7 @@ export function useMediaManager({
     viewMode,
     sortField,
     sortDirection,
+    kindFilter,
     previewMedia,
     deleteConfirm,
     deletingMedia,
@@ -377,6 +381,7 @@ export function useMediaManager({
     hasImageInClipboard: upload.hasImageInClipboard,
     isDragOver: upload.isDragOver,
     dropProps: upload.dropProps,
+    replacingMedia: upload.replacingMedia,
     fileInputRef: upload.fileInputRef,
     replaceInputRef: upload.replaceInputRef,
     toolbarRef: upload.toolbarRef,
@@ -393,6 +398,7 @@ export function useMediaManager({
     setViewMode,
     setSortField,
     setSortDirection,
+    setKindFilter: handleKindFilterChange,
     setPreviewMedia,
     setCropMedia,
     setEditingMedia,

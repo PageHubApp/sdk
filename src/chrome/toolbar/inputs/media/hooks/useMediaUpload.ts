@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
 import { getImageDimensionsFromFile, getImageDimensionsFromUrl } from "@/utils/imageDimensions";
 import { registerMediaWithBackground } from "@/utils/lib";
-import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
+import { getUploadAccept, MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import { useSDK } from "@/core/context";
 import { useImageDrop } from "@/chrome/hooks/useImageDrop";
 import {
@@ -48,8 +48,44 @@ export function useMediaUpload({
 
   // ─── Shared helpers ───
 
-  /** Register uploaded media and attach metadata (dimensions, title, alt) */
-  const registerUploadedMedia = async (mediaId: string, file: File, source: string) => {
+  /** Register uploaded media and attach metadata (dimensions, title, alt).
+   *
+   *  Image uploads (CF Images, `destination: "cf-images"`) go through the
+   *  classic pageMedia path with `type: "cdn"`, extract dimensions, and
+   *  kick off AI metadata generation.
+   *
+   *  R2 uploads (video/audio/pdf/etc) register with `type: "r2"` and stash
+   *  the `deliveryURL` + `contentType` in metadata so render sites don't
+   *  need to re-derive the URL or sniff the file type. No dimension probe
+   *  (would fail on non-images) and no AI metadata (vision model doesn't
+   *  analyze MP4s). */
+  const registerUploadedMedia = async (
+    mediaId: string,
+    file: File,
+    source: string,
+    destination: "cf-images" | "r2" = "cf-images",
+    deliveryURL?: string
+  ) => {
+    if (destination === "r2") {
+      registerMediaWithBackground(query, actions, mediaId, "r2", "media-manager");
+      actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
+        const pageMedia = (props.pageMedia || []) as MediaItem[];
+        const existingMedia = pageMedia.find(m => m.id === mediaId);
+        if (existingMedia) {
+          existingMedia.metadata = {
+            ...existingMedia.metadata,
+            title: file.name || mediaId,
+            alt: file.name?.replace(/\.[^/.]+$/, "") || mediaId,
+            size: file.size,
+            source,
+            contentType: file.type,
+            deliveryURL,
+          };
+        }
+      });
+      return;
+    }
+
     registerMediaWithBackground(query, actions, mediaId, "cdn", "media-manager");
 
     try {
@@ -109,13 +145,14 @@ export function useMediaUpload({
         setUploadProgress(prev => (prev ? { ...prev, current: i, currentFile: file.name } : null));
 
         try {
-          const { mediaId, file: uploadedFile } = await uploadImageToCdn(file);
+          const { mediaId, file: uploadedFile, destination, deliveryURL } =
+            await uploadImageToCdn(file);
 
           setUploadProgress(prev =>
             prev ? { ...prev, completedFiles: [...prev.completedFiles, file.name] } : null
           );
 
-          await registerUploadedMedia(mediaId, uploadedFile, "upload");
+          await registerUploadedMedia(mediaId, uploadedFile, "upload", destination, deliveryURL);
         } catch (error: unknown) {
           const message =
             error instanceof MediaUploadError ? error.message : (error as Error)?.message;
@@ -147,18 +184,34 @@ export function useMediaUpload({
 
     try {
       const file = files[0];
-      const { mediaId: newCdnId, file: uploaded } = await uploadImageToCdn(file);
+      const { mediaId: newMediaId, file: uploaded, destination, deliveryURL } =
+        await uploadImageToCdn(file);
 
       actions.setProp("ROOT", (props: Record<string, unknown>) => {
         const pageMedia = props.pageMedia as MediaItem[] | undefined;
         if (!pageMedia) return;
         const mediaItem = pageMedia.find(m => m.id === replacingMedia);
         if (mediaItem) {
-          mediaItem.cdnId = newCdnId;
+          // Trust the destination — the replacement was really uploaded
+          // there, so type must follow. Previous type ("svg" / "url" /
+          // "cdn") is stale the moment the new file lands.
+          const nextType: MediaItem["type"] = destination === "r2" ? "r2" : "cdn";
+          mediaItem.cdnId = newMediaId;
           mediaItem.uploadedAt = Date.now();
+          mediaItem.type = nextType;
           if (mediaItem.metadata) {
             mediaItem.metadata.title = uploaded.name;
             mediaItem.metadata.size = uploaded.size;
+            mediaItem.metadata.contentType = uploaded.type || mediaItem.metadata.contentType;
+            // Purge stale fields from the previous type so renderers don't
+            // pick them up (e.g. `metadata.svg` after SVG → raster replace).
+            delete mediaItem.metadata.svg;
+            delete mediaItem.metadata.url;
+            if (destination === "r2") {
+              mediaItem.metadata.deliveryURL = deliveryURL;
+            } else {
+              delete mediaItem.metadata.deliveryURL;
+            }
           }
         }
       });
@@ -431,7 +484,7 @@ export function useMediaUpload({
       files.forEach(f => dt.items.add(f));
       handleUpload(dt.files);
     },
-    accept: "*",
+    accept: getUploadAccept(),
   });
 
   // ─── Effects ───
@@ -473,6 +526,7 @@ export function useMediaUpload({
     hasImageInClipboard,
     isDragOver,
     dropProps,
+    replacingMedia,
     // Setters
     setAddMode,
     setUrlInput,

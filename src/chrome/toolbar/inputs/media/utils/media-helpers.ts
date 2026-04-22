@@ -1,8 +1,23 @@
 // ─── Media Manager utility functions (pure, no React dependencies) ───
 
+import { DEFAULT_IMAGE_ACCEPT } from "@/utils/media/registry";
+
 export type SortField = "name" | "size" | "createdAt" | "order";
 export type SortDirection = "asc" | "desc";
 export type AddMode = "upload" | "url" | "svg" | "ai";
+
+/** Logical kind of a media item, derived from `type` + `metadata.contentType`.
+ *  Drives badges, filter chips, and same-kind replace `accept`. */
+export type MediaKind = "image" | "video" | "audio" | "pdf" | "archive" | "other";
+
+export const MEDIA_KIND_LABELS: Record<MediaKind, string> = {
+  image: "Image",
+  video: "Video",
+  audio: "Audio",
+  pdf: "PDF",
+  archive: "Archive",
+  other: "File",
+};
 
 export interface MediaDimensions {
   width: number;
@@ -23,11 +38,16 @@ export interface MediaMetadata {
   aiGenerated?: boolean;
   aiPrompt?: string;
   source?: string;
+  /** For `type: "r2"`, the ready-to-use public URL (avoids re-deriving at render). */
+  deliveryURL?: string;
+  /** The original MIME type — helpful for `r2` media (video/audio/pdf) where
+   *  the type prefix changes how we render it. */
+  contentType?: string;
 }
 
 export interface MediaItem {
   id: string;
-  type?: "cdn" | "url" | "svg";
+  type?: "cdn" | "url" | "svg" | "r2";
   cdnId?: string;
   order?: number;
   uploadedAt?: number;
@@ -47,6 +67,39 @@ export interface AiUsage {
   completionTokens: number;
   totalTokens: number;
   credits: number;
+}
+
+/** Classify a media item by kind. CDN/URL/SVG entries are images; r2 entries
+ *  are routed by `metadata.contentType`. */
+export function getMediaKind(media: Pick<MediaItem, "type" | "metadata">): MediaKind {
+  const ct = media.metadata?.contentType || "";
+  if (media.type === "svg" || media.type === "cdn" || media.type === "url") return "image";
+  if (ct.startsWith("image/")) return "image";
+  if (ct.startsWith("video/")) return "video";
+  if (ct.startsWith("audio/")) return "audio";
+  if (ct === "application/pdf") return "pdf";
+  if (ct === "application/zip") return "archive";
+  return "other";
+}
+
+/** `<input accept>` for replacing a specific media item — restricts the
+ *  picker to the same kind so users can't accidentally swap an image for a
+ *  video (which would break any node still rendering it as an `<img>`). */
+export function getReplaceAccept(item: Pick<MediaItem, "type" | "metadata">): string {
+  switch (getMediaKind(item)) {
+    case "image":
+      return DEFAULT_IMAGE_ACCEPT;
+    case "video":
+      return "video/*";
+    case "audio":
+      return "audio/*";
+    case "pdf":
+      return "application/pdf";
+    case "archive":
+      return "application/zip";
+    default:
+      return "*/*";
+  }
 }
 
 /** Format byte count to human-readable string */
