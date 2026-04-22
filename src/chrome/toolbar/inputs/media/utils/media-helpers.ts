@@ -43,6 +43,8 @@ export interface MediaMetadata {
   /** The original MIME type — helpful for `r2` media (video/audio/pdf) where
    *  the type prefix changes how we render it. */
   contentType?: string;
+  /** Optional single-level folder assignment. */
+  folderId?: string;
 }
 
 export interface MediaItem {
@@ -53,6 +55,14 @@ export interface MediaItem {
   uploadedAt?: number;
   createdAt?: number;
   metadata?: MediaMetadata;
+}
+
+export interface MediaFolder {
+  id: string;
+  name: string;
+  order: number;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface UploadProgress {

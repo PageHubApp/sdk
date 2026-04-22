@@ -2,18 +2,14 @@ import Image from "next/image";
 import {
   TbCheck,
   TbCode,
-  TbCrop,
-  TbEdit,
   TbExternalLink,
   TbFile,
   TbFileMusic,
   TbFolder,
   TbInfoCircle,
   TbLoader2,
-  TbRefresh,
   TbSearch,
   TbEye,
-  TbTrash,
   TbUpload,
 } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
@@ -34,10 +30,10 @@ const BLUR_PLACEHOLDER =
 
 interface MediaGridProps {
   filteredMedia: MediaItem[];
-  mediaList: MediaItem[];
   viewMode: "cards" | "list";
   sortField: SortField;
   selectedMedia: string | null;
+  selectedMediaIds: string[];
   deletingMedia: string[];
   searchQuery: string;
   uploadProgress: UploadProgress | null;
@@ -46,22 +42,22 @@ interface MediaGridProps {
   selectionMode: boolean;
   onSelect: ((mediaId: string) => void) | undefined;
   onClose: () => void;
-  onSetSelected: (id: string | null) => void;
+  onItemSelect: (
+    id: string,
+    modifiers?: { shiftKey?: boolean; metaKey?: boolean; ctrlKey?: boolean }
+  ) => void;
   onPreview: (id: string) => void;
-  onCrop: (media: MediaItem) => void;
-  onReplace: (id: string) => void;
-  onEdit: (media: MediaItem) => void;
-  onDelete: (id: string) => void;
   onSetAddMode: (mode: "upload" | "url" | "svg" | "ai") => void;
+  folderNameById: Map<string, string>;
   fileInputRef: React.RefObject<HTMLInputElement>;
 }
 
 export function MediaGrid({
   filteredMedia,
-  mediaList,
   viewMode,
   sortField,
   selectedMedia,
+  selectedMediaIds,
   deletingMedia,
   searchQuery,
   uploadProgress,
@@ -70,13 +66,10 @@ export function MediaGrid({
   selectionMode,
   onSelect,
   onClose,
-  onSetSelected,
+  onItemSelect,
   onPreview,
-  onCrop,
-  onReplace,
-  onEdit,
-  onDelete,
   onSetAddMode,
+  folderNameById,
   fileInputRef,
 }: MediaGridProps) {
   return (
@@ -86,20 +79,18 @@ export function MediaGrid({
       } ${uploadProgress ? "pt-16" : "p-3"}`}
       {...dropProps}
     >
-      {/* Drag overlay */}
       {isDragOver && (
         <div className="border-accent bg-base-200/75 absolute inset-0 z-40 flex items-center justify-center rounded-lg border-2 border-dashed backdrop-blur-sm">
           <div className="text-accent-content flex flex-col items-center gap-4">
             <TbUpload className="text-6xl" />
             <div className="text-center">
               <p className="text-xl font-semibold">Drop files here</p>
-              <p className="text-sm opacity-75">Release to upload multiple images</p>
+              <p className="text-sm opacity-75">Release to upload multiple files</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Upload progress */}
       {uploadProgress && (
         <div className="border-base-300 bg-base-200 absolute inset-x-0 top-0 z-30 border-b p-4">
           <div className="mb-2 flex items-center justify-between">
@@ -128,8 +119,7 @@ export function MediaGrid({
           )}
           {uploadProgress.completedFiles.length > 0 && (
             <div className="text-secondary-content mt-1 text-xs">
-              <TbCheck className="mr-1 inline" /> Completed:{" "}
-              {uploadProgress.completedFiles.join(", ")}
+              <TbCheck className="mr-1 inline" /> Completed: {uploadProgress.completedFiles.join(", ")}
             </div>
           )}
         </div>
@@ -143,49 +133,58 @@ export function MediaGrid({
                 <TbSearch className="text-neutral-content text-5xl" />
               </div>
               <p className="text-base-content mb-2 text-xl font-semibold">No media found</p>
-              <p className="text-neutral-content text-sm">
-                Try adjusting your search term or filter
-              </p>
+              <p className="text-neutral-content text-sm">Try adjusting search or folder/type filters</p>
             </div>
           ) : (
             <EmptyState onSetAddMode={onSetAddMode} fileInputRef={fileInputRef} />
           )}
         </div>
       ) : (
-        <div
-          className={
-            viewMode === "cards"
-              ? "grid grid-cols-3 gap-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5"
-              : "flex flex-col"
-          }
-        >
-          {filteredMedia.map(media => (
-            <MediaItemRow
-              key={media.id}
-              media={media}
-              viewMode={viewMode}
-              sortField={sortField}
-              isSelected={selectedMedia === media.id}
-              isDeleting={deletingMedia.includes(media.id)}
-              selectionMode={selectionMode}
-              onSelect={() => onSetSelected(media.id)}
-              onDoubleClick={() => {
-                if (selectionMode && onSelect) {
-                  onSelect(media.id);
-                  onClose();
-                }
-              }}
-              onPreview={() => onPreview(media.id)}
-              onCrop={() => onCrop(media)}
-              onReplace={() => onReplace(media.id)}
-              onEdit={() => onEdit(media)}
-              onDelete={() => onDelete(media.id)}
-            />
-          ))}
-        </div>
+        <>
+          {viewMode === "list" && (
+            <div className="text-neutral-content mb-2 grid grid-cols-[2rem_minmax(0,1fr)_6rem_7rem_7rem_8rem] items-center gap-3 px-3 text-[11px] font-semibold uppercase tracking-wide">
+              <span />
+              <span>Name</span>
+              <span>Type</span>
+              <span>Size</span>
+              <span>Modified</span>
+              <span>Folder</span>
+            </div>
+          )}
+          <div
+            className={
+              viewMode === "cards"
+                ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                : "flex flex-col"
+            }
+          >
+            {filteredMedia.map(media => {
+              const isSelected = selectedMediaIds.includes(media.id);
+              return (
+                <MediaItemRow
+                  key={media.id}
+                  media={media}
+                  viewMode={viewMode}
+                  sortField={sortField}
+                  isSelected={isSelected}
+                  isDeleting={deletingMedia.includes(media.id)}
+                  folderNameById={folderNameById}
+                  selectionMode={selectionMode}
+                  onSelect={modifiers => onItemSelect(media.id, modifiers)}
+                  onDoubleClick={() => {
+                    if (selectionMode && onSelect) {
+                      onSelect(media.id);
+                      onClose();
+                    }
+                  }}
+                  onPreview={() => onPreview(media.id)}
+                />
+              );
+            })}
+          </div>
+        </>
       )}
 
-      {/* Selection button */}
       {selectedMedia && selectionMode && onSelect && (
         <div className="absolute right-4 bottom-4">
           <button
@@ -204,8 +203,6 @@ export function MediaGrid({
   );
 }
 
-// ─── Sub-components ───
-
 function EmptyState({
   onSetAddMode,
   fileInputRef,
@@ -216,9 +213,7 @@ function EmptyState({
   return (
     <div className="flex max-w-2xl animate-[slide-up_0.8s_ease-out_forwards] flex-col items-center">
       <h3 className="text-base-content mb-2 text-2xl font-bold">Your media library is empty</h3>
-      <p className="text-neutral-content mb-8 text-sm">
-        Start building your visual content collection
-      </p>
+      <p className="text-neutral-content mb-8 text-sm">Start building your visual content collection</p>
 
       <div className="mb-8 w-full max-w-lg">
         <EditorMenuSectionLabel>Add media</EditorMenuSectionLabel>
@@ -228,9 +223,7 @@ function EmptyState({
             label={
               <div>
                 <div className="text-base-content text-sm font-medium">Upload Files</div>
-                <div className="text-neutral-content text-xs">
-                  Drag & drop or click to upload images
-                </div>
+                <div className="text-neutral-content text-xs">Drag & drop or click to upload files</div>
               </div>
             }
             onClick={() => {
@@ -244,7 +237,7 @@ function EmptyState({
             label={
               <div>
                 <div className="text-base-content text-sm font-medium">Use URLs</div>
-                <div className="text-neutral-content text-xs">Link to images hosted anywhere</div>
+                <div className="text-neutral-content text-xs">Link to assets hosted anywhere</div>
               </div>
             }
             onClick={() => onSetAddMode("url")}
@@ -283,50 +276,54 @@ function MediaItemRow({
   sortField,
   isSelected,
   isDeleting,
+  folderNameById,
   selectionMode,
   onSelect,
   onDoubleClick,
   onPreview,
-  onCrop,
-  onReplace,
-  onEdit,
-  onDelete,
 }: {
   media: MediaItem;
   viewMode: "cards" | "list";
   sortField: SortField;
   isSelected: boolean;
   isDeleting: boolean;
+  folderNameById: Map<string, string>;
   selectionMode: boolean;
-  onSelect: () => void;
+  onSelect: (modifiers?: { shiftKey?: boolean; metaKey?: boolean; ctrlKey?: boolean }) => void;
   onDoubleClick: () => void;
   onPreview: () => void;
-  onCrop: () => void;
-  onReplace: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
 }) {
+  const kind = getMediaKind(media);
+  const folderLabel = media.metadata?.folderId
+    ? (folderNameById.get(media.metadata.folderId) ?? "Unfiled")
+    : "Unfiled";
+
+  const handleClick = (e: React.MouseEvent) => {
+    onSelect({ shiftKey: e.shiftKey, metaKey: e.metaKey, ctrlKey: e.ctrlKey });
+  };
+
   return (
     <div
       role="button"
       tabIndex={0}
       className={`group relative cursor-pointer ${
         viewMode === "cards"
-          ? `border-base-300 bg-base-200 hover:border-primary overflow-hidden rounded-lg border hover:shadow-md ${
-              isSelected ? "ring-primary ring-offset-background ring-2 ring-offset-2" : ""
+          ? `border-base-300 bg-base-200 overflow-hidden rounded-lg border ${
+              isSelected ? "ring-primary ring-offset-background ring-2 ring-offset-2" : "hover:border-primary"
             }`
-          : `border-base-300 hover:bg-neutral/50 border-b ${isSelected ? "bg-primary/5" : ""}`
+          : `border-base-300 grid grid-cols-[2rem_minmax(0,1fr)_6rem_7rem_7rem_8rem] items-center gap-3 border-b px-3 py-1.5 ${
+              isSelected ? "bg-primary/8" : "hover:bg-neutral/40"
+            }`
       } ${isDeleting ? "pointer-events-none opacity-60" : ""}`}
-      onClick={onSelect}
+      onClick={handleClick}
+      onDoubleClick={onDoubleClick}
       onKeyDown={e => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onSelect();
         }
       }}
-      onDoubleClick={onDoubleClick}
     >
-      {/* Deleting overlay */}
       {isDeleting && (
         <div className="bg-error/20 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="flex flex-col items-center gap-2">
@@ -337,78 +334,86 @@ function MediaItemRow({
       )}
 
       {viewMode === "cards" ? (
-        <CardView media={media} sortField={sortField} />
+        <CardView media={media} sortField={sortField} folderLabel={folderLabel} kind={kind} />
       ) : (
-        <ListView media={media} sortField={sortField} />
+        <ListView media={media} folderLabel={folderLabel} kind={kind} showLeadingSpacer={selectionMode} />
       )}
 
-      {/* Action buttons */}
-      <div
-        className={`absolute ${viewMode === "cards" ? "top-1 right-1" : "top-1/2 right-3 -translate-y-1/2"} flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 ${isSelected ? "opacity-100" : "opacity-0"}`}
-      >
-        <ActionButton icon={<TbEye />} title="Preview image" onClick={onPreview} />
-        <ActionButton icon={<TbCrop />} title="Crop/Resize image" onClick={onCrop} />
-        <ActionButton icon={<TbRefresh />} title="Replace image" onClick={onReplace} />
-        <ActionButton icon={<TbEdit />} title="Edit metadata" onClick={onEdit} />
-        <ActionButton icon={<TbTrash />} title="Delete" onClick={onDelete} variant="destructive" />
-      </div>
-
-      {/* Metadata indicator */}
-      {(media.metadata?.alt || media.metadata?.description) && (
-        <div className="absolute bottom-10 left-1">
-          <div className="bg-secondary size-2 rounded-full" />
+      {!selectionMode && (
+        <div
+          className={`${viewMode === "cards" ? "absolute top-1 left-1" : "contents"}`}
+          onClick={e => e.stopPropagation()}
+        >
+          {viewMode === "cards" ? (
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => {}}
+              onClick={e => {
+                e.stopPropagation();
+                onSelect({ shiftKey: e.shiftKey, metaKey: true });
+              }}
+              className="checkbox checkbox-sm border-base-300 bg-base-100/95"
+              aria-label="Select media item"
+            />
+          ) : (
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => {}}
+              onClick={e => {
+                e.stopPropagation();
+                onSelect({ shiftKey: e.shiftKey, metaKey: true });
+              }}
+              className="checkbox checkbox-sm border-base-300 bg-base-100/95"
+              aria-label="Select media item"
+            />
+          )}
         </div>
+      )}
+
+      {viewMode === "cards" && (
+        <button
+          type="button"
+          onClick={e => {
+            e.stopPropagation();
+            onPreview();
+          }}
+          className="bg-base-100/90 text-base-content absolute top-1 right-1 rounded p-1.5 opacity-0 transition-opacity group-hover:opacity-100"
+          aria-label="Preview media"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Preview"
+          data-tooltip-place="top"
+          data-tooltip-offset={8}
+        >
+          <TbEye className="size-4" />
+        </button>
       )}
     </div>
   );
 }
 
-function ActionButton({
-  icon,
-  title,
-  onClick,
-  variant,
+function CardView({
+  media,
+  sortField,
+  folderLabel,
+  kind,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  onClick: () => void;
-  variant?: "destructive";
+  media: MediaItem;
+  sortField: SortField;
+  folderLabel: string;
+  kind: ReturnType<typeof getMediaKind>;
 }) {
-  return (
-    <button
-      type="button"
-      onClick={e => {
-        e.stopPropagation();
-        onClick();
-      }}
-      className={`border-base-300 bg-base-200 hover:bg-neutral rounded-lg border p-1.5 shadow-lg transition-colors ${
-        variant === "destructive"
-          ? "text-error hover:bg-error hover:text-error-content"
-          : "text-primary"
-      }`}
-      aria-label={title}
-      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-      data-tooltip-content={title}
-      data-tooltip-place="top"
-      data-tooltip-offset={8}
-    >
-      <span className="text-sm">{icon}</span>
-    </button>
-  );
-}
-
-function CardView({ media, sortField }: { media: MediaItem; sortField: SortField }) {
   const isR2 = media.type === "r2";
   const contentType = media.metadata?.contentType || "";
   const isVideo = isR2 && contentType.startsWith("video/");
   const isAudio = isR2 && contentType.startsWith("audio/");
   const deliveryURL = media.metadata?.deliveryURL;
-  const kind = getMediaKind(media);
+
   return (
-    <div className="flex flex-col">
+    <div className="flex h-full flex-col">
       <div
-        key={`card-${media.id}`}
-        className="bg-neutral relative aspect-square overflow-hidden bg-cover bg-center transition-transform duration-200 hover:scale-105"
+        className="bg-neutral relative aspect-square overflow-hidden bg-cover bg-center"
         style={{
           backgroundImage:
             media.type === "url"
@@ -418,32 +423,17 @@ function CardView({ media, sortField }: { media: MediaItem; sortField: SortField
                 : `url(${getCdnUrl(media.cdnId || media.id, { width: 400, format: "auto" })})`,
         }}
       >
-        {media.metadata?.size && (
-          <div className="bg-base-100/90 text-base-content absolute right-1 bottom-1 rounded px-1 py-0.5 text-[10px] opacity-0 transition-opacity group-hover:opacity-100">
-            {formatFileSize(media.metadata.size)}
-          </div>
-        )}
-        {media.metadata?.dimensions && (
-          <div className="bg-base-100/90 text-base-content absolute right-1 bottom-1 rounded px-1 py-0.5 text-[10px] opacity-100 transition-opacity group-hover:opacity-0">
-            {formatDimensions(media.metadata.dimensions)}
-          </div>
-        )}
-        {media.metadata?.isVariant && (
-          <div className="bg-primary text-primary-content absolute bottom-1 left-1 flex items-center justify-center rounded px-1 py-0.5 text-[10px]">
-            <TbCrop className="size-3" />
-          </div>
-        )}
-        {kind !== "image" && (
-          <div className="bg-primary/90 text-primary-content absolute top-1 left-1 rounded px-1.5 py-0.5 text-[10px] font-medium">
-            {MEDIA_KIND_LABELS[kind]}
-          </div>
-        )}
+        <div className="bg-base-100/95 text-base-content absolute top-1 right-1 rounded px-1.5 py-0.5 text-[10px] font-medium">
+          {MEDIA_KIND_LABELS[kind]}
+        </div>
+
         {media.type === "svg" && (
           <div
             className="flex size-full items-center justify-center p-2"
             dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }}
           />
         )}
+
         {isVideo && deliveryURL && (
           <video
             src={deliveryURL}
@@ -453,139 +443,118 @@ function CardView({ media, sortField }: { media: MediaItem; sortField: SortField
             playsInline
           />
         )}
+
         {isR2 && !isVideo && (
           <div className="text-base-content/70 flex size-full flex-col items-center justify-center gap-1 p-2">
-            {isAudio ? (
-              <TbFileMusic className="size-8" />
-            ) : (
-              <TbFile className="size-8" />
-            )}
+            {isAudio ? <TbFileMusic className="size-8" /> : <TbFile className="size-8" />}
             <span className="truncate text-[10px]">{contentType || "file"}</span>
           </div>
         )}
       </div>
 
-      <div className="bg-accent text-accent-content p-1.5">
-        <p className="text-base-content truncate text-xs font-medium">
-          {media.metadata?.title || media.id}
+      <div className="bg-base-100 flex min-h-[4.5rem] flex-col gap-0.5 p-2">
+        <p className="text-base-content truncate text-xs font-semibold">{media.metadata?.title || media.id}</p>
+        <p className="text-neutral-content truncate text-[10px]">
+          {media.metadata?.size ? formatFileSize(media.metadata.size) : "--"}
+          {media.metadata?.dimensions ? ` • ${formatDimensions(media.metadata.dimensions)}` : ""}
         </p>
-        {sortField === "createdAt" && (
-          <p className="text-neutral-content truncate text-[10px]">
-            {media.metadata?.description ||
-              (media.uploadedAt ? new Date(media.uploadedAt).toLocaleDateString() : "Unknown")}
-          </p>
-        )}
-        {sortField === "order" && (
-          <p className="text-neutral-content text-[10px]">Order: {media.order || 0}</p>
-        )}
+        <p className="text-neutral-content truncate text-[10px]">
+          {sortField === "createdAt"
+            ? media.uploadedAt
+              ? new Date(media.uploadedAt).toLocaleDateString()
+              : "Unknown date"
+            : folderLabel}
+          {sortField !== "createdAt" ? "" : ` • ${folderLabel}`}
+        </p>
       </div>
     </div>
   );
 }
 
-function ListView({ media, sortField }: { media: MediaItem; sortField: SortField }) {
+function ListView({
+  media,
+  folderLabel,
+  kind,
+  showLeadingSpacer,
+}: {
+  media: MediaItem;
+  folderLabel: string;
+  kind: ReturnType<typeof getMediaKind>;
+  showLeadingSpacer: boolean;
+}) {
   const isR2 = media.type === "r2";
   const contentType = media.metadata?.contentType || "";
   const isVideo = isR2 && contentType.startsWith("video/");
   const isAudio = isR2 && contentType.startsWith("audio/");
   const deliveryURL = media.metadata?.deliveryURL;
-  const kind = getMediaKind(media);
+
   return (
-    <div className="flex items-center gap-4 px-3 py-2">
-      {/* Thumbnail */}
-      <div className="border-base-300 bg-neutral flex size-12 shrink-0 items-center justify-center overflow-hidden rounded border">
-        {media.type === "url" ? (
-          <div className="bg-neutral relative size-full">
-            <Image
-              key={`${media.id}-url-${media.uploadedAt || 0}`}
-              src={media.metadata?.url!}
-              alt={media.metadata?.alt || media.id}
-              fill
-              className="object-cover"
-              onError={e => {
-                (e.currentTarget as HTMLImageElement).style.display = "none";
-              }}
-              placeholder="blur"
-              blurDataURL={BLUR_PLACEHOLDER}
+    <>
+      {showLeadingSpacer ? <span /> : null}
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="border-base-300 bg-neutral flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border">
+          {media.type === "url" ? (
+            <div className="bg-neutral relative size-full">
+              <Image
+                key={`${media.id}-url-${media.uploadedAt || 0}`}
+                src={media.metadata?.url!}
+                alt={media.metadata?.alt || media.id}
+                fill
+                className="object-cover"
+                onError={e => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+                placeholder="blur"
+                blurDataURL={BLUR_PLACEHOLDER}
+              />
+            </div>
+          ) : media.type === "svg" ? (
+            <div className="size-full p-1" dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }} />
+          ) : isVideo && deliveryURL ? (
+            <video
+              src={deliveryURL}
+              className="size-full object-cover"
+              preload="metadata"
+              muted
+              playsInline
             />
-          </div>
-        ) : media.type === "svg" ? (
-          <div
-            className="size-full p-1"
-            dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }}
-          />
-        ) : isVideo && deliveryURL ? (
-          <video
-            src={deliveryURL}
-            className="size-full object-cover"
-            preload="metadata"
-            muted
-            playsInline
-          />
-        ) : isR2 ? (
-          <div className="text-base-content/70 flex size-full items-center justify-center">
-            {isAudio ? <TbFileMusic className="size-6" /> : <TbFile className="size-6" />}
-          </div>
-        ) : (
-          <div className="bg-neutral relative size-full">
-            <Image
-              key={`${media.id}-cdn-${media.uploadedAt || 0}`}
-              src={getCdnUrl(media.cdnId || media.id, { width: 100, format: "auto" })}
-              alt={media.metadata?.alt || media.id}
-              fill
-              className="object-cover"
-              loading="lazy"
-              onError={e => {
-                (e.currentTarget as HTMLImageElement).style.display = "none";
-              }}
-              placeholder="blur"
-              blurDataURL={BLUR_PLACEHOLDER}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Name */}
-      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-        <p className="text-base-content min-w-0 flex-1 truncate text-sm font-medium">
-          {media.metadata?.title || media.id}
-        </p>
-        {kind !== "image" && (
-          <span className="bg-primary/10 text-primary shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium">
-            {MEDIA_KIND_LABELS[kind]}
-          </span>
-        )}
-        {media.metadata?.isVariant && (
-          <span className="bg-primary/10 text-primary shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium">
-            Variant
-          </span>
-        )}
-      </div>
-
-      {/* Dimensions */}
-      {media.metadata?.dimensions && (
-        <div className="text-neutral-content hidden shrink-0 text-xs sm:block sm:w-24">
-          {formatDimensions(media.metadata.dimensions)}
+          ) : isR2 ? (
+            <div className="text-base-content/70 flex size-full items-center justify-center">
+              {isAudio ? <TbFileMusic className="size-5" /> : <TbFile className="size-5" />}
+            </div>
+          ) : (
+            <div className="bg-neutral relative size-full">
+              <Image
+                key={`${media.id}-cdn-${media.uploadedAt || 0}`}
+                src={getCdnUrl(media.cdnId || media.id, { width: 100, format: "auto" })}
+                alt={media.metadata?.alt || media.id}
+                fill
+                className="object-cover"
+                loading="lazy"
+                onError={e => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+                placeholder="blur"
+                blurDataURL={BLUR_PLACEHOLDER}
+              />
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Size */}
-      {media.metadata?.size && (
-        <div className="text-neutral-content hidden shrink-0 text-xs sm:block sm:w-20">
-          {formatFileSize(media.metadata.size)}
+        <div className="min-w-0">
+          <p className="text-base-content truncate text-sm font-medium">{media.metadata?.title || media.id}</p>
+          <p className="text-neutral-content truncate text-[11px]">{media.id}</p>
         </div>
-      )}
-
-      {/* Date/Order */}
-      <div className="text-neutral-content hidden shrink-0 text-xs md:block md:w-24">
-        {sortField === "createdAt"
-          ? media.uploadedAt
-            ? new Date(media.uploadedAt).toLocaleDateString()
-            : "Unknown"
-          : sortField === "order"
-            ? `Order: ${media.order || 0}`
-            : ""}
       </div>
-    </div>
+
+      <div className="text-neutral-content truncate text-xs">{MEDIA_KIND_LABELS[kind]}</div>
+      <div className="text-neutral-content truncate text-xs">
+        {media.metadata?.size ? formatFileSize(media.metadata.size) : "--"}
+      </div>
+      <div className="text-neutral-content truncate text-xs">
+        {media.uploadedAt ? new Date(media.uploadedAt).toLocaleDateString() : "--"}
+      </div>
+      <div className="text-neutral-content truncate text-xs">{folderLabel}</div>
+    </>
   );
 }
