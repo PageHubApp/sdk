@@ -13,7 +13,6 @@ import {
   ariaAttrs,
   collectClasses,
   escapeAttr,
-  escapeHTML,
   handlerAttrs,
   staticClasses,
   tag,
@@ -74,7 +73,8 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     }
   }
 
-  const textHTML = !icon?.only && props.text ? escapeHTML(props.text) : "";
+  // Persisted label HTML like Text.craft (variable spans, TipTap); escaping breaks static previews.
+  const textHTML = !icon?.only && props.text ? String(props.text) : "";
   const before = icon?.position === "left" || icon?.position === "top";
   const inner = before ? iconHTML + textHTML : textHTML + iconHTML;
 
