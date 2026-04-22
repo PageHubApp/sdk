@@ -1,15 +1,12 @@
 import { ConfirmDialog } from "@/chrome/primitives/layout/ConfirmDialog";
-import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { SettingsShell } from "@/chrome/viewport/settings/SettingsShell";
 import { useEditorSidebarDockLeft } from "@/utils/lib";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   TbAlertTriangle,
   TbFolder,
-  TbFolderPlus,
   TbEdit,
   TbEye,
-  TbFile,
   TbRefresh,
   TbScissors,
   TbTrash,
@@ -46,6 +43,9 @@ export function MediaManagerModal({
   kindFilter,
 }: MediaManagerModalProps) {
   const manager = useMediaManager({ isOpen, onClose, onSelect, selectionMode });
+  const [folderNameMode, setFolderNameMode] = useState<"create" | "rename" | null>(null);
+  const [folderNameValue, setFolderNameValue] = useState("");
+  const [isDeleteFolderConfirmOpen, setIsDeleteFolderConfirmOpen] = useState(false);
 
   const toolbarDockedLeft = useEditorSidebarDockLeft();
   const dockEdge: "left" | "right" = toolbarDockedLeft ? "left" : "right";
@@ -108,16 +108,51 @@ export function MediaManagerModal({
   };
 
   const handleCreateFolder = () => {
-    const name = window.prompt("New folder name");
-    if (!name) return;
-    const created = manager.createFolder(name);
-    if (created) manager.setFolderFilter(created.id);
+    setFolderNameMode("create");
+    setFolderNameValue("");
   };
 
   const selectedFolder =
     manager.folderFilter !== "all" && manager.folderFilter !== "unfiled"
       ? manager.folders.find(f => f.id === manager.folderFilter) || null
       : null;
+
+  const handleRenameFolder = () => {
+    if (!selectedFolder) return;
+    setFolderNameMode("rename");
+    setFolderNameValue(selectedFolder.name);
+  };
+
+  const handleDeleteFolder = () => {
+    if (!selectedFolder) return;
+    setIsDeleteFolderConfirmOpen(true);
+  };
+
+  const handleSubmitFolderName = () => {
+    const trimmed = folderNameValue.trim();
+    if (!trimmed) return;
+
+    if (folderNameMode === "create") {
+      const created = manager.createFolder(trimmed);
+      if (created) manager.setFolderFilter(created.id);
+    } else if (folderNameMode === "rename" && selectedFolder) {
+      manager.renameFolder(selectedFolder.id, trimmed);
+    }
+
+    setFolderNameMode(null);
+    setFolderNameValue("");
+  };
+
+  const handleCancelFolderName = () => {
+    setFolderNameMode(null);
+    setFolderNameValue("");
+  };
+
+  const handleConfirmDeleteFolder = () => {
+    if (!selectedFolder) return;
+    manager.deleteFolder(selectedFolder.id);
+    setIsDeleteFolderConfirmOpen(false);
+  };
 
   return (
     <>
@@ -142,12 +177,6 @@ export function MediaManagerModal({
         zIndex={MEDIA_MANAGER_Z}
       >
         <div className="-mx-6 -my-6 flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="border-base-300 bg-neutral text-neutral-content flex items-center gap-2 border-b px-4 py-1.5 text-[11px]">
-            {selectionMode
-              ? "Click an item to select it"
-              : `${manager.filteredMedia.length} ${manager.filteredMedia.length === 1 ? "item" : "items"}${manager.searchQuery ? ` (filtered from ${manager.mediaList.length})` : ""}`}
-          </div>
-
           {manager.uploadError && (
             <div className="border-error bg-error/10 border-b px-6 py-3">
               <div className="flex items-start gap-3">
@@ -165,149 +194,59 @@ export function MediaManagerModal({
             </div>
           )}
 
-          <MediaToolbar manager={manager} />
+          <MediaToolbar
+            manager={manager}
+            selectionMode={selectionMode}
+            filteredCount={manager.filteredMedia.length}
+            totalCount={manager.mediaList.length}
+            selectedCount={manager.selectedMediaIds.length}
+            busy={busy}
+            canRenameOrDeleteFolder={!!selectedFolder}
+            onSelectVisible={manager.selectAllVisible}
+            onCreateFolder={handleCreateFolder}
+            onRenameFolder={handleRenameFolder}
+            onDeleteFolder={handleDeleteFolder}
+            folders={manager.folders}
+            singleSelectedId={singleSelected?.id ?? null}
+            onMoveSelectedToFolder={manager.moveSelectedToFolder}
+            onPreviewSingleSelected={() => singleSelected && manager.setPreviewMedia(singleSelected.id)}
+            onEditSingleSelected={() => singleSelected && manager.openEditModal(singleSelected)}
+            onCropSingleSelected={() => singleSelected && manager.setCropMedia(singleSelected)}
+            onReplaceSingleSelected={() => singleSelected && triggerReplaceForMedia(singleSelected.id)}
+            onDeleteSelected={manager.handleDeleteSelected}
+            onClearSelection={manager.clearSelection}
+          />
 
-          {!selectionMode && (
+          {folderNameMode && !selectionMode && (
             <div className="border-base-300 bg-base-100 flex items-center gap-2 border-b px-3 py-2">
-              {manager.selectedMediaIds.length === 0 ? (
-                <span className="text-neutral-content text-sm">Select media to manage actions</span>
-              ) : (
-                <span className="text-base-content text-sm font-medium">
-                  {manager.selectedMediaIds.length} selected
-                </span>
-              )}
-
-              {manager.selectedMediaIds.length > 0 && (
-                <>
-                  <select
-                    value=""
-                    onChange={e => {
-                      if (!e.target.value) return;
-                      manager.moveSelectedToFolder(
-                        e.target.value === "unfiled" ? null : e.target.value
-                      );
-                      e.currentTarget.value = "";
-                    }}
-                    disabled={busy}
-                    className="select select-sm min-w-[12rem]"
-                  >
-                    <option value="">Move to folder…</option>
-                    <option value="unfiled">Unfiled</option>
-                    {manager.folders.map(folder => (
-                      <option key={folder.id} value={folder.id}>
-                        {folder.name}
-                      </option>
-                    ))}
-                  </select>
-
-                  {singleSelected && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => manager.setPreviewMedia(singleSelected.id)}
-                        disabled={busy}
-                        className="btn btn-sm"
-                      >
-                        <TbEye className="size-4" /> Preview
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => manager.openEditModal(singleSelected)}
-                        disabled={busy}
-                        className="btn btn-sm"
-                      >
-                        <TbEdit className="size-4" /> Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => manager.setCropMedia(singleSelected)}
-                        disabled={busy}
-                        className="btn btn-sm"
-                      >
-                        <TbScissors className="size-4" /> Crop
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => triggerReplaceForMedia(singleSelected.id)}
-                        disabled={busy}
-                        className="btn btn-sm"
-                      >
-                        <TbRefresh className="size-4" /> Replace
-                      </button>
-                    </>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => manager.handleDeleteSelected()}
-                    disabled={busy}
-                    className="btn btn-sm btn-error"
-                  >
-                    <TbTrash className="size-4" /> Delete
-                  </button>
-                  <button
-                    type="button"
-                    onClick={manager.clearSelection}
-                    disabled={busy}
-                    className="btn btn-sm btn-ghost"
-                  >
-                    Clear
-                  </button>
-                </>
-              )}
-
-              <div className="ml-auto flex items-center gap-2">
-                {manager.filteredMedia.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={manager.selectAllVisible}
-                    disabled={busy}
-                    className="btn btn-sm btn-ghost"
-                    data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                    data-tooltip-content="Select all items in current view"
-                    data-tooltip-place="top"
-                  >
-                    Select visible
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleCreateFolder}
-                  disabled={busy}
-                  className="btn btn-sm"
-                >
-                  <TbFolderPlus className="size-4" /> New folder
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-ghost"
-                  disabled={!selectedFolder || busy}
-                  onClick={() => {
-                    if (!selectedFolder) return;
-                    const nextName = window.prompt("Rename folder", selectedFolder.name);
-                    if (nextName) manager.renameFolder(selectedFolder.id, nextName);
-                  }}
-                >
-                  Rename folder
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-ghost text-error"
-                  disabled={!selectedFolder || busy}
-                  onClick={() => {
-                    if (!selectedFolder) return;
-                    if (
-                      window.confirm(
-                        `Delete folder \"${selectedFolder.name}\"? Items will be moved to Unfiled.`
-                      )
-                    ) {
-                      manager.deleteFolder(selectedFolder.id);
-                    }
-                  }}
-                >
-                  Delete folder
-                </button>
-              </div>
+              <input
+                type="text"
+                value={folderNameValue}
+                onChange={e => setFolderNameValue(e.target.value)}
+                placeholder={folderNameMode === "create" ? "New folder name" : "Rename folder"}
+                className="input-dialog h-8 min-h-8 flex-1"
+                autoFocus
+                onKeyDown={e => {
+                  if (e.key === "Enter") handleSubmitFolderName();
+                  if (e.key === "Escape") handleCancelFolderName();
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleSubmitFolderName}
+                disabled={!folderNameValue.trim() || busy}
+                className="btn btn-primary btn-sm"
+              >
+                {folderNameMode === "create" ? "Create" : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelFolderName}
+                disabled={busy}
+                className="btn btn-ghost btn-sm"
+              >
+                Cancel
+              </button>
             </div>
           )}
 
@@ -378,6 +317,22 @@ export function MediaManagerModal({
             : "Are you sure you want to delete this media item? This action cannot be undone."
         }
         confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        key="delete-folder-confirm-dialog"
+        isOpen={isDeleteFolderConfirmOpen}
+        onClose={() => setIsDeleteFolderConfirmOpen(false)}
+        onConfirm={handleConfirmDeleteFolder}
+        title="Delete Folder"
+        message={
+          selectedFolder
+            ? `Delete folder \"${selectedFolder.name}\"? Items will be moved to Unfiled.`
+            : "Delete this folder? Items will be moved to Unfiled."
+        }
+        confirmText="Delete Folder"
         cancelText="Cancel"
         variant="danger"
       />

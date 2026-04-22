@@ -74,7 +74,7 @@ export function MediaGrid({
 }: MediaGridProps) {
   return (
     <div
-      className={`scrollbar-light bg-base-100 relative flex-1 overflow-y-auto transition-colors ${
+      className={`scrollbar-light bg-base-100 relative h-full overflow-y-auto transition-colors ${
         isDragOver ? "border-accent bg-accent border-2 border-dashed" : ""
       } ${uploadProgress ? "pt-16" : "p-3"}`}
       {...dropProps}
@@ -154,7 +154,7 @@ export function MediaGrid({
           <div
             className={
               viewMode === "cards"
-                ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                ? "grid grid-cols-[repeat(auto-fill,minmax(11.5rem,1fr))] gap-3"
                 : "flex flex-col"
             }
           >
@@ -211,11 +211,8 @@ function EmptyState({
   fileInputRef: React.RefObject<HTMLInputElement>;
 }) {
   return (
-    <div className="flex max-w-2xl animate-[slide-up_0.8s_ease-out_forwards] flex-col items-center">
-      <h3 className="text-base-content mb-2 text-2xl font-bold">Your media library is empty</h3>
-      <p className="text-neutral-content mb-8 text-sm">Start building your visual content collection</p>
-
-      <div className="mb-8 w-full max-w-lg">
+    <div className="flex w-full max-w-2xl animate-[slide-up_0.8s_ease-out_forwards] flex-col items-center justify-center gap-8">
+      <div className="w-full max-w-lg">
         <EditorMenuSectionLabel>Add media</EditorMenuSectionLabel>
         <div className="border-base-300 bg-base-100 overflow-hidden rounded-xl border">
           <EditorMenuNavRow

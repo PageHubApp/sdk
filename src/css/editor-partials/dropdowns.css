@@ -8,7 +8,8 @@
 @reference "./styles.css";
 
 .pagehub-sdk-root.ph-select-content {
-  @apply border-base-300 bg-base-100 text-base-content z-9999 min-w-32 rounded-lg border p-1 shadow-lg;
+  @apply border-base-300 bg-base-100 text-base-content min-w-32 rounded-lg border p-1 shadow-lg;
+  z-index: 11000 !important;
   font-size: 14px !important;
   line-height: 1.4 !important;
   outline: none !important;

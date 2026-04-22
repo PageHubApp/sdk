@@ -166,6 +166,10 @@ export const ToolbarDropdown = ({
   wrap = null,
   append,
   propKey,
+  tooltipId,
+  tooltipContent,
+  tooltipPlace = "bottom",
+  tooltipOffset = 10,
 }: any) => {
   const options = useOptions(children, valueLabels, propKey);
   const internalValue = toInternal(String(value ?? ""));
@@ -188,8 +192,12 @@ export const ToolbarDropdown = ({
     <ListboxButton
       id={propKey ? `input-${propKey}` : undefined}
       className="input-plain aria-expanded:bg-base-300/15 flex flex-1 items-center justify-between gap-1 outline-none focus:outline-none focus-visible:outline-none"
-      aria-label={title || placeholder || "Select option"}
+      aria-label={title || (typeof placeholder === "string" ? placeholder : "Select option")}
       onClick={handleButtonClick}
+      data-tooltip-id={tooltipId}
+      data-tooltip-content={tooltipContent}
+      data-tooltip-place={tooltipPlace}
+      data-tooltip-offset={tooltipOffset}
     >
       <span className="truncate">{selectedLabel ?? placeholder ?? ""}</span>
       <span className="-mr-1.5 shrink-0 opacity-50">
@@ -222,6 +230,8 @@ export const ToolbarDropdown = ({
         anchor="bottom start"
         className="pagehub-sdk-root ph-select-content"
         modal={false}
+        portal
+        style={{ zIndex: 12000 }}
       >
         <AutoHideScrollbar className="ph-select-scroll-area" hideDelay={600}>
           <div ref={sentinelRef} />
