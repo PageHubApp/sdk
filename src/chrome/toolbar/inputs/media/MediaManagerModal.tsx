@@ -5,17 +5,14 @@ import { useEditorSidebarDockLeft } from "@/utils/lib";
 import { useEffect, useMemo } from "react";
 import {
   TbAlertTriangle,
-  TbArchive,
+  TbFolder,
+  TbFolderPlus,
   TbEdit,
+  TbEye,
   TbFile,
-  TbFileMusic,
-  TbFileTypePdf,
-  TbPhoto,
   TbRefresh,
   TbScissors,
-  TbStack2,
   TbTrash,
-  TbVideo,
   TbX,
 } from "react-icons/tb";
 import { ImageCropModal } from "../../dialogs/ImageCropModal";
@@ -25,9 +22,7 @@ import { MediaPreviewModal } from "./components/MediaPreviewModal";
 import { MediaToolbar } from "./components/MediaToolbar";
 import { useMediaManager } from "./hooks/useMediaManager";
 import {
-  getMediaKind,
   getReplaceAccept,
-  MEDIA_KIND_LABELS,
   type MediaKind,
 } from "./utils/media-helpers";
 
@@ -43,16 +38,6 @@ interface MediaManagerModalProps {
 
 const MEDIA_MANAGER_DEFAULT_WIDTH = 1080;
 const MEDIA_MANAGER_Z = 10050;
-const KIND_ORDER: MediaKind[] = ["image", "video", "audio", "pdf", "archive", "other"];
-const KIND_ICONS: Record<MediaKind, React.ReactNode> = {
-  image: <TbPhoto />,
-  video: <TbVideo />,
-  audio: <TbFileMusic />,
-  pdf: <TbFileTypePdf />,
-  archive: <TbArchive />,
-  other: <TbFile />,
-};
-
 export function MediaManagerModal({
   isOpen,
   onClose,
@@ -84,26 +69,33 @@ export function MediaManagerModal({
   const busy =
     manager.uploading || manager.savingMetadata === "saving" || manager.deletingMedia.length > 0;
 
-  const kindTabs = useMemo(() => {
-    const counts = new Map<MediaKind, number>();
-    for (const m of manager.mediaList) {
-      const k = getMediaKind(m);
-      counts.set(k, (counts.get(k) ?? 0) + 1);
-    }
-    const present = KIND_ORDER.filter(k => (counts.get(k) ?? 0) > 0);
-    return [
+  const folderTabs = useMemo(
+    () => [
       {
-        key: "all",
-        label: `All (${manager.mediaList.length})`,
-        icon: <TbStack2 />,
+        key: "folder:all",
+        label: `All (${manager.folderCounts.all})`,
+        icon: <TbFolder />,
       },
-      ...present.map(k => ({
-        key: k,
-        label: `${MEDIA_KIND_LABELS[k]} (${counts.get(k)})`,
-        icon: KIND_ICONS[k],
+      {
+        key: "folder:unfiled",
+        label: `Unfiled (${manager.folderCounts.unfiled})`,
+        icon: <TbFolder />,
+      },
+      ...manager.folders.map(folder => ({
+        key: `folder:${folder.id}`,
+        label: `${folder.name} (${manager.folderCounts.byId.get(folder.id) || 0})`,
+        icon: <TbFolder />,
       })),
-    ];
-  }, [manager.mediaList]);
+    ],
+    [manager.folderCounts.all, manager.folderCounts.byId, manager.folderCounts.unfiled, manager.folders]
+  );
+
+  const activeFolderTab =
+    manager.folderFilter === "all"
+      ? "folder:all"
+      : manager.folderFilter === "unfiled"
+        ? "folder:unfiled"
+        : `folder:${manager.folderFilter}`;
 
   const triggerReplaceForMedia = (mediaId: string) => {
     manager.setReplacingMedia(mediaId);
@@ -115,6 +107,18 @@ export function MediaManagerModal({
     }
   };
 
+  const handleCreateFolder = () => {
+    const name = window.prompt("New folder name");
+    if (!name) return;
+    const created = manager.createFolder(name);
+    if (created) manager.setFolderFilter(created.id);
+  };
+
+  const selectedFolder =
+    manager.folderFilter !== "all" && manager.folderFilter !== "unfiled"
+      ? manager.folders.find(f => f.id === manager.folderFilter) || null
+      : null;
+
   return (
     <>
       <SettingsShell
@@ -122,9 +126,12 @@ export function MediaManagerModal({
         onClose={onClose}
         title={selectionMode ? "Select Media" : "Media Manager"}
         storageKey="media-manager-v3"
-        tabs={kindTabs}
-        activeTab={manager.kindFilter}
-        setActiveTab={key => manager.setKindFilter(key as MediaKind | "all")}
+        tabs={folderTabs}
+        activeTab={activeFolderTab}
+        setActiveTab={key => {
+          const raw = String(key).replace(/^folder:/, "");
+          manager.setFolderFilter(raw === "all" || raw === "unfiled" ? raw : raw);
+        }}
         defaultWidth={MEDIA_MANAGER_DEFAULT_WIDTH}
         defaultHeight={defaultHeight}
         minWidth={760}
@@ -162,95 +169,145 @@ export function MediaManagerModal({
 
           {!selectionMode && (
             <div className="border-base-300 bg-base-100 flex items-center gap-2 border-b px-3 py-2">
-              <span className="text-base-content text-sm font-medium">
-                {manager.selectedMediaIds.length
-                  ? `${manager.selectedMediaIds.length} selected`
-                  : "No selection"}
-              </span>
+              {manager.selectedMediaIds.length === 0 ? (
+                <span className="text-neutral-content text-sm">Select media to manage actions</span>
+              ) : (
+                <span className="text-base-content text-sm font-medium">
+                  {manager.selectedMediaIds.length} selected
+                </span>
+              )}
 
-              <select
-                value=""
-                onChange={e => {
-                  if (!e.target.value) return;
-                  manager.moveSelectedToFolder(
-                    e.target.value === "unfiled" ? null : e.target.value
-                  );
-                  e.currentTarget.value = "";
-                }}
-                disabled={!manager.selectedMediaIds.length || busy}
-                className="select select-sm min-w-[12rem]"
-              >
-                <option value="">Move to folder…</option>
-                <option value="unfiled">Unfiled</option>
-                {manager.folders.map(folder => (
-                  <option key={folder.id} value={folder.id}>
-                    {folder.name}
-                  </option>
-                ))}
-              </select>
+              {manager.selectedMediaIds.length > 0 && (
+                <>
+                  <select
+                    value=""
+                    onChange={e => {
+                      if (!e.target.value) return;
+                      manager.moveSelectedToFolder(
+                        e.target.value === "unfiled" ? null : e.target.value
+                      );
+                      e.currentTarget.value = "";
+                    }}
+                    disabled={busy}
+                    className="select select-sm min-w-[12rem]"
+                  >
+                    <option value="">Move to folder…</option>
+                    <option value="unfiled">Unfiled</option>
+                    {manager.folders.map(folder => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </option>
+                    ))}
+                  </select>
 
-              <button
-                type="button"
-                onClick={() => singleSelected && manager.setPreviewMedia(singleSelected.id)}
-                disabled={!singleSelected || busy}
-                className="btn btn-sm"
-              >
-                Preview
-              </button>
-              <button
-                type="button"
-                onClick={() => singleSelected && manager.openEditModal(singleSelected)}
-                disabled={!singleSelected || busy}
-                className="btn btn-sm"
-              >
-                <TbEdit className="size-4" /> Edit
-              </button>
-              <button
-                type="button"
-                onClick={() => singleSelected && manager.setCropMedia(singleSelected)}
-                disabled={!singleSelected || busy}
-                className="btn btn-sm"
-              >
-                <TbScissors className="size-4" /> Crop
-              </button>
-              <button
-                type="button"
-                onClick={() => singleSelected && triggerReplaceForMedia(singleSelected.id)}
-                disabled={!singleSelected || busy}
-                className="btn btn-sm"
-              >
-                <TbRefresh className="size-4" /> Replace
-              </button>
-              <button
-                type="button"
-                onClick={() => manager.handleDeleteSelected()}
-                disabled={!manager.selectedMediaIds.length || busy}
-                className="btn btn-sm btn-error"
-              >
-                <TbTrash className="size-4" /> Delete
-              </button>
-              <button
-                type="button"
-                onClick={manager.clearSelection}
-                disabled={!manager.selectedMediaIds.length || busy}
-                className="btn btn-sm btn-ghost"
-              >
-                Clear
-              </button>
+                  {singleSelected && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => manager.setPreviewMedia(singleSelected.id)}
+                        disabled={busy}
+                        className="btn btn-sm"
+                      >
+                        <TbEye className="size-4" /> Preview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => manager.openEditModal(singleSelected)}
+                        disabled={busy}
+                        className="btn btn-sm"
+                      >
+                        <TbEdit className="size-4" /> Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => manager.setCropMedia(singleSelected)}
+                        disabled={busy}
+                        className="btn btn-sm"
+                      >
+                        <TbScissors className="size-4" /> Crop
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => triggerReplaceForMedia(singleSelected.id)}
+                        disabled={busy}
+                        className="btn btn-sm"
+                      >
+                        <TbRefresh className="size-4" /> Replace
+                      </button>
+                    </>
+                  )}
 
-              {manager.filteredMedia.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => manager.handleDeleteSelected()}
+                    disabled={busy}
+                    className="btn btn-sm btn-error"
+                  >
+                    <TbTrash className="size-4" /> Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={manager.clearSelection}
+                    disabled={busy}
+                    className="btn btn-sm btn-ghost"
+                  >
+                    Clear
+                  </button>
+                </>
+              )}
+
+              <div className="ml-auto flex items-center gap-2">
+                {manager.filteredMedia.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={manager.selectAllVisible}
+                    disabled={busy}
+                    className="btn btn-sm btn-ghost"
+                    data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                    data-tooltip-content="Select all items in current view"
+                    data-tooltip-place="top"
+                  >
+                    Select visible
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={manager.selectAllVisible}
+                  onClick={handleCreateFolder}
                   disabled={busy}
-                  className="btn btn-sm btn-ghost ml-auto"
-                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                  data-tooltip-content="Select all items in current view"
-                  data-tooltip-place="top"
+                  className="btn btn-sm"
                 >
-                  Select visible
+                  <TbFolderPlus className="size-4" /> New folder
                 </button>
-              )}
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost"
+                  disabled={!selectedFolder || busy}
+                  onClick={() => {
+                    if (!selectedFolder) return;
+                    const nextName = window.prompt("Rename folder", selectedFolder.name);
+                    if (nextName) manager.renameFolder(selectedFolder.id, nextName);
+                  }}
+                >
+                  Rename folder
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost text-error"
+                  disabled={!selectedFolder || busy}
+                  onClick={() => {
+                    if (!selectedFolder) return;
+                    if (
+                      window.confirm(
+                        `Delete folder \"${selectedFolder.name}\"? Items will be moved to Unfiled.`
+                      )
+                    ) {
+                      manager.deleteFolder(selectedFolder.id);
+                    }
+                  }}
+                >
+                  Delete folder
+                </button>
+              </div>
             </div>
           )}
 

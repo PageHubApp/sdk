@@ -3,18 +3,22 @@ import {
   TbArrowDown,
   TbArrowUp,
   TbClipboard,
-  TbCode,
-  TbExternalLink,
   TbInfoCircle,
   TbSearch,
-  TbWand,
   TbUpload,
   TbLayoutGrid,
   TbList,
 } from "react-icons/tb";
 import { getUploadAccept } from "@/utils/media/upload";
 import { ToolbarDropdown } from "../../../ToolbarDropdown";
-import { getReplaceAccept, type AddMode, type SortField } from "../utils/media-helpers";
+import {
+  getMediaKind,
+  getReplaceAccept,
+  MEDIA_KIND_LABELS,
+  type AddMode,
+  type MediaKind,
+  type SortField,
+} from "../utils/media-helpers";
 import type { UseMediaManagerReturn } from "../hooks/useMediaManager";
 
 interface MediaToolbarProps {
@@ -27,6 +31,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
     viewMode,
     sortField,
     sortDirection,
+    kindFilter,
     addMode,
     urlInput,
     svgInput,
@@ -43,6 +48,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
     setViewMode,
     setSortField,
     setSortDirection,
+    setKindFilter,
     setAddMode,
     setUrlInput,
     setSvgInput,
@@ -61,6 +67,14 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
 
   const replaceTarget = replacingMedia ? mediaList.find(m => m.id === replacingMedia) : null;
   const replaceAccept = replaceTarget ? getReplaceAccept(replaceTarget) : getUploadAccept();
+  const kindCounts = mediaList.reduce(
+    (acc, item) => {
+      const kind = getMediaKind(item);
+      acc[kind] = (acc[kind] || 0) + 1;
+      return acc;
+    },
+    {} as Record<MediaKind, number>
+  );
 
   /** One height for search + segmented controls; use tool-bg-flat (not tool-bg) so clusters match the bar — no shadow-xl */
   const barH = "h-10";
@@ -68,10 +82,11 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
 
   return (
     <div ref={toolbarRef} className="border-base-300 bg-neutral border-b px-4 py-1.5">
-      <div className={`flex items-center gap-2 ${barH}`}>
+      <div className="scrollbar-light overflow-x-auto">
+        <div className={`flex min-w-max items-center gap-2 ${barH}`}>
         {/* Search */}
         <div
-          className={`input-wrapper input-hover relative flex min-h-0 min-w-0 flex-1 items-center ${barH}`}
+          className={`input-wrapper input-hover relative flex min-h-0 w-[20rem] min-w-[14rem] max-w-[28rem] items-center ${barH}`}
         >
           <TbSearch className="text-neutral-content pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2" />
           <input
@@ -151,42 +166,63 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
           </div>
         </div>
 
+        {/* File Type Filter */}
+        <div className={`${toolClusterClass} min-w-0`}>
+          <div className="flex h-full min-h-0 w-full max-w-[11rem] items-stretch [&_button.input-plain]:text-xs">
+            <ToolbarDropdown
+              wrap="control"
+              propKey="media-kind-filter"
+              placeholder="File type"
+              value={kindFilter}
+              onChange={(val: string) => setKindFilter(val as MediaKind | "all")}
+            >
+              <option value="all">All types ({mediaList.length})</option>
+              <option value="image">Image ({kindCounts.image || 0})</option>
+              <option value="video">Video ({kindCounts.video || 0})</option>
+              <option value="audio">Audio ({kindCounts.audio || 0})</option>
+              <option value="pdf">PDF ({kindCounts.pdf || 0})</option>
+              <option value="archive">Archive ({kindCounts.archive || 0})</option>
+              <option value="other">{MEDIA_KIND_LABELS.other} ({kindCounts.other || 0})</option>
+            </ToolbarDropdown>
+          </div>
+        </div>
+
         {/* Add Mode */}
         <div className={toolClusterClass}>
-          <AddModeButton
-            mode="upload"
-            icon={<TbUpload className="size-[18px]" />}
-            tooltip="Upload files"
-            activeMode={addMode}
-            disabled={uploading}
+          <button
+            type="button"
             onClick={() => {
               setAddMode("upload");
-              if (addMode === "upload") fileInputRef.current?.click();
+              fileInputRef.current?.click();
             }}
-          />
-          <AddModeButton
-            mode="url"
-            icon={<TbExternalLink className="size-[18px]" />}
-            tooltip="Add from URL"
-            activeMode={addMode}
-            onClick={() => setAddMode("url")}
-          />
-          <AddModeButton
-            mode="svg"
-            icon={<TbCode className="size-[18px]" />}
-            tooltip="Add SVG code"
-            activeMode={addMode}
-            onClick={() => setAddMode("svg")}
-          />
-          {canUseImageGenerate && (
-            <AddModeButton
-              mode="ai"
-              icon={<TbWand className="size-[18px]" />}
-              tooltip="Generate with AI"
-              activeMode={addMode}
-              onClick={() => setAddMode("ai")}
-            />
-          )}
+            disabled={uploading}
+            className={`tool-button flex h-full items-stretch px-2 ${addMode === "upload" ? "bg-base-200 text-base-content" : ""}`}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Upload files"
+            data-tooltip-place="bottom"
+            data-tooltip-offset={10}
+          >
+            <TbUpload className="size-[18px]" />
+          </button>
+          <div className="flex h-full min-h-0 w-full max-w-[8.5rem] items-stretch [&_button.input-plain]:text-xs">
+            <ToolbarDropdown
+              wrap="control"
+              propKey="media-add-actions"
+              placeholder="More"
+              value=""
+              onChange={(val: string) => {
+                if (val === "url") setAddMode("url");
+                if (val === "svg") setAddMode("svg");
+                if (val === "ai" && canUseImageGenerate) setAddMode("ai");
+                if (val === "paste") handlePasteClick();
+              }}
+            >
+              <option value="url">Add from URL</option>
+              <option value="svg">Paste SVG</option>
+              {canUseImageGenerate && <option value="ai">Generate with AI</option>}
+              <option value="paste">Paste from clipboard</option>
+            </ToolbarDropdown>
+          </div>
           <button
             type="button"
             onClick={handlePasteClick}
@@ -204,6 +240,7 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
             <TbClipboard className="size-[18px]" />
           </button>
         </div>
+      </div>
       </div>
 
       {/* URL input */}
@@ -304,36 +341,5 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
         className="hidden"
       />
     </div>
-  );
-}
-
-function AddModeButton({
-  mode,
-  icon,
-  tooltip,
-  activeMode,
-  disabled,
-  onClick,
-}: {
-  mode: AddMode;
-  icon: React.ReactNode;
-  tooltip: string;
-  activeMode: AddMode;
-  disabled?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`tool-button flex h-full items-stretch px-2 ${activeMode === mode ? "bg-base-200 text-base-content" : ""}`}
-      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-      data-tooltip-content={tooltip}
-      data-tooltip-place="bottom"
-      data-tooltip-offset={10}
-    >
-      {icon}
-    </button>
   );
 }
