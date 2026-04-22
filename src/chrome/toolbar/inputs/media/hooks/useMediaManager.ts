@@ -87,10 +87,17 @@ export function useMediaManager({
   const applyFilters = useCallback(
     (
       media: MediaItem[],
-      override?: { kind?: MediaKind | "all"; search?: string }
+      override?: {
+        kind?: MediaKind | "all";
+        search?: string;
+        sortField?: SortField;
+        sortDirection?: SortDirection;
+      }
     ): MediaItem[] => {
       const k = override?.kind ?? kindFilter;
       const s = override?.search ?? searchQuery;
+      const sf = override?.sortField ?? sortField;
+      const sd = override?.sortDirection ?? sortDirection;
       let out = media;
       if (k !== "all") out = out.filter(m => getMediaKind(m) === k);
       if (s.trim()) {
@@ -103,7 +110,7 @@ export function useMediaManager({
             m.metadata?.description?.toLowerCase().includes(q)
         );
       }
-      return sortMedia(out, sortField, sortDirection);
+      return sortMedia(out, sf, sd);
     },
     [kindFilter, searchQuery, sortField, sortDirection]
   );
@@ -430,7 +437,13 @@ export function useMediaManager({
     onSelect,
     onClose,
     settings,
-    resortFilteredMedia: () => setFilteredMedia(sortMedia(filteredMedia, sortField, sortDirection)),
+    resortFilteredMedia: (override?: { sortField?: SortField; sortDirection?: SortDirection }) =>
+      setFilteredMedia(
+        applyFilters(mediaList, {
+          sortField: override?.sortField,
+          sortDirection: override?.sortDirection,
+        })
+      ),
   };
 }
 

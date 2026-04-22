@@ -119,14 +119,15 @@ export function MediaToolbar({ manager }: MediaToolbarProps) {
               value={sortField}
               onChange={(val: string) => {
                 setSortField(val as SortField);
-                resortFilteredMedia();
+                resortFilteredMedia({ sortField: val as SortField });
               }}
               append={
                 <button
                   type="button"
                   onClick={() => {
-                    setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-                    resortFilteredMedia();
+                    const nextDirection = sortDirection === "asc" ? "desc" : "asc";
+                    setSortDirection(nextDirection);
+                    resortFilteredMedia({ sortDirection: nextDirection });
                   }}
                   className="tool-button flex h-full items-stretch px-1.5"
                   data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}

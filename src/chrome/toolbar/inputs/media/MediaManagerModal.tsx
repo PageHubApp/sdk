@@ -65,8 +65,12 @@ export function MediaManagerModal({
   const maxHeight = Math.max(600, Math.min(820, Math.round(viewportHeight * 0.86)));
 
   useEffect(() => {
-    if (isOpen && kindFilter) manager.setKindFilter(kindFilter);
-  }, [isOpen, kindFilter]);
+    if (!isOpen) return;
+    const nextKind = kindFilter ?? "all";
+    if (manager.kindFilter !== nextKind) {
+      manager.setKindFilter(nextKind);
+    }
+  }, [isOpen, kindFilter, manager.kindFilter, manager.setKindFilter]);
 
   // Kind tabs: "All" + each present kind. Counts shown inline.
   const kindTabs = useMemo(() => {

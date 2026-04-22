@@ -42,13 +42,18 @@ export function useMediaUpload({
     if (!ensureSavePromiseRef.current) {
       ensureSavePromiseRef.current = saveAndWait(emitter)
         .catch(e => {
+          if (getSiteId()) return;
           console.warn("[MediaManager] page save before upload failed:", e);
+          throw e;
         })
         .finally(() => {
           ensureSavePromiseRef.current = null;
         });
     }
     await ensureSavePromiseRef.current;
+    if (!getSiteId()) {
+      throw new Error("Site is not saved yet. Please wait for save to finish, then retry upload.");
+    }
   };
 
   // ─── Upload state ───

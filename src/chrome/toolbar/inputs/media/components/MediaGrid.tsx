@@ -16,6 +16,7 @@ import {
   TbTrash,
   TbUpload,
 } from "react-icons/tb";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { EditorMenuNavRow, EditorMenuSectionLabel } from "@/chrome/viewport/EditorMenuNav";
 import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
@@ -375,6 +376,7 @@ function ActionButton({
 }) {
   return (
     <button
+      type="button"
       onClick={e => {
         e.stopPropagation();
         onClick();
@@ -384,7 +386,11 @@ function ActionButton({
           ? "text-error hover:bg-error hover:text-error-content"
           : "text-primary"
       }`}
-      title={title}
+      aria-label={title}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      data-tooltip-content={title}
+      data-tooltip-place="top"
+      data-tooltip-offset={8}
     >
       <span className="text-sm">{icon}</span>
     </button>
