@@ -4,6 +4,7 @@ import { TbBrandVimeo, TbBrandYoutube, TbPlayerPlay, TbVideo } from "react-icons
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { getMediaContent } from "../utils/media";
+import { isDirectVideoFileUrl, nativeVideoPlaybackFields } from "../utils/nativeVideo";
 
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../utils/lib";
@@ -74,10 +75,24 @@ export interface VideoProps extends BaseSelectorProps {
   provider?: VideoProvider;
   videoId?: string;
   title?: string;
+  /** HTML5 playback — used for R2 uploads and direct file URLs (`.mp4`, `.webm`, …). */
+  autoPlay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+  playsInline?: boolean;
+  controls?: boolean;
+  preload?: string;
 }
 
 export const Video = (incomingProps: VideoProps) => {
-  let props: any = { canDelete: true, canEditName: true, provider: "youtube", ...incomingProps };
+  let props: any = {
+    canDelete: true,
+    canEditName: true,
+    provider: "youtube",
+    controls: true,
+    playsInline: true,
+    ...incomingProps,
+  };
 
   const {
     connectors: { connect, drag },
@@ -162,13 +177,34 @@ export const Video = (incomingProps: VideoProps) => {
           />
         ) : null;
       }
+      const pb = nativeVideoPlaybackFields(props);
       return (
         <video
           className={videoClassName}
           src={src}
-          controls
-          playsInline
-          preload="metadata"
+          autoPlay={pb.autoPlay}
+          loop={pb.loop}
+          muted={pb.muted}
+          playsInline={pb.playsInline}
+          controls={pb.controls}
+          preload={pb.preload}
+          title={props.title}
+        />
+      );
+    }
+
+    if (provider === "url" && isDirectVideoFileUrl(videoId)) {
+      const pb = nativeVideoPlaybackFields(props);
+      return (
+        <video
+          className={videoClassName}
+          src={videoId}
+          autoPlay={pb.autoPlay}
+          loop={pb.loop}
+          muted={pb.muted}
+          playsInline={pb.playsInline}
+          controls={pb.controls}
+          preload={pb.preload}
           title={props.title}
         />
       );

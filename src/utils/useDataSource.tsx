@@ -45,6 +45,7 @@ export interface DataSource {
 function applyDataSourceScope(
   items: any[] | null | undefined,
   ds: {
+    collection?: string;
     filter?: Record<string, string>;
     ids?: string[];
     sort?: string;
@@ -58,12 +59,29 @@ function applyDataSourceScope(
     const idSet = new Set(ds.ids);
     result = result.filter(it => idSet.has(it?.id));
   }
-  if (ds.filter && Object.keys(ds.filter).length > 0) {
-    result = result.filter(it => {
-      const md = it?.metadata;
-      if (!md) return false;
-      return Object.entries(ds.filter!).every(([k, v]) => md[k] === v);
-    });
+  // Aggregated collections (facets, categories) carry their filter as a
+  // server-side narrowing instruction — the returned rows don't carry the
+  // product metadata being filtered on, so a client post-filter would drop
+  // every row. Products is the only collection where `filter` maps onto the
+  // item's metadata shape.
+  const isProductItemCollection =
+    !ds.collection || ds.collection === "products" || ds.collection === "product";
+  if (isProductItemCollection && ds.filter && Object.keys(ds.filter).length > 0) {
+    // Skip keys with empty string values — these come from unresolved
+    // `{{params.x}}` placeholders on routes without that segment (e.g.
+    // `/shop` vs `/shop/tees`). The server-side pipeline drops them too;
+    // keeping behavior symmetric so client-side post-filter doesn't gut
+    // a correctly-fetched page.
+    const activeFilter = Object.entries(ds.filter).filter(
+      ([, v]) => v != null && v !== ""
+    );
+    if (activeFilter.length > 0) {
+      result = result.filter(it => {
+        const md = it?.metadata;
+        if (!md) return false;
+        return activeFilter.every(([k, v]) => md[k] === v);
+      });
+    }
   }
   if (ds.sort) {
     result = [...result];
@@ -182,8 +200,20 @@ export function useDataSource(
           ? { maxPrice: String(mergedForFetch.priceMax) }
           : {}),
         ...(mergedForFetch.filter ? { filter: mergedForFetch.filter } : {}),
+        ...(typeof mergedForFetch.facetKeys === "string" && mergedForFetch.facetKeys
+          ? { facetKeys: mergedForFetch.facetKeys }
+          : {}),
         ...(mergedForFetch.limit ? { limit: mergedForFetch.limit } : {}),
       };
+      // Flatten facet selections to `facet.<key>` entries so the public-data
+      // endpoint picks them up via its `req.query["facet.*"]` scan. Matches
+      // the URL shape the storefront hook writes on form submit.
+      if (mergedForFetch.facetFilters && typeof mergedForFetch.facetFilters === "object") {
+        for (const [k, v] of Object.entries(mergedForFetch.facetFilters)) {
+          if (!Array.isArray(v) || v.length === 0) continue;
+          options[`facet.${k}`] = v.join(",");
+        }
+      }
     }
 
     // Only skip when we have SSR items AND no user-driven URL query overriding them.
@@ -197,6 +227,12 @@ export function useDataSource(
         options.sort ||
         (options.filter && Object.keys(options.filter).length > 0));
     if (hasItems && !hasQueryOverride && refetchKey === 0) return;
+
+    // Clear stale clientItems so the fetch window falls back to fresh SSR
+    // items (new connectorData from soft-nav) instead of showing the PREVIOUS
+    // URL's items re-filtered through the NEW filter — which evaluates to an
+    // empty array and produces a visible flash of the no-products state.
+    setClientItems(null);
 
     let cancelled = false;
     fetcher(ds.provider, ds.collection, options)

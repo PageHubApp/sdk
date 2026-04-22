@@ -44,6 +44,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   else if (props.type === "form") t = "form";
   else if (props.type === "details") t = "details";
   else if (props.type === "summary") t = "summary";
+  else if (props.type === "label") t = "label";
 
   const attrs: Record<string, any> = {
     class: staticClasses(props, ctx) || undefined,

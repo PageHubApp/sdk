@@ -32,6 +32,8 @@ export interface StaticRenderContext {
   pureTailwind?: boolean;
   /** Set to true by the tree walker when a node has client-only conditions */
   hasClientConditions?: boolean;
+  /** Server-fetched connector data — enables connector-backed condition eval at SSR. */
+  connectorData?: Record<string, { bindings: Record<string, any[]> }> | null;
 }
 
 /** Signature every `.craft.toHTML` must implement */

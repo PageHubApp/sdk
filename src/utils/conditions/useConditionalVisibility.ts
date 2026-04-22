@@ -1,8 +1,10 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
-import { buildClientContext } from "./context";
+import { buildClientContext, buildStaticContext } from "./context";
 import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
+import { getConnectorData } from "../design/variables";
+import { useItemContext } from "../itemContext";
 import type { Condition, ConditionGroup, ConditionLogic } from "./types";
 
 /**
@@ -27,13 +29,24 @@ export function useConditionalVisibility(): {
 
   const hasConditions = (conditionGroups && conditionGroups.length > 0) || conditions.length > 0;
 
-  const [visible, setVisible] = useState(true);
+  const itemContext = useItemContext();
+
+  const [visible, setVisible] = useState(() => {
+    if (enabled || !hasConditions) return true;
+    const ctx = { ...buildStaticContext(rootProps, itemContext), connectorData: getConnectorData() };
+    const result = conditionGroups && conditionGroups.length > 0
+      ? evaluateConditionGroups(conditionGroups, ctx)
+      : evaluateConditions(conditions, conditionLogic, ctx);
+    return result === true;
+  });
   const conditionsRef = useRef(conditions);
   const logicRef = useRef(conditionLogic);
   const groupsRef = useRef(conditionGroups);
+  const itemRef = useRef(itemContext);
   conditionsRef.current = conditions;
   logicRef.current = conditionLogic;
   groupsRef.current = conditionGroups;
+  itemRef.current = itemContext;
 
   useEffect(() => {
     if (enabled || !hasConditions) {
@@ -42,7 +55,7 @@ export function useConditionalVisibility(): {
     }
 
     const evaluate = () => {
-      const ctx = buildClientContext(rootProps);
+      const ctx = buildClientContext(rootProps, itemRef.current);
       let result: boolean | null;
 
       if (groupsRef.current && groupsRef.current.length > 0) {
@@ -65,7 +78,7 @@ export function useConditionalVisibility(): {
       window.removeEventListener("resize", evaluate);
       window.removeEventListener("pagehub:auth-changed", evaluate);
     };
-  }, [hasConditions, enabled, rootProps]);
+  }, [hasConditions, enabled, rootProps, itemContext]);
 
   return { visible, hasConditions };
 }

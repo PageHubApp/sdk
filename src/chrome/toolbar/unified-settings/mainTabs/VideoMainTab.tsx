@@ -5,6 +5,7 @@ import { MediaInput } from "../../inputs/media/MediaInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { isDirectVideoFileUrl } from "@/utils/nativeVideo";
 
 export const VideoMainTab = () => {
   const {
@@ -47,7 +48,7 @@ export const VideoMainTab = () => {
       case "twitch":
         return "Copy the Video ID from the Twitch video URL (e.g., '1234567890' from twitch.tv/videos/1234567890)";
       case "url":
-        return "Paste the direct video file URL (must be publicly accessible)";
+        return "Paste a direct file URL ending in .mp4, .webm, .mov, etc. Uses native HTML5 video (not an iframe). For fullscreen backgrounds, enable Playback: Autoplay, Loop, Muted, turn off Controls.";
       case "r2":
         return "Pick a video file from your media library.";
       default:
@@ -111,6 +112,55 @@ export const VideoMainTab = () => {
             />
           </ToolbarSection>
         )}
+
+        {(provider === "r2" || provider === "url") && (provider === "r2" || isDirectVideoFileUrl(videoId)) ? (
+          <ToolbarSection
+            title="Playback"
+            icon={SECTION_ICONS["Properties"]}
+            help="HTML5 video only (uploaded files, or direct .mp4/.webm URLs). Ignored for YouTube/Vimeo iframe embeds."
+          >
+            <ToolbarItem
+              propKey="controls"
+              propType="component"
+              type="checkbox"
+              label="Show controls"
+              labelWidth="w-full"
+              inputWidth="w-fit"
+            />
+            <ToolbarItem
+              propKey="autoPlay"
+              propType="component"
+              type="checkbox"
+              label="Autoplay"
+              labelWidth="w-full"
+              inputWidth="w-fit"
+            />
+            <ToolbarItem
+              propKey="loop"
+              propType="component"
+              type="checkbox"
+              label="Loop"
+              labelWidth="w-full"
+              inputWidth="w-fit"
+            />
+            <ToolbarItem
+              propKey="muted"
+              propType="component"
+              type="checkbox"
+              label="Muted"
+              labelWidth="w-full"
+              inputWidth="w-fit"
+            />
+            <ToolbarItem
+              propKey="playsInline"
+              propType="component"
+              type="checkbox"
+              label="Plays inline (iOS)"
+              labelWidth="w-full"
+              inputWidth="w-fit"
+            />
+          </ToolbarSection>
+        ) : null}
 
         <SettingsAiSlot />
       </>

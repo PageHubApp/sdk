@@ -431,3 +431,14 @@
   color: oklch(0.25 0.05 85);
   border-radius: 2px;
 }
+
+/* Facet dropdown option — zero-count values still render (Shopify parity) but
+ * appear dimmed and refuse input. Matches blocks that emit
+ * `attrs: { "data-ph-zero": "{{item.count}}" }` on the option wrapper. */
+[data-ph-zero="0"] {
+  opacity: 0.4;
+  cursor: default;
+}
+[data-ph-zero="0"] input {
+  pointer-events: none;
+}

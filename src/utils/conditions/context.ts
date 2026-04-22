@@ -20,12 +20,13 @@ export function buildClientContext(
 /** Build a ConditionContext for static rendering (no window, no live data). */
 export function buildStaticContext(
   rootProps: Record<string, any> | null,
-  item: Record<string, any> | null = null
+  item: Record<string, any> | null = null,
+  connectorData: ConditionContext["connectorData"] = null
 ): ConditionContext {
   return {
     urlParams: null,
     formFields: null,
-    connectorData: null,
+    connectorData,
     company: rootProps?.company || null,
     viewportWidth: null,
     auth: null,

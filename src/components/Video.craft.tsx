@@ -5,11 +5,58 @@ import React from "react";
 import { TbVideo } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Video } from "./Video";
+import {
+  isDirectVideoFileUrl,
+  nativeVideoPlaybackFields,
+  resolveR2VideoSrcFromSerializedTree,
+} from "../utils/nativeVideo";
 import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
+
+function emitNativeVideoHtml(
+  props: Record<string, any>,
+  ctx: Parameters<ToHTMLFn>[2],
+  src: string,
+  provider: string,
+  videoId: string
+): string {
+  const cls = staticClasses(props, ctx);
+  const { title } = props;
+  const pb = nativeVideoPlaybackFields(props);
+  const attrs: Record<string, string | boolean | undefined> = {
+    src,
+    class: cls || undefined,
+    title: title || `${provider} video ${videoId}`,
+  };
+  if (pb.autoPlay) attrs.autoplay = true;
+  if (pb.muted) attrs.muted = true;
+  if (pb.loop) attrs.loop = true;
+  if (pb.playsInline) attrs.playsinline = true;
+  if (pb.controls) attrs.controls = true;
+  if (pb.preload) attrs.preload = pb.preload;
+  return tag(
+    "div",
+    {
+      role: "region",
+      "aria-label": title || `Video: ${videoId}`,
+      ...ariaAttrs(props),
+    },
+    tag("video", attrs, "")
+  );
+}
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const { videoId, provider = "youtube", title } = props;
   if (!videoId) return "";
+
+  if (provider === "r2") {
+    const src = resolveR2VideoSrcFromSerializedTree(ctx.nodes, videoId);
+    if (!src) return "";
+    return emitNativeVideoHtml(props, ctx, src, provider, videoId);
+  }
+
+  if (provider === "url" && isDirectVideoFileUrl(videoId)) {
+    return emitNativeVideoHtml(props, ctx, videoId, provider, videoId);
+  }
 
   const cls = staticClasses(props, ctx);
   let src = "";

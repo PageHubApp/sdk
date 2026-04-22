@@ -4,6 +4,8 @@ import { applyAttrs } from "../utils/applyAttrs";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { motionIt } from "../utils/lib";
 import { FormField } from "@pagehub/ui";
+import { useItemContext } from "../utils/itemContext";
+import { replaceVariables } from "../utils/design/variables";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
 
@@ -107,6 +109,12 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
     id,
   } = useNode();
 
+  // Repeater context — lets block authors write `name="facet.{{item.facetKey}}"`
+  // and `attrs: { value: "{{item.value}}" }` on facet dropdown checkboxes.
+  const itemContext = useItemContext();
+  const interp = (v: string | undefined) =>
+    v ? replaceVariables(v, query, itemContext) : v;
+
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -116,6 +124,27 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   // Generate a stable input ID for label association (WCAG 1.3.1)
   const inputId = `ph-input-${id}`;
 
+  // For checkbox/radio, prefillFromUrl reads the CSV list at the matching URL
+  // param and checks this input iff our `value` is one of the entries. Lets
+  // facet dropdown checkboxes reflect `?facet.color=red,blue` on page load.
+  const resolvedName =
+    props.name && itemContext ? replaceVariables(props.name, query, itemContext) : props.name;
+  const resolvedValue =
+    props.attrs && typeof (props.attrs as any).value === "string" && itemContext
+      ? replaceVariables((props.attrs as any).value, query, itemContext)
+      : (props.attrs as any)?.value;
+  const prefillChecked =
+    !enabled &&
+    props.prefillFromUrl &&
+    (props.type === "checkbox" || props.type === "radio") &&
+    resolvedName &&
+    typeof resolvedValue === "string" &&
+    typeof window !== "undefined" &&
+    (new URLSearchParams(window.location.search).get(resolvedName) || "")
+      .split(",")
+      .map(s => s.trim())
+      .includes(resolvedValue);
+
   // Build props based on input type - only include relevant attributes
   const prop: any = {
     ref: r => connect(drag(r)),
@@ -123,17 +152,27 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
     className: props.className || "",
     type: props.type,
     defaultValue:
-      (!enabled && props.prefillFromUrl && props.name && typeof window !== "undefined"
+      (!enabled &&
+      props.prefillFromUrl &&
+      props.name &&
+      typeof window !== "undefined" &&
+      props.type !== "checkbox" &&
+      props.type !== "radio"
         ? new URLSearchParams(window.location.search).get(props.name)
         : null) ?? props.defaultValue ?? "",
     "aria-label": props.label || props.placeholder || props.name || `${props.type || "text"} input`,
   };
 
+  if (prefillChecked) prop.defaultChecked = true;
+
   applyAriaProps(prop, props);
 
   // Add common text attributes if they have values
   if (props.placeholder) prop.placeholder = props.placeholder;
-  if (props.name) prop.name = props.name;
+  // Interpolate `name` against itemContext so facet dropdowns can write
+  // `name="facet.{{item.facetKey}}"` inside a repeater. Outside a repeater,
+  // interpolation is a no-op.
+  if (props.name) prop.name = interp(props.name);
   if (props.disabled) prop.disabled = props.disabled;
   if (props.readOnly) prop.readOnly = props.readOnly;
 
@@ -207,14 +246,21 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   if (props.type === "tel") prop["aria-describedby"] = `${inputId}-desc`;
   if (props.type === "url") prop["aria-describedby"] = `${inputId}-desc`;
 
-  // Pass through plain string attrs (data-*, etc.) so app hooks can wire DOM contracts.
-  applyAttrs(prop, props.attrs);
+  // Pass through plain string attrs (data-*, etc.) so app hooks can wire DOM
+  // contracts. Interpolate against itemContext so a repeater of facet options
+  // can carry `value="{{item.value}}"` and `data-storefront-input="facet.{{item.facetKey}}"`.
+  applyAttrs(prop, props.attrs, v => (typeof v === "string" ? replaceVariables(v, query, itemContext) : v));
 
   // Safety net: if a block passed `value` via attrs, treat it as the initial
   // value. A bare `value` with no `onChange` makes React warn (read-only) and
   // conflicts with `defaultValue`. Validator migrates this at save time; this
   // guards already-saved blocks that still carry it.
-  if (prop.value !== undefined && prop.onChange === undefined) {
+  //
+  // Checkbox/radio are exempt: on those inputs `value` is the SUBMITTED string
+  // when checked (static metadata), not the input's state — React accepts it
+  // without onChange. Stripping it would make a facet checkbox submit "on".
+  const valueIsInputState = prop.type !== "checkbox" && prop.type !== "radio";
+  if (valueIsInputState && prop.value !== undefined && prop.onChange === undefined) {
     if (prop.defaultValue === "" || prop.defaultValue == null) {
       prop.defaultValue = prop.value;
     }

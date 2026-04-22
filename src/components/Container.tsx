@@ -336,7 +336,12 @@ export function useContainerRender(
 
   // Pass through plain string attrs (data-*, role, autocomplete, etc.) so
   // app URL/commerce hooks and other runtime wiring can query the DOM.
-  applyAttrs(prop, props.attrs);
+  // Interpolate string attrs against repeater item context so blocks can
+  // author e.g. `data-ph-zero="{{item.count}}"` on per-item wrappers —
+  // parity with Button + FormElement.
+  applyAttrs(prop, props.attrs, v =>
+    typeof v === "string" ? replaceVariables(v, query, parentItem) : v
+  );
 
   if (enabled) {
     prop["data-border"] = /\bborder(-[^\s])?/.test(props.className || "");
@@ -393,6 +398,10 @@ export function useContainerRender(
     tagName = "details";
   } else if (props?.type === "summary") {
     tagName = "summary";
+  } else if (props?.type === "label") {
+    // Wrapping label — clicking anywhere inside toggles the first child input
+    // (native HTML behavior with no explicit `for` needed).
+    tagName = "label";
   }
 
   // Note: we intentionally do NOT force overflow:visible here.

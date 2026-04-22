@@ -32,7 +32,7 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
 
   // Try static evaluation
   const rootProps = ctx.nodes["ROOT"]?.props || {};
-  const condCtx = buildStaticContext(rootProps);
+  const condCtx = buildStaticContext(rootProps, null, ctx.connectorData ?? null);
 
   // Get child node IDs from the node tree
   const nodeId = Object.keys(ctx.nodes).find(

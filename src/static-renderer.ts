@@ -288,6 +288,9 @@ export interface RenderToHTMLOptions {
   components?: ResolvedComponentDef[];
   /** Replace DaisyUI/spatial classes with pure Tailwind equivalents in output */
   pureTailwind?: boolean;
+  /** Server-fetched connector data — resolves connector-backed conditions at SSR
+   *  instead of wrapping them for the client-only reveal script. */
+  connectorData?: Record<string, { bindings: Record<string, any[]> }> | null;
 }
 
 export interface RenderToHTMLResult {
@@ -374,7 +377,7 @@ function renderNode(
 
   if (hasConditions) {
     const rootProps = nodes["ROOT"]?.props || {};
-    const condCtx = buildStaticContext(rootProps);
+    const condCtx = buildStaticContext(rootProps, null, ctx.connectorData ?? null);
 
     // Prefer conditionGroups (new format), fall back to flat conditions
     const result =
@@ -513,6 +516,7 @@ export function renderToHTML(
     resolver: extraResolver = {},
     components: componentDefs = [],
     pureTailwind = false,
+    connectorData = null,
   } = options;
 
   // 1. Decompress
@@ -564,6 +568,7 @@ export function renderToHTML(
         .filter(Boolean)
         .join("\n"),
     pureTailwind,
+    connectorData,
   };
 
   // 5a. Preload referenced icon SVGs so Button.craft / ListItem.craft can

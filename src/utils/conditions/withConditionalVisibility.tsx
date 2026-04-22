@@ -1,9 +1,9 @@
 import React from "react";
 import { useEditor, useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
-import { buildClientContext } from "./context";
+import { buildClientContext, buildStaticContext } from "./context";
 import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
-import { replaceVariables } from "../design/variables";
+import { getConnectorData, replaceVariables } from "../design/variables";
 import { useItemContext } from "../itemContext";
 import type { Condition, ConditionGroup, ConditionLogic } from "./types";
 
@@ -67,7 +67,19 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
   // Current repeater item (null outside ItemProvider) — drives `item` conditions.
   const itemContext = useItemContext();
 
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(() => {
+    if (enabled || !hasConditions) return true;
+    // First-render eval (SSR + client hydration): use a hydration-safe context —
+    // connectorData (set in parent render body by useViewerSetup) + itemContext +
+    // company. No window access, so server and client first render agree → no
+    // hydration mismatch. Client-only signals (URL params, viewport, auth) return
+    // null here and are resolved by the useEffect below.
+    const ctx = { ...buildStaticContext(rootProps, itemContext), connectorData: getConnectorData() };
+    const result = conditionGroups && conditionGroups.length > 0
+      ? evaluateConditionGroups(conditionGroups, ctx)
+      : evaluateConditions(conditions, conditionLogic, ctx);
+    return result === true;
+  });
   const conditionsRef = useRef(conditions);
   const logicRef = useRef(conditionLogic);
   const groupsRef = useRef(conditionGroups);

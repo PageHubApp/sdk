@@ -13,13 +13,22 @@ export interface StorefrontUrlQuery {
   maxPrice?: number;
   /** Product detail page slug — merged into `dataSource.filter.slug` for `product` collection. */
   slug?: string;
+  /**
+   * Dropdown-facet filters parsed from `?facet.<key>=red,blue`. Key must match
+   * `[a-zA-Z0-9_-]+`. Empty arrays are dropped during parse so downstream
+   * checks `Object.keys(facetFilters).length > 0` work.
+   */
+  facetFilters?: Record<string, string[]>;
 }
 
 const STOREFRONT_COLLECTIONS = new Set([
   "products",
   "products.categories",
   "product",
+  "products.facets",
 ]);
+
+const FACET_KEY_PATTERN = /^[a-zA-Z0-9_-]+$/;
 
 /** Parse Next.js router / request query into StorefrontUrlQuery. */
 export function storefrontQueryFromRouterQuery(
@@ -57,6 +66,20 @@ export function parseStorefrontUrlQuery(
   if (maxPrice !== undefined) out.maxPrice = maxPrice;
   const slug = pick("slug")?.trim();
   if (slug) out.slug = slug;
+
+  // `?facet.color=red,blue&facet.size=m` → { color: ["red","blue"], size: ["m"] }
+  const facetFilters: Record<string, string[]> = {};
+  for (const [k, v] of Object.entries(q)) {
+    if (!k.startsWith("facet.")) continue;
+    const key = k.slice("facet.".length);
+    if (!FACET_KEY_PATTERN.test(key)) continue;
+    const raw = typeof v === "string" ? v : Array.isArray(v) ? v.join(",") : "";
+    if (!raw) continue;
+    const values = raw.split(",").map(s => s.trim()).filter(Boolean);
+    if (values.length > 0) facetFilters[key] = values;
+  }
+  if (Object.keys(facetFilters).length > 0) out.facetFilters = facetFilters;
+
   return out;
 }
 
@@ -66,6 +89,8 @@ export function parseStorefrontUrlQuery(
 export function applyStorefrontUrlToDataSource(ds: any, url: StorefrontUrlQuery): any {
   if (ds?.ignoreUrl) return ds;
   if (!STOREFRONT_COLLECTIONS.has(ds?.collection)) return ds;
+  // Categories is an aggregate across the whole catalog — URL-narrow filters
+  // would shrink the chip list.
   if (ds.collection === "products.categories") return ds;
   const merged = { ...ds };
   if (ds.collection === "product" && url.slug && !merged.filter?.slug) {
@@ -78,6 +103,11 @@ export function applyStorefrontUrlToDataSource(ds: any, url: StorefrontUrlQuery)
   if (typeof url.page === "number" && !merged.page) merged.page = url.page;
   if (typeof url.minPrice === "number" && merged.priceMin == null) merged.priceMin = url.minPrice;
   if (typeof url.maxPrice === "number" && merged.priceMax == null) merged.priceMax = url.maxPrice;
+  if (url.facetFilters && Object.keys(url.facetFilters).length > 0 && !merged.facetFilters) {
+    // Both products (for filter) and products.facets (so "remove-own-filter"
+    // counts match the current URL state) need the facet selections.
+    merged.facetFilters = url.facetFilters;
+  }
   return merged;
 }
 
@@ -86,6 +116,12 @@ export function canonicalDataSourceKeyString(ds: any): string {
   const filterKey = ds.filter ? JSON.stringify(ds.filter, Object.keys(ds.filter).sort()) : "";
   const idsKey = ds.ids?.length ? ds.ids.sort().join(",") : "";
   const bindingKey = ds.bindingKey != null && ds.bindingKey !== "" ? String(ds.bindingKey) : "";
+  const facetKey = ds.facetFilters
+    ? Object.keys(ds.facetFilters)
+        .sort()
+        .map(k => `${k}=${[...(ds.facetFilters[k] || [])].sort().join(",")}`)
+        .join("|")
+    : "";
   return [
     ds.provider,
     ds.collection,
@@ -102,6 +138,8 @@ export function canonicalDataSourceKeyString(ds: any): string {
     ds.priceMax ?? "",
     ds.autoWalk ? "walk" : "",
     bindingKey,
+    facetKey,
+    ds.facetKeys || "",
   ].join(":");
 }
 
@@ -149,6 +187,12 @@ export function dataSourceFromFetchTarget(
     ...(target.cursor ? { cursor: target.cursor } : {}),
     ...(typeof target.priceMin === "number" ? { priceMin: target.priceMin } : {}),
     ...(typeof target.priceMax === "number" ? { priceMax: target.priceMax } : {}),
+    ...(target.facetFilters && typeof target.facetFilters === "object"
+      ? { facetFilters: target.facetFilters }
+      : {}),
+    ...(typeof target.facetKeys === "string" && target.facetKeys
+      ? { facetKeys: target.facetKeys }
+      : {}),
     ...(target.autoWalk ? { autoWalk: target.autoWalk } : {}),
     ...(target.maxPages != null ? { maxPages: target.maxPages } : {}),
     ...(target.bindingKey != null && target.bindingKey !== ""
