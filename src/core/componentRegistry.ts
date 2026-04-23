@@ -1,7 +1,7 @@
 /**
  * Built-in canvas components — single source of truth for:
  * - CraftJS resolver (React implementations)
- * - defineComponent() definitions (editor toolbox, static HTML, viewer processing)
+ * - defineComponent() definitions live in {@link ./builtinComponentDefs.ts} (editor toolbox, static HTML, viewer)
  *
  * Consumers: {@link ./index.ts}, {@link ./editor.tsx}, {@link ./viewer.tsx}, {@link ./static-renderer.ts}
  */
@@ -46,46 +46,9 @@ import { Text } from "../components/Text";
 import { Video } from "../components/Video";
 import { SavedComponentLoader } from "../chrome/viewport/toolbox/savedComponents";
 
-import {
-  AccordionDef,
-  AudioDef,
-  AutomaticDef,
-  BackgroundDef,
-  ButtonDef,
-  ButtonListDef,
-  ConditionalContainerDef,
-  CookieConsentDef,
-  ContainerDef,
-  ContainerGroupDef,
-  DataDef,
-  DividerDef,
-  DropdownDef,
-  EmbedDef,
-  FormDef,
-  FormElementDef,
-  GridDef,
-  IconDef,
-  ImageDef,
-  ImageListDef,
-  LinkDef,
-  ListDef,
-  ListItemDef,
-  MapDef,
-  MapPointDef,
-  ModalDef,
-  NavDef,
-  SpacerDef,
-  TabsDef,
-  TableDef,
-  TableSectionDef,
-  TableRowDef,
-  TableCellDef,
-  TextDef,
-  VideoDef,
-} from "../components/definitions";
-
-import type { ResolvedComponentDef } from "../define";
 import { withConditionalVisibility } from "../utils/conditions/withConditionalVisibility";
+
+export { BUILTIN_COMPONENT_DEFS, getBuiltinComponentDef } from "./builtinComponentDefs";
 
 /** Craft / viewer resolver: `resolvedName` from serialized nodes → React component. */
 export type BuiltInCraftResolver = Record<string, ComponentType<any>>;
@@ -134,59 +97,6 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Video: cv(Video),
   SavedComponentLoader,
 };
-
-/**
- * Built-in `defineComponent` definitions, in toolbox / static-render order.
- * Keep in sync with {@link ./components/definitions.ts}.
- */
-export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
-  // Layout — structural bones (Section/Row/Column come from ContainerDef presets)
-  AutomaticDef, // Smart container — morphs into Content/Card based on drop location
-  ContainerDef,
-  ConditionalContainerDef,
-  ContainerGroupDef,
-  GridDef,
-  BackgroundDef, // __internal category, hidden from toolbox
-  // Content — what goes inside layouts (most-used first)
-  TextDef,
-  ImageDef,
-  ImageListDef,
-  IconDef,
-  ButtonDef,
-  ButtonListDef,
-  LinkDef,
-  ListDef,
-  ListItemDef,
-  TableDef,
-  TableSectionDef,
-  TableRowDef,
-  TableCellDef,
-  DividerDef,
-  SpacerDef,
-  // Forms — common enough to be near the top
-  FormDef,
-  FormElementDef,
-  // Interactive
-  AccordionDef,
-  TabsDef,
-  DropdownDef,
-  ModalDef,
-  CookieConsentDef,
-  // Media — embeds, video, audio, maps
-  VideoDef,
-  AudioDef,
-  EmbedDef,
-  MapDef,
-  MapPointDef,
-  // Navigation
-  NavDef,
-];
-
-/** Lookup built-in `defineComponent` descriptor by PascalCase name (e.g. `"Button"`). */
-export function getBuiltinComponentDef(name: string): ResolvedComponentDef | undefined {
-  if (!name) return undefined;
-  return BUILTIN_COMPONENT_DEFS.find(d => d.name === name);
-}
 
 // ─── Spatial layout hints ──────────────────────────────────────────────────
 // Opt-in per-component overrides for the 2D drag algorithm. Defaults — null /

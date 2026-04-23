@@ -2,39 +2,48 @@
  * useScrollEffect — GSAP ScrollTrigger-powered scroll effects.
  *
  * Supported effects:
- *   - horizontal-scroll: Pin + translate children horizontally
- *   - scroll-timeline: Pin section, each child animates independently at its own scroll progress
+ * - horizontal-scroll: Pin + translate children horizontally
+ * - scroll-timeline: Pin section, each child animates independently at its own scroll progress
+ *
+ * GSAP is loaded dynamically inside the effect so SSR / Node tooling (e.g. registry scripts)
+ * never hits static `gsap/ScrollTrigger` ESM interop issues.
  */
 
 import { useEffect, type RefObject } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 // ─── Scroll Timeline Presets ────────────────────────────────────────────────
 
-export const SCROLL_TIMELINE_PRESETS: Record<string, { from: gsap.TweenVars; to: gsap.TweenVars }> =
-  {
-    fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
-    fadeOut: { from: { opacity: 1 }, to: { opacity: 0 } },
-    scaleUp: { from: { scale: 0.3, opacity: 0 }, to: { scale: 1, opacity: 1 } },
-    slideLeft: { from: { x: 200, opacity: 0 }, to: { x: 0, opacity: 1 } },
-    slideRight: { from: { x: -200, opacity: 0 }, to: { x: 0, opacity: 1 } },
-    slideUp: { from: { y: 100, opacity: 0 }, to: { y: 0, opacity: 1 } },
-    slideDown: { from: { y: -100, opacity: 0 }, to: { y: 0, opacity: 1 } },
-    rotateIn: { from: { rotation: 15, opacity: 0 }, to: { rotation: 0, opacity: 1 } },
-    fadeScale: {
-      from: { scale: 0.5, opacity: 0, filter: "blur(8px)" },
-      to: { scale: 1, opacity: 1, filter: "blur(0px)" },
-    },
-    slideRotate: {
-      from: { x: 200, rotation: -15, opacity: 0 },
-      to: { x: 0, rotation: 0, opacity: 1 },
-    },
-  };
+export const SCROLL_TIMELINE_PRESETS: Record<
+  string,
+  { from: Record<string, unknown>; to: Record<string, unknown> }
+> = {
+  fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
+  fadeOut: { from: { opacity: 1 }, to: { opacity: 0 } },
+  scaleUp: { from: { scale: 0.3, opacity: 0 }, to: { scale: 1, opacity: 1 } },
+  slideLeft: { from: { x: 200, opacity: 0 }, to: { x: 0, opacity: 1 } },
+  slideRight: { from: { x: -200, opacity: 0 }, to: { x: 0, opacity: 1 } },
+  slideUp: { from: { y: 100, opacity: 0 }, to: { y: 0, opacity: 1 } },
+  slideDown: { from: { y: -100, opacity: 0 }, to: { y: 0, opacity: 1 } },
+  rotateIn: { from: { rotation: 15, opacity: 0 }, to: { rotation: 0, opacity: 1 } },
+  fadeScale: {
+    from: { scale: 0.5, opacity: 0, filter: "blur(8px)" },
+    to: { scale: 1, opacity: 1, filter: "blur(0px)" },
+  },
+  slideRotate: {
+    from: { x: 200, rotation: -15, opacity: 0 },
+    to: { x: 0, rotation: 0, opacity: 1 },
+  },
+};
+
+type GsapRuntime = typeof import("gsap").default;
+
+async function loadGsap(): Promise<GsapRuntime> {
+  const gsap = (await import("gsap")).default;
+  const stMod = await import("gsap/ScrollTrigger");
+  const ScrollTrigger = (stMod as { ScrollTrigger?: unknown }).ScrollTrigger;
+  if (ScrollTrigger) gsap.registerPlugin(ScrollTrigger as never);
+  return gsap;
+}
 
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
@@ -66,19 +75,26 @@ export function useScrollEffect(
     if (!effect || enabled || !sectionRef.current) return;
     if (typeof window === "undefined") return;
 
-    const section = sectionRef.current;
-    let ctx: gsap.Context | undefined;
+    let cancelled = false;
+    let ctx: { revert: () => void } | undefined;
 
-    switch (effect) {
-      case "horizontal-scroll":
-        ctx = initHorizontalScroll(section, { direction, snap, speed, smoothing });
-        break;
-      case "scroll-timeline":
-        ctx = initScrollTimeline(section, { runway, smoothing });
-        break;
-    }
+    void (async () => {
+      const gsap = await loadGsap();
+      if (cancelled || !sectionRef.current) return;
+      const section = sectionRef.current;
+
+      switch (effect) {
+        case "horizontal-scroll":
+          ctx = initHorizontalScroll(gsap, section, { direction, snap, speed, smoothing });
+          break;
+        case "scroll-timeline":
+          ctx = initScrollTimeline(gsap, section, { runway, smoothing });
+          break;
+      }
+    })();
 
     return () => {
+      cancelled = true;
       if (ctx) ctx.revert();
     };
   }, [effect, enabled, direction, snap, speed, smoothing, runway]);
@@ -87,6 +103,7 @@ export function useScrollEffect(
 // ─── Horizontal Scroll ─────────────────────────────────────────────────────
 
 function initHorizontalScroll(
+  gsap: GsapRuntime,
   section: HTMLElement,
   opts: { direction: string; snap: boolean; speed: number; smoothing: number }
 ) {
@@ -128,7 +145,11 @@ function initHorizontalScroll(
 // Pins the section, then each child with [data-scroll-timeline] animates
 // independently at its own scroll progress range.
 
-function initScrollTimeline(section: HTMLElement, opts: { runway: number; smoothing: number }) {
+function initScrollTimeline(
+  gsap: GsapRuntime,
+  section: HTMLElement,
+  opts: { runway: number; smoothing: number }
+) {
   const children = Array.from(section.querySelectorAll("[data-scroll-timeline]")) as HTMLElement[];
   if (children.length === 0) return;
 
