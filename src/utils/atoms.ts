@@ -65,8 +65,16 @@ export const AssistantModeAtom = atom<AssistantMode>(
 /** Save / static HTML issues (e.g. invalid tree). Dismiss sets to null. */
 export const EditorSaveBannerAtom = atom("editorSaveBanner", null as null | { message: string });
 
-/** AI assistant scope — default from entry point; user can override in UI. */
-export type AssistantScope = "design" | "text";
+/** AI assistant scope — resolved per request from pins / media task / chips (client sends to agent). */
+export type AssistantScope = "design" | "text" | "media";
+
+export type AssistantMediaIntent = "generate-image" | "analyze-metadata";
+export type AssistantMediaContext = {
+  intent: AssistantMediaIntent;
+  mediaId?: string;
+  imageUrl?: string;
+  filename?: string;
+};
 
 /** Nodes pinned from the canvas or chat for the next assistant message. */
 export type AiChatAttachedNode = { id: string; displayName: string };
@@ -99,8 +107,22 @@ export const AssistantOpenAtom = atom(
      * Omit or false when the dispatch must not override a dismissed panel.
      */
     revealPanel?: boolean;
+    /** Optional media context for media-scope assistant actions. */
+    mediaContext?: AssistantMediaContext;
   }
 );
+
+/**
+ * Media metadata suggestion emitted by Clippy media actions.
+ * The media manager listens and applies this into the edit modal state.
+ */
+export const AssistantMediaMetadataResultAtom = atom<null | {
+  mediaId: string;
+  title?: string;
+  alt?: string;
+  description?: string;
+  requestId?: string;
+}>("assistantMediaMetadataResult", null);
 
 export const AiChatAttachedNodesAtom = atom<AiChatAttachedNode[]>("aiChatAttachedNodes", []);
 

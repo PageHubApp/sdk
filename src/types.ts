@@ -228,40 +228,6 @@ export interface PageHubMediaMetadataSuggestion {
   description?: string;
 }
 
-export interface PageHubMediaManagerAiPanelContext {
-  prompt: string;
-  model: string;
-  imagePreviewUrl: string | null;
-  optimizedPrompt: string | null;
-  usage: unknown;
-  error: string;
-  success: string;
-  isGenerating: boolean;
-  isSaving: boolean;
-  imageScale: number;
-  imagePosition: { x: number; y: number };
-  isDragging: boolean;
-  designNotes?: string;
-  designTags?: string[];
-  setPrompt: (value: string) => void;
-  setModel: (value: string) => void;
-  setGenerating: (value: boolean) => void;
-  setError: (value: string) => void;
-  setSuccess: (value: string) => void;
-  setGeneratedImage: (args: {
-    imageUrl: string | null;
-    optimizedPrompt?: string | null;
-    usage?: unknown;
-  }) => void;
-  saveGeneratedImage: () => Promise<void>;
-  setImageScale: (value: number) => void;
-  resetImageView: () => void;
-  onImageMouseDown: (e: MouseEvent) => void;
-  onImageMouseMove: (e: MouseEvent) => void;
-  onImageMouseUp: () => void;
-  onImageWheel: (e: WheelEvent) => void;
-}
-
 export interface PageHubMediaEditAiActionsContext {
   media: {
     id: string;
@@ -332,11 +298,6 @@ export interface PageHubEditorChromeSlots {
    * Host-only block in Import/Export → Export tab (e.g. static HTML ZIP). SDK does not call app APIs.
    */
   renderImportExportHandoffExtras?: () => ReactNode;
-  /**
-   * Media manager "Generate with AI" panel.
-   * Host owns API calls/auth; SDK provides media state and save/apply callbacks.
-   */
-  renderMediaManagerAiPanel?: (ctx: PageHubMediaManagerAiPanelContext) => ReactNode;
   /**
    * Media edit modal AI metadata action block.
    * Host owns API calls/auth; SDK provides apply callback for metadata fields.

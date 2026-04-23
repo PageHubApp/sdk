@@ -1,4 +1,5 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { AssistantOpenAtom, useSetAtomState } from "@/utils/atoms";
 import { useEffect, useRef, useState } from "react";
 import {
   TbArrowDown,
@@ -28,7 +29,6 @@ import {
   getMediaKind,
   getReplaceAccept,
   MEDIA_KIND_LABELS,
-  type AddMode,
   type MediaKind,
   type SortField,
 } from "../utils/media-helpers";
@@ -79,6 +79,7 @@ export function MediaToolbar({
   onDeleteSelected,
   onClearSelection,
 }: MediaToolbarProps) {
+  const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const {
     searchQuery,
     viewMode,
@@ -114,8 +115,7 @@ export function MediaToolbar({
     handlePasteClick,
     handleReplaceMedia,
     resortFilteredMedia,
-    renderMediaManagerAiPanel,
-    mediaManagerAiPanelContext,
+    onClose,
   } = manager;
 
   const replaceTarget = replacingMedia ? mediaList.find(m => m.id === replacingMedia) : null;
@@ -356,7 +356,16 @@ export function MediaToolbar({
               onChange={(val: string) => {
                 if (val === "url") setAddMode("url");
                 if (val === "svg") setAddMode("svg");
-                if (val === "ai" && canUseImageGenerate) setAddMode("ai");
+                if (val === "ai" && canUseImageGenerate) {
+                  onClose();
+                  setAssistantOpen({
+                    revealPanel: true,
+                    freshChat: true,
+                    assistantScope: "media",
+                    mediaContext: { intent: "generate-image" },
+                    promptHint: "Generate a new image for my media library.",
+                  });
+                }
                 if (val === "paste") handlePasteClick();
               }}
             >
@@ -641,11 +650,6 @@ export function MediaToolbar({
           </p>
         </div>
       )}
-
-      {/* AI panel */}
-      {canUseImageGenerate &&
-        addMode === "ai" &&
-        renderMediaManagerAiPanel?.(mediaManagerAiPanelContext)}
 
       {/* Hidden file inputs */}
       <input

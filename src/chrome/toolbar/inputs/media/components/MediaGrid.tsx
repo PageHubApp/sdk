@@ -49,7 +49,7 @@ interface MediaGridProps {
     modifiers?: { shiftKey?: boolean; metaKey?: boolean; ctrlKey?: boolean }
   ) => void;
   onPreview: (id: string) => void;
-  onSetAddMode: (mode: "upload" | "url" | "svg" | "ai") => void;
+  onSetAddMode: (mode: "upload" | "url" | "svg") => void;
   folderNameById: Map<string, string>;
   fileInputRef: React.RefObject<HTMLInputElement>;
 }

@@ -1,5 +1,5 @@
 import { Editor, Frame } from "@craftjs/core";
-import React, { Component, useEffect, useMemo, useState } from "react";
+import React, { Component, useEffect, useMemo, useRef, useState } from "react";
 import { TbCheck, TbLoader2, TbMinus, TbPlus, TbRefresh, TbX } from "react-icons/tb";
 
 class PreviewErrorBoundary extends Component<{ children: React.ReactNode }, { error: boolean }> {
@@ -195,8 +195,13 @@ interface PreviewPanelProps {
   liveContent?: string | null;
   changedNodes?: Record<string, any> | null;
   resolver: any;
-  onClose: () => void;
+  onClose?: () => void;
   sectionOverlay?: SectionOverlayConfig | null;
+  /**
+   * Inline mode: render as a chat-embeddable block (no side-panel chrome,
+   * no resize handle, no close button, fixed height). Default: side-panel.
+   */
+  inline?: boolean;
 }
 
 export function PreviewPanel({
@@ -206,9 +211,12 @@ export function PreviewPanel({
   resolver,
   onClose,
   sectionOverlay,
+  inline = false,
 }: PreviewPanelProps) {
-  const [zoom, setZoom] = useState(0.35);
+  const [zoom, setZoom] = useState(inline ? 0.5 : 0.35);
   const [tab, setTab] = useState<Tab>("review");
+  const scaledFrameRef = useRef<HTMLDivElement | null>(null);
+  const [naturalHeight, setNaturalHeight] = useState(0);
   const { width, handleProps } = useResizable({
     storageKey: "preview-panel",
     defaultWidth: 350,
@@ -268,12 +276,57 @@ export function PreviewPanel({
   }, [content]);
 
   const safeContent = useMemo(() => sanitizeCraftNodeReferences(content), [content]);
-  const frameData = tab === "live" && liveContent ? liveContent : JSON.stringify(safeContent);
+  // Strip viewport-height minimums so the preview collapses to content height
+  // rather than reserving 100vh of empty scroll space (Background uses
+  // `min-h-dvh`; matches the same strip in ComponentPreview).
+  const stripViewportMinH = (s: string) =>
+    s
+      .replace(/min-h-screen/g, "")
+      .replace(/min-h-full/g, "")
+      .replace(/min-h-dvh/g, "");
+  const frameData =
+    tab === "live" && liveContent
+      ? stripViewportMinH(liveContent)
+      : stripViewportMinH(JSON.stringify(safeContent));
+
+  // Measure the unscaled inner content so the scroll viewport can size itself
+  // to `naturalHeight * zoom` (transform doesn't affect layout box). Without
+  // this the inline preview leaves huge empty space for short pages.
+  useEffect(() => {
+    const el = scaledFrameRef.current;
+    if (!el) return;
+    const measure = () => setNaturalHeight(el.scrollHeight || el.offsetHeight || 0);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [frameData, zoom]);
+
+  const scaledViewportHeight = naturalHeight > 0 ? Math.ceil(naturalHeight * zoom) : null;
+  // Inline: fixed compact height so the chat doesn't expand / jump as the
+  // agent streams in content. Scroll inside for taller pages.
+  // Side-panel: legacy behavior (flex-1 of parent).
+  const INLINE_MAX_HEIGHT = 240;
+  const scrollStyle = inline
+    ? {
+        height: scaledViewportHeight
+          ? Math.min(scaledViewportHeight, INLINE_MAX_HEIGHT)
+          : INLINE_MAX_HEIGHT,
+      }
+    : undefined;
 
   return (
-    <div className="border-base-300/40 relative flex shrink-0 flex-col border-l" style={{ width }}>
-      {/* Resize handle */}
-      <div {...handleProps.w} />
+    <div
+      className={
+        inline
+          ? "border-base-300/60 bg-base-100/40 relative flex w-full flex-col overflow-hidden rounded-lg border"
+          : "border-base-300/40 relative flex shrink-0 flex-col border-l"
+      }
+      style={inline ? undefined : { width }}
+    >
+      {/* Resize handle (side-panel only) */}
+      {!inline && <div {...handleProps.w} />}
 
       <div className="border-base-300/30 flex items-center justify-between border-b px-3 py-2">
         <div className="border-base-300/60 bg-neutral/40 flex items-center gap-0.5 rounded-lg border p-0.5">
@@ -320,9 +373,11 @@ export function PreviewPanel({
           >
             <TbPlus />
           </button>
-          <button type="button" onClick={onClose} className="tool-button ml-1 [&_svg]:size-3.5!">
-            <TbX />
-          </button>
+          {onClose && !inline && (
+            <button type="button" onClick={onClose} className="tool-button ml-1 [&_svg]:size-3.5!">
+              <TbX />
+            </button>
+          )}
         </div>
       </div>
 
@@ -344,13 +399,17 @@ export function PreviewPanel({
         </div>
       ) : null}
 
-      <div className="scrollbar-light flex-1 overflow-x-hidden overflow-y-auto">
+      <div
+        className={`scrollbar-light w-full min-w-0 overflow-x-hidden overflow-y-auto${inline ? "" : " flex-1"}`}
+        style={scrollStyle}
+      >
         {(() => {
           try {
             return (
               <PreviewErrorBoundary>
                 <div
                   id="ph-preview-frame"
+                  ref={scaledFrameRef}
                   style={{
                     transform: `scale(${zoom})`,
                     transformOrigin: "top left",

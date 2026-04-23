@@ -1,8 +1,8 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAtomValue } from "@zedux/react";
-import { SettingsAtom } from "@/utils/atoms";
+import { useAtomState, useAtomValue } from "@zedux/react";
+import { AssistantMediaMetadataResultAtom, SettingsAtom } from "@/utils/atoms";
 import { getCdnUrl } from "@/utils/cdn";
 import { getPageMedia, updateMediaMetadata } from "@/utils/lib";
 import { DeleteMedia } from "@/chrome/viewport/viewportExports";
@@ -10,7 +10,6 @@ import { useSDK } from "@/core/context";
 import { useAiEnabled } from "@/utils/hooks/useAiEnabled";
 import type {
   PageHubMediaEditAiActionsContext,
-  PageHubMediaManagerAiPanelContext,
   PageHubMediaMetadataSuggestion,
 } from "@/types";
 import {
@@ -73,11 +72,13 @@ export function useMediaManager({
   const { config } = useSDK();
   const aiEnabled = useAiEnabled();
   const settings = useAtomValue(SettingsAtom);
+  const [assistantMediaMetadataResult, setAssistantMediaMetadataResult] = useAtomState(
+    AssistantMediaMetadataResultAtom
+  );
 
-  const mediaManagerAiPanelSlot = config.editorChromeSlots?.renderMediaManagerAiPanel;
   const mediaEditAiActionsSlot = config.editorChromeSlots?.renderMediaEditAiActions;
 
-  const canUseImageGenerate = aiEnabled && typeof mediaManagerAiPanelSlot === "function";
+  const canUseImageGenerate = aiEnabled;
   const canUseImageAnalyze = aiEnabled && typeof mediaEditAiActionsSlot === "function";
 
   // ─── Core media state ───
@@ -528,36 +529,6 @@ export function useMediaManager({
     return getCdnUrl(editingMedia.cdnId || editingMedia.id, { width: 800, format: "auto" });
   }, [editingMedia]);
 
-  const mediaManagerAiPanelContext: PageHubMediaManagerAiPanelContext = {
-    prompt: ai.aiPrompt,
-    model: ai.aiModel,
-    imagePreviewUrl: ai.aiImagePreview,
-    optimizedPrompt: ai.aiOptimizedPrompt,
-    usage: ai.aiClaudeUsage,
-    error: ai.aiError,
-    success: ai.aiSuccess,
-    isGenerating: ai.isGeneratingAi,
-    isSaving: upload.uploading,
-    imageScale: ai.aiImageScale,
-    imagePosition: ai.aiImagePosition,
-    isDragging: ai.isDragging,
-    designNotes: designContext.designNotes,
-    designTags: designContext.designTags,
-    setPrompt: ai.setAiPrompt,
-    setModel: ai.setAiModel,
-    setGenerating: ai.setIsGeneratingAi,
-    setError: ai.setAiError,
-    setSuccess: ai.setAiSuccess,
-    setGeneratedImage: ai.applyGeneratedImage,
-    saveGeneratedImage: () => ai.handleSaveAiImage(),
-    setImageScale: ai.setAiImageScale,
-    resetImageView: ai.resetImageView,
-    onImageMouseDown: ai.handleImageMouseDown,
-    onImageMouseMove: ai.handleImageMouseMove,
-    onImageMouseUp: ai.handleImageMouseUp,
-    onImageWheel: ai.handleWheel,
-  };
-
   const mediaEditAiActionsContext: PageHubMediaEditAiActionsContext | null = editingMedia
     ? {
         media: {
@@ -578,16 +549,28 @@ export function useMediaManager({
     : null;
 
   useEffect(() => {
+    if (!assistantMediaMetadataResult || !editingMedia) return;
+    if (assistantMediaMetadataResult.mediaId !== editingMedia.id) return;
+    applyGeneratedMetadata({
+      title: assistantMediaMetadataResult.title,
+      alt: assistantMediaMetadataResult.alt,
+      description: assistantMediaMetadataResult.description,
+    });
+    ai.setMetadataError("");
+    setAssistantMediaMetadataResult(null);
+  }, [
+    assistantMediaMetadataResult,
+    editingMedia,
+    applyGeneratedMetadata,
+    ai,
+    setAssistantMediaMetadataResult,
+  ]);
+
+  useEffect(() => {
     if (typeof window !== "undefined") {
       phStorage.set("media-view", viewMode);
     }
   }, [viewMode]);
-
-  useEffect(() => {
-    if (upload.addMode === "ai" && !canUseImageGenerate) {
-      upload.setAddMode("upload");
-    }
-  }, [upload.addMode, canUseImageGenerate, upload.setAddMode]);
 
   useEffect(() => {
     if (isOpen) {
@@ -758,9 +741,7 @@ export function useMediaManager({
     canUseImageAnalyze,
     canUseImageGenerate,
     canEditSelected,
-    renderMediaManagerAiPanel: mediaManagerAiPanelSlot,
     renderMediaEditAiActions: mediaEditAiActionsSlot,
-    mediaManagerAiPanelContext,
     mediaEditAiActionsContext,
 
     setSearchQuery,

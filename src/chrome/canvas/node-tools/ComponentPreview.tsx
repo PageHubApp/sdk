@@ -260,7 +260,10 @@ export const ComponentPreview = React.memo(function ComponentPreview({
     }
 
     const cleanedComponent = JSON.parse(
-      jsonString.replace(/min-h-screen/g, "").replace(/min-h-full/g, "")
+      jsonString
+        .replace(/min-h-screen/g, "")
+        .replace(/min-h-full/g, "")
+        .replace(/min-h-dvh/g, "")
     );
 
     const element = buildElementFromStructure(cleanedComponent, resolver);

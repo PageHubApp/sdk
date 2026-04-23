@@ -4,7 +4,7 @@ import { DEFAULT_IMAGE_ACCEPT } from "@/utils/media/registry";
 
 export type SortField = "name" | "size" | "createdAt" | "order";
 export type SortDirection = "asc" | "desc";
-export type AddMode = "upload" | "url" | "svg" | "ai";
+export type AddMode = "upload" | "url" | "svg";
 
 /** Logical kind of a media item, derived from `type` + `metadata.contentType`.
  *  Drives badges, filter chips, and same-kind replace `accept`. */

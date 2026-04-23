@@ -542,7 +542,7 @@ export function useMediaUpload({
     const handleClickOutside = (event: MouseEvent) => {
       if ((event.target as Element)?.closest("[data-ai-login-modal]")) return;
       if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
-        if (addMode === "url" || addMode === "svg" || addMode === "ai") {
+        if (addMode === "url" || addMode === "svg") {
           setAddMode("upload");
         }
       }

@@ -296,7 +296,6 @@ export type {
   PageHubCallbacks,
   PageHubEditorChromeSlots,
   PageHubMediaEditAiActionsContext,
-  PageHubMediaManagerAiPanelContext,
   PageHubMediaMetadataSuggestion,
   PageHubComponentDef,
   PageHubConfig,

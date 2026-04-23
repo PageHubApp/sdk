@@ -10,9 +10,10 @@ import React from "react";
 interface MarkdownTextProps {
   content: string;
   className?: string;
+  onMediaClick?: (url: string) => void;
 }
 
-function parseInline(text: string): React.ReactNode[] {
+function parseInline(text: string, onMediaClick?: (url: string) => void): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
   // Match: **bold**, *italic*, `code`, [text](url)
   const re = /(\*\*(.+?)\*\*)|(\*(.+?)\*)|(`(.+?)`)|(\[([^\]]+)\]\(([^)]+)\))/g;
@@ -41,17 +42,33 @@ function parseInline(text: string): React.ReactNode[] {
         </code>
       );
     } else if (match[7]) {
-      parts.push(
-        <a
-          key={match.index}
-          href={match[9]}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2"
-        >
-          {match[8]}
-        </a>
-      );
+      const linkText = match[8];
+      const linkUrl = match[9];
+      const isImage = linkText.toLowerCase() === "view image" || /\.(png|jpe?g|gif|webp)$/i.test(linkUrl);
+
+      if (isImage) {
+        parts.push(
+          <button
+            key={match.index}
+            onClick={() => onMediaClick?.(linkUrl)}
+            className="mt-2 block overflow-hidden rounded-lg border border-black/10 transition-opacity hover:opacity-90 dark:border-white/10"
+          >
+            <img src={linkUrl} alt={linkText} className="max-h-48 max-w-full object-contain bg-black/5 dark:bg-white/5" />
+          </button>
+        );
+      } else {
+        parts.push(
+          <a
+            key={match.index}
+            href={linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2"
+          >
+            {linkText}
+          </a>
+        );
+      }
     }
     last = match.index + match[0].length;
   }
@@ -63,7 +80,7 @@ function parseInline(text: string): React.ReactNode[] {
   return parts;
 }
 
-export function MarkdownText({ content, className }: MarkdownTextProps) {
+export function MarkdownText({ content, className, onMediaClick }: MarkdownTextProps) {
   const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
   let i = 0;
@@ -103,7 +120,7 @@ export function MarkdownText({ content, className }: MarkdownTextProps) {
       ];
       elements.push(
         <div key={`h-${i}`} className={`${sizes[level - 1] || sizes[2]} mt-2 first:mt-0`}>
-          {parseInline(headingMatch[2])}
+          {parseInline(headingMatch[2], onMediaClick)}
         </div>
       );
       i++;
@@ -114,7 +131,7 @@ export function MarkdownText({ content, className }: MarkdownTextProps) {
     if (line.match(/^[\s]*[-•]\s+/)) {
       const items: React.ReactNode[] = [];
       while (i < lines.length && lines[i].match(/^[\s]*[-•]\s+/)) {
-        items.push(<li key={`li-${i}`}>{parseInline(lines[i].replace(/^[\s]*[-•]\s+/, ""))}</li>);
+        items.push(<li key={`li-${i}`}>{parseInline(lines[i].replace(/^[\s]*[-•]\s+/, ""), onMediaClick)}</li>);
         i++;
       }
       elements.push(
@@ -130,7 +147,7 @@ export function MarkdownText({ content, className }: MarkdownTextProps) {
       const items: React.ReactNode[] = [];
       while (i < lines.length && lines[i].match(/^[\s]*\d+[.)]\s+/)) {
         items.push(
-          <li key={`oli-${i}`}>{parseInline(lines[i].replace(/^[\s]*\d+[.)]\s+/, ""))}</li>
+          <li key={`oli-${i}`}>{parseInline(lines[i].replace(/^[\s]*\d+[.)]\s+/, ""), onMediaClick)}</li>
         );
         i++;
       }
@@ -150,7 +167,7 @@ export function MarkdownText({ content, className }: MarkdownTextProps) {
     }
 
     // Normal paragraph
-    elements.push(<div key={`p-${i}`}>{parseInline(line)}</div>);
+    elements.push(<div key={`p-${i}`}>{parseInline(line, onMediaClick)}</div>);
     i++;
   }
 
