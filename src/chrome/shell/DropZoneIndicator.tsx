@@ -277,6 +277,10 @@ function AlignmentOverlay({
 // ── Reorder slot indicators ───────────────────────────────────────────
 
 /** Horizontal bar for flex-col reorder (existing behavior). */
+const SECTION_PARENT_TYPES = new Set(["page", "header", "footer"]);
+const COL_SLOT_THICKNESS = 3;
+const COL_SECTION_SLOT_THICKNESS = 40;
+
 function ColReorderSlot({
   where,
   currentNode,
@@ -298,10 +302,17 @@ function ColReorderSlot({
     parentInfo.margin.left -
     parentInfo.margin.right;
 
+  // Fat bar when parent is a top-level layout container (page/header/footer) and
+  // we're inserting a section-level node. Centered on the boundary so it overlaps
+  // both sections equally (like CraftJS's built-in section indicator).
+  const isSectionDrop = SECTION_PARENT_TYPES.has(parent?.data?.props?.type);
+  const thickness = isSectionDrop ? COL_SECTION_SLOT_THICKNESS : COL_SLOT_THICKNESS;
+
   let slotTop: number;
   if (currentNode?.dom) {
     const nodeInfo = getDOMInfo(currentNode.dom);
-    slotTop = where === "before" ? nodeInfo.top - 1 : nodeInfo.top + nodeInfo.outerHeight - 1;
+    const boundary = where === "before" ? nodeInfo.top : nodeInfo.top + nodeInfo.outerHeight;
+    slotTop = boundary - thickness / 2;
   } else {
     slotTop = parentInfo.top + parentInfo.padding.top;
   }
@@ -313,13 +324,13 @@ function ColReorderSlot({
         top: `${slotTop}px`,
         left: `${slotLeft}px`,
         width: `${slotWidth}px`,
-        height: "3px",
+        height: `${thickness}px`,
         backgroundColor: contrast,
-        opacity: 0.55,
-        borderRadius: "1.5px",
+        opacity: isSectionDrop ? 0.35 : 0.55,
+        borderRadius: isSectionDrop ? "8px" : "1.5px",
         pointerEvents: "none",
         boxShadow: getContrastShadow(parent.dom),
-        transition: "top 0.1s ease-out, left 0.1s ease-out, width 0.1s ease-out",
+        transition: "top 0.1s ease-out, left 0.1s ease-out, width 0.1s ease-out, height 0.1s ease-out",
       }}
       parentDom={parent.dom}
     />

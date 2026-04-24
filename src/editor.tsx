@@ -394,14 +394,21 @@ function PageHubEditorInner({
             findPosition={findPosition2D}
             onBesideDrop={onBesideDrop(Container)}
             shouldPromoteToParent={(node, parent) => {
-              // Don't promote out of Row/Item containers — stay in the layout context
+              // CraftJS calls this when cursor is within 10px of `node`'s border to ask
+              // whether to bubble up the drop target to `parent`. False = stay in node.
               const displayName = node.data?.custom?.displayName;
               if (displayName === "Row" || displayName === "Item") return false;
-              // Don't promote out of flex-row containers
+              // Only block when promoting INTO another flex-row (truly inside a nested
+              // row layout). A flex-row section whose parent is a flex-col page should
+              // bubble — that's how "drop between sections" works.
               const dom = node.dom as HTMLElement | undefined;
-              if (dom) {
-                const dir = window.getComputedStyle(dom).flexDirection;
-                if (dir === "row" || dir === "row-reverse") return false;
+              const dir = dom ? window.getComputedStyle(dom).flexDirection : null;
+              if (dir === "row" || dir === "row-reverse") {
+                const parentDom = parent?.dom as HTMLElement | undefined;
+                const parentDir = parentDom
+                  ? window.getComputedStyle(parentDom).flexDirection
+                  : null;
+                if (parentDir === "row" || parentDir === "row-reverse") return false;
               }
               return true;
             }}

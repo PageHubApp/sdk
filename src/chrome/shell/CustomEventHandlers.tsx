@@ -17,10 +17,39 @@ const log = isDev
   ? (label: string, data?: Record<string, any>) => console.log(`[drag] ${label}`, data ?? "")
   : () => {};
 
+// Last pointer position observed during any drag. Used to cancel drops that land
+// outside the editor viewport (e.g. released over the sidebar). Tracked globally
+// because new-component drags go through CraftJS's built-in `create` connector
+// which does not route through our custom `drag` handler below.
+let lastDragPointer: { x: number; y: number } | null = null;
+
+if (typeof document !== "undefined") {
+  document.addEventListener(
+    "dragover",
+    (de: DragEvent) => {
+      lastDragPointer = { x: de.clientX, y: de.clientY };
+    },
+    true,
+  );
+}
+
+function isPointerInsideViewport(): boolean {
+  if (typeof document === "undefined" || !lastDragPointer) return true;
+  const { x, y } = lastDragPointer;
+  const el = document.elementFromPoint(x, y) as HTMLElement | null;
+  return !!el?.closest("#viewport");
+}
+
 // ── Handler ──────────────────────────────────────────────────────────
 
 export default class CustomEventHandlers extends DefaultEventHandlers {
   protected executeDrop(dragTarget: DragTarget, indicator: Indicator): void {
+    if (!isPointerInsideViewport()) {
+      log("drop-cancelled-outside-viewport", lastDragPointer ?? {});
+      resetSpatialState();
+      return;
+    }
+
     const { actions, query } = this.options.store;
     const where = indicator.placement.where;
     const isBeside = where === "beside-left" || where === "beside-right";
@@ -147,6 +176,7 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
           el.removeAttribute("data-dragging");
           document.body.removeAttribute("data-is-dragging");
           document.body.removeAttribute("data-dragging-type");
+          lastDragPointer = null;
           resetSpatialState();
         });
 
