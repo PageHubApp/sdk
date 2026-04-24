@@ -198,6 +198,54 @@ export function IconsTab({ d }: IconsTabProps) {
               />
             </ToolbarSection>
           ))}
+
+          {(d.setNames?.length ?? 0) > 0 && (
+            <ToolbarSection
+              key={`${d.set}:__all__`}
+              title={`All · ${(d.setNames?.length ?? 0).toLocaleString()}`}
+              defaultOpen={d.categories.length === 0}
+              full={1}
+            >
+              <div
+                role="grid"
+                aria-label={`All ${d.set} icons`}
+                style={{ width: CONTAINER_WIDTH, height: VISIBLE_ROWS * ROW_HEIGHT }}
+              >
+                <Grid
+                  columnCount={COLUMN_COUNT}
+                  columnWidth={COLUMN_WIDTH}
+                  height={VISIBLE_ROWS * ROW_HEIGHT}
+                  rowCount={Math.ceil((d.setNames?.length ?? 0) / COLUMN_COUNT)}
+                  rowHeight={ROW_HEIGHT}
+                  width={CONTAINER_WIDTH}
+                  className="scrollbar-light"
+                >
+                  {({ columnIndex, rowIndex, style }) => {
+                    const index = rowIndex * COLUMN_COUNT + columnIndex;
+                    const names = d.setNames || [];
+                    if (index >= names.length) return null;
+                    const name = names[index];
+                    const iconRef = `${d.set}/${name}`;
+                    const fullRef = `ref-icon:${iconRef}`;
+                    return (
+                      <div style={style} className="p-1">
+                        <IconCell
+                          iconRef={iconRef}
+                          isSelected={d.selectedIcon === fullRef}
+                          isFocused={false}
+                          isFavorite={d.favorites.includes(iconRef)}
+                          onClick={d.handleIconClick}
+                          onDoubleClick={d.handleIconDoubleClick}
+                          onContextMenu={d.toggleFavorite}
+                          onHover={setHoveredRef}
+                        />
+                      </div>
+                    );
+                  }}
+                </Grid>
+              </div>
+            </ToolbarSection>
+          )}
         </AutoHideScrollbar>
       )}
 
