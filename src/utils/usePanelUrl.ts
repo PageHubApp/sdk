@@ -58,10 +58,28 @@ function stripAllPanelParams(): string {
 let listeners: Array<() => void> = [];
 let currentSnapshot: PanelUrlState = readParams();
 
+/** Remember Components/Blocks URL (tab, category, filters) so reopen (+) restores after auto-close. */
+let lastToolboxSnapshot: PanelUrlState | null = null;
+
+function syncLastToolboxFromPanelState(state: PanelUrlState): void {
+  if (state.panel === "components" || state.panel === "blocks") {
+    lastToolboxSnapshot = {
+      panel: state.panel,
+      cat: state.cat,
+      sub: state.sub,
+      sty: state.sty,
+      q: state.q,
+    };
+  }
+}
+
+syncLastToolboxFromPanelState(currentSnapshot);
+
 // Single popstate handler registered once at module load
 if (typeof window !== "undefined") {
   window.addEventListener("popstate", () => {
     currentSnapshot = readParams();
+    syncLastToolboxFromPanelState(currentSnapshot);
     for (const l of listeners) l();
   });
 }
@@ -83,6 +101,7 @@ function getServerSnapshot(): PanelUrlState {
 
 function notify(): void {
   currentSnapshot = readParams();
+  syncLastToolboxFromPanelState(currentSnapshot);
   for (const l of listeners) l();
 }
 
@@ -147,6 +166,30 @@ export function usePanelUrl() {
     notify();
   }, []);
 
+  /**
+   * Header (+): toggles Components/Blocks insert flyout. When opening from closed, restores
+   * last tab + category/filters (survives auto-close on canvas selection).
+   */
+  const toggleToolboxInsert = useCallback(() => {
+    const current = readParams();
+    if (current.panel === "components" || current.panel === "blocks") {
+      const url = stripAllPanelParams();
+      history.pushState({ source: "panelUrl" }, "", url);
+    } else {
+      const snap = lastToolboxSnapshot;
+      const panel = snap?.panel === "blocks" ? "blocks" : "components";
+      const url = buildUrl({
+        panel,
+        cat: snap?.cat ?? null,
+        sub: snap?.sub ?? null,
+        sty: snap?.sty ?? null,
+        q: snap?.q ?? null,
+      });
+      history.pushState({ source: "panelUrl" }, "", url);
+    }
+    notify();
+  }, []);
+
   /** Switch tab — pushState so back button navigates between tabs */
   const switchTab = useCallback((panelType: PanelType) => {
     const url = buildUrl({ panel: panelType, cat: null, sub: null, sty: null, q: null });
@@ -189,6 +232,7 @@ export function usePanelUrl() {
     open,
     close,
     toggle,
+    toggleToolboxInsert,
     switchTab,
     navigate,
     update,

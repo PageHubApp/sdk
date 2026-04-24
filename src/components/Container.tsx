@@ -221,6 +221,16 @@ export function useContainerRender(
       ref.current = r;
       (scrollRef as React.MutableRefObject<HTMLDivElement | null>).current = r;
       setOverflowScrollEl(r);
+      if (
+        process.env.NODE_ENV === "development" &&
+        typeof id === "string" &&
+        (id.startsWith("kit_") || id.startsWith("sec_") || id.startsWith("page_"))
+      ) {
+        // Trace AI-path connectors: if `applyPatch` writes nodes that never
+        // reach this ref, `setDOM` never fires → node.dom stays null → drop
+        // crash + broken hover on AI-added sections.
+        console.log(`[Container.ref] ${r ? "mount" : "unmount"} id=${id}`);
+      }
       connect(drag(r));
     },
     style: {

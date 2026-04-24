@@ -144,7 +144,7 @@ export const Header = () => {
 
   const setActive = useSetAtomState(LastActiveAtom);
 
-  const { isOpen, toggle, open, close } = usePanelUrl();
+  const { isOpen, toggleToolboxInsert, open, close } = usePanelUrl();
   const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useState(false);
   const [isLayersDialogOpen, setIsLayersDialogOpen] = useAtomState(LayersDialogOpenAtom);
   const [isSiteSettingsModalOpen, setIsSiteSettingsModalOpen] = useState(false);
@@ -307,14 +307,14 @@ export const Header = () => {
         data-tutorial="header"
       >
         <Item
-          ariaLabel="Add Component"
+          ariaLabel="Insert blocks and components"
           onMouseDown={e => e.stopPropagation()}
           onClick={e => {
-            toggle("components");
+            toggleToolboxInsert();
             e.stopPropagation();
           }}
           data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content="Add Component"
+          data-tooltip-content="Insert blocks & components"
           data-tooltip-place="bottom"
           data-tooltip-offset={10}
         >
