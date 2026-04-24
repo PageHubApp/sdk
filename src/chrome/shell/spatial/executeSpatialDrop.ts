@@ -4,6 +4,7 @@
 
 import type { ComponentType } from "react";
 import type { DragTarget, Indicator } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
 import { applyAlignmentOnDrop } from "../alignmentInference";
 import { onBesideDrop } from "../besideDrop";
 import type { CommittedAlignmentState, DragOriginState } from "./spatialSession";
@@ -13,12 +14,57 @@ import { applyPeerClassInherit } from "../peerInherit/applyPeerClassInherit";
 import { buildClonedTree } from "../../viewport/nodeOps";
 import { createMergedActions, type MergedActions } from "./mergedActions";
 import { applyAutomaticMorph } from "../automatic/applyAutomaticMorph";
+import {
+  mergeBlockModifiersIntoRootProps,
+  PH_PENDING_BLOCK_MODIFIERS_KEY,
+} from "../../../utils/modifierUtils";
+
+function readPendingBlockModifiersFromInsertedTree(
+  insertedTree: { nodes?: Record<string, any> } | undefined,
+  newNodeId: string
+): Record<string, unknown> | null {
+  if (!insertedTree?.nodes?.[newNodeId]) return null;
+  const raw = insertedTree.nodes[newNodeId];
+  const fromData = raw?.data?.custom?.[PH_PENDING_BLOCK_MODIFIERS_KEY];
+  if (fromData && typeof fromData === "object") return fromData as Record<string, unknown>;
+  const fromFlat = raw?.custom?.[PH_PENDING_BLOCK_MODIFIERS_KEY];
+  if (fromFlat && typeof fromFlat === "object") return fromFlat as Record<string, unknown>;
+  return null;
+}
 
 /**
- * After toolbox / library insert: run Automatic context morph + peer class inherit as part
- * of the provided merged-action batch so the whole drop (addNodeTree + morph) is one undo step.
+ * After toolbox / library insert: merge library `modifiers` into ROOT (if any), then
+ * Automatic context morph + peer class inherit — one undo step with `addNodeTree`.
  */
-export function applySmartDefaultsForNewNode(batch: MergedActions, query: any, newNodeId: string, parentId: string) {
+export function applySmartDefaultsForNewNode(
+  batch: MergedActions,
+  query: any,
+  newNodeId: string,
+  parentId: string,
+  opts?: { insertedTree?: { nodes?: Record<string, any> } }
+) {
+  let pending = readPendingBlockModifiersFromInsertedTree(opts?.insertedTree, newNodeId);
+  if (!pending) {
+    try {
+      const g = query.node(newNodeId).get();
+      const q = g?.data?.custom?.[PH_PENDING_BLOCK_MODIFIERS_KEY];
+      if (q && typeof q === "object") pending = q as Record<string, unknown>;
+    } catch {
+      /* query may not see the node until the batch applies */
+    }
+  }
+
+  if (pending && Object.keys(pending).length > 0) {
+    batch.setProp(ROOT_NODE, (rootProps: Record<string, any>) => {
+      mergeBlockModifiersIntoRootProps(rootProps, pending as Record<string, any>);
+    });
+    batch.setCustom(newNodeId, (custom: Record<string, any>) => {
+      if (custom && typeof custom === "object") {
+        delete custom[PH_PENDING_BLOCK_MODIFIERS_KEY];
+      }
+    });
+  }
+
   applyAutomaticMorph(batch, query, newNodeId, parentId);
   applyPeerClassInherit(batch, query, newNodeId, parentId);
 }
@@ -78,7 +124,9 @@ export function executeSpatialDrop(
 
     const newNodeId = dragTarget.tree?.rootNodeId;
     if (newNodeId) {
-      applySmartDefaultsForNewNode(batch, query, newNodeId, parentId);
+      applySmartDefaultsForNewNode(batch, query, newNodeId, parentId, {
+        insertedTree: dragTarget.tree,
+      });
     }
   }
 

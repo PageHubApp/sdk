@@ -6,46 +6,24 @@ import { TbLayoutGridAdd } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { ComponentsAtom } from "../../utils/lib";
 import { useSectionTemplates } from "../../utils/useSectionTemplates";
+import { buildCraftTreeFromStructure } from "../structure/buildCraftTreeFromStructure";
 import { ComponentPreview } from "./node-tools/ComponentPreview";
 
-// Convert JSON structure to React Element
-const buildElementFromStructure = (
-  structure: any,
-  key?: string,
-  isPreview: boolean = false,
-  resolver?: any
-): any => {
-  // Resolve the component from the globalThis-locked resolver. This is safe across
-  // Next.js Fast Refresh because the resolver is locked to globalThis on first load.
-  const Component = resolver ? resolver[structure.type] : null;
-  if (!Component) {
-    console.warn(`[SectionPicker] Unknown component type: ${structure.type} — skipping`);
-    return null;
+/** Insert payload for built-in section presets (same tree builder as library toolbox). */
+function buildTemplateElement(template: any, resolver: any) {
+  const key = String(template.slug || template.id || "root");
+  const el = buildCraftTreeFromStructure(template.structure, {
+    mode: "toolbox",
+    resolver,
+    uniqueKey: key,
+    isPreview: false,
+    pendingBlockModifiers: template.modifiers,
+  });
+  if (!el) {
+    console.warn(`[SectionPicker] Unknown or invalid structure for template "${key}" — skipping`);
   }
-
-  const previewPrefix = isPreview ? "preview-" : "";
-  const uniqueKey = `${previewPrefix}${key || "root"}`;
-
-  const children = structure.children?.map((child: any, index: number) =>
-    buildElementFromStructure(child, `${uniqueKey}-${index}`, isPreview, resolver)
-  );
-
-  // Reduce padding for preview mode
-  const props = isPreview
-    ? {
-        ...structure.props,
-        className:
-          structure.props.className?.replace(/py-\d+/g, "py-2").replace(/p-\d+/g, "p-2") ||
-          undefined,
-      }
-    : structure.props;
-
-  return (
-    <Element key={uniqueKey} canvas is={Component} {...props}>
-      {children}
-    </Element>
-  );
-};
+  return el;
+}
 
 // Helper function to build component structure from node
 const buildComponentFromNode = (nodeId: string, query: any): any => {
@@ -76,13 +54,9 @@ const convertTemplates = (categoryId: string, resolver: any, templateData: any) 
   return templates.map(template => ({
     id: template.slug || template.id,
     name: template.name,
-    element: buildElementFromStructure(
-      template.structure,
-      template.slug || template.id,
-      false,
-      resolver
-    ),
+    element: buildTemplateElement(template, resolver),
     structure: template.structure,
+    modifiers: template.modifiers,
   }));
 };
 
@@ -104,13 +78,9 @@ const searchTemplates = (
           name: template.name,
           categoryId,
           categoryName: categories.find(c => c.id === categoryId)?.name || categoryId,
-          element: buildElementFromStructure(
-            template.structure,
-            template.slug || template.id,
-            false,
-            resolver
-          ),
+          element: buildTemplateElement(template, resolver),
           structure: template.structure,
+          modifiers: template.modifiers,
         });
       }
     });
@@ -384,6 +354,8 @@ export const SectionPickerDialog = ({
                         // Preview for built-in templates - use ComponentPreview
                         <ComponentPreview
                           component={template.structure}
+                          modifiers={template.modifiers}
+                          slug={String(template.slug || template.id)}
                           scale={0.2}
                           resolver={query.getOptions().resolver}
                         />

@@ -123,3 +123,91 @@ export function expandModifiersInNodes(nodes: Record<string, any>): Record<strin
 
   return nodes;
 }
+
+/** Craft `custom` key: library insert carries block `modifiers` until merged into ROOT (one undo step). */
+export const PH_PENDING_BLOCK_MODIFIERS_KEY = "phPendingBlockModifiers";
+
+/**
+ * Merge library/block `modifiers` into root props (same semantics as mcp-core `mergeBlockModifiersIntoRoot`).
+ *
+ * **Contract mirror:** Keep in lockstep with `packages/mcp-core/src/helpers/modifiers.js`.
+ * If upsert rules change, update both — no shared package by design.
+ *
+ * Mutates `rootProps` (initializes `modifiers` if missing).
+ */
+export function mergeBlockModifiersIntoRootProps(
+  rootProps: Record<string, any>,
+  blockModifiers: Record<string, ModifierDef[]> | null | undefined
+): void {
+  if (!blockModifiers || typeof blockModifiers !== "object") return;
+  if (!rootProps.modifiers) rootProps.modifiers = {};
+
+  for (const [typeName, mods] of Object.entries(blockModifiers)) {
+    if (!Array.isArray(mods)) continue;
+    if (!rootProps.modifiers[typeName]) rootProps.modifiers[typeName] = [];
+    const bucket = rootProps.modifiers[typeName] as ModifierDef[];
+    for (const mod of mods) {
+      if (!mod?.name) continue;
+      const idx = bucket.findIndex(m => m?.name === mod.name);
+      if (idx >= 0) bucket[idx] = mod;
+      else bucket.push(mod);
+    }
+  }
+}
+
+function expandStructureNode(node: any, map: Map<string, string>): any {
+  if (!node || typeof node !== "object") return node;
+  const out = { ...node };
+  if (out.props && typeof out.props === "object") {
+    const p = { ...out.props };
+    if (typeof p.className === "string" && map.size > 0) {
+      p.className = expandModifierClassName(p.className, map);
+    }
+    out.props = p;
+  }
+  if (Array.isArray(out.children)) {
+    out.children = out.children.map((ch: any) => expandStructureNode(ch, map));
+  }
+  return out;
+}
+
+function cloneStructureJson(structure: any): any {
+  try {
+    return JSON.parse(JSON.stringify(structure));
+  } catch {
+    return structure;
+  }
+}
+
+/**
+ * Deep-clone `structure` and expand every `props.className` using a **pre-built** expansion map.
+ * Does not mutate `structure`. Prefer this when the caller already ran `buildModifierExpansionMap`.
+ */
+export function expandStructureWithModifierMap(
+  structure: any,
+  expansionMap: Map<string, string>
+): any {
+  if (!structure || typeof structure !== "object") return structure;
+  if (expansionMap.size === 0) return cloneStructureJson(structure);
+  const cloned = cloneStructureJson(structure);
+  return expandStructureNode(cloned, expansionMap);
+}
+
+/**
+ * Deep-clone `structure` and expand modifier shortcut tokens in every `props.className`
+ * using `blockModifiers` (library block shape). For previews only — does not mutate input.
+ */
+export function expandStructureWithModifiers(
+  structure: any,
+  blockModifiers: Record<string, ModifierDef[]> | null | undefined
+): any {
+  if (!structure || typeof structure !== "object") return structure;
+  if (!blockModifiers || typeof blockModifiers !== "object") {
+    return cloneStructureJson(structure);
+  }
+  if (Object.keys(blockModifiers).length === 0) {
+    return cloneStructureJson(structure);
+  }
+  const map = buildModifierExpansionMap(blockModifiers);
+  return expandStructureWithModifierMap(structure, map);
+}

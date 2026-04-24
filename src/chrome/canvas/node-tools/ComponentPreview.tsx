@@ -1,79 +1,11 @@
-import { Editor, Element, Frame } from "@craftjs/core";
+import { Editor, Frame } from "@craftjs/core";
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_STYLE_GUIDE } from "../../../utils/defaults";
-
-export const buildElementFromStructure = (
-  structure: any,
-  resolver: any,
-  key?: string,
-  isRoot: boolean = true
-): any => {
-  // Guard against incomplete partial JSON structures
-  if (!structure || !structure.type || !structure.props) return null;
-
-  // Resolve from globalThis-locked resolver — safe across Next.js Fast Refresh
-  const Component = resolver ? resolver[structure.type] : null;
-  if (!Component) {
-    return null;
-  }
-
-  // Check if this is an empty Image (no videoId and no content)
-  if (structure.type === "Image") {
-    const isEmpty = !structure.props.videoId && !structure.props.src && !structure.props.content;
-    if (isEmpty) {
-      structure = {
-        ...structure,
-        props: {
-          ...structure.props,
-          src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect width="800" height="600" fill="%23e5e7eb"/%3E%3C/svg%3E',
-        },
-      };
-    }
-
-    // Cap image heights in preview
-    structure = {
-      ...structure,
-      props: {
-        ...structure.props,
-        className: `${structure.props.className || ""} max-h-32`.trim(),
-      },
-    };
-  }
-
-  const uniqueKey = key || "preview-root";
-
-  // Filter out incomplete children from partial JSON
-  const children = structure.children
-    ?.map((child: any, index: number) =>
-      buildElementFromStructure(child, resolver, `${uniqueKey}-${index}`, false)
-    )
-    .filter(Boolean);
-
-  // Only strip vertical padding from the root container to keep the preview compact.
-  // Leave child node padding intact so inner content spacing looks correct.
-  let cleanedClassName = structure.props.className;
-  if (typeof cleanedClassName !== "string") cleanedClassName = "";
-  if (cleanedClassName && isRoot) {
-    cleanedClassName = cleanedClassName
-      .replace(/py-\d+/g, "py-2")
-      .replace(/pt-\d+/g, "")
-      .replace(/pb-\d+/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-  const propsWithDefaults = {
-    ...structure.props,
-    canDelete: true,
-    ...(isRoot && cleanedClassName ? { className: cleanedClassName } : {}),
-  };
-
-  return (
-    <Element key={uniqueKey} canvas is={Component} {...propsWithDefaults}>
-      {children}
-    </Element>
-  );
-};
+import {
+  buildModifierExpansionMap,
+  expandStructureWithModifierMap,
+} from "../../../utils/modifierUtils";
+import { buildCraftTreeFromStructure } from "../../structure/buildCraftTreeFromStructure";
 
 /**
  * Error boundary that catches CraftJS invariant errors inside preview Editors.
@@ -143,12 +75,18 @@ const PREVIEW_DESIGN_VARS: React.CSSProperties & Record<string, string> = {
 
 interface ComponentPreviewProps {
   component: any;
+  /** Library block `modifiers` — expand shortcut tokens in structure for preview only. */
+  modifiers?: Record<string, { name: string; classes?: string; requires?: string }[]>;
+  /** Stable id for memo (e.g. block slug) when `component` JSON matches another block. */
+  slug?: string;
   scale?: number;
   resolver: any;
 }
 
 export const ComponentPreview = React.memo(function ComponentPreview({
   component,
+  modifiers,
+  slug,
   scale = 0.25,
   resolver,
 }: ComponentPreviewProps) {
@@ -248,58 +186,78 @@ export const ComponentPreview = React.memo(function ComponentPreview({
     const observer = new ResizeObserver(() => measure());
     observer.observe(node);
     return () => observer.disconnect();
-  }, [component, scale]);
+  }, [component, modifiers, scale, slug]);
+
+  const { previewElement, previewBuildError } = useMemo(() => {
+    if (!component) return { previewElement: null as React.ReactNode, previewBuildError: false };
+    try {
+      const jsonString = JSON.stringify(component);
+      if (!jsonString || typeof jsonString !== "string") {
+        throw new Error("Component is not serializable");
+      }
+
+      let cleanedComponent = JSON.parse(
+        jsonString
+          .replace(/min-h-screen/g, "")
+          .replace(/min-h-full/g, "")
+          .replace(/min-h-dvh/g, "")
+      );
+
+      if (modifiers && typeof modifiers === "object" && Object.keys(modifiers).length > 0) {
+        const expansionMap = buildModifierExpansionMap(modifiers as Record<string, any>);
+        if (expansionMap.size > 0) {
+          cleanedComponent = expandStructureWithModifierMap(cleanedComponent, expansionMap);
+        }
+      }
+
+      const el = buildCraftTreeFromStructure(cleanedComponent, {
+        mode: "preview",
+        resolver,
+        uniqueKey: "preview-root",
+        isRoot: true,
+      });
+      return { previewElement: el, previewBuildError: false };
+    } catch (error) {
+      console.error("Error rendering component preview:", error);
+      return { previewElement: null, previewBuildError: true };
+    }
+  }, [component, modifiers, resolver, slug]);
 
   if (!component) return null;
 
-  try {
-    // String replace on the entire JSON structure to remove problematic classes
-    const jsonString = JSON.stringify(component);
-    if (!jsonString || typeof jsonString !== "string") {
-      throw new Error("Component is not serializable");
-    }
-
-    const cleanedComponent = JSON.parse(
-      jsonString
-        .replace(/min-h-screen/g, "")
-        .replace(/min-h-full/g, "")
-        .replace(/min-h-dvh/g, "")
-    );
-
-    const element = buildElementFromStructure(cleanedComponent, resolver);
-    const scaledWidth = `${100 / scale}%`;
-
-    return (
-      <PreviewErrorBoundary>
-        <div
-          className="pagehub-sdk-root bg-base-100 text-base-content overflow-hidden"
-          style={{ pointerEvents: "none", height: scaledHeight ?? undefined }}
-        >
-          <div
-            ref={previewRef}
-            style={
-              {
-                width: scaledWidth,
-                transform: `scale(${scale})`,
-                transformOrigin: "top left",
-                ...PREVIEW_DESIGN_VARS,
-                ...siteVars,
-              } as any
-            }
-          >
-            <Editor resolver={resolver} enabled={false}>
-              <Frame>{element}</Frame>
-            </Editor>
-          </div>
-        </div>
-      </PreviewErrorBoundary>
-    );
-  } catch (error) {
-    console.error("Error rendering component preview:", error);
+  if (previewBuildError) {
     return (
       <div className="border-base-300 bg-neutral text-neutral-content flex h-48 w-full items-center justify-center rounded-lg border">
         Failed to render preview
       </div>
     );
   }
+
+  const scaledWidth = `${100 / scale}%`;
+
+  return (
+    <PreviewErrorBoundary>
+      <div
+        className="pagehub-sdk-root bg-base-100 text-base-content overflow-hidden"
+        style={{ pointerEvents: "none", height: scaledHeight ?? undefined }}
+      >
+        <div
+          ref={previewRef}
+          style={
+            {
+              width: scaledWidth,
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+              ...PREVIEW_DESIGN_VARS,
+              ...siteVars,
+            } as any
+          }
+        >
+          <Editor resolver={resolver} enabled={false}>
+            <Frame>{previewElement}</Frame>
+          </Editor>
+        </div>
+      </div>
+    </PreviewErrorBoundary>
+  );
 });

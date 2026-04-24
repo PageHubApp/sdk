@@ -47,7 +47,13 @@ export const BlockPreviewCard = memo(function BlockPreviewCard({
         }`}
       >
         <div className="relative min-h-[7rem] flex-1 overflow-hidden">
-          <ComponentPreview component={block.structure} scale={0.35} resolver={resolver} />
+          <ComponentPreview
+            component={block.structure}
+            modifiers={block.modifiers}
+            slug={block.slug}
+            scale={0.35}
+            resolver={resolver}
+          />
           <div className="bg-primary/10 pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100" />
         </div>
         <div className="border-base-300 bg-base-100 border-t px-2.5 py-2">
@@ -315,7 +321,13 @@ export function BlockQuickLook({
           </kbd>
         </div>
         <div className="overflow-hidden">
-          <ComponentPreview component={block.structure} scale={0.65} resolver={resolver} />
+          <ComponentPreview
+            component={block.structure}
+            modifiers={block.modifiers}
+            slug={block.slug}
+            scale={0.65}
+            resolver={resolver}
+          />
         </div>
       </div>
     </div>

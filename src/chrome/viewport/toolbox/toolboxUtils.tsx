@@ -231,7 +231,9 @@ export const AddElement = ({
 
     const newNodeId = newElement?.rootNodeId;
     if (newNodeId) {
-      applySmartDefaultsForNewNode(batch, query, newNodeId, targetParentId);
+      applySmartDefaultsForNewNode(batch, query, newNodeId, targetParentId, {
+        insertedTree: newElement,
+      });
     }
 
     return newElement;

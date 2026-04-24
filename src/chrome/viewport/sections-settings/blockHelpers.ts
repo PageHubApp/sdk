@@ -1,6 +1,7 @@
-import { Element } from "@craftjs/core";
 import React from "react";
 import type { BlockCategory } from "../../../utils/useBlockCategories";
+import type { BlockItem } from "../../../utils/useCategoryBlocks";
+import { buildCraftTreeFromStructure } from "../../structure/buildCraftTreeFromStructure";
 
 /**
  * Reserved `cat` query value for user-saved blocks in the Blocks toolbox.
@@ -35,36 +36,28 @@ export const CATEGORY_ORDER = [
   "social-proof",
 ];
 
+export type BuildElementFromStructureOpts = {
+  /** Merged into ROOT on insert (one undo step); stored on root `custom` until consumed. */
+  pendingBlockModifiers?: BlockItem["modifiers"];
+};
+
 export function buildElementFromStructure(
   structure: any,
   key?: string,
   isPreview: boolean = false,
-  resolver?: any
+  resolver?: any,
+  opts?: BuildElementFromStructureOpts
 ): any {
-  const Component = resolver ? resolver[structure.type] : null;
-  if (!Component) return null;
-
+  if (!resolver) return null;
   const previewPrefix = isPreview ? "preview-" : "";
   const uniqueKey = `${previewPrefix}${key || "root"}`;
-
-  const children = structure.children?.map((child: any, index: number) =>
-    buildElementFromStructure(child, `${uniqueKey}-${index}`, isPreview, resolver)
-  );
-
-  const props = isPreview
-    ? {
-        ...structure.props,
-        className:
-          structure.props.className?.replace?.(/py-\d+/g, "py-2").replace?.(/p-\d+/g, "p-2") ||
-          undefined,
-      }
-    : structure.props;
-
-  return React.createElement(
-    Element,
-    { key: uniqueKey, canvas: true, is: Component, ...props },
-    ...(children || [])
-  );
+  return buildCraftTreeFromStructure(structure, {
+    mode: "toolbox",
+    resolver,
+    uniqueKey,
+    isPreview,
+    pendingBlockModifiers: opts?.pendingBlockModifiers,
+  });
 }
 
 export function buildComponentFromNode(nodeId: string, query: any): any {

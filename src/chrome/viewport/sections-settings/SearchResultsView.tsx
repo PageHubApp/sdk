@@ -129,7 +129,8 @@ export function SearchResultsView({
                       block.structure,
                       block.slug,
                       false,
-                      resolver
+                      resolver,
+                      { pendingBlockModifiers: block.modifiers }
                     );
                     insertElement(element);
                   }}
@@ -140,7 +141,8 @@ export function SearchResultsView({
                       block.structure,
                       block.slug,
                       false,
-                      resolver
+                      resolver,
+                      { pendingBlockModifiers: block.modifiers }
                     );
                     if (tool) create(ref, tool);
                   }}

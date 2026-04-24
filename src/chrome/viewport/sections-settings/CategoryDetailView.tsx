@@ -86,7 +86,9 @@ export function CategoryDetailView({
 
   const handleDoubleClick = useCallback(
     (block: BlockItem) => {
-      const element = buildElementFromStructure(block.structure, block.slug, false, resolver);
+      const element = buildElementFromStructure(block.structure, block.slug, false, resolver, {
+        pendingBlockModifiers: block.modifiers,
+      });
       insertElement(element);
     },
     [resolver, insertElement]
@@ -268,7 +270,8 @@ export function CategoryDetailView({
                     block.structure,
                     block.slug,
                     false,
-                    resolver
+                    resolver,
+                    { pendingBlockModifiers: block.modifiers }
                   );
                   if (tool) create(ref, tool);
                 }}
