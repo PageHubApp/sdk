@@ -14,7 +14,7 @@ export const morphToCard: Executor<{ kind: "card"; parentId: string }> = (
   batch.setProp(ctx.nodeId, (props: any) => {
     const cls = props.className || "";
     if (!cls.includes("card") && !cls.includes("bg-base-200")) {
-      props.className = `${cls} ${CARD_CLASSNAME}`.trim();
+      props.className = CARD_CLASSNAME;
     }
   });
   batch.setCustom(ctx.nodeId, (custom: any) => {
