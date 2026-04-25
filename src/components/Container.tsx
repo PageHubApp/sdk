@@ -9,7 +9,13 @@ import { ViewModeAtom } from "../utils/lib";
 import { hasPageIsolation } from "../utils/pageManagement";
 import { mergeAccessibilityProps } from "../utils/accessibility";
 import { addActionHandlers, addCustomHandlers } from "../utils/clickControls";
-import { migrateAction, actionToHref, isHandlerAction, type NodeAction } from "../utils/action";
+import {
+  migrateAction,
+  actionToHref,
+  isHandlerAction,
+  isAnchorAction,
+  type NodeAction,
+} from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { Section, Box } from "@pagehub/ui";
 import { applyBackgroundImage, motionIt } from "../utils/lib";
@@ -287,12 +293,13 @@ export function useContainerRender(
           }
         })()
       : rawUrl;
-  const isLinkAction = action?.type === "link-url" || action?.type === "link-page";
+  const isLinkActionLocal =
+    action?.type === "link" || action?.type === "link-url" || action?.type === "link-page";
   const isInternalLink =
-    isLinkAction && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
-  const linkTarget = isLinkAction ? (action as any).target : undefined;
+    isLinkActionLocal && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
+  const linkTarget = isLinkActionLocal ? (action as any).target : undefined;
 
-  if (resolvedUrl && isLinkAction && !enabled) {
+  if (resolvedUrl && isLinkActionLocal && !enabled) {
     // Real link — href + optional target/rel. tagName is swapped to `<a>` below.
     prop.href = resolvedUrl;
     if (linkTarget) prop.target = linkTarget;
@@ -315,7 +322,7 @@ export function useContainerRender(
     };
   }
 
-  if (isHandlerAction(action) || action?.type === "scroll-to") {
+  if (isHandlerAction(action) || isAnchorAction(action)) {
     addActionHandlers(prop, action, enabled);
   }
 
@@ -514,7 +521,7 @@ export function useContainerRender(
   // <div>, swap the tag to <a> so the card is a real, right-clickable link.
   // Don't override semantic tags (section/article/header/footer/etc).
   const renderTag =
-    resolvedUrl && isLinkAction && !enabled && tagName === "div" ? "a" : tagName;
+    resolvedUrl && isLinkActionLocal && !enabled && tagName === "div" ? "a" : tagName;
 
   return React.createElement(motionIt(props, UiComponent, enabled), {
     ...prop,

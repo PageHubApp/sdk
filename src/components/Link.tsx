@@ -10,6 +10,7 @@ import {
   migrateAction,
   actionToHref,
   actionTarget,
+  isAnchorAction,
   type NodeAction,
 } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -163,8 +164,8 @@ export const Link: UserComponent<LinkProps> = (incomingProps: LinkProps) => {
 
   applyAriaProps(prop, props);
 
-  // scroll-to still attaches a JS handler (event.preventDefault + smooth scroll).
-  if (action?.type === "scroll-to") {
+  // Anchor links (`#hero`) attach a JS handler for preventDefault + smooth scroll.
+  if (isAnchorAction(action)) {
     addActionHandlers(prop, action, enabled, { itemContext });
   }
 

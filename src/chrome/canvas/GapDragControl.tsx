@@ -6,6 +6,9 @@ import { ViewSelectionAtom } from "../toolbar/Label";
 import { ViewAtom } from "../viewport/atoms";
 import { useGapDrag } from "./gap/useGapDrag";
 
+const ACCENT = "rgb(59 130 246)";
+const LINE_LENGTH = 20; // visible marker length along the cross-axis
+
 export function GapDragControl() {
   const { id, dom } = useNode(node => ({
     dom: node.dom,
@@ -30,11 +33,9 @@ export function GapDragControl() {
     setProp,
   });
 
-  const shouldShow = (gapHoverInfo?.show || isDragging) && gapHoverInfo;
-
   const portalTarget = typeof document !== "undefined" ? document.getElementById("viewport") : null;
-
-  if (!shouldShow || !portalTarget || !gapHoverInfo.gapRect) return null;
+  const showActive = (gapHoverInfo?.show || isDragging) && gapHoverInfo?.gapRect;
+  if (!portalTarget || !isSelected || !showActive || !gapHoverInfo?.gapRect) return null;
 
   const portalRect = portalTarget.getBoundingClientRect();
   const ox = -portalRect.left + portalTarget.scrollLeft;
@@ -42,6 +43,12 @@ export function GapDragControl() {
 
   const isVertical = gapHoverInfo.direction === "vertical";
   const gr = gapHoverInfo.gapRect;
+  // Span the full gap on the gap axis; pad on the perpendicular for grab tolerance
+  // when the gap is very thin (1–2px).
+  const fillX = isVertical ? gr.x + ox - Math.max(0, (8 - gr.width) / 2) : gr.x + ox;
+  const fillY = isVertical ? gr.y + oy : gr.y + oy - Math.max(0, (8 - gr.height) / 2);
+  const fillW = isVertical ? Math.max(gr.width, 8) : gr.width;
+  const fillH = isVertical ? gr.height : Math.max(gr.height, 8);
 
   return createPortal(
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
@@ -51,31 +58,52 @@ export function GapDragControl() {
       onMouseDown={handleMouseDown}
       style={{
         position: "absolute",
-        left: gr.x + ox - (isVertical ? 12 : 0),
-        top: gr.y + oy - (isVertical ? 0 : 4),
-        width: isVertical ? Math.max(gr.width, 8) + 24 : gr.width,
-        height: isVertical ? gr.height : Math.max(gr.height, 8) + 8,
-        backgroundColor: isDragging ? "rgba(59, 130, 246, 0.4)" : "rgba(59, 130, 246, 0.2)",
+        left: fillX,
+        top: fillY,
+        width: fillW,
+        height: fillH,
+        backgroundColor: isDragging ? "rgba(59, 130, 246, 0.35)" : "rgba(59, 130, 246, 0.18)",
         cursor: isVertical ? "ew-resize" : "ns-resize",
         zIndex: 9998,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        transition: isDragging ? "none" : "background-color 0.15s ease",
+        transition: isDragging ? "none" : "background-color 0.12s ease",
       }}
     >
+      {/* Centered line marker */}
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          width: isVertical ? 2 : LINE_LENGTH,
+          height: isVertical ? LINE_LENGTH : 2,
+          background: ACCENT,
+          borderRadius: 1,
+          opacity: isDragging ? 1 : 0.85,
+          pointerEvents: "none",
+        }}
+      />
+      {/* Pixel readout */}
       <span
         style={{
+          position: "absolute",
+          ...(isVertical
+            ? { left: "50%", top: "50%", transform: "translate(-50%, calc(-50% - 16px))" }
+            : { left: "50%", top: "50%", transform: "translate(calc(-50% + 18px), -50%)" }),
           fontSize: 11,
           fontWeight: 600,
           color: "#1d4ed8",
-          backgroundColor: "rgba(255, 255, 255, 0.9)",
+          backgroundColor: "rgba(255,255,255,0.95)",
           padding: "1px 5px",
           borderRadius: 3,
           fontFamily: "system-ui, -apple-system, sans-serif",
           pointerEvents: "none",
           userSelect: "none",
           whiteSpace: "nowrap",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
         }}
       >
         {Math.round(gapHoverInfo.currentGap)}px

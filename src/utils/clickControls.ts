@@ -119,11 +119,18 @@ export function addActionHandlers(
 ) {
   if (!action) return;
 
-  if (action.type === "scroll-to") {
+  // Anchor link — covers legacy `scroll-to` and unified `link` with `href: "#…"`.
+  const anchor =
+    action.type === "scroll-to"
+      ? action.anchor
+      : action.type === "link" && typeof action.href === "string" && action.href.startsWith("#")
+        ? action.href.slice(1)
+        : null;
+  if (anchor) {
     prop.onClick = (e: any) => {
       if (enabled) return;
       e.preventDefault();
-      const el = document.getElementById(action.anchor);
+      const el = document.getElementById(anchor);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     };
     return;

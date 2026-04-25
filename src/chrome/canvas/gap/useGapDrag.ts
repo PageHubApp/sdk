@@ -40,6 +40,82 @@ function getVisibleChildren(parent: HTMLElement): HTMLElement[] {
   });
 }
 
+/**
+ * Pure computation: given a flex container, return one GapHoverInfo per gap
+ * between adjacent visible children. Used by GapDragControl to render passive
+ * "always-visible" markers when the container is selected.
+ *
+ * Returns [] if the element isn't a flex container, has fewer than 2 children,
+ * or has no measurable gap.
+ */
+export function computeAllGapRects(dom: HTMLElement | null): GapHoverInfo[] {
+  if (!dom) return [];
+  const styles = window.getComputedStyle(dom);
+  const display = styles.display;
+  if (display !== "flex" && display !== "inline-flex") return [];
+
+  const children = getVisibleChildren(dom);
+  if (children.length < 2) return [];
+
+  const gapValue = styles.gap;
+  let currentGapPx = 0;
+  if (gapValue && gapValue !== "normal" && gapValue !== "0px") {
+    const parsed = parseFloat(gapValue);
+    if (!isNaN(parsed)) currentGapPx = parsed;
+  }
+  if (currentGapPx < 1) return [];
+
+  const flexDirection = styles.flexDirection;
+  const isRow = flexDirection === "row" || flexDirection === "row-reverse";
+  const isColumn = flexDirection === "column" || flexDirection === "column-reverse";
+  const out: GapHoverInfo[] = [];
+
+  for (let i = 0; i < children.length - 1; i++) {
+    const c1 = children[i].getBoundingClientRect();
+    const c2 = children[i + 1].getBoundingClientRect();
+
+    if (isRow) {
+      const isReverse = flexDirection === "row-reverse";
+      const left = isReverse ? c2 : c1;
+      const right = isReverse ? c1 : c2;
+      const gapStart = left.right;
+      const gapEnd = right.left;
+      const gapSize = Math.max(1, gapEnd - gapStart);
+      const minTop = Math.min(c1.top, c2.top);
+      const maxBottom = Math.max(c1.bottom, c2.bottom);
+      out.push({
+        show: true,
+        x: (gapStart + gapEnd) / 2,
+        y: (minTop + maxBottom) / 2,
+        direction: "vertical",
+        currentGap: currentGapPx,
+        childIndex: i,
+        gapRect: { x: gapStart, y: minTop, width: gapSize, height: maxBottom - minTop },
+      });
+    } else if (isColumn) {
+      const isReverse = flexDirection === "column-reverse";
+      const top = isReverse ? c2 : c1;
+      const bottom = isReverse ? c1 : c2;
+      const gapStart = top.bottom;
+      const gapEnd = bottom.top;
+      const gapSize = Math.max(1, gapEnd - gapStart);
+      const minLeft = Math.min(c1.left, c2.left);
+      const maxRight = Math.max(c1.right, c2.right);
+      out.push({
+        show: true,
+        x: (minLeft + maxRight) / 2,
+        y: (gapStart + gapEnd) / 2,
+        direction: "horizontal",
+        currentGap: currentGapPx,
+        childIndex: i,
+        gapRect: { x: minLeft, y: gapStart, width: maxRight - minLeft, height: gapSize },
+      });
+    }
+  }
+
+  return out;
+}
+
 export function useGapDrag({
   dom,
   isSelected,
@@ -60,8 +136,10 @@ export function useGapDrag({
   const isDraggingRef = useRef(false);
   const dragStartPosRef = useRef(dragStartPos);
   const gapHoverInfoRef = useRef(gapHoverInfo);
-  const gapDwellKeyRef = useRef<string | null>(null);
-  const gapDwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // After mouseup, ignore hover detection until this timestamp passes — gives
+  // the marker a beat to actually disappear before the cursor (still parked in
+  // the gap) re-triggers it on the next mousemove.
+  const suppressUntilRef = useRef(0);
 
   isDraggingRef.current = isDragging;
   dragStartPosRef.current = dragStartPos;
@@ -144,6 +222,10 @@ export function useGapDrag({
       // Don't update hover detection while dragging
       if (isDraggingRef.current) return;
 
+      // Post-drag cool-down — keep marker hidden briefly so it doesn't snap
+      // back the instant mouseup releases (cursor is still parked in the gap).
+      if (Date.now() < suppressUntilRef.current) return;
+
       // --- Hover detection ---
       rafId = requestAnimationFrame(() => {
         const computedStyles = window.getComputedStyle(dom);
@@ -184,19 +266,16 @@ export function useGapDrag({
             i
           );
           if (detected) {
-            // Dwell: only commit hover after 300ms in the same gap
-            const key = `${detected.childIndex}`;
-            if (key !== gapDwellKeyRef.current) {
-              gapDwellKeyRef.current = key;
-              if (gapDwellTimerRef.current) clearTimeout(gapDwellTimerRef.current);
-              gapDwellTimerRef.current = setTimeout(() => setGapHoverInfo(detected), 400);
-            }
+            // No dwell — show the marker the moment the cursor enters the gap zone.
+            setGapHoverInfo(prev =>
+              prev && prev.childIndex === detected.childIndex && prev.x === detected.x && prev.y === detected.y
+                ? prev
+                : detected,
+            );
             return;
           }
         }
 
-        gapDwellKeyRef.current = null;
-        if (gapDwellTimerRef.current) clearTimeout(gapDwellTimerRef.current);
         setGapHoverInfo(null);
       });
     };
@@ -225,6 +304,7 @@ export function useGapDrag({
         setDragStartPos(null);
         document.body.style.cursor = "auto";
         setGapHoverInfo(null);
+        suppressUntilRef.current = Date.now() + 250;
       }
     };
 

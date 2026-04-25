@@ -14,6 +14,7 @@ import {
   actionTarget,
   isLinkAction,
   isHandlerAction,
+  isAnchorAction,
   type NodeAction,
 } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -203,14 +204,14 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   applyAriaProps(prop, props);
 
-  // Attach JS handlers for open-modal, show-hide, scroll-to, add-to-cart
+  // Attach JS handlers for open-modal, show-hide, scroll-to (anchor), add-to-cart
   const actionCtx = { itemContext, onAddToCart: sdk?.config.callbacks?.onAddToCart };
   if (isHandlerAction(action)) {
     // For show-hide on buttons, force style method
     const actionForButton =
       action.type === "show-hide" ? { ...action, method: "style" as const } : action;
     addActionHandlers(prop, actionForButton, enabled, actionCtx);
-  } else if (action?.type === "scroll-to") {
+  } else if (isAnchorAction(action)) {
     addActionHandlers(prop, action, enabled, actionCtx);
   }
 

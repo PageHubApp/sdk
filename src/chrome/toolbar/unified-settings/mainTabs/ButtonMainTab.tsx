@@ -1,4 +1,5 @@
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { QuickLinkInput } from "../../inputs/action/LinkInput";
 import { IconDialogInput } from "../../inputs/media/IconDialogInput";
 import IconInput from "../../inputs/media/IconInput";
 import { ToolbarItem } from "../../ToolbarItem";
@@ -16,6 +17,8 @@ export const ButtonMainTab = () =>
       >
         <ToolbarItem propKey="text" type="text" label="Text" propType="component" />
         <SettingsAiSlot />
+
+        <QuickLinkInput />
 
         <IconDialogInput
           propKey="icon.value"

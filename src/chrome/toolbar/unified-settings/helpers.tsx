@@ -72,21 +72,9 @@ export const SECTION_ICONS: Record<string, React.ReactNode> = {
 };
 
 /**
- * Renders a "not available" placeholder for a section.
- */
-export const renderNA = (title: string) => (
-  <ToolbarSection
-    title={title}
-    icon={SECTION_ICONS[title]}
-    disabled
-    help="Not available for this component"
-  />
-);
-
-/**
  * Standard component section order.
  * Every MainTab MUST render these sections in this exact order.
- * Missing sections become "not available" placeholders.
+ * Missing sections are skipped entirely.
  */
 const COMPONENT_SECTIONS = ["Content", "Type", "Marker"] as const;
 
@@ -102,16 +90,16 @@ export type ComponentSlotName =
 /**
  * Renders component-specific sections in the guaranteed standard order.
  * Pass a map of slot name → ReactNode for sections you want filled.
- * Every slot not in the map gets a "not available" placeholder.
+ * Slots not in the map are skipped entirely.
  */
 export function renderComponentSlots(slots: Partial<Record<ComponentSlotName, React.ReactNode>>) {
   return (
     <>
-      {COMPONENT_SECTIONS.map(title => (
-        <React.Fragment key={title}>
-          {slots[title] !== undefined ? slots[title] : renderNA(title)}
-        </React.Fragment>
-      ))}
+      {COMPONENT_SECTIONS.map(title =>
+        slots[title] !== undefined ? (
+          <React.Fragment key={title}>{slots[title]}</React.Fragment>
+        ) : null
+      )}
     </>
   );
 }
@@ -138,11 +126,8 @@ export function renderAdvancedComponentSlots(
             </React.Fragment>
           );
         }
-        return (
-          <React.Fragment key={title}>
-            {slots[title] !== undefined ? slots[title] : renderNA(title)}
-          </React.Fragment>
-        );
+        if (slots[title] === undefined) return null;
+        return <React.Fragment key={title}>{slots[title]}</React.Fragment>;
       })}
     </>
   );

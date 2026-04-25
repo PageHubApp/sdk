@@ -58,6 +58,24 @@ body[data-is-dragging="true"] * {
   cursor: grabbing !important;
 }
 
+/* Edge-resize cursors — set by BorderResizeController. !important + descendant
+   selector overrides any child cursor (e.g. .btn { cursor: pointer }). */
+body[data-ph-edge="right"],
+body[data-ph-edge="right"] * {
+  cursor: ew-resize !important;
+}
+body[data-ph-edge="bottom"],
+body[data-ph-edge="bottom"] * {
+  cursor: ns-resize !important;
+}
+
+/* Rotate cursor — set by RotateHandleController on bottom-left corner zone.
+   The --ph-rotate-cursor var is injected at runtime from a react-icons icon. */
+body[data-ph-rotate="true"],
+body[data-ph-rotate="true"] * {
+  cursor: var(--ph-rotate-cursor, grab) !important;
+}
+
 .pagehub-sdk-root [data-selected="true"] iframe {
   pointer-events: none;
 }

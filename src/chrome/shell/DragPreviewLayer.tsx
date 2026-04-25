@@ -40,6 +40,12 @@ export function DragPreviewLayer() {
       const target = e.target as HTMLElement | null;
       if (!target || !(target instanceof HTMLElement)) return;
 
+      // Only render the custom clone for canvas drags. Sidebar/toolbox drags
+      // (Components panel, Blocks panel) live outside #viewport and rely on
+      // CraftJS's own connector chrome — cloning their previews here can throw
+      // (complex scaled subtrees) and abort the native drag.
+      if (!target.closest("#viewport")) return;
+
       const sdkRoot = target.closest(".pagehub-sdk-root") as HTMLElement | null;
       if (!sdkRoot) return;
 

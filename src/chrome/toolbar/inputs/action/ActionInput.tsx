@@ -5,7 +5,6 @@
  */
 import { useNode } from "@craftjs/core";
 import { TbPointer, TbX } from "react-icons/tb";
-import { PageSelector } from "../../../viewport/PageSelector";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -13,20 +12,23 @@ import {
   ACTION_TYPE_OPTIONS,
   type ActionType,
   type NodeAction,
-  type LinkTarget,
+  type LinkAction,
   type ToggleThemeAction,
   migrateAction,
 } from "@/utils/action";
 import HandlersInput from "./HandlersInput";
+import { LinkInput } from "./LinkInput";
 import { useElementPicker, type PickerFilter } from "./useElementPicker";
 
 const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
+  link: { type: "link", href: "" },
+  // Legacy types kept in the union for in-flight data — not surfaced in the dropdown.
   "link-url": { type: "link-url", url: "" },
   "link-page": { type: "link-page", pageId: "" },
   "scroll-to": { type: "scroll-to", anchor: "" },
-  "open-modal": { type: "open-modal", anchor: "" },
   email: { type: "email", email: "" },
   phone: { type: "phone", phone: "" },
+  "open-modal": { type: "open-modal", anchor: "" },
   "show-hide": { type: "show-hide", target: "", direction: "toggle", trigger: "click" },
   "copy-to-clipboard": { type: "copy-to-clipboard", text: "" },
   "download-file": { type: "download-file", url: "" },
@@ -137,21 +139,43 @@ export default function ActionInput() {
             }
           >
             <option value="">None</option>
-            {ACTION_TYPE_OPTIONS.map(opt => (
+            {/* Ungrouped: top-level "Link" entry. */}
+            {ACTION_TYPE_OPTIONS.filter(opt => !opt.group).map(opt => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
             ))}
+            {/* Grouped: Open / Commerce / System */}
+            {Array.from(
+              ACTION_TYPE_OPTIONS.reduce((acc, opt) => {
+                if (!opt.group) return acc;
+                if (!acc.has(opt.group)) acc.set(opt.group, []);
+                acc.get(opt.group)!.push(opt);
+                return acc;
+              }, new Map<string, typeof ACTION_TYPE_OPTIONS>()).entries()
+            ).map(([group, opts]) => (
+              <optgroup key={group} label={group}>
+                {opts.map(opt => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
           </ToolbarDropdown>
 
-          <ActionSubForm action={action} patch={patchAction(i)} />
+          <ActionSubForm
+            action={action}
+            patch={patchAction(i)}
+            replace={(next: NodeAction) => updateAction(i, next)}
+          />
         </div>
       ))}
 
       {/* Add action button */}
       <ToolbarDashedButton
         onClick={
-          actionList.length === 0 ? () => syncActions([ACTION_DEFAULTS["link-url"]]) : addAction
+          actionList.length === 0 ? () => syncActions([ACTION_DEFAULTS.link]) : addAction
         }
       >
         {actionList.length === 0 ? "Add Action" : "Chain Another Action"}
@@ -162,19 +186,59 @@ export default function ActionInput() {
   );
 }
 
-function ActionSubForm({ action, patch }: { action: NodeAction; patch: (p: any) => void }) {
+function ActionSubForm({
+  action,
+  patch,
+  replace,
+}: {
+  action: NodeAction;
+  patch: (p: any) => void;
+  replace: (next: NodeAction) => void;
+}) {
   switch (action.type) {
+    case "link":
+      return <LinkInput action={action as LinkAction} onChange={replace} />;
+    // Legacy types — render the unified LinkInput so old data is editable
+    // before migration runs. The shim normalizes on next save.
     case "link-url":
-      return <LinkUrlForm action={action} patch={patch} />;
     case "link-page":
-      return <LinkPageForm action={action} patch={patch} />;
     case "scroll-to":
+    case "email":
+    case "phone":
       return (
-        <ElementPickerForm
-          value={(action as any).anchor}
-          filter="section"
-          label="Section"
-          onChange={anchor => patch({ anchor })}
+        <LinkInput
+          action={{
+            type: "link",
+            href:
+              action.type === "link-url"
+                ? action.url
+                : action.type === "link-page"
+                  ? action.pageId
+                    ? `ref:${action.pageId}${action.path ?? ""}`
+                    : ""
+                  : action.type === "scroll-to"
+                    ? action.anchor
+                      ? `#${action.anchor}`
+                      : ""
+                    : action.type === "email"
+                      ? action.email
+                        ? `mailto:${action.email}${
+                            action.subject || action.body
+                              ? `?${new URLSearchParams({
+                                  ...(action.subject ? { subject: action.subject } : {}),
+                                  ...(action.body ? { body: action.body } : {}),
+                                }).toString()}`
+                              : ""
+                          }`
+                        : ""
+                      : action.phone
+                        ? `tel:${action.phone}`
+                        : "",
+            ...((action.type === "link-url" || action.type === "link-page") && action.target
+              ? { target: action.target }
+              : {}),
+          }}
+          onChange={replace}
         />
       );
     case "open-modal":
@@ -186,10 +250,6 @@ function ActionSubForm({ action, patch }: { action: NodeAction; patch: (p: any) 
           onChange={anchor => patch({ anchor })}
         />
       );
-    case "email":
-      return <EmailForm action={action} patch={patch} />;
-    case "phone":
-      return <PhoneForm action={action} patch={patch} />;
     case "show-hide":
       return <ShowHideForm action={action} patch={patch} />;
     case "copy-to-clipboard":
@@ -279,104 +339,6 @@ function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void
 
 // ─── Sub-forms ─────────────────────────────────────────────────────────
 
-function LinkUrlForm({ action, patch }: { action: any; patch: (p: any) => void }) {
-  return (
-    <>
-      <div className="input-wrapper">
-        <input
-          type="url"
-          defaultValue={action.url || ""}
-          onChange={e => patch({ url: e.target.value })}
-          placeholder="https://..."
-          className="input-plain w-full"
-          aria-label="URL"
-        />
-      </div>
-      <TargetSelect value={action.target} onChange={target => patch({ target })} />
-    </>
-  );
-}
-
-function LinkPageForm({ action, patch }: { action: any; patch: (p: any) => void }) {
-  return (
-    <>
-      <div className="input-wrapper flex w-full items-center gap-1">
-        <PageSelector
-          pickerMode
-          onPagePick={page => patch({ pageId: page.id })}
-          selectedPageId={action.pageId || ""}
-          className="flex-1"
-          buttonClassName="input-plain w-full flex items-center justify-between"
-          showHashIcon={false}
-        />
-        {action.pageId && (
-          <button
-            type="button"
-            onClick={() => patch({ pageId: "" })}
-            className="text-neutral-content hover:bg-error hover:text-error-content flex shrink-0 items-center justify-center rounded p-1 text-xs transition-colors"
-            aria-label="Clear page"
-          >
-            <TbX />
-          </button>
-        )}
-      </div>
-      <TargetSelect value={action.target} onChange={target => patch({ target })} />
-    </>
-  );
-}
-
-function EmailForm({ action, patch }: { action: any; patch: (p: any) => void }) {
-  return (
-    <>
-      <div className="input-wrapper">
-        <input
-          type="email"
-          defaultValue={action.email || ""}
-          onChange={e => patch({ email: e.target.value })}
-          placeholder="hello@example.com"
-          className="input-plain w-full"
-          aria-label="Email address"
-        />
-      </div>
-      <div className="input-wrapper">
-        <input
-          type="text"
-          defaultValue={action.subject || ""}
-          onChange={e => patch({ subject: e.target.value })}
-          placeholder="Subject (optional)"
-          className="input-plain w-full"
-          aria-label="Email subject"
-        />
-      </div>
-      <div className="input-wrapper">
-        <input
-          type="text"
-          defaultValue={action.body || ""}
-          onChange={e => patch({ body: e.target.value })}
-          placeholder="Body (optional)"
-          className="input-plain w-full"
-          aria-label="Email body"
-        />
-      </div>
-    </>
-  );
-}
-
-function PhoneForm({ action, patch }: { action: any; patch: (p: any) => void }) {
-  return (
-    <div className="input-wrapper">
-      <input
-        type="tel"
-        defaultValue={action.phone || ""}
-        onChange={e => patch({ phone: e.target.value })}
-        placeholder="+1 (555) 123-4567"
-        className="input-plain w-full"
-        aria-label="Phone number"
-      />
-    </div>
-  );
-}
-
 function ShowHideForm({ action, patch }: { action: any; patch: (p: any) => void }) {
   return (
     <>
@@ -411,27 +373,6 @@ function ShowHideForm({ action, patch }: { action: any; patch: (p: any) => void 
 }
 
 // ─── Shared pieces ─────────────────────────────────────────────────────
-
-function TargetSelect({
-  value,
-  onChange,
-}: {
-  value?: LinkTarget;
-  onChange: (v: LinkTarget) => void;
-}) {
-  return (
-    <ToolbarDropdown
-      value={value || "_self"}
-      onChange={(val: string) => onChange(val as LinkTarget)}
-      propKey="actionTarget"
-    >
-      <option value="_self">Same tab</option>
-      <option value="_blank">New tab</option>
-      <option value="_parent">Parent window</option>
-      <option value="_top">New window</option>
-    </ToolbarDropdown>
-  );
-}
 
 function CopyToClipboardForm({ action, patch }: { action: any; patch: (p: any) => void }) {
   return (

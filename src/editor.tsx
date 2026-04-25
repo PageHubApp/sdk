@@ -37,6 +37,7 @@ import { AiPanelHost } from "./chrome/ai/AiPanelHost";
 import { RenderNodeNewer } from "./chrome/rendering/RenderNode";
 import CustomEventHandlers from "./chrome/shell/CustomEventHandlers";
 import { BorderResizeController } from "./chrome/canvas/BorderResizeController";
+import { RotateHandleController } from "./chrome/canvas/RotateHandleController";
 import { DragPreviewLayer } from "./chrome/shell/DragPreviewLayer";
 import { DropZoneIndicator } from "./chrome/shell/DropZoneIndicator";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
@@ -469,6 +470,7 @@ function PageHubEditorInner({
               <DropZoneIndicator />
               <DragPreviewLayer />
               <BorderResizeController />
+              <RotateHandleController />
               <div
                 className="bg-neutral text-neutral-content relative flex h-full min-h-0 w-full flex-col overflow-hidden"
                 data-base={true}

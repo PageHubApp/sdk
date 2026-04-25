@@ -8,12 +8,18 @@ import { resolvePageRef } from "./pageManagement";
 // ─── Types ─────────────────────────────────────────────────────────────
 
 export type ActionType =
+  | "link"
+  /** @deprecated migrated to "link" via `legacyActionToLink` — kept in union for in-flight data */
   | "link-url"
+  /** @deprecated migrated to "link" via `legacyActionToLink` — kept in union for in-flight data */
   | "link-page"
+  /** @deprecated migrated to "link" via `legacyActionToLink` — kept in union for in-flight data */
   | "scroll-to"
-  | "open-modal"
+  /** @deprecated migrated to "link" via `legacyActionToLink` — kept in union for in-flight data */
   | "email"
+  /** @deprecated migrated to "link" via `legacyActionToLink` — kept in union for in-flight data */
   | "phone"
+  | "open-modal"
   | "show-hide"
   | "copy-to-clipboard"
   | "download-file"
@@ -28,12 +34,32 @@ interface ActionBase {
   type: ActionType;
 }
 
+/**
+ * Unified link action — replaces the 5 legacy link-ish types
+ * (`link-url`, `link-page`, `scroll-to`, `email`, `phone`).
+ *
+ * The `href` field encodes the destination using HTML conventions:
+ *   - `https://example.com` / `//cdn.example.com` — external URL
+ *   - `/blog/hello` — relative URL (host app routing)
+ *   - `ref:<pageId>[/path|?query|#hash]` — internal page reference (resolved at render time)
+ *   - `#hero` — in-page anchor (renderer adds smooth-scroll behavior)
+ *   - `mailto:hi@example.com?subject=…&body=…` — email (subject/body via querystring)
+ *   - `tel:+15551234` — phone
+ */
+export interface LinkAction extends ActionBase {
+  type: "link";
+  href: string;
+  target?: LinkTarget;
+}
+
+/** @deprecated use `LinkAction` */
 export interface LinkUrlAction extends ActionBase {
   type: "link-url";
   url: string;
   target?: LinkTarget;
 }
 
+/** @deprecated use `LinkAction` with `href: "ref:<pageId>[/path]"` */
 export interface LinkPageAction extends ActionBase {
   type: "link-page";
   pageId: string; // CraftJS node ID
@@ -45,6 +71,7 @@ export interface LinkPageAction extends ActionBase {
   target?: LinkTarget;
 }
 
+/** @deprecated use `LinkAction` with `href: "#<anchor>"` */
 export interface ScrollToAction extends ActionBase {
   type: "scroll-to";
   anchor: string;
@@ -55,6 +82,7 @@ export interface OpenModalAction extends ActionBase {
   anchor: string;
 }
 
+/** @deprecated use `LinkAction` with `href: "mailto:<email>?subject=…&body=…"` */
 export interface EmailAction extends ActionBase {
   type: "email";
   email: string;
@@ -62,6 +90,7 @@ export interface EmailAction extends ActionBase {
   body?: string;
 }
 
+/** @deprecated use `LinkAction` with `href: "tel:<phone>"` */
 export interface PhoneAction extends ActionBase {
   type: "phone";
   phone: string;
@@ -137,6 +166,7 @@ export interface ToggleThemeAction extends ActionBase {
 }
 
 export type NodeAction =
+  | LinkAction
   | LinkUrlAction
   | LinkPageAction
   | ScrollToAction
@@ -160,15 +190,28 @@ export type LinkTarget = "_self" | "_blank" | "_parent" | "_top";
 /** Actions that resolve to an href (render as <a>) */
 export function isLinkAction(
   action: NodeAction | null | undefined
-): action is LinkUrlAction | LinkPageAction | EmailAction | PhoneAction | ScrollToAction {
+): action is LinkAction | LinkUrlAction | LinkPageAction | EmailAction | PhoneAction | ScrollToAction {
   if (!action) return false;
   return (
+    action.type === "link" ||
     action.type === "link-url" ||
     action.type === "link-page" ||
     action.type === "email" ||
     action.type === "phone" ||
     action.type === "scroll-to"
   );
+}
+
+/**
+ * Anchor-style links — renderer attaches preventDefault + smooth-scroll behavior.
+ * Covers legacy `scroll-to` and the new unified `link` with `href` starting `#`.
+ */
+export function isAnchorAction(action: NodeAction | null | undefined): boolean {
+  if (!action) return false;
+  if (action.type === "scroll-to") return true;
+  if (action.type === "link" && typeof action.href === "string" && action.href.startsWith("#"))
+    return true;
+  return false;
 }
 
 /** Actions that need JS event handlers at runtime */
@@ -208,10 +251,27 @@ export function actionToHref(
   if (!action) return null;
 
   switch (action.type) {
+    case "link": {
+      const h = action.href;
+      if (!h) return null;
+      // ref:<pageId>[/<path>|?<query>|#<hash>] — internal page reference
+      if (h.startsWith("ref:")) {
+        const m = h.match(/^ref:([^/?#]+)(.*)$/);
+        if (!m) return null;
+        const [, pageId, suffix] = m;
+        const base = resolvePageRef(`ref:${pageId}`, query, routerPath);
+        if (!suffix) return base;
+        const isQueryOrHash = suffix.startsWith("?") || suffix.startsWith("#");
+        if (isQueryOrHash) return `${base}${suffix}`;
+        const slash = suffix.startsWith("/") ? suffix : `/${suffix}`;
+        return base === "/" ? slash : `${base}${slash}`;
+      }
+      // mailto:, tel:, #anchor, https://, /relative — all use as-is
+      return h;
+    }
+
     case "link-url":
-    // Alias for block-authoring convenience: "link" accepts either `url` or `href`.
-    case "link" as any:
-      return (action as any).url || (action as any).href || null;
+      return action.url || null;
 
     case "link-page": {
       if (!action.pageId) return null;
@@ -256,35 +316,87 @@ export function actionToHref(
  */
 export function actionTarget(action: NodeAction | null | undefined): LinkTarget | undefined {
   if (!action) return undefined;
+  if (action.type === "link") return action.target;
   if (action.type === "link-url" || action.type === "link-page") return action.target;
-  if (action.type === "scroll-to" || action.type === "email" || action.type === "phone")
-    return undefined;
   return undefined;
 }
 
 // ─── Migration ─────────────────────────────────────────────────────────
+
+/** Build a `mailto:` URL with optional `?subject=…&body=…` querystring. */
+function encodeMailto(a: { email?: string; subject?: string; body?: string }): string {
+  if (!a.email) return "";
+  const params = new URLSearchParams();
+  if (a.subject) params.set("subject", a.subject);
+  if (a.body) params.set("body", a.body);
+  const qs = params.toString();
+  return `mailto:${a.email}${qs ? `?${qs}` : ""}`;
+}
+
+/**
+ * Pure mapping from any of the 5 legacy link-ish action types to the unified `LinkAction`.
+ * Idempotent — passing an already-`link` action returns it as-is.
+ *
+ * Used by:
+ *   - `migrateAction()` (render-time runtime shim)
+ *   - `scripts/migrate-actions-to-link.mjs` (file walker for blocks/templates)
+ *   - `scripts/migrate-mongo-actions-to-link.mjs` (Mongo cursor for user sites)
+ *
+ * Returns `null` for non-link-ish actions (caller passes them through unchanged).
+ */
+export function legacyActionToLink(action: any): LinkAction | null {
+  if (!action || typeof action !== "object") return null;
+  switch (action.type) {
+    case "link":
+      return action as LinkAction;
+    case "link-url":
+      return { type: "link", href: action.url ?? "", ...(action.target ? { target: action.target } : {}) };
+    case "link-page":
+      return {
+        type: "link",
+        href: action.pageId ? `ref:${action.pageId}${action.path ?? ""}` : "",
+        ...(action.target ? { target: action.target } : {}),
+      };
+    case "scroll-to":
+      return { type: "link", href: action.anchor ? `#${action.anchor}` : "" };
+    case "email":
+      return { type: "link", href: encodeMailto(action) };
+    case "phone":
+      return { type: "link", href: action.phone ? `tel:${action.phone}` : "" };
+    default:
+      return null;
+  }
+}
 
 /**
  * Convert legacy click/url/urlTarget props to NodeAction.
  * Called at render time in components to handle old saved data.
  */
 export function migrateAction(props: any): NodeAction | null {
-  // Already migrated
-  if (props.action) return props.action;
+  // Already migrated — pass through, but normalize 5 legacy link-ish types to unified `link`
+  if (props.action) {
+    const link = legacyActionToLink(props.action);
+    if (link) return link; // Either already `link` (idempotent) or one of the 5 legacy types
+    return props.action; // Non-link action (modal, cart, etc.) — pass through unchanged
+  }
 
-  // Old link mode
+  // Old link mode (props.url / props.urlTarget) — emit unified `link` directly
   if (props.url && typeof props.url === "string") {
     if (props.url.startsWith("ref:")) {
       return {
-        type: "link-page",
-        pageId: props.url.replace("ref:", ""),
-        target: props.urlTarget,
+        type: "link",
+        href: props.url, // already in `ref:<pageId>` form
+        ...(props.urlTarget ? { target: props.urlTarget } : {}),
       };
     }
-    return { type: "link-url", url: props.url, target: props.urlTarget };
+    return {
+      type: "link",
+      href: props.url,
+      ...(props.urlTarget ? { target: props.urlTarget } : {}),
+    };
   }
 
-  // Old action mode
+  // Old action mode (props.click)
   const click = props.click;
   if (click?.type && click?.value) {
     return {
@@ -302,20 +414,16 @@ export function migrateAction(props: any): NodeAction | null {
 
 // ─── Action type labels for UI ─────────────────────────────────────────
 
-export const ACTION_TYPE_OPTIONS: { value: ActionType; label: string }[] = [
-  { value: "link-url", label: "Link to URL" },
-  { value: "link-page", label: "Link to Page" },
-  { value: "scroll-to", label: "Scroll to Section" },
-  { value: "open-modal", label: "Open Modal" },
-  { value: "email", label: "Email" },
-  { value: "phone", label: "Phone" },
-  { value: "show-hide", label: "Show / Hide" },
-  { value: "copy-to-clipboard", label: "Copy to Clipboard" },
-  { value: "download-file", label: "Download File" },
-  { value: "toggle-theme", label: "Toggle light / dark" },
-  { value: "add-to-cart", label: "Add to Cart" },
-  { value: "toggle-cart", label: "Toggle Cart" },
-  { value: "cart-checkout", label: "Checkout Cart" },
-  { value: "manage-subscription", label: "Manage Subscription" },
-  { value: "agent-send", label: "Send Agent Message" },
+export const ACTION_TYPE_OPTIONS: { value: ActionType; label: string; group?: string }[] = [
+  { value: "link", label: "Link" },
+  { value: "open-modal", label: "Open Modal", group: "Open" },
+  { value: "show-hide", label: "Show / Hide", group: "Open" },
+  { value: "add-to-cart", label: "Add to Cart", group: "Commerce" },
+  { value: "toggle-cart", label: "Toggle Cart", group: "Commerce" },
+  { value: "cart-checkout", label: "Checkout Cart", group: "Commerce" },
+  { value: "manage-subscription", label: "Manage Subscription", group: "Commerce" },
+  { value: "toggle-theme", label: "Toggle light / dark", group: "System" },
+  { value: "copy-to-clipboard", label: "Copy to Clipboard", group: "System" },
+  { value: "download-file", label: "Download File", group: "System" },
+  { value: "agent-send", label: "Send Agent Message", group: "System" },
 ];

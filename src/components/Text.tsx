@@ -12,6 +12,7 @@ import {
   actionToHref,
   actionTarget,
   isHandlerAction,
+  isAnchorAction,
   type NodeAction,
 } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -154,7 +155,7 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   // Text-nodes needing runtime hooks (e.g. data-storefront-page-indicator) rely on this.
   applyAttrs(prop, props.attrs);
   const action = migrateAction(props);
-  if (isHandlerAction(action) || action?.type === "scroll-to") {
+  if (isHandlerAction(action) || isAnchorAction(action)) {
     addActionHandlers(prop, action, enabled);
   }
 

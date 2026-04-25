@@ -8,10 +8,8 @@ import { useInspectorPin } from "./InspectorPinContext";
 
 export function SectionPinButton({
   sectionId,
-  disabled,
 }: {
   sectionId: SectionId;
-  disabled: boolean;
 }) {
   const search = useAtomValue(SettingsSearchAtom);
   const { isPinned, togglePin } = useInspectorPin();
@@ -23,8 +21,7 @@ export function SectionPinButton({
   return (
     <button
       type="button"
-      className="text-sidebar-foreground/70 hover:text-sidebar-foreground inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded p-0 leading-none opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 disabled:cursor-not-allowed disabled:opacity-40"
-      disabled={disabled}
+      className="text-sidebar-foreground/70 hover:text-sidebar-foreground inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded p-0 leading-none opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
       onClick={e => {
         e.stopPropagation();
         e.preventDefault();

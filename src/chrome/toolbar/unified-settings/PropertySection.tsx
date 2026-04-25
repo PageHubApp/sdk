@@ -1,13 +1,9 @@
 /**
  * PropertySection — renders a section declaratively from PropertyDefs.
  *
- * STATIC: This component renders once and stays mounted. It reads the current
- * node's className via useNode() to evaluate showWhen conditions. No props
- * from the parent cause rebuilds.
- *
- * Sections ALWAYS render their accordion wrapper — they never unmount.
- * When a section's hideKey is in the hidden set or it has no visible properties,
- * the accordion renders in a disabled (collapsed, grayed-out) state.
+ * Reads the current node's className via useNode() to evaluate showWhen
+ * conditions. When a section's hideKey is in the hidden set or it has no
+ * visible properties, the section renders nothing.
  */
 import React, { useMemo } from "react";
 import { createPortal } from "react-dom";
@@ -86,10 +82,10 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
 
   if (!section) return null;
 
-  // Section is disabled when its hideKey is active OR it has no visible content
+  // Section renders nothing when its hideKey is active OR it has no visible content
   const isHidden = !!(section.hideKey && hiddenKeys.has(section.hideKey));
   const isEmpty = main.length === 0 && advancedGroups.size === 0;
-  const isDisabled = isHidden || isEmpty;
+  if (isHidden || isEmpty) return null;
 
   const renderFlatAdvanced = () => (
     <ToolbarSection full={section.advancedColumns ?? 1} collapsible={false} nested>
@@ -173,8 +169,7 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
         icon={section.icon}
         help={section.help}
         defaultOpen={section.defaultOpen}
-        disabled={isDisabled}
-        header={<SectionPinButton sectionId={sectionId} disabled={isDisabled} />}
+        header={<SectionPinButton sectionId={sectionId} />}
       >
         {scrollBody}
       </ToolbarSection>
