@@ -15,16 +15,19 @@ import { buildMorphContext } from "./helpers";
 
 import { detectStructural } from "./detectors/detectStructural";
 import { detectGrandparent } from "./detectors/detectGrandparent";
+import { detectCardChild } from "./detectors/detectCardChild";
 import { detectFallback } from "./detectors/detectFallback";
 
 import { morphToSection } from "./executors/morphToSection";
 import { morphToContent } from "./executors/morphToContent";
 import { morphToCard } from "./executors/morphToCard";
+import { morphToSegment } from "./executors/morphToSegment";
 import { morphToPlainContainer } from "./executors/morphToPlainContainer";
 
 const DETECTOR_PIPELINE: Detector[] = [
   detectStructural,
   detectGrandparent,
+  detectCardChild,
   detectFallback,
 ];
 
@@ -32,6 +35,7 @@ const EXECUTORS: Record<AutomaticIntentKind, Executor<any>> = {
   section: morphToSection,
   content: morphToContent,
   card: morphToCard,
+  segment: morphToSegment,
   plainContainer: morphToPlainContainer,
   // Remaining kinds are wired up as their executors land.
   hero: morphToPlainContainer,

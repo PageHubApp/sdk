@@ -12,3 +12,5 @@ export const CARD_CLASSNAME =
   "flex flex-col gap-space-md flex-1 min-w-0 bg-base-200 text-base-content rounded-box p-space-md shadow-sm overflow-hidden";
 
 export const PLAIN_CONTAINER_CLASSNAME = "flex flex-col gap-space-md w-full";
+
+export const SEGMENT_CLASSNAME = "flex flex-col gap-space-xs w-full";

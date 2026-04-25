@@ -126,6 +126,15 @@ body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="component"
   box-shadow: var(--pagehub-outline-halo);
 }
 
+/* Hover indicator — subtle dashed outline on the node a click/right-click would
+   select. data-hover is set by RenderNodeDataStates only when hovered AND not
+   selected, so we don't need :not([data-selected]) here. Lower-opacity accent
+   so it reads as "preview" vs. the solid selected outline. */
+.pagehub-sdk-root [data-enabled="true"][data-hover="true"] {
+  outline: 1px dashed color-mix(in oklab, var(--ph-editor-accent) 60%, transparent) !important;
+  outline-offset: var(--pagehub-editor-outline-offset, -1px);
+}
+
 .pagehub-sdk-root img[data-enabled="true"][data-selected="true"] {
   outline: 1px solid var(--ph-editor-accent) !important;
   outline-offset: -1px;

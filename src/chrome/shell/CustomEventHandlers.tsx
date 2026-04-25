@@ -37,7 +37,9 @@ function isPointerInsideViewport(): boolean {
   if (typeof document === "undefined" || !lastDragPointer) return true;
   const { x, y } = lastDragPointer;
   const el = document.elementFromPoint(x, y) as HTMLElement | null;
-  return !!el?.closest("#viewport");
+  // Accept the normal #viewport AND the components canvas surface (canvas mode
+  // moves component DOM out of #viewport into the canvas surface).
+  return !!el?.closest("#viewport, [data-canvas-zoom-component-canvas]");
 }
 
 // 1×1 transparent PNG — fed to dataTransfer.setDragImage() so the browser shows

@@ -222,7 +222,7 @@ export const ToolbarLabel = ({
         }}
         onContextMenu={hasValue ? handleRemove : undefined}
         data-has-value={hasValue || undefined}
-        className={`bg-base-content block size-1.5 cursor-pointer rounded-[1px] transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
+        className={`bg-base-content block size-2 cursor-pointer rounded-[1px] transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
       />
     );
     const tip = hasValue ? `${bpLabel}: ${valText}` : `${bpLabel}: none`;
@@ -239,7 +239,7 @@ export const ToolbarLabel = ({
         }}
         onContextMenu={hasValue ? handleRemove : undefined}
         data-has-value={hasValue || undefined}
-        className={`bg-base-content block size-1.5 cursor-pointer rounded-[1px] transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
+        className={`bg-base-content block size-2 cursor-pointer rounded-[1px] transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
         data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
         data-tooltip-content={tip}
         data-tooltip-place="top"

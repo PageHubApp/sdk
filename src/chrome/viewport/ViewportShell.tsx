@@ -30,6 +30,7 @@ import { useAutoOpenSidebar } from "../hooks/useAutoOpenSidebar";
 import { useComponentSync } from "../hooks/useComponentSync";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { DeviceOffline } from "../toolbar/DeviceOffline";
+import { ComponentCanvasViewport } from "./ComponentCanvasViewport";
 import { ComponentEditorTabs } from "./ComponentEditorTabs";
 import { DeviceScrollbar } from "./DeviceScrollbar";
 import { DeviceSelector } from "./DeviceSelector";
@@ -507,6 +508,10 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           >
             <ComponentEditorTabs />
           </div>
+        )}
+
+        {enabled && viewMode === "canvas" && (
+          <ComponentCanvasViewport className="absolute inset-0 z-30" />
         )}
 
         {enabled && device && view === "mobile" && (

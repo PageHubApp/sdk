@@ -38,36 +38,29 @@ export const MobileDesktopLabels = ({
   return (
     <div
       role="presentation"
-      className="hidden flex-col gap-px has-[[data-has-value]]:flex"
+      className="ml-[1.5px] hidden flex-col gap-0.5 opacity-50 transition-opacity hover:opacity-100 has-[[data-has-value]]:flex"
       onClick={e => e.stopPropagation()}
     >
-      {(
-        [
-          ["mobile", "sm", "desktop"],
-          ["lg", "xl", "2xl"],
-        ] as const
-      ).map((row, i) => (
-        <div key={i} className="flex gap-px">
-          {row.map(bp => (
-            <ToolbarLabel
-              key={bp}
-              lab={lab}
-              prefix={prefix}
-              suffix={suffix}
-              viewValue={bp}
-              propType={propType}
-              propKey={propKey}
-              index={index}
-              propItemKey={propItemKey}
-              icon={icon}
-              showDeleteIcon={showDeleteIcon}
-              showVarSelector={showVarSelector}
-              varSelectorPrefix={varSelectorPrefix}
-              iconOnly
-            />
-          ))}
-        </div>
-      ))}
+      <div className="flex gap-0.5">
+        {(["mobile", "sm", "desktop", "lg", "xl", "2xl"] as const).map(bp => (
+          <ToolbarLabel
+            key={bp}
+            lab={lab}
+            prefix={prefix}
+            suffix={suffix}
+            viewValue={bp}
+            propType={propType}
+            propKey={propKey}
+            index={index}
+            propItemKey={propItemKey}
+            icon={icon}
+            showDeleteIcon={showDeleteIcon}
+            showVarSelector={showVarSelector}
+            varSelectorPrefix={varSelectorPrefix}
+            iconOnly
+          />
+        ))}
+      </div>
     </div>
   );
 };

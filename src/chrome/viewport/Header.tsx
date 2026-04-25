@@ -563,27 +563,23 @@ export const Header = () => {
         </Item>
 
         <Item
-          ariaLabel={`Switch to ${viewMode === "page" ? "Component" : "Page"} Editor`}
+          ariaLabel={`Switch to ${viewMode === "page" ? "Components" : "Page"} Editor`}
           data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content={`Switch to ${viewMode === "page" ? "Component" : "Page"} Editor`}
+          data-tooltip-content={`Switch to ${viewMode === "page" ? "Components" : "Page"} Editor`}
           data-tooltip-place="bottom"
           data-tooltip-offset={10}
           onClick={() => {
-            const newMode = viewMode === "page" ? "component" : "page";
+            const newMode = viewMode === "page" ? "canvas" : "page";
             setViewMode(newMode);
             actions.selectNode(null);
             const rootNode = query.node(ROOT_NODE).get();
 
             if (newMode === "page") {
               // Switching to page view - restore normal state
-              // Deselect any active node
-
-              // Un-isolate to show all pages
               import("@/utils/lib").then(({ isolatePageInTree }) => {
                 isolatePageInTree(query, actions, null, () => {});
               });
 
-              // Show headers, footers, pages — hide components
               rootNode.data.nodes.forEach(nodeId => {
                 const node = query.node(nodeId).get();
                 const nodeType = node?.data?.props?.type;
@@ -591,25 +587,23 @@ export const Header = () => {
                 if (nodeType === "header" || nodeType === "footer" || nodeType === "page") {
                   actions.setHidden(nodeId, false);
                   actions.setProp(nodeId, prop => (prop.hidden = false));
-                } else if (nodeType === "component") {
+                } else if (nodeType === "component" || nodeType === "componentCanvas") {
                   actions.setHidden(nodeId, true);
                   actions.setProp(nodeId, prop => (prop.hidden = true));
                 }
               });
             } else {
-              // Switching to component view — keep pages visible by default (mirrors
-              // close-last-tab behavior). ComponentEditorTabs' effect will isolate
-              // the active tab if there is one, hiding pages at that point.
+              // Entering canvas mode: hide pages/header/footer, show all components + canvas singleton.
               rootNode.data.nodes.forEach(nodeId => {
                 const node = query.node(nodeId).get();
                 const nodeType = node?.data?.props?.type;
 
                 if (nodeType === "header" || nodeType === "footer" || nodeType === "page") {
-                  actions.setHidden(nodeId, false);
-                  actions.setProp(nodeId, prop => (prop.hidden = false));
-                } else if (nodeType === "component") {
                   actions.setHidden(nodeId, true);
                   actions.setProp(nodeId, prop => (prop.hidden = true));
+                } else if (nodeType === "component" || nodeType === "componentCanvas") {
+                  actions.setHidden(nodeId, false);
+                  actions.setProp(nodeId, prop => (prop.hidden = false));
                 }
               });
             }

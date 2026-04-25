@@ -31,7 +31,7 @@ import { Text } from "./Text";
 import { Image } from "./Image";
 
 export const toHTML: ToHTMLFn = (props, children, ctx) => {
-  if (props.type === "component") return "";
+  if (props.type === "component" || props.type === "componentCanvas") return "";
 
   let t = "div";
   if (props.type === "page") t = "article";

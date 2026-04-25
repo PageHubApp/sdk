@@ -104,6 +104,15 @@ const lorem = new LoremIpsum({
   wordsPerSentence: { max: 8, min: 4 },
 });
 
+const titleLorem = new LoremIpsum({
+  wordsPerSentence: { max: 5, min: 3 },
+});
+
+const paragraphLorem = new LoremIpsum({
+  sentencesPerParagraph: { max: 5, min: 4 },
+  wordsPerSentence: { max: 14, min: 8 },
+});
+
 export const TextDef = defineComponent(
   {
     name: "Text",
@@ -138,7 +147,7 @@ export const TextDef = defineComponent(
         icon: MdShortText,
         description: "Large heading text.",
         props: {
-          text: lorem.generateSentences(1),
+          text: titleLorem.generateWords(4),
           className: "text-2xl md:text-4xl",
         },
       },
@@ -157,7 +166,7 @@ export const TextDef = defineComponent(
         description: "Body text block.",
         props: {
           tagName: "p",
-          text: lorem.generateParagraphs(1),
+          text: paragraphLorem.generateParagraphs(1),
         },
       },
     ],

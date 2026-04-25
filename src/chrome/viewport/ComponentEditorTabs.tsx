@@ -1,8 +1,9 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { Element, useEditor } from "@craftjs/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { TbBoxModel2, TbLayoutGridAdd, TbX } from "react-icons/tb";
+import { TbArrowLeft, TbBoxModel2, TbLayoutGridAdd, TbX } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
+import { useSetAtomState } from "../../utils/atoms";
 import {
   ComponentsAtom,
   OpenComponentEditorAtom,
@@ -12,6 +13,7 @@ import {
 import { Container } from "../../components/Container";
 import { useEditorStore } from "../../core/store";
 import { Text } from "../../components/Text";
+import { phStorage } from "../../utils/phStorage";
 
 interface ComponentEditorTab {
   id: string; // The component node ID
@@ -35,6 +37,9 @@ const isolateForComponentEditing = (query, actions, targetContainerId, setIsolat
       actions.setHidden(nodeId, hide);
       actions.setProp(nodeId, prop => (prop.hidden = hide));
       console.log("[isolate]", nodeId, t, hide ? "HIDDEN" : "VISIBLE");
+    } else if (t === "componentCanvas") {
+      actions.setHidden(nodeId, true);
+      actions.setProp(nodeId, prop => (prop.hidden = true));
     }
   });
   const target = query.node(targetContainerId).get();
@@ -65,7 +70,7 @@ const restorePageMode = (query, actions, setIsolate) => {
     if (t === "header" || t === "footer" || t === "page") {
       actions.setHidden(nodeId, false);
       actions.setProp(nodeId, prop => (prop.hidden = false));
-    } else if (t === "component") {
+    } else if (t === "component" || t === "componentCanvas") {
       actions.setHidden(nodeId, true);
       actions.setProp(nodeId, prop => (prop.hidden = true));
     }
@@ -86,6 +91,26 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
   const [components, setComponents] = useAtomState(ComponentsAtom);
   const processingRef = useRef<string | null>(null);
   const viewMode = useAtomValue(ViewModeAtom);
+  const setViewMode = useSetAtomState(ViewModeAtom);
+
+  const handleBackToCanvas = useCallback(() => {
+    phStorage.set("component-mode-origin", "");
+    // Un-hide all components + canvas singleton; hide pages/header/footer.
+    const root = query.node(ROOT_NODE).get();
+    root.data.nodes.forEach(nodeId => {
+      const node = query.node(nodeId).get();
+      const t = node?.data?.props?.type;
+      if (t === "header" || t === "footer" || t === "page") {
+        actions.setHidden(nodeId, true);
+        actions.setProp(nodeId, prop => (prop.hidden = true));
+      } else if (t === "component" || t === "componentCanvas") {
+        actions.setHidden(nodeId, false);
+        actions.setProp(nodeId, prop => (prop.hidden = false));
+      }
+    });
+    setIsolate(null);
+    setViewMode("canvas");
+  }, [query, actions, setIsolate, setViewMode]);
 
   // Open or switch to a component editor.
   // componentId is the CONTAINER node ID (type="component"), or null for a new component.
@@ -323,6 +348,15 @@ export function ComponentEditorTabs({ className = "" }: ComponentEditorTabsProps
       role="region"
       aria-label="Open components"
     >
+      <button
+        type="button"
+        onClick={handleBackToCanvas}
+        className="border-base-300 bg-base-200/60 hover:bg-base-200 text-base-content/80 hover:text-base-content ml-2 flex h-7 shrink-0 items-center gap-1.5 rounded-md border px-2 text-xs font-medium transition-colors"
+        title="Back to canvas"
+      >
+        <TbArrowLeft className="size-3.5" />
+        Canvas
+      </button>
       <div
         className="scrollbar-hide flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-2"
         role="tablist"

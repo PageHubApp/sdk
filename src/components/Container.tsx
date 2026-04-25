@@ -199,9 +199,17 @@ export function useContainerRender(
   if (props.type === "component") {
     if (!enabled) {
       className = `${className} hidden`;
-    } else if (viewMode === "page") {
+    } else if (viewMode === "page" || viewMode === "preview") {
       className = `${className} hidden`;
     } else if (viewMode === "component" && hasPageIsolation(isolate) && isolate !== id) {
+      className = `${className} hidden`;
+    }
+    // viewMode === "canvas": always visible; ComponentCanvasViewport positions via inline style
+  }
+
+  // The componentCanvas singleton holds annotations; only visible in canvas mode
+  if (props.type === "componentCanvas") {
+    if (!enabled || viewMode !== "canvas") {
       className = `${className} hidden`;
     }
   }
@@ -243,6 +251,8 @@ export function useContainerRender(
       ...(props.root?.style ? CSStoObj(props.root.style) || {} : {}),
     },
     className,
+    ...(props.type === "component" ? { "data-component-container": "true" } : {}),
+    ...(props.type === "componentCanvas" ? { "data-component-canvas": "true" } : {}),
     children: (
       <RenderPattern
         props={props}
@@ -267,7 +277,7 @@ export function useContainerRender(
                   ? "Global header"
                   : props.type === "footer"
                     ? "Global footer"
-                    : "Empty container"
+                    : name
             }
             selectedLabel={
               props.type === "page" ? "Drop sections or right-click" : "Drop here or right-click"

@@ -110,7 +110,7 @@ export function useEditorSidebarDockLeft(): boolean {
   return useAtomValue(SideBarAtom);
 }
 /** Canvas scope for component editor / isolation — not the same as responsive viewport `ViewMode` in store.tsx */
-export type EditorCanvasViewMode = "page" | "preview" | "component";
+export type EditorCanvasViewMode = "page" | "preview" | "component" | "canvas";
 export const ViewModeAtom = atom<EditorCanvasViewMode>("viewMode", "page");
 export type OpenComponentEditorState = null | {
   componentId?: string;

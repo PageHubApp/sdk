@@ -71,27 +71,28 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
         "Master Component";
 
       const handleEditComponent = () => {
-        const masterNode = query.node(contentNodeId).get();
-        const containerId = masterNode?.data?.parent;
-        const container = containerId ? query.node(containerId).get() : null;
-        console.log(
-          "[editLinked] contentNodeId:",
-          contentNodeId,
-          "containerId:",
-          containerId,
-          "container type:",
-          container?.data?.props?.type,
-          "container children:",
-          container?.data?.nodes
-        );
-        if (!container || container.data.props?.type !== "component") {
-          console.log("[editLinked] BAIL — no valid container");
+        // Walk up from the master node until we find the type="component" wrapper.
+        // Older code assumed the master is a direct child of the wrapper, but
+        // converted-from-section components nest the master inside a section
+        // first, so the walk needs to keep going.
+        let cursorId: string | undefined = contentNodeId;
+        let foundContainerId: string | undefined;
+        for (let depth = 0; depth < 6 && cursorId; depth++) {
+          const node = query.node(cursorId).get();
+          if (node?.data?.props?.type === "component") {
+            foundContainerId = cursorId;
+            break;
+          }
+          cursorId = node?.data?.parent;
+        }
+        if (!foundContainerId) {
+          console.log("[editLinked] BAIL — no component ancestor found from", contentNodeId);
           return;
         }
 
         actions.selectNode(null);
         setViewMode("component");
-        setOpenComponentEditor({ componentId: containerId, componentName });
+        setOpenComponentEditor({ componentId: foundContainerId, componentName });
       };
 
       return (

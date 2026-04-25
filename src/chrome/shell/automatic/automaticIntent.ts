@@ -28,6 +28,7 @@ export type AutomaticIntent =
   | { kind: "section"; parentId: string }
   | { kind: "content"; parentId: string }
   | { kind: "card"; parentId: string }
+  | { kind: "segment"; parentId: string }
   | { kind: "hero"; parentId: string; theme?: "light" | "dark" }
   | { kind: "cardBody"; parentId: string; slot: "title" | "body" | "actions" }
   | { kind: "stat"; parentId: string }

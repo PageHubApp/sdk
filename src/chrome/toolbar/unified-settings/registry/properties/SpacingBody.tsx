@@ -18,7 +18,7 @@ export function SpacingBody() {
           propTag="p"
           allowedTypes={SPACING_TYPES}
           label="All"
-          labelWidth="w-12"
+          labelWidth="w-16"
           showVarSelector
           inline
         />
@@ -27,7 +27,7 @@ export function SpacingBody() {
           propTag="px"
           allowedTypes={SPACING_TYPES}
           label="X"
-          labelWidth="w-12"
+          labelWidth="w-16"
           showVarSelector
           inline
         />
@@ -36,7 +36,7 @@ export function SpacingBody() {
           propTag="py"
           allowedTypes={SPACING_TYPES}
           label="Y"
-          labelWidth="w-12"
+          labelWidth="w-16"
           showVarSelector
           inline
         />
@@ -48,7 +48,7 @@ export function SpacingBody() {
           propTag="m"
           allowedTypes={SPACING_TYPES}
           label="All"
-          labelWidth="w-12"
+          labelWidth="w-16"
           showVarSelector
           inline
         />
@@ -57,7 +57,7 @@ export function SpacingBody() {
           propTag="mx"
           allowedTypes={SPACING_TYPES}
           label="X"
-          labelWidth="w-12"
+          labelWidth="w-16"
           showVarSelector
           inline
         />
@@ -66,7 +66,7 @@ export function SpacingBody() {
           propTag="my"
           allowedTypes={SPACING_TYPES}
           label="Y"
-          labelWidth="w-12"
+          labelWidth="w-16"
           showVarSelector
           inline
         />
@@ -80,7 +80,7 @@ export function SpacingBody() {
               propTag="pt"
               allowedTypes={SPACING_TYPES}
               label="Top"
-              labelWidth="w-12"
+              labelWidth="w-16"
               showVarSelector
               inline
             />
@@ -89,7 +89,7 @@ export function SpacingBody() {
               propTag="pb"
               allowedTypes={SPACING_TYPES}
               label="Bottom"
-              labelWidth="w-12"
+              labelWidth="w-16"
               showVarSelector
               inline
             />
@@ -98,7 +98,7 @@ export function SpacingBody() {
               propTag="pl"
               allowedTypes={SPACING_TYPES}
               label="Left"
-              labelWidth="w-12"
+              labelWidth="w-16"
               showVarSelector
               inline
             />
@@ -107,7 +107,7 @@ export function SpacingBody() {
               propTag="pr"
               allowedTypes={SPACING_TYPES}
               label="Right"
-              labelWidth="w-12"
+              labelWidth="w-16"
               showVarSelector
               inline
             />
@@ -119,7 +119,7 @@ export function SpacingBody() {
               propTag="mt"
               allowedTypes={SPACING_TYPES}
               label="Top"
-              labelWidth="w-12"
+              labelWidth="w-16"
               showVarSelector
               inline
             />
@@ -128,7 +128,7 @@ export function SpacingBody() {
               propTag="mb"
               allowedTypes={SPACING_TYPES}
               label="Bottom"
-              labelWidth="w-12"
+              labelWidth="w-16"
               showVarSelector
               inline
             />
@@ -137,7 +137,7 @@ export function SpacingBody() {
               propTag="ml"
               allowedTypes={SPACING_TYPES}
               label="Left"
-              labelWidth="w-12"
+              labelWidth="w-16"
               showVarSelector
               inline
             />
@@ -146,7 +146,7 @@ export function SpacingBody() {
               propTag="mr"
               allowedTypes={SPACING_TYPES}
               label="Right"
-              labelWidth="w-12"
+              labelWidth="w-16"
               showVarSelector
               inline
             />

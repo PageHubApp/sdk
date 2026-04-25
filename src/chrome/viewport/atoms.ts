@@ -48,3 +48,10 @@ export const BreakpointZoomAtom = atom(
 export const EnabledAtom = atom("enabled", true);
 
 export const InitialLoadCompleteAtom = atom("initialLoadComplete", false);
+
+export const ComponentCanvasZoomAtom = atom(
+  "componentCanvasZoom",
+  readSavedZoom("editor-component-canvas-zoom", 0.5)
+);
+
+export const ComponentCanvasPanAtom = atom("componentCanvasPan", { x: 80, y: 80 });
