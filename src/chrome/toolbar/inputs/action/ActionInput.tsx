@@ -35,6 +35,7 @@ const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
   "toggle-cart": { type: "toggle-cart" },
   "cart-checkout": { type: "cart-checkout" },
   "manage-subscription": { type: "manage-subscription" },
+  "agent-send": { type: "agent-send", field: "agentMessage" },
 };
 
 export default function ActionInput() {

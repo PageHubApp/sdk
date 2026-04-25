@@ -17,6 +17,7 @@ import { resolveConfig } from "./config";
 import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { PageHubProvider, useHasSDKProvider, useSDK } from "./core/context";
 import { EventEmitter } from "./core/events";
+import { getSaveCoordinator } from "./core/saveCoordinator";
 import { CustomComponentsContext, processForEditor, type ResolvedComponentDef } from "./define";
 import { renderToHTML } from "./static-renderer";
 import type {
@@ -132,61 +133,90 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
 
   const [_, setUnsavedChanges] = useAtomState(UnsavedChangesAtom);
 
-  // Listen for save events from the Instance API
+  // Wire the save coordinator — single authoritative owner of the save
+  // lifecycle. `instance.save()` and the legacy `emitter.emit("save")`
+  // both funnel through here so callers get one Promise + one mutex.
   useEffect(() => {
-    const unsubSave = emitter.on("save", async (meta?: any) => {
-      try {
-        const json = safeSerialize(query);
-        if (!json) return;
-        const compressed = await compressAsync(json);
-        const { html, classes, scrollObserverScript, renderError } = renderToHTML(json, {
-          compressed: false,
-        });
-        if (renderError) {
-          setEditorSaveBanner({ message: renderError });
-        } else {
-          setEditorSaveBanner(null);
-        }
+    const coordinator = getSaveCoordinator(emitter);
 
-        // Build per-page shards — each page as its own compressed piece
-        let shards: PageData["shards"] | undefined;
-        try {
-          const flat = JSON.parse(json);
-          const pageIds = listPageNodeIds(query);
-          if (pageIds.length > 0) {
-            const sharedShard = extractSharedShard(flat);
-            const pages: Record<string, string> = {};
-            for (const pageId of pageIds) {
-              if (flat[pageId]) {
-                pages[pageId] = await compressAsync(JSON.stringify(extractPageShard(flat, pageId)));
-              }
-            }
-            shards = {
-              shared: await compressAsync(JSON.stringify(sharedShard)),
-              pages,
-              loadedPageIds: pageIds,
-            };
-          }
-        } catch (shardErr) {
-          console.warn(
-            "[PageHub] Shard extraction failed, falling back to full-tree save:",
-            shardErr
-          );
-        }
-
-        const pageData: PageData = {
-          content: compressed,
-          html,
-          classes,
-          scrollObserverScript,
-          shards,
-        };
-        await config.callbacks.onSave(pageData, meta);
-        setUnsavedChanges(null);
-      } catch (err) {
-        console.error("[PageHub] Save error:", err);
-        emitter.emit("error", err);
+    const buildPageData = async (): Promise<PageData | null> => {
+      const json = safeSerialize(query);
+      if (!json) return null;
+      const compressed = await compressAsync(json);
+      const { html, classes, scrollObserverScript, renderError } = renderToHTML(json, {
+        compressed: false,
+      });
+      if (renderError) {
+        setEditorSaveBanner({ message: renderError });
+      } else {
+        setEditorSaveBanner(null);
       }
+
+      // Build per-page shards — each page as its own compressed piece
+      let shards: PageData["shards"] | undefined;
+      try {
+        const flat = JSON.parse(json);
+        const pageIds = listPageNodeIds(query);
+        if (pageIds.length > 0) {
+          const sharedShard = extractSharedShard(flat);
+          const pages: Record<string, string> = {};
+          for (const pageId of pageIds) {
+            if (flat[pageId]) {
+              pages[pageId] = await compressAsync(JSON.stringify(extractPageShard(flat, pageId)));
+            }
+          }
+          shards = {
+            shared: await compressAsync(JSON.stringify(sharedShard)),
+            pages,
+            loadedPageIds: pageIds,
+          };
+        }
+      } catch (shardErr) {
+        console.warn(
+          "[PageHub] Shard extraction failed, falling back to full-tree save:",
+          shardErr
+        );
+      }
+
+      return {
+        content: compressed,
+        html,
+        classes,
+        scrollObserverScript,
+        shards,
+      };
+    };
+
+    coordinator.configure({
+      buildPageData,
+      onSave: config.callbacks.onSave as any,
+      applyServerContent: (content: any) => {
+        actions.deserialize(typeof content === "string" ? content : JSON.stringify(content));
+      },
+      onConflictReload: config.callbacks.onConflictReload,
+      notifyUpdatedAt: (updatedAt: string) => {
+        emitter.emit("updated_at_changed", updatedAt);
+      },
+      onSaveSettled: () => {
+        setUnsavedChanges(null);
+      },
+      onConflict: err => {
+        emitter.emit("save_conflict", err);
+      },
+    });
+
+    // Back-compat shim: the legacy emit("save") still fires the coordinator
+    // (autosave timers, third-party hosts that haven't migrated to
+    // `instance.save()`). Errors here are swallowed since the legacy callers
+    // had no way to await a result anyway — typed callers should use
+    // `instance.save()` to get rejections back.
+    const unsubSave = emitter.on("save", (meta?: any) => {
+      coordinator.save(meta).catch(err => {
+        // Conflicts already fanned out via `save_conflict` by the
+        // coordinator's `onConflict` notifier — don't double-emit on error.
+        if (err && err.name === "SaveConflictError") return;
+        emitter.emit("error", err);
+      });
     });
 
     // Listen for load events

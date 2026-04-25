@@ -85,7 +85,7 @@ export const ListDef = defineComponent(
         props: {
           ordered: false,
           markerStyle: "icon",
-          markerIcon: { value: "ref-google:check_circle", size: "w-6 h-6" },
+          markerIcon: { value: "ref-icon:tb/TbCircleCheck", size: "w-6 h-6" },
           className: "list-none m-0 flex w-full flex-col gap-space-sm p-0 text-base-content",
         },
       },

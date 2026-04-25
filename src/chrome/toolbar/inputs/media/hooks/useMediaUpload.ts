@@ -8,7 +8,6 @@ import { getUploadAccept, MediaUploadError, uploadImageToCdn } from "@/utils/med
 import { useSDK } from "@/core/context";
 import { useImageDrop } from "@/chrome/hooks/useImageDrop";
 import { getSiteId } from "@/utils/pageNavigation";
-import { saveAndWait } from "@/utils/saveAndWait";
 import {
   cleanSvg,
   type AddMode,
@@ -28,7 +27,7 @@ export function useMediaUpload({
   generateMetadataForImage,
 }: UseMediaUploadOptions) {
   const { query, actions } = useEditor();
-  const { config, emitter } = useSDK();
+  const { config, save: sdkSave } = useSDK();
 
   /** Ensure the current page has been persisted (has a `_id` + URL) before
    *  attaching media. On `/build` (brand new page), this triggers the host
@@ -36,21 +35,17 @@ export function useMediaUpload({
    *  we mutate `pageMedia`. No-op when already saved. Concurrent callers
    *  (e.g. multi-file upload, upload while paste pending) share one in-flight
    *  promise so we don't fire `emit("save")` multiple times in parallel. */
-  const ensureSavePromiseRef = useRef<Promise<void> | null>(null);
   const ensureSavedPage = async () => {
     if (getSiteId()) return;
-    if (!ensureSavePromiseRef.current) {
-      ensureSavePromiseRef.current = saveAndWait(emitter)
-        .catch(e => {
-          if (getSiteId()) return;
-          console.warn("[MediaManager] page save before upload failed:", e);
-          throw e;
-        })
-        .finally(() => {
-          ensureSavePromiseRef.current = null;
-        });
+    // Coordinator already coalesces concurrent callers — no need for a
+    // local in-flight ref. Just await the result.
+    try {
+      await sdkSave({ isDraft: true });
+    } catch (e) {
+      if (getSiteId()) return;
+      console.warn("[MediaManager] page save before upload failed:", e);
+      throw e;
     }
-    await ensureSavePromiseRef.current;
     if (!getSiteId()) {
       throw new Error("Site is not saved yet. Please wait for save to finish, then retry upload.");
     }

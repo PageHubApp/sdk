@@ -5,12 +5,13 @@
  * SDK components without prop drilling.
  */
 
-import React, { createContext, useContext, useLayoutEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from "react";
 import type { ResolvedConfig } from "../config";
 import { EventEmitter } from "./events";
+import { getSaveCoordinator } from "./saveCoordinator";
 import { setPageHubApiBaseUrl } from "./apiConfig";
 import { EditorStoreProvider } from "./store";
-import type { PageHubFeatures, PageHubTheme } from "../types";
+import type { PageHubFeatures, PageHubTheme, SaveMeta, SaveResult, SaveStatus } from "../types";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import {
   PAGEHUB_RTT_GLOBAL_ID,
@@ -26,6 +27,16 @@ interface SDKContextValue {
   setFeatures: (features: Partial<PageHubFeatures>) => void;
   readOnly: boolean;
   setReadOnly: (readOnly: boolean) => void;
+  /**
+   * Authoritative save — returns a Promise that resolves with
+   * `{ pageId, updatedAt }` or rejects with `SaveConflictError` /
+   * `SaveEmptyError` / `SaveFailedError`. Concurrent calls coalesce.
+   */
+  save: (options?: SaveMeta) => Promise<SaveResult>;
+  /** Subscribe to save status (drives the editor's save indicator). */
+  subscribeSaveStatus: (handler: (status: SaveStatus) => void) => () => void;
+  /** Tell the SDK that the page list is stale; PageSelector etc. refetch. */
+  invalidatePageList: () => void;
 }
 
 const SDKContext = createContext<SDKContextValue | null>(null);
@@ -91,6 +102,19 @@ export function PageHubProvider({ config, emitter, children }: PageHubProviderPr
     return () => setPageHubApiBaseUrl("");
   }, [config.apiBaseUrl]);
 
+  const save = useCallback(
+    (opts?: SaveMeta) => getSaveCoordinator(emitter).save(opts),
+    [emitter]
+  );
+  const subscribeSaveStatus = useCallback(
+    (handler: (status: SaveStatus) => void) =>
+      getSaveCoordinator(emitter).subscribeStatus(handler),
+    [emitter]
+  );
+  const invalidatePageList = useCallback(() => {
+    emitter.emit("page_list_invalidated");
+  }, [emitter]);
+
   const value = useMemo<SDKContextValue>(
     () => ({
       config,
@@ -101,8 +125,11 @@ export function PageHubProvider({ config, emitter, children }: PageHubProviderPr
       setFeatures,
       readOnly,
       setReadOnly,
+      save,
+      subscribeSaveStatus,
+      invalidatePageList,
     }),
-    [config, emitter, theme, features, readOnly]
+    [config, emitter, theme, features, readOnly, save, subscribeSaveStatus, invalidatePageList]
   );
 
   return (

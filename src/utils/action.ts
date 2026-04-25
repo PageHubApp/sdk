@@ -21,7 +21,8 @@ export type ActionType =
   | "add-to-cart"
   | "toggle-cart"
   | "cart-checkout"
-  | "manage-subscription";
+  | "manage-subscription"
+  | "agent-send";
 
 interface ActionBase {
   type: ActionType;
@@ -114,6 +115,19 @@ export interface ManageSubscriptionAction extends ActionBase {
   type: "manage-subscription";
 }
 
+/**
+ * Send the current visitor-composed message to the nearest Agent chat.
+ * Reads the value of `[name=field]` inside the closest `[data-ph-agent-chat]`
+ * ancestor, dispatches `pagehub:agent-send` on that ancestor with `{ value }`,
+ * then clears the field. The `AgentChat` app component listens and calls its
+ * `send()` runtime.
+ */
+export interface AgentSendAction extends ActionBase {
+  type: "agent-send";
+  /** Name of the form field holding the composed message (default: "agentMessage"). */
+  field?: string;
+}
+
 /** Toggle `html.dark` and persist `ph-theme` (same contract as editor chrome + _document bootstrap). */
 export interface ToggleThemeAction extends ActionBase {
   type: "toggle-theme";
@@ -136,7 +150,8 @@ export type NodeAction =
   | AddToCartAction
   | ToggleCartAction
   | CartCheckoutAction
-  | ManageSubscriptionAction;
+  | ManageSubscriptionAction
+  | AgentSendAction;
 
 export type LinkTarget = "_self" | "_blank" | "_parent" | "_top";
 
@@ -166,7 +181,8 @@ export function isHandlerAction(
   | AddToCartAction
   | ToggleCartAction
   | CartCheckoutAction
-  | ManageSubscriptionAction {
+  | ManageSubscriptionAction
+  | AgentSendAction {
   if (!action) return false;
   return (
     action.type === "open-modal" ||
@@ -175,7 +191,8 @@ export function isHandlerAction(
     action.type === "add-to-cart" ||
     action.type === "toggle-cart" ||
     action.type === "cart-checkout" ||
-    action.type === "manage-subscription"
+    action.type === "manage-subscription" ||
+    action.type === "agent-send"
   );
 }
 
@@ -229,6 +246,7 @@ export function actionToHref(
     case "toggle-cart":
     case "cart-checkout":
     case "manage-subscription":
+    case "agent-send":
       return null; // Handled by JS
   }
 }
@@ -299,4 +317,5 @@ export const ACTION_TYPE_OPTIONS: { value: ActionType; label: string }[] = [
   { value: "toggle-cart", label: "Toggle Cart" },
   { value: "cart-checkout", label: "Checkout Cart" },
   { value: "manage-subscription", label: "Manage Subscription" },
+  { value: "agent-send", label: "Send Agent Message" },
 ];

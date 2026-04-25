@@ -46,6 +46,7 @@ import { resolveConfig } from "./config";
 import { PageHubProvider } from "./core/context";
 import { PageHubEditor } from "./editor";
 import { EventEmitter } from "./core/events";
+import { getSaveCoordinator } from "./core/saveCoordinator";
 import { renderToHTML } from "./static-renderer";
 import type { RenderToHTMLOptions, RenderToHTMLResult } from "./static-renderer";
 import { injectTailwindBrowser, removeTailwindBrowser } from "./core/tailwindBrowser";
@@ -57,6 +58,9 @@ import type {
   PageHubFeatures,
   PageHubInstance,
   PageHubTheme,
+  SaveMeta,
+  SaveResult,
+  SaveStatus,
 } from "./types";
 import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { setPageHubApiBaseUrl } from "./core/apiConfig";
@@ -150,9 +154,19 @@ function init(config: PageHubConfig): PageHubInstance {
 
   // ─── Instance API ───────────────────────────────────────────────────
 
+  const coordinator = getSaveCoordinator(emitter);
+
   const instance: PageHubInstance = {
-    async save(options = {}) {
-      emitter.emit("save", options);
+    save(options?: SaveMeta): Promise<SaveResult> {
+      return coordinator.save(options);
+    },
+
+    subscribeStatus(handler: (status: SaveStatus) => void) {
+      return coordinator.subscribeStatus(handler);
+    },
+
+    invalidatePageList() {
+      emitter.emit("page_list_invalidated");
     },
 
     async load(pageId: string) {
@@ -305,7 +319,14 @@ export type {
   PageHubLocale,
   PageHubTheme,
   PageSeo,
+  SaveMeta,
+  SaveResponse,
+  SaveResult,
+  SaveStatus,
 } from "./types";
+
+// Save error classes — value exports (consumers `instanceof` against these).
+export { SaveConflictError, SaveEmptyError, SaveFailedError } from "./types";
 
 // Alias
 export type { PageSeo as PageHubSeo } from "./types";

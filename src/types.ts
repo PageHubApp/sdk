@@ -75,14 +75,92 @@ export interface PageSeo {
   };
 }
 
+// ─── Save result + error contracts ────────────────────────────────────────────
+//
+// The host's `onSave` callback returns a `SaveResponse` — a discriminated union
+// covering success, optimistic-concurrency conflict, and arbitrary failure.
+// The SDK's save coordinator routes that into a typed Promise/error so every
+// caller (`instance.save()`, Clippy's "send", ConnectorsTab, etc.) gets the
+// same authoritative result instead of racing window CustomEvents.
+
+export interface SaveResult {
+  /** Site / page id (always present after a successful save). */
+  pageId: string;
+  /** Server-stamped `updatedAt` after the write. */
+  updatedAt: string;
+}
+
+export type SaveResponse =
+  | { ok: true; pageId: string; updatedAt: string }
+  | {
+      ok: false;
+      conflict: { currentUpdatedAt: string };
+      isDraft: boolean;
+    }
+  | { ok: false; reason: string; status?: number };
+
+/** Save metadata passed from the caller through `onSave`. */
+export interface SaveMeta {
+  isDraft?: boolean;
+}
+
+/** Status taps for the editor's save indicator (PublishButton, etc.). */
+export type SaveStatus = "idle" | "saving" | "saved" | "failed";
+
+export class SaveConflictError extends Error {
+  override name = "SaveConflictError";
+  constructor(
+    public currentUpdatedAt: string,
+    public reload: () => Promise<SaveResult>,
+    public override: () => Promise<SaveResult>,
+    public isDraft: boolean
+  ) {
+    super("Save conflict");
+  }
+}
+
+export class SaveEmptyError extends Error {
+  override name = "SaveEmptyError";
+  constructor() {
+    super("Nothing to save — editor canvas is empty or invalid");
+  }
+}
+
+export class SaveFailedError extends Error {
+  override name = "SaveFailedError";
+  constructor(
+    message: string,
+    public status?: number,
+    public override cause?: unknown
+  ) {
+    super(message);
+  }
+}
+
 // ─── Callbacks — the customer's integration points ────────────────────────────
 
 export interface PageHubCallbacks {
   /**
    * Called when the user saves a page.
-   * The customer persists `pageData` to their own database.
+   *
+   * Return a `SaveResponse` so the SDK coordinator can resolve the
+   * `instance.save()` promise with a typed result (success / conflict /
+   * failure). Returning `void` is supported for back-compat but is treated as
+   * a generic failure when the caller is awaiting a result.
    */
-  onSave: (pageData: PageData, meta?: { isDraft: boolean }) => Promise<void> | void;
+  onSave: (
+    pageData: PageData,
+    meta?: SaveMeta
+  ) => Promise<SaveResponse | void> | SaveResponse | void;
+
+  /**
+   * Optional: when the save coordinator surfaces a conflict and the caller
+   * picks "Reload", it invokes this to refetch the server's current draft.
+   * Return the deserialised CraftJS node map (raw object — the SDK will
+   * `JSON.stringify` + `actions.deserialize`) plus the new `updatedAt`.
+   * The SDK then retries the save against the fresh `expectedUpdatedAt`.
+   */
+  onConflictReload?: () => Promise<{ content: any; updatedAt: string } | null>;
 
   /**
    * Called when the editor needs to load a page.
@@ -427,8 +505,24 @@ export interface PageHubConfig {
 // ─── Instance API — returned by PageHub.init() ───────────────────────────────
 
 export interface PageHubInstance {
-  /** Programmatically save the current editor state */
-  save: (options?: { isDraft?: boolean }) => Promise<void>;
+  /**
+   * Programmatically save the current editor state. Resolves with the
+   * resulting `{ pageId, updatedAt }` and rejects with a typed error
+   * (`SaveConflictError`, `SaveEmptyError`, or `SaveFailedError`).
+   * Concurrent calls coalesce — the same `Promise<SaveResult>` is returned
+   * to every caller while one save is in flight.
+   */
+  save: (options?: SaveMeta) => Promise<SaveResult>;
+
+  /** Subscribe to save status (drives the toolbar save indicator). */
+  subscribeStatus: (handler: (status: SaveStatus) => void) => () => void;
+
+  /**
+   * Tell the SDK that the page list (page count / display names) is stale
+   * and any consumer rendering it should refetch. Used by host-side flows
+   * that mutate pages outside the canvas (rename, delete, settings save).
+   */
+  invalidatePageList: () => void;
 
   /** Load a page into the editor */
   load: (pageId: string) => Promise<void>;
@@ -492,11 +586,16 @@ export type PageHubEvent =
   | "modeChange"
   | "componentSelect"
   | "componentDeselect"
-  | "unsaved_changes";
+  | "unsaved_changes"
+  | "save_status"
+  | "save_conflict"
+  | "saved"
+  | "page_list_invalidated"
+  | "updated_at_changed";
 
 export interface PageHubEventMap {
   ready: [];
-  save: [options?: { isDraft?: boolean }];
+  save: [options?: SaveMeta];
   load: [pageData: PageData];
   change: [];
   publish: [pageData: PageData];
@@ -506,6 +605,34 @@ export interface PageHubEventMap {
   componentDeselect: [];
   /** Emitted when dirty state toggles (editor tracks serialized graph when dirty). */
   unsaved_changes: [dirty: boolean];
+  /** Save coordinator status taps — drives `<SaveIndicator />` etc. */
+  save_status: [status: SaveStatus];
+  /**
+   * Save coordinator hit a 409 — error carries bound `reload()` /
+   * `override()` retry methods. Modal hook listens for this and offers
+   * the user a choice without dispatching window events.
+   */
+  save_conflict: [error: SaveConflictError];
+  /**
+   * Save succeeded — carries the host's full response payload (e.g. the
+   * persisted page document). Replaces the legacy `pagehub:saved` window
+   * event whose `detail` was used by panels (e.g. EditorPublishPanel) to
+   * populate site metadata. Necessary because nested zedux ecosystems mean
+   * a host-side `setSettings` doesn't always reach atom subscribers
+   * mounted inside the SDK's inner `EcosystemProvider`.
+   */
+  saved: [data: any];
+  /**
+   * Page list (page count / display names) is stale; consumers rendering
+   * it should refetch. Fired by `instance.invalidatePageList()`.
+   */
+  page_list_invalidated: [];
+  /**
+   * Server has stamped a fresh `updatedAt` outside the normal save path
+   * (e.g. after a conflict reload, or after the AI agent's MCP write).
+   * Hosts use this to bump their `expectedUpdatedAt` ref.
+   */
+  updated_at_changed: [updatedAt: string];
 }
 
 // ─── Component registration ─────────────────────────────────────────────────

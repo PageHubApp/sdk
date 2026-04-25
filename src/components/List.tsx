@@ -24,7 +24,7 @@ export const List: UserComponent<ListProps> = (incomingProps: ListProps) => {
   let props: any = {
     ordered: false,
     markerStyle: "check" as ListMarkerStyle,
-    markerIcon: { value: "ref-google:check", size: "w-5 h-5" },
+    markerIcon: { value: "ref-icon:tb/TbCheck", size: "w-5 h-5" },
     ...incomingProps,
   };
 

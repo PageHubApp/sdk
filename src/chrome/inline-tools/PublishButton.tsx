@@ -1,56 +1,23 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TbAlertTriangle, TbCheck, TbDeviceFloppy, TbLoader2 } from "react-icons/tb";
+import { useSDK } from "../../core/context";
+import type { SaveStatus } from "../../types";
 
-type IndicatorState = "idle" | "saving" | "success" | "error";
-
-/** Event-driven auto-save icon. Listens to pagehub:saving/saved/save-failed CustomEvents. */
+/** Save status icon driven by the SDK save coordinator. */
 export function SaveIndicator() {
-  const [state, setState] = useState<IndicatorState>("idle");
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  const clearPendingTimeout = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = undefined;
-    }
-  }, []);
+  const { subscribeSaveStatus } = useSDK();
+  const [state, setState] = useState<SaveStatus>("idle");
 
   useEffect(() => {
-    const onSaving = () => {
-      clearPendingTimeout();
-      setState("saving");
-    };
-
-    const onSaved = () => {
-      clearPendingTimeout();
-      setState("success");
-      timeoutRef.current = setTimeout(() => setState("idle"), 3000);
-    };
-
-    const onFailed = () => {
-      clearPendingTimeout();
-      setState("error");
-      timeoutRef.current = setTimeout(() => setState("idle"), 5000);
-    };
-
-    window.addEventListener("pagehub:saving", onSaving);
-    window.addEventListener("pagehub:saved", onSaved);
-    window.addEventListener("pagehub:save-failed", onFailed);
-
-    return () => {
-      window.removeEventListener("pagehub:saving", onSaving);
-      window.removeEventListener("pagehub:saved", onSaved);
-      window.removeEventListener("pagehub:save-failed", onFailed);
-      clearPendingTimeout();
-    };
-  }, [clearPendingTimeout]);
+    return subscribeSaveStatus(setState);
+  }, [subscribeSaveStatus]);
 
   switch (state) {
     case "saving":
       return <TbLoader2 className="animate-spin" />;
-    case "success":
+    case "saved":
       return <TbCheck className="text-success" />;
-    case "error":
+    case "failed":
       return <TbAlertTriangle className="text-warning" />;
     default:
       return <TbDeviceFloppy />;

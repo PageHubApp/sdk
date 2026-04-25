@@ -89,3 +89,14 @@
   line-height: 1.35 !important;
   @apply gap-2 py-1.5 pr-2.5 pl-2;
 }
+
+/* Clippy "More" / "Edit" — responsive megamenu (width capped to viewport). */
+.pagehub-sdk-root.ph-select-content.ph-assistant-command-menu--mega {
+  width: min(720px, calc(100vw - 16px));
+  max-width: calc(100vw - 16px);
+  min-width: min(280px, calc(100vw - 16px));
+}
+
+.pagehub-sdk-root.ph-select-content.ph-assistant-command-menu--mega .ph-assistant-command-menu-mega-scroll {
+  max-height: min(70vh, 480px);
+}

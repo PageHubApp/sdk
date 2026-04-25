@@ -141,12 +141,13 @@ export function PageSelector({
     }
   }, [pages, isolate, query, actions, setIsolate, homePageId]);
 
-  // Revalidate page list after saves (picks up new/deleted pages)
+  // Revalidate page list when the SDK signals an invalidation (page added,
+  // deleted, or settings changed). Typed channel — no overloaded
+  // pagehub:saved pings.
   useEffect(() => {
-    const handler = () => mutatePages();
-    window.addEventListener("pagehub:saved", handler);
-    return () => window.removeEventListener("pagehub:saved", handler);
-  }, [mutatePages]);
+    const unsub = emitter.on("page_list_invalidated", () => mutatePages());
+    return () => unsub();
+  }, [mutatePages, emitter]);
 
   // Listen for custom event to open page settings
   useEffect(() => {

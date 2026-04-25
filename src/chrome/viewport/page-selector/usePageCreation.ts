@@ -6,7 +6,6 @@ import { AddElement } from "../toolbox/toolboxUtils";
 import sluggit from "slug";
 import { usePageNavigation } from "../../../utils/pageNavigation";
 import { useSDK } from "../../../core/context";
-import { saveAndWait } from "../../../utils/saveAndWait";
 
 interface UsePageCreationOptions {
   pages: Array<{ id: string; displayName: string }>;
@@ -37,7 +36,7 @@ export function usePageCreation({
   onPageChange,
 }: UsePageCreationOptions) {
   const { navigateToPage } = usePageNavigation();
-  const { emitter, config } = useSDK();
+  const { config, invalidatePageList } = useSDK();
 
   /** Ensure the name doesn't collide with existing page slugs. */
   function deduplicateName(name: string): string {
@@ -74,7 +73,7 @@ export function usePageCreation({
         });
 
         // Revalidate page list so the new page appears in PageSelector
-        window.dispatchEvent(new CustomEvent("pagehub:saved"));
+        invalidatePageList();
 
         if (pickerMode && onPagePick) {
           onPagePick({ id: pageNodeId, displayName: finalName, isHomePage: false });

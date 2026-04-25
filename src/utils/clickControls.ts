@@ -214,6 +214,35 @@ export function addActionHandlers(
     return;
   }
 
+  if (action.type === "agent-send") {
+    prop.onClick = (e: any) => {
+      if (enabled) return;
+      e.preventDefault();
+      const btn = e.currentTarget as HTMLElement | null;
+      const root = btn?.closest("[data-ph-agent-chat]") as HTMLElement | null;
+      if (!root) return;
+      const fieldName = (action as any).field || "agentMessage";
+      const field = root.querySelector(
+        `[name="${fieldName}"]`
+      ) as HTMLInputElement | HTMLTextAreaElement | null;
+      const value = (field?.value || "").trim();
+      if (!value) return;
+      root.dispatchEvent(
+        new CustomEvent("pagehub:agent-send", {
+          detail: { value, field: fieldName },
+          bubbles: false,
+        })
+      );
+      if (field) {
+        field.value = "";
+        // Nudge React-controlled inputs: dispatch `input` so any onChange fires.
+        field.dispatchEvent(new Event("input", { bubbles: true }));
+        field.focus();
+      }
+    };
+    return;
+  }
+
   if (action.type === "manage-subscription") {
     prop.onClick = async (e: any) => {
       if (enabled) return;

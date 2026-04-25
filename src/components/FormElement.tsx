@@ -7,6 +7,7 @@ import { FormField } from "@pagehub/ui";
 import { useItemContext } from "../utils/itemContext";
 import { replaceVariables } from "../utils/design/variables";
 
+import { addCustomHandlers } from "../utils/clickControls";
 import { applyAnimation } from "../utils/tailwind/tailwind";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
@@ -279,6 +280,8 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   }
 
   prop["data-border"] = /\bborder(-[^\s])?/.test(props.className || "");
+
+  addCustomHandlers(prop, props.handlers, enabled);
 
   if (enabled) {
     // if (!text) prop["children"] = <BsInputCursorText />;
