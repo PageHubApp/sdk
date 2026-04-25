@@ -107,7 +107,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
         if (pageData?.content) {
           setBatchOperation(true);
           const decompressed = await decompressAsync(pageData.content);
-          actions.deserialize(sanitizeCraftSerializedContent(decompressed) || "");
+          actions.history.ignore().deserialize(sanitizeCraftSerializedContent(decompressed) || "");
           // Track which pages are actually in the deserialized tree.
           // SSR may have assembled only one page + shared shard —
           // unloaded pages will be fetched on demand via isolatePageLazy.
@@ -191,7 +191,9 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
       buildPageData,
       onSave: config.callbacks.onSave as any,
       applyServerContent: (content: any) => {
-        actions.deserialize(typeof content === "string" ? content : JSON.stringify(content));
+        actions.history
+          .ignore()
+          .deserialize(typeof content === "string" ? content : JSON.stringify(content));
       },
       onConflictReload: config.callbacks.onConflictReload,
       notifyUpdatedAt: (updatedAt: string) => {
@@ -225,7 +227,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
         if (pageData?.content) {
           setBatchOperation(true);
           const decompressed = await decompressAsync(pageData.content);
-          actions.deserialize(sanitizeCraftSerializedContent(decompressed) || "");
+          actions.history.ignore().deserialize(sanitizeCraftSerializedContent(decompressed) || "");
           requestAnimationFrame(() => setBatchOperation(false));
         }
       } catch (err) {

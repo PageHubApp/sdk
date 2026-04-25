@@ -18,7 +18,7 @@ export const RenderNodeDataStates = () => {
 
   const selectionDom = useSelectionDom();
   const isActive = selectionDom.isActive(id);
-  const isAncestorOfSelected = selectionDom.isAncestorOfSelected(id);
+  const isParentOfSelected = selectionDom.isParentOfSelected(id);
 
   useLayoutEffect(() => {
     if (!dom) return;
@@ -53,16 +53,16 @@ export const RenderNodeDataStates = () => {
         }
       }
 
-      if (isAncestorOfSelected) {
-        dom.setAttribute("data-ancestor", "true");
+      if (isParentOfSelected) {
+        dom.setAttribute("data-parent-of-selected", "true");
       } else {
-        dom.removeAttribute("data-ancestor");
+        dom.removeAttribute("data-parent-of-selected");
       }
 
       if (isHover && !isActive) dom.setAttribute("data-hover", "true");
       else dom.removeAttribute("data-hover");
     }
-  }, [isActive, isHover, isAncestorOfSelected, enabled, dom, name, hasConditions]);
+  }, [isActive, isHover, isParentOfSelected, enabled, dom, name, hasConditions]);
 
   return null;
 };

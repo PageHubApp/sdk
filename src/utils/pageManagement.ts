@@ -119,7 +119,7 @@ export async function isolatePageLazy(
 
   try {
     const json = await decompressAsync(pageData.content);
-    actions.deserialize(json);
+    actions.history.ignore().deserialize(json);
     clearLoadedPages();
     _loadedPages.add(active);
     setIsolate(active);

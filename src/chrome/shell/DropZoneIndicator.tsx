@@ -158,40 +158,25 @@ function BesideOverlay({
       ? getBesidePreviewLabel(query, query.node(parent.id).get(), query.node(currentNode.id).get())
       : "Place beside";
 
-  const overlayWidth = 32;
-  const overlayLeft =
-    where === "beside-left" ? nodeInfo.left : nodeInfo.left + nodeInfo.outerWidth - overlayWidth;
-  const barLeft = where === "beside-left" ? nodeInfo.left : nodeInfo.left + nodeInfo.outerWidth - 4;
+  const barWidth = 2;
+  const barLeft =
+    where === "beside-left"
+      ? nodeInfo.left - barWidth / 2
+      : nodeInfo.left + nodeInfo.outerWidth - barWidth / 2;
   const labelRoot = parent?.dom?.ownerDocument?.body || document.body;
 
   return (
     <>
       <RenderIndicator
-        className="pagehub-beside-indicator-overlay"
-        style={{
-          top: `${nodeInfo.top}px`,
-          left: `${overlayLeft}px`,
-          width: `${overlayWidth}px`,
-          height: `${nodeInfo.outerHeight}px`,
-          backgroundColor: color,
-          opacity: indicator.error ? 0.18 : 0.07,
-          borderRadius: 0,
-          borderColor: color,
-          borderStyle: "dashed",
-          borderWidth: "2px",
-        }}
-        parentDom={parent?.dom}
-      />
-      <RenderIndicator
         className="pagehub-beside-indicator-bar"
         style={{
-          top: `${nodeInfo.top - 2}px`,
+          top: `${nodeInfo.top}px`,
           left: `${barLeft}px`,
-          width: "4px",
-          height: `${nodeInfo.outerHeight + 4}px`,
+          width: `${barWidth}px`,
+          height: `${nodeInfo.outerHeight}px`,
           backgroundColor: color,
           borderRadius: 0,
-          boxShadow: `${getContrastShadow(currentNode.dom)}, 0 6px 18px rgba(0,0,0,0.18)`,
+          pointerEvents: "none",
         }}
         parentDom={parent?.dom}
       />
@@ -199,13 +184,40 @@ function BesideOverlay({
         <DropLabel
           text={labelText}
           top={nodeInfo.top + 12}
-          left={overlayLeft + 12}
+          left={barLeft + (where === "beside-left" ? 8 : -8)}
           borderColor={color}
-          width={`${Math.max(48, overlayWidth - 24)}px`}
+          transform={where === "beside-right" ? "translateX(-100%)" : undefined}
         />,
         labelRoot
       )}
     </>
+  );
+}
+
+// ── Parent outline ────────────────────────────────────────────────────
+// Solid 2px ring around the drop target's parent. Renders for every drop path
+// (beside / alignment / reorder) so the user sees scope at a glance.
+
+function ParentOutline({ parentDom }: { parentDom: HTMLElement }) {
+  const info = getDOMInfo(parentDom);
+  const contrast = getContrastColor(parentDom);
+  return (
+    <RenderIndicator
+      className="pagehub-parent-outline"
+      style={{
+        top: `${info.top}px`,
+        left: `${info.left}px`,
+        width: `${info.outerWidth}px`,
+        height: `${info.outerHeight}px`,
+        backgroundColor: "transparent",
+        border: `2px solid ${contrast}`,
+        borderRadius: "4px",
+        pointerEvents: "none",
+        boxSizing: "border-box",
+        transition: "top 0.1s ease-out, left 0.1s ease-out, width 0.1s ease-out, height 0.1s ease-out",
+      }}
+      parentDom={parentDom}
+    />
   );
 }
 
@@ -278,8 +290,9 @@ function AlignmentOverlay({
 
 /** Horizontal bar for flex-col reorder (existing behavior). */
 const SECTION_PARENT_TYPES = new Set(["page", "header", "footer"]);
-const COL_SLOT_THICKNESS = 3;
-const COL_SECTION_SLOT_THICKNESS = 40;
+const COL_SLOT_THICKNESS = 2;
+const COL_SECTION_ZONE_HEIGHT = 40;
+const COL_SECTION_BAR_THICKNESS = 2;
 
 function ColReorderSlot({
   where,
@@ -302,38 +315,56 @@ function ColReorderSlot({
     parentInfo.margin.left -
     parentInfo.margin.right;
 
-  // Fat bar when parent is a top-level layout container (page/header/footer) and
-  // we're inserting a section-level node. Centered on the boundary so it overlaps
-  // both sections equally (like CraftJS's built-in section indicator).
+  // Section drops keep the 40px visual reservation (faint zone) with a 2px solid bar
+  // centered on the boundary. Non-section reorders are just a 2px solid line.
   const isSectionDrop = SECTION_PARENT_TYPES.has(parent?.data?.props?.type);
-  const thickness = isSectionDrop ? COL_SECTION_SLOT_THICKNESS : COL_SLOT_THICKNESS;
 
-  let slotTop: number;
+  let boundary: number;
   if (currentNode?.dom) {
     const nodeInfo = getDOMInfo(currentNode.dom);
-    const boundary = where === "before" ? nodeInfo.top : nodeInfo.top + nodeInfo.outerHeight;
-    slotTop = boundary - thickness / 2;
+    boundary = where === "before" ? nodeInfo.top : nodeInfo.top + nodeInfo.outerHeight;
   } else {
-    slotTop = parentInfo.top + parentInfo.padding.top;
+    boundary = parentInfo.top + parentInfo.padding.top;
   }
 
+  const barThickness = isSectionDrop ? COL_SECTION_BAR_THICKNESS : COL_SLOT_THICKNESS;
+  const barTop = boundary - barThickness / 2;
+
   return (
-    <RenderIndicator
-      className="pagehub-reorder-slot"
-      style={{
-        top: `${slotTop}px`,
-        left: `${slotLeft}px`,
-        width: `${slotWidth}px`,
-        height: `${thickness}px`,
-        backgroundColor: contrast,
-        opacity: isSectionDrop ? 0.35 : 0.55,
-        borderRadius: isSectionDrop ? "8px" : "1.5px",
-        pointerEvents: "none",
-        boxShadow: getContrastShadow(parent.dom),
-        transition: "top 0.1s ease-out, left 0.1s ease-out, width 0.1s ease-out, height 0.1s ease-out",
-      }}
-      parentDom={parent.dom}
-    />
+    <>
+      {isSectionDrop && (
+        <RenderIndicator
+          className="pagehub-reorder-slot-zone"
+          style={{
+            top: `${boundary - COL_SECTION_ZONE_HEIGHT / 2}px`,
+            left: `${slotLeft}px`,
+            width: `${slotWidth}px`,
+            height: `${COL_SECTION_ZONE_HEIGHT}px`,
+            backgroundColor: contrast,
+            opacity: 0.06,
+            borderRadius: "8px",
+            pointerEvents: "none",
+            transition: "top 0.1s ease-out, left 0.1s ease-out, width 0.1s ease-out",
+          }}
+          parentDom={parent.dom}
+        />
+      )}
+      <RenderIndicator
+        className="pagehub-reorder-slot"
+        style={{
+          top: `${barTop}px`,
+          left: `${slotLeft}px`,
+          width: `${slotWidth}px`,
+          height: `${barThickness}px`,
+          backgroundColor: contrast,
+          opacity: 1,
+          borderRadius: 0,
+          pointerEvents: "none",
+          transition: "top 0.1s ease-out, left 0.1s ease-out, width 0.1s ease-out",
+        }}
+        parentDom={parent.dom}
+      />
+    </>
   );
 }
 
@@ -530,11 +561,15 @@ export function DropZoneIndicator() {
 
   // Ghost preview shows on all drag paths
   const ghost = indicator ? <GhostPreview indicator={indicator} query={query} /> : null;
+  // Parent outline shows on all drag paths — solid 2px ring around the drop target's parent
+  const parentDom = placement?.parent?.dom as HTMLElement | undefined;
+  const parentOutline = parentDom ? <ParentOutline parentDom={parentDom} /> : null;
 
   // Beside indicator takes priority (immediate, no dwell)
   if (isBeside && indicator) {
     return (
       <>
+        {parentOutline}
         <BesideOverlay indicator={indicator} indicatorOptions={indicatorOptions} query={query} />
         {ghost}
       </>
@@ -567,6 +602,7 @@ export function DropZoneIndicator() {
 
       return (
         <>
+          {parentOutline}
           {/* Highlight the node being aligned */}
           <RenderIndicator
             className="pagehub-align-indicator"
@@ -604,6 +640,7 @@ export function DropZoneIndicator() {
   if (indicator && (where === "before" || where === "after")) {
     return (
       <>
+        {parentOutline}
         <ReorderSlot indicator={indicator} />
         {ghost}
       </>

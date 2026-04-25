@@ -16,7 +16,6 @@ function resolveCraftComponent(
 }
 import { InlineToolsRenderer } from "./InlineToolsRenderer";
 import { GapDragControl } from "../canvas/GapDragControl";
-import { ProximityHover } from "../canvas/ProximityHover";
 import { ConditionBadgeController } from "../canvas/ConditionBadgeController";
 import { RenderNodeDataStates } from "./RenderNodeDataStates";
 
@@ -96,7 +95,6 @@ export const RenderNodeNewer = ({ render }) => {
             <ConditionBadgeController />
           </InlineToolsRenderer>
           <RenderNodeDataStates />
-          <ProximityHover />
           <GapDragControl />
         </>
       )}
