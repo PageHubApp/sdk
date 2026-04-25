@@ -212,23 +212,14 @@ export function applyAlignmentOnDrop(
 
   // Inner alignment: node is in a flex container — modify classes instead of wrapping.
   // Only runs when the indicator detected align-inner (not align-wrap).
-  // CraftJS may have moved the node before we run (rAF), so check the ORIGINAL
-  // parent (previousParentId) first — that's the container the user was aligning within.
-  // Inner alignment — only when the indicator detected align-inner, not align-wrap
+  //
+  // We always apply alignment in the node's CURRENT parent. The previous behavior
+  // restored cross-parent drops back to the original parent if the original supported
+  // inner-align — that silently undid the user's reorder. If the current parent
+  // doesn't support inner-align, just skip alignment (the move stands).
   const intentType = (intent as any).type;
   if (intentType !== "align-wrap") {
-    let innerParentNode = parentNode;
-    let innerParentId = parentId;
-
-    if (previousParentId && previousParentId !== parentId) {
-      const origParent = query.node(previousParentId).get();
-      if (origParent?.data && getInnerAlignmentTarget(node, origParent)) {
-        innerParentNode = origParent;
-        innerParentId = previousParentId;
-      }
-    }
-
-    const innerTarget = getInnerAlignmentTarget(node, innerParentNode);
+    const innerTarget = getInnerAlignmentTarget(node, parentNode);
     if (innerTarget) {
       const resolved = resolveInnerAlignmentClass(
         intent.zone,
@@ -236,15 +227,8 @@ export function applyAlignmentOnDrop(
         innerTarget.mode,
         innerTarget.parentDirection
       );
-      // Cross-axis (self-*) always targets the node; main-axis (justify-*) targets the parent
-      const effectiveTargetId = resolved.alwaysParent ? innerParentId : nodeId;
+      const effectiveTargetId = resolved.alwaysParent ? parentId : nodeId;
 
-      if (innerParentId !== parentId) {
-        log("inner-align-restore", { from: parentId, to: innerParentId });
-        actions.move([nodeId], innerParentId, 0);
-      }
-
-      const batch = innerParentId !== parentId ? actions.history.merge() : actions;
       log("inner-align", {
         mode: innerTarget.mode,
         targetId: effectiveTargetId,
@@ -253,7 +237,7 @@ export function applyAlignmentOnDrop(
         parentDir: innerTarget.parentDirection,
       });
 
-      batch.setProp(effectiveTargetId, (props: Record<string, any>) => {
+      actions.setProp(effectiveTargetId, (props: Record<string, any>) => {
         const tokens = (props.className || "")
           .split(/\s+/)
           .filter((t: string) => t && !resolved.tokensToStrip.includes(t));

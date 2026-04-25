@@ -130,7 +130,12 @@ export function executeSpatialDrop(
     }
   }
 
-  if (committed && dragTarget.type === "existing") {
+  // Alignment intent is inferred relative to the ORIGINAL parent during drag. If the
+  // user dropped into a DIFFERENT parent, the move is the primary intent — applying
+  // alignment here would trigger inner-align-restore in alignmentInference, which
+  // moves the node back to the original parent. Skip alignment on cross-parent drops.
+  const droppedInSameParent = !origin?.parentId || parentId === origin.parentId;
+  if (committed && dragTarget.type === "existing" && droppedInSameParent) {
     const { intent, view, classDark } = committed;
     const targetId = copyExisting
       ? alignmentTargetIdForExisting

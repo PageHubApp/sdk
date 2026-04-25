@@ -142,6 +142,14 @@ export const SpacingOverlay = ({
   const container = document?.querySelector('[data-container="true"]');
   if (!container || !overlayData || overlayData.length === 0) return null;
 
+  // #viewport sits inside a CSS-zoom wrapper. position:fixed children of zoomed
+  // ancestors get re-scaled by the browser, so visual coords from
+  // getBoundingClientRect end up squished. Read the zoom and compensate.
+  const viewport = document.getElementById("viewport");
+  const zoomVal = viewport
+    ? parseFloat(getComputedStyle(viewport.parentElement || viewport).zoom) || 1
+    : 1;
+
   // Colors matching Chrome DevTools Box Model
   const color =
     type === "margin"
@@ -158,10 +166,10 @@ export const SpacingOverlay = ({
           style={{
             animation: "node-control-in 0.15s ease-out both",
             position: "fixed",
-            left: overlay.x,
-            top: overlay.y,
-            width: overlay.width,
-            height: overlay.height,
+            left: overlay.x / zoomVal,
+            top: overlay.y / zoomVal,
+            width: overlay.width / zoomVal,
+            height: overlay.height / zoomVal,
             backgroundColor: color,
             border: `1px dashed ${borderColor}`,
             pointerEvents: "none",

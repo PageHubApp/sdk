@@ -232,8 +232,14 @@ export const CodeEditor = ({
     latestValue.current = typeof value === "string" ? value : String(value || "");
   }, [value]);
 
+  // Sync onChange ref in an effect so cleanups in dependent effects (e.g.
+  // autoFormatMountKey) run BEFORE this ref is updated. Setting it at render
+  // time leaks: a pending async write resolves with new ref but old cancellation
+  // state, writing one node's formatted text into another node's props.
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   useEffect(() => {
     if (!autoFormatOnMount || !autoFormatMountKey || readOnly) return;

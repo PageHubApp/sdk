@@ -26,9 +26,24 @@ export const DeviceAtom = atom("device", false);
 
 export const DeviceDimensionsAtom = atom("deviceDimensions", { width: 390, height: 844, dpr: 3 });
 
-export const DeviceZoomAtom = atom("deviceZoom", 0.75);
+function readSavedZoom(key: string, fallback: number): number {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem(`ph-${key}`);
+    if (raw === null) return fallback;
+    const n = parseFloat(raw);
+    return Number.isFinite(n) && n >= 0.25 && n <= 2 ? n : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
-export const BreakpointZoomAtom = atom("breakpointZoom", 1);
+export const DeviceZoomAtom = atom("deviceZoom", readSavedZoom("editor-device-zoom", 0.75));
+
+export const BreakpointZoomAtom = atom(
+  "breakpointZoom",
+  readSavedZoom("editor-breakpoint-zoom", 0.75)
+);
 
 export const EnabledAtom = atom("enabled", true);
 

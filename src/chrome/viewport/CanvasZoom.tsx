@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { TbMinus, TbPlus, TbZoomScan } from "react-icons/tb";
+import { TbMinus, TbPlus, TbZoomReset, TbZoomScan } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { phStorage } from "../../utils/phStorage";
 
 const zoomPresets = [
   { label: "25%", value: 0.25 },
@@ -32,12 +33,33 @@ interface CanvasZoomProps {
   activeKey: string;
   /** When true, controls are inert but still occupy their normal space. */
   disabled?: boolean;
+  /** phStorage key to persist zoom value + fit-to-window flag. */
+  storageKey?: string;
 }
 
-export function CanvasZoom({ zoomAtom, fitMode, activeKey, disabled = false }: CanvasZoomProps) {
+export function CanvasZoom({
+  zoomAtom,
+  fitMode,
+  activeKey,
+  disabled = false,
+  storageKey,
+}: CanvasZoomProps) {
   const [zoom, setZoom] = useAtomState(zoomAtom);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [fitToWindow, setFitToWindow] = useState(false);
+  const [fitToWindow, setFitToWindow] = useState(() => {
+    // Default: prefer fit-to-window unless the user explicitly saved a manual zoom.
+    if (!storageKey || typeof window === "undefined") return true;
+    const savedFit = phStorage.get(`${storageKey}-fit`);
+    if (savedFit === "true") return true;
+    if (savedFit === "false") return false;
+    return true;
+  });
+
+  const persistZoom = (value: number, fit: boolean) => {
+    if (!storageKey) return;
+    phStorage.set(storageKey, String(value));
+    phStorage.set(`${storageKey}-fit`, String(fit));
+  };
 
   const activeAttr = `data-canvas-zoom-${activeKey}`;
   const activeSelector = `[${activeAttr}="true"]`;
@@ -55,7 +77,9 @@ export function CanvasZoom({ zoomAtom, fitMode, activeKey, disabled = false }: C
           ? window.innerHeight - (fitMode.chromeOffset ?? 350)
           : window.innerWidth - (fitMode.chromeOffset ?? 80);
       const calculated = available / fitMode.target;
-      setZoom(Math.max(0.25, Math.min(max, calculated)));
+      const next = Math.max(0.25, Math.min(max, calculated));
+      setZoom(next);
+      persistZoom(next, true);
     };
 
     calculateFitZoom();
@@ -67,6 +91,7 @@ export function CanvasZoom({ zoomAtom, fitMode, activeKey, disabled = false }: C
     setZoom(newZoom);
     setFitToWindow(isFitToWindow);
     setShowDropdown(false);
+    persistZoom(newZoom, isFitToWindow);
   };
 
   const handleZoomIn = () => {
@@ -92,7 +117,9 @@ export function CanvasZoom({ zoomAtom, fitMode, activeKey, disabled = false }: C
           const currentIndex = zoomPresets.findIndex(p => p.value >= currentZoom);
           const nextIndex = Math.min(currentIndex + 1, zoomPresets.length - 1);
           setFitToWindow(false);
-          return zoomPresets[nextIndex].value;
+          const next = zoomPresets[nextIndex].value;
+          persistZoom(next, false);
+          return next;
         });
       } else if ((e.ctrlKey || e.metaKey) && e.key === "-") {
         e.preventDefault();
@@ -100,12 +127,15 @@ export function CanvasZoom({ zoomAtom, fitMode, activeKey, disabled = false }: C
           const currentIndex = zoomPresets.findIndex(p => p.value >= currentZoom);
           const prevIndex = Math.max(currentIndex - 1, 0);
           setFitToWindow(false);
-          return zoomPresets[prevIndex].value;
+          const next = zoomPresets[prevIndex].value;
+          persistZoom(next, false);
+          return next;
         });
       } else if ((e.ctrlKey || e.metaKey) && e.key === "0") {
         e.preventDefault();
         setZoom(1);
         setFitToWindow(false);
+        persistZoom(1, false);
       }
     };
 
@@ -178,6 +208,7 @@ export function CanvasZoom({ zoomAtom, fitMode, activeKey, disabled = false }: C
                   onClick={() => {
                     setFitToWindow(true);
                     setShowDropdown(false);
+                    persistZoom(zoom, true);
                   }}
                   className={`hover:bg-neutral flex w-full items-center gap-2 px-4 py-2 text-left transition-colors ${
                     fitToWindow ? "bg-neutral text-base-content" : "text-neutral-content"
@@ -202,6 +233,18 @@ export function CanvasZoom({ zoomAtom, fitMode, activeKey, disabled = false }: C
         data-tooltip-offset={10}
       >
         <TbPlus className="size-3" />
+      </button>
+
+      <button
+        onClick={() => handleZoomChange(1, false)}
+        disabled={disabled || (zoom === 1 && !fitToWindow)}
+        className="hover:bg-neutral hover:text-base-content rounded p-1 transition-colors disabled:opacity-30"
+        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+        data-tooltip-content="Reset to 100% (Ctrl/Cmd + 0)"
+        data-tooltip-place="bottom"
+        data-tooltip-offset={10}
+      >
+        <TbZoomReset className="size-3" />
       </button>
     </div>
   );

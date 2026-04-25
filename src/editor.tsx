@@ -36,6 +36,8 @@ import { extractPageShard, extractSharedShard } from "./utils/treeSharding";
 import { AiPanelHost } from "./chrome/ai/AiPanelHost";
 import { RenderNodeNewer } from "./chrome/rendering/RenderNode";
 import CustomEventHandlers from "./chrome/shell/CustomEventHandlers";
+import { BorderResizeController } from "./chrome/canvas/BorderResizeController";
+import { DragPreviewLayer } from "./chrome/shell/DragPreviewLayer";
 import { DropZoneIndicator } from "./chrome/shell/DropZoneIndicator";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
 import { EditorSaveBanner } from "./chrome/shell/EditorSaveBanner";
@@ -465,6 +467,8 @@ function PageHubEditorInner({
           >
             <EditorSelectionDomProvider>
               <DropZoneIndicator />
+              <DragPreviewLayer />
+              <BorderResizeController />
               <div
                 className="bg-neutral text-neutral-content relative flex h-full min-h-0 w-full flex-col overflow-hidden"
                 data-base={true}

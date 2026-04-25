@@ -241,23 +241,46 @@ export const Header = () => {
   };
 
   const headerCanvasDeviceRows = [
-    { id: "desktop", label: "Full width", sub: "Fluid canvas" },
-    { id: "mobile", label: "Device", sub: "Phone frame" },
+    {
+      id: "desktop",
+      label: "Responsive",
+      sub: "Fluid canvas",
+      description: "Stretches to fit the editor — preview at any width.",
+    },
+    {
+      id: "mobile",
+      label: "Device",
+      sub: "Phone frame",
+      description: "Pin to a specific phone (iPhone, Pixel, etc.) with a real bezel.",
+    },
   ];
+  const breakpointDescriptions: Record<string, string> = {
+    sm: "Tablet portrait — 2-col grids, stacked headers, side-by-side buttons start here.",
+    md: "Tablet landscape — flex-row layouts and 3-col grids kick in.",
+    lg: "Desktop — 4-col grids, split heroes, asymmetric layouts. Most design density lives here.",
+    xl: "Wide desktop — extra breathing room; rarely needs new layout rules.",
+    "2xl": "Ultra-wide — for cinema-width monitors. Usually nothing changes past this.",
+  };
   const headerCanvasBreakpointRows = [
     {
       id: "sm",
       label: "SM",
       sub: `Tablet · ${EDITOR_CANVAS_BREAKPOINT_PX.sm}px`,
+      description: breakpointDescriptions.sm,
     },
     ...["md", "lg", "xl", "2xl"].map(bp => ({
       id: bp,
       label: bp === "2xl" ? "2XL" : bp.toUpperCase(),
       sub: `${EDITOR_CANVAS_BREAKPOINT_PX[bp]}px`,
+      description: breakpointDescriptions[bp],
     })),
   ];
   const device = useAtomValue(DeviceAtom);
   const deviceDimensions = useAtomValue(DeviceDimensionsAtom);
+  const breakpointZoom = useAtomValue(BreakpointZoomAtom);
+  const deviceZoom = useAtomValue(DeviceZoomAtom);
+  const activeZoom = device && view === "mobile" ? deviceZoom : breakpointZoom;
+  const isScaled = Math.abs(activeZoom - 1) > 0.001;
   const [settings, setSettings] = useAtomState(SettingsAtom);
   const sessionToken = useAtomValue(SessionTokenAtom);
 
@@ -383,15 +406,23 @@ export const Header = () => {
               aria-haspopup="menu"
               className="tool-button gap-0.5!"
             >
-              <span className="inline-flex h-4 w-6 items-center justify-center">
-                {view === "mobile" && <TbDeviceMobile className="size-4" />}
-                {(view === "desktop" || view === "tablet") && (
-                  <TbDeviceDesktop className="size-4" />
-                )}
-                {isEditorCanvasBreakpointView(view) && (
+              <span className="inline-flex h-4 min-w-6 items-center justify-center px-0.5">
+                {isScaled ? (
                   <span className="font-mono text-[11px] leading-none font-bold tracking-tight">
-                    {view === "2xl" ? "2XL" : view.toUpperCase()}
+                    {Math.round(activeZoom * 100)}%
                   </span>
+                ) : (
+                  <>
+                    {view === "mobile" && <TbDeviceMobile className="size-4" />}
+                    {(view === "desktop" || view === "tablet") && (
+                      <TbDeviceDesktop className="size-4" />
+                    )}
+                    {isEditorCanvasBreakpointView(view) && (
+                      <span className="font-mono text-[11px] leading-none font-bold tracking-tight">
+                        {view === "2xl" ? "2XL" : view.toUpperCase()}
+                      </span>
+                    )}
+                  </>
                 )}
               </span>
               <TbChevronDown className="size-3 shrink-0 opacity-60" aria-hidden />
@@ -407,6 +438,10 @@ export const Header = () => {
                   type="button"
                   role="menuitemradio"
                   aria-checked={selected}
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content={row.description}
+                  data-tooltip-place="bottom"
+                  data-tooltip-offset={10}
                   onClick={() => {
                     setView(row.id as CanvasViewMode);
                     scrollSelectedNodeIntoView();
@@ -443,7 +478,10 @@ export const Header = () => {
                   type="button"
                   role="menuitemradio"
                   aria-checked={selected}
-                  title={`${row.label} · ${row.sub}`}
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content={row.description}
+                  data-tooltip-place="bottom"
+                  data-tooltip-offset={10}
                   onClick={() => {
                     setView(row.id as CanvasViewMode);
                     scrollSelectedNodeIntoView();
@@ -474,6 +512,7 @@ export const Header = () => {
                 zoomAtom={DeviceZoomAtom}
                 fitMode={{ kind: "height", target: deviceDimensions.height, chromeOffset: 350 }}
                 activeKey="device-menu"
+                storageKey="editor-device-zoom"
               />
             ) : (
               <CanvasZoom
@@ -485,7 +524,7 @@ export const Header = () => {
                   max: 1,
                 }}
                 activeKey="breakpoint-menu"
-                disabled={!isEditorCanvasBreakpointView(view)}
+                storageKey="editor-breakpoint-zoom"
               />
             )}
           </div>

@@ -11,11 +11,31 @@
   /* Contrast halo behind outlines — ensures visibility on any background.
      Inset to match the negative outline-offset so it doesn't clip. */
   --pagehub-outline-halo: inset 0 0 0 2px rgba(255,255,255,0.45), inset 0 0 0 2px rgba(0,0,0,0.15);
+  /* Editor accent — Framer-style fixed blue for selection / parent / drag chrome.
+     Halo above keeps it visible even when site palette uses a similar blue. */
+  --ph-editor-accent: rgb(59 130 246);
 }
 
 /* Shift+duplicate drag: keep source fully visible (browsers often dim the drag source). */
 body[data-ph-drag-copy="true"] .pagehub-sdk-root [data-dragging="true"] {
   opacity: 1 !important;
+}
+
+/* Move drag: source becomes a flat blue ghost tile — same footprint, no border,
+   no chrome, no children visible — so dropping back doesn't shift layout.
+   Skipped during shift+copy. */
+body:not([data-ph-drag-copy="true"]) .pagehub-sdk-root [data-dragging="true"] {
+  opacity: 1 !important;
+  background: rgb(59 130 246 / 0.18) !important;
+  background-image: none !important;
+  outline: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  border-radius: 4px !important;
+}
+body:not([data-ph-drag-copy="true"]) .pagehub-sdk-root [data-dragging="true"] > * {
+  visibility: hidden !important;
 }
 
 .pagehub-sdk-root .drag-control {
@@ -28,7 +48,14 @@ body[data-ph-drag-copy="true"] .pagehub-sdk-root [data-dragging="true"] {
 
 .pagehub-sdk-root [data-selected="true"],
 .pagehub-sdk-root [data-hover="true"] {
-  @apply cursor-pointer;
+  @apply cursor-grab;
+}
+
+/* Active drag — best-effort grabbing cursor. Browser's HTML5 drag cursor still
+   wins most of the time, but this covers transitions between drag events. */
+body[data-is-dragging="true"],
+body[data-is-dragging="true"] * {
+  cursor: grabbing !important;
 }
 
 .pagehub-sdk-root [data-selected="true"] iframe {
@@ -47,13 +74,9 @@ body[data-ph-drag-copy="true"] .pagehub-sdk-root [data-dragging="true"] {
   opacity: 0.8;
 }
 
-.pagehub-sdk-root [data-dragged-over="true"] {
-  border: 2px dashed currentColor;
-  min-height: 40px;
-  min-width: 40px;
-  padding: 10px;
-  transition: all 0.3s ease;
-}
+/* data-dragged-over is still emitted by Container for EmptyState's pointer-events
+   gating, but no layout-shifting CSS — parent ring + drop indicator handle the
+   visual feedback. */
 
 /* Highlight valid drop targets when dragging a section/block */
 body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="page"],
@@ -74,19 +97,19 @@ body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="component"
 }
 
 .pagehub-sdk-root [data-enabled="true"][data-selected="true"] {
-  outline: 1px solid currentColor !important;
+  outline: 1px solid var(--ph-editor-accent) !important;
   outline-offset: var(--pagehub-editor-outline-offset, -1px);
   box-shadow: var(--pagehub-outline-halo);
 }
 
 .pagehub-sdk-root [data-enabled="true"][data-parent-of-selected="true"] {
-  outline: 1px dashed currentColor !important;
+  outline: 1px dashed var(--ph-editor-accent) !important;
   outline-offset: var(--pagehub-editor-outline-offset, -1px);
   box-shadow: var(--pagehub-outline-halo);
 }
 
 .pagehub-sdk-root img[data-enabled="true"][data-selected="true"] {
-  outline: 1px solid currentColor !important;
+  outline: 1px solid var(--ph-editor-accent) !important;
   outline-offset: -1px;
   box-shadow: var(--pagehub-outline-halo);
 }

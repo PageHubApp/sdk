@@ -25,8 +25,8 @@ import {
   type ToHTMLFn,
 } from "../utils/static-html";
 import { Container } from "./Container";
-import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
 import { ContainerPaddingOverlay } from "./ContainerPaddingOverlay";
+import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
 import { Text } from "./Text";
 import { Image } from "./Image";
 

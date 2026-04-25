@@ -10,17 +10,19 @@ import { useEditor } from "@craftjs/core";
 import { RenderIndicator, getDOMInfo } from "@craftjs/utils";
 import React from "react";
 import ReactDOM from "react-dom";
-import {
-  getAlignmentPreviewLabel,
-  wouldUseInnerAlignment,
-  type AlignmentIntent,
-} from "./alignmentInference";
 import { getDragOrigin, getCommittedAlignment, getAlignmentDom, getParentFlexDirection } from "./findPosition2D";
 import { getBesidePreviewLabel } from "./layoutInference";
 
+// ── Editor accent ────────────────────────────────────────────────────
+// Framer-style fixed accent for selection/drop chrome. Halo (below) keeps it
+// visible on any bg, even when the user's site palette uses a similar blue.
+const EDITOR_ACCENT = "rgb(59 130 246)"; // Tailwind blue-500
+const EDITOR_ERROR = "rgb(239 68 68)"; // Tailwind red-500
+
 // ── Contrast color helper ────────────────────────────────────────────
 // Reads the effective background color of a DOM element (walks parents
-// if transparent) and returns black or white for maximum contrast.
+// if transparent) and returns black or white for maximum contrast. Used
+// only by getContrastShadow now (halo behind the accent).
 // Cached by element — only recomputes when the element ref changes.
 
 // WeakMap — entries are GC'd when the DOM element is collected, no manual cleanup needed.
@@ -148,10 +150,9 @@ function BesideOverlay({
   }
 
   const nodeInfo = getDOMInfo(currentNode.dom);
-  const contrastCol = getContrastColor(currentNode.dom);
   const color = indicator?.error
     ? indicatorOptions?.error || "rgb(153 27 27)"
-    : contrastCol;
+    : EDITOR_ACCENT;
 
   const labelText =
     parent?.id && currentNode?.id
@@ -198,9 +199,8 @@ function BesideOverlay({
 // Solid 2px ring around the drop target's parent. Renders for every drop path
 // (beside / alignment / reorder) so the user sees scope at a glance.
 
-function ParentOutline({ parentDom }: { parentDom: HTMLElement }) {
+function ParentOutline({ parentDom, accent = EDITOR_ACCENT }: { parentDom: HTMLElement; accent?: string }) {
   const info = getDOMInfo(parentDom);
-  const contrast = getContrastColor(parentDom);
   return (
     <RenderIndicator
       className="pagehub-parent-outline"
@@ -210,7 +210,7 @@ function ParentOutline({ parentDom }: { parentDom: HTMLElement }) {
         width: `${info.outerWidth}px`,
         height: `${info.outerHeight}px`,
         backgroundColor: "transparent",
-        border: `2px solid ${contrast}`,
+        border: `2px solid ${accent}`,
         borderRadius: "4px",
         pointerEvents: "none",
         boxSizing: "border-box",
@@ -218,71 +218,6 @@ function ParentOutline({ parentDom }: { parentDom: HTMLElement }) {
       }}
       parentDom={parentDom}
     />
-  );
-}
-
-// ── Alignment indicator overlay ───────────────────────────────────────
-
-function AlignmentOverlay({
-  intent,
-  renderDom,
-  isInner,
-}: {
-  intent: AlignmentIntent;
-  renderDom: HTMLElement;
-  isInner: boolean;
-}) {
-  const rect = renderDom.getBoundingClientRect();
-  const labelText = getAlignmentPreviewLabel(intent, isInner);
-  const isCenter = intent.zone === "center";
-  const contrast = getContrastColor(renderDom);
-
-  let overlayTop: number, overlayLeft: number, overlayWidth: number, overlayHeight: number;
-
-  if (intent.axis === "horizontal") {
-    const zoneW = 32;
-    overlayTop = rect.top;
-    overlayHeight = rect.height;
-    overlayWidth = zoneW;
-    overlayLeft = intent.zone === "start" ? rect.left : rect.left + rect.width - zoneW;
-  } else {
-    const zoneH = 32;
-    overlayLeft = rect.left;
-    overlayWidth = rect.width;
-    overlayHeight = zoneH;
-    overlayTop = intent.zone === "start" ? rect.top : rect.top + rect.height - zoneH;
-  }
-
-  const labelLeft = isCenter ? rect.left + rect.width / 2 : overlayLeft + overlayWidth / 2;
-  const labelTop = isCenter ? rect.top + rect.height / 2 - 12 : overlayTop + 12;
-  const labelRoot = renderDom.ownerDocument?.body || document.body;
-
-  return (
-    <>
-      {!isCenter && (
-        <RenderIndicator
-          className="pagehub-alignment-indicator-overlay"
-          style={{
-            top: `${overlayTop}px`,
-            left: `${overlayLeft}px`,
-            width: `${overlayWidth}px`,
-            height: `${overlayHeight}px`,
-            backgroundColor: contrast,
-            opacity: 0.08,
-            borderRadius: 0,
-            borderColor: contrast,
-            borderStyle: "dashed",
-            borderWidth: "1px",
-            pointerEvents: "none",
-          }}
-          parentDom={renderDom}
-        />
-      )}
-      {ReactDOM.createPortal(
-        <DropLabel text={labelText} top={labelTop} left={labelLeft} borderColor={contrast} transform="translateX(-50%)" />,
-        labelRoot
-      )}
-    </>
   );
 }
 
@@ -418,13 +353,13 @@ function RowReorderSlot({
   );
 }
 
-function ReorderSlot({ indicator }: { indicator: any }) {
+function ReorderSlot({ indicator, accent = EDITOR_ACCENT }: { indicator: any; accent?: string }) {
   const { placement } = indicator;
   const { where, currentNode, parent } = placement;
   if (!parent?.dom) return null;
 
   const parentInfo = getDOMInfo(parent.dom);
-  const contrast = getContrastColor(parent.dom);
+  const contrast = accent;
   const direction = getParentFlexDirection(parent.dom);
 
   const props = { where, currentNode, parent, parentInfo, contrast };
@@ -436,9 +371,11 @@ function ReorderSlot({ indicator }: { indicator: any }) {
 function GhostPreview({
   indicator,
   query,
+  accent = EDITOR_ACCENT,
 }: {
   indicator: any;
   query: any;
+  accent?: string;
 }) {
   const origin = getDragOrigin();
   if (!origin?.nodeId) return null;
@@ -516,7 +453,7 @@ function GhostPreview({
     }
   }
 
-  const contrast = getContrastColor(parentDom);
+  const contrast = accent;
 
   return (
     <RenderIndicator
@@ -559,11 +496,16 @@ export function DropZoneIndicator() {
 
   // ── Render ────────────────────────────────────────────────────────
 
+  // CraftJS sets indicator.error when the drop is invalid (e.g. dragging Text
+  // into a ButtonList that only accepts Buttons). Flip every chrome element red
+  // so the user sees the no-drop state on the zone, not just the cursor.
+  const accent = indicator?.error ? EDITOR_ERROR : EDITOR_ACCENT;
+
   // Ghost preview shows on all drag paths
-  const ghost = indicator ? <GhostPreview indicator={indicator} query={query} /> : null;
+  const ghost = indicator ? <GhostPreview indicator={indicator} query={query} accent={accent} /> : null;
   // Parent outline shows on all drag paths — solid 2px ring around the drop target's parent
   const parentDom = placement?.parent?.dom as HTMLElement | undefined;
-  const parentOutline = parentDom ? <ParentOutline parentDom={parentDom} /> : null;
+  const parentOutline = parentDom ? <ParentOutline parentDom={parentDom} accent={accent} /> : null;
 
   // Beside indicator takes priority (immediate, no dwell)
   if (isBeside && indicator) {
@@ -576,72 +518,26 @@ export function DropZoneIndicator() {
     );
   }
 
-  // Direction-based alignment indicator
-  if (alignmentIntent && indicator?.placement?.parent?.dom) {
-    const origin = getDragOrigin();
-    const originNode = origin?.nodeId ? query.node(origin.nodeId).get() : null;
-    const originDom = originNode?.dom as HTMLElement | undefined;
-
-    if (originDom) {
-      const rect = originDom.getBoundingClientRect();
-      const contrast = getContrastColor(indicator.placement.parent.dom);
-      const labelText =
-        alignmentIntent.axis === "horizontal"
-          ? alignmentIntent.zone === "start"
-            ? "Align left"
-            : alignmentIntent.zone === "end"
-              ? "Align right"
-              : "Center"
-          : alignmentIntent.zone === "start"
-            ? "Align top"
-            : alignmentIntent.zone === "end"
-              ? "Align bottom"
-              : "Center";
-
-      const labelRoot = originDom.ownerDocument?.body || document.body;
-
-      return (
-        <>
-          {parentOutline}
-          {/* Highlight the node being aligned */}
-          <RenderIndicator
-            className="pagehub-align-indicator"
-            style={{
-              top: `${rect.top}px`,
-              left: `${rect.left}px`,
-              width: `${rect.width}px`,
-              height: `${rect.height}px`,
-              backgroundColor: contrast,
-              opacity: 0.06,
-              borderRadius: "4px",
-              border: `1px dashed ${contrast}`,
-              pointerEvents: "none",
-              transition: "all 0.1s ease-out",
-            }}
-            parentDom={indicator.placement.parent.dom}
-          />
-          {ReactDOM.createPortal(
-            <DropLabel
-              text={labelText}
-              top={rect.top + rect.height / 2 - 12}
-              left={rect.left + rect.width / 2}
-              borderColor={contrast}
-              transform="translateX(-50%)"
-            />,
-            labelRoot
-          )}
-          {ghost}
-        </>
-      );
-    }
-  }
-
-  // Reorder slot indicator (default — before/after placement)
+  // Reorder slot indicator (default — before/after placement). Renders even when an
+  // alignment intent is also committed, since alignment is auxiliary info — the line
+  // is the primary "where it lands" feedback.
   if (indicator && (where === "before" || where === "after")) {
     return (
       <>
         {parentOutline}
-        <ReorderSlot indicator={indicator} />
+        <ReorderSlot indicator={indicator} accent={accent} />
+        {ghost}
+      </>
+    );
+  }
+
+  // Alignment-only path (no specific reorder slot — cursor is in middle-third zone).
+  // Parent outline + ghost preview shifting toward the alignment zone is enough
+  // visual feedback; no text labels.
+  if (alignmentIntent && indicator?.placement?.parent?.dom) {
+    return (
+      <>
+        {parentOutline}
         {ghost}
       </>
     );

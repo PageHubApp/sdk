@@ -426,6 +426,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const bezelX = 18;
   const bezelY = 18;
   const breakpointActive = !device && isEditorCanvasBreakpointView(view);
+  const canvasZoomActive = !device && (view === "desktop" || isEditorCanvasBreakpointView(view));
   const deviceStyles: React.CSSProperties =
     device && view === "mobile"
       ? ({
@@ -434,7 +435,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           zoom: deviceZoom,
           "--device-zoom-inverse": 1 / deviceZoom,
         } as React.CSSProperties)
-      : breakpointActive && breakpointZoom !== 1
+      : canvasZoomActive && breakpointZoom !== 1
         ? ({ zoom: breakpointZoom } as React.CSSProperties)
         : {};
 
@@ -517,6 +518,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
                 zoomAtom={DeviceZoomAtom}
                 fitMode={{ kind: "height", target: deviceDimensions.height, chromeOffset: 350 }}
                 activeKey="device"
+                storageKey="editor-device-zoom"
               />
             </div>
           </div>

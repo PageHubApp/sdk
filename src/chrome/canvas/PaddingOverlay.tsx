@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import ReactDOM from "react-dom";
 import { twMerge } from "tailwind-merge";
 import { buildVariantPrefix } from "../../utils/tailwind/className";
+import { isEdgeResizeActive, subscribeEdgeResize } from "./edgeResizeState";
 
 // ── Tailwind spacing snap ───────────────────────────────────────────────
 
@@ -199,12 +200,24 @@ export function PaddingOverlay({
   draggingRef.current = dragging;
   dragValueRef.current = dragValue;
 
-  // Track mouse to detect zone — requires 300ms dwell before showing
+  // Track mouse to detect zone — requires 300ms dwell before showing.
+  // Suppressed while BorderResizeController owns the cursor (edge band hover or
+  // active resize drag) to avoid the two systems fighting over the same zone.
   const zoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingZoneRef = useRef<string | null>(null);
+  const [edgeResize, setEdgeResize] = useState(isEdgeResizeActive());
+  useEffect(() => subscribeEdgeResize(setEdgeResize), []);
+
   useEffect(() => {
-    if (!targetElement || !isActive || dragging) return;
+    if (!targetElement || !isActive || dragging || edgeResize) return;
     const onMove = (e: MouseEvent) => {
+      // Re-check inside the listener too — flag may flip mid-hover.
+      if (isEdgeResizeActive()) {
+        if (zoneTimerRef.current) clearTimeout(zoneTimerRef.current);
+        pendingZoneRef.current = null;
+        setZone(null);
+        return;
+      }
       const next = detectZone(targetElement, e.clientX, e.clientY);
       const key = next ? `${next.side}:${next.mode}` : null;
       if (key !== pendingZoneRef.current) {
@@ -223,7 +236,7 @@ export function PaddingOverlay({
       if (zoneTimerRef.current) clearTimeout(zoneTimerRef.current);
       pendingZoneRef.current = null;
     };
-  }, [targetElement, isActive, dragging]);
+  }, [targetElement, isActive, dragging, edgeResize]);
 
   // Compute overlay rect for current zone
   const computeOverlay = useCallback(() => {
@@ -384,8 +397,13 @@ export function PaddingOverlay({
   if (!portalTarget || !active || !overlayRect) return null;
 
   const portalRect = portalTarget.getBoundingClientRect();
-  const ox = -portalRect.left + portalTarget.scrollLeft;
-  const oy = -portalRect.top + portalTarget.scrollTop;
+  // #viewport sits inside a CSS-zoom wrapper. getBoundingClientRect returns visual
+  // pixels, but `position: absolute` inside the zoomed parent expects logical
+  // pixels — they differ by the zoom factor. Compensate so overlays line up.
+  const zoomVal =
+    parseFloat(getComputedStyle(portalTarget.parentElement || portalTarget).zoom) || 1;
+  const ox = -portalRect.left;
+  const oy = -portalRect.top;
 
   const currentMode = dragging?.mode || zone?.mode;
   const currentSide = dragging?.side || zone?.side;
@@ -459,10 +477,10 @@ export function PaddingOverlay({
       }}
       style={{
         position: "absolute",
-        left: overlayRect.x + ox,
-        top: overlayRect.y + oy,
-        width: overlayRect.w,
-        height: overlayRect.h,
+        left: (overlayRect.x + ox) / zoomVal + portalTarget.scrollLeft,
+        top: (overlayRect.y + oy) / zoomVal + portalTarget.scrollTop,
+        width: overlayRect.w / zoomVal,
+        height: overlayRect.h / zoomVal,
         backgroundColor: bgColor,
         cursor,
         zIndex: 9998,

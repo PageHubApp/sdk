@@ -40,6 +40,16 @@ function isPointerInsideViewport(): boolean {
   return !!el?.closest("#viewport");
 }
 
+// 1×1 transparent PNG — fed to dataTransfer.setDragImage() so the browser shows
+// no drag preview (DragPreviewLayer renders the custom cursor-following clone).
+const EMPTY_DRAG_IMAGE = (() => {
+  if (typeof Image === "undefined") return null as unknown as HTMLImageElement;
+  const img = new Image();
+  img.src =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=";
+  return img;
+})();
+
 // ── Handler ──────────────────────────────────────────────────────────
 
 export default class CustomEventHandlers extends DefaultEventHandlers {
@@ -110,15 +120,12 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
           const nativeEvent = (e as any).nativeEvent || e;
 
           if (nativeEvent.dataTransfer) {
-            const dragPreview = document.createElement("div");
-            dragPreview.className =
-              "w-5 h-5 bg-blue-500 rounded border border-white/30 absolute -top-[9999px] -left-[9999px] opacity-80 shadow-md";
-            document.body.appendChild(dragPreview);
-            nativeEvent.dataTransfer.setDragImage(dragPreview, 10, 10);
+            // Suppress the native drag image with a 1×1 transparent PNG —
+            // DragPreviewLayer renders a custom cursor-following clone instead.
+            // (Element-based suppression is flaky cross-browser; an Image is the
+            // canonical "no drag preview" trick.)
+            nativeEvent.dataTransfer.setDragImage(EMPTY_DRAG_IMAGE, 0, 0);
             nativeEvent.dataTransfer.effectAllowed = "copyMove";
-            requestAnimationFrame(() => {
-              if (dragPreview.parentNode) dragPreview.parentNode.removeChild(dragPreview);
-            });
           }
 
           const applyCopyIntentFromModifiers = (shift: boolean) => {
