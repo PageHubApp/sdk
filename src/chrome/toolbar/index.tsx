@@ -1,5 +1,5 @@
 import { NodeProvider, useEditor } from "@craftjs/core";
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { SideBarAtom, SideBarOpen } from "../../utils/lib";
@@ -10,6 +10,8 @@ import { Header } from "../viewport/Header";
 import { LazyUnifiedSettings } from "../../components/LazyUnifiedSettings";
 import { EditorEmptyState } from "./EditorEmptyState";
 import { SidebarLayersPanel } from "./SidebarLayersPanel";
+import { SidebarSwipeHint } from "./SidebarSwipeHint";
+import { markManualSidebarClose } from "../hooks/useAutoOpenSidebar";
 
 export * from "./helpers/ToolbarDashedButton";
 export * from "./helpers/ToolbarSegmentedControl";
@@ -41,7 +43,7 @@ export const Toolbar = () => {
   const { panel } = usePanelUrl();
   const flyoutBlockingToolColumn = isFlyoutBlockingToolColumn(panel);
 
-  const { selectedNodeId } = useEditor((state, query) => {
+  const { selectedNodeId, actions: editorActions } = useEditor((state, query) => {
     const id = query.getEvent("selected").first() || null;
     if (id && !state.nodes[id]?.data) return { selectedNodeId: null };
     return { selectedNodeId: id };
@@ -72,6 +74,123 @@ export const Toolbar = () => {
       : "w-[360px] opacity-100"
     : "w-0 opacity-0 pointer-events-none";
 
+  // Closure-bound config for the native pointer listeners — read at gesture
+  // start time so we don't reattach the React handler on every render.
+  const cfgRef = useRef({ enabled: false, sideBarLeft: true });
+  cfgRef.current.enabled = isOpen;
+  cfgRef.current.sideBarLeft = sideBarLeft;
+
+  const onSwipeStart = useCallback(
+    (e: React.PointerEvent) => {
+      if (!cfgRef.current.enabled) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-no-swipe-close]")) return;
+      // Bail on form controls (text selection / value scrubbing must keep
+      // working). Buttons are NOT in this list — most of the toolbar UI is
+      // wrapped in buttons; the slop check below distinguishes a click from
+      // a drag.
+      if (
+        target?.closest(
+          "input, textarea, select, [role='slider'], [contenteditable='true']"
+        )
+      ) {
+        return;
+      }
+
+      const aside = ref.current as HTMLElement | null;
+      if (!aside) return;
+
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startTime =
+        typeof performance !== "undefined" ? performance.now() : Date.now();
+      let decided: "h" | "v" | null = null;
+      let lastDx = 0;
+
+      const cleanup = () => {
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("pointercancel", onUp);
+      };
+
+      const onMove = (ev: PointerEvent) => {
+        const dx = ev.clientX - startX;
+        const dy = ev.clientY - startY;
+        const adx = Math.abs(dx);
+        const ady = Math.abs(dy);
+
+        if (decided === null) {
+          // Only engage once horizontal motion clearly dominates. If the user
+          // is scrolling vertically, abandon so the browser can scroll
+          // smoothly — but never lock to "v" on tiny diagonal jitter.
+          if (ady > 24 && ady > adx * 1.5) {
+            decided = "v";
+            cleanup();
+            return;
+          }
+          if (adx < 6 || adx < ady) return;
+          decided = "h";
+        }
+
+        if (decided !== "h") return;
+        ev.preventDefault();
+        lastDx = dx;
+        const closeDir = cfgRef.current.sideBarLeft ? -1 : 1;
+        const travel = dx * closeDir;
+        aside.style.transition = "none";
+        aside.style.transform =
+          travel > 0
+            ? `translateX(${closeDir * Math.min(travel, 360)}px)`
+            : "";
+      };
+
+      const onUp = () => {
+        cleanup();
+        if (decided !== "h") {
+          aside.style.transition = "";
+          aside.style.transform = "";
+          return;
+        }
+        const closeDir = cfgRef.current.sideBarLeft ? -1 : 1;
+        const travel = lastDx * closeDir;
+        const now =
+          typeof performance !== "undefined" ? performance.now() : Date.now();
+        const dt = Math.max(now - startTime, 1);
+        const velocity = travel / dt; // px/ms in close direction
+        const shouldClose =
+          travel >= 50 || (travel >= 25 && velocity >= 0.3);
+
+        if (shouldClose) {
+          // Restore class-based transition (width/opacity) BEFORE flipping
+          // state — otherwise the inline `transition: none` from the drag
+          // suppresses the close animation and the panel snaps shut.
+          // Leave transform applied so the panel doesn't visually snap back
+          // to translate(0) before the width collapses; clear it post-close.
+          aside.style.transition = "";
+          markManualSidebarClose();
+          editorActions.clearEvents();
+          setSideBarOpen(false);
+          window.setTimeout(() => {
+            aside.style.transform = "";
+          }, 260);
+        } else {
+          // Spring back: animate transform to 0.
+          aside.style.transition = "transform 180ms ease-out";
+          aside.style.transform = "";
+          window.setTimeout(() => {
+            aside.style.transition = "";
+          }, 200);
+        }
+      };
+
+      document.addEventListener("pointermove", onMove, { passive: false });
+      document.addEventListener("pointerup", onUp);
+      document.addEventListener("pointercancel", onUp);
+    },
+    [setSideBarOpen, editorActions]
+  );
+
   return (
     <aside
       role="complementary"
@@ -85,6 +204,7 @@ export const Toolbar = () => {
         sizeClass
       )}
       ref={ref}
+      onPointerDown={onSwipeStart}
     >
       <Header />
       <div
@@ -100,6 +220,9 @@ export const Toolbar = () => {
         </div>
         <SidebarLayersPanel />
       </div>
+      {isOverlayLayout && isOpen ? (
+        <SidebarSwipeHint sideBarLeft={sideBarLeft} />
+      ) : null}
     </aside>
   );
 };

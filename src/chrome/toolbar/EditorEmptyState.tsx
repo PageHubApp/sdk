@@ -1,3 +1,4 @@
+import { useEditor } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { TbBoxModel2, TbClick, TbLayoutGridAdd, TbPlus } from "react-icons/tb";
 import { useSDK } from "../../core/context";
@@ -10,6 +11,7 @@ import {
   ViewModeAtom,
 } from "../../utils/lib";
 import { usePanelUrl } from "../../utils/usePanelUrl";
+import { markManualSidebarClose } from "../hooks/useAutoOpenSidebar";
 import { ActionRow } from "./helpers/ActionRow";
 
 export const EditorEmptyState = () => {
@@ -20,6 +22,7 @@ export const EditorEmptyState = () => {
   const { open: openPanel } = usePanelUrl();
   const setViewMode = useSetAtomState(ViewModeAtom);
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
+  const { actions: editorActions } = useEditor();
   const { config } = useSDK();
   const isAiEnabled = useAiEnabled();
   const renderEmptyAi = config.editorChromeSlots?.renderEmptyStateAiCard;
@@ -106,7 +109,11 @@ export const EditorEmptyState = () => {
 
       <button
         type="button"
-        onClick={() => setSideBarOpen(false)}
+        onClick={() => {
+          markManualSidebarClose();
+          editorActions.clearEvents();
+          setSideBarOpen(false);
+        }}
         className="text-neutral-content/50 hover:text-neutral-content/80 shrink-0 border-0 bg-transparent py-2 text-xs transition-colors hover:underline"
       >
         close sidebar

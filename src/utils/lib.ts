@@ -86,7 +86,17 @@ export const ComponentsAtom = atom<any[]>("components", []);
 export const OnlineAtom = atom<boolean>("online", true);
 export const ScreenshotAtom = atom<boolean>("ss", false);
 export const SideBarAtom = atom<boolean>("sidebar", true);
-export const SideBarOpen = atom<boolean>("sidebaropen", true);
+export const SideBarOpen = atom<boolean>(
+  "sidebaropen",
+  (() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return !window.matchMedia("(max-width: 767px)").matches;
+    } catch {
+      return true;
+    }
+  })()
+);
 
 /**
  * `true` = main editor settings toolbar is docked to the **left** of the canvas; `false` = docked to the **right**.
