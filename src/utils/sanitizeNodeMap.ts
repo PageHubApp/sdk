@@ -35,18 +35,78 @@ export function sanitizeCraftNodeReferences(
 }
 
 /**
+ * Drop nodes whose `type.resolvedName` is not in `validTypes`, then clean up
+ * dangling parent.nodes / linkedNodes refs. CraftJS's deserialize destructures
+ * the resolver lookup result and crashes with a cryptic "Cannot destructure
+ * 'type' of undefined" in production builds (where tiny-invariant is a noop)
+ * when a saved node references a component that no longer exists in the
+ * resolver. Mutates in place.
+ */
+export function pruneUnknownComponentNodes(
+  nodes: Record<string, any>,
+  validTypes: Set<string> | string[]
+): { dropped: string[] } {
+  const valid = validTypes instanceof Set ? validTypes : new Set(validTypes);
+  const dropped: string[] = [];
+  for (const [id, node] of Object.entries(nodes)) {
+    if (!node || typeof node !== "object" || Array.isArray(node)) continue;
+    const resolved =
+      typeof node.type === "object" && node.type
+        ? node.type.resolvedName
+        : typeof node.type === "string"
+          ? node.type
+          : null;
+    if (id === "ROOT") continue;
+    if (resolved && !valid.has(resolved)) {
+      dropped.push(`${id}:${resolved}`);
+      delete nodes[id];
+    }
+  }
+  if (dropped.length) {
+    for (const node of Object.values(nodes)) {
+      if (!node || typeof node !== "object" || Array.isArray(node)) continue;
+      if (Array.isArray(node.nodes)) {
+        node.nodes = node.nodes.filter(
+          (cid: string) => typeof cid === "string" && cid && nodes[cid]
+        );
+      }
+      if (node.linkedNodes && typeof node.linkedNodes === "object") {
+        for (const [k, cid] of Object.entries(node.linkedNodes)) {
+          if (typeof cid !== "string" || !cid || !nodes[cid]) delete node.linkedNodes[k];
+        }
+      }
+    }
+  }
+  return { dropped };
+}
+
+/**
  * Best-effort sanitizer for serialized Craft content.
  * If the payload parses to a node map, strip dangling references before it
  * reaches Craft's deserializer/renderer. Invalid JSON is returned unchanged.
+ *
+ * Pass `validTypes` (resolver keys) to ALSO drop nodes whose component name
+ * isn't in the resolver — required for previews, where a stale saved site may
+ * reference components that no longer exist.
  */
 export function sanitizeCraftSerializedContent(
-  serialized: string | null | undefined
+  serialized: string | null | undefined,
+  validTypes?: Set<string> | string[]
 ): string | null | undefined {
   if (typeof serialized !== "string" || !serialized.trim()) return serialized;
 
   try {
     const parsed = JSON.parse(serialized) as Record<string, any>;
     const sanitized = sanitizeCraftNodeReferences(parsed);
+    if (validTypes) {
+      const { dropped } = pruneUnknownComponentNodes(sanitized, validTypes);
+      if (dropped.length && typeof console !== "undefined") {
+        console.warn(
+          `[sanitizeCraftSerializedContent] dropped ${dropped.length} node(s) with unknown component types:`,
+          dropped.slice(0, 8)
+        );
+      }
+    }
     expandModifiersInNodes(sanitized);
     return JSON.stringify(sanitized);
   } catch {
