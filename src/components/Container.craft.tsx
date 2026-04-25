@@ -279,7 +279,7 @@ export const ContainerDef = defineComponent(
       },
     ],
     modifiers: [
-      // Composite patterns (real CSS classes via @utility in daisyui-spatial)
+      // Composite patterns (real CSS classes via @utility in @pagehub/daisyui-spatial)
       // DaisyUI component classes go in `requires` — auto-added alongside the modifier.
       {
         name: "section-wrapper",
