@@ -31,7 +31,6 @@ import { useComponentSync } from "../hooks/useComponentSync";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { DeviceOffline } from "../toolbar/DeviceOffline";
 import { ComponentCanvasViewport } from "./ComponentCanvasViewport";
-import { ComponentEditorTabs } from "./ComponentEditorTabs";
 import { DeviceScrollbar } from "./DeviceScrollbar";
 import { DeviceSelector } from "./DeviceSelector";
 import { CanvasZoom } from "./CanvasZoom";
@@ -395,7 +394,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         ? "flex h-full overflow-hidden flex-row w-full absolute top-0 left-0 right-0 bottom-0"
         : "",
       enabled
-        ? `w-full h-full overflow-auto ${viewMode === "component" ? "mt-[var(--ph-component-tab-strip-h,2.5rem)]" : ""} `
+        ? "w-full h-full overflow-auto "
         : "w-full h-full overflow-auto",
     ],
   };
@@ -451,11 +450,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             : "flex-row"
         }`}
         data-container={true}
-        style={
-          enabled && viewMode === "component" && !device && !preview
-            ? ({ ["--ph-component-tab-strip-h" as string]: "2.5rem" } as React.CSSProperties)
-            : undefined
-        }
       >
         <LoadingBar
           active={pageLoad !== "idle"}
@@ -501,15 +495,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
         {enabled && !online && <DeviceOffline />}
 
-        {/* Canvas column is already right of the sidebar — do not offset left again (was left-[360px]). */}
-        {enabled && (
-          <div
-            className={`absolute inset-x-0 top-0 z-40 ${viewMode === "component" ? "" : "hidden"}`}
-          >
-            <ComponentEditorTabs />
-          </div>
-        )}
-
         {enabled && viewMode === "canvas" && (
           <ComponentCanvasViewport className="absolute inset-0 z-30" />
         )}
@@ -547,11 +532,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             tabIndex={0}
             className={`${activeClass[1]} w-full${classDarkEdit ? "dark" : ""}`}
             ref={(ref: any) => connectors.select(connectors.hover(ref, null), null)}
-            style={
-              viewMode === "component" && !device && !preview
-                ? { marginTop: "var(--ph-component-tab-strip-h, 2.5rem)" }
-                : undefined
-            }
           >
             {children}
           </div>

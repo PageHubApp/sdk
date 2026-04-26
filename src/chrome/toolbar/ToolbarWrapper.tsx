@@ -3,10 +3,11 @@ import { checkIfAncestorLinked } from "@/utils/componentUtils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { TbSearch, TbX } from "react-icons/tb";
+import { TbAdjustments, TbEdit, TbSearch, TbX } from "react-icons/tb";
 import { useSetAtomState } from "../../utils/atoms";
 import { EDITOR_ALL_PAGES_STORAGE, IsolateAtom } from "../../utils/lib";
 import { phStorage } from "../../utils/phStorage";
+import { EditorModeAtom } from "../viewport/atoms";
 import { TabAtom } from "../viewport/atoms";
 import { useAccordionContext } from "./AccordionContext";
 import { RenderChildren } from "./helpers/CloneHelper";
@@ -61,28 +62,114 @@ export const ToolbarWrapper = ({
   const [searchQuery, setSearchQuery] = useAtomState(SettingsSearchAtom);
   const [searchOpen, setSearchOpen] = useAtomState(SettingsSearchOpenAtom);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchPopupRef = useRef<HTMLDivElement>(null);
+  const mousePosRef = useRef({ x: 0, y: 0 });
+  const mouseInsideSidebarRef = useRef(false);
+  const [searchPos, setSearchPos] = useState<{ x: number; y: number } | null>(null);
 
   const setActiveTab = useSetAtomState(TabAtom);
+  const [editorMode, setEditorMode] = useAtomState(EditorModeAtom);
+
+  const SEARCH_POPUP_WIDTH = 280;
+  const SEARCH_POPUP_HEIGHT = 40;
+  const SEARCH_POPUP_PAD = 8;
+
+  const closeSearch = useCallback(() => {
+    setSearchOpen(false);
+    setSearchQuery("");
+    setSearchPos(null);
+  }, [setSearchOpen, setSearchQuery]);
+
+  const openSearchAtMouse = useCallback(() => {
+    const { x: mx, y: my } = mousePosRef.current;
+    const x = Math.min(
+      Math.max(mx - SEARCH_POPUP_WIDTH / 2, SEARCH_POPUP_PAD),
+      window.innerWidth - SEARCH_POPUP_WIDTH - SEARCH_POPUP_PAD
+    );
+    const y = Math.min(
+      Math.max(my + SEARCH_POPUP_PAD, SEARCH_POPUP_PAD),
+      window.innerHeight - SEARCH_POPUP_HEIGHT - SEARCH_POPUP_PAD
+    );
+    setSearchPos({ x, y });
+    setSearchOpen(true);
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  }, [setSearchOpen]);
 
   const toggleSearch = useCallback(() => {
-    if (searchOpen) {
-      setSearchOpen(false);
-      setSearchQuery("");
-    } else {
-      setSearchOpen(true);
-      setTimeout(() => searchInputRef.current?.focus(), 50);
-    }
-  }, [searchOpen, setSearchQuery]);
+    if (searchOpen) closeSearch();
+    else openSearchAtMouse();
+  }, [searchOpen, closeSearch, openSearchAtMouse]);
+
+  const toggleEditorMode = useCallback(() => {
+    const next = editorMode === "content" ? "design" : "content";
+    setEditorMode(next);
+    try {
+      phStorage.set("editor-mode", next);
+    } catch {}
+  }, [editorMode, setEditorMode]);
 
   useEffect(() => {
     const iso = phStorage.get("isolated");
     if (iso && iso !== "null" && iso !== EDITOR_ALL_PAGES_STORAGE) setIsolate(iso);
   }, [setIsolate]);
 
+  // Track mouse position + hover state for the sidebar so Cmd/Ctrl+F can pop the
+  // search wherever the user is currently looking.
+  useEffect(() => {
+    const toolbar = document.getElementById("toolbar");
+    if (!toolbar) return;
+    const handleMove = (e: MouseEvent) => {
+      mousePosRef.current = { x: e.clientX, y: e.clientY };
+    };
+    const handleEnter = () => {
+      mouseInsideSidebarRef.current = true;
+    };
+    const handleLeave = () => {
+      mouseInsideSidebarRef.current = false;
+    };
+    toolbar.addEventListener("mousemove", handleMove);
+    toolbar.addEventListener("mouseenter", handleEnter);
+    toolbar.addEventListener("mouseleave", handleLeave);
+    return () => {
+      toolbar.removeEventListener("mousemove", handleMove);
+      toolbar.removeEventListener("mouseenter", handleEnter);
+      toolbar.removeEventListener("mouseleave", handleLeave);
+    };
+  }, []);
+
+  // Cmd/Ctrl+F → open settings search at the mouse. Fires when the mouse is
+  // hovering the sidebar OR focus is inside it; otherwise native browser find runs.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== "f") return;
+      if (!(e.metaKey || e.ctrlKey)) return;
+      const target = e.target as HTMLElement | null;
+      const focusInSidebar = !!target?.closest?.("#toolbar");
+      if (!focusInSidebar && !mouseInsideSidebarRef.current) return;
+      e.preventDefault();
+      toggleSearch();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [toggleSearch]);
+
+  // Close the floating search popup when the user clicks outside of it.
+  useEffect(() => {
+    if (!searchOpen) return;
+    const handlePointerDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (searchPopupRef.current && target && searchPopupRef.current.contains(target)) return;
+      closeSearch();
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [searchOpen, closeSearch]);
+
   return (
     <div className="flex h-full flex-col">
       {/* Hide settings tabs for fully linked components */}
       {!isLinked && (
+        <>
         <div
           id="toolbarTabs"
           aria-label="Tabs"
@@ -92,17 +179,30 @@ export const ToolbarWrapper = ({
           <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
           <button
             type="button"
-            onClick={toggleSearch}
+            onClick={toggleEditorMode}
             className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-[color,background-color,transform] active:scale-90 ${
-              searchOpen ? "text-primary" : "text-secondary-content hover:text-base-content"
+              editorMode === "design"
+                ? "text-primary"
+                : "text-secondary-content hover:text-base-content"
             }`}
-            aria-label="Search settings"
+            aria-label={
+              editorMode === "content" ? "Switch to Design mode" : "Switch to Content mode"
+            }
+            aria-pressed={editorMode === "design"}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content="Search settings"
+            data-tooltip-content={
+              editorMode === "content"
+                ? "Content mode — click for full Design controls"
+                : "Design mode — click for simplified Content controls"
+            }
             data-tooltip-place="top"
             data-tooltip-offset={10}
           >
-            <TbSearch className="size-4" />
+            {editorMode === "content" ? (
+              <TbEdit className="size-4" />
+            ) : (
+              <TbAdjustments className="size-4" />
+            )}
           </button>
           <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
           <TabBarBreakpointPicker />
@@ -111,7 +211,7 @@ export const ToolbarWrapper = ({
           <div className="min-h-px min-w-0 flex-1" aria-hidden />
           <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
           <div
-            className="relative flex shrink-0 flex-row-reverse items-center gap-2"
+            className="relative flex min-w-48 shrink-0 flex-row-reverse items-center gap-2 pr-3"
             ref={tablistRef}
           >
             {indicatorStyle && (
@@ -170,33 +270,44 @@ export const ToolbarWrapper = ({
             })}
           </div>
 
-          {searchOpen && (
-            <div className="bg-secondary absolute inset-y-0 right-3 left-24 z-10 flex items-center">
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === "Escape") toggleSearch();
-                }}
-                placeholder="Search settings..."
-                className="border-base-300 bg-base-200 text-base-content placeholder:text-neutral-content focus:ring-primary h-9 w-full rounded-md border px-2.5 text-xs focus:ring-1 focus:outline-none"
-                autoFocus
-                {...toolbarInputNoAutocompleteProps}
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="text-neutral-content hover:text-base-content absolute top-1/2 right-4 flex size-5 -translate-y-1/2 cursor-pointer items-center justify-center"
-                >
-                  <TbX className="size-3" />
-                </button>
-              )}
-            </div>
-          )}
         </div>
+
+        {searchOpen && searchPos && (
+          <div
+            ref={searchPopupRef}
+            className="border-base-300 bg-base-100 fixed z-[100] flex items-center gap-2 rounded-lg border px-2 py-1.5 shadow-xl"
+            style={{ left: searchPos.x, top: searchPos.y, width: SEARCH_POPUP_WIDTH }}
+          >
+            <TbSearch className="text-neutral-content size-4 shrink-0" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Escape" || e.key === "Enter") {
+                  e.preventDefault();
+                  closeSearch();
+                }
+              }}
+              placeholder="Search settings..."
+              className="text-base-content placeholder:text-neutral-content min-w-0 flex-1 bg-transparent text-xs outline-none"
+              autoFocus
+              {...toolbarInputNoAutocompleteProps}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="text-neutral-content hover:text-base-content flex size-5 shrink-0 cursor-pointer items-center justify-center"
+                aria-label="Clear search"
+              >
+                <TbX className="size-3" />
+              </button>
+            )}
+          </div>
+        )}
+        </>
       )}
 
       <div id="toolbarItems" data-toolbar={true} className="flex min-h-0 flex-1 flex-col">

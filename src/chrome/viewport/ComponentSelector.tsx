@@ -13,15 +13,14 @@ import {
   TbUpload,
   TbX,
 } from "react-icons/tb";
-import { useAtomState, useAtomValue } from "@zedux/react";
-import { useSetAtomState } from "../../utils/atoms";
+import { useAtomState } from "@zedux/react";
 import {
   ComponentsAtom,
-  IsolateAtom,
-  OpenComponentEditorAtom,
-  hasPageIsolation,
+  ViewModeAtom,
 } from "../../utils/lib";
+import { CanvasIsolateAtom } from "../../utils/componentIsolation";
 import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
+import { useCreateComponent } from "../hooks/useCreateComponent";
 import { EditorListPicker } from "./EditorListPicker";
 import { EditorSidebarPrimaryCta } from "../primitives/EditorSidebarPrimaryCta";
 
@@ -36,32 +35,46 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
   const [editingName, setEditingName] = useState("");
   const { query, actions } = useEditor();
   const [components, setComponents] = useAtomState(ComponentsAtom);
-  const isolate = useAtomValue(IsolateAtom);
-  const setOpenComponentEditor = useSetAtomState(OpenComponentEditorAtom);
+  const [canvasIsolateRaw, setCanvasIsolate] = useAtomState(CanvasIsolateAtom);
+  const canvasIsolate = canvasIsolateRaw as unknown as string | null;
+  const [viewModeRaw, setViewMode] = useAtomState(ViewModeAtom);
+  const viewMode = viewModeRaw as unknown as string;
   const { deleteComponent } = useUnifiedDelete();
+  const createComponent = useCreateComponent();
+
+  /** Resolve a component's container ID (its rootNodeId is the *content* node). */
+  const containerIdOf = (component: any): string | null => {
+    try {
+      const contentNode = query.node(component.rootNodeId).get();
+      return contentNode?.data?.parent ?? null;
+    } catch {
+      return null;
+    }
+  };
+
+  /** Switch to canvas mode (if not already) then isolate the given container. */
+  const goCanvasAndIsolate = (containerId: string) => {
+    if (viewMode !== "canvas") setViewMode("canvas" as any);
+    setCanvasIsolate(containerId as any);
+  };
 
   // Filter components based on search term
   const filteredComponents = components.filter(component =>
     component.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle component click - open in editor
+  // Handle component click — switch to canvas (if needed) and isolate the picked component.
   const handleComponentClick = (component: any) => {
-    setOpenComponentEditor({
-      componentId: component.rootNodeId,
-      componentName: component.name,
-    });
+    const containerId = containerIdOf(component);
+    if (!containerId) return;
+    goCanvasAndIsolate(containerId);
     setIsOpen(false);
   };
 
-  // Handle create new component
+  // Create a blank component on canvas, then isolate it.
   const handleCreateComponent = () => {
-    // Trigger opening a new blank component editor
-    setOpenComponentEditor({
-      componentId: null,
-      componentName: "New Component",
-    });
     setIsOpen(false);
+    createComponent();
   };
 
   // Handle start rename
@@ -164,13 +177,16 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
     }
   };
 
-  // Find the currently editing component based on isolate ID
-  // The isolate ID is the component container, but rootNodeId is the content node
-  // So we need to check if the content node's parent matches the isolate
-  const currentComponent = hasPageIsolation(isolate)
+  // The currently isolated component on canvas (canvasIsolate is the container ID;
+  // c.rootNodeId is the content node, whose parent === container).
+  const currentComponent = canvasIsolate
     ? components.find(c => {
-        const contentNode = query.node(c.rootNodeId).get();
-        return contentNode?.data?.parent === isolate;
+        try {
+          const contentNode = query.node(c.rootNodeId).get();
+          return contentNode?.data?.parent === canvasIsolate;
+        } catch {
+          return false;
+        }
       })
     : null;
 
@@ -251,7 +267,7 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
           let isSelected = false;
           try {
             const contentNode = query.node(component.rootNodeId).get();
-            isSelected = hasPageIsolation(isolate) && contentNode?.data?.parent === isolate;
+            isSelected = !!canvasIsolate && contentNode?.data?.parent === canvasIsolate;
           } catch {
             isSelected = false;
           }

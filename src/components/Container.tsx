@@ -6,7 +6,7 @@ import { TbArrowDown, TbContainer, TbNote } from "react-icons/tb";
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { useIsolate, usePreview, useView } from "../core/store";
 import { ViewModeAtom } from "../utils/lib";
-import { hasPageIsolation } from "../utils/pageManagement";
+import { registerLiveComponent } from "../utils/componentRegistry";
 import { mergeAccessibilityProps } from "../utils/accessibility";
 import { addActionHandlers, addCustomHandlers } from "../utils/clickControls";
 import {
@@ -194,20 +194,20 @@ export function useContainerRender(
 
   let className = typeof props.className === "string" ? props.className : "";
 
-  // Hide component containers from the main viewport
-  // Only show them when being actively edited
+  // Hide component containers in non-canvas modes. Canvas isolation (hiding
+  // non-target components when one is isolated) is handled by setHidden via
+  // applyCanvasVisibility — CraftJS RenderNode returns null for hidden nodes,
+  // so the className branch isn't needed there.
   if (props.type === "component") {
-    if (!enabled) {
-      className = `${className} hidden`;
-    } else if (viewMode === "page" || viewMode === "preview") {
-      className = `${className} hidden`;
-    } else if (viewMode === "component" && hasPageIsolation(isolate) && isolate !== id) {
+    if (!enabled || viewMode === "page" || viewMode === "preview") {
       className = `${className} hidden`;
     }
-    // viewMode === "canvas": always visible; ComponentCanvasViewport positions via inline style
   }
 
-  // The componentCanvas singleton holds annotations; only visible in canvas mode
+  // The componentCanvas singleton is hidden everywhere except canvas list mode.
+  // applyCanvasVisibility hides it via setHidden in non-canvas / isolation
+  // modes, but keep the className guard for the brief window between viewMode
+  // change and the visibility effect running.
   if (props.type === "componentCanvas") {
     if (!enabled || viewMode !== "canvas") {
       className = `${className} hidden`;
@@ -244,6 +244,13 @@ export function useContainerRender(
         // reach this ref, `setDOM` never fires → node.dom stays null → drop
         // crash + broken hover on AI-added sections.
         console.log(`[Container.ref] ${r ? "mount" : "unmount"} id=${id}`);
+      }
+      // Canvas-mode pinning bridge: register/unregister this element in the
+      // live-component registry whenever Container mounts or unmounts. Lets
+      // ComponentCanvasItem react to CraftJS re-renders without polling the
+      // DOM. Cheap no-op when type !== "component".
+      if (props.type === "component") {
+        registerLiveComponent(id, r);
       }
       connect(drag(r));
     },

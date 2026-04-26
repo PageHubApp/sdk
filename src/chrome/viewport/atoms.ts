@@ -1,5 +1,6 @@
 import { atom } from "@zedux/react";
 import type { ViewMode } from "../../core/store";
+import { phStorage } from "../../utils/phStorage";
 
 export const TbActiveMenuAtom = atom("TbActiveMenuAtom", null);
 
@@ -55,3 +56,16 @@ export const ComponentCanvasZoomAtom = atom(
 );
 
 export const ComponentCanvasPanAtom = atom("componentCanvasPan", { x: 80, y: 80 });
+
+/** Sidebar editing mode — "content" hides advanced controls, "design" shows everything. */
+export type EditorMode = "content" | "design";
+export const EditorModeAtom = atom<EditorMode>(
+  "editorMode",
+  (() => {
+    try {
+      const saved = typeof window !== "undefined" ? phStorage.get("editor-mode") : null;
+      if (saved === "content" || saved === "design") return saved;
+    } catch {}
+    return "content";
+  })()
+);

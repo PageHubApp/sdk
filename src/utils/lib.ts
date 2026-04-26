@@ -109,15 +109,9 @@ export const SideBarOpen = atom<boolean>(
 export function useEditorSidebarDockLeft(): boolean {
   return useAtomValue(SideBarAtom);
 }
-/** Canvas scope for component editor / isolation — not the same as responsive viewport `ViewMode` in store.tsx */
-export type EditorCanvasViewMode = "page" | "preview" | "component" | "canvas";
+/** Canvas scope for component editor — not the same as responsive viewport `ViewMode` in store.tsx */
+export type EditorCanvasViewMode = "page" | "preview" | "canvas";
 export const ViewModeAtom = atom<EditorCanvasViewMode>("viewMode", "page");
-export type OpenComponentEditorState = null | {
-  componentId?: string;
-  componentName?: string;
-  draftId?: string;
-};
-export const OpenComponentEditorAtom = atom<any>("openComponentEditor", null);
 export const LastActiveAtom = atom<string>("lastActive", "");
 export const ActiveAtom = atom<string>("active", "");
 export const SelectedSectionAtom = atom<string | null>("selectedSection", null);

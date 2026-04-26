@@ -17,6 +17,7 @@ import { HiddenKeysAtom } from "./registry/atoms";
 import type { PropertyDef, SectionId } from "./registry/propertyDefs";
 import { useInspectorPin } from "./inspectorPin/InspectorPinContext";
 import { SectionPinButton } from "./inspectorPin/SectionPinButton";
+import { EditorModeAtom } from "../../viewport/atoms";
 
 interface Props {
   sectionId: SectionId;
@@ -41,8 +42,13 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
   // Stable props object for showWhen — only include metadata showWhen needs
   const nodeProps = useMemo(() => ({ _craftName: craftName }), [craftName]);
 
-  // Properties are static per section — no per-node filtering needed
-  const properties = useMemo(() => getProperties({ section: sectionId }), [sectionId]);
+  const editorMode = useAtomValue(EditorModeAtom);
+
+  // Properties are static per section — no per-node filtering needed (mode strips advanced ones)
+  const properties = useMemo(() => {
+    const all = getProperties({ section: sectionId });
+    return editorMode === "design" ? all : all.filter(p => !p.advanced);
+  }, [sectionId, editorMode]);
 
   // Split into main vs advanced, evaluate showWhen against current className
   const { main, advancedGroups } = useMemo(() => {
@@ -82,10 +88,12 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
 
   if (!section) return null;
 
-  // Section renders nothing when its hideKey is active OR it has no visible content
+  // Section renders nothing when its hideKey is active OR it's marked advanced in content mode
+  // OR it has no visible content
   const isHidden = !!(section.hideKey && hiddenKeys.has(section.hideKey));
+  const isAdvancedHidden = !!section.advanced && editorMode === "content";
   const isEmpty = main.length === 0 && advancedGroups.size === 0;
-  if (isHidden || isEmpty) return null;
+  if (isHidden || isAdvancedHidden || isEmpty) return null;
 
   const renderFlatAdvanced = () => (
     <ToolbarSection full={section.advancedColumns ?? 1} collapsible={false} nested>

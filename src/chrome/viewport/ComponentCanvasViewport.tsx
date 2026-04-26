@@ -1,17 +1,24 @@
 import { Element, useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import React from "react";
-import { TbHeading, TbTextSize } from "react-icons/tb";
-import { useAtomState } from "@zedux/react";
+import { TbBoxModel2, TbHeading, TbLayoutGridAdd, TbTextSize, TbX } from "react-icons/tb";
+import { useAtomState, useAtomValue } from "@zedux/react";
 import { Container } from "../../components/Container";
 import {
+  CANVAS_SLOT_W,
   CanvasAnnotation,
   COMPONENT_CANVAS_TYPE,
   findComponentCanvasNode,
   getCanvasAnnotations,
+  getComponentCanvasPos,
   listComponentContainers,
 } from "../../utils/componentCanvas";
+import {
+  applyCanvasVisibility,
+  CanvasIsolateAtom,
+} from "../../utils/componentIsolation";
 import { useCanvasPan } from "../hooks/useCanvasPan";
+import { useCreateComponent } from "../hooks/useCreateComponent";
 import { CanvasZoom } from "./CanvasZoom";
 import { CanvasAnnotationLayer } from "./CanvasAnnotationLayer";
 import { ComponentCanvasItem } from "./ComponentCanvasItem";
@@ -40,6 +47,16 @@ function ensureCanvasStyleTag() {
     }
     body[data-ph-canvas-mode="true"] #viewport [data-component-canvas="true"] {
       display: none;
+    }
+    /* The card chrome on the slot is the visible "component frame" in canvas
+       mode. Don't double up with the CraftJS selection chrome on the
+       component-root container — the slot frame is enough. The global ring
+       (inset box-shadow from styles/editor.css) is suppressed here. */
+    body[data-ph-canvas-mode="true"] #viewport [data-component-container="true"][data-selected="true"],
+    body[data-ph-canvas-mode="true"] #viewport [data-component-container="true"][data-hover="true"],
+    body[data-ph-canvas-mode="true"] #viewport [data-component-container="true"][data-parent-of-selected="true"] {
+      outline: none !important;
+      box-shadow: none !important;
     }
   `;
   document.head.appendChild(tag);
@@ -71,7 +88,7 @@ function createComponentCanvasNode(query: any, actions: any): string | null {
 export function ComponentCanvasViewport({ className = "" }: Props) {
   // Subscribe to ROOT children + each component/canvas node's serialized identity
   // so adds/removes/canvasPos/annotations/hidden changes trigger re-renders.
-  const { query, actions } = useEditor((state: any) => {
+  const { query, actions, sig } = useEditor((state: any) => {
     const root = state.nodes?.[ROOT_NODE];
     if (!root?.data?.nodes) return { sig: "" };
     const parts: string[] = [];
@@ -90,8 +107,26 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
     return { sig: parts.join("|") };
   });
   const [zoom] = useAtomState(ComponentCanvasZoomAtom);
-  const [pan] = useAtomState(ComponentCanvasPanAtom);
+  const [pan, setPan] = useAtomState(ComponentCanvasPanAtom);
+  const [canvasIsolateRaw, setCanvasIsolate] = useAtomState(CanvasIsolateAtom);
+  const canvasIsolate = canvasIsolateRaw as unknown as string | null;
   const surfaceRef = React.useRef<HTMLDivElement>(null);
+  const createComponent = useCreateComponent();
+
+  // Look up the isolated component's display name for the pill label.
+  const isolatedName = React.useMemo(() => {
+    if (!canvasIsolate) return null;
+    try {
+      const n = query.node(canvasIsolate).get();
+      return (
+        n?.data?.custom?.displayName ||
+        n?.data?.props?.custom?.displayName ||
+        "Component"
+      );
+    } catch {
+      return "Component";
+    }
+  }, [canvasIsolate, query]);
 
   // Tag body + inject style sheet on mount; clean up on unmount.
   // Lift overflow:hidden on every clipping ancestor of #viewport so absolutely-
@@ -159,49 +194,97 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
     );
   }, [pan.x, pan.y, zoom]);
 
-  // Un-hide every component + canvas singleton when entering canvas mode (idempotent)
+  // Drive ROOT-child visibility off mode + isolation. Single source of truth.
+  // Also runs on mount with whatever the current isolate value is.
   React.useEffect(() => {
-    // Debug: dump ROOT children so we can see what's there
-    try {
-      const root = query.node(ROOT_NODE).get();
-      const summary = root.data.nodes.map((nid: string) => {
-        const n = query.node(nid).get();
-        return {
-          id: nid,
-          type: n?.data?.props?.type,
-          hidden: n?.data?.hidden,
-          displayName: n?.data?.custom?.displayName || n?.data?.props?.custom?.displayName,
-        };
-      });
-      console.log("[ComponentCanvas] ROOT children:", summary);
-    } catch (e) {
-      console.error("[ComponentCanvas] ROOT walk failed", e);
-    }
-
-    const containerIds = listComponentContainers(query, true);
-    console.log("[ComponentCanvas] component container IDs:", containerIds);
-    containerIds.forEach((cid) => {
-      try {
-        actions.setHidden(cid, false);
-        actions.setProp(cid, (p: any) => {
-          p.hidden = false;
-        });
-      } catch {
-        // node may have been removed mid-render
-      }
+    applyCanvasVisibility(query, actions, {
+      mode: "canvas",
+      canvasIsolate,
     });
-    const canvasId = findComponentCanvasNode(query);
-    if (canvasId) {
+  }, [canvasIsolate]);
+
+  // Clean up isolation when the canvas viewport unmounts (e.g. user toggles
+  // back to page mode). Re-entering canvas always starts in list mode.
+  React.useEffect(() => {
+    return () => {
+      setCanvasIsolate(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Safety: if the isolated component disappears (deleted, restructured),
+  // exit isolation so the user isn't stuck on a dead pill / blank canvas.
+  React.useEffect(() => {
+    if (!canvasIsolate) return;
+    try {
+      const n = query.node(canvasIsolate).get();
+      if (!n || n.data?.props?.type !== "component") {
+        setCanvasIsolate(null);
+      }
+    } catch {
+      setCanvasIsolate(null);
+    }
+  }, [canvasIsolate, sig]);
+
+  // Pan/zoom snapshot — taken on isolation enter, restored on exit so the
+  // user lands back where they were in the list view (instead of stuck at the
+  // centered-on-component pan, which leaves siblings off to the side).
+  const preIsolatePanRef = React.useRef<{ pan: { x: number; y: number }; zoom: number } | null>(null);
+
+  React.useEffect(() => {
+    if (!canvasIsolate) {
+      // Exiting isolation — restore the pre-isolation pan/zoom if we have one.
+      if (preIsolatePanRef.current) {
+        setPan(preIsolatePanRef.current.pan);
+        // Zoom intentionally NOT restored — if the user adjusted zoom while
+        // editing the isolated component, that's their new preference.
+        preIsolatePanRef.current = null;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvasIsolate]);
+
+  // When entering isolation, snapshot pan/zoom, select the isolated node, and
+  // center the canvas on it. Preserves the user's current zoom — only pan
+  // changes.
+  React.useEffect(() => {
+    if (!canvasIsolate) return;
+    // Snapshot only on first entry (back-to-back isolation switches keep the
+    // original list-mode pan as the restore target).
+    if (!preIsolatePanRef.current) {
+      preIsolatePanRef.current = { pan: { ...pan }, zoom };
+    }
+    let cancelled = false;
+    requestAnimationFrame(() => {
+      if (cancelled) return;
       try {
-        actions.setHidden(canvasId, false);
-        actions.setProp(canvasId, (p: any) => {
-          p.hidden = false;
-        });
+        actions.selectNode(canvasIsolate);
       } catch {
         // ignore
       }
-    }
-  }, []);
+      const surface = surfaceRef.current;
+      if (!surface) return;
+      const containerIdx = listComponentContainers(query, true).indexOf(canvasIsolate);
+      const savedPos = getComponentCanvasPos(canvasIsolate, query, Math.max(0, containerIdx));
+      const z = zoom;
+      // Read the live component's height (post-mount) so we can vertically
+      // center it. Fall back to a reasonable default if the DOM isn't ready.
+      const liveEl = document.querySelector<HTMLElement>(
+        `[node-id="${canvasIsolate}"][data-component-container="true"]`
+      );
+      const compHeight = liveEl?.offsetHeight || 480;
+      const w = surface.clientWidth;
+      const h = surface.clientHeight;
+      setPan({
+        x: w / 2 - (CANVAS_SLOT_W * z) / 2 - savedPos.x * z,
+        y: Math.max(40, h / 2 - (compHeight * z) / 2) - savedPos.y * z,
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvasIsolate]);
 
   const { cursor } = useCanvasPan({
     panAtom: ComponentCanvasPanAtom,
@@ -248,7 +331,7 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
   return (
     <div
       ref={surfaceRef}
-      className={`bg-base-100 relative h-full w-full overflow-hidden ${className}`}
+      className={`bg-base-200/40 relative h-full w-full overflow-hidden ${className}`}
       style={{ cursor }}
       data-canvas-zoom-component-canvas="true"
     >
@@ -270,39 +353,70 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
             key={cid}
             containerId={cid}
             index={idx}
+            isolated={canvasIsolate === cid}
           />
         ))}
-        <CanvasAnnotationLayer
-          annotations={annotations}
-          onChange={writeAnnotations}
-        />
+        {!canvasIsolate && (
+          <CanvasAnnotationLayer
+            annotations={annotations}
+            onChange={writeAnnotations}
+          />
+        )}
       </div>
+
+      {/* Exit-isolation pill (only visible during isolation). */}
+      {canvasIsolate && (
+        <button
+          type="button"
+          onClick={() => setCanvasIsolate(null)}
+          className="bg-base-100 text-base-content border-base-300 hover:bg-base-200 pointer-events-auto absolute top-3 left-3 z-50 flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium shadow-sm"
+          title="Exit isolation"
+        >
+          <TbX className="size-3.5" />
+          <TbBoxModel2 className="size-3.5 opacity-70" />
+          <span className="max-w-[12rem] truncate">{isolatedName}</span>
+        </button>
+      )}
 
       {/* Floating toolbar */}
       <div className="bg-neutral/95 pointer-events-auto absolute top-3 right-3 z-50 flex items-center gap-2 rounded-lg px-3 py-2 shadow-lg backdrop-blur-sm">
-        <span className="text-neutral-content/70 px-1 text-xs">
-          {containerIds.length} {containerIds.length === 1 ? "component" : "components"}
-        </span>
-        <div className="bg-base-content/20 h-4 w-px" />
-        <button
-          type="button"
-          onClick={() => addAnnotation("label")}
-          className="hover:bg-neutral text-neutral-content rounded p-1.5"
-          title="Add label"
-          aria-label="Add label"
-        >
-          <TbTextSize className="size-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => addAnnotation("title")}
-          className="hover:bg-neutral text-neutral-content rounded p-1.5"
-          title="Add title"
-          aria-label="Add title"
-        >
-          <TbHeading className="size-4" />
-        </button>
-        <div className="bg-base-content/20 h-4 w-px" />
+        {!canvasIsolate && (
+          <>
+            <span className="text-neutral-content/70 px-1 text-xs">
+              {containerIds.length} {containerIds.length === 1 ? "component" : "components"}
+            </span>
+            <div className="bg-base-content/20 h-4 w-px" />
+            <button
+              type="button"
+              onClick={createComponent}
+              className="hover:bg-neutral text-neutral-content rounded p-1.5"
+              title="New component"
+              aria-label="New component"
+            >
+              <TbLayoutGridAdd className="size-4" />
+            </button>
+            <div className="bg-base-content/20 h-4 w-px" />
+            <button
+              type="button"
+              onClick={() => addAnnotation("label")}
+              className="hover:bg-neutral text-neutral-content rounded p-1.5"
+              title="Add label"
+              aria-label="Add label"
+            >
+              <TbTextSize className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => addAnnotation("title")}
+              className="hover:bg-neutral text-neutral-content rounded p-1.5"
+              title="Add title"
+              aria-label="Add title"
+            >
+              <TbHeading className="size-4" />
+            </button>
+            <div className="bg-base-content/20 h-4 w-px" />
+          </>
+        )}
         <CanvasZoom
           zoomAtom={ComponentCanvasZoomAtom}
           fitMode={{ kind: "width", target: 2400, max: 2 }}

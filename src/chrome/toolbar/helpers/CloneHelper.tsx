@@ -3,7 +3,8 @@ import { clearRelation, getBelongsTo, setRelationField } from "@/utils/relation"
 import { removeHasManyRelation } from "../../viewport/viewportExports";
 import { TbBoxModel2, TbLink, TbLinkOff, TbPalette, TbPencil } from "react-icons/tb";
 import { useSetAtomState } from "../../../utils/atoms";
-import { OpenComponentEditorAtom, ViewModeAtom } from "@/utils/lib";
+import { ViewModeAtom } from "@/utils/lib";
+import { CanvasIsolateAtom } from "@/utils/componentIsolation";
 import { ActionRow } from "./ActionRow";
 
 export const ConvertToRegularComponent = ({ query, actions, id }) => (
@@ -47,7 +48,7 @@ export const ConvertToContentComponent = ({ actions, id }) => (
 
 export const RenderChildren = ({ props, children, query, actions, id }) => {
   const setViewMode = useSetAtomState(ViewModeAtom);
-  const setOpenComponentEditor = useSetAtomState(OpenComponentEditorAtom);
+  const setCanvasIsolate = useSetAtomState(CanvasIsolateAtom);
 
   // Check if this node or ANY ancestor is a linked component
   const linkedNode = getLinkedAncestorNode(id, query);
@@ -91,8 +92,8 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
         }
 
         actions.selectNode(null);
-        setViewMode("component");
-        setOpenComponentEditor({ componentId: foundContainerId, componentName });
+        setViewMode("canvas");
+        setCanvasIsolate(foundContainerId);
       };
 
       return (

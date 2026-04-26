@@ -1,42 +1,33 @@
 import { useEditor } from "@craftjs/core";
-import { useAtomValue } from "@zedux/react";
+import { useAtomState } from "@zedux/react";
 import { TbBoxModel2, TbClick, TbLayoutGridAdd, TbPlus } from "react-icons/tb";
 import { useSDK } from "../../core/context";
 import { AssistantOpenAtom, useSetAtomState } from "../../utils/atoms";
 import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
 import {
   ComponentsAtom,
-  OpenComponentEditorAtom,
   SideBarOpen,
   ViewModeAtom,
 } from "../../utils/lib";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { markManualSidebarClose } from "../hooks/useAutoOpenSidebar";
+import { useCreateComponent } from "../hooks/useCreateComponent";
 import { ActionRow } from "./helpers/ActionRow";
 
 export const EditorEmptyState = () => {
-  const viewMode = useAtomValue(ViewModeAtom);
-  const components = useAtomValue(ComponentsAtom);
+  const [components] = useAtomState(ComponentsAtom);
+  const [viewMode] = useAtomState(ViewModeAtom);
   const setSideBarOpen = useSetAtomState(SideBarOpen);
-  const setOpenComponentEditor = useSetAtomState(OpenComponentEditorAtom);
   const { open: openPanel } = usePanelUrl();
-  const setViewMode = useSetAtomState(ViewModeAtom);
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const { actions: editorActions } = useEditor();
   const { config } = useSDK();
   const isAiEnabled = useAiEnabled();
   const renderEmptyAi = config.editorChromeSlots?.renderEmptyStateAiCard;
+  const handleCreateClick = useCreateComponent();
 
-  const isComponentMode = viewMode === "component";
+  const isCanvasMode = viewMode === "canvas";
   const hasComponents = components.length > 0;
-
-  const handleCreateClick = () => {
-    setViewMode("component");
-    setOpenComponentEditor({
-      componentId: null,
-      componentName: "New Component",
-    });
-  };
 
   const handleComponentsClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -51,7 +42,7 @@ export const EditorEmptyState = () => {
   return (
     <div className="scrollbar text-neutral-content z-20 flex min-h-0 w-full flex-1 flex-col overflow-auto bg-transparent p-4 pr-2 pb-2 text-center">
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8">
-        {!isComponentMode && (
+        {!isCanvasMode && (
           <div className="flex max-w-md flex-wrap items-center justify-center gap-1 text-sm">
             <div className="w-full space-y-6">
               <div className="grid grid-cols-1 gap-1">
@@ -84,7 +75,7 @@ export const EditorEmptyState = () => {
           </div>
         )}
 
-        {isComponentMode && !hasComponents && (
+        {isCanvasMode && !hasComponents && (
           <div className="flex w-full max-w-md flex-col gap-1 text-sm">
             <ActionRow
               icon={<TbBoxModel2 className="size-6" />}
@@ -95,7 +86,7 @@ export const EditorEmptyState = () => {
           </div>
         )}
 
-        {isComponentMode && hasComponents && (
+        {isCanvasMode && hasComponents && (
           <div className="flex w-full max-w-md flex-col gap-1 text-sm">
             <ActionRow
               icon={<TbClick className="size-6" />}

@@ -18,6 +18,10 @@ const zoomPresets = [
   { label: "150%", value: 1.5 },
   { label: "175%", value: 1.75 },
   { label: "200%", value: 2 },
+  { label: "300%", value: 3 },
+  { label: "500%", value: 5 },
+  { label: "750%", value: 7.5 },
+  { label: "1000%", value: 10 },
 ];
 
 type FitMode =

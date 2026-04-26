@@ -28,6 +28,7 @@ import {
   useSetAtomState,
 } from "../../utils/atoms";
 import { ComponentsAtom, LastActiveAtom, SideBarAtom, ViewModeAtom } from "../../utils/lib";
+import { applyCanvasVisibility } from "../../utils/componentIsolation";
 import {
   EDITOR_CANVAS_BREAKPOINT_PX,
   isEditorCanvasBreakpointView,
@@ -572,41 +573,15 @@ export const Header = () => {
             const newMode = viewMode === "page" ? "canvas" : "page";
             setViewMode(newMode);
             actions.selectNode(null);
-            const rootNode = query.node(ROOT_NODE).get();
-
             if (newMode === "page") {
-              // Switching to page view - restore normal state
               import("@/utils/lib").then(({ isolatePageInTree }) => {
                 isolatePageInTree(query, actions, null, () => {});
               });
-
-              rootNode.data.nodes.forEach(nodeId => {
-                const node = query.node(nodeId).get();
-                const nodeType = node?.data?.props?.type;
-
-                if (nodeType === "header" || nodeType === "footer" || nodeType === "page") {
-                  actions.setHidden(nodeId, false);
-                  actions.setProp(nodeId, prop => (prop.hidden = false));
-                } else if (nodeType === "component" || nodeType === "componentCanvas") {
-                  actions.setHidden(nodeId, true);
-                  actions.setProp(nodeId, prop => (prop.hidden = true));
-                }
-              });
-            } else {
-              // Entering canvas mode: hide pages/header/footer, show all components + canvas singleton.
-              rootNode.data.nodes.forEach(nodeId => {
-                const node = query.node(nodeId).get();
-                const nodeType = node?.data?.props?.type;
-
-                if (nodeType === "header" || nodeType === "footer" || nodeType === "page") {
-                  actions.setHidden(nodeId, true);
-                  actions.setProp(nodeId, prop => (prop.hidden = true));
-                } else if (nodeType === "component" || nodeType === "componentCanvas") {
-                  actions.setHidden(nodeId, false);
-                  actions.setProp(nodeId, prop => (prop.hidden = false));
-                }
-              });
             }
+            // ROOT-child visibility is driven by ComponentCanvasViewport's
+            // mount effect (canvas mode) and applyCanvasVisibility here for
+            // the page-mode side. No inline hide loops.
+            applyCanvasVisibility(query, actions, { mode: newMode });
           }}
         >
           {viewMode === "page" ? <TbBoxModel2 /> : <TbFileText />}
@@ -644,7 +619,7 @@ export const Header = () => {
 
       {/* Combined breadcrumb / page selector row - Below Header */}
       <div className="bg-base-100 pointer-events-auto">
-        {viewMode === "component" ? (
+        {viewMode === "canvas" ? (
           <div className="border-base-300 flex h-10 min-h-10 shrink-0 items-center border-b px-3 py-0">
             <ComponentSelector className="w-full" />
           </div>

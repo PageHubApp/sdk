@@ -60,6 +60,8 @@ export interface SectionDef {
   searchOnly?: boolean;
   /** Accordion starts open */
   defaultOpen?: boolean;
+  /** When true, this section is hidden in Content mode (only shown in Design mode). */
+  advanced?: boolean;
   /** Column count for the "More X properties" advanced grid (default 1). Ignored when `advancedSubsections` is set. */
   advancedColumns?: number;
   /**
@@ -197,6 +199,8 @@ export interface PropertyDef {
   showWhen?: (className: string, props: Record<string, any>) => boolean;
   /** If set, property is hidden behind "More X properties" toggle */
   advancedGroup?: string;
+  /** When true, this property is hidden in Content mode (only shown in Design mode). */
+  advanced?: boolean;
   /** Help tooltip text */
   help?: string;
 }

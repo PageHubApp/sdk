@@ -91,7 +91,7 @@ export function useCanvasPan({
       if (zf !== 1) {
         setZoom((z: number) => {
           const next = z * zf;
-          return Math.max(0.25, Math.min(2, next));
+          return Math.max(0.25, Math.min(10, next));
         });
       }
     };

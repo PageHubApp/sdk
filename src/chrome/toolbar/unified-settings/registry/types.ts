@@ -37,4 +37,6 @@ export interface SettingsSectionEntry {
   /** If true, this section only appears in search results — not in the normal tab view.
    *  Used for sub-sections of monolithic components (e.g. Spacing inside Layout). */
   searchOnly?: boolean;
+  /** When true, this section is hidden in Content mode (only shown in Design mode). */
+  advanced?: boolean;
 }

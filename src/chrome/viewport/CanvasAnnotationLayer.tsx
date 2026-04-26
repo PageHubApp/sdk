@@ -216,6 +216,10 @@ function AnnotationItem({
           left: 0,
           top: 0,
           minWidth: 80,
+          // Cards are pinned `position: fixed; z-index: 40`. Annotations sit
+          // above them so labels/titles never get hidden under a card.
+          // Toolbars/pills are z-50, so annotations stay below those.
+          zIndex: 45,
           willChange: "transform",
           transformOrigin: "0 0",
           "--ph-ann-x": `${a.x}px`,
