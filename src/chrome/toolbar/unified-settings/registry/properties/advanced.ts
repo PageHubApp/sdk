@@ -1,0 +1,141 @@
+/**
+ * Misc property defs that don't fit into typography/layout/etc — pure data.
+ *
+ * Spans alignment, spacing, properties, ai-context, import-export, permissions,
+ * conditions, animations, scroll-effect, overflow-scroll, data-source.
+ *
+ * TODO: split this further (e.g. alignment.ts, spacing.ts, properties.ts) once
+ * the AlignmentBody / PaddingBody / MarginBody slots are decomposed into
+ * individual property defs.
+ */
+import type { PropertyDef } from "../propertyDefs";
+
+export const advancedProperties: PropertyDef[] = [
+  {
+    id: "padding.body",
+    label: "Padding",
+    section: "spacing",
+    keywords: ["padding", "p", "px", "py", "pt", "pb", "inner"],
+    input: { type: "custom", component: "PaddingBody" },
+    hiddenByDefault: true,
+    sortOrder: 0,
+  },
+  {
+    id: "margin.body",
+    label: "Margin",
+    section: "spacing",
+    keywords: ["margin", "m", "mx", "my", "mt", "mb", "outer"],
+    input: { type: "custom", component: "MarginBody" },
+    hiddenByDefault: true,
+    sortOrder: 1,
+  },
+  {
+    id: "properties.elementId",
+    label: "Element ID",
+    section: "properties",
+    keywords: ["id", "element", "html", "anchor", "link", "hash"],
+    input: { type: "custom", component: "PropertiesInput" },
+    sortOrder: 0,
+  },
+  {
+    id: "aiContext",
+    label: "AI Context",
+    section: "ai-context",
+    keywords: ["ai", "context", "notes", "tags", "description", "assistant", "prompt"],
+    input: { type: "custom", component: "NodeAiContextSection" },
+    sortOrder: 0,
+  },
+  {
+    id: "importExport",
+    label: "Import / Export",
+    section: "import-export",
+    keywords: ["json", "copy", "paste", "import", "export", "code", "clipboard"],
+    input: { type: "custom", component: "ComponentImportExport" },
+    hideKey: "importExport",
+    sortOrder: 0,
+  },
+  {
+    id: "permissions",
+    label: "Permissions",
+    section: "permissions",
+    keywords: ["permission", "lock", "drag", "delete", "drop", "move", "protect", "restrict"],
+    input: { type: "custom", component: "PermissionsSection" },
+    sortOrder: 0,
+  },
+  {
+    id: "conditions",
+    label: "Conditions",
+    section: "conditions",
+    keywords: [
+      "condition",
+      "visibility",
+      "show",
+      "hide",
+      "url",
+      "form",
+      "device",
+      "auth",
+      "connector",
+    ],
+    input: { type: "custom", component: "ConditionsInput" },
+    sortOrder: 0,
+  },
+  {
+    id: "animations",
+    label: "Animation",
+    section: "animations",
+    keywords: [
+      "animate",
+      "motion",
+      "entrance",
+      "scroll",
+      "framer",
+      "css",
+      "fade",
+      "slide",
+      "scale",
+      "bounce",
+      "spring",
+    ],
+    input: { type: "custom", component: "AnimationsInput" },
+    hideKey: "animations",
+    sortOrder: 0,
+  },
+  {
+    id: "scrollEffect",
+    label: "Scroll Effect",
+    section: "scroll-effect",
+    keywords: ["scroll", "horizontal", "timeline", "pin", "gsap", "section", "parallax"],
+    input: { type: "custom", component: "ContainerScrollEffectSection" },
+    showWhen: (_cls, props) => props._craftName === "Container",
+    sortOrder: 0,
+  },
+  {
+    id: "containerOverflow",
+    label: "Overflow",
+    section: "overflow-scroll",
+    keywords: ["overflow", "scroll", "drag", "scrollbar", "horizontal", "carousel"],
+    input: { type: "custom", component: "ContainerOverflowSection" },
+    showWhen: (_cls, props) => props._craftName === "Container",
+    sortOrder: 0,
+  },
+  {
+    id: "dataSource",
+    label: "Data source",
+    section: "data-source",
+    keywords: [
+      "data",
+      "source",
+      "stripe",
+      "connector",
+      "products",
+      "category",
+      "search",
+      "query",
+      "repeater",
+    ],
+    input: { type: "custom", component: "DataSourceSectionSlot" },
+    showWhen: (_cls, props) => !!props.dataSource,
+    sortOrder: 0,
+  },
+];

@@ -14,6 +14,7 @@ import { layoutProperties } from "./layout";
 import { displayProperties } from "./display";
 import { ariaProperties } from "./aria";
 import { advancedProperties } from "./advanced";
+import { alignmentProperties } from "./alignment";
 import { interactionProperties } from "./interactions";
 
 // Register all built-in sections
@@ -31,6 +32,7 @@ registerProperties([
   ...displayProperties,
   ...ariaProperties,
   ...advancedProperties,
+  ...alignmentProperties,
   ...interactionProperties,
 ]);
 
@@ -44,4 +46,5 @@ export { layoutProperties } from "./layout";
 export { displayProperties } from "./display";
 export { ariaProperties } from "./aria";
 export { advancedProperties } from "./advanced";
+export { alignmentProperties } from "./alignment";
 export { interactionProperties } from "./interactions";

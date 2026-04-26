@@ -24,6 +24,7 @@ export const layoutProperties: PropertyDef[] = [
       allowedTypes: SIZE_TYPES,
       showVarSelector: true,
     },
+    hiddenByDefault: true,
     sortOrder: 0,
   },
   {
@@ -38,6 +39,7 @@ export const layoutProperties: PropertyDef[] = [
       allowedTypes: SIZE_TYPES,
       showVarSelector: true,
     },
+    hiddenByDefault: true,
     sortOrder: 1,
   },
   {

@@ -5,14 +5,8 @@
  * Border section — border width/style/color/radius (main) + per-side + divide (advanced)
  * Ring & Outline section — ring + outline width/color (main) + offsets + outline style (advanced)
  */
-import React from "react";
-import { LoadingBarSuspenseFallback } from "../../../../primitives/LoadingBar";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
-
-const LazyBorderSidesPicker = React.lazy(() =>
-  import("../../../inputs/border/BorderSidesPicker").then(m => ({ default: m.BorderSidesPicker }))
-);
 
 const RING_OUTLINE_TYPES: ValueType[] = [
   "tailwind",
@@ -104,6 +98,7 @@ export const appearanceProperties: PropertyDef[] = [
       showVarSelector: true,
     },
     hideKey: "radius",
+    pinned: true,
     sortOrder: 3,
     inline: true,
   },
@@ -114,15 +109,7 @@ export const appearanceProperties: PropertyDef[] = [
     label: "",
     section: "border",
     keywords: ["border", "top", "bottom", "left", "right", "side", "per-side"],
-    input: {
-      type: "custom",
-      component: () =>
-        React.createElement(
-          React.Suspense,
-          { fallback: React.createElement(LoadingBarSuspenseFallback) },
-          React.createElement(LazyBorderSidesPicker)
-        ),
-    },
+    input: { type: "custom", component: "BorderSidesPicker" },
     hideKey: "border",
     advancedGroup: "border-side",
     sortOrder: 110,

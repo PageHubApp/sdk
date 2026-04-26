@@ -46,15 +46,15 @@ export const ToolbarSection = ({
 
   const handleClick = (e: React.MouseEvent) => {
     if (disabled) return;
+    // Run consumer onClick first so it can call e.preventDefault() to override toggle.
+    if (onClick) onClick(e);
+    if (e.defaultPrevented) return;
     if (collapsible) {
       if (managed) {
         accordionCtx.toggle(title, defaultOpen);
       } else {
         setLocalIsOpen(!localIsOpen);
       }
-    }
-    if (onClick) {
-      onClick(e);
     }
   };
 

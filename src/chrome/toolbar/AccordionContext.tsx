@@ -52,6 +52,15 @@ export const AccordionProvider = ({ children }) => {
     [sectionDefault]
   );
 
+  const setOpen = useCallback((title: string, value: boolean) => {
+    setOpenSections(prev => {
+      if (prev[title] === value) return prev;
+      const next = { ...prev, [title]: value };
+      persist(next);
+      return next;
+    });
+  }, []);
+
   const register = useCallback((title, defaultOpen = false, primary = false) => {
     registeredSections.current.set(title, { defaultOpen: !!defaultOpen, primary: !!primary });
   }, []);
@@ -121,7 +130,7 @@ export const AccordionProvider = ({ children }) => {
 
   return (
     <AccordionContext.Provider
-      value={{ getIsOpen, toggle, toggleAll, openAll, openOnly, register, unregister, anyOpen }}
+      value={{ getIsOpen, toggle, setOpen, toggleAll, openAll, openOnly, register, unregister, anyOpen }}
     >
       {children}
     </AccordionContext.Provider>

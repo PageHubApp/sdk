@@ -1,21 +1,7 @@
 /**
- * Background property definitions.
+ * Background property definitions — pure data.
  */
-import React from "react";
-import { LoadingBarSuspenseFallback } from "../../../../primitives/LoadingBar";
 import type { PropertyDef } from "../propertyDefs";
-
-const LazyBackgroundSettingsInput = React.lazy(() =>
-  import("../../../inputs/color/BackgroundSettingsInput").then(m => ({
-    default: m.BackgroundSettingsInput,
-  }))
-);
-const LazyPatternInput = React.lazy(() =>
-  import("../../../inputs/color/PatternInput").then(m => ({ default: m.PatternInput }))
-);
-const LazyGradientInput = React.lazy(() =>
-  import("../../../inputs/color/GradientInput").then(m => ({ default: m.GradientInput }))
-);
 
 export const backgroundProperties: PropertyDef[] = [
   {
@@ -25,6 +11,7 @@ export const backgroundProperties: PropertyDef[] = [
     keywords: ["color", "fill", "bg", "background"],
     input: { type: "color", prefix: "bg" },
     hideKey: "bgColor",
+    pinned: true,
     sortOrder: 0,
     inline: true,
   },
@@ -33,14 +20,7 @@ export const backgroundProperties: PropertyDef[] = [
     label: "Image",
     section: "background",
     keywords: ["image", "photo", "picture", "url", "background"],
-    input: {
-      type: "custom",
-      component: () => (
-        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
-          <LazyBackgroundSettingsInput />
-        </React.Suspense>
-      ),
-    },
+    input: { type: "custom", component: "BackgroundSettingsInput" },
     sortOrder: 10,
   },
   {
@@ -48,14 +28,7 @@ export const backgroundProperties: PropertyDef[] = [
     label: "Pattern",
     section: "background",
     keywords: ["pattern", "texture", "dots", "grid", "lines", "noise"],
-    input: {
-      type: "custom",
-      component: () => (
-        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
-          <LazyPatternInput />
-        </React.Suspense>
-      ),
-    },
+    input: { type: "custom", component: "PatternInput" },
     hideKey: "pattern",
     sortOrder: 20,
   },
@@ -64,18 +37,9 @@ export const backgroundProperties: PropertyDef[] = [
     label: "Gradient",
     section: "background",
     keywords: ["gradient", "linear", "radial", "conic", "from", "to", "via"],
-    input: {
-      type: "custom",
-      component: () => (
-        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
-          <LazyGradientInput />
-        </React.Suspense>
-      ),
-    },
+    input: { type: "custom", component: "GradientInput" },
     sortOrder: 30,
   },
-
-  // ─── Advanced ────────────────────────────────────────────────────
   {
     id: "bgClip",
     label: "Clip",

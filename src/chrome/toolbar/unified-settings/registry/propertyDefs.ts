@@ -46,8 +46,11 @@ export interface SectionDef {
   title: string;
   /** Which tab this section belongs to */
   tab: SettingsTab;
-  /** Icon for accordion header */
-  icon?: ReactNode;
+  /**
+   * Icon for accordion header. Accepts either a JSX node (legacy) or a string
+   * key into the sectionIcons registry (preferred — keeps schema as pure data).
+   */
+  icon?: ReactNode | string;
   /** Search keywords (lowercase) */
   keywords: string[];
   /** If set, section is hidden when this key is in toolbar.hide[] */
@@ -164,8 +167,12 @@ export type PropertyInput =
     }
   | {
       type: "custom";
-      /** React component that renders the control */
-      component: ComponentType<PropertyInputProps>;
+      /**
+       * React component that renders the control. Accepts either a direct
+       * component reference (legacy) or a string key into the customInputs
+       * registry (preferred — keeps schema files free of JSX/imports).
+       */
+      component: ComponentType<PropertyInputProps> | string;
     };
 
 // ─── Property Definition ───────────────────────────────────────────────────
@@ -201,6 +208,25 @@ export interface PropertyDef {
   advancedGroup?: string;
   /** When true, this property is hidden in Content mode (only shown in Design mode). */
   advanced?: boolean;
+  /**
+   * Framer-style add/remove model: properties are hidden by default unless `pinned`
+   * is true. Hidden properties become visible when (a) they have a value, (b) the
+   * user adds them via the `+` menu, or (c) they're in `node.props.toolbarOrder`.
+   */
+  pinned?: boolean;
+  /** @deprecated alias for the inverse of `pinned`. Kept for migration safety. */
+  hiddenByDefault?: boolean;
+  /**
+   * Default value written when the user adds this property via the `+` menu.
+   * Format depends on `input.type`:
+   *  - tailwind-select / tailwind-radio / select → exact class string or option value
+   *  - universal → tailwind class with prefix (e.g. "blur-sm")
+   *  - color → tailwind color class (e.g. "bg-base-200")
+   *  - checkbox → automatically uses `input.on` (no defaultValue needed)
+   *  - text → string
+   *  - custom → owner decides; AccordionAddMenu calls input.onAdd if provided
+   */
+  defaultValue?: string;
   /** Help tooltip text */
   help?: string;
 }

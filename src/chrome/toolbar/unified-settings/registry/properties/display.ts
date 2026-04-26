@@ -7,14 +7,8 @@
  *           font smoothing, interactivity, CSS utilities
  * Custom CSS: own section (className code editor)
  */
-import React from "react";
-import { LoadingBarSuspenseFallback } from "../../../../primitives/LoadingBar";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
-
-const LazyClassNameInput = React.lazy(() =>
-  import("../../../inputs/advanced/ClassNameInput").then(m => ({ default: m.ClassNameInput }))
-);
 
 const OFFSET_TYPES: ValueType[] = ["tailwind", "calc", "px", "%", "em", "rem", "vw", "vh"];
 
@@ -463,14 +457,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Custom CSS",
     section: "custom-css",
     keywords: ["css", "class", "className", "tailwind", "custom", "code"],
-    input: {
-      type: "custom",
-      component: () => (
-        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
-          <LazyClassNameInput />
-        </React.Suspense>
-      ),
-    },
+    input: { type: "custom", component: "ClassNameInput" },
     sortOrder: 0,
   },
 ];

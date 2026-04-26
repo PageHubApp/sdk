@@ -4,21 +4,8 @@
  * Main: transition (property/duration/ease/delay) + blur + backdrop blur
  * Advanced: transforms, filters (preview tile), backdrop filters (preview tile), animate
  */
-import React from "react";
-import { LoadingBarSuspenseFallback } from "../../../../primitives/LoadingBar";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
-
-const LazyFilterPreviewTileFilter = React.lazy(() =>
-  import("../../../inputs/effects/FilterPreviewTile").then(m => ({
-    default: m.FilterPreviewTileFilter,
-  }))
-);
-const LazyFilterPreviewTileBackdrop = React.lazy(() =>
-  import("../../../inputs/effects/FilterPreviewTile").then(m => ({
-    default: m.FilterPreviewTileBackdrop,
-  }))
-);
 
 const EFFECTS_TYPES: ValueType[] = [
   "tailwind",
@@ -173,15 +160,7 @@ export const effectsProperties: PropertyDef[] = [
       "saturate",
       "sepia",
     ],
-    input: {
-      type: "custom",
-      component: () =>
-        React.createElement(
-          React.Suspense,
-          { fallback: React.createElement(LoadingBarSuspenseFallback) },
-          React.createElement(LazyFilterPreviewTileFilter)
-        ),
-    },
+    input: { type: "custom", component: "FilterPreviewTileFilter" },
     advancedGroup: "filter",
     sortOrder: 130,
   },
@@ -202,15 +181,7 @@ export const effectsProperties: PropertyDef[] = [
       "saturate",
       "sepia",
     ],
-    input: {
-      type: "custom",
-      component: () =>
-        React.createElement(
-          React.Suspense,
-          { fallback: React.createElement(LoadingBarSuspenseFallback) },
-          React.createElement(LazyFilterPreviewTileBackdrop)
-        ),
-    },
+    input: { type: "custom", component: "FilterPreviewTileBackdrop" },
     advancedGroup: "backdrop",
     sortOrder: 140,
   },

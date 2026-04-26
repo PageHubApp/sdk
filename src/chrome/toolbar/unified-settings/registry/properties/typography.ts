@@ -1,35 +1,17 @@
 /**
- * Typography property definitions.
+ * Typography property definitions — pure data, no JSX, no imports of inputs.
+ * Custom inputs are referenced by string key into the customInputs registry.
  */
-import React from "react";
-import { LoadingBarSuspenseFallback } from "../../../../primitives/LoadingBar";
 import type { PropertyDef } from "../propertyDefs";
 
-const LazyFontFamilyInput = React.lazy(() =>
-  import("../../../inputs/typography/FontFamilyInput").then(m => ({ default: m.FontFamilyInput }))
-);
-
-const LazyTypographyPresetInput = React.lazy(() =>
-  import("../../../inputs/typography/TypographyPresetInput").then(m => ({
-    default: m.TypographyPresetInput,
-  }))
-);
-
 export const typographyProperties: PropertyDef[] = [
-  // ─── Main (visible by default) ───────────────────────────────────
   {
     id: "typographyPreset",
     label: "Preset",
     section: "typography",
     keywords: ["preset", "typography", "style", "heading", "body", "accent"],
-    input: {
-      type: "custom",
-      component: props => (
-        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
-          <LazyTypographyPresetInput {...props} />
-        </React.Suspense>
-      ),
-    },
+    input: { type: "custom", component: "TypographyPresetInput" },
+    pinned: true,
     sortOrder: -10,
     inline: true,
   },
@@ -46,14 +28,7 @@ export const typographyProperties: PropertyDef[] = [
     label: "Family",
     section: "typography",
     keywords: ["font", "family", "typeface", "google", "heading", "body", "accent"],
-    input: {
-      type: "custom",
-      component: () => (
-        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
-          <LazyFontFamilyInput />
-        </React.Suspense>
-      ),
-    },
+    input: { type: "custom", component: "FontFamilyInput" },
     sortOrder: 10,
   },
   {
@@ -93,7 +68,7 @@ export const typographyProperties: PropertyDef[] = [
     inline: true,
   },
 
-  // ─── Advanced (behind toggle) ────────────────────────────────────
+  // Hidden until added (formerly behind "More typography" toggle)
   {
     id: "lineHeight",
     label: "Line Height",

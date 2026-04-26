@@ -4,16 +4,10 @@
  * "action" section — custom ActionInput component
  * "hover" section — standard color/opacity/transform defs
  */
-import React from "react";
-import { LoadingBarSuspenseFallback } from "../../../../primitives/LoadingBar";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
 
 const HOVER_TYPES: ValueType[] = ["tailwind", "calc"];
-
-const LazyActionInput = React.lazy(() =>
-  import("../../../inputs/action/ActionInput").then(m => ({ default: m.default }))
-);
 
 export const interactionProperties: PropertyDef[] = [
   // ─── Action (custom) ─────────────────────────────────────────────
@@ -33,14 +27,7 @@ export const interactionProperties: PropertyDef[] = [
       "download",
       "cart",
     ],
-    input: {
-      type: "custom",
-      component: () => (
-        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
-          <LazyActionInput />
-        </React.Suspense>
-      ),
-    },
+    input: { type: "custom", component: "ActionInput" },
     sortOrder: 0,
   },
 

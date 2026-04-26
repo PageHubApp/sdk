@@ -10,11 +10,38 @@ import { ToolbarItem } from "../ToolbarItem";
 import { TailwindInput } from "../inputs/advanced/TailwindInput";
 import { ColorInput } from "../inputs/color/ColorInput";
 import { UniversalInput } from "../inputs/universal-input";
+import { useNode } from "@craftjs/core";
+import { useAtomValue } from "@zedux/react";
+import { usePropertyHasValue } from "./usePropertyHasValue";
+import { SessionAddedAtom, sessionKey } from "./sessionAddedAtom";
+import { resolveCustomInput } from "./customInputs";
 import type { PropertyDef, PropertyInputProps } from "./registry/propertyDefs";
 
 interface Props {
   def: PropertyDef;
   index?: string;
+}
+
+/**
+ * Visibility-gated wrapper. For `hiddenByDefault` props, renders the row only
+ * when a value is set. Plain props always render. Hooks fire per-instance, so
+ * each property gets its own hasValue check.
+ */
+export function PropertyRow({ def, index }: Props) {
+  const hasValue = usePropertyHasValue(def);
+  const { id, toolbarOrder } = useNode((node: any) => ({
+    toolbarOrder: Array.isArray(node.data?.props?.toolbarOrder)
+      ? (node.data.props.toolbarOrder as string[])
+      : [],
+  }));
+  const sessionAdded = useAtomValue(SessionAddedAtom);
+  // Pinned (or legacy advancedGroup-only props from prior model) always render.
+  // Everything else hides until it has a value, was just added, or is in toolbarOrder.
+  if (def.pinned) return <PropertyRenderer def={def} index={index} />;
+  const wasJustAdded = sessionAdded.has(sessionKey(id, def.id));
+  const isPersistedAdd = toolbarOrder.includes(def.id);
+  if (!hasValue && !wasJustAdded && !isPersistedAdd) return null;
+  return <PropertyRenderer def={def} index={index} />;
 }
 
 export function PropertyRenderer({ def, index: indexOverride = "" }: Props) {
@@ -163,7 +190,7 @@ export function PropertyRenderer({ def, index: indexOverride = "" }: Props) {
     }
 
     case "custom": {
-      const Component = def.input.component;
+      const Component = resolveCustomInput(def.input.component);
       return <Component def={def} index={index} />;
     }
 

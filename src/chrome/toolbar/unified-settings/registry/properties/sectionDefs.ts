@@ -202,7 +202,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
   {
     id: "action",
     title: "Action",
-    tab: "interactions",
+    tab: "component",
     icon: React.createElement(TbPointer),
     keywords: [
       "action",
