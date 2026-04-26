@@ -1,7 +1,7 @@
 /**
  * usePropertyHasValue — true when a property has any value set on the current node.
  *
- * Used by PropertySection to decide whether to render a `hiddenByDefault` row.
+ * Used by PropertySection to decide whether to render a non-pinned row.
  * Reads via the existing getPropFinalValue plumbing so it sees breakpoint
  * variants (sm:, md:, …) and dark variants too.
  */

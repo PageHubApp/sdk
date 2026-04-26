@@ -8,26 +8,91 @@
  * the AlignmentBody / PaddingBody / MarginBody slots are decomposed into
  * individual property defs.
  */
+import React from "react";
+import {
+  TbBorderInner,
+  TbBoxPadding,
+  TbBoxMargin,
+  TbSquare,
+} from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
+
+const SPACING_TYPES = ["tailwind", "calc", "px", "em", "rem", "%"] as const;
 
 export const advancedProperties: PropertyDef[] = [
   {
-    id: "padding.body",
+    id: "padding",
     label: "Padding",
-    section: "spacing",
+    section: "alignment",
     keywords: ["padding", "p", "px", "py", "pt", "pb", "inner"],
-    input: { type: "custom", component: "PaddingBody" },
-    hiddenByDefault: true,
-    sortOrder: 0,
+    input: {
+      type: "shorthand",
+      varSelectorPrefix: "p",
+      allowedTypes: [...SPACING_TYPES],
+      modes: [
+        {
+          id: "uniform",
+          icon: React.createElement(TbSquare, { className: "size-3.5" }),
+          ariaLabel: "Uniform padding",
+          tags: ["p"],
+          labels: [""],
+        },
+        {
+          id: "axes",
+          icon: React.createElement(TbBoxPadding, { className: "size-3.5" }),
+          ariaLabel: "Padding X & Y",
+          tags: ["px", "py"],
+          labels: ["X", "Y"],
+        },
+        {
+          id: "sides",
+          icon: React.createElement(TbBorderInner, { className: "size-3.5" }),
+          ariaLabel: "Padding per-side",
+          tags: ["pt", "pr", "pb", "pl"],
+          labels: ["T", "R", "B", "L"],
+          columns: 2,
+        },
+      ],
+    },
+    pinned: true,
+    sortOrder: 80,
   },
   {
-    id: "margin.body",
+    id: "margin",
     label: "Margin",
-    section: "spacing",
+    section: "alignment",
     keywords: ["margin", "m", "mx", "my", "mt", "mb", "outer"],
-    input: { type: "custom", component: "MarginBody" },
-    hiddenByDefault: true,
-    sortOrder: 1,
+    input: {
+      type: "shorthand",
+      varSelectorPrefix: "m",
+      allowedTypes: [...SPACING_TYPES],
+      modes: [
+        {
+          id: "uniform",
+          icon: React.createElement(TbSquare, { className: "size-3.5" }),
+          ariaLabel: "Uniform margin",
+          tags: ["m"],
+          labels: [""],
+        },
+        {
+          id: "axes",
+          icon: React.createElement(TbBoxMargin, { className: "size-3.5" }),
+          ariaLabel: "Margin X & Y",
+          tags: ["mx", "my"],
+          labels: ["X", "Y"],
+        },
+        {
+          id: "sides",
+          icon: React.createElement(TbBorderInner, { className: "size-3.5" }),
+          ariaLabel: "Margin per-side",
+          tags: ["mt", "mr", "mb", "ml"],
+          labels: ["T", "R", "B", "L"],
+          columns: 2,
+        },
+      ],
+    },
+    pinned: true,
+    sortOrder: 85,
   },
   {
     id: "properties.elementId",

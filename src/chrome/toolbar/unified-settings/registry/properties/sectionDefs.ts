@@ -14,8 +14,6 @@ import {
   TbBolt,
   TbBorderAll,
   TbBorderOuter,
-  TbBoxMargin,
-  TbBoxPadding,
   TbBrandTailwind,
   TbChevronsDown,
   TbCode,
@@ -95,16 +93,6 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     sortOrder: 20,
     help: "Width, height, min/max size, and aspect ratio.",
   },
-  {
-    id: "spacing",
-    title: "Spacing",
-    tab: "layout",
-    icon: React.createElement(TbBoxMargin),
-    keywords: ["padding", "margin", "spacing", "space"],
-    sortOrder: 25,
-    help: "Padding and margin controls.",
-  },
-
   // ─── Design tab ────────────────────────────────────────────────────
   {
     id: "typography",
@@ -125,12 +113,6 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     hideKey: "font",
     sortOrder: 10,
     help: "Font family, size, weight, color, and text alignment.",
-    advancedSubsections: [
-      { id: "spacing", title: "Spacing" },
-      { id: "decoration", title: "Decoration" },
-      { id: "wrapping", title: "Wrapping" },
-      { id: "other", title: "Other", defaultOpen: false },
-    ],
   },
   {
     id: "background",
@@ -170,10 +152,6 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     ],
     sortOrder: 32,
     help: "Border width, style, color, radius, and per-side controls.",
-    advancedSubsections: [
-      { id: "border-side", title: "Per-side" },
-      { id: "divide", title: "Divide", columns: 2, defaultOpen: false },
-    ],
   },
   {
     id: "ring-outline",
@@ -184,11 +162,6 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     hideKey: "ringOutline",
     sortOrder: 34,
     help: "Focus ring and outline styling.",
-    advancedSubsections: [
-      { id: "ring", title: "Ring" },
-      { id: "outline", title: "Outline" },
-    ],
-    skipAdvancedToggle: true,
   },
   {
     id: "advanced-settings",
@@ -270,12 +243,6 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     hideKey: "effectsClass",
     sortOrder: 40,
     help: "Transform, filter, backdrop, and animation utilities.",
-    advancedSubsections: [
-      { id: "transform", title: "Transform", columns: 2 },
-      { id: "filter", title: "Filter", defaultOpen: false },
-      { id: "backdrop", title: "Backdrop Filter", defaultOpen: false },
-      { id: "animate", title: "Animate", defaultOpen: false },
-    ],
   },
   {
     id: "scroll-effect",
@@ -324,15 +291,6 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     keywords: ["visibility", "pointer", "cursor", "classname", "css"],
     sortOrder: 30,
     help: "Visibility, cursor, page breaks, and other CSS display options.",
-    advancedSubsections: [
-      { id: "behavior", title: "Behavior", columns: 2 },
-      { id: "css", title: "CSS", columns: 2, defaultOpen: false },
-      { id: "breaks", title: "Page Breaks", columns: 2, defaultOpen: false },
-      { id: "list", title: "List", columns: 2, defaultOpen: false },
-      { id: "table", title: "Table", columns: 2, defaultOpen: false },
-      { id: "svg", title: "SVG", columns: 2, defaultOpen: false },
-      { id: "other", title: "Other", columns: 2, defaultOpen: false },
-    ],
   },
   {
     id: "custom-css",

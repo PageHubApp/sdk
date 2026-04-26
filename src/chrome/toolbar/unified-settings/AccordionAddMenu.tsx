@@ -1,8 +1,8 @@
 /**
- * AccordionAddMenu — Framer-style `+ Add` picker for hiddenByDefault properties.
+ * AccordionAddMenu — Framer-style `+ Add` picker for non-pinned properties.
  *
  * Renders a `+` button. Click opens a searchable popover listing the section's
- * hiddenByDefault props that don't currently have a value. Picking one writes
+ * non-pinned props that don't currently have a value. Picking one writes
  * its `defaultValue` (or a sensible fallback per input type), making the row
  * appear via PropertyRow's value-gated render.
  */
@@ -16,6 +16,7 @@ import { ViewAtom } from "../../viewport/atoms";
 import { ViewSelectionAtom } from "../Label";
 import { useAccordionContext } from "../AccordionContext";
 import { getProperties, getSectionDef } from "./registry/propertyRegistry";
+import { HiddenKeysAtom } from "./registry/atoms";
 import { SessionAddedAtom, sessionKey } from "./sessionAddedAtom";
 import type { PropertyDef, SectionId } from "./registry/propertyDefs";
 
@@ -58,6 +59,7 @@ export const AccordionAddMenu = React.memo(
 
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const hiddenKeys = useAtomValue(HiddenKeysAtom);
 
   const {
     actions: { setProp },
@@ -79,6 +81,7 @@ export const AccordionAddMenu = React.memo(
   const available = useMemo(() => {
     return getProperties({ section: sectionId })
       .filter(p => !p.pinned)
+      .filter(p => !p.hideKey || !hiddenKeys.has(p.hideKey))
       .filter(p => !orderSet.has(p.id))
       .filter(p => !propertyHasValue(p, className, componentProps, view, classDark))
       .filter(p => {
@@ -90,7 +93,7 @@ export const AccordionAddMenu = React.memo(
           p.keywords.some(kw => kw.includes(q))
         );
       });
-  }, [sectionId, className, componentProps, view, classDark, query]);
+  }, [sectionId, className, componentProps, view, classDark, query, hiddenKeys, orderSet]);
 
   // Close on outside click
   useEffect(() => {
@@ -117,19 +120,17 @@ export const AccordionAddMenu = React.memo(
     []
   );
 
-  // Hide entirely when there are no hiddenByDefault props in this section at all
-  // (regardless of whether they're currently shown or not). Otherwise always show
-  // the + button so users discover the affordance.
+  // Hide entirely when there are no addable (non-pinned, non-hidden) props in this section.
   const hasAddable = useMemo(
-    () => getProperties({ section: sectionId }).some(p => !p.pinned),
-    [sectionId]
+    () =>
+      getProperties({ section: sectionId }).some(
+        p => !p.pinned && (!p.hideKey || !hiddenKeys.has(p.hideKey))
+      ),
+    [sectionId, hiddenKeys]
   );
   if (!hasAddable) return null;
 
   const onPick = (def: PropertyDef) => {
-    // Adding always expands the section so the user can immediately see/edit
-    // the row they just added (especially when picker was opened from a
-    // collapsed empty-section title click).
     ensureSectionOpen();
     const defaultValue = resolveDefaultValue(def);
     if (defaultValue != null) {
@@ -141,19 +142,17 @@ export const AccordionAddMenu = React.memo(
         view,
         classDark,
       });
+      // Persist click-order. hasValue keeps the row alive across reloads.
+      setProp((p: any) => {
+        const order: string[] = Array.isArray(p.toolbarOrder) ? p.toolbarOrder : [];
+        if (!order.includes(def.id)) p.toolbarOrder = [...order, def.id];
+      }, 0);
     } else {
-      // No clean default — mark this prop as session-added so PropertyRow
-      // renders the row immediately. User sets the value from there.
+      // No clean default — session-only. Row dies on reload if user never set a value.
       const next = new Set(sessionAdded);
       next.add(sessionKey(id, def.id));
       setSessionAdded(next);
     }
-    // Append to per-node toolbarOrder so added rows render in click order
-    // at the bottom of the section, surviving reload.
-    setProp((p: any) => {
-      const order: string[] = Array.isArray(p.toolbarOrder) ? p.toolbarOrder : [];
-      if (!order.includes(def.id)) p.toolbarOrder = [...order, def.id];
-    }, 0);
     setOpen(false);
     setQuery("");
   };
@@ -167,10 +166,10 @@ export const AccordionAddMenu = React.memo(
           ensureSectionOpen();
           setOpen(o => !o);
         }}
-        className="text-neutral-content hover:text-base-content flex size-5 shrink-0 items-center justify-center rounded transition-colors"
+        className="text-base-content hover:bg-base-200 flex size-4 shrink-0 items-center justify-center rounded transition-colors"
         aria-label="Add property"
       >
-        <TbPlus className="size-4" aria-hidden />
+        <TbPlus className="size-3.5" aria-hidden />
       </button>
       {open && (
         <div
@@ -204,28 +203,20 @@ export const AccordionAddMenu = React.memo(
                 {query ? `No matches for "${query}"` : "All properties added"}
               </div>
             ) : (
-              (() => {
-                const section = getSectionDef(sectionId);
-                const groupTitle = (groupId?: string) => {
-                  if (!groupId || !section?.advancedSubsections) return null;
-                  return section.advancedSubsections.find(s => s.id === groupId)?.title || groupId;
-                };
-                return available.map(def => {
-                  const hint = groupTitle(def.advancedGroup);
-                  return (
-                    <button
-                      key={def.id}
-                      type="button"
-                      onClick={() => onPick(def)}
-                      className="text-base-content hover:bg-base-200 flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-xs"
-                      title={def.help}
-                    >
-                      <span>{def.label || def.id}</span>
-                      {hint && <span className="text-neutral-content text-[10px]">{hint}</span>}
-                    </button>
-                  );
-                });
-              })()
+              available.map(def => (
+                <button
+                  key={def.id}
+                  type="button"
+                  onClick={() => onPick(def)}
+                  className="text-base-content hover:bg-base-200 flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-xs"
+                  title={def.help}
+                >
+                  <span>{def.label || def.id}</span>
+                  {def.groupLabel && (
+                    <span className="text-neutral-content text-[10px]">{def.groupLabel}</span>
+                  )}
+                </button>
+              ))
             )}
           </div>
         </div>

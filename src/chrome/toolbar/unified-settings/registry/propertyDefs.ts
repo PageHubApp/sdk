@@ -19,7 +19,6 @@ export type SectionId =
   | "modifiers"
   | "layout"
   | "alignment"
-  | "spacing"
   | "size"
   | "typography"
   | "background"
@@ -46,11 +45,8 @@ export interface SectionDef {
   title: string;
   /** Which tab this section belongs to */
   tab: SettingsTab;
-  /**
-   * Icon for accordion header. Accepts either a JSX node (legacy) or a string
-   * key into the sectionIcons registry (preferred — keeps schema as pure data).
-   */
-  icon?: ReactNode | string;
+  /** Icon for accordion header */
+  icon?: ReactNode;
   /** Search keywords (lowercase) */
   keywords: string[];
   /** If set, section is hidden when this key is in toolbar.hide[] */
@@ -65,31 +61,6 @@ export interface SectionDef {
   defaultOpen?: boolean;
   /** When true, this section is hidden in Content mode (only shown in Design mode). */
   advanced?: boolean;
-  /** Column count for the "More X properties" advanced grid (default 1). Ignored when `advancedSubsections` is set. */
-  advancedColumns?: number;
-  /**
-   * When set, advanced properties are split into nested sub-sections by their
-   * `advancedGroup`. Each entry renders as its own collapsible nested ToolbarSection
-   * (no card chrome, doesn't pollute the global toggleAll). Order follows the array.
-   * Properties whose `advancedGroup` doesn't match any entry render as a final "Other".
-   *
-   * If this is set AND there is no main content (no main props), the "More X properties"
-   * outer toggle is skipped — sub-sections render directly inside the section body.
-   */
-  advancedSubsections?: SectionAdvancedSubsection[];
-  /** When true and `advancedSubsections` is set, skip the outer "More X properties" toggle. */
-  skipAdvancedToggle?: boolean;
-}
-
-export interface SectionAdvancedSubsection {
-  /** Matches `PropertyDef.advancedGroup` */
-  id: string;
-  /** Sub-section header label */
-  title: string;
-  /** Grid column count inside this sub-section (default 1) */
-  columns?: number;
-  /** Sub-section starts expanded (default true) */
-  defaultOpen?: boolean;
 }
 
 // ─── Property Input Types ──────────────────────────────────────────────────
@@ -168,12 +139,46 @@ export type PropertyInput =
   | {
       type: "custom";
       /**
-       * React component that renders the control. Accepts either a direct
-       * component reference (legacy) or a string key into the customInputs
-       * registry (preferred — keeps schema files free of JSX/imports).
+       * React component that renders the control. Accepts a direct component
+       * reference or a string key into the customInputs registry.
        */
       component: ComponentType<PropertyInputProps> | string;
+    }
+  | {
+      type: "shorthand";
+      /**
+       * One or more modes. The toggle shows one icon per mode in array order.
+       * Initial mode = the most-specific mode that has any value set;
+       * else the first mode. Switching modes clears tags from the modes left behind.
+       */
+      modes: ShorthandMode[];
+      /** TailwindStyles key applied to every input unless overridden per-mode/per-slot. */
+      tailwindKey?: string;
+      /** CSS-var picker prefix. Pass to enable the var selector on all inputs. */
+      varSelectorPrefix?: string;
+      /** Allowed value types for all inputs. */
+      allowedTypes?: ValueType[];
     };
+
+export interface ShorthandMode {
+  /** Unique id within the property (e.g. "uniform", "axes", "sides", "corners"). */
+  id: string;
+  /** Icon shown in the mode toggle. */
+  icon: ReactNode;
+  /** Accessible label for the toggle button. */
+  ariaLabel: string;
+  /**
+   * Tailwind prefixes this mode owns. One slot = one input.
+   * Uniform modes typically have a single tag; split modes have 2-4.
+   */
+  tags: string[];
+  /** Short labels per slot (e.g. [""], ["X","Y"], ["T","R","B","L"]). Length must match `tags`. */
+  labels: string[];
+  /** Per-slot TailwindStyles keys — defaults to outer `tailwindKey`. */
+  tailwindKeys?: string[];
+  /** Number of grid columns in the expanded row. Defaults to `tags.length`. */
+  columns?: number;
+}
 
 // ─── Property Definition ───────────────────────────────────────────────────
 
@@ -204,8 +209,12 @@ export interface PropertyDef {
   inline?: boolean;
   /** Show only when condition is met */
   showWhen?: (className: string, props: Record<string, any>) => boolean;
-  /** If set, property is hidden behind "More X properties" toggle */
-  advancedGroup?: string;
+  /**
+   * Optional disambiguator shown on the right side of the +Add picker row.
+   * Use when multiple properties in the same section share a `label`
+   * (e.g. Ring "Width" vs Outline "Width" — set `groupLabel: "Ring"` / `"Outline"`).
+   */
+  groupLabel?: string;
   /** When true, this property is hidden in Content mode (only shown in Design mode). */
   advanced?: boolean;
   /**
@@ -214,8 +223,6 @@ export interface PropertyDef {
    * user adds them via the `+` menu, or (c) they're in `node.props.toolbarOrder`.
    */
   pinned?: boolean;
-  /** @deprecated alias for the inverse of `pinned`. Kept for migration safety. */
-  hiddenByDefault?: boolean;
   /**
    * Default value written when the user adds this property via the `+` menu.
    * Format depends on `input.type`:

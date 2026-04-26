@@ -75,7 +75,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["line", "height", "leading", "spacing", "vertical"],
     input: { type: "tailwind-select", tailwindKey: "lineHeight" },
-    advancedGroup: "spacing",
     sortOrder: 100,
   },
   {
@@ -84,7 +83,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["tracking", "letter", "spacing", "kerning"],
     input: { type: "tailwind-select", tailwindKey: "tracking" },
-    advancedGroup: "spacing",
     sortOrder: 110,
   },
   {
@@ -93,7 +91,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["transform", "uppercase", "lowercase", "capitalize", "case"],
     input: { type: "tailwind-select", tailwindKey: "transform" },
-    advancedGroup: "other",
     sortOrder: 120,
   },
   {
@@ -102,7 +99,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["word", "break", "wrap", "overflow"],
     input: { type: "tailwind-select", tailwindKey: "wordBreak" },
-    advancedGroup: "wrapping",
     sortOrder: 130,
   },
   {
@@ -111,7 +107,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["overflow", "ellipsis", "truncate", "clip"],
     input: { type: "tailwind-select", tailwindKey: "textOverflow" },
-    advancedGroup: "wrapping",
     sortOrder: 140,
   },
   {
@@ -120,7 +115,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["indent", "paragraph", "first line"],
     input: { type: "tailwind-select", tailwindKey: "indent" },
-    advancedGroup: "other",
     sortOrder: 150,
   },
   {
@@ -129,7 +123,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["decoration", "underline", "line-through", "strikethrough", "overline"],
     input: { type: "tailwind-select", tailwindKey: "textDecoration" },
-    advancedGroup: "decoration",
     sortOrder: 160,
   },
   {
@@ -138,7 +131,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["decoration", "style", "solid", "double", "dotted", "dashed", "wavy"],
     input: { type: "tailwind-select", tailwindKey: "decorationStyle" },
-    advancedGroup: "decoration",
     sortOrder: 170,
   },
   {
@@ -147,7 +139,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["decoration", "thickness", "size", "width"],
     input: { type: "tailwind-select", tailwindKey: "decorationThickness" },
-    advancedGroup: "decoration",
     sortOrder: 180,
   },
   {
@@ -156,7 +147,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["italic", "oblique", "style", "emphasis"],
     input: { type: "tailwind-select", tailwindKey: "fontStyle" },
-    advancedGroup: "other",
     sortOrder: 190,
   },
   {
@@ -165,7 +155,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["white", "space", "nowrap", "pre", "wrap"],
     input: { type: "tailwind-select", tailwindKey: "whiteSpace" },
-    advancedGroup: "wrapping",
     sortOrder: 200,
   },
   {
@@ -174,7 +163,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["wrap", "balance", "pretty", "nowrap"],
     input: { type: "tailwind-select", tailwindKey: "textWrap" },
-    advancedGroup: "wrapping",
     sortOrder: 210,
   },
   {
@@ -183,7 +171,6 @@ export const typographyProperties: PropertyDef[] = [
     section: "typography",
     keywords: ["hyphens", "hyphenation", "break"],
     input: { type: "tailwind-select", tailwindKey: "hyphens" },
-    advancedGroup: "wrapping",
     sortOrder: 220,
   },
 ];

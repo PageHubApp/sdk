@@ -19,12 +19,6 @@ const lazyMap: Record<string, React.LazyExoticComponent<ComponentType<any>>> = {
   FontFamilyInput: React.lazy(() =>
     import("../inputs/typography/FontFamilyInput").then(m => ({ default: m.FontFamilyInput }))
   ),
-  PaddingBody: React.lazy(() =>
-    import("./registry/properties/PaddingBody").then(m => ({ default: m.PaddingBody }))
-  ),
-  MarginBody: React.lazy(() =>
-    import("./registry/properties/MarginBody").then(m => ({ default: m.MarginBody }))
-  ),
   LayoutPresetSlot: React.lazy(() =>
     import("./registry/properties/LayoutPresetSlot").then(m => ({ default: m.LayoutPresetSlot }))
   ),
@@ -89,9 +83,6 @@ const lazyMap: Record<string, React.LazyExoticComponent<ComponentType<any>>> = {
   ActionInput: React.lazy(() => import("../inputs/action/ActionInput")),
   FlexDirectionInput: React.lazy(() =>
     import("../inputs/layout/FlexDirectionInput").then(m => ({ default: m.FlexDirectionInput }))
-  ),
-  GapInput: React.lazy(() =>
-    import("../inputs/layout/GapInput").then(m => ({ default: m.GapInput }))
   ),
   TailwindInput: React.lazy(() =>
     import("../inputs/advanced/TailwindInput").then(m => ({ default: m.TailwindInput }))

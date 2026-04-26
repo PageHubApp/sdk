@@ -356,36 +356,22 @@ function MediaItemRow({
         <ListView media={media} folderLabel={folderLabel} kind={kind} showLeadingSpacer={selectionMode} />
       )}
 
-      {!selectionMode && (
+      {!selectionMode && viewMode === "cards" && (
         <div
-          className={`${viewMode === "cards" ? "absolute top-1 left-1" : "contents"}`}
+          className="absolute top-1 left-1"
           onClick={e => e.stopPropagation()}
         >
-          {viewMode === "cards" ? (
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={() => {}}
-              onClick={e => {
-                e.stopPropagation();
-                onSelect({ shiftKey: e.shiftKey, metaKey: true });
-              }}
-              className="checkbox checkbox-sm border-base-300 bg-base-100/95"
-              aria-label="Select media item"
-            />
-          ) : viewMode === "cards" ? (
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={() => {}}
-              onClick={e => {
-                e.stopPropagation();
-                onSelect({ shiftKey: e.shiftKey, metaKey: true });
-              }}
-              className="checkbox checkbox-sm border-base-300 bg-base-100/95"
-              aria-label="Select media item"
-            />
-          ) : null}
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => {}}
+            onClick={e => {
+              e.stopPropagation();
+              onSelect({ shiftKey: e.shiftKey, metaKey: true });
+            }}
+            className="checkbox checkbox-sm border-base-300 bg-base-100/95"
+            aria-label="Select media item"
+          />
         </div>
       )}
 

@@ -10,6 +10,8 @@
  *  - isGrid(cn): contains `grid`
  *  - isFlexOrGrid(cn): contains either
  */
+import React from "react";
+import { TbSpacingHorizontal, TbSquare } from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 
 const isFlex = (cn: string) => /\bflex\b/.test(cn);
@@ -39,11 +41,32 @@ export const alignmentProperties: PropertyDef[] = [
     sortOrder: 0,
   },
   {
-    id: "alignment.gap",
+    id: "gap",
     label: "Gap",
     section: "alignment",
     keywords: ["gap", "spacing", "gutter", "x", "y"],
-    input: { type: "custom", component: "GapInput" },
+    input: {
+      type: "shorthand",
+      tailwindKey: "gap",
+      varSelectorPrefix: "gap",
+      modes: [
+        {
+          id: "uniform",
+          icon: React.createElement(TbSquare, { className: "size-3.5" }),
+          ariaLabel: "Uniform gap",
+          tags: ["gap"],
+          labels: [""],
+        },
+        {
+          id: "axes",
+          icon: React.createElement(TbSpacingHorizontal, { className: "size-3.5" }),
+          ariaLabel: "Gap X & Y",
+          tags: ["gap-x", "gap-y"],
+          labels: ["X", "Y"],
+          tailwindKeys: ["gapX", "gapY"],
+        },
+      ],
+    },
     showWhen: isFlexOrGrid,
     pinned: true,
     sortOrder: 5,
@@ -75,7 +98,6 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["justify", "items"],
     input: { type: "tailwind-radio", tailwindKey: "justifyItems", cols: true },
     showWhen: isFlex,
-    advancedGroup: "alignment-flex",
     sortOrder: 100,
   },
   {
@@ -85,7 +107,6 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["align", "self"],
     input: { type: "tailwind-radio", tailwindKey: "alignSelf", cols: true },
     showWhen: isFlex,
-    advancedGroup: "alignment-flex",
     sortOrder: 110,
   },
   {
@@ -95,7 +116,6 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["justify", "self"],
     input: { type: "tailwind-radio", tailwindKey: "justifySelf", cols: true },
     showWhen: isFlex,
-    advancedGroup: "alignment-flex",
     sortOrder: 120,
   },
   {
@@ -105,7 +125,6 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["grow", "shrink", "basis", "flex"],
     input: { type: "tailwind-select", tailwindKey: "flexBase" },
     showWhen: isFlex,
-    advancedGroup: "alignment-flex",
     sortOrder: 130,
   },
 
@@ -148,7 +167,6 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["grid", "column", "span"],
     input: { type: "tailwind-select", tailwindKey: "gridColSpan" },
     showWhen: isGrid,
-    advancedGroup: "alignment-grid",
     sortOrder: 200,
   },
   {
@@ -158,7 +176,6 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["grid", "row", "span"],
     input: { type: "tailwind-select", tailwindKey: "gridRowSpan" },
     showWhen: isGrid,
-    advancedGroup: "alignment-grid",
     sortOrder: 210,
   },
   {
@@ -168,7 +185,6 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["place", "items", "grid"],
     input: { type: "tailwind-radio", tailwindKey: "placeItems", cols: true },
     showWhen: isGrid,
-    advancedGroup: "alignment-grid",
     sortOrder: 220,
   },
   {
@@ -178,7 +194,6 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["place", "self", "grid"],
     input: { type: "tailwind-radio", tailwindKey: "placeSelf", cols: true },
     showWhen: isGrid,
-    advancedGroup: "alignment-grid",
     sortOrder: 230,
   },
 ];

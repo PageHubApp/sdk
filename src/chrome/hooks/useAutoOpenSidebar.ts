@@ -24,10 +24,9 @@ export const useAutoOpenSidebar = () => {
   const setSideBarOpen = useSetAtomState(SideBarOpen);
   const lastSelectionKeyRef = useRef("");
 
-  const selectionKey = useEditor((_, q) => {
-    const all = q.getEvent("selected").all();
-    return all.join("\0");
-  });
+  const { selectionKey } = useEditor((_, q) => ({
+    selectionKey: q.getEvent("selected").all().join("\0"),
+  }));
 
   useEffect(() => {
     const prev = lastSelectionKeyRef.current;

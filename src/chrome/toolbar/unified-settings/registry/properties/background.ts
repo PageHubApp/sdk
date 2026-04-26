@@ -46,7 +46,6 @@ export const backgroundProperties: PropertyDef[] = [
     section: "background",
     keywords: ["clip", "text", "border", "padding", "content"],
     input: { type: "tailwind-select", tailwindKey: "bgClip" },
-    advancedGroup: "background",
     sortOrder: 100,
   },
   {
@@ -55,7 +54,6 @@ export const backgroundProperties: PropertyDef[] = [
     section: "background",
     keywords: ["blend", "mode", "multiply", "screen", "overlay"],
     input: { type: "tailwind-select", tailwindKey: "bgBlend" },
-    advancedGroup: "background",
     sortOrder: 110,
   },
   {
@@ -64,7 +62,6 @@ export const backgroundProperties: PropertyDef[] = [
     section: "background",
     keywords: ["mix", "blend", "mode", "multiply", "screen", "overlay"],
     input: { type: "tailwind-select", tailwindKey: "mixBlend" },
-    advancedGroup: "background",
     sortOrder: 120,
   },
 ];

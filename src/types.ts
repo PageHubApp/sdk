@@ -131,7 +131,7 @@ export class SaveFailedError extends Error {
   constructor(
     message: string,
     public status?: number,
-    public override cause?: unknown
+    public cause?: unknown
   ) {
     super(message);
   }

@@ -15,6 +15,7 @@ import { useAtomValue } from "@zedux/react";
 import { usePropertyHasValue } from "./usePropertyHasValue";
 import { SessionAddedAtom, sessionKey } from "./sessionAddedAtom";
 import { resolveCustomInput } from "./customInputs";
+import { ShorthandInput } from "../inputs/shorthand/ShorthandInput";
 import type { PropertyDef, PropertyInputProps } from "./registry/propertyDefs";
 
 interface Props {
@@ -23,9 +24,8 @@ interface Props {
 }
 
 /**
- * Visibility-gated wrapper. For `hiddenByDefault` props, renders the row only
- * when a value is set. Plain props always render. Hooks fire per-instance, so
- * each property gets its own hasValue check.
+ * Visibility-gated wrapper. Pinned props always render. Non-pinned render only
+ * when they have a value, were just session-added, or are in `toolbarOrder`.
  */
 export function PropertyRow({ def, index }: Props) {
   const hasValue = usePropertyHasValue(def);
@@ -35,8 +35,8 @@ export function PropertyRow({ def, index }: Props) {
       : [],
   }));
   const sessionAdded = useAtomValue(SessionAddedAtom);
-  // Pinned (or legacy advancedGroup-only props from prior model) always render.
-  // Everything else hides until it has a value, was just added, or is in toolbarOrder.
+  // Pinned props always render. Everything else hides until it has a value,
+  // was just added in this session, or is in toolbarOrder.
   if (def.pinned) return <PropertyRenderer def={def} index={index} />;
   const wasJustAdded = sessionAdded.has(sessionKey(id, def.id));
   const isPersistedAdd = toolbarOrder.includes(def.id);
@@ -192,6 +192,11 @@ export function PropertyRenderer({ def, index: indexOverride = "" }: Props) {
     case "custom": {
       const Component = resolveCustomInput(def.input.component);
       return <Component def={def} index={index} />;
+    }
+
+    case "shorthand": {
+      const { type: _t, ...config } = def.input;
+      return <ShorthandInput def={def} index={index} config={config} />;
     }
 
     default:

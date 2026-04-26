@@ -24,7 +24,6 @@ export const layoutProperties: PropertyDef[] = [
       allowedTypes: SIZE_TYPES,
       showVarSelector: true,
     },
-    hiddenByDefault: true,
     sortOrder: 0,
   },
   {
@@ -39,7 +38,6 @@ export const layoutProperties: PropertyDef[] = [
       allowedTypes: SIZE_TYPES,
       showVarSelector: true,
     },
-    hiddenByDefault: true,
     sortOrder: 1,
   },
   {
@@ -54,7 +52,6 @@ export const layoutProperties: PropertyDef[] = [
       allowedTypes: SIZE_TYPES,
       showVarSelector: true,
     },
-    advancedGroup: "size",
     sortOrder: 10,
   },
   {
@@ -69,7 +66,6 @@ export const layoutProperties: PropertyDef[] = [
       allowedTypes: SIZE_TYPES,
       showVarSelector: true,
     },
-    advancedGroup: "size",
     sortOrder: 11,
   },
   {
@@ -84,7 +80,6 @@ export const layoutProperties: PropertyDef[] = [
       allowedTypes: SIZE_TYPES,
       showVarSelector: true,
     },
-    advancedGroup: "size",
     sortOrder: 12,
   },
   {
@@ -99,7 +94,6 @@ export const layoutProperties: PropertyDef[] = [
       allowedTypes: SIZE_TYPES,
       showVarSelector: true,
     },
-    advancedGroup: "size",
     sortOrder: 13,
   },
   {
@@ -108,7 +102,6 @@ export const layoutProperties: PropertyDef[] = [
     section: "size",
     keywords: ["aspect", "ratio", "square", "video", "16:9", "4:3"],
     input: { type: "tailwind-select", tailwindKey: "aspectRatio" },
-    advancedGroup: "size",
     sortOrder: 14,
   },
 ];

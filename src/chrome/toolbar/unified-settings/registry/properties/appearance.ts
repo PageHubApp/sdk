@@ -5,6 +5,8 @@
  * Border section — border width/style/color/radius (main) + per-side + divide (advanced)
  * Ring & Outline section — ring + outline width/color (main) + offsets + outline style (advanced)
  */
+import React from "react";
+import { TbBorderCorners, TbSquare } from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
 
@@ -92,15 +94,30 @@ export const appearanceProperties: PropertyDef[] = [
     section: "border",
     keywords: ["radius", "rounded", "corners", "border-radius", "pill", "circle"],
     input: {
-      type: "universal",
-      propTag: "rounded",
+      type: "shorthand",
+      varSelectorPrefix: "rounded",
       allowedTypes: ["tailwind", "calc", "px", "em", "rem", "%"],
-      showVarSelector: true,
+      modes: [
+        {
+          id: "uniform",
+          icon: React.createElement(TbSquare, { className: "size-3.5" }),
+          ariaLabel: "Uniform radius",
+          tags: ["rounded"],
+          labels: [""],
+        },
+        {
+          id: "corners",
+          icon: React.createElement(TbBorderCorners, { className: "size-3.5" }),
+          ariaLabel: "Radius per-corner",
+          tags: ["rounded-tl", "rounded-tr", "rounded-br", "rounded-bl"],
+          labels: ["TL", "TR", "BR", "BL"],
+          columns: 2,
+        },
+      ],
     },
     hideKey: "radius",
     pinned: true,
     sortOrder: 3,
-    inline: true,
   },
 
   // ─── Border — advanced (per-side + divide) ───────────────────────
@@ -111,7 +128,6 @@ export const appearanceProperties: PropertyDef[] = [
     keywords: ["border", "top", "bottom", "left", "right", "side", "per-side"],
     input: { type: "custom", component: "BorderSidesPicker" },
     hideKey: "border",
-    advancedGroup: "border-side",
     sortOrder: 110,
   },
   {
@@ -120,7 +136,6 @@ export const appearanceProperties: PropertyDef[] = [
     section: "border",
     keywords: ["divide", "horizontal", "separator", "x"],
     input: { type: "tailwind-select", tailwindKey: "divideX" },
-    advancedGroup: "divide",
     sortOrder: 140,
   },
   {
@@ -129,7 +144,6 @@ export const appearanceProperties: PropertyDef[] = [
     section: "border",
     keywords: ["divide", "vertical", "separator", "y"],
     input: { type: "tailwind-select", tailwindKey: "divideY" },
-    advancedGroup: "divide",
     sortOrder: 141,
   },
   {
@@ -138,7 +152,6 @@ export const appearanceProperties: PropertyDef[] = [
     section: "border",
     keywords: ["divide", "style", "solid", "dashed", "dotted"],
     input: { type: "tailwind-select", tailwindKey: "divideStyle" },
-    advancedGroup: "divide",
     sortOrder: 142,
   },
   {
@@ -147,7 +160,6 @@ export const appearanceProperties: PropertyDef[] = [
     section: "border",
     keywords: ["divide", "color", "separator"],
     input: { type: "color", prefix: "divide" },
-    advancedGroup: "divide",
     sortOrder: 143,
     inline: true,
   },
@@ -165,7 +177,7 @@ export const appearanceProperties: PropertyDef[] = [
       showVarSelector: true,
     },
     hideKey: "ringOutline",
-    advancedGroup: "ring",
+    groupLabel: "Ring",
     sortOrder: 0,
     inline: true,
   },
@@ -176,6 +188,7 @@ export const appearanceProperties: PropertyDef[] = [
     keywords: ["ring", "color", "focus"],
     input: { type: "color", prefix: "ring" },
     hideKey: "ringOutline",
+    groupLabel: "Ring",
     showWhen: className => {
       if (!className) return false;
       return className.split(/\s+/).some(c => {
@@ -183,7 +196,6 @@ export const appearanceProperties: PropertyDef[] = [
         return raw.startsWith("ring") && !raw.startsWith("ring-offset");
       });
     },
-    advancedGroup: "ring",
     sortOrder: 1,
     inline: true,
   },
@@ -199,7 +211,7 @@ export const appearanceProperties: PropertyDef[] = [
       showVarSelector: true,
     },
     hideKey: "ringOutline",
-    advancedGroup: "ring",
+    groupLabel: "Ring",
     sortOrder: 2,
     inline: true,
   },
@@ -217,8 +229,8 @@ export const appearanceProperties: PropertyDef[] = [
       showVarSelector: true,
     },
     hideKey: "ringOutline",
-    advancedGroup: "outline",
-    sortOrder: 0,
+    groupLabel: "Outline",
+    sortOrder: 10,
     inline: true,
   },
   {
@@ -228,6 +240,7 @@ export const appearanceProperties: PropertyDef[] = [
     keywords: ["outline", "color"],
     input: { type: "color", prefix: "outline" },
     hideKey: "ringOutline",
+    groupLabel: "Outline",
     showWhen: className => {
       if (!className) return false;
       return className.split(/\s+/).some(c => {
@@ -235,8 +248,7 @@ export const appearanceProperties: PropertyDef[] = [
         return raw.startsWith("outline") && !raw.startsWith("outline-offset");
       });
     },
-    advancedGroup: "outline",
-    sortOrder: 1,
+    sortOrder: 11,
     inline: true,
   },
   {
@@ -251,8 +263,8 @@ export const appearanceProperties: PropertyDef[] = [
       showVarSelector: true,
     },
     hideKey: "ringOutline",
-    advancedGroup: "outline",
-    sortOrder: 2,
+    groupLabel: "Outline",
+    sortOrder: 12,
     inline: true,
   },
   {
@@ -262,7 +274,7 @@ export const appearanceProperties: PropertyDef[] = [
     keywords: ["outline", "style", "solid", "dashed", "dotted"],
     input: { type: "tailwind-select", tailwindKey: "outlineStyle" },
     hideKey: "ringOutline",
-    advancedGroup: "outline",
-    sortOrder: 3,
+    groupLabel: "Outline",
+    sortOrder: 13,
   },
 ];

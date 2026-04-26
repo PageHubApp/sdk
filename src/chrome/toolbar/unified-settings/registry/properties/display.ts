@@ -226,7 +226,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["visibility", "visible", "invisible", "hidden", "collapse"],
     input: { type: "tailwind-select", tailwindKey: "visibility" },
-    advancedGroup: "behavior",
     sortOrder: 100,
   },
   {
@@ -235,7 +234,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["pointer", "events", "click", "none", "auto"],
     input: { type: "tailwind-select", tailwindKey: "pointerEvents" },
-    advancedGroup: "behavior",
     sortOrder: 101,
   },
   {
@@ -244,7 +242,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["user", "select", "text", "selection", "none", "all"],
     input: { type: "tailwind-select", tailwindKey: "userSelect" },
-    advancedGroup: "behavior",
     sortOrder: 102,
   },
   {
@@ -253,7 +250,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["float", "left", "right", "none", "clear"],
     input: { type: "tailwind-select", tailwindKey: "float" },
-    advancedGroup: "behavior",
     sortOrder: 103,
   },
   {
@@ -262,7 +258,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["vertical", "align", "baseline", "top", "middle", "bottom"],
     input: { type: "tailwind-select", tailwindKey: "verticalAlign" },
-    advancedGroup: "behavior",
     sortOrder: 104,
   },
   {
@@ -271,7 +266,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["smoothing", "antialiased", "subpixel", "rendering"],
     input: { type: "tailwind-select", tailwindKey: "fontSmoothing" },
-    advancedGroup: "behavior",
     sortOrder: 105,
   },
   {
@@ -280,7 +274,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["resize", "drag", "handle", "grow"],
     input: { type: "tailwind-select", tailwindKey: "resize" },
-    advancedGroup: "behavior",
     sortOrder: 110,
   },
   {
@@ -289,7 +282,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["touch", "action", "pan", "pinch", "zoom"],
     input: { type: "tailwind-select", tailwindKey: "touchAction" },
-    advancedGroup: "behavior",
     sortOrder: 111,
   },
   {
@@ -298,7 +290,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["appearance", "native", "none", "auto"],
     input: { type: "tailwind-select", tailwindKey: "appearance" },
-    advancedGroup: "behavior",
     propKey: "appearance",
     sortOrder: 112,
   },
@@ -310,7 +301,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["box", "sizing", "border-box", "content-box"],
     input: { type: "tailwind-select", tailwindKey: "boxSizing" },
-    advancedGroup: "css",
     sortOrder: 200,
   },
   {
@@ -319,7 +309,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["isolation", "isolate", "stacking"],
     input: { type: "tailwind-select", tailwindKey: "isolation" },
-    advancedGroup: "css",
     sortOrder: 201,
   },
   {
@@ -328,7 +317,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["columns", "multi-column", "newspaper"],
     input: { type: "tailwind-select", tailwindKey: "columns" },
-    advancedGroup: "css",
     sortOrder: 202,
   },
 
@@ -339,7 +327,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["break", "before", "page", "column"],
     input: { type: "tailwind-select", tailwindKey: "breakBefore" },
-    advancedGroup: "breaks",
     sortOrder: 203,
   },
   {
@@ -348,7 +335,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["break", "inside", "avoid"],
     input: { type: "tailwind-select", tailwindKey: "breakInside" },
-    advancedGroup: "breaks",
     sortOrder: 204,
   },
   {
@@ -357,7 +343,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["break", "after", "page", "column"],
     input: { type: "tailwind-select", tailwindKey: "breakAfter" },
-    advancedGroup: "breaks",
     sortOrder: 205,
   },
 
@@ -368,7 +353,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["list", "style", "disc", "decimal", "none"],
     input: { type: "tailwind-select", tailwindKey: "listStyleType" },
-    advancedGroup: "list",
     sortOrder: 206,
   },
   {
@@ -377,7 +361,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["list", "position", "inside", "outside"],
     input: { type: "tailwind-select", tailwindKey: "listStylePosition" },
-    advancedGroup: "list",
     sortOrder: 207,
   },
 
@@ -388,7 +371,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["table", "layout", "auto", "fixed"],
     input: { type: "tailwind-select", tailwindKey: "tableLayout" },
-    advancedGroup: "table",
     sortOrder: 208,
   },
   {
@@ -397,7 +379,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["caption", "side", "top", "bottom"],
     input: { type: "tailwind-select", tailwindKey: "captionSide" },
-    advancedGroup: "table",
     sortOrder: 209,
   },
 
@@ -408,7 +389,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["svg", "fill", "color", "icon"],
     input: { type: "tailwind-select", tailwindKey: "fill" },
-    advancedGroup: "svg",
     sortOrder: 212,
   },
   {
@@ -417,7 +397,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["svg", "stroke", "outline", "icon"],
     input: { type: "tailwind-select", tailwindKey: "stroke" },
-    advancedGroup: "svg",
     sortOrder: 213,
   },
   {
@@ -426,7 +405,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["svg", "stroke", "width", "thickness"],
     input: { type: "tailwind-select", tailwindKey: "strokeWidth" },
-    advancedGroup: "svg",
     sortOrder: 214,
   },
 
@@ -437,7 +415,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["content", "pseudo", "before", "after"],
     input: { type: "tailwind-select", tailwindKey: "content" },
-    advancedGroup: "other",
     propKey: "content",
     sortOrder: 210,
   },
@@ -447,7 +424,6 @@ export const displayProperties: PropertyDef[] = [
     section: "display",
     keywords: ["screen", "reader", "sr-only", "accessibility", "hidden"],
     input: { type: "tailwind-select", tailwindKey: "srOnly" },
-    advancedGroup: "other",
     sortOrder: 211,
   },
 

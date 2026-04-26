@@ -9,12 +9,10 @@ import React, { useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import { ItemAdvanceToggle } from "../helpers/ItemSelector";
 import { ToolbarSection } from "../ToolbarSection";
-import { PropertyRenderer, PropertyRow } from "./PropertyRenderer";
+import { PropertyRow } from "./PropertyRenderer";
 import { AccordionAddMenu, type AccordionAddMenuHandle } from "./AccordionAddMenu";
 import { propertyHasValue } from "./propertyHasValue";
-import { resolveSectionIcon } from "./sectionIcons";
 import { SessionAddedAtom, sessionKey } from "./sessionAddedAtom";
 import { ViewAtom } from "../../viewport/atoms";
 import { ViewSelectionAtom } from "../Label";
@@ -58,122 +56,54 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
 
   const editorMode = useAtomValue(EditorModeAtom);
 
-  // Properties are static per section — no per-node filtering needed (mode strips advanced ones)
+  // Properties filtered by editor mode + property-level hideKey
   const properties = useMemo(() => {
     const all = getProperties({ section: sectionId });
-    return editorMode === "design" ? all : all.filter(p => !p.advanced);
-  }, [sectionId, editorMode]);
+    return all.filter(p => {
+      if (editorMode !== "design" && p.advanced) return false;
+      if (p.hideKey && hiddenKeys.has(p.hideKey)) return false;
+      return true;
+    });
+  }, [sectionId, editorMode, hiddenKeys]);
 
-  // Split into:
-  //  - `main`: pinned (always-visible) in registry sortOrder
-  //  - `added`: everything else, sorted by per-node toolbarOrder so user-added
-  //    rows stack at the bottom in click-order. PropertyRow gates on hasValue.
-  const { main, added } = useMemo(() => {
+  // Split: pinned → main (always-visible), rest → candidates (gated below).
+  const { main, candidates } = useMemo(() => {
     const visible = properties.filter(p => !p.showWhen || p.showWhen(className, nodeProps));
     const mainProps: PropertyDef[] = [];
-    const candidates: PropertyDef[] = [];
+    const rest: PropertyDef[] = [];
     for (const p of visible) {
-      (p.pinned ? mainProps : candidates).push(p);
+      (p.pinned ? mainProps : rest).push(p);
     }
-    // Two groups: pre-existing (already had a value before +Add existed) sort by
-    // registry sortOrder. User-added (in toolbarOrder) get APPENDED after, in
-    // exact click sequence. Pre-existing always renders before added.
+    return { main: mainProps, candidates: rest };
+  }, [properties, className, nodeProps]);
+
+  // Visibility gate (mirrors PropertyRow). Pre-filter so empty sections don't render a body.
+  const isPropVisible = (p: PropertyDef) =>
+    toolbarOrder.includes(p.id) ||
+    sessionAdded.has(sessionKey(id, p.id)) ||
+    propertyHasValue(p, className, componentProps, view, classDark);
+
+  const added = useMemo(() => {
+    const visible = candidates.filter(isPropVisible);
+    // Pre-existing (sortOrder) before user-added (toolbarOrder click sequence).
     const orderIndex = new Map<string, number>(toolbarOrder.map((id, i) => [id, i]));
-    const addedSorted = [...candidates].sort((a, b) => {
+    return [...visible].sort((a, b) => {
       const aInOrder = orderIndex.has(a.id);
       const bInOrder = orderIndex.has(b.id);
       if (aInOrder && bInOrder) return orderIndex.get(a.id)! - orderIndex.get(b.id)!;
-      if (aInOrder) return 1; // user-added → after
+      if (aInOrder) return 1;
       if (bInOrder) return -1;
       return (a.sortOrder ?? 100) - (b.sortOrder ?? 100);
     });
-    return { main: mainProps, added: addedSorted };
-  }, [properties, className, nodeProps, toolbarOrder]);
-  const advancedGroups = new Map<string, PropertyDef[]>();
-
-  // Pre-compute sub-section render data when the section opts into grouped advanced (must run before any early return — hooks order)
-  const subsectionRender = useMemo(() => {
-    if (!section?.advancedSubsections || advancedGroups.size === 0) return null;
-    const known = new Set(section.advancedSubsections.map(s => s.id));
-    const orphans: PropertyDef[] = [];
-    advancedGroups.forEach((props, groupId) => {
-      if (!known.has(groupId)) orphans.push(...props);
-    });
-    return {
-      subsections: section.advancedSubsections
-        .map(s => ({ ...s, props: advancedGroups.get(s.id) ?? [] }))
-        .filter(s => s.props.length > 0),
-      orphans,
-    };
-  }, [section, advancedGroups]);
+  }, [candidates, toolbarOrder, sessionAdded, id, className, componentProps, view, classDark]);
 
   if (!section) return null;
 
-  // Section renders nothing when its hideKey is active OR it's marked advanced in content mode
-  // OR it has no visible content
   const isHidden = !!(section.hideKey && hiddenKeys.has(section.hideKey));
   const isAdvancedHidden = !!section.advanced && editorMode === "content";
-  const visibleAddedCount = useMemo(
-    () =>
-      added.filter(
-        p =>
-          toolbarOrder.includes(p.id) ||
-          sessionAdded.has(sessionKey(id, p.id)) ||
-          propertyHasValue(p, className, componentProps, view, classDark)
-      ).length,
-    [added, toolbarOrder, sessionAdded, id, className, componentProps, view, classDark]
-  );
-  const noVisibleContent = main.length === 0 && visibleAddedCount === 0;
-  const isEmpty = main.length === 0 && added.length === 0 && advancedGroups.size === 0;
+  const noVisibleContent = main.length === 0 && added.length === 0;
+  const isEmpty = main.length === 0 && candidates.length === 0;
   if (isHidden || isAdvancedHidden || isEmpty) return null;
-
-  const renderFlatAdvanced = () => (
-    <ToolbarSection full={section.advancedColumns ?? 1} collapsible={false} nested>
-      {[...advancedGroups.values()].flat().map(prop => (
-        <PropertyRow key={prop.id} def={prop} />
-      ))}
-    </ToolbarSection>
-  );
-
-  const renderGroupedAdvanced = () => {
-    if (!subsectionRender) return null;
-    return (
-      <>
-        {subsectionRender.subsections.map(s => (
-          <ToolbarSection
-            key={s.id}
-            title={s.title}
-            nested
-            collapsible
-            defaultOpen={s.defaultOpen ?? true}
-            accordionPassive
-            full={s.columns ?? 1}
-          >
-            {s.props.map(prop => (
-              <PropertyRow key={prop.id} def={prop} />
-            ))}
-          </ToolbarSection>
-        ))}
-        {subsectionRender.orphans.length > 0 && (
-          <ToolbarSection
-            title="Other"
-            nested
-            collapsible
-            defaultOpen={false}
-            accordionPassive
-            full={section.advancedColumns ?? 1}
-          >
-            {subsectionRender.orphans.map(prop => (
-              <PropertyRow key={prop.id} def={prop} />
-            ))}
-          </ToolbarSection>
-        )}
-      </>
-    );
-  };
-
-  const useGrouped = !!subsectionRender;
-  const skipOuterToggle = useGrouped && section.skipAdvancedToggle;
 
   const bodyContent = (
     <>
@@ -183,18 +113,6 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
       {added.map(prop => (
         <PropertyRow key={prop.id} def={prop} />
       ))}
-
-      {advancedGroups.size > 0 &&
-        (skipOuterToggle ? (
-          renderGroupedAdvanced()
-        ) : (
-          <ItemAdvanceToggle
-            propKey={sectionId}
-            title={`More ${section.title.toLowerCase()} properties`}
-          >
-            {useGrouped ? renderGroupedAdvanced() : renderFlatAdvanced()}
-          </ItemAdvanceToggle>
-        ))}
     </>
   );
 
@@ -210,7 +128,7 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
     <>
       <ToolbarSection
         title={section.title}
-        icon={resolveSectionIcon(section.icon)}
+        icon={section.icon}
         help={section.help}
         defaultOpen={section.defaultOpen && !noVisibleContent}
         enabled={!noVisibleContent}

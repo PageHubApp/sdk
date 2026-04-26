@@ -44,11 +44,11 @@ function mainEffect(
   };
 }
 
-/** Advanced effect — behind toggle */
+/** Advanced effect — hidden until added via the +Add picker */
 function advEffect(
   id: string,
   label: string,
-  group: string,
+  _group: string,
   keywords: string[],
   propTag?: string,
   sortOrder = 100
@@ -64,7 +64,6 @@ function advEffect(
       allowedTypes: EFFECTS_TYPES,
       showVarSelector: true,
     },
-    advancedGroup: group,
     sortOrder,
     inline: true,
   };
@@ -161,7 +160,6 @@ export const effectsProperties: PropertyDef[] = [
       "sepia",
     ],
     input: { type: "custom", component: "FilterPreviewTileFilter" },
-    advancedGroup: "filter",
     sortOrder: 130,
   },
 
@@ -182,7 +180,6 @@ export const effectsProperties: PropertyDef[] = [
       "sepia",
     ],
     input: { type: "custom", component: "FilterPreviewTileBackdrop" },
-    advancedGroup: "backdrop",
     sortOrder: 140,
   },
 ];

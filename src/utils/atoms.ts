@@ -116,13 +116,17 @@ export const AssistantOpenAtom = atom(
  * Media metadata suggestion emitted by Clippy media actions.
  * The media manager listens and applies this into the edit modal state.
  */
-export const AssistantMediaMetadataResultAtom = atom<null | {
+type AssistantMediaMetadataResult = null | {
   mediaId: string;
   title?: string;
   alt?: string;
   description?: string;
   requestId?: string;
-}>("assistantMediaMetadataResult", null);
+};
+export const AssistantMediaMetadataResultAtom = atom(
+  "assistantMediaMetadataResult",
+  null as AssistantMediaMetadataResult
+);
 
 export const AiChatAttachedNodesAtom = atom<AiChatAttachedNode[]>("aiChatAttachedNodes", []);
 

@@ -42,7 +42,11 @@ export const ToolbarSection = ({
     }
   }, [managed, title, defaultOpen, nested]);
 
-  const isOpen = managed ? accordionCtx.getIsOpen(title, defaultOpen) : localIsOpen;
+  const isOpen = !enabled
+    ? false
+    : managed
+      ? accordionCtx.getIsOpen(title, defaultOpen)
+      : localIsOpen;
 
   const handleClick = (e: React.MouseEvent) => {
     if (disabled) return;
