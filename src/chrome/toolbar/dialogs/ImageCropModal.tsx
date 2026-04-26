@@ -43,7 +43,7 @@ export function ImageCropModal({ isOpen, onClose, media, onSave, settings }: Ima
           </div>
           <button
             onClick={onClose}
-            className="text-neutral-content hover:bg-neutral hover:text-base-content rounded-lg p-2 transition-colors"
+            className="text-neutral-content hover:bg-neutral hover:text-base-content rounded-md p-2 transition-colors"
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
             data-tooltip-content="Close"
           >

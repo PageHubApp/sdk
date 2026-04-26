@@ -249,7 +249,7 @@ export function InlineEditToolbar({
   const toolbarColumn = (
     <div ref={toolbarRef} className={innerBarClass}>
       {activePanel === "font" ? (
-        <div className="rounded-box border-base-300/50 bg-base-100 border shadow-xl">
+        <div className="rounded-xl border-base-300/50 bg-base-100 border shadow-xl">
           <FontPanel
             editor={editor}
             richTextMode={richTextMode}

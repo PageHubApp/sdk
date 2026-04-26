@@ -298,7 +298,7 @@ export const Card = ({
       onContextMenu={handleContextMenu}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      className={`${bgColor} inline-flex rounded-lg px-1.5 py-0.5 text-xs font-medium whitespace-nowrap hover:brightness-110 ${draggable ? "cursor-grab transition-transform hover:scale-105 active:cursor-grabbing" : "cursor-pointer"}`}
+      className={`${bgColor} inline-flex rounded-md px-1.5 py-0.5 text-xs font-medium whitespace-nowrap hover:brightness-110 ${draggable ? "cursor-grab transition-transform hover:scale-105 active:cursor-grabbing" : "cursor-pointer"}`}
       data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
       data-tooltip-content={resolvedTooltipValue}
       data-tooltip-place="top"
@@ -333,7 +333,7 @@ export const CardLight = ({ value, onClick, className = "" }) => {
   return (
     <button
       onClick={onClick}
-      className={`bg-base-200 text-base-content inline-flex cursor-pointer rounded-lg px-1 py-0.5 text-xs font-medium ${className}`}
+      className={`bg-base-200 text-base-content inline-flex cursor-pointer rounded-md px-1 py-0.5 text-xs font-medium ${className}`}
       data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
       data-tooltip-content={`Add ${value}`}
       data-tooltip-place="top"

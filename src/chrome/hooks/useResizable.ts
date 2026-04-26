@@ -13,6 +13,8 @@ interface UseResizableOptions {
   maxHeight?: number;
   /** Which edges/corners to allow resizing from. Default: ["e", "s", "se"] */
   edges?: ResizeEdge[];
+  /** Persist size to storage. Default: true. Pass false for ephemeral/per-open panels. */
+  persist?: boolean;
 }
 
 const EDGE_CURSORS: Record<ResizeEdge, string> = {
@@ -50,6 +52,7 @@ export function useResizable(options: UseResizableOptions) {
     maxWidth = 9999,
     maxHeight = 9999,
     edges = ["e", "s", "se"],
+    persist = true,
   } = options;
 
   const clamp = (w: number, h: number) => ({
@@ -58,15 +61,17 @@ export function useResizable(options: UseResizableOptions) {
   });
 
   const [size, setSize] = useState(() => {
-    try {
-      const p = phStorage.getJSON<{ width: number; height: number }>(
-        "resizable-" + storageKey,
-        null
-      );
-      if (p && typeof p.width === "number" && typeof p.height === "number") {
-        return clamp(p.width, p.height);
-      }
-    } catch {}
+    if (persist) {
+      try {
+        const p = phStorage.getJSON<{ width: number; height: number }>(
+          "resizable-" + storageKey,
+          null
+        );
+        if (p && typeof p.width === "number" && typeof p.height === "number") {
+          return clamp(p.width, p.height);
+        }
+      } catch {}
+    }
     return { width: defaultWidth, height: defaultHeight };
   });
 
@@ -88,11 +93,12 @@ export function useResizable(options: UseResizableOptions) {
 
   const save = useCallback(
     (s: { width: number; height: number }) => {
+      if (!persist) return;
       try {
         phStorage.set("resizable-" + storageKey, s);
       } catch {}
     },
-    [storageKey]
+    [storageKey, persist]
   );
 
   // When bounds change (e.g. viewport shrinks), keep current size in range.

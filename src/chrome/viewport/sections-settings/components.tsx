@@ -215,7 +215,7 @@ export function FilterDropdown({
         <>
           <div className="fixed inset-0 z-40" onClick={onClose} />
           <div
-            className={`border-base-300 bg-base-100 absolute top-full ${alignClass} z-50 mt-1 min-w-[160px] rounded-lg border py-1 shadow-lg`}
+            className={`border-base-300 bg-base-100 absolute top-full ${alignClass} z-50 mt-1 min-w-[160px] rounded-xl border py-1 shadow-lg`}
           >
             {items.map(item => (
               <button

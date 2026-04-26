@@ -91,6 +91,9 @@ export function UnifiedDropdown({
     mainAxisOffset: 4,
     maxHeightCeiling: 400,
     matchReferenceMinMaxWidth: { min: 120, max: 200 },
+    // Use the viewport as the boundary so dropdowns escape FloatingPanel
+    // (or any other overflow:hidden ancestor of the input).
+    boundary: "viewport",
   });
 
   useLayoutEffect(() => {

@@ -8,8 +8,8 @@ import { useAnchoredPopover } from "@/chrome/overlays/useAnchoredPopover";
 
 const CTX_HOVER =
   "outline-none transition-[color,background-color] duration-150 ease-out hover:bg-accent hover:text-accent-content focus-visible:bg-accent focus-visible:text-accent-content";
-const CTX_ITEM = `flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-3 py-2 text-left text-sm ${CTX_HOVER}`;
-const CTX_SUBMENU_TRIGGER = `flex w-full cursor-default select-none items-center justify-between gap-2 rounded-sm px-3 py-2 text-left text-sm ${CTX_HOVER}`;
+const CTX_ITEM = `flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-left text-sm ${CTX_HOVER}`;
+const CTX_SUBMENU_TRIGGER = `flex w-full cursor-default select-none items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm ${CTX_HOVER}`;
 
 const SUBMENU_FLIP = {
   crossAxis: true,
@@ -87,7 +87,7 @@ function GroupSubmenu({
     <div
       ref={floating.refs.setFloating}
       style={{ ...floating.floatingStyles, zIndex: 100000 }}
-      className="rounded-box border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto border py-1 shadow-xl select-none"
+      className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto border py-1 shadow-xl select-none"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -171,7 +171,7 @@ export function VariableSuggestionPopup({ suggestion }: { suggestion: Suggestion
         className="pagehub-sdk-root"
         style={{ position: "fixed", top: rect.bottom + 6, left: rect.left, zIndex: 99999 }}
       >
-        <div className="rounded-box border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[14rem] overflow-hidden border py-1 shadow-xl">
+        <div className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[14rem] overflow-hidden border py-1 shadow-xl">
           <div className="bg-base-200/80 text-neutral-content px-3 py-1 text-[10px] font-semibold tracking-wide uppercase">
             {group}
           </div>
@@ -214,7 +214,7 @@ export function VariableSuggestionPopup({ suggestion }: { suggestion: Suggestion
       className="pagehub-sdk-root"
       style={{ position: "fixed", top: rect.bottom + 6, left: rect.left, zIndex: 99999 }}
     >
-      <div className="rounded-box border-base-300/50 bg-base-100 text-base-content min-w-[12rem] overflow-visible border py-1 shadow-xl select-none">
+      <div className="rounded-xl border-base-300/50 bg-base-100 text-base-content min-w-[12rem] overflow-visible border py-1 shadow-xl select-none">
         {grouped.map(([group, items]) => {
           const GroupIcon = getGroupIcon(group);
           const ref = getRef(group);

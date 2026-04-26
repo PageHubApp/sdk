@@ -95,7 +95,7 @@ export function DeviceSelector({ onClose }: DeviceSelectorProps) {
               onClick={() => setShowDropdown(false)}
             />
             {/* Dropdown */}
-            <div className="scrollbar-dark border-base-300 bg-neutral text-neutral-content absolute top-full left-0 z-50 mt-1 max-h-96 w-56 overflow-y-auto rounded-lg border shadow-lg">
+            <div className="scrollbar-dark border-base-300 bg-neutral text-neutral-content absolute top-full left-0 z-50 mt-1 max-h-96 w-56 overflow-y-auto rounded-xl border shadow-lg">
               {devicePresets.map(device => (
                 <button
                   key={device.name}

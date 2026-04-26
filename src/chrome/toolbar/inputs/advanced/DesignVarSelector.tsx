@@ -98,7 +98,7 @@ export function DesignVarSelector({
             e: getRect(ref.current),
           });
         }}
-        className="text-neutral-content hover:bg-neutral hover:text-base-content flex size-5 items-center justify-center rounded-lg transition-colors"
+        className="text-neutral-content hover:bg-neutral hover:text-base-content flex size-5 items-center justify-center rounded-md transition-colors"
         data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
         data-tooltip-content="Bind to design system variable"
       >
@@ -219,7 +219,7 @@ function DesignVarDialog({
                       <button
                         key={v.varName}
                         onClick={() => handleSelect(v)}
-                        className="group hover:bg-neutral w-full rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors"
+                        className="group hover:bg-neutral w-full rounded-md px-2.5 py-1.5 text-left text-xs transition-colors"
                       >
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-start justify-between gap-2">

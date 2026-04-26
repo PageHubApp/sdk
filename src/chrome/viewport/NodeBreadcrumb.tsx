@@ -179,7 +179,7 @@ export const NodeBreadcrumb = () => {
           <ToolbarPortalDropdown
             openOn="hover"
             align="left"
-            className="border-base-300 bg-base-100 min-w-[16rem] rounded-lg border p-1 py-1.5 shadow-xl"
+            className="border-base-300 bg-base-100 min-w-[16rem] rounded-xl border p-1 py-1.5 shadow-xl"
             trigger={
               <button
                 type="button"

@@ -265,7 +265,7 @@ export const Dialog = ({
                 </div>
                 <button
                   onClick={closed}
-                  className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors"
+                  className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-md p-1 transition-colors"
                   aria-label="Close"
                 >
                   <TbX />
@@ -331,7 +331,7 @@ export const Dialog = ({
                 >
                   {!searchValue && (
                     <button
-                      className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs transition-colors ${selectedIndex === -1 ? "bg-primary text-primary-content" : ""}`}
+                      className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-md p-1 text-xs transition-colors ${selectedIndex === -1 ? "bg-primary text-primary-content" : ""}`}
                       onClick={e => changed(null)}
                     >
                       Default
@@ -339,7 +339,7 @@ export const Dialog = ({
                   )}
 
                   {!itemList.length && searchValue && (
-                    <div className="text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs">
+                    <div className="text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-md p-1 text-xs">
                       No results.
                     </div>
                   )}
@@ -351,7 +351,7 @@ export const Dialog = ({
                       return (
                         <button
                           id={`font-${_}`}
-                          className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs transition-colors ${
+                          className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-md p-1 text-xs transition-colors ${
                             dialog.value === _
                               ? "bg-primary text-primary-content"
                               : selectedIndex === k

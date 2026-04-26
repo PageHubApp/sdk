@@ -56,7 +56,7 @@ export const ItemToggle = ({ items = [], children, selected, onChange, option = 
             />
 
             {/* Dropdown menu */}
-            <div className="border-base-300 bg-neutral text-neutral-content absolute top-full right-0 z-20 mt-1 overflow-hidden rounded-lg border font-sans shadow-lg">
+            <div className="border-base-300 bg-neutral text-neutral-content absolute top-full right-0 z-20 mt-1 overflow-hidden rounded-xl border font-sans shadow-lg">
               {items.map(item => (
                 <button
                   key={item.id}

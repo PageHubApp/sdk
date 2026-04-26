@@ -62,6 +62,7 @@ User-added rows append to the bottom of the section in click order, surviving re
 | `text`            | Text input                              | ariaLabel, element ID                                   |
 | `select`          | Dropdown with explicit options          | role, tabIndex, ariaExpanded                            |
 | `shorthand`       | Mode-toggle row (uniform / X-Y / sides) | gap, padding, margin, borderRadius                      |
+| `bundle`          | Chip + floating popover                 | ring, outline                                           |
 | `custom`          | React component                         | FontFamilyInput, ActionInput, GradientInput             |
 
 ## Adding a Property
@@ -137,6 +138,57 @@ For properties with one logical concept and several Tailwind shorthand forms (ga
 For padding/margin add a third mode (`tags: ["pt","pr","pb","pl"]`, labels `["T","R","B","L"]`, `columns: 2`). For radius add a per-corner mode (`["rounded-tl","rounded-tr","rounded-br","rounded-bl"]`).
 
 `columns` controls the grid layout of the expanded row (defaults to `tags.length`). Use `2` for 4-side splits so T/R sit on one row, B/L on another.
+
+## Bundle input — chip + floating popover
+
+For *compound* properties that bundle several controls into one logical thing the user adds or removes as a unit (Ring, Outline, future Shadow stacks, gradients). The chip appears inline in the section. Clicking it opens a draggable, viewport-clamped `FloatingPanel` (`packages/sdk/src/chrome/floating/FloatingPanel.tsx`) anchored to the chip and docked on the side opposite the editor sidebar (`SideBarAtom`). The panel renders the bundle's child PropertyDefs via `PropertyRenderer`. Closing the panel doesn't persist position or size — every open is fresh from the trigger's bounding rect.
+
+```ts
+{
+  id: "ring",
+  label: "Ring",
+  section: "ring-outline",
+  hideKey: "ringOutline",
+  input: {
+    type: "bundle",
+    properties: [
+      {
+        id: "ringWidth",
+        label: "Width",
+        section: "ring-outline",
+        keywords: ["ring", "width"],
+        input: {
+          type: "universal",
+          propTag: "ring",
+          tailwindKey: "ringWidth",       // populates the dropdown options
+          allowedTypes: RING_OUTLINE_TYPES,
+          showVarSelector: true,
+        },
+        inline: true,
+      },
+      { id: "ringColor",       label: "Color",  input: { type: "color", prefix: "ring" }, inline: true },
+      { id: "ringOffsetWidth", label: "Offset", input: { type: "universal", propTag: "ring-offset", tailwindKey: "ringOffsetWidth", ... }, inline: true },
+    ],
+    // icon? — optional. Omit when no semantically appropriate icon exists.
+  },
+}
+```
+
+**Visibility / auto-detect.** `propertyHasValue` recognizes bundles: a bundle "has a value" when any of its child PropertyDefs does. So a node already carrying `ring-2 ring-primary` automatically shows the Ring chip on selection — no need for `pinned` or `sessionAdded`.
+
+**Add / Remove semantics.**
+- `+Add` → bundle pushes a `sessionKey` entry into `SessionAddedAtom` and the panel auto-opens. No `defaultValue` is written; once the user picks a value inside the popover, `propertyHasValue` keeps the chip alive across reloads.
+- The `X` on the chip strips every class the bundle owns across **every** scope (mobile / sm / md / dark / hover) by walking the className, matching each token's base via `classPropKeyMatches` against the child propKeys, and dropping matches. ALL in one atomic `setProp` so children don't race each other through the changeProp debounce.
+
+**Chip preview.** When the bundle has a child with `input.type === "color"`, the chip shows a swatch on the left:
+- If the active className contains a class matching that child's `prefix` (e.g. `ring-primary`), the swatch fills with the equivalent `bg-*` class (`bg-primary`).
+- Else, transparent checker pattern (`TRANSPARENT_CHECKER_BG`).
+
+When no color child exists and an `icon` is provided, the icon renders instead. Otherwise nothing — the chip body is just text.
+
+**Chip body.** Always reads "Add..." in muted text — the row label on the left already names the bundle, so the chip itself doesn't repeat it.
+
+**Why this exists.** `+Add` for individual ring/outline props was ambiguous (Width / Color / Offset duplicated across both, even with `groupLabel` disambiguators). Bundles model it the way users think: "I want a Ring," not "I want a ring-width, then a ring-color, then a ring-offset."
 
 ## Adding a Section
 
@@ -285,6 +337,13 @@ interface ShorthandMode {
   tailwindKeys?: string[]; // per-slot TailwindStyles keys
   columns?: number;        // grid column count for the expanded row
 }
+
+// Bundle input — chip + floating panel
+type BundleInput = {
+  type: "bundle";
+  properties: PropertyDef[];   // children rendered inside the popover
+  icon?: ReactNode;            // optional leading icon (omit when no semantic match)
+};
 ```
 
 ## Rules

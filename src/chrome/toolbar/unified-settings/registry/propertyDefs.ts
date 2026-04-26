@@ -22,6 +22,7 @@ export type SectionId =
   | "size"
   | "typography"
   | "background"
+  | "styles"
   | "border"
   | "decoration"
   | "hover-click"
@@ -143,6 +144,17 @@ export type PropertyInput =
        * reference or a string key into the customInputs registry.
        */
       component: ComponentType<PropertyInputProps> | string;
+    }
+  | {
+      type: "bundle";
+      /**
+       * Compound property — renders a single chip in the section, opens a
+       * popover with the inner properties when clicked. Removing the chip
+       * clears every child tag. Used for Ring, Outline, Shadow stacks, etc.
+       */
+      properties: PropertyDef[];
+      /** Optional leading icon shown on the chip + popover header. Omit when no semantically appropriate icon exists. */
+      icon?: ReactNode;
     }
   | {
       type: "shorthand";

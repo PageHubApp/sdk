@@ -567,7 +567,7 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
       )}
 
       {/* Floating toolbar */}
-      <div className="bg-neutral/95 pointer-events-auto absolute top-3 right-3 z-50 flex items-center gap-2 rounded-lg px-3 py-2 shadow-lg backdrop-blur-sm">
+      <div className="bg-neutral/95 pointer-events-auto absolute top-3 right-3 z-50 flex items-center gap-2 rounded-md px-3 py-2 shadow-lg backdrop-blur-sm">
         {!canvasIsolate && (
           <>
             <span className="text-neutral-content/70 px-1 text-xs">

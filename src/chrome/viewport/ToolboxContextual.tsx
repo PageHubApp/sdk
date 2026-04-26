@@ -58,8 +58,8 @@ const CANVAS_CLASS_CLIPBOARD = "canvas-class-clipboard";
 /** Same interaction as `.ph-select-item` (dropdowns.css): accent fill reads on base-100 menus. */
 const CTX_MENU_HOVER =
   "outline-none transition-[color,background-color] duration-150 ease-out hover:bg-accent hover:text-accent-content focus-visible:bg-accent focus-visible:text-accent-content active:bg-accent/90";
-const CTX_MENU_ITEM = `flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-3 py-2 text-left text-sm ${CTX_MENU_HOVER}`;
-const CTX_MENU_SUBMENU_TRIGGER = `flex w-full cursor-default select-none items-center justify-between gap-2 rounded-sm px-3 py-2 text-left text-sm ${CTX_MENU_HOVER}`;
+const CTX_MENU_ITEM = `flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-left text-sm ${CTX_MENU_HOVER}`;
+const CTX_MENU_SUBMENU_TRIGGER = `flex w-full cursor-default select-none items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm ${CTX_MENU_HOVER}`;
 
 const CONTEXT_SUBMENU_FALLBACKS: Placement[] = [
   "left-start",
@@ -574,7 +574,7 @@ export const ToolboxContexual = () => {
         left: (style.left as number | undefined) ?? menu.x,
         top: (style.top as number | undefined) ?? menu.y,
       }}
-      className="rounded-box border-base-300/50 bg-base-100 text-base-content z-10050 min-w-[12rem] overflow-visible border py-1 shadow-xl select-none"
+      className="rounded-xl border-base-300/50 bg-base-100 text-base-content z-10050 min-w-[12rem] overflow-visible border py-1 shadow-xl select-none"
     >
       {showDeselect ? (
         <button type="button" role="menuitem" className={CTX_MENU_ITEM} onClick={handleDeselect}>
@@ -686,7 +686,7 @@ export const ToolboxContexual = () => {
                     ...insertPanelFloating.floatingStyles,
                     zIndex: OVERLAY_Z_CONTEXT_INSERT_PANEL,
                   }}
-                  className="rounded-box border-base-300/50 bg-base-100 text-base-content max-h-[min(70vh,28rem)] min-w-[11rem] overflow-x-visible overflow-y-auto border py-1 shadow-xl select-none"
+                  className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-h-[min(70vh,28rem)] min-w-[11rem] overflow-x-visible overflow-y-auto border py-1 shadow-xl select-none"
                   onMouseEnter={cancelInsertLeaveTimer}
                   onMouseLeave={scheduleCloseInsertPanels}
                 >

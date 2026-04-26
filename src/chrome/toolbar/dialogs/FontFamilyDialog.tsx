@@ -219,7 +219,7 @@ export const FontFamilyDialog = () => {
       <div style={style}>
         <button
           id={`fontFamily-${font}`}
-          className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row truncate rounded-lg p-1 text-xs whitespace-nowrap transition-colors ${
+          className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row truncate rounded-md p-1 text-xs whitespace-nowrap transition-colors ${
             JSON.stringify(dialog.value) === JSON.stringify(font)
               ? "bg-primary text-primary-content"
               : ""

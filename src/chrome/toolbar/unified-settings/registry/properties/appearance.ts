@@ -6,7 +6,12 @@
  * Ring & Outline section — ring + outline width/color (main) + offsets + outline style (advanced)
  */
 import React from "react";
-import { TbBorderCorners, TbSquare } from "react-icons/tb";
+import {
+  TbBorderCorners,
+  TbBorderInner,
+  TbBoxPadding,
+  TbSquare,
+} from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
 
@@ -23,12 +28,14 @@ const RING_OUTLINE_TYPES: ValueType[] = [
   "vmax",
 ];
 
+const BORDER_WIDTH_TYPES: ValueType[] = ["tailwind", "calc", "px"];
+
 export const appearanceProperties: PropertyDef[] = [
   // ─── Appearance (shadow + opacity) ───────────────────────────────
   {
     id: "shadow",
     label: "Shadow",
-    section: "appearance",
+    section: "styles",
     keywords: ["shadow", "drop", "box", "elevation", "depth"],
     input: {
       type: "universal",
@@ -37,13 +44,13 @@ export const appearanceProperties: PropertyDef[] = [
       showVarSelector: true,
     },
     hideKey: "shadow",
-    sortOrder: 0,
+    sortOrder: 5,
     inline: true,
   },
   {
     id: "opacity",
     label: "Opacity",
-    section: "appearance",
+    section: "styles",
     keywords: ["opacity", "transparent", "alpha", "visibility", "fade"],
     input: {
       type: "universal",
@@ -52,46 +59,80 @@ export const appearanceProperties: PropertyDef[] = [
       showVarSelector: true,
     },
     hideKey: "opacity",
-    sortOrder: 1,
-    inline: true,
-  },
-
-  // ─── Border — main ───────────────────────────────────────────────
-  {
-    id: "border",
-    label: "Width",
-    section: "border",
-    keywords: ["border", "width", "size", "stroke", "thickness"],
-    input: { type: "tailwind-select", tailwindKey: "border", showVarSelector: true },
-    hideKey: "border",
     sortOrder: 0,
     inline: true,
   },
+
+  // ─── Border (bundle: chip → popover with Width / Style / Color) ──
   {
-    id: "borderStyle",
-    label: "Style",
-    section: "border",
-    keywords: ["style", "solid", "dashed", "dotted", "double", "none"],
-    input: { type: "tailwind-select", tailwindKey: "borderStyle" },
+    id: "border",
+    label: "Border",
+    section: "styles",
+    keywords: ["border", "width", "style", "color", "stroke", "thickness", "top", "right", "bottom", "left"],
     hideKey: "border",
-    sortOrder: 1,
-    inline: true,
-  },
-  {
-    id: "borderColor",
-    label: "Color",
-    section: "border",
-    keywords: ["border", "color", "stroke"],
-    input: { type: "color", prefix: "border" },
-    hideKey: "border",
-    showWhen: className => /\bborder(-[^\s])?/.test(className),
-    sortOrder: 2,
-    inline: true,
+    sortOrder: 20,
+    input: {
+      type: "bundle",
+      properties: [
+        {
+          id: "borderWidth",
+          label: "Width",
+          section: "styles",
+          keywords: ["border", "width", "size", "thickness"],
+          input: {
+            type: "shorthand",
+            tailwindKey: "border",
+            varSelectorPrefix: "border",
+            allowedTypes: [...BORDER_WIDTH_TYPES],
+            modes: [
+              {
+                id: "uniform",
+                icon: React.createElement(TbSquare, { className: "size-3.5" }),
+                ariaLabel: "Uniform border width",
+                tags: ["border"],
+                labels: [""],
+              },
+              {
+                id: "axes",
+                icon: React.createElement(TbBoxPadding, { className: "size-3.5" }),
+                ariaLabel: "Border X & Y",
+                tags: ["border-x", "border-y"],
+                labels: ["X", "Y"],
+              },
+              {
+                id: "sides",
+                icon: React.createElement(TbBorderInner, { className: "size-3.5" }),
+                ariaLabel: "Border per-side",
+                tags: ["border-t", "border-r", "border-b", "border-l"],
+                labels: ["T", "R", "B", "L"],
+                columns: 2,
+              },
+            ],
+          },
+        },
+        {
+          id: "borderStyle",
+          label: "Style",
+          section: "styles",
+          keywords: ["style", "solid", "dashed", "dotted", "double", "none"],
+          input: { type: "tailwind-select", tailwindKey: "borderStyle" },
+          inline: true,
+        },
+        {
+          id: "borderColor",
+          label: "Color",
+          section: "styles",
+          keywords: ["border", "color", "stroke"],
+          input: { type: "color", prefix: "border" },
+          inline: true,
+        },
+      ],
+    },
   },
   {
     id: "borderRadius",
     label: "Radius",
-    section: "border",
+    section: "styles",
     keywords: ["radius", "rounded", "corners", "border-radius", "pill", "circle"],
     input: {
       type: "shorthand",
@@ -117,164 +158,162 @@ export const appearanceProperties: PropertyDef[] = [
     },
     hideKey: "radius",
     pinned: true,
-    sortOrder: 3,
-  },
-
-  // ─── Border — advanced (per-side + divide) ───────────────────────
-  {
-    id: "borderSides",
-    label: "",
-    section: "border",
-    keywords: ["border", "top", "bottom", "left", "right", "side", "per-side"],
-    input: { type: "custom", component: "BorderSidesPicker" },
-    hideKey: "border",
-    sortOrder: 110,
-  },
-  {
-    id: "divideX",
-    label: "X",
-    section: "border",
-    keywords: ["divide", "horizontal", "separator", "x"],
-    input: { type: "tailwind-select", tailwindKey: "divideX" },
-    sortOrder: 140,
-  },
-  {
-    id: "divideY",
-    label: "Y",
-    section: "border",
-    keywords: ["divide", "vertical", "separator", "y"],
-    input: { type: "tailwind-select", tailwindKey: "divideY" },
-    sortOrder: 141,
-  },
-  {
-    id: "divideStyle",
-    label: "Style",
-    section: "border",
-    keywords: ["divide", "style", "solid", "dashed", "dotted"],
-    input: { type: "tailwind-select", tailwindKey: "divideStyle" },
-    sortOrder: 142,
-  },
-  {
-    id: "divideColor",
-    label: "Color",
-    section: "border",
-    keywords: ["divide", "color", "separator"],
-    input: { type: "color", prefix: "divide" },
-    sortOrder: 143,
-    inline: true,
-  },
-
-  // ─── Ring sub-section ────────────────────────────────────────────
-  {
-    id: "ringWidth",
-    label: "Width",
-    section: "ring-outline",
-    keywords: ["ring", "width", "focus", "outline"],
-    input: {
-      type: "universal",
-      propTag: "ring",
-      allowedTypes: RING_OUTLINE_TYPES,
-      showVarSelector: true,
-    },
-    hideKey: "ringOutline",
-    groupLabel: "Ring",
-    sortOrder: 0,
-    inline: true,
-  },
-  {
-    id: "ringColor",
-    label: "Color",
-    section: "ring-outline",
-    keywords: ["ring", "color", "focus"],
-    input: { type: "color", prefix: "ring" },
-    hideKey: "ringOutline",
-    groupLabel: "Ring",
-    showWhen: className => {
-      if (!className) return false;
-      return className.split(/\s+/).some(c => {
-        const raw = c.replace(/^(sm:|md:|lg:|xl:|2xl:|hover:)/, "");
-        return raw.startsWith("ring") && !raw.startsWith("ring-offset");
-      });
-    },
-    sortOrder: 1,
-    inline: true,
-  },
-  {
-    id: "ringOffsetWidth",
-    label: "Offset",
-    section: "ring-outline",
-    keywords: ["ring", "offset", "gap"],
-    input: {
-      type: "universal",
-      propTag: "ring-offset",
-      allowedTypes: RING_OUTLINE_TYPES,
-      showVarSelector: true,
-    },
-    hideKey: "ringOutline",
-    groupLabel: "Ring",
-    sortOrder: 2,
-    inline: true,
-  },
-
-  // ─── Outline sub-section ─────────────────────────────────────────
-  {
-    id: "outlineWidth",
-    label: "Width",
-    section: "ring-outline",
-    keywords: ["outline", "width", "border"],
-    input: {
-      type: "universal",
-      propTag: "outline",
-      allowedTypes: RING_OUTLINE_TYPES,
-      showVarSelector: true,
-    },
-    hideKey: "ringOutline",
-    groupLabel: "Outline",
     sortOrder: 10,
-    inline: true,
   },
+
+  // ─── Divide (bundle: chip → popover with X / Y / Style / Color) ─────
   {
-    id: "outlineColor",
-    label: "Color",
-    section: "ring-outline",
-    keywords: ["outline", "color"],
-    input: { type: "color", prefix: "outline" },
-    hideKey: "ringOutline",
-    groupLabel: "Outline",
-    showWhen: className => {
-      if (!className) return false;
-      return className.split(/\s+/).some(c => {
-        const raw = c.replace(/^(sm:|md:|lg:|xl:|2xl:|hover:)/, "");
-        return raw.startsWith("outline") && !raw.startsWith("outline-offset");
-      });
-    },
-    sortOrder: 11,
-    inline: true,
-  },
-  {
-    id: "outlineOffset",
-    label: "Offset",
-    section: "ring-outline",
-    keywords: ["outline", "offset", "gap"],
+    id: "divide",
+    label: "Divide",
+    section: "styles",
+    keywords: ["divide", "separator", "between", "x", "y", "style", "color"],
+    sortOrder: 50,
     input: {
-      type: "universal",
-      propTag: "outline-offset",
-      allowedTypes: RING_OUTLINE_TYPES,
-      showVarSelector: true,
+      type: "bundle",
+      properties: [
+        {
+          id: "divideX",
+          label: "X",
+          section: "styles",
+          keywords: ["divide", "horizontal", "separator", "x"],
+          input: { type: "tailwind-select", tailwindKey: "divideX" },
+          inline: true,
+        },
+        {
+          id: "divideY",
+          label: "Y",
+          section: "styles",
+          keywords: ["divide", "vertical", "separator", "y"],
+          input: { type: "tailwind-select", tailwindKey: "divideY" },
+          inline: true,
+        },
+        {
+          id: "divideStyle",
+          label: "Style",
+          section: "styles",
+          keywords: ["divide", "style", "solid", "dashed", "dotted"],
+          input: { type: "tailwind-select", tailwindKey: "divideStyle" },
+          inline: true,
+        },
+        {
+          id: "divideColor",
+          label: "Color",
+          section: "styles",
+          keywords: ["divide", "color", "separator"],
+          input: { type: "color", prefix: "divide" },
+          inline: true,
+        },
+      ],
     },
-    hideKey: "ringOutline",
-    groupLabel: "Outline",
-    sortOrder: 12,
-    inline: true,
   },
+
+  // ─── Ring (bundle: chip → popover with Width / Color / Offset) ───
   {
-    id: "outlineStyle",
-    label: "Style",
-    section: "ring-outline",
-    keywords: ["outline", "style", "solid", "dashed", "dotted"],
-    input: { type: "tailwind-select", tailwindKey: "outlineStyle" },
+    id: "ring",
+    label: "Ring",
+    section: "styles",
+    keywords: ["ring", "focus", "width", "color", "offset"],
     hideKey: "ringOutline",
-    groupLabel: "Outline",
-    sortOrder: 13,
+    sortOrder: 30,
+    input: {
+      type: "bundle",
+      properties: [
+        {
+          id: "ringWidth",
+          label: "Width",
+          section: "styles",
+          keywords: ["ring", "width"],
+          input: {
+            type: "universal",
+            propTag: "ring",
+            tailwindKey: "ringWidth",
+            allowedTypes: RING_OUTLINE_TYPES,
+            showVarSelector: true,
+          },
+          inline: true,
+        },
+        {
+          id: "ringColor",
+          label: "Color",
+          section: "styles",
+          keywords: ["ring", "color"],
+          input: { type: "color", prefix: "ring" },
+          inline: true,
+        },
+        {
+          id: "ringOffsetWidth",
+          label: "Offset",
+          section: "styles",
+          keywords: ["ring", "offset"],
+          input: {
+            type: "universal",
+            propTag: "ring-offset",
+            tailwindKey: "ringOffsetWidth",
+            allowedTypes: RING_OUTLINE_TYPES,
+            showVarSelector: true,
+          },
+          inline: true,
+        },
+      ],
+    },
+  },
+
+  // ─── Outline (bundle: chip → popover with Width / Color / Offset / Style) ─
+  {
+    id: "outline",
+    label: "Outline",
+    section: "styles",
+    keywords: ["outline", "border", "width", "color", "offset", "style"],
+    hideKey: "ringOutline",
+    sortOrder: 40,
+    input: {
+      type: "bundle",
+      properties: [
+        {
+          id: "outlineWidth",
+          label: "Width",
+          section: "styles",
+          keywords: ["outline", "width"],
+          input: {
+            type: "universal",
+            propTag: "outline",
+            tailwindKey: "outlineWidth",
+            allowedTypes: RING_OUTLINE_TYPES,
+            showVarSelector: true,
+          },
+          inline: true,
+        },
+        {
+          id: "outlineColor",
+          label: "Color",
+          section: "styles",
+          keywords: ["outline", "color"],
+          input: { type: "color", prefix: "outline" },
+          inline: true,
+        },
+        {
+          id: "outlineOffset",
+          label: "Offset",
+          section: "styles",
+          keywords: ["outline", "offset"],
+          input: {
+            type: "universal",
+            propTag: "outline-offset",
+            tailwindKey: "outlineOffset",
+            allowedTypes: RING_OUTLINE_TYPES,
+            showVarSelector: true,
+          },
+          inline: true,
+        },
+        {
+          id: "outlineStyle",
+          label: "Style",
+          section: "styles",
+          keywords: ["outline", "style"],
+          input: { type: "tailwind-select", tailwindKey: "outlineStyle" },
+          inline: true,
+        },
+      ],
+    },
   },
 ];

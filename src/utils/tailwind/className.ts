@@ -90,7 +90,7 @@ const RING_OUTLINE_PROP_KEYS = new Set([
  * Aligns toolbar `propKey` values with `resolveClassKey` / `TailwindStyles` category names.
  * Used by getClassForView + removeClassForView so reads match writes (ColorInput, UniversalInput, etc.).
  */
-function classPropKeyMatches(base: string, propKey: string): boolean {
+export function classPropKeyMatches(base: string, propKey: string): boolean {
   if (propKey === "placeholderColor") {
     if (base.startsWith("placeholder:")) {
       return classPropKeyMatches(base.slice("placeholder:".length), "color");

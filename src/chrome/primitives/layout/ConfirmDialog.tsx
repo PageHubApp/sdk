@@ -139,7 +139,7 @@ export const ConfirmDialog = ({
           <div className="flex justify-end gap-3">
             <button
               onClick={onClose}
-              className="border-base-300 text-neutral-content hover:bg-neutral hover:text-base-content rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+              className="border-base-300 text-neutral-content hover:bg-neutral hover:text-base-content rounded-md border px-4 py-2 text-sm font-medium transition-colors"
             >
               {cancelText}
             </button>

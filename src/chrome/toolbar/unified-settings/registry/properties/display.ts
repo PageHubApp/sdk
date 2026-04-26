@@ -7,6 +7,8 @@
  *           font smoothing, interactivity, CSS utilities
  * Custom CSS: own section (className code editor)
  */
+import React from "react";
+import { TbBorderInner, TbBoxPadding, TbSquare } from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
 
@@ -85,7 +87,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "cursor",
     label: "Cursor",
-    section: "display",
+    section: "styles",
     keywords: ["cursor", "pointer", "grab", "default", "not-allowed", "wait", "move"],
     input: {
       type: "universal",
@@ -95,13 +97,13 @@ export const displayProperties: PropertyDef[] = [
       showVarSelector: true,
     },
     hideKey: "cursor",
-    sortOrder: 2,
+    sortOrder: 200,
     inline: true,
   },
   {
     id: "overflow",
     label: "Overflow",
-    section: "display",
+    section: "styles",
     keywords: ["overflow", "hidden", "scroll", "auto", "clip", "visible"],
     input: {
       type: "universal",
@@ -110,12 +112,12 @@ export const displayProperties: PropertyDef[] = [
       allowedTypes: ["tailwind", "calc"],
       showVarSelector: true,
     },
-    sortOrder: 3,
+    sortOrder: 80,
   },
   {
     id: "zIndex",
     label: "Z-Index",
-    section: "display",
+    section: "styles",
     keywords: ["z-index", "z", "layer", "stack", "depth", "order"],
     input: {
       type: "universal",
@@ -124,7 +126,7 @@ export const displayProperties: PropertyDef[] = [
       allowedTypes: ["tailwind", "calc"],
       showVarSelector: true,
     },
-    sortOrder: 4,
+    sortOrder: 220,
     inline: true,
   },
   {
@@ -142,107 +144,65 @@ export const displayProperties: PropertyDef[] = [
     id: "inset",
     label: "Inset",
     section: "display",
-    keywords: ["inset", "all", "offset", "position"],
+    keywords: ["inset", "all", "offset", "position", "top", "right", "bottom", "left"],
     input: {
-      type: "universal",
-      propTag: "inset",
-      tailwindKey: "inset",
-      allowedTypes: OFFSET_TYPES,
-      showVarSelector: true,
+      type: "shorthand",
+      varSelectorPrefix: "inset",
+      allowedTypes: [...OFFSET_TYPES],
+      modes: [
+        {
+          id: "uniform",
+          icon: React.createElement(TbSquare, { className: "size-3.5" }),
+          ariaLabel: "Uniform inset",
+          tags: ["inset"],
+          labels: [""],
+        },
+        {
+          id: "axes",
+          icon: React.createElement(TbBoxPadding, { className: "size-3.5" }),
+          ariaLabel: "Inset X & Y",
+          tags: ["inset-x", "inset-y"],
+          labels: ["X", "Y"],
+        },
+        {
+          id: "sides",
+          icon: React.createElement(TbBorderInner, { className: "size-3.5" }),
+          ariaLabel: "Inset per-side",
+          tags: ["top", "right", "bottom", "left"],
+          labels: ["T", "R", "B", "L"],
+          tailwindKeys: ["top", "right", "bottom", "left"],
+          columns: 2,
+        },
+      ],
     },
     showWhen: hasPositioning,
     sortOrder: 10,
-    inline: true,
-  },
-  {
-    id: "top",
-    label: "Top",
-    section: "display",
-    keywords: ["top", "offset", "position", "y"],
-    input: {
-      type: "universal",
-      propTag: "top",
-      tailwindKey: "top",
-      allowedTypes: OFFSET_TYPES,
-      showVarSelector: true,
-    },
-    showWhen: hasPositioning,
-    sortOrder: 11,
-    inline: true,
-  },
-  {
-    id: "right",
-    label: "Right",
-    section: "display",
-    keywords: ["right", "offset", "position", "x"],
-    input: {
-      type: "universal",
-      propTag: "right",
-      tailwindKey: "right",
-      allowedTypes: OFFSET_TYPES,
-      showVarSelector: true,
-    },
-    showWhen: hasPositioning,
-    sortOrder: 12,
-    inline: true,
-  },
-  {
-    id: "bottom",
-    label: "Bottom",
-    section: "display",
-    keywords: ["bottom", "offset", "position", "y"],
-    input: {
-      type: "universal",
-      propTag: "bottom",
-      tailwindKey: "bottom",
-      allowedTypes: OFFSET_TYPES,
-      showVarSelector: true,
-    },
-    showWhen: hasPositioning,
-    sortOrder: 13,
-    inline: true,
-  },
-  {
-    id: "left",
-    label: "Left",
-    section: "display",
-    keywords: ["left", "offset", "position", "x"],
-    input: {
-      type: "universal",
-      propTag: "left",
-      tailwindKey: "left",
-      allowedTypes: OFFSET_TYPES,
-      showVarSelector: true,
-    },
-    showWhen: hasPositioning,
-    sortOrder: 14,
-    inline: true,
   },
 
-  // ─── Advanced: Behavior ──────────────────────────────────────────
+  // ─── Behavior (styles section) ───────────────────────────────────
   {
     id: "visibility",
     label: "Visibility",
-    section: "display",
+    section: "styles",
     keywords: ["visibility", "visible", "invisible", "hidden", "collapse"],
     input: { type: "tailwind-select", tailwindKey: "visibility" },
-    sortOrder: 100,
+    sortOrder: 75,
   },
   {
     id: "pointerEvents",
     label: "Pointer Events",
-    section: "display",
+    section: "styles",
     keywords: ["pointer", "events", "click", "none", "auto"],
     input: { type: "tailwind-select", tailwindKey: "pointerEvents" },
-    sortOrder: 101,
+    sortOrder: 210,
   },
   {
     id: "userSelect",
     label: "User Select",
-    section: "display",
+    section: "styles",
     keywords: ["user", "select", "text", "selection", "none", "all"],
     input: { type: "tailwind-select", tailwindKey: "userSelect" },
-    sortOrder: 102,
+    sortOrder: 215,
   },
   {
     id: "float",

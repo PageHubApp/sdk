@@ -18,8 +18,8 @@ import { useAnchoredPopover } from "@/chrome/overlays/useAnchoredPopover";
 
 const CTX_HOVER =
   "outline-none transition-[color,background-color] duration-150 ease-out hover:bg-accent hover:text-accent-content focus-visible:bg-accent focus-visible:text-accent-content";
-const CTX_ITEM = `flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-3 py-2 text-left text-sm ${CTX_HOVER}`;
-const CTX_SUBMENU_TRIGGER = `flex w-full cursor-default select-none items-center justify-between gap-2 rounded-sm px-3 py-2 text-left text-sm ${CTX_HOVER}`;
+const CTX_ITEM = `flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-left text-sm ${CTX_HOVER}`;
+const CTX_SUBMENU_TRIGGER = `flex w-full cursor-default select-none items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm ${CTX_HOVER}`;
 
 const SUBMENU_FLIP = {
   crossAxis: true,
@@ -89,7 +89,7 @@ function GroupSubmenu({
     <div
       ref={floating.refs.setFloating}
       style={{ ...floating.floatingStyles, zIndex: 100000 }}
-      className="rounded-box border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto border py-1 shadow-xl select-none"
+      className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto border py-1 shadow-xl select-none"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -264,7 +264,7 @@ export function VariableInsertPanel({ editor, query, nodeId, onAction }: Variabl
         <PopoverPanel
           anchor="bottom start"
           transition
-          className="pagehub-sdk-root rounded-box border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 max-w-[20rem] min-w-[14rem] overflow-hidden border shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
+          className="pagehub-sdk-root rounded-xl border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 max-w-[20rem] min-w-[14rem] overflow-hidden border shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
         >
           <VariableInsertDropdownBody
             editor={editor}
@@ -293,7 +293,7 @@ export function VariableInsertPanel({ editor, query, nodeId, onAction }: Variabl
       <PopoverPanel
         anchor="bottom start"
         transition
-        className="pagehub-sdk-root rounded-box border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 min-w-[12rem] overflow-visible border py-1 shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
+        className="pagehub-sdk-root rounded-xl border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 min-w-[12rem] overflow-visible border py-1 shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
       >
         <VariableInsertDropdownBody
           editor={editor}

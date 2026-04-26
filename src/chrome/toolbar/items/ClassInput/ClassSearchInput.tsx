@@ -130,21 +130,21 @@ export function ClassSearchInput({
               <div className="flex flex-wrap gap-1">
                 <span>
                   Press{" "}
-                  <kbd className="bg-base-200 text-base-content rounded-lg border px-1.5 py-0.5">
+                  <kbd className="bg-base-200 text-base-content rounded-md border px-1.5 py-0.5">
                     Tab
                   </kbd>{" "}
                   to complete
                 </span>
                 <span>
                   Use{" "}
-                  <kbd className="bg-base-200 text-base-content rounded-lg border px-1.5 py-0.5">
+                  <kbd className="bg-base-200 text-base-content rounded-md border px-1.5 py-0.5">
                     ↑↓
                   </kbd>{" "}
                   to navigate
                 </span>
                 <span>
                   Press{" "}
-                  <kbd className="bg-base-200 text-base-content rounded-lg border px-1.5 py-0.5">
+                  <kbd className="bg-base-200 text-base-content rounded-md border px-1.5 py-0.5">
                     Enter
                   </kbd>{" "}
                   to select
@@ -154,7 +154,7 @@ export function ClassSearchInput({
                 Unprefixed classes are the base layer (mobile-first). Prefix with{" "}
                 {["sm:", "md:", "lg:", "xl:", "2xl:"].map((bp, i, arr) => (
                   <span key={bp}>
-                    <kbd className="bg-base-200 text-base-content rounded-lg border px-1.5 py-0.5">
+                    <kbd className="bg-base-200 text-base-content rounded-md border px-1.5 py-0.5">
                       {bp}
                     </kbd>
                     {i < arr.length - 1 ? ", " : " "}

@@ -183,7 +183,7 @@ function Dialog({ children, target, state, opener }: any): any {
             role="dialog"
             aria-modal="true"
             aria-label="Settings dialog"
-            className="animate-backdrop-in border-base-300 bg-neutral text-base-content absolute max-w-[320px] flex-col gap-4 overflow-hidden rounded-lg border-2 shadow-2xl select-none"
+            className="animate-backdrop-in border-base-300 bg-neutral text-base-content absolute max-w-[320px] flex-col gap-4 overflow-hidden rounded-xl border-2 shadow-2xl select-none"
             style={{
               zIndex: 50,
             }}

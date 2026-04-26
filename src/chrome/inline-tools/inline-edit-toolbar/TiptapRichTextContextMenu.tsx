@@ -8,7 +8,7 @@ import { VariableInsertDropdownBody } from "./panels/VariableInsertPanel";
 
 const MENU_Z = 100060;
 const ITEM =
-  "flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-3 py-2 text-left text-sm outline-none transition-[color,background-color] duration-150 ease-out hover:bg-accent hover:text-accent-content focus-visible:bg-accent focus-visible:text-accent-content";
+  "flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-left text-sm outline-none transition-[color,background-color] duration-150 ease-out hover:bg-accent hover:text-accent-content focus-visible:bg-accent focus-visible:text-accent-content";
 
 type Phase = "root" | "variables";
 
@@ -72,7 +72,7 @@ export function TiptapRichTextContextMenu({
   return createPortal(
     <div
       ref={rootRef}
-      className="pagehub-sdk-root rounded-box border-base-300/50 bg-base-100 text-base-content fixed min-w-[12rem] overflow-visible border py-1 shadow-xl select-none"
+      className="pagehub-sdk-root rounded-xl border-base-300/50 bg-base-100 text-base-content fixed min-w-[12rem] overflow-visible border py-1 shadow-xl select-none"
       style={{ left, top, zIndex: MENU_Z }}
       role="menu"
       aria-label="Text actions"

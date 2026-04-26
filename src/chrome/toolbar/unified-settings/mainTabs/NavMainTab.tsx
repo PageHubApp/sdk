@@ -75,7 +75,7 @@ export const NavMainTab = () => {
         icon={SECTION_ICONS["Content"]}
         help="Nav links and their URLs. Switch views to edit mobile."
       >
-        <div className="bg-neutral flex gap-1 rounded-lg p-1">
+        <div className="bg-neutral flex gap-1 rounded-md p-1">
           {NAV_VIEW_STATES.map(({ value, label, icon: Icon }) => (
             <button
               key={value}

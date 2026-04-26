@@ -42,7 +42,7 @@ export const FormMainTab = () => {
           icon={SECTION_ICONS["Content"]}
           help="Preview the form, loading, and submitted states."
         >
-          <div className="bg-neutral flex gap-1 rounded-lg p-1">
+          <div className="bg-neutral flex gap-1 rounded-md p-1">
             {VIEW_STATES.map(({ value, label, icon: Icon }) => (
               <button
                 key={value}

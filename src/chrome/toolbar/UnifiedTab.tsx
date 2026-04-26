@@ -37,7 +37,7 @@ export const UnifiedTab = ({
   return (
     <div
       className={twMerge(
-        "relative flex cursor-pointer items-center justify-center rounded-lg p-1.5 text-lg font-medium transition-[color,opacity,transform] active:scale-90",
+        "relative flex cursor-pointer items-center justify-center rounded-md p-1.5 text-lg font-medium transition-[color,opacity,transform] active:scale-90",
         showActiveColor
           ? "text-primary opacity-100"
           : "text-secondary-content hover:text-base-content opacity-45 hover:opacity-100",

@@ -28,6 +28,8 @@ interface FloatingPanelProps {
   minHeight?: number;
   maxHeight?: number;
   edges?: ResizeEdge[];
+  /** Persist resized size to storage. Default true. Pass false for ephemeral popovers. */
+  persistSize?: boolean;
   /** Initial position — defaults to centered */
   initialPosition?: { x: number; y: number };
   /**
@@ -62,6 +64,7 @@ export function FloatingPanel({
   dockToEdge,
   closeButtonSide = "right",
   zIndex = 999,
+  persistSize = true,
   children,
 }: FloatingPanelProps) {
   const [viewport, setViewport] = React.useState(() => ({
@@ -112,6 +115,7 @@ export function FloatingPanel({
     minHeight,
     maxHeight: boundedMaxHeight,
     edges,
+    persist: persistSize,
   });
 
   useLayoutEffect(() => {
@@ -188,7 +192,7 @@ export function FloatingPanel({
             role="presentation"
             aria-hidden="true"
             onMouseDown={handleMouseDown}
-            className={`border-base-300 bg-accent text-accent-content flex items-center justify-between border-b px-3 py-1.5 ${
+            className={`text-base-content flex items-center justify-between px-3 py-1.5 ${
               isDragging ? "cursor-grabbing" : "cursor-grab"
             }`}
           >

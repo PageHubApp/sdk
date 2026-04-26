@@ -297,7 +297,7 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
                     <button
                       type="button"
                       onClick={() => handleSaveRename(component)}
-                      className="text-neutral-content hover:bg-primary hover:text-primary-content rounded-lg p-1 transition-colors"
+                      className="text-neutral-content hover:bg-primary hover:text-primary-content rounded-md p-1 transition-colors"
                       aria-label="Save"
                     >
                       <TbCheck className="size-5" />

@@ -368,7 +368,7 @@ export function PageSelector({
                   <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">
                     URL
                   </label>
-                  <div className="border-base-300 flex items-center gap-0.5 rounded-lg border px-2 py-1.5">
+                  <div className="border-base-300 flex items-center gap-0.5 rounded-md border px-2 py-1.5">
                     <span className="text-neutral-content/50 text-xs">/</span>
                     <input
                       type="text"

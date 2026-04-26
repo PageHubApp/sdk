@@ -399,7 +399,7 @@ export const Header = () => {
         <ToolbarPortalDropdown
           openOn="hover"
           align="center"
-          className="border-base-300 bg-base-100 w-[18rem] rounded-lg border p-2 shadow-xl"
+          className="border-base-300 bg-base-100 w-[18rem] rounded-xl border p-2 shadow-xl"
           trigger={
             <button
               type="button"

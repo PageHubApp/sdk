@@ -2,7 +2,8 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
 import { ViewAtom } from "../../../viewport/atoms";
 import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAtomValue } from "@zedux/react";
 import { usePalette } from "@/utils/design/PaletteContext";
 import { resolveTheme } from "@/utils/design/resolveTheme";
@@ -37,6 +38,28 @@ export const ColorInput = (__props: any) => {
   } = __props;
 
   const [isOpen, setIsOpen] = useState(false);
+  const [popoverPos, setPopoverPos] = useState<{ top: number; right: number } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Recompute popover position when opening (and on scroll/resize while open).
+  useEffect(() => {
+    if (!isOpen) return;
+    const update = () => {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setPopoverPos({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+      });
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [isOpen]);
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
 
@@ -158,6 +181,7 @@ export const ColorInput = (__props: any) => {
         <div className="relative">
           <div className="color-input-field input-wrapper flex w-full items-stretch">
             <button
+              ref={triggerRef}
               type="button"
               id={`input-${propKey}`}
               className="input-plain relative min-h-8 w-full min-w-0 flex-1 shrink overflow-hidden rounded-lg"
@@ -195,21 +219,27 @@ export const ColorInput = (__props: any) => {
         </div>
       </Wrap>
 
-      {isOpen && (
-        <div className="absolute top-full right-0 z-50 mt-1">
-          <div className="border-base-300 bg-base-200 rounded-lg border shadow-xl">
-            <TokenPicker
-              variant="panel"
-              value={pickerValue}
-              onChange={data => {
-                changed(data);
-              }}
-              onClose={() => setIsOpen(false)}
-              onClear={clearColor}
-            />
-          </div>
-        </div>
-      )}
+      {isOpen &&
+        popoverPos &&
+        createPortal(
+          <div
+            className="pagehub-sdk-root fixed z-[1200]"
+            style={{ top: popoverPos.top, right: popoverPos.right }}
+          >
+            <div className="border-base-300 bg-base-200 rounded-xl border shadow-xl">
+              <TokenPicker
+                variant="panel"
+                value={pickerValue}
+                onChange={data => {
+                  changed(data);
+                }}
+                onClose={() => setIsOpen(false)}
+                onClear={clearColor}
+              />
+            </div>
+          </div>,
+          document.querySelector(".pagehub-sdk-root") || document.body
+        )}
     </div>
   );
 };

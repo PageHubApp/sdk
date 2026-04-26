@@ -214,7 +214,7 @@ export const ColorPickerDialog = () => {
           <div className="flex gap-1.5">
             {colorPicker.propKey !== "theme-design-system" && (
               <button
-                className="text-accent-content hover:bg-neutral hover:text-base-content flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs transition-colors"
+                className="text-accent-content hover:bg-neutral hover:text-base-content flex cursor-pointer items-center justify-center rounded-md p-1 text-xs transition-colors"
                 onClick={saveToPallet}
                 data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                 data-tooltip-content="Save to palette"
@@ -226,7 +226,7 @@ export const ColorPickerDialog = () => {
             {isSupported() && (
               <button
                 onClick={pickColor}
-                className="text-accent-content hover:bg-neutral hover:text-base-content flex cursor-pointer items-center justify-center rounded-lg p-1 text-xs transition-colors"
+                className="text-accent-content hover:bg-neutral hover:text-base-content flex cursor-pointer items-center justify-center rounded-md p-1 text-xs transition-colors"
                 data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                 data-tooltip-content="Eyedropper"
                 data-tooltip-offset={10}
@@ -237,7 +237,7 @@ export const ColorPickerDialog = () => {
           </div>
           <button
             onClick={close}
-            className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors"
+            className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-md p-1 transition-colors"
           >
             <TbX className="size-3.5" />
           </button>

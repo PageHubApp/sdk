@@ -4,6 +4,8 @@
  * Main: transition (property/duration/ease/delay) + blur + backdrop blur
  * Advanced: transforms, filters (preview tile), backdrop filters (preview tile), animate
  */
+import React from "react";
+import { TbBoxPadding, TbSquare } from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
 
@@ -40,6 +42,28 @@ function mainEffect(
       showVarSelector: true,
     },
     sortOrder,
+    inline: true,
+  };
+}
+
+/** Filter / backdrop bundle child — renders a single universal-input row inside the popover. */
+function filterChild(
+  id: string,
+  label: string,
+  propTag: string,
+  keywords: string[]
+): PropertyDef {
+  return {
+    id,
+    label,
+    section: "styles",
+    keywords,
+    input: {
+      type: "universal",
+      propTag,
+      allowedTypes: EFFECTS_TYPES,
+      showVarSelector: true,
+    },
     inline: true,
   };
 }
@@ -82,15 +106,74 @@ export const effectsProperties: PropertyDef[] = [
   mainEffect("ease", "Easing", ["ease", "easing", "curve", "timing", "bezier"], "ease", 2),
   mainEffect("delay", "Delay", ["delay", "wait", "pause"], "delay", 3),
 
-  // ─── Main: Blur (most common filter) ─────────────────────────────
-  mainEffect("blur", "Blur", ["blur", "focus", "gaussian", "soft"], "blur", 10),
-  mainEffect(
-    "backdropBlur",
-    "Backdrop Blur",
-    ["backdrop", "blur", "frosted", "glass"],
-    "backdrop-blur",
-    11
-  ),
+  // ─── Filter (bundle: chip → popover, blur+brightness+contrast+...) ──
+  {
+    id: "filter",
+    label: "Filter",
+    section: "styles",
+    keywords: [
+      "filter",
+      "blur",
+      "brightness",
+      "contrast",
+      "grayscale",
+      "hue",
+      "invert",
+      "saturate",
+      "sepia",
+    ],
+    sortOrder: 60,
+    input: {
+      type: "bundle",
+      properties: [
+        filterChild("blur", "Blur", "blur", ["blur", "focus", "gaussian", "soft"]),
+        filterChild("brightness", "Brightness", "brightness", ["brightness", "light"]),
+        filterChild("contrast", "Contrast", "contrast", ["contrast"]),
+        filterChild("grayscale", "Grayscale", "grayscale", ["grayscale", "mono"]),
+        filterChild("hueRotate", "Hue Rotate", "hue-rotate", ["hue", "rotate", "color"]),
+        filterChild("invert", "Invert", "invert", ["invert", "negative"]),
+        filterChild("saturate", "Saturate", "saturate", ["saturate", "color"]),
+        filterChild("sepia", "Sepia", "sepia", ["sepia", "vintage"]),
+      ],
+    },
+  },
+
+  // ─── Backdrop Filter (bundle: chip → popover, frosted glass) ─────
+  {
+    id: "backdropFilter",
+    label: "Backdrop",
+    section: "styles",
+    keywords: [
+      "backdrop",
+      "filter",
+      "blur",
+      "frosted",
+      "glass",
+      "brightness",
+      "contrast",
+      "grayscale",
+      "hue",
+      "invert",
+      "saturate",
+      "sepia",
+      "opacity",
+    ],
+    sortOrder: 70,
+    input: {
+      type: "bundle",
+      properties: [
+        filterChild("backdropBlur", "Blur", "backdrop-blur", ["backdrop", "blur", "frosted"]),
+        filterChild("backdropBrightness", "Brightness", "backdrop-brightness", ["backdrop", "brightness"]),
+        filterChild("backdropContrast", "Contrast", "backdrop-contrast", ["backdrop", "contrast"]),
+        filterChild("backdropGrayscale", "Grayscale", "backdrop-grayscale", ["backdrop", "grayscale"]),
+        filterChild("backdropHueRotate", "Hue Rotate", "backdrop-hue-rotate", ["backdrop", "hue", "rotate"]),
+        filterChild("backdropInvert", "Invert", "backdrop-invert", ["backdrop", "invert"]),
+        filterChild("backdropOpacity", "Opacity", "backdrop-opacity", ["backdrop", "opacity"]),
+        filterChild("backdropSaturate", "Saturate", "backdrop-saturate", ["backdrop", "saturate"]),
+        filterChild("backdropSepia", "Sepia", "backdrop-sepia", ["backdrop", "sepia"]),
+      ],
+    },
+  },
 
   // ─── Advanced: Animate ───────────────────────────────────────────
   advEffect(
@@ -111,9 +194,36 @@ export const effectsProperties: PropertyDef[] = [
     undefined,
     110
   ),
-  advEffect("scale", "Scale", "transform", ["scale", "zoom", "resize"], "scale", 111),
-  advEffect("scaleX", "Scale X", "transform", ["scale", "x", "horizontal"], "scale-x", 112),
-  advEffect("scaleY", "Scale Y", "transform", ["scale", "y", "vertical"], "scale-y", 113),
+  {
+    id: "scale",
+    label: "Scale",
+    section: "effects",
+    keywords: ["scale", "zoom", "resize", "x", "y"],
+    input: {
+      type: "shorthand",
+      tailwindKey: "scale",
+      varSelectorPrefix: "scale",
+      allowedTypes: [...EFFECTS_TYPES],
+      modes: [
+        {
+          id: "uniform",
+          icon: React.createElement(TbSquare, { className: "size-3.5" }),
+          ariaLabel: "Uniform scale",
+          tags: ["scale"],
+          labels: [""],
+        },
+        {
+          id: "axes",
+          icon: React.createElement(TbBoxPadding, { className: "size-3.5" }),
+          ariaLabel: "Scale X & Y",
+          tags: ["scale-x", "scale-y"],
+          labels: ["X", "Y"],
+          tailwindKeys: ["scaleX", "scaleY"],
+        },
+      ],
+    },
+    sortOrder: 111,
+  },
   advEffect("rotate", "Rotate", "transform", ["rotate", "spin", "angle", "degrees"], "rotate", 114),
   advEffect(
     "translateX",
@@ -131,8 +241,28 @@ export const effectsProperties: PropertyDef[] = [
     "translate-y",
     116
   ),
-  advEffect("skewX", "Skew X", "transform", ["skew", "slant", "tilt", "x"], "skew-x", 117),
-  advEffect("skewY", "Skew Y", "transform", ["skew", "slant", "tilt", "y"], "skew-y", 118),
+  {
+    id: "skew",
+    label: "Skew",
+    section: "effects",
+    keywords: ["skew", "slant", "tilt", "x", "y"],
+    input: {
+      type: "shorthand",
+      varSelectorPrefix: "skew",
+      allowedTypes: [...EFFECTS_TYPES],
+      modes: [
+        {
+          id: "axes",
+          icon: React.createElement(TbBoxPadding, { className: "size-3.5" }),
+          ariaLabel: "Skew X & Y",
+          tags: ["skew-x", "skew-y"],
+          labels: ["X", "Y"],
+          tailwindKeys: ["skewX", "skewY"],
+        },
+      ],
+    },
+    sortOrder: 117,
+  },
   advEffect("transformOrigin", "Origin", "transform", ["origin", "center", "pivot"], "origin", 119),
 
   advEffect(
@@ -144,42 +274,4 @@ export const effectsProperties: PropertyDef[] = [
     120
   ),
 
-  // ─── Advanced: Filter (visual preview tile replaces 7 number rows) ──
-  {
-    id: "filterPreview",
-    label: "",
-    section: "effects",
-    keywords: [
-      "filter",
-      "brightness",
-      "contrast",
-      "grayscale",
-      "hue",
-      "invert",
-      "saturate",
-      "sepia",
-    ],
-    input: { type: "custom", component: "FilterPreviewTileFilter" },
-    sortOrder: 130,
-  },
-
-  // ─── Advanced: Backdrop (visual preview tile replaces 8 number rows) ──
-  {
-    id: "backdropPreview",
-    label: "",
-    section: "effects",
-    keywords: [
-      "backdrop",
-      "opacity",
-      "brightness",
-      "contrast",
-      "grayscale",
-      "hue",
-      "invert",
-      "saturate",
-      "sepia",
-    ],
-    input: { type: "custom", component: "FilterPreviewTileBackdrop" },
-    sortOrder: 140,
-  },
 ];

@@ -180,7 +180,7 @@ export const ToolbarWrapper = ({
           <button
             type="button"
             onClick={toggleEditorMode}
-            className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-[color,background-color,transform] active:scale-90 ${
+            className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-md transition-[color,background-color,transform] active:scale-90 ${
               editorMode === "design"
                 ? "text-primary"
                 : "text-secondary-content hover:text-base-content"
@@ -275,7 +275,7 @@ export const ToolbarWrapper = ({
         {searchOpen && searchPos && (
           <div
             ref={searchPopupRef}
-            className="border-base-300 bg-base-100 fixed z-[100] flex items-center gap-2 rounded-lg border px-2 py-1.5 shadow-xl"
+            className="border-base-300 bg-base-100 fixed z-[100] flex items-center gap-2 rounded-xl border px-2 py-1.5 shadow-xl"
             style={{ left: searchPos.x, top: searchPos.y, width: SEARCH_POPUP_WIDTH }}
           >
             <TbSearch className="text-neutral-content size-4 shrink-0" />

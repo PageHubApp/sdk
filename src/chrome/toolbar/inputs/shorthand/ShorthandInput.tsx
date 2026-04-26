@@ -142,7 +142,7 @@ function ModeToggle({
   onChange: (next: ShorthandMode) => void;
 }) {
   return (
-    <div className="border-base-300/60 flex shrink-0 overflow-hidden rounded border">
+    <div className="border-base-300/60 flex shrink-0 overflow-hidden rounded-md border">
       {modes.map(m => (
         <button
           key={m.id}

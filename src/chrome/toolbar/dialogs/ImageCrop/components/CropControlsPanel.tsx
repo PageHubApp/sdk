@@ -59,7 +59,7 @@ function ScaleControl({
           <button
             key={preset}
             onClick={() => onChange(preset)}
-            className="bg-neutral text-neutral-content hover:bg-primary/10 hover:text-primary flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors"
+            className="bg-neutral text-neutral-content hover:bg-primary/10 hover:text-primary flex-1 rounded-md px-3 py-2 text-xs font-medium transition-colors"
           >
             {Math.round(preset * 100)}%
           </button>
@@ -201,7 +201,7 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
                 <button
                   key={format.value}
                   onClick={() => crop.setImageFormat(format.value)}
-                  className={`rounded-lg p-1.5 text-xs font-medium transition-colors ${
+                  className={`rounded-md p-1.5 text-xs font-medium transition-colors ${
                     crop.imageFormat === format.value
                       ? "bg-primary text-primary-content"
                       : "bg-neutral text-neutral-content hover:bg-primary/10 hover:text-primary"

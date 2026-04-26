@@ -11,8 +11,10 @@
  *  - isFlexOrGrid(cn): contains either
  */
 import React from "react";
-import { TbSpacingHorizontal, TbSquare } from "react-icons/tb";
+import { TbBoxPadding, TbSpacingHorizontal, TbSquare } from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
+
+const SPACING_TYPES = ["tailwind", "calc", "px", "em", "rem", "%"] as const;
 
 const isFlex = (cn: string) => /\bflex\b/.test(cn);
 const isGrid = (cn: string) => /\bgrid\b/.test(cn);
@@ -70,6 +72,29 @@ export const alignmentProperties: PropertyDef[] = [
     showWhen: isFlexOrGrid,
     pinned: true,
     sortOrder: 5,
+  },
+  {
+    id: "space",
+    label: "Space",
+    section: "alignment",
+    keywords: ["space", "between", "siblings", "x", "y"],
+    input: {
+      type: "shorthand",
+      varSelectorPrefix: "space",
+      allowedTypes: [...SPACING_TYPES],
+      modes: [
+        {
+          id: "axes",
+          icon: React.createElement(TbBoxPadding, { className: "size-3.5" }),
+          ariaLabel: "Space between X & Y",
+          tags: ["space-x", "space-y"],
+          labels: ["X", "Y"],
+          tailwindKeys: ["spaceX", "spaceY"],
+        },
+      ],
+    },
+    showWhen: isFlex,
+    sortOrder: 6,
   },
   {
     id: "alignItems",

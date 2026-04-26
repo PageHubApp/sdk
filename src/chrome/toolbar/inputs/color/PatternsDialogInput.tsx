@@ -204,7 +204,7 @@ const PatternPanel = ({
   }, [patterns, mode, search]);
 
   return (
-    <div ref={panelRef} className="border-base-300 bg-base-200 w-64 rounded-lg border shadow-xl">
+    <div ref={panelRef} className="border-base-300 bg-base-200 w-64 rounded-xl border shadow-xl">
       {/* Search */}
       <div className="border-base-300 flex items-center gap-1.5 border-b px-2 py-1.5">
         <TbSearch className="text-neutral-content size-3.5 shrink-0" />

@@ -188,7 +188,7 @@ export function CanvasZoom({
               className="fixed inset-0 z-40"
               onClick={() => setShowDropdown(false)}
             />
-            <div className="border-base-300 bg-base-100 absolute top-full left-0 z-50 mt-1 w-48 overflow-hidden rounded-lg border shadow-lg">
+            <div className="border-base-300 bg-base-100 absolute top-full left-0 z-50 mt-1 w-48 overflow-hidden rounded-xl border shadow-lg">
               <div className="scrollbar-dark max-h-80 overflow-y-auto">
                 {zoomPresets.map(preset => (
                   <button

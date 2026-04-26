@@ -58,7 +58,7 @@ export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps
   return (
     <div
       ref={containerRef}
-      className="border-base-300 bg-base-200 flex w-[240px] flex-col gap-3 rounded-lg border p-3 shadow-xl"
+      className="border-base-300 bg-base-200 flex w-[240px] flex-col gap-3 rounded-xl border p-3 shadow-xl"
     >
       {/* Header */}
       <div className="flex items-center justify-between">

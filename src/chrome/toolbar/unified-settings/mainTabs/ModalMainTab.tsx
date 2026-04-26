@@ -24,7 +24,7 @@ export const ModalMainTab = () => {
         help="How and when the modal opens, and close behavior."
       >
         {/* View toggle — collapsed/expanded in editor */}
-        <div className="bg-neutral flex gap-1 rounded-lg p-1">
+        <div className="bg-neutral flex gap-1 rounded-md p-1">
           {VIEW_STATES.map(({ value, label, icon: Icon }) => (
             <button
               key={value}

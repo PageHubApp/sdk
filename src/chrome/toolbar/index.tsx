@@ -101,6 +101,23 @@ export const Toolbar = () => {
       const aside = ref.current as HTMLElement | null;
       if (!aside) return;
 
+      // React portals bubble events through the React tree, not the DOM tree.
+      // Floating popovers (FloatingPanel, dropdowns, color picker, dialogs)
+      // render via createPortal but still propagate pointerdown up to this
+      // aside handler. Filter to true DOM descendants so portaled UI is immune.
+      if (target && !aside.contains(target)) return;
+
+      // Edge-only zone: only engage swipe-to-close when the gesture starts
+      // near the inside edge of the sidebar (the edge facing the canvas, where
+      // the SidebarSwipeHint sits). Clicks/drags in the body of the panel —
+      // including popover triggers, chips, accordions — are left alone.
+      const EDGE_PX = 32;
+      const rect = aside.getBoundingClientRect();
+      const distFromInsideEdge = cfgRef.current.sideBarLeft
+        ? rect.right - e.clientX
+        : e.clientX - rect.left;
+      if (distFromInsideEdge > EDGE_PX) return;
+
       const startX = e.clientX;
       const startY = e.clientY;
       const startTime =

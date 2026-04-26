@@ -116,7 +116,7 @@ export const PatternDialog = () => {
       <div style={style}>
         <button
           id={`pattern-${pattern.slug}`}
-          className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-lg p-1 text-xs transition-colors ${
+          className={`text-neutral-content hover:bg-neutral flex w-full cursor-pointer flex-row rounded-md p-1 text-xs transition-colors ${
             dialog.value?.slug === pattern.slug ? "bg-primary text-primary-content" : ""
           }`}
           onClick={e => changed(pattern)}

@@ -9,7 +9,7 @@ export const SECTION_CLASSNAME =
 export const CONTENT_CLASSNAME = "flex flex-row flex-wrap gap-space-md w-full max-w-page mx-auto";
 
 export const CARD_CLASSNAME =
-  "flex flex-col gap-space-md flex-1 min-w-0 bg-base-200 text-base-content rounded-box p-space-md shadow-sm";
+  "flex flex-col gap-space-md flex-1 min-w-0 bg-base-200 text-base-content rounded-xl p-space-md shadow-sm";
 
 export const PLAIN_CONTAINER_CLASSNAME = "flex flex-col gap-space-md w-full";
 

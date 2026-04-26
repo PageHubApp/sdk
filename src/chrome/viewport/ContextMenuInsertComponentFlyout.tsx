@@ -62,7 +62,7 @@ export function ContextMenuInsertComponentFlyout({
 
   return (
     <div
-      className="rounded-box border-base-300/50 bg-base-100 text-base-content flex flex-col overflow-hidden border shadow-xl"
+      className="rounded-xl border-base-300/50 bg-base-100 text-base-content flex flex-col overflow-hidden border shadow-xl"
       style={{ width: FLYOUT_W, maxHeight: FLYOUT_MAX_H }}
       onMouseDown={e => e.stopPropagation()}
       onMouseDownCapture={e => e.stopPropagation()}

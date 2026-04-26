@@ -139,7 +139,7 @@ function ColorAccordion({
                 ds.colorButtonRefs.current[index] = el;
               }}
               onClick={() => handleChangeColor(index)}
-              className="border-base-300 hover:border-primary size-8 shrink-0 cursor-pointer rounded-lg border-2 transition-colors"
+              className="border-base-300 hover:border-primary size-8 shrink-0 cursor-pointer rounded-md border-2 transition-colors"
               style={{ backgroundColor: ds.getColorPreview(entry.color) }}
               data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
               data-tooltip-content="Click to change color"

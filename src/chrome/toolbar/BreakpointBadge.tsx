@@ -25,7 +25,7 @@ export function BreakpointBadge({
       onClick={onClick}
       onContextMenu={onContextMenu}
       className={`inline-flex items-center justify-center text-[9px] leading-tight font-semibold transition-colors ${
-        isPill ? "rounded-full px-1.5 py-0.5" : "rounded px-1 py-0.5"
+        isPill ? "rounded-full px-1.5 py-0.5" : "rounded-md px-1 py-0.5"
       } ${className}`}
     >
       {children}

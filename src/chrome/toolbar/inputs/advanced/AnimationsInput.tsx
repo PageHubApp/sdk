@@ -352,7 +352,7 @@ export const AnimationsInput = () => {
             return React.createElement(
               motionIt(props, "div"),
               { ...animProps, key: currentAnimation },
-              <div className="bg-neutral text-neutral-content mx-auto mt-6 flex size-24 items-center justify-center rounded-2xl">
+              <div className="bg-neutral text-neutral-content mx-auto mt-6 flex size-24 items-center justify-center rounded-xl">
                 Test
               </div>
             );

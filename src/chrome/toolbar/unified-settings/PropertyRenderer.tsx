@@ -16,6 +16,7 @@ import { usePropertyHasValue } from "./usePropertyHasValue";
 import { SessionAddedAtom, sessionKey } from "./sessionAddedAtom";
 import { resolveCustomInput } from "./customInputs";
 import { ShorthandInput } from "../inputs/shorthand/ShorthandInput";
+import { BundleRow } from "../inputs/bundle/BundleRow";
 import type { PropertyDef, PropertyInputProps } from "./registry/propertyDefs";
 
 interface Props {
@@ -197,6 +198,17 @@ export function PropertyRenderer({ def, index: indexOverride = "" }: Props) {
     case "shorthand": {
       const { type: _t, ...config } = def.input;
       return <ShorthandInput def={def} index={index} config={config} />;
+    }
+
+    case "bundle": {
+      return (
+        <BundleRow
+          def={def}
+          index={index}
+          properties={def.input.properties}
+          icon={def.input.icon}
+        />
+      );
     }
 
     default:

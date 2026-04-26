@@ -145,7 +145,7 @@ export function LeftSidebarDialog({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="text-base-content/50 hover:bg-base-200 hover:text-base-content flex items-center justify-center rounded-lg p-1.5 transition-colors"
+                    className="text-base-content/50 hover:bg-base-200 hover:text-base-content flex items-center justify-center rounded-md p-1.5 transition-colors"
                     aria-label="Close"
                   >
                     <TbX className="size-5" />

@@ -39,7 +39,7 @@ export function ColorPickerSidebarDialog() {
         <button
           onClick={handleSaveToPalette}
           disabled={!hexInput || !/^#[0-9A-Fa-f]{6}$/.test(hexInput)}
-          className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-md p-1 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="Save to palette"
           data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
           data-tooltip-content="Save to Palette"
@@ -52,7 +52,7 @@ export function ColorPickerSidebarDialog() {
       {isEyeDropperSupported() && (
         <button
           onClick={handleEyeDropper}
-          className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-lg p-1 transition-colors"
+          className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-md p-1 transition-colors"
           aria-label="Pick color from screen"
           data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
           data-tooltip-content="Eyedropper"

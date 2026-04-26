@@ -50,7 +50,7 @@ export function TextSettingsTopNodeTool() {
         <>
           <button
             onClick={() => tiptapEditor.chain().focus().toggleBold().run()}
-            className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
+            className={`hover:bg-neutral rounded-md px-2 py-1 text-sm ${
               tiptapEditor.isActive("bold") ? "bg-neutral text-primary" : "text-base-content"
             }`}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
@@ -61,7 +61,7 @@ export function TextSettingsTopNodeTool() {
 
           <button
             onClick={() => tiptapEditor.chain().focus().toggleItalic().run()}
-            className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
+            className={`hover:bg-neutral rounded-md px-2 py-1 text-sm ${
               tiptapEditor.isActive("italic") ? "bg-neutral text-primary" : "text-base-content"
             }`}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
@@ -72,7 +72,7 @@ export function TextSettingsTopNodeTool() {
 
           <button
             onClick={() => tiptapEditor.chain().focus().toggleUnderline().run()}
-            className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
+            className={`hover:bg-neutral rounded-md px-2 py-1 text-sm ${
               tiptapEditor.isActive("underline") ? "bg-neutral text-primary" : "text-base-content"
             }`}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
@@ -83,7 +83,7 @@ export function TextSettingsTopNodeTool() {
 
           <button
             onClick={() => tiptapEditor.chain().focus().toggleStrike().run()}
-            className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
+            className={`hover:bg-neutral rounded-md px-2 py-1 text-sm ${
               tiptapEditor.isActive("strike") ? "bg-neutral text-primary" : "text-base-content"
             }`}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
@@ -94,7 +94,7 @@ export function TextSettingsTopNodeTool() {
 
           <button
             onClick={() => tiptapEditor.chain().focus().toggleCode().run()}
-            className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
+            className={`hover:bg-neutral rounded-md px-2 py-1 text-sm ${
               tiptapEditor.isActive("code") ? "bg-neutral text-primary" : "text-base-content"
             }`}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}

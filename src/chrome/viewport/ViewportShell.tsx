@@ -501,7 +501,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
         {enabled && device && view === "mobile" && (
           <div className="absolute top-4 right-0 left-0 z-50">
-            <div className="bg-neutral/95 mx-auto flex w-fit items-center gap-4 rounded-lg px-4 py-2 shadow-lg backdrop-blur-sm">
+            <div className="bg-neutral/95 mx-auto flex w-fit items-center gap-4 rounded-xl px-4 py-2 shadow-lg backdrop-blur-sm">
               <DeviceSelector onClose={() => setDevice(false)} />
               <div className="bg-border h-4 w-px" />
               <CanvasZoom

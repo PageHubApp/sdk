@@ -258,7 +258,7 @@ export function LinkInput({
       {open && (
         <div
           ref={popoverRef}
-          className="border-base-300 bg-base-100 absolute z-50 mt-1 max-h-64 w-72 overflow-y-auto rounded-lg border shadow-lg"
+          className="border-base-300 bg-base-100 absolute z-50 mt-1 max-h-64 w-72 overflow-y-auto rounded-xl border shadow-lg"
           style={{ marginTop: "2.5rem" }}
         >
           {pages.length > 0 && (
