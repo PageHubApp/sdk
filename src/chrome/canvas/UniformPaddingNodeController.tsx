@@ -10,6 +10,7 @@ import {
 import RenderNodeControlInline from "../rendering/RenderNodeControlInline";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { ViewAtom } from "../viewport/atoms";
+import { checkIfAncestorLinked } from "../../utils/componentUtils";
 import { useElementColor } from "./canvasUtils";
 import { SpacingOverlay } from "./SpacingOverlay";
 
@@ -62,9 +63,10 @@ const pixelsToTailwindClass = (pixels: number): string => {
 export const UniformPaddingNodeController = () => {
   const { id } = useNode();
 
-  const { isActive, isHover } = useEditor((_, query) => ({
+  const { isActive, isHover, isLocked } = useEditor((_, query) => ({
     isActive: query.getEvent("selected").contains(id),
     isHover: query.getEvent("hovered").contains(id),
+    isLocked: checkIfAncestorLinked(id, query),
   }));
 
   const dom = document.querySelector(`[node-id="${id}"]`);
@@ -165,7 +167,7 @@ export const UniformPaddingNodeController = () => {
     return closest;
   };
 
-  if (!isActive) return null;
+  if (!isActive || isLocked) return null;
 
   return (
     <RenderNodeControlInline

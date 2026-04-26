@@ -13,6 +13,9 @@ import type { PropertyDef } from "../propertyDefs";
 const LazyAlignmentBody = React.lazy(() =>
   import("./AlignmentBody").then(m => ({ default: m.AlignmentBody }))
 );
+const LazyLayoutPresetSlot = React.lazy(() =>
+  import("./LayoutPresetSlot").then(m => ({ default: m.LayoutPresetSlot }))
+);
 const LazySpacingBody = React.lazy(() =>
   import("./SpacingBody").then(m => ({ default: m.SpacingBody }))
 );
@@ -53,6 +56,23 @@ const LazyDataSourceSectionSlot = React.lazy(() =>
 );
 
 export const advancedProperties: PropertyDef[] = [
+  // ─── Layout preset (Container only — self-guards via useNode) ────
+  {
+    id: "layout.preset",
+    label: "Layout",
+    section: "alignment",
+    keywords: ["layout", "preset", "row", "column", "grid", "block", "container"],
+    input: {
+      type: "custom",
+      component: () => (
+        <React.Suspense fallback={<LoadingBarSuspenseFallback />}>
+          <LazyLayoutPresetSlot />
+        </React.Suspense>
+      ),
+    },
+    sortOrder: -10,
+  },
+
   // ─── Alignment section (custom — mode-dependent flex/grid/block) ─
   {
     id: "alignment.body",

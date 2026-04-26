@@ -56,34 +56,39 @@ const MapLeaflet = ({ lat, lng, zoom, tileStyle, childPoints, enabled }: MapLeaf
   const tileUrl = TILE_URLS[tileStyle] || TILE_URLS.osm;
   const attribution = TILE_ATTRIBUTIONS[tileStyle] || TILE_ATTRIBUTIONS.osm;
 
+  // isolation: isolate creates a new stacking context that traps Leaflet's
+  // internal z-indexes (panes 400, controls 1000, popups 700) so they can't
+  // paint over fixed headers / overlays in the host page.
   return (
-    <MapContainer
-      center={[lat, lng]}
-      zoom={zoom}
-      style={{
-        width: "100%",
-        height: "100%",
-        pointerEvents: enabled ? "none" : "auto",
-      }}
-      scrollWheelZoom={!enabled}
-      dragging={!enabled}
-      zoomControl={!enabled}
-      doubleClickZoom={!enabled}
-      touchZoom={!enabled}
-    >
-      <TileLayer url={tileUrl} attribution={attribution} />
-      {childPoints.map(point => (
-        <Marker key={point.id} position={[point.lat, point.lng]}>
-          {(point.title || point.description) && (
-            <Popup>
-              {point.title && <strong>{point.title}</strong>}
-              {point.title && point.description && <br />}
-              {point.description && <span>{point.description}</span>}
-            </Popup>
-          )}
-        </Marker>
-      ))}
-    </MapContainer>
+    <div style={{ width: "100%", height: "100%", isolation: "isolate" }}>
+      <MapContainer
+        center={[lat, lng]}
+        zoom={zoom}
+        style={{
+          width: "100%",
+          height: "100%",
+          pointerEvents: enabled ? "none" : "auto",
+        }}
+        scrollWheelZoom={!enabled}
+        dragging={!enabled}
+        zoomControl={!enabled}
+        doubleClickZoom={!enabled}
+        touchZoom={!enabled}
+      >
+        <TileLayer url={tileUrl} attribution={attribution} />
+        {childPoints.map(point => (
+          <Marker key={point.id} position={[point.lat, point.lng]}>
+            {(point.title || point.description) && (
+              <Popup>
+                {point.title && <strong>{point.title}</strong>}
+                {point.title && point.description && <br />}
+                {point.description && <span>{point.description}</span>}
+              </Popup>
+            )}
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
   );
 };
 

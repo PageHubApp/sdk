@@ -22,6 +22,7 @@ import { twMerge } from "tailwind-merge";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { ViewAtom } from "../viewport/atoms";
 import { editorCanvasViewToClassPrefixKey, buildVariantPrefix } from "../../utils/tailwind/className";
+import { checkIfAncestorLinked } from "../../utils/componentUtils";
 import { useAtomValue } from "@zedux/react";
 import { setEdgeResizeActive } from "./edgeResizeState";
 import { getNodeGeometry, projectToLocalAxis } from "./nodeGeometry";
@@ -77,16 +78,19 @@ function detectEdge(el: HTMLElement, x: number, y: number): Side | null {
 // ── Component ───────────────────────────────────────────────────────────
 
 export function BorderResizeController() {
-  const { selectedId, displayName, propsType, dom } = useEditor((state, query) => {
+  const { selectedId, displayName, propsType, dom, isLocked } = useEditor((state, query) => {
     const all = query.getEvent("selected").all();
     const id = all[0];
-    if (!id) return { selectedId: null, displayName: null, propsType: null, dom: null };
+    if (!id) return { selectedId: null, displayName: null, propsType: null, dom: null, isLocked: false };
     const node = query.node(id).get();
     return {
       selectedId: id,
       displayName: (node?.data?.custom?.displayName as string) || node?.data?.displayName || null,
       propsType: node?.data?.props?.type ?? null,
       dom: node?.dom ?? null,
+      // Linked-component clones (relationType "full" or "content") re-derive
+      // className from master, so resize writes never persist. Hide controls.
+      isLocked: checkIfAncestorLinked(id, query),
     };
   });
 
@@ -111,6 +115,7 @@ export function BorderResizeController() {
   const isResizable =
     selectedId &&
     dom &&
+    !isLocked &&
     !SKIP_DISPLAY_NAMES.has(displayName ?? "") &&
     !SKIP_TYPES.has(propsType ?? "");
 
@@ -271,7 +276,7 @@ export function BorderResizeController() {
 
   // ── Render hover affordance ──────────────────────────────────────────
   const activeSide = draggingSide || hoveredSide;
-  if (!isResizable || !dom || !activeSide) return null;
+  if (!isResizable || !dom || !activeSide || isLocked) return null;
   const portalTarget = typeof document !== "undefined" ? document.getElementById("viewport") : null;
   if (!portalTarget) return null;
 

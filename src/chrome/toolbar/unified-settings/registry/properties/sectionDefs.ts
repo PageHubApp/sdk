@@ -22,6 +22,7 @@ import {
   TbDatabase,
   TbEyeSearch,
   TbHandMove,
+  TbLayout,
   TbLayoutAlignCenter,
   TbLock,
   TbPointer,
@@ -78,12 +79,12 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
   // ─── Layout tab ────────────────────────────────────────────────────
   {
     id: "alignment",
-    title: "Alignment",
+    title: "Layout",
     tab: "layout",
-    icon: React.createElement(TbLayoutAlignCenter),
-    keywords: ["gap", "gutter", "alignment", "align", "justify", "direction", "flex", "grid"],
+    icon: React.createElement(TbLayout),
+    keywords: ["layout", "preset", "gap", "gutter", "alignment", "align", "justify", "direction", "flex", "grid", "row", "column", "block"],
     sortOrder: 15,
-    help: "Flex/grid direction, gap, and child alignment.",
+    help: "Layout preset, direction, gap, and child alignment.",
   },
   {
     id: "size",

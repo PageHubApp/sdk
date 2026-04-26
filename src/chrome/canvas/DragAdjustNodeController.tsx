@@ -13,6 +13,7 @@ import RenderNodeControl from "../rendering/RenderNodeControl";
 import RenderNodeControlInline from "../rendering/RenderNodeControlInline";
 import { ViewAtom } from "../viewport/atoms";
 import DragAdjust from "../viewport/toolbox/DragAdjust";
+import { checkIfAncestorLinked } from "../../utils/componentUtils";
 import { useElementColor } from "./canvasUtils";
 
 // Tailwind spacing values mapping
@@ -98,9 +99,12 @@ export const DragAdjustNodeController = (props: {
 
   const { id } = useNode();
 
-  const { isActive, isHover } = useEditor((_, query) => ({
+  const { isActive, isHover, isLocked } = useEditor((_, query) => ({
     isActive: query.getEvent("selected").contains(id),
     isHover: query.getEvent("hovered").contains(id),
+    // Linked clones (relationType "full" or "content") re-derive className
+    // from master, so width/height/padding writes don't persist. Skip the UI.
+    isLocked: checkIfAncestorLinked(id, query),
   }));
 
   const [isDragging, setIsDragging] = React.useState(false);
@@ -131,7 +135,7 @@ export const DragAdjustNodeController = (props: {
   //        alt={alt}
   // could use it but drl need it ond rag adjusters..
 
-  const showControl = true;
+  const showControl = !isLocked;
   const writeWidthClass = React.useCallback(
     (prop: { className?: string }, nextClass: string) => {
       const classNameWithoutWidth = removeClassForView(

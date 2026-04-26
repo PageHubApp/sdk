@@ -67,44 +67,26 @@ export const ContainerMainTab = () => {
   const node = useGetNode();
   const props = node.data?.props;
   const layoutPreset = useLayoutPreset({ propKey: "layoutPreset" });
-  /** Same pattern as List/ButtonList: primary slot uses title "Content" so AccordionContext defaults it open. */
-  const layoutSection =
-    props?.type === "imageContainer" ? (
-      <LayoutPresetInput lp={layoutPreset} />
-    ) : (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS.Content}
-        propKey="display"
-        help="Layout mode, presets, and display (flex, grid, block)."
-        defaultOpen
-      >
-        <LayoutPresetInput lp={layoutPreset} sectionWrapper={false} />
-      </ToolbarSection>
-    );
 
-  const contentSlot =
-    props?.type === "imageContainer" ? (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Background image and overlay for this container."
-      >
-        <SettingsAiSlot />
-        <BackgroundSettingsInput />
-      </ToolbarSection>
-    ) : (
-      layoutSection
-    );
+  // imageContainer keeps its background-image content panel; layout preset
+  // for all other containers now lives in the Layout tab > Alignment section
+  // (registered via LayoutPresetSlot).
+  if (props?.type !== "imageContainer") return null;
 
   return (
     <>
       {renderComponentSlots({
-        Content: contentSlot,
-        Type:
-          props?.type === "imageContainer" ? (
-            <LayoutPresetInput lp={layoutPreset} />
-          ) : null,
+        Content: (
+          <ToolbarSection
+            title="Content"
+            icon={SECTION_ICONS["Content"]}
+            help="Background image and overlay for this container."
+          >
+            <SettingsAiSlot />
+            <BackgroundSettingsInput />
+          </ToolbarSection>
+        ),
+        Type: <LayoutPresetInput lp={layoutPreset} />,
       })}
     </>
   );

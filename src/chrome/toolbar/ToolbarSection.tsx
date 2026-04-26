@@ -66,12 +66,12 @@ export const ToolbarSection = ({
   // only the chevron/toggle behavior differs (otherwise body loses p-3 and looks flush).
   const titleClasses = nested
     ? `flex w-full items-center justify-between gap-1 ${collapsible ? `${cursorClass} -mx-3 px-3 py-1.5` : "-mx-3 px-3 py-1.5"} text-[11px] font-semibold text-neutral-content transition-colors ${disabled ? "" : "hover:text-base-content"} ${className}`
-    : `group flex w-full items-center justify-between gap-2 border-b border-base-300 bg-sidebar px-3 py-1.5 ${collapsible ? cursorClass : "cursor-default"} text-[11px] font-semibold uppercase tracking-wide text-sidebar-foreground/70 transition-colors ${className}`;
+    : `group flex w-full items-center justify-between gap-2 border-b ${isOpen ? "border-transparent" : "border-base-300/60"} bg-base-100 px-3 py-3 ${collapsible ? cursorClass : "cursor-default"} text-xs font-semibold text-base-content transition-colors ${className}`;
 
   // When scrollable, we remove padding from body and add it inside the scrollbar wrapper
   const bodyClasses = nested
     ? `grid items-end gap-2 ${scrollable ? "" : "-mx-3 px-3 pb-2"} ${bodyClassName}`
-    : `grid items-end gap-3 border-b border-base-300 bg-base-200 text-base-content ${scrollable ? "" : "p-3 pt-2"} ${bodyClassName}`;
+    : `grid items-end gap-3 border-b border-base-300/60 bg-base-100 text-base-content ${scrollable ? "" : "p-3 pt-2"} ${bodyClassName}`;
 
   // Inner padding classes for when scrollable is enabled
   const scrollableInnerClasses = nested ? "p-2" : "p-3";

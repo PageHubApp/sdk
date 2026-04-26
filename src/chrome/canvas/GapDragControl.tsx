@@ -2,6 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { createPortal } from "react-dom";
 import { editorCanvasViewToClassPrefixKey } from "../../utils/tailwind/className";
+import { checkIfAncestorLinked } from "../../utils/componentUtils";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { ViewAtom } from "../viewport/atoms";
 import { useGapDrag } from "./gap/useGapDrag";
@@ -14,8 +15,12 @@ export function GapDragControl() {
     dom: node.dom,
   }));
 
-  const { isSelected } = useEditor((_, query) => ({
+  const { isSelected, isLocked } = useEditor((_, query) => ({
     isSelected: query.getEvent("selected").contains(id),
+    // Linked-component clones (relationType "full" or "content") re-derive
+    // their props from the master each render, so any className the user
+    // would write here gets thrown away. Hide the control entirely.
+    isLocked: checkIfAncestorLinked(id, query),
   }));
 
   const {
@@ -35,7 +40,7 @@ export function GapDragControl() {
 
   const portalTarget = typeof document !== "undefined" ? document.getElementById("viewport") : null;
   const showActive = (gapHoverInfo?.show || isDragging) && gapHoverInfo?.gapRect;
-  if (!portalTarget || !isSelected || !showActive || !gapHoverInfo?.gapRect) return null;
+  if (!portalTarget || !isSelected || isLocked || !showActive || !gapHoverInfo?.gapRect) return null;
 
   const portalRect = portalTarget.getBoundingClientRect();
   const ox = -portalRect.left + portalTarget.scrollLeft;

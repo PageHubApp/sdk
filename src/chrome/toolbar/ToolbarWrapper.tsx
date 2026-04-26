@@ -174,7 +174,7 @@ export const ToolbarWrapper = ({
           id="toolbarTabs"
           aria-label="Tabs"
           role="tablist"
-          className="border-base-300 bg-secondary text-secondary-content relative flex h-10 w-full min-w-0 shrink-0 items-center gap-2 border-b px-3 py-0 text-center font-semibold"
+          className="border-base-300/60 bg-base-100 text-base-content relative flex h-10 w-full min-w-0 shrink-0 items-center gap-2 border-b px-3 py-0 text-center font-semibold"
         >
           <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
           <button
@@ -310,7 +310,7 @@ export const ToolbarWrapper = ({
         </>
       )}
 
-      <div id="toolbarItems" data-toolbar={true} className="flex min-h-0 flex-1 flex-col">
+      <div id="toolbarItems" data-toolbar={true} className="flex min-h-0 flex-1 flex-col bg-base-100">
         <RenderChildren props={props} query={query} actions={actions} id={id}>
           {children}
         </RenderChildren>
