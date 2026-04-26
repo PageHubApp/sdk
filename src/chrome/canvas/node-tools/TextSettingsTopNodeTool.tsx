@@ -2,6 +2,7 @@ import { useTiptapContext } from "../../inline-tools/TiptapContext";
 import { ToolbarItem } from "../../toolbar/ToolbarItem";
 import { ColorInput } from "../../toolbar/inputs/color/ColorInput";
 import { NodeToolWrapper } from "../../inline-tools/NodeDialog";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
 import { AiOutlineAlignRight } from "react-icons/ai";
 import { TbAlignCenter, TbAlignLeft } from "react-icons/tb";
 
@@ -52,7 +53,8 @@ export function TextSettingsTopNodeTool() {
             className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
               tiptapEditor.isActive("bold") ? "bg-neutral text-primary" : "text-base-content"
             }`}
-            title="Bold"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Bold"
           >
             <strong>B</strong>
           </button>
@@ -62,7 +64,8 @@ export function TextSettingsTopNodeTool() {
             className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
               tiptapEditor.isActive("italic") ? "bg-neutral text-primary" : "text-base-content"
             }`}
-            title="Italic"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Italic"
           >
             <em>I</em>
           </button>
@@ -72,7 +75,8 @@ export function TextSettingsTopNodeTool() {
             className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
               tiptapEditor.isActive("underline") ? "bg-neutral text-primary" : "text-base-content"
             }`}
-            title="Underline"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Underline"
           >
             <u>U</u>
           </button>
@@ -82,7 +86,8 @@ export function TextSettingsTopNodeTool() {
             className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
               tiptapEditor.isActive("strike") ? "bg-neutral text-primary" : "text-base-content"
             }`}
-            title="Strikethrough"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Strikethrough"
           >
             <s>S</s>
           </button>
@@ -92,7 +97,8 @@ export function TextSettingsTopNodeTool() {
             className={`hover:bg-neutral rounded-lg px-2 py-1 text-sm ${
               tiptapEditor.isActive("code") ? "bg-neutral text-primary" : "text-base-content"
             }`}
-            title="Code"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Code"
           >
             <code>&lt;/&gt;</code>
           </button>

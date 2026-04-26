@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { TbCheck, TbChevronDown, TbPencil, TbTrash } from "react-icons/tb";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../primitives/layout/tooltipSurface";
 
 export interface VariablePopoverProps {
   variables: { id: string; label: string; group?: string }[];
@@ -157,7 +158,8 @@ export function VariablePopover({
                   setEditText(currentValue);
                   setEditing(true);
                 }}
-                title="Edit value"
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content="Edit value"
               >
                 <TbPencil size={13} />
               </button>
@@ -170,7 +172,8 @@ export function VariablePopover({
                 onRemove();
                 onClose();
               }}
-              title="Remove variable"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Remove variable"
             >
               <TbTrash size={13} />
             </button>

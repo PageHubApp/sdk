@@ -96,7 +96,7 @@ function buildTabsChildren() {
       key="tabbar"
       canvas
       is={Container}
-      custom={{ displayName: "Tab Bar" }}
+      custom={{ displayName: "Tab Bar", rules: { canMoveOut: () => false } }}
       canDelete={true}
       canEditName={true}
       className="border-base-300 flex flex-row gap-0 border-b"

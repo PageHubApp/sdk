@@ -11,6 +11,7 @@ import ClientIconLoader from "../../dialogs/ClientIconLoader";
 import { IconPickerDialogAtom } from "../../dialogs/GoogleIconDialog";
 import { useDialog } from "../../dialogs/toolHooks";
 import { MediaManagerModal } from "./MediaManagerModal";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const IconDialogInput = ({
   propKey,
@@ -126,7 +127,8 @@ export const IconDialogInput = ({
                 changed("");
               }}
               className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-              title="Clear icon"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Clear icon"
             >
               ×
             </button>

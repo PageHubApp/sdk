@@ -7,6 +7,7 @@ import { atom, useAtomState, useAtomInstance } from "@zedux/react";
 import { BatchOperationAtom } from "@/utils/atoms";
 import { TbEdit } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedMapPointAtom = atom<any>("selectedmappoint_unified", null);
 
@@ -76,7 +77,8 @@ export const MapMainTab = () => {
             <button
               key="edit"
               className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
-              title="Edit point"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Edit point"
               onClick={e => {
                 e.stopPropagation();
                 actions.selectNode(point.id);

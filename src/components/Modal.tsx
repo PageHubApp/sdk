@@ -176,19 +176,45 @@ export const Modal = ({ children, ...props }) => {
     return () => clearTimeout(timer);
   }, [enabled]);
 
+  // Sync state FROM the backdrop element. show-hide actions target the backdrop
+  // by id and toggle its `hidden` class — the anchor div is unreachable from
+  // show-hide, so we listen on the backdrop directly. We watch:
+  //   1. `pagehub:modal` events dispatched on the backdrop (programmatic open/close).
+  //   2. `class` attribute mutations (show-hide-driven `hidden` toggles).
+  //   3. Backdrop click for `closeOnBackdrop` (filters bubbled clicks from content).
   useEffect(() => {
-    if (enabled) return;
-    const el = anchorRef.current;
-    if (!el) return;
-    const handler = e => {
-      const { action } = e.detail;
+    if (enabled || !isMounted) return;
+    const backdrop = document.getElementById(modalId);
+    if (!backdrop) return;
+
+    const modalHandler = (e: any) => {
+      const { action } = e.detail || {};
       if (action === "open") setIsOpen(true);
       else if (action === "close") setIsOpen(false);
       else setIsOpen(prev => !prev);
     };
-    el.addEventListener("pagehub:modal", handler);
-    return () => el.removeEventListener("pagehub:modal", handler);
-  }, [enabled, isMounted]);
+    backdrop.addEventListener("pagehub:modal", modalHandler);
+
+    const observer = new MutationObserver(() => {
+      const hidden = backdrop.classList.contains("hidden");
+      setIsOpen(prev => (prev === !hidden ? prev : !hidden));
+    });
+    observer.observe(backdrop, { attributes: true, attributeFilter: ["class"] });
+
+    let backdropClickHandler: ((e: MouseEvent) => void) | null = null;
+    if (props.closeOnBackdrop !== false) {
+      backdropClickHandler = (e: MouseEvent) => {
+        if (e.target === e.currentTarget) setIsOpen(false);
+      };
+      backdrop.addEventListener("click", backdropClickHandler);
+    }
+
+    return () => {
+      backdrop.removeEventListener("pagehub:modal", modalHandler);
+      observer.disconnect();
+      if (backdropClickHandler) backdrop.removeEventListener("click", backdropClickHandler);
+    };
+  }, [enabled, isMounted, modalId, props.closeOnBackdrop]);
 
   useEffect(() => {
     if (enabled || !isOpen || props.closeOnEscape === false) return;

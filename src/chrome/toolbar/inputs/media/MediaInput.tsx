@@ -8,6 +8,7 @@ import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { MediaManagerModal } from "./MediaManagerModal";
 import { getMediaKind } from "./utils/media-helpers";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 /** Read a value by dot-path (e.g. "background.image") from an object. */
 function getPath(obj: any, path: string): any {
@@ -166,7 +167,8 @@ export const MediaInput = propa => {
             <button
               onClick={handleClear}
               className="bg-error text-error-content hover:bg-error/90 absolute top-1 right-1 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-              title="Clear media"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Clear media"
             >
               ×
             </button>

@@ -9,6 +9,7 @@ import { atom, useAtomState, useAtomInstance } from "@zedux/react";
 import { BatchOperationAtom } from "@/utils/atoms";
 import { TbEdit, TbLayoutNavbar, TbMenu2 } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedNavItemAtom = atom<any>("selectednavitem_unified", null);
 
@@ -126,7 +127,8 @@ export const NavMainTab = () => {
             <button
               key="edit"
               className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
-              title="Edit link"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Edit link"
               onClick={e => {
                 e.stopPropagation();
                 actions.selectNode(link.id);

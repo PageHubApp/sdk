@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TbChevronDown, TbChevronRight, TbX } from "react-icons/tb";
 import type { BlockCategory } from "../../../utils/useBlockCategories";
 import type { BlockItem } from "../../../utils/useCategoryBlocks";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
 import { ComponentPreview } from "../../canvas/node-tools/ComponentPreview";
 import { ToolboxInsertHintTooltip } from "../../primitives/ToolboxInsertHintTooltip";
 import { buildComponentFromNode } from "./blockHelpers";
@@ -187,7 +188,8 @@ export function FilterDropdown({
             {isAutoApplied ? (
               <span
                 className="bg-primary-content/60 size-1 rounded-full"
-                title="Auto-applied from your site's style"
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content="Auto-applied from your site's style"
               />
             ) : null}
           </span>

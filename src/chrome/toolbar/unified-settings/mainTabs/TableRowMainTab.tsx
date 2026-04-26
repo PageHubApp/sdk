@@ -8,6 +8,7 @@ import { BatchOperationAtom } from "@/utils/atoms";
 import { TbEdit } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 import { TableCell } from "../../../../components/TableCell";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedTableCellListAtom = atom<any>("selectedtablecelllist_unified", null);
 
@@ -85,7 +86,8 @@ export const TableRowMainTab = () => {
             <button
               key="edit"
               className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
-              title="Edit cell"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Edit cell"
               onClick={e => {
                 e.stopPropagation();
                 actions.selectNode(item.id);

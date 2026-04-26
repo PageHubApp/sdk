@@ -7,6 +7,7 @@ import { atom, useAtomState, useAtomInstance } from "@zedux/react";
 import { BatchOperationAtom } from "@/utils/atoms";
 import { TbEdit } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedTableSectionListAtom = atom<any>("selectedtablesectionlist_unified", null);
 
@@ -78,7 +79,8 @@ export const TableMainTab = () => {
             <button
               key="edit"
               className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
-              title="Edit section"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Edit section"
               onClick={e => {
                 e.stopPropagation();
                 actions.selectNode(item.id);

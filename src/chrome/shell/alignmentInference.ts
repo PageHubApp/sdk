@@ -257,6 +257,24 @@ export function applyAlignmentOnDrop(
   const nodeIndex = (parentNode.data.nodes || []).indexOf(nodeId);
   if (nodeIndex < 0) return;
 
+  // Wrapping requires moving the node out of its current parent into the new
+  // Align wrapper. If the parent disallows that (Dropdown/Tabs/Accordion
+  // content nodes set `canMoveOut: () => false`), skip alignment — the
+  // reorder/drop already stands; we just don't add the wrapper.
+  const canMoveOutRule = parentNode.rules?.canMoveOut;
+  if (typeof canMoveOutRule === "function") {
+    let allowed = true;
+    try {
+      allowed = canMoveOutRule([node], parentNode) !== false;
+    } catch {
+      allowed = false;
+    }
+    if (!allowed) {
+      log("skip", { reason: "parent-rejects-canMoveOut", parentId });
+      return;
+    }
+  }
+
   log("create-wrapper", { nodeId, parentId, nodeIndex, wrapperClassName });
 
   // Create wrapper, insert at node's position, move node into it

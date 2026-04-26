@@ -11,6 +11,7 @@ import { useDialog } from "../../dialogs/toolHooks";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { CATEGORY_LABELS } from "./designVarConstants";
 import { useDesignVarOptions, type DesignVar } from "./useDesignVarOptions";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 interface DesignVarSelectorProps {
   propKey: string;
@@ -98,7 +99,8 @@ export function DesignVarSelector({
           });
         }}
         className="text-neutral-content hover:bg-neutral hover:text-base-content flex size-5 items-center justify-center rounded-lg transition-colors"
-        title="Bind to design system variable"
+        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+        data-tooltip-content="Bind to design system variable"
       >
         <TbVariable className="size-3.5" />
       </button>

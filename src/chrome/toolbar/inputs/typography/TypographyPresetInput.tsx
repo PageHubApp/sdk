@@ -19,6 +19,7 @@ import {
   TypographyPresetSelect,
   type TypographyPresetRow,
 } from "./TypographyPresetSelect";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 function presetClass(name: string): string {
   const slug = toCSSVarName(name);
@@ -187,7 +188,8 @@ export function TypographyPresetInput({ def }: Props = {}) {
           <button
             type="button"
             onClick={saveAsPreset}
-            title="Save current typography as a preset"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Save current typography as a preset"
             aria-label="Save as preset"
             className="tool-button shrink-0"
           >

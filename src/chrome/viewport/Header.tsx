@@ -569,7 +569,8 @@ export const Header = () => {
           data-tooltip-content={`Switch to ${viewMode === "page" ? "Components" : "Page"} Editor`}
           data-tooltip-place="bottom"
           data-tooltip-offset={10}
-          onClick={() => {
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+            e.currentTarget.blur();
             const newMode = viewMode === "page" ? "canvas" : "page";
             setViewMode(newMode);
             actions.selectNode(null);

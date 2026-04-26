@@ -118,7 +118,7 @@ function buildModalChildren() {
       canvas
       id="my-modal"
       is={Container}
-      custom={{ displayName: "Modal Backdrop" }}
+      custom={{ displayName: "Modal Backdrop", rules: { canMoveOut: () => false } }}
       canDelete={false}
       canEditName={false}
       className="fixed top-0 left-0 z-50 hidden h-screen w-screen flex-col items-center justify-center bg-black/50 px-space-sm py-space-sm"
@@ -137,7 +137,7 @@ function buildModalChildren() {
         canvas
         id="my-modal-content"
         is={Container}
-        custom={{ displayName: "Modal Content" }}
+        custom={{ displayName: "Modal Content", rules: { canMoveOut: () => false } }}
         canDelete={false}
         canEditName={false}
         className="gap-container px-container-x py-container-y bg-base-100 rounded-box flex w-full max-w-lg flex-col shadow-xl"

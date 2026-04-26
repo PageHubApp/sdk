@@ -6,6 +6,7 @@ import { useResolvedIcon } from "../utils/iconResolver";
 import { motionIt } from "../utils/lib";
 import { applyAnimation, CSStoObj } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
+import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { useScrollToSelected } from "./componentHooks";
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
@@ -60,6 +61,7 @@ export const ListItem: UserComponent<ListItemProps> = (incomingProps: ListItemPr
   props = setClonedProps(props, query);
 
   const parentList = useParentListProps(id);
+  useRuntimeVarsVersion();
 
   const [isMounted, setIsMounted] = useState(false);
 

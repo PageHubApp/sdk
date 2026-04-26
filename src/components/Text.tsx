@@ -20,6 +20,7 @@ import { motionIt } from "../utils/lib";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
+import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../utils/itemContext";
 import { useScrollToSelected } from "./componentHooks";
 
@@ -116,6 +117,7 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   const { query, enabled } = useEditor(state => getClonedState(props, state));
   const router = useRouter();
   const itemContext = useItemContext();
+  useRuntimeVarsVersion();
 
   const {
     connectors: { connect, drag },

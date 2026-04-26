@@ -1,5 +1,6 @@
 import React from "react";
 import { TbX } from "react-icons/tb";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import type { CanvasAnnotation } from "../../utils/componentCanvas";
 
 interface Props {
@@ -277,7 +278,8 @@ function AnnotationItem({
             e.stopPropagation();
             onDelete();
           }}
-          title="Delete annotation"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Delete annotation"
         >
           <TbX className="size-3" />
         </button>

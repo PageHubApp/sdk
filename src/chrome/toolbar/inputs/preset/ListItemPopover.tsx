@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { TbChevronRight, TbGripVertical, TbTrash } from "react-icons/tb";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 /**
  * ListItemPopover — Compact row + inline detail panel for list editors.
@@ -68,7 +69,8 @@ export const ListItemRow = ({
             e.stopPropagation();
             onDelete();
           }}
-          title="Delete"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Delete"
         >
           <TbTrash className="h-3.5 w-3.5" />
         </button>

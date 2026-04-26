@@ -5,6 +5,7 @@ import { TbChevronLeft, TbChevronRight, TbCopy, TbDownload, TbX } from "react-ic
 import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
 import { formatFileSize, getMediaKind, type MediaItem } from "../utils/media-helpers";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../../primitives/layout/tooltipSurface";
 
 interface MediaPreviewModalProps {
   previewMedia: string | null;
@@ -57,7 +58,8 @@ export function MediaPreviewModal({
             rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}
             className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-            title="Download"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Download"
           >
             <TbDownload className="size-6" />
           </a>
@@ -65,7 +67,8 @@ export function MediaPreviewModal({
         <button
           onClick={onClose}
           className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-          title="Close (ESC)"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Close (ESC)"
         >
           <TbX className="size-6" />
         </button>
@@ -79,7 +82,8 @@ export function MediaPreviewModal({
             onPrevious();
           }}
           className="absolute top-1/2 left-4 z-10 -translate-y-1/2 rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
-          title="Previous (←)"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Previous (←)"
         >
           <TbChevronLeft className="size-8" />
         </button>
@@ -93,7 +97,8 @@ export function MediaPreviewModal({
             onNext();
           }}
           className="absolute top-1/2 right-4 z-10 -translate-y-1/2 rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
-          title="Next (→)"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Next (→)"
         >
           <TbChevronRight className="size-8" />
         </button>

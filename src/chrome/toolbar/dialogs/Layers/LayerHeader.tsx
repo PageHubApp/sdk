@@ -13,6 +13,7 @@ import {
 } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { IsolateAtom, isolatePageInTree } from "@/utils/lib";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useLayerManager } from "./LayerManager";
 import { useLayerMove } from "./hooks/useLayerMove";
 import { useLayerDragDrop } from "./hooks/useLayerDragDrop";
@@ -255,7 +256,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
         <button
           onClick={handleToggleVisibility}
           className="rounded p-0.5 transition-all hover:scale-110 hover:bg-white/20 dark:hover:bg-black/20"
-          title={hidden ? "Show" : "Hide"}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content={hidden ? "Show" : "Hide"}
           aria-label="Toggle visibility"
           aria-pressed={!hidden}
         >
@@ -318,7 +320,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
                   ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
                   : "cursor-not-allowed opacity-20"
               }`}
-              title="Move up (↑)"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Move up (↑)"
             >
               <TbArrowUp
                 className={`size-3 transition-colors ${
@@ -334,7 +337,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
                   ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
                   : "cursor-not-allowed opacity-20"
               }`}
-              title="Move down (↓)"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Move down (↓)"
             >
               <TbArrowDown
                 className={`size-3 transition-colors ${
@@ -351,7 +355,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
                   ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
                   : "cursor-not-allowed opacity-20"
               }`}
-              title="Move out (←)"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Move out (←)"
             >
               <TbArrowLeft
                 className={`size-3 transition-colors ${
@@ -367,7 +372,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
                   ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
                   : "cursor-not-allowed opacity-20"
               }`}
-              title="Move in (→)"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Move in (→)"
             >
               <TbArrowRight
                 className={`size-3 transition-colors ${
@@ -381,7 +387,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
                 <button
                   onClick={handleDelete}
                   className="rounded p-0.5 transition-all hover:scale-110 hover:bg-red-500/20 dark:hover:bg-red-500/30"
-                  title="Delete"
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content="Delete"
                 >
                   <TbTrash
                     className={`size-3 transition-colors ${

@@ -3,6 +3,7 @@ import { useEditor } from "@craftjs/core";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { TbCheck, TbChevronDown, TbEdit, TbPlus, TbTrash } from "react-icons/tb";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { FloatingPanel } from "../floating/FloatingPanel";
 
 interface Modifier {
@@ -409,14 +410,16 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
                         <button
                           onClick={() => handleEdit(i)}
                           className="text-neutral-content hover:text-base-content"
-                          title="Edit"
+                          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                          data-tooltip-content="Edit"
                         >
                           <TbEdit size={14} />
                         </button>
                         <button
                           onClick={() => handleDelete(i)}
                           className="text-neutral-content hover:text-error"
-                          title="Delete"
+                          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                          data-tooltip-content="Delete"
                         >
                           <TbTrash size={14} />
                         </button>

@@ -18,6 +18,7 @@ import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
 import { TokenPicker } from "./TokenPicker";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const ColorInput = (__props: any) => {
   const {
@@ -185,7 +186,8 @@ export const ColorInput = (__props: any) => {
               type="button"
               onClick={handleClear}
               className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 z-10 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-              title="Clear color"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Clear color"
             >
               ×
             </button>

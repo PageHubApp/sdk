@@ -4,6 +4,7 @@
  */
 import type { AddToCartAction, NodeAction, ShowHideAction, ToggleThemeAction } from "./action";
 import { phStorage } from "./phStorage";
+import { setShowHideState } from "./showHideStore";
 
 // ─── Legacy type (kept for migration period only) ──────────────────────
 export interface ClickControl {
@@ -17,21 +18,34 @@ export interface ClickControl {
 // ─── Visibility helpers ────────────────────────────────────────────────
 
 function showElement(el: HTMLElement, method: "class" | "style" = "class") {
-  if (method === "style") el.style.display = "block";
-  else el.classList.remove("hidden");
+  if (method === "style") {
+    el.style.display = "block";
+    return;
+  }
+  // Mutate the live DOM for an instant response (before React rerenders),
+  // and write to the store so the next React render produces a className
+  // without `hidden` (otherwise reconciliation would re-add it from props).
+  el.classList.remove("hidden");
+  if (el.id) setShowHideState(el.id, "shown");
 }
 
 function hideElement(el: HTMLElement, method: "class" | "style" = "class") {
-  if (method === "style") el.style.display = "none";
-  else el.classList.add("hidden");
+  if (method === "style") {
+    el.style.display = "none";
+    return;
+  }
+  el.classList.add("hidden");
+  if (el.id) setShowHideState(el.id, "hidden");
 }
 
 function toggleElement(el: HTMLElement, method: "class" | "style" = "class") {
   if (method === "style") {
     el.style.display = el.style.display === "none" ? "block" : "none";
-  } else {
-    el.classList.toggle("hidden");
+    return;
   }
+  const willHide = !el.classList.contains("hidden");
+  el.classList.toggle("hidden");
+  if (el.id) setShowHideState(el.id, willHide ? "hidden" : "shown");
 }
 
 // ─── Modal dispatch ────────────────────────────────────────────────────

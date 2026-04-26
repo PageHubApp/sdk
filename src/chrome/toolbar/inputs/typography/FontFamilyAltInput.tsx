@@ -15,6 +15,7 @@ import { Wrap } from "../../ToolbarStyle";
 import { ViewSelectionAtom } from "../../Label";
 import { FontFamilyDialogAtom } from "../../dialogs/FontFamilyDialog";
 import { useDialog } from "../../dialogs/toolHooks";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 function displayFontFromToken(token: string, query: any): string {
   if (!token) return "";
@@ -161,7 +162,8 @@ export const FontFamilyAltInput = ({
                 pushChange("", 2000);
               }}
               className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 z-10 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-              title="Clear font family"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Clear font family"
             >
               ×
             </button>

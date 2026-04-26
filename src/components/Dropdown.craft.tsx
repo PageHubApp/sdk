@@ -57,7 +57,7 @@ function buildDropdownChildren() {
       key="panel"
       canvas
       is={Container}
-      custom={{ displayName: "Dropdown Panel" }}
+      custom={{ displayName: "Dropdown Panel", rules: { canMoveOut: () => false } }}
       canDelete={true}
       canEditName={true}
       className="bg-base-200 text-base-content rounded-box border-base-300 absolute top-full left-0 z-50 mt-1 hidden min-w-48 flex-col overflow-hidden border py-space-xs shadow-lg group-focus-within:flex"

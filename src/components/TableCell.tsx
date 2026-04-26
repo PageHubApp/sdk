@@ -5,6 +5,7 @@ import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { motionIt } from "../utils/lib";
 import { applyAnimation, CSStoObj } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
+import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { useScrollToSelected } from "./componentHooks";
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
@@ -45,6 +46,7 @@ export const TableCell: UserComponent<TableCellProps> = (incomingProps: TableCel
   }, []);
 
   useScrollToSelected(id, enabled);
+  useRuntimeVarsVersion();
 
   const Tag = props.as === "th" ? "th" : "td";
   const rawHtml = replaceVariables(String(props.text ?? ""), query);

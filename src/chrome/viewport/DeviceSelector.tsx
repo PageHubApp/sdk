@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { TbX } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { DeviceDimensionsAtom } from "./atoms";
 
 const devicePresets = [
@@ -137,7 +138,8 @@ export function DeviceSelector({ onClose }: DeviceSelectorProps) {
       <button
         onClick={onClose}
         className="hover:text-base-content transition-colors"
-        title="Exit device mode"
+        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+        data-tooltip-content="Exit device mode"
       >
         <TbX className="size-4" />
       </button>

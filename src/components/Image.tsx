@@ -9,6 +9,7 @@ import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { getResponsiveImageAttrs, motionIt } from "../utils/lib";
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
+import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../utils/itemContext";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
@@ -61,6 +62,7 @@ export const Image = (incomingProps: ImageProps) => {
     isActive: q.getEvent("selected").contains(id),
   }));
   const itemContext = useItemContext();
+  useRuntimeVarsVersion();
 
   const { videoId } = props;
   const rawSrc = props.src ?? props.content;

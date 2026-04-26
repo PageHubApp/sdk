@@ -93,7 +93,7 @@ function buildCookieConsentChildren() {
       canvas
       id="cookie-consent"
       is={Container}
-      custom={{ displayName: "Cookie Banner" }}
+      custom={{ displayName: "Cookie Banner", rules: { canMoveOut: () => false } }}
       canDelete={false}
       canEditName={false}
       className="bg-base-200 text-base-content fixed right-0 bottom-0 left-0 z-[9998] shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
@@ -102,7 +102,7 @@ function buildCookieConsentChildren() {
       <Element
         canvas
         is={Container}
-        custom={{ displayName: "Banner Content" }}
+        custom={{ displayName: "Banner Content", rules: { canMoveOut: () => false } }}
         canDelete={false}
         className="gap-space-sm px-space-md py-space-sm max-w-page mx-auto flex flex-col items-center justify-between sm:flex-row"
       >

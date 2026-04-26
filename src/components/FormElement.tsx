@@ -6,6 +6,7 @@ import { motionIt } from "../utils/lib";
 import { FormField } from "@pagehub/ui";
 import { useItemContext } from "../utils/itemContext";
 import { replaceVariables } from "../utils/design/variables";
+import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 
 import { addCustomHandlers } from "../utils/clickControls";
 import { applyAnimation } from "../utils/tailwind/tailwind";
@@ -42,7 +43,7 @@ export const OnlyFormElement = ({ children, ...props }) => {
     id,
   }: any = useNode();
   return (
-    <div title="only-FormElement" ref={connect} className="mt-5 w-full" {...props}>
+    <div ref={connect} className="mt-5 w-full" {...props}>
       {children}
     </div>
   );
@@ -113,6 +114,7 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   // Repeater context — lets block authors write `name="facet.{{item.facetKey}}"`
   // and `attrs: { value: "{{item.value}}" }` on facet dropdown checkboxes.
   const itemContext = useItemContext();
+  useRuntimeVarsVersion();
   const interp = (v: string | undefined) =>
     v ? replaceVariables(v, query, itemContext) : v;
 

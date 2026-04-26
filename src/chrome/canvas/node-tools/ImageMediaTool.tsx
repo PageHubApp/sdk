@@ -2,6 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
 import { useState } from "react";
 import { getMediaById, registerMediaWithBackground } from "../../../utils/lib";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
 
 export const ImageMediaTool = () => {
   const { query, actions } = useEditor();
@@ -52,7 +53,8 @@ export const ImageMediaTool = () => {
         aria-hidden="true"
         className="absolute inset-0 z-0 cursor-pointer bg-transparent"
         onDoubleClick={handleDoubleClick}
-        title="Double-click to change image"
+        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+        data-tooltip-content="Double-click to change image"
       />
 
       {/* Media Modal */}

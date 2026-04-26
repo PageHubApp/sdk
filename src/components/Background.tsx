@@ -13,10 +13,20 @@ import { useLazyBackground } from "../utils/hooks/useLazyBackground";
 import { Box } from "@pagehub/ui";
 import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../utils/lib";
 import { PaletteProvider } from "../utils/design/PaletteContext";
+import { RuntimeVarsProvider } from "../utils/design/RuntimeVarsContext";
 import { RenderPattern, inlayProps } from "./componentHooks";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import { useBackgroundEffects } from "./Background/useBackgroundEffects";
 import { InjectedHeadTags, InjectedBodyTags } from "./InjectedHeadTags";
+
+/**
+ * Bootstrap shim for runtime variables. Defines a queueing setVar synchronously
+ * during HTML parse so user inject.head / inject.footer scripts can call
+ * window.PageHub.setVar(...) before React hydrates. Provider replaces this with
+ * the live setVar and drains the queue post-mount.
+ */
+const RUNTIME_VARS_BOOTSTRAP =
+  'window.PageHub=window.PageHub||{_queue:[],setVar:function(k,v){this._queue.push([k,v])},getVar:function(){}};';
 
 export interface NamedColor {
   name: string;
@@ -149,29 +159,37 @@ export function Background({
 
   prop.children = (
     <PaletteProvider palette={resolveTheme(props).palette}>
-      {isRoot && props.inject?.head ? <InjectedHeadTags html={props.inject.head} /> : null}
-      <RenderPattern
-        props={props}
-        settings={settings}
-        view={view}
-        enabled={enabled}
-        properties={inlayProps}
-        preview={preview}
-        query={query}
-      >
-        {children ||
-          (enabled ? (
-            <EditorEmptyLeafHint
-              selected={isActive}
-              icon={<TbContainer aria-hidden />}
-              idleLabel="Empty canvas"
-              selectedLabel="Drop here or right-click"
-            />
-          ) : null)}
-      </RenderPattern>
-      {isRoot && props.inject?.footer ? (
-        <InjectedBodyTags html={props.inject.footer} />
-      ) : null}
+      <RuntimeVarsProvider>
+        {isRoot && !enabled ? (
+          <script
+            key="ph-runtime-vars-bootstrap"
+            dangerouslySetInnerHTML={{ __html: RUNTIME_VARS_BOOTSTRAP }}
+          />
+        ) : null}
+        {isRoot && props.inject?.head ? <InjectedHeadTags html={props.inject.head} /> : null}
+        <RenderPattern
+          props={props}
+          settings={settings}
+          view={view}
+          enabled={enabled}
+          properties={inlayProps}
+          preview={preview}
+          query={query}
+        >
+          {children ||
+            (enabled ? (
+              <EditorEmptyLeafHint
+                selected={isActive}
+                icon={<TbContainer aria-hidden />}
+                idleLabel="Empty canvas"
+                selectedLabel="Drop here or right-click"
+              />
+            ) : null)}
+        </RenderPattern>
+        {isRoot && props.inject?.footer ? (
+          <InjectedBodyTags html={props.inject.footer} />
+        ) : null}
+      </RuntimeVarsProvider>
     </PaletteProvider>
   );
 

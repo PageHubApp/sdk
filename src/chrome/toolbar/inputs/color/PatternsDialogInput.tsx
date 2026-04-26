@@ -9,6 +9,7 @@ import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
 import { getPageHubApiBaseUrl } from "@/core/apiConfig";
 import { TbSearch, TbX } from "react-icons/tb";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 const DEMO_COLORS = {
   patternColor1: "rgba(59, 130, 246, 0.8)",
@@ -130,7 +131,8 @@ export const PatternsDialogInput = ({
                 clear();
               }}
               className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 z-10 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-              title="Clear pattern"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Clear pattern"
             >
               ×
             </button>

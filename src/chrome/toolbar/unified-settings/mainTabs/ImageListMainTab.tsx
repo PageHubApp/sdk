@@ -8,6 +8,7 @@ import { atom, useAtomState, useAtomInstance } from "@zedux/react";
 import { BatchOperationAtom } from "@/utils/atoms";
 import { TbEdit } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedImageListItemAtom = atom<any>("selectedimagelistitem_unified", null);
 
@@ -73,7 +74,8 @@ export const ImageListMainTab = () => {
             <button
               key="edit"
               className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
-              title="Edit image"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Edit image"
               onClick={e => {
                 e.stopPropagation();
                 actions.selectNode(image.id);

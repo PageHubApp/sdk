@@ -72,6 +72,18 @@ export {
   replaceVariables,
 } from "./pageManagement";
 
+// ─── Runtime variables (window.PageHub.setVar) ──────────────────────────
+export {
+  setRuntimeVar,
+  getRuntimeVars,
+  getRuntimeVarsVersion,
+  subscribeRuntimeVars,
+} from "./design/variables";
+export {
+  RuntimeVarsProvider,
+  useRuntimeVarsVersion,
+} from "./design/RuntimeVarsContext";
+
 // ─── CDN re-export ──────────────────────────────────────────────────────
 
 export { getCdnUrl };

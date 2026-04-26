@@ -9,6 +9,7 @@ import { BatchOperationAtom } from "@/utils/atoms";
 import { applyPeerClassInherit } from "../../../shell/peerInherit/applyPeerClassInherit";
 import { TbEdit, TbPlus } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedButtonListItemAtom = atom<any>("selectedbuttonlistitem_unified", null);
 
@@ -81,7 +82,8 @@ export const ButtonListMainTab = () => {
             <button
               key="edit"
               className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
-              title="Edit button"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Edit button"
               onClick={e => {
                 e.stopPropagation();
                 actions.selectNode(button.id);

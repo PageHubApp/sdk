@@ -18,6 +18,7 @@ import { useResolvedIcon } from "../utils/iconResolver";
 import { motionIt } from "../utils/lib";
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
+import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { resolvePageRef } from "../utils/pageManagement";
 import { useScrollToSelected } from "./componentHooks";
 
@@ -84,6 +85,7 @@ export const Link: UserComponent<LinkProps> = (incomingProps: LinkProps) => {
 
   const router = useRouter();
   const itemContext = useItemContext();
+  useRuntimeVarsVersion();
 
   props = setClonedProps(props, query);
 

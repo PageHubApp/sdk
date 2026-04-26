@@ -141,7 +141,8 @@ function ColorAccordion({
               onClick={() => handleChangeColor(index)}
               className="border-base-300 hover:border-primary size-8 shrink-0 cursor-pointer rounded-lg border-2 transition-colors"
               style={{ backgroundColor: ds.getColorPreview(entry.color) }}
-              title="Click to change color"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Click to change color"
             />
             <div className="min-w-0 flex-1">
               <input
@@ -162,7 +163,8 @@ function ColorAccordion({
                     navigator.clipboard.writeText(toPaletteCSSVarName(entry.name));
                   }
                 }}
-                title="Click to copy CSS variable"
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content="Click to copy CSS variable"
               >
                 {toPaletteCSSVarName(entry.name)}
               </div>
@@ -170,7 +172,8 @@ function ColorAccordion({
             <button
               onClick={() => handleDelete(index)}
               className="text-error hover:text-error p-1 opacity-0 transition-opacity group-hover:opacity-100"
-              title="Delete color"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Delete color"
             >
               <TbTrash size={16} />
             </button>

@@ -2,6 +2,7 @@ import { getLinkedAncestorNode } from "@/utils/componentUtils";
 import { clearRelation, getBelongsTo, setRelationField } from "@/utils/relation";
 import { removeHasManyRelation } from "../../viewport/viewportExports";
 import { TbBoxModel2, TbLink, TbLinkOff, TbPalette, TbPencil } from "react-icons/tb";
+import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
 import { ViewModeAtom } from "@/utils/lib";
 import { CanvasIsolateAtom } from "@/utils/componentIsolation";
@@ -49,9 +50,15 @@ export const ConvertToContentComponent = ({ actions, id }) => (
 export const RenderChildren = ({ props, children, query, actions, id }) => {
   const setViewMode = useSetAtomState(ViewModeAtom);
   const setCanvasIsolate = useSetAtomState(CanvasIsolateAtom);
+  const canvasIsolate = useAtomValue(CanvasIsolateAtom) as unknown as string | null;
+  const viewMode = useAtomValue(ViewModeAtom);
 
-  // Check if this node or ANY ancestor is a linked component
-  const linkedNode = getLinkedAncestorNode(id, query);
+  // Skip the linked-ancestor lookup whenever we're in the component editor
+  // (canvas view mode), isolated or not. The whole point of that editor is to
+  // work directly on component internals — surfacing a "Linked instance of X"
+  // panel from a parent clone is never what the user wants there.
+  const inComponentEditor = viewMode === "canvas" || !!canvasIsolate;
+  const linkedNode = inComponentEditor ? null : getLinkedAncestorNode(id, query);
 
   if (linkedNode) {
     const linkedNodeId = getBelongsTo(linkedNode.data.props);

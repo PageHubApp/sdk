@@ -82,6 +82,58 @@ export function getAuthState(): AuthState | null {
   return _authState;
 }
 
+// ── Runtime variables (set at runtime via window.PageHub.setVar) ──────────────
+//
+// Mirrors the connector / auth setter pattern. Updates are IMMUTABLE — the
+// store reference is replaced on every set so React's useSyncExternalStore can
+// detect the change cleanly. A monotonic version number is exposed so the
+// useSyncExternalStore snapshot is a primitive (no re-render-on-every-render).
+
+let _runtimeVars: Record<string, string> = {};
+let _runtimeVersion = 0;
+const _runtimeListeners = new Set<() => void>();
+
+/** Set a runtime variable. Coerces to string. Triggers subscribers. */
+export function setRuntimeVar(key: string, value: any): void {
+  if (!key || typeof key !== "string") return;
+  const stringValue = value == null ? "" : String(value);
+  _runtimeVars = { ..._runtimeVars, [key]: stringValue };
+  _runtimeVersion++;
+  _runtimeListeners.forEach(fn => {
+    try {
+      fn();
+    } catch (e) {
+      console.error("Runtime var listener error:", e);
+    }
+  });
+}
+
+/** Read the current runtime vars snapshot. */
+export function getRuntimeVars(): Record<string, string> {
+  return _runtimeVars;
+}
+
+/** Monotonic version — used as the useSyncExternalStore snapshot. */
+export function getRuntimeVarsVersion(): number {
+  return _runtimeVersion;
+}
+
+/** Subscribe to runtime var changes. Returns an unsubscribe fn. */
+export function subscribeRuntimeVars(fn: () => void): () => void {
+  _runtimeListeners.add(fn);
+  return () => {
+    _runtimeListeners.delete(fn);
+  };
+}
+
+let _queueDrained = false;
+export function isRuntimeQueueDrained(): boolean {
+  return _queueDrained;
+}
+export function markRuntimeQueueDrained(): void {
+  _queueDrained = true;
+}
+
 /** Walk a dot-separated path into a nested object, supporting array indices. */
 function walkPath(obj: any, parts: string[]): any {
   let value = obj;
@@ -180,6 +232,11 @@ export const replaceVariables = (
 
       if (key.startsWith("variables.")) {
         const varKey = key.slice("variables.".length);
+        // Runtime store wins (window.PageHub.setVar)
+        if (Object.prototype.hasOwnProperty.call(_runtimeVars, varKey)) {
+          const rv = _runtimeVars[varKey];
+          if (rv !== undefined && rv !== null && rv !== "") return rv;
+        }
         const customVars = rootProps.variables;
         if (Array.isArray(customVars)) {
           const found = customVars.find((v: any) => v.key === varKey);
@@ -244,7 +301,8 @@ export const replaceVariables = (
       if (
         trimmedVar.startsWith("item.") ||
         trimmedVar.startsWith("connector.") ||
-        trimmedVar.startsWith("auth.")
+        trimmedVar.startsWith("auth.") ||
+        trimmedVar.startsWith("variables.")
       ) {
         return "";
       }
@@ -316,6 +374,10 @@ export const resolveVariable = (varId: string, query: any): string => {
     // Handle custom variables
     if (varId.startsWith("variables.")) {
       const varKey = varId.slice("variables.".length);
+      if (Object.prototype.hasOwnProperty.call(_runtimeVars, varKey)) {
+        const rv = _runtimeVars[varKey];
+        if (rv !== undefined && rv !== null && rv !== "") return rv;
+      }
       const customVars = rootProps.variables;
       if (Array.isArray(customVars)) {
         const found = customVars.find((v: any) => v.key === varKey);

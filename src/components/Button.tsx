@@ -23,6 +23,7 @@ import { motionIt } from "../utils/lib";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
+import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { resolvePageRef } from "../utils/pageManagement";
 import { useScrollToSelected } from "./componentHooks";
 
@@ -97,6 +98,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   const router = useRouter();
   const itemContext = useItemContext();
+  useRuntimeVarsVersion();
   const sdk = useSDKSafe();
 
   props = setClonedProps(props, query);
@@ -204,13 +206,13 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   applyAriaProps(prop, props);
 
-  // Attach JS handlers for open-modal, show-hide, scroll-to (anchor), add-to-cart
+  // Attach JS handlers for open-modal, show-hide, scroll-to (anchor), add-to-cart.
+  // show-hide method is honored — class-based hide survives React rerenders
+  // because show-hide writes to a reactive store and Container reads it back
+  // when computing className. See utils/showHideStore.ts.
   const actionCtx = { itemContext, onAddToCart: sdk?.config.callbacks?.onAddToCart };
   if (isHandlerAction(action)) {
-    // For show-hide on buttons, force style method
-    const actionForButton =
-      action.type === "show-hide" ? { ...action, method: "style" as const } : action;
-    addActionHandlers(prop, actionForButton, enabled, actionCtx);
+    addActionHandlers(prop, action, enabled, actionCtx);
   } else if (isAnchorAction(action)) {
     addActionHandlers(prop, action, enabled, actionCtx);
   }

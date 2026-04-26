@@ -109,7 +109,7 @@ function buildMobileMenuChildren() {
       canvas
       id="mobile-menu"
       is={Container}
-      custom={{ displayName: "Mobile Menu Overlay" }}
+      custom={{ displayName: "Mobile Menu Overlay", rules: { canMoveOut: () => false } }}
       canDelete={false}
       canEditName={false}
       className="fixed top-0 left-0 z-50 hidden h-screen w-screen bg-black/50 md:hidden"
@@ -127,7 +127,7 @@ function buildMobileMenuChildren() {
         canvas
         id="mobile-menu-panel"
         is={Container}
-        custom={{ displayName: "Mobile Menu Panel" }}
+        custom={{ displayName: "Mobile Menu Panel", rules: { canMoveOut: () => false } }}
         canDelete={false}
         canEditName={false}
         className="bg-base-100 h-full w-80 max-w-sm shadow-xl"
@@ -145,7 +145,7 @@ function buildMobileMenuChildren() {
           canvas
           id="mobile-menu-header"
           is={Container}
-          custom={{ displayName: "Mobile Nav Header" }}
+          custom={{ displayName: "Mobile Nav Header", rules: { canMoveOut: () => false } }}
           canDelete={false}
           canEditName={false}
           className="px-container-x py-container-y flex items-center justify-between border-b"

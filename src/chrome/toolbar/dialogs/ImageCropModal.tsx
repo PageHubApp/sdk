@@ -3,6 +3,7 @@ import { TbCrop, TbX } from "react-icons/tb";
 import { CropCanvas } from "./ImageCrop/components/CropCanvas";
 import { CropControlsPanel } from "./ImageCrop/components/CropControlsPanel";
 import { useImageCrop } from "./ImageCrop/hooks/useImageCrop";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
 
 interface ImageCropModalProps {
   isOpen: boolean;
@@ -43,7 +44,8 @@ export function ImageCropModal({ isOpen, onClose, media, onSave, settings }: Ima
           <button
             onClick={onClose}
             className="text-neutral-content hover:bg-neutral hover:text-base-content rounded-lg p-2 transition-colors"
-            title="Close"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Close"
           >
             <TbX className="text-lg" />
           </button>

@@ -1,18 +1,31 @@
 import { Element, useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import React from "react";
-import { TbBoxModel2, TbHeading, TbLayoutGridAdd, TbTextSize, TbX } from "react-icons/tb";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import {
+  TbBoxModel2,
+  TbHeading,
+  TbLayoutAlignLeft,
+  TbLayoutAlignTop,
+  TbLayoutGridAdd,
+  TbTextSize,
+  TbX,
+} from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { Container } from "../../components/Container";
 import {
+  CANVAS_SLOT_H,
   CANVAS_SLOT_W,
   CanvasAnnotation,
   COMPONENT_CANVAS_TYPE,
   findComponentCanvasNode,
   getCanvasAnnotations,
   getComponentCanvasPos,
+  getComponentCanvasSize,
+  getStateNodeDefaultPos,
   listComponentContainers,
 } from "../../utils/componentCanvas";
+import { findInherentComponentNodes, findStateNodes } from "../../utils/componentStateNodes";
 import {
   applyCanvasVisibility,
   CanvasIsolateAtom,
@@ -58,6 +71,19 @@ function ensureCanvasStyleTag() {
       outline: none !important;
       box-shadow: none !important;
     }
+    /* Hide CraftJS node-name chips in canvas mode — the per-card drag
+       handle label replaces them, two labels for the same node is noise. */
+    body[data-ph-canvas-mode="true"] .ph-node-name-chip {
+      display: none !important;
+    }
+    /* Suppress CraftJS selection chrome on state-pinned nodes for parity
+       with master cards — slot frame is visible chrome enough. */
+    body[data-ph-canvas-mode="true"] #viewport [data-canvas-state-pin="true"][data-selected="true"],
+    body[data-ph-canvas-mode="true"] #viewport [data-canvas-state-pin="true"][data-hover="true"],
+    body[data-ph-canvas-mode="true"] #viewport [data-canvas-state-pin="true"][data-parent-of-selected="true"] {
+      outline: none !important;
+      box-shadow: none !important;
+    }
   `;
   document.head.appendChild(tag);
 }
@@ -70,10 +96,12 @@ function createComponentCanvasNode(query: any, actions: any): string | null {
         <Element
           canvas
           is={Container}
-          type={COMPONENT_CANVAS_TYPE}
-          custom={{ displayName: "Component Canvas" }}
-          annotations={[]}
-          className="hidden"
+          {...({
+            type: COMPONENT_CANVAS_TYPE,
+            custom: { displayName: "Component Canvas" },
+            annotations: [],
+            className: "hidden",
+          } as Record<string, unknown>)}
         />
       )
       .toNodeTree();
@@ -98,7 +126,10 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
       const hidden = n?.data?.hidden ? "h" : "v";
       if (t === "component") {
         const pos = n?.data?.props?.custom?.canvasPos;
-        parts.push(`c:${nid}:${hidden}:${pos?.x ?? "?"}:${pos?.y ?? "?"}`);
+        const ipos = n?.data?.props?.custom?.canvasIsolatePos;
+        parts.push(
+          `c:${nid}:${hidden}:${pos?.x ?? "?"}:${pos?.y ?? "?"}:${ipos?.x ?? "?"}:${ipos?.y ?? "?"}`,
+        );
       } else if (t === "componentCanvas") {
         const ann = n?.data?.props?.annotations ?? [];
         parts.push(`cc:${nid}:${hidden}:${ann.length}:${JSON.stringify(ann)}`);
@@ -114,6 +145,8 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
   const createComponent = useCreateComponent();
 
   // Look up the isolated component's display name for the pill label.
+  // Fall through to `data.displayName` (the React component name like "Modal"
+  // or "Dropdown") so inherent components don't all collapse to "Component".
   const isolatedName = React.useMemo(() => {
     if (!canvasIsolate) return null;
     try {
@@ -121,6 +154,7 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
       return (
         n?.data?.custom?.displayName ||
         n?.data?.props?.custom?.displayName ||
+        n?.data?.displayName ||
         "Component"
       );
     } catch {
@@ -214,11 +248,17 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
 
   // Safety: if the isolated component disappears (deleted, restructured),
   // exit isolation so the user isn't stuck on a dead pill / blank canvas.
+  // Accept either a `type === "component"` Container or an inherent
+  // component (Modal/Dropdown/Tabs/Accordion node) — both can be isolated.
   React.useEffect(() => {
     if (!canvasIsolate) return;
     try {
       const n = query.node(canvasIsolate).get();
-      if (!n || n.data?.props?.type !== "component") {
+      const dn: string = n?.data?.displayName || "";
+      const isReal = n?.data?.props?.type === "component";
+      const isInherent =
+        ["Modal", "Dropdown", "Tabs", "Accordion"].indexOf(dn) >= 0;
+      if (!n || (!isReal && !isInherent)) {
         setCanvasIsolate(null);
       }
     } catch {
@@ -265,19 +305,62 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
       const surface = surfaceRef.current;
       if (!surface) return;
       const containerIdx = listComponentContainers(query, true).indexOf(canvasIsolate);
-      const savedPos = getComponentCanvasPos(canvasIsolate, query, Math.max(0, containerIdx));
-      const z = zoom;
-      // Read the live component's height (post-mount) so we can vertically
-      // center it. Fall back to a reasonable default if the DOM isn't ready.
+      const masterPos = getComponentCanvasPos(
+        canvasIsolate,
+        query,
+        Math.max(0, containerIdx),
+        "canvasIsolatePos",
+      );
+      const masterSize = getComponentCanvasSize(canvasIsolate, query);
+      const masterW = masterSize.w ?? CANVAS_SLOT_W;
+      // Read the live master height (post-mount); fall back to slot default.
       const liveEl = document.querySelector<HTMLElement>(
         `[node-id="${canvasIsolate}"][data-component-container="true"]`
       );
-      const compHeight = liveEl?.offsetHeight || 480;
+      const masterH = masterSize.h ?? liveEl?.offsetHeight ?? CANVAS_SLOT_H;
+
+      // Build bounding box across master + every state card, so we center on
+      // the group rather than leaving state cards floating off-viewport.
+      let minX = masterPos.x;
+      let minY = masterPos.y;
+      let maxX = masterPos.x + masterW;
+      let maxY = masterPos.y + masterH;
+      const states = findStateNodes(canvasIsolate, query);
+      states.forEach((s, i) => {
+        let sx: number;
+        let sy: number;
+        try {
+          const stored = query.node(s.nodeId).get()?.data?.props?.custom?.canvasIsolatePos;
+          if (stored && typeof stored.x === "number" && typeof stored.y === "number") {
+            sx = stored.x;
+            sy = stored.y;
+          } else {
+            const def = getStateNodeDefaultPos(canvasIsolate, i, query);
+            sx = def.x;
+            sy = def.y;
+          }
+        } catch {
+          const def = getStateNodeDefaultPos(canvasIsolate, i, query);
+          sx = def.x;
+          sy = def.y;
+        }
+        const ssize = getComponentCanvasSize(s.nodeId, query);
+        const sw = ssize.w ?? CANVAS_SLOT_W;
+        const sh = ssize.h ?? CANVAS_SLOT_H;
+        if (sx < minX) minX = sx;
+        if (sy < minY) minY = sy;
+        if (sx + sw > maxX) maxX = sx + sw;
+        if (sy + sh > maxY) maxY = sy + sh;
+      });
+
+      const z = zoom;
       const w = surface.clientWidth;
       const h = surface.clientHeight;
+      const cx = minX + (maxX - minX) / 2;
+      const cy = minY + (maxY - minY) / 2;
       setPan({
-        x: w / 2 - (CANVAS_SLOT_W * z) / 2 - savedPos.x * z,
-        y: Math.max(40, h / 2 - (compHeight * z) / 2) - savedPos.y * z,
+        x: w / 2 - cx * z,
+        y: Math.max(40, h / 2 - cy * z),
       });
     });
     return () => {
@@ -294,10 +377,33 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
   });
 
   const containerIds = listComponentContainers(query);
+  // Inherent components — Modal/Dropdown/Tabs/Accordion nodes anywhere on
+  // the page are surfaced as canvas cards alongside the user's
+  // type === "component" Containers. No wrapping needed.
+  const inherentIds = React.useMemo(
+    () => findInherentComponentNodes(query),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sig],
+  );
+  const allCardIds = React.useMemo(
+    () => [...containerIds, ...inherentIds],
+    [containerIds, inherentIds],
+  );
   const canvasId = findComponentCanvasNode(query);
   const annotations: CanvasAnnotation[] = canvasId
     ? getCanvasAnnotations(canvasId, query)
     : [];
+
+  // State cards: in isolation, walk the component subtree for hidden state
+  // nodes (Modal panels, Tabs panes, show-hide / open-modal targets) and
+  // surface each as its own card alongside the master. Recompute when the
+  // tree structure or isolation target changes (sig already tracks the
+  // ROOT-children / canvas signature).
+  const stateNodes = React.useMemo(() => {
+    if (!canvasIsolate) return [];
+    return findStateNodes(canvasIsolate, query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvasIsolate, sig]);
 
   const writeAnnotations = (next: CanvasAnnotation[]) => {
     let id = canvasId;
@@ -308,6 +414,56 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
     actions.setProp(id, (p: any) => {
       p.annotations = next;
     });
+  };
+
+  // Arrange every list-mode card in a row or column starting at (0, 0).
+  // Reads each card's measured slot size from the DOM when available so cards
+  // with custom widths/heights pack tightly; falls back to slot defaults.
+  // Labels and titles get reset alongside: above the row in horizontal mode,
+  // left of the column in vertical mode.
+  const arrangeCards = (axis: "horizontal" | "vertical") => {
+    const GAP = 32;
+    const HANDLE_RESERVE = 32; // matches HANDLE_HEIGHT + HANDLE_GAP in ComponentCanvasItem
+    const ANNOTATION_LANE = 56; // distance from the card row at which annotations sit
+    const ANNOTATION_STEP = 220; // packing distance between consecutive annotations
+    let cursor = 0;
+    for (const id of allCardIds) {
+      const size = getComponentCanvasSize(id, query);
+      // Prefer the live slot's rendered size for auto-fit cards.
+      let slotW = size.w;
+      let slotH = size.h;
+      if (slotW === undefined || slotH === undefined) {
+        const wrapper =
+          (document.querySelector(`[node-id="${id}"][data-component-container="true"]`) as HTMLElement | null) ||
+          (document.querySelector(`[node-id="${id}"]`) as HTMLElement | null);
+        if (wrapper) {
+          if (slotW === undefined) slotW = wrapper.offsetWidth || CANVAS_SLOT_W;
+          if (slotH === undefined) slotH = wrapper.offsetHeight || CANVAS_SLOT_H;
+        }
+      }
+      const w = slotW ?? CANVAS_SLOT_W;
+      const h = slotH ?? CANVAS_SLOT_H;
+      const x = axis === "horizontal" ? cursor : 0;
+      const y = axis === "horizontal" ? HANDLE_RESERVE : cursor;
+      try {
+        actions.setProp(id, (p: any) => {
+          if (!p.custom) p.custom = {};
+          p.custom.canvasPos = { x, y };
+        });
+      } catch {
+        // ignore — node might be inherent and missing custom shape
+      }
+      cursor += (axis === "horizontal" ? w : h + HANDLE_RESERVE) + GAP;
+    }
+    if (annotations.length > 0) {
+      const next = annotations.map((ann, i) => {
+        if (axis === "horizontal") {
+          return { ...ann, x: i * ANNOTATION_STEP, y: -ANNOTATION_LANE };
+        }
+        return { ...ann, x: -ANNOTATION_STEP, y: i * 60 };
+      });
+      writeAnnotations(next);
+    }
   };
 
   const addAnnotation = (kind: "label" | "title") => {
@@ -331,11 +487,11 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
   return (
     <div
       ref={surfaceRef}
-      className={`bg-base-200/40 relative h-full w-full overflow-hidden ${className}`}
+      className={`bg-base-200 relative h-full w-full overflow-hidden ${className}`}
       style={{ cursor }}
       data-canvas-zoom-component-canvas="true"
     >
-      {containerIds.length === 0 && (
+      {allCardIds.length === 0 && (
         <div className="text-base-content/60 pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 text-center">
           <div className="text-lg font-medium">No components yet</div>
           <div className="text-sm">
@@ -348,14 +504,43 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
           + --ph-zoom from the surface via CSS calc, so panning/zooming costs
           zero React renders for items. */}
       <div className="pointer-events-none absolute inset-0">
-        {containerIds.map((cid, idx) => (
-          <ComponentCanvasItem
-            key={cid}
-            containerId={cid}
-            index={idx}
-            isolated={canvasIsolate === cid}
-          />
-        ))}
+        {canvasIsolate ? (
+          <>
+            {/* Master card. When state cards exist alongside it, drop the
+                isolated chrome (handle + resize) so the master is just one of
+                N manipulable cards. With no state cards, keep the original
+                chromeless isolated look. */}
+            <ComponentCanvasItem
+              key={canvasIsolate}
+              containerId={canvasIsolate}
+              index={0}
+              isolated={stateNodes.length === 0}
+              disableIsolate
+              isIsolationCanvas
+            />
+            {stateNodes.map((s, i) => (
+              <ComponentCanvasItem
+                key={s.nodeId}
+                containerId={s.nodeId}
+                index={i + 1}
+                isolated={false}
+                defaultPos={getStateNodeDefaultPos(canvasIsolate, i, query)}
+                disableIsolate
+                isStatePin
+                isIsolationCanvas
+              />
+            ))}
+          </>
+        ) : (
+          allCardIds.map((cid, idx) => (
+            <ComponentCanvasItem
+              key={cid}
+              containerId={cid}
+              index={idx}
+              isolated={false}
+            />
+          ))
+        )}
         {!canvasIsolate && (
           <CanvasAnnotationLayer
             annotations={annotations}
@@ -370,7 +555,10 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
           type="button"
           onClick={() => setCanvasIsolate(null)}
           className="bg-base-100 text-base-content border-base-300 hover:bg-base-200 pointer-events-auto absolute top-3 left-3 z-50 flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium shadow-sm"
-          title="Exit isolation"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Exit isolation"
+          data-tooltip-place="bottom"
+          data-tooltip-offset={6}
         >
           <TbX className="size-3.5" />
           <TbBoxModel2 className="size-3.5 opacity-70" />
@@ -383,24 +571,54 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
         {!canvasIsolate && (
           <>
             <span className="text-neutral-content/70 px-1 text-xs">
-              {containerIds.length} {containerIds.length === 1 ? "component" : "components"}
+              {allCardIds.length} {allCardIds.length === 1 ? "component" : "components"}
             </span>
             <div className="bg-base-content/20 h-4 w-px" />
             <button
               type="button"
               onClick={createComponent}
               className="hover:bg-neutral text-neutral-content rounded p-1.5"
-              title="New component"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="New component"
+              data-tooltip-place="bottom"
+              data-tooltip-offset={6}
               aria-label="New component"
             >
               <TbLayoutGridAdd className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => arrangeCards("horizontal")}
+              className="hover:bg-neutral text-neutral-content rounded p-1.5"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Arrange in a row"
+              data-tooltip-place="bottom"
+              data-tooltip-offset={6}
+              aria-label="Arrange horizontally"
+            >
+              <TbLayoutAlignTop className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => arrangeCards("vertical")}
+              className="hover:bg-neutral text-neutral-content rounded p-1.5"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Arrange in a column"
+              data-tooltip-place="bottom"
+              data-tooltip-offset={6}
+              aria-label="Arrange vertically"
+            >
+              <TbLayoutAlignLeft className="size-4" />
             </button>
             <div className="bg-base-content/20 h-4 w-px" />
             <button
               type="button"
               onClick={() => addAnnotation("label")}
               className="hover:bg-neutral text-neutral-content rounded p-1.5"
-              title="Add label"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Add label"
+              data-tooltip-place="bottom"
+              data-tooltip-offset={6}
               aria-label="Add label"
             >
               <TbTextSize className="size-4" />
@@ -409,7 +627,10 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
               type="button"
               onClick={() => addAnnotation("title")}
               className="hover:bg-neutral text-neutral-content rounded p-1.5"
-              title="Add title"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Add title"
+              data-tooltip-place="bottom"
+              data-tooltip-offset={6}
               aria-label="Add title"
             >
               <TbHeading className="size-4" />

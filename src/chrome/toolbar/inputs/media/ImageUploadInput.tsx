@@ -8,6 +8,7 @@ import { getMediaContent, registerMediaWithBackground } from "@/utils/lib";
 import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import Spinner from "../../helpers/Spinner";
 import { MediaManagerModal } from "./MediaManagerModal";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 import { Wrap } from "../../ToolbarStyle";
 
@@ -220,7 +221,8 @@ export const ImageUploadInput: any = ({
         <button
           onClick={() => setShowMediaBrowser(true)}
           className="btn flex gap-2"
-          title="Browse media library"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content="Browse media library"
         >
           <TbPhoto />
           Browse

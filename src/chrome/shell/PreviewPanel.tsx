@@ -1,6 +1,7 @@
 import { Editor, Frame } from "@craftjs/core";
 import React, { Component, useEffect, useMemo, useRef, useState } from "react";
 import { TbCheck, TbLoader2, TbMinus, TbPlus, TbRefresh, TbX } from "react-icons/tb";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 
 class PreviewErrorBoundary extends Component<{ children: React.ReactNode }, { error: boolean }> {
   state = { error: false };
@@ -155,7 +156,8 @@ function SectionControlList({ sections, onRedo, onAccept, onReject }: SectionOve
                   type="button"
                   onClick={() => onAccept(s.nodeId)}
                   className="rounded px-1.5 py-0.5 text-[10px] text-emerald-600 hover:bg-emerald-500/10"
-                  title="Accept"
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content="Accept"
                 >
                   <TbCheck className="size-3" />
                 </button>
@@ -165,7 +167,8 @@ function SectionControlList({ sections, onRedo, onAccept, onReject }: SectionOve
                   type="button"
                   onClick={() => onRedo(s.nodeId)}
                   className="text-primary hover:bg-primary/10 rounded px-1.5 py-0.5 text-[10px]"
-                  title="Redo"
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content="Redo"
                 >
                   <TbRefresh className="size-3" />
                 </button>
@@ -175,7 +178,8 @@ function SectionControlList({ sections, onRedo, onAccept, onReject }: SectionOve
                   type="button"
                   onClick={() => onReject(s.nodeId)}
                   className="text-error hover:bg-error/10 rounded px-1.5 py-0.5 text-[10px]"
-                  title="Reject"
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content="Reject"
                 >
                   <TbX className="size-3" />
                 </button>
@@ -358,7 +362,8 @@ export function PreviewPanel({
             type="button"
             onClick={() => setZoom(z => Math.max(0.15, z - 0.05))}
             className="tool-button p-0.5! [&_svg]:size-3.5!"
-            title="Zoom out"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Zoom out"
           >
             <TbMinus />
           </button>
@@ -369,7 +374,8 @@ export function PreviewPanel({
             type="button"
             onClick={() => setZoom(z => Math.min(1, z + 0.05))}
             className="tool-button p-0.5! [&_svg]:size-3.5!"
-            title="Zoom in"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Zoom in"
           >
             <TbPlus />
           </button>

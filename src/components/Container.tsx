@@ -26,6 +26,8 @@ import { useHorizontalDragScroll } from "../utils/hooks/useHorizontalDragScroll"
 import { HorizontalOverflowThumbOverlay } from "./primitives/HorizontalOverflowThumbOverlay";
 import { RenderPattern, inlayProps } from "./componentHooks";
 import { replaceVariables } from "../utils/design/variables";
+import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
+import { applyShowHideOverride, useShowHideVersion } from "../utils/showHideStore";
 import { useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
 
@@ -106,6 +108,8 @@ export function useContainerRender(
   const { query, enabled } = useEditor(state => getClonedState(props, state));
   const router = useRouter();
   const parentItem = useItemContext();
+  useRuntimeVarsVersion();
+  useShowHideVersion();
 
   const { name, id, isHovered, hasChildNodes, isCanvasNode, isActive } = useNode(node => ({
     name: node.data.custom.displayName || node.data.displayName,
@@ -194,6 +198,20 @@ export function useContainerRender(
 
   let className = typeof props.className === "string" ? props.className : "";
 
+  // Apply class-based show-hide override. The action handler writes to the
+  // showHideStore by DOM id; here we read it back so React rerenders produce
+  // the correct className (with or without `hidden`) instead of clobbering
+  // the live DOM mutation. Skip in editor — visibility is controlled by the
+  // editor canvas, not show-hide actions.
+  if (!enabled) {
+    const showHideTarget =
+      (props.attrs && typeof props.attrs.id === "string" ? props.attrs.id : undefined) ||
+      (typeof props.id === "string" ? props.id : undefined);
+    if (showHideTarget) {
+      className = applyShowHideOverride(className, showHideTarget);
+    }
+  }
+
   // Hide component containers in non-canvas modes. Canvas isolation (hiding
   // non-target components when one is isolated) is handled by setHidden via
   // applyCanvasVisibility — CraftJS RenderNode returns null for hidden nodes,
@@ -245,13 +263,12 @@ export function useContainerRender(
         // crash + broken hover on AI-added sections.
         console.log(`[Container.ref] ${r ? "mount" : "unmount"} id=${id}`);
       }
-      // Canvas-mode pinning bridge: register/unregister this element in the
-      // live-component registry whenever Container mounts or unmounts. Lets
-      // ComponentCanvasItem react to CraftJS re-renders without polling the
-      // DOM. Cheap no-op when type !== "component".
-      if (props.type === "component") {
-        registerLiveComponent(id, r);
-      }
+      // Canvas-mode pinning bridge: register every Container DOM in the live
+      // registry whenever it mounts/unmounts. Component cards key off
+      // type === "component" containers; state cards (Modal panels, Tab panes,
+      // show-hide targets) pin descendants by id, so the registry must cover
+      // every Container — not just component roots.
+      registerLiveComponent(id, r);
       connect(drag(r));
     },
     style: {
