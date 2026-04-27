@@ -10,7 +10,8 @@ import {
 } from "../../../utils/tailwind/className";
 import { ViewAtom } from "../../viewport/atoms";
 import { changeProp } from "../../viewport/viewportExports";
-import { breakpointScopeHasSelection, getEffectiveViews, ViewSelectionAtom } from "../Label";
+import { getEffectiveViews, EditModifiersAtom } from "../Label";
+import { MultiScopeAtom } from "../breakpoint-chip/atoms";
 import { ToolbarItemProps } from "../ToolbarItem";
 import { Card, Wrap } from "../ToolbarStyle";
 import { ClassSearchInput } from "./ClassInput/ClassSearchInput";
@@ -43,7 +44,8 @@ const Input = ({
   clearAllPlacement?: "in-buckets" | "after-append";
   rawTokenDisplay?: boolean;
 }) => {
-  const [selectedViews, setSelectedViews] = useAtomState(ViewSelectionAtom);
+  const [selectedViews, setSelectedViews] = useAtomState(EditModifiersAtom);
+  const multiScope = useAtomValue(MultiScopeAtom);
   const classDark = selectedViews.dark ?? false;
   const classes = Array.isArray(value) ? value : [];
   const [classInput, setClassInput] = useState("");
@@ -187,15 +189,15 @@ const Input = ({
       <div className="text-xxs text-neutral-content -mt-5 flex flex-wrap items-baseline gap-x-1 pl-1">
         <span>Apply to:</span>
         <span className="text-base-content font-medium">
-          {breakpointScopeHasSelection(selectedViews)
-            ? getEffectiveViews(selectedViews, canvasView)
+          {multiScope.size > 0
+            ? getEffectiveViews(selectedViews, canvasView, multiScope)
                 .map(v => APPLY_SCOPE_DISPLAY[v] ?? v)
                 .join(" + ")
             : (APPLY_SCOPE_DISPLAY[canvasViewToClassScopeKey(canvasView)] ??
               canvasViewToClassScopeKey(canvasView))}
         </span>
-        {!breakpointScopeHasSelection(selectedViews) && (
-          <span className="text-neutral-content">(default layers)</span>
+        {multiScope.size === 0 && (
+          <span className="text-neutral-content">(canvas layer)</span>
         )}
       </div>
 
@@ -244,7 +246,7 @@ export function ClassItem({
   } = useNode(node => ({ nodeProps: node.data?.props, id: node.id }));
   const { query, actions } = useEditor();
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classWriteView = editorCanvasViewToClassPrefixKey(view);
   const value = (nodeProps || {})[propKey];
 

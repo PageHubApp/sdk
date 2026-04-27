@@ -1,16 +1,16 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { TbMoon, TbMoonOff } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
-import { ViewSelectionAtom } from "./Label";
+import { EditModifiersAtom } from "./Label";
 
 export const TabBarDarkModeToggle = () => {
-  const [viewSelection, setViewSelection] = useAtomState(ViewSelectionAtom);
-  const darkOn = viewSelection.dark ?? false;
+  const [modifiers, setModifiers] = useAtomState(EditModifiersAtom);
+  const darkOn = modifiers.dark ?? false;
 
   return (
     <button
       type="button"
-      onClick={() => setViewSelection(prev => ({ ...prev, dark: !prev.dark }))}
+      onClick={() => setModifiers(prev => ({ ...prev, dark: !prev.dark }))}
       className={`flex shrink-0 cursor-pointer items-center justify-center rounded p-1 transition-[color,transform] active:scale-90 ${
         darkOn
           ? "bg-violet-600/20 text-violet-800 ring-1 ring-violet-500/30 dark:text-violet-200"

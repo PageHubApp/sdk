@@ -5,7 +5,8 @@ import { useSetAtomState } from "@/utils/atoms";
 import { BatchOperationAtom } from "@/utils/atoms";
 import { UnsavedChangesAtom, ViewAtom } from "@/chrome/viewport/atoms";
 import { changeProp, getPropFinalValue } from "@/chrome/viewport/viewportExports";
-import { getEffectiveViews, ViewSelectionAtom } from "../../../Label";
+import { getEffectiveViews, EditModifiersAtom } from "../../../Label";
+import { MultiScopeAtom } from "../../../breakpoint-chip/atoms";
 import { useContainerLayoutManager } from "../../useContainerLayoutManager";
 import { getFlexPresets, GRID_PRESETS, type LayoutPreset } from "../presets/layoutPresets";
 
@@ -23,8 +24,9 @@ export type LayoutPresetHandle = ReturnType<typeof useLayoutPreset>;
 export function useLayoutPreset({ propKey, onLayoutChange, lockMode }: UseLayoutPresetOptions) {
   const { actions, query } = useEditor();
   const view = useAtomValue(ViewAtom);
-  const viewSelection = useAtomValue(ViewSelectionAtom);
-  const classDark = viewSelection.dark ?? false;
+  const modifiers = useAtomValue(EditModifiersAtom);
+  const multiScope = useAtomValue(MultiScopeAtom);
+  const classDark = modifiers.dark ?? false;
 
   const {
     actions: { setProp },
@@ -234,7 +236,7 @@ export function useLayoutPreset({ propKey, onLayoutChange, lockMode }: UseLayout
   // ─── Display variant change ───
 
   const handleDisplayVariant = (variant: string) => {
-    const effectiveViews = getEffectiveViews(viewSelection, view);
+    const effectiveViews = getEffectiveViews(modifiers, view, multiScope);
     effectiveViews.forEach(v => cp("display", variant, v));
     if (variant === "inline" || variant === "hidden") {
       clearLayoutProps(effectiveViews);
@@ -246,7 +248,7 @@ export function useLayoutPreset({ propKey, onLayoutChange, lockMode }: UseLayout
 
   const switchToMode = (mode: LayoutMode) => {
     if (lockMode && mode !== lockMode) return;
-    const effectiveViews = getEffectiveViews(viewSelection, view);
+    const effectiveViews = getEffectiveViews(modifiers, view, multiScope);
     setLayoutMode(mode);
     clearLayoutProps(effectiveViews);
 

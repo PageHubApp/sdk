@@ -28,9 +28,10 @@ import {
 import { FloatingWidget } from "../floating/FloatingWidget";
 import { useAutoOpenSidebar } from "../hooks/useAutoOpenSidebar";
 import { useComponentSync } from "../hooks/useComponentSync";
-import { ViewSelectionAtom } from "../toolbar/Label";
+import { EditModifiersAtom } from "../toolbar/Label";
 import { DeviceOffline } from "../toolbar/DeviceOffline";
 import { ComponentCanvasViewport } from "./ComponentCanvasViewport";
+import { CanvasScopeBand } from "./CanvasScopeBand";
 import { DeviceScrollbar } from "./DeviceScrollbar";
 import { DeviceSelector } from "./DeviceSelector";
 import { CanvasZoom } from "./CanvasZoom";
@@ -115,8 +116,8 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   }, [setOptions]);
 
   // ─── Atoms ───
-  const [viewSelectionState, setViewSelection] = useAtomState(ViewSelectionAtom);
-  const classDarkEdit = viewSelectionState.dark ?? false;
+  const editModifiers = useAtomValue(EditModifiersAtom);
+  const classDarkEdit = editModifiers.dark ?? false;
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const viewMode = useAtomValue(ViewModeAtom);
@@ -249,34 +250,9 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     setStorePreview(preview);
   }, [preview, setStorePreview]);
 
-  // ─── Sync canvas breakpoint → toolbar scope chips ───
-  // Picking a canvas breakpoint highlights the matching scope chip so users see
-  // which layer their next class edit will write to. Canvas "desktop" (fluid)
-  // clears all chips → implicit fallback writes to base/mobile.
-  useEffect(() => {
-    const canvasToScope: Record<string, string | null> = {
-      mobile: "mobile",
-      sm: "sm",
-      md: "desktop",
-      lg: "lg",
-      xl: "xl",
-      "2xl": "2xl",
-      desktop: null,
-      tablet: null,
-    };
-    const target = canvasToScope[view] ?? null;
-    setViewSelection(prev => ({
-      ...prev,
-      mobile: target === "mobile",
-      sm: target === "sm",
-      desktop: target === "desktop",
-      lg: target === "lg",
-      xl: target === "xl",
-      "2xl": target === "2xl",
-    }));
-  }, [view, setViewSelection]);
-
   // ─── Init localStorage ───
+  // (Phase 2 deleted the canvas → scope chip sync effect — the canvas viewport
+  // IS the scope now; no separate atom to mirror.)
   useEffect(() => {
     phStorage.set("clipboard", {});
   }, []);
@@ -713,6 +689,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           overlay
           onComplete={handleLoadComplete}
         />
+        {enabled && <CanvasScopeBand />}
         {/* Preview edit button */}
         {!enabled && !screenshot && (
           <FloatingWidget

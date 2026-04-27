@@ -5,7 +5,8 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface
 import { TbBoxAlignBottom, TbBoxAlignLeft, TbBoxAlignRight, TbBoxAlignTop } from "react-icons/tb";
 import { ViewAtom } from "../../../viewport/atoms";
 import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
-import { getEffectiveViews, ViewSelectionAtom } from "../../Label";
+import { getEffectiveViews, EditModifiersAtom } from "../../Label";
+import { MultiScopeAtom } from "../../breakpoint-chip/atoms";
 import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { Wrap } from "../../ToolbarStyle";
 
@@ -42,8 +43,9 @@ function getDirectionOptions(mode: FlexMode | undefined): DirOption[] {
 
 export const FlexDirectionInput = ({ wrap = "", inline = true, mode }: FlexDirectionInputProps) => {
   const view = useAtomValue(ViewAtom);
-  const viewSelection = useAtomValue(ViewSelectionAtom);
-  const classDark = viewSelection.dark ?? false;
+  const modifiers = useAtomValue(EditModifiersAtom);
+  const multiScope = useAtomValue(MultiScopeAtom);
+  const classDark = modifiers.dark ?? false;
   const { query, actions } = useEditor();
   const {
     actions: { setProp },
@@ -67,7 +69,7 @@ export const FlexDirectionInput = ({ wrap = "", inline = true, mode }: FlexDirec
   const selected = values.includes(raw) ? raw : values[0];
 
   const pushDirection = (next: string) => {
-    const effectiveViews = getEffectiveViews(viewSelection, view);
+    const effectiveViews = getEffectiveViews(modifiers, view, multiScope);
     effectiveViews.forEach(targetView => {
       changeProp({
         propKey: "flexDirection",

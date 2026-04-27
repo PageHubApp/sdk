@@ -4,7 +4,8 @@ import { useAtomValue } from "@zedux/react";
 import { AllStyles, TailwindStyles } from "@/utils/tailwind";
 import { ViewAtom } from "../../../viewport/atoms";
 import { changeProp, getProp, getPropFinalValue } from "../../../viewport/viewportExports";
-import { getEffectiveViews, ViewSelectionAtom } from "../../Label";
+import { getEffectiveViews, EditModifiersAtom } from "../../Label";
+import { MultiScopeAtom } from "../../breakpoint-chip/atoms";
 import { isDesignTokenClass } from "./designTokens";
 import { CSS_UNITS, UniversalInputProps, ValueType } from "./types";
 import { formatValue, parseValue } from "./utils";
@@ -25,8 +26,9 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
 
   // Get current view for responsive styles
   const view = useAtomValue(ViewAtom);
-  const viewSelection = useAtomValue(ViewSelectionAtom);
-  const classDark = viewSelection.dark ?? false;
+  const modifiers = useAtomValue(EditModifiersAtom);
+  const multiScope = useAtomValue(MultiScopeAtom);
+  const classDark = modifiers.dark ?? false;
 
   // Get node and props from Craft.js
   const {
@@ -248,7 +250,7 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
     pendingUpdateRef.current = true;
 
     if (propType === "class") {
-      const effectiveViews = getEffectiveViews(viewSelection, view);
+      const effectiveViews = getEffectiveViews(modifiers, view, multiScope);
       effectiveViews.forEach(targetView => {
         changeProp({
           setProp,
@@ -324,7 +326,10 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
     // CraftJS data
     id,
     view,
-    viewSelection,
+    /** @deprecated Phase 2 renamed → use `modifiers`. Kept for callers that destructure. */
+    viewSelection: modifiers,
+    modifiers,
+    multiScope,
     query,
     actions,
   };

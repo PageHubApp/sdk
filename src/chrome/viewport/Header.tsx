@@ -429,7 +429,7 @@ export const Header = () => {
           trigger={
             <button
               type="button"
-              aria-label="Canvas width"
+              aria-label="Canvas width — also the edit scope (next class write targets this layer)"
               aria-haspopup="menu"
               className="tool-button gap-0.5!"
             >
@@ -452,6 +452,15 @@ export const Header = () => {
                   </>
                 )}
               </span>
+              {/* Phase 2: prominent scope pill — viewport switcher IS the edit scope. */}
+              {!isScaled && view !== "desktop" && view !== "mobile" && (
+                <span
+                  className="bg-primary text-primary-content ml-0.5 inline-flex h-4 items-center justify-center rounded-sm px-1 font-mono text-[9px] leading-none font-bold uppercase"
+                  aria-hidden
+                >
+                  scope
+                </span>
+              )}
               <TbChevronDown className="size-3 shrink-0 opacity-60" aria-hidden />
             </button>
           }

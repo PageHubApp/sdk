@@ -5,28 +5,31 @@ import { atom, useAtomState, useAtomValue } from "@zedux/react";
 
 import { ViewAtom } from "../viewport/atoms";
 import { changeProp, getPropFinalValue } from "../viewport/viewportExports";
-import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
+import { MultiScopeAtom } from "./breakpoint-chip/atoms";
+import type { BpKey } from "../../utils/breakpointRewrite";
 
-// Global state for view selection (which Tailwind layers the next edit applies to)
-export const ViewSelectionAtom = atom("toolbar-view-selection", {
-  mobile: false,
-  sm: false,
-  desktop: false,
-  lg: false,
-  xl: false,
-  "2xl": false,
+/**
+ * Editor-wide modifier flags layered on top of the canvas-derived edit scope.
+ * Phase 2 stripped the breakpoint keys (the canvas viewport is now the scope).
+ * Only `dark:` survives — orthogonal concern, still toggled by TabBarDarkModeToggle.
+ */
+export type EditModifiers = {
   /** When true, class writes target `dark:` after the active breakpoint (and `dark:hover:` when editing hover). */
+  dark: boolean;
+};
+
+export const EditModifiersAtom = atom<EditModifiers>("toolbar-edit-modifiers", {
   dark: false,
 });
 
-export function breakpointScopeHasSelection(viewSelection: Record<string, boolean>): boolean {
-  return VIEW_BREAKPOINT_SCOPE_KEYS.some(k => viewSelection[k]);
-}
+/** @deprecated Backwards-compat alias. New code should import EditModifiersAtom. */
+export const ViewSelectionAtom = EditModifiersAtom;
 
 /**
- * When no scope badges/toggles are on, class-style edits follow the editor canvas breakpoint
- * (CANVAS WIDTH). Full-width fluid (`desktop`) targets the base layer only; use the MD canvas
- * mode for `md:` utilities.
+ * Class writes target the canvas-derived breakpoint by default. When the user
+ * has alt-clicked cells in the chip popover to opt into multi-scope writes,
+ * we honor that set instead — the `MultiScopeAtom` is opaque to most call
+ * sites and overrides the canvas pick.
  */
 export function defaultEffectiveViewsForCanvas(canvasView: string | undefined | null): string[] {
   const v = canvasView || "desktop";
@@ -40,19 +43,35 @@ export function defaultEffectiveViewsForCanvas(canvasView: string | undefined | 
   return ["mobile"];
 }
 
-// Helper function to get effective views based on selection
-export const getEffectiveViews = (viewSelection: Record<string, boolean>, currentView: string) => {
-  if (!breakpointScopeHasSelection(viewSelection)) {
-    return defaultEffectiveViewsForCanvas(currentView);
+/**
+ * Resolve the bp(s) the next class write should target.
+ *
+ * Phase 2 unified the rule: scope = canvas view. Power users who want to
+ * write the same class to several breakpoints at once can opt in via the
+ * chip popover's alt-click → `MultiScopeAtom`. When that set is non-empty,
+ * it WINS over the canvas-derived single-scope.
+ *
+ * The `_modifiers` parameter is retained only for source-compatibility with
+ * the old `viewSelection` first-argument shape — it is unused.
+ */
+export function getEffectiveViews(
+  _modifiers: any,
+  currentView: string,
+  multiScope?: ReadonlySet<BpKey>
+): string[] {
+  if (multiScope && multiScope.size > 0) {
+    return Array.from(multiScope);
   }
+  return defaultEffectiveViewsForCanvas(currentView);
+}
 
-  const views = [];
-  for (const k of VIEW_BREAKPOINT_SCOPE_KEYS) {
-    // Scope key `desktop` is the md layer; class writes use `md` so ViewAtom `desktop` (full width) stays unambiguous.
-    if (viewSelection[k]) views.push(k === "desktop" ? "md" : k);
-  }
-  return views;
-};
+/** @deprecated Always returns false now — multi-scope is owned by `MultiScopeAtom`. */
+export function breakpointScopeHasSelection(_viewSelection: any): boolean {
+  return false;
+}
+
+// Re-export so consumers can still import the multi-scope atom from here if they want.
+export { MultiScopeAtom };
 
 // Function to resolve CSS variable to its computed value
 const resolveCSSVar = (value: string): string => {
@@ -129,10 +148,10 @@ export const ToolbarLabel = ({
   const { query, actions } = useEditor();
 
   const currentView = useAtomValue(ViewAtom);
-  const [viewSelection, setViewSelection] = useAtomState(ViewSelectionAtom);
+  const [modifiers] = useAtomState(EditModifiersAtom);
 
   // Get the actual value for this specific view using proper resolution logic
-  const classDark = viewSelection.dark ?? false;
+  const classDark = modifiers.dark ?? false;
 
   const { value: resolvedValue, viewValue: resolvedViewValue } = getPropFinalValue(
     { propKey, propType, index, propItemKey },
@@ -145,16 +164,12 @@ export const ToolbarLabel = ({
   const isExplicit = resolvedViewValue === viewValue;
   const hasValue = resolvedValue != null && resolvedValue !== "" && isExplicit;
 
-  // Check if this view is selected in the toggle
-  const isSelected = viewSelection[viewValue];
-
-  // Only show primary color if this view is selected, or if none selected and this is current view
-  const hasSelection = breakpointScopeHasSelection(viewSelection);
+  // Active-view detection: chip lights up when its bp matches the canvas view.
   const canvasMatchesBadge =
     viewValue === currentView ||
     (currentView === "desktop" && viewValue === "mobile") ||
     (currentView === "md" && viewValue === "desktop");
-  const isActiveView = isSelected || (!hasSelection && canvasMatchesBadge);
+  const isActiveView = canvasMatchesBadge;
 
   let view = viewValue;
 
@@ -162,17 +177,6 @@ export const ToolbarLabel = ({
     viewValue = "component";
     view = "component"; // Update view too!
   }
-
-  const handleToggle = e => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Toggle this view selection
-    setViewSelection(prev => ({
-      ...prev,
-      [viewValue]: !prev[viewValue],
-    }));
-  };
 
   const handleRemove = e => {
     e.preventDefault();
@@ -198,66 +202,20 @@ export const ToolbarLabel = ({
 
   const valText = `${prefix || ""}${displayValue(resolvedValue)}${suffix || ""}`;
 
-  // ─── Breakpoint views: only render when value is defined ───
-  const isBreakpointView =
-    viewValue === "mobile" ||
-    viewValue === "desktop" ||
-    viewValue === "sm" ||
-    viewValue === "lg" ||
-    viewValue === "xl" ||
-    viewValue === "2xl";
-
-  if (lab && isBreakpointView && !icon && !showDeleteIcon) {
-    const bpLabel = viewValue === "mobile" ? "base" : viewValue === "desktop" ? "md" : viewValue;
-    const dot = (
-      <span
-        role="button"
-        tabIndex={0}
-        onClick={handleToggle}
-        onKeyDown={e => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleToggle(e as any);
-          }
-        }}
-        onContextMenu={hasValue ? handleRemove : undefined}
-        data-has-value={hasValue || undefined}
-        className={`bg-base-content block size-2 cursor-pointer rounded-[1px] transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
-      />
-    );
-    const tip = hasValue ? `${bpLabel}: ${valText}` : `${bpLabel}: none`;
-    return (
-      <span
-        role="button"
-        tabIndex={0}
-        onClick={handleToggle}
-        onKeyDown={e => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleToggle(e as any);
-          }
-        }}
-        onContextMenu={hasValue ? handleRemove : undefined}
-        data-has-value={hasValue || undefined}
-        className={`bg-base-content block size-2 cursor-pointer rounded-[1px] transition-opacity ${hasValue ? "opacity-100" : "opacity-20"}`}
-        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-        data-tooltip-content={tip}
-        data-tooltip-place="top"
-        data-tooltip-offset={10}
-      />
-    );
-  }
+  // Phase 2 dropped the per-bp dot rendering branch — `BreakpointChip` now owns
+  // every breakpoint indicator next to a property label. ToolbarLabel is still
+  // used for delete-icon / var-selector / icon-only chips below.
 
   // ─── Non-breakpoint views (icon, delete, var selector, etc.) ───
   const renderActiveNode = () => (
     <div
       role="button"
       tabIndex={0}
-      onClick={handleToggle}
+      onClick={handleRemove}
       onKeyDown={e => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          handleToggle(e as any);
+          handleRemove(e as any);
         }
       }}
       onContextMenu={e => handleRemove(e)}

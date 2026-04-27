@@ -5,7 +5,8 @@ import { TbTarget } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { getBackgroundUrl } from "@/utils/lib";
 import { ViewAtom } from "../../../viewport/atoms";
-import { getEffectiveViews, ViewSelectionAtom } from "../../Label";
+import { getEffectiveViews, EditModifiersAtom } from "../../Label";
+import { MultiScopeAtom } from "../../breakpoint-chip/atoms";
 
 interface BackgroundFocalPointPickerProps {
   imageUrl?: string;
@@ -14,7 +15,8 @@ interface BackgroundFocalPointPickerProps {
 export function BackgroundFocalPointPicker({ imageUrl }: BackgroundFocalPointPickerProps) {
   const { actions, query } = useEditor();
   const view = useAtomValue(ViewAtom);
-  const viewSelection = useAtomValue(ViewSelectionAtom);
+  const modifiers = useAtomValue(EditModifiersAtom);
+  const multiScope = useAtomValue(MultiScopeAtom);
 
   const {
     actions: { setProp },
@@ -80,10 +82,10 @@ export function BackgroundFocalPointPicker({ imageUrl }: BackgroundFocalPointPic
     }
 
     // Get which views to apply to based on selection
-    const effectiveViews = getEffectiveViews(viewSelection, view);
+    const effectiveViews = getEffectiveViews(modifiers, view, multiScope);
 
     // Save to selected views via setProp
-    const classDark = viewSelection.dark ?? false;
+    const classDark = modifiers.dark ?? false;
     effectiveViews.forEach(targetView => {
       changeProp({
         propKey: "backgroundPosition",

@@ -10,7 +10,8 @@ const CodeEditor = React.lazy(() =>
   import("./inputs/typography/CodeEditor").then(m => ({ default: m.CodeEditor }))
 );
 import { DesignVarSelector } from "./inputs/advanced/DesignVarSelector";
-import { getEffectiveViews, ViewSelectionAtom } from "./Label";
+import { getEffectiveViews, EditModifiersAtom } from "./Label";
+import { MultiScopeAtom } from "./breakpoint-chip/atoms";
 import { ToolbarDropdown } from "./ToolbarDropdown";
 import { BgWrap, Wrap } from "./ToolbarStyle";
 import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
@@ -402,7 +403,8 @@ export const ToolbarItem = (__props: ToolbarItemProps) => {
   } = __props;
 
   const view = useAtomValue(ViewAtom);
-  const viewSelection = useAtomValue(ViewSelectionAtom);
+  const modifiers = useAtomValue(EditModifiersAtom);
+  const multiScope = useAtomValue(MultiScopeAtom);
 
   const {
     actions: { setProp },
@@ -420,14 +422,14 @@ export const ToolbarItem = (__props: ToolbarItemProps) => {
     return getEditorVariableOptions(query);
   }, [codeType, query]);
 
-  const classDark = viewSelection.dark ?? false;
+  const classDark = modifiers.dark ?? false;
 
   const { value, viewValue } = getPropFinalValue(__props, view, nodeProps, classDark);
 
   const changed = value => {
     // For class properties, apply to all selected views
     if (propType === "class") {
-      const effectiveViews = getEffectiveViews(viewSelection, view);
+      const effectiveViews = getEffectiveViews(modifiers, view, multiScope);
       effectiveViews.forEach(targetView => {
         changeProp({
           propKey,

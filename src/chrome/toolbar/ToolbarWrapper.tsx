@@ -12,7 +12,6 @@ import { TabAtom } from "../viewport/atoms";
 import { useAccordionContext } from "./AccordionContext";
 import { RenderChildren } from "./helpers/CloneHelper";
 import Tab from "./Tab";
-import { TabBarBreakpointPicker } from "./TabBarBreakpointPicker";
 import { TabBarCollapseToggle } from "./TabBarCollapseToggle";
 import { TabBarDarkModeToggle } from "./TabBarDarkModeToggle";
 import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
@@ -207,7 +206,6 @@ export const ToolbarWrapper = ({
             )}
           </button>
           <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
-          <TabBarBreakpointPicker />
           <TabBarDarkModeToggle />
 
           <div className="min-h-px min-w-0 flex-1" aria-hidden />
