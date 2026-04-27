@@ -9,6 +9,7 @@ const POPOVER_MODE = new Set<string>([
   "AnimationsInput",
   "ConditionsInput",
   "GradientInput",
+  "PatternInput",
 ]);
 
 export function isPopoverModeComponent(component: string | unknown): boolean {

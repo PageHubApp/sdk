@@ -1,6 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { changeProp } from "../../../viewport/viewportExports";
 import { ViewAtom } from "../../../viewport/atoms";
+import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { generatePattern } from "@/utils/lib";
@@ -8,6 +9,7 @@ import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
 import { getPageHubApiBaseUrl } from "@/core/apiConfig";
 import { TbSearch, TbX } from "react-icons/tb";
 
@@ -56,11 +58,20 @@ export const PatternsDialogInput = ({
   }));
 
   const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pickerPos, setPickerPos] = useState<{ top: number; left: number } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const value = nodeProps.root ? nodeProps.root[propKey] || "" : null;
 
   const patt = useMemo(() => (value ? makePreview(value) : null), [value]);
+
+  const openPicker = () => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (rect) {
+      setPickerPos({ top: rect.bottom + 4, left: rect.left });
+    }
+    setIsOpen(true);
+  };
 
   const changed = (pattern: any) => {
     changeProp({
@@ -95,77 +106,73 @@ export const PatternsDialogInput = ({
   };
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <Wrap
         props={{ label, labelHide: true }}
         lab={value?.name}
         propType={propType}
         propKey={propKey}
       >
-        <div className="relative">
-          <div className="input-wrapper flex w-full items-center">
-            <button
-              type="button"
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content={value?.title || "Select pattern"}
-              id={propKey ? `input-${propKey}` : undefined}
-              onClick={() => setIsOpen(prev => !prev)}
-              className="input-plain flex min-w-0 flex-1 items-center text-left"
-            >
-              <div className="pointer-events-none flex min-h-0 w-full items-center gap-2">
-                <div
-                  className="border-base-300 bg-base-200 h-6 w-12 shrink-0 rounded border"
-                  style={patt ? { backgroundImage: `url(${patt})` } : undefined}
-                />
-                <div className="min-w-0 flex-1 truncate text-left">
-                  {value?.title || <span className="text-neutral-content">Select pattern</span>}
-                </div>
+        <div className="input-wrapper flex w-full items-center gap-1.5 px-1">
+          <button
+            ref={triggerRef}
+            type="button"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content={value?.title || "Select pattern"}
+            id={propKey ? `input-${propKey}` : undefined}
+            onClick={() => (isOpen ? setIsOpen(false) : openPicker())}
+            className="input-plain flex min-w-0 flex-1 items-center text-left"
+          >
+            <div className="pointer-events-none flex min-h-0 w-full items-center gap-2">
+              <div
+                className="border-base-300 bg-base-200 h-6 w-12 shrink-0 rounded border"
+                style={patt ? { backgroundImage: `url(${patt})` } : undefined}
+              />
+              <div className="min-w-0 flex-1 truncate text-left">
+                {value?.title || <span className="text-neutral-content">Select pattern</span>}
               </div>
-            </button>
-          </div>
-
-          {value && (
-            <button
-              type="button"
-              onClick={e => {
-                e.stopPropagation();
-                clear();
-              }}
-              className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 z-10 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Clear pattern"
-            >
-              ×
-            </button>
-          )}
+            </div>
+          </button>
+          {value && <InlineClearButton onClick={clear} tooltip="Clear pattern" />}
         </div>
       </Wrap>
 
-      {isOpen && (
-        <div className="absolute top-full right-0 z-50 mt-1">
-          <PatternPanel
+      {isOpen &&
+        pickerPos &&
+        createPortal(
+          <PatternPickerPanel
             selected={value?.slug}
+            position={pickerPos}
+            triggerRef={triggerRef}
             onSelect={pattern => {
               changed(pattern);
               setIsOpen(false);
             }}
             onClose={() => setIsOpen(false)}
-          />
-        </div>
-      )}
+          />,
+          document.querySelector(".pagehub-sdk-root") || document.body
+        )}
     </div>
   );
 };
 
-const PatternPanel = ({
-  selected,
-  onSelect,
-  onClose,
-}: {
+interface PickerPanelProps {
   selected?: string;
+  position: { top: number; left: number };
+  /** Trigger element — excluded from outside-click detection so clicking the
+   *  trigger to toggle the picker doesn't trigger a double-open cycle. */
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
   onSelect: (pattern: any) => void;
   onClose: () => void;
-}) => {
+}
+
+const PatternPickerPanel = ({
+  selected,
+  position,
+  triggerRef,
+  onSelect,
+  onClose,
+}: PickerPanelProps) => {
   const [patterns, setPatterns] = useState<any[] | null>(null);
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState<"all" | "stroke" | "fill">("all");
@@ -185,11 +192,17 @@ const PatternPanel = ({
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
+      const target = e.target as Node | null;
+      if (panelRef.current && panelRef.current.contains(target)) return;
+      // Also exclude the trigger button — clicking it fires onClose here then
+      // immediately re-opens via onClick. The parent's onClick toggle handles
+      // closing when the picker is already open.
+      if (triggerRef.current && triggerRef.current.contains(target)) return;
+      onClose();
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [onClose]);
+  }, [onClose, triggerRef]);
 
   const filtered = useMemo(() => {
     if (!patterns) return [];
@@ -205,7 +218,12 @@ const PatternPanel = ({
   }, [patterns, mode, search]);
 
   return (
-    <div ref={panelRef} className="border-base-300 bg-base-200 w-64 rounded-xl border shadow-xl">
+    <div
+      ref={panelRef}
+      data-floating-allow
+      className="pagehub-sdk-root border-base-300 bg-base-200 fixed z-[1200] w-64 rounded-xl border shadow-xl"
+      style={{ top: position.top, left: position.left }}
+    >
       {/* Search */}
       <div className="border-base-300 flex items-center gap-1.5 border-b px-2 py-1.5">
         <TbSearch className="text-neutral-content size-3.5 shrink-0" />

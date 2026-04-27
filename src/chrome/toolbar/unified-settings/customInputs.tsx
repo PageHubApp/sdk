@@ -114,11 +114,8 @@ const lazyMap: Record<string, LazyEntry> = {
       }))
     )
   ),
-  PatternInput: row(
-    React.lazy(() =>
-      import("../inputs/color/PatternInput").then(m => ({ default: m.PatternInput }))
-    )
-  ),
+  // Popover variant — chip with pattern thumbnail + label, opens FloatingPanel editor.
+  PatternInput: chip(React.lazy(() => import("../inputs/color/PatternInputPopover"))),
   // Popover variant — chip with gradient swatch + label, opens FloatingPanel editor.
   GradientInput: chip(React.lazy(() => import("../inputs/color/GradientInputPopover"))),
   ClassNameInput: block(
