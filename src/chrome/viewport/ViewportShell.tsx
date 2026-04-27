@@ -54,6 +54,7 @@ import {
   PreviewAtom,
   ResponsiveAtom,
   ShowBreakpointMarkersAtom,
+  ShowDeviceGuidesAtom,
   SideBySideAtom,
   ViewAtom,
   DeviceAtom,
@@ -140,6 +141,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   );
   const responsive = useAtomValue(ResponsiveAtom);
   const showBreakpointMarkers = useAtomValue(ShowBreakpointMarkersAtom);
+  const showDeviceGuides = useAtomValue(ShowDeviceGuidesAtom);
   const [pendingBreakpointOverride, setPendingBreakpointOverride] = useAtomState(
     PendingBreakpointOverrideAtom
   );
@@ -523,6 +525,17 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const breakpointMarkerOrder = ["sm", "md", "lg", "xl", "2xl"] as const;
   type BpKey = (typeof breakpointMarkerOrder)[number];
 
+  // Non-draggable device reference guides — informational only ("this is iPhone width").
+  // Not breakpoints, not editable. Toggled via `ShowDeviceGuidesAtom`.
+  const DEVICE_GUIDES = [
+    { id: "iphone-se", label: "iPhone SE", width: 375 },
+    { id: "iphone-14", label: "iPhone 14", width: 390 },
+    { id: "iphone-pro-max", label: "iPhone Pro Max", width: 430 },
+    { id: "ipad", label: "iPad", width: 768 },
+    { id: "ipad-pro", label: "iPad Pro", width: 1024 },
+    { id: "macbook", label: "MacBook", width: 1440 },
+  ] as const;
+
   const getCommittedBpPx = useCallback(
     (bp: BpKey): number => {
       const fromTheme = themeBreakpoints?.[bp];
@@ -875,6 +888,30 @@ export function Viewport({ children }: { children: React.ReactNode }) {
                   </div>
                 );
               })}
+            </>
+          )}
+          {enabled && !device && showDeviceGuides && (
+            <>
+              {DEVICE_GUIDES.map(g => (
+                <div
+                  key={g.id}
+                  role="presentation"
+                  aria-hidden="true"
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content={`${g.label} · ${g.width}px (reference guide)`}
+                  data-tooltip-place="right"
+                  className="pointer-events-auto absolute top-0 bottom-0 z-20 w-3 -translate-x-1/2 select-none"
+                  style={{ left: `${g.width}px` }}
+                >
+                  <div
+                    className="pointer-events-none absolute inset-y-0 left-1/2"
+                    style={{ borderLeft: "1px dotted rgba(120,120,120,0.35)" }}
+                  />
+                  <span className="bg-base-200 text-base-content/60 pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 rounded px-1 font-mono text-[10px] leading-none whitespace-nowrap">
+                    {g.label} · {g.width}
+                  </span>
+                </div>
+              ))}
             </>
           )}
           <div

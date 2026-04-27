@@ -10,6 +10,7 @@ import {
 import {
   TbArrowsHorizontal,
   TbBoxModel2,
+  TbDeviceMobile,
   TbDownload,
   TbEye,
   TbEyeOff,
@@ -26,7 +27,7 @@ import {
 import { useAtomState } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
 import { AssistantOpenAtom, ShowGridLinesAtom, SidebarLayersPanelAtom } from "../../utils/atoms";
-import { ShowBreakpointMarkersAtom } from "./atoms";
+import { ShowBreakpointMarkersAtom, ShowDeviceGuidesAtom } from "./atoms";
 import { phStorage } from "../../utils/phStorage";
 import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
 import { useSDK } from "../../core/context";
@@ -73,6 +74,7 @@ export const EditorNavigation = ({
   }));
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
   const [showBreakpointMarkers, setShowBreakpointMarkers] = useAtomState(ShowBreakpointMarkersAtom);
+  const [showDeviceGuides, setShowDeviceGuides] = useAtomState(ShowDeviceGuidesAtom);
   const [sidebarLayersOpen, setSidebarLayersOpen] = useAtomState(SidebarLayersPanelAtom);
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const { config } = useSDK();
@@ -267,6 +269,22 @@ export const EditorNavigation = ({
                             const next = !prev;
                             try {
                               phStorage.set("show-breakpoint-markers", String(next));
+                            } catch {}
+                            return next;
+                          });
+                        }}
+                      />
+
+                      <EditorMenuNavRow
+                        icon={<TbDeviceMobile />}
+                        label={
+                          <div className="text-sm">{`${showDeviceGuides ? "Hide" : "Show"} Device Guides`}</div>
+                        }
+                        onClick={() => {
+                          setShowDeviceGuides(prev => {
+                            const next = !prev;
+                            try {
+                              phStorage.set("show-device-guides", String(next));
                             } catch {}
                             return next;
                           });

@@ -84,6 +84,20 @@ export const ShowBreakpointMarkersAtom = atom(
   })()
 );
 
+/** Show non-draggable device reference guides (iPhone, iPad, etc) on the canvas. Persisted via phStorage. */
+export const ShowDeviceGuidesAtom = atom(
+  "showDeviceGuides",
+  (() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const saved = phStorage.get("show-device-guides");
+      if (saved === "true") return true;
+      if (saved === "false") return false;
+    } catch {}
+    return false;
+  })()
+);
+
 /**
  * Transient drag-preview value per breakpoint (px). Empty when no drag in progress.
  * Markers read from this for live cursor-tracking; class behavior reads from
