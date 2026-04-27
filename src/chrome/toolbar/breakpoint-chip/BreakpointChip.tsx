@@ -39,6 +39,14 @@ interface Props {
   propItemKey?: string | null;
   /** Optional label string used in tooltip — falls back to propKey. */
   label?: string;
+  /**
+   * When true, render a faint "ghost" placeholder in the silent-when-clean state
+   * (auto density + no overrides). Fades in on hover of any ancestor with
+   * `group/bp-row`. Use for section-header chips where layout shift is
+   * acceptable; leave false for per-input chips where a hidden chip must
+   * collapse to zero width.
+   */
+  ghost?: boolean;
 }
 
 type BpValue = { bp: ChipBp; value: any };
@@ -82,6 +90,7 @@ export function BreakpointChip({
   index = null,
   propItemKey = null,
   label,
+  ghost = false,
 }: Props) {
   const { id: nodeId, nodeProps } = useNode((n: any) => ({
     id: n.id,
@@ -110,8 +119,12 @@ export function BreakpointChip({
   const highestOverrideBp = highestNonBase(explicit);
 
   // `auto` (default): silent until we have at least one explicit override.
-  // Base-only values (no breakpoint cascade) render nothing.
-  if (density === "auto" && overrideCount === 0) return null;
+  // When the caller opts in via `ghost`, render a faint placeholder that
+  // fades in on hover of any ancestor with `group/bp-row` (discoverability
+  // affordance). Otherwise return null so per-input rows don't reserve
+  // space for invisible chips.
+  const isGhost = density === "auto" && overrideCount === 0;
+  if (isGhost && !ghost) return null;
 
   // `always`: render even when clean — faint hollow ring at base.
   // Otherwise (auto + at least one override) render the active chip state.
@@ -137,6 +150,7 @@ export function BreakpointChip({
   })();
 
   const tooltip = (() => {
+    if (isGhost) return "Click to add a responsive override";
     if (!hasAnyValue) return `${label || propKey}: no value`;
     const parts = explicit.map(e => `${CHIP_BP_LABEL[e.bp]}: ${String(e.value)}`);
     return parts.join(" · ");
@@ -188,12 +202,21 @@ export function BreakpointChip({
         data-ph-prop-key={propKey}
         aria-label={`Breakpoint overrides for ${label || propKey}`}
         aria-expanded={!!isOpen}
-        className={`relative inline-flex h-3.5 min-w-[14px] cursor-pointer items-center justify-center gap-0.5 rounded-[3px] px-[3px] transition-colors ${
+        className={`relative inline-flex h-3.5 min-w-[14px] cursor-pointer items-center justify-center gap-0.5 rounded-[3px] px-[3px] transition-[colors,opacity] duration-150 ${
           isOpen ? "bg-base-200" : "hover:bg-base-200"
+        } ${
+          isGhost
+            ? "opacity-0 group-hover/bp-row:opacity-40 hover:!opacity-100"
+            : ""
         }`}
       >
-        <span className={`inline-block size-[6px] shrink-0 rounded-full ${dotClass}`} aria-hidden />
-        {(showHollow || showEmptyHollow) ? null : (
+        <span
+          className={`inline-block size-[6px] shrink-0 rounded-full ${
+            isGhost ? "border border-base-content/50 bg-transparent" : dotClass
+          }`}
+          aria-hidden
+        />
+        {(showHollow || showEmptyHollow || isGhost) ? null : (
           <span
             className="text-base-content font-mono text-[9px] leading-none"
             aria-hidden

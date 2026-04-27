@@ -32,6 +32,7 @@ import { EditModifiersAtom } from "../toolbar/Label";
 import { DeviceOffline } from "../toolbar/DeviceOffline";
 import { ComponentCanvasViewport } from "./ComponentCanvasViewport";
 import { CanvasScopeBand } from "./CanvasScopeBand";
+import { ViewportScopeCoachmark } from "./ViewportScopeCoachmark";
 import { DeviceScrollbar } from "./DeviceScrollbar";
 import { DeviceSelector } from "./DeviceSelector";
 import { CanvasZoom } from "./CanvasZoom";
@@ -717,6 +718,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           onComplete={handleLoadComplete}
         />
         {enabled && <CanvasScopeBand />}
+        {enabled && <ViewportScopeCoachmark />}
         {/* Preview edit button */}
         {!enabled && !screenshot && (
           <FloatingWidget

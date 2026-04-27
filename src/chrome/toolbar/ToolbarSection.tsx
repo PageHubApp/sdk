@@ -73,8 +73,8 @@ export const ToolbarSection = ({
   // Non-collapsible sections still use the same header/body chrome as collapsible ones;
   // only the chevron/toggle behavior differs (otherwise body loses p-3 and looks flush).
   const titleClasses = nested
-    ? `flex w-full items-center justify-between gap-1 ${collapsible ? `${cursorClass} -mx-3 px-3 py-1.5` : "-mx-3 px-3 py-1.5"} text-[11px] font-semibold text-neutral-content transition-colors ${disabled ? "" : "hover:text-base-content"} ${className}`
-    : `group flex w-full items-center justify-between gap-2 border-b ${isOpen ? "border-transparent" : "border-base-300/60"} bg-base-100 px-3 py-3 ${collapsible ? cursorClass : "cursor-default"} text-xs font-semibold text-base-content transition-colors ${className}`;
+    ? `group/bp-row flex w-full items-center justify-between gap-1 ${collapsible ? `${cursorClass} -mx-3 px-3 py-1.5` : "-mx-3 px-3 py-1.5"} text-[11px] font-semibold text-neutral-content transition-colors ${disabled ? "" : "hover:text-base-content"} ${className}`
+    : `group group/bp-row flex w-full items-center justify-between gap-2 border-b ${isOpen ? "border-transparent" : "border-base-300/60"} bg-base-100 px-3 py-3 ${collapsible ? cursorClass : "cursor-default"} text-xs font-semibold text-base-content transition-colors ${className}`;
 
   // When scrollable, we remove padding from body and add it inside the scrollbar wrapper
   const bodyClasses = nested
@@ -138,7 +138,7 @@ export const ToolbarSection = ({
                   className="flex max-w-[min(100%,20rem)] min-w-0 shrink-0 flex-nowrap items-center justify-end gap-1"
                   onClick={e => e.stopPropagation()}
                 >
-                  {propKey && <BreakpointChip propKey={propKey} label={title} />}
+                  {propKey && <BreakpointChip propKey={propKey} label={title} ghost />}
                   {header}
                 </div>
               )}
