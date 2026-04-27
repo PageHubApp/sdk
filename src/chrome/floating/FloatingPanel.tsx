@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge";
 import { useDraggableWindow } from "../hooks/useDraggableWindow";
 import { useResizable } from "../hooks/useResizable";
 import { useFocusTrap } from "../../utils/hooks/useAccessibility";
+import { AutoHideScrollbar } from "../primitives/layout/AutoHideScrollbar";
 
 type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
@@ -41,6 +42,20 @@ interface FloatingPanelProps {
   closeButtonSide?: "left" | "right";
   /** z-index for the panel (default 999) */
   zIndex?: number;
+  /**
+   * Wrap children in an `AutoHideScrollbar` + padded body div automatically.
+   * Default `true` — matches what 7+ popover panels were hand-rolling. Set
+   * `false` for panels whose content manages its own scroll (e.g. icon
+   * pickers with their own grid scroll, layered tabbed surfaces).
+   */
+  scrollable?: boolean;
+  /**
+   * Inner body wrapper className when `scrollable` is true. Default matches
+   * the popover-panel convention. Pass a custom string to override; pass
+   * `null` to skip the inner wrapper entirely (rare — when scrollable
+   * is true but you want children flush against AutoHideScrollbar).
+   */
+  bodyClassName?: string | null;
   children: React.ReactNode;
 }
 
@@ -65,6 +80,8 @@ export function FloatingPanel({
   closeButtonSide = "right",
   zIndex = 999,
   persistSize = true,
+  scrollable = false,
+  bodyClassName = "text-base-content flex flex-col gap-2 p-3 text-xs",
   children,
 }: FloatingPanelProps) {
   const [viewport, setViewport] = React.useState(() => ({
@@ -244,7 +261,13 @@ export function FloatingPanel({
             )}
           </div>
 
-          {children}
+          {scrollable ? (
+            <AutoHideScrollbar className="flex-1">
+              {bodyClassName == null ? children : <div className={bodyClassName}>{children}</div>}
+            </AutoHideScrollbar>
+          ) : (
+            children
+          )}
         </div>
       </div>
     </>,

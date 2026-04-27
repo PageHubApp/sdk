@@ -44,12 +44,11 @@ export default function BundleRowPanel({
       initialPosition={initialPosition}
       persistSize={false}
       zIndex={1100}
+      scrollable
     >
-      <div className="text-base-content flex flex-1 flex-col gap-2 overflow-y-auto p-3 text-xs">
-        {properties.map(child => (
-          <PropertyRenderer key={child.id} def={child} />
-        ))}
-      </div>
+      {properties.map(child => (
+        <PropertyRenderer key={child.id} def={child} />
+      ))}
     </FloatingPanel>
   );
 }
