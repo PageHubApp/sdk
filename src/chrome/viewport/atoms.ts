@@ -18,14 +18,16 @@ export const MouseInEditor = atom("mousein", false);
 export const UnsavedChangesAtom = atom<any>("unsavedchanges", null);
 
 /**
- * Default canvas view: `md` on desktop (so class writes target the `md:` layer and
- * leave the base layer clean for mobile), `mobile` on a touch/narrow device (writes
- * land on base). Editor-only state, so client-side window check is safe — no SSR
- * hydration concern.
+ * Default canvas view: `desktop` (fluid full-width) on a wide screen, `mobile`
+ * on a touch/narrow screen. Both routes cause class writes to target the BASE
+ * (mobile-first) layer — keeps the cascade clean by default and matches the
+ * new "viewport = edit scope" model. Users explicitly switch to sm/md/lg/xl/2xl
+ * when they want to override at a breakpoint. Editor-only state — client-side
+ * window check is safe (no SSR hydration concern).
  */
 const defaultCanvasView = (): ViewMode => {
-  if (typeof window === "undefined") return "md";
-  return window.innerWidth < 768 ? "mobile" : "md";
+  if (typeof window === "undefined") return "desktop";
+  return window.innerWidth < 768 ? "mobile" : "desktop";
 };
 
 export const ViewAtom = atom<ViewMode>("view", defaultCanvasView());

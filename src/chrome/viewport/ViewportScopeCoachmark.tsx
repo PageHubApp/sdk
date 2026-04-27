@@ -21,8 +21,8 @@ const STORAGE_KEY = "coachmark-viewport-scope-shown";
 const BASE_VIEWS = new Set(["mobile", "desktop", "tablet"]);
 
 function chipPrefix(view: string): string {
-  // ViewAtom "desktop" maps to the md class layer per Label.tsx legacy mapping;
-  // but desktop is a quiet state (no band, no coachmark) so we don't hit it here.
+  // ViewAtom "desktop" / "mobile" / "tablet" are quiet base states — coachmark
+  // gates them out before this runs, so we only see sm/md/lg/xl/2xl here.
   if (view === "2xl") return "2xl:";
   return `${view}:`;
 }
