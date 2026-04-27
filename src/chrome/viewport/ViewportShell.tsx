@@ -717,8 +717,12 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           overlay
           onComplete={handleLoadComplete}
         />
-        {enabled && <CanvasScopeBand />}
-        {enabled && <ViewportScopeCoachmark />}
+        {/* Scope band + first-run coachmark are page-editor concerns.
+            Component-editor mode (`viewMode === "canvas"`) edits a single
+            isolated component and has its own mental model — suppress both
+            so we don't shout "EDITING MD BREAKPOINT" over a component card. */}
+        {enabled && viewMode !== "canvas" && <CanvasScopeBand />}
+        {enabled && viewMode !== "canvas" && <ViewportScopeCoachmark />}
         {/* Preview edit button */}
         {!enabled && !screenshot && (
           <FloatingWidget
@@ -978,8 +982,12 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           />
         )}
 
-        {/* Phase 3: side-by-side read-only mirror (when enabled) */}
-        {enabled && sideBySide.enabled && !deviceFrame && (
+        {/* Phase 3: side-by-side read-only mirror.
+            Suppress in component-isolation mode (`viewMode === "canvas"`):
+            the primary canvas isolates a single component but the mirror has
+            no isolation logic — it would render the full page tree, making
+            the page editor appear to "leak" behind the component editor. */}
+        {enabled && sideBySide.enabled && !deviceFrame && viewMode !== "canvas" && (
           <SideBySideFrame
             secondaryView={sideBySide.secondaryView}
             widthPx={resolveSecondaryWidthPx(sideBySide.secondaryView, themeBreakpoints)}
