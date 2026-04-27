@@ -74,11 +74,13 @@ export const ToolbarWrapper = ({
   const SEARCH_POPUP_HEIGHT = 40;
   const SEARCH_POPUP_PAD = 8;
 
+  // Closing the popup keeps the active query so search results persist in the
+  // sidebar. To clear, the user reopens cmd+f (input shows the existing query)
+  // and either submits with an empty input or hits the X button in the popup.
   const closeSearch = useCallback(() => {
     setSearchOpen(false);
-    setSearchQuery("");
     setSearchPos(null);
-  }, [setSearchOpen, setSearchQuery]);
+  }, [setSearchOpen]);
 
   const openSearchAtMouse = useCallback(() => {
     const { x: mx, y: my } = mousePosRef.current;
@@ -320,7 +322,7 @@ export const ToolbarWrapper = ({
         id="toolbarFooter"
         className={
           foot
-            ? "border-base-300 bg-sidebar box-border flex w-full max-w-none shrink-0 flex-row flex-nowrap items-center justify-between border-t px-2.5 py-1 text-base"
+            ? "border-base-300 box-border flex w-full max-w-none shrink-0 flex-row flex-nowrap items-center justify-between border-t px-2.5 py-1 text-base"
             : "box-border min-h-0 w-full max-w-none shrink-0 border-0 p-0"
         }
       >

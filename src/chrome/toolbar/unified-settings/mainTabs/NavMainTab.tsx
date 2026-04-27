@@ -2,7 +2,7 @@ import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { IconInput } from "../../inputs/media/IconInput";
 import ActionInput from "../../inputs/action/ActionInput";
-import { ListEditor } from "../../inputs/preset/ListItemPopover";
+import { ListEditor } from "../../inputs/preset/ListEditor";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { atom, useAtomState, useAtomInstance } from "@zedux/react";
@@ -70,11 +70,7 @@ export const NavMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Nav links and their URLs. Switch views to edit mobile."
-      >
+      <ToolbarSection collapsible={false}>
         <div className="bg-neutral flex gap-1 rounded-md p-1">
           {NAV_VIEW_STATES.map(({ value, label, icon: Icon }) => (
             <button

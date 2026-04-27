@@ -7,8 +7,8 @@ import type {
   Operator,
 } from "./types";
 
-/** Mobile breakpoint in px — matches Tailwind's `md` (768px) */
-const MOBILE_BREAKPOINT = 768;
+/** Default mobile breakpoint (Tailwind `md`) — overridden per-site via `ctx.mobileBreakpoint`. */
+const DEFAULT_MOBILE_BREAKPOINT = 768;
 
 /** Walk a dot-separated path into a nested object, supporting array indices. */
 function walkPath(obj: any, parts: string[]): any {
@@ -100,7 +100,8 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
 
     case "device": {
       if (ctx.viewportWidth == null) return null;
-      const isMobile = ctx.viewportWidth < MOBILE_BREAKPOINT;
+      const threshold = ctx.mobileBreakpoint ?? DEFAULT_MOBILE_BREAKPOINT;
+      const isMobile = ctx.viewportWidth < threshold;
       const expected = cond.value === "mobile";
       return cond.operator === "equals" ? isMobile === expected : isMobile !== expected;
     }

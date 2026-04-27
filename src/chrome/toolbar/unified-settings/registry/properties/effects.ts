@@ -5,7 +5,7 @@
  * Advanced: transforms, filters (preview tile), backdrop filters (preview tile), animate
  */
 import React from "react";
-import { TbBoxPadding, TbSquare } from "react-icons/tb";
+import { TbBoxPadding, TbSquare, TbTransitionRight } from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
 
@@ -93,18 +93,81 @@ function advEffect(
   };
 }
 
+/** Transform property — lives in the dedicated Transforms section. */
+function transformProp(
+  id: string,
+  label: string,
+  keywords: string[],
+  propTag: string,
+  sortOrder: number
+): PropertyDef {
+  return {
+    id,
+    label,
+    section: "transforms",
+    keywords,
+    input: {
+      type: "universal",
+      propTag,
+      allowedTypes: EFFECTS_TYPES,
+      showVarSelector: true,
+    },
+    sortOrder,
+    inline: true,
+  };
+}
+
 export const effectsProperties: PropertyDef[] = [
-  // ─── Main: Transition ────────────────────────────────────────────
-  mainEffect(
-    "transitionProperty",
-    "Transition",
-    ["transition", "property", "animate"],
-    "transition",
-    0
-  ),
-  mainEffect("duration", "Duration", ["duration", "time", "speed", "ms"], "duration", 1),
-  mainEffect("ease", "Easing", ["ease", "easing", "curve", "timing", "bezier"], "ease", 2),
-  mainEffect("delay", "Delay", ["delay", "wait", "pause"], "delay", 3),
+  // ─── Main: Transition (bundle: property + duration + ease + delay) ──
+  {
+    id: "transition",
+    label: "Transition",
+    section: "effects",
+    keywords: [
+      "transition",
+      "property",
+      "animate",
+      "duration",
+      "time",
+      "speed",
+      "ease",
+      "easing",
+      "curve",
+      "timing",
+      "bezier",
+      "delay",
+      "wait",
+    ],
+    sortOrder: 0,
+    input: {
+      type: "bundle",
+      icon: React.createElement(TbTransitionRight, { className: "size-3.5" }),
+      properties: [
+        mainEffect(
+          "transitionProperty",
+          "Property",
+          ["transition", "property", "animate"],
+          "transition",
+          0
+        ),
+        mainEffect(
+          "duration",
+          "Duration",
+          ["duration", "time", "speed", "ms"],
+          "duration",
+          1
+        ),
+        mainEffect(
+          "ease",
+          "Easing",
+          ["ease", "easing", "curve", "timing", "bezier"],
+          "ease",
+          2
+        ),
+        mainEffect("delay", "Delay", ["delay", "wait", "pause"], "delay", 3),
+      ],
+    },
+  },
 
   // ─── Filter (bundle: chip → popover, blur+brightness+contrast+...) ──
   {
@@ -185,19 +248,11 @@ export const effectsProperties: PropertyDef[] = [
     100
   ),
 
-  // ─── Advanced: Transform ─────────────────────────────────────────
-  advEffect(
-    "twTransform",
-    "GPU Transform",
-    "transform",
-    ["transform", "gpu", "3d", "hardware"],
-    undefined,
-    110
-  ),
+  // ─── Transforms section ──────────────────────────────────────────
   {
     id: "scale",
     label: "Scale",
-    section: "effects",
+    section: "transforms",
     keywords: ["scale", "zoom", "resize", "x", "y"],
     input: {
       type: "shorthand",
@@ -222,29 +277,35 @@ export const effectsProperties: PropertyDef[] = [
         },
       ],
     },
-    sortOrder: 111,
+    sortOrder: 0,
   },
-  advEffect("rotate", "Rotate", "transform", ["rotate", "spin", "angle", "degrees"], "rotate", 114),
-  advEffect(
-    "translateX",
-    "Translate X",
-    "transform",
-    ["translate", "move", "x", "horizontal"],
-    "translate-x",
-    115
-  ),
-  advEffect(
-    "translateY",
-    "Translate Y",
-    "transform",
-    ["translate", "move", "y", "vertical"],
-    "translate-y",
-    116
-  ),
+  transformProp("rotate", "Rotate", ["rotate", "spin", "angle", "degrees"], "rotate", 10),
+  {
+    id: "translate",
+    label: "Translate",
+    section: "transforms",
+    keywords: ["translate", "move", "x", "y", "horizontal", "vertical"],
+    input: {
+      type: "shorthand",
+      varSelectorPrefix: "translate",
+      allowedTypes: [...EFFECTS_TYPES],
+      modes: [
+        {
+          id: "axes",
+          icon: React.createElement(TbBoxPadding, { className: "size-3.5" }),
+          ariaLabel: "Translate X & Y",
+          tags: ["translate-x", "translate-y"],
+          labels: ["X", "Y"],
+          tailwindKeys: ["translateX", "translateY"],
+        },
+      ],
+    },
+    sortOrder: 20,
+  },
   {
     id: "skew",
     label: "Skew",
-    section: "effects",
+    section: "transforms",
     keywords: ["skew", "slant", "tilt", "x", "y"],
     input: {
       type: "shorthand",
@@ -261,17 +322,22 @@ export const effectsProperties: PropertyDef[] = [
         },
       ],
     },
-    sortOrder: 117,
+    sortOrder: 30,
   },
-  advEffect("transformOrigin", "Origin", "transform", ["origin", "center", "pivot"], "origin", 119),
-
-  advEffect(
+  transformProp("transformOrigin", "Origin", ["origin", "center", "pivot"], "origin", 40),
+  transformProp(
+    "twTransform",
+    "GPU Transform",
+    ["transform", "gpu", "3d", "hardware"],
+    "transform",
+    100
+  ),
+  transformProp(
     "willChange",
     "Will Change",
-    "transform",
     ["will-change", "performance", "gpu"],
     "will-change",
-    120
+    110
   ),
 
 ];

@@ -5,7 +5,7 @@ import { ToolbarPortalDropdown } from "../inline-tools/ToolbarPortalDropdown";
 import { ViewSelectionAtom, breakpointScopeHasSelection } from "./Label";
 
 const BREAKPOINT_LABELS: Record<string, string> = {
-  mobile: "xs",
+  mobile: "base",
   sm: "sm",
   desktop: "md",
   lg: "lg",

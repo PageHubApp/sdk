@@ -375,7 +375,7 @@ export function ConditionGroupUI({
   };
 
   return (
-    <div className="border-base-300 rounded-lg border p-2">
+    <div>
       {/* AND/OR toggle within group */}
       {group.conditions.length > 1 && (
         <div className="bg-neutral mb-2 flex gap-1 rounded-md p-0.5">

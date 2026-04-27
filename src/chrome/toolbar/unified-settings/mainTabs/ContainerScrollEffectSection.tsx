@@ -2,7 +2,6 @@ import { useEditor, useNode } from "@craftjs/core";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { SECTION_ICONS } from "../helpers";
 
 /**
  * GSAP scroll effects for Container — Interactions tab, after Tailwind effects (registry).

@@ -156,7 +156,7 @@ export const ComponentSettings = () => {
   }, [search, items]);
 
   return (
-    <div className="bg-sidebar flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden">
       <form
         onSubmit={e => {
           const form = e.currentTarget;

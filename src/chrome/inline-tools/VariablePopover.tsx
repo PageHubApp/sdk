@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { TbCheck, TbChevronDown, TbPencil, TbTrash } from "react-icons/tb";
+import { AnchoredPopover } from "../overlays/AnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../primitives/layout/tooltipSurface";
 
 export interface VariablePopoverProps {
@@ -24,26 +25,10 @@ export function VariablePopover({
   onClose,
   anchorRect,
 }: VariablePopoverProps) {
-  const ref = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(displayValue);
   const [currentValue, setCurrentValue] = useState(displayValue);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handleOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (
-        ref.current &&
-        !ref.current.contains(target) &&
-        !target.closest("[data-headlessui-state]")
-      ) {
-        onClose();
-      }
-    };
-    setTimeout(() => document.addEventListener("mousedown", handleOutside), 0);
-    return () => document.removeEventListener("mousedown", handleOutside);
-  }, [onClose]);
 
   useEffect(() => {
     if (editing) {
@@ -62,15 +47,14 @@ export function VariablePopover({
   };
 
   return (
-    <div
-      ref={ref}
-      className="pagehub-sdk-root variable-popover"
-      style={{
-        position: "fixed",
-        left: anchorRect.left,
-        top: anchorRect.bottom + 4,
-        zIndex: 99999,
+    <AnchoredPopover
+      open
+      onOpenChange={openNext => {
+        if (!openNext) onClose();
       }}
+      anchorRect={anchorRect}
+      placement="bottom-start"
+      className="pagehub-sdk-root variable-popover"
     >
       <div className="variable-popover-header">Variable</div>
 
@@ -90,6 +74,7 @@ export function VariablePopover({
 
         <ListboxOptions
           anchor="bottom start"
+          transition
           className="pagehub-sdk-root ph-select-content z-999999!"
           modal={false}
         >
@@ -180,6 +165,6 @@ export function VariablePopover({
           </div>
         </div>
       )}
-    </div>
+    </AnchoredPopover>
   );
 }

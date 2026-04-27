@@ -1,7 +1,15 @@
-import { DENSITY_STEPS } from "@/utils/defaults";
+import { DEFAULT_BREAKPOINTS, DENSITY_STEPS } from "@/utils/defaults";
+import { ROOT_NODE } from "@craftjs/utils";
+import { useEditor } from "@craftjs/core";
+import { useAtomValue } from "@zedux/react";
 import { ToolbarDropdown } from "../../../toolbar/ToolbarDropdown";
 import { ToolbarSection } from "../../../toolbar/ToolbarSection";
 import type { UseDesignSystemReturn } from "../hooks/useDesignSystem";
+import {
+  AppliedBreakpointsAtom,
+  type AppliedBreakpointsShape,
+} from "../../atoms";
+import { rewriteBreakpoints } from "../../../../utils/breakpointRewrite";
 
 interface StylesTabProps {
   ds: UseDesignSystemReturn;
@@ -96,6 +104,114 @@ function ColorButton({
         />
         <span className="flex-1 truncate">{value}</span>
       </button>
+    </div>
+  );
+}
+
+function BreakpointsSection() {
+  const { actions, themeBreakpoints } = useEditor((state, _query) => {
+    const root = state.nodes[ROOT_NODE];
+    return {
+      themeBreakpoints: root?.data?.props?.theme?.breakpoints as
+        | Partial<AppliedBreakpointsShape>
+        | undefined,
+    };
+  });
+  const appliedBreakpoints = useAtomValue(AppliedBreakpointsAtom);
+
+  const order: Array<keyof AppliedBreakpointsShape> = ["sm", "md", "lg", "xl", "2xl"];
+
+  const setBreakpoint = (key: keyof AppliedBreakpointsShape, raw: number) => {
+    const idx = order.indexOf(key);
+    const prev = idx > 0 ? order[idx - 1] : null;
+    const next = idx < order.length - 1 ? order[idx + 1] : null;
+    const prevPx = prev ? (themeBreakpoints?.[prev] ?? DEFAULT_BREAKPOINTS[prev]) : 240;
+    const nextPx = next ? (themeBreakpoints?.[next] ?? DEFAULT_BREAKPOINTS[next]) : 3840;
+    const clamped = Math.max(prevPx + 1, Math.min(nextPx - 1, raw));
+
+    actions.setProp(ROOT_NODE, (props: any) => {
+      if (!props.theme) props.theme = {};
+      if (!props.theme.breakpoints) props.theme.breakpoints = {};
+      props.theme.breakpoints[key] = clamped;
+    });
+
+    // Live-update the in-page compiled CSS so classes activate at the new threshold immediately.
+    const styleEl = document.getElementById("tailwind-compiled") as HTMLStyleElement | null;
+    if (styleEl) {
+      const toBps: AppliedBreakpointsShape = { ...appliedBreakpoints, [key]: clamped };
+      styleEl.textContent = rewriteBreakpoints(
+        styleEl.textContent || "",
+        appliedBreakpoints,
+        toBps
+      );
+    }
+  };
+
+  const resetAll = () => {
+    actions.setProp(ROOT_NODE, (props: any) => {
+      if (props.theme?.breakpoints) delete props.theme.breakpoints;
+    });
+    const styleEl = document.getElementById("tailwind-compiled") as HTMLStyleElement | null;
+    if (styleEl) {
+      styleEl.textContent = rewriteBreakpoints(
+        styleEl.textContent || "",
+        appliedBreakpoints,
+        DEFAULT_BREAKPOINTS
+      );
+    }
+  };
+
+  const hasOverrides = themeBreakpoints && Object.keys(themeBreakpoints).length > 0;
+
+  return (
+    <div className="space-y-2">
+      <p className="text-neutral-content text-[10px] leading-snug">
+        Adjust the pixel widths where <code>sm:</code> / <code>md:</code> / <code>lg:</code> /{" "}
+        <code>xl:</code> / <code>2xl:</code> activate. Affects every responsive class on this site.
+      </p>
+      {order.map(key => {
+        const px = themeBreakpoints?.[key] ?? DEFAULT_BREAKPOINTS[key];
+        const isCustom = themeBreakpoints?.[key] !== undefined;
+        return (
+          <div key={key} className="flex items-center gap-2">
+            <label
+              htmlFor={`ds-bp-${key}`}
+              className="text-base-content w-12 text-xs font-mono uppercase"
+            >
+              {key === "2xl" ? "2XL" : key.toUpperCase()}
+            </label>
+            <input
+              id={`ds-bp-${key}`}
+              type="number"
+              min={241}
+              max={3839}
+              value={px}
+              placeholder={`${DEFAULT_BREAKPOINTS[key]}`}
+              onChange={e => {
+                const n = parseInt(e.target.value, 10);
+                if (!Number.isFinite(n)) return;
+                setBreakpoint(key, n);
+              }}
+              className={`border-base-300 bg-base-100 w-20 rounded border px-2 py-1 text-xs ${
+                isCustom ? "text-primary" : "text-base-content"
+              }`}
+            />
+            <span className="text-neutral-content text-[10px]">px</span>
+            <span className="text-neutral-content text-[10px]">
+              default {DEFAULT_BREAKPOINTS[key]}
+            </span>
+          </div>
+        );
+      })}
+      {hasOverrides && (
+        <button
+          type="button"
+          onClick={resetAll}
+          className="text-neutral-content hover:text-base-content mt-1 cursor-pointer text-[10px] underline transition-colors"
+        >
+          Reset all to defaults
+        </button>
+      )}
     </div>
   );
 }
@@ -542,6 +658,16 @@ export function StylesTab({ ds }: StylesTabProps) {
             { value: "underline-offset-8", label: "8px" },
           ]}
         />
+      </ToolbarSection>
+
+      <ToolbarSection
+        key={`breakpoints-${expandedSections.breakpoints}`}
+        title="Breakpoints (Advanced)"
+        defaultOpen={!!expandedSections.breakpoints}
+        showChevron
+        onClick={() => toggleSection("breakpoints")}
+      >
+        <BreakpointsSection />
       </ToolbarSection>
     </div>
   );

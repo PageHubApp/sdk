@@ -20,6 +20,7 @@ export type HideKey =
   | "opacity"
   | "cursor"
   | "ringOutline"
+  | "alignment"
   // Whole-tab hides
   | "hoverClick"
   | "animations"

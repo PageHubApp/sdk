@@ -9,11 +9,7 @@ export const TableCellMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Cell HTML; use th for header cells."
-      >
+      <ToolbarSection collapsible={false}>
         <ToolbarItem
           propKey="text"
           propType="component"

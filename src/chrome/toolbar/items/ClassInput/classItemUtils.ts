@@ -93,7 +93,7 @@ export const APPLY_SCOPE_DISPLAY: Record<string, string> = {
 
 /** Full-width scope row: selected matches sidebar section headers (border + bg). */
 export const BP_SCOPE_ROW_SELECTED =
-  "border border-sidebar-border bg-sidebar text-sidebar-foreground shadow-sm";
+  "border border-sidebar-border bg-sidebar-accent text-sidebar-foreground shadow-sm";
 export const BP_SCOPE_ROW_IDLE =
   "border border-transparent text-neutral-content hover:border-sidebar-border hover:bg-sidebar-accent/80";
 

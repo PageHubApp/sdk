@@ -14,16 +14,19 @@ function ModifierChip({
   mod,
   active,
   onToggle,
+  onHoverPreview,
 }: {
   mod: ResolvedModifier;
   active: boolean;
   onToggle: () => void;
+  onHoverPreview?: () => void;
 }) {
   const classCount = mod.classes ? mod.classes.split(/\s+/).filter(Boolean).length : 0;
   return (
     <button
       type="button"
       onClick={onToggle}
+      onMouseEnter={onHoverPreview}
       className={twMerge(
         "ph-toolbar-dashed-btn w-fit max-w-full gap-1 py-1 text-xs",
         active && PH_TOOLBAR_DASHED_BTN_ACTIVE
@@ -50,10 +53,12 @@ function ChipGroup({
   mods,
   isActive,
   onToggle,
+  onHoverPreview,
 }: {
   mods: ResolvedModifier[];
   isActive: (mod: ResolvedModifier) => boolean;
   onToggle: (mod: ResolvedModifier) => void;
+  onHoverPreview?: (mod: ResolvedModifier) => void;
 }) {
   return (
     <div className="flex flex-wrap gap-1">
@@ -63,6 +68,7 @@ function ChipGroup({
           mod={mod}
           active={isActive(mod)}
           onToggle={() => onToggle(mod)}
+          onHoverPreview={onHoverPreview ? () => onHoverPreview(mod) : undefined}
         />
       ))}
     </div>
@@ -79,10 +85,12 @@ function CategorySection({
   cat,
   isActive,
   onToggle,
+  onHoverPreview,
 }: {
   cat: CategoryMeta;
   isActive: (mod: ResolvedModifier) => boolean;
   onToggle: (mod: ResolvedModifier) => void;
+  onHoverPreview?: (mod: ResolvedModifier) => void;
 }) {
   const summary = useActiveSummary(cat, isActive);
 
@@ -100,16 +108,31 @@ function CategorySection({
       }
     >
       {cat.renderAs === "patterns" && (
-        <PatternCards mods={cat.mods} isActive={isActive} onToggle={onToggle} />
+        <PatternCards
+          mods={cat.mods}
+          isActive={isActive}
+          onToggle={onToggle}
+          onHoverPreview={onHoverPreview}
+        />
       )}
       {cat.renderAs === "dropdown" && (
         <ExclusiveDropdown mods={cat.mods} isActive={isActive} onToggle={onToggle} />
       )}
       {cat.renderAs === "pills" && (
-        <ExclusivePills mods={cat.mods} isActive={isActive} onToggle={onToggle} />
+        <ExclusivePills
+          mods={cat.mods}
+          isActive={isActive}
+          onToggle={onToggle}
+          onHoverPreview={onHoverPreview}
+        />
       )}
       {cat.renderAs === "chips" && (
-        <ChipGroup mods={cat.mods} isActive={isActive} onToggle={onToggle} />
+        <ChipGroup
+          mods={cat.mods}
+          isActive={isActive}
+          onToggle={onToggle}
+          onHoverPreview={onHoverPreview}
+        />
       )}
     </ToolbarSection>
   );
@@ -205,8 +228,17 @@ function SaveAsModifier({
 }
 
 export function ModifiersInput() {
-  const { categorized, isActive, toggleModifier, saveAsModifier, nodeTypeName, hasModifiers } =
-    useModifiers();
+  const {
+    categorized,
+    isActive,
+    toggleModifier,
+    previewModifier,
+    commitModifier,
+    endPreview,
+    saveAsModifier,
+    nodeTypeName,
+    hasModifiers,
+  } = useModifiers();
 
   return (
     <ToolbarSection
@@ -220,9 +252,15 @@ export function ModifiersInput() {
       defaultOpen={true}
       disabled={!hasModifiers}
     >
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-0.5" onMouseLeave={endPreview}>
         {categorized.map(cat => (
-          <CategorySection key={cat.name} cat={cat} isActive={isActive} onToggle={toggleModifier} />
+          <CategorySection
+            key={cat.name}
+            cat={cat}
+            isActive={isActive}
+            onToggle={cat.renderAs === "dropdown" ? toggleModifier : commitModifier}
+            onHoverPreview={previewModifier}
+          />
         ))}
       </div>
       <SaveAsModifier onSave={saveAsModifier} defaultType={nodeTypeName} />

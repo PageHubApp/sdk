@@ -59,11 +59,7 @@ export const VideoMainTab = () => {
   return renderComponentSlots({
     Content: (
       <>
-        <ToolbarSection
-          title="Content"
-          icon={SECTION_ICONS["Content"]}
-          help="Video provider and ID or URL."
-        >
+        <ToolbarSection collapsible={false}>
           <ToolbarItem
             propKey="provider"
             propType="component"

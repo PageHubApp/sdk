@@ -24,6 +24,7 @@ import { paletteToCSSVar } from "../../../utils/design/palette";
 import { useAtomValue } from "@zedux/react";
 import { hasOverflowAncestor } from "@/utils/hasOverflowAncestor";
 import { DeviceAtom, ViewAtom } from "../../viewport/atoms";
+import { isEditorCanvasBreakpointView } from "../../../utils/tailwind/className";
 import { PortalToolbarBelowNode } from "./PortalToolbarBelowNode";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
 import { TokenPicker } from "../../toolbar/inputs/color/TokenPicker";
@@ -137,7 +138,7 @@ export function InlineEditToolbar({
   }));
   const device = useAtomValue(DeviceAtom);
   const view = useAtomValue(ViewAtom);
-  const isDeviceMode = Boolean(device && view === "mobile");
+  const isDeviceMode = Boolean(device && isEditorCanvasBreakpointView(view));
   const needsPortal = useMemo(
     () => Boolean(dom) && (hasOverflowAncestor(dom) || isDeviceMode),
     [dom, isDeviceMode]

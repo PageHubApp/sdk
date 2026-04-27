@@ -1,11 +1,10 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
 import { SketchPicker } from "@hello-pangea/color-picker";
-import { Popover, PopoverPanel } from "@headlessui/react";
+import { AnchoredPopover } from "@/chrome/overlays/AnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import debounce from "lodash.debounce";
-import { useEffect, useRef, useState } from "react";
-import ReactDOM from "react-dom";
+import { useEffect, useState } from "react";
 import { BsEyedropper } from "react-icons/bs";
 import { TbCheck, TbChevronDown, TbChevronRight, TbDeviceFloppy, TbX } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
@@ -197,18 +196,23 @@ export const ColorPickerDialog = () => {
   };
 
   // Position based on trigger rect from atom
-  const rect = colorPicker.e;
-  const panelStyle = usePanelPosition(rect, 310, 600);
+  const rect: DOMRect | null = colorPicker.e ?? null;
+  const innerMaxHeight =
+    typeof window !== "undefined" ? Math.min(600, window.innerHeight * 0.6) : 600;
 
-  if (!colorPicker.enabled) return null;
-
-  return ReactDOM.createPortal(
-    <ColorPickerBackdrop onClose={close}>
-      <div
-        role="dialog"
-        className="pagehub-sdk-root ph-panel pointer-events-auto w-[310px] overflow-hidden"
-        style={panelStyle}
-      >
+  return (
+    <AnchoredPopover
+      open={Boolean(colorPicker.enabled && rect)}
+      onOpenChange={openNext => {
+        if (!openNext) close();
+      }}
+      anchorRect={rect}
+      placement="bottom-start"
+      mainAxisOffset={6}
+      maxHeightCeiling={innerMaxHeight}
+      className="pagehub-sdk-root ph-panel pointer-events-auto w-[310px] overflow-hidden"
+    >
+      <div role="dialog">
         {/* Header */}
         <div className="border-base-300 bg-accent text-accent-content flex items-center justify-between border-b px-3 py-1.5">
           <div className="flex gap-1.5">
@@ -245,7 +249,7 @@ export const ColorPickerDialog = () => {
 
         <div
           className="scrollbar-light bg-base-100 flex w-[310px] flex-col overflow-y-auto rounded-lg"
-          style={{ maxHeight: panelStyle.maxHeight }}
+          style={{ maxHeight: innerMaxHeight }}
         >
           {/* 1. Design Tokens — always on top when available */}
           {canShowPalette && (
@@ -395,66 +399,8 @@ export const ColorPickerDialog = () => {
           )}
         </div>
       </div>
-    </ColorPickerBackdrop>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    </AnchoredPopover>
   );
 };
 
-// ── Positioning hook ────────────────────────────────────────────────────────
-
-const usePanelPosition = (rect: any, width: number, maxHeight: number) => {
-  if (!rect) return { position: "fixed" as const, top: 100, left: 100, zIndex: 99999, maxHeight };
-
-  const availableBelow = window.innerHeight - rect.bottom - 20;
-  const availableRight = window.innerWidth - rect.left - 20;
-
-  let top = rect.bottom + 6;
-  let left = rect.left;
-
-  // Flip up if not enough space below
-  if (availableBelow < 200) {
-    top = Math.max(20, rect.top - Math.min(maxHeight, rect.top - 20) - 6);
-  }
-
-  // Shift left if overflowing right
-  if (availableRight < width) {
-    left = Math.max(20, window.innerWidth - width - 20);
-  }
-
-  return {
-    position: "fixed" as const,
-    top,
-    left,
-    zIndex: 99999,
-    maxHeight: Math.min(maxHeight, window.innerHeight * 0.6),
-  };
-};
-
-// ── Backdrop handles click-outside and escape ───────────────────────────────
-
-const ColorPickerBackdrop = ({ onClose, children }) => {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleMouseDown = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      // Don't close if clicking inside the dialog or a tooltip
-      if (ref.current?.contains(target)) return;
-      if (target.closest("[data-tooltip-id]") || target.closest('[role="tooltip"]')) return;
-      onClose();
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-
-    document.addEventListener("mousedown", handleMouseDown);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleMouseDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [onClose]);
-
-  return <div ref={ref}>{children}</div>;
-};
+// (positioning + outside-click + escape now handled by <AnchoredPopover>)

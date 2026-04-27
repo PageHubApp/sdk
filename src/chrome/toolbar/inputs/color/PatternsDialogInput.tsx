@@ -7,9 +7,9 @@ import { generatePattern } from "@/utils/lib";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { getPageHubApiBaseUrl } from "@/core/apiConfig";
 import { TbSearch, TbX } from "react-icons/tb";
-import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 const DEMO_COLORS = {
   patternColor1: "rgba(59, 130, 246, 0.8)",
@@ -106,7 +106,8 @@ export const PatternsDialogInput = ({
           <div className="input-wrapper flex w-full items-center">
             <button
               type="button"
-              title={value?.title || "Select pattern"}
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content={value?.title || "Select pattern"}
               id={propKey ? `input-${propKey}` : undefined}
               onClick={() => setIsOpen(prev => !prev)}
               className="input-plain flex min-w-0 flex-1 items-center text-left"

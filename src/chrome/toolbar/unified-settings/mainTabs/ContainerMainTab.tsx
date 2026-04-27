@@ -6,7 +6,7 @@ import { useLayoutPreset } from "../../inputs/layout/hooks/useLayoutPreset";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useGetNode } from "../../dialogs/toolHooks";
-import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { renderComponentSlots } from "../helpers";
 
 import { useNodeTypeHelpers } from "@/chrome/canvas/hooks/useNodeType";
 import { useEditor } from "@craftjs/core";
@@ -77,11 +77,7 @@ export const ContainerMainTab = () => {
     <>
       {renderComponentSlots({
         Content: (
-          <ToolbarSection
-            title="Content"
-            icon={SECTION_ICONS["Content"]}
-            help="Background image and overlay for this container."
-          >
+          <ToolbarSection collapsible={false}>
             <SettingsAiSlot />
             <BackgroundSettingsInput />
           </ToolbarSection>

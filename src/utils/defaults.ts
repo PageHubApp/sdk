@@ -1,3 +1,15 @@
+// Default Tailwind v4 breakpoints (px). These map to the rem values Tailwind
+// emits in compiled CSS: 40rem / 48rem / 64rem / 80rem / 96rem (16px base).
+export const DEFAULT_BREAKPOINTS = {
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+  "2xl": 1536,
+} as const;
+
+export type BreakpointKey = keyof typeof DEFAULT_BREAKPOINTS;
+
 // Default palette colors - single source of truth
 // Uses DaisyUI 5-compatible names: primary/secondary/accent/neutral/base-*/error/info/success/warning
 export const DEFAULT_PALETTE = [

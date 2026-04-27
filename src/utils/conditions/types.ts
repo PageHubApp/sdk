@@ -58,6 +58,11 @@ export interface ConditionContext {
   auth: import("../design/variables").AuthState | null;
   /** Current repeater item (populated inside ItemProvider). Null at top level. */
   item: Record<string, any> | null;
+  /**
+   * Pixel threshold below which `device: mobile` evaluates true. Defaults to 768
+   * (Tailwind `md`) when not set. Per-site override via `theme.breakpoints.md`.
+   */
+  mobileBreakpoint?: number;
 }
 
 /** Branch definition for ConditionalContainer */

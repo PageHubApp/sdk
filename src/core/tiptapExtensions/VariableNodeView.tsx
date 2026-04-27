@@ -3,7 +3,6 @@ import { NodeViewWrapper } from "@tiptap/react";
 import type { NodeViewProps } from "@tiptap/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor as useCraftEditor } from "@craftjs/core";
-import { createPortal } from "react-dom";
 import { OPEN_LINK_PANEL_EVENT } from "@/chrome/inline-tools/openLinkPanelEvent";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { VariablePopover } from "@/chrome/inline-tools/VariablePopover";
@@ -143,21 +142,18 @@ export function VariableNodeView({
       <span ref={spanRef} onDoubleClick={handleDoubleClick}>
         {displayText}
       </span>
-      {showPopover &&
-        anchorRect &&
-        createPortal(
-          <VariablePopover
-            variables={options.getVariables()}
-            currentId={varId}
-            displayValue={displayText}
-            anchorRect={anchorRect}
-            onChangeVariable={handleChangeVariable}
-            onEditValue={varId !== "year" ? handleEditValue : undefined}
-            onRemove={handleRemove}
-            onClose={handleClose}
-          />,
-          document.body
-        )}
+      {showPopover && anchorRect && (
+        <VariablePopover
+          variables={options.getVariables()}
+          currentId={varId}
+          displayValue={displayText}
+          anchorRect={anchorRect}
+          onChangeVariable={handleChangeVariable}
+          onEditValue={varId !== "year" ? handleEditValue : undefined}
+          onRemove={handleRemove}
+          onClose={handleClose}
+        />
+      )}
     </NodeViewWrapper>
   );
 }

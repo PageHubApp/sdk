@@ -6,11 +6,7 @@ import { renderComponentSlots, renderAdvancedComponentSlots, SECTION_ICONS } fro
 export const CookieConsentMainTab = () => {
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Cookie consent banner behavior and positioning."
-      >
+      <ToolbarSection collapsible={false}>
         <ToolbarItem propKey="position" propType="component" type="select" label="Position">
           <option value="bottom">Bottom</option>
           <option value="top">Top</option>

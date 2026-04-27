@@ -2,7 +2,7 @@ import { useNode } from "@craftjs/core";
 import { LayoutPresetInput } from "../../inputs/layout/LayoutPresetInput";
 import { useLayoutPreset } from "../../inputs/layout/hooks/useLayoutPreset";
 import { useSDK } from "../../../../core/context";
-import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { renderComponentSlots } from "../helpers";
 import { ToolbarSection } from "../../ToolbarSection";
 
 /** Renders the host-provided data source section via editorChromeSlots (parity with Container). */
@@ -21,13 +21,7 @@ export const GridMainTab = () => {
     <>
       {renderComponentSlots({
         Content: (
-          <ToolbarSection
-            title="Content"
-            icon={SECTION_ICONS.Content}
-            propKey="display"
-            help="Layout mode, presets, and display (flex, grid, block)."
-            defaultOpen
-          >
+          <ToolbarSection collapsible={false}>
             <LayoutPresetInput lp={layoutPreset} gridOnly sectionWrapper={false} />
           </ToolbarSection>
         ),

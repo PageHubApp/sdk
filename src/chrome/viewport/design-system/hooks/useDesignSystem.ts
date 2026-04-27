@@ -101,6 +101,7 @@ export function useDesignSystem(isOpen: boolean) {
     sizing: false,
     forms: false,
     links: false,
+    breakpoints: false,
   });
 
   // ─── Domain state (grouped) ───

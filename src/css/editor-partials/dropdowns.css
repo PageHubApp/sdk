@@ -7,6 +7,29 @@
 
 @reference "./styles.css";
 
+/* ─── Unified anchored popover fade ──────────────────────────────────────
+   Canonical keyframes for every editor popover. Hooked up by:
+   - <AnchoredPopover>          → [data-ph-popover][data-state="open|closed"]
+   - Headless UI Listbox panels → .ph-select-content[data-open|data-closed]
+   This file is loaded by editor.css and styles/editor.css (the editor uses
+   editor-partials/dropdowns.css; the site-preview SDK bundle uses its own
+   copy in src/css/styles.css that mirrors these keyframes).
+   ─────────────────────────────────────────────────────────────────────── */
+@keyframes ph-popover-fade-in {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+@keyframes ph-popover-fade-out {
+  from { opacity: 1 }
+  to { opacity: 0 }
+}
+[data-ph-popover][data-state="open"] {
+  animation: ph-popover-fade-in 75ms ease-out;
+}
+[data-ph-popover][data-state="closed"] {
+  animation: ph-popover-fade-out 75ms ease-in forwards;
+}
+
 .pagehub-sdk-root.ph-select-content {
   @apply border-base-300 bg-base-100 text-base-content min-w-32 rounded-lg border p-1 shadow-lg;
   z-index: 11000 !important;
@@ -15,19 +38,18 @@
   outline: none !important;
   overflow: visible !important;
   max-height: none !important;
-  animation: ph-select-in 120ms ease-out;
+}
+.pagehub-sdk-root.ph-select-content[data-open] {
+  animation: ph-popover-fade-in 75ms ease-out;
+}
+.pagehub-sdk-root.ph-select-content[data-closed] {
+  animation: ph-popover-fade-out 75ms ease-in forwards;
 }
 .pagehub-sdk-root.ph-select-content .ph-select-scroll-area {
   max-height: 264px;
 }
 .pagehub-sdk-root.ph-select-content * {
   font-size: inherit !important;
-}
-.pagehub-sdk-root.ph-select-content[data-side="bottom"] {
-  transform-origin: top;
-}
-.pagehub-sdk-root.ph-select-content[data-side="top"] {
-  transform-origin: bottom;
 }
 
 /* Item rows: inside Listbox panel (.ph-select-content) or any list shell (.ph-select-item-host). */
@@ -61,16 +83,6 @@
   background: linear-gradient(to top, var(--background) 40%, transparent);
 }
 
-@keyframes ph-select-in {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
 
 /* Assistant quick-action menus: roomier panel, smaller type than toolbar selects. */
 .pagehub-sdk-root.ph-select-content.ph-assistant-command-menu {

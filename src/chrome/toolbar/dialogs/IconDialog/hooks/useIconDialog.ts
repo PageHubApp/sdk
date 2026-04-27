@@ -1,7 +1,5 @@
 import { useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAtomState } from "@zedux/react";
-import { IconPickerDialogAtom } from "../../dialogAtoms";
 import { getMediaContent } from "@/utils/lib";
 import { phStorage } from "../../../../../utils/phStorage";
 import { loadIconSprite } from "../../../../../utils/icons/IconSvgMapContext";
@@ -16,11 +14,11 @@ export interface IconSetMeta {
   count: number;
 }
 
-export const COLUMN_COUNT = 5;
-export const COLUMN_WIDTH = 68;
-export const ROW_HEIGHT = 70;
-export const CONTAINER_WIDTH = 359;
-export const VISIBLE_ROWS = 6;
+export const COLUMN_COUNT = 7;
+export const COLUMN_WIDTH = 44;
+export const ROW_HEIGHT = 44;
+export const CONTAINER_WIDTH = 7 * COLUMN_WIDTH;
+export const VISIBLE_ROWS = 8;
 
 const RECENTS_KEY = "icon-recents";
 const FAVORITES_KEY = "icon-favorites";
@@ -54,21 +52,42 @@ function setIdFromRef(ref: string): string | null {
   return slash > 0 ? ref.slice(0, slash) : null;
 }
 
-export function useIconDialog() {
-  const [dialog, setDialog] = useAtomState(IconPickerDialogAtom);
+export interface UseIconDialogProps {
+  value: string;
+  prefix?: string;
+  isOpen: boolean;
+  onChange: (value: string) => void;
+  onClose: () => void;
+  onUseMedia?: () => void;
+}
+
+export function useIconDialog({
+  value,
+  prefix,
+  isOpen,
+  onChange,
+  onClose,
+  onUseMedia,
+}: UseIconDialogProps) {
   const { query } = useEditor();
 
+  // Synthesize the legacy `dialog` shape so IconsTab/MediaTab keep working.
+  const dialog = useMemo(
+    () => ({ value, prefix, enabled: isOpen, changed: onChange, onUseMedia }),
+    [value, prefix, isOpen, onChange, onUseMedia],
+  );
+
   const getInitialTab = (): "media" | "icons" => {
-    if (dialog.value?.startsWith("ref-image:")) return "media";
+    if (value?.startsWith("ref-image:")) return "media";
     return "icons";
   };
 
   const [activeTab, setActiveTab] = useState<"media" | "icons">(getInitialTab());
-  const [selectedIcon, setSelectedIcon] = useState(dialog.value);
+  const [selectedIcon, setSelectedIcon] = useState(value);
 
   const [set, setSet] = useState<string>(() => {
-    if (dialog.value?.startsWith("ref-icon:")) {
-      const body = dialog.value.replace("ref-icon:", "");
+    if (value?.startsWith("ref-icon:")) {
+      const body = value.replace("ref-icon:", "");
       const slash = body.indexOf("/");
       if (slash > 0) return body.slice(0, slash);
     }
@@ -93,13 +112,13 @@ export function useIconDialog() {
   }, []);
 
   useEffect(() => {
-    if (!dialog.enabled) return;
+    if (!isOpen) return;
     if (setIndex) return;
     loadSetIndex().then(setSetIndex).catch(console.error);
-  }, [dialog.enabled, setIndex]);
+  }, [isOpen, setIndex]);
 
   useEffect(() => {
-    if (!dialog.enabled) return;
+    if (!isOpen) return;
     const cached = setNamesCache.get(set);
     if (cached) {
       setSetNames(cached);
@@ -116,21 +135,21 @@ export function useIconDialog() {
         setSetNames([]);
         setLoadingNames(false);
       });
-  }, [set, dialog.enabled]);
+  }, [set, isOpen]);
 
   // Load recents/favorites from storage on dialog open
   useEffect(() => {
-    if (!dialog.enabled) return;
+    if (!isOpen) return;
     const storedRecents = phStorage.getJSON<string[]>(RECENTS_KEY, []);
     const storedFavorites = phStorage.getJSON<string[]>(FAVORITES_KEY, []);
     if (Array.isArray(storedRecents)) setRecents(storedRecents);
     if (Array.isArray(storedFavorites)) setFavorites(storedFavorites);
-  }, [dialog.enabled]);
+  }, [isOpen]);
 
   // Prefetch the default set + any sets referenced by recents/favorites so
   // cross-set cells render without a sprite fetch flicker.
   useEffect(() => {
-    if (!dialog.enabled) return;
+    if (!isOpen) return;
     const sets = new Set<string>(["tb"]);
     for (const r of recents) {
       const s = setIdFromRef(r);
@@ -144,7 +163,7 @@ export function useIconDialog() {
       loadIconSprite(s);
       loadSetNames(s).catch(() => {});
     }
-  }, [dialog.enabled, recents, favorites]);
+  }, [isOpen, recents, favorites]);
 
   const filteredIcons = useMemo(() => {
     const names = setNames || [];
@@ -161,24 +180,24 @@ export function useIconDialog() {
   const rowCount = Math.ceil(filteredIcons.length / COLUMN_COUNT);
 
   useEffect(() => {
-    if (dialog.enabled) setActiveTab(getInitialTab());
-  }, [dialog.value, dialog.enabled]);
+    if (isOpen) setActiveTab(getInitialTab());
+  }, [value, isOpen]);
 
   useEffect(() => {
-    if (dialog.enabled) {
-      setSelectedIcon(dialog.value);
+    if (isOpen) {
+      setSelectedIcon(value);
     } else {
       setActiveTab("icons");
       setSearch("");
       setShowMediaBrowser(false);
     }
-  }, [dialog.enabled, dialog.value]);
+  }, [isOpen, value]);
 
   useEffect(() => {
     setFocusedIndex(0);
   }, [activeTab, set, search]);
 
-  const closeDialog = () => setDialog({ ...dialog, enabled: false });
+  const closeDialog = onClose;
 
   const recordUse = useCallback((iconRef: string) => {
     setRecents(prev => {
@@ -203,20 +222,19 @@ export function useIconDialog() {
     (iconRef: string) => {
       const fullRef = `ref-icon:${iconRef}`;
       recordUse(iconRef);
-      if (!dialog.changed) return;
-      setDialog({ ...dialog, value: fullRef, enabled: false });
-      dialog.changed(fullRef);
+      onChange(fullRef);
+      onClose();
     },
-    [dialog, recordUse, setDialog],
+    [recordUse, onChange, onClose],
   );
 
   const handleIconClick = useCallback(
     (iconRef: string) => {
       const fullRef = `ref-icon:${iconRef}`;
       setSelectedIcon(fullRef);
-      dialog.changed?.(fullRef);
+      onChange(fullRef);
     },
-    [dialog],
+    [onChange],
   );
 
   const handleIconDoubleClick = useCallback(
@@ -228,10 +246,9 @@ export function useIconDialog() {
 
   const handleMediaSelect = (mediaId: string) => {
     if (!mediaId) return;
-    if (!dialog.changed) return;
     const fullRef = `ref-image:${mediaId}`;
-    setDialog({ ...dialog, value: fullRef, enabled: false });
-    dialog.changed(fullRef);
+    onChange(fullRef);
+    onClose();
     setShowMediaBrowser(false);
   };
 
@@ -248,7 +265,7 @@ export function useIconDialog() {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!dialog.enabled || activeTab !== "icons") return;
+      if (!isOpen || activeTab !== "icons") return;
       const icons = filteredIcons;
       if (icons.length === 0) return;
 
@@ -306,14 +323,14 @@ export function useIconDialog() {
           break;
       }
     },
-    [dialog.enabled, activeTab, filteredIcons, focusedIndex, set, emitChange],
+    [isOpen, activeTab, filteredIcons, focusedIndex, set, emitChange, closeDialog],
   );
 
   useEffect(() => {
-    if (!dialog.enabled) return;
+    if (!isOpen) return;
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [dialog.enabled, handleKeyDown]);
+  }, [isOpen, handleKeyDown]);
 
   return {
     dialog,

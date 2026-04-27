@@ -67,7 +67,6 @@ const THEME_CSS = `
   --color-muted-foreground: var(--neutral-content);
   --color-destructive: var(--error);
   --color-destructive-foreground: var(--error-content);
-  --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-border: var(--sidebar-border);
 

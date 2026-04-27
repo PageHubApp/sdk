@@ -8,6 +8,7 @@ import {
   usePanelUrl,
 } from "../../utils/usePanelUrl";
 import {
+  TbArrowsHorizontal,
   TbBoxModel2,
   TbDownload,
   TbEye,
@@ -25,6 +26,7 @@ import {
 import { useAtomState } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
 import { AssistantOpenAtom, ShowGridLinesAtom, SidebarLayersPanelAtom } from "../../utils/atoms";
+import { ShowBreakpointMarkersAtom } from "./atoms";
 import { phStorage } from "../../utils/phStorage";
 import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
 import { useSDK } from "../../core/context";
@@ -70,6 +72,7 @@ export const EditorNavigation = ({
     selectedId: query.getEvent("selected").first() ?? null,
   }));
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
+  const [showBreakpointMarkers, setShowBreakpointMarkers] = useAtomState(ShowBreakpointMarkersAtom);
   const [sidebarLayersOpen, setSidebarLayersOpen] = useAtomState(SidebarLayersPanelAtom);
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const { config } = useSDK();
@@ -251,6 +254,22 @@ export const EditorNavigation = ({
                             "data-show-gridlines",
                             (!showGridLines).toString()
                           );
+                        }}
+                      />
+
+                      <EditorMenuNavRow
+                        icon={<TbArrowsHorizontal />}
+                        label={
+                          <div className="text-sm">{`${showBreakpointMarkers ? "Hide" : "Show"} Breakpoint Lines`}</div>
+                        }
+                        onClick={() => {
+                          setShowBreakpointMarkers(prev => {
+                            const next = !prev;
+                            try {
+                              phStorage.set("show-breakpoint-markers", String(next));
+                            } catch {}
+                            return next;
+                          });
                         }}
                       />
 

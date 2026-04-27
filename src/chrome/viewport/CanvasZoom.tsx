@@ -26,7 +26,15 @@ const zoomPresets = [
 
 type FitMode =
   | { kind: "height"; target: number; chromeOffset?: number; max?: number }
-  | { kind: "width"; target: number; chromeOffset?: number; max?: number };
+  | { kind: "width"; target: number; chromeOffset?: number; max?: number }
+  | {
+      kind: "both";
+      targetW: number;
+      targetH: number;
+      chromeOffsetW?: number;
+      chromeOffsetH?: number;
+      max?: number;
+    };
 
 interface CanvasZoomProps {
   // Zedux atom whose value is a number. Accepts any number atom template
@@ -76,11 +84,18 @@ export function CanvasZoom({
 
     const calculateFitZoom = () => {
       const max = fitMode.max ?? 2;
-      const available =
-        fitMode.kind === "height"
-          ? window.innerHeight - (fitMode.chromeOffset ?? 350)
-          : window.innerWidth - (fitMode.chromeOffset ?? 80);
-      const calculated = available / fitMode.target;
+      let calculated: number;
+      if (fitMode.kind === "both") {
+        const availW = window.innerWidth - (fitMode.chromeOffsetW ?? 80);
+        const availH = window.innerHeight - (fitMode.chromeOffsetH ?? 350);
+        calculated = Math.min(availW / fitMode.targetW, availH / fitMode.targetH);
+      } else if (fitMode.kind === "height") {
+        const available = window.innerHeight - (fitMode.chromeOffset ?? 350);
+        calculated = available / fitMode.target;
+      } else {
+        const available = window.innerWidth - (fitMode.chromeOffset ?? 80);
+        calculated = available / fitMode.target;
+      }
       const next = Math.max(0.25, Math.min(max, calculated));
       setZoom(next);
       persistZoom(next, true);
@@ -89,7 +104,7 @@ export function CanvasZoom({
     calculateFitZoom();
     window.addEventListener("resize", calculateFitZoom);
     return () => window.removeEventListener("resize", calculateFitZoom);
-  }, [fitToWindow, setZoom, fitMode.kind, fitMode.target, fitMode.chromeOffset, fitMode.max]);
+  }, [fitToWindow, setZoom, fitMode]);
 
   const handleZoomChange = (newZoom: number, isFitToWindow = false) => {
     setZoom(newZoom);

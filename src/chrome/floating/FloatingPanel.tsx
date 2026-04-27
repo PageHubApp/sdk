@@ -106,6 +106,38 @@ export function FloatingPanel({
     bounds: { top: 0, right: 0, bottom: 0, left: 0 },
   });
 
+  // Outside-click dismiss. Skip clicks inside the panel itself, inside any
+  // Headless UI portal (Listbox/Combobox/Dialog menus render outside the
+  // panel via portal), inside our own listbox content (`.ph-select-content`),
+  // or inside another floating panel layered above us. Defer the listener
+  // by one frame so the same pointerdown that opened the panel can't close it.
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = false;
+    const arm = requestAnimationFrame(() => {
+      active = true;
+    });
+    const handlePointerDown = (e: PointerEvent) => {
+      if (!active) return;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const panel = (windowRef as any).current as HTMLElement | null;
+      if (panel && panel.contains(target)) return;
+      if (
+        target.closest(
+          '[data-headlessui-portal], .ph-select-content, [role="dialog"], [role="listbox"], [role="menu"], [data-rtt-tooltip], [data-floating-allow]'
+        )
+      )
+        return;
+      onClose();
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      cancelAnimationFrame(arm);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [isOpen, onClose, windowRef]);
+
   const { width, height, handleProps } = useResizable({
     storageKey,
     defaultWidth,

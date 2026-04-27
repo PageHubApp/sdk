@@ -54,7 +54,7 @@ export const advancedProperties: PropertyDef[] = [
         },
       ],
     },
-    pinned: true,
+    pinned: false,
     sortOrder: 80,
   },
   {
@@ -91,7 +91,7 @@ export const advancedProperties: PropertyDef[] = [
         },
       ],
     },
-    pinned: true,
+    pinned: false,
     sortOrder: 85,
   },
   {

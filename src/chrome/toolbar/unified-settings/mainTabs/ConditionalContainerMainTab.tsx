@@ -9,7 +9,7 @@ import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { ToolbarSection } from "../../ToolbarSection";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
-import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { renderComponentSlots } from "../helpers";
 import type {
   Condition,
   ConditionBranch,

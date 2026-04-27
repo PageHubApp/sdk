@@ -4,7 +4,7 @@ import { IpsumGenerator } from "../../inputs/media/IpsumGenerator";
 import { SelectOptionsItem } from "../../items/SelectOptionsItem";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { renderComponentSlots } from "../helpers";
 
 // Inlined to avoid circular dep (FormElement.tsx → UnifiedSettings → registry → this file)
 const inputTypes = [

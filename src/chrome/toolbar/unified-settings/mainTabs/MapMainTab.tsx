@@ -2,11 +2,11 @@ import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { ListEditor } from "../../inputs/preset/ListItemPopover";
+import { ListEditor } from "../../inputs/preset/ListEditor";
 import { atom, useAtomState, useAtomInstance } from "@zedux/react";
 import { BatchOperationAtom } from "@/utils/atoms";
 import { TbEdit } from "react-icons/tb";
-import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { renderComponentSlots } from "../helpers";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedMapPointAtom = atom<any>("selectedmappoint_unified", null);
@@ -49,11 +49,7 @@ export const MapMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Map pins — add, remove, and position them."
-      >
+      <ToolbarSection collapsible={false}>
         <ListEditor
           items={childPoints || []}
           activeIndex={activeIndex}

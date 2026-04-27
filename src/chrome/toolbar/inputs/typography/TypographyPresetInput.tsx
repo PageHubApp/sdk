@@ -191,7 +191,7 @@ export function TypographyPresetInput({ def }: Props = {}) {
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
             data-tooltip-content="Save current typography as a preset"
             aria-label="Save as preset"
-            className="tool-button shrink-0"
+            className="border-base-300 bg-base-200 text-base-content hover:border-primary hover:bg-base-300/25 inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border transition-colors active:scale-95 [&_svg]:size-4"
           >
             <TbDeviceFloppy />
           </button>

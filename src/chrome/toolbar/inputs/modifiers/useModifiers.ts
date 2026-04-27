@@ -1,6 +1,6 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import type { ComponentModifier } from "@/define";
 
 export interface ResolvedModifier extends ComponentModifier {
@@ -145,62 +145,116 @@ export function useModifiers() {
     return currentClassName.split(/\s+/).includes(mod.name);
   };
 
-  const toggleModifier = (mod: ResolvedModifier) => {
-    const active = isActive(mod);
+  /** Pure toggle: takes a baseline (className + activeModifiers) and returns the post-toggle state. */
+  const computeToggle = (
+    mod: ResolvedModifier,
+    baseClassName: string,
+    baseActiveMods: string[]
+  ): { className: string; activeModifiers: string[] } => {
+    let classes = baseClassName.split(/\s+/).filter(Boolean);
+    let activeMods = [...baseActiveMods];
 
+    const modClasses = resolveClasses(mod);
+    const wasActive = baseActiveMods.includes(mod.name)
+      || (mod.classes
+        ? modClasses.every(c => classes.includes(c))
+        : classes.includes(mod.name));
+
+    // If exclusive and turning ON, clear sibling category mods first
+    if (mod.exclusive && mod.category && !wasActive) {
+      const siblings = allModifiers.filter(
+        m => m.category === mod.category && m.name !== mod.name
+      );
+      for (const sib of siblings) {
+        const sibClasses = resolveClasses(sib);
+        classes = classes.filter((c: string) => !sibClasses.includes(c));
+        activeMods = activeMods.filter((n: string) => n !== sib.name);
+      }
+    }
+
+    if (wasActive) {
+      classes = classes.filter((c: string) => !modClasses.includes(c));
+      activeMods = activeMods.filter((n: string) => n !== mod.name);
+    } else {
+      if (mod.removes?.length) {
+        classes = classes.filter((c: string) => {
+          for (const pattern of mod.removes!) {
+            if (pattern.endsWith("*")) {
+              if (c.startsWith(pattern.slice(0, -1))) return false;
+            } else if (c === pattern) return false;
+          }
+          return true;
+        });
+      }
+      if (mod.requires) {
+        for (const req of mod.requires.split(" ")) {
+          if (!classes.includes(req)) classes.push(req);
+        }
+      }
+      for (const c of modClasses) {
+        if (!classes.includes(c)) classes.push(c);
+      }
+      if (!activeMods.includes(mod.name)) {
+        activeMods.push(mod.name);
+      }
+    }
+
+    return { className: classes.join(" "), activeModifiers: activeMods };
+  };
+
+  const toggleModifier = (mod: ResolvedModifier) => {
     setProp((props: any) => {
       if (!props.root) props.root = {};
-      let classes = (props.className || "").split(/\s+/).filter(Boolean);
-      let activeMods = [...(props.root.activeModifiers || [])];
-
-      // If exclusive, remove other modifiers in the same category first
-      if (mod.exclusive && mod.category && !active) {
-        const siblings = allModifiers.filter(
-          m => m.category === mod.category && m.name !== mod.name
-        );
-        for (const sib of siblings) {
-          const sibClasses = resolveClasses(sib);
-          classes = classes.filter((c: string) => !sibClasses.includes(c));
-          activeMods = activeMods.filter((n: string) => n !== sib.name);
-        }
-      }
-
-      const modClasses = resolveClasses(mod);
-
-      if (active) {
-        // Remove all classes for this modifier
-        classes = classes.filter((c: string) => !modClasses.includes(c));
-        activeMods = activeMods.filter((n: string) => n !== mod.name);
-      } else {
-        // Remove conflicting classes first
-        if (mod.removes?.length) {
-          classes = classes.filter((c: string) => {
-            for (const pattern of mod.removes!) {
-              if (pattern.endsWith("*")) {
-                if (c.startsWith(pattern.slice(0, -1))) return false;
-              } else if (c === pattern) return false;
-            }
-            return true;
-          });
-        }
-        // Auto-add required base class if not present (e.g. "btn" for "btn-primary")
-        if (mod.requires) {
-          for (const req of mod.requires.split(" ")) {
-            if (!classes.includes(req)) classes.push(req);
-          }
-        }
-        // Add all classes for this modifier
-        for (const c of modClasses) {
-          if (!classes.includes(c)) classes.push(c);
-        }
-        if (!activeMods.includes(mod.name)) {
-          activeMods.push(mod.name);
-        }
-      }
-
-      props.className = classes.join(" ");
-      props.root.activeModifiers = activeMods;
+      const next = computeToggle(
+        mod,
+        (props.className || "") as string,
+        (props.root.activeModifiers || []) as string[]
+      );
+      props.className = next.className;
+      props.root.activeModifiers = next.activeModifiers;
     });
+  };
+
+  // Hover preview: snapshot original state on first hover, restore on leave.
+  // Each hover applies the toggle against the SNAPSHOT (not the previously-hovered
+  // state) so previews always show "what clicking from the original state would do."
+  const previewSnapshotRef = useRef<{ className: string; activeModifiers: string[] } | null>(null);
+
+  const previewModifier = (mod: ResolvedModifier) => {
+    if (!previewSnapshotRef.current) {
+      previewSnapshotRef.current = {
+        className: currentClassName,
+        activeModifiers: [...activeModifiers],
+      };
+    }
+    const snap = previewSnapshotRef.current;
+    const next = computeToggle(mod, snap.className, snap.activeModifiers);
+    setProp((props: any) => {
+      if (!props.root) props.root = {};
+      props.className = next.className;
+      props.root.activeModifiers = next.activeModifiers;
+    });
+  };
+
+  const endPreview = () => {
+    const snap = previewSnapshotRef.current;
+    if (!snap) return;
+    previewSnapshotRef.current = null;
+    setProp((props: any) => {
+      if (!props.root) props.root = {};
+      props.className = snap.className;
+      props.root.activeModifiers = [...snap.activeModifiers];
+    });
+  };
+
+  /** Click handler: commit the currently-previewed state, or toggle directly if no preview is active (touch/no-hover). */
+  const commitModifier = (mod: ResolvedModifier) => {
+    if (previewSnapshotRef.current) {
+      // Preview already applied the desired state — just drop the snapshot so endPreview won't revert.
+      previewSnapshotRef.current = null;
+    } else {
+      toggleModifier(mod);
+    }
   };
 
   // The resolved component type name for the selected node
@@ -237,6 +291,9 @@ export function useModifiers() {
     categorized,
     isActive,
     toggleModifier,
+    previewModifier,
+    commitModifier,
+    endPreview,
     saveAsModifier,
     componentName,
     nodeTypeName,

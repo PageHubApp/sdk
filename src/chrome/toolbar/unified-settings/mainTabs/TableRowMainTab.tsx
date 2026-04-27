@@ -1,6 +1,6 @@
 import { Element, NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
-import { ListEditor } from "../../inputs/preset/ListItemPopover";
+import { ListEditor } from "../../inputs/preset/ListEditor";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { atom, useAtomState, useAtomInstance } from "@zedux/react";

@@ -15,6 +15,10 @@ import { useAtomValue } from "@zedux/react";
 import { UniversalInput } from "../universal-input";
 import type { ValueType } from "../universal-input/types";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
+import {
+  TOOLBAR_SEGMENTED_ACTIVE,
+  TOOLBAR_SEGMENTED_INACTIVE,
+} from "../../helpers/ToolbarSegmentedControl";
 import { ViewAtom } from "../../../viewport/atoms";
 import { ViewSelectionAtom } from "../../Label";
 import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
@@ -142,7 +146,7 @@ function ModeToggle({
   onChange: (next: ShorthandMode) => void;
 }) {
   return (
-    <div className="border-base-300/60 flex shrink-0 overflow-hidden rounded-md border">
+    <div className="bg-neutral flex h-8 shrink-0 items-stretch gap-0.5 rounded-md p-0.5">
       {modes.map(m => (
         <button
           key={m.id}
@@ -153,10 +157,8 @@ function ModeToggle({
           data-tooltip-content={m.ariaLabel}
           data-tooltip-place="top"
           data-tooltip-delay-show={500}
-          className={`flex h-8 w-7 items-center justify-center transition-colors ${
-            m.id === activeId
-              ? "bg-primary text-primary-content"
-              : "text-neutral-content hover:bg-base-200"
+          className={`flex w-7 items-center justify-center rounded transition-colors ${
+            m.id === activeId ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE
           }`}
         >
           {m.icon}

@@ -99,11 +99,7 @@ export const TabsMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Tab behavior and layout settings."
-      >
+      <ToolbarSection collapsible={false}>
         <ToolbarItem propKey="defaultTab" propType="component" type="select" label="Default Tab">
           {defaultTabOptions}
         </ToolbarItem>

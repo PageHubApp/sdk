@@ -99,10 +99,8 @@
     "Segoe UI Symbol", "Noto Color Emoji";
 
   /* Align with app sidebar tokens (styles/globals.css) — works when globals omit */
-  --sidebar: hsl(0 0% 98%);
   --sidebar-foreground: hsl(240 5.3% 26.1%);
   --sidebar-border: hsl(220 13% 87%);
-  --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-border: var(--sidebar-border);
 }
@@ -190,10 +188,8 @@
     "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
 
-  --sidebar: hsl(0 0% 12%);
   --sidebar-foreground: hsl(0 0% 98%);
   --sidebar-border: hsl(0 0% 26%);
-  --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-border: var(--sidebar-border);
 }

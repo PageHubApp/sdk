@@ -3,10 +3,7 @@
  * only link-oriented actions (link-url, link-page, scroll-to, email, phone).
  */
 import { TbLink } from "react-icons/tb";
-import {
-  LinkMainTab,
-  LinkMainTabAdvanced,
-} from "../chrome/toolbar/unified-settings/mainTabs/LinkMainTab";
+import { LinkMainTab } from "../chrome/toolbar/unified-settings/mainTabs/LinkMainTab";
 import { defineComponent } from "../define";
 import { migrateAction, actionToHref, actionTarget } from "../utils/action";
 import { resolveIconSvgSync } from "../utils/icons/serverResolve";
@@ -85,7 +82,6 @@ export const LinkDef = defineComponent(
     icon: TbLink,
     category: "Content",
     settings: LinkMainTab,
-    advancedSettings: LinkMainTabAdvanced,
     toHTML,
     disable: ["opacity"],
     rules: {

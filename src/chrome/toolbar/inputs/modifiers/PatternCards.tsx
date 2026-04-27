@@ -6,10 +6,12 @@ export function PatternCards({
   mods,
   isActive,
   onToggle,
+  onHoverPreview,
 }: {
   mods: ResolvedModifier[];
   isActive: (mod: ResolvedModifier) => boolean;
   onToggle: (mod: ResolvedModifier) => void;
+  onHoverPreview?: (mod: ResolvedModifier) => void;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -21,6 +23,7 @@ export function PatternCards({
             key={mod.name}
             type="button"
             onClick={() => onToggle(mod)}
+            onMouseEnter={onHoverPreview ? () => onHoverPreview(mod) : undefined}
             className={twMerge(
               "ph-toolbar-dashed-btn flex-col items-start gap-0.5 text-left",
               active && PH_TOOLBAR_DASHED_BTN_ACTIVE

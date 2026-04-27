@@ -2,6 +2,8 @@ import { useEditor } from "@craftjs/core";
 import { useEffect } from "react";
 import { useAtomValue } from "@zedux/react";
 import { DeviceAtom, DeviceDimensionsAtom, ViewAtom } from "./atoms";
+import { isEditorCanvasBreakpointView } from "../../utils/tailwind/className";
+import { DEVICE_FRAME_BY_VIEW, getDeviceFrameSpec } from "./deviceFrames";
 
 const EDITOR_CANVAS_SCREEN_STYLE_ID = "editor-canvas-screen-override";
 
@@ -112,7 +114,18 @@ export const ViewportMeta = () => {
     const styleId = "device-screen-override";
     let styleElement = document.getElementById(styleId) as HTMLStyleElement;
 
-    if (device && view === "mobile") {
+    const frame =
+      device && isEditorCanvasBreakpointView(view)
+        ? getDeviceFrameSpec(
+            view,
+            DEVICE_FRAME_BY_VIEW[view] === "phone" ? deviceDimensions : undefined
+          )
+        : null;
+
+    if (frame) {
+      const innerW = frame.innerWidth;
+      const innerH = frame.innerHeight;
+      const dpr = frame.kind === "phone" ? deviceDimensions.dpr || 2 : 2;
       // Create or update style element
       if (!styleElement) {
         styleElement = document.createElement("style");
@@ -122,80 +135,87 @@ export const ViewportMeta = () => {
 
       // Override screen dimensions and viewport units for the device
       const scopedViewport = ".pagehub-sdk-root #viewport";
+      const isTouchKind = frame.kind === "phone" || frame.kind === "tablet";
       styleElement.textContent = `
         /* Override Tailwind screen utilities */
         ${scopedViewport} .h-screen,
         ${scopedViewport} .min-h-screen {
-          height: ${deviceDimensions.height}px !important;
-          min-height: ${deviceDimensions.height}px !important;
+          height: ${innerH}px !important;
+          min-height: ${innerH}px !important;
         }
-        
+
         ${scopedViewport} .w-screen {
-          width: ${deviceDimensions.width}px !important;
+          width: ${innerW}px !important;
         }
-        
+
         ${scopedViewport} .min-w-screen {
-          min-width: ${deviceDimensions.width}px !important;
+          min-width: ${innerW}px !important;
         }
-        
+
         ${scopedViewport} .max-h-screen {
-          max-height: ${deviceDimensions.height}px !important;
+          max-height: ${innerH}px !important;
         }
-        
+
         ${scopedViewport} .max-w-screen {
-          max-width: ${deviceDimensions.width}px !important;
+          max-width: ${innerW}px !important;
         }
-        
+
         /* Override viewport units (vh, vw, vmin, vmax) */
         ${scopedViewport} {
-          --viewport-height: ${deviceDimensions.height}px;
-          --viewport-width: ${deviceDimensions.width}px;
-          --vh: ${deviceDimensions.height / 100}px;
-          --vw: ${deviceDimensions.width / 100}px;
-          --vmin: ${Math.min(deviceDimensions.width, deviceDimensions.height) / 100}px;
-          --vmax: ${Math.max(deviceDimensions.width, deviceDimensions.height) / 100}px;
+          --viewport-height: ${innerH}px;
+          --viewport-width: ${innerW}px;
+          --vh: ${innerH / 100}px;
+          --vw: ${innerW / 100}px;
+          --vmin: ${Math.min(innerW, innerH) / 100}px;
+          --vmax: ${Math.max(innerW, innerH) / 100}px;
         }
-        
+
         /* Apply viewport units to common patterns */
         ${scopedViewport} [style*="100vh"],
         ${scopedViewport} [style*="height: 100vh"] {
-          height: ${deviceDimensions.height}px !important;
+          height: ${innerH}px !important;
         }
-        
+
         ${scopedViewport} [style*="min-height: 100vh"] {
-          min-height: ${deviceDimensions.height}px !important;
+          min-height: ${innerH}px !important;
         }
-        
+
         ${scopedViewport} [style*="100vw"],
         ${scopedViewport} [style*="width: 100vw"] {
-          width: ${deviceDimensions.width}px !important;
+          width: ${innerW}px !important;
         }
-        
+
+        ${
+          isTouchKind
+            ? `
         /* Simulate touch device */
         ${scopedViewport} * {
           -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
           touch-action: manipulation;
         }
-        
+
         /* Smooth scrolling like mobile */
         ${scopedViewport} {
           -webkit-overflow-scrolling: touch;
           scroll-behavior: smooth;
         }
-        
+
         /* Hide scrollbars like mobile (optional) */
         ${scopedViewport}::-webkit-scrollbar {
           display: none;
         }
-        
+
         ${scopedViewport} {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
-        
+        `
+            : ""
+        }
+
         /* Safe area insets for notched devices (iPhone X+) */
         ${
-          deviceDimensions.height >= 812
+          frame.kind === "phone" && innerH >= 812
             ? `
           ${scopedViewport} {
             --safe-area-inset-top: 44px;
@@ -206,22 +226,22 @@ export const ViewportMeta = () => {
         `
             : `
           ${scopedViewport} {
-            --safe-area-inset-top: 20px;
+            --safe-area-inset-top: 0px;
             --safe-area-inset-bottom: 0px;
             --safe-area-inset-left: 0px;
             --safe-area-inset-right: 0px;
           }
         `
         }
-        
+
         /* Device Pixel Ratio (DPR) for Retina displays */
         ${scopedViewport} {
-          --device-pixel-ratio: ${deviceDimensions.dpr || 2};
+          --device-pixel-ratio: ${dpr};
         }
-        
+
         /* Simulate device resolution with image-rendering */
         ${
-          (deviceDimensions.dpr || 2) >= 2
+          dpr >= 2
             ? `
           ${scopedViewport} img {
             image-rendering: -webkit-optimize-contrast;
@@ -250,8 +270,8 @@ export const ViewportMeta = () => {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const mobileDeviceChrome = device && view === "mobile";
-    if (!enabled || mobileDeviceChrome) {
+    const deviceChrome = device && isEditorCanvasBreakpointView(view);
+    if (!enabled || deviceChrome) {
       document.getElementById(EDITOR_CANVAS_SCREEN_STYLE_ID)?.remove();
       return;
     }

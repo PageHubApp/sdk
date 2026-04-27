@@ -8,7 +8,15 @@
  * Custom CSS: own section (className code editor)
  */
 import React from "react";
-import { TbBorderInner, TbBoxPadding, TbSquare } from "react-icons/tb";
+import {
+  TbBorderInner,
+  TbBoxPadding,
+  TbList,
+  TbPageBreak,
+  TbSquare,
+  TbTable,
+  TbVectorTriangle,
+} from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
 
@@ -207,7 +215,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "float",
     label: "Float",
-    section: "display",
+    section: "styles",
     keywords: ["float", "left", "right", "none", "clear"],
     input: { type: "tailwind-select", tailwindKey: "float" },
     sortOrder: 103,
@@ -215,7 +223,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "verticalAlign",
     label: "Vertical Align",
-    section: "display",
+    section: "typography",
     keywords: ["vertical", "align", "baseline", "top", "middle", "bottom"],
     input: { type: "tailwind-select", tailwindKey: "verticalAlign" },
     sortOrder: 104,
@@ -223,7 +231,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "fontSmoothing",
     label: "Font Smoothing",
-    section: "display",
+    section: "typography",
     keywords: ["smoothing", "antialiased", "subpixel", "rendering"],
     input: { type: "tailwind-select", tailwindKey: "fontSmoothing" },
     sortOrder: 105,
@@ -231,7 +239,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "resize",
     label: "Resize",
-    section: "display",
+    section: "styles",
     keywords: ["resize", "drag", "handle", "grow"],
     input: { type: "tailwind-select", tailwindKey: "resize" },
     sortOrder: 110,
@@ -239,7 +247,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "touchAction",
     label: "Touch Action",
-    section: "display",
+    section: "styles",
     keywords: ["touch", "action", "pan", "pinch", "zoom"],
     input: { type: "tailwind-select", tailwindKey: "touchAction" },
     sortOrder: 111,
@@ -247,7 +255,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "cssAppearance",
     label: "Appearance",
-    section: "display",
+    section: "styles",
     keywords: ["appearance", "native", "none", "auto"],
     input: { type: "tailwind-select", tailwindKey: "appearance" },
     propKey: "appearance",
@@ -258,7 +266,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "boxSizing",
     label: "Box Sizing",
-    section: "display",
+    section: "size",
     keywords: ["box", "sizing", "border-box", "content-box"],
     input: { type: "tailwind-select", tailwindKey: "boxSizing" },
     sortOrder: 200,
@@ -266,7 +274,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "isolation",
     label: "Isolation",
-    section: "display",
+    section: "styles",
     keywords: ["isolation", "isolate", "stacking"],
     input: { type: "tailwind-select", tailwindKey: "isolation" },
     sortOrder: 201,
@@ -274,105 +282,157 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "columns",
     label: "Columns",
-    section: "display",
+    section: "styles",
     keywords: ["columns", "multi-column", "newspaper"],
     input: { type: "tailwind-select", tailwindKey: "columns" },
     sortOrder: 202,
   },
 
-  // ─── Advanced: Page Breaks ───────────────────────────────────────
+  // ─── Advanced: Page Breaks (bundle) ──────────────────────────────
   {
-    id: "breakBefore",
-    label: "Before",
-    section: "display",
-    keywords: ["break", "before", "page", "column"],
-    input: { type: "tailwind-select", tailwindKey: "breakBefore" },
+    id: "break",
+    label: "Break",
+    section: "styles",
+    keywords: ["break", "before", "inside", "after", "page", "column", "avoid"],
     sortOrder: 203,
-  },
-  {
-    id: "breakInside",
-    label: "Inside",
-    section: "display",
-    keywords: ["break", "inside", "avoid"],
-    input: { type: "tailwind-select", tailwindKey: "breakInside" },
-    sortOrder: 204,
-  },
-  {
-    id: "breakAfter",
-    label: "After",
-    section: "display",
-    keywords: ["break", "after", "page", "column"],
-    input: { type: "tailwind-select", tailwindKey: "breakAfter" },
-    sortOrder: 205,
+    input: {
+      type: "bundle",
+      icon: React.createElement(TbPageBreak, { className: "size-3.5" }),
+      properties: [
+        {
+          id: "breakBefore",
+          label: "Before",
+          section: "styles",
+          keywords: ["break", "before", "page", "column"],
+          input: { type: "tailwind-select", tailwindKey: "breakBefore" },
+          inline: true,
+        },
+        {
+          id: "breakInside",
+          label: "Inside",
+          section: "styles",
+          keywords: ["break", "inside", "avoid"],
+          input: { type: "tailwind-select", tailwindKey: "breakInside" },
+          inline: true,
+        },
+        {
+          id: "breakAfter",
+          label: "After",
+          section: "styles",
+          keywords: ["break", "after", "page", "column"],
+          input: { type: "tailwind-select", tailwindKey: "breakAfter" },
+          inline: true,
+        },
+      ],
+    },
   },
 
-  // ─── Advanced: List ──────────────────────────────────────────────
+  // ─── Advanced: List (bundle) ─────────────────────────────────────
   {
-    id: "listStyleType",
-    label: "Style",
-    section: "display",
-    keywords: ["list", "style", "disc", "decimal", "none"],
-    input: { type: "tailwind-select", tailwindKey: "listStyleType" },
+    id: "list",
+    label: "List",
+    section: "typography",
+    keywords: ["list", "style", "position", "disc", "decimal", "inside", "outside"],
     sortOrder: 206,
-  },
-  {
-    id: "listStylePosition",
-    label: "Position",
-    section: "display",
-    keywords: ["list", "position", "inside", "outside"],
-    input: { type: "tailwind-select", tailwindKey: "listStylePosition" },
-    sortOrder: 207,
+    input: {
+      type: "bundle",
+      icon: React.createElement(TbList, { className: "size-3.5" }),
+      properties: [
+        {
+          id: "listStyleType",
+          label: "Style",
+          section: "typography",
+          keywords: ["list", "style", "disc", "decimal", "none"],
+          input: { type: "tailwind-select", tailwindKey: "listStyleType" },
+          inline: true,
+        },
+        {
+          id: "listStylePosition",
+          label: "Position",
+          section: "typography",
+          keywords: ["list", "position", "inside", "outside"],
+          input: { type: "tailwind-select", tailwindKey: "listStylePosition" },
+          inline: true,
+        },
+      ],
+    },
   },
 
-  // ─── Advanced: Table ─────────────────────────────────────────────
+  // ─── Advanced: Table (bundle) ────────────────────────────────────
   {
-    id: "tableLayout",
-    label: "Layout",
-    section: "display",
-    keywords: ["table", "layout", "auto", "fixed"],
-    input: { type: "tailwind-select", tailwindKey: "tableLayout" },
+    id: "table",
+    label: "Table",
+    section: "styles",
+    keywords: ["table", "layout", "auto", "fixed", "caption", "side"],
     sortOrder: 208,
-  },
-  {
-    id: "captionSide",
-    label: "Caption Side",
-    section: "display",
-    keywords: ["caption", "side", "top", "bottom"],
-    input: { type: "tailwind-select", tailwindKey: "captionSide" },
-    sortOrder: 209,
+    input: {
+      type: "bundle",
+      icon: React.createElement(TbTable, { className: "size-3.5" }),
+      properties: [
+        {
+          id: "tableLayout",
+          label: "Layout",
+          section: "styles",
+          keywords: ["table", "layout", "auto", "fixed"],
+          input: { type: "tailwind-select", tailwindKey: "tableLayout" },
+          inline: true,
+        },
+        {
+          id: "captionSide",
+          label: "Caption Side",
+          section: "styles",
+          keywords: ["caption", "side", "top", "bottom"],
+          input: { type: "tailwind-select", tailwindKey: "captionSide" },
+          inline: true,
+        },
+      ],
+    },
   },
 
-  // ─── Advanced: SVG ───────────────────────────────────────────────
+  // ─── Advanced: SVG (bundle) ──────────────────────────────────────
   {
-    id: "fill",
-    label: "Fill",
-    section: "display",
-    keywords: ["svg", "fill", "color", "icon"],
-    input: { type: "tailwind-select", tailwindKey: "fill" },
+    id: "svg",
+    label: "SVG",
+    section: "styles",
+    keywords: ["svg", "fill", "stroke", "width", "color", "icon", "outline", "thickness"],
     sortOrder: 212,
-  },
-  {
-    id: "stroke",
-    label: "Stroke",
-    section: "display",
-    keywords: ["svg", "stroke", "outline", "icon"],
-    input: { type: "tailwind-select", tailwindKey: "stroke" },
-    sortOrder: 213,
-  },
-  {
-    id: "strokeWidth",
-    label: "Width",
-    section: "display",
-    keywords: ["svg", "stroke", "width", "thickness"],
-    input: { type: "tailwind-select", tailwindKey: "strokeWidth" },
-    sortOrder: 214,
+    input: {
+      type: "bundle",
+      icon: React.createElement(TbVectorTriangle, { className: "size-3.5" }),
+      properties: [
+        {
+          id: "fill",
+          label: "Fill",
+          section: "styles",
+          keywords: ["svg", "fill", "color", "icon"],
+          input: { type: "tailwind-select", tailwindKey: "fill" },
+          inline: true,
+        },
+        {
+          id: "stroke",
+          label: "Stroke",
+          section: "styles",
+          keywords: ["svg", "stroke", "outline", "icon"],
+          input: { type: "tailwind-select", tailwindKey: "stroke" },
+          inline: true,
+        },
+        {
+          id: "strokeWidth",
+          label: "Width",
+          section: "styles",
+          keywords: ["svg", "stroke", "width", "thickness"],
+          input: { type: "tailwind-select", tailwindKey: "strokeWidth" },
+          inline: true,
+        },
+      ],
+    },
   },
 
   // ─── Advanced: Other ─────────────────────────────────────────────
   {
     id: "cssContent",
     label: "Content",
-    section: "display",
+    section: "styles",
     keywords: ["content", "pseudo", "before", "after"],
     input: { type: "tailwind-select", tailwindKey: "content" },
     propKey: "content",
@@ -381,7 +441,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "srOnly",
     label: "Screen Reader",
-    section: "display",
+    section: "aria",
     keywords: ["screen", "reader", "sr-only", "accessibility", "hidden"],
     input: { type: "tailwind-select", tailwindKey: "srOnly" },
     sortOrder: 211,

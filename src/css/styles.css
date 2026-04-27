@@ -9,7 +9,6 @@
   /* ─── SDK-specific additions ──────────────────────────────────────────── */
 
   /* Editor chrome tokens */
-  --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
@@ -406,6 +405,27 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ─── Anchored popover fade ─────────────────────────────────────────────
+   Canonical fade keyframes for every editor popover. Hooked up by:
+   - <AnchoredPopover> via [data-ph-popover][data-state="open|closed"]
+   - Headless UI Listbox/Combobox/Popover panels via .ph-select-content
+     [data-open|data-closed] (see editor-partials/dropdowns.css)
+   ──────────────────────────────────────────────────────────────────── */
+@keyframes ph-popover-fade-in {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+@keyframes ph-popover-fade-out {
+  from { opacity: 1 }
+  to { opacity: 0 }
+}
+[data-ph-popover][data-state="open"] {
+  animation: ph-popover-fade-in 75ms ease-out;
+}
+[data-ph-popover][data-state="closed"] {
+  animation: ph-popover-fade-out 75ms ease-in forwards;
 }
 
 /* Container overflow UX — hide native bar when custom thumb is shown */

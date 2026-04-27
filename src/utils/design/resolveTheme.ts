@@ -12,6 +12,7 @@ export function resolveTheme(props: Record<string, any>): DesignSystemVars {
     darkModeEnabled: t.darkModeEnabled || false,
     styleGuide: t.styleGuide || {},
     typography: t.typography || [],
+    breakpoints: t.breakpoints || undefined,
   };
 }
 

@@ -4,12 +4,11 @@ import { TbCode } from "react-icons/tb";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { getEditorVariableOptions } from "../../../../utils/editorVariableOptions";
-import { ItemAdvanceToggle } from "../../helpers/ItemSelector";
+import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { QuickLinkInput } from "../../inputs/action/LinkInput";
 import { IpsumGenerator } from "../../inputs/media/IpsumGenerator";
-import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { renderComponentSlots } from "../helpers";
 
 const CodeEditor = lazy(() =>
   import("../../inputs/typography/CodeEditor").then(m => ({ default: m.CodeEditor }))
@@ -48,25 +47,62 @@ function HtmlEditorBody() {
   );
 }
 
+type RichTextMode = "full" | "inline";
+
+const FORMAT_OPTIONS: { value: RichTextMode; label: string }[] = [
+  { value: "full", label: "Rich" },
+  { value: "inline", label: "Inline" },
+];
+
+function FormatControl() {
+  const {
+    actions: { setProp },
+    mode,
+  } = useNode((node: any) => ({
+    mode: (node.data?.props?.richText?.mode as RichTextMode | undefined) || "full",
+  }));
+
+  return (
+    <div className="flex items-center gap-0.5">
+      <span className="text-base-content w-20 shrink-0 truncate text-xs">Format</span>
+      <div className="min-w-0 flex-1">
+        <ToolbarSegmentedControl
+          dense
+          aria-label="Text format"
+          value={mode}
+          onChange={next =>
+            setProp((p: any) => {
+              if (!p.richText || typeof p.richText !== "object") p.richText = {};
+              p.richText.mode = next;
+            }, 0)
+          }
+          options={FORMAT_OPTIONS}
+        />
+      </div>
+    </div>
+  );
+}
+
 export const TextMainTab = () => {
   const [htmlOpen, setHtmlOpen] = useState(false);
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="The HTML content displayed in this text block."
-      >
+      <ToolbarSection collapsible={false}>
         <QuickLinkInput />
-        <button
-          type="button"
-          className="ph-toolbar-dashed-btn"
-          onClick={() => setHtmlOpen(true)}
-        >
-          <TbCode size={12} aria-hidden />
-          Edit HTML
-        </button>
+        <IpsumGenerator propKey="text" propType="component" />
+        <FormatControl />
+        <div className="flex w-full gap-2 [&>*]:flex-1">
+          <button
+            type="button"
+            className="ph-toolbar-dashed-btn"
+            onClick={() => setHtmlOpen(true)}
+          >
+            <TbCode size={12} aria-hidden />
+            Edit HTML
+          </button>
+          <SettingsAiSlot />
+        </div>
         <FloatingPanel
           isOpen={htmlOpen}
           onClose={() => setHtmlOpen(false)}
@@ -84,19 +120,6 @@ export const TextMainTab = () => {
         >
           {htmlOpen ? <HtmlEditorBody /> : null}
         </FloatingPanel>
-        <SettingsAiSlot />
-        <IpsumGenerator propKey="text" propType="component" />
-        <ItemAdvanceToggle propKey="textContentAdvanced" title="More content properties">
-          <ToolbarItem
-            propKey="richText.mode"
-            propType="component"
-            type="select"
-            label="Editor profile"
-          >
-            <option value="full">Full (paragraphs, lists, images)</option>
-            <option value="inline">Inline (no block wrapper in saved HTML)</option>
-          </ToolbarItem>
-        </ItemAdvanceToggle>
       </ToolbarSection>
     ),
   });

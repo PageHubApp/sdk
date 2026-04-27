@@ -120,7 +120,14 @@ export const ToolbarSection = ({
               </div>
 
               {(propKey || header) && (
-                <div className="flex max-w-[min(100%,20rem)] flex-1 flex-wrap items-center justify-end gap-1">
+                <div
+                  // Action area sizes to its content so the gap between title
+                  // and action area stays part of the outer toggle hit-target
+                  // (justify-between pushes this to the end). stopPropagation
+                  // protects the buttons inside from accidental toggles.
+                  className="flex max-w-[min(100%,20rem)] min-w-0 shrink-0 flex-nowrap items-center justify-end gap-1"
+                  onClick={e => e.stopPropagation()}
+                >
                   {propKey &&
                     VIEW_BREAKPOINT_SCOPE_KEYS.map(bp => (
                       <ToolbarLabel

@@ -228,6 +228,7 @@ export const ToolbarDropdown = ({
 
       <ListboxOptions
         anchor="bottom start"
+        transition
         className="pagehub-sdk-root ph-select-content"
         modal={false}
         portal

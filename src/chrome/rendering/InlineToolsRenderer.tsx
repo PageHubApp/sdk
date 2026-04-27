@@ -5,6 +5,7 @@ import ReactDOM from "react-dom";
 import { hasOverflowAncestor } from "@/utils/hasOverflowAncestor";
 import { InlineRenderContext } from "../inline-tools/InlineRenderContext";
 import { DeviceAtom, ViewAtom } from "../viewport/atoms";
+import { isEditorCanvasBreakpointView } from "../../utils/tailwind/className";
 
 /**
  * PortalToolsWrapper - Renders tools via createPortal to a target element,
@@ -123,7 +124,7 @@ export const InlineToolsRenderer = ({
 
   const device = useAtomValue(DeviceAtom);
   const view = useAtomValue(ViewAtom);
-  const isDeviceMode = device && view === "mobile";
+  const isDeviceMode = device && isEditorCanvasBreakpointView(view);
 
   // Don't render on server (SSR)
   const isClient = typeof window !== "undefined";

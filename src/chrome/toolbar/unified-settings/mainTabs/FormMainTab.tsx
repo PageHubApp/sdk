@@ -37,11 +37,7 @@ export const FormMainTab = () => {
   return renderComponentSlots({
     Content: (
       <>
-        <ToolbarSection
-          title="Content"
-          icon={SECTION_ICONS["Content"]}
-          help="Preview the form, loading, and submitted states."
-        >
+        <ToolbarSection collapsible={false}>
           <div className="bg-neutral flex gap-1 rounded-md p-1">
             {VIEW_STATES.map(({ value, label, icon: Icon }) => (
               <button

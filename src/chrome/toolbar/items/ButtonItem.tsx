@@ -6,7 +6,7 @@ import { useAtomState, useAtomValue } from "@zedux/react";
 import { ColorInput } from "../inputs/color/ColorInput";
 import { IconDialogInput } from "../inputs/media/IconDialogInput";
 import ActionInput from "../inputs/action/ActionInput";
-import { ListEditor } from "../inputs/preset/ListItemPopover";
+import { ListEditor } from "../inputs/preset/ListEditor";
 
 import { ToolbarItem, ToolbarItemProps } from "../ToolbarItem";
 import { ToolbarSection } from "../ToolbarSection";

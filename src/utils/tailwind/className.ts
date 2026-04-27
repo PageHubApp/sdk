@@ -309,6 +309,7 @@ export function getClass(className: string, propKey: string): string | undefined
 
 /** Tailwind default min-widths — used to size the editor canvas for breakpoint previews. */
 export const EDITOR_CANVAS_BREAKPOINT_PX = {
+  mobile: 390,
   sm: 640,
   md: 768,
   lg: 1024,
@@ -320,6 +321,25 @@ export type EditorCanvasBreakpointId = keyof typeof EDITOR_CANVAS_BREAKPOINT_PX;
 
 export function isEditorCanvasBreakpointView(view: string): view is EditorCanvasBreakpointId {
   return Object.prototype.hasOwnProperty.call(EDITOR_CANVAS_BREAKPOINT_PX, view);
+}
+
+/**
+ * Resolve canvas breakpoint pixel widths for the active site theme.
+ * `mobile` (390) is always hardcoded — it's a preview convenience, not a Tailwind layer.
+ * `sm`/`md`/`lg`/`xl`/`2xl` come from `theme.breakpoints` if set, else defaults.
+ */
+export function getCanvasBreakpointPx(theme?: {
+  breakpoints?: Record<string, number>;
+}): Record<EditorCanvasBreakpointId, number> {
+  const bp = theme?.breakpoints;
+  return {
+    mobile: 390,
+    sm: bp?.sm ?? EDITOR_CANVAS_BREAKPOINT_PX.sm,
+    md: bp?.md ?? EDITOR_CANVAS_BREAKPOINT_PX.md,
+    lg: bp?.lg ?? EDITOR_CANVAS_BREAKPOINT_PX.lg,
+    xl: bp?.xl ?? EDITOR_CANVAS_BREAKPOINT_PX.xl,
+    "2xl": bp?.["2xl"] ?? EDITOR_CANVAS_BREAKPOINT_PX["2xl"],
+  };
 }
 
 /** Ordered scope IDs for toolbar “apply to layer” toggles (base + each min-width). */

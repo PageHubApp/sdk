@@ -44,22 +44,22 @@ export function IconsTab({ d }: IconsTabProps) {
       className="flex min-h-0 flex-1 flex-col"
     >
       {/* Search + set selector */}
-      <div className="border-base-300 bg-neutral flex items-center gap-2 border-b px-3 py-2">
-        <div className="input-wrapper flex min-h-8 flex-1 items-stretch">
+      <div className="flex shrink-0 items-center gap-2 px-3 py-2">
+        <div className="input-wrapper flex min-h-7 flex-1 items-stretch">
           <input
             ref={el => {
               if (el) el.focus();
             }}
             type="text"
             role="searchbox"
-            className="input-plain h-8 min-h-8 w-full text-xs"
+            className="input-plain h-7 min-h-7 w-full text-xs"
             placeholder="Search icons..."
             value={d.search}
             onChange={e => d.handleSearch(e.target.value)}
             aria-label="Search icons"
           />
         </div>
-        <div className="w-40 shrink-0">
+        <div className="w-32 shrink-0">
           <ToolbarDropdown
             value={d.set}
             onChange={d.handleSetChange}
@@ -74,20 +74,14 @@ export function IconsTab({ d }: IconsTabProps) {
         </div>
       </div>
 
-      <div className="border-base-300 bg-base-200 text-base-content flex items-center justify-between border-b px-3 py-1.5 text-xs">
-        <span>
-          {d.setIndex?.find(s => s.id === d.set)?.name ?? d.set}
-        </span>
-        <span className="text-neutral-content">
-          {isSearching
-            ? d.loadingNames
-              ? "Loading…"
-              : `${d.filteredIcons.length} result${d.filteredIcons.length !== 1 ? "s" : ""}`
-            : d.loadingNames
-              ? "Loading…"
-              : `${(d.setNames?.length ?? 0).toLocaleString()} icons`}
-        </span>
-      </div>
+      {/* Inline count under the search row — removed the separate sub-header band. */}
+      {(isSearching || d.loadingNames) && (
+        <div className="text-neutral-content shrink-0 px-3 pb-1 text-[10px]">
+          {d.loadingNames
+            ? "Loading…"
+            : `${d.filteredIcons.length} result${d.filteredIcons.length !== 1 ? "s" : ""}`}
+        </div>
+      )}
 
       {isSearching ? (
         <div
@@ -105,7 +99,7 @@ export function IconsTab({ d }: IconsTabProps) {
             rowCount={d.rowCount}
             rowHeight={ROW_HEIGHT}
             width={CONTAINER_WIDTH}
-            className="scrollbar-light border-base-300 bg-base-200 text-base-content border-b"
+            className="scrollbar-light text-base-content"
           >
             {({ columnIndex, rowIndex, style }) => {
               const index = rowIndex * COLUMN_COUNT + columnIndex;
@@ -115,7 +109,7 @@ export function IconsTab({ d }: IconsTabProps) {
               const fullRef = `ref-icon:${iconRef}`;
               const isFocused = d.focusedIndex === index;
               return (
-                <div style={style} className="p-1">
+                <div style={style} className="p-0.5">
                   <IconCell
                     iconRef={iconRef}
                     isSelected={d.selectedIcon === fullRef}
@@ -132,7 +126,7 @@ export function IconsTab({ d }: IconsTabProps) {
           </Grid>
         </div>
       ) : (
-        <AutoHideScrollbar className="bg-base-200 min-h-0 flex-1">
+        <AutoHideScrollbar className="min-h-0 flex-1">
           <ToolbarSection title="Common" defaultOpen full={1}>
             <IconGrid
               refs={commonIcons}

@@ -6,10 +6,15 @@
  * its `defaultValue` (or a sensible fallback per input type), making the row
  * appear via PropertyRow's value-gated render.
  */
-import React, { forwardRef, useImperativeHandle, useMemo, useState, useRef, useEffect } from "react";
+import React, { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue, useAtomState } from "@zedux/react";
-import { TbPlus, TbSearch, TbX } from "react-icons/tb";
+import { TbPlus } from "react-icons/tb";
+import {
+  SearchableMenuPopover,
+  type SearchableMenuItem,
+  type SearchableMenuPopoverHandle,
+} from "../../primitives/SearchableMenuPopover";
 import { changeProp } from "../../viewport/viewportExports";
 import { propertyHasValue } from "./propertyHasValue";
 import { ViewAtom } from "../../viewport/atoms";
@@ -18,6 +23,9 @@ import { useAccordionContext } from "../AccordionContext";
 import { getProperties, getSectionDef } from "./registry/propertyRegistry";
 import { HiddenKeysAtom } from "./registry/atoms";
 import { SessionAddedAtom, sessionKey } from "./sessionAddedAtom";
+import { PopoverOpenRequestAtom, requestOpenPopover } from "./popoverOpenRequestAtom";
+import { isPopoverModeComponent } from "./popoverModeRegistry";
+import { resolveCustomInput } from "./customInputs";
 import type { PropertyDef, SectionId } from "./registry/propertyDefs";
 
 interface Props {
@@ -47,10 +55,7 @@ function resolveDefaultValue(def: PropertyDef): string | undefined {
 
 export const AccordionAddMenu = React.memo(
   forwardRef<AccordionAddMenuHandle, Props>(function AccordionAddMenu({ sectionId }, ref) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const popoverRef = useRef<SearchableMenuPopoverHandle>(null);
   const accordionCtx = useAccordionContext();
   const sectionTitle = useMemo(() => getSectionDef(sectionId)?.title || "", [sectionId]);
   const ensureSectionOpen = () => {
@@ -76,48 +81,50 @@ export const AccordionAddMenu = React.memo(
   }));
   const { query: editorQuery } = useEditor();
   const [sessionAdded, setSessionAdded] = useAtomState(SessionAddedAtom);
+  const [popoverRequests, setPopoverRequests] = useAtomState(PopoverOpenRequestAtom);
 
   const orderSet = useMemo(() => new Set(toolbarOrder), [toolbarOrder]);
-  const available = useMemo(() => {
+  const available = useMemo<SearchableMenuItem<PropertyDef>[]>(() => {
     return getProperties({ section: sectionId })
       .filter(p => !p.pinned)
       .filter(p => !p.hideKey || !hiddenKeys.has(p.hideKey))
       .filter(p => !orderSet.has(p.id))
       .filter(p => !propertyHasValue(p, className, componentProps, view, classDark))
-      .filter(p => {
-        if (!query) return true;
-        const q = query.toLowerCase();
-        return (
-          p.label.toLowerCase().includes(q) ||
-          p.id.toLowerCase().includes(q) ||
-          p.keywords.some(kw => kw.includes(q))
-        );
-      });
-  }, [sectionId, className, componentProps, view, classDark, query, hiddenKeys, orderSet]);
-
-  // Close on outside click
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: PointerEvent) => {
-      if (!popoverRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    window.addEventListener("pointerdown", handleClick);
-    return () => window.removeEventListener("pointerdown", handleClick);
-  }, [open]);
-
-  // Focus search on open
-  useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
+      .map(p => ({
+        id: p.id,
+        label: p.label || p.id,
+        hint: p.groupLabel,
+        help: p.help,
+        keywords: p.keywords,
+        data: p,
+      }));
+  }, [sectionId, className, componentProps, view, classDark, hiddenKeys, orderSet]);
 
   useImperativeHandle(
     ref,
     () => ({
-      // Imperative open from PropertySection (empty-section title click) — does NOT
-      // expand the accordion. The picker floats over a still-collapsed section.
-      open: () => setOpen(true),
+      // Imperative open from PropertySection (empty-section title click).
+      // For popover-mode single-prop sections we MUST expand the accordion
+      // first so the trigger row mounts; otherwise the open-request fires
+      // into a void (the popover trigger lives inside the section body).
+      // Search-popover sections still float over a collapsed section.
+      open: () => {
+        const sectionProps = getProperties({ section: sectionId }).filter(
+          p => !p.pinned && (!p.hideKey || !hiddenKeys.has(p.hideKey))
+        );
+        if (
+          sectionProps.length === 1 &&
+          sectionProps[0].input.type === "custom" &&
+          isPopoverModeComponent(sectionProps[0].input.component)
+        ) {
+          ensureSectionOpen();
+          requestOpenPopover(popoverRequests, setPopoverRequests, id, sectionProps[0].id);
+          return;
+        }
+        popoverRef.current?.open();
+      },
     }),
-    []
+    [sectionId, hiddenKeys, popoverRequests, setPopoverRequests, id]
   );
 
   // Hide entirely when there are no addable (non-pinned, non-hidden) props in this section.
@@ -130,7 +137,40 @@ export const AccordionAddMenu = React.memo(
   );
   if (!hasAddable) return null;
 
-  const onPick = (def: PropertyDef) => {
+  // Single non-popover-mode custom input → the property IS the section (e.g.
+  // Permissions, Import/Export, AI Context, Custom CSS). Nothing to "add"; the
+  // section body always renders the editor. Suppress the `+`.
+  const isSingleInlineCustomSection = (() => {
+    const sectionProps = getProperties({ section: sectionId }).filter(
+      p => !p.pinned && (!p.hideKey || !hiddenKeys.has(p.hideKey))
+    );
+    if (sectionProps.length !== 1) return false;
+    const only = sectionProps[0];
+    return only.input.type === "custom" && !isPopoverModeComponent(only.input.component);
+  })();
+  if (isSingleInlineCustomSection) return null;
+
+  // Section that owns exactly one popover-mode prop → render the popover
+  // trigger inline in the header. The trigger owns its own UI (empty-state
+  // `+` button OR has-value chip + X) and listens for open-requests, so
+  // section title clicks and `+` clicks both route through the same atom.
+  const sectionPopoverProp = (() => {
+    const sectionProps = getProperties({ section: sectionId }).filter(
+      p => !p.pinned && (!p.hideKey || !hiddenKeys.has(p.hideKey))
+    );
+    if (sectionProps.length !== 1) return null;
+    const only = sectionProps[0];
+    if (only.input.type !== "custom") return null;
+    if (!isPopoverModeComponent(only.input.component)) return null;
+    return only;
+  })();
+  if (sectionPopoverProp && sectionPopoverProp.input.type === "custom") {
+    const PopoverComponent = resolveCustomInput(sectionPopoverProp.input.component);
+    return <PopoverComponent def={sectionPopoverProp} />;
+  }
+
+  const onPick = (item: SearchableMenuItem<PropertyDef>) => {
+    const def = item.data!;
     ensureSectionOpen();
     const defaultValue = resolveDefaultValue(def);
     if (defaultValue != null) {
@@ -153,75 +193,47 @@ export const AccordionAddMenu = React.memo(
       next.add(sessionKey(id, def.id));
       setSessionAdded(next);
     }
-    setOpen(false);
-    setQuery("");
   };
 
-  return (
-    <div className="relative">
+  // Single addable option → skip the search popover.
+  // For popover-mode custom inputs (Action, Animations, Conditions, …) the
+  // click directly opens the popover modal instead of dropping an empty chip
+  // in the sidebar; the chip only appears later if the user actually saves
+  // a value. For everything else, fall back to the original add-via-pick flow.
+  if (available.length === 1) {
+    const only = available[0];
+    const onlyDef = only.data;
+    const isPopoverMode =
+      onlyDef?.input.type === "custom" && isPopoverModeComponent(onlyDef.input.component);
+    return (
       <button
         type="button"
-        onClick={e => {
-          e.stopPropagation();
+        onClick={() => {
           ensureSectionOpen();
-          setOpen(o => !o);
+          if (isPopoverMode && onlyDef) {
+            requestOpenPopover(popoverRequests, setPopoverRequests, id, onlyDef.id);
+          } else {
+            onPick(only);
+          }
         }}
-        className="text-base-content hover:bg-base-200 flex size-4 shrink-0 items-center justify-center rounded transition-colors"
-        aria-label="Add property"
+        aria-label={`Add ${only.label}`}
+        title={only.help}
+        className="text-neutral-content hover:text-base-content hover:bg-base-200 flex size-4 shrink-0 items-center justify-center rounded-md opacity-70 transition-[color,background-color,opacity] hover:opacity-100"
       >
         <TbPlus className="size-3.5" aria-hidden />
       </button>
-      {open && (
-        <div
-          ref={popoverRef}
-          onClick={e => e.stopPropagation()}
-          className="border-base-300/60 bg-base-100 absolute right-0 top-full z-50 mt-1 max-h-72 w-64 overflow-hidden rounded border shadow-lg"
-        >
-          <div className="border-base-300/60 flex items-center gap-1.5 border-b px-2 py-1.5">
-            <TbSearch className="text-neutral-content size-3.5 shrink-0" aria-hidden />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Type to search..."
-              className="text-base-content placeholder:text-neutral-content min-w-0 flex-1 bg-transparent text-xs outline-none"
-            />
-            {query && (
-              <button
-                type="button"
-                onClick={() => setQuery("")}
-                className="text-neutral-content hover:text-base-content shrink-0"
-              >
-                <TbX className="size-3" />
-              </button>
-            )}
-          </div>
-          <div className="max-h-60 overflow-y-auto">
-            {available.length === 0 ? (
-              <div className="text-neutral-content px-3 py-4 text-center text-xs italic">
-                {query ? `No matches for "${query}"` : "All properties added"}
-              </div>
-            ) : (
-              available.map(def => (
-                <button
-                  key={def.id}
-                  type="button"
-                  onClick={() => onPick(def)}
-                  className="text-base-content hover:bg-base-200 flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-xs"
-                  title={def.help}
-                >
-                  <span>{def.label || def.id}</span>
-                  {def.groupLabel && (
-                    <span className="text-neutral-content text-[10px]">{def.groupLabel}</span>
-                  )}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+    );
+  }
+
+  return (
+    <SearchableMenuPopover<PropertyDef>
+      ref={popoverRef}
+      trigger={<TbPlus className="size-3.5" aria-hidden />}
+      triggerAriaLabel="Add property"
+      items={available}
+      onSelect={onPick}
+      emptyMessage="All properties added"
+    />
   );
   })
 );

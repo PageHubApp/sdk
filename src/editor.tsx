@@ -64,9 +64,6 @@ const ColorPickerSidebarDialog = React.lazy(() =>
 const FontFamilyDialog = React.lazy(() =>
   import("./chrome/toolbar/dialogs/FontFamilyDialog").then(m => ({ default: m.FontFamilyDialog }))
 );
-const GoogleIconDialog = React.lazy(() =>
-  import("./chrome/toolbar/dialogs/GoogleIconDialog").then(m => ({ default: m.GoogleIconDialog }))
-);
 const PatternDialog = React.lazy(() =>
   import("./chrome/toolbar/dialogs/PatternDialog").then(m => ({ default: m.PatternDialog }))
 );
@@ -472,7 +469,7 @@ function PageHubEditorInner({
               <BorderResizeController />
               <RotateHandleController />
               <div
-                className="bg-neutral text-neutral-content relative flex h-full min-h-0 w-full flex-col overflow-hidden"
+                className="bg-base-100 text-base-content relative flex h-full min-h-0 w-full flex-col overflow-hidden"
                 data-base={true}
               >
                 {!readOnly && <EditorSaveBanner />}
@@ -486,7 +483,6 @@ function PageHubEditorInner({
                       <ColorPickerDialog />
                       <ColorPickerSidebarDialog />
                       <FontFamilyDialog />
-                      <GoogleIconDialog />
                       <PatternDialog />
                       <GlobalSectionPickerDialog />
                     </>

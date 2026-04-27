@@ -73,8 +73,33 @@ export const COMMON_SIZING_LAYOUT: DropdownLayoutConfig = {
 /** Named / subgroup column narrow; numeric + hints use the rest (no 50% dead space). */
 const TWO_COL_COMPACT: [string, string] = ["w-auto shrink-0 min-w-11", "min-w-0 flex-1"];
 
-/** Numeric-first layout that still exposes named/fraction/other fallback values. */
+/** Numeric-first layout that still exposes named/fraction/other fallback values.
+ * Flat by default — subgrouping uses spacing-tier thresholds (≤3/≤8/≤24) that only
+ * suit spacing-style value scales. Properties whose values benefit from S/M/L/XL
+ * tiering (rotate, translateX/Y) should use COMMON_NUMERIC_SUBGROUPED_LAYOUT instead. */
 export const COMMON_NUMERIC_LAYOUT: DropdownLayoutConfig = {
+  layout: "left-right",
+  columns: {
+    count: 2,
+    widths: [...TWO_COL_COMPACT],
+  },
+  leftSection: {
+    title: "",
+    groups: ["numeric"],
+    showHints: false,
+    disableSubgroups: true,
+  },
+  rightSection: {
+    title: "",
+    groups: ["named", "fractions", "other"],
+    showHints: false,
+  },
+};
+
+/** Numeric layout with S/M/L/XL subgrouping. Use for properties whose values span the
+ * spacing-tier thresholds (≤3/≤8/≤24/>24): rotate (0/1/2/3/6/12/45/90/180),
+ * translateX/Y (full spacing scale 0..96 + fractions). */
+export const COMMON_NUMERIC_SUBGROUPED_LAYOUT: DropdownLayoutConfig = {
   layout: "left-right",
   columns: {
     count: 2,
@@ -141,6 +166,30 @@ export const COMMON_NAMED_ONLY_LAYOUT: DropdownLayoutConfig = {
   leftSection: {
     title: "",
     groups: ["named"],
+    showHints: false,
+  },
+};
+
+/** Time values (duration/delay): flat numeric list with ms hints. Subgroups disabled
+ * because Tailwind ships ~9 values total (0/75/100/150/200/300/500/700/1000) that all
+ * sit far above the spacing-unit thresholds groupNumericByRange uses (≤3/≤8/≤24), so
+ * subgrouping would dump everything into XL and leave S/M/L empty. */
+export const COMMON_TIME_LAYOUT: DropdownLayoutConfig = {
+  layout: "left-right",
+  columns: {
+    count: 2,
+    widths: [...TWO_COL_COMPACT],
+  },
+  leftSection: {
+    title: "",
+    groups: ["numeric"],
+    showHints: true,
+    hintType: "ms",
+    disableSubgroups: true,
+  },
+  rightSection: {
+    title: "",
+    groups: ["named", "other"],
     showHints: false,
   },
 };
@@ -287,6 +336,7 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
       groups: ["numeric"],
       showHints: true,
       hintType: "percentage",
+      disableSubgroups: true,
     },
   },
 
@@ -346,16 +396,16 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
 
   // ========== CLASS EFFECTS (Tailwind transition / transform / filter / backdrop) ==========
   transitionProperty: COMMON_NAMED_OTHER_COLUMN,
-  duration: COMMON_NAMED_OTHER_COLUMN,
-  delay: COMMON_NUMERIC_LAYOUT,
+  duration: COMMON_TIME_LAYOUT,
+  delay: COMMON_TIME_LAYOUT,
   ease: COMMON_NAMED_OTHER_COLUMN,
   twAnimate: COMMON_NAMED_OTHER_COLUMN,
   scale: COMMON_NUMERIC_LAYOUT,
   scaleX: COMMON_NUMERIC_LAYOUT,
   scaleY: COMMON_NUMERIC_LAYOUT,
-  rotate: COMMON_NUMERIC_LAYOUT,
-  translateX: COMMON_NUMERIC_LAYOUT,
-  translateY: COMMON_NUMERIC_LAYOUT,
+  rotate: COMMON_NUMERIC_SUBGROUPED_LAYOUT,
+  translateX: COMMON_NUMERIC_SUBGROUPED_LAYOUT,
+  translateY: COMMON_NUMERIC_SUBGROUPED_LAYOUT,
   skewX: COMMON_NUMERIC_LAYOUT,
   skewY: COMMON_NUMERIC_LAYOUT,
   transformOrigin: COMMON_NAMED_OTHER_COLUMN,

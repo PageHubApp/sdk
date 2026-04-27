@@ -17,6 +17,7 @@ function resolveCraftComponent(
 import { InlineToolsRenderer } from "./InlineToolsRenderer";
 import { GapDragControl } from "../canvas/GapDragControl";
 import { ConditionBadgeController } from "../canvas/ConditionBadgeController";
+import { LintBadgeController } from "../canvas/LintBadgeController";
 import { RenderNodeDataStates } from "./RenderNodeDataStates";
 
 class NodeErrorBoundary extends React.Component<{ children?: React.ReactNode }> {
@@ -93,6 +94,9 @@ export const RenderNodeNewer = ({ render }) => {
         <>
           <InlineToolsRenderer craftComponent={craftComponent ?? undefined} props={nodeProps}>
             <ConditionBadgeController />
+          </InlineToolsRenderer>
+          <InlineToolsRenderer alwaysVisible>
+            <LintBadgeController />
           </InlineToolsRenderer>
           <RenderNodeDataStates />
           <GapDragControl />

@@ -1,6 +1,8 @@
 /**
  * Background property definitions — pure data.
  */
+import React from "react";
+import { TbBlendMode } from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 
 export const backgroundProperties: PropertyDef[] = [
@@ -11,7 +13,7 @@ export const backgroundProperties: PropertyDef[] = [
     keywords: ["color", "fill", "bg", "background"],
     input: { type: "color", prefix: "bg" },
     hideKey: "bgColor",
-    pinned: true,
+    pinned: false,
     sortOrder: 0,
     inline: true,
   },
@@ -35,6 +37,7 @@ export const backgroundProperties: PropertyDef[] = [
   {
     id: "bgGradient",
     label: "Gradient",
+    propKey: "gradients",
     section: "background",
     keywords: ["gradient", "linear", "radial", "conic", "from", "to", "via"],
     input: { type: "custom", component: "GradientInput" },
@@ -49,19 +52,32 @@ export const backgroundProperties: PropertyDef[] = [
     sortOrder: 100,
   },
   {
-    id: "bgBlend",
+    id: "blend",
     label: "Blend",
     section: "background",
-    keywords: ["blend", "mode", "multiply", "screen", "overlay"],
-    input: { type: "tailwind-select", tailwindKey: "bgBlend" },
+    keywords: ["blend", "mode", "multiply", "screen", "overlay", "mix", "background"],
     sortOrder: 110,
-  },
-  {
-    id: "mixBlend",
-    label: "Mix Blend Mode",
-    section: "background",
-    keywords: ["mix", "blend", "mode", "multiply", "screen", "overlay"],
-    input: { type: "tailwind-select", tailwindKey: "mixBlend" },
-    sortOrder: 120,
+    input: {
+      type: "bundle",
+      icon: React.createElement(TbBlendMode, { className: "size-3.5" }),
+      properties: [
+        {
+          id: "bgBlend",
+          label: "Background",
+          section: "background",
+          keywords: ["blend", "mode", "multiply", "screen", "overlay"],
+          input: { type: "tailwind-select", tailwindKey: "bgBlend" },
+          inline: true,
+        },
+        {
+          id: "mixBlend",
+          label: "Mix",
+          section: "background",
+          keywords: ["mix", "blend", "mode", "multiply", "screen", "overlay"],
+          input: { type: "tailwind-select", tailwindKey: "mixBlend" },
+          inline: true,
+        },
+      ],
+    },
   },
 ];

@@ -51,8 +51,8 @@ export function ToolbarSegmentedControl<T extends string>({
             onClick={() => onChange(opt.value)}
             className={
               dense
-                ? `flex min-w-0 flex-1 items-center justify-center gap-1 rounded px-2 py-2 text-[11px] leading-tight font-medium transition-colors ${selected ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE}`
-                : `flex min-w-0 flex-1 items-center justify-center gap-1 rounded px-2 py-2 text-xs leading-tight font-medium transition-colors ${selected ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE}`
+                ? `flex min-w-0 flex-1 items-center justify-center gap-1 rounded h-6 px-2 text-[11px] leading-tight font-medium transition-colors ${selected ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE}`
+                : `flex min-w-0 flex-1 items-center justify-center gap-1 rounded h-6 px-2 text-xs leading-tight font-medium transition-colors ${selected ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE}`
             }
           >
             {opt.label}

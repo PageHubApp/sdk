@@ -1,12 +1,12 @@
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { renderComponentSlots } from "../helpers";
 
 export const AudioMainTab = () =>
   renderComponentSlots({
     Content: (
-      <ToolbarSection title="Content" icon={SECTION_ICONS["Content"]} help="URL to the audio file.">
+      <ToolbarSection collapsible={false}>
         <ToolbarItem
           propKey="src"
           propType="component"

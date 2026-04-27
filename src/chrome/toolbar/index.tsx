@@ -215,7 +215,7 @@ export const Toolbar = () => {
       key="sideMenu"
       id="toolbar"
       className={twMerge(
-        "bg-sidebar text-sidebar-foreground border-sidebar-border flex flex-col overflow-hidden border-x border-b-2 shadow-lg transition-[width,opacity] duration-200",
+        "text-sidebar-foreground border-sidebar-border flex flex-col overflow-hidden border-x shadow-lg transition-[width,opacity] duration-200",
         layoutClass,
         orderClass,
         sizeClass
@@ -225,7 +225,7 @@ export const Toolbar = () => {
     >
       <Header />
       <div
-        className="bg-sidebar text-sidebar-foreground z-0 flex w-full flex-1 flex-col overflow-hidden antialiased select-none"
+        className="text-sidebar-foreground z-0 flex w-full flex-1 flex-col overflow-hidden antialiased select-none"
         aria-expanded={isOpen ? "true" : "false"}
       >
         <div

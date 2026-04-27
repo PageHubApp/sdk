@@ -14,6 +14,8 @@ import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { usePropertyHasValue } from "./usePropertyHasValue";
 import { SessionAddedAtom, sessionKey } from "./sessionAddedAtom";
+import { PopoverOpenRequestAtom, popoverRequestKey } from "./popoverOpenRequestAtom";
+import { isPopoverModeComponent } from "./popoverModeRegistry";
 import { resolveCustomInput } from "./customInputs";
 import { ShorthandInput } from "../inputs/shorthand/ShorthandInput";
 import { BundleRow } from "../inputs/bundle/BundleRow";
@@ -30,18 +32,27 @@ interface Props {
  */
 export function PropertyRow({ def, index }: Props) {
   const hasValue = usePropertyHasValue(def);
-  const { id, toolbarOrder } = useNode((node: any) => ({
-    toolbarOrder: Array.isArray(node.data?.props?.toolbarOrder)
-      ? (node.data.props.toolbarOrder as string[])
-      : [],
-  }));
+  const { id } = useNode();
   const sessionAdded = useAtomValue(SessionAddedAtom);
-  // Pinned props always render. Everything else hides until it has a value,
-  // was just added in this session, or is in toolbarOrder.
+  const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
+  // Pinned props always render. Popover-mode custom inputs also always render
+  // — they own their own empty-state (chip hidden when no value) and need to
+  // be mounted to receive open-requests from the section + button. Generic
+  // hasValue can't see their internal data shape (e.g. `actions` array vs
+  // a class named "action"), so a value-gated render would never trigger.
   if (def.pinned) return <PropertyRenderer def={def} index={index} />;
+  const isPopoverModeCustom =
+    def.input.type === "custom" && isPopoverModeComponent(def.input.component);
+  if (isPopoverModeCustom) return <PropertyRenderer def={def} index={index} />;
+  // Standard rule: if the prop has no value set on this node, it lives in the
+  // +Add menu — NOT displayed. `wasJustAdded` keeps the row alive briefly after
+  // a +Add click so the user has somewhere to type the first value (cleared on
+  // reload). `hasOpenRequest` mounts the row so a popover open-request can
+  // reach it. `toolbarOrder` is intentionally NOT checked anymore — having
+  // been added in a past session shouldn't keep the row showing forever.
   const wasJustAdded = sessionAdded.has(sessionKey(id, def.id));
-  const isPersistedAdd = toolbarOrder.includes(def.id);
-  if (!hasValue && !wasJustAdded && !isPersistedAdd) return null;
+  const hasOpenRequest = popoverRequests.has(popoverRequestKey(id, def.id));
+  if (!hasValue && !wasJustAdded && !hasOpenRequest) return null;
   return <PropertyRenderer def={def} index={index} />;
 }
 

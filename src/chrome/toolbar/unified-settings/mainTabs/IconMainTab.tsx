@@ -2,16 +2,12 @@ import { IconDialogInput } from "../../inputs/media/IconDialogInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindStyles } from "@/utils/tailwind";
-import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { renderComponentSlots } from "../helpers";
 
 export const IconMainTab = () =>
   renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Pick an icon and choose its size."
-      >
+      <ToolbarSection collapsible={false}>
         <IconDialogInput
           propKey="value"
           propType="component"

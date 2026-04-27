@@ -12,7 +12,8 @@
  * UI sub-fields (path, subject, body, target) are derived from `href` for
  * friendly editing; the stored value is always one `href` string.
  */
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   TbArrowRight,
   TbChevronDown,
@@ -126,6 +127,32 @@ export function LinkInput({
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number; width: number } | null>(
+    null
+  );
+
+  // Recompute portal popover position relative to the combo wrapper.
+  useLayoutEffect(() => {
+    if (!open) return;
+    const update = () => {
+      const anchor = wrapperRef.current;
+      if (!anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      setPopoverPos({
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+      });
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [open]);
 
   // Close popover on outside click
   useEffect(() => {
@@ -211,15 +238,25 @@ export function LinkInput({
 
   return (
     <div className="link-input flex flex-col gap-2">
-      {/* Combo row: trigger + text input */}
-      <div className="border-base-300 bg-base-100 flex w-full items-center gap-1 rounded-md border px-1.5">
+      {/* Combo row: trigger + text input. Clicking anywhere on the row (label,
+          icon, or input chrome) opens the popover; the input still focuses for
+          typing. The X clear and chevron stop propagation so they keep their own
+          toggle/clear semantics. */}
+      <div
+        ref={wrapperRef}
+        onClick={() => setOpen(o => !o)}
+        className="input-wrapper flex h-8 w-full items-center gap-1 px-1.5"
+      >
         <KindIcon className="text-neutral-content size-3.5 shrink-0" aria-hidden />
         <input
+          id="ph-link-input"
           type="text"
           value={isPage ? displayValue : draft}
           readOnly={isPage}
           onChange={e => setDraft(e.target.value)}
           onBlur={commitDraft}
+          onClick={e => e.stopPropagation()}
+          onFocus={() => setOpen(true)}
           onKeyDown={e => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -229,13 +266,16 @@ export function LinkInput({
             }
           }}
           placeholder={placeholder}
-          className="flex-1 bg-transparent py-1.5 text-xs outline-none"
+          className="input-plain flex-1 bg-transparent text-xs outline-none"
           aria-label="Link destination"
         />
         {href && (
           <button
             type="button"
-            onClick={() => writeHref("")}
+            onClick={e => {
+              e.stopPropagation();
+              writeHref("");
+            }}
             className="text-neutral-content hover:bg-error hover:text-error-content rounded p-0.5 transition-colors"
             aria-label="Clear link"
           >
@@ -245,7 +285,12 @@ export function LinkInput({
         <button
           ref={triggerRef}
           type="button"
-          onClick={() => setOpen(o => !o)}
+          onClick={e => {
+            // Wrapper click already toggles — stop here so we don't double-toggle
+            // and end up where we started.
+            e.stopPropagation();
+            setOpen(o => !o);
+          }}
           className="text-neutral-content hover:bg-base-200 hover:text-base-content rounded p-1 transition-colors"
           aria-label="Pick page or anchor"
           aria-expanded={open}
@@ -254,65 +299,75 @@ export function LinkInput({
         </button>
       </div>
 
-      {/* Popover: Pages + Anchors */}
-      {open && (
+      {/* Popover: Pages + Anchors — portaled, matches ToolbarDropdown chrome via .ph-select-content */}
+      {open &&
+        popoverPos &&
+        createPortal(
         <div
           ref={popoverRef}
-          className="border-base-300 bg-base-100 absolute z-50 mt-1 max-h-64 w-72 overflow-y-auto rounded-xl border shadow-lg"
-          style={{ marginTop: "2.5rem" }}
+          className="pagehub-sdk-root ph-select-content fixed max-h-64 overflow-y-auto"
+          style={{
+            top: popoverPos.top,
+            left: popoverPos.left,
+            width: popoverPos.width,
+            zIndex: 12000,
+          }}
         >
           {pages.length > 0 && (
-            <div>
-              <div className="text-neutral-content border-base-300 border-b px-3 py-1.5 text-[10px] font-semibold tracking-wide uppercase">
+            <>
+              <div className="text-neutral-content px-2 pt-1 pb-0.5 text-[10px] font-semibold tracking-wider uppercase">
                 Pages
               </div>
-              {pages.map(p => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => handlePagePick(p.id)}
-                  className={`hover:bg-base-200 flex w-full items-center gap-2 px-3 py-2 text-left text-xs ${
-                    parsed.pageId === p.id ? "bg-primary/10 text-primary" : "text-base-content"
-                  }`}
-                >
-                  <TbExternalLink className="size-3.5 shrink-0 opacity-70" />
-                  <span className="truncate">{p.displayName}</span>
-                </button>
-              ))}
-            </div>
+              {pages.map(p => {
+                const selected = parsed.pageId === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => handlePagePick(p.id)}
+                    data-selected={selected || undefined}
+                    className="ph-select-item"
+                  >
+                    <TbExternalLink className="size-3.5 shrink-0 opacity-70" />
+                    <span className="truncate">{p.displayName}</span>
+                  </button>
+                );
+              })}
+            </>
           )}
           {anchors.length > 0 && (
-            <div>
-              <div className="text-neutral-content border-base-300 border-y px-3 py-1.5 text-[10px] font-semibold tracking-wide uppercase">
+            <>
+              <div className="text-neutral-content px-2 pt-2 pb-0.5 text-[10px] font-semibold tracking-wider uppercase">
                 Anchors
               </div>
-              {anchors.map(a => (
-                <button
-                  key={a.nodeId}
-                  type="button"
-                  onClick={() => handleAnchorPick(a.anchor)}
-                  className={`hover:bg-base-200 flex w-full items-center gap-2 px-3 py-2 text-left text-xs ${
-                    parsed.kind === "anchor" && href === `#${a.anchor}`
-                      ? "bg-primary/10 text-primary"
-                      : "text-base-content"
-                  }`}
-                >
-                  <TbHash className="size-3.5 shrink-0 opacity-70" />
-                  <span className="truncate">{a.label}</span>
-                  <span className="text-neutral-content ml-auto truncate font-mono text-[10px]">
-                    #{a.anchor}
-                  </span>
-                </button>
-              ))}
-            </div>
+              {anchors.map(a => {
+                const selected = parsed.kind === "anchor" && href === `#${a.anchor}`;
+                return (
+                  <button
+                    key={a.nodeId}
+                    type="button"
+                    onClick={() => handleAnchorPick(a.anchor)}
+                    data-selected={selected || undefined}
+                    className="ph-select-item"
+                  >
+                    <TbHash className="size-3.5 shrink-0 opacity-70" />
+                    <span className="truncate">{a.label}</span>
+                    <span className="text-neutral-content ml-auto truncate font-mono text-[10px]">
+                      #{a.anchor}
+                    </span>
+                  </button>
+                );
+              })}
+            </>
           )}
           {pages.length === 0 && anchors.length === 0 && (
             <div className="text-neutral-content px-3 py-3 text-xs">
               No pages or anchors found. Type a URL above.
             </div>
           )}
-        </div>
-      )}
+        </div>,
+          document.querySelector(".pagehub-sdk-root") ?? document.body
+        )}
 
       {/* Sub-fields by kind */}
       {parsed.kind === "page" && (
@@ -436,20 +491,20 @@ export function QuickLinkInput() {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <LinkInput
-        action={(action as LinkAction | null) ?? null}
-        onChange={writeAction}
-        placeholder="Page or URL..."
-      />
-      <button
-        type="button"
-        onClick={jumpToActions}
-        className="text-neutral-content hover:text-primary inline-flex items-center gap-1 self-end text-[11px] transition-colors"
+    <div className="flex items-center gap-0.5">
+      <label
+        htmlFor="ph-link-input"
+        className="text-base-content w-20 shrink-0 cursor-pointer truncate text-xs"
       >
-        More actions
-        <TbArrowRight className="size-3" />
-      </button>
+        Link
+      </label>
+      <div className="min-w-0 flex-1">
+        <LinkInput
+          action={(action as LinkAction | null) ?? null}
+          onChange={writeAction}
+          placeholder="Page or URL..."
+        />
+      </div>
     </div>
   );
 }

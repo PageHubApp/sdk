@@ -1,7 +1,7 @@
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { IconDialogInput } from "../../inputs/media/IconDialogInput";
-import { ListEditor } from "../../inputs/preset/ListItemPopover";
+import { ListEditor } from "../../inputs/preset/ListEditor";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { atom, useAtomState, useAtomInstance } from "@zedux/react";
@@ -48,11 +48,7 @@ export const ListMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Add, remove, and reorder list items."
-      >
+      <ToolbarSection collapsible={false}>
         <ListEditor
           items={childItems || []}
           activeIndex={activeIndex}

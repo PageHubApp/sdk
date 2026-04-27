@@ -76,7 +76,7 @@ export function SidebarLayersPanel() {
       <button
         type="button"
         onClick={toggle}
-        className="border-base-300 bg-base-100 text-sidebar-foreground/70 hover:text-sidebar-foreground flex w-full shrink-0 items-center gap-1.5 border-t px-3 py-2.5 text-[11px] leading-none font-semibold tracking-wide uppercase transition-colors"
+        className="border-base-300 text-sidebar-foreground/70 hover:text-sidebar-foreground flex w-full shrink-0 items-center gap-1.5 border-t px-3 py-2.5 text-[11px] leading-none font-semibold tracking-wide uppercase transition-colors"
       >
         <TbLayoutGrid className="size-3 shrink-0 opacity-70" />
         <span>Layers</span>
@@ -86,7 +86,7 @@ export function SidebarLayersPanel() {
   }
 
   return (
-    <div ref={panelRef} className="bg-base-100 relative z-[51] flex shrink-0 flex-col" style={{ height }}>
+    <div ref={panelRef} className="relative z-[51] flex shrink-0 flex-col" style={{ height }}>
       {/* Resize handle */}
       <div
         onPointerDown={onPointerDown}

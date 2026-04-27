@@ -31,6 +31,7 @@ import { ComponentsAtom, LastActiveAtom, SideBarAtom, ViewModeAtom } from "../..
 import { applyCanvasVisibility } from "../../utils/componentIsolation";
 import {
   EDITOR_CANVAS_BREAKPOINT_PX,
+  getCanvasBreakpointPx,
   isEditorCanvasBreakpointView,
 } from "../../utils/tailwind/className";
 import {
@@ -38,10 +39,20 @@ import {
   markToolboxHistorySelectionSync,
   usePanelUrl,
 } from "../../utils/usePanelUrl";
+import { lazy, Suspense } from "react";
 import { SaveIndicator } from "../inline-tools/PublishButton";
 import { ToolbarPortalDropdown } from "../inline-tools/ToolbarPortalDropdown";
-import { LayersDialog } from "../toolbar/dialogs/LayersDialog";
 import { MediaManagerModal } from "../toolbar/inputs/media/MediaManagerModal";
+
+// Lazy: rarely-open modals — fetch on first open so HMR edits to them
+// (and to FloatingPanel/PropertyRenderer chains they import) don't ripple
+// through the always-mounted Header tree.
+const LayersDialog = lazy(() =>
+  import("../toolbar/dialogs/LayersDialog").then(m => ({ default: m.LayersDialog }))
+);
+const ModifiersModal = lazy(() =>
+  import("./ModifiersModal").then(m => ({ default: m.ModifiersModal }))
+);
 import {
   BreakpointZoomAtom,
   DeviceAtom,
@@ -49,13 +60,14 @@ import {
   DeviceZoomAtom,
   EnabledAtom,
   PreviewAtom,
+  ResponsiveAtom,
   ViewAtom,
 } from "./atoms";
 import { CanvasZoom } from "./CanvasZoom";
+import { DEVICE_FRAME_BY_VIEW, getDeviceFrameSpec } from "./deviceFrames";
 import { ComponentSelector } from "./ComponentSelector";
 import { EditorNavigation } from "./EditorNavigation";
 
-import { ModifiersModal } from "./ModifiersModal";
 import { NodeBreadcrumb } from "./NodeBreadcrumb";
 import { SiteSettingsModal } from "./SiteSettingsModal";
 
@@ -69,8 +81,8 @@ import { useHeaderShortcuts } from "./header/useHeaderShortcuts";
 export { useComponentVisible } from "./header/useComponentVisible";
 
 export const Header = () => {
-  const { enabled, canUndo, canRedo, actions, query, componentFingerprint } = useEditor(
-    (state, query) => {
+  const { enabled, canUndo, canRedo, actions, query, componentFingerprint, themeBreakpoints } =
+    useEditor((state, query) => {
       const root = state.nodes[ROOT_NODE];
       const fp =
         root?.data?.nodes
@@ -85,9 +97,11 @@ export const Header = () => {
         canUndo: query.history.canUndo(),
         canRedo: query.history.canRedo(),
         componentFingerprint: fp,
+        themeBreakpoints: root?.data?.props?.theme?.breakpoints as
+          | Record<string, number>
+          | undefined,
       };
-    }
-  );
+    });
   const { emitter } = useSDK();
 
   const setComponents = useSetAtomState(ComponentsAtom);
@@ -243,44 +257,55 @@ export const Header = () => {
 
   const headerCanvasDeviceRows = [
     {
-      id: "desktop",
+      mode: "fluid" as const,
       label: "Responsive",
       sub: "Fluid canvas",
-      description: "Stretches to fit the editor — preview at any width.",
+      description:
+        "ON: canvas clamps to the editor area. OFF: canvas renders at the exact breakpoint width and overflows when the editor is narrower.",
     },
     {
-      id: "mobile",
+      mode: "device" as const,
       label: "Device",
-      sub: "Phone frame",
-      description: "Pin to a specific phone (iPhone, Pixel, etc.) with a real bezel.",
+      sub: "Phone · tablet · monitor",
+      description:
+        "Pin to a real device frame at the selected breakpoint (phone, tablet, laptop, monitor).",
     },
   ];
   const breakpointDescriptions: Record<string, string> = {
+    mobile: "Mobile — single-column, stacked layouts. The mobile-first base.",
     sm: "Tablet portrait — 2-col grids, stacked headers, side-by-side buttons start here.",
     md: "Tablet landscape — flex-row layouts and 3-col grids kick in.",
     lg: "Desktop — 4-col grids, split heroes, asymmetric layouts. Most design density lives here.",
     xl: "Wide desktop — extra breathing room; rarely needs new layout rules.",
     "2xl": "Ultra-wide — for cinema-width monitors. Usually nothing changes past this.",
   };
+  const resolvedBreakpointPx = getCanvasBreakpointPx({ breakpoints: themeBreakpoints });
   const headerCanvasBreakpointRows = [
+    {
+      id: "mobile",
+      label: "Mobile",
+      sub: `${resolvedBreakpointPx.mobile}px`,
+      description: breakpointDescriptions.mobile,
+    },
     {
       id: "sm",
       label: "SM",
-      sub: `Tablet · ${EDITOR_CANVAS_BREAKPOINT_PX.sm}px`,
+      sub: `Tablet · ${resolvedBreakpointPx.sm}px`,
       description: breakpointDescriptions.sm,
     },
-    ...["md", "lg", "xl", "2xl"].map(bp => ({
+    ...(["md", "lg", "xl", "2xl"] as const).map(bp => ({
       id: bp,
       label: bp === "2xl" ? "2XL" : bp.toUpperCase(),
-      sub: `${EDITOR_CANVAS_BREAKPOINT_PX[bp]}px`,
+      sub: `${resolvedBreakpointPx[bp]}px`,
       description: breakpointDescriptions[bp],
     })),
   ];
-  const device = useAtomValue(DeviceAtom);
+  const [device, setDevice] = useAtomState(DeviceAtom);
+  const [responsive, setResponsive] = useAtomState(ResponsiveAtom);
   const deviceDimensions = useAtomValue(DeviceDimensionsAtom);
   const breakpointZoom = useAtomValue(BreakpointZoomAtom);
   const deviceZoom = useAtomValue(DeviceZoomAtom);
-  const activeZoom = device && view === "mobile" ? deviceZoom : breakpointZoom;
+  const activeZoom = device ? deviceZoom : breakpointZoom;
   const isScaled = Math.abs(activeZoom - 1) > 0.001;
   const [settings, setSettings] = useAtomState(SettingsAtom);
   const sessionToken = useAtomValue(SessionTokenAtom);
@@ -399,7 +424,7 @@ export const Header = () => {
         <ToolbarPortalDropdown
           openOn="hover"
           align="center"
-          className="border-base-300 bg-base-100 w-[18rem] rounded-xl border p-2 shadow-xl"
+          className="border-base-300 bg-base-100 w-[22rem] rounded-xl border p-2 shadow-xl"
           trigger={
             <button
               type="button"
@@ -418,7 +443,7 @@ export const Header = () => {
                     {(view === "desktop" || view === "tablet") && (
                       <TbDeviceDesktop className="size-4" />
                     )}
-                    {isEditorCanvasBreakpointView(view) && (
+                    {isEditorCanvasBreakpointView(view) && view !== "mobile" && (
                       <span className="font-mono text-[11px] leading-none font-bold tracking-tight">
                         {view === "2xl" ? "2XL" : view.toUpperCase()}
                       </span>
@@ -432,19 +457,25 @@ export const Header = () => {
         >
           <div className="mb-2 grid grid-cols-2 gap-1.5">
             {headerCanvasDeviceRows.map(row => {
-              const selected = view === row.id;
+              const selected = row.mode === "device" ? device : responsive;
               return (
                 <button
-                  key={row.id}
+                  key={row.mode}
                   type="button"
-                  role="menuitemradio"
+                  role="menuitemcheckbox"
                   aria-checked={selected}
                   data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                   data-tooltip-content={row.description}
                   data-tooltip-place="bottom"
                   data-tooltip-offset={10}
                   onClick={() => {
-                    setView(row.id as CanvasViewMode);
+                    if (row.mode === "device") {
+                      setDevice(d => !d);
+                      // "desktop" (fluid full-width) has no device frame — default to mobile when turning device on.
+                      if (!device && view === "desktop") setView("mobile" as CanvasViewMode);
+                    } else {
+                      setResponsive(r => !r);
+                    }
                     scrollSelectedNodeIntoView();
                   }}
                   className={`flex items-center gap-2 rounded-md border px-2.5 py-2 text-left text-xs transition ${
@@ -453,7 +484,7 @@ export const Header = () => {
                       : "border-base-300 hover:bg-base-200 text-base-content"
                   }`}
                 >
-                  {row.id === "desktop" ? (
+                  {row.mode === "fluid" ? (
                     <TbDeviceDesktop className="size-4 shrink-0" />
                   ) : (
                     <TbDeviceMobile className="size-4 shrink-0" />
@@ -470,7 +501,7 @@ export const Header = () => {
           <div className="text-neutral-content mt-1 mb-1 px-0.5 text-[10px] font-semibold tracking-wide uppercase">
             Breakpoints
           </div>
-          <div className="grid grid-cols-5 gap-1">
+          <div className="grid grid-cols-6 gap-1">
             {headerCanvasBreakpointRows.map(row => {
               const selected = view === row.id;
               return (
@@ -484,7 +515,10 @@ export const Header = () => {
                   data-tooltip-place="bottom"
                   data-tooltip-offset={10}
                   onClick={() => {
-                    setView(row.id as CanvasViewMode);
+                    // Click selected chip again → unset back to fluid desktop.
+                    setView(
+                      (view === row.id ? "desktop" : (row.id as CanvasViewMode)) as CanvasViewMode
+                    );
                     scrollSelectedNodeIntoView();
                   }}
                   className={`flex flex-col items-center justify-center rounded-md border px-1 py-1.5 text-center transition ${
@@ -508,19 +542,36 @@ export const Header = () => {
             <span className="text-neutral-content px-0.5 text-[10px] font-semibold tracking-wide uppercase">
               Zoom
             </span>
-            {device && view === "mobile" ? (
-              <CanvasZoom
-                zoomAtom={DeviceZoomAtom}
-                fitMode={{ kind: "height", target: deviceDimensions.height, chromeOffset: 350 }}
-                activeKey="device-menu"
-                storageKey="editor-device-zoom"
-              />
+            {device && isEditorCanvasBreakpointView(view) ? (
+              (() => {
+                const frame = getDeviceFrameSpec(
+                  view,
+                  DEVICE_FRAME_BY_VIEW[view] === "phone" ? deviceDimensions : undefined,
+                  resolvedBreakpointPx
+                );
+                return (
+                  <CanvasZoom
+                    zoomAtom={DeviceZoomAtom}
+                    fitMode={{
+                      kind: "both",
+                      targetW: frame.innerWidth + frame.bezelX,
+                      targetH: frame.innerHeight + frame.bezelY,
+                      chromeOffsetW: 220,
+                      chromeOffsetH: 220,
+                      max: 1,
+                    }}
+                    activeKey="device-menu"
+                    storageKey="editor-device-zoom"
+                  />
+                );
+              })()
             ) : (
               <CanvasZoom
                 zoomAtom={BreakpointZoomAtom}
                 fitMode={{
                   kind: "width",
-                  target: (EDITOR_CANVAS_BREAKPOINT_PX as Record<string, number>)[view] ?? 1024,
+                  target:
+                    (resolvedBreakpointPx as Record<string, number>)[view] ?? 1024,
                   chromeOffset: 420,
                   max: 1,
                 }}
@@ -649,7 +700,11 @@ export const Header = () => {
         onClose={() => setIsMediaManagerModalOpen(false)}
       />
 
-      <LayersDialog isOpen={isLayersDialogOpen} onClose={() => setIsLayersDialogOpen(false)} />
+      {isLayersDialogOpen && (
+        <Suspense fallback={null}>
+          <LayersDialog isOpen onClose={() => setIsLayersDialogOpen(false)} />
+        </Suspense>
+      )}
 
       <SiteSettingsModal
         isOpen={isSiteSettingsModalOpen}
@@ -657,10 +712,11 @@ export const Header = () => {
         extraTabs={siteSettingsExtraTabs}
       />
 
-      <ModifiersModal
-        isOpen={isModifiersModalOpen}
-        onClose={() => setIsModifiersModalOpen(false)}
-      />
+      {isModifiersModalOpen && (
+        <Suspense fallback={null}>
+          <ModifiersModal isOpen onClose={() => setIsModifiersModalOpen(false)} />
+        </Suspense>
+      )}
     </>
   );
 };

@@ -1,5 +1,5 @@
 import { NodeId, useEditor } from "@craftjs/core";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   TbArrowDown,
   TbArrowLeft,
@@ -17,6 +17,7 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface
 import { useLayerManager } from "./LayerManager";
 import { useLayerMove } from "./hooks/useLayerMove";
 import { useLayerDragDrop } from "./hooks/useLayerDragDrop";
+import { lintNode, maxSeverity } from "@/utils/lint/responsiveLint";
 
 interface LayerHeaderProps {
   nodeId: NodeId;
@@ -31,25 +32,51 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
 
-  const { displayName, hidden, isSelected, isHovered, actions, query, nodeType } = useEditor(
-    (editorState, query) => {
-      const node = editorState.nodes[nodeId];
-      const selectedId = query.getEvent("selected").first();
-      const hoveredId = query.getEvent("hovered").first();
+  const {
+    displayName,
+    hidden,
+    isSelected,
+    isHovered,
+    actions,
+    query,
+    nodeType,
+    nodeClassName,
+    nodeChildCount,
+    nodeLintIgnore,
+  } = useEditor((editorState, query) => {
+    const node = editorState.nodes[nodeId];
+    const selectedId = query.getEvent("selected").first();
+    const hoveredId = query.getEvent("hovered").first();
 
-      return {
-        displayName:
-          node?.data?.custom?.displayName ||
-          node?.data?.displayName ||
-          node?.data?.name ||
-          "Unnamed",
-        hidden: node?.data?.hidden || false,
-        isSelected: selectedId === nodeId,
-        isHovered: hoveredId === nodeId,
-        nodeType: node?.data?.props?.type || "",
-      };
-    }
+    return {
+      displayName:
+        node?.data?.custom?.displayName ||
+        node?.data?.displayName ||
+        node?.data?.name ||
+        "Unnamed",
+      hidden: node?.data?.hidden || false,
+      isSelected: selectedId === nodeId,
+      isHovered: hoveredId === nodeId,
+      nodeType: node?.data?.props?.type || "",
+      nodeClassName: (node?.data?.props?.className as string) || "",
+      nodeChildCount: node?.data?.nodes?.length ?? 0,
+      nodeLintIgnore: node?.data?.custom?.lintIgnore,
+    };
+  });
+
+  // Responsive lint — re-runs only when this node's className or child count changes.
+  const lintIssues = useMemo(
+    () =>
+      lintNode({
+        data: {
+          props: { className: nodeClassName },
+          nodes: new Array(nodeChildCount), // we only need the length
+          custom: { lintIgnore: nodeLintIgnore },
+        },
+      }),
+    [nodeClassName, nodeChildCount, nodeLintIgnore]
   );
+  const lintSeverity = maxSeverity(lintIssues);
 
   const isDragging = state.draggedNode === nodeId;
   const isDropTarget = state.dropIndicator?.targetId === nodeId && state.draggedNode !== nodeId;
@@ -302,6 +329,20 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             </span>
           )}
         </div>
+
+        {lintSeverity && (
+          <span
+            className={`size-1.5 shrink-0 rounded-full ${
+              lintSeverity === "error" ? "bg-red-500" : "bg-yellow-500"
+            }`}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content={lintIssues.map(i => `• ${i.message}`).join("\n")}
+            data-tooltip-place="left"
+            aria-label={`${lintIssues.length} responsive ${
+              lintIssues.length === 1 ? "issue" : "issues"
+            }`}
+          />
+        )}
 
         {/* Arrow controls - show on hover or selection */}
         <div

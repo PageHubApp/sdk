@@ -14,6 +14,7 @@ export function buildClientContext(
     viewportWidth: typeof window !== "undefined" ? window.innerWidth : null,
     auth: getAuthState(),
     item,
+    mobileBreakpoint: rootProps?.theme?.breakpoints?.md,
   };
 }
 
@@ -31,5 +32,6 @@ export function buildStaticContext(
     viewportWidth: null,
     auth: null,
     item,
+    mobileBreakpoint: rootProps?.theme?.breakpoints?.md,
   };
 }

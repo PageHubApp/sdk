@@ -17,13 +17,31 @@ export const MouseInEditor = atom("mousein", false);
 /** Serialized graph when dirty, or null when clean (see `editor.tsx` unsaved listener). */
 export const UnsavedChangesAtom = atom<any>("unsavedchanges", null);
 
-export const ViewAtom = atom<ViewMode>("view", "desktop");
+/**
+ * Default canvas view: `md` on desktop (so class writes target the `md:` layer and
+ * leave the base layer clean for mobile), `mobile` on a touch/narrow device (writes
+ * land on base). Editor-only state, so client-side window check is safe — no SSR
+ * hydration concern.
+ */
+const defaultCanvasView = (): ViewMode => {
+  if (typeof window === "undefined") return "md";
+  return window.innerWidth < 768 ? "mobile" : "md";
+};
+
+export const ViewAtom = atom<ViewMode>("view", defaultCanvasView());
 
 export const ToolbarTitleAtom = atom("ttt", "");
 
 export const TabAtom = atom("editorTab", "");
 
 export const DeviceAtom = atom("device", false);
+
+/**
+ * When true (default): canvas clamps to the editor area — picking a breakpoint narrows
+ * the viewport but never overflows. When false: canvas renders at the exact selected
+ * breakpoint width and overflows the editor when needed (scroll-to-pan).
+ */
+export const ResponsiveAtom = atom("responsive", true);
 
 export const DeviceDimensionsAtom = atom("deviceDimensions", { width: 390, height: 844, dpr: 3 });
 
@@ -45,6 +63,58 @@ export const BreakpointZoomAtom = atom(
   "breakpointZoom",
   readSavedZoom("editor-breakpoint-zoom", 0.75)
 );
+
+/** Per-breakpoint width overrides (drag-resize). Not persisted. */
+export const BreakpointWidthOverrideAtom = atom<Record<string, number>>(
+  "breakpointWidthOverride",
+  {}
+);
+
+/** Show dotted breakpoint marker lines on the canvas. Persisted via phStorage. */
+export const ShowBreakpointMarkersAtom = atom(
+  "showBreakpointMarkers",
+  (() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const saved = phStorage.get("show-breakpoint-markers");
+      if (saved === "true") return true;
+      if (saved === "false") return false;
+    } catch {}
+    return false;
+  })()
+);
+
+/**
+ * Transient drag-preview value per breakpoint (px). Empty when no drag in progress.
+ * Markers read from this for live cursor-tracking; class behavior reads from
+ * `theme.breakpoints` (only changes on commit). Resets after pointer-up.
+ */
+export const PendingBreakpointOverrideAtom = atom<Record<string, number>>(
+  "pendingBreakpointOverride",
+  {}
+);
+
+/**
+ * What's currently applied to the in-page `<style id="tailwind-compiled">` block.
+ * Tracked so client-side `rewriteBreakpoints` can compute deltas (rewrite from
+ * "currently applied" → "newly committed") on each drag commit.
+ *
+ * Defaults are seeded on mount from theme.breakpoints, falling back to Tailwind's defaults.
+ */
+export type AppliedBreakpointsShape = {
+  sm: number;
+  md: number;
+  lg: number;
+  xl: number;
+  "2xl": number;
+};
+export const AppliedBreakpointsAtom = atom<AppliedBreakpointsShape>("appliedBreakpoints", {
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+  "2xl": 1536,
+});
 
 export const EnabledAtom = atom("enabled", true);
 

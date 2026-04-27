@@ -3,7 +3,7 @@ import { changeProp } from "../../viewport/viewportExports";
 import { atom, useAtomState } from "@zedux/react";
 import { ToolbarItem, ToolbarItemProps } from "../ToolbarItem";
 import { Wrap } from "../ToolbarStyle";
-import { ListEditor } from "../inputs/preset/ListItemPopover";
+import { ListEditor } from "../inputs/preset/ListEditor";
 
 // Create a simple state atom for managing which option is expanded
 const SelectedOptionAtom = atom<any>("selectedOption", null);

@@ -2,10 +2,7 @@
  * Button — Component definition via defineComponent()
  */
 import { RxButton } from "react-icons/rx";
-import {
-  ButtonMainTab,
-  ButtonMainTabAdvanced,
-} from "../chrome/toolbar/unified-settings/mainTabs/ButtonMainTab";
+import { ButtonMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ButtonMainTab";
 import { defineComponent } from "../define";
 import { migrateAction, actionToHref, actionTarget } from "../utils/action";
 import { resolveIconSvgSync } from "../utils/icons/serverResolve";
@@ -88,7 +85,6 @@ export const ButtonDef = defineComponent(
     icon: RxButton,
     category: "Content",
     settings: ButtonMainTab,
-    advancedSettings: ButtonMainTabAdvanced,
     toHTML,
     disable: ["opacity"],
     hoverClickVariant: "button",

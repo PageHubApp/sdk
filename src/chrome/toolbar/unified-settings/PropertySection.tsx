@@ -10,10 +10,11 @@ import { createPortal } from "react-dom";
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { ToolbarSection } from "../ToolbarSection";
-import { PropertyRow } from "./PropertyRenderer";
+import { PropertyRenderer, PropertyRow } from "./PropertyRenderer";
 import { AccordionAddMenu, type AccordionAddMenuHandle } from "./AccordionAddMenu";
 import { propertyHasValue } from "./propertyHasValue";
 import { SessionAddedAtom, sessionKey } from "./sessionAddedAtom";
+import { isPopoverModeComponent } from "./popoverModeRegistry";
 import { ViewAtom } from "../../viewport/atoms";
 import { ViewSelectionAtom } from "../Label";
 import { getSectionDef, getProperties } from "./registry/propertyRegistry";
@@ -77,11 +78,28 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
     return { main: mainProps, candidates: rest };
   }, [properties, className, nodeProps]);
 
+  // Sections whose only non-pinned property is a single non-popover-mode custom
+  // input (Permissions, Import/Export, AI Context, Custom CSS) are "the section
+  // IS the input" — always render the body, no `+`, normal accordion toggle.
+  // There's nothing to "add"; the header just expands/collapses the editor.
+  const isSingleCustomSection =
+    candidates.length === 1 &&
+    candidates[0].input.type === "custom" &&
+    !isPopoverModeComponent(candidates[0].input.component);
+
   // Visibility gate (mirrors PropertyRow). Pre-filter so empty sections don't render a body.
-  const isPropVisible = (p: PropertyDef) =>
-    toolbarOrder.includes(p.id) ||
-    sessionAdded.has(sessionKey(id, p.id)) ||
-    propertyHasValue(p, className, componentProps, view, classDark);
+  // Popover-mode custom inputs always count as visible — they own their own
+  // empty-state (chip hidden when no value) and the section is the user's only
+  // entry point to the popover trigger row.
+  const isPropVisible = (p: PropertyDef) => {
+    if (p.input.type === "custom" && isPopoverModeComponent(p.input.component)) return true;
+    if (isSingleCustomSection && p === candidates[0]) return true;
+    return (
+      toolbarOrder.includes(p.id) ||
+      sessionAdded.has(sessionKey(id, p.id)) ||
+      propertyHasValue(p, className, componentProps, view, classDark)
+    );
+  };
 
   const added = useMemo(() => {
     const visible = candidates.filter(isPropVisible);
@@ -105,13 +123,29 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
   const isEmpty = main.length === 0 && candidates.length === 0;
   if (isHidden || isAdvancedHidden || isEmpty) return null;
 
+  // Sections whose only props are popover-mode customs render the trigger in
+  // the header (via AccordionAddMenu) — so skip them in the body and disable
+  // accordion collapse. The header IS the section.
+  const isPopoverOnlySection =
+    properties.length > 0 &&
+    properties.every(
+      p => p.input.type === "custom" && isPopoverModeComponent(p.input.component)
+    );
+  const filterPopoverModeProps = (p: PropertyDef) =>
+    !(p.input.type === "custom" && isPopoverModeComponent(p.input.component));
+  const visibleMain = isPopoverOnlySection ? main.filter(filterPopoverModeProps) : main;
+  const visibleAdded = isPopoverOnlySection ? added.filter(filterPopoverModeProps) : added;
+
+  // Single-custom sections bypass PropertyRow's value gate — the custom input
+  // IS the section content, so it always renders.
+  const Row = isSingleCustomSection ? PropertyRenderer : PropertyRow;
   const bodyContent = (
     <>
-      {main.map(prop => (
-        <PropertyRow key={prop.id} def={prop} />
+      {visibleMain.map(prop => (
+        <Row key={prop.id} def={prop} />
       ))}
-      {added.map(prop => (
-        <PropertyRow key={prop.id} def={prop} />
+      {visibleAdded.map(prop => (
+        <Row key={prop.id} def={prop} />
       ))}
     </>
   );
@@ -130,11 +164,23 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
         title={section.title}
         icon={section.icon}
         help={section.help}
-        defaultOpen={section.defaultOpen && !noVisibleContent}
+        // Popover-only sections render header-only. collapsible=false bypasses
+        // the accordion atom (so previously-persisted open state can't leak
+        // back in) and defaultOpen=false keeps the un-managed body hidden.
+        defaultOpen={
+          isPopoverOnlySection ? false : (section.defaultOpen ?? false) && !noVisibleContent
+        }
         enabled={!noVisibleContent}
+        collapsible={!isPopoverOnlySection}
+        // collapsible=false drops cursor-pointer. We DO want pointer here
+        // because the header is the popover trigger.
+        className={isPopoverOnlySection ? "cursor-pointer!" : ""}
         onClick={e => {
-          // Empty section (no pinned, no visible added): bypass toggle, open picker.
-          if (noVisibleContent) {
+          // Popover-only section → click anywhere on the header opens the popover.
+          // Empty regular section (with addable props) → open the picker.
+          // Single-custom sections fall through to normal accordion toggle —
+          // their body is always rendered so there's nothing to "add".
+          if (isPopoverOnlySection || (noVisibleContent && !isSingleCustomSection)) {
             e.preventDefault();
             addMenuRef.current?.open();
           }

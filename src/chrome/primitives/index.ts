@@ -14,3 +14,9 @@ export type {
   SidebarTabsPaneItem,
   SidebarTabsPaneProps,
 } from "./SidebarTabsPane";
+export { SearchableMenuPopover } from "./SearchableMenuPopover";
+export type {
+  SearchableMenuItem,
+  SearchableMenuPopoverHandle,
+} from "./SearchableMenuPopover";
+export { PopoverChip } from "./PopoverChip";

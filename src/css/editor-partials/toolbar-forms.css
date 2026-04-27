@@ -8,7 +8,7 @@
    - Single control: .input (full button-style) or .input-dialog / .input-dialog-sm |
      .input-dialog-md | .input-dialog-leading (padding variants).
    - Field surfaces use bg-base-200 (Daisy nested step). In light theme base-200 equals
-     base-100 in tokens; in dark, fields lift above bg-sidebar / base-100 panels.
+     base-100 in tokens; in dark, fields lift above base-100 panels.
    ============================================================================= */
 
 @reference "./styles.css";

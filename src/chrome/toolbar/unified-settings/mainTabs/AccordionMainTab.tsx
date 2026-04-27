@@ -95,11 +95,7 @@ export const AccordionMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Accordion behavior settings."
-      >
+      <ToolbarSection collapsible={false}>
         <ToolbarItem
           propKey="multiOpen"
           propType="component"

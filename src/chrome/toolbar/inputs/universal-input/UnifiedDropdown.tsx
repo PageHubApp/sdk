@@ -1,5 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
-import ReactDOM from "react-dom";
+import React, { useState } from "react";
 import {
   TbArrowNarrowDown,
   TbArrowNarrowLeft,
@@ -24,8 +23,8 @@ import {
   TbZoomOut,
 } from "react-icons/tb";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
+import { AnchoredPopover } from "../../../overlays/AnchoredPopover";
 import { OVERLAY_Z_UNIFIED_DROPDOWN } from "../../../overlays/overlayZIndex";
-import { useAnchoredPopover } from "../../../overlays/useAnchoredPopover";
 import { getLayoutConfig, groupFractionsByDenominator, groupNumericByRange } from "./config";
 import { useDesignVars } from "./hooks/useDesignVars";
 import { SubgroupItem } from "./SubgroupComponents";
@@ -85,36 +84,9 @@ export function UnifiedDropdown({
 
   const showDropdown = isVarMode ? Boolean(hasDesignVars) : Boolean(hasOptions);
 
-  const floating = useAnchoredPopover({
-    open: showDropdown,
-    placement: "bottom-start",
-    mainAxisOffset: 4,
-    maxHeightCeiling: 400,
-    matchReferenceMinMaxWidth: { min: 120, max: 200 },
-    // Use the viewport as the boundary so dropdowns escape FloatingPanel
-    // (or any other overflow:hidden ancestor of the input).
-    boundary: "viewport",
-  });
-
-  useLayoutEffect(() => {
-    floating.refs.setReference(inputRef.current);
-    if (showDropdown) void floating.update();
-    // floating identity updates each render; only re-attach when visibility toggles
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync reference to toolbar input
-  }, [showDropdown]);
-
-  // In var mode, only show if we have design vars
-  // In tailwind mode, only show if we have tailwind options
-  if (!showDropdown) return null;
-
   const vw = typeof window !== "undefined" ? window.innerWidth : 1536;
   const maxPanel = Math.min(vw - 16, 320);
-  const style: React.CSSProperties = {
-    ...floating.floatingStyles,
-    zIndex: OVERLAY_Z_UNIFIED_DROPDOWN,
-    width: "fit-content",
-    maxWidth: maxPanel,
-  };
+  const popoverStyle: React.CSSProperties = { width: "fit-content", maxWidth: maxPanel };
 
   // Helper to get display label (humanize token)
   const getDisplayLabel = (option: string) => {
@@ -206,8 +178,13 @@ export function UnifiedDropdown({
         );
       }
       case "shadow": {
+        // Wrapper provides padding so the shadow has room to render outside the swatch.
+        // The inner card carries the actual shadow class — bigger (size-7) and colored
+        // so it doesn't read as a checkbox at a glance.
         return (
-          <div className={`border-base-300 bg-base-200 size-4 shrink-0 rounded border ${option}`} />
+          <div className="flex size-9 shrink-0 items-center justify-center">
+            <div className={`bg-base-100 size-7 rounded ${option}`} />
+          </div>
         );
       }
       default:
@@ -241,17 +218,19 @@ export function UnifiedDropdown({
       return (
         <div key={groupType} className="p-2">
           <div className="space-y-1">
-            {Object.entries(subgroups).map(([subgroupName, subgroupOptions]) => (
-              <SubgroupItem
-                key={subgroupName}
-                subgroupName={subgroupName}
-                options={subgroupOptions}
-                showHints={false}
-                hintType={hintType}
-                onSelect={onSelect}
-                propTag={propTag}
-              />
-            ))}
+            {Object.entries(subgroups)
+              .filter(([, subgroupOptions]) => subgroupOptions.length > 0)
+              .map(([subgroupName, subgroupOptions]) => (
+                <SubgroupItem
+                  key={subgroupName}
+                  subgroupName={subgroupName}
+                  options={subgroupOptions}
+                  showHints={false}
+                  hintType={hintType}
+                  onSelect={onSelect}
+                  propTag={propTag}
+                />
+              ))}
           </div>
         </div>
       );
@@ -282,14 +261,22 @@ export function UnifiedDropdown({
 
   // If searching, show filtered flat list
   if (filteredOptions) {
-    return ReactDOM.createPortal(
-      <div
-        data-unified-dropdown
-        style={style}
-        ref={floating.refs.setFloating}
+    return (
+      <AnchoredPopover
+        open={showDropdown}
+        onOpenChange={() => {}}
+        anchor={inputRef}
+        placement="bottom-start"
+        mainAxisOffset={4}
+        maxHeightCeiling={400}
+        matchAnchorWidth={{ min: 120, max: 200 }}
+        boundary={[]}
+        zIndex={OVERLAY_Z_UNIFIED_DROPDOWN}
+        disableDismiss
+        style={popoverStyle}
         className="pagehub-sdk-root ph-panel text-base-content flex w-fit flex-col"
       >
-        <div className="ph-select-item-host flex flex-1 flex-col">
+        <div data-unified-dropdown className="ph-select-item-host flex flex-1 flex-col">
           <button
             type="button"
             onClick={() => onSelect("")}
@@ -322,8 +309,7 @@ export function UnifiedDropdown({
             )}
           </div>
         </div>
-      </div>,
-      document.querySelector(".pagehub-sdk-root") || document.body
+      </AnchoredPopover>
     );
   }
 
@@ -466,14 +452,22 @@ export function UnifiedDropdown({
   };
 
   // Otherwise show organized groups with configurable layout (tailwind mode - no design vars)
-  return ReactDOM.createPortal(
-    <div
-      data-unified-dropdown
-      style={style}
-      ref={floating.refs.setFloating}
+  return (
+    <AnchoredPopover
+      open={showDropdown}
+      onOpenChange={() => {}}
+      anchor={inputRef}
+      placement="bottom-start"
+      mainAxisOffset={4}
+      maxHeightCeiling={400}
+      matchAnchorWidth={{ min: 120, max: 200 }}
+      boundary={[]}
+      zIndex={OVERLAY_Z_UNIFIED_DROPDOWN}
+      disableDismiss
+      style={popoverStyle}
       className="pagehub-sdk-root ph-panel text-base-content flex w-fit flex-col overflow-hidden"
     >
-      <div className="ph-select-item-host flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div data-unified-dropdown className="ph-select-item-host flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* Main Options Section - Configurable Layout */}
         {!isVarMode && renderMainContent()}
 
@@ -602,7 +596,6 @@ export function UnifiedDropdown({
           Reset to Default
         </button>
       </div>
-    </div>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    </AnchoredPopover>
   );
 }

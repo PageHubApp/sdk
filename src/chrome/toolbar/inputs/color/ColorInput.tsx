@@ -225,6 +225,7 @@ export const ColorInput = (__props: any) => {
           <div
             className="pagehub-sdk-root fixed z-[1200]"
             style={{ top: popoverPos.top, right: popoverPos.right }}
+            data-floating-allow
           >
             <div className="border-base-300 bg-base-200 rounded-xl border shadow-xl">
               <TokenPicker

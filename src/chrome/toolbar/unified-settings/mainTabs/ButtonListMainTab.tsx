@@ -2,13 +2,13 @@ import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { IconInput } from "../../inputs/media/IconInput";
 import ActionInput from "../../inputs/action/ActionInput";
-import { ListEditor } from "../../inputs/preset/ListItemPopover";
+import { ListEditor } from "../../inputs/preset/ListEditor";
 import { ToolbarSection } from "../../ToolbarSection";
 import { atom, useAtomState, useAtomInstance } from "@zedux/react";
 import { BatchOperationAtom } from "@/utils/atoms";
 import { applyPeerClassInherit } from "../../../shell/peerInherit/applyPeerClassInherit";
 import { TbEdit, TbPlus } from "react-icons/tb";
-import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { renderComponentSlots } from "../helpers";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedButtonListItemAtom = atom<any>("selectedbuttonlistitem_unified", null);
@@ -53,11 +53,7 @@ export const ButtonListMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Add, remove, and reorder buttons in this group."
-      >
+      <ToolbarSection collapsible={false}>
         <ListEditor
           items={childButtons || []}
           activeIndex={activeIndex}

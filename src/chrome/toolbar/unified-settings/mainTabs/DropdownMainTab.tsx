@@ -9,11 +9,7 @@ export const DropdownMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Dropdown trigger and position settings."
-      >
+      <ToolbarSection collapsible={false}>
         <ToolbarItem propKey="trigger" propType="component" type="select" label="Trigger">
           <option value="click">Click</option>
           <option value="hover">Hover</option>

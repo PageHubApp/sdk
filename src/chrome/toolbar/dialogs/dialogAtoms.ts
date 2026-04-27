@@ -33,14 +33,6 @@ export const FontFamilyDialogAtom = atom("fontFamily", {
   originalValue: null,
 } as any);
 
-export const IconPickerDialogAtom = atom("iconPickerDialog", {
-  enabled: false,
-  prefix: "",
-  changed: null,
-  onUseMedia: null,
-  e: null,
-} as any);
-
 export const PatternDialogAtom = atom("patternDialog", {
   enabled: false,
   prefix: "",

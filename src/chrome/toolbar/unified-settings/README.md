@@ -16,10 +16,15 @@ properties/              — Definition files (one per domain)
   sectionDefs.ts         — All section definitions (id, title, tab, icon, sortOrder)
   typography.ts          — Font, size, weight, color, alignment + advanced
   background.ts          — Color, image, pattern, gradient + clip/blend
-  appearance.ts          — Border, radius, shadow, opacity + ring/outline/divide
-  effects.ts             — Transition, blur + transforms/filters/backdrop
+  appearance.ts          — Styles section: opacity, shadow, radius + Border / Ring /
+                           Outline / Divide bundles
+  effects.ts             — Filter + Backdrop bundles (Styles section), transition
+                           timing (Effects section), Transforms section props
+                           (scale, rotate, translate, skew, origin, GPU/will-change)
   layout.ts              — Size properties (width, height, min/max, aspect)
-  display.ts             — Position, cursor, overflow, offsets + CSS utilities
+  display.ts             — Position, inset (shorthand), order + behavior props
+                           moved to Styles (visibility, overflow, cursor, z-index,
+                           pointer-events, user-select)
   aria.ts                — ARIA labels, roles, focus, live regions
   alignment.ts           — Layout direction, gap, align/justify, padding, margin
   interactions.ts        — Action (custom) + hover styles
@@ -34,7 +39,7 @@ properties/              — Definition files (one per domain)
 | ------------ | ------------------------------------------------------------------------------------- |
 | Component    | Component settings (MainTab), Action, Data source                                     |
 | Layout       | Layout (direction, gap, align, padding, margin), Size                                 |
-| Design       | Typography, Background, Appearance, Border, Ring & Outline                            |
+| Design       | Typography, Background, Styles, Transforms                                            |
 | Interactions | Hover, Conditions, Animation, Tailwind Effects, Scroll Effect, Overflow               |
 | Advanced     | Properties, ARIA, Modifiers, Classes, Display, AI Context, Import/Export, Permissions |
 
@@ -147,7 +152,7 @@ For *compound* properties that bundle several controls into one logical thing th
 {
   id: "ring",
   label: "Ring",
-  section: "ring-outline",
+  section: "styles",
   hideKey: "ringOutline",
   input: {
     type: "bundle",
@@ -155,7 +160,7 @@ For *compound* properties that bundle several controls into one logical thing th
       {
         id: "ringWidth",
         label: "Width",
-        section: "ring-outline",
+        section: "styles",
         keywords: ["ring", "width"],
         input: {
           type: "universal",

@@ -64,16 +64,17 @@ export const IpsumGenerator = ({ propKey, propType }) => {
   ];
 
   return (
-    <div className="flex items-center justify-between px-1">
-      <span className="text-neutral-content text-xs">Lorem</span>
-      <div className="flex gap-0.5">
+    <div className="flex items-center gap-0.5">
+      <span className="text-base-content w-20 shrink-0 truncate text-xs">Sample</span>
+      <div className="bg-neutral ml-auto flex w-fit shrink-0 items-center gap-1 rounded-md p-1">
         {buttons.map(({ icon: Icon, label, generate }) => (
           <button
             key={label}
             type="button"
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
             data-tooltip-content={label}
-            className="text-neutral-content hover:bg-neutral hover:text-base-content rounded-md p-1.5 transition-colors"
+            data-tooltip-place="top"
+            className="text-neutral-content hover:bg-base-100 hover:text-base-content flex h-6 items-center justify-center rounded px-2 transition-colors"
             onClick={() => save(generate())}
           >
             <Icon className="size-3.5" />

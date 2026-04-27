@@ -387,6 +387,11 @@ function stripUnusedKeyframes(css: string): string {
   return result;
 }
 
+// ── Per-site breakpoint rewriting ─────────────────────────────────────────
+
+import { applyBreakpointRewrite } from "./utils/breakpointRewrite";
+export { applyBreakpointRewrite, rewriteBreakpoints } from "./utils/breakpointRewrite";
+
 // ── Public API ─────────────────────────────────────────────────────────────
 
 /**
@@ -405,8 +410,14 @@ export async function compileCSS(options: {
   nodes?: Record<string, any>;
   /** Strip unused @keyframes and skip spotlight presets (for standalone exports) */
   lean?: boolean;
+  /**
+   * Per-site breakpoint overrides (px). When provided and non-default, the compiled
+   * output's `@media (width >= …)` thresholds (Tailwind + DaisyUI) are rewritten in
+   * place via `applyBreakpointRewrite`.
+   */
+  breakpoints?: Record<string, number>;
 }): Promise<string> {
-  const { classes, themeCSS, lean = false } = options;
+  const { classes, themeCSS, lean = false, breakpoints } = options;
 
   if (classes.length === 0) return themeCSS || "";
 
@@ -434,6 +445,10 @@ export async function compileCSS(options: {
     );
     stripped = daisyStripped + " " + stripped;
   }
+
+  // Apply per-site breakpoint rewrite (no-op when defaults). Must run BEFORE minify
+  // so the `@media (width >= 48rem)` form (with spaces) is intact for the regex.
+  stripped = applyBreakpointRewrite(stripped, breakpoints);
 
   // Strip unused @keyframes for lean exports (standalone HTML)
   if (lean) {
@@ -495,6 +510,7 @@ export async function buildStaticPage(
   const css = await compileCSS({
     classes: renderResult.classes,
     themeCSS: renderResult.themeCSS,
+    breakpoints: renderResult.breakpoints,
   });
 
   // 3. Optionally wrap in a complete HTML document
@@ -573,7 +589,13 @@ export async function compileTailwindCSS(pageData: string): Promise<string | nul
 
     if (candidates.length === 0) return null;
 
-    const css = await compileCSS({ classes: candidates, nodes });
+    // Per-site breakpoints live on ROOT.props.theme.breakpoints. Surface them so
+    // the compiled CSS @media thresholds reflect the site's chosen widths.
+    const rootProps = nodes?.ROOT?.props ?? {};
+    const breakpoints: Record<string, number> | undefined =
+      rootProps.theme?.breakpoints || undefined;
+
+    const css = await compileCSS({ classes: candidates, nodes, breakpoints });
     return css || null;
   } catch (error) {
     console.error("[compileTailwindCSS] Failed:", error);

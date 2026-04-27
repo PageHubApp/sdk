@@ -4,7 +4,7 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import Router from "next/router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { TbPencil } from "react-icons/tb";
+import { TbPencil, TbX } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
 import { ToolboxMenu, toolboxMenuInitialState } from "../rendering/toolboxMenuAtom";
@@ -44,8 +44,14 @@ import { initPageNavigation, updateOnIsolate, usePageNavigation } from "../../ut
 import { LoadingBar } from "../primitives/LoadingBar";
 
 import {
+  AppliedBreakpointsAtom,
+  type AppliedBreakpointsShape,
+  BreakpointWidthOverrideAtom,
   BreakpointZoomAtom,
+  PendingBreakpointOverrideAtom,
   PreviewAtom,
+  ResponsiveAtom,
+  ShowBreakpointMarkersAtom,
   ViewAtom,
   DeviceAtom,
   DeviceDimensionsAtom,
@@ -57,12 +63,12 @@ import {
 import { useEditorStore } from "../../core/store";
 import {
   EDITOR_CANVAS_BREAKPOINT_PX,
+  getCanvasBreakpointPx,
   isEditorCanvasBreakpointView,
 } from "../../utils/tailwind/className";
-import {
-  getEditorTabletCanvasClasses,
-  getEditorWidthOnlyCanvasClasses,
-} from "./editorCanvasLayout";
+import { getEditorWidthOnlyCanvasClasses } from "./editorCanvasLayout";
+import { DEVICE_FRAME_BY_VIEW, getDeviceFrameSpec } from "./deviceFrames";
+import { rewriteBreakpoints, type BpKey } from "../../utils/breakpointRewrite";
 
 export function Viewport({ children }: { children: React.ReactNode }) {
   const {
@@ -80,6 +86,12 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       .filter((id: string) => state.nodes[id]?.data?.props?.type === "page")
       .join(",");
   });
+
+  const themeBreakpoints = useEditor((state: any) => {
+    return state.nodes[ROOT_NODE]?.data?.props?.theme?.breakpoints as
+      | Record<string, number>
+      | undefined;
+  }) as Record<string, number> | undefined;
 
   // ─── Composed hooks ───
   useComponentSync();
@@ -103,7 +115,8 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   }, [setOptions]);
 
   // ─── Atoms ───
-  const classDarkEdit = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const [viewSelectionState, setViewSelection] = useAtomState(ViewSelectionAtom);
+  const classDarkEdit = viewSelectionState.dark ?? false;
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const viewMode = useAtomValue(ViewModeAtom);
@@ -115,6 +128,15 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const deviceDimensions = useAtomValue(DeviceDimensionsAtom);
   const deviceZoom = useAtomValue(DeviceZoomAtom);
   const [breakpointZoom, setBreakpointZoom] = useAtomState(BreakpointZoomAtom);
+  const [breakpointWidthOverride, setBreakpointWidthOverride] = useAtomState(
+    BreakpointWidthOverrideAtom
+  );
+  const responsive = useAtomValue(ResponsiveAtom);
+  const showBreakpointMarkers = useAtomValue(ShowBreakpointMarkersAtom);
+  const [pendingBreakpointOverride, setPendingBreakpointOverride] = useAtomState(
+    PendingBreakpointOverrideAtom
+  );
+  const [appliedBreakpoints, setAppliedBreakpoints] = useAtomState(AppliedBreakpointsAtom);
   const [preview, setPreview] = useAtomState(PreviewAtom);
   const setEnabled = useSetAtomState(EnabledAtom);
   const isolated = useAtomValue(IsolateAtom);
@@ -226,9 +248,33 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setStorePreview(preview);
   }, [preview, setStorePreview]);
+
+  // ─── Sync canvas breakpoint → toolbar scope chips ───
+  // Picking a canvas breakpoint highlights the matching scope chip so users see
+  // which layer their next class edit will write to. Canvas "desktop" (fluid)
+  // clears all chips → implicit fallback writes to base/mobile.
   useEffect(() => {
-    setDevice(view === "mobile");
-  }, [view, setDevice]);
+    const canvasToScope: Record<string, string | null> = {
+      mobile: "mobile",
+      sm: "sm",
+      md: "desktop",
+      lg: "lg",
+      xl: "xl",
+      "2xl": "2xl",
+      desktop: null,
+      tablet: null,
+    };
+    const target = canvasToScope[view] ?? null;
+    setViewSelection(prev => ({
+      ...prev,
+      mobile: target === "mobile",
+      sm: target === "sm",
+      desktop: target === "desktop",
+      lg: target === "lg",
+      xl: target === "xl",
+      "2xl": target === "2xl",
+    }));
+  }, [view, setViewSelection]);
 
   // ─── Init localStorage ───
   useEffect(() => {
@@ -384,68 +430,278 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     ? "flex-1 min-w-0 relative scrollbar-light bg-base-100 overflow-y-auto overflow-x-hidden"
     : "w-full h-full overflow-auto relative";
 
-  const deviceClasses = {
-    mobile: [
-      "mx-auto flex z-2 transition overflow-hidden shrink-0 p-[6px] rounded-[44px] bg-[#1a1a1a] border-[3px] border-[#2a2a2a] shadow-[0_0_0_1px_rgba(0,0,0,0.3),0_20px_60px_-10px_rgba(0,0,0,0.5),0_0_40px_-5px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] relative",
-      "w-full h-full flex overflow-auto rounded-[38px] relative bg-base-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-    ],
-    desktop: [
-      enabled
-        ? "flex h-full overflow-hidden flex-row w-full absolute top-0 left-0 right-0 bottom-0"
-        : "",
-      enabled
-        ? "w-full h-full overflow-auto "
-        : "w-full h-full overflow-auto",
-    ],
-  };
+  // Resolve canvas breakpoint widths from site theme (falls back to defaults).
+  const resolvedBreakpointPx = getCanvasBreakpointPx({ breakpoints: themeBreakpoints });
+
+  // Resolve a device frame spec when Device mode is on and view is a real breakpoint.
+  // (`view === "desktop"` has no frame; popover already redirects to mobile in that case.)
+  const deviceFrame =
+    device && isEditorCanvasBreakpointView(view)
+      ? getDeviceFrameSpec(
+          view,
+          // Only the phone frame respects user-customizable phone dimensions.
+          DEVICE_FRAME_BY_VIEW[view] === "phone" ? deviceDimensions : undefined,
+          resolvedBreakpointPx
+        )
+      : null;
+  const isPhoneFrame = deviceFrame?.kind === "phone";
 
   let viewClasses: Record<string, string[]> = {
-    mobile: [
-      `flex overflow-hidden flex-row mx-auto w-${enabled ? "[380px]" : "full"} h-full `,
-      enabled
-        ? "w-full rounded-lg overflow-y-auto overflow-x-hidden scrollbar-light bg-base-100 relative"
-        : "w-full h-full overflow-auto relative",
-    ],
     desktop: [desktopOuter, desktopInner],
   };
-
-  viewClasses.sm = getEditorTabletCanvasClasses(enabled, EDITOR_CANVAS_BREAKPOINT_PX.sm);
-  ["md", "lg", "xl", "2xl"].forEach(bp => {
-    viewClasses[bp] = getEditorWidthOnlyCanvasClasses(
-      enabled,
-      desktopOuter,
-      desktopInner,
-      (EDITOR_CANVAS_BREAKPOINT_PX as Record<string, number>)[bp]
-    );
+  ["mobile", "sm", "md", "lg", "xl", "2xl"].forEach(bp => {
+    viewClasses[bp] = getEditorWidthOnlyCanvasClasses(enabled);
   });
-
-  if (device) viewClasses = deviceClasses;
+  if (deviceFrame) {
+    viewClasses[view] = [deviceFrame.outerClassName, deviceFrame.innerClassName];
+  } else if (device) {
+    // Device toggle on but breakpoint not resolvable — fall back to fluid desktop.
+    viewClasses[view] = [desktopOuter, desktopInner];
+  }
   const activeClass = viewClasses[view] ?? viewClasses.desktop;
 
-  // Device bezel: border (3px) + padding (6px) on each side
-  const bezelX = 18;
-  const bezelY = 18;
   const breakpointActive = !device && isEditorCanvasBreakpointView(view);
   const canvasZoomActive = !device && (view === "desktop" || isEditorCanvasBreakpointView(view));
-  const deviceStyles: React.CSSProperties =
-    device && view === "mobile"
-      ? ({
-          width: `${deviceDimensions.width + bezelX}px`,
-          height: `${deviceDimensions.height + bezelY}px`,
-          zoom: deviceZoom,
-          "--device-zoom-inverse": 1 / deviceZoom,
-        } as React.CSSProperties)
-      : canvasZoomActive && breakpointZoom !== 1
-        ? ({ zoom: breakpointZoom } as React.CSSProperties)
-        : {};
+  const deviceStyles: React.CSSProperties = deviceFrame
+    ? ({
+        width: `${deviceFrame.innerWidth + deviceFrame.bezelX}px`,
+        height: `${deviceFrame.innerHeight + deviceFrame.bezelY}px`,
+        paddingTop: deviceFrame.framePadding.top,
+        paddingRight: deviceFrame.framePadding.right,
+        paddingBottom: deviceFrame.framePadding.bottom,
+        paddingLeft: deviceFrame.framePadding.left,
+        zoom: deviceZoom,
+        "--device-zoom-inverse": 1 / deviceZoom,
+      } as React.CSSProperties)
+    : canvasZoomActive && breakpointZoom !== 1
+      ? ({ zoom: breakpointZoom } as React.CSSProperties)
+      : {};
+
+  // ─── Breakpoint canvas width (drag-resizable) ───
+  const breakpointWidthPx = breakpointActive
+    ? (breakpointWidthOverride[view] ??
+      (resolvedBreakpointPx as Record<string, number>)[view])
+    : null;
+  // Responsive ON: clamp to editor area (`min(100%, X)`) so the canvas never overflows.
+  // Responsive OFF: force exact breakpoint width — parent gets `overflow-auto` so the
+  // canvas can scroll horizontally when wider than the editor area.
+  const canvasOuterStyle: React.CSSProperties =
+    breakpointWidthPx != null
+      ? responsive
+        ? { ...deviceStyles, maxWidth: `min(100%, ${breakpointWidthPx}px)` }
+        : { ...deviceStyles, width: `${breakpointWidthPx}px`, maxWidth: "none", flexShrink: 0 }
+      : deviceStyles;
+
+  const handlePointerDownEdge = useCallback(
+    (side: "left" | "right") => (e: React.PointerEvent) => {
+      if (!breakpointActive || !breakpointWidthPx) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const startWidth = breakpointWidthPx;
+      const z = canvasZoomActive && breakpointZoom !== 1 ? breakpointZoom : 1;
+      const minW = 240;
+      const maxW = 3840;
+      const onMove = (ev: PointerEvent) => {
+        const dxScreen = ev.clientX - startX;
+        // Drag is symmetric (canvas is mx-auto centered): each side moves half the cursor delta.
+        // Right handle: cursor moving right grows the canvas; left handle: cursor moving left grows it.
+        const delta = (side === "right" ? dxScreen : -dxScreen) * 2;
+        const next = Math.max(minW, Math.min(maxW, Math.round(startWidth + delta / z)));
+        setBreakpointWidthOverride(prev => ({ ...prev, [view]: next }));
+      };
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+        window.removeEventListener("blur", onUp);
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+      window.addEventListener("blur", onUp);
+    },
+    [breakpointActive, breakpointWidthPx, breakpointZoom, canvasZoomActive, setBreakpointWidthOverride, view]
+  );
+
+  // ─── Breakpoint marker drag (per Tailwind breakpoint sm/md/lg/xl/2xl) ───
+  // Live-preview goes to PendingBreakpointOverrideAtom (no commit). Pointer-up
+  // commits to ROOT.props.theme.breakpoints via a single history entry, then
+  // rewrites the in-page <style id="tailwind-compiled"> in place.
+  const breakpointMarkerOrder = ["sm", "md", "lg", "xl", "2xl"] as const;
+  type BpKey = (typeof breakpointMarkerOrder)[number];
+
+  const getCommittedBpPx = useCallback(
+    (bp: BpKey): number => {
+      const fromTheme = themeBreakpoints?.[bp];
+      if (typeof fromTheme === "number") return fromTheme;
+      return EDITOR_CANVAS_BREAKPOINT_PX[bp];
+    },
+    [themeBreakpoints]
+  );
+
+  const getEffectiveBpPx = useCallback(
+    (bp: BpKey): number => pendingBreakpointOverride[bp] ?? getCommittedBpPx(bp),
+    [pendingBreakpointOverride, getCommittedBpPx]
+  );
+
+  const handleMarkerPointerDown = useCallback(
+    (bp: BpKey) => (e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const startX = e.clientX;
+      const startWidth = getEffectiveBpPx(bp);
+      const z = canvasZoomActive && breakpointZoom !== 1 ? breakpointZoom : 1;
+      // Clamp inside neighboring breakpoints (keep ordering monotonically increasing).
+      const idx = breakpointMarkerOrder.indexOf(bp);
+      const prev = idx > 0 ? breakpointMarkerOrder[idx - 1] : null;
+      const next = idx < breakpointMarkerOrder.length - 1 ? breakpointMarkerOrder[idx + 1] : null;
+      const minW = prev ? getCommittedBpPx(prev) + 1 : 240;
+      const maxW = next ? getCommittedBpPx(next) - 1 : 3840;
+
+      const onMove = (ev: PointerEvent) => {
+        const dxScreen = ev.clientX - startX;
+        const nextPx = Math.max(
+          minW,
+          Math.min(maxW, Math.round(startWidth + dxScreen / z))
+        );
+        setPendingBreakpointOverride(prevState => ({ ...prevState, [bp]: nextPx }));
+      };
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+        window.removeEventListener("blur", onUp);
+
+        // Read the final pending value before clearing.
+        let finalPx: number | undefined;
+        setPendingBreakpointOverride(prevState => {
+          finalPx = prevState[bp];
+          const { [bp]: _drop, ...rest } = prevState;
+          return rest;
+        });
+        if (typeof finalPx !== "number" || finalPx === startWidth) return;
+
+        // Commit: persist to ROOT.props.theme.breakpoints as one history entry.
+        // (Single setProp is naturally one undo step — no need for history.merge.)
+        actions.setProp(ROOT_NODE, (props: any) => {
+          if (!props.theme) props.theme = {};
+          if (!props.theme.breakpoints) props.theme.breakpoints = {};
+          props.theme.breakpoints[bp] = finalPx;
+        });
+
+        // Rewrite the live <style id="tailwind-compiled"> from currently-applied
+        // values to the new committed values, in place.
+        const styleEl = document.getElementById("tailwind-compiled") as HTMLStyleElement | null;
+        if (styleEl) {
+          const fromBps = appliedBreakpoints;
+          const toBps = { ...fromBps, [bp]: finalPx };
+          styleEl.textContent = rewriteBreakpoints(
+            styleEl.textContent || "",
+            fromBps,
+            toBps
+          );
+          setAppliedBreakpoints(toBps);
+        }
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+      window.addEventListener("blur", onUp);
+    },
+    [
+      actions,
+      appliedBreakpoints,
+      breakpointZoom,
+      canvasZoomActive,
+      getCommittedBpPx,
+      getEffectiveBpPx,
+      setAppliedBreakpoints,
+      setPendingBreakpointOverride,
+    ]
+  );
+
+  const resetMarkerBreakpoint = useCallback(
+    (bp: BpKey) => () => {
+      const defaultPx = EDITOR_CANVAS_BREAKPOINT_PX[bp];
+      const current = themeBreakpoints?.[bp];
+      if (current === undefined || current === defaultPx) return;
+
+      // Remove the override from theme.breakpoints (delete the key, keep others).
+      actions.setProp(ROOT_NODE, (props: any) => {
+        if (props.theme?.breakpoints) {
+          delete props.theme.breakpoints[bp];
+          if (Object.keys(props.theme.breakpoints).length === 0) delete props.theme.breakpoints;
+        }
+      });
+
+      const styleEl = document.getElementById("tailwind-compiled") as HTMLStyleElement | null;
+      if (styleEl) {
+        const fromBps = appliedBreakpoints;
+        const toBps = { ...fromBps, [bp]: defaultPx };
+        styleEl.textContent = rewriteBreakpoints(
+          styleEl.textContent || "",
+          fromBps,
+          toBps
+        );
+        setAppliedBreakpoints(toBps);
+      }
+    },
+    [actions, appliedBreakpoints, setAppliedBreakpoints, themeBreakpoints]
+  );
+
+  // On mount: seed AppliedBreakpointsAtom from theme.breakpoints + apply rewrite
+  // to the SSR-baked <style> tag in case it didn't run with current theme.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const styleEl = document.getElementById("tailwind-compiled") as HTMLStyleElement | null;
+    if (!styleEl) return;
+    const target: AppliedBreakpointsShape = {
+      sm: themeBreakpoints?.sm ?? 640,
+      md: themeBreakpoints?.md ?? 768,
+      lg: themeBreakpoints?.lg ?? 1024,
+      xl: themeBreakpoints?.xl ?? 1280,
+      "2xl": themeBreakpoints?.["2xl"] ?? 1536,
+    };
+    // Only rewrite if appliedBreakpoints differs from target.
+    const sameAsApplied = (Object.keys(target) as Array<keyof typeof target>).every(
+      k => appliedBreakpoints[k] === target[k]
+    );
+    if (!sameAsApplied) {
+      styleEl.textContent = rewriteBreakpoints(
+        styleEl.textContent || "",
+        appliedBreakpoints,
+        target
+      );
+      setAppliedBreakpoints(target);
+    }
+    // Run only when committed theme.breakpoints changes (not on every appliedBreakpoints write).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    themeBreakpoints?.sm,
+    themeBreakpoints?.md,
+    themeBreakpoints?.lg,
+    themeBreakpoints?.xl,
+    themeBreakpoints?.["2xl"],
+  ]);
+
+  const resetBreakpointWidth = useCallback(() => {
+    if (!breakpointActive) return;
+    setBreakpointWidthOverride(prev => {
+      if (!(view in prev)) return prev;
+      const { [view]: _drop, ...rest } = prev;
+      return rest;
+    });
+  }, [breakpointActive, setBreakpointWidthOverride, view]);
 
   // ─── Render ───
   return (
     <>
       <ViewportMeta />
       <div
-        className={`relative flex h-full w-full min-w-0 flex-1 overflow-hidden ${
-          (device && view === "mobile") || isEditorCanvasBreakpointView(view)
+        className={`relative flex h-full w-full min-w-0 flex-1 ${
+          breakpointActive && !responsive ? "overflow-x-auto overflow-y-hidden" : "overflow-hidden"
+        } ${
+          deviceFrame || isEditorCanvasBreakpointView(view)
             ? "bg-neutral/50 items-center justify-center"
             : "flex-row"
         }`}
@@ -499,14 +755,40 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           <ComponentCanvasViewport className="absolute inset-0 z-30" />
         )}
 
-        {enabled && device && view === "mobile" && (
+        {enabled && deviceFrame && (
           <div className="absolute top-4 right-0 left-0 z-50">
             <div className="bg-neutral/95 mx-auto flex w-fit items-center gap-4 rounded-xl px-4 py-2 shadow-lg backdrop-blur-sm">
-              <DeviceSelector onClose={() => setDevice(false)} />
+              {isPhoneFrame ? (
+                <DeviceSelector onClose={() => setDevice(false)} />
+              ) : (
+                <div className="text-neutral-content flex items-center gap-2 text-xs">
+                  <span className="font-medium capitalize">{deviceFrame.kind}</span>
+                  <span className="opacity-70">
+                    {deviceFrame.innerWidth} × {deviceFrame.innerHeight}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setDevice(false)}
+                    className="hover:text-base-content ml-2 transition-colors"
+                    data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                    data-tooltip-content="Exit device mode"
+                    aria-label="Exit device mode"
+                  >
+                    <TbX className="size-4" />
+                  </button>
+                </div>
+              )}
               <div className="bg-border h-4 w-px" />
               <CanvasZoom
                 zoomAtom={DeviceZoomAtom}
-                fitMode={{ kind: "height", target: deviceDimensions.height, chromeOffset: 350 }}
+                fitMode={{
+                  kind: "both",
+                  targetW: deviceFrame.innerWidth + deviceFrame.bezelX,
+                  targetH: deviceFrame.innerHeight + deviceFrame.bezelY,
+                  chromeOffsetW: 220,
+                  chromeOffsetH: 220,
+                  max: 1,
+                }}
                 activeKey="device"
                 storageKey="editor-device-zoom"
               />
@@ -514,11 +796,95 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <div className={`${activeClass[0]} w-full`} style={deviceStyles}>
-          {device && view === "mobile" && (
+        <div className={`${activeClass[0]} w-full relative`} style={canvasOuterStyle}>
+          {deviceFrame?.decoration === "notch" && (
             <div className="pointer-events-none absolute top-[14px] right-0 left-0 z-60 flex justify-center">
               <div className="h-[30px] w-[105px] rounded-full bg-[#0a0a0a]" />
             </div>
+          )}
+          {deviceFrame?.decoration === "camera-top" && (
+            <div className="pointer-events-none absolute top-[6px] right-0 left-0 z-60 flex justify-center">
+              <div className="size-1.5 rounded-full bg-[#0a0a0a]" />
+            </div>
+          )}
+          {deviceFrame?.decoration === "camera-side" && (
+            <div className="pointer-events-none absolute top-0 bottom-0 left-[6px] z-60 flex items-center">
+              <div className="size-1.5 rounded-full bg-[#0a0a0a]" />
+            </div>
+          )}
+          {enabled && breakpointActive && (
+            <>
+              <div
+                role="separator"
+                aria-orientation="vertical"
+                aria-label="Resize canvas (drag) — double-click to reset"
+                onPointerDown={handlePointerDownEdge("left")}
+                onDoubleClick={resetBreakpointWidth}
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content={`${breakpointWidthPx}px — drag to resize, double-click to reset`}
+                data-tooltip-place="right"
+                className="group absolute top-0 left-0 z-40 flex h-full w-5 -translate-x-full cursor-ew-resize items-center justify-center select-none"
+              >
+                <div className="bg-base-content/30 group-hover:bg-base-content/60 h-10 w-1 rounded-full transition-colors" />
+              </div>
+              <div
+                role="separator"
+                aria-orientation="vertical"
+                aria-label="Resize canvas (drag) — double-click to reset"
+                onPointerDown={handlePointerDownEdge("right")}
+                onDoubleClick={resetBreakpointWidth}
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content={`${breakpointWidthPx}px — drag to resize, double-click to reset`}
+                data-tooltip-place="left"
+                className="group absolute top-0 right-0 z-40 flex h-full w-5 translate-x-full cursor-ew-resize items-center justify-center select-none"
+              >
+                <div className="bg-base-content/30 group-hover:bg-base-content/60 h-10 w-1 rounded-full transition-colors" />
+              </div>
+            </>
+          )}
+          {enabled && !device && showBreakpointMarkers && (
+            <>
+              {breakpointMarkerOrder.map(bp => {
+                const px = getEffectiveBpPx(bp);
+                const isPending = pendingBreakpointOverride[bp] !== undefined;
+                const isCustom = themeBreakpoints?.[bp] !== undefined;
+                return (
+                  <div
+                    key={bp}
+                    role="separator"
+                    aria-orientation="vertical"
+                    aria-label={`Breakpoint ${bp.toUpperCase()} at ${px}px — drag to adjust, double-click to reset`}
+                    onPointerDown={handleMarkerPointerDown(bp)}
+                    onDoubleClick={resetMarkerBreakpoint(bp)}
+                    data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                    data-tooltip-content={`${bp.toUpperCase()} · ${px}px — drag to adjust${isCustom ? ", double-click to reset" : ""}`}
+                    data-tooltip-place="right"
+                    className="group absolute top-0 bottom-0 z-30 w-3 -translate-x-1/2 cursor-ew-resize select-none"
+                    style={{ left: `${px}px` }}
+                  >
+                    <div
+                      className="pointer-events-none absolute inset-y-0 left-1/2"
+                      style={{
+                        borderLeft: isPending
+                          ? "1px dashed rgba(99,102,241,0.9)"
+                          : isCustom
+                            ? "1px dashed rgba(99,102,241,0.6)"
+                            : "1px dashed rgba(120,120,120,0.45)",
+                      }}
+                    />
+                    <span
+                      className={`pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 rounded bg-base-200 px-1 font-mono text-[10px] leading-none whitespace-nowrap ${
+                        isPending || isCustom
+                          ? "text-primary"
+                          : "text-base-content/70 group-hover:text-base-content"
+                      }`}
+                    >
+                      {bp.toUpperCase()} · {px}
+                    </span>
+                  </div>
+                );
+              })}
+            </>
           )}
           <div
             id="viewport"
@@ -535,24 +901,34 @@ export function Viewport({ children }: { children: React.ReactNode }) {
           >
             {children}
           </div>
-          {device && view === "mobile" && (
+          {deviceFrame?.decoration === "notch" && (
             <div className="pointer-events-none absolute right-0 bottom-[14px] left-0 z-60 flex justify-center">
               <div className="bg-foreground/30 h-[5px] w-[120px] rounded-full" />
             </div>
           )}
+          {deviceFrame?.decoration === "laptop-chin" && (
+            <div className="pointer-events-none absolute right-0 bottom-[8px] left-0 z-60 flex justify-center">
+              <div className="h-[3px] w-[120px] rounded-full bg-[#3a3a3a]" />
+            </div>
+          )}
+          {deviceFrame?.decoration === "monitor-stand" && (
+            <div className="pointer-events-none absolute right-0 bottom-[10px] left-0 z-60 flex justify-center">
+              <div className="h-[2px] w-[180px] rounded-full bg-[#3a3a3a]" />
+            </div>
+          )}
         </div>
 
-        {device && view === "mobile" && enabled && (
+        {deviceFrame && enabled && (
           <DeviceScrollbar
-            deviceWidth={deviceDimensions.width + bezelX}
-            deviceHeight={deviceDimensions.height + bezelY}
+            deviceWidth={deviceFrame.innerWidth + deviceFrame.bezelX}
+            deviceHeight={deviceFrame.innerHeight + deviceFrame.bezelY}
             deviceZoom={deviceZoom}
             sideBarOpen={sideBarOpen}
             sideBarLeft={sideBarLeft}
           />
         )}
 
-        {device && view === "mobile" && (
+        {deviceFrame && (
           <div id="device-tools-portal" className="pointer-events-none absolute inset-0 z-100" />
         )}
 

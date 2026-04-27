@@ -3,7 +3,7 @@ import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { MediaInput } from "../../inputs/media/MediaInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { ListEditor } from "../../inputs/preset/ListItemPopover";
+import { ListEditor } from "../../inputs/preset/ListEditor";
 import { atom, useAtomState, useAtomInstance } from "@zedux/react";
 import { BatchOperationAtom } from "@/utils/atoms";
 import { TbEdit } from "react-icons/tb";
@@ -46,11 +46,7 @@ export const ImageListMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Add, remove, and reorder images in this gallery."
-      >
+      <ToolbarSection collapsible={false}>
         <ListEditor
           items={childImages || []}
           activeIndex={activeIndex}

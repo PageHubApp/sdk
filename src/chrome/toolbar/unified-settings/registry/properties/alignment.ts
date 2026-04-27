@@ -11,7 +11,13 @@
  *  - isFlexOrGrid(cn): contains either
  */
 import React from "react";
-import { TbBoxPadding, TbSpacingHorizontal, TbSquare } from "react-icons/tb";
+import {
+  TbBoxPadding,
+  TbGridDots,
+  TbGridScan,
+  TbSpacingHorizontal,
+  TbSquare,
+} from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 
 const SPACING_TYPES = ["tailwind", "calc", "px", "em", "rem", "%"] as const;
@@ -21,13 +27,15 @@ const isGrid = (cn: string) => /\bgrid\b/.test(cn);
 const isFlexOrGrid = (cn: string) => isFlex(cn) || isGrid(cn);
 
 export const alignmentProperties: PropertyDef[] = [
-  // ─── Container-only layout preset ─────────────────────────────────
+  // ─── Container-only layout preset (always visible — slot self-hides
+  // for non-container nodes via useHasContainerType) ────────────────
   {
     id: "layout.preset",
     label: "Layout",
     section: "alignment",
     keywords: ["layout", "preset", "row", "column", "grid", "block", "container"],
     input: { type: "custom", component: "LayoutPresetSlot" },
+    pinned: true,
     sortOrder: -10,
   },
 
@@ -39,7 +47,7 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["direction", "row", "column", "flex"],
     input: { type: "custom", component: "FlexDirectionInput" },
     showWhen: isFlex,
-    pinned: true,
+    pinned: false,
     sortOrder: 0,
   },
   {
@@ -70,7 +78,7 @@ export const alignmentProperties: PropertyDef[] = [
       ],
     },
     showWhen: isFlexOrGrid,
-    pinned: true,
+    pinned: false,
     sortOrder: 5,
   },
   {
@@ -153,27 +161,8 @@ export const alignmentProperties: PropertyDef[] = [
     sortOrder: 130,
   },
 
-  // ─── Grid controls (visible when grid) ───────────────────────────
-  {
-    id: "gridCols",
-    label: "Columns",
-    section: "alignment",
-    keywords: ["grid", "columns", "cols", "template"],
-    input: { type: "tailwind-select", tailwindKey: "gridCols" },
-    showWhen: isGrid,
-    pinned: true,
-    sortOrder: 20,
-  },
-  {
-    id: "gridRows",
-    label: "Rows",
-    section: "alignment",
-    keywords: ["grid", "rows", "template"],
-    input: { type: "tailwind-select", tailwindKey: "gridRows" },
-    showWhen: isGrid,
-    pinned: true,
-    sortOrder: 21,
-  },
+  // gridCols / gridRows are owned by the LayoutPreset picker at the top of
+  // this section — no separate bundle here.
   {
     id: "placeContent",
     label: "Place Content",
@@ -184,41 +173,67 @@ export const alignmentProperties: PropertyDef[] = [
     sortOrder: 22,
   },
 
-  // ─── Grid (advanced) ─────────────────────────────────────────────
+  // ─── Grid span (advanced, visible when grid) ─────────────────────
   {
-    id: "gridColSpan",
-    label: "Col Span",
+    id: "gridSpan",
+    label: "Span",
     section: "alignment",
-    keywords: ["grid", "column", "span"],
-    input: { type: "tailwind-select", tailwindKey: "gridColSpan" },
+    keywords: ["grid", "span", "column", "row"],
     showWhen: isGrid,
     sortOrder: 200,
+    input: {
+      type: "bundle",
+      icon: React.createElement(TbGridScan, { className: "size-3.5" }),
+      properties: [
+        {
+          id: "gridColSpan",
+          label: "Col Span",
+          section: "alignment",
+          keywords: ["grid", "column", "span"],
+          input: { type: "tailwind-select", tailwindKey: "gridColSpan" },
+          inline: true,
+        },
+        {
+          id: "gridRowSpan",
+          label: "Row Span",
+          section: "alignment",
+          keywords: ["grid", "row", "span"],
+          input: { type: "tailwind-select", tailwindKey: "gridRowSpan" },
+          inline: true,
+        },
+      ],
+    },
   },
+
+  // ─── Place (advanced, visible when grid) ─────────────────────────
   {
-    id: "gridRowSpan",
-    label: "Row Span",
+    id: "place",
+    label: "Place",
     section: "alignment",
-    keywords: ["grid", "row", "span"],
-    input: { type: "tailwind-select", tailwindKey: "gridRowSpan" },
-    showWhen: isGrid,
-    sortOrder: 210,
-  },
-  {
-    id: "placeItems",
-    label: "Place Items",
-    section: "alignment",
-    keywords: ["place", "items", "grid"],
-    input: { type: "tailwind-radio", tailwindKey: "placeItems", cols: true },
+    keywords: ["place", "items", "self", "grid"],
     showWhen: isGrid,
     sortOrder: 220,
-  },
-  {
-    id: "placeSelf",
-    label: "Place Self",
-    section: "alignment",
-    keywords: ["place", "self", "grid"],
-    input: { type: "tailwind-radio", tailwindKey: "placeSelf", cols: true },
-    showWhen: isGrid,
-    sortOrder: 230,
+    input: {
+      type: "bundle",
+      icon: React.createElement(TbGridDots, { className: "size-3.5" }),
+      properties: [
+        {
+          id: "placeItems",
+          label: "Items",
+          section: "alignment",
+          keywords: ["place", "items", "grid"],
+          input: { type: "tailwind-radio", tailwindKey: "placeItems", cols: true },
+          inline: true,
+        },
+        {
+          id: "placeSelf",
+          label: "Self",
+          section: "alignment",
+          keywords: ["place", "self", "grid"],
+          input: { type: "tailwind-radio", tailwindKey: "placeSelf", cols: true },
+          inline: true,
+        },
+      ],
+    },
   },
 ];

@@ -23,7 +23,7 @@ import { collectIconRefs } from "./utils/icons/collectIconRefs";
 import { preloadIcons } from "./utils/icons/serverResolve";
 import { buildStaticContext } from "./utils/conditions/context";
 import { evaluateConditionGroups, evaluateConditions } from "./utils/conditions/evaluate";
-import { CONDITION_EVAL_SCRIPT } from "./utils/conditions/clientScript";
+import { getConditionEvalScript } from "./utils/conditions/clientScript";
 
 const TAILWIND_FONT_WEIGHT_CLASS =
   /^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/i;
@@ -304,6 +304,8 @@ export interface RenderToHTMLResult {
   scrollObserverScript: string;
   /** Design system CSS variables (:root block) — palette colors, spacing, fonts */
   themeCSS: string;
+  /** Per-site breakpoint overrides from ROOT.props.theme.breakpoints (undefined = defaults). */
+  breakpoints?: Record<string, number>;
   /** SEO metadata extracted from ROOT props */
   seo: {
     title: string;
@@ -614,7 +616,9 @@ export function renderToHTML(
     (needsHorizontalScroll ? PH_HORIZONTAL_SCROLL_SCRIPT : "") +
     (needsScrollTimeline ? PH_SCROLL_TIMELINE_SCRIPT : "") +
     (needsOverflowSite ? PH_OVERFLOW_SITE_SCRIPT : "") +
-    (ctx.hasClientConditions ? CONDITION_EVAL_SCRIPT : "");
+    (ctx.hasClientConditions
+      ? getConditionEvalScript({ mobileBreakpoint: rootProps.theme?.breakpoints?.md })
+      : "");
 
   // 10. Wrap in document
   if (wrapDocument) {
@@ -648,6 +652,7 @@ ${scrollObserverScript}
       fontUrls: [...ctx.fontUrls],
       scrollObserverScript,
       themeCSS,
+      breakpoints: rootProps.theme?.breakpoints || undefined,
       seo,
     };
   }
@@ -658,6 +663,7 @@ ${scrollObserverScript}
     fontUrls: [...ctx.fontUrls],
     scrollObserverScript,
     themeCSS,
+    breakpoints: rootProps.theme?.breakpoints || undefined,
     seo,
   };
 }

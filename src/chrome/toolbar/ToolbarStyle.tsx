@@ -2,8 +2,8 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface
 import type { MouseEvent } from "react";
 import { useCallback } from "react";
 import { TbInfoCircle } from "react-icons/tb";
-import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
+import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
 import { ToolbarLabel } from "./Label";
 
 export { BreakpointBadge } from "./BreakpointBadge";
@@ -26,41 +26,36 @@ export const MobileDesktopLabels = ({
   lab,
   prefix,
   suffix,
-  propType,
+  propType = "class",
   propKey,
-  index,
-  propItemKey,
+  index = null,
+  propItemKey = null,
   icon,
   showDeleteIcon,
   showVarSelector,
   varSelectorPrefix,
-}) => {
+}: any) => {
+  if (!propKey) return null;
+  if (propType === "root" || propType === "component") return null;
   return (
-    <div
-      role="presentation"
-      className="ml-[1.5px] hidden flex-col gap-0.5 opacity-50 transition-opacity hover:opacity-100 has-[[data-has-value]]:flex"
-      onClick={e => e.stopPropagation()}
-    >
-      <div className="flex gap-0.5">
-        {(["mobile", "sm", "desktop", "lg", "xl", "2xl"] as const).map(bp => (
-          <ToolbarLabel
-            key={bp}
-            lab={lab}
-            prefix={prefix}
-            suffix={suffix}
-            viewValue={bp}
-            propType={propType}
-            propKey={propKey}
-            index={index}
-            propItemKey={propItemKey}
-            icon={icon}
-            showDeleteIcon={showDeleteIcon}
-            showVarSelector={showVarSelector}
-            varSelectorPrefix={varSelectorPrefix}
-            iconOnly
-          />
-        ))}
-      </div>
+    <div className="flex shrink-0 items-center gap-1">
+      {VIEW_BREAKPOINT_SCOPE_KEYS.map(bp => (
+        <ToolbarLabel
+          key={bp}
+          lab={lab || propKey}
+          prefix={prefix}
+          suffix={suffix}
+          propKey={propKey}
+          viewValue={bp}
+          propType={propType}
+          index={index}
+          propItemKey={propItemKey}
+          icon={icon}
+          showDeleteIcon={showDeleteIcon}
+          showVarSelector={showVarSelector}
+          varSelectorPrefix={varSelectorPrefix}
+        />
+      ))}
     </div>
   );
 };
@@ -357,7 +352,7 @@ export const Accord = ({
 
   return (
     <div className={className}>
-      <div className="bg-sidebar text-sidebar-foreground flex gap-2 px-3 py-1.5">
+      <div className="text-sidebar-foreground flex gap-2 px-3 py-1.5">
         <button
           className="w-full cursor-pointer truncate pr-3 text-sm font-semibold whitespace-nowrap"
           onClick={() => setAccordion(active ? "" : prop)}

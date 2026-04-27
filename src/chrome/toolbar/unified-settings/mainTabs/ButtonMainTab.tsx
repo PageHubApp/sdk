@@ -1,80 +1,58 @@
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useNode } from "@craftjs/core";
+import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { QuickLinkInput } from "../../inputs/action/LinkInput";
-import { IconDialogInput } from "../../inputs/media/IconDialogInput";
-import IconInput from "../../inputs/media/IconInput";
+import { IconInput } from "../../inputs/media/IconInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { TailwindStyles } from "@/utils/tailwind";
-import { renderComponentSlots, SECTION_ICONS } from "../helpers";
+import { renderComponentSlots } from "../helpers";
+
+type ButtonType = "button" | "submit" | "reset";
+
+const TYPE_OPTIONS: { value: ButtonType; label: string }[] = [
+  { value: "button", label: "Button" },
+  { value: "submit", label: "Submit" },
+  { value: "reset", label: "Reset" },
+];
+
+function ButtonTypeControl() {
+  const {
+    actions: { setProp },
+    type,
+  } = useNode((node: any) => ({
+    type: (node.data?.props?.type as ButtonType | undefined) || "button",
+  }));
+
+  return (
+    <div className="flex items-center gap-0.5">
+      <span className="text-base-content w-20 shrink-0 truncate text-xs">Type</span>
+      <div className="min-w-0 flex-1">
+        <ToolbarSegmentedControl
+          dense
+          aria-label="Button type"
+          value={type}
+          onChange={next =>
+            setProp((p: any) => {
+              p.type = next;
+            }, 0)
+          }
+          options={TYPE_OPTIONS}
+        />
+      </div>
+    </div>
+  );
+}
 
 export const ButtonMainTab = () =>
   renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="Button label, icon, and icon placement."
-      >
+      <ToolbarSection collapsible={false}>
         <ToolbarItem propKey="text" type="text" label="Text" propType="component" />
-        <SettingsAiSlot />
 
         <QuickLinkInput />
 
-        <IconDialogInput
-          propKey="icon.value"
-          propType="component"
-          label="Icon"
-          labelWidth="w-full"
-          inputWidth="w-fit"
-        />
-        <ToolbarItem
-          propKey="icon.only"
-          propType="component"
-          type="checkbox"
-          label="Only Show Icon"
-          on={true}
-          labelHide
-          labelWidth="w-full"
-        />
-        <ToolbarItem propKey="icon.position" propType="component" type="select" label="Position">
-          <option value="left">Left</option>
-          <option value="right">Right</option>
-          <option value="top">Top</option>
-          <option value="bottom">Bottom</option>
-        </ToolbarItem>
-        <ToolbarItem
-          propKey="icon.size"
-          propType="component"
-          type="select"
-          label="Size"
-          max={TailwindStyles.allWidths.length - 1}
-          min={0}
-          valueLabels={TailwindStyles.allWidths}
-        />
-      </ToolbarSection>
-    ),
-    Type: (
-      <ToolbarSection
-        title="Type"
-        icon={SECTION_ICONS["Type"]}
-        help="Button or submit (for forms)."
-      >
-        <ToolbarItem propKey="type" type="select" label="Type" propType="component">
-          <option value="button">Button</option>
-          <option value="submit">Submit</option>
-        </ToolbarItem>
+        <IconInput propKey="icon" />
+
+        <ButtonTypeControl />
       </ToolbarSection>
     ),
   });
-
-export const ButtonMainTabAdvanced = () => (
-  <IconInput
-    propKey="icon"
-    propType="component"
-    label="Icon"
-    labelWidth="w-full"
-    inputWidth="w-fit"
-    iconOnlyLabel="Only Show Icon"
-    positionLabel="Position"
-  />
-);

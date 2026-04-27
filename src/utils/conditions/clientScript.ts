@@ -2,12 +2,17 @@
  * Inline <script> for evaluating conditions in static HTML exports.
  * Runs on page load — evaluates URL params and viewport width,
  * then shows/hides elements with data-ph-conditions.
+ *
+ * @param mobileBreakpoint - px threshold for `device: mobile`. Defaults to 768
+ *   (Tailwind `md`). Pass `theme.breakpoints?.md` to honor per-site overrides.
  */
-export const CONDITION_EVAL_SCRIPT = `<script>
+export function getConditionEvalScript({ mobileBreakpoint = 768 }: { mobileBreakpoint?: number } = {}): string {
+  const safeMobile = Number.isFinite(mobileBreakpoint) ? mobileBreakpoint : 768;
+  return `<script>
 (function(){
   var params = new URLSearchParams(window.location.search);
   var vw = window.innerWidth;
-  var MOBILE = 768;
+  var MOBILE = ${safeMobile};
 
   function walkPath(obj, parts) {
     var val = obj;
@@ -88,3 +93,11 @@ export const CONDITION_EVAL_SCRIPT = `<script>
   });
 })();
 </script>`;
+}
+
+/**
+ * @deprecated Use `getConditionEvalScript()` instead — defaults to mobileBreakpoint=768
+ * (matches the prior literal export). Kept as a back-compat shim; remove once no
+ * consumers reference it.
+ */
+export const CONDITION_EVAL_SCRIPT = getConditionEvalScript();

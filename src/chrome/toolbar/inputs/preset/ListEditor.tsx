@@ -3,11 +3,14 @@ import { TbChevronRight, TbGripVertical, TbTrash } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 /**
- * ListItemPopover — Compact row + inline detail panel for list editors.
+ * ListEditor — Compact row + inline detail panel for list editors.
  *
  * Each item renders as a slim row (~32px). Clicking opens an inline detail
- * panel directly below the list, containing the item's editable fields.
- * Only one panel is open at a time (controlled by parent via activeIndex/setActiveIndex).
+ * panel directly below the list, containing the item's editable fields. Only
+ * one panel is open at a time (controlled by parent via activeIndex/setActiveIndex).
+ *
+ * NOTE: Despite the previous filename, this is NOT a popover — no portal, no
+ * floating positioning, no anchor. It's an inline collapsible row group.
  */
 
 // ── Single row ──────────────────────────────────────────────────────────────
@@ -35,7 +38,7 @@ export const ListItemRow = ({
       className={`group border-base-300 flex h-8 items-center gap-1 border-b px-1.5 text-sm transition-colors last:border-b-0 ${
         isActive
           ? "bg-accent text-accent-content"
-          : "bg-sidebar text-sidebar-foreground hover:bg-accent/50"
+          : "text-sidebar-foreground hover:bg-accent/50"
       }`}
     >
       {/* Drag handle */}

@@ -18,11 +18,7 @@ export const ModalMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="How and when the modal opens, and close behavior."
-      >
+      <ToolbarSection collapsible={false}>
         {/* View toggle — collapsed/expanded in editor */}
         <div className="bg-neutral flex gap-1 rounded-md p-1">
           {VIEW_STATES.map(({ value, label, icon: Icon }) => (

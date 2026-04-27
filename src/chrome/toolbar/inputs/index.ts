@@ -49,7 +49,7 @@ export { default as ActionInput } from "./action/ActionInput";
 export * from "./action/useElementPicker";
 
 // Preset inputs
-export * from "./preset/ListItemPopover";
+export * from "./preset/ListEditor";
 
 // Root inputs
 export * from "./LayoutIconGenerator";

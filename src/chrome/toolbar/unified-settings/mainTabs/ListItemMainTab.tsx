@@ -11,11 +11,7 @@ export const ListItemMainTab = () => {
 
   return renderComponentSlots({
     Content: (
-      <ToolbarSection
-        title="Content"
-        icon={SECTION_ICONS["Content"]}
-        help="HTML is allowed for inline emphasis; keep one short line per item when possible."
-      >
+      <ToolbarSection collapsible={false}>
         <ToolbarItem
           propKey="text"
           propType="component"

@@ -11,6 +11,12 @@ export interface DesignSystemVars {
   darkModeEnabled?: boolean;
   styleGuide: Record<string, any>;
   typography?: any[];
+  /**
+   * Per-site breakpoint overrides in px. Undefined = use Tailwind defaults.
+   * Applied at compile time via `applyBreakpointRewrite` (compile-css.ts) —
+   * NOT emitted as runtime CSS vars (CSS vars in @media are not supported).
+   */
+  breakpoints?: Record<string, number>;
 }
 
 /**

@@ -32,7 +32,7 @@ const CSS_TRIGGER_OPTIONS = [
   { value: "hover", label: "On Hover" },
 ];
 
-const ANIMATION_PARAM_KEYS = [
+export const ANIMATION_PARAM_KEYS = [
   "animationDuration",
   "animationDelay",
   "animationEasing",

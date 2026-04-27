@@ -6,6 +6,7 @@ import { ViewAtom } from "../../../viewport/atoms";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { ColorInput } from "./ColorInput";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useCallback, useMemo } from "react";
 
 const DIRECTIONS = TailwindStyles.gradients as string[];
@@ -127,7 +128,8 @@ export const GradientInput = () => {
             key={dir}
             type="button"
             onClick={() => setDirection(direction === dir ? "" : dir)}
-            title={dir.replace("bg-linear-to-", "to ").toUpperCase()}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content={dir.replace("bg-linear-to-", "to ").toUpperCase()}
             className={`flex flex-1 items-center justify-center py-1.5 text-xs transition-colors ${
               direction === dir
                 ? "bg-primary text-primary-content"

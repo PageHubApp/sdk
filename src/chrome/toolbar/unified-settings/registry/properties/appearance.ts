@@ -157,7 +157,7 @@ export const appearanceProperties: PropertyDef[] = [
       ],
     },
     hideKey: "radius",
-    pinned: true,
+    pinned: false,
     sortOrder: 10,
   },
 

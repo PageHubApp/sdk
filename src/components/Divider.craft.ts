@@ -33,6 +33,7 @@ export const DividerDef = defineComponent(
       "opacity",
       "hoverClick",
       "animations",
+      "alignment",
     ],
     presets: [
       {

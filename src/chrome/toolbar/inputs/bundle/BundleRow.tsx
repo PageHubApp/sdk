@@ -7,20 +7,23 @@
  *
  * X on the chip clears every child tag. Auto-opens when added via +Add picker.
  */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNode } from "@craftjs/core";
 import { useAtomValue, useAtomState } from "@zedux/react";
-import { TbX } from "react-icons/tb";
-import { FloatingPanel } from "../../../floating/FloatingPanel";
-import { PropertyRenderer } from "../../unified-settings/PropertyRenderer";
 import {
   classPropKeyMatches,
   splitClassVariants,
 } from "../../../../utils/tailwind/className";
 import { TRANSPARENT_CHECKER_BG } from "../../../../utils/design/colorSystem";
 import { SideBarAtom } from "../../../../utils/lib";
+import { PopoverChip } from "../../../primitives/PopoverChip";
 import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
 import type { PropertyDef, PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+
+// Lazy: panel body imports FloatingPanel + PropertyRenderer (huge transitive
+// graph). Keeping them out of the BundleRow module means HMR edits to either
+// won't ripple through every BundleRow mounted in the toolbar.
+const BundleRowPanel = lazy(() => import("./BundleRowPanel"));
 
 interface Props extends PropertyInputProps {
   properties: PropertyDef[];
@@ -134,67 +137,44 @@ export function BundleRow({ def, properties, icon }: Props) {
     setOpen(false);
   };
 
+  const leading = colorChild ? (
+    <span
+      className="border-base-300 relative size-4 shrink-0 overflow-hidden rounded border"
+      style={swatchBgClass ? undefined : TRANSPARENT_CHECKER_BG}
+      aria-hidden
+    >
+      {swatchBgClass && <span className={`absolute inset-0 ${swatchBgClass}`} aria-hidden />}
+    </span>
+  ) : icon ? (
+    icon
+  ) : null;
+
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-base-content w-20 shrink-0 text-xs">{def.label}</span>
-      <div
-        className={`input-wrapper text-base-content flex h-8 min-w-0 flex-1 items-center gap-1.5 px-1 text-xs ${
-          open ? "border-primary ring-ring/45 ring-1" : ""
-        }`}
-      >
-        <button
-          ref={triggerRef}
-          type="button"
-          onClick={() => (open ? setOpen(false) : openPanel())}
-          aria-expanded={open}
-          className="flex min-w-0 flex-1 items-center gap-1.5 truncate px-1 text-left"
-        >
-          {colorChild ? (
-            <span
-              className="border-base-300 relative size-4 shrink-0 overflow-hidden rounded border"
-              style={swatchBgClass ? undefined : TRANSPARENT_CHECKER_BG}
-              aria-hidden
-            >
-              {swatchBgClass && (
-                <span className={`absolute inset-0 ${swatchBgClass}`} aria-hidden />
-              )}
-            </span>
-          ) : icon ? (
-            <span className="text-neutral-content shrink-0">{icon}</span>
-          ) : null}
-          <span className="text-neutral-content flex-1 truncate">Add...</span>
-        </button>
-        <button
-          type="button"
-          onClick={remove}
-          aria-label={`Remove ${def.label}`}
-          className="text-neutral-content hover:text-base-content flex size-5 shrink-0 items-center justify-center rounded"
-        >
-          <TbX className="size-3" aria-hidden />
-        </button>
-      </div>
+    <div className="flex items-center gap-0.5">
+      <span className="text-base-content w-20 shrink-0 truncate text-xs">{def.label}</span>
+      <PopoverChip
+        ref={triggerRef}
+        open={open}
+        onTriggerClick={() => (open ? setOpen(false) : openPanel())}
+        onClear={remove}
+        triggerAriaLabel={`Edit ${def.label}`}
+        clearAriaLabel={`Remove ${def.label}`}
+        leading={leading}
+        summary="Add..."
+      />
       {open && (
-        <FloatingPanel
-          isOpen
-          onClose={() => setOpen(false)}
-          title={def.label}
-          icon={icon}
-          storageKey={`bundle-${def.id}`}
-          defaultWidth={PANEL_WIDTH}
-          defaultHeight={PANEL_HEADER + PANEL_PAD + properties.length * ROW_HEIGHT}
-          minWidth={260}
-          maxWidth={480}
-          minHeight={120}
-          initialPosition={initialPos}
-          persistSize={false}
-          zIndex={1100}
-        >
-          <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
-            {properties.map(child => (
-              <PropertyRenderer key={child.id} def={child} />
-            ))}
-          </div>
-        </FloatingPanel>
+        <Suspense fallback={null}>
+          <BundleRowPanel
+            title={def.label}
+            icon={icon}
+            storageKey={`bundle-${def.id}`}
+            defaultWidth={PANEL_WIDTH}
+            defaultHeight={PANEL_HEADER + PANEL_PAD + properties.length * ROW_HEIGHT}
+            initialPosition={initialPos}
+            onClose={() => setOpen(false)}
+            properties={properties}
+          />
+        </Suspense>
       )}
     </div>
   );

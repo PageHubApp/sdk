@@ -36,25 +36,25 @@ function IconCellImpl({
       onMouseEnter={onHover ? () => onHover(iconRef) : undefined}
       onMouseLeave={onHover ? () => onHover(null) : undefined}
       onFocus={onHover ? () => onHover(iconRef) : undefined}
-      className={`relative flex size-full cursor-pointer items-center justify-center rounded-md border ${
+      className={`relative flex size-full cursor-pointer items-center justify-center rounded-md transition-colors ${
         isSelected
-          ? "border-primary bg-primary/10 text-primary"
+          ? "bg-primary/10 text-primary"
           : isFocused
-            ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
-            : "hover:border-base-300 hover:bg-neutral border-transparent"
+            ? "ring-primary/40 bg-primary/5 ring-1"
+            : "text-base-content/80 hover:bg-neutral hover:text-base-content"
       }`}
       aria-label={`Icon: ${name}${isFavorite ? " (favorite)" : ""}`}
       tabIndex={isFocused ? 0 : -1}
       role="gridcell"
       aria-selected={isSelected}
     >
-      <svg className="h-5 w-5" aria-hidden="true" fill="currentColor">
+      <svg className="h-[18px] w-[18px]" aria-hidden="true" fill="currentColor">
         <use href={`#${name}`} />
       </svg>
       {isFavorite && (
         <span
           aria-hidden="true"
-          className="bg-primary absolute right-0.5 top-0.5 size-1.5 rounded-full"
+          className="bg-primary absolute right-1 top-1 size-1 rounded-full"
         />
       )}
     </button>

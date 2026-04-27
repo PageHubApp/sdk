@@ -163,7 +163,7 @@ export function InspectorPinDock() {
               key={sectionId}
               className="border-base-300/80 flex min-h-0 min-w-0 flex-1 flex-col border-b basis-0 last:border-b-0"
             >
-              <div className="bg-sidebar flex shrink-0 items-center justify-between gap-2 border-b border-base-300 px-3 py-1.5">
+              <div className="flex shrink-0 items-center justify-between gap-2 border-b border-base-300 px-3 py-1.5">
                 <div className="text-sidebar-foreground/85 flex min-w-0 items-center gap-1.5 text-[11px] font-semibold tracking-wide uppercase">
                   {def?.icon && (
                     <span className="text-neutral-content opacity-70">{def.icon}</span>

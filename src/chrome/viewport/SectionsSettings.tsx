@@ -205,7 +205,7 @@ export function SectionsSettings() {
 
   // Main view: search bar + category grid
   return (
-    <div className="bg-sidebar flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden">
       {/* Search bar + style filter */}
       <div className="border-base-300 bg-base-100 flex items-center gap-2 border-b p-3">
         <div className="relative flex-1">
