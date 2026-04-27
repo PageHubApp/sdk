@@ -11,7 +11,7 @@
  * the bp letter. Pointer events disabled so it never eats clicks.
  */
 import { useAtomValue } from "@zedux/react";
-import { ViewAtom } from "./atoms";
+import { AppliedBreakpointsAtom, ViewAtom } from "./atoms";
 
 const BAND_COLOR: Record<string, string> = {
   mobile: "transparent",
@@ -22,8 +22,11 @@ const BAND_COLOR: Record<string, string> = {
   "2xl": "#f43f5e", // rose-500
 };
 
+type BpKey = "sm" | "md" | "lg" | "xl" | "2xl";
+
 export function CanvasScopeBand() {
   const view = useAtomValue(ViewAtom);
+  const applied = useAtomValue(AppliedBreakpointsAtom);
 
   // Quiet states — nothing to surface.
   if (view === "desktop" || view === "tablet" || view === "mobile") return null;
@@ -31,17 +34,20 @@ export function CanvasScopeBand() {
   const color = BAND_COLOR[view];
   if (!color || color === "transparent") return null;
 
-  const label =
-    view === "2xl" ? "2XL" : view.toUpperCase();
+  const label = view === "2xl" ? "2XL" : view.toUpperCase();
+  const px = applied[view as BpKey];
+  const sizeText = px ? `${px}px and up` : `${view}: layer`;
 
   return (
     <div
       role="status"
-      aria-label={`Editing ${label} layer — class writes target ${view}: prefix`}
-      className="canvas-scope-band pointer-events-none absolute top-0 right-0 left-0 z-30 flex h-[22px] items-center justify-center text-[10px] font-semibold tracking-[0.08em] uppercase select-none"
+      aria-label={`Editing ${label} breakpoint — ${sizeText}. Class writes target the ${view}: prefix.`}
+      className="canvas-scope-band pointer-events-none absolute top-0 right-0 left-0 z-30 flex h-[22px] items-center justify-center gap-2 text-[10px] font-semibold tracking-[0.08em] uppercase select-none"
       style={{ backgroundColor: color, color: "white" }}
     >
-      Editing {label} · classes write as {view}:
+      <span>Editing {label} breakpoint</span>
+      <span className="opacity-70">·</span>
+      <span className="font-mono normal-case tracking-normal">{sizeText}</span>
     </div>
   );
 }
