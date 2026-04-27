@@ -35,6 +35,7 @@ import { CanvasScopeBand } from "./CanvasScopeBand";
 import { DeviceScrollbar } from "./DeviceScrollbar";
 import { DeviceSelector } from "./DeviceSelector";
 import { CanvasZoom } from "./CanvasZoom";
+import { SideBySideFrame, resolveSecondaryWidthPx } from "./SideBySideFrame";
 import { useSDK } from "../../core/context";
 import { ViewportMeta } from "./ViewportMeta";
 import { useEditorDocumentKeydown } from "../hooks/useEditorDocumentKeydown";
@@ -53,6 +54,7 @@ import {
   PreviewAtom,
   ResponsiveAtom,
   ShowBreakpointMarkersAtom,
+  SideBySideAtom,
   ViewAtom,
   DeviceAtom,
   DeviceDimensionsAtom,
@@ -69,7 +71,11 @@ import {
 } from "../../utils/tailwind/className";
 import { getEditorWidthOnlyCanvasClasses } from "./editorCanvasLayout";
 import { DEVICE_FRAME_BY_VIEW, getDeviceFrameSpec } from "./deviceFrames";
-import { rewriteBreakpoints, type BpKey } from "../../utils/breakpointRewrite";
+import {
+  rewriteBreakpoints,
+  rewriteMediaToContainer,
+  type BpKey,
+} from "../../utils/breakpointRewrite";
 
 export function Viewport({ children }: { children: React.ReactNode }) {
   const {
@@ -140,6 +146,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const [appliedBreakpoints, setAppliedBreakpoints] = useAtomState(AppliedBreakpointsAtom);
   const [preview, setPreview] = useAtomState(PreviewAtom);
   const setEnabled = useSetAtomState(EnabledAtom);
+  const sideBySide = useAtomValue(SideBySideAtom);
   const isolated = useAtomValue(IsolateAtom);
   const lastActive = useAtomValue(LastActiveAtom);
   const screenshot = useAtomValue(ScreenshotAtom);
@@ -274,6 +281,16 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
   // ─── Page navigation store init ───
   const navInitRef = useRef(false);
+
+  // ─── Side-by-side scroll mirror (Phase 3) ───
+  // Both frames share scroll state but each has its own DOM scroll container.
+  // The primary viewport handler mirrors scrollTop into secondary; the secondary
+  // mirrors back. `isMirroring` flag prevents an infinite ping-pong.
+  const scrollMirrorRef = useRef<{
+    primary: HTMLDivElement | null;
+    secondary: HTMLDivElement | null;
+    isMirroring: boolean;
+  }>({ primary: null, secondary: null, isMirroring: false });
 
   // ─── Page loading state (single enum instead of two booleans) ───
   const [pageLoad, setPageLoad] = useState<"idle" | "loading" | "done">("idle");
@@ -571,10 +588,11 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         if (styleEl) {
           const fromBps = appliedBreakpoints;
           const toBps = { ...fromBps, [bp]: finalPx };
-          styleEl.textContent = rewriteBreakpoints(
-            styleEl.textContent || "",
-            fromBps,
-            toBps
+          // Editor-only: also normalize any new `@media` to `@container` so
+          // dynamic classes added during editing land in the same container-query
+          // namespace as SSR-baked CSS.
+          styleEl.textContent = rewriteMediaToContainer(
+            rewriteBreakpoints(styleEl.textContent || "", fromBps, toBps)
           );
           setAppliedBreakpoints(toBps);
         }
@@ -614,10 +632,8 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       if (styleEl) {
         const fromBps = appliedBreakpoints;
         const toBps = { ...fromBps, [bp]: defaultPx };
-        styleEl.textContent = rewriteBreakpoints(
-          styleEl.textContent || "",
-          fromBps,
-          toBps
+        styleEl.textContent = rewriteMediaToContainer(
+          rewriteBreakpoints(styleEl.textContent || "", fromBps, toBps)
         );
         setAppliedBreakpoints(toBps);
       }
@@ -643,10 +659,8 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       k => appliedBreakpoints[k] === target[k]
     );
     if (!sameAsApplied) {
-      styleEl.textContent = rewriteBreakpoints(
-        styleEl.textContent || "",
-        appliedBreakpoints,
-        target
+      styleEl.textContent = rewriteMediaToContainer(
+        rewriteBreakpoints(styleEl.textContent || "", appliedBreakpoints, target)
       );
       setAppliedBreakpoints(target);
     }
@@ -874,7 +888,27 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             data-isolated={!!isolated}
             tabIndex={0}
             className={`${activeClass[1]} w-full${classDarkEdit ? "dark" : ""}`}
-            ref={(ref: any) => connectors.select(connectors.hover(ref, null), null)}
+            ref={(ref: any) => {
+              connectors.select(connectors.hover(ref, null), null);
+              // Phase 3: register primary container for scroll-sync.
+              scrollMirrorRef.current.primary = ref as HTMLDivElement | null;
+            }}
+            onScroll={
+              sideBySide.enabled
+                ? e => {
+                    const m = scrollMirrorRef.current;
+                    if (m.isMirroring || !m.secondary) return;
+                    m.isMirroring = true;
+                    try {
+                      m.secondary.scrollTop = (e.currentTarget as HTMLDivElement).scrollTop;
+                    } finally {
+                      requestAnimationFrame(() => {
+                        m.isMirroring = false;
+                      });
+                    }
+                  }
+                : undefined
+            }
           >
             {children}
           </div>
@@ -902,6 +936,15 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             deviceZoom={deviceZoom}
             sideBarOpen={sideBarOpen}
             sideBarLeft={sideBarLeft}
+          />
+        )}
+
+        {/* Phase 3: side-by-side read-only mirror (when enabled) */}
+        {enabled && sideBySide.enabled && !deviceFrame && (
+          <SideBySideFrame
+            secondaryView={sideBySide.secondaryView}
+            widthPx={resolveSecondaryWidthPx(sideBySide.secondaryView, themeBreakpoints)}
+            scrollMirrorRef={scrollMirrorRef}
           />
         )}
 

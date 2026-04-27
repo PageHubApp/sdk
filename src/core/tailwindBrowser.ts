@@ -16,6 +16,8 @@
  * build-time postcss-unwrap-layers.cjs plugin.
  */
 
+import { rewriteMediaToContainer } from "../utils/breakpointRewrite";
+
 const SCRIPT_ID = "pagehub-tw-browser";
 const CONFIG_ID = "pagehub-tw-config";
 const LAYER_STRIP_ID = "pagehub-tw-unlayered";
@@ -167,6 +169,11 @@ export function injectTailwindBrowser(): void {
   // 3. Watch for the runtime's output <style> tag and strip @layer wrappers.
   //    The browser runtime appends a <style> to <head> and updates its textContent.
   //    We observe mutations and rewrite the CSS to remove @layer blocks.
+  //
+  //    PHASE 3: Also rewrite `@media` → `@container ph-editor-canvas` so any
+  //    dynamic class added during editing (e.g. user types a new utility) lands
+  //    in the same container-query namespace as SSR-baked CSS — required for
+  //    side-by-side mirror frames to behave correctly.
   layerObserver = new MutationObserver(() => {
     // Find the runtime's output style — it's the last <style> without an id
     // that contains @layer (the runtime doesn't set an id on its output tag)
@@ -174,9 +181,17 @@ export function injectTailwindBrowser(): void {
     for (const style of styles) {
       const text = style.textContent || "";
       if (text.includes("@layer") && text.includes("--tw-")) {
-        const stripped = stripLayers(text);
-        if (stripped !== text) {
-          style.textContent = stripped;
+        let next = stripLayers(text);
+        // Only rewrite when in editor (#viewport carries the container-name).
+        if (
+          typeof document !== "undefined" &&
+          document.getElementById("viewport") &&
+          next.includes("@media")
+        ) {
+          next = rewriteMediaToContainer(next);
+        }
+        if (next !== text) {
+          style.textContent = next;
         }
       }
     }

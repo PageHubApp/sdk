@@ -44,6 +44,9 @@ export function rewriteBreakpoints(
   let out = css;
 
   // Pass 1: replace every recognizable form with a key-scoped placeholder.
+  // Tailwind/DaisyUI emit `@media`; the editor's container-rewrite turns those
+  // into `@container ph-editor-canvas` — both forms are handled so live-update
+  // works whether or not the editor flag is on.
   for (const key of BP_KEYS) {
     const fromPx = fromBps[key];
     const fromRem = fromPx / 16;
@@ -68,6 +71,24 @@ export function rewriteBreakpoints(
       new RegExp(`@media\\s+\\(width>=${fromPx}px\\)`, "g"),
       `@media (width>=__PH_BD_${key}__)`
     );
+
+    // Editor container form (Tailwind spaced).
+    out = out.replace(
+      new RegExp(
+        `@container\\s+ph-editor-canvas\\s+\\(width\\s+>=\\s+${fromPx}px\\)`,
+        "g"
+      ),
+      `@container ph-editor-canvas (width >= __PH_BP_${key}__)`
+    );
+
+    // Editor container form (DaisyUI compact).
+    out = out.replace(
+      new RegExp(
+        `@container\\s+ph-editor-canvas\\s+\\(width>=${fromPx}px\\)`,
+        "g"
+      ),
+      `@container ph-editor-canvas (width>=__PH_BD_${key}__)`
+    );
   }
 
   // Pass 2: substitute placeholders with the target px values.
@@ -81,20 +102,71 @@ export function rewriteBreakpoints(
 }
 
 /**
+ * Editor-only: rewrite `@media (width >= Xpx)` → `@container ph-editor-canvas (width >= Xpx)`
+ * so each canvas frame responds to its OWN container width, not the browser's.
+ *
+ * Must run AFTER rewriteBreakpoints (consumes its px output, not Tailwind's rem).
+ * Handles both Tailwind spaced form and DaisyUI compact form.
+ *
+ * IMPORTANT: do NOT apply for /view, /static, custom domains — public renders
+ * MUST keep `@media`. The editor canvas (#viewport) and any side-by-side
+ * mirrors carry `container-type: inline-size; container-name: ph-editor-canvas`
+ * so this query resolves identically to a browser-width media query for the
+ * single-frame case but per-canvas for dual-frame.
+ */
+export function rewriteMediaToContainer(css: string): string {
+  return css
+    // Tailwind: `@media (width >= 768px)` → `@container ph-editor-canvas (width >= 768px)`
+    .replace(/@media\s+\(width\s+>=\s+(\d+)px\)/g, "@container ph-editor-canvas (width >= $1px)")
+    // DaisyUI: `@media (width>=768px)` → `@container ph-editor-canvas (width>=768px)`
+    .replace(/@media\s+\(width>=(\d+)px\)/g, "@container ph-editor-canvas (width>=$1px)");
+}
+
+/**
  * Compile-time wrapper: rewrite from defaults to per-site breakpoints.
  * No-op when `bps` is undefined or every key matches defaults.
+ *
+ * `opts.editor` (Phase 3) — when true, ALSO rewrites `@media` →
+ * `@container ph-editor-canvas` so the editor canvas (and any side-by-side
+ * mirror frame) responds to its own width via CSS container queries instead
+ * of the browser viewport.
  */
 export function applyBreakpointRewrite(
   css: string,
-  bps?: Record<string, number>
+  bps?: Record<string, number>,
+  opts?: { editor?: boolean }
 ): string {
-  if (!bps) return css;
-  const merged: Record<BpKey, number> = {
-    sm: bps.sm ?? DEFAULT_BREAKPOINTS_PX.sm,
-    md: bps.md ?? DEFAULT_BREAKPOINTS_PX.md,
-    lg: bps.lg ?? DEFAULT_BREAKPOINTS_PX.lg,
-    xl: bps.xl ?? DEFAULT_BREAKPOINTS_PX.xl,
-    "2xl": bps["2xl"] ?? DEFAULT_BREAKPOINTS_PX["2xl"],
-  };
-  return rewriteBreakpoints(css, DEFAULT_BREAKPOINTS_PX, merged);
+  let out = css;
+  if (bps) {
+    const merged: Record<BpKey, number> = {
+      sm: bps.sm ?? DEFAULT_BREAKPOINTS_PX.sm,
+      md: bps.md ?? DEFAULT_BREAKPOINTS_PX.md,
+      lg: bps.lg ?? DEFAULT_BREAKPOINTS_PX.lg,
+      xl: bps.xl ?? DEFAULT_BREAKPOINTS_PX.xl,
+      "2xl": bps["2xl"] ?? DEFAULT_BREAKPOINTS_PX["2xl"],
+    };
+    out = rewriteBreakpoints(out, DEFAULT_BREAKPOINTS_PX, merged);
+  } else if (opts?.editor) {
+    // Editor without per-site overrides: still need to normalize Tailwind's
+    // rem form to px BEFORE rewriting to @container, otherwise the regex
+    // (which only handles px) would miss the unmodified rem media queries.
+    out = rewriteBreakpoints(out, DEFAULT_BREAKPOINTS_PX, DEFAULT_BREAKPOINTS_PX);
+    // rewriteBreakpoints early-returns on identical from/to maps — call the
+    // pass-through path manually:
+    out = rewritePxFormCanonicalize(out);
+  }
+  return opts?.editor ? rewriteMediaToContainer(out) : out;
+}
+
+/**
+ * Internal: convert Tailwind's `@media (width >= Xrem)` form to its `Xpx`
+ * equivalent so the @container rewrite regex can match. Used only by the
+ * editor path when there are no per-site bp overrides (rewriteBreakpoints
+ * would otherwise short-circuit and leave rem in place).
+ */
+function rewritePxFormCanonicalize(css: string): string {
+  return css.replace(
+    /@media\s+\(width\s+>=\s+([\d.]+)rem\)/g,
+    (_m, rem) => `@media (width >= ${Math.round(parseFloat(rem) * 16)}px)`
+  );
 }

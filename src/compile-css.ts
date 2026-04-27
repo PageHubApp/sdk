@@ -161,23 +161,6 @@ function collectDaisyUICSS(candidates: string[]): string {
 let _themeCSS: string | null = null;
 let _spatialCSS: string | null = null;
 let _animationCSS: string | null = null;
-let _spotlightPresetsCache: { mtimeMs: number; content: string } | null = null;
-
-function getSpotlightPresetsCSS(): string {
-  const filePath = resolve(__dirname, "css/spotlight-presets.css");
-  try {
-    const mtimeMs = statSync(filePath).mtimeMs;
-    if (!_spotlightPresetsCache || _spotlightPresetsCache.mtimeMs !== mtimeMs) {
-      _spotlightPresetsCache = {
-        mtimeMs,
-        content: readFileSync(filePath, "utf-8"),
-      };
-    }
-    return _spotlightPresetsCache.content;
-  } catch {
-    return "";
-  }
-}
 
 function getThemeCSS(): string {
   if (_themeCSS === null) {
@@ -416,8 +399,17 @@ export async function compileCSS(options: {
    * place via `applyBreakpointRewrite`.
    */
   breakpoints?: Record<string, number>;
+  /**
+   * Editor mode (Phase 3). When true, ALSO rewrites `@media` → `@container
+   * ph-editor-canvas` so the editor canvas responds to its own width and
+   * side-by-side mirror frames can show different bps simultaneously.
+   *
+   * MUST be false (or omitted) for /view, /static, custom domains — public
+   * renders need real `@media` to respond to the browser viewport.
+   */
+  editor?: boolean;
 }): Promise<string> {
-  const { classes, themeCSS, lean = false, breakpoints } = options;
+  const { classes, themeCSS, lean = false, breakpoints, editor = false } = options;
 
   if (classes.length === 0) return themeCSS || "";
 
@@ -448,7 +440,9 @@ export async function compileCSS(options: {
 
   // Apply per-site breakpoint rewrite (no-op when defaults). Must run BEFORE minify
   // so the `@media (width >= 48rem)` form (with spaces) is intact for the regex.
-  stripped = applyBreakpointRewrite(stripped, breakpoints);
+  // `editor: true` ALSO rewrites `@media` → `@container ph-editor-canvas` so the
+  // /build canvas responds to its own width (enables Phase 3 side-by-side).
+  stripped = applyBreakpointRewrite(stripped, breakpoints, { editor });
 
   // Strip unused @keyframes for lean exports (standalone HTML)
   if (lean) {
@@ -457,14 +451,6 @@ export async function compileCSS(options: {
 
   // Minify
   stripped = minifyCSS(stripped);
-
-  // Spotlight presets (skip for lean exports)
-  if (!lean) {
-    const spotlightPresets = minifyCSS(getSpotlightPresetsCSS());
-    if (spotlightPresets) {
-      stripped = `${spotlightPresets} ${stripped}`.trim();
-    }
-  }
 
   // Prepend theme CSS variables if provided
   if (themeCSS) {
@@ -578,9 +564,15 @@ ${renderResult.scrollObserverScript}
  * class extraction, modifier utilities, and compilation in one call.
  *
  * @param pageData - Base64+lzutf8 compressed Craft.js JSON
+ * @param opts.editor - When true, rewrites `@media` → `@container ph-editor-canvas`
+ *   so the editor canvas responds to its own container width. MUST be false
+ *   for /view, /static, custom domains.
  * @returns Compiled, minified CSS string or null if compilation fails
  */
-export async function compileTailwindCSS(pageData: string): Promise<string | null> {
+export async function compileTailwindCSS(
+  pageData: string,
+  opts?: { editor?: boolean }
+): Promise<string | null> {
   try {
     const lz = await import("lzutf8");
     const decompressed = lz.decompress(lz.decodeBase64(pageData));
@@ -595,7 +587,12 @@ export async function compileTailwindCSS(pageData: string): Promise<string | nul
     const breakpoints: Record<string, number> | undefined =
       rootProps.theme?.breakpoints || undefined;
 
-    const css = await compileCSS({ classes: candidates, nodes, breakpoints });
+    const css = await compileCSS({
+      classes: candidates,
+      nodes,
+      breakpoints,
+      editor: opts?.editor === true,
+    });
     return css || null;
   } catch (error) {
     console.error("[compileTailwindCSS] Failed:", error);
