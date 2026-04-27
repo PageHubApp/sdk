@@ -1,7 +1,7 @@
 /**
  * Button — Component definition via defineComponent()
  */
-import { RxButton } from "react-icons/rx";
+import { TbHandClick } from "react-icons/tb";
 import { ButtonMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ButtonMainTab";
 import { defineComponent } from "../define";
 import { migrateAction, actionToHref, actionTarget } from "../utils/action";
@@ -82,7 +82,7 @@ export const ButtonDef = defineComponent(
   {
     name: "Button",
     component: Button,
-    icon: RxButton,
+    icon: TbHandClick,
     category: "Content",
     settings: ButtonMainTab,
     toHTML,

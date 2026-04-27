@@ -7,7 +7,6 @@
  */
 
 import colors from "tailwindcss/colors";
-import { ringOutlineClassKey } from "./ringOutlineClassKey";
 
 // ─── RootClassGenProps ─────────────────────────────────────────────────────
 
@@ -5328,47 +5327,6 @@ export function isValidTailwindClass(cls: string): boolean {
   return false;
 }
 
-// ─── classNameToVar ────────────────────────────────────────────────────────
-
-/** Stems after `text-` that are font-size utilities, not text colors. */
-const CLASSNAME_TO_VAR_TEXT_SIZE_STEM =
-  /^(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)$/;
-
-/**
- * Map a Tailwind class to its prop key.
- * Uses reverse index for known classes, falls back to prefix matching for arbitrary values.
- * Aligns with toolbar / className-first keys: `TailwindStyles` stores text colors under `text` but UI uses `color`.
- */
-export const classNameToVar = (name: string): string | undefined => {
-  for (const key of Object.keys(TailwindStyles)) {
-    if (RootClassGenProps.includes(key)) continue;
-    if (Array.isArray(TailwindStyles[key]) && TailwindStyles[key].includes(name)) {
-      if (key === "text") return "color";
-      return key;
-    }
-  }
-  const ro = ringOutlineClassKey(name);
-  if (ro) return ro;
-  if (/^font-\(--[^)]+\)$/.test(name)) return "fontFamily";
-  if (name.startsWith("font-[") && name.endsWith("]")) {
-    const inner = name.slice(6, -1).trim();
-    const q0 = inner.charAt(0);
-    if (q0 === "'" || q0 === '"' || q0 === String.fromCharCode(96)) return "fontFamily";
-    if (/^family-name\s*:/.test(inner)) return "fontFamily";
-    if (/^\d{1,3}$/.test(inner)) return "fontWeight";
-    if (/^[A-Za-z0-9_\s-]+$/.test(inner) && /[A-Za-z]/.test(inner)) return "fontFamily";
-  }
-  for (const [prefix, key] of PREFIX_ENTRIES) {
-    if (name.startsWith(prefix)) {
-      if (
-        key === "fontSize" &&
-        name.startsWith("text-") &&
-        !CLASSNAME_TO_VAR_TEXT_SIZE_STEM.test(name.slice(5))
-      ) {
-        return "color";
-      }
-      return key;
-    }
-  }
-  return undefined;
-};
+// `classNameToVar` lives in `./className.ts` — single resolution path so the
+// `text-` / `border-` / `font-` shadow-bug gates and the reverse index don't
+// drift between two parallel implementations.

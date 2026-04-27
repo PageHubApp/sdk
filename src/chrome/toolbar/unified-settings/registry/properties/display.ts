@@ -69,7 +69,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "display",
     label: "Display",
-    section: "display",
+    section: "styles",
     keywords: ["display", "block", "flex", "grid", "inline", "hidden", "none"],
     input: {
       type: "universal",
@@ -82,7 +82,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "position",
     label: "Position",
-    section: "display",
+    section: "styles",
     keywords: ["position", "relative", "absolute", "fixed", "sticky", "static"],
     input: {
       type: "universal",
@@ -140,7 +140,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "order",
     label: "Order",
-    section: "display",
+    section: "styles",
     keywords: ["order", "flex", "grid", "position", "sequence"],
     input: { type: "tailwind-select", tailwindKey: "order" },
     sortOrder: 5,
@@ -151,7 +151,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "inset",
     label: "Inset",
-    section: "display",
+    section: "styles",
     keywords: ["inset", "all", "offset", "position", "top", "right", "bottom", "left"],
     input: {
       type: "shorthand",
@@ -441,10 +441,10 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "srOnly",
     label: "Screen Reader",
-    section: "aria",
+    section: "properties",
     keywords: ["screen", "reader", "sr-only", "accessibility", "hidden"],
     input: { type: "tailwind-select", tailwindKey: "srOnly" },
-    sortOrder: 211,
+    sortOrder: 180,
   },
 
   // ─── Custom CSS (own section in Advanced tab) ────────────────────

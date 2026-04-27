@@ -10,6 +10,8 @@ import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
+import { MiniPreviewTile } from "@/chrome/primitives/MiniPreviewTile";
+import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 import { getPageHubApiBaseUrl } from "@/core/apiConfig";
 import { TbSearch, TbX } from "react-icons/tb";
 
@@ -113,7 +115,9 @@ export const PatternsDialogInput = ({
         propType={propType}
         propKey={propKey}
       >
-        <div className="input-wrapper flex w-full items-center gap-1.5 px-1">
+        <ToolbarRowFrame
+          trailing={value ? <InlineClearButton onClick={clear} tooltip="Clear pattern" /> : null}
+        >
           <button
             ref={triggerRef}
             type="button"
@@ -124,8 +128,9 @@ export const PatternsDialogInput = ({
             className="input-plain flex min-w-0 flex-1 items-center text-left"
           >
             <div className="pointer-events-none flex min-h-0 w-full items-center gap-2">
-              <div
-                className="border-base-300 bg-base-200 h-6 w-12 shrink-0 rounded border"
+              <MiniPreviewTile
+                size="swatch"
+                rounded="md"
                 style={patt ? { backgroundImage: `url(${patt})` } : undefined}
               />
               <div className="min-w-0 flex-1 truncate text-left">
@@ -133,8 +138,7 @@ export const PatternsDialogInput = ({
               </div>
             </div>
           </button>
-          {value && <InlineClearButton onClick={clear} tooltip="Clear pattern" />}
-        </div>
+        </ToolbarRowFrame>
       </Wrap>
 
       {isOpen &&

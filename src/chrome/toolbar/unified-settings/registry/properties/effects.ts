@@ -1,179 +1,98 @@
 /**
- * Effects property definitions — transitions, transforms, filters, backdrop.
+ * Effects property definitions — six popover-mode rows under one section.
  *
- * Main: transition (property/duration/ease/delay) + blur + backdrop blur
- * Advanced: transforms, filters (preview tile), backdrop filters (preview tile), animate
+ * Each row is its own popover-mode property (chip + lazy panel) backed by the
+ * shared `EffectRowInputPopover` trigger which dispatches by `def.id`. Standard
+ * `+` button in the section header (via AccordionAddMenu) shows the addable
+ * rows and opens the matching popover on pick — same UX as Action / Animation /
+ * Conditions, just with multiple rows in one section.
+ *
+ * Storage stays SPLIT (animation on `root.*`, scroll-effect on container
+ * props, transition / transform / filter / backdrop on className tokens).
+ * The trigger looks up readers / writers from `effects-builder/effectTypes.tsx`.
+ *
+ * `isActive` on each prop is what keeps the section body tight: PropertySection
+ * uses it to gate visibility (only ACTIVE rows render in body), and
+ * AccordionAddMenu uses it to hide already-active entries from the picker.
  */
-import React from "react";
-import { TbBoxPadding, TbSquare, TbTransitionRight } from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
-import type { ValueType } from "../../../inputs/universal-input/types";
-
-const EFFECTS_TYPES: ValueType[] = [
-  "tailwind",
-  "calc",
-  "px",
-  "%",
-  "em",
-  "rem",
-  "vw",
-  "vh",
-  "vmin",
-  "vmax",
-];
-
-/** Main effect — visible by default */
-function mainEffect(
-  id: string,
-  label: string,
-  keywords: string[],
-  propTag?: string,
-  sortOrder = 0
-): PropertyDef {
-  return {
-    id,
-    label,
-    section: "effects",
-    keywords,
-    input: {
-      type: "universal",
-      propTag: propTag || id,
-      allowedTypes: EFFECTS_TYPES,
-      showVarSelector: true,
-    },
-    sortOrder,
-    inline: true,
-  };
-}
-
-/** Filter / backdrop bundle child — renders a single universal-input row inside the popover. */
-function filterChild(
-  id: string,
-  label: string,
-  propTag: string,
-  keywords: string[]
-): PropertyDef {
-  return {
-    id,
-    label,
-    section: "styles",
-    keywords,
-    input: {
-      type: "universal",
-      propTag,
-      allowedTypes: EFFECTS_TYPES,
-      showVarSelector: true,
-    },
-    inline: true,
-  };
-}
-
-/** Advanced effect — hidden until added via the +Add picker */
-function advEffect(
-  id: string,
-  label: string,
-  _group: string,
-  keywords: string[],
-  propTag?: string,
-  sortOrder = 100
-): PropertyDef {
-  return {
-    id,
-    label,
-    section: "effects",
-    keywords,
-    input: {
-      type: "universal",
-      propTag: propTag || id,
-      allowedTypes: EFFECTS_TYPES,
-      showVarSelector: true,
-    },
-    sortOrder,
-    inline: true,
-  };
-}
-
-/** Transform property — lives in the dedicated Transforms section. */
-function transformProp(
-  id: string,
-  label: string,
-  keywords: string[],
-  propTag: string,
-  sortOrder: number
-): PropertyDef {
-  return {
-    id,
-    label,
-    section: "transforms",
-    keywords,
-    input: {
-      type: "universal",
-      propTag,
-      allowedTypes: EFFECTS_TYPES,
-      showVarSelector: true,
-    },
-    sortOrder,
-    inline: true,
-  };
-}
+import {
+  BACKDROP_PREFIXES,
+  FILTER_PREFIXES,
+  TRANSFORM_PREFIXES,
+  TRANSITION_PREFIXES,
+  classNameHasAnyPrefix,
+} from "./effects-builder/effectTypes";
 
 export const effectsProperties: PropertyDef[] = [
-  // ─── Main: Transition (bundle: property + duration + ease + delay) ──
+  {
+    id: "animation",
+    label: "Animation",
+    section: "effects",
+    keywords: [
+      "animation",
+      "animate",
+      "motion",
+      "entrance",
+      "fade",
+      "slide",
+      "scale",
+      "spring",
+      "bounce",
+      "framer",
+      "css",
+      "preset",
+    ],
+    hideKey: "animations",
+    sortOrder: 10,
+    isActive: (_cn, props) => !!props?.root?.animation,
+    input: { type: "custom", component: "EffectRowInput" },
+  },
+  {
+    id: "scroll-effect",
+    label: "Scroll Effect",
+    section: "effects",
+    keywords: ["scroll", "horizontal", "timeline", "pin", "gsap", "section", "parallax"],
+    sortOrder: 20,
+    // Container-only — gate matches the now-deleted `scrollEffect` prop in advanced.ts.
+    showWhen: (_cls, props) => props._craftName === "Container",
+    isActive: (_cn, props) => !!props?.scrollEffect,
+    input: { type: "custom", component: "EffectRowInput" },
+  },
   {
     id: "transition",
     label: "Transition",
     section: "effects",
-    keywords: [
-      "transition",
-      "property",
-      "animate",
-      "duration",
-      "time",
-      "speed",
-      "ease",
-      "easing",
-      "curve",
-      "timing",
-      "bezier",
-      "delay",
-      "wait",
-    ],
-    sortOrder: 0,
-    input: {
-      type: "bundle",
-      icon: React.createElement(TbTransitionRight, { className: "size-3.5" }),
-      properties: [
-        mainEffect(
-          "transitionProperty",
-          "Property",
-          ["transition", "property", "animate"],
-          "transition",
-          0
-        ),
-        mainEffect(
-          "duration",
-          "Duration",
-          ["duration", "time", "speed", "ms"],
-          "duration",
-          1
-        ),
-        mainEffect(
-          "ease",
-          "Easing",
-          ["ease", "easing", "curve", "timing", "bezier"],
-          "ease",
-          2
-        ),
-        mainEffect("delay", "Delay", ["delay", "wait", "pause"], "delay", 3),
-      ],
-    },
+    keywords: ["transition", "duration", "ease", "delay", "timing", "curve", "ms", "speed"],
+    hideKey: "effectsClass",
+    sortOrder: 30,
+    isActive: (cn) => classNameHasAnyPrefix(cn, TRANSITION_PREFIXES),
+    input: { type: "custom", component: "EffectRowInput" },
   },
-
-  // ─── Filter (bundle: chip → popover, blur+brightness+contrast+...) ──
+  {
+    id: "transform",
+    label: "Transform",
+    section: "effects",
+    keywords: [
+      "transform",
+      "scale",
+      "rotate",
+      "translate",
+      "skew",
+      "origin",
+      "gpu",
+      "3d",
+      "hardware",
+    ],
+    hideKey: "effectsClass",
+    sortOrder: 40,
+    isActive: (cn) => classNameHasAnyPrefix(cn, TRANSFORM_PREFIXES),
+    input: { type: "custom", component: "EffectRowInput" },
+  },
   {
     id: "filter",
     label: "Filter",
-    section: "styles",
+    section: "effects",
     keywords: [
       "filter",
       "blur",
@@ -185,159 +104,19 @@ export const effectsProperties: PropertyDef[] = [
       "saturate",
       "sepia",
     ],
+    hideKey: "effectsClass",
+    sortOrder: 50,
+    isActive: (cn) => classNameHasAnyPrefix(cn, FILTER_PREFIXES),
+    input: { type: "custom", component: "EffectRowInput" },
+  },
+  {
+    id: "backdrop",
+    label: "Backdrop Filter",
+    section: "effects",
+    keywords: ["backdrop", "frosted", "glass", "blur", "filter"],
+    hideKey: "effectsClass",
     sortOrder: 60,
-    input: {
-      type: "bundle",
-      properties: [
-        filterChild("blur", "Blur", "blur", ["blur", "focus", "gaussian", "soft"]),
-        filterChild("brightness", "Brightness", "brightness", ["brightness", "light"]),
-        filterChild("contrast", "Contrast", "contrast", ["contrast"]),
-        filterChild("grayscale", "Grayscale", "grayscale", ["grayscale", "mono"]),
-        filterChild("hueRotate", "Hue Rotate", "hue-rotate", ["hue", "rotate", "color"]),
-        filterChild("invert", "Invert", "invert", ["invert", "negative"]),
-        filterChild("saturate", "Saturate", "saturate", ["saturate", "color"]),
-        filterChild("sepia", "Sepia", "sepia", ["sepia", "vintage"]),
-      ],
-    },
+    isActive: (cn) => classNameHasAnyPrefix(cn, BACKDROP_PREFIXES),
+    input: { type: "custom", component: "EffectRowInput" },
   },
-
-  // ─── Backdrop Filter (bundle: chip → popover, frosted glass) ─────
-  {
-    id: "backdropFilter",
-    label: "Backdrop",
-    section: "styles",
-    keywords: [
-      "backdrop",
-      "filter",
-      "blur",
-      "frosted",
-      "glass",
-      "brightness",
-      "contrast",
-      "grayscale",
-      "hue",
-      "invert",
-      "saturate",
-      "sepia",
-      "opacity",
-    ],
-    sortOrder: 70,
-    input: {
-      type: "bundle",
-      properties: [
-        filterChild("backdropBlur", "Blur", "backdrop-blur", ["backdrop", "blur", "frosted"]),
-        filterChild("backdropBrightness", "Brightness", "backdrop-brightness", ["backdrop", "brightness"]),
-        filterChild("backdropContrast", "Contrast", "backdrop-contrast", ["backdrop", "contrast"]),
-        filterChild("backdropGrayscale", "Grayscale", "backdrop-grayscale", ["backdrop", "grayscale"]),
-        filterChild("backdropHueRotate", "Hue Rotate", "backdrop-hue-rotate", ["backdrop", "hue", "rotate"]),
-        filterChild("backdropInvert", "Invert", "backdrop-invert", ["backdrop", "invert"]),
-        filterChild("backdropOpacity", "Opacity", "backdrop-opacity", ["backdrop", "opacity"]),
-        filterChild("backdropSaturate", "Saturate", "backdrop-saturate", ["backdrop", "saturate"]),
-        filterChild("backdropSepia", "Sepia", "backdrop-sepia", ["backdrop", "sepia"]),
-      ],
-    },
-  },
-
-  // ─── Advanced: Animate ───────────────────────────────────────────
-  advEffect(
-    "twAnimate",
-    "Animate",
-    "animate",
-    ["animate", "spin", "ping", "pulse", "bounce"],
-    "animate",
-    100
-  ),
-
-  // ─── Transforms section ──────────────────────────────────────────
-  {
-    id: "scale",
-    label: "Scale",
-    section: "transforms",
-    keywords: ["scale", "zoom", "resize", "x", "y"],
-    input: {
-      type: "shorthand",
-      tailwindKey: "scale",
-      varSelectorPrefix: "scale",
-      allowedTypes: [...EFFECTS_TYPES],
-      modes: [
-        {
-          id: "uniform",
-          icon: React.createElement(TbSquare, { className: "size-3.5" }),
-          ariaLabel: "Uniform scale",
-          tags: ["scale"],
-          labels: [""],
-        },
-        {
-          id: "axes",
-          icon: React.createElement(TbBoxPadding, { className: "size-3.5" }),
-          ariaLabel: "Scale X & Y",
-          tags: ["scale-x", "scale-y"],
-          labels: ["X", "Y"],
-          tailwindKeys: ["scaleX", "scaleY"],
-        },
-      ],
-    },
-    sortOrder: 0,
-  },
-  transformProp("rotate", "Rotate", ["rotate", "spin", "angle", "degrees"], "rotate", 10),
-  {
-    id: "translate",
-    label: "Translate",
-    section: "transforms",
-    keywords: ["translate", "move", "x", "y", "horizontal", "vertical"],
-    input: {
-      type: "shorthand",
-      varSelectorPrefix: "translate",
-      allowedTypes: [...EFFECTS_TYPES],
-      modes: [
-        {
-          id: "axes",
-          icon: React.createElement(TbBoxPadding, { className: "size-3.5" }),
-          ariaLabel: "Translate X & Y",
-          tags: ["translate-x", "translate-y"],
-          labels: ["X", "Y"],
-          tailwindKeys: ["translateX", "translateY"],
-        },
-      ],
-    },
-    sortOrder: 20,
-  },
-  {
-    id: "skew",
-    label: "Skew",
-    section: "transforms",
-    keywords: ["skew", "slant", "tilt", "x", "y"],
-    input: {
-      type: "shorthand",
-      varSelectorPrefix: "skew",
-      allowedTypes: [...EFFECTS_TYPES],
-      modes: [
-        {
-          id: "axes",
-          icon: React.createElement(TbBoxPadding, { className: "size-3.5" }),
-          ariaLabel: "Skew X & Y",
-          tags: ["skew-x", "skew-y"],
-          labels: ["X", "Y"],
-          tailwindKeys: ["skewX", "skewY"],
-        },
-      ],
-    },
-    sortOrder: 30,
-  },
-  transformProp("transformOrigin", "Origin", ["origin", "center", "pivot"], "origin", 40),
-  transformProp(
-    "twTransform",
-    "GPU Transform",
-    ["transform", "gpu", "3d", "hardware"],
-    "transform",
-    100
-  ),
-  transformProp(
-    "willChange",
-    "Will Change",
-    ["will-change", "performance", "gpu"],
-    "will-change",
-    110
-  ),
-
 ];

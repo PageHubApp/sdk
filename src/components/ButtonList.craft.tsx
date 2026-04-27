@@ -2,7 +2,7 @@
  * ButtonList — Component definition via defineComponent()
  */
 import React from "react";
-import { RxButton } from "react-icons/rx";
+import { TbHandClick } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { ButtonList } from "./ButtonList";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
@@ -24,7 +24,7 @@ export const ButtonListDef = defineComponent(
   {
     name: "ButtonList",
     component: ButtonList,
-    icon: RxButton,
+    icon: TbHandClick,
     category: "Content",
     canvas: true,
     settings: ButtonListMainTab,

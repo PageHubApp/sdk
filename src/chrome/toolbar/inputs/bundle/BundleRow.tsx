@@ -7,16 +7,20 @@
  *
  * X on the chip clears every child tag. Auto-opens when added via +Add picker.
  */
-import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { useNode } from "@craftjs/core";
 import { useAtomValue, useAtomState } from "@zedux/react";
 import {
   classPropKeyMatches,
   splitClassVariants,
 } from "../../../../utils/tailwind/className";
+import { formatTailwindDisplayLabel } from "../../../../utils/tailwind/displayLabel";
 import { TRANSPARENT_CHECKER_BG } from "../../../../utils/design/colorSystem";
 import { SideBarAtom } from "../../../../utils/lib";
 import { PopoverChip } from "../../../primitives/PopoverChip";
+import { ViewAtom } from "../../../viewport/atoms";
+import { getPropFinalValue } from "../../../viewport/propSystem";
+import { ViewSelectionAtom } from "../../Label";
 import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
 import type { PropertyDef, PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
 
@@ -30,11 +34,8 @@ interface Props extends PropertyInputProps {
   icon?: React.ReactNode;
 }
 
-// Approx row height in the panel body (input row + gap). Used to size the
-// panel to fit its content when first opened.
-const ROW_HEIGHT = 40;
-const PANEL_HEADER = 32;
-const PANEL_PAD = 24;
+// Hint width for chip-anchored initial position only — panel is auto-sized,
+// height is driven by the bundle's properties.
 const PANEL_WIDTH = 300;
 
 export function BundleRow({ def, properties, icon }: Props) {
@@ -46,15 +47,50 @@ export function BundleRow({ def, properties, icon }: Props) {
   // Sidebar docked left → panel opens on the RIGHT side of the trigger.
   // Docked right → opens to the LEFT side. Either way: adjacent to the chip.
   const sidebarLeft = useAtomValue(SideBarAtom);
+  const view = useAtomValue(ViewAtom);
+  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
 
   const {
     actions: { setProp },
     id,
     className,
+    componentProps,
   } = useNode((node: any) => ({
     nodeId: node.id,
     className: typeof node.data?.props?.className === "string" ? node.data.props.className : "",
+    componentProps: node.data?.props || {},
   }));
+
+  // Synthesize a chip summary from each child's current value so the row
+  // reflects what's actually set ("Underline · Solid"), instead of the
+  // permanent "Add..." placeholder. Class children format their token via
+  // `formatTailwindDisplayLabel`; component children read the prop and
+  // stringify if it's a primitive.
+  const summary = useMemo(() => {
+    const labels: string[] = [];
+    for (const child of properties) {
+      const propKey = child.propKey || child.id;
+      const propType = child.propType || "class";
+      if (propType === "class") {
+        const { value } = getPropFinalValue(
+          { propKey, propType: "class" },
+          view,
+          { className },
+          classDark
+        );
+        if (value && typeof value === "string") {
+          labels.push(formatTailwindDisplayLabel(value, propKey));
+        }
+      } else if (propType === "component" || propType === "root") {
+        const v = componentProps?.[propKey];
+        if (v != null && v !== "" && (typeof v === "string" || typeof v === "number")) {
+          labels.push(String(v));
+        }
+      }
+      if (labels.length >= 2) break;
+    }
+    return labels.length ? labels.join(" · ") : "Add...";
+  }, [properties, className, componentProps, view, classDark]);
 
   // Detect a color child + its current swatch class for the chip preview.
   // For ring-N color → render `bg-N` (e.g. ring-primary → bg-primary).
@@ -103,8 +139,8 @@ export function BundleRow({ def, properties, icon }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionAdded, id, def.id]);
 
-  const remove = (e: React.MouseEvent | React.KeyboardEvent) => {
-    e.stopPropagation();
+  const remove = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    e?.stopPropagation();
     // Strip ALL classes the bundle owns across EVERY scope (mobile, sm:, md:,
     // dark:, hover:, ...). removeClassForView is scoped to a single view, so
     // it'd leave bare classes when the toolbar is in the desktop scope.
@@ -156,11 +192,11 @@ export function BundleRow({ def, properties, icon }: Props) {
         ref={triggerRef}
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
-        onClear={remove}
+        onClear={() => remove()}
         triggerAriaLabel={`Edit ${def.label}`}
         clearAriaLabel={`Remove ${def.label}`}
         leading={leading}
-        summary="Add..."
+        summary={summary}
       />
       {open && (
         <Suspense fallback={null}>
@@ -168,8 +204,6 @@ export function BundleRow({ def, properties, icon }: Props) {
             title={def.label}
             icon={icon}
             storageKey={`bundle-${def.id}`}
-            defaultWidth={PANEL_WIDTH}
-            defaultHeight={PANEL_HEADER + PANEL_PAD + properties.length * ROW_HEIGHT}
             initialPosition={initialPos}
             onClose={() => setOpen(false)}
             properties={properties}

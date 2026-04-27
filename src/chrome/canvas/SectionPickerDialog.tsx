@@ -1,8 +1,7 @@
 import { Element, useEditor } from "@craftjs/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { MdClose, MdSearch } from "react-icons/md";
-import { TbLayoutGridAdd } from "react-icons/tb";
+import { TbLayoutGridAdd, TbSearch, TbX } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { ComponentsAtom } from "../../utils/lib";
 import { useSectionTemplates } from "../../utils/useSectionTemplates";
@@ -228,7 +227,7 @@ export const SectionPickerDialog = ({
                 className="text-neutral-content hover:text-neutral-content transition-colors"
                 aria-label="Close"
               >
-                <MdClose size={24} />
+                <TbX size={24} />
               </button>
             </div>
 
@@ -264,7 +263,7 @@ export const SectionPickerDialog = ({
                       onChange={e => handleSearch(e.target.value)}
                       className="input-plain-search pl-8"
                     />
-                    <MdSearch
+                    <TbSearch
                       className="text-neutral-content pointer-events-none absolute top-1/2 left-2 z-10 -translate-y-1/2"
                       size={16}
                     />

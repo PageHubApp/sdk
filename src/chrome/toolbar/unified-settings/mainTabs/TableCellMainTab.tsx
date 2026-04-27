@@ -9,6 +9,7 @@ export const TableCellMainTab = () => {
 
   return renderComponentSlots({
     Content: (
+      <>
       <ToolbarSection collapsible={false}>
         <ToolbarItem
           propKey="text"
@@ -29,11 +30,10 @@ export const TableCellMainTab = () => {
         </ToolbarItem>
         <SettingsAiSlot />
       </ToolbarSection>
-    ),
-    Properties: (
+
       <ToolbarSection
         title="Span"
-        icon={SECTION_ICONS["Properties"]}
+        icon={SECTION_ICONS["Type"]}
         help="colspan / rowspan for merged cells."
       >
         <ToolbarItem
@@ -70,6 +70,7 @@ export const TableCellMainTab = () => {
           </ToolbarItem>
         )}
       </ToolbarSection>
+      </>
     ),
   });
 };

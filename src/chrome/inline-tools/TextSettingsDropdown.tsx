@@ -2,8 +2,7 @@ import { useTiptapContext } from "./TiptapContext";
 import { ToolbarItem } from "../toolbar/ToolbarItem";
 import { ColorInput } from "../toolbar/inputs/color/ColorInput";
 import { useState } from "react";
-import { AiOutlineAlignRight } from "react-icons/ai";
-import { TbAlignCenter, TbAlignLeft } from "react-icons/tb";
+import { TbAlignCenter, TbAlignLeft, TbAlignRight } from "react-icons/tb";
 
 export function TextSettingsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +34,7 @@ export function TextSettingsDropdown() {
             options={[
               { value: "text-left", label: <TbAlignLeft /> },
               { value: "text-center", label: <TbAlignCenter /> },
-              { value: "text-right", label: <AiOutlineAlignRight /> },
+              { value: "text-right", label: <TbAlignRight /> },
             ]}
           />
         </div>

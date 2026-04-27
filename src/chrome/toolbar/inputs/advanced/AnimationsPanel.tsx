@@ -8,29 +8,19 @@ import { AnimationsInput } from "./AnimationsInput";
 interface PanelProps {
   initialPosition?: { x: number; y: number };
   onClose: () => void;
-  defaultWidth: number;
-  defaultHeight: number;
 }
 
-export default function AnimationsPanel({
-  initialPosition,
-  onClose,
-  defaultWidth,
-  defaultHeight,
-}: PanelProps) {
+export default function AnimationsPanel({ initialPosition, onClose }: PanelProps) {
   return (
     <FloatingPanel
       isOpen
       onClose={onClose}
       title="Animation"
       storageKey="animations-input"
-      defaultWidth={defaultWidth}
-      defaultHeight={defaultHeight}
       minWidth={320}
       maxWidth={520}
       minHeight={300}
       initialPosition={initialPosition}
-      persistSize={false}
       zIndex={1100}
       scrollable
     >

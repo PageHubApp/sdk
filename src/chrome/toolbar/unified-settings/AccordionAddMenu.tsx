@@ -70,10 +70,12 @@ export const AccordionAddMenu = React.memo(
     actions: { setProp },
     id,
     className,
+    craftName,
     componentProps,
     toolbarOrder,
   } = useNode((node: any) => ({
     className: typeof node.data?.props?.className === "string" ? node.data.props.className : "",
+    craftName: (node.data?.name || node.data?.displayName || "") as string,
     componentProps: node.data?.props || {},
     toolbarOrder: Array.isArray(node.data?.props?.toolbarOrder)
       ? (node.data.props.toolbarOrder as string[])
@@ -83,13 +85,34 @@ export const AccordionAddMenu = React.memo(
   const [sessionAdded, setSessionAdded] = useAtomState(SessionAddedAtom);
   const [popoverRequests, setPopoverRequests] = useAtomState(PopoverOpenRequestAtom);
 
+  // showWhen receives the same shape PropertySection passes — `_craftName`
+  // synthesized onto componentProps. Lets registry-level node-type / context
+  // gates (e.g. scroll-effect = Container only) hide picker entries that
+  // would never render in body anyway.
+  const showWhenProps = useMemo(
+    () => ({ ...componentProps, _craftName: craftName }),
+    [componentProps, craftName]
+  );
+
+  // Context for `def.isActive` — registry-aware defs (modifiers) need the
+  // CraftJS query so the picker can correctly hide already-active items.
+  const activeCtx = useMemo(() => ({ query: editorQuery, nodeId: id }), [editorQuery, id]);
+
   const orderSet = useMemo(() => new Set(toolbarOrder), [toolbarOrder]);
   const available = useMemo<SearchableMenuItem<PropertyDef>[]>(() => {
     return getProperties({ section: sectionId })
       .filter(p => !p.pinned)
       .filter(p => !p.hideKey || !hiddenKeys.has(p.hideKey))
+      .filter(p => !p.showWhen || p.showWhen(className, showWhenProps))
       .filter(p => !orderSet.has(p.id))
-      .filter(p => !propertyHasValue(p, className, componentProps, view, classDark))
+      .filter(p => {
+        // Custom isActive (e.g. popover-mode rows whose value lives on a
+        // nested prop or as className tokens) — exclude active items so the
+        // picker doesn't double-add. Falls through to propertyHasValue for
+        // props without a custom checker.
+        if (p.isActive) return !p.isActive(className, componentProps, activeCtx);
+        return !propertyHasValue(p, className, componentProps, view, classDark);
+      })
       .map(p => ({
         id: p.id,
         label: p.label || p.id,
@@ -98,7 +121,17 @@ export const AccordionAddMenu = React.memo(
         keywords: p.keywords,
         data: p,
       }));
-  }, [sectionId, className, componentProps, view, classDark, hiddenKeys, orderSet]);
+  }, [
+    sectionId,
+    className,
+    showWhenProps,
+    componentProps,
+    view,
+    classDark,
+    hiddenKeys,
+    orderSet,
+    activeCtx,
+  ]);
 
   useImperativeHandle(
     ref,

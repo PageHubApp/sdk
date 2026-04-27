@@ -7,7 +7,6 @@
 import React from "react";
 import { useEditor, useNode } from "@craftjs/core";
 import {
-  TbAccessible,
   TbAdjustments,
   TbAnchor,
   TbArrowsExchange,
@@ -25,6 +24,7 @@ import {
   TbLock,
   TbLockOpen,
   TbPalette,
+  TbPhotoFilled,
   TbPointFilled,
   TbPointer,
   TbSettings2,
@@ -32,7 +32,6 @@ import {
   TbSparkles,
   TbTypography,
 } from "react-icons/tb";
-import { PiImageFill } from "react-icons/pi";
 import { ToolbarSection } from "../ToolbarSection";
 import { PropertiesInput } from "../inputs/advanced/PropertiesInput";
 
@@ -45,13 +44,13 @@ export const SECTION_ICONS: Record<string, React.ReactNode> = {
   Icon: <TbIcons />,
   Type: <TbCategory />,
   Marker: <TbPointFilled />,
-  Properties: <TbSettings2 />,
+  Attributes: <TbSettings2 />,
   /** Modal open-target id (Actions); not a generic "anchor" section */
   ModalTarget: <TbAnchor />,
   // Design
   Colors: <TbPalette />,
   Typography: <TbTypography />,
-  Background: <PiImageFill />,
+  Background: <TbPhotoFilled />,
   Border: <TbBorderAll />,
   Decoration: <TbSparkles />,
   // Layout
@@ -65,7 +64,6 @@ export const SECTION_ICONS: Record<string, React.ReactNode> = {
   /** Interactions registry section (Container scroll / timeline) */
   ScrollEffect: <TbChevronsDown />,
   // Advanced
-  ARIA: <TbAccessible />,
   Display: <TbAdjustments />,
   "Custom Code": <TbCode />,
   "Import / Export": <TbArrowsExchange />,
@@ -81,7 +79,7 @@ const COMPONENT_SECTIONS = ["Content", "Type", "Marker"] as const;
 /**
  * Sections that render in the Advanced tab instead of the Component tab.
  */
-export const ADVANCED_COMPONENT_SECTIONS = ["Properties"] as const;
+export const ADVANCED_COMPONENT_SECTIONS = ["Attributes"] as const;
 
 export type ComponentSlotName =
   | (typeof COMPONENT_SECTIONS)[number]
@@ -113,13 +111,13 @@ export function renderAdvancedComponentSlots(
   return (
     <>
       {ADVANCED_COMPONENT_SECTIONS.map(title => {
-        if (title === "Properties" && slots[title] === undefined) {
+        if (title === "Attributes" && slots[title] === undefined) {
           return (
             <React.Fragment key={title}>
               <ToolbarSection
-                title="Properties"
-                icon={SECTION_ICONS["Properties"]}
-                help="Custom properties for this component."
+                title="Attributes"
+                icon={SECTION_ICONS["Attributes"]}
+                help="HTML tag, ID, data attributes, and ARIA / accessibility."
               >
                 <PropertiesInput />
               </ToolbarSection>

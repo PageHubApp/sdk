@@ -5,8 +5,7 @@ import { AnchoredPopover } from "@/chrome/overlays/AnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import debounce from "lodash.debounce";
 import { useEffect, useState } from "react";
-import { BsEyedropper } from "react-icons/bs";
-import { TbCheck, TbChevronDown, TbChevronRight, TbDeviceFloppy, TbX } from "react-icons/tb";
+import { TbCheck, TbChevronDown, TbChevronRight, TbColorPicker, TbDeviceFloppy, TbX } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import useEyeDropper from "use-eye-dropper";
 import { resolveTheme } from "../../../utils/design/resolveTheme";
@@ -235,7 +234,7 @@ export const ColorPickerDialog = () => {
                 data-tooltip-content="Eyedropper"
                 data-tooltip-offset={10}
               >
-                <BsEyedropper />
+                <TbColorPicker />
               </button>
             )}
           </div>

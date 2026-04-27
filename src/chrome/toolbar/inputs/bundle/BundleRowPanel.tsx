@@ -12,8 +12,6 @@ interface PanelProps {
   title: string;
   icon?: ReactNode;
   storageKey: string;
-  defaultWidth: number;
-  defaultHeight: number;
   initialPosition?: { x: number; y: number };
   onClose: () => void;
   properties: PropertyDef[];
@@ -23,8 +21,6 @@ export default function BundleRowPanel({
   title,
   icon,
   storageKey,
-  defaultWidth,
-  defaultHeight,
   initialPosition,
   onClose,
   properties,
@@ -36,13 +32,10 @@ export default function BundleRowPanel({
       title={title}
       icon={icon}
       storageKey={storageKey}
-      defaultWidth={defaultWidth}
-      defaultHeight={defaultHeight}
       minWidth={260}
       maxWidth={480}
       minHeight={120}
       initialPosition={initialPosition}
-      persistSize={false}
       zIndex={1100}
       scrollable
     >

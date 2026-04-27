@@ -7,7 +7,7 @@
  */
 import React, { useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useNode } from "@craftjs/core";
+import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { ToolbarSection } from "../ToolbarSection";
 import { PropertyRenderer, PropertyRow } from "./PropertyRenderer";
@@ -22,7 +22,6 @@ import { HiddenKeysAtom } from "./registry/atoms";
 import type { PropertyDef, SectionId } from "./registry/propertyDefs";
 import { useInspectorPin } from "./inspectorPin/InspectorPinContext";
 import { SectionPinButton } from "./inspectorPin/SectionPinButton";
-import { EditorModeAtom } from "../../viewport/atoms";
 
 interface Props {
   sectionId: SectionId;
@@ -51,32 +50,43 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
   const sessionAdded = useAtomValue(SessionAddedAtom);
+  const { query } = useEditor();
 
   // Stable props object for showWhen — only include metadata showWhen needs
   const nodeProps = useMemo(() => ({ _craftName: craftName }), [craftName]);
 
-  const editorMode = useAtomValue(EditorModeAtom);
+  // Context handed to `def.isActive` — registry-aware defs (e.g. modifiers)
+  // need the CraftJS query to read `node.data.type.craft.*` for state that
+  // can't be derived from className/props alone.
+  const activeCtx = useMemo(() => ({ query, nodeId: id }), [query, id]);
 
-  // Properties filtered by editor mode + property-level hideKey
+  // Properties filtered by property-level hideKey
   const properties = useMemo(() => {
     const all = getProperties({ section: sectionId });
     return all.filter(p => {
-      if (editorMode !== "design" && p.advanced) return false;
       if (p.hideKey && hiddenKeys.has(p.hideKey)) return false;
       return true;
     });
-  }, [sectionId, editorMode, hiddenKeys]);
+  }, [sectionId, hiddenKeys]);
 
   // Split: pinned → main (always-visible), rest → candidates (gated below).
+  // Pinned props can opt into a value-gate via `isActive` — when defined and
+  // returning false, the row is excluded from `main` (so list-style pinned
+  // props like Conditions don't keep the section in expanded mode while empty).
   const { main, candidates } = useMemo(() => {
     const visible = properties.filter(p => !p.showWhen || p.showWhen(className, nodeProps));
     const mainProps: PropertyDef[] = [];
     const rest: PropertyDef[] = [];
     for (const p of visible) {
-      (p.pinned ? mainProps : rest).push(p);
+      if (p.pinned) {
+        if (p.isActive && !p.isActive(className, componentProps, activeCtx)) continue;
+        mainProps.push(p);
+      } else {
+        rest.push(p);
+      }
     }
     return { main: mainProps, candidates: rest };
-  }, [properties, className, nodeProps]);
+  }, [properties, className, nodeProps, componentProps, activeCtx]);
 
   // Sections whose only non-pinned property is a single non-popover-mode custom
   // input (Permissions, Import/Export, AI Context, Custom CSS) are "the section
@@ -88,11 +98,23 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
     !isPopoverModeComponent(candidates[0].input.component);
 
   // Visibility gate (mirrors PropertyRow). Pre-filter so empty sections don't render a body.
-  // Popover-mode custom inputs always count as visible — they own their own
-  // empty-state (chip hidden when no value) and the section is the user's only
-  // entry point to the popover trigger row.
+  // Popover-mode customs default to ALWAYS visible — they own their own empty
+  // state (chip hidden when no value) and the section is the user's only entry
+  // point to the popover trigger row. EXCEPT: when a popover-mode prop sets
+  // `def.isActive`, it opts into value-gated visibility (used by stacked-row
+  // sections like Effects where 6 popover-mode props share one section and we
+  // only want the active ones to render in body).
   const isPropVisible = (p: PropertyDef) => {
-    if (p.input.type === "custom" && isPopoverModeComponent(p.input.component)) return true;
+    if (p.input.type === "custom" && isPopoverModeComponent(p.input.component)) {
+      if (p.isActive) {
+        return (
+          p.isActive(className, componentProps, activeCtx) ||
+          toolbarOrder.includes(p.id) ||
+          sessionAdded.has(sessionKey(id, p.id))
+        );
+      }
+      return true;
+    }
     if (isSingleCustomSection && p === candidates[0]) return true;
     return (
       toolbarOrder.includes(p.id) ||
@@ -118,23 +140,39 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
   if (!section) return null;
 
   const isHidden = !!(section.hideKey && hiddenKeys.has(section.hideKey));
-  const isAdvancedHidden = !!section.advanced && editorMode === "content";
-  const noVisibleContent = main.length === 0 && added.length === 0;
   const isEmpty = main.length === 0 && candidates.length === 0;
-  if (isHidden || isAdvancedHidden || isEmpty) return null;
+  if (isHidden || isEmpty) return null;
 
-  // Sections whose only props are popover-mode customs render the trigger in
-  // the header (via AccordionAddMenu) — so skip them in the body and disable
-  // accordion collapse. The header IS the section.
+  // Sections whose ONLY prop is a single popover-mode custom render the trigger
+  // in the header (via AccordionAddMenu) — so skip the body and disable accordion
+  // collapse. The header IS the section. Multi-prop popover-mode sections (e.g.
+  // Effects with 6 popover-mode rows) fall through to a regular accordion: the
+  // `+` shows AccordionAddMenu's search picker, the body lists active rows.
   const isPopoverOnlySection =
-    properties.length > 0 &&
-    properties.every(
-      p => p.input.type === "custom" && isPopoverModeComponent(p.input.component)
-    );
+    properties.length === 1 &&
+    properties[0].input.type === "custom" &&
+    isPopoverModeComponent(properties[0].input.component);
+  // Mixed pattern (Conditions): a single non-pinned popover-mode picker
+  // alongside other body props. AccordionAddMenu's `sectionPopoverProp`
+  // path mounts the picker in the section header; without filtering it out
+  // of the body it would also render as a row inside (duplicate `+`), AND
+  // it would keep `noVisibleContent` false even when no real body content
+  // exists — preventing the section from collapsing into its empty state.
+  const nonPinnedProps = properties.filter(p => !p.pinned);
+  const headerMountsPopoverPicker =
+    !isPopoverOnlySection &&
+    nonPinnedProps.length === 1 &&
+    nonPinnedProps[0].input.type === "custom" &&
+    isPopoverModeComponent(nonPinnedProps[0].input.component);
   const filterPopoverModeProps = (p: PropertyDef) =>
     !(p.input.type === "custom" && isPopoverModeComponent(p.input.component));
-  const visibleMain = isPopoverOnlySection ? main.filter(filterPopoverModeProps) : main;
-  const visibleAdded = isPopoverOnlySection ? added.filter(filterPopoverModeProps) : added;
+  const shouldFilterPopover = isPopoverOnlySection || headerMountsPopoverPicker;
+  const visibleMain = shouldFilterPopover ? main.filter(filterPopoverModeProps) : main;
+  const visibleAdded = shouldFilterPopover ? added.filter(filterPopoverModeProps) : added;
+  // Use the post-filter counts so a header-mounted popover picker doesn't
+  // count as body content. Otherwise the empty-state `+` click handler
+  // (line below) wouldn't fire and the section would expand into a blank body.
+  const noVisibleContent = visibleMain.length === 0 && visibleAdded.length === 0;
 
   // Single-custom sections bypass PropertyRow's value gate — the custom input
   // IS the section content, so it always renders.

@@ -11,7 +11,7 @@ import { useDialog } from "../../dialogs/toolHooks";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { CATEGORY_LABELS } from "./designVarConstants";
 import { useDesignVarOptions, type DesignVar } from "./useDesignVarOptions";
-import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
+import { ToolbarIconButton } from "../../../primitives/ToolbarIconButton";
 
 interface DesignVarSelectorProps {
   propKey: string;
@@ -86,7 +86,7 @@ export function DesignVarSelector({
 
   return (
     <>
-      <button
+      <ToolbarIconButton
         ref={ref}
         onClick={() => {
           setDialog({
@@ -98,12 +98,12 @@ export function DesignVarSelector({
             e: getRect(ref.current),
           });
         }}
-        className="text-neutral-content hover:bg-neutral hover:text-base-content flex size-5 items-center justify-center rounded-md transition-colors"
-        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-        data-tooltip-content="Bind to design system variable"
+        variant="subtle"
+        ariaLabel="Bind to design system variable"
+        tooltip="Bind to design system variable"
       >
         <TbVariable className="size-3.5" />
-      </button>
+      </ToolbarIconButton>
 
       {dialog.enabled && (
         <DesignVarDialog

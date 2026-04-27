@@ -7,7 +7,7 @@ import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
 import ClientIconLoader from "../../dialogs/ClientIconLoader";
 import { IconPickerPopover } from "../../dialogs/IconDialog/IconPickerPopover";
-import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
+import { InlineClearButton } from "../../../primitives/InlineClearButton";
 
 export const IconDialogInput = ({
   propKey,
@@ -90,19 +90,8 @@ export const IconDialogInput = ({
           }
         />
 
-        {/* Clear button — only when an icon is set */}
         {value && (
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              changed("");
-            }}
-            className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content="Clear icon"
-          >
-            ×
-          </button>
+          <InlineClearButton onClick={() => changed("")} tooltip="Clear icon" floating />
         )}
       </div>
     </Wrap>

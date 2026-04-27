@@ -2,19 +2,20 @@ import { Editor } from "@tiptap/react";
 import { VariableInsertPanel } from "./VariableInsertPanel";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import {
-  MdFormatAlignCenter,
-  MdFormatAlignLeft,
-  MdFormatAlignRight,
-  MdFormatIndentIncrease,
-  MdFormatLineSpacing,
-  MdFormatListBulleted,
-  MdFormatListNumbered,
-  MdFormatStrikethrough,
-  MdImage,
-  MdSubscript,
-  MdSuperscript,
-} from "react-icons/md";
-import { TbEraser, TbX } from "react-icons/tb";
+  TbAlignCenter,
+  TbAlignLeft,
+  TbAlignRight,
+  TbEraser,
+  TbIndentIncrease,
+  TbLineHeight,
+  TbList,
+  TbListNumbers,
+  TbPhoto,
+  TbStrikethrough,
+  TbSubscript,
+  TbSuperscript,
+  TbX,
+} from "react-icons/tb";
 import { DeleteNodeButton } from "../../../canvas/node-tools/DeleteNodeButton";
 import type { PagehubTextRichMode } from "@/core/tiptapExtensions/pagehubTextTiptapExtensions";
 
@@ -42,9 +43,9 @@ export function MorePanel({
       <div className="flex items-center">
         {richTextMode !== "inline" &&
           [
-            { align: "left", icon: <MdFormatAlignLeft />, label: "Align left" },
-            { align: "center", icon: <MdFormatAlignCenter />, label: "Align center" },
-            { align: "right", icon: <MdFormatAlignRight />, label: "Align right" },
+            { align: "left", icon: <TbAlignLeft />, label: "Align left" },
+            { align: "center", icon: <TbAlignCenter />, label: "Align center" },
+            { align: "right", icon: <TbAlignRight />, label: "Align right" },
           ].map(a => (
             <button
               key={a.align}
@@ -65,26 +66,26 @@ export function MorePanel({
               onClick={() => editor.chain().focus().toggleBulletList().run()}
               active={editor.isActive("bulletList")}
               tip="Bullet list"
-              icon={<MdFormatListBulleted />}
+              icon={<TbList />}
               onAction={onAction}
             />
             <Btn
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
               active={editor.isActive("orderedList")}
               tip="Numbered list"
-              icon={<MdFormatListNumbered />}
+              icon={<TbListNumbers />}
               onAction={onAction}
             />
             <Btn
               onClick={() => editor.chain().focus().liftListItem("listItem").run()}
               tip="Outdent"
-              icon={<MdFormatIndentIncrease className="rotate-180" />}
+              icon={<TbIndentIncrease className="rotate-180" />}
               onAction={onAction}
             />
             <Btn
               onClick={() => editor.chain().focus().sinkListItem("listItem").run()}
               tip="Indent"
-              icon={<MdFormatIndentIncrease />}
+              icon={<TbIndentIncrease />}
               onAction={onAction}
             />
 
@@ -96,21 +97,21 @@ export function MorePanel({
           onClick={() => editor.chain().focus().toggleStrike().run()}
           active={editor.isActive("strike")}
           tip="Strikethrough"
-          icon={<MdFormatStrikethrough />}
+          icon={<TbStrikethrough />}
           onAction={onAction}
         />
         <Btn
           onClick={() => editor.chain().focus().toggleSuperscript().run()}
           active={editor.isActive("superscript")}
           tip="Superscript"
-          icon={<MdSuperscript />}
+          icon={<TbSuperscript />}
           onAction={onAction}
         />
         <Btn
           onClick={() => editor.chain().focus().toggleSubscript().run()}
           active={editor.isActive("subscript")}
           tip="Subscript"
-          icon={<MdSubscript />}
+          icon={<TbSubscript />}
           onAction={onAction}
         />
 
@@ -121,13 +122,13 @@ export function MorePanel({
             <Btn
               onClick={onInsertImage}
               tip="Insert image"
-              icon={<MdImage />}
+              icon={<TbPhoto />}
               onAction={onAction}
             />
             <Btn
               onClick={() => editor.chain().focus().setHorizontalRule().run()}
               tip="Horizontal rule"
-              icon={<MdFormatLineSpacing />}
+              icon={<TbLineHeight />}
               onAction={onAction}
             />
           </>

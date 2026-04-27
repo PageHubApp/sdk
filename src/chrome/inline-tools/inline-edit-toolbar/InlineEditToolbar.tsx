@@ -11,14 +11,15 @@ import React, {
 } from "react";
 import { useClampToViewport } from "../../overlays/useClampToViewport";
 import {
-  MdFormatBold,
-  MdFormatColorFill,
-  MdFormatColorText,
-  MdFormatItalic,
-  MdFormatUnderlined,
-  MdLink,
-} from "react-icons/md";
-import { TbAlphabetLatin, TbChevronDown } from "react-icons/tb";
+  TbAlphabetLatin,
+  TbBold,
+  TbChevronDown,
+  TbHighlight,
+  TbItalic,
+  TbLink,
+  TbTextColor,
+  TbUnderline,
+} from "react-icons/tb";
 import { getMediaContent } from "../../../utils/lib";
 import { paletteToCSSVar } from "../../../utils/design/palette";
 import { useAtomValue } from "@zedux/react";
@@ -162,7 +163,7 @@ export function InlineEditToolbar({
         command={() => editor.chain().focus().toggleBold().run()}
         active={tipTap.isBold}
         tooltip="Bold (⌘B)"
-        icon={<MdFormatBold />}
+        icon={<TbBold />}
         onAction={handleButtonClick}
       />
       <FormatButton
@@ -170,7 +171,7 @@ export function InlineEditToolbar({
         command={() => editor.chain().focus().toggleItalic().run()}
         active={tipTap.isItalic}
         tooltip="Italic (⌘I)"
-        icon={<MdFormatItalic />}
+        icon={<TbItalic />}
         onAction={handleButtonClick}
       />
       <FormatButton
@@ -178,7 +179,7 @@ export function InlineEditToolbar({
         command={() => editor.chain().focus().toggleUnderline().run()}
         active={tipTap.isUnderline}
         tooltip="Underline (⌘U)"
-        icon={<MdFormatUnderlined />}
+        icon={<TbUnderline />}
         onAction={handleButtonClick}
       />
 
@@ -208,7 +209,7 @@ export function InlineEditToolbar({
         data-tooltip-place="top"
         data-tooltip-offset={10}
       >
-        <MdLink />
+        <TbLink />
       </button>
 
       <div className="bg-border mx-1 h-5 w-px" />
@@ -220,7 +221,7 @@ export function InlineEditToolbar({
           label={tipTap.textStyleColor ? "Text color" : "Text color (inherited)"}
           onClick={() => toggle("textcolor")}
         >
-          <MdFormatColorText className="size-3" aria-hidden />
+          <TbTextColor className="size-3" aria-hidden />
         </InlineColorSwatch>
         <InlineColorSwatch
           active={activePanel === "bgcolor"}
@@ -228,7 +229,7 @@ export function InlineEditToolbar({
           label={tipTap.highlightColor ? "Highlight color" : "Highlight (none)"}
           onClick={() => toggle("bgcolor")}
         >
-          <MdFormatColorFill className="size-3" aria-hidden />
+          <TbHighlight className="size-3" aria-hidden />
         </InlineColorSwatch>
       </div>
 

@@ -84,6 +84,7 @@ export const EmbedMainTab = () => {
 
   return renderComponentSlots({
     Content: (
+      <>
       <ToolbarSection
         title="Embed"
         icon={SECTION_ICONS["Content"]}
@@ -163,11 +164,9 @@ export const EmbedMainTab = () => {
         )}
         <SettingsAiSlot />
       </ToolbarSection>
-    ),
-    Properties: (
+
       <ToolbarSection
-        title="Properties"
-        icon={SECTION_ICONS["Properties"]}
+        title="Advanced"
         help="Title for accessibility and optional code override."
       >
         <ToolbarItem
@@ -216,6 +215,7 @@ export const EmbedMainTab = () => {
           description="Let head/footer scripts execute while editing. Off by default — prevents popups and widgets firing during design."
         />
       </ToolbarSection>
+      </>
     ),
   });
 };

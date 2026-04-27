@@ -97,10 +97,10 @@ export const ListMainTab = () => {
         <SettingsAiSlot />
       </ToolbarSection>
     ),
-    Properties: (
+    Marker: (
       <ToolbarSection
         title="List"
-        icon={SECTION_ICONS["Properties"]}
+        icon={SECTION_ICONS["Marker"]}
         help="Ordered numbering or custom markers for unordered lists."
       >
         <ToolbarItem

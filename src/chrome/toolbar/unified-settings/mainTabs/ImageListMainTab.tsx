@@ -1,86 +1,41 @@
-import { NodeProvider, useEditor, useNode } from "@craftjs/core";
+import { NodeProvider, useNode } from "@craftjs/core";
+import { atom, useAtomState } from "@zedux/react";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { MediaInput } from "../../inputs/media/MediaInput";
+import { CraftListEditor } from "../../inputs/preset/CraftListEditor";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { ListEditor } from "../../inputs/preset/ListEditor";
-import { atom, useAtomState, useAtomInstance } from "@zedux/react";
-import { BatchOperationAtom } from "@/utils/atoms";
-import { TbEdit } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
-import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedImageListItemAtom = atom<any>("selectedimagelistitem_unified", null);
 
 export const ImageListMainTab = () => {
-  const { actions, query } = useEditor();
   const { id, props } = useNode(node => ({ props: node.data?.props }));
   const [activeIndex, setActiveIndex] = useAtomState(SelectedImageListItemAtom) as unknown as [
     number | null,
     (v: number | null) => void,
   ];
-  const batchOp = useAtomInstance(BatchOperationAtom);
-
-  // Get child Image nodes
-  const { childImages } = useEditor((_, q) => {
-    try {
-      const node = q.node(id).get();
-      const images = node.data.nodes
-        .map((childId: string) => {
-          try {
-            const childNode = q.node(childId).get();
-            if (childNode.data.name !== "Image") return null;
-            return { id: childId, props: childNode.data.props };
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean);
-      return { childImages: images };
-    } catch {
-      return { childImages: [] };
-    }
-  });
 
   const isCarousel = props.mode === "carousel" || props.mode === "hero";
 
   return renderComponentSlots({
     Content: (
+      <>
       <ToolbarSection collapsible={false}>
-        <ListEditor
-          items={childImages || []}
+        <CraftListEditor
+          parentId={id}
+          childTypeName="Image"
+          mapItem={node => ({ props: node.data.props })}
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
           addLabel="Add Image"
-          renderLabel={(image, index) => image.props?.alt || `Image ${index + 1}`}
-          onDelete={image => actions.delete(image.id)}
-          onAdd={() => {
+          editTooltip="Edit image"
+          renderLabel={(image: any, index) => image.props?.alt || `Image ${index + 1}`}
+          onAdd={({ query, addNode }) => {
             const ImageComp = query.getOptions().resolver.Image;
-            if (ImageComp) {
-              batchOp.setState(true);
-              actions.addNodeTree(
-                query.parseReactElement(<ImageComp alt="New image" />).toNodeTree(),
-                id
-              );
-              setActiveIndex(childImages.length);
-              requestAnimationFrame(() => batchOp.setState(false));
-            }
+            if (ImageComp) addNode(<ImageComp alt="New image" />);
           }}
-          extraButtons={image => [
-            <button
-              key="edit"
-              className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Edit image"
-              onClick={e => {
-                e.stopPropagation();
-                actions.selectNode(image.id);
-              }}
-            >
-              <TbEdit className="h-3.5 w-3.5" />
-            </button>,
-          ]}
-          renderPopover={image => (
+          renderPopover={(image: any) => (
             <NodeProvider id={image.id}>
               <MediaInput propKey="videoId" typeKey="type" title="" collapsible={false} />
             </NodeProvider>
@@ -88,11 +43,10 @@ export const ImageListMainTab = () => {
         />
         <SettingsAiSlot />
       </ToolbarSection>
-    ),
-    Properties: (
+
       <ToolbarSection
-        title="Properties"
-        icon={SECTION_ICONS["Properties"]}
+        title="Layout"
+        icon={SECTION_ICONS["Type"]}
         help="Layout mode (grid, carousel, masonry, etc) and items per row."
       >
         <ToolbarItem
@@ -120,13 +74,11 @@ export const ImageListMainTab = () => {
           labelWidth="w-24"
         />
       </ToolbarSection>
-    ),
-    ...(isCarousel
-      ? {
-          Carousel: (
+
+      {isCarousel && (
             <ToolbarSection
               title="Carousel"
-              icon={SECTION_ICONS["Properties"]}
+              icon={SECTION_ICONS["Type"]}
               help="Carousel navigation and autoplay settings."
             >
               <ToolbarItem
@@ -185,8 +137,8 @@ export const ImageListMainTab = () => {
                 placeholder="bg-base-100 w-8"
               />
             </ToolbarSection>
-          ),
-        }
-      : {}),
+      )}
+      </>
+    ),
   });
 };

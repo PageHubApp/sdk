@@ -153,10 +153,20 @@ export const alignmentProperties: PropertyDef[] = [
   },
   {
     id: "flexBase",
-    label: "Grow / Shrink",
+    label: "Flex",
     section: "alignment",
-    keywords: ["grow", "shrink", "basis", "flex"],
-    input: { type: "tailwind-select", tailwindKey: "flexBase" },
+    keywords: ["grow", "shrink", "basis", "flex", "fill", "auto", "fixed"],
+    input: {
+      type: "tailwind-radio",
+      tailwindKey: "flexBase",
+      cols: true,
+      options: [
+        { label: "Fill", value: "flex-1", hint: "Grow and shrink to fill remaining space" },
+        { label: "Auto", value: "flex-auto", hint: "Size to content; can grow and shrink" },
+        { label: "Default", value: "flex-initial", hint: "Size to content; can shrink only" },
+        { label: "Fixed", value: "flex-none", hint: "Keep content size; no grow or shrink" },
+      ],
+    },
     showWhen: isFlex,
     sortOrder: 130,
   },

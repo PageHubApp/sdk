@@ -336,7 +336,7 @@ Partials that use `@apply` / `@utility` rely on **`css/editor-partials/tailwind-
 | Third-party (e.g. Sketch color picker)                            | `css/editor-partials/third-party.css`              |
 | HeadlessUI listbox (`ph-select-*`)                                | `css/editor-partials/dropdowns.css`                |
 | Scroll/hover presets + `css-*` keyframes                          | `css/styles.css` (animation presets section)       |
-| Sequential spotlight presets (chain/grid)                         | `css/spotlight-presets.css`                        |
+| Sequential spotlight presets (chain/grid)                         | `css/styles.css` (spotlight presets section)       |
 
 ### Naming contract (integrators & contributors)
 

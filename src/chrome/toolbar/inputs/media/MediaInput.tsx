@@ -8,7 +8,8 @@ import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { MediaManagerModal } from "./MediaManagerModal";
 import { getMediaKind } from "./utils/media-helpers";
-import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
+import { InlineClearButton } from "../../../primitives/InlineClearButton";
+import { MiniPreviewTile } from "../../../primitives/MiniPreviewTile";
 
 /** Read a value by dot-path (e.g. "background.image") from an object. */
 function getPath(obj: any, path: string): any {
@@ -139,7 +140,7 @@ export const MediaInput = propa => {
         {/* Preview if media exists or content URL exists */}
         {(hasMedia && (svgContent || imageUrl)) || (hasContentUrl && imageUrl) ? (
           <div className="relative">
-            <div className="bg-base-100 flex aspect-video items-center justify-center overflow-hidden rounded-lg p-2">
+            <MiniPreviewTile size="video" bg="base-100" bordered={false} padded>
               {svgContent ? (
                 <div
                   className="text-base-content flex size-full items-center justify-center [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
@@ -161,17 +162,10 @@ export const MediaInput = propa => {
                   loading="lazy"
                 />
               ) : null}
-            </div>
+            </MiniPreviewTile>
 
-            {/* Clear button - only show when media is set or content URL exists */}
-            <button
-              onClick={handleClear}
-              className="bg-error text-error-content hover:bg-error/90 absolute top-1 right-1 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Clear media"
-            >
-              ×
-            </button>
+            <InlineClearButton onClick={handleClear} tooltip="Clear media" floating />
+
           </div>
         ) : null}
 

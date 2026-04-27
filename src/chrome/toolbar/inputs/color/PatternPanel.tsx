@@ -24,6 +24,7 @@ export default function PatternPanel({
       onClose={onClose}
       title="Pattern"
       storageKey="pattern-input"
+      autoSize={false}
       defaultWidth={defaultWidth}
       defaultHeight={defaultHeight}
       minWidth={260}

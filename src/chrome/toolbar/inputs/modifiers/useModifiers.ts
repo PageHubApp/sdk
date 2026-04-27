@@ -261,12 +261,15 @@ export function useModifiers() {
   const nodeTypeName =
     query.node(id).get()?.data?.name || query.node(id).get()?.data?.displayName || "";
 
-  const saveAsModifier = (label: string, targetType?: string) => {
+  const saveAsModifier = (label: string, targetType?: string, customClasses?: string) => {
     const typeName = targetType || nodeTypeName;
     if (!typeName || !label.trim()) return;
 
     const name = label.trim().toLowerCase().replace(/\s+/g, "-");
-    const classes = currentClassName.trim();
+    // When the caller curates a subset of the current className (Save panel
+    // lets the user prune tokens before saving), use that. Otherwise fall
+    // back to the full current className.
+    const classes = (customClasses ?? currentClassName).trim();
     if (!classes) return;
 
     // Store modifier with classes on ROOT
@@ -297,6 +300,7 @@ export function useModifiers() {
     saveAsModifier,
     componentName,
     nodeTypeName,
+    currentClassName,
     hasModifiers: allModifiers.length > 0,
   };
 }

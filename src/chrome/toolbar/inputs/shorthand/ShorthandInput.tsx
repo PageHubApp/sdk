@@ -15,10 +15,7 @@ import { useAtomValue } from "@zedux/react";
 import { UniversalInput } from "../universal-input";
 import type { ValueType } from "../universal-input/types";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
-import {
-  TOOLBAR_SEGMENTED_ACTIVE,
-  TOOLBAR_SEGMENTED_INACTIVE,
-} from "../../helpers/ToolbarSegmentedControl";
+import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { ViewAtom } from "../../../viewport/atoms";
 import { ViewSelectionAtom } from "../../Label";
 import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
@@ -116,19 +113,23 @@ export function ShorthandInput({ def, config }: Props) {
       </div>
 
       {!isSingle && (
-        <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+        <div
+          className="grid gap-1.5"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+        >
           {active.tags.map((tag, i) => (
-            <UniversalInput
-              key={tag}
-              propKey={tag}
-              propTag={tag}
-              tailwindKey={active.tailwindKeys?.[i] ?? tailwindKey}
-              label={active.labels[i]}
-              labelWidth="w-6"
-              showVarSelector={!!varSelectorPrefix}
-              allowedTypes={allowedTypes}
-              inline
-            />
+            <div key={tag} className="min-w-0">
+              <UniversalInput
+                propKey={tag}
+                propTag={tag}
+                tailwindKey={active.tailwindKeys?.[i] ?? tailwindKey}
+                label={active.labels[i]}
+                labelWidth="w-6"
+                showVarSelector={!!varSelectorPrefix}
+                allowedTypes={allowedTypes}
+                inline
+              />
+            </div>
           ))}
         </div>
       )}
@@ -146,24 +147,21 @@ function ModeToggle({
   onChange: (next: ShorthandMode) => void;
 }) {
   return (
-    <div className="bg-neutral flex h-8 shrink-0 items-stretch gap-0.5 rounded-md p-0.5">
-      {modes.map(m => (
-        <button
-          key={m.id}
-          type="button"
-          onClick={() => onChange(m)}
-          aria-label={m.ariaLabel}
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content={m.ariaLabel}
-          data-tooltip-place="top"
-          data-tooltip-delay-show={500}
-          className={`flex w-7 items-center justify-center rounded transition-colors ${
-            m.id === activeId ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE
-          }`}
-        >
-          {m.icon}
-        </button>
-      ))}
-    </div>
+    <ToolbarSegmentedControl
+      compact
+      optionClassName="w-7"
+      tooltipId={PAGEHUB_RTT_GLOBAL_ID}
+      value={activeId}
+      onChange={id => {
+        const next = modes.find(m => m.id === id);
+        if (next) onChange(next);
+      }}
+      options={modes.map(m => ({
+        value: m.id,
+        label: m.icon,
+        tooltip: m.ariaLabel,
+        ariaLabel: m.ariaLabel,
+      }))}
+    />
   );
 }

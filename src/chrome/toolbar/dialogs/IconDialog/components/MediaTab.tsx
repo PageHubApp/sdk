@@ -1,4 +1,5 @@
 import { TbPhoto } from "react-icons/tb";
+import { MiniPreviewTile } from "@/chrome/primitives/MiniPreviewTile";
 import type { UseIconDialogReturn } from "../hooks/useIconDialog";
 
 interface MediaTabProps {
@@ -21,10 +22,10 @@ export function MediaTab({ d }: MediaTabProps) {
       {mediaContent ? (
         <>
           <div className="flex flex-col items-center gap-4">
-            <div className="border-base-300 bg-neutral relative aspect-video w-full overflow-hidden rounded-lg border">
+            <MiniPreviewTile size="video" bg="neutral" relative>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={mediaContent} alt="Selected media" className="size-full object-contain" />
-            </div>
+            </MiniPreviewTile>
           </div>
           <button
             type="button"

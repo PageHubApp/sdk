@@ -15,7 +15,10 @@ export interface PickerOption {
 export type PickerFilter = "modal" | "section" | "all";
 
 export function useElementPicker(filter: PickerFilter): PickerOption[] {
-  return useEditor(state => {
+  // CraftJS `useEditor` spreads the selector return into its hook return — if
+  // the selector returns a bare array it surfaces as an object with numeric
+  // keys (and `.map` blows up). Wrap in an object and destructure.
+  const { options } = useEditor(state => {
     const options: PickerOption[] = [];
 
     for (const [nodeId, node] of Object.entries(state.nodes)) {
@@ -24,7 +27,14 @@ export function useElementPicker(filter: PickerFilter): PickerOption[] {
       const displayName = node.data.displayName || node.data.name || "";
       const p = node.data?.props || {};
       const isOverlay = node.data.custom?.overlay === true;
-      const targetId = isOverlay ? p.anchor : p.id || p.anchor;
+      const attrsId = typeof p.attrs?.id === "string" ? p.attrs.id : undefined;
+      // Match Container.tsx's show-hide target resolution: attrs.id first, then
+      // props.id, then props.anchor. Overlay components (Modal, CookieConsent)
+      // own their id via `props.anchor`, so keep that primary for them.
+      const propsId = typeof p.id === "string" ? p.id : undefined;
+      const targetId = isOverlay
+        ? p.anchor || attrsId || propsId
+        : attrsId || propsId || p.anchor;
       const label = getDisplayName(node);
 
       if (!targetId) continue;
@@ -44,6 +54,7 @@ export function useElementPicker(filter: PickerFilter): PickerOption[] {
       });
     }
 
-    return options;
+    return { options };
   });
+  return options;
 }

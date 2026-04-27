@@ -109,6 +109,7 @@ export const TextMainTab = () => {
           title="Edit HTML"
           icon={<TbCode className="size-3.5" />}
           storageKey="textContentEditor"
+          autoSize={false}
           defaultWidth={720}
           defaultHeight={520}
           minWidth={420}

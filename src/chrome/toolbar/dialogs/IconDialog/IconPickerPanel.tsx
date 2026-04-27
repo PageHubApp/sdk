@@ -37,6 +37,7 @@ export default function IconPickerPanel({
       onClose={onClose}
       title="Select Icon"
       storageKey="icon-picker"
+      autoSize={false}
       defaultWidth={defaultWidth}
       defaultHeight={defaultHeight}
       minWidth={320}

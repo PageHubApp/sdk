@@ -1,7 +1,7 @@
 /**
  * AnimationsInputPopover — thin trigger chip that opens a draggable
  * FloatingPanel containing the full AnimationsInput body. Same pattern as
- * ActionInputPopover / IconPickerPopover / BundleRow.
+ * IconPickerPopover / BundleRow.
  */
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
@@ -20,8 +20,8 @@ import type { PropertyInputProps } from "../../unified-settings/registry/propert
 
 const AnimationsPanel = lazy(() => import("./AnimationsPanel"));
 
+// Hint width for chip-anchored initial position only — panel is auto-sized.
 const PANEL_WIDTH = 360;
-const PANEL_HEIGHT = 480;
 
 function describeAnimation(animation: string, engine: string): string {
   if (!animation) return "Add Animation…";
@@ -133,12 +133,7 @@ export default function AnimationsInputPopover({ def }: PropertyInputProps) {
       )}
       {open && (
         <Suspense fallback={null}>
-          <AnimationsPanel
-            initialPosition={initialPos}
-            onClose={() => setOpen(false)}
-            defaultWidth={PANEL_WIDTH}
-            defaultHeight={PANEL_HEIGHT}
-          />
+          <AnimationsPanel initialPosition={initialPos} onClose={() => setOpen(false)} />
         </Suspense>
       )}
     </>

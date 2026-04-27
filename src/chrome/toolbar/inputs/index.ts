@@ -30,7 +30,6 @@ export * from "./media/MediaManagerInput";
 export * from "./media/MediaManagerModal";
 
 // Advanced inputs
-export * from "./advanced/AccessibilityInput";
 export * from "./advanced/AnimationsInput";
 export * from "./advanced/EffectsClassInput";
 export * from "./advanced/ButtonInput";

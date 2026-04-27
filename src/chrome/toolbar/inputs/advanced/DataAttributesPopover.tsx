@@ -13,8 +13,8 @@ import { SideBarAtom } from "../../../../utils/lib";
 
 const DataAttributesPanel = lazy(() => import("./DataAttributesPanel"));
 
+// Hint width for chip-anchored initial position only — the panel is auto-sized.
 const PANEL_WIDTH = 360;
-const PANEL_HEIGHT = 360;
 
 export function DataAttributesPopover() {
   const [open, setOpen] = useState(false);
@@ -89,8 +89,6 @@ export function DataAttributesPopover() {
           <DataAttributesPanel
             initialPosition={initialPos}
             onClose={() => setOpen(false)}
-            defaultWidth={PANEL_WIDTH}
-            defaultHeight={PANEL_HEIGHT}
           />
         </Suspense>
       )}

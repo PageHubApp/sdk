@@ -19,7 +19,8 @@ import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { Wrap } from "../../ToolbarStyle";
 import { TokenPicker } from "./TokenPicker";
-import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
+import { InlineClearButton } from "../../../primitives/InlineClearButton";
+import { ToolbarRowFrame } from "../../../primitives/ToolbarRowFrame";
 
 export const ColorInput = (__props: any) => {
   const {
@@ -178,45 +179,34 @@ export const ColorInput = (__props: any) => {
         inputWidth={inputWidth}
         labelWidth={labelWidth}
       >
-        <div className="relative">
-          <div className="color-input-field input-wrapper flex w-full items-stretch">
-            <button
-              ref={triggerRef}
-              type="button"
-              id={`input-${propKey}`}
-              className="input-plain relative min-h-8 w-full min-w-0 flex-1 shrink overflow-hidden rounded-lg"
-              onClick={() => setIsOpen(prev => !prev)}
-              aria-label={label || propKey || "Color"}
-            >
-              {showChecker && (
-                <span
-                  className="pointer-events-none absolute inset-0 z-0 rounded-lg"
-                  style={TRANSPARENT_CHECKER_BG}
-                  aria-hidden
-                />
-              )}
-              {hasStoredColor && (
-                <span
-                  className="pointer-events-none absolute inset-0 z-[1] rounded-lg"
-                  style={{ backgroundColor: fillCss }}
-                  aria-hidden
-                />
-              )}
-            </button>
-          </div>
-
-          {value && (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 z-10 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Clear color"
-            >
-              ×
-            </button>
-          )}
-        </div>
+        <ToolbarRowFrame
+          variant="swatch"
+          trailing={value ? <InlineClearButton onClick={handleClear} tooltip="Clear color" /> : null}
+        >
+          <button
+            ref={triggerRef}
+            type="button"
+            id={`input-${propKey}`}
+            className="relative h-full w-full min-w-0 flex-1 shrink rounded-none"
+            onClick={() => setIsOpen(prev => !prev)}
+            aria-label={label || propKey || "Color"}
+          >
+            {showChecker && (
+              <span
+                className="pointer-events-none absolute inset-0 z-0"
+                style={TRANSPARENT_CHECKER_BG}
+                aria-hidden
+              />
+            )}
+            {hasStoredColor && (
+              <span
+                className="pointer-events-none absolute inset-0 z-[1]"
+                style={{ backgroundColor: fillCss }}
+                aria-hidden
+              />
+            )}
+          </button>
+        </ToolbarRowFrame>
       </Wrap>
 
       {isOpen &&

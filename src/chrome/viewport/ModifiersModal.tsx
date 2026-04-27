@@ -169,6 +169,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
       title="Modifiers"
       backdrop
       storageKey="modifiers-manager"
+      autoSize={false}
       defaultWidth={500}
       defaultHeight={Math.round(typeof window !== "undefined" ? window.innerHeight - 120 : 600)}
       minWidth={360}

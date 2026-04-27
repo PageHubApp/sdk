@@ -5,15 +5,21 @@ import {
   TbArrowLeft,
   TbArrowRight,
   TbArrowUp,
+  TbBox,
   TbChevronRight,
   TbEye,
   TbEyeOff,
-  TbGripVertical,
+  TbFile,
+  TbLayoutBottombar,
+  TbLayoutNavbar,
+  TbSection,
   TbTrash,
 } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { IsolateAtom, isolatePageInTree } from "@/utils/lib";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { getBuiltinComponentDef } from "@/core/builtinComponentDefs";
+import { resolveToolboxIcon } from "@/chrome/viewport/toolbox/resolveToolboxIcon";
 import { useLayerManager } from "./LayerManager";
 import { useLayerMove } from "./hooks/useLayerMove";
 import { useLayerDragDrop } from "./hooks/useLayerDragDrop";
@@ -24,6 +30,24 @@ interface LayerHeaderProps {
   depth: number;
   hasChildren: boolean;
   isExpanded: boolean;
+}
+
+const FALLBACK_ICON = TbBox;
+
+function resolveTypeIcon(
+  nodeName: string,
+  isPage: boolean,
+  isHeader: boolean,
+  isFooter: boolean,
+  isSection: boolean,
+): React.ComponentType<{ className?: string }> {
+  if (isPage) return TbFile;
+  if (isHeader) return TbLayoutNavbar;
+  if (isFooter) return TbLayoutBottombar;
+  if (isSection) return TbSection;
+  const def = getBuiltinComponentDef(nodeName);
+  if (def?.icon) return resolveToolboxIcon(def.icon);
+  return FALLBACK_ICON;
 }
 
 export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHeaderProps) {
@@ -39,6 +63,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
     isHovered,
     actions,
     query,
+    nodeName,
     nodeType,
     nodeClassName,
     nodeChildCount,
@@ -57,6 +82,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
       hidden: node?.data?.hidden || false,
       isSelected: selectedId === nodeId,
       isHovered: hoveredId === nodeId,
+      nodeName: node?.data?.name || "",
       nodeType: node?.data?.props?.type || "",
       nodeClassName: (node?.data?.props?.className as string) || "",
       nodeChildCount: node?.data?.nodes?.length ?? 0,
@@ -86,6 +112,23 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   const isHeader = nodeType === "header";
   const isFooter = nodeType === "footer";
   const isSection = nodeType === "section";
+
+  const TypeIcon = useMemo(
+    () => resolveTypeIcon(nodeName, isPage, isHeader, isFooter, isSection),
+    [nodeName, isPage, isHeader, isFooter, isSection],
+  );
+
+  const roleIconColor = isSelected
+    ? "text-white"
+    : isPage
+      ? "text-orange-500"
+      : isHeader
+        ? "text-purple-500"
+        : isFooter
+          ? "text-emerald-500"
+          : isSection
+            ? "text-blue-500"
+            : "text-gray-500 dark:text-gray-400";
 
   // Extracted hooks for move and drag/drop logic
   const {
@@ -192,53 +235,40 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
     }
   }, [isEditingName]);
 
+  const showInsideDrop = isDropTarget && state.dropIndicator?.position === "inside";
+  const showBeforeDrop = isDropTarget && state.dropIndicator?.position === "before";
+  const showAfterDrop = isDropTarget && state.dropIndicator?.position === "after";
+
+  const dimmed = hidden && !isSelected;
+
+  const rowClassName = [
+    "group relative flex w-full cursor-pointer select-none items-center gap-1 py-1.5 pr-1.5",
+    isHeader ? "mb-0.5" : "",
+    isFooter ? "mt-0.5" : "",
+    isSelected
+      ? "bg-blue-600 text-white dark:bg-blue-500"
+      : "text-gray-800 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800/70",
+    isHovered && !isSelected ? "bg-gray-100 dark:bg-gray-800/70" : "",
+    isDragging ? "cursor-grabbing opacity-40" : "",
+    showInsideDrop ? "ring-1 ring-blue-500 ring-inset" : "",
+    dimmed ? "opacity-60" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <>
-      {/* Drop indicator - before (with spacing) */}
-      {isDropTarget && state.dropIndicator?.position === "before" && (
+      {/* Drop indicator - before */}
+      {showBeforeDrop && (
         <div
-          className="animate-in fade-in zoom-in relative w-full py-1.5 duration-200"
-          style={{ marginLeft: `${depth * 12}px` }}
-        >
-          <div className="h-1 w-full animate-pulse rounded-full bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 shadow-lg shadow-blue-500/50" />
-          <div className="absolute -top-1.5 left-0 size-5 rounded-full border-3 border-white bg-linear-to-br from-blue-400 to-blue-600 shadow-lg" />
-          <div className="absolute -top-1 right-0 rounded-full bg-linear-to-r from-blue-500 to-blue-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
-            Drop here
-          </div>
-        </div>
+          className="relative h-0.5 w-full bg-blue-500"
+          style={{ marginLeft: `${depth * 12 + 6}px` }}
+        />
       )}
 
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div
-        className={`group relative flex cursor-pointer items-center gap-1.5 border-l-2 px-2 py-1 ${
-          isHeader ? "mb-1.5" : ""
-        } ${isFooter ? "mt-1.5" : ""} ${
-          isSelected
-            ? isPage
-              ? "border-l-orange-700 bg-linear-to-r from-orange-500 to-orange-600 font-medium text-white shadow-lg"
-              : isHeader
-                ? "border-l-purple-700 bg-linear-to-r from-purple-500 to-purple-600 font-medium text-white shadow-lg"
-                : isFooter
-                  ? "border-l-emerald-700 bg-linear-to-r from-emerald-500 to-emerald-600 font-medium text-white shadow-lg"
-                  : isSection
-                    ? "border-l-blue-700 bg-linear-to-r from-blue-500 to-blue-600 font-medium text-white shadow-lg"
-                    : "border-l-gray-700 bg-linear-to-r from-gray-500 to-gray-600 font-medium text-white shadow-lg"
-            : isPage
-              ? "border-l-orange-300 bg-orange-50/50 hover:border-l-orange-400 hover:bg-orange-100/70 dark:border-l-orange-700 dark:bg-orange-900/30 dark:hover:border-l-orange-600 dark:hover:bg-orange-900/50"
-              : isHeader
-                ? "border-l-purple-300 bg-purple-50/50 hover:border-l-purple-400 hover:bg-purple-100/70 dark:border-l-purple-700 dark:bg-purple-900/30 dark:hover:border-l-purple-600 dark:hover:bg-purple-900/50"
-                : isFooter
-                  ? "border-l-emerald-300 bg-emerald-50/50 hover:border-l-emerald-400 hover:bg-emerald-100/70 dark:border-l-emerald-700 dark:bg-emerald-900/30 dark:hover:border-l-emerald-600 dark:hover:bg-emerald-900/50"
-                  : isSection
-                    ? "border-l-blue-300 bg-blue-50/50 hover:border-l-blue-400 hover:bg-blue-100/70 dark:border-l-blue-700 dark:bg-blue-900/30 dark:hover:border-l-blue-600 dark:hover:bg-blue-900/50"
-                    : "border-l-transparent hover:border-l-gray-300 hover:bg-gray-50 dark:hover:border-l-gray-600 dark:hover:bg-gray-800"
-        } ${isDragging ? "scale-105 cursor-grabbing opacity-50 shadow-xl" : "cursor-pointer"} ${
-          isHovered && !isSelected ? "bg-gray-50 dark:bg-gray-900" : ""
-        } ${
-          isDropTarget && state.dropIndicator?.position === "inside"
-            ? "scale-[1.02] border-l-blue-500 bg-linear-to-r from-blue-50 to-blue-100 ring-2 ring-blue-400 ring-inset dark:from-blue-950 dark:to-blue-900 dark:ring-blue-600"
-            : ""
-        } ${isDropTarget ? "my-1" : ""}`}
+        className={rowClassName}
         style={{ paddingLeft: `${depth * 12 + 6}px` }}
         onClick={handleSelect}
         draggable
@@ -247,63 +277,26 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
       >
-        {/* Drag handle */}
-        <div
-          className={`${isDragging ? "animate-pulse" : ""} transition-transform hover:scale-110`}
-        >
-          <TbGripVertical
-            className={`size-3 shrink-0 cursor-grab transition-colors active:cursor-grabbing ${
-              isSelected
-                ? "text-white"
-                : "text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-            } ${isDragging ? "text-blue-500" : ""}`}
-          />
-        </div>
-
         {/* Expand/collapse chevron */}
-        <div className="flex size-3.5 shrink-0 items-center justify-center">
+        <div className="flex size-3 shrink-0 items-center justify-center">
           {hasChildren ? (
             <button
               onClick={handleToggleExpand}
-              className="rounded p-0.5 transition-all hover:scale-110 hover:bg-white/20 dark:hover:bg-black/20"
+              className="rounded p-0.5 transition-colors hover:bg-black/10 dark:hover:bg-white/10"
               aria-expanded={isExpanded}
+              aria-label={isExpanded ? "Collapse" : "Expand"}
             >
               <TbChevronRight
-                className={`size-3 transition-all duration-200 ${
+                className={`size-3 transition-transform duration-150 ${
                   isExpanded ? "rotate-90" : ""
-                } ${isSelected ? "text-white" : "text-gray-600 dark:text-gray-400"}`}
+                } ${isSelected ? "text-white" : "text-gray-500 dark:text-gray-400"}`}
               />
             </button>
-          ) : (
-            <div className="size-3" />
-          )}
+          ) : null}
         </div>
 
-        {/* Visibility toggle */}
-        <button
-          onClick={handleToggleVisibility}
-          className="rounded p-0.5 transition-all hover:scale-110 hover:bg-white/20 dark:hover:bg-black/20"
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content={hidden ? "Show" : "Hide"}
-          aria-label="Toggle visibility"
-          aria-pressed={!hidden}
-        >
-          {hidden ? (
-            <TbEyeOff
-              className={`size-3.5 transition-colors ${
-                isSelected ? "text-white/70" : "text-gray-400 hover:text-red-500"
-              }`}
-            />
-          ) : (
-            <TbEye
-              className={`size-3.5 transition-colors ${
-                isSelected
-                  ? "text-white"
-                  : "text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-              }`}
-            />
-          )}
-        </button>
+        {/* Type icon (carries role color for page/header/footer/section) */}
+        <TypeIcon className={`size-3.5 shrink-0 ${roleIconColor}`} />
 
         {/* Display name */}
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
@@ -321,8 +314,8 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             />
           ) : (
             <span
-              className={`block truncate text-xs ${
-                isSelected ? "font-medium text-white" : "text-gray-900 dark:text-gray-100"
+              className={`block truncate text-xs leading-tight ${
+                isSelected ? "font-medium" : ""
               }`}
             >
               {isPage ? "Page" : displayName}
@@ -330,6 +323,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
           )}
         </div>
 
+        {/* Lint dot — always visible when present */}
         {lintSeverity && (
           <span
             className={`size-1.5 shrink-0 rounded-full ${
@@ -344,126 +338,106 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
           />
         )}
 
-        {/* Arrow controls - show on hover or selection */}
+        {/* Hidden indicator — visible at rest only when node is hidden */}
+        {hidden && (
+          <TbEyeOff
+            className={`size-3.5 shrink-0 ${
+              isSelected ? "text-white/80" : "text-gray-400 dark:text-gray-500"
+            } group-hover:hidden`}
+            aria-hidden
+          />
+        )}
+
+        {/* Hover-only chrome: visibility toggle + move arrows + delete */}
         <div
-          className={`flex items-center gap-0.5 transition-all duration-200 ${
-            isSelected
-              ? "scale-100 opacity-100"
-              : "scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100"
+          className={`flex items-center gap-0.5 transition-opacity ${
+            isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           }`}
         >
-          <div className="flex items-center gap-0.5 rounded bg-white/10 px-0.5 backdrop-blur-sm dark:bg-black/10">
-            <button
-              onClick={handleMoveUp}
-              disabled={!canMoveUp}
-              className={`rounded p-0.5 transition-all ${
-                canMoveUp
-                  ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
-                  : "cursor-not-allowed opacity-20"
-              }`}
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Move up (↑)"
-            >
-              <TbArrowUp
-                className={`size-3 transition-colors ${
-                  isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
-                }`}
-              />
-            </button>
-            <button
-              onClick={handleMoveDown}
-              disabled={!canMoveDown}
-              className={`rounded p-0.5 transition-all ${
-                canMoveDown
-                  ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
-                  : "cursor-not-allowed opacity-20"
-              }`}
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Move down (↓)"
-            >
-              <TbArrowDown
-                className={`size-3 transition-colors ${
-                  isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
-                }`}
-              />
-            </button>
-            <div className="h-3 w-px bg-white/20 dark:bg-black/20" />
-            <button
-              onClick={handleMoveOut}
-              disabled={!canMoveOut}
-              className={`rounded p-0.5 transition-all ${
-                canMoveOut
-                  ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
-                  : "cursor-not-allowed opacity-20"
-              }`}
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Move out (←)"
-            >
-              <TbArrowLeft
-                className={`size-3 transition-colors ${
-                  isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
-                }`}
-              />
-            </button>
-            <button
-              onClick={handleMoveIn}
-              disabled={!canMoveIn}
-              className={`rounded p-0.5 transition-all ${
-                canMoveIn
-                  ? "hover:scale-110 hover:bg-white/20 dark:hover:bg-black/30"
-                  : "cursor-not-allowed opacity-20"
-              }`}
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Move in (→)"
-            >
-              <TbArrowRight
-                className={`size-3 transition-colors ${
-                  isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
-                }`}
-              />
-            </button>
-            {canDelete && (
-              <>
-                <div className="h-3 w-px bg-white/20 dark:bg-black/20" />
-                <button
-                  onClick={handleDelete}
-                  className="rounded p-0.5 transition-all hover:scale-110 hover:bg-red-500/20 dark:hover:bg-red-500/30"
-                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                  data-tooltip-content="Delete"
-                >
-                  <TbTrash
-                    className={`size-3 transition-colors ${
-                      isSelected
-                        ? "text-white hover:text-red-300"
-                        : "text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400"
-                    }`}
-                  />
-                </button>
-              </>
+          <button
+            onClick={handleToggleVisibility}
+            className="rounded p-0.5 transition-colors hover:bg-black/10 dark:hover:bg-white/10"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content={hidden ? "Show" : "Hide"}
+            aria-label="Toggle visibility"
+            aria-pressed={!hidden}
+          >
+            {hidden ? (
+              <TbEyeOff className="size-3.5" />
+            ) : (
+              <TbEye className="size-3.5" />
             )}
-          </div>
+          </button>
+
+          <button
+            onClick={handleMoveUp}
+            disabled={!canMoveUp}
+            className={`rounded p-0.5 transition-colors hover:bg-black/10 dark:hover:bg-white/10 ${
+              canMoveUp ? "" : "cursor-not-allowed opacity-30"
+            }`}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Move up (↑)"
+            aria-label="Move up"
+          >
+            <TbArrowUp className="size-3" />
+          </button>
+          <button
+            onClick={handleMoveDown}
+            disabled={!canMoveDown}
+            className={`rounded p-0.5 transition-colors hover:bg-black/10 dark:hover:bg-white/10 ${
+              canMoveDown ? "" : "cursor-not-allowed opacity-30"
+            }`}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Move down (↓)"
+            aria-label="Move down"
+          >
+            <TbArrowDown className="size-3" />
+          </button>
+          <button
+            onClick={handleMoveOut}
+            disabled={!canMoveOut}
+            className={`rounded p-0.5 transition-colors hover:bg-black/10 dark:hover:bg-white/10 ${
+              canMoveOut ? "" : "cursor-not-allowed opacity-30"
+            }`}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Move out (←)"
+            aria-label="Move out"
+          >
+            <TbArrowLeft className="size-3" />
+          </button>
+          <button
+            onClick={handleMoveIn}
+            disabled={!canMoveIn}
+            className={`rounded p-0.5 transition-colors hover:bg-black/10 dark:hover:bg-white/10 ${
+              canMoveIn ? "" : "cursor-not-allowed opacity-30"
+            }`}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Move in (→)"
+            aria-label="Move in"
+          >
+            <TbArrowRight className="size-3" />
+          </button>
+
+          {canDelete && (
+            <button
+              onClick={handleDelete}
+              className="rounded p-0.5 transition-colors hover:bg-red-500/20 hover:text-red-500"
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Delete"
+              aria-label="Delete"
+            >
+              <TbTrash className="size-3" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Drop indicator - after (with spacing) */}
-      {isDropTarget && state.dropIndicator?.position === "after" && (
+      {/* Drop indicator - after */}
+      {showAfterDrop && (
         <div
-          className="animate-in fade-in zoom-in relative w-full py-1.5 duration-200"
-          style={{ marginLeft: `${depth * 12}px` }}
-        >
-          <div className="h-1 w-full animate-pulse rounded-full bg-linear-to-r from-blue-400 via-blue-500 to-blue-600 shadow-lg shadow-blue-500/50" />
-          <div className="absolute -top-1.5 left-0 size-5 rounded-full border-3 border-white bg-linear-to-br from-blue-400 to-blue-600 shadow-lg" />
-          <div className="absolute -top-1 right-0 rounded-full bg-linear-to-r from-blue-500 to-blue-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
-            Drop here
-          </div>
-        </div>
-      )}
-
-      {/* Label for inside drops */}
-      {isDropTarget && state.dropIndicator?.position === "inside" && (
-        <div className="pointer-events-none absolute top-2 right-3 z-10 animate-pulse rounded-full border-2 border-blue-400 bg-linear-to-r from-blue-500 to-blue-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
-          Drop inside
-        </div>
+          className="relative h-0.5 w-full bg-blue-500"
+          style={{ marginLeft: `${depth * 12 + 6}px` }}
+        />
       )}
     </>
   );

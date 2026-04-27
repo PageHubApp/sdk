@@ -12,8 +12,16 @@ import type { SectionId } from "../registry/propertyDefs";
 
 const STORAGE_KEY = "unified-settings-pinned-sections";
 
-/** Not pinnable — component-driven blocks (PropertySection-only feature). */
-const NON_PINNABLE = new Set<string>(["component", "modifiers", "advanced-settings"]);
+/** Not pinnable — component-driven blocks (PropertySection-only feature) and
+ *  popover-only sections whose body is a FloatingPanel (no inline content to dock). */
+const NON_PINNABLE = new Set<string>([
+  "component",
+  "modifiers",
+  "advanced-settings",
+  "import-export",
+  "ai-context",
+  "permissions",
+]);
 
 const MAX_PINS = 10;
 

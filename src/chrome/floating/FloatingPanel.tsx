@@ -22,8 +22,16 @@ interface FloatingPanelProps {
   backdropClassName?: string;
   /** useResizable options */
   storageKey: string;
-  defaultWidth: number;
-  defaultHeight: number;
+  /**
+   * When `autoSize` is false (default): required — fixed pixel size, panel
+   * is resizable, dims persist to storage.
+   *
+   * When `autoSize` is true: optional — if omitted, the panel hugs its
+   * content (`w-fit`/`h-fit`); if set, used as a starting size hint via
+   * CSS `width`/`height` but content/min/max still drive layout.
+   */
+  defaultWidth?: number;
+  defaultHeight?: number;
   minWidth?: number;
   maxWidth?: number;
   minHeight?: number;
@@ -31,6 +39,25 @@ interface FloatingPanelProps {
   edges?: ResizeEdge[];
   /** Persist resized size to storage. Default true. Pass false for ephemeral popovers. */
   persistSize?: boolean;
+  /**
+   * **Default true.** Width / height collapse to `fit-content` clamped by
+   * `minWidth` / `maxWidth` / `minHeight` / `maxHeight`. Resize handles and
+   * persisted size are disabled. Right for the vast majority of toolbar /
+   * sidebar popovers — small forms whose content drives layout (Calc,
+   * Condition / Action / Effect-row editors, DataAttributes, Bundle, etc.).
+   *
+   * Pass `autoSize={false}` to opt into a fixed pixel box with user-resize
+   * + persisted dims. Use for: large dialogs (Page / Site / Modifiers
+   * settings, Layers, Modifiers picker), grid pickers whose column count
+   * depends on width (Icon, Pattern), the SketchPicker color panel, the
+   * inline tiptap editor in Text main-tab, and any panel where the user
+   * benefits from dragging the size manually.
+   *
+   * When `autoSize` is false, `defaultWidth` and `defaultHeight` are
+   * REQUIRED. When true, both are optional and used only as a hint for
+   * initial position math (centering, dock-to-edge).
+   */
+  autoSize?: boolean;
   /** Initial position — defaults to centered */
   initialPosition?: { x: number; y: number };
   /**
@@ -82,8 +109,20 @@ export function FloatingPanel({
   persistSize = true,
   scrollable = false,
   bodyClassName = "text-base-content flex flex-col gap-2 p-3 text-xs",
+  autoSize = true,
   children,
 }: FloatingPanelProps) {
+  if (process.env.NODE_ENV !== "production" && !autoSize) {
+    if (defaultWidth == null || defaultHeight == null) {
+      console.error(
+        "[FloatingPanel] defaultWidth/defaultHeight are required when autoSize is false"
+      );
+    }
+  }
+  // Fallback hint values used by initialPosition math (centering / dock) and
+  // the resizable hook when autoSize panels still pass a starting hint.
+  const widthHint = defaultWidth ?? 320;
+  const heightHint = defaultHeight ?? 360;
   const [viewport, setViewport] = React.useState(() => ({
     width: typeof window !== "undefined" ? window.innerWidth : 1200,
     height: typeof window !== "undefined" ? window.innerHeight : 800,
@@ -96,13 +135,13 @@ export function FloatingPanel({
     if (initialPosition) return initialPosition;
     const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
     if (dockToEdge === "right") {
-      return { x: Math.max(8, vw - defaultWidth - 12), y: 40 };
+      return { x: Math.max(8, vw - widthHint - 12), y: 40 };
     }
     if (dockToEdge === "left") {
       return { x: 8, y: 40 };
     }
     return {
-      x: Math.round(vw / 2 - defaultWidth / 2),
+      x: Math.round(vw / 2 - widthHint / 2),
       y: 40,
     };
   })();
@@ -125,9 +164,18 @@ export function FloatingPanel({
 
   // Outside-click dismiss. Skip clicks inside the panel itself, inside any
   // Headless UI portal (Listbox/Combobox/Dialog menus render outside the
-  // panel via portal), inside our own listbox content (`.ph-select-content`),
-  // or inside another floating panel layered above us. Defer the listener
-  // by one frame so the same pointerdown that opened the panel can't close it.
+  // panel via portal), inside an `AnchoredPopover`-portaled overlay
+  // (`[data-ph-popover]` — color picker, var picker, UnifiedDropdown, etc.),
+  // inside our own listbox content (`.ph-select-content`), or inside another
+  // floating panel layered above us. Defer the listener by one frame so the
+  // same pointerdown that opened the panel can't close it.
+  //
+  // CAPTURE PHASE — must fire BEFORE any React element-level handler. Headless
+  // UI's Listbox option click runs on pointerdown and synchronously detaches
+  // the portaled options panel; if we ran in bubble phase, `target.closest()`
+  // would walk an orphaned subtree and miss the `.ph-select-content` skip
+  // selector, closing the parent FloatingPanel. Capture phase fires while the
+  // DOM is still intact.
   useEffect(() => {
     if (!isOpen) return;
     let active = false;
@@ -142,45 +190,55 @@ export function FloatingPanel({
       if (panel && panel.contains(target)) return;
       if (
         target.closest(
-          '[data-headlessui-portal], .ph-select-content, [role="dialog"], [role="listbox"], [role="menu"], [data-rtt-tooltip], [data-floating-allow]'
+          '[data-headlessui-portal], [data-ph-popover], .ph-select-content, [role="dialog"], [role="listbox"], [role="menu"], [data-rtt-tooltip], [data-floating-allow]'
         )
       )
         return;
       onClose();
     };
-    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("pointerdown", handlePointerDown, true);
     return () => {
       cancelAnimationFrame(arm);
-      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("pointerdown", handlePointerDown, true);
     };
   }, [isOpen, onClose, windowRef]);
 
-  const { width, height, handleProps } = useResizable({
+  // When autoSize, bypass useResizable entirely — no fixed pixel dims, no
+  // resize handles, no persisted size. CSS min/max + content drives layout.
+  const resizable = useResizable({
     storageKey,
-    defaultWidth,
-    defaultHeight,
+    defaultWidth: widthHint,
+    defaultHeight: heightHint,
     minWidth,
     maxWidth: boundedMaxWidth,
     minHeight,
     maxHeight: boundedMaxHeight,
     edges,
-    persist: persistSize,
+    persist: persistSize && !autoSize,
   });
+  const width = autoSize ? undefined : resizable.width;
+  const height = autoSize ? undefined : resizable.height;
+  const handleProps = autoSize ? ({} as typeof resizable.handleProps) : resizable.handleProps;
 
   useLayoutEffect(() => {
     if (!isOpen || !dockToEdge) return;
     const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
-    const x = dockToEdge === "right" ? Math.max(8, vw - width - 12) : 8;
+    // Use the live measured width when fixed; fall back to the hint for autoSize.
+    const w = width ?? widthHint;
+    const x = dockToEdge === "right" ? Math.max(8, vw - w - 12) : 8;
     setPosition({ x, y: 40 });
-  }, [isOpen, dockToEdge, setPosition, width, viewport.width]);
+  }, [isOpen, dockToEdge, setPosition, width, widthHint, viewport.width]);
 
   useLayoutEffect(() => {
     if (!isOpen || dockToEdge) return;
+    // Skip viewport-clamp for autoSize panels — CSS max-width / max-height
+    // already cap them and there's no measured width to clamp against.
+    if (autoSize) return;
     setPosition(prev => ({
-      x: Math.max(0, Math.min(prev.x, Math.max(0, viewport.width - width))),
-      y: Math.max(0, Math.min(prev.y, Math.max(0, viewport.height - height))),
+      x: Math.max(0, Math.min(prev.x, Math.max(0, viewport.width - (width ?? 0)))),
+      y: Math.max(0, Math.min(prev.y, Math.max(0, viewport.height - (height ?? 0)))),
     }));
-  }, [dockToEdge, height, isOpen, setPosition, viewport.height, viewport.width, width]);
+  }, [autoSize, dockToEdge, height, isOpen, setPosition, viewport.height, viewport.width, width]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -229,13 +287,26 @@ export function FloatingPanel({
         aria-modal="true"
         aria-label={title}
         className="pagehub-sdk-root ph-modal-surface pointer-events-auto fixed overflow-hidden"
-        style={{ top: position.y, left: position.x, width, height, zIndex }}
+        style={
+          autoSize
+            ? {
+                top: position.y,
+                left: position.x,
+                minWidth,
+                maxWidth: boundedMaxWidth,
+                minHeight,
+                maxHeight: boundedMaxHeight,
+                zIndex,
+              }
+            : { top: position.y, left: position.x, width, height, zIndex }
+        }
       >
-        {(edges as string[]).map(e =>
-          (handleProps as any)[e] ? <div key={e} {...(handleProps as any)[e]} /> : null
-        )}
+        {!autoSize &&
+          (edges as string[]).map(e =>
+            (handleProps as any)[e] ? <div key={e} {...(handleProps as any)[e]} /> : null
+          )}
 
-        <div className="flex h-full flex-col">
+        <div className={autoSize ? "flex max-h-full flex-col" : "flex h-full flex-col"}>
           {/* Header — drag handle */}
           <div
             role="presentation"

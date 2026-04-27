@@ -68,6 +68,7 @@ export function SettingsShell({
       onClose={onClose}
       title={title}
       storageKey={storageKey}
+      autoSize={false}
       defaultWidth={defaultWidth}
       defaultHeight={defaultHeight}
       minWidth={minWidth}

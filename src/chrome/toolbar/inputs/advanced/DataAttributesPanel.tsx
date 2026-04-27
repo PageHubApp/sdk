@@ -5,35 +5,26 @@
 import { useNode } from "@craftjs/core";
 import { useState } from "react";
 import { TbPlus, TbTrash } from "react-icons/tb";
+import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
   onClose: () => void;
-  defaultWidth: number;
-  defaultHeight: number;
 }
 
-export default function DataAttributesPanel({
-  initialPosition,
-  onClose,
-  defaultWidth,
-  defaultHeight,
-}: PanelProps) {
+export default function DataAttributesPanel({ initialPosition, onClose }: PanelProps) {
   return (
     <FloatingPanel
       isOpen
       onClose={onClose}
       title="Data Attributes"
       storageKey="data-attributes"
-      defaultWidth={defaultWidth}
-      defaultHeight={defaultHeight}
       minWidth={300}
       maxWidth={520}
       minHeight={220}
       initialPosition={initialPosition}
-      persistSize={false}
       zIndex={1100}
       scrollable
     >
@@ -89,28 +80,28 @@ function DataAttributesEditor() {
         <div key={i} className="flex min-w-0 items-center gap-1">
           <span className="text-neutral-content shrink-0">data-</span>
           <div className="w-20 shrink-0">
-            <div className="input-wrapper w-full">
+            <ToolbarRowFrame>
               <input
                 type="text"
                 value={attr.key}
                 onChange={e => updateAttribute(i, "key", e.target.value)}
-                className="input-plain w-full font-mono text-xs"
+                className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
                 placeholder="key"
                 {...toolbarInputNoAutocompleteProps}
               />
-            </div>
+            </ToolbarRowFrame>
           </div>
           <div className="min-w-0 flex-1">
-            <div className="input-wrapper w-full">
+            <ToolbarRowFrame>
               <input
                 type="text"
                 value={attr.value}
                 onChange={e => updateAttribute(i, "value", e.target.value)}
-                className="input-plain w-full font-mono text-xs"
+                className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
                 placeholder="value"
                 {...toolbarInputNoAutocompleteProps}
               />
-            </div>
+            </ToolbarRowFrame>
           </div>
           <button
             type="button"
@@ -125,30 +116,30 @@ function DataAttributesEditor() {
       <div className="flex min-w-0 items-center gap-1">
         <span className="text-neutral-content shrink-0">data-</span>
         <div className="w-20 shrink-0">
-          <div className="input-wrapper w-full">
+          <ToolbarRowFrame>
             <input
               type="text"
               value={newKey}
               onChange={e => setNewKey(e.target.value)}
               onKeyDown={e => e.key === "Enter" && addAttribute()}
-              className="input-plain w-full font-mono text-xs"
+              className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
               placeholder="key"
               {...toolbarInputNoAutocompleteProps}
             />
-          </div>
+          </ToolbarRowFrame>
         </div>
         <div className="min-w-0 flex-1">
-          <div className="input-wrapper w-full">
+          <ToolbarRowFrame>
             <input
               type="text"
               value={newValue}
               onChange={e => setNewValue(e.target.value)}
               onKeyDown={e => e.key === "Enter" && addAttribute()}
-              className="input-plain w-full font-mono text-xs"
+              className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
               placeholder="value"
               {...toolbarInputNoAutocompleteProps}
             />
-          </div>
+          </ToolbarRowFrame>
         </div>
         <button
           type="button"

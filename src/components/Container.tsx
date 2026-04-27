@@ -198,15 +198,15 @@ export function useContainerRender(
 
   let className = typeof props.className === "string" ? props.className : "";
 
-  // Apply class-based show-hide override. The action handler writes to the
-  // showHideStore by DOM id; here we read it back so React rerenders produce
-  // the correct className (with or without `hidden`) instead of clobbering
-  // the live DOM mutation. Skip in editor — visibility is controlled by the
-  // editor canvas, not show-hide actions.
-  if (!enabled) {
+  // Apply class-based show-hide override. In viewer the action handler writes
+  // here when buttons fire; in editor the action-panel "peek" button writes
+  // here so authors can see hidden targets (modal backdrops, drawers, etc.)
+  // without leaving the trigger's settings panel.
+  {
     const showHideTarget =
       (props.attrs && typeof props.attrs.id === "string" ? props.attrs.id : undefined) ||
-      (typeof props.id === "string" ? props.id : undefined);
+      (typeof props.id === "string" ? props.id : undefined) ||
+      (typeof props.anchor === "string" ? props.anchor : undefined);
     if (showHideTarget) {
       className = applyShowHideOverride(className, showHideTarget);
     }

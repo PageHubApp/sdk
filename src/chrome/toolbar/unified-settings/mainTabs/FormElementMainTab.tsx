@@ -40,8 +40,9 @@ export const FormElementMainTab = () => {
 
   return renderComponentSlots({
     Content: (
+      <>
       <ToolbarSection
-        title="Properties"
+        title="Field"
         help="The placeholder will be displayed when no text is entered. The name is how you identify this input."
       >
         <ToolbarItem
@@ -71,9 +72,7 @@ export const FormElementMainTab = () => {
         </ToolbarItem>
         <SettingsAiSlot />
       </ToolbarSection>
-    ),
-    Properties: (
-      <>
+
         {fieldType === "select" && (
           <ToolbarSection title="Select Options" help="Manage options for select dropdowns">
             <SelectOptionsItem
@@ -230,3 +229,4 @@ export const FormElementMainTab = () => {
     ),
   });
 };
+

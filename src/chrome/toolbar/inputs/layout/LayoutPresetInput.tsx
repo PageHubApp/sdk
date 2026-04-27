@@ -44,7 +44,7 @@ export function DisplayVariantTrailing({ lp }: { lp: LayoutPresetHandle }) {
         aria-expanded={lp.showDisplayDropdown}
         aria-haspopup="listbox"
         onClick={() => lp.setShowDisplayDropdown(!lp.showDisplayDropdown)}
-        className={`flex items-center justify-center gap-1 rounded px-2 py-2 text-xs leading-tight font-medium transition-colors ${
+        className={`flex h-6 items-center justify-center gap-1 rounded px-2 text-xs leading-tight font-medium transition-colors ${
           ["inline-block", "inline-flex", "inline-grid", "inline", "hidden"].includes(lp.currentDisplay)
             ? TOOLBAR_SEGMENTED_ACTIVE
             : TOOLBAR_SEGMENTED_INACTIVE
@@ -95,7 +95,7 @@ export function LayoutPresetInput({
           <div
             role="tab"
             aria-selected
-            className={`flex min-w-0 flex-1 cursor-default items-center justify-center gap-1 rounded px-2 py-2 text-xs leading-tight font-medium ${TOOLBAR_SEGMENTED_ACTIVE}`}
+            className={`flex h-6 min-w-0 flex-1 cursor-default items-center justify-center gap-1 rounded px-2 text-xs leading-tight font-medium ${TOOLBAR_SEGMENTED_ACTIVE}`}
           >
             <TbLayoutGrid className="size-3.5 shrink-0" aria-hidden />
             Grid
@@ -171,22 +171,14 @@ export function LayoutPresetInput({
                   key={index}
                   type="button"
                   aria-pressed={isActive}
+                  aria-label={preset.name}
                   onClick={() => lp.handlePresetSelect(preset)}
                   className={twMerge(
-                    "ph-toolbar-dashed-btn flex-col items-center justify-start gap-1.5 p-2 text-left text-xs font-medium",
+                    "ph-toolbar-dashed-btn items-center justify-center p-2",
                     isActive && PH_TOOLBAR_DASHED_BTN_ACTIVE
                   )}
-                  title={preset.name}
                 >
                   <div className="w-full">{preset.icon}</div>
-                  <div
-                    className={twMerge(
-                      "text-xs font-medium",
-                      isActive ? "text-primary" : "text-base-content"
-                    )}
-                  >
-                    {preset.name}
-                  </div>
                 </button>
               );
             })}

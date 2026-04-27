@@ -1,13 +1,13 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { ToolbarIconButton } from "@/chrome/primitives/ToolbarIconButton";
 import { checkIfAncestorLinked } from "@/utils/componentUtils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { TbAdjustments, TbEdit, TbSearch, TbX } from "react-icons/tb";
+import { TbSearch, TbX } from "react-icons/tb";
 import { useSetAtomState } from "../../utils/atoms";
 import { EDITOR_ALL_PAGES_STORAGE, IsolateAtom } from "../../utils/lib";
 import { phStorage } from "../../utils/phStorage";
-import { EditorModeAtom } from "../viewport/atoms";
 import { TabAtom } from "../viewport/atoms";
 import { useAccordionContext } from "./AccordionContext";
 import { RenderChildren } from "./helpers/CloneHelper";
@@ -67,7 +67,6 @@ export const ToolbarWrapper = ({
   const [searchPos, setSearchPos] = useState<{ x: number; y: number } | null>(null);
 
   const setActiveTab = useSetAtomState(TabAtom);
-  const [editorMode, setEditorMode] = useAtomState(EditorModeAtom);
 
   const SEARCH_POPUP_WIDTH = 280;
   const SEARCH_POPUP_HEIGHT = 40;
@@ -100,14 +99,6 @@ export const ToolbarWrapper = ({
     if (searchOpen) closeSearch();
     else openSearchAtMouse();
   }, [searchOpen, closeSearch, openSearchAtMouse]);
-
-  const toggleEditorMode = useCallback(() => {
-    const next = editorMode === "content" ? "design" : "content";
-    setEditorMode(next);
-    try {
-      phStorage.set("editor-mode", next);
-    } catch {}
-  }, [editorMode, setEditorMode]);
 
   useEffect(() => {
     const iso = phStorage.get("isolated");
@@ -180,30 +171,18 @@ export const ToolbarWrapper = ({
           <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
           <button
             type="button"
-            onClick={toggleEditorMode}
+            onClick={toggleSearch}
             className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-md transition-[color,background-color,transform] active:scale-90 ${
-              editorMode === "design"
-                ? "text-primary"
-                : "text-secondary-content hover:text-base-content"
+              searchOpen ? "text-primary" : "text-secondary-content hover:text-base-content"
             }`}
-            aria-label={
-              editorMode === "content" ? "Switch to Design mode" : "Switch to Content mode"
-            }
-            aria-pressed={editorMode === "design"}
+            aria-label="Search settings"
+            aria-pressed={searchOpen}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content={
-              editorMode === "content"
-                ? "Content mode — click for full Design controls"
-                : "Design mode — click for simplified Content controls"
-            }
+            data-tooltip-content="Search settings (⌘F)"
             data-tooltip-place="top"
             data-tooltip-offset={10}
           >
-            {editorMode === "content" ? (
-              <TbEdit className="size-4" />
-            ) : (
-              <TbAdjustments className="size-4" />
-            )}
+            <TbSearch className="size-4" />
           </button>
           <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
           <TabBarDarkModeToggle />
@@ -296,14 +275,13 @@ export const ToolbarWrapper = ({
               {...toolbarInputNoAutocompleteProps}
             />
             {searchQuery && (
-              <button
-                type="button"
+              <ToolbarIconButton
                 onClick={() => setSearchQuery("")}
-                className="text-neutral-content hover:text-base-content flex size-5 shrink-0 cursor-pointer items-center justify-center"
-                aria-label="Clear search"
+                ariaLabel="Clear search"
+                className="cursor-pointer"
               >
                 <TbX className="size-3" />
-              </button>
+              </ToolbarIconButton>
             )}
           </div>
         )}

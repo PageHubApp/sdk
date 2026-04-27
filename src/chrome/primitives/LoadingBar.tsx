@@ -125,7 +125,7 @@ export function LoadingBarSuspenseFallback() {
    replacing; the registry uses `RowSkeleton` as the default.
    ============================================================================= */
 
-const skeletonChunk = "bg-base-200/70 animate-pulse rounded";
+const skeletonChunk = "bg-base-content/5 animate-pulse rounded";
 
 /** Ghost label (`w-20`) + ghost input — matches the canonical inline row. */
 export function RowSkeleton() {

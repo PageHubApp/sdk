@@ -5,11 +5,16 @@
  * to the legacy "add chip + auto-open" flow.
  */
 const POPOVER_MODE = new Set<string>([
-  "ActionInput",
+  "ActionsAddPicker",
   "AnimationsInput",
-  "ConditionsInput",
+  "ConditionsAddPicker",
   "GradientInput",
   "PatternInput",
+  "EffectRowInput",
+  "ComponentImportExport",
+  "NodeAiContextSection",
+  "ContainerOverflowSection",
+  "ModifiersAddPicker",
 ]);
 
 export function isPopoverModeComponent(component: string | unknown): boolean {

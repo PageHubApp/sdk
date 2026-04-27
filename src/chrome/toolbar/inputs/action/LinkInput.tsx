@@ -16,14 +16,15 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "re
 import { createPortal } from "react-dom";
 import {
   TbArrowRight,
-  TbChevronDown,
   TbExternalLink,
   TbHash,
   TbLink,
   TbMail,
   TbPhone,
-  TbX,
 } from "react-icons/tb";
+import { ChevronTrigger } from "../../../primitives/ChevronTrigger";
+import { InlineClearButton } from "../../../primitives/InlineClearButton";
+import { ToolbarRowFrame } from "../../../primitives/ToolbarRowFrame";
 import { useEditor, useNode } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useAtomState } from "@zedux/react";
@@ -242,62 +243,47 @@ export function LinkInput({
           icon, or input chrome) opens the popover; the input still focuses for
           typing. The X clear and chevron stop propagation so they keep their own
           toggle/clear semantics. */}
-      <div
-        ref={wrapperRef}
+      <ToolbarRowFrame
         onClick={() => setOpen(o => !o)}
-        className="input-wrapper flex h-8 w-full items-center gap-1 px-1.5"
+        trailing={
+          <>
+            {href && (
+              <InlineClearButton onClick={() => writeHref("")} tooltip="Clear link" />
+            )}
+            <ChevronTrigger
+              ref={triggerRef}
+              open={open}
+              onClick={() => setOpen(o => !o)}
+              tooltip="Pick page or anchor"
+            />
+          </>
+        }
       >
-        <KindIcon className="text-neutral-content size-3.5 shrink-0" aria-hidden />
-        <input
-          id="ph-link-input"
-          type="text"
-          value={isPage ? displayValue : draft}
-          readOnly={isPage}
-          onChange={e => setDraft(e.target.value)}
-          onBlur={commitDraft}
-          onClick={e => e.stopPropagation()}
-          onFocus={() => setOpen(true)}
-          onKeyDown={e => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              commitDraft();
-            } else if (e.key === "Escape") {
-              setDraft(href);
-            }
-          }}
-          placeholder={placeholder}
-          className="input-plain flex-1 bg-transparent text-xs outline-none"
-          aria-label="Link destination"
-        />
-        {href && (
-          <button
-            type="button"
-            onClick={e => {
-              e.stopPropagation();
-              writeHref("");
+        <div ref={wrapperRef} className="flex h-full min-w-0 flex-1 items-center gap-1.5">
+          <KindIcon className="text-neutral-content size-3.5 shrink-0" aria-hidden />
+          <input
+            id="ph-link-input"
+            type="text"
+            value={isPage ? displayValue : draft}
+            readOnly={isPage}
+            onChange={e => setDraft(e.target.value)}
+            onBlur={commitDraft}
+            onClick={e => e.stopPropagation()}
+            onFocus={() => setOpen(true)}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commitDraft();
+              } else if (e.key === "Escape") {
+                setDraft(href);
+              }
             }}
-            className="text-neutral-content hover:bg-error hover:text-error-content rounded p-0.5 transition-colors"
-            aria-label="Clear link"
-          >
-            <TbX className="size-3" />
-          </button>
-        )}
-        <button
-          ref={triggerRef}
-          type="button"
-          onClick={e => {
-            // Wrapper click already toggles — stop here so we don't double-toggle
-            // and end up where we started.
-            e.stopPropagation();
-            setOpen(o => !o);
-          }}
-          className="text-neutral-content hover:bg-base-200 hover:text-base-content rounded p-1 transition-colors"
-          aria-label="Pick page or anchor"
-          aria-expanded={open}
-        >
-          <TbChevronDown className={`size-3 transition-transform ${open ? "rotate-180" : ""}`} />
-        </button>
-      </div>
+            placeholder={placeholder}
+            className="h-full flex-1 bg-transparent px-1 text-xs outline-none"
+            aria-label="Link destination"
+          />
+        </div>
+      </ToolbarRowFrame>
 
       {/* Popover: Pages + Anchors — portaled, matches ToolbarDropdown chrome via .ph-select-content */}
       {open &&
@@ -435,7 +421,6 @@ export function LinkInput({
  * Drop into the `Content` slot of Button/Link MainTabs.
  */
 export function QuickLinkInput() {
-  const [, setTab] = useAtomState(TabAtom);
   const {
     actions: { setProp },
     action,
@@ -445,11 +430,6 @@ export function QuickLinkInput() {
     const single = (props.action as NodeAction | undefined) ?? migrateAction(props);
     return { action: single };
   });
-
-  const jumpToActions = () => {
-    setTab("Interactions");
-    setTimeout(() => scrollToSection("Interactions"), 150);
-  };
 
   const writeAction = (next: LinkAction) => {
     setProp((props: any) => {
@@ -468,27 +448,8 @@ export function QuickLinkInput() {
     });
   };
 
-  // Non-link action: show stub with jump-to-actions CTA.
-  if (action && action.type !== "link") {
-    const label =
-      ACTION_TYPE_OPTIONS.find(opt => opt.value === action.type)?.label ?? action.type;
-    return (
-      <div className="border-base-300 bg-base-200/50 flex items-center gap-2 rounded-md border px-3 py-2 text-xs">
-        <TbLink className="text-neutral-content size-3.5 shrink-0" />
-        <span className="text-neutral-content flex-1 truncate">
-          Action: <span className="text-base-content font-medium">{label}</span>
-        </span>
-        <button
-          type="button"
-          onClick={jumpToActions}
-          className="text-primary hover:bg-primary/10 inline-flex items-center gap-1 rounded px-2 py-1 font-medium transition-colors"
-        >
-          Edit
-          <TbArrowRight className="size-3" />
-        </button>
-      </div>
-    );
-  }
+  // Non-link action: skip the quick row — the Action section below has full controls.
+  if (action && action.type !== "link") return null;
 
   return (
     <div className="flex items-center gap-0.5">

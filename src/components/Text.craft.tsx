@@ -1,9 +1,7 @@
 /**
  * Text — Component definition via defineComponent()
  */
-import { BsBodyText } from "react-icons/bs";
-import { FaFont } from "react-icons/fa";
-import { MdShortText } from "react-icons/md";
+import { TbAlignJustified, TbHeading, TbLetterT } from "react-icons/tb";
 import { TextMainTab } from "../chrome/toolbar/unified-settings/mainTabs/TextMainTab";
 import { defineComponent } from "../define";
 import { LoremIpsum } from "../utils/data/loremIpsum";
@@ -117,7 +115,7 @@ export const TextDef = defineComponent(
   {
     name: "Text",
     component: Text,
-    icon: FaFont,
+    icon: TbLetterT,
     category: "Content",
     settings: TextMainTab,
     defaultProps: {
@@ -134,6 +132,8 @@ export const TextDef = defineComponent(
       "opacity",
       "cursor",
       "accessibility",
+      "alignment",
+      "size",
     ],
     hoverClickVariant: "text",
     rules: {
@@ -144,7 +144,7 @@ export const TextDef = defineComponent(
     presets: [
       {
         label: "Title",
-        icon: MdShortText,
+        icon: TbHeading,
         description: "Large heading text.",
         props: {
           text: titleLorem.generateWords(4),
@@ -153,7 +153,7 @@ export const TextDef = defineComponent(
       },
       {
         label: "Sub-title",
-        icon: MdShortText,
+        icon: TbHeading,
         description: "Secondary heading text.",
         props: {
           text: lorem.generateSentences(1),
@@ -162,7 +162,7 @@ export const TextDef = defineComponent(
       },
       {
         label: "Paragraph",
-        icon: BsBodyText,
+        icon: TbAlignJustified,
         description: "Body text block.",
         props: {
           tagName: "p",

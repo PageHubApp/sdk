@@ -15,7 +15,8 @@ import { Wrap } from "../../ToolbarStyle";
 import { ViewSelectionAtom } from "../../Label";
 import { FontFamilyDialogAtom } from "../../dialogs/FontFamilyDialog";
 import { useDialog } from "../../dialogs/toolHooks";
-import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
+import { InlineClearButton } from "../../../primitives/InlineClearButton";
+import { ToolbarRowFrame } from "../../../primitives/ToolbarRowFrame";
 
 function displayFontFromToken(token: string, query: any): string {
   if (!token) return "";
@@ -127,48 +128,37 @@ export const FontFamilyAltInput = ({
         inputWidth={inputWidth}
         labelWidth={labelWidth}
       >
-        <div className="relative">
-          <div className="input-wrapper flex w-full items-center">
-            <button
-              type="button"
-              title={displayValue}
-              id={propKey ? `input-${propKey}` : undefined}
-              onClick={() => {
-                setDialog({
-                  enabled: true,
-                  value: [],
-                  originalValue: value || "",
-                  prefix,
-                  propKey,
-                  changed,
-                  preview,
-                  e: getRect(ref.current),
-                });
-              }}
-              style={{
-                fontFamily: displayValue || undefined,
-              }}
-              className="input-plain flex min-w-0 flex-1 items-center truncate text-left"
-            >
-              {displayValue || "Default"}
-            </button>
-          </div>
-
-          {value && (
-            <button
-              type="button"
-              onClick={e => {
-                e.stopPropagation();
-                pushChange("", 2000);
-              }}
-              className="bg-error text-error-content hover:bg-error/90 absolute -top-1 -right-1 z-10 flex size-4 items-center justify-center rounded-full text-xs font-bold"
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Clear font family"
-            >
-              ×
-            </button>
-          )}
-        </div>
+        <ToolbarRowFrame
+          trailing={
+            value ? (
+              <InlineClearButton onClick={() => pushChange("", 2000)} tooltip="Clear font family" />
+            ) : null
+          }
+        >
+          <button
+            type="button"
+            title={displayValue}
+            id={propKey ? `input-${propKey}` : undefined}
+            onClick={() => {
+              setDialog({
+                enabled: true,
+                value: [],
+                originalValue: value || "",
+                prefix,
+                propKey,
+                changed,
+                preview,
+                e: getRect(ref.current),
+              });
+            }}
+            style={{
+              fontFamily: displayValue || undefined,
+            }}
+            className="input-plain flex min-w-0 flex-1 items-center truncate text-left"
+          >
+            {displayValue || "Default"}
+          </button>
+        </ToolbarRowFrame>
       </Wrap>
     </div>
   );

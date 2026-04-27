@@ -1,25 +1,32 @@
 /**
- * TypographyPresetInput — wires `TypographyPresetSelect` into the
- * settings panel. Reads typography presets from `ROOT.props.theme`
- * and applies / clears the `ph-{name}` class on the selected node.
+ * TypographyPresetInput — host for the Framer-style text-styles picker.
  *
- * No presets defined → renders nothing (the section's other fields
- * still work). Matches the inline FontPanel preset-apply logic so a
- * preset picked here looks identical to one applied via the inline
- * text toolbar.
+ * Reads typography presets from `ROOT.props.theme.typography` and renders the
+ * `TextStylePicker` chip + lazy-loaded popover panels. Owns four data-shape
+ * concerns the picker shouldn't have to know about:
+ *
+ *  - **Apply / clear** — toggles the `ph-{slug}` class on the current node's
+ *    className (the same path the inline FontPanel uses).
+ *  - **Capture for "New Style"** — reads computed typography from the live
+ *    DOM via `readTypographyFromDom(nodeId)` so the editor opens prefilled
+ *    with what the node looks like right now.
+ *  - **Persist** — writes preset definitions back to `ROOT.props.theme.typography`
+ *    via `setProp(ROOT_NODE, ...)` + `writeTheme()`. Renames are handled by
+ *    matching on the original name; create / update / delete each map to a
+ *    single root mutation.
+ *  - **Side effects of rename / delete** — when a preset is renamed, the
+ *    current node's className needs the `ph-{old}` class swapped for the
+ *    new one; on delete, strip the class entirely.
  */
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useMemo } from "react";
-import { TbDeviceFloppy } from "react-icons/tb";
 import { toCSSVarName } from "@/utils/design/designSystemVars";
 import { resolveTheme, writeTheme } from "@/utils/design/resolveTheme";
 import type { PropertyDef } from "../../unified-settings/registry/propertyDefs";
-import {
-  TypographyPresetSelect,
-  type TypographyPresetRow,
-} from "./TypographyPresetSelect";
-import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
+import { TextStylePicker } from "./TextStylePicker";
+import { emptyDraft, presetToDraft, type TextStyleDraft } from "./TextStyleEditorPanel";
+import { type TypographyPresetRow } from "./TypographyPresetSelect";
 
 function presetClass(name: string): string {
   const slug = toCSSVarName(name);
@@ -41,7 +48,7 @@ function stripQuotes(v: string): string {
  * Reads effective typography from the selected node's DOM element.
  * Falls back to sane defaults for any property we can't resolve.
  */
-function readTypographyFromDom(nodeId: string): Omit<TypographyPresetRow, "name"> | null {
+function readTypographyFromDom(nodeId: string): Partial<TextStyleDraft> | null {
   const el = document.querySelector(`[node-id="${nodeId}"]`) as HTMLElement | null;
   if (!el) return null;
   const cs = window.getComputedStyle(el);
@@ -52,11 +59,24 @@ function readTypographyFromDom(nodeId: string): Omit<TypographyPresetRow, "name"
     lineHeight: cs.lineHeight === "normal" ? "1.5" : cs.lineHeight || "1.5",
     letterSpacing: cs.letterSpacing === "normal" ? "normal" : cs.letterSpacing,
     textTransform: cs.textTransform === "none" ? "none" : cs.textTransform,
+    color: cs.color || "",
+    textDecoration:
+      cs.textDecorationLine && cs.textDecorationLine !== "none" ? cs.textDecorationLine : "none",
+    textAlign: cs.textAlign || "left",
   };
 }
 
+/** Strip every known preset class from a className string. */
+function stripPresetClasses(className: string, knownPresetClasses: Set<string>): string {
+  return className
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter(t => !knownPresetClasses.has(t))
+    .join(" ");
+}
+
 export function TypographyPresetInput({ def }: Props = {}) {
-  const { actions: editorActions, presets } = useEditor(state => {
+  const { actions: editorActions, presets, presetsRaw } = useEditor(state => {
     const root = state.nodes[ROOT_NODE];
     const theme = resolveTheme(root?.data?.props || {});
     const list = (theme.typography || []) as any[];
@@ -71,7 +91,7 @@ export function TypographyPresetInput({ def }: Props = {}) {
         letterSpacing: p.letterSpacing,
         textTransform: p.textTransform,
       }));
-    return { presets: presetsList };
+    return { presets: presetsList, presetsRaw: list };
   });
 
   const {
@@ -98,19 +118,21 @@ export function TypographyPresetInput({ def }: Props = {}) {
     return preset?.name ?? null;
   }, [classNameStr, presets, presetClassSet]);
 
-  const onSelect = (preset: TypographyPresetRow | null) => {
+  /** Toggle the `ph-{name}` class on the current node. Pass `null` to clear. */
+  const applyPresetToNode = (name: string | null, knownClassesOverride?: Set<string>) => {
+    const known = knownClassesOverride ?? presetClassSet;
     setProp((p: any) => {
-      const tokens = (typeof p.className === "string" ? p.className : "")
-        .split(/\s+/)
-        .filter(Boolean);
-      const cleaned = tokens.filter((t: string) => !presetClassSet.has(t));
-      if (preset) {
-        const cls = presetClass(preset.name);
-        if (cls) cleaned.push(cls);
-      }
-      p.className = cleaned.join(" ");
+      const cleaned = stripPresetClasses(
+        typeof p.className === "string" ? p.className : "",
+        known
+      );
+      const cls = name ? presetClass(name) : "";
+      p.className = cls ? (cleaned ? `${cleaned} ${cls}` : cls) : cleaned;
     });
+  };
 
+  const onSelect = (preset: TypographyPresetRow | null) => {
+    applyPresetToNode(preset?.name ?? null);
     if (preset?.fontFamily) {
       import("@/utils/fonts/googleFonts").then(({ loadGoogleFont }) => {
         loadGoogleFont(preset.fontFamily, [preset.fontWeight || "400"]);
@@ -118,48 +140,117 @@ export function TypographyPresetInput({ def }: Props = {}) {
     }
   };
 
-  const saveAsPreset = () => {
-    const suggested = `Preset ${presets.length + 1}`;
-    const raw = window.prompt("Name this preset", suggested);
-    const name = (raw || "").trim();
-    if (!name) return;
-    if (presets.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-      window.alert(`A preset named "${name}" already exists.`);
-      return;
+  const buildNewDraft = (): TextStyleDraft => {
+    const captured = readTypographyFromDom(nodeId);
+    const draft = { ...emptyDraft(), ...(captured || {}) };
+    // Suggest a unique name so the user can hit Save without typing first.
+    let suggested = `Style ${presets.length + 1}`;
+    const existing = new Set(presets.map(p => p.name.toLowerCase()));
+    let i = presets.length + 1;
+    while (existing.has(suggested.toLowerCase())) {
+      i += 1;
+      suggested = `Style ${i}`;
     }
-    const styles = readTypographyFromDom(nodeId) || {
-      fontFamily: "Inter",
-      fontSize: "1rem",
-      fontWeight: "400",
-      lineHeight: "1.5",
-      letterSpacing: "normal",
-      textTransform: "none",
+    draft.name = suggested;
+    return draft;
+  };
+
+  const buildEditDraft = (preset: TypographyPresetRow): TextStyleDraft => {
+    // Pull the raw preset (may carry color / textDecoration / textAlign that
+    // `TypographyPresetRow` doesn't surface) so the editor can round-trip them.
+    const raw =
+      presetsRaw.find(
+        p => p && typeof p.name === "string" && p.name === preset.name
+      ) ?? preset;
+    return presetToDraft({ ...preset, ...raw });
+  };
+
+  /** Persist a draft into ROOT.props.theme.typography. Pass `originalName=null` for create. */
+  const persistDraft = (originalName: string | null, draft: TextStyleDraft) => {
+    const cleaned: Record<string, any> = {
+      name: draft.name,
+      fontFamily: draft.fontFamily || "Inter",
+      fontSize: draft.fontSize || "1rem",
+      fontWeight: draft.fontWeight || "400",
+      lineHeight: draft.lineHeight || "1.5",
+      letterSpacing: draft.letterSpacing || "normal",
+      textTransform: draft.textTransform || "none",
     };
+    if (draft.color) cleaned.color = draft.color;
+    if (draft.textDecoration && draft.textDecoration !== "none") {
+      cleaned.textDecoration = draft.textDecoration;
+    }
+    if (draft.textAlign && draft.textAlign !== "left") cleaned.textAlign = draft.textAlign;
 
     editorActions.setProp(ROOT_NODE, (rootProps: Record<string, any>) => {
       const current = resolveTheme(rootProps);
-      const nextTypography = [
-        ...(current.typography || []),
-        { name, ...styles },
-      ];
-      writeTheme(rootProps, {
-        ...current,
-        typography: nextTypography as any,
-      });
+      const list = ([...(current.typography || [])] as any[]).filter(
+        p => p && typeof p.name === "string" && p.name.length > 0
+      );
+      if (originalName == null) {
+        list.push(cleaned);
+      } else {
+        const idx = list.findIndex(p => p.name === originalName);
+        if (idx === -1) list.push(cleaned);
+        else list[idx] = { ...list[idx], ...cleaned };
+      }
+      writeTheme(rootProps, { ...current, typography: list as any });
     });
+  };
 
-    // Apply the new preset class to the current node so the save acts as an "assign"
-    const cls = presetClass(name);
-    if (cls) {
-      setProp((p: any) => {
-        const tokens = (typeof p.className === "string" ? p.className : "")
-          .split(/\s+/)
-          .filter(Boolean);
-        const cleaned = tokens.filter((t: string) => !presetClassSet.has(t) && t !== cls);
-        cleaned.push(cls);
-        p.className = cleaned.join(" ");
-      });
-    }
+  const onCreate = (draft: TextStyleDraft) => {
+    persistDraft(null, draft);
+    // Apply newly created preset to the current node (the "save acts as
+    // assign" affordance from the previous flow).
+    const newClass = presetClass(draft.name);
+    if (!newClass) return;
+    setProp((p: any) => {
+      const cleaned = stripPresetClasses(
+        typeof p.className === "string" ? p.className : "",
+        presetClassSet
+      );
+      const tokens = cleaned ? `${cleaned} ${newClass}` : newClass;
+      p.className = tokens;
+    });
+  };
+
+  const onUpdate = (originalName: string, draft: TextStyleDraft) => {
+    persistDraft(originalName, draft);
+    if (originalName === draft.name) return;
+    // Renamed — swap the class on the current node IF this node was using the
+    // old preset. Other nodes referencing the old class fall through to the
+    // catch-all base styles until re-applied (acceptable; matches Framer
+    // behavior — renames don't auto-rewrite content).
+    const oldClass = presetClass(originalName);
+    const newClass = presetClass(draft.name);
+    setProp((p: any) => {
+      const tokens = (typeof p.className === "string" ? p.className : "")
+        .split(/\s+/)
+        .filter(Boolean);
+      const next = tokens.map((t: string) => (t === oldClass ? newClass : t));
+      p.className = next.join(" ");
+    });
+  };
+
+  const onDelete = (presetName: string) => {
+    editorActions.setProp(ROOT_NODE, (rootProps: Record<string, any>) => {
+      const current = resolveTheme(rootProps);
+      const list = ([...(current.typography || [])] as any[]).filter(
+        p => p && typeof p.name === "string" && p.name !== presetName
+      );
+      writeTheme(rootProps, { ...current, typography: list as any });
+    });
+    // Strip the class from the current node so the row no longer reads as
+    // "selected" — and the className isn't left referencing a phantom preset.
+    const removed = presetClass(presetName);
+    if (!removed) return;
+    setProp((p: any) => {
+      const tokens = (typeof p.className === "string" ? p.className : "")
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((t: string) => t !== removed);
+      p.className = tokens.join(" ");
+    });
   };
 
   const label = def?.label;
@@ -177,24 +268,17 @@ export function TypographyPresetInput({ def }: Props = {}) {
             </label>
           </div>
         ) : null}
-        <div className="flex min-w-0 flex-1 items-center gap-1">
-          <div className="min-w-0 flex-1">
-            <TypographyPresetSelect
-              presets={presets}
-              selectedName={selectedName}
-              onSelect={onSelect}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={saveAsPreset}
-            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content="Save current typography as a preset"
-            aria-label="Save as preset"
-            className="border-base-300 bg-base-200 text-base-content hover:border-primary hover:bg-base-300/25 inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border transition-colors active:scale-95 [&_svg]:size-4"
-          >
-            <TbDeviceFloppy />
-          </button>
+        <div className="min-w-0 flex-1">
+          <TextStylePicker
+            presets={presets}
+            selectedName={selectedName}
+            onSelect={onSelect}
+            buildNewDraft={buildNewDraft}
+            buildEditDraft={buildEditDraft}
+            onCreate={onCreate}
+            onUpdate={onUpdate}
+            onDelete={onDelete}
+          />
         </div>
       </div>
     </div>

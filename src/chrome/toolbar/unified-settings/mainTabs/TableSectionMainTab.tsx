@@ -1,15 +1,12 @@
-import { Element, NodeProvider, useEditor, useNode } from "@craftjs/core";
+import { Element, NodeProvider, useNode } from "@craftjs/core";
+import { atom, useAtomState } from "@zedux/react";
 import { TableRow } from "../../../../components/TableRow";
 import { TableCell } from "../../../../components/TableCell";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
-import { ListEditor } from "../../inputs/preset/ListEditor";
+import { CraftListEditor } from "../../inputs/preset/CraftListEditor";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { atom, useAtomState, useAtomInstance } from "@zedux/react";
-import { BatchOperationAtom } from "@/utils/atoms";
-import { TbEdit } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
-import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedTableRowListAtom = atom<any>("selectedtablerowlist_unified", null);
 
@@ -26,43 +23,18 @@ function countCellsInFirstRow(query: any, sectionId: string): number {
 }
 
 export const TableSectionMainTab = () => {
-  const { actions, query } = useEditor();
   const { id } = useNode();
   const [activeIndex, setActiveIndex] = useAtomState(SelectedTableRowListAtom) as unknown as [
     number | null,
     (v: number | null) => void,
   ];
-  const batchOp = useAtomInstance(BatchOperationAtom);
-
-  const { rows } = useEditor((_, q) => {
-    try {
-      const node = q.node(id).get();
-      const list = node.data.nodes
-        .map((childId: string) => {
-          try {
-            const childNode = q.node(childId).get();
-            if (childNode.data.name !== "TableRow") return null;
-            return {
-              id: childId,
-              label: childNode.data.custom?.displayName || "Row",
-              props: childNode.data.props,
-            };
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean);
-      return { rows: list };
-    } catch {
-      return { rows: [] };
-    }
-  });
 
   return renderComponentSlots({
-    Properties: (
+    Content: (
+      <>
       <ToolbarSection
         title="Section"
-        icon={SECTION_ICONS["Properties"]}
+        icon={SECTION_ICONS["Type"]}
         help="thead / tbody / tfoot — rows live inside this section."
       >
         <ToolbarItem
@@ -77,68 +49,50 @@ export const TableSectionMainTab = () => {
           <option value="tfoot">tfoot</option>
         </ToolbarItem>
       </ToolbarSection>
-    ),
-    Content: (
+
       <ToolbarSection
         title="Rows"
         icon={SECTION_ICONS["Content"]}
         help="Add or reorder rows. New rows get the same number of cells as the first row."
       >
-        <ListEditor
-          items={rows || []}
+        <CraftListEditor
+          parentId={id}
+          childTypeName="TableRow"
+          mapItem={node => ({
+            label: node.custom?.displayName || "Row",
+            props: node.data.props,
+          })}
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
           addLabel="Add row"
-          renderLabel={item => item.label}
-          onDelete={item => actions.delete(item.id)}
-          onAdd={() => {
-            const n = countCellsInFirstRow(query, id);
-            batchOp.setState(true);
-            actions.addNodeTree(
-              query
-                .parseReactElement(
+          editTooltip="Edit row"
+          renderLabel={(item: any) => item.label}
+          onAdd={({ parentId, query, addNode }) => {
+            const n = countCellsInFirstRow(query, parentId);
+            addNode(
+              <Element
+                canvas
+                is={TableRow}
+                custom={{ displayName: "New Row" }}
+                canDelete
+                canEditName
+              >
+                {Array.from({ length: n }, (_, i) => (
                   <Element
-                    canvas
-                    is={TableRow}
-                    custom={{ displayName: `Row ${(rows?.length || 0) + 1}` }}
+                    key={i}
+                    is={TableCell}
+                    text="<p>—</p>"
+                    as="td"
                     canDelete
                     canEditName
-                  >
-                    {Array.from({ length: n }, (_, i) => (
-                      <Element
-                        key={i}
-                        is={TableCell}
-                        text="<p>—</p>"
-                        as="td"
-                        canDelete
-                        canEditName
-                        custom={{ displayName: `Cell ${i + 1}` }}
-                        className="border-base-300 border px-3 py-2"
-                      />
-                    ))}
-                  </Element>
-                )
-                .toNodeTree(),
-              id
+                    custom={{ displayName: `Cell ${i + 1}` }}
+                    className="border-base-300 border px-3 py-2"
+                  />
+                ))}
+              </Element>
             );
-            setActiveIndex(rows.length);
-            requestAnimationFrame(() => batchOp.setState(false));
           }}
-          extraButtons={item => [
-            <button
-              key="edit"
-              className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Edit row"
-              onClick={e => {
-                e.stopPropagation();
-                actions.selectNode(item.id);
-              }}
-            >
-              <TbEdit className="h-3.5 w-3.5" />
-            </button>,
-          ]}
-          renderPopover={item => (
+          renderPopover={(item: any) => (
             <NodeProvider id={item.id}>
               <ToolbarItem
                 propKey="className"
@@ -152,6 +106,7 @@ export const TableSectionMainTab = () => {
         />
         <SettingsAiSlot />
       </ToolbarSection>
+      </>
     ),
   });
 };

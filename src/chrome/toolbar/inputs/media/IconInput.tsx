@@ -14,8 +14,9 @@
 import React, { useRef, useState } from "react";
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import { TbX } from "react-icons/tb";
 import { TailwindStyles } from "@/utils/tailwind";
+import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
+import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { SideBarAtom } from "../../../../utils/lib";
 import ClientIconLoader from "../../dialogs/ClientIconLoader";
@@ -43,6 +44,7 @@ interface IconInputProps {
   collapsible?: boolean;
 }
 
+// Hint width for chip-anchored initial position only — panel is auto-sized.
 const PANEL_WIDTH = 320;
 
 /** Walk a dot path (e.g. "icon.value") through a props object. */
@@ -104,10 +106,13 @@ export const IconInput = ({
   return (
     <div className="flex items-center gap-0.5">
       <span className="text-base-content w-20 shrink-0 truncate text-xs">{label}</span>
-      <div
-        className={`input-wrapper text-base-content flex h-8 min-w-0 flex-1 items-center gap-1.5 px-1 text-xs ${
-          open ? "border-primary ring-ring/45 ring-1" : ""
-        }`}
+      <ToolbarRowFrame
+        open={open}
+        trailing={
+          iconValue ? (
+            <InlineClearButton onClick={clearAll} tooltip="Remove icon" />
+          ) : null
+        }
       >
         <button
           ref={triggerRef}
@@ -115,7 +120,7 @@ export const IconInput = ({
           onClick={() => (open ? setOpen(false) : openPanel())}
           aria-expanded={open}
           aria-label={iconValue ? `Edit icon: ${iconValue}` : "Add icon"}
-          className="flex min-w-0 flex-1 items-center gap-1.5 truncate px-1 text-left"
+          className="flex h-full min-w-0 flex-1 items-center gap-1.5 truncate px-1 text-left"
         >
           <span
             className={`flex size-4 shrink-0 items-center justify-center ${
@@ -131,30 +136,17 @@ export const IconInput = ({
             {iconValue || "Add..."}
           </span>
         </button>
-        {iconValue && (
-          <button
-            type="button"
-            onClick={clearAll}
-            aria-label="Remove icon"
-            className="text-neutral-content hover:text-base-content flex size-5 shrink-0 items-center justify-center rounded"
-          >
-            <TbX className="size-3" aria-hidden />
-          </button>
-        )}
-      </div>
+      </ToolbarRowFrame>
       {open && (
         <FloatingPanel
           isOpen
           onClose={() => setOpen(false)}
           title={label}
           storageKey={`icon-bundle-${propKey}`}
-          defaultWidth={PANEL_WIDTH}
-          defaultHeight={360}
           minWidth={280}
           maxWidth={480}
           minHeight={200}
           initialPosition={initialPos}
-          persistSize={false}
           zIndex={1100}
         >
           <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">

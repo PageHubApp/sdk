@@ -13,6 +13,7 @@ import { DesignVarSelector } from "./inputs/advanced/DesignVarSelector";
 import { getEffectiveViews, EditModifiersAtom } from "./Label";
 import { MultiScopeAtom } from "./breakpoint-chip/atoms";
 import { ToolbarDropdown } from "./ToolbarDropdown";
+import { ToolbarSegmentedControl } from "./helpers/ToolbarSegmentedControl";
 import { BgWrap, Wrap } from "./ToolbarStyle";
 import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
 
@@ -129,7 +130,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
 
   if (type === "textarea") {
     return (
-      <BgWrap wrap={wrap}>
+      <BgWrap wrap={wrap} flexible>
         <div className="flex w-full items-start gap-2">
           <textarea
             id={propKey ? `input-${propKey}` : undefined}
@@ -158,7 +159,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
     }
 
     return (
-      <div className="flex h-9 w-full items-center gap-2">
+      <div className="flex h-8 w-full items-center gap-1.5">
         <input
           type="range"
           className="slider bg-neutral text-neutral-content h-2 flex-1 cursor-pointer appearance-none rounded-lg"
@@ -201,50 +202,38 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
   }
 
   if (type === "radio") {
+    const radioOptions = (props?.options || []).map((_: any) => {
+      const tip =
+        typeof _.hint === "string"
+          ? _.hint
+          : typeof _.label === "string"
+            ? _.label
+            : String(_.value ?? "");
+      const optValue = String(_.value ?? "");
+      // The leading clear chip ("—", value="") is content-narrow — let it
+      // sit at natural width so flex-1 siblings can divide the remaining
+      // track evenly. Otherwise an em-dash claims a 1/N share alongside
+      // multi-character labels and visually drifts apart.
+      const widthClass = optValue === "" ? "flex-none px-2" : undefined;
+      return {
+        value: optValue,
+        label: _.label,
+        tooltip: tip || "None",
+        ariaLabel: tip || optValue,
+        widthClass,
+      };
+    });
+    // No `BgWrap` here — the segmented control is its own bordered surface.
+    // Wrapping it in `ToolbarRowFrame` produces a double-bordered row with
+    // extra inner padding that visibly offsets the leading clear chip.
     return (
-      <BgWrap wrap={wrap}>
-        <div
-          className={`flex w-full items-center justify-center p-0.5 ${
-            !props.cols ? "flex-col" : "flex-row flex-wrap"
-          }`}
-        >
-          {props?.options?.map((_, key) => {
-            const checked = value === _.value;
-            const tip =
-              typeof _.hint === "string"
-                ? _.hint
-                : typeof _.label === "string"
-                  ? _.label
-                  : String(_.value ?? "");
-            return (
-              <div key={key} className="flex items-center">
-                <input
-                  id={`radio-${propKey}-${key}`}
-                  type="radio"
-                  name={propKey}
-                  defaultChecked={checked}
-                  onClick={() => changed(_.value)}
-                  className="hidden"
-                  aria-label={tip || String(_.value ?? "")}
-                />
-                <label
-                  htmlFor={`radio-${propKey}-${key}`}
-                  className={`hover:bg-neutral hover:text-base-content block cursor-pointer rounded px-1 py-0.5 text-[11px] font-medium transition-colors ${
-                    checked
-                      ? "bg-primary text-primary-content font-semibold"
-                      : "text-neutral-content"
-                  }`}
-                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                  data-tooltip-content={tip || "None"}
-                  data-tooltip-place="bottom"
-                >
-                  {_.label}
-                </label>
-              </div>
-            );
-          })}
-        </div>
-      </BgWrap>
+      <ToolbarSegmentedControl
+        dense
+        value={value ?? ""}
+        onChange={v => changed(v)}
+        tooltipId={PAGEHUB_RTT_GLOBAL_ID}
+        options={radioOptions}
+      />
     );
   }
 

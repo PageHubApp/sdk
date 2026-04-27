@@ -8,7 +8,7 @@ import React from "react";
 import { TailwindStyles } from "@/utils/tailwind";
 import { ToolbarItem } from "../ToolbarItem";
 import { TailwindInput } from "../inputs/advanced/TailwindInput";
-import { ColorInput } from "../inputs/color/ColorInput";
+import { ColorInputPopover } from "../inputs/color/ColorInputPopover";
 import { UniversalInput } from "../inputs/universal-input";
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
@@ -19,6 +19,7 @@ import { isPopoverModeComponent } from "./popoverModeRegistry";
 import { resolveCustomInput } from "./customInputs";
 import { ShorthandInput } from "../inputs/shorthand/ShorthandInput";
 import { BundleRow } from "../inputs/bundle/BundleRow";
+import { MultiToggleInput } from "../inputs/multi-toggle/MultiToggleInput";
 import type { PropertyDef, PropertyInputProps } from "./registry/propertyDefs";
 
 interface Props {
@@ -40,6 +41,8 @@ export function PropertyRow({ def, index }: Props) {
   // be mounted to receive open-requests from the section + button. Generic
   // hasValue can't see their internal data shape (e.g. `actions` array vs
   // a class named "action"), so a value-gated render would never trigger.
+  // (Pinned + `isActive` opt-in is filtered upstream in PropertySection's
+  // main split — the row never reaches here when isActive returns false.)
   if (def.pinned) return <PropertyRenderer def={def} index={index} />;
   const isPopoverModeCustom =
     def.input.type === "custom" && isPopoverModeComponent(def.input.component);
@@ -115,6 +118,10 @@ export function PropertyRenderer({ def, index: indexOverride = "" }: Props) {
       );
     }
 
+    case "multi-toggle": {
+      return <MultiToggleInput def={def} />;
+    }
+
     case "universal": {
       const { propTag, allowedTypes, showVarSelector, labelWidth, tailwindKey, tailwindOptions } =
         def.input;
@@ -138,7 +145,7 @@ export function PropertyRenderer({ def, index: indexOverride = "" }: Props) {
     case "color": {
       const { prefix } = def.input;
       return (
-        <ColorInput
+        <ColorInputPopover
           propKey={propKey}
           label={def.label}
           prefix={prefix}

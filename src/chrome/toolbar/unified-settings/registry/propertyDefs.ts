@@ -32,7 +32,6 @@ export type SectionId =
   | "scroll-effect"
   | "overflow-scroll"
   | "properties"
-  | "aria"
   | "display"
   | "ai-context"
   | "import-export"
@@ -60,8 +59,6 @@ export interface SectionDef {
   searchOnly?: boolean;
   /** Accordion starts open */
   defaultOpen?: boolean;
-  /** When true, this section is hidden in Content mode (only shown in Design mode). */
-  advanced?: boolean;
 }
 
 // ─── Property Input Types ──────────────────────────────────────────────────
@@ -70,12 +67,26 @@ export interface SectionDef {
 export interface InputOption {
   label: ReactNode;
   value: string;
+  /** Optional tooltip text shown on hover. Falls back to `label` when omitted. */
+  hint?: string;
 }
 
 /** Props passed to custom property input components */
 export interface PropertyInputProps {
   def: PropertyDef;
   index?: string;
+}
+
+/**
+ * Context passed to `PropertyDef.isActive` so registry-aware defs can reach
+ * the CraftJS node graph (e.g. read `node.data.type.craft.toolbar.modifiers`
+ * to detect className-derived state). Optional — most defs ignore it.
+ */
+export interface PropertyActiveContext {
+  /** CraftJS query from `useEditor()` — `query.node(id).get()` etc. */
+  query: any;
+  /** The id of the node this isActive call applies to. */
+  nodeId: string;
 }
 
 /** Discriminated union — how a property renders its control */
@@ -157,6 +168,23 @@ export type PropertyInput =
       icon?: ReactNode;
     }
   | {
+      type: "multi-toggle";
+      /**
+       * Row of icon toggle buttons. Each toggle owns its own className + propKey
+       * (different Tailwind groups, e.g. font-bold = fontWeight, italic =
+       * fontStyle). A leading "None" button clears every toggle's class at the
+       * current view.
+       */
+      toggles: {
+        icon: ReactNode;
+        tooltip: string;
+        /** propKey used by getClassForView / removeClassForView. */
+        propKey: string;
+        /** Class applied when the toggle is active (e.g. "font-bold", "italic"). */
+        className: string;
+      }[];
+    }
+  | {
       type: "shorthand";
       /**
        * One or more modes. The toggle shows one icon per mode in array order.
@@ -222,13 +250,30 @@ export interface PropertyDef {
   /** Show only when condition is met */
   showWhen?: (className: string, props: Record<string, any>) => boolean;
   /**
+   * Custom "is this property active / has a meaningful value" check used by
+   * popover-mode customs whose data shape `propertyHasValue` can't see (e.g.
+   * value lives on a nested prop or as multiple className tokens). When set,
+   * PropertySection's body-visibility gate uses it INSTEAD of the
+   * always-render rule that other popover-mode props rely on, and
+   * AccordionAddMenu's picker hides items that are already active.
+   *
+   * The optional third arg gives access to the CraftJS query and current
+   * node id — needed for cases where "active" depends on the node type's
+   * own registry (e.g. modifiers reading
+   * `node.data.type.craft.toolbar.modifiers` to know which class tokens
+   * count as "applied").
+   */
+  isActive?: (
+    className: string,
+    props: Record<string, any>,
+    ctx?: PropertyActiveContext
+  ) => boolean;
+  /**
    * Optional disambiguator shown on the right side of the +Add picker row.
    * Use when multiple properties in the same section share a `label`
    * (e.g. Ring "Width" vs Outline "Width" — set `groupLabel: "Ring"` / `"Outline"`).
    */
   groupLabel?: string;
-  /** When true, this property is hidden in Content mode (only shown in Design mode). */
-  advanced?: boolean;
   /**
    * Framer-style add/remove model: properties are hidden by default unless `pinned`
    * is true. Hidden properties become visible when (a) they have a value, (b) the

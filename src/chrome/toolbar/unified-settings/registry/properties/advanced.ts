@@ -206,6 +206,11 @@ export const advancedProperties: PropertyDef[] = [
     sortOrder: 0,
   },
   {
+    // Body chip-list. Pinned so AccordionAddMenu's `sectionPopoverProp` path
+    // (which requires the picker to be the only NON-pinned prop) can mount
+    // the header `+`. `isActive` gates body visibility on the array contents
+    // — empty array hides the row and the section collapses back to the
+    // clean header-only "click + to add" state.
     id: "conditions",
     label: "Conditions",
     section: "conditions",
@@ -221,46 +226,31 @@ export const advancedProperties: PropertyDef[] = [
       "connector",
     ],
     input: { type: "custom", component: "ConditionsInput" },
+    pinned: true,
+    isActive: (_cls, props) => Array.isArray(props?.conditions) && props.conditions.length > 0,
     sortOrder: 0,
   },
   {
-    id: "animations",
-    label: "Animation",
-    section: "animations",
-    keywords: [
-      "animate",
-      "motion",
-      "entrance",
-      "scroll",
-      "framer",
-      "css",
-      "fade",
-      "slide",
-      "scale",
-      "bounce",
-      "spring",
-    ],
-    input: { type: "custom", component: "AnimationsInput" },
-    hideKey: "animations",
-    sortOrder: 0,
+    // Section-header `+` picker. Popover-mode + non-pinned, so AccordionAddMenu's
+    // `sectionPopoverProp` path mounts it inside the section title row.
+    id: "conditions:add",
+    label: "Add condition",
+    section: "conditions",
+    help: "Add a visibility condition.",
+    keywords: ["add", "condition", "url", "form", "auth", "device", "connector"],
+    input: { type: "custom", component: "ConditionsAddPicker" },
+    sortOrder: 1,
   },
-  {
-    id: "scrollEffect",
-    label: "Scroll Effect",
-    section: "scroll-effect",
-    keywords: ["scroll", "horizontal", "timeline", "pin", "gsap", "section", "parallax"],
-    input: { type: "custom", component: "ContainerScrollEffectSection" },
-    showWhen: (_cls, props) => props._craftName === "Container",
-    sortOrder: 0,
-  },
+  // Animation + Scroll Effect are now rows inside the unified Effects
+  // builder (see registry/properties/effects.ts + effects-builder/).
   {
     id: "containerOverflow",
     label: "Overflow",
-    section: "overflow-scroll",
+    section: "alignment",
     keywords: ["overflow", "scroll", "drag", "scrollbar", "horizontal", "carousel"],
     input: { type: "custom", component: "ContainerOverflowSection" },
     showWhen: (_cls, props) => props._craftName === "Container",
-    sortOrder: 0,
+    sortOrder: 900,
   },
   {
     id: "dataSource",

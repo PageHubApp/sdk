@@ -1,14 +1,20 @@
 /**
- * Conditional visibility — visual condition builder with dropdown pickers.
- * Supports: URL params, form fields, connectors, company variables, device/viewport.
- * AND within groups, OR between groups (Elementor-style condition groups).
+ * Conditional visibility — chip-list builder for a node's `conditions[]`.
+ *
+ * In the inspector toolbar this renders as N `ConditionChipRow`s + a
+ * "+ Add condition" picker. Each chip opens a small floating editor with the
+ * fields for that one condition.
+ *
+ * The page-settings AccessTab uses the OR-group variant exported from this
+ * file (`ConditionGroupUI`, `parseGroups`, `defaultCondition`) — the toolbar
+ * variant intentionally drops OR groups and stores a single AND list.
  */
-import { ROOT_NODE } from "@craftjs/utils";
-import { useEditor, useNode } from "@craftjs/core";
-import { TbEyeSearch, TbPlus, TbTrash } from "react-icons/tb";
+import { useNode } from "@craftjs/core";
+import { useEffect, useRef, useState } from "react";
+import { TbTrash } from "react-icons/tb";
+import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
-import { ToolbarSection } from "../../ToolbarSection";
 import { useElementPicker } from "../action/useElementPicker";
 import { getConnectorData } from "../../../../utils/design/variables";
 import type {
@@ -23,6 +29,12 @@ import {
   OPERATOR_LABELS,
   OPERATORS_BY_TYPE,
 } from "../../../../utils/conditions/types";
+import { useAtomValue } from "@zedux/react";
+import { ConditionChipRow } from "./ConditionChipRow";
+import {
+  PopoverOpenRequestAtom,
+  popoverRequestKey,
+} from "../../unified-settings/popoverOpenRequestAtom";
 
 // ── Category labels ──────────────────────────────────────────────────────────
 
@@ -69,7 +81,6 @@ const COMPANY_FIELDS = [
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Get available connector providers + collections from live data */
 function useConnectorOptions(): { provider: string; collections: string[] }[] {
   const data = getConnectorData();
   if (!data) return [];
@@ -79,15 +90,13 @@ function useConnectorOptions(): { provider: string; collections: string[] }[] {
   }));
 }
 
-/** Parse a flat conditions array + conditionLogic into condition groups.
+/** Parse a flat conditions array + conditionGroups into condition groups.
  *  Legacy format (flat array) becomes a single group. */
 export function parseGroups(
   conditions: Condition[],
   conditionGroups: ConditionGroup[] | undefined
 ): ConditionGroup[] {
-  // New format: conditionGroups array
   if (conditionGroups && conditionGroups.length > 0) return conditionGroups;
-  // Legacy: flat conditions array = single group
   if (conditions.length > 0) return [{ conditions, logic: "all" }];
   return [];
 }
@@ -108,38 +117,23 @@ export function defaultCondition(type: ConditionType): Condition {
   }
 }
 
-// ── Single Condition Row ─────────────────────────────────────────────────────
+// ── Field block (reused by ConditionRow + ConditionEditorPanel) ──────────────
 
-function ConditionRow({
+export function ConditionFields({
   cond,
   onChange,
-  onRemove,
   formElements,
   connectorOptions,
 }: {
   cond: Condition;
   onChange: (patch: Partial<Condition>) => void;
-  onRemove: () => void;
   formElements: ReturnType<typeof useElementPicker>;
   connectorOptions: ReturnType<typeof useConnectorOptions>;
 }) {
   const operators = OPERATORS_BY_TYPE[cond.type] || OPERATORS_BY_TYPE["url-param"];
 
   return (
-    <div className="border-base-300 mb-2 flex flex-col gap-1.5 rounded-md border p-2">
-      <div className="flex items-center justify-between">
-        <span className="text-neutral-content text-[10px] font-medium">
-          {CATEGORY_OPTIONS.find(c => c.value === cond.type)?.label || cond.type}
-        </span>
-        <button
-          type="button"
-          onClick={onRemove}
-          className="text-neutral-content hover:bg-error hover:text-error-content rounded p-0.5"
-        >
-          <TbTrash size={12} />
-        </button>
-      </div>
-
+    <>
       {/* Category picker */}
       <ToolbarDropdown
         value={cond.type}
@@ -254,28 +248,28 @@ function ConditionRow({
               </option>
             ))}
           </ToolbarDropdown>
-          <div className="input-wrapper">
+          <ToolbarRowFrame>
             <input
               type="text"
               value={cond.key}
               onChange={e => onChange({ key: e.target.value })}
               placeholder="field name"
-              className="input-plain w-full font-mono text-xs"
+              className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
             />
-          </div>
+          </ToolbarRowFrame>
         </>
       )}
 
       {cond.type === "url-param" && (
-        <div className="input-wrapper">
+        <ToolbarRowFrame>
           <input
             type="text"
             value={cond.key}
             onChange={e => onChange({ key: e.target.value })}
             placeholder="param name (e.g. ref)"
-            className="input-plain w-full font-mono text-xs"
+            className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
           />
-        </div>
+        </ToolbarRowFrame>
       )}
 
       {/* Operator — skip for device (implicit equals) */}
@@ -321,21 +315,60 @@ function ConditionRow({
             ))}
           </ToolbarDropdown>
         ) : (
-          <div className="input-wrapper">
+          <ToolbarRowFrame>
             <input
               type="text"
               value={cond.value}
               onChange={e => onChange({ value: e.target.value })}
               placeholder="expected value"
-              className="input-plain w-full font-mono text-xs"
+              className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
             />
-          </div>
+          </ToolbarRowFrame>
         ))}
+    </>
+  );
+}
+
+// ── Single Condition Row (AccessTab card layout) ─────────────────────────────
+
+function ConditionRow({
+  cond,
+  onChange,
+  onRemove,
+  formElements,
+  connectorOptions,
+}: {
+  cond: Condition;
+  onChange: (patch: Partial<Condition>) => void;
+  onRemove: () => void;
+  formElements: ReturnType<typeof useElementPicker>;
+  connectorOptions: ReturnType<typeof useConnectorOptions>;
+}) {
+  return (
+    <div className="border-base-300 mb-2 flex flex-col gap-1.5 rounded-md border p-2">
+      <div className="flex items-center justify-between">
+        <span className="text-neutral-content text-[10px] font-medium">
+          {CATEGORY_OPTIONS.find(c => c.value === cond.type)?.label || cond.type}
+        </span>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-neutral-content hover:bg-error hover:text-error-content rounded p-0.5"
+        >
+          <TbTrash size={12} />
+        </button>
+      </div>
+      <ConditionFields
+        cond={cond}
+        onChange={onChange}
+        formElements={formElements}
+        connectorOptions={connectorOptions}
+      />
     </div>
   );
 }
 
-// ── Condition Group ──────────────────────────────────────────────────────────
+// ── Condition Group (AccessTab) ──────────────────────────────────────────────
 
 export function ConditionGroupUI({
   group,
@@ -376,7 +409,6 @@ export function ConditionGroupUI({
 
   return (
     <div>
-      {/* AND/OR toggle within group */}
       {group.conditions.length > 1 && (
         <div className="bg-neutral mb-2 flex gap-1 rounded-md p-0.5">
           <button
@@ -420,99 +452,98 @@ export function ConditionGroupUI({
   );
 }
 
-// ── Main Component ───────────────────────────────────────────────────────────
+// ── Toolbar chip-list body ───────────────────────────────────────────────────
+
+// Matches the def id registered in `registry/properties/advanced.ts`. The
+// header `+` picker dispatches an open-request keyed by (nodeId, this id)
+// when it adds a condition.
+const CONDITIONS_BODY_DEF_ID = "conditions";
 
 export const ConditionsInput = () => {
   const {
-    conditions,
-    conditionLogic,
-    conditionGroups,
+    id,
     actions: { setProp },
+    conditions,
+    conditionGroups,
   } = useNode(node => ({
-    conditions: (node.data?.props.conditions || []) as Condition[],
-    conditionLogic: (node.data?.props.conditionLogic || "all") as ConditionLogic,
-    conditionGroups: node.data?.props.conditionGroups as ConditionGroup[] | undefined,
+    id: node.id,
+    conditions: (node.data?.props?.conditions || []) as Condition[],
+    conditionGroups: node.data?.props?.conditionGroups as ConditionGroup[] | undefined,
   }));
+  const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
+  const requestVersion =
+    popoverRequests.get(popoverRequestKey(id, CONDITIONS_BODY_DEF_ID)) || 0;
 
-  const rawFormElements = useElementPicker("all");
-  const formElements = Array.isArray(rawFormElements) ? rawFormElements : [];
-  const connectorOptions = useConnectorOptions();
-
+  // Toolbar surface only deals with a single AND list. Legacy conditionGroups
+  // data is read flat (first group's conditions), and any save rewrites the
+  // single canonical shape — `conditions[]` + `conditionLogic: "all"`. Multi-
+  // group OR data is still authorable from page-settings AccessTab.
   const groups = parseGroups(conditions, conditionGroups);
+  const list: Condition[] = groups[0]?.conditions ?? [];
 
-  const saveGroups = (updated: ConditionGroup[]) => {
-    setProp((props: any) => {
-      props.conditionGroups = updated;
-      // Keep flat conditions in sync for backward compat with existing evaluator
-      // (flat = first group's conditions when there's only one group)
-      if (updated.length === 1) {
-        props.conditions = updated[0].conditions;
-        props.conditionLogic = updated[0].logic;
-      } else if (updated.length === 0) {
-        props.conditions = [];
-        props.conditionLogic = "all";
-      } else {
-        // Multiple groups: store all conditions flat for legacy readers,
-        // but conditionGroups is the source of truth
-        props.conditions = updated.flatMap(g => g.conditions);
-        props.conditionLogic = "all";
+  const writeList = (next: Condition[]) => {
+    setProp((p: any) => {
+      p.conditions = next;
+      p.conditionLogic = "all";
+      if (p.conditionGroups !== undefined) {
+        p.conditionGroups = next.length > 0 ? [{ conditions: next, logic: "all" }] : [];
       }
     });
   };
 
-  const updateGroup = (groupIndex: number, updated: ConditionGroup) => {
-    const newGroups = [...groups];
-    newGroups[groupIndex] = updated;
-    saveGroups(newGroups);
+  const updateAt = (idx: number, patch: Partial<Condition>) => {
+    const next = list.map((c, i) => (i === idx ? { ...c, ...patch } : c));
+    writeList(next);
   };
 
-  const removeGroup = (groupIndex: number) => {
-    saveGroups(groups.filter((_, i) => i !== groupIndex));
+  const removeAt = (idx: number) => {
+    writeList(list.filter((_, i) => i !== idx));
   };
 
-  const addGroup = () => {
-    saveGroups([...groups, { conditions: [defaultCondition("url-param")], logic: "all" }]);
-  };
+  // Auto-open the new tail chip. Two trigger paths:
+  //   1. Length grew while this body was mounted — the length-growth
+  //      detector fires.
+  //   2. The header "+" picker added a chip while the section was closed
+  //      (this body unmounted). The picker also bumps `PopoverOpenRequestAtom`
+  //      via `requestOpenPopover(..., CONDITIONS_BODY_DEF_ID)`, and we open
+  //      the tail when `requestVersion` advances. The length detector can't
+  //      cover this case because `prevLengthRef` initializes post-add on
+  //      remount.
+  const prevLengthRef = useRef(list.length);
+  const [pendingOpenIdx, setPendingOpenIdx] = useState<number | null>(null);
+  useEffect(() => {
+    if (list.length > prevLengthRef.current) {
+      setPendingOpenIdx(list.length - 1);
+    }
+    prevLengthRef.current = list.length;
+  }, [list.length]);
+  // Init to 0, NOT to the current `requestVersion`. If the picker dispatched
+  // while this body was unmounted, the very first version we see on mount IS
+  // the bump we need to consume — initializing to it would make the equality
+  // check bail. Mirrors `EffectRowInputPopover.tsx`'s `useRef(0)`.
+  const lastRequestVersionRef = useRef(0);
+  useEffect(() => {
+    if (requestVersion === 0 || requestVersion === lastRequestVersionRef.current) return;
+    lastRequestVersionRef.current = requestVersion;
+    if (list.length > 0) setPendingOpenIdx(list.length - 1);
+  }, [requestVersion, list.length]);
+  const consumeAutoOpen = () => setPendingOpenIdx(null);
+
+  if (list.length === 0) return null;
 
   return (
-    <>
-      {groups.length === 0 && (
-        <p className="text-neutral-content mb-2 text-[11px]">
-          No conditions set. This element is always visible.
-        </p>
-      )}
-
-      {groups.map((group, gi) => (
-        <div key={gi}>
-          {gi > 0 && (
-            <div className="my-2 flex items-center gap-2">
-              <div className="bg-base-300 h-px flex-1" />
-              <span className="text-neutral-content text-[10px] font-bold tracking-wider uppercase">
-                OR
-              </span>
-              <div className="bg-base-300 h-px flex-1" />
-            </div>
-          )}
-          <ConditionGroupUI
-            group={group}
-            groupIndex={gi}
-            onChange={updated => updateGroup(gi, updated)}
-            onRemove={() => removeGroup(gi)}
-            formElements={formElements}
-            connectorOptions={connectorOptions}
-          />
-        </div>
+    <div className="flex flex-col gap-1">
+      {list.map((cond, i) => (
+        <ConditionChipRow
+          key={i}
+          cond={cond}
+          autoOpen={i === pendingOpenIdx}
+          onAutoOpenConsumed={consumeAutoOpen}
+          onChange={patch => updateAt(i, patch)}
+          onRemove={() => removeAt(i)}
+        />
       ))}
-
-      <div className="mt-2 flex gap-2">
-        {groups.length === 0 ? (
-          <ToolbarDashedButton onClick={addGroup}>Add condition</ToolbarDashedButton>
-        ) : (
-          <ToolbarDashedButton onClick={addGroup} icon={<TbPlus size={12} />}>
-            Add condition group (OR)
-          </ToolbarDashedButton>
-        )}
-      </div>
-    </>
+    </div>
   );
 };
+

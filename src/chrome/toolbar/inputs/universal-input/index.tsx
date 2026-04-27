@@ -1,6 +1,9 @@
 import React, { useMemo } from "react";
 import { TbBraces, TbBrandTailwind, TbMathFunction } from "react-icons/tb";
-import { BgWrap, MobileDesktopLabels } from "../../ToolbarStyle";
+import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
+import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
+import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
+import { MobileDesktopLabels } from "../../ToolbarStyle";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { CalcDialog } from "./CalcDialog";
 import { TypeSelector } from "./TypeSelector";
@@ -114,6 +117,15 @@ export function UniversalInput(props: UniversalInputProps) {
     return types;
   }, [allowedTypes]);
 
+  // Show human-readable label for tailwind class values when not actively editing.
+  // Matches the dropdown's humanization (e.g. `p-space-sm` → "Space Small").
+  const displayValue = useMemo(() => {
+    if (isEditing) return inputValue;
+    if (propType !== "class") return inputValue;
+    if (selectedType !== "tailwind" || !inputValue) return inputValue;
+    return formatTailwindDisplayLabel(inputValue, propTag);
+  }, [isEditing, inputValue, selectedType, propType, propTag]);
+
   // Dynamic placeholder based on type
   const dynamicPlaceholder = useMemo(() => {
     const limitedTypes = ["%", "vh", "vw", "vmin", "vmax"];
@@ -161,16 +173,50 @@ export function UniversalInput(props: UniversalInputProps) {
         )}
 
         {/* Input wrapper */}
-        <div className={`flex items-center gap-0.5 ${inputWidth || "flex-1"}`}>
-          <BgWrap wrap={wrap}>
-            <div className="flex w-full items-center gap-1">
-              {/* Main input - always visible */}
-              <div className="relative flex-1">
+        <div className={`flex min-w-0 items-center gap-0.5 ${inputWidth || "flex-1"}`}>
+          {(() => {
+            const onTypeChangeHandler = (type: ValueType) => {
+              const oldType = selectedType;
+
+              // If calc is selected from dropdown, open the calc dialog
+              if (type === "calc") {
+                setSelectedType("calc");
+                setShowCalcDialog(true);
+                return;
+              }
+
+              setSelectedType(type);
+              setIsEditing(false); // Exit editing mode when switching types
+
+              if (type === "tailwind" || type === "var") {
+                setShowAutocomplete(true);
+              }
+
+              const isOldNumeric = CSS_UNITS.includes(oldType);
+              const isNewNumeric = CSS_UNITS.includes(type);
+
+              if (type !== oldType) {
+                if (isOldNumeric && isNewNumeric) {
+                  const numericValue = parsed.numeric?.toString() || "";
+                  if (numericValue) {
+                    setInputValue(numericValue);
+                    handleChange(numericValue, type);
+                  } else {
+                    setInputValue("");
+                  }
+                } else {
+                  setInputValue("");
+                }
+              }
+            };
+
+            const inputBody = (
+              <div className="relative min-w-0 flex-1">
                 <input
                   id={`input-${propKey}`}
                   ref={inputRef}
                   type="text"
-                  value={inputValue}
+                  value={displayValue}
                   onChange={handleInputChange}
                   onBlur={handleInputBlur}
                   onKeyDown={handleKeyDown}
@@ -197,66 +243,54 @@ export function UniversalInput(props: UniversalInputProps) {
                   />
                 )}
               </div>
+            );
 
-              {/* Type selector */}
-              {!hideTypeSelector && (
-                <TypeSelector
-                  ref={typeSelectorRef}
-                  types={availableTypes}
-                  selectedType={selectedType}
-                  onCalcClick={() => setShowCalcDialog(true)}
-                  onOpenChange={setIsTypeSelectorOpen}
-                  onTypeChange={type => {
-                    const oldType = selectedType;
+            const typeSelector = !hideTypeSelector ? (
+              <TypeSelector
+                ref={typeSelectorRef}
+                types={availableTypes}
+                selectedType={selectedType}
+                onCalcClick={() => setShowCalcDialog(true)}
+                onOpenChange={setIsTypeSelectorOpen}
+                onTypeChange={onTypeChangeHandler}
+              />
+            ) : null;
 
-                    // If calc is selected from dropdown, open the calc dialog
-                    if (type === "calc") {
-                      setSelectedType("calc");
-                      setShowCalcDialog(true);
-                      return;
-                    }
+            const clearButton = currentValue ? (
+              <InlineClearButton
+                onClick={e => {
+                  // Prevent input blur from racing the clear and committing stale state.
+                  e.preventDefault();
+                  setInputValue("");
+                  setIsEditing(false);
+                  setShowAutocomplete(false);
+                  handleChange("", selectedType);
+                }}
+                tooltip="Clear"
+              />
+            ) : null;
 
-                    setSelectedType(type);
-                    setIsEditing(false); // Exit editing mode when switching types
+            // `wrap` opt-out: render bare row without the input frame (legacy callers).
+            if (wrap) {
+              return (
+                <div className="flex w-full min-w-0 items-center gap-1.5">
+                  {inputBody}
+                  {typeSelector}
+                  {clearButton}
+                </div>
+              );
+            }
 
-                    if (type === "tailwind" || type === "var") {
-                      setShowAutocomplete(true);
-                    }
-
-                    const isOldNumeric = CSS_UNITS.includes(oldType);
-                    const isNewNumeric = CSS_UNITS.includes(type);
-
-                    // When changing type, handle differently based on what kind of types
-                    if (type !== oldType) {
-                      if (isOldNumeric && isNewNumeric) {
-                        // Numeric to numeric: keep the number, just change unit
-                        const numericValue = parsed.numeric?.toString() || "";
-                        if (numericValue) {
-                          setInputValue(numericValue);
-                          handleChange(numericValue, type);
-                        } else {
-                          setInputValue("");
-                          // Don't call handleChange with empty - just clear locally
-                        }
-                      } else if (isNewNumeric && !isOldNumeric) {
-                        // Text to numeric: clear input, let user type the number
-                        setInputValue("");
-                        // Don't save empty value - just clear the input and wait for user to type
-                      } else if (!isNewNumeric && isOldNumeric) {
-                        // Numeric to text (tailwind/calc): clear input
-                        setInputValue("");
-                        // Don't save empty value - wait for user input
-                      } else {
-                        // Text to text (tailwind <-> calc): clear
-                        setInputValue("");
-                        // Don't save empty value - wait for user input
-                      }
-                    }
-                  }}
-                />
-              )}
-            </div>
-          </BgWrap>
+            // Canonical: ToolbarRowFrame owns the border/padding/gap, with the
+            // clear button in its `trailing` slot so it sits inside the right
+            // gutter (matches Color, Pattern, Link, Icon, Font Family inputs).
+            return (
+              <ToolbarRowFrame trailing={clearButton}>
+                {inputBody}
+                {typeSelector}
+              </ToolbarRowFrame>
+            );
+          })()}
         </div>
       </div>
 

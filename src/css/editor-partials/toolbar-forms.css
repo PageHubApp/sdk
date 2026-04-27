@@ -93,7 +93,7 @@
   @apply appearance-none pr-6;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230f0f0f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 0.4rem center;
+  background-position: right 0.5rem center;
   background-size: 0.75rem;
 }
 .dark .pagehub-sdk-root select.input-plain,
@@ -208,14 +208,6 @@
   @apply border-base-300 bg-base-200 w-full cursor-pointer rounded-lg border px-1 py-0 transition-[border-color,box-shadow,background-color] duration-150 ease-out;
   @apply hover:border-primary hover:bg-base-300/25;
   @apply focus-within:border-primary focus-within:ring-ring/45 focus-within:ring-1;
-}
-
-/* Color toolbar swatch: full-bleed fill inside border (no px-1 gutter); checker clips to rounded-lg */
-.pagehub-sdk-root .input-wrapper.color-input-field {
-  @apply overflow-hidden p-0!;
-}
-.pagehub-sdk-root #toolbarContents .input-wrapper.color-input-field .input-plain {
-  @apply px-0!;
 }
 
 .pagehub-sdk-root #toolbarContents .input,

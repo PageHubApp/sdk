@@ -21,6 +21,7 @@ export type HideKey =
   | "cursor"
   | "ringOutline"
   | "alignment"
+  | "size"
   // Whole-tab hides
   | "hoverClick"
   | "animations"

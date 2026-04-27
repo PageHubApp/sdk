@@ -45,6 +45,19 @@ export function propertyHasValue(
     return false;
   }
 
+  if (def.input.type === "multi-toggle") {
+    for (const t of def.input.toggles) {
+      const r = getPropFinalValue(
+        { propKey: t.propKey, propType: "class" },
+        view,
+        { className },
+        classDark
+      );
+      if (r.value != null && r.value !== "") return true;
+    }
+    return false;
+  }
+
   const propType = def.propType || "class";
   if (propType === "component") {
     const v = componentProps[def.propKey || def.id];

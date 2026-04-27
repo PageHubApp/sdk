@@ -21,8 +21,8 @@ import type { PropertyInputProps } from "../../unified-settings/registry/propert
 
 const GradientPanel = lazy(() => import("./GradientPanel"));
 
+// Hint width for chip-anchored initial position only — panel is auto-sized.
 const PANEL_WIDTH = 320;
-const PANEL_HEIGHT = 460;
 
 const DIR_TO_CSS: Record<string, string> = {
   "bg-linear-to-t": "to top",
@@ -193,12 +193,7 @@ export default function GradientInputPopover({ def }: PropertyInputProps) {
       />
       {open && (
         <Suspense fallback={null}>
-          <GradientPanel
-            initialPosition={initialPos}
-            onClose={() => setOpen(false)}
-            defaultWidth={PANEL_WIDTH}
-            defaultHeight={PANEL_HEIGHT}
-          />
+          <GradientPanel initialPosition={initialPos} onClose={() => setOpen(false)} />
         </Suspense>
       )}
     </div>

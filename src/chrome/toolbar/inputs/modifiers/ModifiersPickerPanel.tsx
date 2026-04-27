@@ -1,9 +1,9 @@
 /**
- * ConditionsPanel — heavy lazy chunk: FloatingPanel + full ConditionsInput body.
- * Loaded on first open by ConditionsInputPopover.
+ * ModifiersPickerPanel — heavy lazy chunk: FloatingPanel + ModifiersPickerBody.
+ * Loaded on first open by ModifiersAddPicker.
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
-import { ConditionsInput } from "./ConditionsInput";
+import { ModifiersPickerBody } from "./ModifiersPickerBody";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -12,7 +12,7 @@ interface PanelProps {
   defaultHeight: number;
 }
 
-export default function ConditionsPanel({
+export default function ModifiersPickerPanel({
   initialPosition,
   onClose,
   defaultWidth,
@@ -22,19 +22,20 @@ export default function ConditionsPanel({
     <FloatingPanel
       isOpen
       onClose={onClose}
-      title="Conditions"
-      storageKey="conditions-input"
+      title="Modifiers"
+      storageKey="modifiers-picker"
+      autoSize={false}
       defaultWidth={defaultWidth}
       defaultHeight={defaultHeight}
-      minWidth={340}
-      maxWidth={560}
-      minHeight={300}
+      minWidth={280}
+      maxWidth={420}
+      minHeight={240}
       initialPosition={initialPosition}
       persistSize={false}
       zIndex={1100}
       scrollable
     >
-      <ConditionsInput />
+      <ModifiersPickerBody />
     </FloatingPanel>
   );
 }

@@ -3,17 +3,24 @@
  * Custom inputs are referenced by string key into the customInputs registry.
  */
 import React from "react";
-import { TbLineHeight, TbTextWrap, TbUnderline } from "react-icons/tb";
+import {
+  TbBold,
+  TbItalic,
+  TbLineHeight,
+  TbStrikethrough,
+  TbTextWrap,
+  TbUnderline,
+} from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 
 export const typographyProperties: PropertyDef[] = [
   {
     id: "typographyPreset",
-    label: "Preset",
+    label: "Styles",
     section: "typography",
-    keywords: ["preset", "typography", "style", "heading", "body", "accent"],
+    keywords: ["styles", "preset", "typography", "heading", "body", "accent"],
     input: { type: "custom", component: "TypographyPresetInput" },
-    pinned: false,
+    pinned: true,
     sortOrder: -10,
     inline: true,
   },
@@ -175,12 +182,41 @@ export const typographyProperties: PropertyDef[] = [
     },
   },
   {
-    id: "fontStyle",
+    id: "emphasis",
     label: "Style",
     section: "typography",
-    keywords: ["italic", "oblique", "style", "emphasis"],
-    input: { type: "tailwind-select", tailwindKey: "fontStyle" },
+    keywords: ["bold", "italic", "underline", "strike", "style", "emphasis", "weight"],
     sortOrder: 190,
+    inline: true,
+    input: {
+      type: "multi-toggle",
+      toggles: [
+        {
+          icon: React.createElement(TbBold, { className: "size-3.5" }),
+          tooltip: "Bold",
+          propKey: "fontWeight",
+          className: "font-bold",
+        },
+        {
+          icon: React.createElement(TbItalic, { className: "size-3.5" }),
+          tooltip: "Italic",
+          propKey: "fontStyle",
+          className: "italic",
+        },
+        {
+          icon: React.createElement(TbUnderline, { className: "size-3.5" }),
+          tooltip: "Underline",
+          propKey: "textDecoration",
+          className: "underline",
+        },
+        {
+          icon: React.createElement(TbStrikethrough, { className: "size-3.5" }),
+          tooltip: "Strikethrough",
+          propKey: "textDecoration",
+          className: "line-through",
+        },
+      ],
+    },
   },
 
   // ─── Wrap & Overflow (bundle) ────────────────────────────────────
@@ -214,7 +250,17 @@ export const typographyProperties: PropertyDef[] = [
           label: "White Space",
           section: "typography",
           keywords: ["white", "space", "nowrap", "pre", "wrap"],
-          input: { type: "tailwind-select", tailwindKey: "whiteSpace" },
+          input: {
+            type: "select",
+            options: [
+              { label: "Normal", value: "whitespace-normal" },
+              { label: "No Wrap", value: "whitespace-nowrap" },
+              { label: "Preserve", value: "whitespace-pre" },
+              { label: "Preserve & Wrap", value: "whitespace-pre-wrap" },
+              { label: "Preserve Breaks", value: "whitespace-pre-line" },
+              { label: "Break Spaces", value: "whitespace-break-spaces" },
+            ],
+          },
           inline: true,
         },
         {
@@ -230,7 +276,15 @@ export const typographyProperties: PropertyDef[] = [
           label: "Word Break",
           section: "typography",
           keywords: ["word", "break", "wrap", "overflow"],
-          input: { type: "tailwind-select", tailwindKey: "wordBreak" },
+          input: {
+            type: "select",
+            options: [
+              { label: "Normal", value: "break-normal" },
+              { label: "Break Long Words", value: "break-words" },
+              { label: "Break Anywhere", value: "break-all" },
+              { label: "Keep Together", value: "break-keep" },
+            ],
+          },
           inline: true,
         },
         {

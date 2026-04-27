@@ -81,7 +81,10 @@ export const ToolbarSection = ({
     ? `group/bp-row flex w-full items-center gap-1 ${collapsible ? "-mx-3 px-3 py-1.5" : "-mx-3 px-3 py-1.5"} text-[11px] font-semibold text-neutral-content transition-colors ${disabled ? "" : "hover:text-base-content"} ${className}`
     : `group group/bp-row flex w-full items-center gap-2 border-b ${isOpen ? "border-transparent" : "border-base-300/60"} bg-base-100 px-3 py-3 text-xs font-semibold text-base-content transition-colors ${className}`;
 
-  const titleHitClasses = `flex min-w-0 flex-1 items-center gap-1.5 ${disabled ? "opacity-40" : ""} ${collapsible ? cursorClass : "cursor-default"}`;
+  // When non-collapsible, inherit cursor from the parent (`titleClasses`) so
+  // popover-only sections that pass `cursor-pointer!` via `className` win.
+  // Hardcoding `cursor-default` here would override that inheritance.
+  const titleHitClasses = `flex min-w-0 flex-1 items-center gap-1.5 ${disabled ? "opacity-40" : ""} ${collapsible ? cursorClass : ""}`;
 
   // When scrollable, we remove padding from body and add it inside the scrollbar wrapper
   const bodyClasses = nested

@@ -62,7 +62,7 @@ export const FormMainTab = () => {
           <SettingsAiSlot />
         </ToolbarSection>
 
-        <ToolbarSection title="Submission" icon={SECTION_ICONS["Properties"]} help={help}>
+        <ToolbarSection title="Submission" icon={SECTION_ICONS["Type"]} help={help}>
           <ToolbarItem
             propKey="formName"
             propType="component"
@@ -117,7 +117,7 @@ export const FormMainTab = () => {
 
         <ToolbarSection
           title="After Submit"
-          icon={SECTION_ICONS["Properties"]}
+          icon={SECTION_ICONS["Type"]}
           help="What happens after the form is submitted successfully."
         >
           <ToolbarItem
@@ -145,7 +145,7 @@ export const FormMainTab = () => {
         {(formType === "save" || formType === "emailSave") && (
           <ToolbarSection
             title="Webhook"
-            icon={SECTION_ICONS["Properties"]}
+            icon={SECTION_ICONS["Type"]}
             help="Send form data to an external URL on every submission. Works with Zapier, Make, n8n, or any webhook endpoint."
           >
             <ToolbarItem

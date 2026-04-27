@@ -1,5 +1,4 @@
-import { splitClassVariants } from "./className";
-import { classNameToVar } from "./tailwind-styles";
+import { classNameToVar, splitClassVariants } from "./className";
 
 const STEMS_BY_PROP: Record<string, string[]> = {
   border: ["border"],

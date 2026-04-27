@@ -67,25 +67,33 @@ const lazyMap: Record<string, LazyEntry> = {
       import("../inputs/advanced/PropertiesInput").then(m => ({ default: m.PropertiesInput }))
     )
   ),
-  NodeAiContextSection: block(
-    React.lazy(() =>
-      import("./mainTabs/NodeAiContextSection").then(m => ({ default: m.NodeAiContextSection }))
-    )
+  // Popover variant — chip + FloatingPanel hosting the AI context editor.
+  NodeAiContextSection: chip(
+    React.lazy(() => import("../inputs/advanced/NodeAiContextInputPopover"))
   ),
-  ComponentImportExport: block(
-    React.lazy(() =>
-      import("../inputs/advanced/ComponentImportExport").then(m => ({
-        default: m.ComponentImportExport,
-      }))
-    )
+  // Popover variant — chip + FloatingPanel hosting the import/export editor.
+  ComponentImportExport: chip(
+    React.lazy(() => import("../inputs/advanced/ComponentImportExportPopover"))
   ),
   PermissionsSection: block(
     React.lazy(() =>
       import("./registry/PermissionsSection").then(m => ({ default: m.PermissionsSection }))
     )
   ),
-  // Popover variant — chip + FloatingPanel.
-  ConditionsInput: chip(React.lazy(() => import("../inputs/advanced/ConditionsInputPopover"))),
+  // Body — N editable condition chips. Each chip lazy-loads its own
+  // ConditionEditorPanel on click. Pinned (always renders) so the empty
+  // body is fine until the user picks the first type from the header `+`.
+  ConditionsInput: block(
+    React.lazy(() =>
+      import("../inputs/advanced/ConditionsInput").then(m => ({ default: m.ConditionsInput }))
+    )
+  ),
+  // Section-header `+` picker. Popover-mode so AccordionAddMenu mounts it
+  // inside the conditions section title row. Picking a category appends a
+  // condition to `props.conditions` and the body auto-opens the new chip.
+  ConditionsAddPicker: chip(
+    React.lazy(() => import("../inputs/advanced/ConditionsAddPicker"))
+  ),
   // Popover variant — chip + FloatingPanel.
   AnimationsInput: chip(React.lazy(() => import("../inputs/advanced/AnimationsInputPopover"))),
   ContainerScrollEffectSection: block(
@@ -95,12 +103,13 @@ const lazyMap: Record<string, LazyEntry> = {
       }))
     )
   ),
-  ContainerOverflowSection: block(
-    React.lazy(() =>
-      import("./mainTabs/ContainerOverflowSection").then(m => ({
-        default: m.ContainerOverflowSection,
-      }))
-    )
+  // Popover variant — chip + FloatingPanel for each effect row.
+  EffectRowInput: chip(
+    React.lazy(() => import("./registry/properties/effects-builder/EffectRowInputPopover"))
+  ),
+  // Popover variant — chip + FloatingPanel hosting the overflow editor.
+  ContainerOverflowSection: chip(
+    React.lazy(() => import("../inputs/advanced/ContainerOverflowSectionPopover"))
   ),
   DataSourceSectionSlot: block(
     React.lazy(() =>
@@ -123,8 +132,18 @@ const lazyMap: Record<string, LazyEntry> = {
       import("../inputs/advanced/ClassNameInput").then(m => ({ default: m.ClassNameInput }))
     )
   ),
-  // The registry-resolved "ActionInput" is the popover variant — chip + FloatingPanel.
-  ActionInput: chip(React.lazy(() => import("../inputs/action/ActionInputPopover"))),
+  // List-style Action section (mirrors Conditions): body chip-list + header
+  // `+` picker. Each chip lazy-loads its own ActionEditorPanel on click.
+  // Per-node `handlers` live inside the body too (see ActionsInput.tsx).
+  // Direct importers (NavMainTab, ButtonListMainTab, ButtonItem) keep using
+  // the flat `ActionInput` from `inputs/action/ActionInput` since they're
+  // already inside their own dialogs.
+  ActionsInput: block(
+    React.lazy(() =>
+      import("../inputs/action/ActionsInput").then(m => ({ default: m.ActionsInput }))
+    )
+  ),
+  ActionsAddPicker: chip(React.lazy(() => import("../inputs/action/ActionsAddPicker"))),
   FlexDirectionInput: row(
     React.lazy(() =>
       import("../inputs/layout/FlexDirectionInput").then(m => ({
@@ -136,6 +155,22 @@ const lazyMap: Record<string, LazyEntry> = {
     React.lazy(() =>
       import("../inputs/advanced/TailwindInput").then(m => ({ default: m.TailwindInput }))
     )
+  ),
+  // Body — N modifier chips (one per `props.root.activeModifiers` entry).
+  // X removes the modifier; click dispatches an open-request to the picker.
+  ModifierChipList: block(
+    React.lazy(() =>
+      import("../inputs/modifiers/ModifierChipList").then(m => ({
+        default: m.ModifierChipList,
+      }))
+    )
+  ),
+  // Section-header `+` picker. Popover-mode so AccordionAddMenu mounts it
+  // inside the modifiers section title row. Opens a FloatingPanel with the
+  // categorized preview-rich library (Pattern cards, exclusive segmented
+  // controls, dropdowns, free chips) and the "Save as modifier" footer.
+  ModifiersAddPicker: chip(
+    React.lazy(() => import("../inputs/modifiers/ModifiersAddPicker"))
   ),
 };
 

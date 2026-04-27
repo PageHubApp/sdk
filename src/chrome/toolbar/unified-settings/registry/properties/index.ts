@@ -16,6 +16,7 @@ import { ariaProperties } from "./aria";
 import { advancedProperties } from "./advanced";
 import { alignmentProperties } from "./alignment";
 import { interactionProperties } from "./interactions";
+import { modifiersProperties } from "./modifiers";
 
 // Register all built-in sections
 for (const section of BUILT_IN_SECTIONS) {
@@ -34,6 +35,7 @@ registerProperties([
   ...advancedProperties,
   ...alignmentProperties,
   ...interactionProperties,
+  ...modifiersProperties,
 ]);
 
 // Re-export for direct access
@@ -48,3 +50,4 @@ export { ariaProperties } from "./aria";
 export { advancedProperties } from "./advanced";
 export { alignmentProperties } from "./alignment";
 export { interactionProperties } from "./interactions";
+export { modifiersProperties } from "./modifiers";

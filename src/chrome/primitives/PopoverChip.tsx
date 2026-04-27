@@ -15,7 +15,8 @@
  *   is rendered as an optional pill overlay via `previewOverlay`.
  */
 import { forwardRef } from "react";
-import { TbX } from "react-icons/tb";
+import { InlineClearButton } from "./InlineClearButton";
+import { ToolbarRowFrame } from "./ToolbarRowFrame";
 
 interface PopoverChipProps {
   /** When true, chip border highlights to signal the popover is open. */
@@ -50,10 +51,9 @@ export const PopoverChip = forwardRef<HTMLButtonElement, PopoverChipProps>(funct
   ref
 ) {
   return (
-    <div
-      className={`input-wrapper text-base-content flex h-8 min-w-0 flex-1 items-center gap-1.5 px-1 text-xs ${
-        open ? "border-primary ring-ring/45 ring-1" : ""
-      }`}
+    <ToolbarRowFrame
+      open={open}
+      trailing={<InlineClearButton onClick={onClear} tooltip={clearAriaLabel} />}
     >
       {variant === "preview" ? (
         <button
@@ -84,17 +84,6 @@ export const PopoverChip = forwardRef<HTMLButtonElement, PopoverChipProps>(funct
           <span className="text-neutral-content flex-1 truncate">{summary}</span>
         </button>
       )}
-      <button
-        type="button"
-        onClick={e => {
-          e.stopPropagation();
-          onClear();
-        }}
-        aria-label={clearAriaLabel}
-        className="text-neutral-content hover:text-base-content flex size-5 shrink-0 items-center justify-center rounded"
-      >
-        <TbX className="size-3" aria-hidden />
-      </button>
-    </div>
+    </ToolbarRowFrame>
   );
 });

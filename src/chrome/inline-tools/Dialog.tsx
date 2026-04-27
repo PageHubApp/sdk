@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { MdClose } from "react-icons/md";
+import { TbX } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { getRect } from "../viewport/useRect";
 import { useFocusTrap } from "../../utils/hooks/useAccessibility";
@@ -203,7 +203,7 @@ function Dialog({ children, target, state, opener }: any): any {
                   aria-label="Close dialog"
                 >
                   <span className="sr-only">Close</span>
-                  <MdClose />
+                  <TbX />
                 </button>
               </div>
             </button>

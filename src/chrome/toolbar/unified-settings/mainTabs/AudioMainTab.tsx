@@ -6,20 +6,19 @@ import { renderComponentSlots } from "../helpers";
 export const AudioMainTab = () =>
   renderComponentSlots({
     Content: (
-      <ToolbarSection collapsible={false}>
-        <ToolbarItem
-          propKey="src"
-          propType="component"
-          type="text"
-          label="URL"
-          labelHide={true}
-          placeholder="https://example.com/audio.mp3"
-        />
-        <SettingsAiSlot />
-      </ToolbarSection>
-    ),
-    Properties: (
       <>
+        <ToolbarSection collapsible={false}>
+          <ToolbarItem
+            propKey="src"
+            propType="component"
+            type="text"
+            label="URL"
+            labelHide={true}
+            placeholder="https://example.com/audio.mp3"
+          />
+          <SettingsAiSlot />
+        </ToolbarSection>
+
         <ToolbarSection title="Playback Options" help="Controls, autoplay, and loop settings.">
           <ToolbarItem
             propKey="controls"

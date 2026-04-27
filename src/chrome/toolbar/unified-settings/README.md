@@ -7,7 +7,7 @@ Schema-driven sidebar. Every property defined as structured data. PropertyRender
 ```
 propertyDefs.ts          — Types: PropertyDef, PropertyInput, SectionDef, ShorthandMode
 propertyRegistry.ts      — Public API: register, override, unregister, search
-PropertyRenderer.tsx     — Renders a single property from its def (9 input types)
+PropertyRenderer.tsx     — Renders a single property from its def (10 input types)
 PropertySection.tsx      — Renders a section accordion from PropertyDefs
 AccordionAddMenu.tsx     — `+` picker for non-pinned properties
 RegistrySettings.tsx     — Main shell (tabs, search, structural sections)
@@ -18,9 +18,11 @@ properties/              — Definition files (one per domain)
   background.ts          — Color, image, pattern, gradient + clip/blend
   appearance.ts          — Styles section: opacity, shadow, radius + Border / Ring /
                            Outline / Divide bundles
-  effects.ts             — Filter + Backdrop bundles (Styles section), transition
-                           timing (Effects section), Transforms section props
-                           (scale, rotate, translate, skew, origin, GPU/will-change)
+  effects.ts             — Six popover-mode rows under the unified `effects`
+                           section (Animation, Scroll Effect, Transition,
+                           Transform, Filter, Backdrop). All share the
+                           `EffectRowInputPopover` trigger; per-id behavior
+                           lives in `effects-builder/effectTypes.tsx`.
   layout.ts              — Size properties (width, height, min/max, aspect)
   display.ts             — Position, inset (shorthand), order + behavior props
                            moved to Styles (visibility, overflow, cursor, z-index,
@@ -39,9 +41,11 @@ properties/              — Definition files (one per domain)
 | ------------ | ------------------------------------------------------------------------------------- |
 | Component    | Component settings (MainTab), Action, Data source                                     |
 | Layout       | Layout (direction, gap, align, padding, margin), Size                                 |
-| Design       | Typography, Background, Styles, Transforms                                            |
-| Interactions | Hover, Conditions, Animation, Tailwind Effects, Scroll Effect, Overflow               |
+| Design       | Typography, Background, Styles, Effects (unified)                                     |
+| Interactions | Hover, Conditions, Overflow                                                           |
 | Advanced     | Properties, ARIA, Modifiers, Classes, Display, AI Context, Import/Export, Permissions |
+
+The **Effects** section is a multi-row popover-mode section: one accordion with six popover-mode rows (Animation, Scroll Effect, Transition, Transform, Filter, Backdrop) sharing one trigger component. Storage stays split (root.animation\*, container scrollEffect props, className tokens). Standard `+` in the section header for adding; chip per active row in body. See [editor-popover-pattern.md §7](../../../../../docs/sdk/editor-popover-pattern.md#7-multi-row-popover-mode-sections).
 
 ## Visibility model — Framer-style add/remove
 
@@ -67,6 +71,7 @@ User-added rows append to the bottom of the section in click order, surviving re
 | `text`            | Text input                              | ariaLabel, element ID                                   |
 | `select`          | Dropdown with explicit options          | role, tabIndex, ariaExpanded                            |
 | `shorthand`       | Mode-toggle row (uniform / X-Y / sides) | gap, padding, margin, borderRadius                      |
+| `multi-toggle`    | Segmented row of independent toggles    | emphasis (bold / italic / underline / strike)           |
 | `bundle`          | Chip + floating popover                 | ring, outline                                           |
 | `custom`          | React component                         | FontFamilyInput, ActionInput, GradientInput             |
 
@@ -144,6 +149,30 @@ For padding/margin add a third mode (`tags: ["pt","pr","pb","pl"]`, labels `["T"
 
 `columns` controls the grid layout of the expanded row (defaults to `tags.length`). Use `2` for 4-side splits so T/R sit on one row, B/L on another.
 
+## Multi-toggle input — independent toggles in one row
+
+For "text emphasis"-style controls where each option is independently on/off and crosses Tailwind class groups (Bold = `font-bold`/`fontWeight`, Italic = `italic`/`fontStyle`, Underline = `underline`/`textDecoration`, Strike = `line-through`/`textDecoration`). Renders inside the canonical `ToolbarSegmentedControl` track (`bg-neutral` rail, `bg-base-100 + shadow-sm` active chip — same look as the alignment radios) with a leading "None" segment that clears every toggle's class at the active view.
+
+```ts
+{
+  id: "emphasis",
+  label: "Style",
+  section: "typography",
+  inline: true,
+  input: {
+    type: "multi-toggle",
+    toggles: [
+      { icon: <TbBold className="size-3.5" />,          tooltip: "Bold",          propKey: "fontWeight",     className: "font-bold" },
+      { icon: <TbItalic className="size-3.5" />,        tooltip: "Italic",        propKey: "fontStyle",      className: "italic" },
+      { icon: <TbUnderline className="size-3.5" />,     tooltip: "Underline",     propKey: "textDecoration", className: "underline" },
+      { icon: <TbStrikethrough className="size-3.5" />, tooltip: "Strikethrough", propKey: "textDecoration", className: "line-through" },
+    ],
+  },
+}
+```
+
+Reads/writes go through the standard `getPropFinalValue` + `changeProp` plumbing per toggle, so each toggle respects breakpoint scope (`md:font-bold`, etc.) and the `dark:` variant the same as any other class input. Toggles that share a `propKey` (e.g. Underline + Strike both write to `textDecoration`) are mutually exclusive at write-time because `tailwind-merge` collapses the group — that's intentional, not a bug. `propertyHasValue` auto-shows the row when any toggle's class is on the node, so the +Add menu doesn't need to seed a default value.
+
 ## Bundle input — chip + floating popover
 
 For *compound* properties that bundle several controls into one logical thing the user adds or removes as a unit (Ring, Outline, future Shadow stacks, gradients). The chip appears inline in the section. Clicking it opens a draggable, viewport-clamped `FloatingPanel` (`packages/sdk/src/chrome/floating/FloatingPanel.tsx`) anchored to the chip and docked on the side opposite the editor sidebar (`SideBarAtom`). The panel renders the bundle's child PropertyDefs via `PropertyRenderer`. Closing the panel doesn't persist position or size — every open is fresh from the trigger's bounding rect.
@@ -191,7 +220,7 @@ For *compound* properties that bundle several controls into one logical thing th
 
 When no color child exists and an `icon` is provided, the icon renders instead. Otherwise nothing — the chip body is just text.
 
-**Chip body.** Always reads "Add..." in muted text — the row label on the left already names the bundle, so the chip itself doesn't repeat it.
+**Chip body.** Synthesizes a summary from each child's current value: class children format their token via `formatTailwindDisplayLabel(value, propKey)` (e.g. `underline` → "Underline"), component / root children stringify primitive values. Joined with " · ", capped at 2 labels (so the chip stays one line). Falls back to "Add..." in muted text when no child has a value yet.
 
 **Why this exists.** `+Add` for individual ring/outline props was ambiguous (Width / Color / Offset duplicated across both, even with `groupLabel` disambiguators). Bundles model it the way users think: "I want a Ring," not "I want a ring-width, then a ring-color, then a ring-offset."
 
@@ -311,7 +340,6 @@ interface PropertyDef {
   inline?: boolean;        // label + input on same row
   showWhen?: (className, props) => boolean;
   groupLabel?: string;     // disambiguator shown in +Add picker (e.g. "Ring" vs "Outline")
-  advanced?: boolean;      // hidden in Content mode; visible only in Design mode
   pinned?: boolean;        // always visible (skips the +Add gate)
   defaultValue?: string;   // value written when added via +Add picker
   help?: string;           // tooltip
@@ -330,7 +358,6 @@ interface SectionDef {
   help?: string;
   searchOnly?: boolean;
   defaultOpen?: boolean;
-  advanced?: boolean;      // hidden in Content mode
 }
 
 interface ShorthandMode {

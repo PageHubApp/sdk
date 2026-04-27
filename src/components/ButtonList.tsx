@@ -1,6 +1,6 @@
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
-import { RxButton } from "react-icons/rx";
+import { TbHandClick } from "react-icons/tb";
 import type { NodeAction } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { Box } from "@pagehub/ui";
@@ -167,7 +167,7 @@ export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: Button
           : enabled && (
               <div className="flex w-auto items-center justify-center p-4">
                 <div data-empty-state={true} className="text-3xl">
-                  <RxButton />
+                  <TbHandClick />
                 </div>
               </div>
             )
@@ -176,7 +176,7 @@ export const ButtonList: UserComponent<ButtonListProps> = (incomingProps: Button
           : enabled && (
               <div className="flex w-auto items-center justify-center p-4">
                 <div data-empty-state={true} className="text-3xl">
-                  <RxButton />
+                  <TbHandClick />
                 </div>
               </div>
             )}

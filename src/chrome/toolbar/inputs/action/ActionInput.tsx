@@ -4,7 +4,19 @@
  * Supports chained actions via `actions: NodeAction[]` prop.
  */
 import { useNode } from "@craftjs/core";
-import { TbPointer, TbX } from "react-icons/tb";
+import { TbChevronDown, TbEye, TbEyeOff, TbX } from "react-icons/tb";
+import {
+  getShowHideState,
+  toggleShowHideState,
+  useShowHideVersion,
+} from "@/utils/showHideStore";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { LabeledAddChip } from "@/chrome/primitives/LabeledAddChip";
+import {
+  SearchableMenuPopover,
+  type SearchableMenuItem,
+} from "@/chrome/primitives/SearchableMenuPopover";
+import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -20,7 +32,7 @@ import HandlersInput from "./HandlersInput";
 import { LinkInput } from "./LinkInput";
 import { useElementPicker, type PickerFilter } from "./useElementPicker";
 
-const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
+export const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
   link: { type: "link", href: "" },
   // Legacy types kept in the union for in-flight data — not surfaced in the dropdown.
   "link-url": { type: "link-url", url: "" },
@@ -172,21 +184,23 @@ export default function ActionInput() {
         </div>
       ))}
 
-      {/* Add action button */}
-      <ToolbarDashedButton
-        onClick={
-          actionList.length === 0 ? () => syncActions([ACTION_DEFAULTS.link]) : addAction
-        }
-      >
-        {actionList.length === 0 ? "Add Action" : "Chain Another Action"}
-      </ToolbarDashedButton>
+      {/* Add action — labeled chip when empty, dashed CTA when chaining. */}
+      {actionList.length === 0 ? (
+        <LabeledAddChip
+          label="Action"
+          ariaLabel="Add action"
+          onClick={() => syncActions([ACTION_DEFAULTS.link])}
+        />
+      ) : (
+        <ToolbarDashedButton onClick={addAction}>Chain Another Action</ToolbarDashedButton>
+      )}
 
       <HandlersInput />
     </>
   );
 }
 
-function ActionSubForm({
+export function ActionSubForm({
   action,
   patch,
   replace,
@@ -243,7 +257,7 @@ function ActionSubForm({
       );
     case "open-modal":
       return (
-        <ElementPickerForm
+        <TargetPickerInput
           value={(action as any).anchor}
           filter="modal"
           label="Modal"
@@ -296,10 +310,10 @@ function ToggleThemeForm({
         Toggles the site light/dark preference (stored in{" "}
         <code className="text-[9px]">ph-theme</code>, same as the editor chrome).
       </p>
-      <ElementPickerForm
+      <TargetPickerInput
         value={action.dismissTarget || ""}
         filter="all"
-        label="Hide panel after toggle (optional id)"
+        label="Dismiss target (optional)"
         onChange={(dismissTarget: string) => patch({ dismissTarget: dismissTarget || undefined })}
       />
       {action.dismissTarget ? (
@@ -322,17 +336,17 @@ function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void
       <p className="text-neutral-content text-[10px] leading-snug">
         Adds the current product to the shopping cart. Must be inside a data-bound Container.
       </p>
-      <div className="input-wrapper">
-        <label className="input-label">Quantity</label>
+      <ToolbarRowFrame>
+        <label className="text-neutral-content shrink-0 px-1 text-xs">Quantity</label>
         <input
           type="number"
           min={1}
           max={99}
           value={action.quantity || 1}
           onChange={e => patch({ quantity: parseInt(e.target.value) || 1 })}
-          className="input-plain w-full text-xs"
+          className="h-full w-full bg-transparent px-1 text-xs outline-none"
         />
-      </div>
+      </ToolbarRowFrame>
     </>
   );
 }
@@ -342,12 +356,17 @@ function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void
 function ShowHideForm({ action, patch }: { action: any; patch: (p: any) => void }) {
   return (
     <>
-      <ElementPickerForm
-        value={action.target}
-        filter="all"
-        label="Target"
-        onChange={target => patch({ target })}
-      />
+      <div className="flex items-stretch gap-2">
+        <div className="min-w-0 flex-1">
+          <TargetPickerInput
+            value={action.target}
+            filter="all"
+            label="Target"
+            onChange={target => patch({ target })}
+          />
+        </div>
+        <PeekTargetButton target={action.target} />
+      </div>
       <div className="flex gap-2">
         <ToolbarDropdown
           value={action.direction || "toggle"}
@@ -372,51 +391,82 @@ function ShowHideForm({ action, patch }: { action: any; patch: (p: any) => void 
   );
 }
 
+function PeekTargetButton({ target }: { target: string | undefined }) {
+  useShowHideVersion();
+  const disabled = !target;
+  // Treat unknown state as "hidden" — most show-hide targets ship with `hidden`
+  // in their authored className (modal backdrops, drawers, accordion panels).
+  const shown = target ? getShowHideState(target) === "shown" : false;
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={() => target && toggleShowHideState(target)}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      data-tooltip-content={shown ? "Hide target in editor" : "Show target in editor"}
+      className="border-base-300 bg-base-200/50 text-neutral-content hover:bg-base-200 hover:text-base-content disabled:opacity-40 inline-flex shrink-0 items-center justify-center rounded-md border px-2 transition-colors"
+      aria-label={shown ? "Hide target in editor" : "Show target in editor"}
+    >
+      {shown ? <TbEye className="size-3.5" /> : <TbEyeOff className="size-3.5" />}
+    </button>
+  );
+}
+
 // ─── Shared pieces ─────────────────────────────────────────────────────
 
 function CopyToClipboardForm({ action, patch }: { action: any; patch: (p: any) => void }) {
   return (
-    <div className="input-wrapper">
+    <ToolbarRowFrame>
       <input
         type="text"
         defaultValue={action.text || ""}
         onChange={e => patch({ text: e.target.value })}
         placeholder="Text to copy..."
-        className="input-plain w-full"
+        className="h-full w-full bg-transparent px-1 text-xs outline-none"
         aria-label="Text to copy"
       />
-    </div>
+    </ToolbarRowFrame>
   );
 }
 
 function DownloadFileForm({ action, patch }: { action: any; patch: (p: any) => void }) {
   return (
     <>
-      <div className="input-wrapper">
+      <ToolbarRowFrame>
         <input
           type="url"
           defaultValue={action.url || ""}
           onChange={e => patch({ url: e.target.value })}
           placeholder="https://example.com/file.pdf"
-          className="input-plain w-full"
+          className="h-full w-full bg-transparent px-1 text-xs outline-none"
           aria-label="File URL"
         />
-      </div>
-      <div className="input-wrapper">
+      </ToolbarRowFrame>
+      <ToolbarRowFrame>
         <input
           type="text"
           defaultValue={action.filename || ""}
           onChange={e => patch({ filename: e.target.value })}
           placeholder="Filename (optional)"
-          className="input-plain w-full"
+          className="h-full w-full bg-transparent px-1 text-xs outline-none"
           aria-label="Download filename"
         />
-      </div>
+      </ToolbarRowFrame>
     </>
   );
 }
 
-function ElementPickerForm({
+/**
+ * Show-hide / open-modal target picker.
+ *
+ * Free-text input is the source of truth — users can always type / paste a
+ * target id, even when the page hasn't loaded the candidate list yet, when
+ * the target lives on another page, or when no canvas node is enumerable.
+ * The trailing chevron opens a `SearchableMenuPopover` of discovered targets
+ * (any node with `attrs.id`, `props.id`, or — for overlay components — a
+ * `props.anchor`). Selecting an item writes its id into the input.
+ */
+function TargetPickerInput({
   value,
   filter,
   label,
@@ -425,32 +475,40 @@ function ElementPickerForm({
   value: string;
   filter: PickerFilter;
   label: string;
-  onChange: (anchor: string) => void;
+  onChange: (next: string) => void;
 }) {
   const options = useElementPicker(filter);
-
-  if (!options.length) {
-    return (
-      <div className="bg-neutral/50 flex items-center gap-2 rounded-md px-3 py-2">
-        <span className="text-neutral-content text-xs">No {label.toLowerCase()}s found</span>
-      </div>
-    );
-  }
-
+  const items: SearchableMenuItem<string>[] = options.map(opt => ({
+    id: opt.anchor,
+    label: opt.label,
+    hint: opt.anchor,
+    keywords: [opt.anchor, opt.componentType],
+    data: opt.anchor,
+  }));
+  const lower = label.toLowerCase();
   return (
-    <ToolbarDropdown
-      value={value || ""}
-      onChange={onChange}
-      propKey={`action${label}`}
-      placeholder={`Select ${label.toLowerCase()}...`}
+    <ToolbarRowFrame
+      trailing={
+        <SearchableMenuPopover<string>
+          items={items}
+          onSelect={item => onChange(item.data ?? item.id)}
+          trigger={<TbChevronDown className="size-3.5" aria-hidden />}
+          triggerAriaLabel={`Pick ${lower} from page`}
+          triggerClassName="text-neutral-content hover:text-base-content hover:bg-base-200 flex size-5 shrink-0 items-center justify-center rounded-md transition-colors"
+          searchPlaceholder={`Search ${lower}…`}
+          emptyMessage={`No ${lower}s on this page yet`}
+          anchor="bottom end"
+        />
+      }
     >
-      <option value="">Select {label.toLowerCase()}...</option>
-      {options.map(opt => (
-        <option key={opt.nodeId} value={opt.anchor}>
-          {opt.label}
-          {opt.componentType !== label ? ` (${opt.componentType})` : ""}
-        </option>
-      ))}
-    </ToolbarDropdown>
+      <input
+        type="text"
+        value={value || ""}
+        onChange={e => onChange(e.target.value)}
+        placeholder={`${label} id…`}
+        className="h-full w-full bg-transparent px-1 text-xs outline-none"
+        aria-label={label}
+      />
+    </ToolbarRowFrame>
   );
 }

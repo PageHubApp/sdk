@@ -1,4 +1,5 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 import type { MouseEvent } from "react";
 import { useCallback } from "react";
 import { TbInfoCircle } from "react-icons/tb";
@@ -57,11 +58,28 @@ void ToolbarLabel;
 /** @deprecated Global tooltip handles truncated labels — kept for import compat, renders nothing. */
 export const TruncatedLabelTooltip = () => null;
 
-export const BgWrap = ({ children, className = "", wrap = null }) => {
-  if (wrap) {
-    return children;
+/**
+ * Bordered wrapper for toolbar inputs.
+ * - Default: routes to `ToolbarRowFrame` so single-line inputs (text / number /
+ *   url / radio) inherit the canonical `h-8` row shape with no per-input override.
+ * - `flexible`: keeps the legacy auto-height div for multi-line cases (textarea).
+ *   Do not introduce new flexible callers — anything single-line goes through
+ *   the frame.
+ */
+export const BgWrap = ({
+  children,
+  wrap = null,
+  flexible = false,
+}: {
+  children: any;
+  wrap?: any;
+  flexible?: boolean;
+}) => {
+  if (wrap) return children;
+  if (flexible) {
+    return <div className="input-wrapper input-hover">{children}</div>;
   }
-  return <div className={`input-wrapper ${className || "input-hover"}`}>{children}</div>;
+  return <ToolbarRowFrame>{children}</ToolbarRowFrame>;
 };
 
 const Labler = ({

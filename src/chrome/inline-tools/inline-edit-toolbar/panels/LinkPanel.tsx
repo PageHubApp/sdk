@@ -1,7 +1,6 @@
 import { Editor } from "@tiptap/react";
 import { useLayoutEffect, useState } from "react";
-import { MdLink, MdLinkOff } from "react-icons/md";
-import { TbFile, TbX } from "react-icons/tb";
+import { TbFile, TbLink, TbLinkOff, TbX } from "react-icons/tb";
 import { PageSelector } from "../../../viewport/PageSelector";
 
 interface LinkPanelProps {
@@ -95,7 +94,7 @@ export function LinkPanel({ editor, onClose, onSave }: LinkPanelProps) {
           onClick={() => setLinkType("external")}
           className={`flex items-center gap-1 rounded-r-md px-2 py-1.5 text-xs transition-colors ${linkType === "external" ? "bg-primary text-primary-content" : "text-neutral-content hover:bg-base-200"}`}
         >
-          <MdLink className="size-3.5" />
+          <TbLink className="size-3.5" />
           URL
         </button>
       </div>
@@ -152,7 +151,7 @@ export function LinkPanel({ editor, onClose, onSave }: LinkPanelProps) {
           onClick={removeLink}
           className="tool-button text-error hover:bg-error/10 !h-7 !w-7 shrink-0 !p-0"
         >
-          <MdLinkOff />
+          <TbLinkOff />
         </button>
       )}
 

@@ -20,6 +20,7 @@ export function LayersDialog({ isOpen, onClose }: LayersDialogProps) {
       title="Layers"
       icon={<TbLayoutGrid className="size-3.5" />}
       storageKey="layers-dialog"
+      autoSize={false}
       defaultWidth={340}
       defaultHeight={500}
       minWidth={280}
@@ -27,7 +28,7 @@ export function LayersDialog({ isOpen, onClose }: LayersDialogProps) {
       minHeight={300}
       maxHeight={700}
       dockToEdge={dockSide}
-      closeButtonSide={dockSide === "left" ? "left" : "right"}
+      closeButtonSide="right"
       zIndex={10050}
     >
       <div className="bg-base-100 text-base-content flex min-h-0 flex-1 flex-col overflow-hidden">

@@ -112,7 +112,7 @@ export const VideoMainTab = () => {
         {(provider === "r2" || provider === "url") && (provider === "r2" || isDirectVideoFileUrl(videoId)) ? (
           <ToolbarSection
             title="Playback"
-            icon={SECTION_ICONS["Properties"]}
+            icon={SECTION_ICONS["Type"]}
             help="HTML5 video only (uploaded files, or direct .mp4/.webm URLs). Ignored for YouTube/Vimeo iframe embeds."
           >
             <ToolbarItem
@@ -158,24 +158,22 @@ export const VideoMainTab = () => {
           </ToolbarSection>
         ) : null}
 
+        <ToolbarSection
+          title="Accessibility"
+          help="Accessibility title for the video."
+        >
+          <ToolbarItem
+            propKey="title"
+            propType="component"
+            type="text"
+            label="Video Title"
+            labelHide={false}
+            placeholder="Describe the video content"
+          />
+        </ToolbarSection>
+
         <SettingsAiSlot />
       </>
-    ),
-    Properties: (
-      <ToolbarSection
-        title="Properties"
-        icon={SECTION_ICONS["Properties"]}
-        help="Accessibility title for the video."
-      >
-        <ToolbarItem
-          propKey="title"
-          propType="component"
-          type="text"
-          label="Video Title"
-          labelHide={false}
-          placeholder="Describe the video content"
-        />
-      </ToolbarSection>
     ),
   });
 };

@@ -99,7 +99,7 @@ export function SiteAiToneForm({
             <label htmlFor={idNotes} className="toolbar-label mb-2 block font-medium">
               Design notes
             </label>
-            <BgWrap>
+            <BgWrap flexible>
               <div className="flex w-full items-start gap-2">
                 <textarea
                   id={idNotes}

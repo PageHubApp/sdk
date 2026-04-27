@@ -1,15 +1,13 @@
 import { NodeProvider, useEditor, useNode } from "@craftjs/core";
+import { atom, useAtomState } from "@zedux/react";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { IconInput } from "../../inputs/media/IconInput";
 import ActionInput from "../../inputs/action/ActionInput";
-import { ListEditor } from "../../inputs/preset/ListEditor";
+import { CraftListEditor } from "../../inputs/preset/CraftListEditor";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { atom, useAtomState, useAtomInstance } from "@zedux/react";
-import { BatchOperationAtom } from "@/utils/atoms";
-import { TbEdit, TbLayoutNavbar, TbMenu2 } from "react-icons/tb";
+import { TbLayoutNavbar, TbMenu2 } from "react-icons/tb";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
-import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 export const SelectedNavItemAtom = atom<any>("selectednavitem_unified", null);
 
@@ -19,15 +17,15 @@ const NAV_VIEW_STATES = [
 ] as const;
 
 export const NavMainTab = () => {
-  const { actions, query } = useEditor();
+  const { actions } = useEditor();
   const { id, props: nodeProps } = useNode(node => ({ props: node.data?.props }));
   const [activeIndex, setActiveIndex] = useAtomState(SelectedNavItemAtom) as unknown as [
     number | null,
     (v: number | null) => void,
   ];
-  const batchOp = useAtomInstance(BatchOperationAtom);
 
-  // Read this Nav's menu prop
+  // Read this Nav's menu prop (the mobile-menu container's id, used to filter
+  // out the hamburger button from the visible link list).
   const { menu } = useEditor((_, q) => {
     try {
       const node = q.node(id).get();
@@ -38,34 +36,6 @@ export const NavMainTab = () => {
   });
 
   const menuId = menu.id || "mobile-menu";
-
-  // Get child Button nodes — exclude hamburger (click.value === menuId) and Container children (overlay)
-  const { navLinks } = useEditor((_, q) => {
-    try {
-      const node = q.node(id).get();
-      const links = node.data.nodes
-        .map((childId: string) => {
-          try {
-            const childNode = q.node(childId).get();
-            if (childNode.data.name !== "Button") return null;
-            const clickValue = childNode.data.props?.click?.value;
-            if (clickValue === menuId) return null;
-            return {
-              id: childId,
-              text: childNode.data.props.text || "Link",
-              props: childNode.data.props,
-            };
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean);
-      return { navLinks: links };
-    } catch {
-      return { navLinks: [] };
-    }
-  });
-
   const currentView = nodeProps.view || "";
 
   return renderComponentSlots({
@@ -92,48 +62,29 @@ export const NavMainTab = () => {
             </button>
           ))}
         </div>
-        <ListEditor
-          items={navLinks || []}
+        <CraftListEditor
+          parentId={id}
+          childTypeName="Button"
+          filterChild={node => node.data.props?.click?.value !== menuId}
+          mapItem={node => ({ text: node.data.props.text || "Link", props: node.data.props })}
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
           addLabel="Add Link"
-          renderLabel={link => link.text}
-          onDelete={link => actions.delete(link.id)}
-          onAdd={() => {
+          editTooltip="Edit link"
+          renderLabel={(link: any) => link.text}
+          onAdd={({ query, addNode }) => {
             const Button = query.getOptions().resolver.Button;
             if (Button) {
-              batchOp.setState(true);
-              actions.addNodeTree(
-                query
-                  .parseReactElement(
-                    <Button
-                      text="New Link"
-                      url="#"
-                      className="hidden px-(--button-padding-x) py-(--button-padding-y) md:block"
-                    />
-                  )
-                  .toNodeTree(),
-                id
+              addNode(
+                <Button
+                  text="New Link"
+                  url="#"
+                  className="hidden px-(--button-padding-x) py-(--button-padding-y) md:block"
+                />
               );
-              setActiveIndex(navLinks.length);
-              requestAnimationFrame(() => batchOp.setState(false));
             }
           }}
-          extraButtons={link => [
-            <button
-              key="edit"
-              className="text-base-content hover:text-primary flex items-center justify-center transition-colors"
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Edit link"
-              onClick={e => {
-                e.stopPropagation();
-                actions.selectNode(link.id);
-              }}
-            >
-              <TbEdit className="h-3.5 w-3.5" />
-            </button>,
-          ]}
-          renderPopover={link => (
+          renderPopover={(link: any) => (
             <NodeProvider id={link.id}>
               <ActionInput />
               <IconInput

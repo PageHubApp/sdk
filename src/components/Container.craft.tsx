@@ -3,6 +3,7 @@ import React from "react";
 import { Element } from "@craftjs/core";
 import {
   TbAlertTriangle,
+  TbAppWindow,
   TbBadge,
   TbChartBar,
   TbContainer,
@@ -24,6 +25,7 @@ import {
   tag,
   type ToHTMLFn,
 } from "../utils/static-html";
+import { Button } from "./Button";
 import { Container } from "./Container";
 import { ContainerPaddingOverlay } from "./ContainerPaddingOverlay";
 import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
@@ -187,6 +189,88 @@ function buildStatChildren() {
   ];
 }
 
+function buildModalChildren() {
+  // Generate a unique anchor per insert so dropping multiple Modal presets on
+  // one page doesn't collide. Trigger and backdrop share this closure value.
+  const anchor = `modal-${Math.random().toString(36).slice(2, 8)}`;
+  return [
+    <Element
+      key="trigger"
+      is={Button}
+      custom={{ displayName: "Open Modal" }}
+      text="Open Modal"
+      url=""
+      action={{
+        type: "show-hide",
+        target: anchor,
+        direction: "show",
+        trigger: "click",
+        method: "class",
+      }}
+      className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold"
+    />,
+    <Element
+      key="overlay"
+      canvas
+      is={Container}
+      custom={{ displayName: "Modal Backdrop" }}
+      canDelete={true}
+      canEditName={true}
+      anchor={anchor}
+      className="fixed top-0 left-0 z-[1200] hidden h-screen w-screen flex-col items-center justify-center bg-black/50 px-4 py-4"
+      action={
+        {
+          type: "show-hide",
+          target: anchor,
+          direction: "hide",
+          trigger: "click",
+          method: "class",
+        } as any
+      }
+    >
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Modal Content" }}
+        canDelete={true}
+        canEditName={true}
+        className="gap-container px-container-x py-container-y bg-base-100 rounded-box flex w-full max-w-lg flex-col shadow-xl relative"
+        handlers={{ onClick: "event.stopPropagation()" }}
+      >
+        <Element
+          is={Text}
+          custom={{ displayName: "Title" }}
+          tagName="h3"
+          text='<h3 class="text-xl font-bold font-heading">Modal Title</h3>'
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Text}
+          custom={{ displayName: "Body" }}
+          text='<p class="text-base-content/80">Your modal content goes here.</p>'
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "Close" }}
+          text="Got it"
+          url=""
+          action={{
+            type: "show-hide",
+            target: anchor,
+            direction: "hide",
+            trigger: "click",
+            method: "class",
+          }}
+          className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold self-end"
+        />
+      </Element>
+    </Element>,
+  ];
+}
+
 /**
  * Extra Container-based presets for the "Components" toolbox category.
  * Same pattern as NAV_EXTRA_PRESETS — Container element, separate category.
@@ -232,6 +316,14 @@ export const COMPONENT_EXTRA_PRESETS = [
     element: Container,
     props: { className: "flex flex-col items-center gap-space-xs text-center" },
     children: buildStatChildren,
+  },
+  {
+    label: "Modal",
+    description: "Click-triggered dialog — trigger button + dimmed backdrop + content panel, all plain Containers wired with show-hide.",
+    icon: TbAppWindow,
+    element: Container,
+    props: { className: "contents" },
+    children: buildModalChildren,
   },
 ];
 
@@ -424,111 +516,6 @@ export const ContainerDef = defineComponent(
         label: "XL Padding",
         category: "Padding",
         description: "Extra-large padding on all sides using the density-aware spatial scale",
-      },
-      // Width
-      {
-        name: "w-full",
-        label: "Full",
-        category: "Width",
-        description: "Stretches to 100% of the parent width",
-      },
-      { name: "w-1/2", label: "Half", category: "Width", description: "50% of the parent width" },
-      { name: "w-1/3", label: "Third", category: "Width", description: "33% of the parent width" },
-      {
-        name: "w-2/3",
-        label: "Two Thirds",
-        category: "Width",
-        description: "66% of the parent width",
-      },
-      // Height
-      {
-        name: "min-h-screen",
-        label: "Full Screen",
-        category: "Height",
-        description: "Minimum height of 100vh — good for full-page hero sections",
-      },
-      {
-        name: "min-h-[50vh]",
-        label: "Half Screen",
-        category: "Height",
-        description: "Minimum height of 50vh — good for mid-sized hero sections",
-      },
-      // Layout
-      {
-        name: "mx-auto",
-        label: "Centered",
-        category: "Layout",
-        description: "Centers a block element horizontally using auto left/right margins",
-      },
-      {
-        name: "overflow-hidden",
-        label: "Clip Overflow",
-        category: "Layout",
-        description:
-          "Clips content to the container bounds — required when using rounded corners with images",
-      },
-      {
-        name: "items-center",
-        label: "Center Items",
-        category: "Layout",
-        description: "Vertically centers flex children (cross-axis alignment)",
-      },
-      {
-        name: "justify-center",
-        label: "Center Content",
-        category: "Layout",
-        description: "Horizontally centers flex children (main-axis alignment)",
-      },
-      // Color surfaces
-      {
-        name: "bg-base-100",
-        label: "Base 100",
-        category: "Surface",
-        description: "Primary page background color",
-        exclusive: true,
-      },
-      {
-        name: "bg-base-200",
-        label: "Base 200",
-        category: "Surface",
-        description: "Slightly raised surface — good for cards and sidebars",
-        exclusive: true,
-      },
-      {
-        name: "bg-base-content",
-        label: "Dark",
-        category: "Surface",
-        description:
-          "High-contrast dark background using the content color — use text-base-100 for text",
-        exclusive: true,
-      },
-      {
-        name: "bg-primary",
-        label: "Primary",
-        category: "Surface",
-        description: "Primary brand color background — use text-primary-content for text",
-        exclusive: true,
-      },
-      {
-        name: "bg-secondary",
-        label: "Secondary",
-        category: "Surface",
-        description: "Secondary brand color background — use text-secondary-content for text",
-        exclusive: true,
-      },
-      {
-        name: "bg-accent",
-        label: "Accent",
-        category: "Surface",
-        description: "Accent color background — use text-accent-content for text",
-        exclusive: true,
-      },
-      {
-        name: "bg-neutral",
-        label: "Neutral",
-        category: "Surface",
-        description: "Neutral dark background — use text-neutral-content for text",
-        exclusive: true,
       },
     ],
   },

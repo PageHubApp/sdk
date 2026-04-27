@@ -2,6 +2,7 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headless
 import type { CSSProperties } from "react";
 import { useCallback, useRef, useState } from "react";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
+import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 
 /** Same sentinel as ToolbarDropdown — not a real preset name */
 const EMPTY = "__ph_empty__";
@@ -165,19 +166,25 @@ export function TypographyPresetSelect({
 
   return (
     <Listbox value={internalValue} onChange={handleChange}>
-      <div className="input-wrapper flex w-full items-center gap-2">
+      <ToolbarRowFrame
+        trailing={
+          <span
+            className="text-neutral-content flex size-5 shrink-0 items-center justify-center"
+            aria-hidden
+          >
+            <ChevronDown />
+          </span>
+        }
+      >
         <ListboxButton
           id={id}
-          className="input-plain flex flex-1 items-center justify-between gap-1 focus:border-transparent focus:outline-none active:border-transparent active:outline-none"
-          aria-label="Typography preset"
+          className="flex h-full min-w-0 flex-1 items-center px-1 text-left text-xs focus:border-transparent focus:outline-none active:border-transparent active:outline-none"
+          aria-label="Text style"
           onClick={handleButtonClick}
         >
           <span className="truncate">{triggerLabel}</span>
-          <span className="-mr-1.5 shrink-0 opacity-50">
-            <ChevronDown />
-          </span>
         </ListboxButton>
-      </div>
+      </ToolbarRowFrame>
 
       <ListboxOptions
         anchor="bottom start"

@@ -365,7 +365,21 @@ export function generateTypographyCSSClasses(typography: any[]): string {
     const className = `ph-${toCSSVarName(font.name)}`;
     const varName = toCSSVarName(font.name);
 
-    // Generate CSS class that uses CSS variables
+    // Optional fields are emitted only when set on the preset so legacy
+    // presets keep producing the same output.
+    const optional: string[] = [];
+    if (font.color) {
+      optional.push(`  color: var(--${varName}-color, ${font.color});`);
+    }
+    if (font.textDecoration) {
+      optional.push(
+        `  text-decoration: var(--${varName}-text-decoration, ${font.textDecoration});`
+      );
+    }
+    if (font.textAlign) {
+      optional.push(`  text-align: var(--${varName}-text-align, ${font.textAlign});`);
+    }
+
     classes.push(`
 .${className} {
   font-family: var(--${varName}-font-family, ${font.fontFamily || "inherit"});
@@ -374,6 +388,7 @@ export function generateTypographyCSSClasses(typography: any[]): string {
   line-height: var(--${varName}-line-height, ${font.lineHeight || "1.5"});
   letter-spacing: var(--${varName}-letter-spacing, ${font.letterSpacing || "normal"});
   text-transform: var(--${varName}-text-transform, ${font.textTransform || "none"});
+${optional.join("\n")}
 }`);
   });
 
@@ -412,6 +427,15 @@ export function generateTypographyCSSVariables(typography: any[]): string {
     }
     if (font.textTransform) {
       variables.push(`  --${varName}-text-transform: ${font.textTransform};`);
+    }
+    if (font.color) {
+      variables.push(`  --${varName}-color: ${font.color};`);
+    }
+    if (font.textDecoration) {
+      variables.push(`  --${varName}-text-decoration: ${font.textDecoration};`);
+    }
+    if (font.textAlign) {
+      variables.push(`  --${varName}-text-align: ${font.textAlign};`);
     }
   });
 

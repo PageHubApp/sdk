@@ -20,3 +20,9 @@ export type {
   SearchableMenuPopoverHandle,
 } from "./SearchableMenuPopover";
 export { PopoverChip } from "./PopoverChip";
+export { InlineClearButton } from "./InlineClearButton";
+export { ToolbarRowFrame } from "./ToolbarRowFrame";
+export { ChevronTrigger } from "./ChevronTrigger";
+export { ToolbarIconButton } from "./ToolbarIconButton";
+export { MiniPreviewTile } from "./MiniPreviewTile";
+export { LabeledAddChip } from "./LabeledAddChip";

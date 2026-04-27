@@ -51,9 +51,26 @@ function resolveClassKey(cls: string): string | undefined {
   const fontKey = fontUtilityStemToKey(cls);
   if (fontKey) return fontKey;
 
-  // Prefix matching for arbitrary/dynamic values
+  // Prefix matching for arbitrary/dynamic values.
+  //
+  // Three prefixes are overloaded between a structural utility and a color
+  // token. When the color form isn't in the reverse index (DaisyUI semantic
+  // names, theme vars), the bare prefix loop would otherwise resolve it to
+  // the structural key and shadow the real structural class in
+  // `getClassForView` (left-to-right iteration returns the first match).
+  // Mirror the same gates that `classNameToVar` uses in `tailwind-styles.ts`.
   for (const [prefix, key] of PREFIX_ENTRIES) {
-    if (cls.startsWith(prefix)) return key;
+    if (cls.startsWith(prefix)) {
+      // `text-5xl` is a font size; `text-base-content` is a color.
+      if (key === "fontSize" && !isTextFontSizeUtility(cls)) return "text";
+      // `border-2` is width; `border-primary` is color.
+      if (key === "border" && !isBorderNonColorUtility(cls)) return "borderColor";
+      // `font-bold` is a weight (caught by the reverse index above);
+      // anything left starting with `font-` is a family token (e.g.
+      // `font-heading`, `font-body`, `font-accent` per CLAUDE.md).
+      if (key === "fontWeight") return "fontFamily";
+      return key;
+    }
   }
   return undefined;
 }
@@ -75,21 +92,20 @@ function isBorderNonColorUtility(base: string): boolean {
   return false;
 }
 
-const RING_OUTLINE_PROP_KEYS = new Set([
-  "ringWidth",
-  "ringColor",
-  "ringOffsetWidth",
-  "ringOffsetColor",
-  "outlineWidth",
-  "outlineStyle",
-  "outlineColor",
-  "outlineOffset",
-]);
-
 /**
  * Aligns toolbar `propKey` values with `resolveClassKey` / `TailwindStyles` category names.
  * Used by getClassForView + removeClassForView so reads match writes (ColorInput, UniversalInput, etc.).
+ *
+ * Most propKeys map straight to a `resolveClassKey` result. The few aliased
+ * pairs (the toolbar uses one name, `TailwindStyles` uses another) are listed
+ * explicitly below; everything else falls through to the generic equality.
  */
+const PROP_KEY_ALIAS: Record<string, string> = {
+  bgColor: "background",
+  textColor: "text",
+  color: "text",
+};
+
 export function classPropKeyMatches(base: string, propKey: string): boolean {
   if (propKey === "placeholderColor") {
     if (base.startsWith("placeholder:")) {
@@ -97,27 +113,24 @@ export function classPropKeyMatches(base: string, propKey: string): boolean {
     }
     return false;
   }
-
-  if (propKey === "borderColor") {
-    const resolved = resolveClassKey(base);
-    if (resolved === "borderColor") return true;
-    if (resolved === "border" && !isBorderNonColorUtility(base)) return true;
-    return false;
-  }
-
-  if (RING_OUTLINE_PROP_KEYS.has(propKey)) {
-    return resolveClassKey(base) === propKey;
-  }
-
   const resolved = resolveClassKey(base);
-  if (resolved === propKey) return true;
+  if (resolved === undefined) return false;
+  const target = PROP_KEY_ALIAS[propKey] ?? propKey;
+  return resolved === target;
+}
 
-  if (propKey === "color") {
-    if (resolved === "text") return true;
-    if (resolved === "fontSize" && base.startsWith("text-") && !isTextFontSizeUtility(base))
-      return true;
-  }
-  return false;
+/**
+ * Map a Tailwind class to its toolbar prop key.
+ *
+ * Thin wrapper over `resolveClassKey` that preserves the legacy "color" alias
+ * for text-color tokens — the toolbar / `displayLabel` keying system was
+ * authored against `color`, while `TailwindStyles` stores the same group under
+ * `text`. The shadow-bug gates (`text-` / `border-` / `font-` overloads) live
+ * in `resolveClassKey`, so this wrapper inherits them automatically.
+ */
+export function classNameToVar(name: string): string | undefined {
+  const k = resolveClassKey(name);
+  return k === "text" ? "color" : k;
 }
 
 /** v1 variant segments (canonical stack: responsive, then `dark`, then `hover` — matches twMerge-friendly ordering). */

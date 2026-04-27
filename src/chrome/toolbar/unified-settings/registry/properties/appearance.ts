@@ -32,20 +32,44 @@ const BORDER_WIDTH_TYPES: ValueType[] = ["tailwind", "calc", "px"];
 
 export const appearanceProperties: PropertyDef[] = [
   // ─── Appearance (shadow + opacity) ───────────────────────────────
+  // Shadow is a Size + Color bundle (Tailwind v4 supports `shadow-<color>` so
+  // size and tint are independent). Same disambiguation as Border / Ring —
+  // size uses tailwindKey "shadow" (finite preset list), color uses the
+  // `shadow-` prefix via the color picker.
   {
     id: "shadow",
     label: "Shadow",
     section: "styles",
-    keywords: ["shadow", "drop", "box", "elevation", "depth"],
-    input: {
-      type: "universal",
-      propTag: "shadow",
-      allowedTypes: ["tailwind", "calc"],
-      showVarSelector: true,
-    },
+    keywords: ["shadow", "drop", "box", "elevation", "depth", "color"],
     hideKey: "shadow",
     sortOrder: 5,
-    inline: true,
+    input: {
+      type: "bundle",
+      properties: [
+        {
+          id: "shadowSize",
+          label: "Size",
+          section: "styles",
+          keywords: ["shadow", "size", "elevation", "depth"],
+          input: {
+            type: "universal",
+            propTag: "shadow",
+            tailwindKey: "shadow",
+            allowedTypes: ["tailwind", "calc"],
+            showVarSelector: true,
+          },
+          inline: true,
+        },
+        {
+          id: "shadowColor",
+          label: "Color",
+          section: "styles",
+          keywords: ["shadow", "color", "tint"],
+          input: { type: "color", prefix: "shadow" },
+          inline: true,
+        },
+      ],
+    },
   },
   {
     id: "opacity",

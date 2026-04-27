@@ -1,15 +1,13 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import { TailwindStyles } from "@/utils/tailwind";
 import { changeProp } from "../../../viewport/viewportExports";
 import { ViewAtom } from "../../../viewport/atoms";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { ColorInput } from "./ColorInput";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { useCallback, useMemo } from "react";
-
-const DIRECTIONS = TailwindStyles.gradients as string[];
 
 const DIRECTION_ARROWS: Record<string, string> = {
   "bg-linear-to-tl": "↖",
@@ -122,24 +120,16 @@ export const GradientInput = () => {
   return (
     <div className="flex flex-col gap-2">
       {/* Direction row — always visible, consistent layout */}
-      <div className="border-base-300 flex items-center gap-px overflow-hidden rounded-md border">
-        {ROW_ORDER.map(dir => (
-          <button
-            key={dir}
-            type="button"
-            onClick={() => setDirection(direction === dir ? "" : dir)}
-            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content={dir.replace("bg-linear-to-", "to ").toUpperCase()}
-            className={`flex flex-1 items-center justify-center py-1.5 text-xs transition-colors ${
-              direction === dir
-                ? "bg-primary text-primary-content"
-                : "bg-neutral/30 text-neutral-content hover:bg-neutral"
-            }`}
-          >
-            {DIRECTION_ARROWS[dir]}
-          </button>
-        ))}
-      </div>
+      <ToolbarSegmentedControl
+        tooltipId={PAGEHUB_RTT_GLOBAL_ID}
+        value={direction}
+        onChange={dir => setDirection(direction === dir ? "" : dir)}
+        options={ROW_ORDER.map(dir => ({
+          value: dir,
+          label: DIRECTION_ARROWS[dir],
+          tooltip: dir.replace("bg-linear-to-", "to ").toUpperCase(),
+        }))}
+      />
 
       {/* Preview bar */}
       {hasGradient && (

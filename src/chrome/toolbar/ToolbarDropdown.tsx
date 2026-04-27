@@ -1,6 +1,7 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { Children, isValidElement, useCallback, useMemo, useRef, useState } from "react";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
+import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 
 const Label = ({ value }) => <label>{value}</label>;
@@ -62,35 +63,6 @@ const ChevronDown = () => (
     strokeLinejoin="round"
   >
     <path d="m6 9 6 6 6-6" />
-  </svg>
-);
-
-const Check = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-
-const Dash = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-  >
-    <line x1="6" y1="12" x2="18" y2="12" />
   </svg>
 );
 
@@ -170,6 +142,7 @@ export const ToolbarDropdown = ({
   tooltipContent,
   tooltipPlace = "bottom",
   tooltipOffset = 10,
+  chevron = false,
 }: any) => {
   const options = useOptions(children, valueLabels, propKey);
   const internalValue = toInternal(String(value ?? ""));
@@ -191,7 +164,7 @@ export const ToolbarDropdown = ({
   const trigger = (
     <ListboxButton
       id={propKey ? `input-${propKey}` : undefined}
-      className="input-plain aria-expanded:bg-base-300/15 flex flex-1 items-center justify-between gap-1 outline-none focus:outline-none focus-visible:outline-none"
+      className="aria-expanded:bg-base-300/15 flex h-full min-w-0 flex-1 items-center px-1 text-left text-xs outline-none focus:outline-none focus-visible:outline-none"
       aria-label={title || (typeof placeholder === "string" ? placeholder : "Select option")}
       onClick={handleButtonClick}
       data-tooltip-id={tooltipId}
@@ -200,11 +173,25 @@ export const ToolbarDropdown = ({
       data-tooltip-offset={tooltipOffset}
     >
       <span className="truncate">{selectedLabel ?? placeholder ?? ""}</span>
-      <span className="-mr-1.5 shrink-0 opacity-50">
-        <ChevronDown />
-      </span>
     </ListboxButton>
   );
+
+  const chevronSlot = chevron ? (
+    <span
+      className="text-neutral-content flex size-5 shrink-0 items-center justify-center"
+      aria-hidden
+    >
+      <ChevronDown />
+    </span>
+  ) : null;
+
+  const trailing =
+    append || chevronSlot ? (
+      <>
+        {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
+        {chevronSlot}
+      </>
+    ) : null;
 
   return (
     <Listbox value={internalValue} onChange={handleChange}>
@@ -215,15 +202,12 @@ export const ToolbarDropdown = ({
       )}
 
       {wrap === "control" ? (
-        <div className="flex w-full items-center gap-2">
+        <div className="flex w-full items-center gap-1.5">
           {trigger}
-          {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
+          {trailing}
         </div>
       ) : (
-        <div className="input-wrapper flex w-full items-center gap-2">
-          {trigger}
-          {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
-        </div>
+        <ToolbarRowFrame trailing={trailing}>{trigger}</ToolbarRowFrame>
       )}
 
       <ListboxOptions
@@ -245,12 +229,14 @@ export const ToolbarDropdown = ({
           </div>
           {options.map((opt, i) => {
             if ("group" in opt && opt.group) {
+              const prev = options[i - 1];
+              const showDivider = prev && !("group" in prev && prev.group);
               return (
-                <div
-                  key={`group-${opt.group}`}
-                  className="text-neutral-content px-2 pt-2 pb-0.5 text-[10px] font-semibold tracking-wider uppercase first:pt-1"
-                >
-                  {opt.group}
+                <div key={`group-${opt.group}`}>
+                  {showDivider && <div className="bg-border mx-1.5 my-1 h-px" />}
+                  <div className="text-base-content/55 px-2 pt-1 pb-0.5 text-[10px] font-semibold tracking-[0.08em] uppercase">
+                    {opt.group}
+                  </div>
                 </div>
               );
             }
@@ -258,15 +244,11 @@ export const ToolbarDropdown = ({
             const nextIsReal = isNone && options[i + 1]?.value !== EMPTY;
             return (
               <span key={opt.value}>
-                <ListboxOption value={opt.value} className="ph-select-item">
-                  {({ selected }) => (
-                    <>
-                      <span className="flex w-4 shrink-0 items-center justify-center">
-                        {selected && (isNone ? <Dash /> : <Check />)}
-                      </span>
-                      {isNone ? <span className="text-neutral-content">None</span> : opt.label}
-                    </>
-                  )}
+                <ListboxOption
+                  value={opt.value}
+                  className="ph-select-item data-selected:bg-primary/10 data-selected:text-primary"
+                >
+                  {isNone ? <span className="text-neutral-content">None</span> : opt.label}
                 </ListboxOption>
                 {nextIsReal && <div className="bg-border my-1 h-px" />}
               </span>

@@ -3,8 +3,7 @@ import { ToolbarItem } from "../../toolbar/ToolbarItem";
 import { ColorInput } from "../../toolbar/inputs/color/ColorInput";
 import { NodeToolWrapper } from "../../inline-tools/NodeDialog";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
-import { AiOutlineAlignRight } from "react-icons/ai";
-import { TbAlignCenter, TbAlignLeft } from "react-icons/tb";
+import { TbAlignCenter, TbAlignLeft, TbAlignRight } from "react-icons/tb";
 
 export function TextSettingsTopNodeTool() {
   // Get the Tiptap editor from context
@@ -115,7 +114,7 @@ export function TextSettingsTopNodeTool() {
         options={[
           { value: "text-left", label: <TbAlignLeft /> },
           { value: "text-center", label: <TbAlignCenter /> },
-          { value: "text-right", label: <AiOutlineAlignRight /> },
+          { value: "text-right", label: <TbAlignRight /> },
         ]}
       />
     </NodeToolWrapper>

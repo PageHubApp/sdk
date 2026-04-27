@@ -66,11 +66,13 @@
 
 .pagehub-sdk-root.ph-select-content .ph-select-scroll-indicator {
   @apply sticky z-10 flex w-full cursor-default items-center justify-center;
-  height: 24px;
+  height: 0;
   opacity: 0;
   pointer-events: none;
+  overflow: hidden;
 }
 .pagehub-sdk-root.ph-select-content .ph-select-scroll-indicator.active {
+  height: 24px;
   opacity: 1;
   pointer-events: auto;
 }

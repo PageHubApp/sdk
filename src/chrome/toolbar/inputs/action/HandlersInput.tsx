@@ -6,6 +6,7 @@
 import { useNode } from "@craftjs/core";
 import { useMemo } from "react";
 import { TbTrash } from "react-icons/tb";
+import { LabeledAddChip } from "@/chrome/primitives/LabeledAddChip";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { CodeEditor } from "../typography/CodeEditor";
@@ -88,6 +89,17 @@ export default function HandlersInput() {
 
   const takenEvents = new Set(rows.map(r => r.event));
 
+  // Empty state collapses to a single labeled chip — no section header, no
+  // helper preamble. The header / explainer reappear only when at least one
+  // handler is being edited (the explainer is the user's prompt at that point).
+  if (rows.length === 0) {
+    return (
+      <div className="mt-2">
+        <LabeledAddChip label="Handlers" ariaLabel="Add handler" onClick={addRow} />
+      </div>
+    );
+  }
+
   return (
     <div className="border-base-300 mt-3 flex flex-col gap-2 border-t pt-3">
       <span className="text-neutral-content text-[10px] font-medium uppercase tracking-wide">
@@ -138,9 +150,7 @@ export default function HandlersInput() {
         </div>
       ))}
 
-      <ToolbarDashedButton onClick={addRow}>
-        {rows.length === 0 ? "Add Handler" : "Add Another Handler"}
-      </ToolbarDashedButton>
+      <ToolbarDashedButton onClick={addRow}>Add Another Handler</ToolbarDashedButton>
     </div>
   );
 }

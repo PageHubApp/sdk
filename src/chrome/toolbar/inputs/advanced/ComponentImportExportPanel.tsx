@@ -1,9 +1,9 @@
 /**
- * ActionPanel — heavy lazy chunk: FloatingPanel + full ActionInput body.
- * Loaded on first open by ActionInputPopover.
+ * ComponentImportExportPanel — heavy lazy chunk: FloatingPanel hosting the
+ * existing ComponentImportExport editor body unchanged.
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
-import ActionInput from "./ActionInput";
+import { ComponentImportExport } from "./ComponentImportExport";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -12,7 +12,7 @@ interface PanelProps {
   defaultHeight: number;
 }
 
-export default function ActionPanel({
+export default function ComponentImportExportPanel({
   initialPosition,
   onClose,
   defaultWidth,
@@ -22,19 +22,20 @@ export default function ActionPanel({
     <FloatingPanel
       isOpen
       onClose={onClose}
-      title="Action"
-      storageKey="action-input"
+      title="Import / Export"
+      storageKey="component-import-export"
+      autoSize={false}
       defaultWidth={defaultWidth}
       defaultHeight={defaultHeight}
-      minWidth={300}
-      maxWidth={520}
-      minHeight={240}
+      minWidth={340}
+      maxWidth={640}
+      minHeight={360}
       initialPosition={initialPosition}
       persistSize={false}
       zIndex={1100}
       scrollable
     >
-      <ActionInput />
+      <ComponentImportExport />
     </FloatingPanel>
   );
 }

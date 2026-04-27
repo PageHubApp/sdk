@@ -1,4 +1,5 @@
 import { UserComponent } from "@craftjs/core";
+import { HeaderMainTab } from "../chrome/toolbar/unified-settings/mainTabs/HeaderMainTab";
 import { Container } from "./Container";
 import { LazyUnifiedSettings } from "./LazyUnifiedSettings";
 
@@ -8,8 +9,9 @@ export const Header: UserComponent<any> = (props: any) => {
 
 Object.defineProperty(Header, "craft", {
   get() {
+    const containerCraft: any = Container.craft || {};
     return {
-      ...Container.craft,
+      ...containerCraft,
       displayName: "Header",
       props: {
         canDelete: false,
@@ -28,6 +30,10 @@ Object.defineProperty(Header, "craft", {
       },
       related: {
         toolbar: LazyUnifiedSettings,
+      },
+      toolbar: {
+        ...(containerCraft.toolbar || {}),
+        settings: HeaderMainTab,
       },
     };
   },

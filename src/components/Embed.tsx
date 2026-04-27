@@ -94,7 +94,11 @@ export function generateEmbedCode(service: EmbedService, url: string): string | 
     }
     case "kofi": {
       const username = trimmed.replace(/^https?:\/\/(ko-fi\.com\/)?/, "").replace(/\/$/, "");
-      return `<iframe id="kofiframe" src="https://ko-fi.com/${username}/?hidefeed=true&widget=true&embed=true" style="border:none;width:100%;padding:4px;background:#f9f9f9;" height="712" title="Ko-fi"></iframe>`;
+      // Background omitted on purpose — CSS vars (var(--base-200) etc.) don't cross
+      // the iframe document boundary, and a hardcoded #f9f9f9 reads as a glaring light
+      // box on dark themes. Ko-fi's own iframe content fills the area; the wrapper
+      // background only ever showed during slow loads.
+      return `<iframe id="kofiframe" src="https://ko-fi.com/${username}/?hidefeed=true&widget=true&embed=true" style="border:none;width:100%;padding:4px;" height="712" title="Ko-fi"></iframe>`;
     }
     case "typeform": {
       const formId = trimmed.match(/to\/([a-zA-Z0-9]+)/)?.[1] || trimmed;

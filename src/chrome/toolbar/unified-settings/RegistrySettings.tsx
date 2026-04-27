@@ -10,20 +10,18 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { BiPaint } from "react-icons/bi";
-import { TbBoxPadding, TbMouse, TbSettings } from "react-icons/tb";
+import { TbBoxPadding, TbBrush, TbMouse, TbSettings } from "react-icons/tb";
 import { useDefaultTab, useScrollToActiveTab } from "../../../utils/lib";
 import { registerUnifiedSettings } from "../../../components/LazyUnifiedSettings";
 import { useSetAtomState } from "../../../utils/atoms";
 import { ToolboxMenu, toolboxMenuInitialState } from "../../rendering/toolboxMenuAtom";
 import { resolveToolboxIcon } from "../../viewport/toolbox/resolveToolboxIcon";
-import { EditorModeAtom, TabAtom } from "../../viewport/atoms";
+import { TabAtom } from "../../viewport/atoms";
 import { TBWrap } from "../helpers/SettingsHelper";
 import { UnifiedTabBody } from "../UnifiedTab";
 import { AccordionProvider, useAccordionContext } from "../AccordionContext";
 import { Notice } from "../inputs/Notice";
 import { ToolbarSection } from "../ToolbarSection";
-import { ModifiersInput } from "../inputs/modifiers/ModifiersInput";
 import { PropertyRenderer } from "./PropertyRenderer";
 import { PropertySection } from "./PropertySection";
 import { InspectorPinProvider } from "./inspectorPin/InspectorPinContext";
@@ -43,14 +41,14 @@ import "./registry";
 // ─── Fixed tab structure ───────────────────────────────────────────────────
 
 type TabId = "component" | "layout" | "design" | "interactions" | "advanced";
-type TabDef = { id: TabId; title: string; icon: React.ReactNode; advanced?: boolean };
+type TabDef = { id: TabId; title: string; icon: React.ReactNode };
 
 const TABS: TabDef[] = [
   { id: "component", title: "Component", icon: null },
   { id: "layout", title: "Layout", icon: <TbBoxPadding /> },
-  { id: "design", title: "Design", icon: <BiPaint /> },
-  { id: "interactions", title: "Interactions", icon: <TbMouse />, advanced: true },
-  { id: "advanced", title: "Advanced", icon: <TbSettings />, advanced: true },
+  { id: "design", title: "Design", icon: <TbBrush /> },
+  { id: "interactions", title: "Interactions", icon: <TbMouse /> },
+  { id: "advanced", title: "Advanced", icon: <TbSettings /> },
 ];
 
 const TAB_IDS = TABS.map(t => t.id) as readonly TabId[];
@@ -99,11 +97,7 @@ const StaticTabContent = React.memo(function StaticTabContent({
 }: {
   tabId: TabId;
 }) {
-  const mode = useAtomValue(EditorModeAtom);
-  const sections = useMemo(() => {
-    const all = SECTIONS_BY_TAB[tabId];
-    return mode === "design" ? all : all.filter(s => !s.advanced);
-  }, [tabId, mode]);
+  const sections = SECTIONS_BY_TAB[tabId];
 
   return (
     <>
@@ -111,8 +105,6 @@ const StaticTabContent = React.memo(function StaticTabContent({
         switch (section.id) {
           case "component":
             return <ComponentSection key={section.id} />;
-          case "modifiers":
-            return <ModifiersInput key={section.id} />;
           case "advanced-settings":
             return <AdvancedSettingsSection key={section.id} />;
           default:
@@ -160,7 +152,6 @@ function SearchResults({ search }: { search: string }) {
 const STATIC_SECTIONS = TABS.map(tab => ({
   id: tab.id,
   title: tab.title,
-  advanced: tab.advanced,
   children: <StaticTabContent tabId={tab.id} />,
 }));
 
@@ -188,7 +179,6 @@ export const RegistrySettings = () => {
   const [activeTab, setActiveTab] = useAtomState(TabAtom);
   const setMenu = useSetAtomState(ToolboxMenu);
   const search = useAtomValue(SettingsSearchAtom);
-  const editorMode = useAtomValue(EditorModeAtom);
 
   const setHiddenKeys = useSetAtomState(HiddenKeysAtom);
   const toolbar = getToolbarConfig(query, nodeData);
@@ -207,25 +197,19 @@ export const RegistrySettings = () => {
   const isInitialMount = useScrollToActiveTab(activeTab, setActiveTab, id);
 
   // Head: update component tab title + icon via ref mutation — no new array
-  const headRef = useRef(TABS.map(t => ({ title: t.title, icon: t.icon, advanced: t.advanced })));
+  const headRef = useRef(TABS.map(t => ({ title: t.title, icon: t.icon })));
   headRef.current[0].title = displayName || "Component";
   const NodeIcon = resolveToolboxIcon(toolbar?.icon);
   headRef.current[0].icon = <NodeIcon />;
 
-  // Filter tabs + sections by editor mode. In Content mode, advanced tabs disappear.
-  const visibleHead = useMemo(
-    () => (editorMode === "design" ? headRef.current : headRef.current.filter(h => !h.advanced)),
-    [editorMode, displayName, toolbar?.icon]
-  );
+  const visibleHead = headRef.current;
   const visibleSections = useMemo(
     () =>
-      (editorMode === "design" ? STATIC_SECTIONS : STATIC_SECTIONS.filter(s => !s.advanced)).map(
-        (s, i) => ({
-          title: i === 0 ? displayName || "Component" : s.title,
-          children: s.children,
-        })
-      ),
-    [editorMode, displayName]
+      STATIC_SECTIONS.map((s, i) => ({
+        title: i === 0 ? displayName || "Component" : s.title,
+        children: s.children,
+      })),
+    [displayName]
   );
 
   useDefaultTab(visibleHead, activeTab, setActiveTab);

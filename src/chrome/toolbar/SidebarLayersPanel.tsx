@@ -76,11 +76,13 @@ export function SidebarLayersPanel() {
       <button
         type="button"
         onClick={toggle}
-        className="border-base-300 text-sidebar-foreground/70 hover:text-sidebar-foreground flex w-full shrink-0 items-center gap-1.5 border-t px-3 py-2.5 text-[11px] leading-none font-semibold tracking-wide uppercase transition-colors"
+        className="border-base-300 text-base-content flex w-full shrink-0 items-center gap-1.5 border-t px-3 py-3 text-xs font-semibold transition-colors"
       >
-        <TbLayoutGrid className="size-3 shrink-0 opacity-70" />
+        <span className="text-neutral-content opacity-70">
+          <TbLayoutGrid className="size-3 shrink-0" />
+        </span>
         <span>Layers</span>
-        <TbChevronUp className="ml-auto size-3" />
+        <TbChevronUp className="text-neutral-content ml-auto size-3" />
       </button>
     );
   }
@@ -97,11 +99,13 @@ export function SidebarLayersPanel() {
       </div>
 
       {/* Header */}
-      <div className="text-sidebar-foreground/70 flex shrink-0 items-center gap-1.5 px-3 pt-1 pb-2">
-        <TbLayoutGrid className="size-3 shrink-0 opacity-70" />
-        <span className="text-[11px] font-semibold tracking-wide uppercase">Layers</span>
+      <div className="text-base-content flex shrink-0 items-center gap-1.5 px-3 py-3 text-xs font-semibold">
+        <span className="text-neutral-content opacity-70">
+          <TbLayoutGrid className="size-3 shrink-0" />
+        </span>
+        <span>Layers</span>
 
-        <div className="ml-auto flex items-center gap-1.5">
+        <div className="text-neutral-content ml-auto flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => setDialogOpen(true)}
