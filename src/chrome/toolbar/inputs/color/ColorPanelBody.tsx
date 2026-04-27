@@ -1,29 +1,24 @@
 /**
  * ColorPanelBody — Framer-style vertical color picker hosted inside a
- * FloatingPanel. Composed entirely of existing pieces:
+ * FloatingPanel. Composed of:
  *
- *  - SketchPicker (already a dep, used by CreateTokenDialog)
- *  - PaletteSection / RecentColorsSection / TailwindColorsSection / SpecialColorsSection
+ *  - SketchPicker (HSV / RGB / hex)
+ *  - DesignSystemPalette (searchable list with edit/create/delete)
+ *  - RecentColorsSection / TailwindColorsSection / SpecialColorsSection
  *    (extracted from ColorPickerSidebarDialog)
- *  - CreateTokenDialog (palette token authoring)
- *  - useEyeDropper (already used by ColorPickerSidebarDialog)
+ *  - useEyeDropper
  *
  * Local state — does not go through ColorPickerSidebarAtom. Owns its own
  * `value` reads via `value`/`onChange` props passed by ColorInputPopover.
  */
-import { ROOT_NODE } from "@craftjs/utils";
-import { useEditor } from "@craftjs/core";
-import { SketchPicker } from "@hello-pangea/color-picker";
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { TbColorPicker, TbPlus, TbTrash } from "react-icons/tb";
+import { SketchPicker } from "@hello-pangea/color-picker";
+import { TbColorPicker, TbTrash } from "react-icons/tb";
 import useEyeDropper from "use-eye-dropper";
-import { resolveTheme } from "@/utils/design/resolveTheme";
 import { phStorage } from "@/utils/phStorage";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { CreateTokenDialog } from "./CreateTokenDialog";
+import { DesignSystemPalette } from "./DesignSystemPalette";
 import {
-  PaletteSection,
   RecentColorsSection,
   SpecialColorsSection,
   TailwindColorsSection,
@@ -36,11 +31,6 @@ interface ColorPanelBodyProps {
   onChange: (data: { type: "palette" | "hex" | "rgb" | "class"; value: any }) => void;
   /** Optional clear handler — wired to "Clear color" trash icon next to hex input. */
   onClear?: () => void;
-}
-
-interface PaletteEntry {
-  name: string;
-  color: string;
 }
 
 function loadRecentColors(): string[] {
@@ -69,8 +59,8 @@ function deriveSelectedColor(value: string): string {
   const stripped = value.replace(/^(bg|text|border|from|to|via|ring|divide|outline)-/, "");
   const hexMatch = stripped.match(/#[0-9A-Fa-f]{3,8}/);
   if (hexMatch) return hexMatch[0];
-  // `[var(--name)]` style class — surface the underlying palette name so
-  // PaletteSection's `selectedColor.includes(name)` check lights up the swatch.
+  // `[var(--name)]` style class — surface the underlying palette name so the
+  // DesignSystemPalette row matches by name and lights up.
   const varMatch = stripped.match(/\[var\(--([a-z0-9-]+)\)\]/i);
   if (varMatch) return varMatch[1];
   return stripped;
@@ -82,43 +72,18 @@ function deriveHexInput(value: string): string {
 }
 
 export function ColorPanelBody({ value, onChange, onClear }: ColorPanelBodyProps) {
-  const { query, actions } = useEditor();
   const { open: openEyeDropper, isSupported } = useEyeDropper();
 
-  const [palette, setPalette] = useState<PaletteEntry[]>([]);
   const [recentColors, setRecentColors] = useState<string[]>(loadRecentColors);
   const [hexInput, setHexInput] = useState(() => deriveHexInput(value));
-  const [createDialogPos, setCreateDialogPos] = useState<{ left: number; top: number } | null>(
-    null
-  );
 
   const selectedColor = deriveSelectedColor(value);
-
-  // Load palette from ROOT_NODE on mount + whenever the editor query identity
-  // changes (rare). Mirrors useColorPickerState's effect.
-  useEffect(() => {
-    try {
-      const rootNode = query.node(ROOT_NODE).get();
-      const themePalette = resolveTheme(rootNode?.data?.props || {}).palette;
-      setPalette((themePalette as PaletteEntry[]).filter(p => p?.name && p?.color));
-    } catch (e) {
-      console.error("Failed to load palette:", e);
-    }
-  }, [query]);
 
   // Keep hex input in sync if value changes from outside (palette pick, etc.)
   useEffect(() => {
     const next = deriveHexInput(value);
     if (next) setHexInput(next);
   }, [value]);
-
-  const refreshPalette = () => {
-    try {
-      const rootNode = query.node(ROOT_NODE).get();
-      const themePalette = resolveTheme(rootNode?.data?.props || {}).palette;
-      setPalette((themePalette as PaletteEntry[]).filter(p => p?.name && p?.color));
-    } catch {}
-  };
 
   const dispatch = (data: { type: "palette" | "hex" | "rgb" | "class"; value: any }) => {
     onChange(data);
@@ -148,22 +113,6 @@ export function ColorPanelBody({ value, onChange, onClear }: ColorPanelBodyProps
       }
     } catch {
       /* user cancelled */
-    }
-  };
-
-  const handleRemoveFromPalette = (colorName: string) => {
-    if (!query || !actions) return;
-    try {
-      const rootNode = query.node(ROOT_NODE).get();
-      const currentPalette = resolveTheme(rootNode?.data?.props || {}).palette;
-      const updatedPalette = currentPalette.filter((c: PaletteEntry) => c.name !== colorName);
-      actions.setProp(ROOT_NODE, (props: any) => {
-        if (!props.theme) props.theme = {};
-        props.theme.palette = updatedPalette;
-      });
-      setPalette(updatedPalette);
-    } catch (e) {
-      console.error("Failed to remove palette token:", e);
     }
   };
 
@@ -246,64 +195,10 @@ export function ColorPanelBody({ value, onChange, onClear }: ColorPanelBodyProps
         )}
       </div>
 
-      {/* Design system tokens (palette) — primary user-facing list, like Framer's "Styles" */}
-      {palette.length > 0 && (
-        <div>
-          <PaletteSection
-            palette={palette}
-            selectedColor={selectedColor}
-            onSelect={handleSelect}
-            onDoubleClick={handleSelect}
-            onRemove={handleRemoveFromPalette}
-          />
-          <button
-            type="button"
-            onClick={e => {
-              const panel = (e.currentTarget as HTMLElement).closest('[role="dialog"]');
-              const panelRect = panel?.getBoundingClientRect();
-              const fallbackRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-              const anchor = panelRect ?? fallbackRect;
-              // Open to the right of the panel, top-aligned. Clamp so it stays
-              // on-screen if the panel is already docked to the right edge.
-              const DIALOG_WIDTH = 256;
-              const GAP = 8;
-              const rawLeft = anchor.right + GAP;
-              const left =
-                rawLeft + DIALOG_WIDTH > window.innerWidth - 8
-                  ? Math.max(8, anchor.left - DIALOG_WIDTH - GAP)
-                  : rawLeft;
-              setCreateDialogPos({ left, top: Math.max(8, anchor.top) });
-            }}
-            className="border-base-300 text-neutral-content hover:border-foreground hover:text-base-content mt-2 flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-dashed text-xs transition-colors"
-            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content="Save current color as a named token"
-            data-tooltip-place="top"
-            data-tooltip-offset={10}
-          >
-            <TbPlus className="size-3.5" />
-            New Token
-          </button>
-        </div>
-      )}
-
-      {createDialogPos &&
-        createPortal(
-          <div
-            className="pagehub-sdk-root fixed"
-            style={{ left: createDialogPos.left, top: createDialogPos.top, zIndex: 1200 }}
-            data-floating-allow
-          >
-            <CreateTokenDialog
-              onCreated={name => {
-                setCreateDialogPos(null);
-                refreshPalette();
-                dispatch({ type: "palette", value: `palette:${name}` });
-              }}
-              onClose={() => setCreateDialogPos(null)}
-            />
-          </div>,
-          document.body
-        )}
+      <DesignSystemPalette
+        selectedColor={selectedColor}
+        onSelect={paletteValue => dispatch({ type: "palette", value: paletteValue })}
+      />
 
       {/* Special colors (transparent, currentColor, inherit, etc.) */}
       <SpecialColorsSection

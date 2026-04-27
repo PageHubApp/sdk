@@ -1,6 +1,7 @@
 import { Editor, Frame } from "@craftjs/core";
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_STYLE_GUIDE } from "../../../utils/defaults";
+import { DEFAULT_CUSTOM_FONTS } from "../../viewport/design-system/hooks/useDesignSystem";
 import {
   buildModifierExpansionMap,
   expandStructureWithModifierMap,
@@ -50,8 +51,8 @@ const PREVIEW_DESIGN_VARS: React.CSSProperties & Record<string, string> = {
   "--noise": DEFAULT_STYLE_GUIDE.noise,
   "--border": DEFAULT_STYLE_GUIDE.border,
   "--shadow-style": DEFAULT_STYLE_GUIDE.shadowStyle,
-  "--heading-font-family": `'${DEFAULT_STYLE_GUIDE.headingFontFamily}', system-ui, sans-serif`,
-  "--body-font-family": `'${DEFAULT_STYLE_GUIDE.bodyFontFamily}', system-ui, sans-serif`,
+  "--heading-font-family": `'${DEFAULT_CUSTOM_FONTS.find(f => f.name === "Heading")?.fontFamily ?? "Open Sans"}', system-ui, sans-serif`,
+  "--body-font-family": `'${DEFAULT_CUSTOM_FONTS.find(f => f.name === "Body")?.fontFamily ?? "Open Sans"}', system-ui, sans-serif`,
   "--button-padding": DEFAULT_STYLE_GUIDE.buttonPadding,
   "--button-padding-x": DEFAULT_STYLE_GUIDE.buttonPadding.split(" ")[0],
   "--button-padding-y":

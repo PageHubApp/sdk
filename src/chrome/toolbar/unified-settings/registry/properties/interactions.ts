@@ -1,7 +1,8 @@
 /**
  * Interactions property definitions.
  *
- * "action" section — custom ActionInput component
+ * "action" section — custom ActionsInput component (mixed-source body:
+ * actions[] chips + handlers{} chips, see editor-popover-pattern.md §8)
  * "hover" section — standard color/opacity/transform defs
  */
 import type { PropertyDef } from "../propertyDefs";

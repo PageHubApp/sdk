@@ -5,7 +5,7 @@ import { SelectedButtonAtom } from "../../../components/settings-stub";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { ColorInput } from "../inputs/color/ColorInput";
 import { IconDialogInput } from "../inputs/media/IconDialogInput";
-import ActionInput from "../inputs/action/ActionInput";
+import { ActionsInput } from "../inputs/action/ActionsInput";
 import { ListEditor } from "../inputs/preset/ListEditor";
 
 import { ToolbarItem, ToolbarItemProps } from "../ToolbarItem";
@@ -75,7 +75,7 @@ const Input = ({ nodeProps, setProp }) => {
             labelHide={false}
           />
 
-          <ActionInput />
+          <ActionsInput />
 
           <ToolbarSection full={2}>
             <IconDialogInput

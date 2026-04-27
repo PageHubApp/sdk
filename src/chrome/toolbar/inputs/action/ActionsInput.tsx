@@ -1,23 +1,25 @@
 /**
- * Actions — chip-list builder for a node's `actions[]` chain.
+ * Actions — chip-list builder for a node's `actions[]` chain AND its
+ * `handlers` map (custom JS event strings).
  *
- * Renders one `ActionChipRow` per action in the node's chain. The chain is
- * built up from the section header `+` picker (`ActionsAddPicker`) — there
- * is no in-body "Chain Another Action" button anymore; chaining = adding
- * another chip.
+ * Body renders two chip-lists stacked:
+ *   1. Action chips, top — one per `props.actions[]` entry. Added via the
+ *      section-header `+` (`ActionsAddPicker`).
+ *   2. Handler chips, below — one per `props.handlers` key. Added via the
+ *      in-body `+ Add Handler` picker (`HandlersAddPicker`).
  *
- * Mirrors `ConditionsInput.tsx`. Auto-open hand-off (closed-section case)
- * rides the canonical `PopoverOpenRequestAtom` keyed by this body's def id
- * — see docs/sdk/editor-popover-pattern.md §4 + §8.
- *
- * `HandlersInput` lives at the bottom of this body so per-node DOM event
- * handlers stay grouped under the same Action section.
+ * Mirrors `ConditionsInput.tsx` but with a mixed-source body (array + map).
+ * Auto-open hand-off rides the canonical `PopoverOpenRequestAtom` with TWO
+ * def ids — `"action"` for the action tail and `"action.handler"` for the
+ * handler tail. Two keys, one bus; see docs/sdk/editor-popover-pattern.md
+ * §4 + §8.
  */
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActionChipRow } from "./ActionChipRow";
-import HandlersInput from "./HandlersInput";
+import { HandlerChipRow } from "./HandlerChipRow";
+import { HandlersAddPicker, HANDLERS_BODY_DEF_ID } from "./HandlersAddPicker";
 import {
   PopoverOpenRequestAtom,
   popoverRequestKey,
@@ -25,8 +27,8 @@ import {
 import { migrateAction, type NodeAction } from "../../../../utils/action";
 
 // Matches the def id registered in `registry/properties/interactions.ts`.
-// The header `+` picker dispatches an open-request keyed by (nodeId, this id)
-// when it appends an action — see ConditionsInput.tsx for the same pattern.
+// `ActionsAddPicker` dispatches an open-request keyed by (nodeId, this id)
+// when it appends an action.
 const ACTIONS_BODY_DEF_ID = "action";
 
 export const ACTIONS_BODY_DEF_ID_EXPORT = ACTIONS_BODY_DEF_ID;
@@ -36,6 +38,7 @@ export function ActionsInput() {
     id,
     actions: { setProp },
     actionList,
+    handlers,
   } = useNode(node => {
     const props = node.data.props;
     const list: NodeAction[] = props.actions?.length
@@ -44,13 +47,28 @@ export function ActionsInput() {
           const single = (props.action as NodeAction | undefined) ?? migrateAction(props);
           return single ? [single] : [];
         })();
-    return { id: node.id, actionList: list };
+    const handlersMap: Record<string, string> =
+      props.handlers && typeof props.handlers === "object" ? props.handlers : {};
+    return { id: node.id, actionList: list, handlers: handlersMap };
   });
   const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
-  const requestVersion =
+  const actionRequestVersion =
     popoverRequests.get(popoverRequestKey(id, ACTIONS_BODY_DEF_ID)) || 0;
+  const handlerRequestVersion =
+    popoverRequests.get(popoverRequestKey(id, HANDLERS_BODY_DEF_ID)) || 0;
 
-  const writeList = (next: NodeAction[]) => {
+  // Stable derived list of [event, code] pairs from the handler map.
+  const handlerEntries = useMemo(
+    () =>
+      Object.entries(handlers).filter(
+        ([, v]) => typeof v === "string"
+      ) as [string, string][],
+    [handlers]
+  );
+  const handlerKeys = useMemo(() => handlerEntries.map(([e]) => e), [handlerEntries]);
+  const handlerKeysSig = handlerKeys.join("|");
+
+  const writeActions = (next: NodeAction[]) => {
     setProp((p: any) => {
       p.actions = next;
       // Keep legacy single-action prop in sync for the old runtime path.
@@ -63,53 +81,116 @@ export function ActionsInput() {
     });
   };
 
-  const updateAt = (idx: number, next: NodeAction) => {
-    writeList(actionList.map((a, i) => (i === idx ? next : a)));
+  const updateActionAt = (idx: number, next: NodeAction) => {
+    writeActions(actionList.map((a, i) => (i === idx ? next : a)));
+  };
+  const removeActionAt = (idx: number) => {
+    writeActions(actionList.filter((_, i) => i !== idx));
   };
 
-  const removeAt = (idx: number) => {
-    writeList(actionList.filter((_, i) => i !== idx));
+  const updateHandler = (
+    prevEvent: string,
+    next: { event: string; code: string }
+  ) => {
+    setProp((p: any) => {
+      const map: Record<string, string> = { ...(p.handlers || {}) };
+      // Preserve insertion order if the event didn't change. If it did, drop
+      // the old key and add the new one at the tail.
+      if (prevEvent === next.event) {
+        map[prevEvent] = next.code;
+      } else {
+        delete map[prevEvent];
+        map[next.event] = next.code;
+      }
+      p.handlers = map;
+    });
+  };
+  const removeHandler = (event: string) => {
+    setProp((p: any) => {
+      if (!p.handlers) return;
+      const map: Record<string, string> = { ...p.handlers };
+      delete map[event];
+      if (Object.keys(map).length === 0) {
+        delete p.handlers;
+      } else {
+        p.handlers = map;
+      }
+    });
   };
 
-  // Auto-open the new tail chip. Two trigger paths (mirrors ConditionsInput):
-  //   1. Length grew while this body was mounted — the length-growth
-  //      detector fires.
-  //   2. The header "+" picker added a chip while the section was closed
-  //      (this body unmounted). The picker also bumps `PopoverOpenRequestAtom`
-  //      via `requestOpenPopover(..., ACTIONS_BODY_DEF_ID)`, and we open
-  //      the tail when `requestVersion` advances. The length detector can't
-  //      cover that case because `prevLengthRef` initializes post-add on
-  //      remount.
-  const prevLengthRef = useRef(actionList.length);
-  const [pendingOpenIdx, setPendingOpenIdx] = useState<number | null>(null);
+  // ── Auto-open: action tail ────────────────────────────────────────────
+  const prevActionLenRef = useRef(actionList.length);
+  const [pendingActionIdx, setPendingActionIdx] = useState<number | null>(null);
   useEffect(() => {
-    if (actionList.length > prevLengthRef.current) {
-      setPendingOpenIdx(actionList.length - 1);
+    if (actionList.length > prevActionLenRef.current) {
+      setPendingActionIdx(actionList.length - 1);
     }
-    prevLengthRef.current = actionList.length;
+    prevActionLenRef.current = actionList.length;
   }, [actionList.length]);
-  // Init to 0 (NOT current `requestVersion`) — see editor-popover-pattern.md §4.
-  const lastRequestVersionRef = useRef(0);
+  // Init to 0 (NOT current version) — see editor-popover-pattern.md §4.
+  const lastActionVersionRef = useRef(0);
   useEffect(() => {
-    if (requestVersion === 0 || requestVersion === lastRequestVersionRef.current) return;
-    lastRequestVersionRef.current = requestVersion;
-    if (actionList.length > 0) setPendingOpenIdx(actionList.length - 1);
-  }, [requestVersion, actionList.length]);
-  const consumeAutoOpen = () => setPendingOpenIdx(null);
+    if (actionRequestVersion === 0 || actionRequestVersion === lastActionVersionRef.current)
+      return;
+    lastActionVersionRef.current = actionRequestVersion;
+    if (actionList.length > 0) setPendingActionIdx(actionList.length - 1);
+  }, [actionRequestVersion, actionList.length]);
+  const consumeActionAutoOpen = () => setPendingActionIdx(null);
+
+  // ── Auto-open: handler tail ───────────────────────────────────────────
+  // Map keys are insertion-ordered in JS, so the last key in `handlerKeys`
+  // is the most recently added — open it.
+  const prevHandlerKeysRef = useRef<string[]>(handlerKeys);
+  const [pendingHandlerEvent, setPendingHandlerEvent] = useState<string | null>(null);
+  useEffect(() => {
+    const prev = new Set(prevHandlerKeysRef.current);
+    const added = handlerKeys.find(k => !prev.has(k));
+    if (added) setPendingHandlerEvent(added);
+    prevHandlerKeysRef.current = handlerKeys;
+  }, [handlerKeysSig, handlerKeys]);
+  const lastHandlerVersionRef = useRef(0);
+  useEffect(() => {
+    if (
+      handlerRequestVersion === 0 ||
+      handlerRequestVersion === lastHandlerVersionRef.current
+    )
+      return;
+    lastHandlerVersionRef.current = handlerRequestVersion;
+    if (handlerKeys.length > 0) {
+      setPendingHandlerEvent(handlerKeys[handlerKeys.length - 1]);
+    }
+  }, [handlerRequestVersion, handlerKeys]);
+  const consumeHandlerAutoOpen = () => setPendingHandlerEvent(null);
 
   return (
     <div className="flex flex-col gap-1">
       {actionList.map((action, i) => (
         <ActionChipRow
-          key={i}
+          key={`action-${i}`}
           action={action}
-          autoOpen={i === pendingOpenIdx}
-          onAutoOpenConsumed={consumeAutoOpen}
-          onChange={next => updateAt(i, next)}
-          onRemove={() => removeAt(i)}
+          autoOpen={i === pendingActionIdx}
+          onAutoOpenConsumed={consumeActionAutoOpen}
+          onChange={next => updateActionAt(i, next)}
+          onRemove={() => removeActionAt(i)}
         />
       ))}
-      <HandlersInput />
+
+      {handlerEntries.map(([event, code]) => (
+        <HandlerChipRow
+          key={`handler-${event}`}
+          event={event}
+          code={code}
+          takenEvents={handlerKeys}
+          autoOpen={event === pendingHandlerEvent}
+          onAutoOpenConsumed={consumeHandlerAutoOpen}
+          onChange={next => updateHandler(event, next)}
+          onRemove={() => removeHandler(event)}
+        />
+      ))}
+
+      <div className="mt-1">
+        <HandlersAddPicker takenEvents={handlerKeys} />
+      </div>
     </div>
   );
 }

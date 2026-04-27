@@ -270,12 +270,11 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
     "spaceLg",
     "spaceXl",
     "spacingDensity",
-    // Typography - font weights (Tailwind classes)
-    "headingFont",
-    "bodyFont",
-    // Typography - font families (actual font names for CSS variables)
+    // Typography - font families and numeric weights (sourced from theme.typography Heading/Body tokens via the orchestrator)
     "headingFontFamily",
+    "headingFontWeight",
     "bodyFontFamily",
+    "bodyFontWeight",
     "accentFontFamily",
   ];
 
@@ -455,11 +454,23 @@ export function generateDesignSystemCSSVariables(
   const palette = autoGenerateContentColors(designSystem.palette);
   const paletteVars = generatePaletteCSSVariables(palette);
   // Partial persisted styleGuide (e.g. only fonts) must not drop layout tokens like --radius-box.
+  // Heading/Body fonts now live in theme.typography[]; derive headingFontFamily/headingFontWeight
+  // (and body equivalents) from those tokens so --heading-font-family etc. still emit.
+  const typography = Array.isArray(designSystem.typography) ? designSystem.typography : [];
+  const headingToken = typography.find((t: any) => t?.name === "Heading");
+  const bodyToken = typography.find((t: any) => t?.name === "Body");
+  const fontOverrides: Record<string, string> = {};
+  if (headingToken?.fontFamily) fontOverrides.headingFontFamily = headingToken.fontFamily;
+  if (headingToken?.fontWeight) fontOverrides.headingFontWeight = headingToken.fontWeight;
+  if (bodyToken?.fontFamily) fontOverrides.bodyFontFamily = bodyToken.fontFamily;
+  if (bodyToken?.fontWeight) fontOverrides.bodyFontWeight = bodyToken.fontWeight;
+
   const mergedStyleGuide = {
     ...DEFAULT_STYLE_GUIDE,
     ...(designSystem.styleGuide && typeof designSystem.styleGuide === "object"
       ? designSystem.styleGuide
       : {}),
+    ...fontOverrides,
   };
   const styleVars = generateStyleGuideCSSVariables(mergedStyleGuide);
   const typographyVars = designSystem.typography

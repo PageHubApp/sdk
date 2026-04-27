@@ -2,7 +2,7 @@ import { NodeProvider, useNode } from "@craftjs/core";
 import { atom, useAtomState } from "@zedux/react";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { IconInput } from "../../inputs/media/IconInput";
-import ActionInput from "../../inputs/action/ActionInput";
+import { ActionsInput } from "../../inputs/action/ActionsInput";
 import { CraftListEditor } from "../../inputs/preset/CraftListEditor";
 import { ToolbarSection } from "../../ToolbarSection";
 import { applyPeerClassInherit } from "../../../shell/peerInherit/applyPeerClassInherit";
@@ -38,7 +38,7 @@ export const ButtonListMainTab = () => {
           }}
           renderPopover={(button: any) => (
             <NodeProvider id={button.id}>
-              <ActionInput />
+              <ActionsInput />
               <IconInput
                 propKey="icon"
                 propType="component"

@@ -10,8 +10,10 @@
  * by the `autoOpen` prop fed by `ActionsInput`'s pendingOpenIdx state — see
  * docs/sdk/editor-popover-pattern.md §8.
  */
+import { useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
 import { useAtomValue } from "@zedux/react";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   TbLink,
   TbWindowMaximize,
@@ -28,6 +30,7 @@ import {
 import { PopoverChip } from "../../../primitives/PopoverChip";
 import { SideBarAtom } from "../../../../utils/lib";
 import { ACTION_TYPE_OPTIONS, type ActionType, type NodeAction } from "../../../../utils/action";
+import { PeekTargetButton } from "./PeekTargetButton";
 
 const ActionEditorPanel = lazy(() => import("./ActionEditorPanel"));
 
@@ -59,9 +62,24 @@ function actionTypeLabel(a: NodeAction): string {
 
 /** Value-only summary for the chip body. The type label lives OUTSIDE the
  *  chip (row-label pattern, mirrors `EffectRowInputPopover`), so DON'T
- *  prefix the type here — that would render twice. */
-function describeAction(a: NodeAction): string {
-  if (a.type === "link") return a.href || "";
+ *  prefix the type here — that would render twice.
+ *
+ *  `pageNames` resolves `ref:<pageId>` link hrefs to friendly page names so
+ *  the chip matches the LinkInput popover's display. */
+function describeAction(a: NodeAction, pageNames?: Map<string, string>): string {
+  if (a.type === "link") {
+    const h = a.href || "";
+    if (h.startsWith("ref:") && pageNames) {
+      const m = h.match(/^ref:([^/?#]+)(.*)$/);
+      const pageId = m ? m[1] : h.slice(4);
+      const suffix = m ? m[2] : "";
+      const name = pageNames.get(pageId);
+      if (name) return suffix ? `${name}${suffix}` : name;
+    }
+    if (h.startsWith("mailto:")) return h.slice(7).split("?")[0] || h;
+    if (h.startsWith("tel:")) return h.slice(4) || h;
+    return h;
+  }
   if (a.type === "open-modal") return (a as any).anchor || "";
   if (a.type === "show-hide") return (a as any).target || "";
   if (a.type === "copy-to-clipboard") {
@@ -98,9 +116,33 @@ export function ActionChipRow({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const sidebarLeft = useAtomValue(SideBarAtom);
 
+  // Resolve `ref:<pageId>` hrefs to page displayNames (chip mirrors LinkInput).
+  // Skip the editor read entirely for non-link actions so we don't subscribe.
+  const isLink = action.type === "link";
+  const { pageNames } = useEditor(state => {
+    if (!isLink) return { pageNames: undefined };
+    const map = new Map<string, string>();
+    const root = state.nodes[ROOT_NODE];
+    if (root?.data?.nodes) {
+      for (const childId of root.data.nodes) {
+        const n = state.nodes[childId];
+        if (n?.data?.props?.type === "page") {
+          map.set(
+            childId,
+            (n.data.custom?.displayName as string) || "Untitled Page"
+          );
+        }
+      }
+    }
+    return { pageNames: map };
+  });
+
   const Icon = TYPE_ICON[action.type as ActionType] || TbPointer;
   const typeLabel = actionTypeLabel(action);
-  const summary = describeAction(action) || "Add…";
+  const summary = useMemo(
+    () => describeAction(action, pageNames) || "Add…",
+    [action, pageNames]
+  );
 
   const computePosition = () => {
     const rect = triggerRef.current?.getBoundingClientRect();
@@ -131,6 +173,9 @@ export function ActionChipRow({
     onRemove();
   };
 
+  const showHideTarget =
+    action.type === "show-hide" ? ((action as any).target as string | undefined) : undefined;
+
   return (
     <div className="flex items-center gap-0.5">
       <span className="text-base-content w-20 shrink-0 truncate text-xs">{typeLabel}</span>
@@ -143,6 +188,11 @@ export function ActionChipRow({
         clearAriaLabel="Remove action"
         leading={<Icon className="size-3.5" aria-hidden />}
         summary={summary}
+        trailingExtras={
+          action.type === "show-hide" ? (
+            <PeekTargetButton target={showHideTarget} size="sm" />
+          ) : null
+        }
       />
       {open && (
         <Suspense fallback={null}>

@@ -192,14 +192,24 @@ export function useLayoutPreset({ propKey, onLayoutChange, lockMode }: UseLayout
     cp("layoutMode", lockMode ?? layoutMode, "mobile", "root");
     if (preset.columns) cp("layoutColumns", String(preset.columns), "mobile", "root");
 
-    // Auto-adjust containers
+    // Auto-adjust containers.
+    // NB: `preset.direction` matches the tab name and is intentionally inverted vs.
+    // the actual CSS axis ("Columns" tab = flex-row children). Use `preset.flexDirection`
+    // — that's the real CSS class — so the child width policy (flex-1 vs w-full) lines
+    // up with how the parent will actually flow.
     if (preset.columns) {
       const mode =
-        preset.layout === "flex" ? (preset.direction === "row" ? "flex-row" : "flex-col") : "grid";
+        preset.layout === "flex"
+          ? preset.flexDirection === "flex-row"
+            ? "flex-row"
+            : "flex-col"
+          : "grid";
 
       setBatchOperation(true);
       try {
-        adjustContainerCount(preset.columns, mode as "grid" | "flex-row" | "flex-col");
+        adjustContainerCount(preset.columns, mode as "grid" | "flex-row" | "flex-col", {
+          asymmetric: !!preset.asymmetric,
+        });
       } finally {
         setTimeout(() => {
           setBatchOperation(false);

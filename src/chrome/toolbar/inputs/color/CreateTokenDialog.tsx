@@ -2,18 +2,33 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
 import { SketchPicker } from "@hello-pangea/color-picker";
 import { useEffect, useRef, useState } from "react";
-import { TbCheck, TbX } from "react-icons/tb";
+import { TbCheck, TbTrash, TbX } from "react-icons/tb";
 import { resolveTheme } from "@/utils/design/resolveTheme";
 
 interface CreateTokenDialogProps {
+  /** When set, dialog is in edit mode: pre-fills name + color, shows Delete button.
+   *  Saving renames/recolors the existing entry (matched by `originalName`). */
+  existing?: { originalName: string; color: string };
+  /** Which palette to write to. Defaults to "palette" (light); pass "darkPalette" for dark mode. */
+  paletteKey?: "palette" | "darkPalette";
+  /** Fired after a successful create OR rename. Receives the final (possibly new) name. */
   onCreated: (name: string) => void;
+  /** Fired after a successful delete (edit mode only). */
+  onDeleted?: (name: string) => void;
   onClose: () => void;
 }
 
-export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps) {
+export function CreateTokenDialog({
+  existing,
+  paletteKey = "palette",
+  onCreated,
+  onDeleted,
+  onClose,
+}: CreateTokenDialogProps) {
   const { actions, query } = useEditor();
-  const [name, setName] = useState("New Color");
-  const [color, setColor] = useState("#3b82f6");
+  const isEdit = !!existing;
+  const [name, setName] = useState(existing?.originalName ?? "New Color");
+  const [color, setColor] = useState(existing?.color ?? "#3b82f6");
   const nameRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -44,14 +59,53 @@ export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps
     try {
       const node = query.node(ROOT_NODE).get();
       const theme = resolveTheme(node?.data?.props || {});
-      const newPalette = [...theme.palette, { name: trimmed, color }];
+      const palette = ((paletteKey === "darkPalette" ? theme.darkPalette : theme.palette) ?? []) as Array<{
+        name: string;
+        color: string;
+      }>;
+
+      let nextPalette: Array<{ name: string; color: string }>;
+      if (isEdit) {
+        // Replace by originalName (allows rename + recolor in one save).
+        nextPalette = palette.map(entry =>
+          entry.name === existing!.originalName ? { name: trimmed, color } : entry
+        );
+        // If originalName wasn't found (deleted in another tab?), append.
+        if (!nextPalette.some(e => e.name === trimmed)) {
+          nextPalette = [...nextPalette, { name: trimmed, color }];
+        }
+      } else {
+        nextPalette = [...palette, { name: trimmed, color }];
+      }
+
       actions.setProp(ROOT_NODE, (props: any) => {
         if (!props.theme) props.theme = {};
-        props.theme.palette = newPalette;
+        props.theme[paletteKey] = nextPalette;
       });
       onCreated(trimmed);
     } catch (e) {
-      console.error("Failed to create token:", e);
+      console.error("Failed to save token:", e);
+    }
+  };
+
+  const handleDelete = () => {
+    if (!isEdit) return;
+    try {
+      const node = query.node(ROOT_NODE).get();
+      const theme = resolveTheme(node?.data?.props || {});
+      const palette = ((paletteKey === "darkPalette" ? theme.darkPalette : theme.palette) ?? []) as Array<{
+        name: string;
+        color: string;
+      }>;
+      const nextPalette = palette.filter(e => e.name !== existing!.originalName);
+      actions.setProp(ROOT_NODE, (props: any) => {
+        if (!props.theme) props.theme = {};
+        props.theme[paletteKey] = nextPalette;
+      });
+      onDeleted?.(existing!.originalName);
+      onClose();
+    } catch (e) {
+      console.error("Failed to delete token:", e);
     }
   };
 
@@ -62,7 +116,9 @@ export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-base-content text-xs font-medium">New Token</span>
+        <span className="text-base-content text-xs font-medium">
+          {isEdit ? "Edit Token" : "New Token"}
+        </span>
         <button onClick={onClose} className="text-neutral-content hover:text-base-content">
           <TbX className="size-3.5" />
         </button>
@@ -109,15 +165,26 @@ export function CreateTokenDialog({ onCreated, onClose }: CreateTokenDialogProps
         />
       </div>
 
-      {/* Save */}
-      <button
-        onClick={handleSave}
-        disabled={!name.trim()}
-        className="bg-primary text-primary-content hover:bg-primary/90 flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        <TbCheck className="size-3" />
-        Save Token
-      </button>
+      {/* Save (+ Delete in edit mode) */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleSave}
+          disabled={!name.trim()}
+          className="bg-primary text-primary-content hover:bg-primary/90 flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <TbCheck className="size-3" />
+          {isEdit ? "Save" : "Save Token"}
+        </button>
+        {isEdit && (
+          <button
+            onClick={handleDelete}
+            className="border-base-300 text-neutral-content hover:border-error hover:text-error flex size-8 shrink-0 items-center justify-center rounded-md border transition-colors"
+            aria-label="Delete token"
+          >
+            <TbTrash className="size-3.5" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,34 +1,28 @@
 /**
- * Unified action picker — replaces ClickItem + LinkSettingsInput.
- * Single dropdown to pick action type, then contextual sub-forms.
- * Supports chained actions via `actions: NodeAction[]` prop.
+ * Action sub-forms shared by `ActionEditorPanel` (chip-list flow) and the
+ * Action type defaults shared by `ActionsAddPicker`.
+ *
+ * The legacy default-export (single-action UI + inline `HandlersInput`) was
+ * removed when the chip-list flow took over every callsite — see
+ * `ActionsInput.tsx` and docs/sdk/editor-popover-pattern.md §8 "Mixed-source
+ * body". This file exists to host `ACTION_DEFAULTS` and `ActionSubForm` plus
+ * the per-type sub-forms (`ShowHideForm`, `ToggleThemeForm`, etc.) that
+ * `ActionSubForm` switches between.
  */
-import { useNode } from "@craftjs/core";
-import { TbChevronDown, TbEye, TbEyeOff, TbX } from "react-icons/tb";
-import {
-  getShowHideState,
-  toggleShowHideState,
-  useShowHideVersion,
-} from "@/utils/showHideStore";
-import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { LabeledAddChip } from "@/chrome/primitives/LabeledAddChip";
+import { TbChevronDown } from "react-icons/tb";
+import { PeekTargetButton } from "./PeekTargetButton";
 import {
   SearchableMenuPopover,
   type SearchableMenuItem,
 } from "@/chrome/primitives/SearchableMenuPopover";
 import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
-import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
-import { ToolbarSection } from "../../ToolbarSection";
 import {
-  ACTION_TYPE_OPTIONS,
   type ActionType,
   type NodeAction,
   type LinkAction,
   type ToggleThemeAction,
-  migrateAction,
 } from "@/utils/action";
-import HandlersInput from "./HandlersInput";
 import { LinkInput } from "./LinkInput";
 import { useElementPicker, type PickerFilter } from "./useElementPicker";
 
@@ -51,154 +45,6 @@ export const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
   "manage-subscription": { type: "manage-subscription" },
   "agent-send": { type: "agent-send", field: "agentMessage" },
 };
-
-export default function ActionInput() {
-  const {
-    actions: { setProp },
-    actionList,
-  } = useNode(node => {
-    const props = node.data.props;
-    // Support both legacy single `action` and new `actions` array
-    if (props.actions?.length) return { actionList: props.actions as NodeAction[] };
-    const single = (props.action as NodeAction | undefined) ?? migrateAction(props);
-    return { actionList: single ? [single] : [] };
-  });
-
-  const syncActions = (list: NodeAction[]) => {
-    setProp((props: any) => {
-      props.actions = list;
-      // Keep single `action` in sync for backwards compat
-      props.action = list[0] || null;
-      // Clean up legacy props
-      delete props.click;
-      delete props.url;
-      delete props.urlTarget;
-      delete props.clickMode;
-    });
-  };
-
-  const updateAction = (index: number, next: NodeAction) => {
-    const list = [...actionList];
-    list[index] = next;
-    syncActions(list);
-  };
-
-  const patchAction =
-    (index: number) =>
-    <T extends NodeAction>(patch: Partial<T>) => {
-      const list = [...actionList];
-      list[index] = { ...list[index], ...patch } as NodeAction;
-      syncActions(list);
-    };
-
-  const removeAction = (index: number) => {
-    syncActions(actionList.filter((_, i) => i !== index));
-  };
-
-  const addAction = () => {
-    syncActions([
-      ...actionList,
-      { type: "show-hide", target: "", direction: "toggle", trigger: "click" },
-    ]);
-  };
-
-  const handleTypeChange = (index: number, val: string) => {
-    if (!val) {
-      removeAction(index);
-      return;
-    }
-    updateAction(index, ACTION_DEFAULTS[val as ActionType]);
-  };
-
-  return (
-    <>
-      {actionList.map((action, i) => (
-        <div
-          key={i}
-          className={`flex flex-col gap-2 ${
-            actionList.length > 1 ? "border-base-300 mb-2 rounded-md border p-2" : ""
-          }`}
-        >
-          {actionList.length > 1 && (
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-neutral-content text-[10px] font-medium">Action {i + 1}</span>
-              <button
-                type="button"
-                onClick={() => removeAction(i)}
-                className="text-neutral-content hover:bg-error hover:text-error-content rounded p-0.5"
-              >
-                <TbX size={12} />
-              </button>
-            </div>
-          )}
-
-          <ToolbarDropdown
-            value={action.type ?? ""}
-            onChange={(val: string) => handleTypeChange(i, val)}
-            propKey={`actionType-${i}`}
-            placeholder="None"
-            append={
-              actionList.length === 1 ? (
-                <button
-                  type="button"
-                  onClick={() => syncActions([])}
-                  className="text-neutral-content hover:bg-error hover:text-error-content flex shrink-0 items-center justify-center rounded p-1 text-xs transition-colors"
-                  aria-label="Clear action"
-                >
-                  <TbX />
-                </button>
-              ) : null
-            }
-          >
-            <option value="">None</option>
-            {/* Ungrouped: top-level "Link" entry. */}
-            {ACTION_TYPE_OPTIONS.filter(opt => !opt.group).map(opt => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-            {/* Grouped: Open / Commerce / System */}
-            {Array.from(
-              ACTION_TYPE_OPTIONS.reduce((acc, opt) => {
-                if (!opt.group) return acc;
-                if (!acc.has(opt.group)) acc.set(opt.group, []);
-                acc.get(opt.group)!.push(opt);
-                return acc;
-              }, new Map<string, typeof ACTION_TYPE_OPTIONS>()).entries()
-            ).map(([group, opts]) => (
-              <optgroup key={group} label={group}>
-                {opts.map(opt => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </ToolbarDropdown>
-
-          <ActionSubForm
-            action={action}
-            patch={patchAction(i)}
-            replace={(next: NodeAction) => updateAction(i, next)}
-          />
-        </div>
-      ))}
-
-      {/* Add action — labeled chip when empty, dashed CTA when chaining. */}
-      {actionList.length === 0 ? (
-        <LabeledAddChip
-          label="Action"
-          ariaLabel="Add action"
-          onClick={() => syncActions([ACTION_DEFAULTS.link])}
-        />
-      ) : (
-        <ToolbarDashedButton onClick={addAction}>Chain Another Action</ToolbarDashedButton>
-      )}
-
-      <HandlersInput />
-    </>
-  );
-}
 
 export function ActionSubForm({
   action,
@@ -388,27 +234,6 @@ function ShowHideForm({ action, patch }: { action: any; patch: (p: any) => void 
         </ToolbarDropdown>
       </div>
     </>
-  );
-}
-
-function PeekTargetButton({ target }: { target: string | undefined }) {
-  useShowHideVersion();
-  const disabled = !target;
-  // Treat unknown state as "hidden" — most show-hide targets ship with `hidden`
-  // in their authored className (modal backdrops, drawers, accordion panels).
-  const shown = target ? getShowHideState(target) === "shown" : false;
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() => target && toggleShowHideState(target)}
-      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-      data-tooltip-content={shown ? "Hide target in editor" : "Show target in editor"}
-      className="border-base-300 bg-base-200/50 text-neutral-content hover:bg-base-200 hover:text-base-content disabled:opacity-40 inline-flex shrink-0 items-center justify-center rounded-md border px-2 transition-colors"
-      aria-label={shown ? "Hide target in editor" : "Show target in editor"}
-    >
-      {shown ? <TbEye className="size-3.5" /> : <TbEyeOff className="size-3.5" />}
-    </button>
   );
 }
 

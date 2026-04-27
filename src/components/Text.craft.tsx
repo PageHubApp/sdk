@@ -1,7 +1,7 @@
 /**
  * Text — Component definition via defineComponent()
  */
-import { TbAlignJustified, TbHeading, TbLetterT } from "react-icons/tb";
+import { TbBlockquote, TbH1, TbH2, TbLetterT } from "react-icons/tb";
 import { TextMainTab } from "../chrome/toolbar/unified-settings/mainTabs/TextMainTab";
 import { defineComponent } from "../define";
 import { LoremIpsum } from "../utils/data/loremIpsum";
@@ -144,7 +144,7 @@ export const TextDef = defineComponent(
     presets: [
       {
         label: "Title",
-        icon: TbHeading,
+        icon: TbH1,
         description: "Large heading text.",
         props: {
           text: titleLorem.generateWords(4),
@@ -153,7 +153,7 @@ export const TextDef = defineComponent(
       },
       {
         label: "Sub-title",
-        icon: TbHeading,
+        icon: TbH2,
         description: "Secondary heading text.",
         props: {
           text: lorem.generateSentences(1),
@@ -162,7 +162,7 @@ export const TextDef = defineComponent(
       },
       {
         label: "Paragraph",
-        icon: TbAlignJustified,
+        icon: TbBlockquote,
         description: "Body text block.",
         props: {
           tagName: "p",
@@ -200,27 +200,6 @@ export const TextDef = defineComponent(
         description:
           "Secondary heading below the main title — larger than body but smaller than the heading",
       },
-      // Size
-      { name: "text-xs", label: "XS", category: "Size", exclusive: true },
-      { name: "text-sm", label: "SM", category: "Size", exclusive: true },
-      { name: "text-base", label: "Base", category: "Size", exclusive: true },
-      { name: "text-lg", label: "LG", category: "Size", exclusive: true },
-      { name: "text-xl", label: "XL", category: "Size", exclusive: true },
-      { name: "text-2xl", label: "2XL", category: "Size", exclusive: true },
-      { name: "text-3xl", label: "3XL", category: "Size", exclusive: true },
-      { name: "text-4xl", label: "4XL", category: "Size", exclusive: true },
-      { name: "text-5xl", label: "5XL", category: "Size", exclusive: true },
-      // Weight
-      { name: "font-light", label: "Light", category: "Weight", exclusive: true },
-      { name: "font-normal", label: "Normal", category: "Weight", exclusive: true },
-      { name: "font-medium", label: "Medium", category: "Weight", exclusive: true },
-      { name: "font-semibold", label: "Semibold", category: "Weight", exclusive: true },
-      { name: "font-bold", label: "Bold", category: "Weight", exclusive: true },
-      { name: "font-extrabold", label: "Extra Bold", category: "Weight", exclusive: true },
-      // Alignment
-      { name: "text-left", label: "Left", category: "Align", exclusive: true },
-      { name: "text-center", label: "Center", category: "Align", exclusive: true },
-      { name: "text-right", label: "Right", category: "Align", exclusive: true },
       // Style
       {
         name: "uppercase",

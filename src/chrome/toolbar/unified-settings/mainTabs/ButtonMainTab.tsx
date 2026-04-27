@@ -1,6 +1,5 @@
 import { useNode } from "@craftjs/core";
 import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
-import { QuickLinkInput } from "../../inputs/action/LinkInput";
 import { IconInput } from "../../inputs/media/IconInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -47,8 +46,6 @@ export const ButtonMainTab = () =>
     Content: (
       <ToolbarSection collapsible={false}>
         <ToolbarItem propKey="text" type="text" label="Text" propType="component" />
-
-        <QuickLinkInput />
 
         <IconInput propKey="icon" />
 

@@ -44,7 +44,7 @@ export * from "./advanced/TailwindInput";
 export * from "./advanced/ConditionsInput";
 
 // Action inputs
-export { default as ActionInput } from "./action/ActionInput";
+export { ActionsInput } from "./action/ActionsInput";
 export * from "./action/useElementPicker";
 
 // Preset inputs

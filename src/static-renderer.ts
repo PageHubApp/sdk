@@ -576,11 +576,13 @@ export function renderToHTML(
   // 6. Render from ROOT
   const html = renderNode("ROOT", nodes, resolver, ctx);
 
-  // 7. Collect font URLs (real families live in *FontFamily — headingFont/bodyFont are weight classes)
+  // 7. Collect font URLs (Heading/Body fonts now live in theme.typography[])
   const rootProps = nodes["ROOT"]?.props || {};
-  const sg = resolveTheme(rootProps).styleGuide;
-  for (const fontKey of ["headingFontFamily", "bodyFontFamily"] as const) {
-    const font = styleGuideGoogleFontFamily(sg[fontKey]);
+  const theme = resolveTheme(rootProps);
+  const headingTok = (theme.typography || []).find((t: any) => t?.name === "Heading");
+  const bodyTok = (theme.typography || []).find((t: any) => t?.name === "Body");
+  for (const tok of [headingTok, bodyTok]) {
+    const font = styleGuideGoogleFontFamily(tok?.fontFamily);
     if (font) {
       ctx.fontUrls.add(
         `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@300;400;500;600;700&display=swap`
@@ -687,8 +689,15 @@ function generateThemeVars(rootProps: Record<string, any>): string {
     sg.sectionGap && `  --section-gap: ${sg.sectionGap};`,
     sg.containerGap && `  --container-gap: ${sg.containerGap};`,
     sg.contentWidth && `  --content-width: ${sg.contentWidth};`,
-    sg.headingFontFamily && `  --font-sans: ${sg.headingFontFamily};`,
-    sg.bodyFontFamily && `  --font-serif: ${sg.bodyFontFamily};`,
+    // --font-sans / --font-serif legacy: now sourced from theme.typography[] Heading/Body
+    (() => {
+      const h = (theme.typography || []).find((t: any) => t?.name === "Heading");
+      return h?.fontFamily ? `  --font-sans: ${h.fontFamily};` : null;
+    })(),
+    (() => {
+      const b = (theme.typography || []).find((t: any) => t?.name === "Body");
+      return b?.fontFamily ? `  --font-serif: ${b.fontFamily};` : null;
+    })(),
     sg.inputBorderWidth && `  --input-border-width: ${sg.inputBorderWidth};`,
     sg.inputBorderColor && `  --input-border-color: ${sg.inputBorderColor};`,
     sg.inputBorderRadius && `  --input-border-radius: ${sg.inputBorderRadius};`,

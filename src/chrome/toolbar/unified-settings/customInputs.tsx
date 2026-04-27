@@ -133,11 +133,10 @@ const lazyMap: Record<string, LazyEntry> = {
     )
   ),
   // List-style Action section (mirrors Conditions): body chip-list + header
-  // `+` picker. Each chip lazy-loads its own ActionEditorPanel on click.
-  // Per-node `handlers` live inside the body too (see ActionsInput.tsx).
-  // Direct importers (NavMainTab, ButtonListMainTab, ButtonItem) keep using
-  // the flat `ActionInput` from `inputs/action/ActionInput` since they're
-  // already inside their own dialogs.
+  // `+` picker. Each action chip lazy-loads its own ActionEditorPanel on
+  // click; per-node `handlers` render as chips below the action chips with
+  // their own HandlerEditorPanel and an in-body `+ Add Handler` picker. See
+  // ActionsInput.tsx + docs/sdk/editor-popover-pattern.md §8.
   ActionsInput: block(
     React.lazy(() =>
       import("../inputs/action/ActionsInput").then(m => ({ default: m.ActionsInput }))

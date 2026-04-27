@@ -6,7 +6,7 @@
  * the exact same swatch UIs without duplicating markup.
  */
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { TbCheck, TbTrash, TbX } from "react-icons/tb";
+import { TbCheck, TbTrash } from "react-icons/tb";
 import {
   applyOpacityToCssColor,
   resolveColorForDisplay,
@@ -67,67 +67,9 @@ export function SpecialColorsSection({
   );
 }
 
-export function PaletteSection({
-  palette,
-  selectedColor,
-  onSelect,
-  onDoubleClick,
-  onRemove,
-}: {
-  palette: { name: string; color: string }[];
-  selectedColor: string;
-  onSelect: SelectFn;
-  onDoubleClick: SelectFn;
-  onRemove?: (name: string) => void;
-}) {
-  return (
-    <div>
-      <span className="text-base-content mb-1.5 block text-xs font-medium">Design System</span>
-      <div className="grid grid-cols-12 gap-1">
-        {palette.map((paletteColor, idx) => {
-          const hexColor = resolvePaletteHex(paletteColor.color || "", palette);
-          const paletteValue = `palette:${paletteColor.name}`;
-          const isSelected =
-            selectedColor.includes(paletteColor.name) || selectedColor === paletteValue;
-
-          return (
-            <div key={idx} className="group relative">
-              <button
-                onClick={() => onSelect("palette", paletteValue)}
-                onDoubleClick={() => onDoubleClick("palette", paletteValue)}
-                className="relative aspect-square w-full rounded-lg border-2 transition-all hover:scale-105"
-                style={{
-                  backgroundColor: hexColor,
-                  borderColor: isSelected ? "var(--primary)" : "var(--base-300)",
-                }}
-                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                data-tooltip-content={paletteColor.name}
-                data-tooltip-place="top"
-                data-tooltip-offset={10}
-              >
-                {isSelected && (
-                  <TbCheck className="absolute inset-0 m-auto size-5 text-white drop-shadow-lg" />
-                )}
-              </button>
-              {onRemove && (
-                <button
-                  onClick={e => {
-                    e.stopPropagation();
-                    onRemove(paletteColor.name);
-                  }}
-                  className="bg-error text-error-content absolute -top-1 -right-1 hidden rounded-full p-0.5 shadow-lg transition-all group-hover:block hover:scale-110"
-                  aria-label="Remove color"
-                >
-                  <TbX className="size-3" />
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+// Palette grid — replaced by DesignSystemPalette (Framer-style searchable list).
+// Kept the file for the other section renderers (Recent, Tailwind, Special) and
+// the shared `resolvePaletteHex` helper.
 
 export function RecentColorsSection({
   recentColors,

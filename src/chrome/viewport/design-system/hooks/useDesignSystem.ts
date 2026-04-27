@@ -49,10 +49,6 @@ export interface StyleGuideState {
   spaceLg: string;
   spaceXl: string;
   spacingDensity: string;
-  headingFont: string;
-  headingFontFamily: string;
-  bodyFont: string;
-  bodyFontFamily: string;
   shadowStyle: string;
   // Form inputs
   border: string;
@@ -70,7 +66,30 @@ export interface StyleGuideState {
   linkUnderlineOffset: string;
 }
 
-const DEFAULT_CUSTOM_FONTS: CustomFont[] = [
+// Heading and Body are reserved-name tokens that drive --heading-font-family /
+// --body-font-family CSS vars (which power Tailwind `font-heading` / `font-body`).
+// Their fontSize/lineHeight/etc. are mostly cosmetic — nodes use Tailwind size
+// classes (text-3xl, etc.) by default. Migration ports old styleGuide.headingFont*
+// / bodyFont* scalars into entries here; new sites get these defaults.
+export const DEFAULT_CUSTOM_FONTS: CustomFont[] = [
+  {
+    name: "Heading",
+    fontFamily: "Open Sans",
+    fontSize: "1.5rem",
+    fontWeight: "700",
+    lineHeight: "1.2",
+    letterSpacing: "normal",
+    textTransform: "none",
+  },
+  {
+    name: "Body",
+    fontFamily: "Open Sans",
+    fontSize: "1rem",
+    fontWeight: "400",
+    lineHeight: "1.5",
+    letterSpacing: "normal",
+    textTransform: "none",
+  },
   {
     name: "Caption",
     fontFamily: "Inter",
@@ -90,7 +109,7 @@ export function useDesignSystem(isOpen: boolean) {
   const [colorDialog, setColorDialog] = useAtomState(ColorPickerAtom);
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<"colors" | "styles" | "typography">("colors");
+  const [activeTab, setActiveTab] = useState<"colors" | "styles">("colors");
 
   // Collapsible sections
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -116,8 +135,6 @@ export function useDesignSystem(isOpen: boolean) {
   } as StyleGuideState);
 
   // ─── Refs ───
-  const headingFontButtonRef = useRef<HTMLButtonElement>(null);
-  const bodyFontButtonRef = useRef<HTMLButtonElement>(null);
   const colorButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({});
   const inputBorderColorButtonRef = useRef<HTMLButtonElement>(null);
   const inputBgColorButtonRef = useRef<HTMLButtonElement>(null);
@@ -486,14 +503,6 @@ export function useDesignSystem(isOpen: boolean) {
     });
   };
 
-  const openHeadingFontPicker = () =>
-    openFontPicker(headingFontButtonRef, styles.headingFontFamily, v =>
-      updateStyle("headingFontFamily", v)
-    );
-
-  const openBodyFontPicker = () =>
-    openFontPicker(bodyFontButtonRef, styles.bodyFontFamily, v => updateStyle("bodyFontFamily", v));
-
   // ─── Style color picker helper (reusable for all color buttons in styles tab) ───
   const openStyleColorPicker = (
     buttonRef: React.RefObject<HTMLButtonElement>,
@@ -526,26 +535,22 @@ export function useDesignSystem(isOpen: boolean) {
       .map(font => `family=${(font[0] as string).replace(/ +/g, "+")}:wght@400`)
       .join("&");
 
-    const styleGuideFonts: string[] = [];
-    const weightMap: Record<string, string> = {
-      "font-bold": "700",
-      "font-semibold": "600",
-      "font-medium": "500",
-      "font-normal": "400",
-    };
-
-    if (styles.headingFontFamily && !styles.headingFontFamily.startsWith("style:")) {
-      styleGuideFonts.push(
-        `family=${styles.headingFontFamily.replace(/ +/g, "+")}:wght@${weightMap[styles.headingFont] || "400"}`
+    // Heading/Body fonts now live in customFonts (theme.typography[]) — not styleGuide
+    const tokenFonts: string[] = [];
+    const headingTok = customFonts.find(t => t.name === "Heading");
+    const bodyTok = customFonts.find(t => t.name === "Body");
+    if (headingTok?.fontFamily && !headingTok.fontFamily.startsWith("style:")) {
+      tokenFonts.push(
+        `family=${headingTok.fontFamily.replace(/ +/g, "+")}:wght@${headingTok.fontWeight || "400"}`
       );
     }
-    if (styles.bodyFontFamily && !styles.bodyFontFamily.startsWith("style:")) {
-      styleGuideFonts.push(
-        `family=${styles.bodyFontFamily.replace(/ +/g, "+")}:wght@${weightMap[styles.bodyFont] || "400"}`
+    if (bodyTok?.fontFamily && !bodyTok.fontFamily.startsWith("style:")) {
+      tokenFonts.push(
+        `family=${bodyTok.fontFamily.replace(/ +/g, "+")}:wght@${bodyTok.fontWeight || "400"}`
       );
     }
 
-    const allFamilies = [...families.split("&"), ...styleGuideFonts].join("&");
+    const allFamilies = [...families.split("&"), ...tokenFonts].join("&");
     const href = `https://fonts.googleapis.com/css2?${allFamilies}&display=swap`;
     const sheetrefs = getStyleSheets();
 
@@ -679,10 +684,6 @@ export function useDesignSystem(isOpen: boolean) {
     styles,
     updateStyle,
     // Font pickers
-    headingFontButtonRef,
-    bodyFontButtonRef,
-    openHeadingFontPicker,
-    openBodyFontPicker,
     openFontPicker,
     setFontDialog,
     // Style color pickers

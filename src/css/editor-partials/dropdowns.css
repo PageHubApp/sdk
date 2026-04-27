@@ -52,6 +52,10 @@
   font-size: inherit !important;
 }
 
+.pagehub-sdk-root.ph-select-content .ph-select-group {
+  font-size: 11px !important;
+}
+
 /* Item rows: inside Listbox panel (.ph-select-content) or any list shell (.ph-select-item-host). */
 .pagehub-sdk-root.ph-select-content .ph-select-item,
 .pagehub-sdk-root .ph-select-item-host .ph-select-item {

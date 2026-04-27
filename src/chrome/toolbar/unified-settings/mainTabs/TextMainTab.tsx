@@ -5,7 +5,6 @@ import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { getEditorVariableOptions } from "../../../../utils/editorVariableOptions";
 import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
-import { QuickLinkInput } from "../../inputs/action/LinkInput";
 import { IpsumGenerator } from "../../inputs/media/IpsumGenerator";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
@@ -89,7 +88,6 @@ export const TextMainTab = () => {
   return renderComponentSlots({
     Content: (
       <ToolbarSection collapsible={false}>
-        <QuickLinkInput />
         <IpsumGenerator propKey="text" propType="component" />
         <FormatControl />
         <div className="flex w-full gap-2 [&>*]:flex-1">

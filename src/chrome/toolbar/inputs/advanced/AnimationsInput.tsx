@@ -1,10 +1,9 @@
 import { useEditor, useNode } from "@craftjs/core";
-import React from "react";
+import React, { useState } from "react";
 import { cssAnimationPresets, isCSSAnimation } from "@/utils/animations";
 import { motionIt } from "@/utils/lib";
 import { applyAnimation } from "@/utils/tailwind";
-import { TbBolt, TbTimeline } from "react-icons/tb";
-import { TbRotate } from "react-icons/tb";
+import { TbPlayerPlay, TbRotate, TbTimeline } from "react-icons/tb";
 import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -88,6 +87,11 @@ export const AnimationsInput = () => {
 
   const isInScrollTimeline = useParentScrollTimeline();
   const stConfig = props.root?.scrollTimeline;
+
+  // Bumped on each Test click to remount the preview tile so the entrance
+  // animation replays. `key` already remounts on type change; this covers
+  // duration / delay / easing tweaks and "play it again" requests.
+  const [playCount, setPlayCount] = useState(0);
 
   const currentAnimation = props.root?.animation || "";
   const hasAnimation = !!currentAnimation;
@@ -179,6 +183,43 @@ export const AnimationsInput = () => {
       )}
 
       <>
+        {/* Preview stage — always visible. Click the tile to replay. */}
+        <div className="border-base-300 bg-base-200/40 mb-3 flex h-32 items-center justify-center overflow-hidden rounded-xl border">
+          {hasAnimation ? (
+            (() => {
+              const animProps = applyAnimation({}, props);
+              if (animProps.className?.includes("ph-anim-scroll")) {
+                animProps.className =
+                  animProps.className.replace("ph-anim-scroll", "").trim() + " ph-in-view";
+                delete animProps.ref;
+              }
+              return React.createElement(
+                motionIt(props, "div"),
+                { ...animProps, key: `${currentAnimation}-${playCount}` },
+                <button
+                  type="button"
+                  onClick={() => setPlayCount(n => n + 1)}
+                  className="border-base-300 bg-base-100 text-base-content hover:border-primary group flex size-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border shadow-sm transition-colors"
+                  aria-label="Replay animation"
+                >
+                  <TbPlayerPlay
+                    className="text-neutral-content group-hover:text-primary size-4 transition-colors"
+                    aria-hidden
+                  />
+                  <span className="text-[10px] font-medium tracking-wide uppercase">
+                    Replay
+                  </span>
+                </button>
+              );
+            })()
+          ) : (
+            <div className="text-neutral-content flex flex-col items-center gap-1.5 text-xs">
+              <div className="border-base-300 bg-base-100 size-16 rounded-lg border border-dashed" />
+              <span>Pick an animation to preview</span>
+            </div>
+          )}
+        </div>
+
         <div className="mb-2">
           <ToolbarSegmentedControl
             dense
@@ -338,25 +379,6 @@ export const AnimationsInput = () => {
             )}
           </>
         )}
-
-        {/* Live preview */}
-        {hasAnimation &&
-          (() => {
-            const animProps = applyAnimation({}, props);
-            // Force-unpause scroll animations in the preview so they play immediately
-            if (animProps.className?.includes("ph-anim-scroll")) {
-              animProps.className =
-                animProps.className.replace("ph-anim-scroll", "").trim() + " ph-in-view";
-              delete animProps.ref;
-            }
-            return React.createElement(
-              motionIt(props, "div"),
-              { ...animProps, key: currentAnimation },
-              <div className="bg-neutral text-neutral-content mx-auto mt-6 flex size-24 items-center justify-center rounded-xl">
-                Test
-              </div>
-            );
-          })()}
       </>
     </>
   );

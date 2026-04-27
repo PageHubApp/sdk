@@ -34,6 +34,11 @@ interface PopoverChipProps {
   variant?: "default" | "preview";
   /** Optional pill overlay rendered on top of `leading` in preview mode. */
   previewOverlay?: React.ReactNode;
+  /** Optional extra trailing affordances rendered INSIDE the chip frame,
+   *  before the X. Keep them small (`size-5` icon-button shape) — the frame
+   *  reserves a single trailing column. Used by show-hide action chips for
+   *  the eye-toggle peek button. */
+  trailingExtras?: React.ReactNode;
 }
 
 export const PopoverChip = forwardRef<HTMLButtonElement, PopoverChipProps>(function PopoverChip(
@@ -47,13 +52,19 @@ export const PopoverChip = forwardRef<HTMLButtonElement, PopoverChipProps>(funct
     summary,
     variant = "default",
     previewOverlay,
+    trailingExtras,
   },
   ref
 ) {
   return (
     <ToolbarRowFrame
       open={open}
-      trailing={<InlineClearButton onClick={onClear} tooltip={clearAriaLabel} />}
+      trailing={
+        <>
+          {trailingExtras}
+          <InlineClearButton onClick={onClear} tooltip={clearAriaLabel} />
+        </>
+      }
     >
       {variant === "preview" ? (
         <button
@@ -81,7 +92,7 @@ export const PopoverChip = forwardRef<HTMLButtonElement, PopoverChipProps>(funct
               {leading}
             </span>
           ) : null}
-          <span className="text-neutral-content flex-1 truncate">{summary}</span>
+          <span className="text-base-content flex-1 truncate">{summary}</span>
         </button>
       )}
     </ToolbarRowFrame>

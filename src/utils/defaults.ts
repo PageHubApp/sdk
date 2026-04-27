@@ -99,11 +99,7 @@ export const DEFAULT_STYLE_GUIDE = {
   spaceXl: "clamp(3.5rem, 1.75rem + 5.25vw, 6rem)", // 56px → 96px — statement: heroes, full-bleed CTAs
   spacingDensity: "1", // Master multiplier: 0.75 (compact) → 1.25 (airy)
 
-  // Typography - heading/body family strings back CSS vars; weights are Tailwind classes on nodes
-  headingFont: "font-bold", // Tailwind class for font weight
-  headingFontFamily: "Open Sans",
-  bodyFont: "font-normal", // Tailwind class for font weight
-  bodyFontFamily: "Open Sans",
+  // Heading/body fonts now live in theme.typography[] (see DEFAULT_CUSTOM_FONTS in useDesignSystem.ts)
   shadowStyle: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)", // shadow-lg
 
   // Form inputs

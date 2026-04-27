@@ -123,10 +123,11 @@ export function useDesignVars(): DesignVar[] {
 
     // Style guide vars with categories and labels
     const styleVarMap: Record<string, { category: string; label: string }> = {
+      // Sourced from theme.typography[] Heading/Body tokens via the orchestrator
       headingFontFamily: { category: "typography", label: "Heading Font Family" },
       bodyFontFamily: { category: "typography", label: "Body Font Family" },
-      headingFont: { category: "typography", label: "Heading Font Weight" },
-      bodyFont: { category: "typography", label: "Body Font Weight" },
+      headingFontWeight: { category: "typography", label: "Heading Font Weight" },
+      bodyFontWeight: { category: "typography", label: "Body Font Weight" },
       containerPadding: { category: "spacing", label: "Container Padding" },
       buttonPadding: { category: "spacing", label: "Button Padding" },
       sectionGap: { category: "spacing", label: "Section Gap" },

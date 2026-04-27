@@ -1,4 +1,3 @@
-import { QuickLinkInput } from "../../inputs/action/LinkInput";
 import { IconInput } from "../../inputs/media/IconInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -9,8 +8,6 @@ export const LinkMainTab = () =>
     Content: (
       <ToolbarSection collapsible={false}>
         <ToolbarItem propKey="text" type="text" label="Text" propType="component" />
-
-        <QuickLinkInput />
 
         <IconInput propKey="icon" />
       </ToolbarSection>

@@ -13,10 +13,11 @@ export const FONT_WEIGHT_MAP: Record<string, string> = {
 
 /** Style guide variable metadata: category + display label */
 export const STYLE_VAR_MAP: Record<string, { category: string; label: string }> = {
+  // Sourced from theme.typography[] Heading/Body tokens via the orchestrator
   headingFontFamily: { category: "typography", label: "Heading Font Family" },
   bodyFontFamily: { category: "typography", label: "Body Font Family" },
-  headingFont: { category: "typography", label: "Heading Font Weight" },
-  bodyFont: { category: "typography", label: "Body Font Weight" },
+  headingFontWeight: { category: "typography", label: "Heading Font Weight" },
+  bodyFontWeight: { category: "typography", label: "Body Font Weight" },
   containerPadding: { category: "spacing", label: "Container Padding" },
   buttonPadding: { category: "spacing", label: "Button Padding" },
   sectionGap: { category: "spacing", label: "Section Gap" },

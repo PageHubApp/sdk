@@ -12,10 +12,8 @@
  * UI sub-fields (path, subject, body, target) are derived from `href` for
  * friendly editing; the stored value is always one `href` string.
  */
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  TbArrowRight,
   TbExternalLink,
   TbHash,
   TbLink,
@@ -25,20 +23,15 @@ import {
 import { ChevronTrigger } from "../../../primitives/ChevronTrigger";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
 import { ToolbarRowFrame } from "../../../primitives/ToolbarRowFrame";
-import { useEditor, useNode } from "@craftjs/core";
+import { AnchoredPopover } from "../../../overlays/AnchoredPopover";
+import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
-import { useAtomState } from "@zedux/react";
-import { ToolbarDropdown } from "../../ToolbarDropdown";
+import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { useElementPicker } from "./useElementPicker";
 import {
-  ACTION_TYPE_OPTIONS,
-  migrateAction,
   type LinkAction,
   type LinkTarget,
-  type NodeAction,
 } from "../../../../utils/action";
-import { TabAtom } from "../../../viewport/atoms";
-import { scrollToSection } from "../../UnifiedTab";
 
 interface PageOption {
   id: string;
@@ -127,45 +120,7 @@ export function LinkInput({
 
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number; width: number } | null>(
-    null
-  );
-
-  // Recompute portal popover position relative to the combo wrapper.
-  useLayoutEffect(() => {
-    if (!open) return;
-    const update = () => {
-      const anchor = wrapperRef.current;
-      if (!anchor) return;
-      const rect = anchor.getBoundingClientRect();
-      setPopoverPos({
-        top: rect.bottom + 4,
-        left: rect.left,
-        width: rect.width,
-      });
-    };
-    update();
-    window.addEventListener("scroll", update, true);
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update, true);
-      window.removeEventListener("resize", update);
-    };
-  }, [open]);
-
-  // Close popover on outside click
-  useEffect(() => {
-    if (!open) return;
-    const onDocClick = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (triggerRef.current?.contains(t) || popoverRef.current?.contains(t)) return;
-      setOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
 
   // ─── Page list (CraftJS tree) ───
   const { pages } = useEditor(state => {
@@ -285,75 +240,73 @@ export function LinkInput({
         </div>
       </ToolbarRowFrame>
 
-      {/* Popover: Pages + Anchors — portaled, matches ToolbarDropdown chrome via .ph-select-content */}
-      {open &&
-        popoverPos &&
-        createPortal(
-        <div
-          ref={popoverRef}
-          className="pagehub-sdk-root ph-select-content fixed max-h-64 overflow-y-auto"
-          style={{
-            top: popoverPos.top,
-            left: popoverPos.left,
-            width: popoverPos.width,
-            zIndex: 12000,
-          }}
-        >
-          {pages.length > 0 && (
-            <>
-              <div className="text-neutral-content px-2 pt-1 pb-0.5 text-[10px] font-semibold tracking-wider uppercase">
-                Pages
-              </div>
-              {pages.map(p => {
-                const selected = parsed.pageId === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => handlePagePick(p.id)}
-                    data-selected={selected || undefined}
-                    className="ph-select-item"
-                  >
-                    <TbExternalLink className="size-3.5 shrink-0 opacity-70" />
-                    <span className="truncate">{p.displayName}</span>
-                  </button>
-                );
-              })}
-            </>
-          )}
-          {anchors.length > 0 && (
-            <>
-              <div className="text-neutral-content px-2 pt-2 pb-0.5 text-[10px] font-semibold tracking-wider uppercase">
-                Anchors
-              </div>
-              {anchors.map(a => {
-                const selected = parsed.kind === "anchor" && href === `#${a.anchor}`;
-                return (
-                  <button
-                    key={a.nodeId}
-                    type="button"
-                    onClick={() => handleAnchorPick(a.anchor)}
-                    data-selected={selected || undefined}
-                    className="ph-select-item"
-                  >
-                    <TbHash className="size-3.5 shrink-0 opacity-70" />
-                    <span className="truncate">{a.label}</span>
-                    <span className="text-neutral-content ml-auto truncate font-mono text-[10px]">
-                      #{a.anchor}
-                    </span>
-                  </button>
-                );
-              })}
-            </>
-          )}
-          {pages.length === 0 && anchors.length === 0 && (
-            <div className="text-neutral-content px-3 py-3 text-xs">
-              No pages or anchors found. Type a URL above.
+      {/* Pages + Anchors picker — AnchoredPopover + unified ph-select chrome */}
+      <AnchoredPopover
+        open={open}
+        onOpenChange={setOpen}
+        anchor={wrapperRef}
+        placement="bottom-start"
+        matchAnchorWidth={{ min: 240, max: 480 }}
+        ignoreOutsideClicks={[wrapperRef]}
+        className="pagehub-sdk-root ph-select-content max-h-64 overflow-y-auto"
+      >
+        {pages.length > 0 && (
+          <>
+            <div className="ph-select-group text-base-content px-2 pt-1 pb-1.5 font-bold">
+              Pages
             </div>
-          )}
-        </div>,
-          document.querySelector(".pagehub-sdk-root") ?? document.body
+            {pages.map(p => {
+              const selected = parsed.pageId === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => handlePagePick(p.id)}
+                  data-selected={selected || undefined}
+                  className="ph-select-item data-selected:bg-primary data-selected:text-primary-content"
+                >
+                  <TbExternalLink className="size-3.5 shrink-0 opacity-70" />
+                  <span className="truncate">{p.displayName}</span>
+                </button>
+              );
+            })}
+          </>
         )}
+        {anchors.length > 0 && (
+          <>
+            <div
+              className={`ph-select-group text-base-content px-2 pb-1.5 font-bold ${
+                pages.length > 0 ? "pt-2" : "pt-1"
+              }`}
+            >
+              Anchors
+            </div>
+            {anchors.map(a => {
+              const selected = parsed.kind === "anchor" && href === `#${a.anchor}`;
+              return (
+                <button
+                  key={a.nodeId}
+                  type="button"
+                  onClick={() => handleAnchorPick(a.anchor)}
+                  data-selected={selected || undefined}
+                  className="ph-select-item data-selected:bg-primary data-selected:text-primary-content"
+                >
+                  <TbHash className="size-3.5 shrink-0 opacity-70" />
+                  <span className="truncate">{a.label}</span>
+                  <span className="text-neutral-content ml-auto truncate font-mono text-[10px]">
+                    #{a.anchor}
+                  </span>
+                </button>
+              );
+            })}
+          </>
+        )}
+        {pages.length === 0 && anchors.length === 0 && (
+          <div className="text-neutral-content px-3 py-3 text-xs">
+            No pages or anchors found. Type a URL above.
+          </div>
+        )}
+      </AnchoredPopover>
 
       {/* Sub-fields by kind */}
       {parsed.kind === "page" && (
@@ -396,76 +349,18 @@ export function LinkInput({
         </>
       )}
 
-      {/* Target select — only for url/page (mailto/tel/anchor don't need it) */}
+      {/* Target toggle — only for url/page (mailto/tel/anchor don't need it) */}
       {(parsed.kind === "url" || parsed.kind === "page") && (
-        <ToolbarDropdown
-          value={target || "_self"}
-          onChange={(val: string) => writeTarget(val as LinkTarget)}
-          propKey="linkInputTarget"
-        >
-          <option value="_self">Same tab</option>
-          <option value="_blank">New tab</option>
-        </ToolbarDropdown>
-      )}
-    </div>
-  );
-}
-
-// ─── QuickLinkInput — wraps LinkInput for top-of-MainTab placement ─────
-
-/**
- * Reads/writes `props.action` directly via CraftJS `useNode`. When the action
- * isn't a link (e.g. modal, cart), shows a stub with a jump button to the full
- * Actions panel in the Interactions tab.
- *
- * Drop into the `Content` slot of Button/Link MainTabs.
- */
-export function QuickLinkInput() {
-  const {
-    actions: { setProp },
-    action,
-  } = useNode(node => {
-    const props = node.data.props;
-    // Run migrateAction so legacy types render as unified `link` here.
-    const single = (props.action as NodeAction | undefined) ?? migrateAction(props);
-    return { action: single };
-  });
-
-  const writeAction = (next: LinkAction) => {
-    setProp((props: any) => {
-      props.action = next;
-      // Keep `actions` array in sync (chained-actions compat).
-      if (Array.isArray(props.actions) && props.actions.length > 0) {
-        props.actions[0] = next;
-      } else if (Array.isArray(props.actions)) {
-        props.actions = [next];
-      }
-      // Clean up legacy props.
-      delete props.click;
-      delete props.url;
-      delete props.urlTarget;
-      delete props.clickMode;
-    });
-  };
-
-  // Non-link action: skip the quick row — the Action section below has full controls.
-  if (action && action.type !== "link") return null;
-
-  return (
-    <div className="flex items-center gap-0.5">
-      <label
-        htmlFor="ph-link-input"
-        className="text-base-content w-20 shrink-0 cursor-pointer truncate text-xs"
-      >
-        Link
-      </label>
-      <div className="min-w-0 flex-1">
-        <LinkInput
-          action={(action as LinkAction | null) ?? null}
-          onChange={writeAction}
-          placeholder="Page or URL..."
+        <ToolbarSegmentedControl<LinkTarget>
+          aria-label="Link target"
+          value={(target || "_self") as LinkTarget}
+          onChange={writeTarget}
+          options={[
+            { value: "_self", label: "Same tab" },
+            { value: "_blank", label: "New tab" },
+          ]}
         />
-      </div>
+      )}
     </div>
   );
 }

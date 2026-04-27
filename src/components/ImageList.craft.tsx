@@ -2,7 +2,7 @@
  * ImageList — Component definition via defineComponent()
  */
 import React from "react";
-import { TbPhoto, TbPhotoScan } from "react-icons/tb";
+import { TbCarouselHorizontal, TbPhoto } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { ImageList } from "./ImageList";
 import {
@@ -82,7 +82,7 @@ export const ImageListDef = defineComponent(
       {
         label: "Image Gallery",
         description: "Grid, masonry, or carousel image gallery.",
-        icon: TbPhotoScan,
+        icon: TbCarouselHorizontal,
         props: {
           className: "w-full p-space-sm flex-row gap-space-sm",
           showNavigation: true,

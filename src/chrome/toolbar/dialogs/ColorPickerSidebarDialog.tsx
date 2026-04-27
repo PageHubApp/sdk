@@ -3,8 +3,8 @@ import { TbColorPicker, TbDeviceFloppy, TbPalette } from "react-icons/tb";
 import { LeftSidebarDialog } from "./LeftSidebarDialog";
 import { useColorPickerState } from "./useColorPickerState";
 import { phStorage } from "../../../utils/phStorage";
+import { DesignSystemPalette } from "../inputs/color/DesignSystemPalette";
 import {
-  PaletteSection,
   RecentColorsSection,
   SpecialColorsSection,
   TailwindColorsSection,
@@ -20,7 +20,6 @@ export function ColorPickerSidebarDialog() {
     selectedColor,
     recentColors,
     setRecentColors,
-    palette,
     isEyeDropperSupported,
     handleClose,
     handleColorSelect,
@@ -28,7 +27,6 @@ export function ColorPickerSidebarDialog() {
     handleHexSubmit,
     handleEyeDropper,
     handleSaveToPalette,
-    handleRemoveFromPalette,
   } = useColorPickerState();
 
   const headerRight = (
@@ -117,14 +115,11 @@ export function ColorPickerSidebarDialog() {
         </div>
 
         {/* Design System Palette */}
-        {dialog.showPalette && palette.length > 0 && (
+        {dialog.showPalette && (
           <div className="mb-4">
-            <PaletteSection
-              palette={palette}
+            <DesignSystemPalette
               selectedColor={selectedColor}
-              onSelect={handleColorSelect}
-              onDoubleClick={handleColorDoubleClick}
-              onRemove={handleRemoveFromPalette}
+              onSelect={paletteValue => handleColorSelect("palette", paletteValue)}
             />
           </div>
         )}

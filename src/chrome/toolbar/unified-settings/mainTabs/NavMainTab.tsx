@@ -2,7 +2,7 @@ import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { atom, useAtomState } from "@zedux/react";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { IconInput } from "../../inputs/media/IconInput";
-import ActionInput from "../../inputs/action/ActionInput";
+import { ActionsInput } from "../../inputs/action/ActionsInput";
 import { CraftListEditor } from "../../inputs/preset/CraftListEditor";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -86,7 +86,7 @@ export const NavMainTab = () => {
           }}
           renderPopover={(link: any) => (
             <NodeProvider id={link.id}>
-              <ActionInput />
+              <ActionsInput />
               <IconInput
                 propKey="icon"
                 propType="component"
