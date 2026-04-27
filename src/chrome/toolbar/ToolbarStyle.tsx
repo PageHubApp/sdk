@@ -3,8 +3,8 @@ import type { MouseEvent } from "react";
 import { useCallback } from "react";
 import { TbInfoCircle } from "react-icons/tb";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
-import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
 import { ToolbarLabel } from "./Label";
+import { BreakpointChip } from "./breakpoint-chip/BreakpointChip";
 
 export { BreakpointBadge } from "./BreakpointBadge";
 
@@ -24,41 +24,35 @@ function useTruncateRef() {
 
 export const MobileDesktopLabels = ({
   lab,
-  prefix,
-  suffix,
+  prefix: _prefix,
+  suffix: _suffix,
   propType = "class",
   propKey,
   index = null,
   propItemKey = null,
-  icon,
-  showDeleteIcon,
-  showVarSelector,
-  varSelectorPrefix,
+  icon: _icon,
+  showDeleteIcon: _showDeleteIcon,
+  showVarSelector: _showVarSelector,
+  varSelectorPrefix: _varSelectorPrefix,
 }: any) => {
   if (!propKey) return null;
   if (propType === "root" || propType === "component") return null;
   return (
     <div className="flex shrink-0 items-center gap-1">
-      {VIEW_BREAKPOINT_SCOPE_KEYS.map(bp => (
-        <ToolbarLabel
-          key={bp}
-          lab={lab || propKey}
-          prefix={prefix}
-          suffix={suffix}
-          propKey={propKey}
-          viewValue={bp}
-          propType={propType}
-          index={index}
-          propItemKey={propItemKey}
-          icon={icon}
-          showDeleteIcon={showDeleteIcon}
-          showVarSelector={showVarSelector}
-          varSelectorPrefix={varSelectorPrefix}
-        />
-      ))}
+      <BreakpointChip
+        propKey={propKey}
+        propType={propType}
+        index={index}
+        propItemKey={propItemKey}
+        label={lab || propKey}
+      />
     </div>
   );
 };
+
+// Suppress unused-import warning — ToolbarLabel is still consumed by other surfaces
+// (icon-only delete buttons, var selectors) elsewhere in the codebase.
+void ToolbarLabel;
 
 /** @deprecated Global tooltip handles truncated labels — kept for import compat, renders nothing. */
 export const TruncatedLabelTooltip = () => null;

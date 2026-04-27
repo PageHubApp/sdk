@@ -139,3 +139,36 @@ export const EditorModeAtom = atom<EditorMode>(
     return "content";
   })()
 );
+
+/**
+ * Per-field breakpoint indicator chip density preference.
+ *  - `auto`   → render only when there's something to say (silent-when-clean).
+ *  - `always` → render every chip, faint hollow ring at base.
+ *  - `off`    → never render.
+ * Persisted via phStorage so user pref survives page reloads.
+ */
+export type IndicatorDensity = "auto" | "always" | "off";
+export const IndicatorDensityAtom = atom<IndicatorDensity>(
+  "indicatorDensity",
+  (() => {
+    try {
+      const saved = typeof window !== "undefined" ? phStorage.get("indicator-density") : null;
+      if (saved === "auto" || saved === "always" || saved === "off") return saved;
+    } catch {}
+    return "auto";
+  })()
+);
+
+/**
+ * Optional side-by-side editing mode. When `enabled`, ViewportShell renders a
+ * second read-only frame mirroring the primary canvas at `secondaryView` width.
+ * Always disabled by default; flag-off path is bit-identical to today.
+ */
+export type SideBySideShape = {
+  enabled: boolean;
+  secondaryView: ViewMode;
+};
+export const SideBySideAtom = atom<SideBySideShape>("sideBySide", {
+  enabled: false,
+  secondaryView: "mobile",
+});

@@ -70,6 +70,7 @@ import { EditorNavigation } from "./EditorNavigation";
 
 import { NodeBreadcrumb } from "./NodeBreadcrumb";
 import { SiteSettingsModal } from "./SiteSettingsModal";
+import { ChipPopover } from "../toolbar/breakpoint-chip/ChipPopover";
 
 import { useSDK } from "../../core/context";
 import type { ViewMode as CanvasViewMode } from "../../core/store";
@@ -717,6 +718,9 @@ export const Header = () => {
           <ModifiersModal isOpen onClose={() => setIsModifiersModalOpen(false)} />
         </Suspense>
       )}
+
+      {/* Singleton breakpoint-chip popover — anchored to whichever chip is open. */}
+      <ChipPopover />
     </>
   );
 };

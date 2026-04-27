@@ -1,14 +1,17 @@
 import { DEFAULT_BREAKPOINTS, DENSITY_STEPS } from "@/utils/defaults";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
-import { useAtomValue } from "@zedux/react";
+import { useAtomState, useAtomValue } from "@zedux/react";
 import { ToolbarDropdown } from "../../../toolbar/ToolbarDropdown";
 import { ToolbarSection } from "../../../toolbar/ToolbarSection";
 import type { UseDesignSystemReturn } from "../hooks/useDesignSystem";
 import {
   AppliedBreakpointsAtom,
   type AppliedBreakpointsShape,
+  IndicatorDensityAtom,
+  type IndicatorDensity,
 } from "../../atoms";
+import { phStorage } from "../../../../utils/phStorage";
 import { rewriteBreakpoints } from "../../../../utils/breakpointRewrite";
 
 interface StylesTabProps {
@@ -669,6 +672,50 @@ export function StylesTab({ ds }: StylesTabProps) {
       >
         <BreakpointsSection />
       </ToolbarSection>
+
+      <ToolbarSection title="Editor preferences" defaultOpen={false} showChevron>
+        <IndicatorDensityRow />
+      </ToolbarSection>
+    </div>
+  );
+}
+
+function IndicatorDensityRow() {
+  const [density, setDensity] = useAtomState(IndicatorDensityAtom);
+  const choose = (next: IndicatorDensity) => {
+    setDensity(next);
+    phStorage.set("indicator-density", next);
+  };
+  const opts: { id: IndicatorDensity; label: string; desc: string }[] = [
+    { id: "auto", label: "Auto", desc: "Show only when overridden" },
+    { id: "always", label: "Always", desc: "Show on every property" },
+    { id: "off", label: "Off", desc: "Hide all chips" },
+  ];
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-base-content text-xs font-medium">Indicator density</label>
+      <p className="text-neutral-content text-[10px] leading-snug">
+        Per-property breakpoint chips next to labels. Right-click a chip for reset / promote /
+        copy commands.
+      </p>
+      <div className="bg-base-200 mt-1 inline-flex gap-px rounded-md p-0.5">
+        {opts.map(opt => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => choose(opt.id)}
+            aria-pressed={density === opt.id}
+            aria-label={`${opt.label}: ${opt.desc}`}
+            className={`flex-1 cursor-pointer rounded px-2 py-1 text-[11px] transition-colors ${
+              density === opt.id
+                ? "bg-base-100 text-base-content font-semibold shadow-sm"
+                : "text-neutral-content hover:text-base-content"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

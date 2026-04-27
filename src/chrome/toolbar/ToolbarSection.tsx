@@ -2,9 +2,9 @@ import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar"
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useEffect, useState } from "react";
 import { TbChevronRight } from "react-icons/tb";
-import { VIEW_BREAKPOINT_SCOPE_KEYS } from "../../utils/tailwind/className";
 import { useAccordionContext } from "./AccordionContext";
-import { ToolbarLabel } from "./Label";
+import { BreakpointChip } from "./breakpoint-chip/BreakpointChip";
+import { useSectionHasAnyOverride } from "./breakpoint-chip/useSectionHasAnyOverride";
 
 export const ToolbarSection = ({
   title,
@@ -14,6 +14,7 @@ export const ToolbarSection = ({
   enabled = true,
   onClick,
   propKey,
+  propKeys,
   tabClass = true,
   className = "",
   bodyClassName = "",
@@ -30,6 +31,9 @@ export const ToolbarSection = ({
   accordionPassive = false,
   disabled = false,
 }: any) => {
+  // Aggregate dot — true when any prop in `propKeys` has at least one non-base
+  // override on the active node. Hidden when density is "off".
+  const hasOverride = useSectionHasAnyOverride(propKeys, "class");
   const accordionCtx = useAccordionContext();
   const managed = accordionCtx && collapsible && title && !accordionPassive;
 
@@ -117,6 +121,12 @@ export const ToolbarSection = ({
                 )}
                 {icon && <span className="text-neutral-content opacity-70">{icon}</span>}
                 {title}
+                {hasOverride && (
+                  <span
+                    className="bg-primary inline-block size-1.5 rounded-full"
+                    aria-label="Section has breakpoint overrides"
+                  />
+                )}
               </div>
 
               {(propKey || header) && (
@@ -128,16 +138,7 @@ export const ToolbarSection = ({
                   className="flex max-w-[min(100%,20rem)] min-w-0 shrink-0 flex-nowrap items-center justify-end gap-1"
                   onClick={e => e.stopPropagation()}
                 >
-                  {propKey &&
-                    VIEW_BREAKPOINT_SCOPE_KEYS.map(bp => (
-                      <ToolbarLabel
-                        key={bp}
-                        lab={propKey}
-                        propKey={propKey}
-                        viewValue={bp}
-                        iconOnly
-                      />
-                    ))}
+                  {propKey && <BreakpointChip propKey={propKey} label={title} />}
                   {header}
                 </div>
               )}
