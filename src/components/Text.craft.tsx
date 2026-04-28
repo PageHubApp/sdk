@@ -148,7 +148,7 @@ export const TextDef = defineComponent(
         description: "Large heading text.",
         props: {
           text: titleLorem.generateWords(4),
-          className: "text-2xl md:text-4xl",
+          className: "text-4xl",
         },
       },
       {
@@ -157,7 +157,7 @@ export const TextDef = defineComponent(
         description: "Secondary heading text.",
         props: {
           text: lorem.generateSentences(1),
-          className: "text-lg md:text-xl",
+          className: "text-xl",
         },
       },
       {
