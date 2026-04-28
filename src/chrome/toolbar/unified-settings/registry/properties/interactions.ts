@@ -123,7 +123,7 @@ export const interactionProperties: PropertyDef[] = [
           label: "Style",
           section: "hover",
           keywords: ["hover", "border", "style", "solid", "dashed", "dotted"],
-          input: { type: "tailwind-select", tailwindKey: "borderStyle" },
+          input: { type: "universal", tailwindKey: "borderStyle" },
           propKey: "borderStyle",
           index: "hover",
           inline: true,

@@ -139,7 +139,7 @@ export const appearanceProperties: PropertyDef[] = [
           label: "Style",
           section: "styles",
           keywords: ["style", "solid", "dashed", "dotted", "double", "none"],
-          input: { type: "tailwind-select", tailwindKey: "borderStyle" },
+          input: { type: "universal", tailwindKey: "borderStyle" },
           inline: true,
         },
         {
@@ -200,7 +200,7 @@ export const appearanceProperties: PropertyDef[] = [
           label: "X",
           section: "styles",
           keywords: ["divide", "horizontal", "separator", "x"],
-          input: { type: "tailwind-select", tailwindKey: "divideX" },
+          input: { type: "universal", tailwindKey: "divideX" },
           inline: true,
         },
         {
@@ -208,7 +208,7 @@ export const appearanceProperties: PropertyDef[] = [
           label: "Y",
           section: "styles",
           keywords: ["divide", "vertical", "separator", "y"],
-          input: { type: "tailwind-select", tailwindKey: "divideY" },
+          input: { type: "universal", tailwindKey: "divideY" },
           inline: true,
         },
         {
@@ -216,7 +216,7 @@ export const appearanceProperties: PropertyDef[] = [
           label: "Style",
           section: "styles",
           keywords: ["divide", "style", "solid", "dashed", "dotted"],
-          input: { type: "tailwind-select", tailwindKey: "divideStyle" },
+          input: { type: "universal", tailwindKey: "divideStyle" },
           inline: true,
         },
         {
@@ -334,7 +334,7 @@ export const appearanceProperties: PropertyDef[] = [
           label: "Style",
           section: "styles",
           keywords: ["outline", "style"],
-          input: { type: "tailwind-select", tailwindKey: "outlineStyle" },
+          input: { type: "universal", tailwindKey: "outlineStyle" },
           inline: true,
         },
       ],

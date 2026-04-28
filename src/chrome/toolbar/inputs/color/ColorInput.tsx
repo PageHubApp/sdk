@@ -21,6 +21,8 @@ import { Wrap } from "../../ToolbarStyle";
 import { TokenPicker } from "./TokenPicker";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
 import { ToolbarRowFrame } from "../../../primitives/ToolbarRowFrame";
+import { useRegisterFloatingPanelPortal } from "../../../floating/FloatingPanel";
+import type { ReactNode } from "react";
 
 export const ColorInput = (__props: any) => {
   const {
@@ -209,28 +211,44 @@ export const ColorInput = (__props: any) => {
         </ToolbarRowFrame>
       </Wrap>
 
-      {isOpen &&
-        popoverPos &&
-        createPortal(
-          <div
-            className="pagehub-sdk-root fixed z-[1200]"
-            style={{ top: popoverPos.top, right: popoverPos.right }}
-            data-floating-allow
-          >
-            <div className="border-base-300 bg-base-200 rounded-xl border shadow-xl">
-              <TokenPicker
-                variant="panel"
-                value={pickerValue}
-                onChange={data => {
-                  changed(data);
-                }}
-                onClose={() => setIsOpen(false)}
-                onClear={clearColor}
-              />
-            </div>
-          </div>,
-          document.querySelector(".pagehub-sdk-root") || document.body
-        )}
+      {isOpen && popoverPos && (
+        <ColorPickerPortal top={popoverPos.top} right={popoverPos.right}>
+          <div className="border-base-300 bg-base-200 rounded-xl border shadow-xl">
+            <TokenPicker
+              variant="panel"
+              value={pickerValue}
+              onChange={data => {
+                changed(data);
+              }}
+              onClose={() => setIsOpen(false)}
+              onClear={clearColor}
+            />
+          </div>
+        </ColorPickerPortal>
+      )}
     </div>
   );
 };
+
+function ColorPickerPortal({
+  top,
+  right,
+  children,
+}: {
+  top: number;
+  right: number;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useRegisterFloatingPanelPortal(ref);
+  return createPortal(
+    <div
+      ref={ref}
+      className="pagehub-sdk-root fixed z-[1200]"
+      style={{ top, right }}
+    >
+      {children}
+    </div>,
+    document.querySelector(".pagehub-sdk-root") || document.body
+  );
+}

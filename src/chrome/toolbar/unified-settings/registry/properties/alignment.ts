@@ -1,20 +1,26 @@
 /**
  * Alignment / Layout section — all props split out from the old AlignmentBody.
- *
- * Each prop self-hides via `showWhen` based on the node's resolved layout mode
- * (flex / grid / block). Mode is detected from className: presence of `flex`
- * or `grid` keywords; flex-row/flex-col distinguishes flex direction.
- *
- * Helpers:
- *  - isFlex(cn): contains `flex` and not `grid`
- *  - isGrid(cn): contains `grid`
- *  - isFlexOrGrid(cn): contains either
+ * Every prop is always offered (no `showWhen` gate on display mode); picking
+ * one writes the class regardless of whether the parent is flex/grid yet, and
+ * the user picks a layout from the Layout chip when they want flex/grid to
+ * actually take effect.
  */
 import React from "react";
 import {
+  TbAlignBoxCenterStretch,
+  TbBaseline,
   TbBoxPadding,
   TbGridDots,
   TbGridScan,
+  TbLayoutAlignBottom,
+  TbLayoutAlignCenter,
+  TbLayoutAlignLeft,
+  TbLayoutAlignMiddle,
+  TbLayoutAlignRight,
+  TbLayoutAlignTop,
+  TbLayoutDistributeHorizontal,
+  TbSpace,
+  TbSpaces,
   TbSpacingHorizontal,
   TbSquare,
 } from "react-icons/tb";
@@ -22,9 +28,8 @@ import type { PropertyDef } from "../propertyDefs";
 
 const SPACING_TYPES = ["tailwind", "calc", "px", "em", "rem", "%"] as const;
 
-const isFlex = (cn: string) => /\bflex\b/.test(cn);
-const isGrid = (cn: string) => /\bgrid\b/.test(cn);
-const isFlexOrGrid = (cn: string) => isFlex(cn) || isGrid(cn);
+const icoEl = (Cmp: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>) =>
+  React.createElement(Cmp, { className: "size-3.5 shrink-0", "aria-hidden": true });
 
 export const alignmentProperties: PropertyDef[] = [
   // ─── Container-only layout preset (always visible — slot self-hides
@@ -46,7 +51,6 @@ export const alignmentProperties: PropertyDef[] = [
     section: "alignment",
     keywords: ["direction", "row", "column", "flex"],
     input: { type: "custom", component: "FlexDirectionInput" },
-    showWhen: isFlex,
     pinned: false,
     sortOrder: 0,
   },
@@ -77,7 +81,6 @@ export const alignmentProperties: PropertyDef[] = [
         },
       ],
     },
-    showWhen: isFlexOrGrid,
     pinned: false,
     sortOrder: 5,
   },
@@ -101,7 +104,6 @@ export const alignmentProperties: PropertyDef[] = [
         },
       ],
     },
-    showWhen: isFlex,
     sortOrder: 6,
   },
   {
@@ -109,8 +111,21 @@ export const alignmentProperties: PropertyDef[] = [
     label: "Align",
     section: "alignment",
     keywords: ["align", "items", "vertical", "cross"],
-    input: { type: "tailwind-radio", tailwindKey: "alignItems", cols: true },
-    showWhen: isFlex,
+    input: {
+      type: "tailwind-radio",
+      tailwindKey: "alignItems",
+      cols: true,
+      // Icons match the cross-axis intuition for row-direction flex (the
+      // default). Hover tooltips carry the value name. Order: start → center →
+      // end → baseline → stretch (visual top-to-bottom + special cases last).
+      options: [
+        { label: icoEl(TbLayoutAlignTop), value: "items-start", hint: "Start" },
+        { label: icoEl(TbLayoutAlignMiddle), value: "items-center", hint: "Center" },
+        { label: icoEl(TbLayoutAlignBottom), value: "items-end", hint: "End" },
+        { label: icoEl(TbBaseline), value: "items-baseline", hint: "Baseline" },
+        { label: icoEl(TbAlignBoxCenterStretch), value: "items-stretch", hint: "Stretch" },
+      ],
+    },
     sortOrder: 10,
   },
   {
@@ -118,8 +133,23 @@ export const alignmentProperties: PropertyDef[] = [
     label: "Justify",
     section: "alignment",
     keywords: ["justify", "content", "horizontal", "main"],
-    input: { type: "tailwind-radio", tailwindKey: "justifyContent", cols: true },
-    showWhen: isFlex,
+    input: {
+      type: "tailwind-radio",
+      tailwindKey: "justifyContent",
+      cols: true,
+      // Main-axis distribution. Icons match row-direction intuition; tooltips
+      // carry the value name. between/around/evenly all share the same family
+      // (no dedicated tabler icons), distinguished by tooltip + slight reuse
+      // of TbSpaces vs TbSpace for around/evenly.
+      options: [
+        { label: icoEl(TbLayoutAlignLeft), value: "justify-start", hint: "Start" },
+        { label: icoEl(TbLayoutAlignCenter), value: "justify-center", hint: "Center" },
+        { label: icoEl(TbLayoutAlignRight), value: "justify-end", hint: "End" },
+        { label: icoEl(TbLayoutDistributeHorizontal), value: "justify-between", hint: "Between" },
+        { label: icoEl(TbSpaces), value: "justify-around", hint: "Around" },
+        { label: icoEl(TbSpace), value: "justify-evenly", hint: "Evenly" },
+      ],
+    },
     sortOrder: 11,
   },
 
@@ -129,8 +159,17 @@ export const alignmentProperties: PropertyDef[] = [
     label: "Justify Items",
     section: "alignment",
     keywords: ["justify", "items"],
-    input: { type: "tailwind-radio", tailwindKey: "justifyItems", cols: true },
-    showWhen: isFlex,
+    input: {
+      type: "tailwind-radio",
+      tailwindKey: "justifyItems",
+      cols: true,
+      options: [
+        { label: icoEl(TbLayoutAlignLeft), value: "justify-items-start", hint: "Start" },
+        { label: icoEl(TbLayoutAlignCenter), value: "justify-items-center", hint: "Center" },
+        { label: icoEl(TbLayoutAlignRight), value: "justify-items-end", hint: "End" },
+        { label: icoEl(TbAlignBoxCenterStretch), value: "justify-items-stretch", hint: "Stretch" },
+      ],
+    },
     sortOrder: 100,
   },
   {
@@ -138,8 +177,19 @@ export const alignmentProperties: PropertyDef[] = [
     label: "Align Self",
     section: "alignment",
     keywords: ["align", "self"],
-    input: { type: "tailwind-radio", tailwindKey: "alignSelf", cols: true },
-    showWhen: isFlex,
+    input: {
+      type: "tailwind-radio",
+      tailwindKey: "alignSelf",
+      cols: true,
+      options: [
+        { label: icoEl(TbSquare), value: "self-auto", hint: "Auto" },
+        { label: icoEl(TbLayoutAlignTop), value: "self-start", hint: "Start" },
+        { label: icoEl(TbLayoutAlignMiddle), value: "self-center", hint: "Center" },
+        { label: icoEl(TbLayoutAlignBottom), value: "self-end", hint: "End" },
+        { label: icoEl(TbBaseline), value: "self-baseline", hint: "Baseline" },
+        { label: icoEl(TbAlignBoxCenterStretch), value: "self-stretch", hint: "Stretch" },
+      ],
+    },
     sortOrder: 110,
   },
   {
@@ -147,8 +197,18 @@ export const alignmentProperties: PropertyDef[] = [
     label: "Justify Self",
     section: "alignment",
     keywords: ["justify", "self"],
-    input: { type: "tailwind-radio", tailwindKey: "justifySelf", cols: true },
-    showWhen: isFlex,
+    input: {
+      type: "tailwind-radio",
+      tailwindKey: "justifySelf",
+      cols: true,
+      options: [
+        { label: icoEl(TbSquare), value: "justify-self-auto", hint: "Auto" },
+        { label: icoEl(TbLayoutAlignLeft), value: "justify-self-start", hint: "Start" },
+        { label: icoEl(TbLayoutAlignCenter), value: "justify-self-center", hint: "Center" },
+        { label: icoEl(TbLayoutAlignRight), value: "justify-self-end", hint: "End" },
+        { label: icoEl(TbAlignBoxCenterStretch), value: "justify-self-stretch", hint: "Stretch" },
+      ],
+    },
     sortOrder: 120,
   },
   {
@@ -167,7 +227,6 @@ export const alignmentProperties: PropertyDef[] = [
         { label: "Fixed", value: "flex-none", hint: "Keep content size; no grow or shrink" },
       ],
     },
-    showWhen: isFlex,
     sortOrder: 130,
   },
 
@@ -179,7 +238,6 @@ export const alignmentProperties: PropertyDef[] = [
     section: "alignment",
     keywords: ["place", "content", "grid"],
     input: { type: "tailwind-radio", tailwindKey: "placeContent", cols: true },
-    showWhen: isGrid,
     sortOrder: 22,
   },
 
@@ -189,7 +247,6 @@ export const alignmentProperties: PropertyDef[] = [
     label: "Span",
     section: "alignment",
     keywords: ["grid", "span", "column", "row"],
-    showWhen: isGrid,
     sortOrder: 200,
     input: {
       type: "bundle",
@@ -200,7 +257,7 @@ export const alignmentProperties: PropertyDef[] = [
           label: "Col Span",
           section: "alignment",
           keywords: ["grid", "column", "span"],
-          input: { type: "tailwind-select", tailwindKey: "gridColSpan" },
+          input: { type: "universal", tailwindKey: "gridColSpan" },
           inline: true,
         },
         {
@@ -208,7 +265,7 @@ export const alignmentProperties: PropertyDef[] = [
           label: "Row Span",
           section: "alignment",
           keywords: ["grid", "row", "span"],
-          input: { type: "tailwind-select", tailwindKey: "gridRowSpan" },
+          input: { type: "universal", tailwindKey: "gridRowSpan" },
           inline: true,
         },
       ],
@@ -221,7 +278,6 @@ export const alignmentProperties: PropertyDef[] = [
     label: "Place",
     section: "alignment",
     keywords: ["place", "items", "self", "grid"],
-    showWhen: isGrid,
     sortOrder: 220,
     input: {
       type: "bundle",

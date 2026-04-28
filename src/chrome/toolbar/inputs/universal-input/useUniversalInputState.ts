@@ -65,6 +65,11 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
   const [inputValue, setInputValue] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  // Tracks whether the user has actually arrow-keyed into the option list yet.
+  // Without this, `selectedIndex = 0` would always highlight the first option
+  // on open even when the cursor never moved — confusingly distinct from the
+  // already-selected value.
+  const [kbdNavActive, setKbdNavActive] = useState(false);
   const [isTypeSelectorOpen, setIsTypeSelectorOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const typeSelectorRef = useRef<HTMLDivElement>(null);
@@ -302,6 +307,8 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
     setIsEditing,
     selectedIndex,
     setSelectedIndex,
+    kbdNavActive,
+    setKbdNavActive,
     isTypeSelectorOpen,
     setIsTypeSelectorOpen,
     selectedType,

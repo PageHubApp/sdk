@@ -105,6 +105,11 @@ export const AccordionAddMenu = React.memo(
       .filter(p => !p.hideKey || !hiddenKeys.has(p.hideKey))
       .filter(p => !p.showWhen || p.showWhen(className, showWhenProps))
       .filter(p => !orderSet.has(p.id))
+      // Session-added rows already render in the body via `wasJustAdded` even
+      // when the user hasn't set a value yet. Hide them from the picker so the
+      // same row can't appear in both places (e.g. pick Align with no class
+      // set → row mounts via sessionAdded → picker would still offer Align).
+      .filter(p => !sessionAdded.has(sessionKey(id, p.id)))
       .filter(p => {
         // Custom isActive (e.g. popover-mode rows whose value lives on a
         // nested prop or as className tokens) — exclude active items so the
@@ -131,6 +136,8 @@ export const AccordionAddMenu = React.memo(
     hiddenKeys,
     orderSet,
     activeCtx,
+    sessionAdded,
+    id,
   ]);
 
   useImperativeHandle(

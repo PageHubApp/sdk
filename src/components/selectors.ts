@@ -117,6 +117,12 @@ export interface BaseSelectorProps {
 
   /** Editor/AI only — design intent (notes + tags), merged with ROOT/ancestors in prompts. Not rendered. */
   design?: DesignProps;
+
+  /**
+   * Inline handler bodies keyed by React event prop names (`onClick`, …).
+   * Values are small JS snippets compiled at runtime; see `addCustomHandlers`.
+   */
+  handlers?: Record<string, string>;
 }
 
 /**

@@ -302,7 +302,7 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
       showPreview: "shadow",
     },
   },
-  borderStyle: COMMON_NAMED_ONLY_LAYOUT,
+  borderStyle: COMMON_NAMED_OTHER_COLUMN,
 
   // ========== OPACITY ==========
   opacity: {
@@ -341,8 +341,8 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
   },
 
   // ========== LAYOUT & DISPLAY ==========
-  display: COMMON_NAMED_ONLY_LAYOUT,
-  position: COMMON_NAMED_ONLY_LAYOUT,
+  display: COMMON_NAMED_OTHER_COLUMN,
+  position: COMMON_NAMED_OTHER_COLUMN,
   cursor: {
     layout: "left-right",
     columns: {
@@ -376,7 +376,7 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
       showHints: false,
     },
   },
-  scrollBehavior: COMMON_NAMED_ONLY_LAYOUT,
+  scrollBehavior: COMMON_NAMED_OTHER_COLUMN,
   scrollSnapType: COMMON_NAMED_OTHER_SPLIT_LAYOUT,
   scrollSnapAlign: COMMON_NAMED_OTHER_SPLIT_LAYOUT,
   scrollSnapStop: COMMON_NAMED_OTHER_SPLIT_LAYOUT,
@@ -390,9 +390,11 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
   justifyContent: COMMON_NAMED_ONLY_LAYOUT,
 
   // ========== TYPOGRAPHY ==========
-  fontSize: COMMON_NAMED_ONLY_LAYOUT,
-  fontWeight: COMMON_NAMED_ONLY_LAYOUT,
-  textAlign: COMMON_NAMED_ONLY_LAYOUT,
+  // Most typography scale values (text-xs / text-sm / text-base / font-bold / …)
+  // bucket into `other` after the prefix is stripped, so we need both groups.
+  fontSize: COMMON_NAMED_OTHER_COLUMN,
+  fontWeight: COMMON_NAMED_OTHER_COLUMN,
+  textAlign: COMMON_NAMED_OTHER_COLUMN,
 
   // ========== CLASS EFFECTS (Tailwind transition / transform / filter / backdrop) ==========
   transitionProperty: COMMON_NAMED_OTHER_COLUMN,
@@ -409,7 +411,7 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
   skewX: COMMON_NUMERIC_LAYOUT,
   skewY: COMMON_NUMERIC_LAYOUT,
   transformOrigin: COMMON_NAMED_OTHER_COLUMN,
-  twTransform: COMMON_NAMED_ONLY_LAYOUT,
+  twTransform: COMMON_NAMED_OTHER_COLUMN,
   blur: COMMON_NUMERIC_LAYOUT,
   brightness: COMMON_NUMERIC_LAYOUT,
   contrast: COMMON_NUMERIC_LAYOUT,
@@ -539,6 +541,8 @@ export const getLayoutConfig = (propTag?: string, tailwindKey?: string): Dropdow
     return DROPDOWN_LAYOUTS[tailwindKey];
   }
 
-  // Default to simple stacked layout if no config found
-  return COMMON_NAMED_ONLY_LAYOUT;
+  // Default fallback shows both named + other so multi-segment tailwind values
+  // (e.g. `pointer-events-auto`, `border-solid`) that bucket into `other` stay
+  // visible. NAMED_ONLY would silently hide them.
+  return COMMON_NAMED_OTHER_COLUMN;
 };

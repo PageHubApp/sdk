@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   TbArrowNarrowDown,
   TbArrowNarrowLeft,
@@ -22,11 +22,9 @@ import {
   TbZoomIn,
   TbZoomOut,
 } from "react-icons/tb";
-import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { AnchoredPopover } from "../../../overlays/AnchoredPopover";
 import { OVERLAY_Z_UNIFIED_DROPDOWN } from "../../../overlays/overlayZIndex";
 import { getLayoutConfig, groupFractionsByDenominator, groupNumericByRange } from "./config";
-import { useDesignVars } from "./hooks/useDesignVars";
 import { SubgroupItem } from "./SubgroupComponents";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 
@@ -47,6 +45,8 @@ interface UnifiedDropdownProps {
   tailwindKey?: string;
   currentValue?: string;
   selectedType?: string;
+  /** Option string the keyboard cursor is on (for arrow-key highlight in grouped view). */
+  highlightedOption?: string;
 }
 
 export function UnifiedDropdown({
@@ -60,19 +60,13 @@ export function UnifiedDropdown({
   tailwindKey,
   currentValue,
   selectedType,
+  highlightedOption,
 }: UnifiedDropdownProps) {
-  const [varSearchTerm, setVarSearchTerm] = useState("");
-
   // Get layout configuration for this property type
   const layoutConfig = getLayoutConfig(propTag, tailwindKey);
 
-  // Get real design system vars from extracted hook
-  const realDesignVars = useDesignVars();
-
-  // Determine what to show based on selectedType
-  const isVarMode = selectedType === "var";
-
-  // Don't show dropdown if there's nothing to display
+  // Don't show dropdown if there's nothing to display. Var mode is owned by
+  // VarPicker — UnifiedDropdown is tailwind-only.
   const hasOptions =
     options &&
     (options.named.length > 0 ||
@@ -80,9 +74,8 @@ export function UnifiedDropdown({
       options.fractions.length > 0 ||
       options.tokens.length > 0 ||
       options.other.length > 0);
-  const hasDesignVars = showVarSelector && realDesignVars.length > 0;
 
-  const showDropdown = isVarMode ? Boolean(hasDesignVars) : Boolean(hasOptions);
+  const showDropdown = Boolean(hasOptions);
 
   const vw = typeof window !== "undefined" ? window.innerWidth : 1536;
   const maxPanel = Math.min(vw - 16, 320);
@@ -242,11 +235,19 @@ export function UnifiedDropdown({
         <div className="ph-select-item-host overflow-y-auto">
           {groupOptions.map(option => {
             const preview = renderPreview(option, showPreview);
+            const isSelected = currentValue === option;
+            const isHighlighted = !isSelected && highlightedOption === option;
             return (
               <button
                 key={option}
                 type="button"
-                className="ph-select-item text-base-content text-xs"
+                className={`ph-select-item text-base-content text-xs ${
+                  isSelected
+                    ? "bg-primary text-primary-content font-semibold"
+                    : isHighlighted
+                      ? "bg-primary/10 text-primary font-semibold"
+                      : ""
+                }`}
                 onClick={() => onSelect(option)}
               >
                 {preview}
@@ -468,125 +469,7 @@ export function UnifiedDropdown({
       className="pagehub-sdk-root ph-panel text-base-content flex w-fit flex-col overflow-hidden"
     >
       <div data-unified-dropdown className="ph-select-item-host flex min-h-0 flex-1 flex-col overflow-hidden">
-        {/* Main Options Section - Configurable Layout */}
-        {!isVarMode && renderMainContent()}
-
-        {/* Design Variables Section - Hidden in tailwind mode */}
-        {isVarMode && showVarSelector && realDesignVars.length > 0 && (
-          <div className="border-base-300 flex h-full flex-col">
-            <div className="scrollbar-light flex-1 overflow-y-auto">
-              <div className="bg-base-200">
-                {(() => {
-                  // Filter by category based on input type
-                  const getRelevantCategories = () => {
-                    // Width, height, spacing inputs - show spacing and other
-                    if (
-                      propTag &&
-                      [
-                        "w",
-                        "h",
-                        "m",
-                        "p",
-                        "mt",
-                        "mb",
-                        "ml",
-                        "mr",
-                        "mx",
-                        "my",
-                        "pt",
-                        "pb",
-                        "pl",
-                        "pr",
-                        "px",
-                        "py",
-                        "gap",
-                      ].includes(propTag)
-                    ) {
-                      return ["spacing", "other"];
-                    }
-                    // Color inputs - show palette and colors
-                    if (propTag && ["bg", "text", "border"].includes(propTag)) {
-                      return ["palette", "colors"];
-                    }
-                    // Typography inputs - show typography
-                    if (
-                      (propTag && ["font", "text"].includes(propTag)) ||
-                      tailwindKey === "fontFamily"
-                    ) {
-                      return ["typography", "palette"];
-                    }
-                    // Default: show all
-                    return ["palette", "typography", "spacing", "colors", "other"];
-                  };
-
-                  const relevantCategories = getRelevantCategories();
-
-                  const filteredVars = realDesignVars.filter(v => {
-                    // Filter by category first
-                    if (!relevantCategories.includes(v.category)) {
-                      return false;
-                    }
-                    // Then filter by search term
-                    if (!varSearchTerm) return true;
-                    const search = varSearchTerm.toLowerCase();
-                    return (
-                      v.label.toLowerCase().includes(search) ||
-                      v.varName.toLowerCase().includes(search) ||
-                      v.name.toLowerCase().includes(search)
-                    );
-                  });
-
-                  if (filteredVars.length === 0) {
-                    return (
-                      <div className="text-neutral-content px-3 py-6 text-center text-xs">
-                        No variables found
-                      </div>
-                    );
-                  }
-
-                  return filteredVars.map(v => {
-                    const varValue =
-                      tailwindKey === "fontFamily" ? `font-(${v.varName})` : `var(${v.varName})`;
-                    const isSelected = currentValue === varValue;
-                    return (
-                      <button
-                        key={v.varName}
-                        type="button"
-                        onClick={() => onSelect(varValue)}
-                        className={`ph-select-item gap-2 text-xs ${
-                          isSelected ? "bg-primary/10 text-primary font-semibold" : ""
-                        }`}
-                      >
-                        <div
-                          className="border-base-300 size-3 shrink-0 rounded border"
-                          style={{
-                            backgroundColor: v.category === "palette" ? v.value : "transparent",
-                          }}
-                        />
-                        <span className="flex-1 truncate font-medium">{v.label}</span>
-                        <span className="text-neutral-content">{v.varName}</span>
-                      </button>
-                    );
-                  });
-                })()}
-              </div>
-            </div>
-            <div
-              role="presentation"
-              className="border-base-300 bg-base-200 border-t p-2"
-              onMouseDown={e => e.stopPropagation()}
-            >
-              <input
-                type="text"
-                value={varSearchTerm}
-                onChange={e => setVarSearchTerm(e.target.value)}
-                placeholder="Search variables..."
-                className="input-plain w-full cursor-text py-0 text-xs"
-                {...toolbarInputNoAutocompleteProps}
-              />
-            </div>
-          </div>
-        )}
+        {renderMainContent()}
 
         <button
           type="button"

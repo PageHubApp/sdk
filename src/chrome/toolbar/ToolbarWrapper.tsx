@@ -133,7 +133,7 @@ export const ToolbarWrapper = ({
   // hovering the sidebar OR focus is inside it; otherwise native browser find runs.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() !== "f") return;
+      if (e.key?.toLowerCase() !== "f") return;
       if (!(e.metaKey || e.ctrlKey)) return;
       const target = e.target as HTMLElement | null;
       const focusInSidebar = !!target?.closest?.("#toolbar");

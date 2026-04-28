@@ -111,7 +111,7 @@ export const displayProperties: PropertyDef[] = [
   {
     id: "overflow",
     label: "Overflow",
-    section: "styles",
+    section: "alignment",
     keywords: ["overflow", "hidden", "scroll", "auto", "clip", "visible"],
     input: {
       type: "universal",
@@ -142,7 +142,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Order",
     section: "styles",
     keywords: ["order", "flex", "grid", "position", "sequence"],
-    input: { type: "tailwind-select", tailwindKey: "order" },
+    input: { type: "universal", tailwindKey: "order" },
     sortOrder: 5,
     inline: true,
   },
@@ -193,7 +193,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Visibility",
     section: "styles",
     keywords: ["visibility", "visible", "invisible", "hidden", "collapse"],
-    input: { type: "tailwind-select", tailwindKey: "visibility" },
+    input: { type: "universal", tailwindKey: "visibility" },
     sortOrder: 75,
   },
   {
@@ -201,7 +201,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Pointer Events",
     section: "styles",
     keywords: ["pointer", "events", "click", "none", "auto"],
-    input: { type: "tailwind-select", tailwindKey: "pointerEvents" },
+    input: { type: "universal", tailwindKey: "pointerEvents" },
     sortOrder: 210,
   },
   {
@@ -209,7 +209,7 @@ export const displayProperties: PropertyDef[] = [
     label: "User Select",
     section: "styles",
     keywords: ["user", "select", "text", "selection", "none", "all"],
-    input: { type: "tailwind-select", tailwindKey: "userSelect" },
+    input: { type: "universal", tailwindKey: "userSelect" },
     sortOrder: 215,
   },
   {
@@ -217,7 +217,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Float",
     section: "styles",
     keywords: ["float", "left", "right", "none", "clear"],
-    input: { type: "tailwind-select", tailwindKey: "float" },
+    input: { type: "universal", tailwindKey: "float" },
     sortOrder: 103,
   },
   {
@@ -225,7 +225,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Vertical Align",
     section: "typography",
     keywords: ["vertical", "align", "baseline", "top", "middle", "bottom"],
-    input: { type: "tailwind-select", tailwindKey: "verticalAlign" },
+    input: { type: "universal", tailwindKey: "verticalAlign" },
     sortOrder: 104,
   },
   {
@@ -233,7 +233,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Font Smoothing",
     section: "typography",
     keywords: ["smoothing", "antialiased", "subpixel", "rendering"],
-    input: { type: "tailwind-select", tailwindKey: "fontSmoothing" },
+    input: { type: "universal", tailwindKey: "fontSmoothing" },
     sortOrder: 105,
   },
   {
@@ -241,7 +241,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Resize",
     section: "styles",
     keywords: ["resize", "drag", "handle", "grow"],
-    input: { type: "tailwind-select", tailwindKey: "resize" },
+    input: { type: "universal", tailwindKey: "resize" },
     sortOrder: 110,
   },
   {
@@ -249,7 +249,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Touch Action",
     section: "styles",
     keywords: ["touch", "action", "pan", "pinch", "zoom"],
-    input: { type: "tailwind-select", tailwindKey: "touchAction" },
+    input: { type: "universal", tailwindKey: "touchAction" },
     sortOrder: 111,
   },
   {
@@ -257,7 +257,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Appearance",
     section: "styles",
     keywords: ["appearance", "native", "none", "auto"],
-    input: { type: "tailwind-select", tailwindKey: "appearance" },
+    input: { type: "universal", tailwindKey: "appearance" },
     propKey: "appearance",
     sortOrder: 112,
   },
@@ -268,7 +268,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Box Sizing",
     section: "size",
     keywords: ["box", "sizing", "border-box", "content-box"],
-    input: { type: "tailwind-select", tailwindKey: "boxSizing" },
+    input: { type: "universal", tailwindKey: "boxSizing" },
     sortOrder: 200,
   },
   {
@@ -276,7 +276,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Isolation",
     section: "styles",
     keywords: ["isolation", "isolate", "stacking"],
-    input: { type: "tailwind-select", tailwindKey: "isolation" },
+    input: { type: "universal", tailwindKey: "isolation" },
     sortOrder: 201,
   },
   {
@@ -284,7 +284,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Columns",
     section: "styles",
     keywords: ["columns", "multi-column", "newspaper"],
-    input: { type: "tailwind-select", tailwindKey: "columns" },
+    input: { type: "universal", tailwindKey: "columns" },
     sortOrder: 202,
   },
 
@@ -304,7 +304,7 @@ export const displayProperties: PropertyDef[] = [
           label: "Before",
           section: "styles",
           keywords: ["break", "before", "page", "column"],
-          input: { type: "tailwind-select", tailwindKey: "breakBefore" },
+          input: { type: "universal", tailwindKey: "breakBefore" },
           inline: true,
         },
         {
@@ -312,7 +312,7 @@ export const displayProperties: PropertyDef[] = [
           label: "Inside",
           section: "styles",
           keywords: ["break", "inside", "avoid"],
-          input: { type: "tailwind-select", tailwindKey: "breakInside" },
+          input: { type: "universal", tailwindKey: "breakInside" },
           inline: true,
         },
         {
@@ -320,7 +320,7 @@ export const displayProperties: PropertyDef[] = [
           label: "After",
           section: "styles",
           keywords: ["break", "after", "page", "column"],
-          input: { type: "tailwind-select", tailwindKey: "breakAfter" },
+          input: { type: "universal", tailwindKey: "breakAfter" },
           inline: true,
         },
       ],
@@ -343,7 +343,7 @@ export const displayProperties: PropertyDef[] = [
           label: "Style",
           section: "typography",
           keywords: ["list", "style", "disc", "decimal", "none"],
-          input: { type: "tailwind-select", tailwindKey: "listStyleType" },
+          input: { type: "universal", tailwindKey: "listStyleType" },
           inline: true,
         },
         {
@@ -351,7 +351,7 @@ export const displayProperties: PropertyDef[] = [
           label: "Position",
           section: "typography",
           keywords: ["list", "position", "inside", "outside"],
-          input: { type: "tailwind-select", tailwindKey: "listStylePosition" },
+          input: { type: "universal", tailwindKey: "listStylePosition" },
           inline: true,
         },
       ],
@@ -374,7 +374,7 @@ export const displayProperties: PropertyDef[] = [
           label: "Layout",
           section: "styles",
           keywords: ["table", "layout", "auto", "fixed"],
-          input: { type: "tailwind-select", tailwindKey: "tableLayout" },
+          input: { type: "universal", tailwindKey: "tableLayout" },
           inline: true,
         },
         {
@@ -382,7 +382,7 @@ export const displayProperties: PropertyDef[] = [
           label: "Caption Side",
           section: "styles",
           keywords: ["caption", "side", "top", "bottom"],
-          input: { type: "tailwind-select", tailwindKey: "captionSide" },
+          input: { type: "universal", tailwindKey: "captionSide" },
           inline: true,
         },
       ],
@@ -405,7 +405,7 @@ export const displayProperties: PropertyDef[] = [
           label: "Fill",
           section: "styles",
           keywords: ["svg", "fill", "color", "icon"],
-          input: { type: "tailwind-select", tailwindKey: "fill" },
+          input: { type: "universal", tailwindKey: "fill" },
           inline: true,
         },
         {
@@ -413,7 +413,7 @@ export const displayProperties: PropertyDef[] = [
           label: "Stroke",
           section: "styles",
           keywords: ["svg", "stroke", "outline", "icon"],
-          input: { type: "tailwind-select", tailwindKey: "stroke" },
+          input: { type: "universal", tailwindKey: "stroke" },
           inline: true,
         },
         {
@@ -421,7 +421,7 @@ export const displayProperties: PropertyDef[] = [
           label: "Width",
           section: "styles",
           keywords: ["svg", "stroke", "width", "thickness"],
-          input: { type: "tailwind-select", tailwindKey: "strokeWidth" },
+          input: { type: "universal", tailwindKey: "strokeWidth" },
           inline: true,
         },
       ],
@@ -434,7 +434,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Content",
     section: "styles",
     keywords: ["content", "pseudo", "before", "after"],
-    input: { type: "tailwind-select", tailwindKey: "content" },
+    input: { type: "universal", tailwindKey: "content" },
     propKey: "content",
     sortOrder: 210,
   },
@@ -443,7 +443,7 @@ export const displayProperties: PropertyDef[] = [
     label: "Screen Reader",
     section: "properties",
     keywords: ["screen", "reader", "sr-only", "accessibility", "hidden"],
-    input: { type: "tailwind-select", tailwindKey: "srOnly" },
+    input: { type: "universal", tailwindKey: "srOnly" },
     sortOrder: 180,
   },
 

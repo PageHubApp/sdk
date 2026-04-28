@@ -12,8 +12,9 @@
  */
 import type { Boundary, FlipOptions, Placement, RootBoundary } from "@floating-ui/react-dom";
 import type { CSSProperties, ReactNode, RefObject } from "react";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
+import { useFloatingPanelPortalRegister } from "../floating/FloatingPanel";
 import { OVERLAY_Z_ANCHORED } from "./overlayZIndex";
 import { useAnchoredPopover } from "./useAnchoredPopover";
 
@@ -151,6 +152,23 @@ export function AnchoredPopover({
 
   const target = useMemo(() => getPortalTarget(portalTarget), [portalTarget]);
 
+  // If we're rendered inside a FloatingPanel, register our portal root with
+  // its outside-click skip set. Without this, clicking inside this popover
+  // would dismiss the parent panel.
+  const registerWithParentPanel = useFloatingPanelPortalRegister();
+  const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
+  const setFloatingRef = useCallback(
+    (el: HTMLElement | null) => {
+      floating.refs.setFloating(el);
+      setPortalNode(el);
+    },
+    [floating.refs]
+  );
+  useEffect(() => {
+    if (!portalNode || !registerWithParentPanel) return;
+    return registerWithParentPanel(portalNode);
+  }, [portalNode, registerWithParentPanel]);
+
   if (!mounted || !target) return null;
 
   const mergedStyle: CSSProperties = {
@@ -161,7 +179,7 @@ export function AnchoredPopover({
 
   return ReactDOM.createPortal(
     <div
-      ref={floating.refs.setFloating}
+      ref={setFloatingRef}
       data-ph-popover=""
       data-state={state}
       style={mergedStyle}

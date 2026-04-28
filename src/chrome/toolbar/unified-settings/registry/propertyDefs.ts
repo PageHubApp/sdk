@@ -113,10 +113,11 @@ export type PropertyInput =
     }
   | {
       type: "universal";
-      /** Prefix for Tailwind classes (e.g. "pt", "w", "gap") */
-      propTag: string;
-      /** Allowed value types */
-      allowedTypes: ValueType[];
+      /** Prefix for Tailwind classes (e.g. "pt", "w", "gap"). Optional — if
+       * omitted, the dropdown infers the prefix from the first option. */
+      propTag?: string;
+      /** Allowed value types. Optional — defaults to all CSS units + tailwind. */
+      allowedTypes?: ValueType[];
       /** Show design var selector */
       showVarSelector?: boolean;
       /** Label width class */

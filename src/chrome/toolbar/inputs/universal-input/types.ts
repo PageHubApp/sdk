@@ -29,6 +29,16 @@ export interface DesignVar {
   value: string;
   category: string;
   label: string;
+  /** True when the user created this token (vs a built-in registry entry).
+   *  Drives delete affordance + rename-allowed in the VarPicker editor. */
+  custom?: boolean;
+  /** Stable key the token is stored under — for styleGuide tokens this is
+   *  the `theme.styleGuide` key; for palette tokens it's the palette item
+   *  `name`; for typography it's the preset `name`. The editor needs this
+   *  to write back to the right entry. */
+  key?: string;
+  /** Source bucket — disambiguates which storage the editor mutates. */
+  source?: "palette" | "darkPalette" | "styleGuide" | "typography";
 }
 
 export interface UniversalInputProps {

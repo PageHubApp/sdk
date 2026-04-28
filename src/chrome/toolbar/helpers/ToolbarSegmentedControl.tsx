@@ -53,7 +53,7 @@ export function ToolbarSegmentedControl<T extends string>({
 }: Props<T>) {
   const trackClass = compact
     ? "bg-neutral inline-flex shrink-0 gap-1 rounded-md p-1"
-    : "bg-neutral flex w-full min-w-0 gap-1 rounded-md p-1";
+    : "bg-neutral flex w-full min-w-0 gap-1 rounded-md p-1 overflow-hidden";
   const defaultOptionWidthClass = compact ? "" : "min-w-0 flex-1";
   return (
     <div role="tablist" aria-label={ariaLabel} className={`${trackClass} ${className}`}>
@@ -63,6 +63,15 @@ export function ToolbarSegmentedControl<T extends string>({
           ? "rounded h-6 px-2 text-[11px] leading-tight font-medium"
           : "rounded h-6 px-2 text-xs leading-tight font-medium";
         const widthClass = opt.widthClass ?? defaultOptionWidthClass;
+        // Wrap string labels so flex-1 buttons ellipsize on overflow instead of
+        // pushing the track past its parent. JSX labels (icon-only / icon+text
+        // segments) render as-is — caller controls their own shrink behavior.
+        const labelNode =
+          typeof opt.label === "string" ? (
+            <span className="min-w-0 truncate">{opt.label}</span>
+          ) : (
+            opt.label
+          );
         return (
           <button
             key={String(opt.value)}
@@ -76,7 +85,7 @@ export function ToolbarSegmentedControl<T extends string>({
             data-tooltip-content={opt.tooltip}
             className={`${widthClass} flex items-center justify-center gap-1 transition-colors ${baseSize} ${selected ? TOOLBAR_SEGMENTED_ACTIVE : TOOLBAR_SEGMENTED_INACTIVE} ${optionClassName}`}
           >
-            {opt.label}
+            {labelNode}
           </button>
         );
       })}

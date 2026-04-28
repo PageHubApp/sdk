@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import ReactDOM from "react-dom";
 import { OVERLAY_Z_TYPE_SELECTOR } from "../../../overlays/overlayZIndex";
 import { useAnchoredPopover } from "../../../overlays/useAnchoredPopover";
+import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 import { ValueType } from "./types";
 
 interface TypeSelectorProps {
@@ -70,7 +71,9 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
                 setIsOpen(!isOpen);
               }}
               className="text-neutral-content hover:text-base-content flex min-w-5 items-center justify-center p-0 text-[9px] font-medium"
-              title={"Change type selector"}
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Change type"
+              data-tooltip-place="bottom"
             >
               {selectedLabel}
             </button>

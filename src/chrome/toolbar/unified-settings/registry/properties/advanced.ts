@@ -245,9 +245,9 @@ export const advancedProperties: PropertyDef[] = [
   // builder (see registry/properties/effects.ts + effects-builder/).
   {
     id: "containerOverflow",
-    label: "Overflow",
+    label: "Scroll Behavior",
     section: "alignment",
-    keywords: ["overflow", "scroll", "drag", "scrollbar", "horizontal", "carousel"],
+    keywords: ["overflow", "scroll", "drag", "scrollbar", "horizontal", "carousel", "snap"],
     input: { type: "custom", component: "ContainerOverflowSection" },
     showWhen: (_cls, props) => props._craftName === "Container",
     sortOrder: 900,

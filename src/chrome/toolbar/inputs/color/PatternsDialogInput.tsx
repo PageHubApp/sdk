@@ -3,6 +3,7 @@ import { changeProp } from "../../../viewport/viewportExports";
 import { ViewAtom } from "../../../viewport/atoms";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRegisterFloatingPanelPortal } from "@/chrome/floating/FloatingPanel";
 import { useAtomValue } from "@zedux/react";
 import { generatePattern } from "@/utils/lib";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
@@ -181,6 +182,7 @@ const PatternPickerPanel = ({
   const [search, setSearch] = useState("");
   const [mode, setMode] = useState<"all" | "stroke" | "fill">("all");
   const panelRef = useRef<HTMLDivElement>(null);
+  useRegisterFloatingPanelPortal(panelRef);
 
   useEffect(() => {
     const apiUrl = getPageHubApiBaseUrl();
@@ -224,7 +226,6 @@ const PatternPickerPanel = ({
   return (
     <div
       ref={panelRef}
-      data-floating-allow
       className="pagehub-sdk-root border-base-300 bg-base-200 fixed z-[1200] w-64 rounded-xl border shadow-xl"
       style={{ top: position.top, left: position.left }}
     >

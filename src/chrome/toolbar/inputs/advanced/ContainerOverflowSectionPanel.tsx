@@ -18,7 +18,7 @@ export default function ContainerOverflowSectionPanel({
     <FloatingPanel
       isOpen
       onClose={onClose}
-      title="Overflow"
+      title="Scroll Behavior"
       storageKey="container-overflow"
       minWidth={300}
       maxWidth={520}

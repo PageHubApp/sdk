@@ -13,8 +13,10 @@
  */
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
-import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useRegisterFloatingPanelPortal } from "@/chrome/floating/FloatingPanel";
 import { TbCheck, TbMoon, TbPencil, TbPlus, TbSearch, TbSun } from "react-icons/tb";
 import { resolveTheme } from "@/utils/design/resolveTheme";
 import { resolvePaletteHex } from "@/chrome/toolbar/dialogs/colorPickerSections";
@@ -209,37 +211,57 @@ export function DesignSystemPalette({ selectedColor, onSelect, anchorEl }: Props
       </button>
 
       {/* Shared create/edit dialog */}
-      {dialog &&
-        createPortal(
-          <div
-            className="pagehub-sdk-root fixed"
-            style={{ left: dialog.pos.left, top: dialog.pos.top, zIndex: 1200 }}
-            data-floating-allow
-          >
-            <CreateTokenDialog
-              paletteKey={paletteKey}
-              {...(dialog.mode === "edit"
-                ? {
-                    existing: {
-                      originalName: dialog.existing.name,
-                      color: resolvePaletteHex(dialog.existing.color || "", palette),
-                    },
-                  }
-                : {})}
-              onCreated={name => {
-                setDialog(null);
-                refresh();
-                onSelect(`palette:${name}`);
-              }}
-              onDeleted={() => {
-                setDialog(null);
-                refresh();
-              }}
-              onClose={() => setDialog(null)}
-            />
-          </div>,
-          document.body
-        )}
+      {dialog && (
+        <CreateTokenDialogPortal
+          left={dialog.pos.left}
+          top={dialog.pos.top}
+        >
+          <CreateTokenDialog
+            paletteKey={paletteKey}
+            {...(dialog.mode === "edit"
+              ? {
+                  existing: {
+                    originalName: dialog.existing.name,
+                    color: resolvePaletteHex(dialog.existing.color || "", palette),
+                  },
+                }
+              : {})}
+            onCreated={name => {
+              setDialog(null);
+              refresh();
+              onSelect(`palette:${name}`);
+            }}
+            onDeleted={() => {
+              setDialog(null);
+              refresh();
+            }}
+            onClose={() => setDialog(null)}
+          />
+        </CreateTokenDialogPortal>
+      )}
     </div>
+  );
+}
+
+function CreateTokenDialogPortal({
+  left,
+  top,
+  children,
+}: {
+  left: number;
+  top: number;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useRegisterFloatingPanelPortal(ref);
+  return createPortal(
+    <div
+      ref={ref}
+      className="pagehub-sdk-root fixed"
+      style={{ left, top, zIndex: 1200 }}
+    >
+      {children}
+    </div>,
+    document.body
   );
 }

@@ -101,7 +101,7 @@ export const layoutProperties: PropertyDef[] = [
     label: "Aspect Ratio",
     section: "size",
     keywords: ["aspect", "ratio", "square", "video", "16:9", "4:3"],
-    input: { type: "tailwind-select", tailwindKey: "aspectRatio" },
+    input: { type: "universal", tailwindKey: "aspectRatio" },
     sortOrder: 14,
   },
 ];

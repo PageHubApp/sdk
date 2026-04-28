@@ -9,6 +9,7 @@ interface UseInputHandlersProps {
   setIsEditing: (editing: boolean) => void;
   setShowAutocomplete: (show: boolean) => void;
   setSelectedIndex: (index: number) => void;
+  setKbdNavActive: (active: boolean) => void;
   skipBlurCommitRef: React.MutableRefObject<boolean>;
   currentValue: string;
   parsed: { type: ValueType; value: string; numeric?: number };
@@ -30,6 +31,7 @@ export const useInputHandlers = (props: UseInputHandlersProps) => {
     setIsEditing,
     setShowAutocomplete,
     setSelectedIndex,
+    setKbdNavActive,
     skipBlurCommitRef,
     currentValue,
     parsed,
@@ -120,6 +122,7 @@ export const useInputHandlers = (props: UseInputHandlersProps) => {
   // Handle input focus
   const handleInputFocus = () => {
     setIsEditing(true);
+    setKbdNavActive(false);
     if (availableTailwindOptions.length > 0 || showVarSelector) {
       setShowAutocomplete(true);
     }
@@ -127,9 +130,18 @@ export const useInputHandlers = (props: UseInputHandlersProps) => {
 
   // Handle input blur
   const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Check if focus is moving to something inside the dropdown
+    // Check if focus is moving to something inside the input's own popover
+    // surfaces — the unified tailwind autocomplete dropdown, OR the var
+    // picker FloatingPanel (which uses role="dialog"). Without the dialog
+    // check, picking a var would: click input → autocomplete opens → focus
+    // moves into the picker's search → input blurs → 200ms timer dismisses
+    // the picker → flicker.
     const relatedTarget = e.relatedTarget as HTMLElement;
-    if (relatedTarget && relatedTarget.closest("[data-unified-dropdown]")) {
+    if (
+      relatedTarget &&
+      (relatedTarget.closest("[data-unified-dropdown]") ||
+        relatedTarget.closest('[role="dialog"]'))
+    ) {
       return;
     }
 
@@ -160,8 +172,10 @@ export const useInputHandlers = (props: UseInputHandlersProps) => {
     if (option === "") {
       targetType = selectedType;
     } else if (isDesignVar) {
-      targetType = "calc";
-      setSelectedType("calc");
+      // Design tokens like `var(--secondary)` are var-type, not calc — the
+      // chip should render the {} braces icon, not the f(x) math icon.
+      targetType = "var";
+      setSelectedType("var");
     } else {
       targetType = "tailwind";
       setSelectedType("tailwind");
@@ -169,6 +183,10 @@ export const useInputHandlers = (props: UseInputHandlersProps) => {
 
     handleChange(option, targetType);
     setShowAutocomplete(false);
+    // Exit editing mode so `displayValue` re-formats the freshly-selected
+    // class as its human label (e.g. `text-9xl` → "9X Large"). Without this,
+    // the input shows the raw token until the next reload re-syncs.
+    setIsEditing(false);
     inputRef.current?.blur();
   };
 
@@ -181,10 +199,12 @@ export const useInputHandlers = (props: UseInputHandlersProps) => {
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
+        setKbdNavActive(true);
         setSelectedIndex(Math.min(selectedIndex + 1, currentOptions.length - 1));
         break;
       case "ArrowUp":
         e.preventDefault();
+        setKbdNavActive(true);
         setSelectedIndex(Math.max(selectedIndex - 1, 0));
         break;
       case "Enter":

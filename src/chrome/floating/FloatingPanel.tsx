@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect } from "react";
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import ReactDOM from "react-dom";
 import { TbX } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
@@ -8,6 +8,50 @@ import { useFocusTrap } from "../../utils/hooks/useAccessibility";
 import { AutoHideScrollbar } from "../primitives/layout/AutoHideScrollbar";
 
 type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+
+/**
+ * Descendant-portal registration for FloatingPanel's outside-click dismiss.
+ *
+ * Any portaled overlay opened from inside a FloatingPanel (AnchoredPopover,
+ * nested FloatingPanel, hand-rolled portal) registers its root element here so
+ * pointerdowns inside it don't dismiss the parent. Replaces the old hardcoded
+ * selector skip-list — a portal that doesn't self-register is "outside" and
+ * will dismiss its parent panel. Use `useFloatingPanelPortalRegister()` from
+ * inside any portal that mounts under a FloatingPanel.
+ */
+const FloatingPanelContext = React.createContext<{
+  registerPortal: (node: HTMLElement | null) => () => void;
+} | null>(null);
+
+/**
+ * Returns a register function that, given a portal root element, marks it as
+ * "inside" the nearest ancestor FloatingPanel for dismiss-checking purposes.
+ * Returns the unsubscribe function. No-ops outside a FloatingPanel.
+ */
+export function useFloatingPanelPortalRegister():
+  | ((node: HTMLElement | null) => () => void)
+  | null {
+  const ctx = useContext(FloatingPanelContext);
+  return ctx?.registerPortal ?? null;
+}
+
+/**
+ * Hook form: pass a ref pointing at a portal root and it auto-registers /
+ * unregisters with the nearest ancestor FloatingPanel. Use in inline portals
+ * where wiring a manual useEffect feels heavy.
+ */
+export function useRegisterFloatingPanelPortal(
+  ref: React.RefObject<HTMLElement | null>
+): void {
+  const register = useFloatingPanelPortalRegister();
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || !register) return;
+    return register(node);
+    // ref is stable; only the register identity matters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [register]);
+}
 
 interface FloatingPanelProps {
   isOpen: boolean;
@@ -83,6 +127,14 @@ interface FloatingPanelProps {
    * is true but you want children flush against AutoHideScrollbar).
    */
   bodyClassName?: string | null;
+  /**
+   * DOM nodes (typically anchors / triggers / sibling widget chrome) where
+   * clicks should NOT dismiss the panel even though they're outside the
+   * panel's own DOM. Use when the panel logically belongs to a wider widget
+   * — e.g. VarPicker anchored to a chip but conceptually owned by the whole
+   * UniversalInput row, so clicking the row's text input shouldn't dismiss.
+   */
+  ignoreOutsideClicks?: ReadonlyArray<React.RefObject<HTMLElement | null>>;
   children: React.ReactNode;
 }
 
@@ -109,6 +161,7 @@ export function FloatingPanel({
   persistSize = true,
   scrollable = false,
   bodyClassName = "text-base-content flex flex-col gap-2 p-3 text-xs",
+  ignoreOutsideClicks,
   autoSize = true,
   children,
 }: FloatingPanelProps) {
@@ -148,6 +201,28 @@ export function FloatingPanel({
 
   const focusTrapRef = useFocusTrap(isOpen);
 
+  // Set of descendant portal roots that should NOT count as "outside" for
+  // dismiss. Populated via FloatingPanelContext by AnchoredPopover, nested
+  // FloatingPanels, and any hand-rolled portal that calls
+  // useFloatingPanelPortalRegister().
+  const portalsRef = useRef<Set<HTMLElement>>(new Set());
+  const registerPortal = useCallback((node: HTMLElement | null) => {
+    if (!node) return () => {};
+    portalsRef.current.add(node);
+    return () => {
+      portalsRef.current.delete(node);
+    };
+  }, []);
+  const ctxValue = useMemo(() => ({ registerPortal }), [registerPortal]);
+
+  // If THIS panel is itself mounted inside another FloatingPanel (panel-on-
+  // panel — e.g. ColorPanel anchored next to a parent editor panel), register
+  // our root with the parent so its outside-click handler skips clicks that
+  // land inside us. Without this, opening a nested panel would dismiss the
+  // parent on the very next pointerdown.
+  const parentRegister = useContext(FloatingPanelContext)?.registerPortal;
+  const selfPortalRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!isOpen) return;
     const handleEscape = (e: KeyboardEvent) => {
@@ -157,25 +232,34 @@ export function FloatingPanel({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
+  // Register our root with the parent FloatingPanel (if any) so its outside-
+  // click handler skips clicks on us. Re-runs when isOpen flips so the parent
+  // sees us only while we're actually mounted.
+  useEffect(() => {
+    if (!isOpen || !parentRegister) return;
+    const node = selfPortalRef.current;
+    if (!node) return;
+    return parentRegister(node);
+  }, [isOpen, parentRegister]);
+
   const { position, isDragging, windowRef, handleMouseDown, setPosition } = useDraggableWindow({
     initialPosition: defaultPos,
     bounds: { top: 0, right: 0, bottom: 0, left: 0 },
   });
 
   // Outside-click dismiss. Skip clicks inside the panel itself, inside any
-  // Headless UI portal (Listbox/Combobox/Dialog menus render outside the
-  // panel via portal), inside an `AnchoredPopover`-portaled overlay
-  // (`[data-ph-popover]` — color picker, var picker, UnifiedDropdown, etc.),
-  // inside our own listbox content (`.ph-select-content`), or inside another
-  // floating panel layered above us. Defer the listener by one frame so the
-  // same pointerdown that opened the panel can't close it.
+  // self-registered descendant portal (AnchoredPopover, nested FloatingPanel,
+  // hand-rolled portals using useFloatingPanelPortalRegister), or inside a
+  // third-party portal we can't make self-register: Headless UI
+  // (`[data-headlessui-portal]`) and react-tooltip (`[data-rtt-tooltip]`).
+  // Defer the listener by one frame so the same pointerdown that opened the
+  // panel can't close it.
   //
   // CAPTURE PHASE — must fire BEFORE any React element-level handler. Headless
   // UI's Listbox option click runs on pointerdown and synchronously detaches
-  // the portaled options panel; if we ran in bubble phase, `target.closest()`
-  // would walk an orphaned subtree and miss the `.ph-select-content` skip
-  // selector, closing the parent FloatingPanel. Capture phase fires while the
-  // DOM is still intact.
+  // the portaled options panel; if we ran in bubble phase, the orphaned
+  // subtree would miss our containment checks and close the parent panel.
+  // Capture phase fires while the DOM is still intact.
   useEffect(() => {
     if (!isOpen) return;
     let active = false;
@@ -188,12 +272,16 @@ export function FloatingPanel({
       if (!target) return;
       const panel = (windowRef as any).current as HTMLElement | null;
       if (panel && panel.contains(target)) return;
-      if (
-        target.closest(
-          '[data-headlessui-portal], [data-ph-popover], .ph-select-content, [role="dialog"], [role="listbox"], [role="menu"], [data-rtt-tooltip], [data-floating-allow]'
-        )
-      )
-        return;
+      for (const portal of portalsRef.current) {
+        if (portal.contains(target)) return;
+      }
+      if (ignoreOutsideClicks) {
+        for (const ref of ignoreOutsideClicks) {
+          const node = ref?.current;
+          if (node && node.contains(target)) return;
+        }
+      }
+      if (target.closest("[data-headlessui-portal], [data-rtt-tooltip]")) return;
       onClose();
     };
     document.addEventListener("pointerdown", handlePointerDown, true);
@@ -201,7 +289,7 @@ export function FloatingPanel({
       cancelAnimationFrame(arm);
       document.removeEventListener("pointerdown", handlePointerDown, true);
     };
-  }, [isOpen, onClose, windowRef]);
+  }, [isOpen, onClose, windowRef, ignoreOutsideClicks]);
 
   // When autoSize, bypass useResizable entirely — no fixed pixel dims, no
   // resize handles, no persisted size. CSS min/max + content drives layout.
@@ -268,7 +356,7 @@ export function FloatingPanel({
   );
 
   return ReactDOM.createPortal(
-    <>
+    <FloatingPanelContext.Provider value={ctxValue}>
       {backdrop && (
         <div
           className={twMerge("pagehub-sdk-root ph-modal-backdrop", backdropClassName)}
@@ -282,6 +370,7 @@ export function FloatingPanel({
         ref={el => {
           (windowRef as any).current = el;
           (focusTrapRef as any).current = el;
+          selfPortalRef.current = el;
         }}
         role="dialog"
         aria-modal="true"
@@ -341,7 +430,7 @@ export function FloatingPanel({
           )}
         </div>
       </div>
-    </>,
+    </FloatingPanelContext.Provider>,
     document.querySelector(".pagehub-sdk-root") || document.body
   );
 }
