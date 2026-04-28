@@ -12,13 +12,10 @@ import { Audio } from "../components/Audio";
 import { Background } from "../components/Background";
 import { Button } from "../components/Button";
 import { ButtonList } from "../components/ButtonList";
-import { Nav } from "../components/Nav";
 import { ConditionalContainer } from "../components/ConditionalContainer";
 import { Container } from "../components/Container";
 import { ContainerGroup } from "../components/ContainerGroup";
 import { Data } from "../components/Data";
-import { Divider } from "../components/Divider";
-import { Dropdown } from "../components/Dropdown";
 import { Embed } from "../components/Embed";
 import { Footer } from "../components/Footer";
 import { Form } from "../components/Form";
@@ -33,7 +30,6 @@ import { List } from "../components/List";
 import { ListItem } from "../components/ListItem";
 import { Map } from "../components/Map";
 import { MapPoint } from "../components/MapPoint";
-import { Spacer } from "../components/Spacer";
 import { Table } from "../components/Table";
 import { TableSection } from "../components/TableSection";
 import { TableRow } from "../components/TableRow";
@@ -62,8 +58,6 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Container: cv(Container),
   ContainerGroup: cv(ContainerGroup),
   Data: cv(Data),
-  Divider: cv(Divider),
-  Dropdown: cv(Dropdown),
   Embed: cv(Embed),
   Footer: cv(Footer),
   Form: cv(Form),
@@ -79,8 +73,6 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   ListItem: cv(ListItem),
   Map: cv(Map),
   MapPoint: cv(MapPoint),
-  Nav: cv(Nav),
-  Spacer: cv(Spacer),
   Table: cv(Table),
   TableSection: cv(TableSection),
   TableRow: cv(TableRow),

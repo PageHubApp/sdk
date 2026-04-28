@@ -19,9 +19,7 @@ const WALK_NODE_CAP = 500;
 /** React component displayNames that show up on the canvas as "inherent
  *  components" — surfaces interactive widgets anywhere in the page as cards
  *  without needing to wrap them in a `type === "component"` Container. */
-export const INHERENT_COMPONENT_DISPLAYNAMES = new Set<string>([
-  "Dropdown",
-]);
+export const INHERENT_COMPONENT_DISPLAYNAMES = new Set<string>();
 
 export type StateNodeKind = "modal" | "show-hide" | "tab" | "css-hidden";
 

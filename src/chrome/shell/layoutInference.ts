@@ -131,7 +131,7 @@ export function makeContainerTree(
 // ── Internal helpers for promotion resolution ─────────────────────────
 
 // Layout utility components excluded from meaningful child counts
-const LAYOUT_UTILITY_NAMES = new Set(["Spacer", "Divider"]);
+const LAYOUT_UTILITY_NAMES = new Set<string>();
 const LAYOUT_WRAPPER_DISPLAY_NAMES = new Set(["Row", "Item"]);
 
 function isMeaningfulChild(query: any, nodeId: NodeId) {

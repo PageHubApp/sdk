@@ -19,6 +19,7 @@ import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
 import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { SideBarAtom } from "../../../../utils/lib";
+import { parseIconRef } from "@/utils/icons/collectIconRefs";
 import ClientIconLoader from "../../dialogs/ClientIconLoader";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ColorInput } from "../color/ColorInput";
@@ -46,6 +47,18 @@ interface IconInputProps {
 
 // Hint width for chip-anchored initial position only — panel is auto-sized.
 const PANEL_WIDTH = 320;
+
+/** "ref-icon:tb/TbCircleCheck" → "Circle Check"; "ref-image:abc" → "Custom"; else raw. */
+function humanizeIconValue(value: string): string {
+  if (value.startsWith("ref-image:")) return "Custom";
+  const parsed = parseIconRef(value);
+  if (!parsed) return value;
+  const setPrefix = parsed.set.charAt(0).toUpperCase() + parsed.set.slice(1);
+  const stripped = parsed.name.startsWith(setPrefix)
+    ? parsed.name.slice(setPrefix.length)
+    : parsed.name;
+  return stripped.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+}
 
 /** Walk a dot path (e.g. "icon.value") through a props object. */
 function readNested(props: Record<string, any>, dotPath: string): unknown {
@@ -133,7 +146,7 @@ export const IconInput = ({
             {iconValue ? <ClientIconLoader value={iconValue} /> : null}
           </span>
           <span className="text-neutral-content flex-1 truncate">
-            {iconValue || "Add..."}
+            {iconValue ? humanizeIconValue(iconValue) : "Add..."}
           </span>
         </button>
       </ToolbarRowFrame>

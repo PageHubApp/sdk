@@ -16,8 +16,6 @@ import { ConditionalContainer } from "../ConditionalContainer";
 import { Container } from "../Container";
 import { ContainerGroup } from "../ContainerGroup";
 import { Data } from "../Data";
-import { Divider } from "../Divider";
-import { Dropdown } from "../Dropdown";
 import { Embed } from "../Embed";
 import { Footer } from "../Footer";
 import { Form } from "../Form";
@@ -32,8 +30,6 @@ import { List } from "../List";
 import { ListItem } from "../ListItem";
 import { Map } from "../Map";
 import { MapPoint } from "../MapPoint";
-import { Nav } from "../Nav";
-import { Spacer } from "../Spacer";
 import { Table } from "../Table";
 import { TableSection } from "../TableSection";
 import { TableRow } from "../TableRow";
@@ -54,8 +50,6 @@ export const viewerResolver = {
   Container: cv(Container),
   ContainerGroup: cv(ContainerGroup),
   Data: cv(Data),
-  Divider: cv(Divider),
-  Dropdown: cv(Dropdown),
   Embed: cv(Embed),
   Footer: cv(Footer),
   Form: cv(Form),
@@ -71,8 +65,6 @@ export const viewerResolver = {
   ListItem: cv(ListItem),
   Map: cv(Map),
   MapPoint: cv(MapPoint),
-  Nav: cv(Nav),
-  Spacer: cv(Spacer),
   Table: cv(Table),
   TableSection: cv(TableSection),
   TableRow: cv(TableRow),

@@ -6,13 +6,16 @@ import {
   TbAppWindow,
   TbBadge,
   TbChartBar,
+  TbChevronDown,
   TbContainer,
   TbCookie,
   TbLayoutColumns,
   TbLayoutList,
   TbLayoutNavbar,
   TbLayoutRows,
+  TbMinus,
   TbSection,
+  TbSpace,
   TbUserCircle,
 } from "react-icons/tb";
 import {
@@ -64,6 +67,13 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     open: t === "details" && props.open ? "" : undefined,
     "data-tab-group": props.tabGroup || undefined,
   };
+  if (props.attrs && typeof props.attrs === "object") {
+    for (const [k, v] of Object.entries(props.attrs)) {
+      if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+        attrs[k] = v as any;
+      }
+    }
+  }
 
   // Stamp load-trigger show actions for the static-export bootstrap script
   // (PH_LOAD_ACTION_SCRIPT). The script reveals `[data-ph-load-show]`
@@ -549,6 +559,60 @@ function buildAccordionChildren() {
   ];
 }
 
+function buildDropdownChildren() {
+  return [
+    <Element
+      key="trigger"
+      is={Button}
+      custom={{ displayName: "Dropdown Trigger" }}
+      text="Menu"
+      url=""
+      icon={{ value: "ref-icon:tb/TbChevronDown", position: "right", only: false, size: "w-5 h-5" }}
+      canDelete={true}
+      canEditName={true}
+      className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold"
+    />,
+    <Element
+      key="panel"
+      canvas
+      is={Container}
+      custom={{ displayName: "Dropdown Panel" }}
+      canDelete={true}
+      canEditName={true}
+      handlers={{ onClick: "if (event.currentTarget.closest('[tabindex]')) event.currentTarget.closest('[tabindex]').blur()" }}
+      className="bg-base-200 text-base-content rounded-box border-base-300 absolute top-full left-0 z-50 mt-1 hidden min-w-48 flex-col overflow-hidden border py-space-xs shadow-lg group-focus-within:flex"
+    >
+      <Element
+        is={Button}
+        custom={{ displayName: "Option 1" }}
+        text="Option 1"
+        url="#"
+        canDelete={true}
+        canEditName={true}
+        className="hover:bg-neutral w-full rounded-none border-0 px-space-sm py-space-xs text-left text-sm"
+      />
+      <Element
+        is={Button}
+        custom={{ displayName: "Option 2" }}
+        text="Option 2"
+        url="#"
+        canDelete={true}
+        canEditName={true}
+        className="hover:bg-neutral w-full rounded-none border-0 px-space-sm py-space-xs text-left text-sm"
+      />
+      <Element
+        is={Button}
+        custom={{ displayName: "Option 3" }}
+        text="Option 3"
+        url="#"
+        canDelete={true}
+        canEditName={true}
+        className="hover:bg-neutral w-full rounded-none border-0 px-space-sm py-space-xs text-left text-sm"
+      />
+    </Element>,
+  ];
+}
+
 function buildCookieConsentChildren() {
   // Banner starts hidden via the `hidden` class. A load-trigger show-hide
   // action on the banner itself reveals it on first mount — gated by a
@@ -658,6 +722,664 @@ function buildCookieConsentChildren() {
             className="btn btn-primary btn-sm rounded-box font-medium"
           />
         </Element>
+      </Element>
+    </Element>,
+  ];
+}
+
+function buildMobileMenuChildren() {
+  // Hamburger + drawer pair only — for adding mobile nav to an existing
+  // header without restructuring it. Trigger and drawer share the anchor.
+  const anchor = `mnav-${Math.random().toString(36).slice(2, 8)}`;
+  return [
+    <Element
+      key="hamburger"
+      is={Button}
+      custom={{ displayName: "Hamburger" }}
+      text="Open menu"
+      url=""
+      icon={{ value: "ref-icon:tb/TbMenu2", only: true, size: "w-7 h-7" }}
+      action={[
+        {
+          type: "show-hide",
+          target: anchor,
+          direction: "show",
+          trigger: "click",
+          method: "class",
+        },
+      ]}
+      className="lg:hidden bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+      canDelete={true}
+      canEditName={true}
+    />,
+    <Element
+      key="drawer"
+      canvas
+      is={Container}
+      custom={{ displayName: "Mobile Drawer" }}
+      canDelete={true}
+      canEditName={true}
+      attrs={{ id: anchor }}
+      className="hidden fixed inset-0 z-[1200] bg-base-100 lg:hidden h-full p-space-lg flex-col"
+      handlers={{
+        onClick:
+          "var a = event.target.closest('a, button[data-action]'); if (a) event.currentTarget.classList.add('hidden');",
+      }}
+    >
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Drawer Header" }}
+        canDelete={true}
+        canEditName={true}
+        className="flex items-center justify-end pb-space-md"
+      >
+        <Element
+          is={Button}
+          custom={{ displayName: "Close" }}
+          text="Close"
+          url=""
+          icon={{ value: "ref-icon:tb/TbX", only: true, size: "w-6 h-6" }}
+          action={[
+            {
+              type: "show-hide",
+              target: anchor,
+              direction: "hide",
+              trigger: "click",
+              method: "class",
+            },
+          ]}
+          className="bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Drawer Links" }}
+        canDelete={true}
+        canEditName={true}
+        className="flex flex-col gap-space-sm"
+      >
+        <Element
+          is={Button}
+          custom={{ displayName: "Link 1" }}
+          text="Home"
+          url=""
+          action={[{ type: "link", href: "#" }]}
+          className="text-base-content text-lg w-full justify-start py-space-sm"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "Link 2" }}
+          text="About"
+          url=""
+          action={[{ type: "link", href: "#" }]}
+          className="text-base-content text-lg w-full justify-start py-space-sm"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "Link 3" }}
+          text="Contact"
+          url=""
+          action={[{ type: "link", href: "#" }]}
+          className="text-base-content text-lg w-full justify-start py-space-sm"
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+    </Element>,
+  ];
+}
+
+function buildNavbarChildren() {
+  // Unique anchor per insert so multiple Navbar presets on one page don't
+  // collide on the mobile drawer's show-hide id.
+  const anchor = `nav-${Math.random().toString(36).slice(2, 8)}`;
+  return [
+    <Element
+      key="nav"
+      canvas
+      is={Container}
+      custom={{ displayName: "Navbar" }}
+      type="nav"
+      canDelete={true}
+      canEditName={true}
+      className="flex items-center justify-between w-full px-container-x py-space-sm bg-base-100"
+    >
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Logo" }}
+        canDelete={true}
+        canEditName={true}
+        className="flex flex-row items-center gap-space-sm"
+      >
+        <Element
+          canvas
+          is={Container}
+          custom={{ displayName: "Logo Mark" }}
+          canDelete={true}
+          canEditName={true}
+          className="w-10 h-10 rounded-md bg-primary flex items-center justify-center"
+        >
+          <Element
+            is={Icon}
+            custom={{ displayName: "Mark Icon" }}
+            value="ref-icon:tb/TbBolt"
+            className="text-primary-content w-6 h-6"
+            canDelete={true}
+            canEditName={true}
+          />
+        </Element>
+        <Element
+          is={Text}
+          custom={{ displayName: "Wordmark" }}
+          tagName="span"
+          text='<span class="text-lg font-bold font-heading">Brand</span>'
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Desktop Links" }}
+        canDelete={true}
+        canEditName={true}
+        className="hidden lg:flex items-center gap-space-md"
+      >
+        <Element
+          is={Button}
+          custom={{ displayName: "Link 1" }}
+          text="Home"
+          url=""
+          action={[{ type: "link", href: "#" }]}
+          className="text-base-content hover:text-primary"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "Link 2" }}
+          text="Features"
+          url=""
+          action={[{ type: "link", href: "#features" }]}
+          className="text-base-content hover:text-primary"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "Link 3" }}
+          text="Pricing"
+          url=""
+          action={[{ type: "link", href: "#pricing" }]}
+          className="text-base-content hover:text-primary"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "CTA" }}
+          text="Get started"
+          url=""
+          action={[{ type: "link", href: "#" }]}
+          className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold"
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+      <Element
+        is={Button}
+        custom={{ displayName: "Hamburger" }}
+        text="Open menu"
+        url=""
+        icon={{ value: "ref-icon:tb/TbMenu2", only: true, size: "w-7 h-7" }}
+        action={[
+          {
+            type: "show-hide",
+            target: anchor,
+            direction: "show",
+            trigger: "click",
+            method: "class",
+          },
+        ]}
+        className="lg:hidden bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+        canDelete={true}
+        canEditName={true}
+      />
+    </Element>,
+    <Element
+      key="drawer"
+      canvas
+      is={Container}
+      custom={{ displayName: "Mobile Drawer" }}
+      canDelete={true}
+      canEditName={true}
+      attrs={{ id: anchor }}
+      className="hidden fixed inset-0 z-[1200] bg-base-100 lg:hidden h-full p-space-lg flex-col"
+      handlers={{
+        onClick:
+          "var a = event.target.closest('a, button[data-action]'); if (a) event.currentTarget.classList.add('hidden');",
+      }}
+    >
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Drawer Header" }}
+        canDelete={true}
+        canEditName={true}
+        className="flex items-center justify-end pb-space-md"
+      >
+        <Element
+          is={Button}
+          custom={{ displayName: "Close" }}
+          text="Close"
+          url=""
+          icon={{ value: "ref-icon:tb/TbX", only: true, size: "w-6 h-6" }}
+          action={[
+            {
+              type: "show-hide",
+              target: anchor,
+              direction: "hide",
+              trigger: "click",
+              method: "class",
+            },
+          ]}
+          className="bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Drawer Links" }}
+        canDelete={true}
+        canEditName={true}
+        className="flex flex-col gap-space-sm"
+      >
+        <Element
+          is={Button}
+          custom={{ displayName: "Link 1" }}
+          text="Home"
+          url=""
+          action={[{ type: "link", href: "#" }]}
+          className="text-base-content text-lg w-full justify-start py-space-sm"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "Link 2" }}
+          text="Features"
+          url=""
+          action={[{ type: "link", href: "#features" }]}
+          className="text-base-content text-lg w-full justify-start py-space-sm"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "Link 3" }}
+          text="Pricing"
+          url=""
+          action={[{ type: "link", href: "#pricing" }]}
+          className="text-base-content text-lg w-full justify-start py-space-sm"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "CTA" }}
+          text="Get started"
+          url=""
+          action={[{ type: "link", href: "#" }]}
+          className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold mt-space-md"
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+    </Element>,
+  ];
+}
+
+function buildNavbarMegaChildren() {
+  // Mega navbar — desktop nav with one show-hide mega panel + same mobile
+  // drawer pattern as the simple navbar. Unique anchor per insert covers
+  // both the drawer and the mega panel toggle.
+  const drawerAnchor = `nav-${Math.random().toString(36).slice(2, 8)}`;
+  const megaAnchor = `mega-${Math.random().toString(36).slice(2, 8)}`;
+  return [
+    <Element
+      key="nav"
+      canvas
+      is={Container}
+      custom={{ displayName: "Navbar (mega)" }}
+      type="nav"
+      canDelete={true}
+      canEditName={true}
+      className="relative flex items-center justify-between w-full px-container-x py-space-sm bg-base-100"
+    >
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Logo" }}
+        canDelete={true}
+        canEditName={true}
+        className="flex flex-row items-center gap-space-sm"
+      >
+        <Element
+          canvas
+          is={Container}
+          custom={{ displayName: "Logo Mark" }}
+          canDelete={true}
+          canEditName={true}
+          className="w-10 h-10 rounded-md bg-primary flex items-center justify-center"
+        >
+          <Element
+            is={Icon}
+            custom={{ displayName: "Mark Icon" }}
+            value="ref-icon:tb/TbBolt"
+            className="text-primary-content w-6 h-6"
+            canDelete={true}
+            canEditName={true}
+          />
+        </Element>
+        <Element
+          is={Text}
+          custom={{ displayName: "Wordmark" }}
+          tagName="span"
+          text='<span class="text-lg font-bold font-heading">Brand</span>'
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Desktop Links" }}
+        canDelete={true}
+        canEditName={true}
+        className="hidden lg:flex items-center gap-space-md"
+      >
+        <Element
+          is={Button}
+          custom={{ displayName: "Products" }}
+          text="Products"
+          url=""
+          icon={{ value: "ref-icon:tb/TbChevronDown", position: "right", size: "w-4 h-4" }}
+          action={[
+            {
+              type: "show-hide",
+              target: megaAnchor,
+              direction: "toggle",
+              trigger: "click",
+              method: "class",
+            },
+          ]}
+          className="text-base-content hover:text-primary"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "Pricing" }}
+          text="Pricing"
+          url=""
+          action={[{ type: "link", href: "#pricing" }]}
+          className="text-base-content hover:text-primary"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "CTA" }}
+          text="Get started"
+          url=""
+          action={[{ type: "link", href: "#" }]}
+          className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold"
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+      <Element
+        is={Button}
+        custom={{ displayName: "Hamburger" }}
+        text="Open menu"
+        url=""
+        icon={{ value: "ref-icon:tb/TbMenu2", only: true, size: "w-7 h-7" }}
+        action={[
+          {
+            type: "show-hide",
+            target: drawerAnchor,
+            direction: "show",
+            trigger: "click",
+            method: "class",
+          },
+        ]}
+        className="lg:hidden bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+        canDelete={true}
+        canEditName={true}
+      />
+      <Element
+        key="mega"
+        canvas
+        is={Container}
+        custom={{ displayName: "Mega Panel" }}
+        canDelete={true}
+        canEditName={true}
+        attrs={{ id: megaAnchor }}
+        className="hidden absolute left-0 right-0 top-full z-[1100] bg-base-100 border-t border-base-200 shadow-xl px-container-x py-space-lg"
+      >
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Mega Grid" }}
+        canDelete={true}
+        canEditName={true}
+        className="grid grid-cols-3 gap-space-lg max-w-page mx-auto w-full"
+      >
+        <Element
+          canvas
+          is={Container}
+          custom={{ displayName: "Column 1" }}
+          canDelete={true}
+          canEditName={true}
+          className="flex flex-col gap-space-xs"
+        >
+          <Element
+            is={Text}
+            custom={{ displayName: "Heading" }}
+            tagName="h4"
+            text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Platform</h4>'
+            canDelete={true}
+            canEditName={true}
+          />
+          <Element
+            is={Button}
+            custom={{ displayName: "Link" }}
+            text="Editor"
+            url=""
+            action={[{ type: "link", href: "#" }]}
+            className="text-base-content hover:text-primary justify-start"
+            canDelete={true}
+            canEditName={true}
+          />
+          <Element
+            is={Button}
+            custom={{ displayName: "Link" }}
+            text="Templates"
+            url=""
+            action={[{ type: "link", href: "#" }]}
+            className="text-base-content hover:text-primary justify-start"
+            canDelete={true}
+            canEditName={true}
+          />
+        </Element>
+        <Element
+          canvas
+          is={Container}
+          custom={{ displayName: "Column 2" }}
+          canDelete={true}
+          canEditName={true}
+          className="flex flex-col gap-space-xs"
+        >
+          <Element
+            is={Text}
+            custom={{ displayName: "Heading" }}
+            tagName="h4"
+            text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Solutions</h4>'
+            canDelete={true}
+            canEditName={true}
+          />
+          <Element
+            is={Button}
+            custom={{ displayName: "Link" }}
+            text="Marketing"
+            url=""
+            action={[{ type: "link", href: "#" }]}
+            className="text-base-content hover:text-primary justify-start"
+            canDelete={true}
+            canEditName={true}
+          />
+          <Element
+            is={Button}
+            custom={{ displayName: "Link" }}
+            text="Storefront"
+            url=""
+            action={[{ type: "link", href: "#" }]}
+            className="text-base-content hover:text-primary justify-start"
+            canDelete={true}
+            canEditName={true}
+          />
+        </Element>
+        <Element
+          canvas
+          is={Container}
+          custom={{ displayName: "Column 3" }}
+          canDelete={true}
+          canEditName={true}
+          className="flex flex-col gap-space-xs"
+        >
+          <Element
+            is={Text}
+            custom={{ displayName: "Heading" }}
+            tagName="h4"
+            text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Resources</h4>'
+            canDelete={true}
+            canEditName={true}
+          />
+          <Element
+            is={Button}
+            custom={{ displayName: "Link" }}
+            text="Docs"
+            url=""
+            action={[{ type: "link", href: "#" }]}
+            className="text-base-content hover:text-primary justify-start"
+            canDelete={true}
+            canEditName={true}
+          />
+          <Element
+            is={Button}
+            custom={{ displayName: "Link" }}
+            text="Blog"
+            url=""
+            action={[{ type: "link", href: "#" }]}
+            className="text-base-content hover:text-primary justify-start"
+            canDelete={true}
+            canEditName={true}
+          />
+        </Element>
+      </Element>
+      </Element>
+    </Element>,
+    <Element
+      key="drawer"
+      canvas
+      is={Container}
+      custom={{ displayName: "Mobile Drawer" }}
+      canDelete={true}
+      canEditName={true}
+      attrs={{ id: drawerAnchor }}
+      className="hidden fixed inset-0 z-[1200] bg-base-100 lg:hidden h-full p-space-lg flex-col"
+      handlers={{
+        onClick:
+          "var a = event.target.closest('a, button[data-action]'); if (a) event.currentTarget.classList.add('hidden');",
+      }}
+    >
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Drawer Header" }}
+        canDelete={true}
+        canEditName={true}
+        className="flex items-center justify-end pb-space-md"
+      >
+        <Element
+          is={Button}
+          custom={{ displayName: "Close" }}
+          text="Close"
+          url=""
+          icon={{ value: "ref-icon:tb/TbX", only: true, size: "w-6 h-6" }}
+          action={[
+            {
+              type: "show-hide",
+              target: drawerAnchor,
+              direction: "hide",
+              trigger: "click",
+              method: "class",
+            },
+          ]}
+          className="bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Drawer Links" }}
+        canDelete={true}
+        canEditName={true}
+        className="flex flex-col gap-space-sm"
+      >
+        <Element
+          is={Button}
+          custom={{ displayName: "Products" }}
+          text="Products"
+          url=""
+          action={[{ type: "link", href: "#" }]}
+          className="text-base-content text-lg w-full justify-start py-space-sm"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "Pricing" }}
+          text="Pricing"
+          url=""
+          action={[{ type: "link", href: "#pricing" }]}
+          className="text-base-content text-lg w-full justify-start py-space-sm"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Button}
+          custom={{ displayName: "CTA" }}
+          text="Get started"
+          url=""
+          action={[{ type: "link", href: "#" }]}
+          className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold mt-space-md"
+          canDelete={true}
+          canEditName={true}
+        />
       </Element>
     </Element>,
   ];
@@ -791,6 +1513,61 @@ export const ContainerDef = defineComponent(
         category: "Interactive",
         props: { className: "contents" },
         children: buildCookieConsentChildren,
+      },
+      {
+        label: "Dropdown",
+        description: "Click-triggered menu — trigger button + panel revealed via group-focus-within. Pure CSS, zero JS.",
+        icon: TbChevronDown,
+        category: "Interactive",
+        props: {
+          className: "group relative inline-flex flex-col self-start",
+          attrs: { tabindex: 0 },
+        },
+        children: buildDropdownChildren,
+      },
+      {
+        label: "Spacer",
+        description: "Empty vertical gap. Adjust height via className.",
+        icon: TbSpace,
+        category: "Content",
+        props: {
+          className: "h-16 w-full bg-transparent",
+          attrs: { "aria-hidden": "true" },
+        },
+      },
+      {
+        label: "Divider",
+        description: "Horizontal rule between sections.",
+        icon: TbMinus,
+        category: "Content",
+        props: {
+          className: "border-t w-full",
+          attrs: { role: "separator" },
+        },
+      },
+      {
+        label: "Navbar",
+        description: "Header with logo, desktop links, and a show-hide mobile drawer. Class-based, plain Containers.",
+        icon: TbLayoutNavbar,
+        category: "Navigation",
+        props: { className: "contents" },
+        children: buildNavbarChildren,
+      },
+      {
+        label: "Navbar (mega)",
+        description: "Navbar with one show-hide mega panel for grouped links plus the standard mobile drawer.",
+        icon: TbLayoutNavbar,
+        category: "Navigation",
+        props: { className: "contents" },
+        children: buildNavbarMegaChildren,
+      },
+      {
+        label: "Mobile Menu",
+        description: "Just the hamburger button + slide-in drawer pair. Drop next to an existing header.",
+        icon: TbLayoutNavbar,
+        category: "Navigation",
+        props: { className: "contents" },
+        children: buildMobileMenuChildren,
       },
     ],
     modifiers: [

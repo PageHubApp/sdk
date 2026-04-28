@@ -252,8 +252,6 @@ const BUILT_IN_NAMES = new Set([
   "Container",
   "ContainerGroup",
   "Data",
-  "Divider",
-  "Dropdown",
   "Embed",
   "Footer",
   "Form",
@@ -265,8 +263,6 @@ const BUILT_IN_NAMES = new Set([
   "Link",
   "Map",
   "MapPoint",
-  "Nav",
-  "Spacer",
   "Text",
   "Video",
 ]);

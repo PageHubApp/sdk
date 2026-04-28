@@ -98,6 +98,14 @@ export const ColorInput = (__props: any) => {
   const fillCss = finalStyle.backgroundColor ?? "";
   const showChecker = !hasStoredColor || cssColorShowsTransparency(fillCss);
 
+  const swatchLabel = useMemo(() => {
+    const raw = String(value ?? "").trim();
+    if (!raw) return "";
+    const m = raw.match(/palette:(.+)$/);
+    if (m) return m[1];
+    return raw;
+  }, [value]);
+
   const classWriteView = propType === "class" ? editorCanvasViewToClassPrefixKey(view) : undefined;
 
   const changed = (data: any) => {
@@ -206,6 +214,14 @@ export const ColorInput = (__props: any) => {
                 style={{ backgroundColor: fillCss }}
                 aria-hidden
               />
+            )}
+            {swatchLabel && (
+              <span
+                className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center px-2 text-[11px] font-medium tracking-tight text-white"
+                style={{ mixBlendMode: "difference" }}
+              >
+                <span className="block max-w-full truncate">{swatchLabel}</span>
+              </span>
             )}
           </button>
         </ToolbarRowFrame>

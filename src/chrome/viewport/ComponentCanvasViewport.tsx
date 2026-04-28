@@ -256,7 +256,7 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
       const n = query.node(canvasIsolate).get();
       const dn: string = n?.data?.displayName || "";
       const isReal = n?.data?.props?.type === "component";
-      const isInherent = dn === "Dropdown";
+      const isInherent = false;
       if (!n || (!isReal && !isInherent)) {
         setCanvasIsolate(null);
       }
