@@ -75,7 +75,7 @@ export interface ComponentPreset {
    * Override the toolbox category for this specific preset. Defaults to
    * the host component's `category`. Use this when a preset variant
    * belongs in a different toolbox section than its component (e.g.
-   * ButtonList "Social Nav" lives under "Navigation").
+   * Container "Social Nav" lives under "Navigation").
    */
   category?: string;
   /**
@@ -107,7 +107,7 @@ export interface ComponentModifier {
   /** Optional help text shown in the editor to explain what the modifier does. */
   description?: string;
   /**
-   * Peer copy from sibling (e.g. new Button in ButtonList): `true` = participate when active on reference;
+   * Peer copy from sibling (e.g. new Button next to existing Buttons): `true` = participate when active on reference;
    * `false` = never (e.g. State modifiers). Omit = participate unless category is State (see applyPeerClassInherit).
    */
   peerInherit?: boolean;
@@ -122,7 +122,7 @@ export interface ComponentModifier {
 
 /** When set on a component def, new nodes can inherit className chrome from a sibling (schema-driven). */
 export interface PeerInheritConfig {
-  /** Parent `name` values that enable this behavior (e.g. `["ButtonList"]`). */
+  /** Parent `name` values that enable this behavior (e.g. `["Container", "ContainerGroup"]`). */
   whenParentIs: string[];
   /** Pick reference sibling: left neighbor first, else right. */
   reference: "left-neighbor" | "right-neighbor";
@@ -200,7 +200,7 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
   /** Modifiers — composable className toggles shown in the Design tab. */
   modifiers?: ComponentModifier[];
 
-  /** Optional: inherit visual chrome from a sibling when inserting into matching parents (e.g. Button in ButtonList). */
+  /** Optional: inherit visual chrome from a same-name sibling when inserting into matching parent containers. */
   peerInherit?: PeerInheritConfig;
 }
 
@@ -248,7 +248,6 @@ const BUILT_IN_NAMES = new Set([
   "Automatic",
   "Background",
   "Button",
-  "ButtonList",
   "Container",
   "ContainerGroup",
   "Data",

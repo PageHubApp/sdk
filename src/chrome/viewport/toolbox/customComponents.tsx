@@ -4,7 +4,7 @@
  *
  * Each preset becomes its own toolbox entry. By default it lands in the host
  * `def.category`; a preset may carry `category: "..."` to land in a different
- * toolbox section (e.g. ButtonList "Social Nav" → "Navigation").
+ * toolbox section (e.g. Container "Social Nav" → "Navigation").
  */
 import React from "react";
 import { RenderToolComponent, ToolboxItemDisplay } from "./toolboxUtils";

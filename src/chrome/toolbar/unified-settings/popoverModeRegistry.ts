@@ -8,6 +8,8 @@ const POPOVER_MODE = new Set<string>([
   "ActionsAddPicker",
   "AnimationsInput",
   "ConditionsAddPicker",
+  "HandlersAddPicker",
+  "StateBindingsAddPicker",
   "GradientInput",
   "PatternInput",
   "BackgroundImageInput",

@@ -1,5 +1,5 @@
 /**
- * Schema-driven className inheritance from a sibling (e.g. new Button in ButtonList).
+ * Schema-driven className inheritance from a same-name sibling (e.g. new Button next to existing Buttons in a Container).
  * Uses component def `peerInherit` + modifier metadata; supplements with raw Tailwind tokens
  * (rounded-*, border*, …) templates often use without modifier names.
  */
@@ -144,13 +144,31 @@ export function applyPeerClassInherit(
   const idx = nodes.indexOf(newNodeId);
   if (idx < 0) return;
 
+  // Heterogeneous parents (auto-list-grouped Container) can have non-Button
+  // siblings interleaved. Reference must be a same-name sibling — otherwise
+  // we'd inherit Image / Container / Text classes onto a Button. Walk left
+  // first (preferred), then right.
+  const isSameKind = (id: string) => {
+    try {
+      return query.node(id).get()?.data?.name === name;
+    } catch {
+      return false;
+    }
+  };
+
   let refId: string | null = null;
+  const walk = (start: number, step: number) => {
+    let i = start;
+    while (i >= 0 && i < nodes.length) {
+      if (i !== idx && isSameKind(nodes[i]!)) return nodes[i]!;
+      i += step;
+    }
+    return null;
+  };
   if (cfg.reference === "left-neighbor") {
-    if (idx > 0) refId = nodes[idx - 1]!;
-    else if (nodes.length > 1) refId = nodes[1]!;
+    refId = walk(idx - 1, -1) ?? walk(idx + 1, +1);
   } else {
-    if (idx < nodes.length - 1) refId = nodes[idx + 1]!;
-    else if (nodes.length > 1) refId = nodes[idx - 1]!;
+    refId = walk(idx + 1, +1) ?? walk(idx - 1, -1);
   }
   if (!refId || refId === newNodeId) return;
 

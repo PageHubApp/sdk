@@ -34,7 +34,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     keywords: ["content", "settings", "props"],
     sortOrder: 0,
     defaultOpen: false,
-    help: "Content and settings specific to this component.",
+    help: "Settings that only this kind of thing has.",
   },
   {
     id: "data-source",
@@ -53,7 +53,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     ],
     sortOrder: 5,
     defaultOpen: false,
-    help: "Where this node's repeater data comes from — connector collections, filters, and URL refetch options.",
+    help: "Where the list pulls its data from.",
   },
   {
     id: "modifiers",
@@ -63,7 +63,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     keywords: ["modifier", "pattern", "variant", "style", "class", "toggle"],
     hideKey: "modifiers",
     sortOrder: 10,
-    help: "Toggle pre-built style variants and patterns.",
+    help: "One-click style presets you can stack on top.",
   },
   {
     id: "preset-items",
@@ -72,7 +72,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     icon: React.createElement(TbLayout),
     keywords: ["items", "add", "child", "preset", "list"],
     sortOrder: 5,
-    help: "Add or remove children for this preset (Accordion items, tabs, etc.).",
+    help: "Add or remove the items inside this group.",
     defaultOpen: true,
   },
 
@@ -85,7 +85,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     keywords: ["layout", "preset", "gap", "gutter", "alignment", "align", "justify", "direction", "flex", "grid", "row", "column", "block"],
     hideKey: "alignment",
     sortOrder: 15,
-    help: "Layout preset, direction, gap, and child alignment.",
+    help: "Where stuff sits — rows, columns, gaps, alignment.",
   },
   {
     id: "size",
@@ -95,7 +95,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     keywords: ["width", "height", "min", "max", "aspect"],
     hideKey: "size",
     sortOrder: 20,
-    help: "Width, height, min/max size, and aspect ratio.",
+    help: "How wide, tall, and big this thing is.",
   },
   // ─── Design tab ────────────────────────────────────────────────────
   {
@@ -116,7 +116,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     ],
     hideKey: "font",
     sortOrder: 10,
-    help: "Font family, size, weight, color, and text alignment.",
+    help: "Font, size, weight, colour, alignment for the words.",
   },
   {
     id: "background",
@@ -126,7 +126,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     keywords: ["color", "image", "gradient", "pattern", "fill", "bg"],
     hideKey: "background",
     sortOrder: 20,
-    help: "Background color, image, gradient, and pattern.",
+    help: "What sits behind — colour, image, gradient, pattern.",
   },
   {
     // Hosted exclusively in the cog popover off the Background image chip
@@ -141,7 +141,17 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     keywords: ["loading", "lazy", "priority", "repeat", "size", "origin", "position", "attachment"],
     sortOrder: 25,
     searchOnly: true,
-    help: "Loading + tile/repeat/position controls for a background image.",
+    help: "How the background image loads, repeats, and positions.",
+  },
+  {
+    id: "hover",
+    title: "Hover",
+    tab: "design",
+    icon: React.createElement(TbHandMove),
+    keywords: ["hover", "mouse", "over", "color", "scale", "opacity", "transform", "shadow"],
+    hideKey: "hoverClick",
+    sortOrder: 32,
+    help: "How it looks when the mouse is over it.",
   },
   {
     id: "styles",
@@ -175,7 +185,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
       "dotted",
     ],
     sortOrder: 30,
-    help: "Opacity, surface, border, ring/outline, filter, behavior — anything that paints or hides.",
+    help: "Edges, shadow, opacity, corners, blur — the paint job.",
   },
   // The "Transforms" section was merged into the unified Effects builder.
   {
@@ -187,10 +197,13 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
   },
 
   // ─── Interactions tab ──────────────────────────────────────────────
+  // "What does this node DO" — typed actions, raw JS handlers, visibility
+  // conditions, runtime state bindings. Pure styling stays on the Design tab
+  // (Hover lives there now — it's a style variant, not behavior).
   {
     id: "action",
     title: "Action",
-    tab: "component",
+    tab: "interactions",
     icon: React.createElement(TbPointer),
     keywords: [
       "action",
@@ -206,17 +219,31 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     ],
     hideKey: "hoverClick",
     sortOrder: 10,
-    help: "What happens on click — link, scroll, modal, cart, and more.",
+    help: "What happens when someone clicks it.",
   },
   {
-    id: "hover",
-    title: "Hover",
+    id: "handlers",
+    title: "Handlers",
     tab: "interactions",
-    icon: React.createElement(TbHandMove),
-    keywords: ["hover", "mouse", "over", "color", "scale", "opacity", "transform", "shadow"],
+    icon: React.createElement(TbCode),
+    keywords: [
+      "handler",
+      "event",
+      "javascript",
+      "js",
+      "code",
+      "click",
+      "hover",
+      "mouseenter",
+      "mouseleave",
+      "focus",
+      "blur",
+      "keydown",
+      "keyup",
+    ],
     hideKey: "hoverClick",
     sortOrder: 15,
-    help: "Styling that applies while the cursor is over this element.",
+    help: "Run your own JavaScript when an event fires.",
   },
   {
     id: "conditions",
@@ -225,7 +252,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     icon: React.createElement(TbEyeSearch),
     keywords: ["condition", "visibility", "show", "hide", "url", "form"],
     sortOrder: 20,
-    help: "Show or hide this element based on URL, auth, or form state.",
+    help: "Rules that show or hide this in real time.",
   },
   {
     id: "stateBindings",
@@ -243,7 +270,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
       "condition",
     ],
     sortOrder: 22,
-    help: "Bind modifiers to runtime state — e.g. apply 'active' classes when a paired panel is shown.",
+    help: "React to runtime state — e.g. 'active' when a panel opens.",
   },
   // Animation, "Tailwind effects", Scroll Effect — collapsed into one
   // unified Effects section (Design tab) backed by effects-builder/. See
@@ -289,7 +316,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     ],
     hideKey: "effectsClass",
     sortOrder: 38,
-    help: "Animation, scroll, transition, transform, filter, and backdrop effects.",
+    help: "Movement and motion — animations, transitions, parallax.",
   },
   // ─── Advanced tab ──────────────────────────────────────────────────
   {
@@ -314,7 +341,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     ],
     hideKey: "accessibility",
     sortOrder: 10,
-    help: "HTML tag, ID, data attributes, and ARIA / accessibility.",
+    help: "HTML tag, IDs, data-attrs, accessibility.",
   },
   {
     id: "custom-css",
@@ -323,7 +350,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     icon: React.createElement(TbCode),
     keywords: ["css", "class", "className", "tailwind", "custom", "code", "classes"],
     sortOrder: 25,
-    help: "Add or edit Tailwind and custom class names.",
+    help: "Raw Tailwind and custom class names.",
   },
   {
     id: "ai-context",
@@ -332,7 +359,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     icon: React.createElement(TbWand),
     keywords: ["ai", "context", "description", "block", "notes", "tags", "assistant"],
     sortOrder: 35,
-    help: "Optional notes/tags so AI understands this component.",
+    help: "Notes that help AI understand this thing.",
   },
   {
     id: "import-export",
@@ -342,7 +369,7 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     keywords: ["json", "copy", "paste", "import", "export", "code"],
     hideKey: "importExport",
     sortOrder: 40,
-    help: "Copy this node as JSON or paste JSON to replace it.",
+    help: "Copy this as JSON or paste JSON to replace it.",
   },
   {
     id: "permissions",
@@ -351,6 +378,6 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     icon: React.createElement(TbLock),
     keywords: ["permission", "lock", "drag", "delete", "edit", "move", "protect", "restrict"],
     sortOrder: 200,
-    help: "Lock down what can be done with this node.",
+    help: "Lock down what can be done with this.",
   },
 ];

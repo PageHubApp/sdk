@@ -1,8 +1,10 @@
 /**
  * Interactions property definitions.
  *
- * "action" section — custom ActionsInput component (mixed-source body:
- * actions[] chips + handlers{} chips, see editor-popover-pattern.md §8)
+ * "action" section — custom ActionsInput component (chip list backed by
+ * `props.action[]`, see editor-popover-pattern.md §8)
+ * "handlers" section — custom HandlersInput component (chip list backed by
+ * `props.handlers` map of event name → JS string, see §8)
  * "hover" section — standard color/opacity/transform defs
  */
 import type { PropertyDef } from "../propertyDefs";
@@ -14,10 +16,9 @@ export const interactionProperties: PropertyDef[] = [
   // ─── Action (list-style section, mirrors Conditions) ─────────────
   // Body chip-list. Pinned so AccordionAddMenu's `sectionPopoverProp` path
   // (which requires the picker to be the only NON-pinned prop) can mount the
-  // header `+`. `isActive` gates body visibility on either the actions array
-  // OR the per-node `handlers` map — handlers live inside this body too, so
-  // an empty actions list with a custom handler should still expand. See
-  // docs/sdk/editor-popover-pattern.md §8.
+  // header `+`. `isActive` gates body visibility on the actions array — empty
+  // list collapses the section back to "click + to add". Handlers live in
+  // their own sibling section (see below). See editor-popover-pattern.md §8.
   {
     id: "action",
     label: "Action",
@@ -33,8 +34,6 @@ export const interactionProperties: PropertyDef[] = [
       "phone",
       "download",
       "cart",
-      "handler",
-      "event",
     ],
     input: { type: "custom", component: "ActionsInput" },
     pinned: true,
@@ -49,11 +48,7 @@ export const interactionProperties: PropertyDef[] = [
         (Array.isArray(props?.actions) && props.actions.length > 0) ||
         !!props?.click ||
         !!props?.url;
-      const hasHandlers =
-        props?.handlers &&
-        typeof props.handlers === "object" &&
-        Object.keys(props.handlers).length > 0;
-      return Boolean(hasAction || hasLegacy || hasHandlers);
+      return Boolean(hasAction || hasLegacy);
     },
     sortOrder: 0,
   },
@@ -66,6 +61,49 @@ export const interactionProperties: PropertyDef[] = [
     help: "Add a click / interaction action.",
     keywords: ["add", "action", "link", "modal", "click", "show", "hide", "cart"],
     input: { type: "custom", component: "ActionsAddPicker" },
+    sortOrder: 1,
+  },
+
+  // ─── Handlers (list-style section, mirrors Conditions / Action) ───
+  // Body chip-list of `props.handlers` (event → JS string map). Sibling of
+  // Action — declarative typed actions live there, raw JS escape hatch lives
+  // here. See editor-popover-pattern.md §8.
+  {
+    id: "handlers",
+    label: "Handlers",
+    section: "handlers",
+    keywords: [
+      "handler",
+      "event",
+      "javascript",
+      "js",
+      "code",
+      "click",
+      "hover",
+      "mouseenter",
+      "mouseleave",
+      "focus",
+      "blur",
+      "keydown",
+      "keyup",
+    ],
+    input: { type: "custom", component: "HandlersInput" },
+    pinned: true,
+    isActive: (_cls, props) =>
+      props?.handlers &&
+      typeof props.handlers === "object" &&
+      Object.keys(props.handlers).length > 0,
+    sortOrder: 0,
+  },
+  {
+    // Section-header `+` picker. Popover-mode + non-pinned, so AccordionAddMenu's
+    // `sectionPopoverProp` path mounts it inside the section title row.
+    id: "handlers:add",
+    label: "Add handler",
+    section: "handlers",
+    help: "Add a custom JS handler for a DOM event.",
+    keywords: ["add", "handler", "event", "javascript", "js", "code"],
+    input: { type: "custom", component: "HandlersAddPicker" },
     sortOrder: 1,
   },
 

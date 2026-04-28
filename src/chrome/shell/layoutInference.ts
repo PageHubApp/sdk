@@ -68,7 +68,7 @@ export function shouldPreserveCenteredContent(node: Pick<Node, "data"> | undefin
   return getCenterAlignmentScore(node) >= 2;
 }
 
-/** Unprefixed or breakpoint `flex-row` (ButtonList / nav strips often use `sm:flex-row`). */
+/** Unprefixed or breakpoint `flex-row` (button-group / nav strips often use `sm:flex-row`). */
 export function hasDeclaredFlexRow(className: string) {
   if (!className) return false;
   if (hasToken(className, "flex-row")) return true;
@@ -91,11 +91,10 @@ export function isSimpleBesideRow(node: Pick<Node, "data"> | undefined | null) {
 /**
  * Beside-right/left on this node should stay a local split (new Row under the column parent),
  * not promote to "Split content" (whole stack vs sibling at grandparent). Typical failure:
- * dragging a hero CTA beside the ButtonList promoted the entire "Hero copy" column vs the image.
+ * dragging a hero CTA beside a sibling button-group row promoted the entire "Hero copy" column vs the image.
  */
 export function isBesidePromotionLeafTarget(node: Pick<Node, "data"> | undefined | null) {
   if (!node?.data) return false;
-  if (node.data.name === "ButtonList") return true;
   return isSimpleBesideRow(node);
 }
 

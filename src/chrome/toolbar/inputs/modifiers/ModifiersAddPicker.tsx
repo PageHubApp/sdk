@@ -26,10 +26,7 @@ import {
 } from "../../../primitives/SearchableMenuPopover";
 import { SideBarAtom } from "../../../../utils/lib";
 import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
-import {
-  PopoverOpenRequestAtom,
-  popoverRequestKey,
-} from "../../unified-settings/popoverOpenRequestAtom";
+import { useSectionPopoverOpenRequest } from "../../unified-settings/popoverOpenRequestAtom";
 import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
 
 const ModifiersPickerPanel = lazy(() => import("./ModifiersPickerPanel"));
@@ -75,7 +72,6 @@ export default function ModifiersAddPicker({ def }: PropertyInputProps) {
   const triggerWrapRef = useRef<HTMLSpanElement>(null);
   const sidebarLeft = useAtomValue(SideBarAtom);
   const sessionAdded = useAtomValue(SessionAddedAtom);
-  const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
 
   const { id } = useNode(node => ({ id: node.id }));
 
@@ -108,19 +104,9 @@ export default function ModifiersAddPicker({ def }: PropertyInputProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionAdded, id, def?.id]);
 
-  // Open the library directly whenever a popover-open-request fires for this
-  // def (chip click in ModifierChipList). Bypasses the menu — same reason.
-  // Init to 0, NOT current version: if a dispatch fired while this trigger
-  // was unmounted, the very first version we see on mount IS the bump.
-  const lastRequestVersion = useRef(0);
-  useEffect(() => {
-    if (!def) return;
-    const version = popoverRequests.get(popoverRequestKey(id, def.id)) || 0;
-    if (version === 0 || version === lastRequestVersion.current) return;
-    lastRequestVersion.current = version;
-    requestAnimationFrame(openLibrary);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [popoverRequests, id, def?.id]);
+  // Open the library directly on a popover-open-request bump (chip click in
+  // ModifierChipList, empty-section title click). Bypasses the menu.
+  useSectionPopoverOpenRequest(id, def?.id ?? "", () => requestAnimationFrame(openLibrary));
 
   const handleSelect = (item: SearchableMenuItem<MenuAction>) => {
     if (item.data === "library") openLibrary();

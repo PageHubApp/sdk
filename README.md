@@ -273,7 +273,6 @@ The SDK ships with these drag-and-drop components out of the box:
 | `Image`          | Responsive images                         |
 | `ImageList`      | Image gallery / grid                      |
 | `Button`         | CTA button with variants                  |
-| `ButtonList`     | Button group                              |
 | `Video`          | Video embed (YouTube, Vimeo, self-hosted) |
 | `Audio`          | Audio player                              |
 | `Embed`          | Raw HTML / iframe embed                   |

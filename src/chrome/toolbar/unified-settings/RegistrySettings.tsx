@@ -22,6 +22,7 @@ import { UnifiedTabBody } from "../UnifiedTab";
 import { AccordionProvider, useAccordionContext } from "../AccordionContext";
 import { Notice } from "../inputs/Notice";
 import { ToolbarSection } from "../ToolbarSection";
+import { AutoChildListGroups } from "./AutoChildListGroups";
 import { PropertyRenderer } from "./PropertyRenderer";
 import { PropertySection } from "./PropertySection";
 import { InspectorPinProvider } from "./inspectorPin/InspectorPinContext";
@@ -77,7 +78,12 @@ function ComponentSection() {
   const nodeData = query.node(id).get().data;
   const toolbar = getToolbarConfig(query, nodeData);
   const Settings = toolbar?.settings;
-  return Settings ? <Settings /> : null;
+  return (
+    <>
+      <AutoChildListGroups />
+      {Settings ? <Settings /> : null}
+    </>
+  );
 }
 
 function AdvancedSettingsSection() {

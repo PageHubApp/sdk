@@ -14,6 +14,7 @@ import { getSectionDef } from "../../unified-settings/registry/propertyRegistry"
 import {
   PopoverOpenRequestAtom,
   requestOpenPopover,
+  useSectionPopoverOpenRequest,
 } from "../../unified-settings/popoverOpenRequestAtom";
 import { defaultCondition } from "../advanced/ConditionsInput";
 import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
@@ -44,6 +45,10 @@ export default function StateBindingsAddPicker({ def }: PropertyInputProps) {
     if (sectionTitle && accordionCtx?.setOpen) accordionCtx.setOpen(sectionTitle, true);
     requestOpenPopover(popoverRequests, setPopoverRequests, id, STATE_BINDINGS_BODY_DEF_ID);
   };
+
+  // State has no type-picker menu — title click just creates a fresh binding
+  // (same as clicking +).
+  useSectionPopoverOpenRequest(id, def.id, onClick);
 
   return (
     <button

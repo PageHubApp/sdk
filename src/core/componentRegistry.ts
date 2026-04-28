@@ -11,7 +11,6 @@ import type { ComponentType } from "react";
 import { Audio } from "../components/Audio";
 import { Background } from "../components/Background";
 import { Button } from "../components/Button";
-import { ButtonList } from "../components/ButtonList";
 import { ConditionalContainer } from "../components/ConditionalContainer";
 import { Container } from "../components/Container";
 import { ContainerGroup } from "../components/ContainerGroup";
@@ -53,7 +52,6 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Automatic: cv(Container),
   Background,
   Button: cv(Button),
-  ButtonList: cv(ButtonList),
   ConditionalContainer: cv(ConditionalContainer),
   Container: cv(Container),
   ContainerGroup: cv(ContainerGroup),

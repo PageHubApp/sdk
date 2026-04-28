@@ -144,7 +144,7 @@ export const useScrollToSelected = (id, enabled) => {
 
 /**
  * Gets child nodes of a specific type from a parent container
- * Shared utility for components like ButtonList and ImageList
+ * Shared utility for components like ImageList and any auto-list-grouped Container
  */
 export const useChildNodes = (parentId: string, componentName: string) => {
   return useEditor((_, query) => {

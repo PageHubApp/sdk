@@ -313,7 +313,7 @@ export const ButtonDef = defineComponent(
       },
     ],
     peerInherit: {
-      whenParentIs: ["ButtonList"],
+      whenParentIs: ["Container", "ContainerGroup"],
       reference: "left-neighbor",
     },
   },

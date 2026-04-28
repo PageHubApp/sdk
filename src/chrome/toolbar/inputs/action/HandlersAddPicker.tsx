@@ -1,44 +1,59 @@
 /**
- * HandlersAddPicker — dashed `+ Add Handler` button below the action chips.
+ * HandlersAddPicker — section-header `+` for the Handlers section.
  *
- * Lives inside the Action body (NOT in the section header — the section's
- * header `+` is for actions). Renders a `SearchableMenuPopover` of available
+ * Registered as a popover-mode property on the handlers section so
+ * AccordionAddMenu mounts it INSIDE the section title row (single-popover
+ * `sectionPopoverProp` path). Renders a `SearchableMenuPopover` of available
  * event names; events already in use on this node are filtered out.
  *
  * Picking one writes `props.handlers[event] = ""` and dispatches a
- * `PopoverOpenRequestAtom` bump keyed to the body's handler-tail def id so
- * `ActionsInput` auto-opens the new chip's editor. See
- * docs/sdk/editor-popover-pattern.md §4 + §8.
+ * `PopoverOpenRequestAtom` bump keyed to `HANDLERS_BODY_DEF_ID` so
+ * `HandlersInput` auto-opens the new chip's editor — even when the section
+ * was previously closed. See docs/sdk/editor-popover-pattern.md §4 + §8.
  */
 import { useNode } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
+import { useRef } from "react";
 import { TbPlus } from "react-icons/tb";
 import {
   SearchableMenuPopover,
   type SearchableMenuItem,
+  type SearchableMenuPopoverHandle,
 } from "../../../primitives/SearchableMenuPopover";
+import { useAccordionContext } from "../../AccordionContext";
+import { getSectionDef } from "../../unified-settings/registry/propertyRegistry";
 import {
   PopoverOpenRequestAtom,
   requestOpenPopover,
+  useSectionPopoverOpenRequest,
 } from "../../unified-settings/popoverOpenRequestAtom";
 import { HANDLER_EVENT_OPTIONS } from "./handlerEvents";
+import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
 
-// Sub-key for the handler tail. Distinct from the action body's `"action"`
-// key so the bus can target either tail independently.
-export const HANDLERS_BODY_DEF_ID = "action.handler";
+// Body's def id — matches the registry entry the picker pairs with.
+export const HANDLERS_BODY_DEF_ID = "handlers";
 
-interface Props {
-  takenEvents: string[];
-}
-
-export function HandlersAddPicker({ takenEvents }: Props) {
+export default function HandlersAddPicker({ def }: PropertyInputProps) {
   const {
     id,
     actions: { setProp },
-  } = useNode(node => ({ id: node.id }));
+    handlers,
+  } = useNode(node => ({
+    id: node.id,
+    handlers:
+      node.data.props.handlers && typeof node.data.props.handlers === "object"
+        ? (node.data.props.handlers as Record<string, string>)
+        : {},
+  }));
+  const accordionCtx = useAccordionContext();
+  const sectionTitle = getSectionDef(def.section)?.title;
   const [popoverRequests, setPopoverRequests] = useAtomState(PopoverOpenRequestAtom);
+  const popoverRef = useRef<SearchableMenuPopoverHandle>(null);
+  useSectionPopoverOpenRequest(id, def.id, () =>
+    requestAnimationFrame(() => popoverRef.current?.open()),
+  );
 
-  const taken = new Set(takenEvents);
+  const taken = new Set(Object.keys(handlers));
   const items: SearchableMenuItem<string>[] = HANDLER_EVENT_OPTIONS.filter(
     opt => !taken.has(opt.value)
   ).map(opt => ({
@@ -55,24 +70,20 @@ export function HandlersAddPicker({ takenEvents }: Props) {
       next[event] = "";
       p.handlers = next;
     });
+    if (sectionTitle && accordionCtx?.setOpen) accordionCtx.setOpen(sectionTitle, true);
     requestOpenPopover(popoverRequests, setPopoverRequests, id, HANDLERS_BODY_DEF_ID);
   };
 
   return (
     <SearchableMenuPopover
+      ref={popoverRef}
       items={items}
       onSelect={onPick}
-      trigger={
-        <span className="flex items-center gap-1.5">
-          <TbPlus className="size-3.5" aria-hidden />
-          <span>Add Handler</span>
-        </span>
-      }
+      trigger={<TbPlus className="size-3.5" aria-hidden />}
       triggerAriaLabel="Add handler"
-      triggerClassName="border-base-300 hover:border-base-content/30 hover:bg-base-200/40 text-neutral-content hover:text-base-content flex w-full items-center justify-center rounded-md border border-dashed py-1.5 text-xs transition-colors"
       searchPlaceholder="Search events…"
       emptyMessage="All events in use"
-      anchor="bottom start"
+      anchor="bottom end"
       panelWidthClass="w-56"
     />
   );

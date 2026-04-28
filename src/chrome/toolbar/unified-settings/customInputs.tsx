@@ -149,15 +149,24 @@ const lazyMap: Record<string, LazyEntry> = {
   ),
   // List-style Action section (mirrors Conditions): body chip-list + header
   // `+` picker. Each action chip lazy-loads its own ActionEditorPanel on
-  // click; per-node `handlers` render as chips below the action chips with
-  // their own HandlerEditorPanel and an in-body `+ Add Handler` picker. See
-  // ActionsInput.tsx + docs/sdk/editor-popover-pattern.md §8.
+  // click. See ActionsInput.tsx + docs/sdk/editor-popover-pattern.md §8.
   ActionsInput: block(
     React.lazy(() =>
       import("../inputs/action/ActionsInput").then(m => ({ default: m.ActionsInput }))
     )
   ),
   ActionsAddPicker: chip(React.lazy(() => import("../inputs/action/ActionsAddPicker"))),
+  // Sibling Handlers section — chip-list of `props.handlers` (event → JS
+  // string map). Each handler chip lazy-loads its own HandlerEditorPanel.
+  // See HandlersInput.tsx + docs/sdk/editor-popover-pattern.md §8.
+  HandlersInput: block(
+    React.lazy(() =>
+      import("../inputs/action/HandlersInput").then(m => ({ default: m.HandlersInput }))
+    )
+  ),
+  HandlersAddPicker: chip(
+    React.lazy(() => import("../inputs/action/HandlersAddPicker"))
+  ),
   FlexDirectionInput: row(
     React.lazy(() =>
       import("../inputs/layout/FlexDirectionInput").then(m => ({

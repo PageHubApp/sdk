@@ -11,7 +11,6 @@
 import { Audio } from "../Audio";
 import { Background } from "../Background";
 import { Button } from "../Button";
-import { ButtonList } from "../ButtonList";
 import { ConditionalContainer } from "../ConditionalContainer";
 import { Container } from "../Container";
 import { ContainerGroup } from "../ContainerGroup";
@@ -45,7 +44,6 @@ export const viewerResolver = {
   Automatic: cv(Container),
   Background,
   Button: cv(Button),
-  ButtonList: cv(ButtonList),
   ConditionalContainer: cv(ConditionalContainer),
   Container: cv(Container),
   ContainerGroup: cv(ContainerGroup),

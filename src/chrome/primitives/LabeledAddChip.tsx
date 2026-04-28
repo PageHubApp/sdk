@@ -9,7 +9,7 @@ import { ToolbarRowFrame } from "./ToolbarRowFrame";
  * one exists, the host component takes over and renders its own editor body.
  *
  * Used for in-section empty states where a chunky `ToolbarDashedButton` would
- * read as too heavy (Action / Handlers inside a ButtonList detail panel).
+ * read as too heavy (Action / Handlers inside an auto-list-group detail panel).
  */
 export const LabeledAddChip = ({
   label,

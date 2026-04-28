@@ -12,16 +12,19 @@
  */
 import { useNode } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
+import { useRef } from "react";
 import { TbPlus } from "react-icons/tb";
 import {
   SearchableMenuPopover,
   type SearchableMenuItem,
+  type SearchableMenuPopoverHandle,
 } from "../../../primitives/SearchableMenuPopover";
 import { useAccordionContext } from "../../AccordionContext";
 import { getSectionDef } from "../../unified-settings/registry/propertyRegistry";
 import {
   PopoverOpenRequestAtom,
   requestOpenPopover,
+  useSectionPopoverOpenRequest,
 } from "../../unified-settings/popoverOpenRequestAtom";
 import {
   ACTION_TYPE_OPTIONS,
@@ -49,6 +52,10 @@ export default function ActionsAddPicker({ def }: PropertyInputProps) {
   const accordionCtx = useAccordionContext();
   const sectionTitle = getSectionDef(def.section)?.title;
   const [popoverRequests, setPopoverRequests] = useAtomState(PopoverOpenRequestAtom);
+  const popoverRef = useRef<SearchableMenuPopoverHandle>(null);
+  useSectionPopoverOpenRequest(id, def.id, () =>
+    requestAnimationFrame(() => popoverRef.current?.open()),
+  );
 
   const onPick = (item: SearchableMenuItem<ActionType>) => {
     if (!item.data) return;
@@ -72,6 +79,7 @@ export default function ActionsAddPicker({ def }: PropertyInputProps) {
 
   return (
     <SearchableMenuPopover
+      ref={popoverRef}
       items={ITEMS}
       onSelect={onPick}
       trigger={<TbPlus className="size-3.5" aria-hidden />}

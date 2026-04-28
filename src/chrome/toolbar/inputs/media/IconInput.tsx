@@ -1,7 +1,7 @@
 /**
  * IconInput — Framer-style chip + floating popover for component-prop icon stacks.
  *
- * Replaces the 5–7 inline rows that used to live in Button/Link/ButtonList/Nav
+ * Replaces the 5–7 inline rows that used to live in Button/Link/Nav
  * Content sections. Renders one row: live icon thumb + label + X clear. Click
  * opens a `FloatingPanel` containing every icon control:
  *   • Image (IconDialogInput) · Only Show Icon · Position · Size
