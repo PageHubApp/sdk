@@ -28,8 +28,8 @@ const inactive =
 const active = "bg-sidebar-accent text-sidebar-accent-foreground";
 
 function tabPad(density: SidebarTabDensity | undefined, hasIcon: boolean): string {
-  if (density === "compact") return "gap-1.5 px-2 py-3";
-  return hasIcon ? "gap-2 px-4 py-3" : "px-4 py-3";
+  if (density === "compact") return "gap-1.5 px-2 py-2";
+  return hasIcon ? "gap-2 px-4 py-2" : "px-4 py-2";
 }
 
 export function SidebarTabsPane({

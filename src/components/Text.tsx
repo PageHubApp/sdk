@@ -8,11 +8,13 @@ import { Text as UiText } from "@pagehub/ui";
 import { addActionHandlers, addCustomHandlers } from "../utils/clickControls";
 import { applyAttrs } from "../utils/applyAttrs";
 import {
-  migrateAction,
+  migrateActions,
   actionToHref,
   actionTarget,
+  isLinkAction,
   isHandlerAction,
   isAnchorAction,
+  findLinkAction,
   type NodeAction,
 } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -36,8 +38,8 @@ export interface TextProps extends BaseSelectorProps {
   richText?: { mode?: "full" | "inline"; profile?: string };
   textFitMode?: "oneline" | "multiline" | "box" | "boxoneline";
   activeTab?: number;
-  action?: NodeAction;
-  click?: any; // Legacy — handled by migrateAction()
+  action?: NodeAction | NodeAction[];
+  click?: any; // Legacy — handled by migrateActions()
 }
 
 // Guard against corrupted tagName data (e.g. `p, "text": "..."` from bad MCP writes)
@@ -75,13 +77,13 @@ const renderLiveMode = (
   const processedText = replaceVariables(props.text, query, itemContext);
   let tagName = sanitizeTagName(props.tagName);
 
-  const action = migrateAction(props);
-  const resolvedUrl = actionToHref(action, query, router?.asPath);
+  const firstLink = findLinkAction(migrateActions(props));
+  const resolvedUrl = actionToHref(firstLink, query, router?.asPath);
 
   if (resolvedUrl) {
     const isInternal = resolvedUrl.startsWith("/");
     tagName = isInternal ? Link : ("a" as any);
-    const target = actionTarget(action);
+    const target = actionTarget(firstLink);
     const linkProps: any = {
       href: resolvedUrl,
       dangerouslySetInnerHTML: { __html: unwrapP(processedText) },
@@ -156,9 +158,15 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   // Pass through plain string attrs (data-*, role, etc.) — matches Container/Button/FormElement.
   // Text-nodes needing runtime hooks (e.g. data-storefront-page-indicator) rely on this.
   applyAttrs(prop, props.attrs);
-  const action = migrateAction(props);
-  if (isHandlerAction(action) || isAnchorAction(action)) {
-    addActionHandlers(prop, action, enabled);
+  const actions = migrateActions(props);
+  // Text wraps in <a> via renderLiveMode for single-link cases; here we attach
+  // JS handlers for chains, anchors, and non-link actions.
+  const needsJsDispatch =
+    actions.length > 1 ||
+    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
+    (actions.length === 1 && !isLinkAction(actions[0]));
+  if (needsJsDispatch) {
+    addActionHandlers(prop, actions, enabled);
   }
 
   addCustomHandlers(prop, props.handlers, enabled);
@@ -195,8 +203,8 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   } else {
     const liveContent = renderLiveMode(props, query, router, itemContext);
 
-    const liveAction = migrateAction(props);
-    const liveHref = actionToHref(liveAction, query, router?.asPath);
+    const liveLink = findLinkAction(migrateActions(props));
+    const liveHref = actionToHref(liveLink, query, router?.asPath);
     if (liveHref) {
       // Wrap text in a link but keep the original tagName (h1, h2, etc.) as the outer element
       // so className, animations, and semantic structure are preserved.

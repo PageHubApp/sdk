@@ -4,6 +4,7 @@
  */
 
 import { resolvePageRef } from "./pageManagement";
+import type { ConditionGroup } from "./conditions/types";
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -28,10 +29,26 @@ export type ActionType =
   | "toggle-cart"
   | "cart-checkout"
   | "manage-subscription"
-  | "agent-send";
+  | "agent-send"
+  | "set-local-storage"
+  | "remove-local-storage"
+  | "set-state"
+  | "toggle-state"
+  | "clear-state";
 
 interface ActionBase {
   type: ActionType;
+  /**
+   * Optional gate — action only fires when conditions evaluate truthy. Same
+   * shape as node-level visibility / page-access conditions
+   * (`packages/sdk/src/utils/conditions/types.ts`). Multiple groups are OR'd
+   * (Elementor-style); within a group, `logic: "all" | "any"` chooses AND/OR.
+   *
+   * Currently only `fireLoadAction` reads this field — load-trigger banners
+   * use it for first-visit gating (replaces the old `gateLocalStorageKey`).
+   * Click/hover gating in `addActionHandlers` is a follow-up.
+   */
+  conditions?: ConditionGroup[];
 }
 
 /**
@@ -102,7 +119,22 @@ export interface ShowHideAction extends ActionBase {
   direction: "show" | "hide" | "toggle" | "tab";
   method?: "class" | "style";
   group?: string;
-  trigger?: "click" | "hover";
+  /**
+   * What fires the action.
+   *  - `"click"` (default) / `"hover"` — DOM event handlers.
+   *  - `"load"` — fires once on mount in viewer mode. Use the inherited
+   *    `conditions` field (e.g. a `localStorage not-exists` group) for
+   *    first-visit-only banners (cookie consent, popups). Editor
+   *    auto-reveal uses `useShowOnLoadAutoReveal` so authors can edit the
+   *    banner regardless of conditions.
+   */
+  trigger?: "click" | "hover" | "load";
+  /**
+   * @deprecated Migrated to `conditions` by `normalizeAction` —
+   * `{ type: "localStorage", key, operator: "not-exists" }`. Kept in the
+   * union only so old in-flight data passes type checks until rewritten.
+   */
+  gateLocalStorageKey?: string;
 }
 
 export interface CopyToClipboardAction extends ActionBase {
@@ -157,6 +189,56 @@ export interface AgentSendAction extends ActionBase {
   field?: string;
 }
 
+/**
+ * Write a key/value pair to `window.localStorage`. Pairs naturally with
+ * a load-trigger `show-hide` action whose `gateLocalStorageKey` matches —
+ * once the key is set, the banner / popup is gated out on subsequent visits.
+ */
+export interface SetLocalStorageAction extends ActionBase {
+  type: "set-local-storage";
+  key: string;
+  value: string;
+}
+
+/** Remove a key from `window.localStorage` (e.g. "show this banner again"). */
+export interface RemoveLocalStorageAction extends ActionBase {
+  type: "remove-local-storage";
+  key: string;
+}
+
+/**
+ * Write to the central state registry. The generic primitive that drives
+ * tab-active styling, modal-open flags, drawer-open, selection groups, etc.
+ * Pair with a `state` condition (visibility / className gating) to react.
+ */
+export interface SetStateAction extends ActionBase {
+  type: "set-state";
+  /** Registry key — element id (implicit) or named state declared on ROOT. */
+  key: string;
+  /** Discriminator — used by the editor to offer the right operator suite. Defaults to "value". */
+  kind?: "visibility" | "selection" | "flag" | "value";
+  /** Value to write. Supports `{{item.*}}` interpolation at runtime. */
+  value: string;
+  trigger?: "click" | "hover" | "load";
+}
+
+/** Toggle a state between two values (defaults: visibility "shown"/"hidden", flag "on"/"off"). */
+export interface ToggleStateAction extends ActionBase {
+  type: "toggle-state";
+  key: string;
+  kind?: "visibility" | "selection" | "flag" | "value";
+  /** Optional value pair. If omitted, kind decides ("shown"|"hidden", "on"|"off"). */
+  values?: [string, string];
+  trigger?: "click" | "hover" | "load";
+}
+
+/** Remove a state entry entirely. Useful for "reset" buttons. */
+export interface ClearStateAction extends ActionBase {
+  type: "clear-state";
+  key: string;
+  trigger?: "click" | "hover" | "load";
+}
+
 /** Toggle `html.dark` and persist `ph-theme` (same contract as editor chrome + _document bootstrap). */
 export interface ToggleThemeAction extends ActionBase {
   type: "toggle-theme";
@@ -181,7 +263,12 @@ export type NodeAction =
   | ToggleCartAction
   | CartCheckoutAction
   | ManageSubscriptionAction
-  | AgentSendAction;
+  | AgentSendAction
+  | SetLocalStorageAction
+  | RemoveLocalStorageAction
+  | SetStateAction
+  | ToggleStateAction
+  | ClearStateAction;
 
 export type LinkTarget = "_self" | "_blank" | "_parent" | "_top";
 
@@ -225,7 +312,12 @@ export function isHandlerAction(
   | ToggleCartAction
   | CartCheckoutAction
   | ManageSubscriptionAction
-  | AgentSendAction {
+  | AgentSendAction
+  | SetLocalStorageAction
+  | RemoveLocalStorageAction
+  | SetStateAction
+  | ToggleStateAction
+  | ClearStateAction {
   if (!action) return false;
   return (
     action.type === "open-modal" ||
@@ -235,7 +327,12 @@ export function isHandlerAction(
     action.type === "toggle-cart" ||
     action.type === "cart-checkout" ||
     action.type === "manage-subscription" ||
-    action.type === "agent-send"
+    action.type === "agent-send" ||
+    action.type === "set-local-storage" ||
+    action.type === "remove-local-storage" ||
+    action.type === "set-state" ||
+    action.type === "toggle-state" ||
+    action.type === "clear-state"
   );
 }
 
@@ -307,6 +404,13 @@ export function actionToHref(
     case "cart-checkout":
     case "manage-subscription":
     case "agent-send":
+    case "set-local-storage":
+    case "remove-local-storage":
+    case "set-state":
+    case "toggle-state":
+    case "clear-state":
+    case "copy-to-clipboard":
+    case "download-file":
       return null; // Handled by JS
   }
 }
@@ -368,48 +472,130 @@ export function legacyActionToLink(action: any): LinkAction | null {
   }
 }
 
-/**
- * Convert legacy click/url/urlTarget props to NodeAction.
- * Called at render time in components to handle old saved data.
- */
-export function migrateAction(props: any): NodeAction | null {
-  // Already migrated — pass through, but normalize 5 legacy link-ish types to unified `link`
-  if (props.action) {
-    const link = legacyActionToLink(props.action);
-    if (link) return link; // Either already `link` (idempotent) or one of the 5 legacy types
-    return props.action; // Non-link action (modal, cart, etc.) — pass through unchanged
-  }
+/** Normalize a single raw action: pass through if already valid, or migrate legacy link-ish to `link`. */
+function normalizeAction(raw: any): NodeAction | null {
+  if (!raw || typeof raw !== "object") return null;
+  const link = legacyActionToLink(raw);
+  if (link) return link;
 
-  // Old link mode (props.url / props.urlTarget) — emit unified `link` directly
-  if (props.url && typeof props.url === "string") {
-    if (props.url.startsWith("ref:")) {
+  // Legacy `gateLocalStorageKey` on load-trigger show-hide → fold into the
+  // generic `conditions` array so action gating uses one mechanism. Only
+  // fires when the action doesn't already carry conditions (idempotent —
+  // re-running the migration on already-normalized data is a no-op).
+  if (
+    raw.type === "show-hide" &&
+    raw.trigger === "load" &&
+    typeof raw.gateLocalStorageKey === "string" &&
+    raw.gateLocalStorageKey
+  ) {
+    const hasConditions = Array.isArray(raw.conditions) && raw.conditions.length > 0;
+    if (!hasConditions) {
+      const { gateLocalStorageKey, ...rest } = raw;
       return {
-        type: "link",
-        href: props.url, // already in `ref:<pageId>` form
-        ...(props.urlTarget ? { target: props.urlTarget } : {}),
-      };
+        ...rest,
+        conditions: [
+          {
+            logic: "all",
+            conditions: [
+              {
+                type: "localStorage",
+                key: gateLocalStorageKey,
+                operator: "not-exists",
+                value: "",
+              },
+            ],
+          },
+        ],
+      } as NodeAction;
     }
-    return {
-      type: "link",
-      href: props.url,
-      ...(props.urlTarget ? { target: props.urlTarget } : {}),
-    };
+    // Already has conditions — strip the dead field, trust conditions.
+    const { gateLocalStorageKey, ...rest } = raw;
+    return rest as NodeAction;
   }
 
-  // Old action mode (props.click)
+  return raw as NodeAction;
+}
+
+/**
+ * Single read entry for any component that consumes click actions. Always
+ * returns an array (length 0+), normalized so each entry is a current
+ * `NodeAction` shape.
+ *
+ * Resolution order — handles every saved data shape:
+ *   1. `props.action` is a string → return `[]`. Form components reuse
+ *      `props.action` for the form submission URL; that path stays string,
+ *      this helper opts out so the form keeps working.
+ *   2. `props.action` is an array → normalize each entry.
+ *   3. `props.action` is a single object → wrap to one-element array.
+ *   4. `props.actions` is a non-empty array → normalize each entry.
+ *      (Legacy plural-prop window; reading kept for back-compat.)
+ *   5. Legacy `props.url` / `props.urlTarget` → wrap as one `link` action.
+ *   6. Legacy `props.click` (show-hide pre-unification) → wrap as one show-hide action.
+ *   7. Else `[]`.
+ */
+export function migrateActions(props: any): NodeAction[] {
+  if (!props) return [];
+
+  // (1) Form's `props.action` is a submission URL string — opt out.
+  if (typeof props.action === "string") return [];
+
+  // (2) / (3) `props.action`
+  if (Array.isArray(props.action)) {
+    return props.action.map(normalizeAction).filter((a: NodeAction | null): a is NodeAction => a !== null);
+  }
+  if (props.action && typeof props.action === "object") {
+    const norm = normalizeAction(props.action);
+    return norm ? [norm] : [];
+  }
+
+  // (4) Legacy plural-prop window
+  if (Array.isArray(props.actions) && props.actions.length > 0) {
+    return props.actions.map(normalizeAction).filter((a: NodeAction | null): a is NodeAction => a !== null);
+  }
+
+  // (5) Old link mode (props.url / props.urlTarget) — emit unified `link` directly
+  if (props.url && typeof props.url === "string") {
+    return [
+      {
+        type: "link",
+        href: props.url,
+        ...(props.urlTarget ? { target: props.urlTarget } : {}),
+      },
+    ];
+  }
+
+  // (6) Old action mode (props.click)
   const click = props.click;
   if (click?.type && click?.value) {
-    return {
-      type: "show-hide",
-      target: click.value,
-      direction: click.direction || "toggle",
-      method: click.method,
-      group: click.group,
-      trigger: click.type, // "click" | "hover"
-    };
+    return [
+      {
+        type: "show-hide",
+        target: click.value,
+        direction: click.direction || "toggle",
+        method: click.method,
+        group: click.group,
+        trigger: click.type,
+      },
+    ];
   }
 
-  return null;
+  return [];
+}
+
+/**
+ * @deprecated Use `migrateActions` and pick the first entry. Kept as a
+ * one-line shim because `utils/index.ts` re-exports it for external SDK
+ * consumers.
+ */
+export function migrateAction(props: any): NodeAction | null {
+  return migrateActions(props)[0] ?? null;
+}
+
+/** Find the first link-ish action in an array (for `<a href>` rendering). */
+export function findLinkAction(
+  actions: NodeAction[]
+): LinkAction | LinkUrlAction | LinkPageAction | EmailAction | PhoneAction | ScrollToAction | undefined {
+  return actions.find(isLinkAction);
 }
 
 // ─── Action type labels for UI ─────────────────────────────────────────
@@ -426,4 +612,9 @@ export const ACTION_TYPE_OPTIONS: { value: ActionType; label: string; group?: st
   { value: "copy-to-clipboard", label: "Copy to Clipboard", group: "System" },
   { value: "download-file", label: "Download File", group: "System" },
   { value: "agent-send", label: "Send Agent Message", group: "System" },
+  { value: "set-local-storage", label: "Set Local Storage", group: "Storage" },
+  { value: "remove-local-storage", label: "Remove Local Storage", group: "Storage" },
+  { value: "set-state", label: "Set State", group: "State" },
+  { value: "toggle-state", label: "Toggle State", group: "State" },
+  { value: "clear-state", label: "Clear State", group: "State" },
 ];

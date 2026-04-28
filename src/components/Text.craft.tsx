@@ -5,7 +5,7 @@ import { TbBlockquote, TbH1, TbH2, TbLetterT } from "react-icons/tb";
 import { TextMainTab } from "../chrome/toolbar/unified-settings/mainTabs/TextMainTab";
 import { defineComponent } from "../define";
 import { LoremIpsum } from "../utils/data/loremIpsum";
-import { migrateAction, actionToHref, actionTarget } from "../utils/action";
+import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../utils/action";
 import {
   ariaAttrs,
   getInlineStyle,
@@ -31,9 +31,9 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const text = props.text || "";
   const safeName = sanitizeTagName(props.tagName);
 
-  const action = migrateAction(props);
-  const href = actionToHref(action);
-  const target = actionTarget(action);
+  const firstLink = findLinkAction(migrateActions(props));
+  const href = actionToHref(firstLink);
+  const target = actionTarget(firstLink);
 
   if (href) {
     const linkTag = tag(

@@ -74,6 +74,7 @@ export const displayProperties: PropertyDef[] = [
     input: {
       type: "universal",
       propTag: "block",
+      tailwindKey: "display",
       allowedTypes: ["tailwind", "calc"],
       showVarSelector: true,
     },
@@ -87,6 +88,7 @@ export const displayProperties: PropertyDef[] = [
     input: {
       type: "universal",
       propTag: "relative",
+      tailwindKey: "position",
       allowedTypes: ["tailwind", "calc"],
       showVarSelector: true,
     },

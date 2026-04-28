@@ -13,31 +13,56 @@ interface ModifierDef {
   requires?: string;
 }
 
+/**
+ * Built-in component definitions can ship default modifiers via `def.modifiers`.
+ * Callers (sanitizeNodeMap, compile-css) supply the resolved def list so this
+ * leaf module doesn't need to import the resolver.
+ */
+interface BuiltinDefWithModifiers {
+  name: string;
+  modifiers?: ModifierDef[];
+}
+
 // ── Expansion map ──────────────────────────────────────────────────────────
+
+function addModifierToMap(map: Map<string, string>, mod: ModifierDef | undefined) {
+  if (!mod?.name || !mod?.classes) return;
+  const parts: string[] = [];
+  if (mod.requires) {
+    for (const req of mod.requires.split(/\s+/)) {
+      if (req) parts.push(req);
+    }
+  }
+  for (const cls of mod.classes.split(/\s+/)) {
+    if (cls && !parts.includes(cls)) parts.push(cls);
+  }
+  map.set(mod.name, parts.join(" "));
+}
 
 /**
  * Build a { modifierName → "class1 class2 ..." } lookup from ROOT.props.modifiers.
  * Includes `requires` classes prepended (e.g. "btn" base for "btn-primary" variant).
+ *
+ * If `builtinDefs` is supplied, def-shipped modifiers are added FIRST so any
+ * site-level modifier with the same name OVERRIDES the built-in. This lets
+ * components ship default named patterns (e.g. `accordion-slide-fade` on
+ * Container) that the runtime expander actually consumes.
  */
 export function buildModifierExpansionMap(
-  modifiers: Record<string, ModifierDef[]>
+  modifiers: Record<string, ModifierDef[]>,
+  builtinDefs?: BuiltinDefWithModifiers[]
 ): Map<string, string> {
   const map = new Map<string, string>();
-  for (const mods of Object.values(modifiers)) {
-    if (!Array.isArray(mods)) continue;
-    for (const mod of mods) {
-      if (!mod?.name || !mod?.classes) continue;
-      const parts: string[] = [];
-      if (mod.requires) {
-        for (const req of mod.requires.split(/\s+/)) {
-          if (req) parts.push(req);
-        }
-      }
-      for (const cls of mod.classes.split(/\s+/)) {
-        if (cls && !parts.includes(cls)) parts.push(cls);
-      }
-      map.set(mod.name, parts.join(" "));
+  // Builtins first — site overrides win by name
+  if (builtinDefs) {
+    for (const def of builtinDefs) {
+      if (!def?.modifiers) continue;
+      for (const mod of def.modifiers) addModifierToMap(map, mod);
     }
+  }
+  for (const mods of Object.values(modifiers || {})) {
+    if (!Array.isArray(mods)) continue;
+    for (const mod of mods) addModifierToMap(map, mod);
   }
   return map;
 }
@@ -82,11 +107,16 @@ export function expandModifierClassName(
  *
  * Mutates and returns the same object (no deep clone — caller owns the data).
  */
-export function expandModifiersInNodes(nodes: Record<string, any>): Record<string, any> {
-  const modifiers = nodes?.ROOT?.props?.modifiers;
-  if (!modifiers || typeof modifiers !== "object") return nodes;
+export function expandModifiersInNodes(
+  nodes: Record<string, any>,
+  builtinDefs?: BuiltinDefWithModifiers[]
+): Record<string, any> {
+  const modifiers = (nodes?.ROOT?.props?.modifiers ?? {}) as Record<string, ModifierDef[]>;
+  const hasSite = modifiers && typeof modifiers === "object" && Object.keys(modifiers).length > 0;
+  const hasBuiltins = builtinDefs && builtinDefs.some(d => d?.modifiers && d.modifiers.length > 0);
+  if (!hasSite && !hasBuiltins) return nodes;
 
-  const map = buildModifierExpansionMap(modifiers as Record<string, ModifierDef[]>);
+  const map = buildModifierExpansionMap(modifiers, builtinDefs);
   if (map.size === 0) return nodes;
 
   for (const [nodeId, node] of Object.entries(nodes)) {

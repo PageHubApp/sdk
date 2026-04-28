@@ -46,6 +46,20 @@ export interface PropSchema {
   section?: string;
 }
 
+export interface PresetAddChildConfig {
+  /** Button label, e.g. "Add Item" or "Add Tab". */
+  label: string;
+  /**
+   * Returns a fresh `<Element>` tree (one new child) to append to the
+   * preset wrapper. Each call MUST return a brand-new tree — the SDK
+   * passes it through `query.parseReactElement().toNodeTree()` and
+   * mutating shared trees breaks the editor.
+   */
+  template: () => React.ReactElement;
+  /** Optional human-readable label for each existing child row in the editor list. */
+  childLabel?: (childNode: any, index: number) => string;
+}
+
 export interface ComponentPreset {
   /** Label shown in the toolbox */
   label: string;
@@ -57,6 +71,20 @@ export interface ComponentPreset {
   props?: Record<string, any>;
   /** Nested children for complex presets (nav menus, forms, etc.) */
   children?: React.ReactNode | (() => React.ReactNode);
+  /**
+   * Override the toolbox category for this specific preset. Defaults to
+   * the host component's `category`. Use this when a preset variant
+   * belongs in a different toolbox section than its component (e.g.
+   * ButtonList "Social Nav" lives under "Navigation").
+   */
+  category?: string;
+  /**
+   * When set, the dropped wrapper becomes editable as a list of children —
+   * a Component-tab row with an Add Item / delete UI that mutates the
+   * wrapper's children using the supplied factory. Functions don't survive
+   * JSON, so this stays in module memory and is looked up by `preset.label`.
+   */
+  addChild?: PresetAddChildConfig;
 }
 
 export interface ComponentModifier {
@@ -83,6 +111,13 @@ export interface ComponentModifier {
    * `false` = never (e.g. State modifiers). Omit = participate unless category is State (see applyPeerClassInherit).
    */
   peerInherit?: boolean;
+  /**
+   * Force a specific render type for the picker. By default the category
+   * derives one from `exclusive`/length (≥5 → dropdown, ≥2 → pills, else
+   * chips; Pattern always cards). Use this when long labels need card
+   * rendering even though entries are exclusive radios.
+   */
+  renderAs?: "patterns" | "pills" | "dropdown" | "chips";
 }
 
 /** When set on a component def, new nodes can inherit className chrome from a sibling (schema-driven). */
@@ -209,7 +244,6 @@ export interface ResolvedComponentDef<P = any> {
 // ─── Built-in component names (for collision detection) ────────────────────
 
 const BUILT_IN_NAMES = new Set([
-  "Accordion",
   "Audio",
   "Automatic",
   "Background",
@@ -222,7 +256,6 @@ const BUILT_IN_NAMES = new Set([
   "Dropdown",
   "Embed",
   "Footer",
-  "CookieConsent",
   "Form",
   "FormElement",
   "Header",
@@ -232,10 +265,8 @@ const BUILT_IN_NAMES = new Set([
   "Link",
   "Map",
   "MapPoint",
-  "Modal",
   "Nav",
   "Spacer",
-  "Tabs",
   "Text",
   "Video",
 ]);

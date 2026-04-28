@@ -5,12 +5,11 @@ import { ROOT_NODE } from "@craftjs/utils";
  *
  * In canvas isolation mode the editor surfaces each "interaction state"
  * subtree of the isolated component as its own canvas card — Modal panels,
- * Dropdown panels, Tabs panes — alongside the master card. This module finds
+ * Dropdown panels, tab panes — alongside the master card. This module finds
  * those state nodes by reverse-indexing show-hide / open-modal action targets
  * within the isolated subtree, plus any node carrying `props.tabGroup`.
  *
- * Out of scope for v1: Accordion (`<details>` is a different model — multi-
- * open, browser-driven), nested components (we stop the walk at any other
+ * Out of scope for v1: nested components (we stop the walk at any other
  * `type === "component"` boundary), and cross-component show-hide
  * (target must live INSIDE the isolated subtree to count).
  */
@@ -21,10 +20,7 @@ const WALK_NODE_CAP = 500;
  *  components" — surfaces interactive widgets anywhere in the page as cards
  *  without needing to wrap them in a `type === "component"` Container. */
 export const INHERENT_COMPONENT_DISPLAYNAMES = new Set<string>([
-  "Modal",
   "Dropdown",
-  "Tabs",
-  "Accordion",
 ]);
 
 export type StateNodeKind = "modal" | "show-hide" | "tab" | "css-hidden";
@@ -38,10 +34,10 @@ export interface StateNodeRef {
 
 /**
  * Walk the entire CraftJS tree from ROOT and return every node whose
- * displayName is in {@link INHERENT_COMPONENT_DISPLAYNAMES} — Modal,
- * Dropdown, Tabs, Accordion. These are surfaced as canvas cards alongside
- * user-created `type === "component"` Containers so the user doesn't have
- * to wrap each interactive widget in a component to design its states.
+ * displayName is in {@link INHERENT_COMPONENT_DISPLAYNAMES} — Dropdown.
+ * These are surfaced as canvas cards alongside user-created
+ * `type === "component"` Containers so the user doesn't have to wrap each
+ * interactive widget in a component to design its states.
  *
  * Skips:
  *  - nodes inside `type === "component"` containers (already covered by
@@ -158,9 +154,16 @@ export function findStateNodes(
     const node = query.node(id).get();
     const props = node?.data?.props ?? {};
 
-    // Action-driven states (show-hide, open-modal).
-    const action = props.action;
-    if (action && typeof action === "object") {
+    // Action-driven states (show-hide, open-modal). Scans the full action
+    // chain (`props.action` may be an object or array of NodeAction).
+    const rawAction = props.action;
+    const actionList: any[] = Array.isArray(rawAction)
+      ? rawAction
+      : rawAction && typeof rawAction === "object"
+        ? [rawAction]
+        : [];
+    for (const action of actionList) {
+      if (!action || typeof action !== "object") continue;
       if (action.type === "show-hide" && typeof action.target === "string") {
         const targetId = idIndex.get(action.target);
         if (targetId && targetId !== id && !seen.has(targetId)) {
@@ -182,9 +185,8 @@ export function findStateNodes(
       }
     }
 
-    // Tab panels — `props.tabGroup` is the durable signal (Tabs.tsx strips
-    // the `hidden` className at runtime in editor mode, so className is not
-    // reliable). Each tab pane becomes its own card.
+    // Tab panels — `props.tabGroup` is the durable signal. Each tab pane
+    // becomes its own card.
     if (typeof props.tabGroup === "string" && props.tabGroup.length > 0) {
       if (!seen.has(id)) {
         seen.set(id, { nodeId: id, kind: "tab" });
@@ -192,7 +194,7 @@ export function findStateNodes(
     }
 
     // CSS-only hidden subtrees — Dropdown panels (`hidden group-focus-within:
-    // flex`), accordion details bodies, anything authored as "starts hidden,
+    // flex`), anything authored as "starts hidden,
     // shown by interaction" without an action wire. Tokenized match on
     // `hidden` so `hidden` alone counts and substrings like `hidden-md` don't.
     if (typeof props.className === "string") {

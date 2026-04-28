@@ -6,5 +6,7 @@ export { useComponentSync } from "./useComponentSync";
 export { useDraggableWindow } from "./useDraggableWindow";
 export { useImageDrop } from "./useImageDrop";
 export { useInsertTarget } from "./useInsertTarget";
+export { usePanelSearch } from "./usePanelSearch";
 export { useResizable } from "./useResizable";
+export { useShowOnLoadAutoReveal } from "./useShowOnLoadAutoReveal";
 export { useUnifiedDelete } from "./useUnifiedDelete";

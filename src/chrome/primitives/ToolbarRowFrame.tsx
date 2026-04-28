@@ -48,7 +48,7 @@ export const ToolbarRowFrame = ({
   return (
     <div
       onClick={onClick}
-      className={`input-wrapper text-base-content flex h-8 w-full items-center text-xs ${variantClass} ${
+      className={`input-wrapper text-base-content flex h-8 w-full min-w-0 items-center text-xs ${variantClass} ${
         open ? "border-primary ring-ring/45 ring-1" : ""
       }`}
     >

@@ -1,5 +1,6 @@
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { MediaInput } from "../../inputs/media/MediaInput";
+import { TailwindInput } from "../../inputs/advanced/TailwindInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
@@ -13,8 +14,15 @@ export const ImageMainTab = () =>
             propKey="videoId"
             typeKey="type"
             contentKey="src"
-            title=""
-            collapsible={false}
+            variant="chip"
+            label="Image"
+          />
+          <TailwindInput propKey="objectFit" label="Object Fit" prop="objectFit" type="select" />
+          <TailwindInput
+            propKey="objectPosition"
+            label="Object Position"
+            prop="objectPosition"
+            type="select"
           />
           <SettingsAiSlot />
         </ToolbarSection>

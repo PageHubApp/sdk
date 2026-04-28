@@ -360,7 +360,6 @@ export type { BuiltInCraftResolver } from "./core/componentRegistry";
 export { getPageHubApiBaseUrl, setPageHubApiBaseUrl } from "./core/apiConfig";
 
 // Export ported selector components for React users
-export { Accordion } from "./components/Accordion";
 export { Audio } from "./components/Audio";
 export { Background } from "./components/Background";
 export { Button } from "./components/Button";
@@ -383,14 +382,11 @@ export { List } from "./components/List";
 export { ListItem } from "./components/ListItem";
 export { Map } from "./components/Map";
 export { MapPoint } from "./components/MapPoint";
-export { CookieConsent } from "./components/CookieConsent";
-export { Modal } from "./components/Modal";
 export { Spacer } from "./components/Spacer";
 export { Table } from "./components/Table";
 export { TableSection } from "./components/TableSection";
 export { TableRow } from "./components/TableRow";
 export { TableCell } from "./components/TableCell";
-export { Tabs } from "./components/Tabs";
 export { Text } from "./components/Text";
 export { Video } from "./components/Video";
 

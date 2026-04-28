@@ -4,7 +4,7 @@
 import React from "react";
 import { TbPhoto } from "react-icons/tb";
 import { defineComponent } from "../define";
-import { migrateAction, actionToHref } from "../utils/action";
+import { migrateActions, actionToHref, findLinkAction } from "../utils/action";
 import { Image } from "./Image";
 import {
   staticClasses,
@@ -69,7 +69,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
 
   const imgTag = `<img${buildAttrs(imgAttrs)} />`;
 
-  const href = actionToHref(migrateAction(props)) || props.url;
+  const href = actionToHref(findLinkAction(migrateActions(props))) || props.url;
   if (href) {
     return tag(
       "a",

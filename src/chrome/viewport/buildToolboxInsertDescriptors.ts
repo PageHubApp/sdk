@@ -1,6 +1,5 @@
 import type { ComponentType, ReactElement } from "react";
 import type { ResolvedComponentDef } from "../../define";
-import { NAV_EXTRA_PRESETS, COMPONENT_EXTRA_PRESETS } from "../../components/definitions";
 import { SavedComponentLoader } from "./toolbox/savedComponents";
 
 export type ToolboxInsertDescriptor = {
@@ -47,12 +46,12 @@ export function buildToolboxInsertDescriptors(
         const children = presetChildren(preset);
         rows.push({
           key: `${def.name}-preset-${i}`,
-          category: cat.title,
+          category: preset.category ?? cat.title,
           label: String(preset.label || def.displayName),
           icon: (preset.icon ?? def.icon) as ToolboxInsertDescriptor["icon"],
           toolProps: {
             element: def.component,
-            custom: { displayName: preset.label || def.displayName },
+            custom: { displayName: preset.label || def.displayName, preset: preset.label },
             ...def.defaultProps,
             ...(preset.props || {}),
             ...(children !== undefined && children !== null ? { children } : {}),
@@ -61,38 +60,6 @@ export function buildToolboxInsertDescriptors(
       });
     }
   }
-
-  NAV_EXTRA_PRESETS.forEach((preset: any, i: number) => {
-    const children = typeof preset.children === "function" ? preset.children() : preset.children;
-    rows.push({
-      key: `nav-extra-${i}`,
-      category: "Navigation",
-      label: String(preset.label || `Preset ${i}`),
-      icon: preset.icon as ToolboxInsertDescriptor["icon"],
-      toolProps: {
-        element: preset.element,
-        ...(preset.props || {}),
-        custom: { displayName: preset.label },
-        ...(children !== undefined && children !== null ? { children } : {}),
-      },
-    });
-  });
-
-  COMPONENT_EXTRA_PRESETS.forEach((preset: any, i: number) => {
-    const children = typeof preset.children === "function" ? preset.children() : preset.children;
-    rows.push({
-      key: `component-extra-${i}`,
-      category: "Components",
-      label: String(preset.label || `Preset ${i}`),
-      icon: preset.icon as ToolboxInsertDescriptor["icon"],
-      toolProps: {
-        element: preset.element,
-        ...(preset.props || {}),
-        custom: { displayName: preset.label },
-        ...(children !== undefined && children !== null ? { children } : {}),
-      },
-    });
-  });
 
   for (const c of components?.filter(component => !component.isSection) || []) {
     const name = c.name || "Component";

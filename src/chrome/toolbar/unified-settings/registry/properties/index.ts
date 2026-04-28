@@ -8,6 +8,7 @@ import { registerProperties, registerSectionDef } from "../propertyRegistry";
 import { BUILT_IN_SECTIONS } from "./sectionDefs";
 import { typographyProperties } from "./typography";
 import { backgroundProperties } from "./background";
+import { imageSettingsProperties } from "./imageSettings";
 import { appearanceProperties } from "./appearance";
 import { effectsProperties } from "./effects";
 import { layoutProperties } from "./layout";
@@ -17,6 +18,7 @@ import { advancedProperties } from "./advanced";
 import { alignmentProperties } from "./alignment";
 import { interactionProperties } from "./interactions";
 import { modifiersProperties } from "./modifiers";
+import { presetProperties } from "./preset";
 
 // Register all built-in sections
 for (const section of BUILT_IN_SECTIONS) {
@@ -27,6 +29,7 @@ for (const section of BUILT_IN_SECTIONS) {
 registerProperties([
   ...typographyProperties,
   ...backgroundProperties,
+  ...imageSettingsProperties,
   ...appearanceProperties,
   ...effectsProperties,
   ...layoutProperties,
@@ -36,12 +39,14 @@ registerProperties([
   ...alignmentProperties,
   ...interactionProperties,
   ...modifiersProperties,
+  ...presetProperties,
 ]);
 
 // Re-export for direct access
 export { BUILT_IN_SECTIONS } from "./sectionDefs";
 export { typographyProperties } from "./typography";
 export { backgroundProperties } from "./background";
+export { imageSettingsProperties } from "./imageSettings";
 export { appearanceProperties } from "./appearance";
 export { effectsProperties } from "./effects";
 export { layoutProperties } from "./layout";

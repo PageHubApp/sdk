@@ -5,7 +5,7 @@
 import { TbLink } from "react-icons/tb";
 import { LinkMainTab } from "../chrome/toolbar/unified-settings/mainTabs/LinkMainTab";
 import { defineComponent } from "../define";
-import { migrateAction, actionToHref, actionTarget } from "../utils/action";
+import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../utils/action";
 import { resolveIconSvgSync } from "../utils/icons/serverResolve";
 import {
   ariaAttrs,
@@ -39,9 +39,9 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
 
   const fullCls = [cls, extra].filter(Boolean).join(" ");
-  const action = migrateAction(props);
-  const href = actionToHref(action);
-  const target = actionTarget(action);
+  const firstLink = findLinkAction(migrateActions(props));
+  const href = actionToHref(firstLink);
+  const target = actionTarget(firstLink);
 
   const attrs: Record<string, any> = {
     class: fullCls || undefined,

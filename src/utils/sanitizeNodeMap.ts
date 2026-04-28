@@ -1,3 +1,4 @@
+import { BUILTIN_COMPONENT_DEFS } from "../core/builtinComponentDefs";
 import { expandModifiersInNodes } from "./modifierUtils";
 
 /** Craft's renderer expects every node to have a plain object `props`; missing props crashes DefaultRender. */
@@ -107,7 +108,7 @@ export function sanitizeCraftSerializedContent(
         );
       }
     }
-    expandModifiersInNodes(sanitized);
+    expandModifiersInNodes(sanitized, BUILTIN_COMPONENT_DEFS);
     return JSON.stringify(sanitized);
   } catch {
     return serialized;

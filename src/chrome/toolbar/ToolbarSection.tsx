@@ -170,7 +170,7 @@ export const ToolbarSection = ({
                   className={scrollableInnerClasses}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: `repeat(${full}, 1fr)`,
+                    gridTemplateColumns: `repeat(${full}, minmax(0, 1fr))`,
                     gap: nested ? "0.5rem" : "0.75rem",
                     alignItems: "end",
                   }}
@@ -185,7 +185,7 @@ export const ToolbarSection = ({
           ) : (
             <div
               className={bodyClasses}
-              style={{ gridTemplateColumns: `repeat(${full}, 1fr)` }}
+              style={{ gridTemplateColumns: `repeat(${full}, minmax(0, 1fr))` }}
               role="group"
               aria-labelledby={title}
             >

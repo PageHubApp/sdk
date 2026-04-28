@@ -8,13 +8,11 @@
  * Every component is wrapped with conditional visibility so conditions
  * evaluate in any CraftJS context (editor, viewer, /view/, /static/).
  */
-import { Accordion } from "../Accordion";
 import { Audio } from "../Audio";
 import { Background } from "../Background";
 import { Button } from "../Button";
 import { ButtonList } from "../ButtonList";
 import { ConditionalContainer } from "../ConditionalContainer";
-import { CookieConsent } from "../CookieConsent";
 import { Container } from "../Container";
 import { ContainerGroup } from "../ContainerGroup";
 import { Data } from "../Data";
@@ -33,7 +31,6 @@ import { Link } from "../Link";
 import { List } from "../List";
 import { ListItem } from "../ListItem";
 import { Map } from "../Map";
-import { Modal } from "../Modal";
 import { MapPoint } from "../MapPoint";
 import { Nav } from "../Nav";
 import { Spacer } from "../Spacer";
@@ -41,7 +38,6 @@ import { Table } from "../Table";
 import { TableSection } from "../TableSection";
 import { TableRow } from "../TableRow";
 import { TableCell } from "../TableCell";
-import { Tabs } from "../Tabs";
 import { Text } from "../Text";
 import { Video } from "../Video";
 import { withConditionalVisibility } from "../../utils/conditions/withConditionalVisibility";
@@ -49,14 +45,12 @@ import { withConditionalVisibility } from "../../utils/conditions/withConditiona
 const cv = withConditionalVisibility;
 
 export const viewerResolver = {
-  Accordion: cv(Accordion),
   Audio: cv(Audio),
   Automatic: cv(Container),
   Background,
   Button: cv(Button),
   ButtonList: cv(ButtonList),
   ConditionalContainer: cv(ConditionalContainer),
-  CookieConsent: cv(CookieConsent),
   Container: cv(Container),
   ContainerGroup: cv(ContainerGroup),
   Data: cv(Data),
@@ -77,14 +71,12 @@ export const viewerResolver = {
   ListItem: cv(ListItem),
   Map: cv(Map),
   MapPoint: cv(MapPoint),
-  Modal: cv(Modal),
   Nav: cv(Nav),
   Spacer: cv(Spacer),
   Table: cv(Table),
   TableSection: cv(TableSection),
   TableRow: cv(TableRow),
   TableCell: cv(TableCell),
-  Tabs: cv(Tabs),
   Text: cv(Text),
   Video: cv(Video),
 };

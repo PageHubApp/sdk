@@ -8,12 +8,15 @@ import { useIsolate, usePreview, useView } from "../core/store";
 import { ViewModeAtom } from "../utils/lib";
 import { registerLiveComponent } from "../utils/componentRegistry";
 import { mergeAccessibilityProps } from "../utils/accessibility";
-import { addActionHandlers, addCustomHandlers } from "../utils/clickControls";
+import { addActionHandlers, addCustomHandlers, fireLoadAction } from "../utils/clickControls";
 import {
-  migrateAction,
+  migrateActions,
   actionToHref,
+  actionTarget,
+  isLinkAction,
   isHandlerAction,
   isAnchorAction,
+  findLinkAction,
   type NodeAction,
 } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -28,8 +31,11 @@ import { RenderPattern, inlayProps } from "./componentHooks";
 import { replaceVariables } from "../utils/design/variables";
 import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { applyShowHideOverride, useShowHideVersion } from "../utils/showHideStore";
+import { applyStateModifiers } from "../utils/conditions/stateModifiers";
+import { buildClientContext } from "../utils/conditions/context";
 import { useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
+import { ROOT_NODE } from "@craftjs/utils";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import type { OverflowProps } from "./types";
@@ -39,7 +45,12 @@ export interface ContainerProps extends BaseSelectorProps {
   is404Page?: boolean;
   anchor?: string;
   tabGroup?: string;
-  action?: string | NodeAction;
+  /**
+   * Click action(s) — array for multi-action chains, single object for one
+   * action, or a string when this Container is form-mode (`type === "form"`),
+   * where `action` is the form submission URL.
+   */
+  action?: string | NodeAction | NodeAction[];
   method?: string;
   onSubmit?: any;
   target?: any;
@@ -48,6 +59,8 @@ export interface ContainerProps extends BaseSelectorProps {
   "aria-label"?: string;
 
   open?: boolean;
+  /** Pass-through DOM attrs (data-*, role, autocomplete, name, etc.). Documented in templates.md. */
+  attrs?: Record<string, string | number | boolean>;
   actionProp?: NodeAction;
   click?: any; // Legacy — handled by migrateAction()
   scrollEffect?: string;
@@ -157,6 +170,19 @@ export function useContainerRender(
     setIsMounted(true);
   }, []);
 
+  // Fire load-trigger actions on mount in viewer mode. Skipped in editor —
+  // `useShowOnLoadAutoReveal` keeps banners visible to the author regardless
+  // of localStorage gates.
+  useEffect(() => {
+    if (enabled) return;
+    migrateActions(props)
+      .filter(a => (a as any).trigger === "load")
+      .forEach(fireLoadAction);
+    // Mount-only — re-fires only when toggling between editor and viewer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled]);
+
+
   const ref = useRef(null);
 
   // Detect when something is being dragged over this container
@@ -210,6 +236,25 @@ export function useContainerRender(
     if (showHideTarget) {
       className = applyShowHideOverride(className, showHideTarget);
     }
+  }
+
+  // Apply state-bound modifier classes — author-declared "when state X, apply
+  // modifier Y" bindings on `props.stateModifiers`. Subscribes to the global
+  // state tick via `useShowHideVersion()` above so changes rerender us.
+  if (Array.isArray(props.stateModifiers) && props.stateModifiers.length > 0) {
+    let rootProps: any = null;
+    try {
+      rootProps = query.node(ROOT_NODE).get()?.data?.props ?? null;
+    } catch {
+      /* root may be unavailable in isolated previews */
+    }
+    className = applyStateModifiers(
+      className,
+      props.stateModifiers,
+      buildClientContext(rootProps, parentItem),
+      "Container",
+      rootProps
+    );
   }
 
   // Hide component containers in non-canvas modes. Canvas isolation (hiding
@@ -314,9 +359,12 @@ export function useContainerRender(
     ),
   };
 
-  // Unified action system
-  const action = migrateAction(props);
-  const rawUrl = actionToHref(action, query, router?.asPath);
+  // Unified action system. Container respects the form-mode collision —
+  // when `props.type === "form"`, `props.action` is a submission URL string
+  // and `migrateActions` returns `[]` (see action.ts). Form path handled below.
+  const actions = migrateActions(props);
+  const firstLink = findLinkAction(actions);
+  const rawUrl = actionToHref(firstLink, query, router?.asPath);
   const resolvedUrl =
     rawUrl && query
       ? (() => {
@@ -327,37 +375,36 @@ export function useContainerRender(
           }
         })()
       : rawUrl;
-  const isLinkActionLocal =
-    action?.type === "link" || action?.type === "link-url" || action?.type === "link-page";
+  const linkTarget = actionTarget(firstLink);
   const isInternalLink =
-    isLinkActionLocal && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
-  const linkTarget = isLinkActionLocal ? (action as any).target : undefined;
+    !!firstLink && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
 
-  if (resolvedUrl && isLinkActionLocal && !enabled) {
-    // Real link — href + optional target/rel. tagName is swapped to `<a>` below.
+  if (resolvedUrl && firstLink && !enabled) {
     prop.href = resolvedUrl;
     if (linkTarget) prop.target = linkTarget;
     if (/^https?:\/\//.test(resolvedUrl)) prop.rel = "noopener noreferrer";
     // Internal same-window links → SPA navigation via Next router (matches Link).
-    if (isInternalLink && !linkTarget) {
+    // Skip the SPA shortcut when the chain has more than one action; the JS
+    // dispatcher below handles ordered execution + nav at the link's turn.
+    if (isInternalLink && !linkTarget && actions.length === 1) {
       prop.onClick = (e: any) => {
-        // Let modifier-clicks and middle-clicks use native navigation
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
         e.preventDefault();
         router.push(resolvedUrl).catch(() => {});
       };
     }
-  } else if (resolvedUrl) {
-    // Non-link action with resolved URL (shouldn't really happen) or editor
-    // mode — keep the legacy onClick fallback so clicks still do something.
-    prop.onClick = (e: any) => {
-      e.preventDefault();
-      if (!enabled) window.open(resolvedUrl, linkTarget || "_self");
-    };
   }
 
-  if (isHandlerAction(action) || isAnchorAction(action)) {
-    addActionHandlers(prop, action, enabled);
+  // Multi-action chains, anchor links, and any handler-action route through
+  // `addActionHandlers`. Single-link cases above already wired native nav.
+  const needsJsDispatch =
+    actions.length > 1 ||
+    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
+    (actions.length === 1 && !isLinkAction(actions[0]));
+  if (needsJsDispatch) {
+    addActionHandlers(prop, actions, enabled, {
+      resolvedLinkHref: typeof resolvedUrl === "string" ? resolvedUrl : null,
+    });
   }
 
   if (props.type === "form") {
@@ -555,7 +602,7 @@ export function useContainerRender(
   // <div>, swap the tag to <a> so the card is a real, right-clickable link.
   // Don't override semantic tags (section/article/header/footer/etc).
   const renderTag =
-    resolvedUrl && isLinkActionLocal && !enabled && tagName === "div" ? "a" : tagName;
+    resolvedUrl && firstLink && !enabled && tagName === "div" ? "a" : tagName;
 
   return React.createElement(motionIt(props, UiComponent, enabled), {
     ...prop,

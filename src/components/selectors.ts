@@ -119,6 +119,19 @@ export interface BaseSelectorProps {
   design?: DesignProps;
 
   /**
+   * State-bound modifier bindings. Each entry: `{ conditions, modifiers }`.
+   * At render, conditions evaluate against the live registry/context — when
+   * truthy, the named modifiers' classes are appended to className. The
+   * generic primitive that drives "active when target shown" / "open when
+   * paired modal visible" / etc. without per-component runtime code.
+   * See packages/sdk/src/utils/conditions/stateModifiers.ts.
+   */
+  stateModifiers?: Array<{
+    conditions: import("../utils/conditions/types").ConditionGroup[];
+    modifiers: string[];
+  }>;
+
+  /**
    * Inline handler bodies keyed by React event prop names (`onClick`, …).
    * Values are small JS snippets compiled at runtime; see `addCustomHandlers`.
    */

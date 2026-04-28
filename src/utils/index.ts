@@ -35,7 +35,13 @@ export { getClonedState, setClonedProps } from "./cloneHelper";
 export { PaletteProvider, usePalette } from "./design/PaletteContext";
 
 // Action system
-export { addActionHandlers, addClickControls, initAccordionGroups } from "./clickControls";
+export {
+  addActionHandlers,
+  addClickControls,
+  fireLoadAction,
+  getLoadActionScript,
+  PH_LOAD_ACTION_SCRIPT,
+} from "./clickControls";
 export type { ClickControl } from "./clickControls";
 export {
   migrateAction,

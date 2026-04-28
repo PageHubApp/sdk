@@ -19,6 +19,11 @@ interface Props {
   onRemove: () => void;
   initialPosition?: { x: number; y: number };
   onClose: () => void;
+  /** Anchor id of the node owning this action — surfaces a "self" entry in
+   *  state-key pickers. */
+  selfId?: string;
+  /** Returns a stable self id, stamping `attrs.id` if none exists. */
+  ensureSelfId?: () => string;
 }
 
 export default function ActionEditorPanel({
@@ -27,6 +32,8 @@ export default function ActionEditorPanel({
   onRemove,
   initialPosition,
   onClose,
+  selfId,
+  ensureSelfId,
 }: Props) {
   const handleTypeChange = (val: string) => {
     if (!val) {
@@ -96,7 +103,13 @@ export default function ActionEditorPanel({
           ))}
         </ToolbarDropdown>
 
-        <ActionSubForm action={action} patch={patch} replace={onChange} />
+        <ActionSubForm
+          action={action}
+          patch={patch}
+          replace={onChange}
+          selfId={selfId}
+          ensureSelfId={ensureSelfId}
+        />
       </div>
     </FloatingPanel>
   );

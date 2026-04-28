@@ -8,13 +8,11 @@
 
 import type { ComponentType } from "react";
 
-import { Accordion } from "../components/Accordion";
 import { Audio } from "../components/Audio";
 import { Background } from "../components/Background";
 import { Button } from "../components/Button";
 import { ButtonList } from "../components/ButtonList";
 import { Nav } from "../components/Nav";
-import { CookieConsent } from "../components/CookieConsent";
 import { ConditionalContainer } from "../components/ConditionalContainer";
 import { Container } from "../components/Container";
 import { ContainerGroup } from "../components/ContainerGroup";
@@ -35,13 +33,11 @@ import { List } from "../components/List";
 import { ListItem } from "../components/ListItem";
 import { Map } from "../components/Map";
 import { MapPoint } from "../components/MapPoint";
-import { Modal } from "../components/Modal";
 import { Spacer } from "../components/Spacer";
 import { Table } from "../components/Table";
 import { TableSection } from "../components/TableSection";
 import { TableRow } from "../components/TableRow";
 import { TableCell } from "../components/TableCell";
-import { Tabs } from "../components/Tabs";
 import { Text } from "../components/Text";
 import { Video } from "../components/Video";
 import { SavedComponentLoader } from "../chrome/viewport/toolbox/savedComponents";
@@ -57,14 +53,12 @@ export type BuiltInCraftResolver = Record<string, ComponentType<any>>;
 const cv = withConditionalVisibility;
 
 export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
-  Accordion: cv(Accordion),
   Audio: cv(Audio),
   Automatic: cv(Container),
   Background,
   Button: cv(Button),
   ButtonList: cv(ButtonList),
   ConditionalContainer: cv(ConditionalContainer),
-  CookieConsent: cv(CookieConsent),
   Container: cv(Container),
   ContainerGroup: cv(ContainerGroup),
   Data: cv(Data),
@@ -85,10 +79,8 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   ListItem: cv(ListItem),
   Map: cv(Map),
   MapPoint: cv(MapPoint),
-  Modal: cv(Modal),
   Nav: cv(Nav),
   Spacer: cv(Spacer),
-  Tabs: cv(Tabs),
   Table: cv(Table),
   TableSection: cv(TableSection),
   TableRow: cv(TableRow),

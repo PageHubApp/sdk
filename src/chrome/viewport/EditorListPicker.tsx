@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { SearchInput } from "../primitives/SearchInput";
 
 export interface EditorListPickerProps {
   /** Merged onto the root `relative` wrapper (layout, width). */
@@ -14,6 +15,10 @@ export interface EditorListPickerProps {
   searchPlaceholder: string;
   searchValue: string;
   onSearchChange: (value: string) => void;
+  /** Hide the search field (e.g. for short lists). Defaults to true. */
+  showSearch?: boolean;
+  /** Header label shown above the list when search is hidden. */
+  title?: string;
   /** Scrollable list body (items, empty states). */
   children: React.ReactNode;
   /** Footer block (create actions, secondary rows). Top border is applied by this shell. */
@@ -34,10 +39,13 @@ export function EditorListPicker({
   searchPlaceholder,
   searchValue,
   onSearchChange,
+  showSearch = true,
+  title,
   children,
   footer,
 }: EditorListPickerProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handlePointerDownOutside = (event: MouseEvent) => {
@@ -49,9 +57,10 @@ export function EditorListPicker({
 
     if (isOpen) {
       document.addEventListener("mousedown", handlePointerDownOutside);
+      if (showSearch) searchRef.current?.focus();
       return () => document.removeEventListener("mousedown", handlePointerDownOutside);
     }
-  }, [isOpen, setIsOpen, onDismiss]);
+  }, [isOpen, setIsOpen, onDismiss, showSearch]);
 
   return (
     <div className={`relative ${className}`.trim()} ref={rootRef}>
@@ -59,16 +68,21 @@ export function EditorListPicker({
       {afterTrigger}
       {isOpen ? (
         <div className="ph-panel text-base-content absolute inset-x-0 top-full z-50 mt-1 flex max-h-[500px] min-w-[280px] flex-col overflow-hidden">
-          <div className="border-base-300 border-b p-3">
-            <input
-              type="text"
-              placeholder={searchPlaceholder}
-              value={searchValue}
-              onChange={e => onSearchChange(e.target.value)}
-              className="input-transparent"
-              autoFocus
-            />
-          </div>
+          {showSearch ? (
+            <div className="border-base-300 border-b p-2">
+              <SearchInput
+                ref={searchRef}
+                size="slim"
+                placeholder={searchPlaceholder}
+                value={searchValue}
+                onChange={onSearchChange}
+              />
+            </div>
+          ) : title ? (
+            <div className="border-base-300 text-neutral-content border-b px-3 py-2 text-[10px] font-medium tracking-wide uppercase">
+              {title}
+            </div>
+          ) : null}
           <div className="scrollbar bg-base-100 text-base-content flex-1 overflow-y-auto">
             {children}
           </div>

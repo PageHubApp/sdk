@@ -1,14 +1,27 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TbCode, TbPalette, TbPlug, TbPuzzle, TbRoute, TbSparkles } from "react-icons/tb";
+import {
+  TbBrandHtml5,
+  TbCode,
+  TbMapPin,
+  TbPalette,
+  TbPlug,
+  TbPuzzle,
+  TbRoute,
+  TbSparkles,
+  TbVariable,
+} from "react-icons/tb";
 import { normalizeDesignTags } from "../../utils/normalizeDesignTags";
 import { useEditorSidebarDockLeft } from "../../utils/lib";
 import { AITab } from "./site-settings/AITab";
 import { BrandingTab } from "./site-settings/BrandingTab";
-import { CodeTab } from "./site-settings/CodeTab";
+import { ContactTab } from "./site-settings/ContactTab";
+import { FooterCodeTab } from "./site-settings/FooterCodeTab";
+import { HeaderCodeTab } from "./site-settings/HeaderCodeTab";
 import { IntegrationsTab } from "./site-settings/IntegrationsTab";
 import { RedirectsTab } from "./site-settings/RedirectsTab";
+import { VariablesTab } from "./site-settings/VariablesTab";
 import { mergeSettingsTabs, visibleSettingsTabs } from "./settings/registry";
 import { SETTINGS_INPUT_CLASS, SETTINGS_SELECT_CLASS } from "./settings/settingsControlClasses";
 import { SettingsShell } from "./settings/SettingsShell";
@@ -292,16 +305,38 @@ export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSetti
             setCompanyTagline={value => ctx.updateField("companyTagline", value)}
             companyType={ctx.draft.companyType}
             setCompanyType={value => ctx.updateField("companyType", value)}
+          />
+        ),
+      },
+      {
+        key: "contact",
+        label: "Contact",
+        order: 120,
+        icon: <TbMapPin />,
+        render: ctx => (
+          <ContactTab
+            inputClass={ctx.inputClass}
             companyLocation={ctx.draft.companyLocation}
             setCompanyLocation={value => ctx.updateField("companyLocation", value)}
+            companyWebsite={ctx.draft.companyWebsite}
+            setCompanyWebsite={value => ctx.updateField("companyWebsite", value)}
             companyAddress={ctx.draft.companyAddress}
             setCompanyAddress={value => ctx.updateField("companyAddress", value)}
             companyPhone={ctx.draft.companyPhone}
             setCompanyPhone={value => ctx.updateField("companyPhone", value)}
             companyEmail={ctx.draft.companyEmail}
             setCompanyEmail={value => ctx.updateField("companyEmail", value)}
-            companyWebsite={ctx.draft.companyWebsite}
-            setCompanyWebsite={value => ctx.updateField("companyWebsite", value)}
+          />
+        ),
+      },
+      {
+        key: "variables",
+        label: "Variables",
+        order: 150,
+        icon: <TbVariable />,
+        render: ctx => (
+          <VariablesTab
+            inputClass={ctx.inputClass}
             customVariables={ctx.draft.customVariables}
             setCustomVariables={value => ctx.updateField("customVariables", value)}
           />
@@ -350,14 +385,24 @@ export function SiteSettingsModal({ isOpen, onClose, extraTabs = [] }: SiteSetti
         ),
       },
       {
-        key: "code",
-        label: "Custom code",
+        key: "header-code",
+        label: "Header code",
         order: 600,
         icon: <TbCode />,
         render: ctx => (
-          <CodeTab
+          <HeaderCodeTab
             headerCode={ctx.draft.headerCode}
             setHeaderCode={value => ctx.updateField("headerCode", value)}
+          />
+        ),
+      },
+      {
+        key: "footer-code",
+        label: "Footer code",
+        order: 610,
+        icon: <TbBrandHtml5 />,
+        render: ctx => (
+          <FooterCodeTab
             footerCode={ctx.draft.footerCode}
             setFooterCode={value => ctx.updateField("footerCode", value)}
           />

@@ -1,6 +1,6 @@
-import { TbSquare } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
+import { AutoHideScrollbar } from "../../../primitives/layout/AutoHideScrollbar";
 import { PH_TOOLBAR_DASHED_BTN_ACTIVE } from "../../phToolbarDashedSelection";
 import {
   DISPLAY_VARIANTS,
@@ -54,12 +54,9 @@ export default function LayoutPresetPanel({ initialPosition, onClose, lp, gridOn
     onClose();
   };
 
-  const handleBlock = () => {
-    lp.switchToMode("block");
-    onClose();
-  };
-
-  const blockActive = lp.layoutMode === "block";
+  const displayVariants = gridOnly
+    ? DISPLAY_VARIANTS.filter(v => v.value !== "block")
+    : DISPLAY_VARIANTS;
 
   return (
     <FloatingPanel
@@ -68,68 +65,48 @@ export default function LayoutPresetPanel({ initialPosition, onClose, lp, gridOn
       title="Layout"
       storageKey="layout-preset"
       minWidth={280}
-      maxWidth={420}
       maxHeight={640}
       initialPosition={initialPosition}
       zIndex={1100}
       scrollable
     >
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-3">
         {sections.map(section => (
           <div key={section.label}>
             <div className="text-neutral-content mb-1.5 text-[10px] font-semibold tracking-wider uppercase">
               {section.label}
             </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {section.presets.map((preset, i) => {
-                const active = isPresetActive(preset, section.layoutMode, lp);
-                return (
-                  <button
-                    key={`${section.label}-${i}`}
-                    type="button"
-                    aria-pressed={active}
-                    aria-label={preset.name}
-                    onClick={() => handlePick(preset)}
-                    className={twMerge(
-                      "ph-toolbar-dashed-btn items-center justify-center p-2",
-                      active && PH_TOOLBAR_DASHED_BTN_ACTIVE
-                    )}
-                  >
-                    <div className="w-full">{preset.icon}</div>
-                  </button>
-                );
-              })}
-            </div>
+            <AutoHideScrollbar className="max-h-[120px]">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-1.5 pr-1.5">
+                {section.presets.map((preset, i) => {
+                  const active = isPresetActive(preset, section.layoutMode, lp);
+                  return (
+                    <button
+                      key={`${section.label}-${i}`}
+                      type="button"
+                      aria-pressed={active}
+                      aria-label={preset.name}
+                      onClick={() => handlePick(preset)}
+                      className={twMerge(
+                        "ph-toolbar-dashed-btn items-center justify-center p-2",
+                        active && PH_TOOLBAR_DASHED_BTN_ACTIVE
+                      )}
+                    >
+                      <div className="w-full">{preset.icon}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </AutoHideScrollbar>
           </div>
         ))}
-
-        {!gridOnly && (
-          <div>
-            <div className="text-neutral-content mb-1.5 text-[10px] font-semibold tracking-wider uppercase">
-              No layout
-            </div>
-            <button
-              type="button"
-              aria-pressed={blockActive}
-              aria-label="Block (no layout)"
-              onClick={handleBlock}
-              className={twMerge(
-                "ph-toolbar-dashed-btn flex items-center justify-center gap-1.5 p-2 text-xs",
-                blockActive && PH_TOOLBAR_DASHED_BTN_ACTIVE
-              )}
-            >
-              <TbSquare className="size-3.5 shrink-0" aria-hidden />
-              Block
-            </button>
-          </div>
-        )}
 
         <div>
           <div className="text-neutral-content mb-1.5 text-[10px] font-semibold tracking-wider uppercase">
             Display
           </div>
-          <div className="grid grid-cols-2 gap-1.5">
-            {DISPLAY_VARIANTS.map(variant => {
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-1.5">
+            {displayVariants.map(variant => {
               const active = lp.currentDisplay === variant.value;
               return (
                 <button

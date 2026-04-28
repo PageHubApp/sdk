@@ -1,6 +1,5 @@
 // Color inputs
 export * from "./color/BackgroundFocalPointPicker";
-export * from "./color/BackgroundSettingsInput";
 export * from "./color/ColorInput";
 export * from "./color/PatternInput";
 export * from "./color/PatternsDialogInput";

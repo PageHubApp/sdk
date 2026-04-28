@@ -39,13 +39,21 @@ export const interactionProperties: PropertyDef[] = [
     input: { type: "custom", component: "ActionsInput" },
     pinned: true,
     isActive: (_cls, props) => {
-      const hasActions = Array.isArray(props?.actions) && props.actions.length > 0;
-      const hasLegacy = !!props?.action || !!props?.click || !!props?.url;
+      // `props.action` may be an array (multi-action), single object, or
+      // string (form-mode submission URL — not an interaction). Plural
+      // `props.actions` survives only for in-flight legacy data.
+      const a = props?.action;
+      const hasAction =
+        (Array.isArray(a) && a.length > 0) || (a && typeof a === "object");
+      const hasLegacy =
+        (Array.isArray(props?.actions) && props.actions.length > 0) ||
+        !!props?.click ||
+        !!props?.url;
       const hasHandlers =
         props?.handlers &&
         typeof props.handlers === "object" &&
         Object.keys(props.handlers).length > 0;
-      return Boolean(hasActions || hasLegacy || hasHandlers);
+      return Boolean(hasAction || hasLegacy || hasHandlers);
     },
     sortOrder: 0,
   },

@@ -14,6 +14,23 @@ export interface PickerOption {
 
 export type PickerFilter = "modal" | "section" | "all";
 
+/**
+ * Resolves the DOM-discoverable anchor id for a CraftJS node — the same id
+ * Container.tsx and the show-hide picker use as a state-registry key.
+ * Overlay-style nodes (`custom.overlay === true`) own their id via
+ * `props.anchor`; everything else prefers `attrs.id` then `props.id` then
+ * `props.anchor`. Returns undefined when the node has no usable id.
+ */
+export function getNodeAnchor(node: any): string | undefined {
+  if (!node?.data) return undefined;
+  const p = node.data?.props || {};
+  const isOverlay = node.data.custom?.overlay === true;
+  const attrsId = typeof p.attrs?.id === "string" ? p.attrs.id : undefined;
+  const propsId = typeof p.id === "string" ? p.id : undefined;
+  const anchor = typeof p.anchor === "string" ? p.anchor : undefined;
+  return isOverlay ? anchor || attrsId || propsId : attrsId || propsId || anchor;
+}
+
 export function useElementPicker(filter: PickerFilter): PickerOption[] {
   // CraftJS `useEditor` spreads the selector return into its hook return — if
   // the selector returns a bare array it surfaces as an object with numeric
@@ -25,16 +42,8 @@ export function useElementPicker(filter: PickerFilter): PickerOption[] {
       if (!node?.data) continue;
 
       const displayName = node.data.displayName || node.data.name || "";
-      const p = node.data?.props || {};
       const isOverlay = node.data.custom?.overlay === true;
-      const attrsId = typeof p.attrs?.id === "string" ? p.attrs.id : undefined;
-      // Match Container.tsx's show-hide target resolution: attrs.id first, then
-      // props.id, then props.anchor. Overlay components (Modal, CookieConsent)
-      // own their id via `props.anchor`, so keep that primary for them.
-      const propsId = typeof p.id === "string" ? p.id : undefined;
-      const targetId = isOverlay
-        ? p.anchor || attrsId || propsId
-        : attrsId || propsId || p.anchor;
+      const targetId = getNodeAnchor(node);
       const label = getDisplayName(node);
 
       if (!targetId) continue;

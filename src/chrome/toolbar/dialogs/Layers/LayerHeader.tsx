@@ -24,6 +24,11 @@ import { useLayerManager } from "./LayerManager";
 import { useLayerMove } from "./hooks/useLayerMove";
 import { useLayerDragDrop } from "./hooks/useLayerDragDrop";
 import { lintNode, maxSeverity } from "@/utils/lint/responsiveLint";
+import {
+  getShowHideState,
+  setShowHideState,
+  useShowHideVersion,
+} from "@/utils/showHideStore";
 
 interface LayerHeaderProps {
   nodeId: NodeId;
@@ -58,7 +63,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
 
   const {
     displayName,
-    hidden,
+    craftHidden,
     isSelected,
     isHovered,
     actions,
@@ -68,10 +73,16 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
     nodeClassName,
     nodeChildCount,
     nodeLintIgnore,
+    showHideTarget,
   } = useEditor((editorState, query) => {
     const node = editorState.nodes[nodeId];
     const selectedId = query.getEvent("selected").first();
     const hoveredId = query.getEvent("hovered").first();
+    const props = node?.data?.props;
+    const target =
+      (props?.attrs && typeof props.attrs.id === "string" ? props.attrs.id : undefined) ||
+      (typeof props?.id === "string" ? props.id : undefined) ||
+      (typeof props?.anchor === "string" ? props.anchor : undefined);
 
     return {
       displayName:
@@ -79,7 +90,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
         node?.data?.displayName ||
         node?.data?.name ||
         "Unnamed",
-      hidden: node?.data?.hidden || false,
+      craftHidden: node?.data?.hidden || false,
       isSelected: selectedId === nodeId,
       isHovered: hoveredId === nodeId,
       nodeName: node?.data?.name || "",
@@ -87,8 +98,27 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
       nodeClassName: (node?.data?.props?.className as string) || "",
       nodeChildCount: node?.data?.nodes?.length ?? 0,
       nodeLintIgnore: node?.data?.custom?.lintIgnore,
+      showHideTarget: target as string | undefined,
     };
   });
+
+  // Subscribe to show-hide store so the eyeball icon flips reactively when
+  // the store state for this node's DOM target changes (e.g. modifier picker
+  // toggles, action panel "peek", show-hide button click).
+  useShowHideVersion();
+
+  // Unified hidden state — node is hidden if ANY mechanism is hiding it:
+  //   1. CraftJS `data.hidden` (page switching, isolation, conditions)
+  //   2. `hidden` token in className (cookie banners, modal backdrops)
+  //   3. showHideStore says "hidden" for the node's DOM target
+  // The store override "shown" wins over a baked-in className `hidden` token,
+  // matching what `applyShowHideOverride` does at render time.
+  const classNameHasHidden = nodeClassName.split(/\s+/).includes("hidden");
+  const storeState = showHideTarget ? getShowHideState(showHideTarget) : undefined;
+  const isHidden =
+    craftHidden ||
+    (classNameHasHidden && storeState !== "shown") ||
+    storeState === "hidden";
 
   // Responsive lint — re-runs only when this node's className or child count changes.
   const lintIssues = useMemo(
@@ -168,13 +198,24 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
     [nodeId, canDelete, actions]
   );
 
-  // Handle visibility toggle
+  // Handle visibility toggle — reveals the node by clearing whichever
+  // mechanism is hiding it (any combination of craft `data.hidden`, className
+  // `hidden` token via store, or store-hidden state). When making a visible
+  // node hidden, defaults to craft `data.hidden` so the eyeball works on every
+  // node regardless of whether it has a DOM id.
   const handleToggleVisibility = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      actions.setHidden(nodeId, !hidden);
+      if (!isHidden) {
+        actions.setHidden(nodeId, true);
+        return;
+      }
+      if (craftHidden) actions.setHidden(nodeId, false);
+      if (showHideTarget && (classNameHasHidden || storeState === "hidden")) {
+        setShowHideState(showHideTarget, "shown");
+      }
     },
-    [nodeId, hidden, actions]
+    [nodeId, isHidden, craftHidden, classNameHasHidden, storeState, showHideTarget, actions]
   );
 
   // Handle expand/collapse
@@ -239,7 +280,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   const showBeforeDrop = isDropTarget && state.dropIndicator?.position === "before";
   const showAfterDrop = isDropTarget && state.dropIndicator?.position === "after";
 
-  const dimmed = hidden && !isSelected;
+  const dimmed = isHidden && !isSelected;
 
   const rowClassName = [
     "group relative flex w-full cursor-pointer select-none items-center gap-1 py-1.5 pr-1.5",
@@ -338,12 +379,12 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
           />
         )}
 
-        {/* Hidden indicator — visible at rest only when node is hidden */}
-        {hidden && (
+        {/* Hidden indicator — visible at rest only when node is hidden AND
+            chrome isn't already showing (selected rows or hovered rows show
+            the toggle button, which would otherwise render two eyeballs). */}
+        {isHidden && !isSelected && (
           <TbEyeOff
-            className={`size-3.5 shrink-0 ${
-              isSelected ? "text-white/80" : "text-gray-400 dark:text-gray-500"
-            } group-hover:hidden`}
+            className="size-3.5 shrink-0 text-gray-400 dark:text-gray-500 group-hover:hidden"
             aria-hidden
           />
         )}
@@ -358,11 +399,11 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             onClick={handleToggleVisibility}
             className="rounded p-0.5 transition-colors hover:bg-black/10 dark:hover:bg-white/10"
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content={hidden ? "Show" : "Hide"}
+            data-tooltip-content={isHidden ? "Show" : "Hide"}
             aria-label="Toggle visibility"
-            aria-pressed={!hidden}
+            aria-pressed={!isHidden}
           >
-            {hidden ? (
+            {isHidden ? (
               <TbEyeOff className="size-3.5" />
             ) : (
               <TbEye className="size-3.5" />

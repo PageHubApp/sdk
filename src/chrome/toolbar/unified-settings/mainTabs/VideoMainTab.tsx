@@ -88,10 +88,10 @@ export const VideoMainTab = () => {
               propKey="videoId"
               typeKey="provider"
               contentKey="videoId"
-              title=""
               kindFilter="video"
               defaultTypeValue="r2"
-              showObjectProperties={false}
+              variant="chip"
+              label="Video"
             />
           </ToolbarSection>
         ) : (

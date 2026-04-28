@@ -7,10 +7,13 @@ import { addCustomHandlers, addActionHandlers } from "../utils/clickControls";
 import { useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
 import {
-  migrateAction,
+  migrateActions,
   actionToHref,
   actionTarget,
+  isLinkAction,
   isAnchorAction,
+  isHandlerAction,
+  findLinkAction,
   type NodeAction,
 } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -39,7 +42,7 @@ interface IconProps {
 export interface LinkProps extends BaseSelectorProps {
   text?: string;
   icon?: IconProps;
-  action?: NodeAction;
+  action?: NodeAction | NodeAction[];
 }
 
 const defaultIcon = {
@@ -124,13 +127,14 @@ export const Link: UserComponent<LinkProps> = (incomingProps: LinkProps) => {
     prop.className = prop.className + " " + defaults.join(" ");
   }
 
-  const action = migrateAction(props);
-  const rawUrl = actionToHref(action, query, router?.asPath);
+  const actions = migrateActions(props);
+  const firstLink = findLinkAction(actions);
+  const rawUrl = actionToHref(firstLink, query, router?.asPath);
   let resolvedUrl = rawUrl ? replaceVariables(rawUrl, query, itemContext) : rawUrl;
   if (resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("ref:")) {
     resolvedUrl = resolvePageRef(resolvedUrl, query, router?.asPath);
   }
-  const target = actionTarget(action);
+  const target = actionTarget(firstLink);
 
   const isInternalLink =
     resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
@@ -166,15 +170,24 @@ export const Link: UserComponent<LinkProps> = (incomingProps: LinkProps) => {
 
   applyAriaProps(prop, props);
 
-  // Anchor links (`#hero`) attach a JS handler for preventDefault + smooth scroll.
-  if (isAnchorAction(action)) {
-    addActionHandlers(prop, action, enabled, { itemContext });
+  // Multi-action chains, anchor links, and any handler-action route through
+  // `addActionHandlers`. Single non-anchor link → browser navigates natively.
+  const actionCtx = {
+    itemContext,
+    resolvedLinkHref: typeof resolvedUrl === "string" ? resolvedUrl : null,
+  };
+  const needsJsDispatch =
+    actions.length > 1 ||
+    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
+    (actions.length === 1 && !isLinkAction(actions[0]));
+  if (needsJsDispatch) {
+    addActionHandlers(prop, actions, enabled, actionCtx);
   }
 
   addCustomHandlers(prop, props.handlers, enabled);
 
-  if (action?.type && !enabled) {
-    prop["data-action"] = action.type;
+  if (actions.length > 0 && !enabled) {
+    prop["data-action"] = actions.map(a => a.type).join(" ");
   }
 
   if (enabled) {

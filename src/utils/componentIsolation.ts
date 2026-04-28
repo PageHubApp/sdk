@@ -79,7 +79,7 @@ export function applyCanvasVisibility(
         shouldHide = canvasIsolate != null;
       } else {
         // header / footer / page — keep MOUNTED in canvas mode so any
-        // inherent components nested inside (Modal/Dropdown/Tabs/Accordion)
+        // inherent components nested inside (Modal/Dropdown/Tabs)
         // have live DOM to pin to. The canvas surface is rendered on top
         // with an opaque background, so the pages don't bleed through
         // visually. Hidden via CraftJS unmount would kill the DOM.

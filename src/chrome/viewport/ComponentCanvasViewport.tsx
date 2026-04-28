@@ -249,15 +249,14 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
   // Safety: if the isolated component disappears (deleted, restructured),
   // exit isolation so the user isn't stuck on a dead pill / blank canvas.
   // Accept either a `type === "component"` Container or an inherent
-  // component (Modal/Dropdown/Tabs/Accordion node) — both can be isolated.
+  // component (Modal/Dropdown/Tabs node) — both can be isolated.
   React.useEffect(() => {
     if (!canvasIsolate) return;
     try {
       const n = query.node(canvasIsolate).get();
       const dn: string = n?.data?.displayName || "";
       const isReal = n?.data?.props?.type === "component";
-      const isInherent =
-        ["Modal", "Dropdown", "Tabs", "Accordion"].indexOf(dn) >= 0;
+      const isInherent = dn === "Dropdown";
       if (!n || (!isReal && !isInherent)) {
         setCanvasIsolate(null);
       }
@@ -377,7 +376,7 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
   });
 
   const containerIds = listComponentContainers(query);
-  // Inherent components — Modal/Dropdown/Tabs/Accordion nodes anywhere on
+  // Inherent components — Modal/Dropdown/Tabs nodes anywhere on
   // the page are surfaced as canvas cards alongside the user's
   // type === "component" Containers. No wrapping needed.
   const inherentIds = React.useMemo(
@@ -395,7 +394,7 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
     : [];
 
   // State cards: in isolation, walk the component subtree for hidden state
-  // nodes (Modal panels, Tabs panes, show-hide / open-modal targets) and
+  // nodes (Modal panels, tab panes, show-hide / open-modal targets) and
   // surface each as its own card alongside the master. Recompute when the
   // tree structure or isolation target changes (sig already tracks the
   // ROOT-children / canvas signature).

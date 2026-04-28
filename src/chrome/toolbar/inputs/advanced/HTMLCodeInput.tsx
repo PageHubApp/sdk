@@ -63,6 +63,8 @@ interface HTMLCodeInputProps {
   formatMountKey?: string;
   /** `{{` completions in the HTML editor (company + custom site variables). */
   variableCompletionOptions?: EditorVariableOption[];
+  /** Extra classes for the inner CodeEditor wrapper (e.g. `h-full` to fill a flex column). */
+  editorContainerClassName?: string;
 }
 
 export const HTMLCodeInput = ({
@@ -75,9 +77,10 @@ export const HTMLCodeInput = ({
   className = "",
   formatMountKey,
   variableCompletionOptions,
+  editorContainerClassName,
 }: HTMLCodeInputProps) => {
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`flex flex-col gap-2 ${className}`}>
       {label && <label className="toolbar-label block font-medium">{label}</label>}
       <CodeEditor
         value={value}
@@ -89,6 +92,7 @@ export const HTMLCodeInput = ({
         autoFormatOnMount={Boolean(formatMountKey)}
         autoFormatMountKey={formatMountKey}
         htmlVariableCompletionOptions={variableCompletionOptions}
+        containerClassName={editorContainerClassName}
       />
       {helpText && <p className="text-neutral-content text-xs">{helpText}</p>}
     </div>

@@ -258,7 +258,7 @@ export function applyAlignmentOnDrop(
   if (nodeIndex < 0) return;
 
   // Wrapping requires moving the node out of its current parent into the new
-  // Align wrapper. If the parent disallows that (Dropdown/Tabs/Accordion
+  // Align wrapper. If the parent disallows that (Dropdown/Tabs
   // content nodes set `canMoveOut: () => false`), skip alignment — the
   // reorder/drop already stands; we just don't add the wrapper.
   const canMoveOutRule = parentNode.rules?.canMoveOut;

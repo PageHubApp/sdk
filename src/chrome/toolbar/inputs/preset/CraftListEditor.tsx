@@ -39,12 +39,16 @@ interface AddHelpers {
 interface Props<T extends BaseCraftItem> {
   /** CraftJS parent node id whose children we're editing. */
   parentId: string;
-  /** `childNode.data.name` must equal this string for the child to be listed. */
-  childTypeName: string;
+  /**
+   * `childNode.data.name` must equal this string for the child to be listed.
+   * Omit to skip the name filter and list every child (preset wrappers whose
+   * children may be heterogeneous types).
+   */
+  childTypeName?: string;
   /** Optional secondary filter (e.g. exclude hamburger Buttons). Receives the raw craft node. */
   filterChild?: (childNode: any) => boolean;
   /** Map a child craft node to the renderable item shape. `id` is added automatically. */
-  mapItem: (childNode: any, id: string) => Omit<T, "id">;
+  mapItem: (childNode: any, id: string, index: number) => Omit<T, "id">;
 
   activeIndex: any;
   setActiveIndex: (v: number | null) => void;
@@ -80,12 +84,12 @@ export function CraftListEditor<T extends BaseCraftItem>({
     try {
       const node = q.node(parentId).get();
       const list = (node.data.nodes ?? [])
-        .map((childId: string) => {
+        .map((childId: string, idx: number) => {
           try {
             const childNode = q.node(childId).get();
-            if (childNode.data.name !== childTypeName) return null;
+            if (childTypeName && childNode.data.name !== childTypeName) return null;
             if (filterChild && !filterChild(childNode)) return null;
-            return { id: childId, ...mapItem(childNode, childId) } as T;
+            return { id: childId, ...mapItem(childNode, childId, idx) } as T;
           } catch {
             return null;
           }
@@ -109,7 +113,7 @@ export function CraftListEditor<T extends BaseCraftItem>({
   const editLabel =
     editTooltip === null
       ? null
-      : (editTooltip ?? `Edit ${childTypeName.toLowerCase()}`);
+      : (editTooltip ?? `Edit ${childTypeName?.toLowerCase() ?? "item"}`);
 
   return (
     <ListEditor

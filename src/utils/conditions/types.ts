@@ -6,7 +6,9 @@ export type ConditionType =
   | "company"
   | "device"
   | "auth"
-  | "item";
+  | "item"
+  | "localStorage"
+  | "state";
 
 /** Comparison operators */
 export type Operator =
@@ -29,7 +31,9 @@ export interface Condition {
    *  - company: field name like "name", "email", "phone"
    *  - device: always "viewport"
    *  - auth: dot-path like "status", "customer.hasSubscription", "customer.orderCount"
-   *  - item: dot-path into the current repeater item (e.g. "description", "metadata.sizes", "priceRange") */
+   *  - item: dot-path into the current repeater item (e.g. "description", "metadata.sizes", "priceRange")
+   *  - localStorage: raw localStorage key (no `ph-` prefix); compared against `value` for the equality operators, presence for exists/not-exists
+   *  - state: registry key — element id (implicit, written by show-hide) or named state declared on ROOT. Compared against `value`; visibility entries use "shown"/"hidden". */
   key: string;
   operator: Operator;
   /** Comparison value. For device: "mobile" | "desktop". Ignored for exists/not-exists. */
@@ -84,6 +88,8 @@ export const OPERATORS_BY_TYPE: Record<ConditionType, Operator[]> = {
   device: ["equals"],
   auth: ["equals", "not-equals", "exists", "not-exists", "greater-than", "less-than"],
   item: ["exists", "not-exists", "equals", "not-equals", "contains", "greater-than", "less-than"],
+  localStorage: ["exists", "not-exists", "equals", "not-equals"],
+  state: ["equals", "not-equals", "exists", "not-exists", "contains"],
 };
 
 /** Human-readable labels for operators */

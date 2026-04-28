@@ -38,14 +38,23 @@ import {
 
 // ── Category labels ──────────────────────────────────────────────────────────
 
-const CATEGORY_OPTIONS: { value: ConditionType; label: string }[] = [
+/**
+ * All authorable condition types + their human labels. Exported so action-side
+ * gating UIs (`ActionConditionsEditor`) and the section-header `+` picker can
+ * share one canonical menu list. Order intentional — most-common first.
+ */
+export const CONDITION_TYPE_OPTIONS: { value: ConditionType; label: string }[] = [
   { value: "url-param", label: "URL Parameter" },
   { value: "form-field", label: "Form Field" },
   { value: "connector", label: "Connector" },
   { value: "company", label: "Company Variable" },
   { value: "device", label: "Device / Viewport" },
   { value: "auth", label: "Auth Status" },
+  { value: "localStorage", label: "Local Storage" },
+  { value: "state", label: "State" },
 ];
+
+const CATEGORY_OPTIONS = CONDITION_TYPE_OPTIONS;
 
 const AUTH_FIELDS = [
   { value: "status", label: "Login status" },
@@ -112,6 +121,10 @@ export function defaultCondition(type: ConditionType): Condition {
       return { type: "connector", key: "", operator: "exists", value: "" };
     case "company":
       return { type: "company", key: "name", operator: "exists", value: "" };
+    case "localStorage":
+      return { type: "localStorage", key: "", operator: "not-exists", value: "" };
+    case "state":
+      return { type: "state", key: "", operator: "equals", value: "" };
     default:
       return { type, key: "", operator: "equals", value: "" };
   }
@@ -267,6 +280,30 @@ export function ConditionFields({
             value={cond.key}
             onChange={e => onChange({ key: e.target.value })}
             placeholder="param name (e.g. ref)"
+            className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
+          />
+        </ToolbarRowFrame>
+      )}
+
+      {cond.type === "localStorage" && (
+        <ToolbarRowFrame>
+          <input
+            type="text"
+            value={cond.key}
+            onChange={e => onChange({ key: e.target.value })}
+            placeholder="storage key (e.g. ph-cookie-consent)"
+            className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
+          />
+        </ToolbarRowFrame>
+      )}
+
+      {cond.type === "state" && (
+        <ToolbarRowFrame>
+          <input
+            type="text"
+            value={cond.key}
+            onChange={e => onChange({ key: e.target.value })}
+            placeholder="state key (element id or named state)"
             className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
           />
         </ToolbarRowFrame>

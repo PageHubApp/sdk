@@ -1,10 +1,11 @@
 /**
- * Actions — chip-list builder for a node's `actions[]` chain AND its
- * `handlers` map (custom JS event strings).
+ * Actions — chip-list builder for a node's action chain AND its `handlers`
+ * map (custom JS event strings).
  *
  * Body renders two chip-lists stacked:
- *   1. Action chips, top — one per `props.actions[]` entry. Added via the
- *      section-header `+` (`ActionsAddPicker`).
+ *   1. Action chips, top — one per `props.action[]` entry (or one chip when
+ *      `props.action` is a single object, kept as a length-1 array shape on
+ *      next save). Added via the section-header `+` (`ActionsAddPicker`).
  *   2. Handler chips, below — one per `props.handlers` key. Added via the
  *      in-body `+ Add Handler` picker (`HandlersAddPicker`).
  *
@@ -20,11 +21,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ActionChipRow } from "./ActionChipRow";
 import { HandlerChipRow } from "./HandlerChipRow";
 import { HandlersAddPicker, HANDLERS_BODY_DEF_ID } from "./HandlersAddPicker";
+import { getNodeAnchor } from "./useElementPicker";
 import {
   PopoverOpenRequestAtom,
   popoverRequestKey,
 } from "../../unified-settings/popoverOpenRequestAtom";
-import { migrateAction, type NodeAction } from "../../../../utils/action";
+import { migrateActions, type NodeAction } from "../../../../utils/action";
 
 // Matches the def id registered in `registry/properties/interactions.ts`.
 // `ActionsAddPicker` dispatches an open-request keyed by (nodeId, this id)
@@ -39,18 +41,31 @@ export function ActionsInput() {
     actions: { setProp },
     actionList,
     handlers,
+    selfId,
   } = useNode(node => {
     const props = node.data.props;
-    const list: NodeAction[] = props.actions?.length
-      ? (props.actions as NodeAction[])
-      : (() => {
-          const single = (props.action as NodeAction | undefined) ?? migrateAction(props);
-          return single ? [single] : [];
-        })();
     const handlersMap: Record<string, string> =
       props.handlers && typeof props.handlers === "object" ? props.handlers : {};
-    return { id: node.id, actionList: list, handlers: handlersMap };
+    return {
+      id: node.id,
+      actionList: migrateActions(props),
+      handlers: handlersMap,
+      selfId: getNodeAnchor(node),
+    };
   });
+  // Resolves a stable id for "self" picks — returns the existing anchor when
+  // present, otherwise stamps the CraftJS node id into `attrs.id` so the
+  // runtime / state-registry / show-hide pickers can find it.
+  const ensureSelfId = (): string => {
+    if (selfId) return selfId;
+    setProp((p: any) => {
+      const attrs = (p.attrs && typeof p.attrs === "object") ? { ...p.attrs } : {};
+      if (typeof attrs.id !== "string" || !attrs.id) attrs.id = id;
+      p.attrs = attrs;
+    });
+    return id;
+  };
+
   const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
   const actionRequestVersion =
     popoverRequests.get(popoverRequestKey(id, ACTIONS_BODY_DEF_ID)) || 0;
@@ -70,10 +85,11 @@ export function ActionsInput() {
 
   const writeActions = (next: NodeAction[]) => {
     setProp((p: any) => {
-      p.actions = next;
-      // Keep legacy single-action prop in sync for the old runtime path.
-      p.action = next[0] || null;
-      // Drop pre-migration scratch props.
+      // Single field, always the array shape — runtime + editor agree on one
+      // schema. Empty list → null so isActive gating sees an unset action.
+      p.action = next.length > 0 ? next : null;
+      // Drop legacy / dual-write props on every save so old data converges.
+      delete p.actions;
       delete p.click;
       delete p.url;
       delete p.urlTarget;
@@ -172,6 +188,8 @@ export function ActionsInput() {
           onAutoOpenConsumed={consumeActionAutoOpen}
           onChange={next => updateActionAt(i, next)}
           onRemove={() => removeActionAt(i)}
+          selfId={selfId}
+          ensureSelfId={ensureSelfId}
         />
       ))}
 

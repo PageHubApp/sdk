@@ -28,6 +28,7 @@ import {
 import { FloatingWidget } from "../floating/FloatingWidget";
 import { useAutoOpenSidebar } from "../hooks/useAutoOpenSidebar";
 import { useComponentSync } from "../hooks/useComponentSync";
+import { useShowOnLoadAutoReveal } from "../hooks/useShowOnLoadAutoReveal";
 import { EditModifiersAtom } from "../toolbar/Label";
 import { DeviceOffline } from "../toolbar/DeviceOffline";
 import { ComponentCanvasViewport } from "./ComponentCanvasViewport";
@@ -105,6 +106,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   // ─── Composed hooks ───
   useComponentSync();
   useAutoOpenSidebar();
+  useShowOnLoadAutoReveal();
   const { handleKeyDown, handleDoubleClick, handleBodyKeyDown } = useViewportKeyboard();
   const { handleViewportClick } = useViewportClickDeselect();
   useEditorDocumentKeydown();
@@ -701,28 +703,31 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ViewportMeta />
-      <div
-        className={`relative flex h-full w-full min-w-0 flex-1 ${
-          breakpointActive && !responsive ? "overflow-x-auto overflow-y-hidden" : "overflow-hidden"
-        } ${
-          deviceFrame || isEditorCanvasBreakpointView(view)
-            ? "bg-neutral/50 items-center justify-center"
-            : "flex-row"
-        }`}
-        data-container={true}
-      >
-        <LoadingBar
-          active={pageLoad !== "idle"}
-          done={pageLoad === "done"}
-          overlay
-          onComplete={handleLoadComplete}
-        />
+      <div className="flex h-full w-full min-w-0 flex-1 flex-col">
         {/* Scope band + first-run coachmark are page-editor concerns.
             Component-editor mode (`viewMode === "canvas"`) edits a single
             isolated component and has its own mental model — suppress both
-            so we don't shout "EDITING MD BREAKPOINT" over a component card. */}
+            so we don't shout "EDITING MD BREAKPOINT" over a component card.
+            Band sits ABOVE the canvas in flex flow (not absolute) so it
+            never covers page content like the user's <header>. */}
         {enabled && viewMode !== "canvas" && <CanvasScopeBand />}
-        {enabled && viewMode !== "canvas" && <ViewportScopeCoachmark />}
+        <div
+          className={`relative flex w-full min-w-0 flex-1 ${
+            breakpointActive && !responsive ? "overflow-x-auto overflow-y-hidden" : "overflow-hidden"
+          } ${
+            deviceFrame || isEditorCanvasBreakpointView(view)
+              ? "bg-neutral/50 items-center justify-center"
+              : "flex-row"
+          }`}
+          data-container={true}
+        >
+          <LoadingBar
+            active={pageLoad !== "idle"}
+            done={pageLoad === "done"}
+            overlay
+            onComplete={handleLoadComplete}
+          />
+          {enabled && viewMode !== "canvas" && <ViewportScopeCoachmark />}
         {/* Preview edit button */}
         {!enabled && !screenshot && (
           <FloatingWidget
@@ -1015,6 +1020,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         )}
 
         {enabled ? <ToolboxContexual /> : null}
+        </div>
       </div>
     </>
   );

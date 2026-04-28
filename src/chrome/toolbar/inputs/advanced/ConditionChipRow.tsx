@@ -12,11 +12,13 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   TbDeviceMobile,
   TbDatabase,
+  TbDeviceFloppy,
   TbForms,
   TbLink,
   TbBuilding,
   TbUser,
   TbEye,
+  TbBolt,
 } from "react-icons/tb";
 import { PopoverChip } from "../../../primitives/PopoverChip";
 import { SideBarAtom } from "../../../../utils/lib";
@@ -41,6 +43,8 @@ const TYPE_ICON: Record<ConditionType, React.ComponentType<{ className?: string 
   device: TbDeviceMobile,
   auth: TbUser,
   item: TbEye,
+  localStorage: TbDeviceFloppy,
+  state: TbBolt,
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -51,6 +55,8 @@ const TYPE_LABEL: Record<string, string> = {
   device: "Device",
   auth: "Auth",
   item: "Item",
+  localStorage: "Local Storage",
+  state: "State",
 };
 
 const OP_LABEL: Record<string, string> = {

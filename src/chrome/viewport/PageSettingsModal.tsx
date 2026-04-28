@@ -2,14 +2,29 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import sluggit from "slug";
-import { TbAdjustments, TbLock, TbSearch, TbSettings } from "react-icons/tb";
+import {
+  TbAdjustments,
+  TbBrandTwitter,
+  TbCode,
+  TbJson,
+  TbLock,
+  TbPaint,
+  TbPhoto,
+  TbSearch,
+  TbSettings,
+} from "react-icons/tb";
 import { useSDK } from "../../core/context";
 import { useEditorSidebarDockLeft } from "../../utils/lib";
 import { getLoadedPages, listPageNodeIds } from "../../utils/pageManagement";
 import { AccessTab } from "./page-settings/AccessTab";
 import { AdvancedTab } from "./page-settings/AdvancedTab";
 import { BasicTab } from "./page-settings/BasicTab";
+import { HeadCodeTab } from "./page-settings/HeadCodeTab";
+import { OpenGraphTab } from "./page-settings/OpenGraphTab";
+import { SchemaTab } from "./page-settings/SchemaTab";
 import { SEOTab } from "./page-settings/SEOTab";
+import { ThemeOverridesTab } from "./page-settings/ThemeOverridesTab";
+import { TwitterCardTab } from "./page-settings/TwitterCardTab";
 import {
   PAGE_SETTINGS_FIELDS,
   pageSettingsDefaults,
@@ -177,8 +192,6 @@ export function PageSettingsModal({
   const [activeTab, setActiveTab] = useState<string>("basic");
   const [pageSlug, setPageSlug] = useState("");
   const [autoSlug, setAutoSlug] = useState(true);
-  const [ogExpanded, setOgExpanded] = useState(false);
-  const [twitterExpanded, setTwitterExpanded] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -255,7 +268,6 @@ export function PageSettingsModal({
         render: ctx => (
           <SEOTab
             inputClass={ctx.inputClass}
-            selectClass={ctx.selectClass}
             pageTitle={ctx.draft.pageTitle}
             setPageTitle={value => ctx.updateField("pageTitle", value)}
             pageDescription={ctx.draft.pageDescription}
@@ -264,8 +276,18 @@ export function PageSettingsModal({
             setPageKeywords={value => ctx.updateField("pageKeywords", value)}
             pageAuthor={ctx.draft.pageAuthor}
             setPageAuthor={value => ctx.updateField("pageAuthor", value)}
-            ogExpanded={ogExpanded}
-            setOgExpanded={setOgExpanded}
+          />
+        ),
+      },
+      {
+        key: "open-graph",
+        label: "Open Graph",
+        order: 210,
+        icon: <TbPhoto />,
+        render: ctx => (
+          <OpenGraphTab
+            inputClass={ctx.inputClass}
+            selectClass={ctx.selectClass}
             ogTitle={ctx.draft.ogTitle}
             setOgTitle={value => ctx.updateField("ogTitle", value)}
             ogDescription={ctx.draft.ogDescription}
@@ -274,8 +296,18 @@ export function PageSettingsModal({
             setOgImage={value => ctx.updateField("ogImage", value)}
             ogType={ctx.draft.ogType}
             setOgType={value => ctx.updateField("ogType", value)}
-            twitterExpanded={twitterExpanded}
-            setTwitterExpanded={setTwitterExpanded}
+          />
+        ),
+      },
+      {
+        key: "twitter",
+        label: "Twitter / X",
+        order: 220,
+        icon: <TbBrandTwitter />,
+        render: ctx => (
+          <TwitterCardTab
+            inputClass={ctx.inputClass}
+            selectClass={ctx.selectClass}
             twitterCard={ctx.draft.twitterCard}
             setTwitterCard={value => ctx.updateField("twitterCard", value)}
             twitterSite={ctx.draft.twitterSite}
@@ -295,14 +327,45 @@ export function PageSettingsModal({
             inputClass={ctx.inputClass}
             canonicalUrl={ctx.draft.canonicalUrl}
             setCanonicalUrl={value => ctx.updateField("canonicalUrl", value)}
-            headCode={ctx.draft.headCode}
-            setHeadCode={value => ctx.updateField("headCode", value)}
             bodyClass={ctx.draft.bodyClass}
             setBodyClass={value => ctx.updateField("bodyClass", value)}
-            jsonLd={ctx.draft.jsonLd}
-            setJsonLd={value => ctx.updateField("jsonLd", value)}
             pagePassword={ctx.draft.pagePassword}
             setPagePassword={value => ctx.updateField("pagePassword", value)}
+          />
+        ),
+      },
+      {
+        key: "head-code",
+        label: "Custom code",
+        order: 310,
+        icon: <TbCode />,
+        render: ctx => (
+          <HeadCodeTab
+            headCode={ctx.draft.headCode}
+            setHeadCode={value => ctx.updateField("headCode", value)}
+          />
+        ),
+      },
+      {
+        key: "schema",
+        label: "Schema",
+        order: 320,
+        icon: <TbJson />,
+        render: ctx => (
+          <SchemaTab
+            jsonLd={ctx.draft.jsonLd}
+            setJsonLd={value => ctx.updateField("jsonLd", value)}
+          />
+        ),
+      },
+      {
+        key: "theme",
+        label: "Theme",
+        order: 330,
+        icon: <TbPaint />,
+        render: ctx => (
+          <ThemeOverridesTab
+            inputClass={ctx.inputClass}
             themeOverrides={ctx.draft.themeOverrides}
             setThemeOverrides={value => ctx.updateField("themeOverrides", value)}
           />
@@ -345,7 +408,7 @@ export function PageSettingsModal({
         },
       },
     ],
-    [actions, autoSlug, ogExpanded, onClose, pageSlug, showDeleteConfirm, twitterExpanded]
+    [actions, autoSlug, onClose, pageSlug, showDeleteConfirm]
   );
 
   const injectedTabs = useMemo(() => adaptLegacyExtraTabs(extraTabs), [extraTabs]);
@@ -489,12 +552,6 @@ export function PageSettingsModal({
 
   const tabs = useMemo(() => visibleSettingsTabs(allTabs, tabRenderCtx), [allTabs, tabRenderCtx]);
   const activeDef = tabs.find(tab => tab.key === activeTab) ?? tabs[0];
-
-  useEffect(() => {
-    if (!isOpen) return;
-    setOgExpanded(false);
-    setTwitterExpanded(false);
-  }, [isOpen, pageId]);
 
   const handleClose = useCallback(() => {
     flushSave();

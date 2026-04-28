@@ -65,6 +65,16 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     sortOrder: 10,
     help: "Toggle pre-built style variants and patterns.",
   },
+  {
+    id: "preset-items",
+    title: "Items",
+    tab: "layout",
+    icon: React.createElement(TbLayout),
+    keywords: ["items", "add", "child", "preset", "list"],
+    sortOrder: 5,
+    help: "Add or remove children for this preset (Accordion items, tabs, etc.).",
+    defaultOpen: true,
+  },
 
   // ─── Layout tab ────────────────────────────────────────────────────
   {
@@ -117,6 +127,21 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     hideKey: "background",
     sortOrder: 20,
     help: "Background color, image, gradient, and pattern.",
+  },
+  {
+    // Hosted exclusively in the cog popover off the Background image chip
+    // (see `BackgroundImageSettingsBody` → `<PropertySection sectionId="image-settings" />`).
+    // `searchOnly: true` keeps it out of the main inspector tab body — the
+    // section still resolves via getSectionDef / getProperties so the popover
+    // can render it; tab views call `getSectionDefs({ tab }).filter(s => !s.searchOnly)`.
+    id: "image-settings",
+    title: "Image Settings",
+    tab: "design",
+    icon: React.createElement(TbPhotoFilled),
+    keywords: ["loading", "lazy", "priority", "repeat", "size", "origin", "position", "attachment"],
+    sortOrder: 25,
+    searchOnly: true,
+    help: "Loading + tile/repeat/position controls for a background image.",
   },
   {
     id: "styles",
@@ -201,6 +226,24 @@ export const BUILT_IN_SECTIONS: SectionDef[] = [
     keywords: ["condition", "visibility", "show", "hide", "url", "form"],
     sortOrder: 20,
     help: "Show or hide this element based on URL, auth, or form state.",
+  },
+  {
+    id: "stateBindings",
+    title: "State",
+    tab: "interactions",
+    icon: React.createElement(TbBolt),
+    keywords: [
+      "state",
+      "active",
+      "open",
+      "selected",
+      "tab",
+      "modifier",
+      "binding",
+      "condition",
+    ],
+    sortOrder: 22,
+    help: "Bind modifiers to runtime state — e.g. apply 'active' classes when a paired panel is shown.",
   },
   // Animation, "Tailwind effects", Scroll Effect — collapsed into one
   // unified Effects section (Design tab) backed by effects-builder/. See

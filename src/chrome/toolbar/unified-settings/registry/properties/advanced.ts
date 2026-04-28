@@ -241,6 +241,26 @@ export const advancedProperties: PropertyDef[] = [
     input: { type: "custom", component: "ConditionsAddPicker" },
     sortOrder: 1,
   },
+  {
+    id: "stateBindings",
+    label: "State bindings",
+    section: "stateBindings",
+    keywords: ["state", "active", "open", "modifier", "binding"],
+    input: { type: "custom", component: "StateBindingsInput" },
+    pinned: true,
+    isActive: (_cls, props) =>
+      Array.isArray(props?.stateModifiers) && props.stateModifiers.length > 0,
+    sortOrder: 0,
+  },
+  {
+    id: "stateBindings:add",
+    label: "Add state binding",
+    section: "stateBindings",
+    help: "Add a binding that applies modifiers when state matches.",
+    keywords: ["add", "state", "binding", "active", "modifier"],
+    input: { type: "custom", component: "StateBindingsAddPicker" },
+    sortOrder: 1,
+  },
   // Animation + Scroll Effect are now rows inside the unified Effects
   // builder (see registry/properties/effects.ts + effects-builder/).
   {

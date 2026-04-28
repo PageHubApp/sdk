@@ -25,6 +25,7 @@ import {
 } from "@/utils/action";
 import { LinkInput } from "./LinkInput";
 import { useElementPicker, type PickerFilter } from "./useElementPicker";
+import { ActionConditionsEditor } from "../conditions/ActionConditionsEditor";
 
 export const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
   link: { type: "link", href: "" },
@@ -44,16 +45,28 @@ export const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
   "cart-checkout": { type: "cart-checkout" },
   "manage-subscription": { type: "manage-subscription" },
   "agent-send": { type: "agent-send", field: "agentMessage" },
+  "set-local-storage": { type: "set-local-storage", key: "", value: "" },
+  "remove-local-storage": { type: "remove-local-storage", key: "" },
+  "set-state": { type: "set-state", key: "", value: "" },
+  "toggle-state": { type: "toggle-state", key: "" },
+  "clear-state": { type: "clear-state", key: "" },
 };
 
 export function ActionSubForm({
   action,
   patch,
   replace,
+  selfId,
+  ensureSelfId,
 }: {
   action: NodeAction;
   patch: (p: any) => void;
   replace: (next: NodeAction) => void;
+  /** DOM-discoverable id of the node owning this action — surfaces a "self"
+   *  entry in state-key pickers. Undefined when the node has no anchor set. */
+  selfId?: string;
+  /** Returns a stable self id, stamping `attrs.id` when none exists yet. */
+  ensureSelfId?: () => string;
 }) {
   switch (action.type) {
     case "link":
@@ -138,9 +151,268 @@ export function ActionSubForm({
           Redirects logged-in customers to the Stripe customer portal to manage subscriptions.
         </p>
       );
+    case "set-local-storage":
+      return <SetLocalStorageForm action={action as any} patch={patch} />;
+    case "remove-local-storage":
+      return <RemoveLocalStorageForm action={action as any} patch={patch} />;
+    case "set-state":
+      return (
+        <SetStateForm
+          action={action as any}
+          patch={patch}
+          selfId={selfId}
+          ensureSelfId={ensureSelfId}
+        />
+      );
+    case "toggle-state":
+      return (
+        <ToggleStateForm
+          action={action as any}
+          patch={patch}
+          selfId={selfId}
+          ensureSelfId={ensureSelfId}
+        />
+      );
+    case "clear-state":
+      return (
+        <ClearStateForm
+          action={action as any}
+          patch={patch}
+          selfId={selfId}
+          ensureSelfId={ensureSelfId}
+        />
+      );
     default:
       return null;
   }
+}
+
+function SetStateForm({
+  action,
+  patch,
+  selfId,
+  ensureSelfId,
+}: {
+  action: { key: string; kind?: string; value: string };
+  patch: (p: any) => void;
+  selfId?: string;
+  ensureSelfId?: () => string;
+}) {
+  const fillFromSelf = () => {
+    const id = ensureSelfId?.() ?? selfId;
+    if (!id) return;
+    patch({ key: id, value: id });
+  };
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-neutral-content text-[10px] leading-snug">
+        Writes <code className="text-[9px]">key</code> →{" "}
+        <code className="text-[9px]">value</code> to the central state
+        registry. Pair with a State condition (visibility / className gating)
+        elsewhere on the page to react.
+      </p>
+      {ensureSelfId && (
+        <button
+          type="button"
+          onClick={fillFromSelf}
+          className="text-primary hover:bg-base-200 self-start rounded-md px-2 py-1 text-[10px] font-medium transition-colors"
+        >
+          Use this element for key + value
+        </button>
+      )}
+      <label className="flex flex-col gap-1 text-[10px]">
+        <span className="text-neutral-content">Key</span>
+        <StateKeyPickerInput
+          value={action.key || ""}
+          selfId={selfId}
+          ensureSelfId={ensureSelfId}
+          onChange={key => patch({ key })}
+        />
+      </label>
+      <label className="flex flex-col gap-1 text-[10px]">
+        <span className="text-neutral-content">Kind</span>
+        <ToolbarDropdown
+          value={action.kind || "value"}
+          onChange={(val: string) => patch({ kind: val })}
+          propKey="setStateKind"
+        >
+          <option value="value">Value</option>
+          <option value="visibility">Visibility</option>
+          <option value="selection">Selection</option>
+          <option value="flag">Flag</option>
+        </ToolbarDropdown>
+      </label>
+      <label className="flex flex-col gap-1 text-[10px]">
+        <span className="text-neutral-content">Value</span>
+        <input
+          className="bg-base-100 border-base-300 rounded-field border px-2 py-1 text-xs"
+          value={action.value || ""}
+          onChange={e => patch({ value: e.target.value })}
+          placeholder='"shown" / "panel-1" / "{{item.id}}"'
+        />
+      </label>
+    </div>
+  );
+}
+
+function ToggleStateForm({
+  action,
+  patch,
+  selfId,
+  ensureSelfId,
+}: {
+  action: { key: string; kind?: string; values?: [string, string] };
+  patch: (p: any) => void;
+  selfId?: string;
+  ensureSelfId?: () => string;
+}) {
+  const pair = Array.isArray(action.values) ? action.values : ["", ""];
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-neutral-content text-[10px] leading-snug">
+        Flips a state between two values on click. Defaults: visibility kind
+        toggles <code className="text-[9px]">shown / hidden</code>; flag kind
+        toggles <code className="text-[9px]">on / off</code>. Override with
+        explicit values.
+      </p>
+      <label className="flex flex-col gap-1 text-[10px]">
+        <span className="text-neutral-content">Key</span>
+        <StateKeyPickerInput
+          value={action.key || ""}
+          selfId={selfId}
+          ensureSelfId={ensureSelfId}
+          onChange={key => patch({ key })}
+        />
+      </label>
+      <label className="flex flex-col gap-1 text-[10px]">
+        <span className="text-neutral-content">Kind</span>
+        <ToolbarDropdown
+          value={action.kind || "flag"}
+          onChange={(val: string) => patch({ kind: val })}
+          propKey="toggleStateKind"
+        >
+          <option value="flag">Flag</option>
+          <option value="visibility">Visibility</option>
+          <option value="value">Value</option>
+        </ToolbarDropdown>
+      </label>
+      <div className="flex gap-2">
+        <label className="flex flex-1 flex-col gap-1 text-[10px]">
+          <span className="text-neutral-content">Value A</span>
+          <input
+            className="bg-base-100 border-base-300 rounded-field border px-2 py-1 text-xs"
+            value={pair[0]}
+            onChange={e => patch({ values: [e.target.value, pair[1]] })}
+            placeholder="optional"
+          />
+        </label>
+        <label className="flex flex-1 flex-col gap-1 text-[10px]">
+          <span className="text-neutral-content">Value B</span>
+          <input
+            className="bg-base-100 border-base-300 rounded-field border px-2 py-1 text-xs"
+            value={pair[1]}
+            onChange={e => patch({ values: [pair[0], e.target.value] })}
+            placeholder="optional"
+          />
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function ClearStateForm({
+  action,
+  patch,
+  selfId,
+  ensureSelfId,
+}: {
+  action: { key: string };
+  patch: (p: any) => void;
+  selfId?: string;
+  ensureSelfId?: () => string;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-neutral-content text-[10px] leading-snug">
+        Removes the state entry entirely. Useful for "reset to default" buttons.
+      </p>
+      <label className="flex flex-col gap-1 text-[10px]">
+        <span className="text-neutral-content">Key</span>
+        <StateKeyPickerInput
+          value={action.key || ""}
+          selfId={selfId}
+          ensureSelfId={ensureSelfId}
+          onChange={key => patch({ key })}
+        />
+      </label>
+    </div>
+  );
+}
+
+function SetLocalStorageForm({
+  action,
+  patch,
+}: {
+  action: { key: string; value: string };
+  patch: (p: any) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-neutral-content text-[10px] leading-snug">
+        Writes <code className="text-[9px]">key</code> →{" "}
+        <code className="text-[9px]">value</code> to{" "}
+        <code className="text-[9px]">window.localStorage</code> when the
+        button is clicked. Pairs with a load-trigger Show / Hide action whose
+        Local Storage condition watches the same key — once the key is set,
+        the target stays hidden on subsequent visits.
+      </p>
+      <label className="flex flex-col gap-1 text-[10px]">
+        <span className="text-neutral-content">Key</span>
+        <input
+          className="bg-base-100 border-base-300 rounded-field border px-2 py-1 text-xs"
+          value={action.key || ""}
+          onChange={e => patch({ key: e.target.value })}
+          placeholder="ph-cookie-consent"
+        />
+      </label>
+      <label className="flex flex-col gap-1 text-[10px]">
+        <span className="text-neutral-content">Value</span>
+        <input
+          className="bg-base-100 border-base-300 rounded-field border px-2 py-1 text-xs"
+          value={action.value || ""}
+          onChange={e => patch({ value: e.target.value })}
+          placeholder="dismissed"
+        />
+      </label>
+    </div>
+  );
+}
+
+function RemoveLocalStorageForm({
+  action,
+  patch,
+}: {
+  action: { key: string };
+  patch: (p: any) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-neutral-content text-[10px] leading-snug">
+        Clears the <code className="text-[9px]">key</code> from{" "}
+        <code className="text-[9px]">window.localStorage</code> — useful for
+        "show this banner again" links.
+      </p>
+      <label className="flex flex-col gap-1 text-[10px]">
+        <span className="text-neutral-content">Key</span>
+        <input
+          className="bg-base-100 border-base-300 rounded-field border px-2 py-1 text-xs"
+          value={action.key || ""}
+          onChange={e => patch({ key: e.target.value })}
+          placeholder="ph-cookie-consent"
+        />
+      </label>
+    </div>
+  );
 }
 
 function ToggleThemeForm({
@@ -200,6 +472,7 @@ function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void
 // ─── Sub-forms ─────────────────────────────────────────────────────────
 
 function ShowHideForm({ action, patch }: { action: any; patch: (p: any) => void }) {
+  const isLoad = action.trigger === "load";
   return (
     <>
       <div className="flex items-stretch gap-2">
@@ -231,8 +504,15 @@ function ShowHideForm({ action, patch }: { action: any; patch: (p: any) => void 
         >
           <option value="click">On Click</option>
           <option value="hover">On Hover</option>
+          <option value="load">On Load</option>
         </ToolbarDropdown>
       </div>
+      {isLoad && (
+        <ActionConditionsEditor
+          value={action.conditions}
+          onChange={groups => patch({ conditions: groups })}
+        />
+      )}
     </>
   );
 }
@@ -278,6 +558,80 @@ function DownloadFileForm({ action, patch }: { action: any; patch: (p: any) => v
         />
       </ToolbarRowFrame>
     </>
+  );
+}
+
+/**
+ * State-key picker — same pattern as `TargetPickerInput` but the popover lists
+ * a "self" entry (this node's anchor id) on top of every discoverable element
+ * id on the page. Free-form input remains the source of truth so authors can
+ * type a named state (`tabs-1`, `cart-open`) without picking from the list.
+ */
+function StateKeyPickerInput({
+  value,
+  selfId,
+  ensureSelfId,
+  onChange,
+}: {
+  value: string;
+  selfId?: string;
+  ensureSelfId?: () => string;
+  onChange: (next: string) => void;
+}) {
+  const options = useElementPicker("all");
+  const SELF_SENTINEL = "__ph_self__";
+  const items: SearchableMenuItem<string>[] = [];
+  if (ensureSelfId || selfId) {
+    items.push({
+      id: SELF_SENTINEL,
+      label: "This element (self)",
+      hint: selfId || "stamps an id when picked",
+      keywords: ["self", "this", selfId || ""],
+      data: SELF_SENTINEL,
+    });
+  }
+  for (const opt of options) {
+    if (selfId && opt.anchor === selfId) continue;
+    items.push({
+      id: opt.anchor,
+      label: opt.label,
+      hint: opt.anchor,
+      keywords: [opt.anchor, opt.componentType],
+      data: opt.anchor,
+    });
+  }
+  return (
+    <ToolbarRowFrame
+      trailing={
+        <SearchableMenuPopover<string>
+          items={items}
+          onSelect={item => {
+            const data = item.data ?? item.id;
+            if (data === SELF_SENTINEL) {
+              const id = ensureSelfId?.() ?? selfId;
+              if (id) onChange(id);
+              return;
+            }
+            onChange(data);
+          }}
+          trigger={<TbChevronDown className="size-3.5" aria-hidden />}
+          triggerAriaLabel="Pick state key from page"
+          triggerClassName="text-neutral-content hover:text-base-content hover:bg-base-200 flex size-5 shrink-0 items-center justify-center rounded-md transition-colors"
+          searchPlaceholder="Search elements…"
+          emptyMessage="No element ids on this page yet"
+          anchor="bottom end"
+        />
+      }
+    >
+      <input
+        type="text"
+        value={value || ""}
+        onChange={e => onChange(e.target.value)}
+        placeholder="Element id or named state…"
+        className="h-full w-full bg-transparent px-1 text-xs outline-none"
+        aria-label="State key"
+      />
+    </ToolbarRowFrame>
   );
 }
 

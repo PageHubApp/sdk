@@ -304,9 +304,10 @@ export const GRID_PRESETS: LayoutPreset[] = [
 // ─── Display variants ───
 
 export const DISPLAY_VARIANTS = [
-  { value: "inline-block", label: "Inline-block" },
-  { value: "inline-flex", label: "Inline-flex" },
-  { value: "inline-grid", label: "Inline-grid" },
+  { value: "block", label: "Block" },
+  { value: "inline-block", label: "Inline Block" },
+  { value: "inline-flex", label: "Inline Flex" },
+  { value: "inline-grid", label: "Inline Grid" },
   { value: "inline", label: "Inline" },
   { value: "hidden", label: "None" },
 ] as const;

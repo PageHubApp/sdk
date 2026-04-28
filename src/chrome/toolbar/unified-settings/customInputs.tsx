@@ -94,6 +94,19 @@ const lazyMap: Record<string, LazyEntry> = {
   ConditionsAddPicker: chip(
     React.lazy(() => import("../inputs/advanced/ConditionsAddPicker"))
   ),
+  // State bindings — `props.stateModifiers` array. When the named state matches
+  // the binding's conditions at runtime, modifier classes are appended to the
+  // node's className.
+  StateBindingsInput: block(
+    React.lazy(() =>
+      import("../inputs/state/StateBindingsInput").then(m => ({
+        default: m.StateBindingsInput,
+      }))
+    )
+  ),
+  StateBindingsAddPicker: chip(
+    React.lazy(() => import("../inputs/state/StateBindingsAddPicker"))
+  ),
   // Popover variant — chip + FloatingPanel.
   AnimationsInput: chip(React.lazy(() => import("../inputs/advanced/AnimationsInputPopover"))),
   ContainerScrollEffectSection: block(
@@ -116,12 +129,14 @@ const lazyMap: Record<string, LazyEntry> = {
       import("./mainTabs/DataSourceSectionSlot").then(m => ({ default: m.DataSourceSectionSlot }))
     )
   ),
-  BackgroundSettingsInput: row(
-    React.lazy(() =>
-      import("../inputs/color/BackgroundSettingsInput").then(m => ({
-        default: m.BackgroundSettingsInput,
-      }))
-    )
+  // Popover variant — chip with image thumbnail + label, opens FloatingPanel
+  // hosting the slim media picker. The chip's `trailingExtras` slot renders
+  // a sliders icon that opens `ImageSettingsPanel` (Focal Point + the 9
+  // registered `image-settings` properties) — same trailingExtras pattern
+  // docs §1 documents (Layout chip's "+ Add container", show-hide chip's
+  // eye toggle).
+  BackgroundImageInput: chip(
+    React.lazy(() => import("../inputs/color/BackgroundImageInputPopover"))
   ),
   // Popover variant — chip with pattern thumbnail + label, opens FloatingPanel editor.
   PatternInput: chip(React.lazy(() => import("../inputs/color/PatternInputPopover"))),
@@ -170,6 +185,16 @@ const lazyMap: Record<string, LazyEntry> = {
   // controls, dropdowns, free chips) and the "Save as modifier" footer.
   ModifiersAddPicker: chip(
     React.lazy(() => import("../inputs/modifiers/ModifiersAddPicker"))
+  ),
+  // Component-tab affordance for preset wrappers — Add Item / delete-row UI
+  // driven by `node.data.custom.preset` + `presetRegistry.ts`. See
+  // packages/sdk/src/chrome/toolbar/inputs/preset/PresetAddChildList.tsx.
+  PresetAddChildList: block(
+    React.lazy(() =>
+      import("../inputs/preset/PresetAddChildList").then(m => ({
+        default: m.PresetAddChildList,
+      }))
+    )
   ),
 };
 

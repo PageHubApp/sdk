@@ -1,8 +1,17 @@
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useAtomValue } from "@zedux/react";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TbLoader2, TbPalette, TbSearch } from "react-icons/tb";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { TbPalette } from "react-icons/tb";
+import {
+  FilterDropdown,
+  PanelBody,
+  PanelHeaderRow,
+  PanelLoadingState,
+  PanelScrollSpacer,
+  SearchInput,
+} from "@/chrome/primitives";
+import { usePanelSearch } from "@/chrome/hooks";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { ComponentsAtom } from "../../utils/lib";
 import { useBlockCategories, type BlockCategory } from "../../utils/useBlockCategories";
@@ -11,7 +20,6 @@ import {
   CategoryCard,
   CustomSectionCard,
   BlockPreviewCard,
-  FilterDropdown,
 } from "./sections-settings/components";
 import { CategoryDetailView } from "./sections-settings/CategoryDetailView";
 import { MyBlocksCategoryView } from "./sections-settings/MyBlocksCategoryView";
@@ -36,22 +44,18 @@ export function SectionsSettings() {
     return { siteStyle: typeof s === "string" && s ? s : null };
   });
 
-  const {
-    state: params,
-    navigate: panelNavigate,
-    enterSearchMode,
-    update: panelUpdate,
-  } = usePanelUrl();
+  const { state: params, navigate: panelNavigate, update: panelUpdate } = usePanelUrl();
 
-  const [searchInput, setSearchInput] = useState(params.q ?? "");
-  const focusRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const {
+    value: searchInput,
+    focusRef,
+    onChange: handleSearchChange,
+    isSearchMode,
+  } = usePanelSearch({ minLength: 2 });
   const [styleOpen, setStyleOpen] = useState(false);
   // Once the user explicitly clears the style pill, suppress auto-apply of siteStyle for the
   // rest of the session. Full reload resets this flag — buildStyle is the canonical default.
   const userClearedStyleRef = useRef(false);
-
-  const isSearchMode = searchInput.trim().length >= 2;
 
   // Active style: URL param wins; otherwise fall back to site style unless the user cleared it.
   const effectiveSiteStyle = userClearedStyleRef.current ? null : siteStyle;
@@ -134,48 +138,17 @@ export function SectionsSettings() {
     }
   }, [params.cat, customSections.length, panelUpdate]);
 
-  useEffect(() => {
-    const time = setTimeout(() => focusRef?.current?.focus(), 50);
-    return () => clearTimeout(time);
-  }, []);
-
-  // Sync search input from URL params (e.g. on popstate/back)
-  useEffect(() => {
-    setSearchInput(params.q ?? "");
-  }, [params.q]);
-
-  // Debounce search input -> URL param
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearchInput(value);
-
-      if (value.trim().length >= 2) {
-        enterSearchMode();
-      }
-
-      clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        if (value.trim().length >= 2) {
-          panelUpdate({ q: value });
-        } else {
-          panelUpdate({ q: null });
-        }
-      }, 300);
-    },
-    [enterSearchMode, panelUpdate]
-  );
-
   // Category drill-in view
   if (selectedCategory && !isSearchMode) {
     if (selectedCategory.id === WORKSPACE_BLOCKS_CATEGORY_ID) {
       return (
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <PanelBody>
           <MyBlocksCategoryView sections={customSections} onBack={() => history.back()} />
-        </div>
+        </PanelBody>
       );
     }
     return (
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <PanelBody>
         <CategoryDetailView
           category={selectedCategory}
           categories={sortedCategories}
@@ -191,7 +164,7 @@ export function SectionsSettings() {
           }}
           onCategoryChange={catId => panelNavigate({ cat: catId, sub: null, sty: null, q: null })}
         />
-      </div>
+      </PanelBody>
     );
   }
 
@@ -205,20 +178,16 @@ export function SectionsSettings() {
 
   // Main view: search bar + category grid
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <PanelBody>
       {/* Search bar + style filter */}
-      <div className="border-base-300 bg-base-100 flex items-center gap-2 border-b p-3">
-        <div className="relative flex-1">
-          <TbSearch className="text-neutral-content absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search blocks..."
-            className="input-transparent pl-8"
-            ref={focusRef}
-            value={searchInput}
-            onChange={e => handleSearchChange(e.target.value)}
-          />
-        </div>
+      <PanelHeaderRow>
+        <SearchInput
+          ref={focusRef}
+          value={searchInput}
+          onChange={handleSearchChange}
+          placeholder="Search blocks..."
+          size="slim"
+        />
         {hasStyleOptions && (
           <FilterDropdown
             label="Style"
@@ -241,7 +210,7 @@ export function SectionsSettings() {
             }}
           />
         )}
-      </div>
+      </PanelHeaderRow>
 
       {/* Search results */}
       {isSearchMode ? (
@@ -250,9 +219,7 @@ export function SectionsSettings() {
         <AutoHideScrollbar className="flex-1">
           <div className="p-3">
             {isLoading ? (
-              <div className="flex h-32 items-center justify-center">
-                <TbLoader2 className="text-neutral-content size-5 animate-spin" />
-              </div>
+              <PanelLoadingState />
             ) : (
               <div className="grid grid-cols-2 gap-2.5">
                 {workspaceCategory ? (
@@ -283,9 +250,9 @@ export function SectionsSettings() {
               </div>
             )}
           </div>
-          <div className="shrink-0" style={{ minHeight: "70vh" }} />
+          <PanelScrollSpacer />
         </AutoHideScrollbar>
       )}
-    </div>
+    </PanelBody>
   );
 }

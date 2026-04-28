@@ -2,6 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { changeProp } from "../../../viewport/viewportExports";
 import { useEffect, useRef, useState } from "react";
 import { TbTarget } from "react-icons/tb";
+import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { useAtomValue } from "@zedux/react";
 import { getBackgroundUrl } from "@/utils/lib";
 import { ViewAtom } from "../../../viewport/atoms";
@@ -10,9 +11,16 @@ import { MultiScopeAtom } from "../../breakpoint-chip/atoms";
 
 interface BackgroundFocalPointPickerProps {
   imageUrl?: string;
+  /** Optional callback fired whenever the picker opens or closes. Lets the
+   *  host hide neighbouring chrome (e.g. ImageSettingsSection's settings
+   *  list) while focal-point editing is active. */
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function BackgroundFocalPointPicker({ imageUrl }: BackgroundFocalPointPickerProps) {
+export function BackgroundFocalPointPicker({
+  imageUrl,
+  onOpenChange,
+}: BackgroundFocalPointPickerProps) {
   const { actions, query } = useEditor();
   const view = useAtomValue(ViewAtom);
   const modifiers = useAtomValue(EditModifiersAtom);
@@ -196,6 +204,11 @@ export function BackgroundFocalPointPicker({ imageUrl }: BackgroundFocalPointPic
     }
   }, [isPickerOpen]);
 
+  // Notify host of open/close so neighbouring chrome can hide while picking.
+  useEffect(() => {
+    onOpenChange?.(isPickerOpen);
+  }, [isPickerOpen, onOpenChange]);
+
   // Handle global mouse events when dragging
   useEffect(() => {
     if (isDragging) {
@@ -229,14 +242,13 @@ export function BackgroundFocalPointPicker({ imageUrl }: BackgroundFocalPointPic
 
   return (
     <>
-      {/* Toggle Button */}
-      <button
+      {/* Toggle Button — canonical dashed CTA shared with Action / Bundle / etc. */}
+      <ToolbarDashedButton
         onClick={() => (isPickerOpen ? handleClosePicker() : setIsPickerOpen(true))}
-        className="btn btn-secondary"
+        icon={<TbTarget className="size-3.5" aria-hidden />}
       >
-        <TbTarget className="size-4" />
-        <span>Focal Point Picker</span>
-      </button>
+        {isPickerOpen ? "Close Focal Point Picker" : "Focal Point Picker"}
+      </ToolbarDashedButton>
 
       {/* Picker Interface */}
       {isPickerOpen && (

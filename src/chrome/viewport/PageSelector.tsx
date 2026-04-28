@@ -2,7 +2,7 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import {
   TbChevronDown,
   TbExternalLink,
@@ -19,8 +19,11 @@ import { hasPageIsolation, IsolateAtom, isolatePageInTree } from "../../utils/li
 import { usePageNavigation } from "../../utils/pageNavigation";
 import { EditorSidebarPrimaryCta } from "../primitives/EditorSidebarPrimaryCta";
 import { EditorListPicker } from "./EditorListPicker";
-import { PageSettingsModal } from "./PageSettingsModal";
 import { UnsavedChangesAtom } from "./atoms";
+
+const PageSettingsModal = lazy(() =>
+  import("./PageSettingsModal").then(m => ({ default: m.PageSettingsModal }))
+);
 import { usePageCreation } from "./page-selector/usePageCreation";
 
 import sluggit from "slug";
@@ -339,6 +342,8 @@ export function PageSelector({
         searchPlaceholder="Search pages..."
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
+        showSearch={pages.length >= 8}
+        title="Pages"
         footer={
           pickerMode ? null : showCreateDialog ? (
             <div className="flex flex-col gap-3 p-3">
@@ -360,7 +365,7 @@ export function PageSelector({
                       if (e.key === "Enter") handleCreateSubmit();
                       if (e.key === "Escape") resetCreateDialog();
                     }}
-                    className="input-transparent"
+                    className="border-base-300 text-base-content placeholder:text-neutral-content/60 focus-visible:ring-ring w-full rounded-md border bg-transparent px-2 py-1.5 text-xs outline-none focus-visible:ring-1"
                     autoFocus
                   />
                 </div>
@@ -368,7 +373,7 @@ export function PageSelector({
                   <label className="text-neutral-content mb-1 block text-[10px] font-medium uppercase">
                     URL
                   </label>
-                  <div className="border-base-300 flex items-center gap-0.5 rounded-md border px-2 py-1.5">
+                  <div className="border-base-300 focus-within:ring-ring flex items-center gap-0.5 rounded-md border px-2 py-1.5 transition-colors focus-within:ring-1">
                     <span className="text-neutral-content/50 text-xs">/</span>
                     <input
                       type="text"
@@ -404,7 +409,7 @@ export function PageSelector({
                     if (e.key === "Enter") handleCreateSubmit();
                     if (e.key === "Escape") resetCreateDialog();
                   }}
-                  className="input-transparent"
+                  className="border-base-300 text-base-content placeholder:text-neutral-content/60 focus-visible:ring-ring w-full rounded-md border bg-transparent px-2 py-1.5 text-xs outline-none focus-visible:ring-1"
                 />
               </div>
               <div>
@@ -419,7 +424,7 @@ export function PageSelector({
                     if (e.key === "Escape") resetCreateDialog();
                   }}
                   rows={2}
-                  className="input-transparent resize-none"
+                  className="border-base-300 text-base-content placeholder:text-neutral-content/60 focus-visible:ring-ring w-full resize-none rounded-md border bg-transparent px-2 py-1.5 text-xs outline-none focus-visible:ring-1"
                 />
               </div>
 
@@ -461,8 +466,10 @@ export function PageSelector({
             return (
               <div
                 key={page.id}
-                className={`group hover:bg-neutral flex w-full items-center gap-2 px-3 py-2 transition-colors ${
-                  isSelected ? "bg-accent text-accent-content font-medium" : ""
+                className={`group flex w-full items-center gap-2 border-l-2 px-3 py-2 transition-colors ${
+                  isSelected
+                    ? "border-primary bg-base-200 text-base-content font-medium"
+                    : "border-transparent hover:border-base-300 hover:bg-base-200/60 text-base-content/80 hover:text-base-content"
                 }`}
               >
                 {pickerMode ? (
@@ -522,13 +529,15 @@ export function PageSelector({
         ) : null}
       </EditorListPicker>
 
-      {!pickerMode ? (
-        <PageSettingsModal
-          isOpen={settingsPageId !== null}
-          onClose={() => setSettingsPageId(null)}
-          pageId={settingsPageId}
-          extraTabs={pageSettingsExtraTabs}
-        />
+      {!pickerMode && settingsPageId !== null ? (
+        <Suspense fallback={null}>
+          <PageSettingsModal
+            isOpen
+            onClose={() => setSettingsPageId(null)}
+            pageId={settingsPageId}
+            extraTabs={pageSettingsExtraTabs}
+          />
+        </Suspense>
       ) : null}
     </>
   );

@@ -1,3 +1,4 @@
+import { getStateValue } from "../stateRegistry";
 import type {
   Condition,
   ConditionBranch,
@@ -110,6 +111,35 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
       if (!ctx.auth) return null;
       const val = walkPath(ctx.auth, cond.key.split("."));
       return applyOperator(val == null ? null : String(val), cond.operator, cond.value);
+    }
+
+    case "localStorage": {
+      // Browser-only — SSR / static eval can't see the visitor's storage,
+      // return null so the caller treats it as indeterminate (matches how
+      // url-param works without `urlParams`).
+      if (typeof window === "undefined") return null;
+      let val: string | null = null;
+      try {
+        val = window.localStorage.getItem(cond.key);
+      } catch {
+        // Private mode / quota — treat as not-set so banners still appear.
+        val = null;
+      }
+      return applyOperator(val, cond.operator, cond.value);
+    }
+
+    case "state": {
+      // Module-singleton read — registry is the same across SSR/client. On
+      // the server the registry is empty until `seedFromWindow()` runs in
+      // the client. For exists/not-exists the answer is unambiguous even
+      // when unset (matches how the `item` branch handles missing keys).
+      const val = getStateValue(cond.key);
+      if (val === undefined) {
+        if (cond.operator === "not-exists") return true;
+        if (cond.operator === "exists") return false;
+        return null;
+      }
+      return applyOperator(val, cond.operator, cond.value);
     }
 
     case "item": {

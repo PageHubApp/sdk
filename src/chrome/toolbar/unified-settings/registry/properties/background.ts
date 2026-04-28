@@ -22,7 +22,8 @@ export const backgroundProperties: PropertyDef[] = [
     label: "Image",
     section: "background",
     keywords: ["image", "photo", "picture", "url", "background"],
-    input: { type: "custom", component: "BackgroundSettingsInput" },
+    input: { type: "custom", component: "BackgroundImageInput" },
+    isActive: (_cls, props) => !!props?.background?.image,
     sortOrder: 10,
   },
   {

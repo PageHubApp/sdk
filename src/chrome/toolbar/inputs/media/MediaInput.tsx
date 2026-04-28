@@ -1,15 +1,23 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { useState } from "react";
+import { useAtomValue } from "@zedux/react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
-import { getMediaById, getMediaContent, registerMediaWithBackground } from "@/utils/lib";
+import { getMediaById, getMediaContent, registerMediaWithBackground, SideBarAtom } from "@/utils/lib";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
-import { MediaManagerModal } from "./MediaManagerModal";
 import { getMediaKind } from "./utils/media-helpers";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
 import { MiniPreviewTile } from "../../../primitives/MiniPreviewTile";
+import { PopoverChip } from "../../../primitives/PopoverChip";
+import type { MediaKind } from "./utils/media-helpers";
+
+const POPOVER_PANEL_WIDTH = 480;
+
+const MediaManagerModalLazy = lazy(() =>
+  import("./MediaManagerModal").then(m => ({ default: m.MediaManagerModal }))
+);
 
 /** Read a value by dot-path (e.g. "background.image") from an object. */
 function getPath(obj: any, path: string): any {
@@ -33,7 +41,39 @@ function setPath(obj: any, path: string, value: any): void {
   cursor[segs[segs.length - 1]] = value;
 }
 
-export const MediaInput = propa => {
+interface MediaInputProps {
+  propKey: string;
+  typeKey: string;
+  contentKey?: string;
+  title?: string;
+  showObjectProperties?: boolean;
+  kindFilter?: MediaKind;
+  /** Value written to `typeKey` on clear (and as the fallback when a
+   *  selected item has no `type`). Defaults to "cdn" — Image's expected
+   *  reset state. Video passes "r2" so clear doesn't stomp `provider` to
+   *  an invalid value. */
+  defaultTypeValue?: string;
+  collapsible?: boolean;
+  /**
+   * Layout shape:
+   *  - "full" (default) — preview tile + dashed Browse button + optional
+   *    Object Properties body. Used by component main tabs that own the
+   *    entire panel surface.
+   *  - "chip" — single-row PopoverChip (preview when set, "Add..." empty),
+   *    click opens picker. Matches Pattern / Gradient row shape. Caller is
+   *    responsible for any Object Properties / URL editing — chip is just
+   *    the picker.
+   */
+  variant?: "full" | "chip";
+  /** Optional row label rendered to the left of the chip (chip variant
+   *  only). Falls back to no gutter when absent. */
+  label?: string;
+  /** Existing prop kept for back-compat with the full variant's
+   *  ToolbarSection title; chip variant prefers `label`. */
+  props?: any;
+}
+
+export const MediaInput = (propa: MediaInputProps) => {
   const props = { ...propa };
   const { props: nodeProps, id: componentId } = useNode(node => ({
     props: node.data?.props,
@@ -53,14 +93,28 @@ export const MediaInput = propa => {
     title = "Media",
     showObjectProperties = true,
     kindFilter,
-    /** Value written to `typeKey` on clear (and as the fallback when a
-     *  selected item has no `type`). Defaults to "cdn" — Image's expected
-     *  reset state. Video passes "r2" so clear doesn't stomp `provider` to
-     *  an invalid value. */
     defaultTypeValue = "cdn",
+    variant = "full",
+    label,
   } = props;
 
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [popoverInitialPos, setPopoverInitialPos] = useState<
+    { x: number; y: number } | undefined
+  >();
+  const sidebarLeft = useAtomValue(SideBarAtom);
+
+  const openChipBrowser = () => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (rect) {
+      const x = sidebarLeft ? rect.right + 8 : rect.left - POPOVER_PANEL_WIDTH - 8;
+      setPopoverInitialPos({ x: Math.max(8, x), y: Math.max(8, rect.top) });
+    } else {
+      setPopoverInitialPos(undefined);
+    }
+    setShowMediaBrowser(true);
+  };
 
   const handleBrowseSelect = (selectedMediaId: string) => {
     if (!selectedMediaId) return;
@@ -99,7 +153,7 @@ export const MediaInput = propa => {
   const svgContent = isSvg ? selectedMedia?.metadata?.svg : null;
 
   // For preview, use optimized size for CDN images
-  let imageUrl = null;
+  let imageUrl: string | null = null;
   if (hasMedia && !isSvg) {
     if (selectedMedia?.type === "cdn") {
       const cdnId = selectedMedia.cdnId || selectedMedia.id;
@@ -114,6 +168,7 @@ export const MediaInput = propa => {
 
   const selectedKind = selectedMedia ? getMediaKind(selectedMedia) : null;
   const isVideoPreview = selectedKind === "video" && !!imageUrl;
+  const hasPreview = !!(svgContent || imageUrl);
 
   const handleClear = () => {
     setProp(_props => {
@@ -134,6 +189,69 @@ export const MediaInput = propa => {
     });
   };
 
+  const renderBrowser = () =>
+    showMediaBrowser ? (
+      <Suspense fallback={null}>
+        <MediaManagerModalLazy
+          isOpen
+          onClose={() => setShowMediaBrowser(false)}
+          onSelect={handleBrowseSelect}
+          selectionMode
+          kindFilter={kindFilter}
+        />
+      </Suspense>
+    ) : null;
+
+  // ── Chip variant ──────────────────────────────────────────────────────
+  if (variant === "chip") {
+    const previewLeading = hasPreview ? (
+      svgContent ? (
+        <span
+          className="text-base-content absolute inset-0 flex items-center justify-center [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
+          dangerouslySetInnerHTML={{ __html: svgContent }}
+          aria-hidden
+        />
+      ) : isVideoPreview ? (
+        <video
+          src={imageUrl ?? undefined}
+          className="absolute inset-0 size-full object-cover"
+          preload="metadata"
+          muted
+          playsInline
+        />
+      ) : (
+        <span
+          className="absolute inset-0 bg-cover bg-center"
+          style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
+          aria-hidden
+        />
+      )
+    ) : (
+      <TbPhoto className="size-3.5" aria-hidden />
+    );
+
+    return (
+      <div className="flex items-center gap-0.5">
+        {label ? (
+          <span className="text-base-content w-20 shrink-0 truncate text-xs">{label}</span>
+        ) : null}
+        <PopoverChip
+          ref={triggerRef}
+          open={showMediaBrowser}
+          onTriggerClick={openChipBrowser}
+          onClear={handleClear}
+          triggerAriaLabel={hasPreview ? "Change media" : "Add media"}
+          clearAriaLabel="Clear media"
+          variant={hasPreview ? "preview" : "default"}
+          leading={previewLeading}
+          summary={hasPreview ? null : "Add..."}
+        />
+        {renderBrowser()}
+      </div>
+    );
+  }
+
+  // ── Full variant (existing behavior) ──────────────────────────────────
   const body = (
     <>
       <div className="space-y-2">
@@ -148,7 +266,7 @@ export const MediaInput = propa => {
                 />
               ) : isVideoPreview ? (
                 <video
-                  src={imageUrl}
+                  src={imageUrl ?? undefined}
                   className="size-full rounded-lg object-cover"
                   preload="metadata"
                   muted
@@ -216,13 +334,7 @@ export const MediaInput = propa => {
         </ToolbarSection>
       )}
 
-      <MediaManagerModal
-        isOpen={showMediaBrowser}
-        onClose={() => setShowMediaBrowser(false)}
-        onSelect={handleBrowseSelect}
-        selectionMode={true}
-        kindFilter={kindFilter}
-      />
+      {renderBrowser()}
     </>
   );
 

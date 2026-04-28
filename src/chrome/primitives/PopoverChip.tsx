@@ -14,7 +14,13 @@
  * - preview — `leading` takes the full chip body (Gradient swatch). Summary
  *   is rendered as an optional pill overlay via `previewOverlay`.
  */
-import { forwardRef } from "react";
+import { useAtomState } from "@zedux/react";
+import { forwardRef, useCallback } from "react";
+import {
+  SessionAddedAtom,
+  sessionKey,
+} from "../toolbar/unified-settings/sessionAddedAtom";
+import { useProperty } from "../toolbar/unified-settings/propertyContext";
 import { InlineClearButton } from "./InlineClearButton";
 import { ToolbarRowFrame } from "./ToolbarRowFrame";
 
@@ -56,13 +62,25 @@ export const PopoverChip = forwardRef<HTMLButtonElement, PopoverChipProps>(funct
   },
   ref
 ) {
+  const property = useProperty();
+  const [, setSessionAdded] = useAtomState(SessionAddedAtom);
+  const handleClear = useCallback(() => {
+    onClear();
+    if (property) {
+      setSessionAdded(prev => {
+        const next = new Set(prev);
+        next.add(sessionKey(property.nodeId, property.propId));
+        return next;
+      });
+    }
+  }, [onClear, property, setSessionAdded]);
   return (
     <ToolbarRowFrame
       open={open}
       trailing={
         <>
           {trailingExtras}
-          <InlineClearButton onClick={onClear} tooltip={clearAriaLabel} />
+          <InlineClearButton onClick={handleClear} tooltip={clearAriaLabel} />
         </>
       }
     >
@@ -92,7 +110,7 @@ export const PopoverChip = forwardRef<HTMLButtonElement, PopoverChipProps>(funct
               {leading}
             </span>
           ) : null}
-          <span className="text-base-content flex-1 truncate">{summary}</span>
+          <span className="text-base-content min-w-0 flex-1 truncate">{summary}</span>
         </button>
       )}
     </ToolbarRowFrame>

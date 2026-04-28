@@ -32,6 +32,7 @@ const ITEMS: SearchableMenuItem<ConditionType>[] = [
   { id: "company", label: "Company Variable", data: "company" },
   { id: "device", label: "Device / Viewport", data: "device" },
   { id: "auth", label: "Auth Status", data: "auth" },
+  { id: "localStorage", label: "Local Storage", data: "localStorage" },
 ];
 
 // Body's def id — picker dispatches an open-request keyed by this so the

@@ -1,11 +1,18 @@
 import { useAtomValue } from "@zedux/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { TbCategory } from "react-icons/tb";
 import { ComponentsAtom } from "../../utils/lib";
-import { NAV_EXTRA_PRESETS, COMPONENT_EXTRA_PRESETS } from "../../components/definitions";
 import { useCustomComponents } from "../../define";
-import { usePanelUrl } from "../../utils/usePanelUrl";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout";
-import { buildCustomToolboxEntries, buildExtraPresetEntries } from "./toolbox/customComponents";
+import {
+  FilterDropdown,
+  PanelBody,
+  PanelHeaderRow,
+  PanelScrollSpacer,
+  SearchInput,
+} from "@/chrome/primitives";
+import { usePanelSearch } from "@/chrome/hooks";
+import { buildCustomToolboxEntries } from "./toolbox/customComponents";
 import { SavedComponentsToolbox } from "./toolbox/savedComponents";
 
 // All built-in components now served via defineComponent() toolbox categories.
@@ -28,28 +35,32 @@ export const ComponentSettings = () => {
   const { toolboxCategories } = useCustomComponents();
   const [list, setList] = useState(baseItems);
 
-  const { state: params, enterSearchMode, update: panelUpdate } = usePanelUrl();
+  const {
+    value: search,
+    focusRef,
+    onChange: handleSearchChange,
+  } = usePanelSearch({ minLength: 1 });
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [categoryOpen, setCategoryOpen] = useState(false);
 
-  const [search, setSearch] = useState(params.q ?? null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  // Build toolbox entries from defineComponent() definitions.
-  // Flatten all presets into individual content items for the grid.
+  // Flatten all presets across all defs into per-preset entries tagged with
+  // their target toolbox category (`preset.category ?? def.category`).
   const customItems = useMemo(() => {
-    if (!toolboxCategories?.length) return [];
-    return toolboxCategories.map(cat => ({
-      title: cat.title,
-      content: cat.content.flatMap(def => buildCustomToolboxEntries(def)),
-    }));
+    if (!toolboxCategories?.length) return [] as { title: string; content: any[] }[];
+    const buckets = new Map<string, any[]>();
+    for (const cat of toolboxCategories) {
+      for (const def of cat.content) {
+        for (const { category, entry } of buildCustomToolboxEntries(def)) {
+          if (!buckets.has(category)) buckets.set(category, []);
+          buckets.get(category)!.push(entry);
+        }
+      }
+    }
+    return Array.from(buckets.entries()).map(([title, content]) => ({ title, content }));
   }, [toolboxCategories]);
 
-  // Nav extra presets (Social Nav, Plain Nav, etc.) — ButtonList-based, not Nav-based.
-  // Built once and injected into the Navigation category.
-  const navExtras = useMemo(() => buildExtraPresetEntries(NAV_EXTRA_PRESETS), []);
-  const componentExtras = useMemo(() => buildExtraPresetEntries(COMPONENT_EXTRA_PRESETS), []);
-
-  // Merge defineComponent categories into matching base categories,
-  // or append as new categories if no match. Then add saved components.
+  // Merge categorized entries into base categories; append new categories
+  // (e.g. host-defined ones) as needed.
   const items = useMemo(() => {
     const merged = baseItems.map(item => ({ ...item, content: [...item.content] }));
 
@@ -63,63 +74,22 @@ export const ComponentSettings = () => {
       }
     }
 
-    // Inject Nav extra presets (ButtonList-based nav variants) into Navigation
-    const navCategory = merged.find(item => item.title === "Navigation");
-    if (navCategory) {
-      navCategory.content.push(...navExtras);
-    }
-
-    // Inject Component extra presets (Badge, Avatar, Alert — Container-based) into Components
-    const compCategory = merged.find(item => item.title === "Components");
-    if (compCategory) {
-      compCategory.content.push(...componentExtras);
-    }
-
     if (components?.filter(component => !component.isSection)?.length) {
       merged.push(SavedComponentsToolbox(components));
     }
 
     return merged;
-  }, [components, customItems, navExtras]);
-
-  const focusRef = useRef<HTMLInputElement>(null);
+  }, [components, customItems]);
 
   useEffect(() => {
-    const time = setTimeout(() => focusRef?.current?.focus(), 50);
-    return () => clearTimeout(time);
-  }, [focusRef]);
+    const scoped = categoryFilter
+      ? items.filter(item => item.title === categoryFilter)
+      : items;
 
-  // Sync search input from URL params (e.g. on popstate/back)
-  useEffect(() => {
-    setSearch(params.q ?? null);
-  }, [params.q]);
-
-  // Debounce search input → URL param
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearch(value || null);
-
-      if (value.trim().length >= 1) {
-        enterSearchMode();
-      }
-
-      clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        if (value.trim().length >= 1) {
-          panelUpdate({ q: value });
-        } else {
-          panelUpdate({ q: null });
-        }
-      }, 300);
-    },
-    [enterSearchMode, panelUpdate]
-  );
-
-  useEffect(() => {
     if (search) {
       const searchTerm = search.toLowerCase();
       setList(
-        items
+        scoped
           .map(item => {
             const title = item.title.toString().toLowerCase() || "";
 
@@ -152,30 +122,45 @@ export const ComponentSettings = () => {
       return;
     }
 
-    setList(items);
-  }, [search, items]);
+    setList(scoped);
+  }, [search, items, categoryFilter]);
+
+  const categoryItems = useMemo(
+    () =>
+      items
+        .filter(item => item.content.length > 0 && !item.title.startsWith("__"))
+        .map(item => ({ name: item.title, count: item.content.length })),
+    [items],
+  );
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      <form
-        onSubmit={e => {
-          const form = e.currentTarget;
-          const input = form.querySelector("input[type=text]") as HTMLInputElement | null;
-          if (input) setSearch(input.value);
-          e.preventDefault();
-        }}
-      >
-        <div className="border-base-300 bg-base-100 flex gap-1.5 border-b p-3">
-          <input
-            type="text"
-            placeholder="Search Components"
-            className="input-transparent"
-            ref={focusRef}
-            value={search ?? ""}
-            onChange={e => handleSearchChange(e.target.value)}
+    <PanelBody>
+      <PanelHeaderRow>
+        <SearchInput
+          ref={focusRef}
+          value={search}
+          onChange={handleSearchChange}
+          placeholder="Search components..."
+          size="slim"
+        />
+        {categoryItems.length > 0 && (
+          <FilterDropdown
+            label="Category"
+            icon={TbCategory}
+            activeValue={categoryFilter}
+            isOpen={categoryOpen}
+            onToggle={() => setCategoryOpen(!categoryOpen)}
+            onClose={() => setCategoryOpen(false)}
+            onClear={() => setCategoryFilter(null)}
+            items={categoryItems}
+            activeKey={categoryFilter}
+            onSelect={name => {
+              setCategoryFilter(name);
+              setCategoryOpen(false);
+            }}
           />
-        </div>
-      </form>
+        )}
+      </PanelHeaderRow>
       <AutoHideScrollbar className="flex-1">
         {list?.map((a, k) => (
           <div key={k} className="border-base-300">
@@ -188,8 +173,8 @@ export const ComponentSettings = () => {
             </div>
           </div>
         ))}
-        <div className="shrink-0" style={{ minHeight: "70vh" }} />
+        <PanelScrollSpacer />
       </AutoHideScrollbar>
-    </div>
+    </PanelBody>
   );
 };

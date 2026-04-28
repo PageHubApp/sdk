@@ -30,11 +30,13 @@ function collectModifierClassTokens(query: any, nodeId: string): Set<string> {
       ((node?.data?.type as any)?.craft?.toolbar?.modifiers as ComponentModifier[] | undefined) ||
       [];
     for (const m of builtins) {
+      // BOTH the literal name and the expanded classes count as "active token"
+      // markers — matches per-chip isActive in useModifiers.ts (a className with
+      // the bare modifier name OR with all expanded classes is considered active).
       if (m.classes) {
         for (const c of m.classes.split(/\s+/)) if (c) out.add(c);
-      } else if (m.name) {
-        out.add(m.name);
       }
+      if (m.name) out.add(m.name);
     }
     // Site-level custom modifiers live on ROOT, keyed by component type name.
     const rootProps = query.node(ROOT_NODE).get()?.data?.props;
@@ -47,9 +49,8 @@ function collectModifierClassTokens(query: any, nodeId: string): Set<string> {
       for (const m of siteForType) {
         if (m.classes) {
           for (const c of m.classes.split(/\s+/)) if (c) out.add(c);
-        } else if (m.name) {
-          out.add(m.name);
         }
+        if (m.name) out.add(m.name);
       }
     }
   } catch {

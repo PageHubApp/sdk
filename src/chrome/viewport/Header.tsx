@@ -70,8 +70,11 @@ import { ComponentSelector } from "./ComponentSelector";
 import { EditorNavigation } from "./EditorNavigation";
 
 import { NodeBreadcrumb } from "./NodeBreadcrumb";
-import { SiteSettingsModal } from "./SiteSettingsModal";
 import { ChipPopover } from "../toolbar/breakpoint-chip/ChipPopover";
+
+const SiteSettingsModal = lazy(() =>
+  import("./SiteSettingsModal").then(m => ({ default: m.SiteSettingsModal }))
+);
 
 import { useSDK } from "../../core/context";
 import type { ViewMode as CanvasViewMode } from "../../core/store";
@@ -769,11 +772,15 @@ export const Header = () => {
         </Suspense>
       )}
 
-      <SiteSettingsModal
-        isOpen={isSiteSettingsModalOpen}
-        onClose={() => setIsSiteSettingsModalOpen(false)}
-        extraTabs={siteSettingsExtraTabs}
-      />
+      {isSiteSettingsModalOpen && (
+        <Suspense fallback={null}>
+          <SiteSettingsModal
+            isOpen
+            onClose={() => setIsSiteSettingsModalOpen(false)}
+            extraTabs={siteSettingsExtraTabs}
+          />
+        </Suspense>
+      )}
 
       {isModifiersModalOpen && (
         <Suspense fallback={null}>

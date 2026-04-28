@@ -4,17 +4,22 @@ import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
 import { TbPointer } from "react-icons/tb";
 import { Button as UiButton } from "@pagehub/ui";
+import { ROOT_NODE } from "@craftjs/utils";
 import { addActionHandlers, addCustomHandlers } from "../utils/clickControls";
+import { useShowHideVersion } from "../utils/showHideStore";
+import { applyStateModifiers } from "../utils/conditions/stateModifiers";
+import { buildClientContext } from "../utils/conditions/context";
 import { useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
 import { useSDKSafe } from "../core/context";
 import {
-  migrateAction,
+  migrateActions,
   actionToHref,
   actionTarget,
   isLinkAction,
   isHandlerAction,
   isAnchorAction,
+  findLinkAction,
   type NodeAction,
 } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -46,9 +51,8 @@ export interface ButtonProps extends BaseSelectorProps {
   icon?: IconProps;
   url?: string;
   type?: string;
-  action?: NodeAction;
-  click?: any; // Legacy — handled by migrateAction()
-  defaultActive?: boolean;
+  action?: NodeAction | NodeAction[];
+  click?: any; // Legacy — handled by migrateActions()
 }
 
 const defaultIcon = {
@@ -122,9 +126,29 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     return () => document.removeEventListener("pagehub:variable-changed", handler);
   }, [hasVariables]);
 
+  // Subscribe to global state changes so author bindings rerender on state writes.
+  useShowHideVersion();
+
+  let baseClassName = props.className || "";
+  if (Array.isArray(props.stateModifiers) && props.stateModifiers.length > 0) {
+    let rootProps: any = null;
+    try {
+      rootProps = query.node(ROOT_NODE).get()?.data?.props ?? null;
+    } catch {
+      /* root may be unavailable in isolated previews */
+    }
+    baseClassName = applyStateModifiers(
+      baseClassName,
+      props.stateModifiers,
+      buildClientContext(rootProps, itemContext),
+      "Button",
+      rootProps
+    );
+  }
+
   const prop: any = {
     ref: r => connect(drag(r)),
-    className: props.className || "",
+    className: baseClassName,
   };
 
   // Auto-apply flex layout when icon is present so icon+text sit inline.
@@ -146,15 +170,15 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     }
   }
 
-  // Resolve action to href (handles link-url, link-page, email, phone, scroll-to)
-  const action = migrateAction(props);
-  const rawUrl = actionToHref(action, query, router?.asPath);
+  // Resolve actions; first link in the chain drives the visible <a href>.
+  const actions = migrateActions(props);
+  const firstLink = findLinkAction(actions);
+  const rawUrl = actionToHref(firstLink, query, router?.asPath);
   let resolvedUrl = rawUrl ? replaceVariables(rawUrl, query, itemContext) : rawUrl;
-  // If variable interpolation produced a ref: page link (e.g. ternary), resolve it now
   if (resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("ref:")) {
     resolvedUrl = resolvePageRef(resolvedUrl, query, router?.asPath);
   }
-  const target = actionTarget(action);
+  const target = actionTarget(firstLink);
 
   const isInternalLink =
     resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
@@ -206,28 +230,32 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   applyAriaProps(prop, props);
 
-  // Attach JS handlers for open-modal, show-hide, scroll-to (anchor), add-to-cart.
-  // show-hide method is honored — class-based hide survives React rerenders
-  // because show-hide writes to a reactive store and Container reads it back
-  // when computing className. See utils/showHideStore.ts.
-  const actionCtx = { itemContext, onAddToCart: sdk?.config.callbacks?.onAddToCart };
-  if (isHandlerAction(action)) {
-    addActionHandlers(prop, action, enabled, actionCtx);
-  } else if (isAnchorAction(action)) {
-    addActionHandlers(prop, action, enabled, actionCtx);
+  // Attach JS handlers for the action chain. Skip the JS hop for the cheap
+  // single-non-anchor-link case — `<a href>` lets the browser navigate
+  // natively. Multi-action chains, anchor links, and any handler-action
+  // (modal/cart/show-hide/etc.) all route through `addActionHandlers`,
+  // which composes one onClick that fires every entry in array order.
+  const actionCtx = {
+    itemContext,
+    onAddToCart: sdk?.config.callbacks?.onAddToCart,
+    resolvedLinkHref: typeof resolvedUrl === "string" ? resolvedUrl : null,
+  };
+  const needsJsDispatch =
+    actions.length > 1 ||
+    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
+    // Single non-anchor link with no other actions → browser handles it.
+    (actions.length === 1 && !isLinkAction(actions[0]));
+  if (needsJsDispatch) {
+    addActionHandlers(prop, actions, enabled, actionCtx);
   }
 
   addCustomHandlers(prop, props.handlers, enabled);
 
-  // Stamp data-action for runtime discovery (e.g. CartProvider badge injection on toggle-cart)
-  if (action?.type && !enabled) {
-    prop["data-action"] = action.type;
-  }
-
-  // Tab button: mark with data attribute for active state tracking
-  if (action?.type === "show-hide" && action.direction === "tab") {
-    prop["data-tab-button"] = "true";
-    prop["data-tab-active"] = props.defaultActive === true ? "true" : "false";
+  // Stamp data-action for runtime discovery (e.g. CartProvider badge injection
+  // on toggle-cart). Whitespace-separated for multi-action chains so attribute
+  // word-match selectors (`[data-action~='toggle-cart']`) still resolve.
+  if (actions.length > 0 && !enabled) {
+    prop["data-action"] = actions.map(a => a.type).join(" ");
   }
 
   if (enabled) {

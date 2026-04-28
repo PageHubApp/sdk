@@ -1,15 +1,18 @@
 import { TbSection } from "react-icons/tb";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
-import { BackgroundSettingsInput } from "../../inputs/color/BackgroundSettingsInput";
 import { LayoutPresetInput } from "../../inputs/layout/LayoutPresetInput";
 import { useLayoutPreset } from "../../inputs/layout/hooks/useLayoutPreset";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useGetNode } from "../../dialogs/toolHooks";
 import { renderComponentSlots } from "../helpers";
+import { PropertyRow } from "../PropertyRenderer";
+import { backgroundProperties } from "../registry/properties/background";
 
 import { useNodeTypeHelpers } from "@/chrome/canvas/hooks/useNodeType";
 import { useEditor } from "@craftjs/core";
+
+const bgImageDef = backgroundProperties.find(p => p.id === "bgImage")!;
 
 export const HeaderFooterToggles = () => {
   const { isHeader, isFooter, isPage, isComponent } = useNodeTypeHelpers();
@@ -79,7 +82,11 @@ export const ContainerMainTab = () => {
         Content: (
           <ToolbarSection collapsible={false}>
             <SettingsAiSlot />
-            <BackgroundSettingsInput />
+            {/* Render through registry so the popover trigger lazy-loads via
+                customInputs.tsx (chip skeleton fallback) — same pipeline the
+                Design tab Background section uses. Direct imports would
+                bypass code-splitting + Suspense. */}
+            <PropertyRow def={bgImageDef} />
           </ToolbarSection>
         ),
         Type: <LayoutPresetInput lp={layoutPreset} />,

@@ -162,7 +162,11 @@ export function BasicTab({
         </div>
       </SettingsFormCard>
 
-      <SettingsFormCard title="Danger zone" className="border-error/25 bg-error/5">
+      <SettingsFormCard
+        title="Danger zone"
+        variant="card"
+        className="border-error/25 bg-error/5"
+      >
         <p className="text-neutral-content text-sm">
           Deleting a page cannot be undone. Linked navigation and published URLs may break.
         </p>

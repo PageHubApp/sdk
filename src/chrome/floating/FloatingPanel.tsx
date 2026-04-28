@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { TbX } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
@@ -22,6 +22,26 @@ type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 const FloatingPanelContext = React.createContext<{
   registerPortal: (node: HTMLElement | null) => () => void;
 } | null>(null);
+
+/**
+ * Drag-handle context. Exposed so panels rendered with `headerless` can wire
+ * the built-in drag handler onto a custom element (e.g. a header strip
+ * rendered inside a sidebar).
+ */
+interface FloatingPanelDragApi {
+  onMouseDown: (e: React.MouseEvent) => void;
+  isDragging: boolean;
+  onClose: () => void;
+}
+const FloatingPanelDragContext = React.createContext<FloatingPanelDragApi | null>(null);
+
+/**
+ * Returns the drag/close API for the nearest ancestor FloatingPanel. Use from
+ * inside a `headerless` panel to render your own draggable header.
+ */
+export function useFloatingPanelDrag(): FloatingPanelDragApi | null {
+  return useContext(FloatingPanelDragContext);
+}
 
 /**
  * Returns a register function that, given a portal root element, marks it as
@@ -81,25 +101,27 @@ interface FloatingPanelProps {
   minHeight?: number;
   maxHeight?: number;
   edges?: ResizeEdge[];
-  /** Persist resized size to storage. Default true. Pass false for ephemeral popovers. */
+  /** Persist resized size to storage across sessions. Default true. Pass false for ephemeral popovers that should always reopen at their starting size. */
   persistSize?: boolean;
   /**
-   * **Default true.** Width / height collapse to `fit-content` clamped by
-   * `minWidth` / `maxWidth` / `minHeight` / `maxHeight`. Resize handles and
-   * persisted size are disabled. Right for the vast majority of toolbar /
-   * sidebar popovers — small forms whose content drives layout (Calc,
-   * Condition / Action / Effect-row editors, DataAttributes, Bundle, etc.).
+   * **Default true.** Initial layout only — controls how the panel sizes
+   * itself BEFORE any user interaction.
    *
-   * Pass `autoSize={false}` to opt into a fixed pixel box with user-resize
-   * + persisted dims. Use for: large dialogs (Page / Site / Modifiers
-   * settings, Layers, Modifiers picker), grid pickers whose column count
-   * depends on width (Icon, Pattern), the SketchPicker color panel, the
-   * inline tiptap editor in Text main-tab, and any panel where the user
-   * benefits from dragging the size manually.
+   * - `true` → width / height collapse to `fit-content` clamped by
+   *   `minWidth` / `maxWidth` / `minHeight` / `maxHeight`. Right for
+   *   small toolbar / sidebar popovers whose content drives layout.
+   * - `false` → fixed pixel box at `defaultWidth` × `defaultHeight`. Use
+   *   for large dialogs / grid pickers / panels where the user benefits
+   *   from a stable starting size.
+   *
+   * **Resize is independent.** Resize handles render in BOTH modes. The
+   * first user drag (or a persisted size from a prior session) flips the
+   * panel into explicit pixel sizing — fit-content was just the starting
+   * point.
    *
    * When `autoSize` is false, `defaultWidth` and `defaultHeight` are
-   * REQUIRED. When true, both are optional and used only as a hint for
-   * initial position math (centering, dock-to-edge).
+   * REQUIRED. When true, both are optional (used as a hint for initial
+   * position math — centering, dock-to-edge).
    */
   autoSize?: boolean;
   /** Initial position — defaults to centered */
@@ -135,6 +157,13 @@ interface FloatingPanelProps {
    * UniversalInput row, so clicking the row's text input shouldn't dismiss.
    */
   ignoreOutsideClicks?: ReadonlyArray<React.RefObject<HTMLElement | null>>;
+  /**
+   * Suppress the default title-bar / drag-handle / close button. The panel
+   * still owns drag + close logic; consumers wire it up via
+   * `useFloatingPanelDrag()` and place their own header where they want
+   * (typical use: render the title + close inside a sidebar nav).
+   */
+  headerless?: boolean;
   children: React.ReactNode;
 }
 
@@ -163,6 +192,7 @@ export function FloatingPanel({
   bodyClassName = "text-base-content flex flex-col gap-2 p-3 text-xs",
   ignoreOutsideClicks,
   autoSize = true,
+  headerless = false,
   children,
 }: FloatingPanelProps) {
   if (process.env.NODE_ENV !== "production" && !autoSize) {
@@ -214,6 +244,8 @@ export function FloatingPanel({
     };
   }, []);
   const ctxValue = useMemo(() => ({ registerPortal }), [registerPortal]);
+  // Drag context is built after handleMouseDown / isDragging are available
+  // (see below — useDraggableWindow is called further down).
 
   // If THIS panel is itself mounted inside another FloatingPanel (panel-on-
   // panel — e.g. ColorPanel anchored next to a parent editor panel), register
@@ -291,8 +323,10 @@ export function FloatingPanel({
     };
   }, [isOpen, onClose, windowRef, ignoreOutsideClicks]);
 
-  // When autoSize, bypass useResizable entirely — no fixed pixel dims, no
-  // resize handles, no persisted size. CSS min/max + content drives layout.
+  // `autoSize` controls INITIAL layout (fit-content vs fixed default dims).
+  // Resize is independent — handles always render. Once the user drags (or a
+  // persisted size loads), we switch from CSS-driven fit-content to explicit
+  // width/height from `useResizable`.
   const resizable = useResizable({
     storageKey,
     defaultWidth: widthHint,
@@ -302,11 +336,30 @@ export function FloatingPanel({
     minHeight,
     maxHeight: boundedMaxHeight,
     edges,
-    persist: persistSize && !autoSize,
+    persist: persistSize,
   });
-  const width = autoSize ? undefined : resizable.width;
-  const height = autoSize ? undefined : resizable.height;
-  const handleProps = autoSize ? ({} as typeof resizable.handleProps) : resizable.handleProps;
+  const [hasResized, setHasResized] = useState(resizable.hasPersistedSize);
+  useEffect(() => {
+    if (resizable.isResizing && !hasResized) setHasResized(true);
+  }, [resizable.isResizing, hasResized]);
+  // While in fit-content mode, mirror the measured DOM size into useResizable
+  // so a drag-start has the correct startWidth/startHeight.
+  const isFitContent = autoSize && !hasResized;
+  useEffect(() => {
+    if (!isOpen || !isFitContent) return;
+    const el = (windowRef as any).current as HTMLElement | null;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(entries => {
+      const rect = entries[0]?.contentRect;
+      if (!rect) return;
+      resizable.setSize({ width: rect.width, height: rect.height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isOpen, isFitContent, resizable.setSize, windowRef]);
+  const width = isFitContent ? undefined : resizable.width;
+  const height = isFitContent ? undefined : resizable.height;
+  const handleProps = resizable.handleProps;
 
   useLayoutEffect(() => {
     if (!isOpen || !dockToEdge) return;
@@ -319,14 +372,14 @@ export function FloatingPanel({
 
   useLayoutEffect(() => {
     if (!isOpen || dockToEdge) return;
-    // Skip viewport-clamp for autoSize panels — CSS max-width / max-height
-    // already cap them and there's no measured width to clamp against.
-    if (autoSize) return;
+    // Skip viewport-clamp while in fit-content — CSS max-width / max-height
+    // already cap, and there's no committed measured width to clamp against.
+    if (isFitContent) return;
     setPosition(prev => ({
       x: Math.max(0, Math.min(prev.x, Math.max(0, viewport.width - (width ?? 0)))),
       y: Math.max(0, Math.min(prev.y, Math.max(0, viewport.height - (height ?? 0)))),
     }));
-  }, [autoSize, dockToEdge, height, isOpen, setPosition, viewport.height, viewport.width, width]);
+  }, [isFitContent, dockToEdge, height, isOpen, setPosition, viewport.height, viewport.width, width]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -377,7 +430,7 @@ export function FloatingPanel({
         aria-label={title}
         className="pagehub-sdk-root ph-modal-surface pointer-events-auto fixed overflow-hidden"
         style={
-          autoSize
+          isFitContent
             ? {
                 top: position.y,
                 left: position.x,
@@ -387,48 +440,62 @@ export function FloatingPanel({
                 maxHeight: boundedMaxHeight,
                 zIndex,
               }
-            : { top: position.y, left: position.x, width, height, zIndex }
+            : {
+                top: position.y,
+                left: position.x,
+                width,
+                height,
+                minWidth,
+                maxWidth: boundedMaxWidth,
+                minHeight,
+                maxHeight: boundedMaxHeight,
+                zIndex,
+              }
         }
       >
-        {!autoSize &&
-          (edges as string[]).map(e =>
-            (handleProps as any)[e] ? <div key={e} {...(handleProps as any)[e]} /> : null
-          )}
+        {(edges as string[]).map(e =>
+          (handleProps as any)[e] ? <div key={e} {...(handleProps as any)[e]} /> : null
+        )}
 
-        <div className={autoSize ? "flex max-h-full flex-col" : "flex h-full flex-col"}>
-          {/* Header — drag handle */}
-          <div
-            role="presentation"
-            aria-hidden="true"
-            onMouseDown={handleMouseDown}
-            className={`text-base-content flex items-center justify-between px-3 py-1.5 ${
-              isDragging ? "cursor-grabbing" : "cursor-grab"
-            }`}
-          >
-            {closeButtonSide === "left" ? (
-              <>
-                <div className="flex min-w-0 items-center gap-2">
-                  {closeButton}
-                  {titleNode}
-                </div>
-                <span className="size-5" aria-hidden="true" />
-              </>
+        <FloatingPanelDragContext.Provider
+          value={{ onMouseDown: handleMouseDown, isDragging, onClose }}
+        >
+          <div className={autoSize ? "flex max-h-full flex-col" : "flex h-full flex-col"}>
+            {!headerless && (
+              <div
+                role="presentation"
+                aria-hidden="true"
+                onMouseDown={handleMouseDown}
+                className={`text-base-content flex items-center justify-between px-3 py-1.5 ${
+                  isDragging ? "cursor-grabbing" : "cursor-grab"
+                }`}
+              >
+                {closeButtonSide === "left" ? (
+                  <>
+                    <div className="flex min-w-0 items-center gap-2">
+                      {closeButton}
+                      {titleNode}
+                    </div>
+                    <span className="size-5" aria-hidden="true" />
+                  </>
+                ) : (
+                  <>
+                    {titleNode}
+                    {closeButton}
+                  </>
+                )}
+              </div>
+            )}
+
+            {scrollable ? (
+              <AutoHideScrollbar className="flex-1">
+                {bodyClassName == null ? children : <div className={bodyClassName}>{children}</div>}
+              </AutoHideScrollbar>
             ) : (
-              <>
-                {titleNode}
-                {closeButton}
-              </>
+              children
             )}
           </div>
-
-          {scrollable ? (
-            <AutoHideScrollbar className="flex-1">
-              {bodyClassName == null ? children : <div className={bodyClassName}>{children}</div>}
-            </AutoHideScrollbar>
-          ) : (
-            children
-          )}
-        </div>
+        </FloatingPanelDragContext.Provider>
       </div>
     </FloatingPanelContext.Provider>,
     document.querySelector(".pagehub-sdk-root") || document.body

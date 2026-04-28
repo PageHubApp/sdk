@@ -48,6 +48,11 @@ const CATEGORY_PRIORITY: Record<string, number> = {
 const DEFAULT_OPEN = new Set(["Pattern", "Size", "Color", "Surface", "DaisyUI Color"]);
 
 function deriveRenderType(name: string, mods: ResolvedModifier[]): ModifierRenderType {
+  // Per-modifier override wins — first non-empty hint in the group decides.
+  const hinted = mods.find(m => (m as any).renderAs)?.renderAs as
+    | ModifierRenderType
+    | undefined;
+  if (hinted) return hinted;
   if (name === "Pattern") return "patterns";
   const allExclusive = mods.length > 0 && mods.every(m => m.exclusive);
   if (allExclusive && mods.length >= 5) return "dropdown";
@@ -133,16 +138,31 @@ export function useModifiers() {
   }, [grouped]);
 
   const isActive = (mod: ResolvedModifier) => {
-    // Check tracked state first
+    // Tracked state is authoritative once expansion has run.
     if (activeModifiers.includes(mod.name)) return true;
-    // For composite modifiers, also check if all classes are present in className
+    // If we have ANY tracked active modifier in the same exclusive category,
+    // treat this one as inactive — exclusive siblings don't subset-match
+    // each other (one's expanded classes are often a subset of another's).
+    if (mod.exclusive && mod.category && activeModifiers.length > 0) {
+      // Only short-circuit if a tracked entry actually shares this category
+      const sharesCategory = allModifiers.some(
+        m =>
+          m.exclusive &&
+          m.category === mod.category &&
+          activeModifiers.includes(m.name) &&
+          m.name !== mod.name
+      );
+      if (sharesCategory) return false;
+    }
+    const current = currentClassName.split(/\s+/);
+    // Pre-expansion: the raw modifier name is still in className.
+    if (current.includes(mod.name)) return true;
+    // For composite modifiers, fall back to "all expanded classes present".
     if (mod.classes) {
       const needed = resolveClasses(mod);
-      const current = currentClassName.split(/\s+/);
       return needed.every(c => current.includes(c));
     }
-    // For single-class modifiers, check className directly
-    return currentClassName.split(/\s+/).includes(mod.name);
+    return false;
   };
 
   /** Pure toggle: takes a baseline (className + activeModifiers) and returns the post-toggle state. */

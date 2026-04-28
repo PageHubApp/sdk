@@ -24,6 +24,7 @@ import { preloadIcons } from "./utils/icons/serverResolve";
 import { buildStaticContext } from "./utils/conditions/context";
 import { evaluateConditionGroups, evaluateConditions } from "./utils/conditions/evaluate";
 import { getConditionEvalScript } from "./utils/conditions/clientScript";
+import { getLoadActionScript } from "./utils/clickControls";
 
 const TAILWIND_FONT_WEIGHT_CLASS =
   /^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/i;
@@ -618,6 +619,12 @@ export function renderToHTML(
     (needsHorizontalScroll ? PH_HORIZONTAL_SCROLL_SCRIPT : "") +
     (needsScrollTimeline ? PH_SCROLL_TIMELINE_SCRIPT : "") +
     (needsOverflowSite ? PH_OVERFLOW_SITE_SCRIPT : "") +
+    // Load-action script also bootstraps `window.__PH_STATE__` so the
+    // condition evaluator's `state` branch can read it. Emit whenever
+    // either load-actions OR client-side conditions exist.
+    (ctx.hasLoadActions || ctx.hasClientConditions
+      ? getLoadActionScript({ mobileBreakpoint: rootProps.theme?.breakpoints?.md })
+      : "") +
     (ctx.hasClientConditions
       ? getConditionEvalScript({ mobileBreakpoint: rootProps.theme?.breakpoints?.md })
       : "");

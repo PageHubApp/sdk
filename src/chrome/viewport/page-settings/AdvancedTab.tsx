@@ -1,32 +1,19 @@
 import React, { useState } from "react";
-import { ToolbarDashedButton } from "../../toolbar/helpers/ToolbarDashedButton";
 import {
   SettingsFormCard,
   SettingsFormField,
   SettingsTabIntro,
   settingsTabRootClass,
 } from "../settings/SettingsTabChrome";
-import { settingsMultilineInputClass } from "../settings/settingsControlClasses";
-
-interface ThemeOverride {
-  varName: string;
-  value: string;
-}
 
 interface AdvancedTabProps {
   inputClass: string;
   canonicalUrl: string;
   setCanonicalUrl: (v: string) => void;
-  headCode: string;
-  setHeadCode: (v: string) => void;
   bodyClass: string;
   setBodyClass: (v: string) => void;
-  jsonLd: string;
-  setJsonLd: (v: string) => void;
   pagePassword: string;
   setPagePassword: (v: string) => void;
-  themeOverrides: ThemeOverride[];
-  setThemeOverrides: (v: ThemeOverride[]) => void;
 }
 
 /** SHA-256 hash via Web Crypto API — runs in browser only */
@@ -44,19 +31,12 @@ export function AdvancedTab({
   inputClass,
   canonicalUrl,
   setCanonicalUrl,
-  headCode,
-  setHeadCode,
   bodyClass,
   setBodyClass,
-  jsonLd,
-  setJsonLd,
   pagePassword,
   setPagePassword,
-  themeOverrides,
-  setThemeOverrides,
 }: AdvancedTabProps) {
   const [rawPassword, setRawPassword] = useState("");
-  const multiline = settingsMultilineInputClass(inputClass);
 
   const handlePasswordSet = async () => {
     if (!rawPassword.trim()) {
@@ -73,25 +53,11 @@ export function AdvancedTab({
     setRawPassword("");
   };
 
-  const addOverride = () => {
-    setThemeOverrides([...themeOverrides, { varName: "", value: "" }]);
-  };
-
-  const updateOverride = (index: number, field: "varName" | "value", val: string) => {
-    const next = [...themeOverrides];
-    next[index] = { ...next[index], [field]: val };
-    setThemeOverrides(next);
-  };
-
-  const removeOverride = (index: number) => {
-    setThemeOverrides(themeOverrides.filter((_, i) => i !== index));
-  };
-
   return (
     <div className={settingsTabRootClass}>
       <SettingsTabIntro
         title="Advanced"
-        description="Canonical URL, per-page head snippets, body class, JSON-LD, optional password hash, and CSS variable overrides."
+        description="Canonical URL, body class, and password protection. Custom head code, JSON-LD schema, and theme overrides each have their own tab."
       />
 
       <SettingsFormCard title="URLs and body">
@@ -122,46 +88,6 @@ export function AdvancedTab({
             onChange={e => setBodyClass(e.target.value)}
             className={`${inputClass} ${mono}`}
             placeholder="e.g. dark overflow-hidden"
-          />
-        </SettingsFormField>
-      </SettingsFormCard>
-
-      <SettingsFormCard title="Head and structured data">
-        <SettingsFormField
-          label="Custom head code"
-          htmlFor="head-code"
-          hint="HTML injected into <head> for this page only."
-        >
-          <textarea
-            id="head-code"
-            value={headCode}
-            onChange={e => setHeadCode(e.target.value)}
-            className={`${multiline} ${mono}`}
-            rows={6}
-            placeholder={'<script>…</script>\n<link rel="stylesheet" href="…">'}
-          />
-        </SettingsFormField>
-
-        <SettingsFormField
-          label="JSON-LD"
-          htmlFor="json-ld"
-          hint={
-            <>
-              Injected as{" "}
-              <code className="bg-base-300/60 rounded px-1 py-0.5 text-[11px]">
-                &lt;script type=&quot;application/ld+json&quot;&gt;
-              </code>
-              .
-            </>
-          }
-        >
-          <textarea
-            id="json-ld"
-            value={jsonLd}
-            onChange={e => setJsonLd(e.target.value)}
-            className={`${multiline} ${mono}`}
-            rows={8}
-            placeholder={'{\n  "@context": "https://schema.org",\n  "@type": "WebPage"\n}'}
           />
         </SettingsFormField>
       </SettingsFormCard>
@@ -206,43 +132,6 @@ export function AdvancedTab({
         <p className="text-neutral-content text-xs">
           Only a SHA-256 hash is stored — not the raw password.
         </p>
-      </SettingsFormCard>
-
-      <SettingsFormCard title="Theme overrides">
-        <p className="text-neutral-content text-sm">
-          Override design tokens for this page only. Use CSS variable names without the leading{" "}
-          <code className="font-mono text-xs">--</code>.
-        </p>
-        <div className="space-y-2">
-          {themeOverrides.map((override, i) => (
-            <div key={i} className="flex flex-wrap items-center gap-2">
-              <span className="text-neutral-content font-mono text-xs">--</span>
-              <input
-                type="text"
-                value={override.varName}
-                onChange={e => updateOverride(i, "varName", e.target.value)}
-                className={`${inputClass} w-32 shrink-0 ${mono} py-2`}
-                placeholder="var-name"
-              />
-              <input
-                type="text"
-                value={override.value}
-                onChange={e => updateOverride(i, "value", e.target.value)}
-                className={`${inputClass} min-w-0 flex-1 ${mono} py-2`}
-                placeholder="#fff or 1rem"
-              />
-              <button
-                type="button"
-                onClick={() => removeOverride(i)}
-                className="text-neutral-content hover:bg-error/15 hover:text-error shrink-0 rounded-lg px-2 py-1 text-sm"
-                aria-label="Remove override"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-          <ToolbarDashedButton onClick={addOverride}>Add override</ToolbarDashedButton>
-        </div>
       </SettingsFormCard>
     </div>
   );

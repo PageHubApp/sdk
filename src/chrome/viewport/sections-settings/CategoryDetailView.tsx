@@ -5,7 +5,6 @@ import {
   TbArrowLeft,
   TbChevronLeft,
   TbChevronRight,
-  TbLoader2,
   TbPalette,
 } from "react-icons/tb";
 import { SectionPickerDialogAtom } from "../../../utils/atoms";
@@ -14,8 +13,9 @@ import type { BlockCategory } from "../../../utils/useBlockCategories";
 import { useCategoryBlocks, type BlockItem } from "../../../utils/useCategoryBlocks";
 import { useInsertTarget } from "../../hooks/useInsertTarget";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout";
+import { FilterDropdown, PanelHeaderRow, PanelLoadingState } from "@/chrome/primitives";
 import { AddElement } from "../toolbox/toolboxUtils";
-import { BlockPreviewCard, BlockQuickLook, FilterDropdown } from "./components";
+import { BlockPreviewCard, BlockQuickLook } from "./components";
 import { buildElementFromStructure } from "./blockHelpers";
 
 const PAGE_SIZE = 6;
@@ -189,7 +189,7 @@ export function CategoryDetailView({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-base-300 flex items-center gap-2 border-b px-3 py-4">
+      <PanelHeaderRow>
         <button
           onClick={onBack}
           className="hover:bg-neutral cursor-pointer rounded-md p-1 transition-colors"
@@ -244,13 +244,11 @@ export function CategoryDetailView({
             }}
           />
         )}
-      </div>
+      </PanelHeaderRow>
 
       {/* Block list */}
       {isLoading ? (
-        <div className="flex flex-1 items-center justify-center">
-          <TbLoader2 className="text-neutral-content size-5 animate-spin" />
-        </div>
+        <PanelLoadingState fill />
       ) : (
         <AutoHideScrollbar className="flex-1">
           <div

@@ -133,7 +133,7 @@ const DAISYUI_MAP: Record<string, string> = {
   textarea: "w-full rounded-lg border border-base-300 p-3",
   select: "w-full rounded-lg border border-base-300 px-3 py-2 appearance-none",
 
-  // Collapse / Accordion
+  // Collapse
   collapse: "rounded-lg overflow-hidden",
   "collapse-title": "font-medium cursor-pointer px-4 py-3",
   "collapse-content": "px-4 pb-3",

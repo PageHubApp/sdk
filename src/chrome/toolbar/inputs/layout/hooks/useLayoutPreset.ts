@@ -248,8 +248,9 @@ export function useLayoutPreset({ propKey, onLayoutChange, lockMode }: UseLayout
   const handleDisplayVariant = (variant: string) => {
     const effectiveViews = getEffectiveViews(modifiers, view, multiScope);
     effectiveViews.forEach(v => cp("display", variant, v));
-    if (variant === "inline" || variant === "hidden") {
+    if (variant === "block" || variant === "inline" || variant === "hidden") {
       clearLayoutProps(effectiveViews);
+      if (variant === "block") setLayoutMode("block");
     }
     setShowDisplayDropdown(false);
   };

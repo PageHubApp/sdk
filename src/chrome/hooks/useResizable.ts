@@ -60,7 +60,7 @@ export function useResizable(options: UseResizableOptions) {
     height: Math.max(Math.min(minHeight, maxHeight), Math.min(maxHeight, Math.round(h))),
   });
 
-  const [size, setSize] = useState(() => {
+  const [size, setSizeRaw] = useState(() => {
     if (persist) {
       try {
         const p = phStorage.getJSON<{ width: number; height: number }>(
@@ -74,6 +74,23 @@ export function useResizable(options: UseResizableOptions) {
     }
     return { width: defaultWidth, height: defaultHeight };
   });
+  const [hasPersistedSize] = useState(() => {
+    if (!persist) return false;
+    try {
+      const p = phStorage.getJSON<{ width: number; height: number }>(
+        "resizable-" + storageKey,
+        null
+      );
+      return !!(p && typeof p.width === "number" && typeof p.height === "number");
+    } catch {
+      return false;
+    }
+  });
+  const setSize = useCallback((next: { width: number; height: number }) => {
+    setSizeRaw(prev =>
+      prev.width === next.width && prev.height === next.height ? prev : next
+    );
+  }, []);
 
   const [positionDelta, setPositionDelta] = useState({ dx: 0, dy: 0 });
   const [isResizing, setIsResizing] = useState(false);
@@ -103,7 +120,7 @@ export function useResizable(options: UseResizableOptions) {
 
   // When bounds change (e.g. viewport shrinks), keep current size in range.
   useEffect(() => {
-    setSize(prev => {
+    setSizeRaw(prev => {
       const next = clamp(prev.width, prev.height);
       return next.width === prev.width && next.height === prev.height ? prev : next;
     });
@@ -143,7 +160,7 @@ export function useResizable(options: UseResizableOptions) {
 
       sizeRef.current = clamped;
       deltaRef.current = { dx: pdx, dy: pdy };
-      setSize(clamped);
+      setSizeRaw(clamped);
       setPositionDelta({ dx: pdx, dy: pdy });
     };
 
@@ -259,5 +276,13 @@ export function useResizable(options: UseResizableOptions) {
     { style: React.CSSProperties; onPointerDown: (e: React.PointerEvent) => void }
   >;
 
-  return { width: size.width, height: size.height, isResizing, positionDelta, handleProps };
+  return {
+    width: size.width,
+    height: size.height,
+    isResizing,
+    positionDelta,
+    handleProps,
+    setSize,
+    hasPersistedSize,
+  };
 }

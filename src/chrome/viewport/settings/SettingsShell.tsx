@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import type { ReactNode } from "react";
-import { FloatingPanel } from "../../floating/FloatingPanel";
+import { FloatingPanel, useFloatingPanelDrag } from "../../floating/FloatingPanel";
+import { AutoHideScrollbar } from "../../primitives/layout/AutoHideScrollbar";
 
 interface SettingsShellTab {
   key: string;
@@ -31,8 +32,8 @@ interface SettingsShellProps {
 function tabButtonClass(isActive: boolean) {
   return `flex min-h-11 w-full items-center gap-2 border-l-2 px-4 py-2 text-left text-sm font-medium transition-colors ${
     isActive
-      ? "border-primary bg-base-100 text-base-content"
-      : "border-transparent text-neutral-content hover:bg-base-200 hover:text-base-content"
+      ? "border-primary bg-base-200 text-base-content"
+      : "border-transparent text-base-content/70 hover:border-base-300 hover:bg-base-200/60 hover:text-base-content"
   }`;
 }
 
@@ -79,12 +80,59 @@ export function SettingsShell({
       closeButtonSide={dockToEdge === "left" ? "left" : "right"}
       zIndex={zIndex}
       edges={["e", "s", "se", "w", "sw"]}
+      headerless
     >
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex min-h-0 flex-1 overflow-hidden">
+      <SettingsShellBody
+        title={title}
+        tabs={tabs}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        footer={footer}
+      >
+        {children}
+      </SettingsShellBody>
+    </FloatingPanel>
+  );
+}
+
+interface SettingsShellBodyProps {
+  title: string;
+  tabs: SettingsShellTab[];
+  activeTab: string;
+  setActiveTab: (key: string) => void;
+  footer?: ReactNode;
+  children: ReactNode;
+}
+
+function SettingsShellBody({
+  title,
+  tabs,
+  activeTab,
+  setActiveTab,
+  footer,
+  children,
+}: SettingsShellBodyProps) {
+  const drag = useFloatingPanelDrag();
+  const dragCursor = drag?.isDragging ? "cursor-grabbing" : "cursor-grab";
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <div
+          className="border-base-300 flex w-52 shrink-0 flex-col border-r"
+          aria-label={`${title} sections`}
+        >
+          <div
+            role="presentation"
+            aria-hidden="true"
+            onMouseDown={drag?.onMouseDown}
+            className={`text-base-content flex items-center px-4 py-3 ${dragCursor}`}
+          >
+            <span className="min-w-0 truncate text-sm font-semibold">{title}</span>
+          </div>
           <nav
-            className="border-base-300 bg-neutral scrollbar-light flex w-52 shrink-0 flex-col overflow-y-auto border-r py-1"
-            aria-label={`${title} sections`}
+            className="scrollbar-light flex min-h-0 flex-1 flex-col overflow-y-auto py-1"
+            aria-label={`${title} tabs`}
           >
             {tabs.map(tab => (
               <button
@@ -100,13 +148,22 @@ export function SettingsShell({
               </button>
             ))}
           </nav>
-
-          <div className="scrollbar-light bg-base-100 text-base-content flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto p-6">
-            {children}
+          <div className="border-base-300 border-t p-3">
+            <button
+              type="button"
+              onClick={drag?.onClose}
+              className="btn btn-secondary btn-sm w-full"
+            >
+              Close
+            </button>
           </div>
         </div>
-        {footer ? <div className="border-base-300 bg-neutral border-t p-4">{footer}</div> : null}
+
+        <AutoHideScrollbar className="bg-base-100 text-base-content flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="flex min-h-full flex-col p-6">{children}</div>
+        </AutoHideScrollbar>
       </div>
-    </FloatingPanel>
+      {footer ? <div className="border-base-300 border-t p-4">{footer}</div> : null}
+    </div>
   );
 }

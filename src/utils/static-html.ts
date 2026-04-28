@@ -32,6 +32,8 @@ export interface StaticRenderContext {
   pureTailwind?: boolean;
   /** Set to true by the tree walker when a node has client-only conditions */
   hasClientConditions?: boolean;
+  /** Set to true by `toHTML` when it stamps a `data-ph-load-show` marker on a node — opts the static export into shipping `PH_LOAD_ACTION_SCRIPT`. */
+  hasLoadActions?: boolean;
   /** Server-fetched connector data — enables connector-backed condition eval at SSR. */
   connectorData?: Record<string, { bindings: Record<string, any[]> }> | null;
 }

@@ -26,6 +26,11 @@ import {
   TbReceipt,
   TbSend,
   TbPointer,
+  TbDatabase,
+  TbDatabaseOff,
+  TbBolt,
+  TbBoltOff,
+  TbToggleLeft,
 } from "react-icons/tb";
 import { PopoverChip } from "../../../primitives/PopoverChip";
 import { SideBarAtom } from "../../../../utils/lib";
@@ -52,6 +57,11 @@ const TYPE_ICON: Partial<
   "cart-checkout": TbCreditCard,
   "manage-subscription": TbReceipt,
   "agent-send": TbSend,
+  "set-local-storage": TbDatabase,
+  "remove-local-storage": TbDatabaseOff,
+  "set-state": TbBolt,
+  "toggle-state": TbToggleLeft,
+  "clear-state": TbBoltOff,
 };
 
 const ACTION_LABEL = new Map(ACTION_TYPE_OPTIONS.map(o => [o.value, o.label]));
@@ -81,7 +91,17 @@ function describeAction(a: NodeAction, pageNames?: Map<string, string>): string 
     return h;
   }
   if (a.type === "open-modal") return (a as any).anchor || "";
-  if (a.type === "show-hide") return (a as any).target || "";
+  if (a.type === "show-hide") {
+    const target = (a as any).target || "";
+    const trig = (a as any).trigger;
+    const gated =
+      Array.isArray((a as any).conditions) && (a as any).conditions.length > 0
+        ? " · conditional"
+        : "";
+    const prefix =
+      trig === "load" ? `${target} · on load` : trig === "hover" ? `${target} · hover` : target;
+    return `${prefix}${gated}`;
+  }
   if (a.type === "copy-to-clipboard") {
     const t = (a as any).text as string | undefined;
     if (!t) return "";
@@ -90,6 +110,21 @@ function describeAction(a: NodeAction, pageNames?: Map<string, string>): string 
   if (a.type === "download-file") return (a as any).url || "";
   if (a.type === "add-to-cart" && (a as any).quantity) return `×${(a as any).quantity}`;
   if (a.type === "agent-send") return (a as any).field || "";
+  if (a.type === "set-local-storage") {
+    const k = (a as any).key as string | undefined;
+    const v = (a as any).value as string | undefined;
+    if (k && v) return `${k} = ${v}`;
+    return k || "";
+  }
+  if (a.type === "remove-local-storage") return (a as any).key || "";
+  if (a.type === "set-state") {
+    const k = (a as any).key as string | undefined;
+    const v = (a as any).value as string | undefined;
+    if (k && v) return `${k} = ${v}`;
+    return k || "";
+  }
+  if (a.type === "toggle-state") return (a as any).key || "";
+  if (a.type === "clear-state") return (a as any).key || "";
   return "";
 }
 
@@ -102,6 +137,13 @@ interface Props {
   autoOpen?: boolean;
   /** Notify parent so it can clear its pending-open state. */
   onAutoOpenConsumed?: () => void;
+  /** Anchor id of the node owning this action — forwarded to the editor panel
+   *  so state-key pickers can surface a "self" entry. */
+  selfId?: string;
+  /** Returns a stable self id for the owning node, stamping `attrs.id` when
+   *  none exists yet. Forwarded to state forms so the "self" affordance works
+   *  even on un-id'd nodes. */
+  ensureSelfId?: () => string;
 }
 
 export function ActionChipRow({
@@ -110,6 +152,8 @@ export function ActionChipRow({
   onRemove,
   autoOpen,
   onAutoOpenConsumed,
+  selfId,
+  ensureSelfId,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
@@ -202,6 +246,8 @@ export function ActionChipRow({
             onRemove={onRemove}
             initialPosition={initialPos}
             onClose={() => setOpen(false)}
+            selfId={selfId}
+            ensureSelfId={ensureSelfId}
           />
         </Suspense>
       )}

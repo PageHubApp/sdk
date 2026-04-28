@@ -7,7 +7,10 @@ import {
   TbBadge,
   TbChartBar,
   TbContainer,
+  TbCookie,
   TbLayoutColumns,
+  TbLayoutList,
+  TbLayoutNavbar,
   TbLayoutRows,
   TbSection,
   TbUserCircle,
@@ -17,6 +20,7 @@ import {
   HeaderFooterToggles,
 } from "../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab";
 import { defineComponent } from "../define";
+import { migrateActions } from "../utils/action";
 import {
   ariaAttrs,
   getInlineStyle,
@@ -28,6 +32,7 @@ import {
 import { Button } from "./Button";
 import { Container } from "./Container";
 import { ContainerPaddingOverlay } from "./ContainerPaddingOverlay";
+import { Icon } from "./Icon";
 import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
 import { Text } from "./Text";
 import { Image } from "./Image";
@@ -59,6 +64,50 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     open: t === "details" && props.open ? "" : undefined,
     "data-tab-group": props.tabGroup || undefined,
   };
+
+  // Stamp load-trigger show actions for the static-export bootstrap script
+  // (PH_LOAD_ACTION_SCRIPT). The script reveals `[data-ph-load-show]`
+  // elements on first visit (gated by optional `conditions`). React routes
+  // don't need this — Container's mount effect dispatches the same actions
+  // via `fireLoadAction`. `migrateActions` handles every action prop shape
+  // (single object, array, legacy `props.actions`) and runs the same
+  // legacy-field migration the runtime uses, so the static stamp can never
+  // diverge from runtime semantics.
+  // Stamp load-trigger set-state actions so PH_LOAD_ACTION_SCRIPT can seed
+  // `window.__PH_STATE__` pre-hydration. Multiple set-states on one node are
+  // emitted as a JSON array. Mirrors the show-hide stamp below.
+  const loadStateWrites: Array<{ key: string; value: string; kind?: string }> = [];
+  for (const la of migrateActions(props)) {
+    if (la.type !== "show-hide") {
+      if ((la as any).trigger === "load" && la.type === "set-state") {
+        const ss = la as any;
+        if (ss.key) {
+          loadStateWrites.push({
+            key: ss.key,
+            value: ss.value ?? "",
+            ...(ss.kind ? { kind: ss.kind } : {}),
+          });
+          ctx.hasLoadActions = true;
+        }
+      }
+      continue;
+    }
+    if (la.trigger !== "load") continue;
+    if (la.direction !== "show") continue;
+    // Only stamp the target element. If it's not this node, skip — the
+    // target Container's own toHTML pass will stamp itself when walked.
+    const targetId = props.id || props.anchor;
+    if (la.target !== targetId) continue;
+    attrs["data-ph-load-show"] = "";
+    if (la.method === "style") attrs["data-ph-load-method"] = "style";
+    if (Array.isArray(la.conditions) && la.conditions.length > 0) {
+      attrs["data-ph-load-conditions"] = JSON.stringify(la.conditions);
+    }
+    ctx.hasLoadActions = true;
+  }
+  if (loadStateWrites.length > 0) {
+    attrs["data-ph-load-set-state"] = JSON.stringify(loadStateWrites);
+  }
 
   // Horizontal scroll section: wrap children in sticky viewport + flex track
   if (props.scrollEffect === "horizontal-scroll") {
@@ -271,61 +320,348 @@ function buildModalChildren() {
   ];
 }
 
+function buildTabsChildren() {
+  // Unique group + panel ids per insert so multiple Tabs presets on one page
+  // don't collide. Buttons compose two actions on click: `show-hide` direction
+  // tab swaps which panel is visible; `set-state` writes the selected panel
+  // id under the group key so the active-styling stateModifier on each button
+  // can read it. The first panel fires a load-trigger `set-state` so the
+  // registry seeds before first paint — no flash of "no tab active".
+  const suffix = Math.random().toString(36).slice(2, 8);
+  const group = `tabs-${suffix}`;
+  const panel = (i: number) => `tab-${suffix}-${i}`;
+  const tabBtn = (i: number, label: string) => (
+    <Element
+      key={`tab-${i}`}
+      is={Button}
+      custom={{ displayName: `Tab ${i + 1}` }}
+      text={label}
+      url=""
+      action={[
+        {
+          type: "show-hide",
+          target: panel(i),
+          direction: "tab",
+          trigger: "click",
+          method: "class",
+          group,
+        },
+        {
+          type: "set-state",
+          key: group,
+          kind: "selection",
+          value: panel(i),
+          trigger: "click",
+        },
+      ]}
+      stateModifiers={[
+        {
+          conditions: [
+            {
+              logic: "all",
+              conditions: [
+                { type: "state", key: group, operator: "equals", value: panel(i) },
+              ],
+            },
+          ],
+          modifiers: ["tab-active"],
+        },
+      ]}
+      className="rounded-none border-b-2 border-transparent px-4 py-2 text-sm font-medium text-base-content"
+    />
+  );
+  const tabPanel = (i: number, body: string, hidden: boolean) => {
+    const isFirst = !hidden;
+    const props: Record<string, any> = {
+      canvas: true,
+      is: Container,
+      custom: { displayName: `Tab Panel ${i + 1}` },
+      canDelete: true,
+      canEditName: true,
+      id: panel(i),
+      tabGroup: group,
+      className: `gap-container px-container-x py-container-y flex flex-col${hidden ? " hidden" : ""}`,
+    };
+    if (isFirst) {
+      props.action = [
+        {
+          type: "set-state",
+          key: group,
+          kind: "selection",
+          value: panel(i),
+          trigger: "load",
+        },
+      ];
+    }
+    return (
+      <Element key={`panel-${i}`} {...props}>
+        <Element
+          is={Text}
+          custom={{ displayName: "Content" }}
+          text={body}
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+    );
+  };
+  return [
+    <Element
+      key="bar"
+      canvas
+      is={Container}
+      custom={{ displayName: "Tab Bar" }}
+      canDelete={true}
+      canEditName={true}
+      className="border-base-300 flex flex-row gap-0 border-b"
+    >
+      {tabBtn(0, "Overview")}
+      {tabBtn(1, "Features")}
+      {tabBtn(2, "Pricing")}
+    </Element>,
+    tabPanel(0, "<p>Overview content goes here. This is the first tab panel, visible by default.</p>", false),
+    tabPanel(1, "<p>Features content goes here. This panel is hidden until Tab 2 is clicked.</p>", true),
+    tabPanel(2, "<p>Pricing content goes here. This panel is hidden until Tab 3 is clicked.</p>", true),
+  ];
+}
+
 /**
- * Extra Container-based presets for the "Components" toolbox category.
- * Same pattern as NAV_EXTRA_PRESETS — Container element, separate category.
+ * Builds one accordion item — a `<details>` Container with a summary
+ * (header + chevron) and a body Container. Factored out so the
+ * Accordion preset's `addChild.template` reuses the exact shape.
+ *
+ * The shared `name` attribute (single-open exclusive toggle) is supplied
+ * by the caller — the initial 3-item drop uses one shared group; new
+ * items appended later inherit the same group via the wrapper's first
+ * child for consistency, but the simplest correct path is to always
+ * generate a fresh group when the user drops the preset and let new
+ * items reuse that string. The wrapper's modifier (`accordion-slide-fade`)
+ * carries the animation regardless.
  */
-export const COMPONENT_EXTRA_PRESETS = [
-  {
-    label: "Badge",
-    description: "Small label pill for tags, status, or categories.",
-    icon: TbBadge,
-    element: Container,
-    props: { className: "badge badge-primary font-medium self-start" },
-    children: () => [
+function buildAccordionItem(opts: {
+  index: number;
+  groupName: string;
+  question: string;
+  answer: string;
+  open?: boolean;
+}) {
+  const { index, groupName, question, answer, open } = opts;
+  return (
+    <Element
+      key={`item-${index}`}
+      canvas
+      is={Container}
+      custom={{ displayName: `Accordion Item ${index + 1}` }}
+      canDelete={true}
+      canEditName={true}
+      type="details"
+      open={open || undefined}
+      attrs={{ name: groupName }}
+      className="border-base-300 group border-b"
+    >
       <Element
-        key="label"
-        is={Text}
-        custom={{ displayName: "Label" }}
-        text="New"
+        canvas
+        is={Container}
+        custom={{ displayName: "Header" }}
         canDelete={true}
         canEditName={true}
-      />,
-    ],
-  },
-  {
-    label: "Avatar",
-    description: "Circular image for profile photos or team members.",
-    icon: TbUserCircle,
-    element: Container,
-    props: { className: "w-16 h-16 rounded-full overflow-hidden shrink-0" },
-    children: buildAvatarChildren,
-  },
-  {
-    label: "Alert",
-    description: "Notification banner with icon and message.",
-    icon: TbAlertTriangle,
-    element: Container,
-    props: { className: "alert alert-info flex flex-row items-center gap-space-xs w-full" },
-    children: buildAlertChildren,
-  },
-  {
-    label: "Stat",
-    description: "Number + label pair for counters and metrics.",
-    icon: TbChartBar,
-    element: Container,
-    props: { className: "flex flex-col items-center gap-space-xs text-center" },
-    children: buildStatChildren,
-  },
-  {
-    label: "Modal",
-    description: "Click-triggered dialog — trigger button + dimmed backdrop + content panel, all plain Containers wired with show-hide.",
-    icon: TbAppWindow,
-    element: Container,
-    props: { className: "contents" },
-    children: buildModalChildren,
-  },
-];
+        type="summary"
+        className="flex cursor-pointer list-none flex-row items-center justify-between px-4 py-3 select-none"
+      >
+        <Element
+          is={Text}
+          custom={{ displayName: "Title" }}
+          text={`<p class="font-medium">${question}</p>`}
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          is={Icon}
+          custom={{ displayName: "Chevron" }}
+          value="ref-icon:tb/TbChevronDown"
+          className="w-5 h-5 transition-transform duration-200 group-open:rotate-180"
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Body" }}
+        canDelete={true}
+        canEditName={true}
+        className="px-4 pb-4 text-base-content/80"
+      >
+        <Element
+          is={Text}
+          custom={{ displayName: "Answer" }}
+          text={`<p>${answer}</p>`}
+          canDelete={true}
+          canEditName={true}
+        />
+      </Element>
+    </Element>
+  );
+}
+
+/** Used for new items appended via the Component-tab "Add Item" affordance. */
+function buildAccordionItemTemplate() {
+  // Group name doesn't really matter for new items — the existing initial
+  // children carry the original group; new items share their open-state
+  // exclusivity with siblings only if the user manually copies the `name`
+  // attr. Default to a fresh group so the new item starts independent.
+  const groupName = `accordion-${Math.random().toString(36).slice(2, 8)}`;
+  return buildAccordionItem({
+    index: 0,
+    groupName,
+    question: "New question",
+    answer: "Replace this with your answer.",
+  });
+}
+
+function buildAccordionChildren() {
+  // Native <details> + shared `name` attr gives single-open exclusive toggle
+  // with zero JS. Drop the `name` attr to allow multiple panels open at once.
+  // Container renders `props.type: "details"` → <details>, "summary" → <summary>.
+  const groupName = `accordion-${Math.random().toString(36).slice(2, 8)}`;
+  return [
+    buildAccordionItem({
+      index: 0,
+      groupName,
+      question: "How does the accordion work?",
+      answer:
+        "Native <details> elements share a name attribute, giving single-open exclusive toggle with zero JavaScript.",
+      open: true,
+    }),
+    buildAccordionItem({
+      index: 1,
+      groupName,
+      question: "Can I have multiple panels open?",
+      answer: "Remove the name attr from each item to allow multiple panels open at once.",
+    }),
+    buildAccordionItem({
+      index: 2,
+      groupName,
+      question: "How do I customize the chevron?",
+      answer:
+        "Use the Modifiers Modal to author your own animation classes — or swap the Chevron icon to any other ref-icon ref.",
+    }),
+  ];
+}
+
+function buildCookieConsentChildren() {
+  // Banner starts hidden via the `hidden` class. A load-trigger show-hide
+  // action on the banner itself reveals it on first mount — gated by a
+  // `localStorage not-exists` condition so dismissed visitors stay
+  // un-bothered. Same condition shape as node visibility / page access;
+  // authors can stack additional gates (e.g. `auth.status equals
+  // logged-out`) via the Action panel's condition chip-list.
+  //
+  // Container's mount effect dispatches the action in React routes
+  // (/view, /static, custom domains, editor preview); static export ships
+  // an inline bootstrap script (PH_LOAD_ACTION_SCRIPT) that evaluates the
+  // same conditions client-side.
+  //
+  // Reject + Accept fire two actions on click: show-hide (snap visually) +
+  // set-local-storage (persist key so the load gate matches next visit).
+  const anchor = `cookie-consent-${Math.random().toString(36).slice(2, 8)}`;
+  const storageKey = `ph-${anchor}`;
+  return [
+    <Element
+      key="banner"
+      canvas
+      is={Container}
+      custom={{ displayName: "Cookie Banner" }}
+      canDelete={true}
+      canEditName={true}
+      anchor={anchor}
+      action={{
+        type: "show-hide",
+        target: anchor,
+        direction: "show",
+        trigger: "load",
+        method: "class",
+        conditions: [
+          {
+            logic: "all",
+            conditions: [
+              {
+                type: "localStorage",
+                key: storageKey,
+                operator: "not-exists",
+                value: "",
+              },
+            ],
+          },
+        ],
+      }}
+      className="hidden fixed bottom-0 left-0 right-0 z-[1100] bg-base-200 text-base-content shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
+    >
+      <Element
+        canvas
+        is={Container}
+        custom={{ displayName: "Banner Content" }}
+        canDelete={true}
+        canEditName={true}
+        className="flex flex-col sm:flex-row items-center justify-between gap-space-sm px-space-md py-space-sm max-w-page mx-auto"
+      >
+        <Element
+          is={Text}
+          custom={{ displayName: "Consent Text" }}
+          tagName="p"
+          richText={{ mode: "inline" }}
+          text="We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies."
+          className="text-sm text-base-content/80"
+          canDelete={true}
+          canEditName={true}
+        />
+        <Element
+          canvas
+          is={Container}
+          custom={{ displayName: "Button Group" }}
+          canDelete={true}
+          canEditName={true}
+          className="flex flex-row items-center gap-space-xs shrink-0"
+        >
+          <Element
+            is={Button}
+            custom={{ displayName: "Reject" }}
+            text="Reject"
+            url=""
+            action={[
+              {
+                type: "show-hide",
+                target: anchor,
+                direction: "hide",
+                trigger: "click",
+                method: "class",
+              },
+              { type: "set-local-storage", key: storageKey, value: "rejected" },
+            ]}
+            className="btn btn-ghost btn-sm rounded-box font-medium"
+          />
+          <Element
+            is={Button}
+            custom={{ displayName: "Accept" }}
+            text="Accept"
+            url=""
+            action={[
+              {
+                type: "show-hide",
+                target: anchor,
+                direction: "hide",
+                trigger: "click",
+                method: "class",
+              },
+              { type: "set-local-storage", key: storageKey, value: "accepted" },
+            ]}
+            className="btn btn-primary btn-sm rounded-box font-medium"
+          />
+        </Element>
+      </Element>
+    </Element>,
+  ];
+}
 
 export const ContainerDef = defineComponent(
   {
@@ -368,6 +704,93 @@ export const ContainerDef = defineComponent(
         icon: TbLayoutRows,
         description: "Vertical flex layout. Smart defaults based on where you drop it.",
         props: { className: "flex flex-col gap-space-md w-full" },
+      },
+      // ─── Pseudo-component presets (live in other toolbox categories) ───
+      {
+        label: "Badge",
+        description: "Small label pill for tags, status, or categories.",
+        icon: TbBadge,
+        category: "Components",
+        props: { className: "badge badge-primary font-medium self-start" },
+        children: () => [
+          <Element
+            key="label"
+            is={Text}
+            custom={{ displayName: "Label" }}
+            text="New"
+            canDelete={true}
+            canEditName={true}
+          />,
+        ],
+      },
+      {
+        label: "Avatar",
+        description: "Circular image for profile photos or team members.",
+        icon: TbUserCircle,
+        category: "Components",
+        props: { className: "w-16 h-16 rounded-full overflow-hidden shrink-0" },
+        children: buildAvatarChildren,
+      },
+      {
+        label: "Alert",
+        description: "Notification banner with icon and message.",
+        icon: TbAlertTriangle,
+        category: "Components",
+        props: { className: "alert alert-info flex flex-row items-center gap-space-xs w-full" },
+        children: buildAlertChildren,
+      },
+      {
+        label: "Stat",
+        description: "Number + label pair for counters and metrics.",
+        icon: TbChartBar,
+        category: "Components",
+        props: { className: "flex flex-col items-center gap-space-xs text-center" },
+        children: buildStatChildren,
+      },
+      {
+        label: "Modal",
+        description: "Click-triggered dialog — trigger button + dimmed backdrop + content panel, all plain Containers wired with show-hide.",
+        icon: TbAppWindow,
+        category: "Interactive",
+        props: { className: "contents" },
+        children: buildModalChildren,
+      },
+      {
+        label: "Tabs",
+        description: "Tab bar with switchable content panels.",
+        icon: TbLayoutNavbar,
+        category: "Interactive",
+        props: { className: "flex flex-col w-full" },
+        children: buildTabsChildren,
+      },
+      {
+        label: "Accordion",
+        description: "Collapsible panels that expand to reveal content.",
+        icon: TbLayoutList,
+        category: "Interactive",
+        props: { className: "flex flex-col w-full accordion-slide-fade" },
+        children: buildAccordionChildren,
+        addChild: {
+          label: "Add Item",
+          template: buildAccordionItemTemplate,
+          childLabel: (childNode: any, index: number) => {
+            try {
+              const headerId = childNode?.data?.nodes?.[0];
+              if (!headerId) return `Item ${index + 1}`;
+              return childNode?.data?.custom?.displayName || `Item ${index + 1}`;
+            } catch {
+              return `Item ${index + 1}`;
+            }
+          },
+        },
+      },
+      {
+        label: "Cookie Consent",
+        description: "Bottom banner asking visitors to accept or reject cookies.",
+        icon: TbCookie,
+        category: "Interactive",
+        props: { className: "contents" },
+        children: buildCookieConsentChildren,
       },
     ],
     modifiers: [
@@ -516,6 +939,74 @@ export const ContainerDef = defineComponent(
         label: "XL Padding",
         category: "Padding",
         description: "Extra-large padding on all sides using the density-aware spatial scale",
+      },
+      // ── Animation patterns ────────────────────────────────────────────────
+      // Express native <details> open/close transitions as Tailwind 4
+      // arbitrary-variant utilities. Zero custom CSS — every class compiles
+      // through the standard SSR Tailwind pipeline. Edit / clone via the
+      // Modifiers Modal to author per-site variants.
+      // `&` is the wrapper div — `::details-content` only exists on <details>,
+      // so we need the descendant combinator (`_`) to target child <details>
+      // elements: `[&_details::details-content]:…`.
+      {
+        name: "accordion-slide",
+        label: "Slide",
+        category: "Accordion",
+        exclusive: true,
+        renderAs: "patterns",
+        description: "Animates height on <details> open/close — pure CSS, no JS",
+        classes:
+          "[&_details]:[interpolate-size:allow-keywords] " +
+          "[&_details::details-content]:h-0 " +
+          "[&_details::details-content]:overflow-clip " +
+          "[&_details::details-content]:transition-all " +
+          "[&_details::details-content]:duration-300 " +
+          "[&_details::details-content]:ease-out " +
+          "[&_details[open]::details-content]:h-auto " +
+          "[&_details[open]::details-content]:starting:h-0 " +
+          "[&_details::details-content]:[transition-behavior:allow-discrete]",
+      },
+      {
+        name: "accordion-fade",
+        label: "Fade",
+        category: "Accordion",
+        exclusive: true,
+        renderAs: "patterns",
+        description: "Animates opacity + height on <details> open/close",
+        classes:
+          "[&_details]:[interpolate-size:allow-keywords] " +
+          "[&_details::details-content]:h-0 " +
+          "[&_details::details-content]:opacity-0 " +
+          "[&_details::details-content]:overflow-clip " +
+          "[&_details::details-content]:transition-all " +
+          "[&_details::details-content]:duration-300 " +
+          "[&_details::details-content]:ease-out " +
+          "[&_details[open]::details-content]:h-auto " +
+          "[&_details[open]::details-content]:opacity-100 " +
+          "[&_details[open]::details-content]:starting:h-0 " +
+          "[&_details[open]::details-content]:starting:opacity-0 " +
+          "[&_details::details-content]:[transition-behavior:allow-discrete]",
+      },
+      {
+        name: "accordion-slide-fade",
+        label: "Slide + Fade",
+        category: "Accordion",
+        exclusive: true,
+        renderAs: "patterns",
+        description: "Combined opacity + height animation (default Accordion preset)",
+        classes:
+          "[&_details]:[interpolate-size:allow-keywords] " +
+          "[&_details::details-content]:h-0 " +
+          "[&_details::details-content]:opacity-0 " +
+          "[&_details::details-content]:overflow-clip " +
+          "[&_details::details-content]:transition-all " +
+          "[&_details::details-content]:duration-300 " +
+          "[&_details::details-content]:ease-out " +
+          "[&_details[open]::details-content]:h-auto " +
+          "[&_details[open]::details-content]:opacity-100 " +
+          "[&_details[open]::details-content]:starting:h-0 " +
+          "[&_details[open]::details-content]:starting:opacity-0 " +
+          "[&_details::details-content]:[transition-behavior:allow-discrete]",
       },
     ],
   },

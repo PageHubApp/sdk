@@ -20,6 +20,7 @@ import { resolveCustomInput } from "./customInputs";
 import { ShorthandInput } from "../inputs/shorthand/ShorthandInput";
 import { BundleRow } from "../inputs/bundle/BundleRow";
 import { MultiToggleInput } from "../inputs/multi-toggle/MultiToggleInput";
+import { PropertyContextProvider } from "./propertyContext";
 import type { PropertyDef, PropertyInputProps } from "./registry/propertyDefs";
 
 interface Props {
@@ -59,7 +60,16 @@ export function PropertyRow({ def, index }: Props) {
   return <PropertyRenderer def={def} index={index} />;
 }
 
-export function PropertyRenderer({ def, index: indexOverride = "" }: Props) {
+export function PropertyRenderer({ def, index: indexOverride }: Props) {
+  const { id: nodeId } = useNode();
+  return (
+    <PropertyContextProvider value={{ nodeId, propId: def.id }}>
+      <PropertyRendererInner def={def} index={indexOverride} />
+    </PropertyContextProvider>
+  );
+}
+
+function PropertyRendererInner({ def, index: indexOverride = "" }: Props) {
   const propKey = def.propKey || def.id;
   const propType = def.propType || "class";
   const index = def.index || indexOverride;

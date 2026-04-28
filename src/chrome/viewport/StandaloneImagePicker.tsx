@@ -112,24 +112,24 @@ export const StandaloneImagePicker = ({
       <div className="flex gap-2">
         <label
           htmlFor={`file-upload-${label}`}
-          className={`border-base-300 bg-base-200/60 flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-3 shadow-sm transition-[border-color,background-color] ${
+          className={`btn btn-outline flex-1 ${
             errors.length
-              ? "border-error bg-error text-error-content"
+              ? "btn-error"
               : saved
-                ? "border-secondary bg-secondary text-secondary-content"
+                ? "btn-secondary"
                 : loading
-                  ? "border-primary bg-base-200 text-primary"
-                  : "text-base-content hover:border-primary hover:bg-base-300/25"
-          } ${!enabled && "cursor-not-allowed opacity-50"}`}
+                  ? "btn-primary"
+                  : "border-base-300 hover:border-primary"
+          } ${!enabled ? "btn-disabled" : ""}`}
         >
           {loading ? (
             <Spinner />
           ) : errors.length ? (
-            <TbAlertTriangle className="text-xl" />
+            <TbAlertTriangle className="size-4" />
           ) : (
-            <TbUpload className="text-xl" />
+            <TbUpload className="size-4" />
           )}
-          <span className="text-sm font-medium">{displayLabel}</span>
+          <span>{displayLabel}</span>
           <input
             id={`file-upload-${label}`}
             type="file"
@@ -143,19 +143,20 @@ export const StandaloneImagePicker = ({
         <button
           type="button"
           onClick={() => setShowMediaBrowser(true)}
-          className="border-base-300 text-base-content hover:border-primary hover:bg-neutral flex items-center gap-2 rounded-lg border-2 px-4 py-3"
+          className="btn btn-outline border-base-300 hover:border-primary"
         >
-          <TbPhoto className="text-xl" />
-          <span className="text-sm font-medium">Browse</span>
+          <TbPhoto className="size-4" />
+          <span>Browse</span>
         </button>
 
         {hasUploadedImage && (
           <button
             type="button"
             onClick={handleClear}
-            className="border-error bg-base-200 text-error hover:bg-error hover:text-error-content flex items-center gap-2 rounded-lg border px-4 py-3 shadow-sm transition-[border-color,background-color]"
+            className="btn btn-outline btn-error btn-square"
+            aria-label="Remove image"
           >
-            <TbTrash className="text-xl" />
+            <TbTrash className="size-4" />
           </button>
         )}
       </div>

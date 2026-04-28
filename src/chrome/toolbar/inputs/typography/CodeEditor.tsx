@@ -205,6 +205,8 @@ interface CodeEditorProps {
   toolbarDenseCode?: boolean;
   /** When set (HTML mode), `{{` triggers completion for company / site variables. */
   htmlVariableCompletionOptions?: EditorVariableOption[];
+  /** Extra classes for the editor's outer wrapper (e.g. `h-full` for fill-height layouts). */
+  containerClassName?: string;
 }
 
 export const CodeEditor = ({
@@ -226,6 +228,7 @@ export const CodeEditor = ({
   autoFormatMountKey,
   toolbarDenseCode = false,
   htmlVariableCompletionOptions,
+  containerClassName = "",
 }: CodeEditorProps) => {
   const latestValue = useRef(typeof value === "string" ? value : String(value || ""));
   useEffect(() => {
@@ -294,7 +297,9 @@ export const CodeEditor = ({
   );
 
   return (
-    <div className="border-base-300 bg-base-200 focus-within:border-primary/50 hover:bg-base-300/25 overflow-hidden rounded-lg border">
+    <div
+      className={`border-base-300 bg-base-200 focus-within:border-primary/50 hover:bg-base-300/25 overflow-hidden rounded-lg border ${containerClassName}`.trim()}
+    >
       <CodeMirror
         value={typeof value === "string" ? value : String(value || "")}
         height={height}

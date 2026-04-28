@@ -10,6 +10,7 @@ const POPOVER_MODE = new Set<string>([
   "ConditionsAddPicker",
   "GradientInput",
   "PatternInput",
+  "BackgroundImageInput",
   "EffectRowInput",
   "ComponentImportExport",
   "NodeAiContextSection",

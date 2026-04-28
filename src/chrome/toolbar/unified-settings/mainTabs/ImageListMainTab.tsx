@@ -37,7 +37,7 @@ export const ImageListMainTab = () => {
           }}
           renderPopover={(image: any) => (
             <NodeProvider id={image.id}>
-              <MediaInput propKey="videoId" typeKey="type" title="" collapsible={false} />
+              <MediaInput propKey="videoId" typeKey="type" variant="chip" label="Image" />
             </NodeProvider>
           )}
         />

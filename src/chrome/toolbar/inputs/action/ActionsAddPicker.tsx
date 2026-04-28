@@ -5,10 +5,10 @@
  * AccordionAddMenu mounts it INSIDE the section title row (single-popover
  * `sectionPopoverProp` path). Renders a `SearchableMenuPopover` whose items
  * are the action types (Link, Open Modal, Show / Hide, …). Picking one
- * appends a fresh action to `props.actions` and dispatches a popover-open
- * request keyed by the body's def id so `ActionsInput` auto-opens the new
- * chip's editor — even when the body was unmounted (closed accordion
- * section). See docs/sdk/editor-popover-pattern.md §4 + §8.
+ * appends a fresh action to `props.action` (array shape) and dispatches a
+ * popover-open request keyed by the body's def id so `ActionsInput`
+ * auto-opens the new chip's editor — even when the body was unmounted
+ * (closed accordion section). See docs/sdk/editor-popover-pattern.md §4 + §8.
  */
 import { useNode } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
@@ -26,8 +26,7 @@ import {
 import {
   ACTION_TYPE_OPTIONS,
   type ActionType,
-  type NodeAction,
-  migrateAction,
+  migrateActions,
 } from "../../../../utils/action";
 import { ACTION_DEFAULTS } from "./ActionInput";
 import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
@@ -55,17 +54,13 @@ export default function ActionsAddPicker({ def }: PropertyInputProps) {
     if (!item.data) return;
     const next = ACTION_DEFAULTS[item.data];
     setProp((p: any) => {
-      // Migrate any legacy single-action / scratch props onto the canonical
-      // `actions[]` shape on first add so the chip-list reads cleanly.
-      const existing: NodeAction[] = Array.isArray(p.actions) && p.actions.length > 0
-        ? [...p.actions]
-        : (() => {
-            const single = (p.action as NodeAction | undefined) ?? migrateAction(p);
-            return single ? [single] : [];
-          })();
+      // `migrateActions` consolidates every legacy / dual-write shape into a
+      // single array; we append to that and write back the canonical
+      // `props.action` array.
+      const existing = migrateActions(p);
       existing.push(next);
-      p.actions = existing;
-      p.action = existing[0] || null;
+      p.action = existing;
+      delete p.actions;
       delete p.click;
       delete p.url;
       delete p.urlTarget;

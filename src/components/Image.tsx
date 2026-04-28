@@ -4,7 +4,15 @@ import { TbCheck, TbPhoto } from "react-icons/tb";
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { Image as UiImage } from "@pagehub/ui";
 import { getCdnUrl } from "../utils/cdn";
-import { migrateAction, actionToHref } from "../utils/action";
+import {
+  migrateActions,
+  actionToHref,
+  isLinkAction,
+  isHandlerAction,
+  isAnchorAction,
+  findLinkAction,
+} from "../utils/action";
+import { addActionHandlers, addCustomHandlers } from "../utils/clickControls";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { getResponsiveImageAttrs, motionIt } from "../utils/lib";
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
@@ -117,12 +125,16 @@ export const Image = (incomingProps: ImageProps) => {
     return u === "rounded" || u.startsWith("rounded-");
   });
 
+  const actions = migrateActions(props);
+  const firstLink = findLinkAction(actions);
+  const resolvedHref = actionToHref(firstLink) || props.url;
+
   const prop: any = {
     ref: r => {
       ref.current = r;
       connect(drag(r));
     },
-    href: actionToHref(migrateAction(props)) || props.url,
+    href: resolvedHref,
     onClick: e => {
       enabled && e.preventDefault();
     },
@@ -134,6 +146,22 @@ export const Image = (incomingProps: ImageProps) => {
   };
 
   applyAriaProps(prop, props);
+
+  // Multi-action chains, anchor links, or any non-link action route through
+  // `addActionHandlers`. Single non-anchor link → href + browser navigation.
+  const needsJsDispatch =
+    actions.length > 1 ||
+    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
+    (actions.length === 1 && !isLinkAction(actions[0]));
+  if (needsJsDispatch) {
+    addActionHandlers(prop, actions, enabled, {
+      resolvedLinkHref: typeof resolvedHref === "string" ? resolvedHref : null,
+    });
+  }
+  addCustomHandlers(prop, props.handlers, enabled);
+  if (actions.length > 0 && !enabled) {
+    prop["data-action"] = actions.map(a => a.type).join(" ");
+  }
 
   // Use metadata from media library, fallback to props — resolve {{item.*}} variables
   const resolveVar = (v: string) =>

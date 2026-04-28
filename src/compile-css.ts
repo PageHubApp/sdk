@@ -20,6 +20,7 @@ import { readFileSync, statSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, resolve, join } from "path";
 import { renderToHTML, type RenderToHTMLOptions } from "./static-renderer";
+import { BUILTIN_COMPONENT_DEFS } from "./core/builtinComponentDefs";
 import { buildModifierExpansionMap, expandModifierClassName } from "./utils/modifierUtils";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -279,12 +280,14 @@ function extractCandidatesFromNodes(nodes: Record<string, any>): string[] {
   ];
   for (const c of implicit) candidates.add(c);
 
-  // Build modifier expansion map so modifier names get expanded to real classes
+  // Build modifier expansion map so modifier names get expanded to real classes.
+  // Merges def-shipped built-in modifiers (e.g. "accordion-slide-fade" on
+  // Container) with site-level overrides at ROOT.props.modifiers (site wins).
   const modifiers = nodes?.ROOT?.props?.modifiers;
-  const expansionMap =
-    modifiers && typeof modifiers === "object"
-      ? buildModifierExpansionMap(modifiers)
-      : new Map<string, string>();
+  const expansionMap = buildModifierExpansionMap(
+    modifiers && typeof modifiers === "object" ? modifiers : {},
+    BUILTIN_COMPONENT_DEFS
+  );
 
   for (const node of Object.values(nodes)) {
     const props = (node as any)?.props;

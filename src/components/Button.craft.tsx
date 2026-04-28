@@ -4,7 +4,7 @@
 import { TbHandClick } from "react-icons/tb";
 import { ButtonMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ButtonMainTab";
 import { defineComponent } from "../define";
-import { migrateAction, actionToHref, actionTarget } from "../utils/action";
+import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../utils/action";
 import { resolveIconSvgSync } from "../utils/icons/serverResolve";
 import {
   ariaAttrs,
@@ -39,9 +39,13 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
 
   const fullCls = [cls, extra].filter(Boolean).join(" ");
-  const action = migrateAction(props);
-  const href = actionToHref(action);
-  const target = actionTarget(action);
+  // Static export carries no JS runtime — multi-action chains can't fire.
+  // Render the first link's href on `<a>` (preserves SEO + right-click) and
+  // accept the chain-fidelity loss; in-app SSR (/view, /static, custom
+  // domains) hydrate React and dispatch the full chain via Button.tsx.
+  const firstLink = findLinkAction(migrateActions(props));
+  const href = actionToHref(firstLink);
+  const target = actionTarget(firstLink);
   const t = href ? "a" : "button";
 
   const attrs: Record<string, any> = {
@@ -104,6 +108,19 @@ export const ButtonDef = defineComponent(
       },
     ],
     modifiers: [
+      // State modifier — canonical "active" styling for any state-bound trigger
+      // (tab buttons, drawer triggers, accordion summaries, etc.). Bind via
+      // `props.stateModifiers` referencing this name. Authors override at the
+      // site level via "Save modifier" to swap classes without touching every
+      // binding.
+      {
+        name: "tab-active",
+        label: "Active",
+        category: "State",
+        description:
+          "Active styling for state-bound triggers — applied when the binding's state condition matches.",
+        classes: "border-primary text-primary",
+      },
       // Composite patterns — canonical CTA buttons with spatial tokens + consistent height
       {
         name: "cta-responsive",
