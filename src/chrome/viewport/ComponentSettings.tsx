@@ -20,14 +20,21 @@ import { SavedComponentsToolbox } from "./toolbox/savedComponents";
 // from the CustomComponentsContext merge below.
 const baseItems = [
   { title: "Layout", content: [] as any[] },
-  { title: "Content", content: [] as any[] },
-  { title: "List", content: [] as any[] },
+  { title: "Text", content: [] as any[] },
+  { title: "Buttons", content: [] as any[] },
+  { title: "Images", content: [] as any[] },
+  { title: "Icons", content: [] as any[] },
+  { title: "Interactive", content: [] as any[] },
+  { title: "Navigation", content: [] as any[] },
+  { title: "Forms", content: [] as any[] },
+  { title: "Media", content: [] as any[] },
+  { title: "Embeds", content: [] as any[] },
+  { title: "Dividers", content: [] as any[] },
+  { title: "Stripe", content: [] as any[] },
+  { title: "Lists", content: [] as any[] },
+  { title: "Tables", content: [] as any[] },
   { title: "Grid", content: [] as any[] },
   { title: "Components", content: [] as any[] },
-  { title: "Forms", content: [] as any[] },
-  { title: "Interactive", content: [] as any[] },
-  { title: "Media", content: [] as any[] },
-  { title: "Navigation", content: [] as any[] },
 ];
 
 export const ComponentSettings = () => {

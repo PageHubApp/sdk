@@ -59,7 +59,7 @@ export const FormElementDef = defineComponent(
   {
     name: "FormElement",
     displayName: "Form Item",
-    description: "Form input field — text, email, select, checkbox, etc.",
+    description: "A single form field — text, email, dropdown, checkbox, etc.",
     component: FormElement,
     icon: TbInputSearch,
     category: "Forms",

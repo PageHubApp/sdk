@@ -11,7 +11,7 @@ import { HoverNodeController, NameNodeController, DeleteNodeController } from ".
 export const MapDef = defineComponent(
   {
     name: "Map",
-    description: "Interactive map embed with markers.",
+    description: "A map you can drag, zoom, and pin places on.",
     component: Map,
     icon: TbMap,
     category: "Media",

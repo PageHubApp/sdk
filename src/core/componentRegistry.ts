@@ -23,7 +23,6 @@ import { Grid } from "../components/Grid";
 import { Header } from "../components/Header";
 import { Icon } from "../components/Icon";
 import { Image } from "../components/Image";
-import { ImageList } from "../components/ImageList";
 import { Link } from "../components/Link";
 import { List } from "../components/List";
 import { ListItem } from "../components/ListItem";
@@ -65,7 +64,6 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Header: cv(Header),
   Icon: cv(Icon),
   Image: cv(Image),
-  ImageList: cv(ImageList),
   Link: cv(Link),
   List: cv(List),
   ListItem: cv(ListItem),

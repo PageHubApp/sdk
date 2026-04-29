@@ -4,7 +4,7 @@
  *
  * Why: lets a plain Container with N Buttons / Images / Icons expose
  * add/remove/reorder UI without needing a dedicated wrapper component
- * (the role ImageList still plays for carousel/hero/marquee modes).
+ * (the role ButtonList / ImageList used to play, now retired).
  * ABA-pattern siblings (Btn, Img, Btn)
  * are intentional layout — those don't get a list editor.
  *
@@ -41,13 +41,7 @@ const GROUPABLE_NAMES = new Set([
 
 // Skip when the wrapper's own MainTab renders a list editor — avoids double UI.
 // Map / Table* genuinely need bespoke editors.
-const LIST_WRAPPER_NAMES = new Set([
-  "ImageList",
-  "Map",
-  "Table",
-  "TableSection",
-  "TableRow",
-]);
+const LIST_WRAPPER_NAMES = new Set(["Map", "Table", "TableSection", "TableRow"]);
 
 interface DetectedGroup {
   name: string;

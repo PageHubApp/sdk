@@ -28,7 +28,7 @@ export const ListDef = defineComponent(
     displayName: "List",
     component: List,
     icon: TbList,
-    category: "List",
+    category: "Lists",
     canvas: true,
     settings: ListMainTab,
     toHTML,
@@ -54,7 +54,7 @@ export const ListDef = defineComponent(
     presets: [
       {
         label: "Checklist",
-        description: "Unordered list with check markers — common for features.",
+        description: "A list with check marks — good for feature lists.",
         props: {
           ordered: false,
           markerStyle: "check",
@@ -63,7 +63,7 @@ export const ListDef = defineComponent(
       },
       {
         label: "Bullet list",
-        description: "Simple bullet markers.",
+        description: "A list with simple bullet points.",
         props: {
           ordered: false,
           markerStyle: "bullet",
@@ -72,7 +72,7 @@ export const ListDef = defineComponent(
       },
       {
         label: "Numbered list",
-        description: "Ordered list with native numbering.",
+        description: "A list numbered 1, 2, 3...",
         props: {
           ordered: true,
           className:
@@ -81,7 +81,7 @@ export const ListDef = defineComponent(
       },
       {
         label: "Icon bullets",
-        description: "Material Symbols marker — pick the glyph in settings.",
+        description: "A list where each row starts with an icon you choose.",
         props: {
           ordered: false,
           markerStyle: "icon",

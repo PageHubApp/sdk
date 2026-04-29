@@ -151,14 +151,14 @@ export const FormDef = defineComponent(
       {
         label: "Subscribe Form",
         icon: TbMail,
-        description: "Email opt-in form with a single input.",
+        description: "An email-only form — newsletter sign-ups, etc.",
         props: { formType: "subscribe" },
         children: buildSubscribeChildren,
       },
       {
         label: "Contact Form",
         icon: TbForms,
-        description: "Name, email, and message contact form.",
+        description: "A standard 'get in touch' form — name, email, message.",
         props: { formType: "contact" },
         children: buildContactChildren,
       },

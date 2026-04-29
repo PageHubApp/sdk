@@ -87,7 +87,7 @@ export const ButtonDef = defineComponent(
     name: "Button",
     component: Button,
     icon: TbHandClick,
-    category: "Content",
+    category: "Buttons",
     settings: ButtonMainTab,
     toHTML,
     disable: ["opacity"],
@@ -99,7 +99,7 @@ export const ButtonDef = defineComponent(
     presets: [
       {
         label: "Button",
-        description: "Primary CTA button with spatial padding and theme colors.",
+        description: "A clickable button — your main call-to-action.",
         props: {
           text: "Button",
           className:

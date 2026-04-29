@@ -31,7 +31,7 @@ import {
 export const BackgroundDef = defineComponent(
   {
     name: "Background",
-    description: "Root page wrapper with theme colors and font.",
+    description: "The page itself — sets the site's colours and fonts.",
     component: Background,
     icon: TbContainer,
     category: "__internal",

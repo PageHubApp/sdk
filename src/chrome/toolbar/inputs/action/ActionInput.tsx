@@ -50,6 +50,8 @@ export const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
   "set-state": { type: "set-state", key: "", value: "" },
   "toggle-state": { type: "toggle-state", key: "" },
   "clear-state": { type: "clear-state", key: "" },
+  "increment-state": { type: "increment-state", key: "", step: 1 },
+  "decrement-state": { type: "decrement-state", key: "", step: 1 },
 };
 
 export function ActionSubForm({

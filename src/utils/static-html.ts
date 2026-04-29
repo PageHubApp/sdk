@@ -253,6 +253,19 @@ export function getInlineStyle(props: Record<string, any>): string {
   if (props.background?.image) {
     styleObj = { ...(styleObj || {}), "background-image": `url(${props.background.image})` };
   }
+  // State-bound style bindings — at SSR the registry is empty, so emit each
+  // binding's `defaultValue` (or "0"). Hydration overwrites with the live
+  // value on first React render.
+  if (Array.isArray(props.stateStyleBindings) && props.stateStyleBindings.length > 0) {
+    const next: Record<string, string> = { ...(styleObj || {}) };
+    for (const b of props.stateStyleBindings) {
+      if (!b || !b.key || !b.styleProp) continue;
+      const raw = typeof b.defaultValue === "string" ? b.defaultValue : "0";
+      const out = b.template ? String(b.template).replace(/\{\{value\}\}/g, raw) : raw;
+      next[b.styleProp] = out;
+    }
+    styleObj = next;
+  }
 
   // ── CSS animation inline style overrides ────────────────────────────
   const animKey = props.root?.animation;

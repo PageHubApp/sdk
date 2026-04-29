@@ -39,7 +39,7 @@ export const TableCellDef = defineComponent(
     displayName: "Table Cell",
     component: TableCell,
     icon: TbBorderInner,
-    category: "List",
+    category: "Tables",
     canvas: false,
     settings: TableCellMainTab,
     toHTML,
@@ -62,7 +62,7 @@ export const TableCellDef = defineComponent(
     presets: [
       {
         label: "Cell",
-        description: "Table cell with HTML content.",
+        description: "One cell inside a table row.",
         props: {
           text: "<p>Cell</p>",
           as: "td",

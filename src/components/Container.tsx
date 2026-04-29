@@ -8,7 +8,13 @@ import { useIsolate, usePreview, useView } from "../core/store";
 import { ViewModeAtom } from "../utils/lib";
 import { registerLiveComponent } from "../utils/componentRegistry";
 import { mergeAccessibilityProps } from "../utils/accessibility";
-import { addActionHandlers, addCustomHandlers, fireLoadAction } from "../utils/clickControls";
+import {
+  addActionHandlers,
+  addCustomHandlers,
+  fireIntervalActions,
+  fireLoadAction,
+} from "../utils/clickControls";
+import { getStateValue } from "../utils/stateRegistry";
 import {
   migrateActions,
   actionToHref,
@@ -61,6 +67,22 @@ export interface ContainerProps extends BaseSelectorProps {
   open?: boolean;
   /** Pass-through DOM attrs (data-*, role, autocomplete, name, etc.). Documented in templates.md. */
   attrs?: Record<string, string | number | boolean>;
+  /**
+   * Bind state-registry values into inline CSS — write the live value of
+   * `state[key]` into a CSS property (typically a custom variable like
+   * `--carousel-index`). Used by carousel tracks, stepper indicators, any
+   * "DOM follows numeric state" pattern. Reactive via the global state tick.
+   *
+   *   stateStyleBindings: [{ key: "carousel-1", styleProp: "--carousel-index" }]
+   */
+  stateStyleBindings?: Array<{
+    key: string;
+    styleProp: string;
+    /** Optional template — `{{value}}` is replaced with the resolved state value. */
+    template?: string;
+    /** Default when state is unset (or non-numeric). Defaults to `"0"`. */
+    defaultValue?: string;
+  }>;
   actionProp?: NodeAction;
   click?: any; // Legacy — handled by migrateAction()
   scrollEffect?: string;
@@ -175,9 +197,12 @@ export function useContainerRender(
   // of localStorage gates.
   useEffect(() => {
     if (enabled) return;
-    migrateActions(props)
-      .filter(a => (a as any).trigger === "load")
-      .forEach(fireLoadAction);
+    const actions = migrateActions(props);
+    actions.filter(a => (a as any).trigger === "load").forEach(fireLoadAction);
+    // Interval triggers (autoscroll carousels, ticker bands, etc.) — set up
+    // on mount, tear down on unmount.
+    const cleanup = fireIntervalActions(actions);
+    return cleanup;
     // Mount-only — re-fires only when toggling between editor and viewer.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
@@ -293,6 +318,21 @@ export function useContainerRender(
   // Container uses raw children and optional editor hints.
   const resolvedChildren = opts?.renderChildren ? opts.renderChildren(children) : children;
 
+  // State-bound inline style — read live state values and write into CSS
+  // (typically custom properties like `--carousel-index`). Reactive via the
+  // global state tick already subscribed to above.
+  const stateStyle: Record<string, string> = {};
+  if (Array.isArray(props.stateStyleBindings) && props.stateStyleBindings.length > 0) {
+    for (const b of props.stateStyleBindings) {
+      if (!b || !b.key || !b.styleProp) continue;
+      const raw =
+        getStateValue(b.key) ??
+        (typeof b.defaultValue === "string" ? b.defaultValue : "0");
+      const out = b.template ? b.template.replace(/\{\{value\}\}/g, raw) : raw;
+      stateStyle[b.styleProp] = out;
+    }
+  }
+
   let prop: any = {
     ref: r => {
       ref.current = r;
@@ -318,6 +358,7 @@ export function useContainerRender(
     },
     style: {
       ...(props.root?.style ? CSStoObj(props.root.style) || {} : {}),
+      ...stateStyle,
     },
     className,
     ...(props.type === "component" ? { "data-component-container": "true" } : {}),

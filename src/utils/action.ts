@@ -34,7 +34,9 @@ export type ActionType =
   | "remove-local-storage"
   | "set-state"
   | "toggle-state"
-  | "clear-state";
+  | "clear-state"
+  | "increment-state"
+  | "decrement-state";
 
 interface ActionBase {
   type: ActionType;
@@ -239,6 +241,49 @@ export interface ClearStateAction extends ActionBase {
   trigger?: "click" | "hover" | "load";
 }
 
+/**
+ * Numeric arithmetic on a state value — `value = parseInt(currentValue || 0) + step`,
+ * then clamp to [min, max] (when set) or wrap-around (when `wrap: true`).
+ *
+ * Powers carousel prev/next, stepper inputs, "show N more" pagination, etc.
+ *
+ * `trigger: "interval"` + `intervalMs` fires the action on a setInterval —
+ * autoscroll carousels, timed slideshows, ticker bands. Pause via the SAME
+ * action with a node `data-state-interval-pause` attr (added on hover by
+ * authors via CSS `:hover` — no JS needed for the pause itself).
+ */
+export interface IncrementStateAction extends ActionBase {
+  type: "increment-state";
+  key: string;
+  /** Defaults to 1. */
+  step?: number;
+  /** Optional clamp lower bound. */
+  min?: number;
+  /**
+   * Optional clamp upper bound. Numeric literal OR a state-key reference of the
+   * shape `state:<otherKey>` (e.g. `"state:carousel-1-max"`) that resolves at
+   * fire time — useful when max depends on dynamic content (slide count).
+   */
+  max?: number | string;
+  /** Wrap to min when above max (and vice-versa for decrement). Default false. */
+  wrap?: boolean;
+  trigger?: "click" | "hover" | "load" | "interval";
+  /** Required when trigger === "interval". */
+  intervalMs?: number;
+}
+
+/** Mirror of IncrementStateAction with negated step. Same min/max/wrap semantics. */
+export interface DecrementStateAction extends ActionBase {
+  type: "decrement-state";
+  key: string;
+  step?: number;
+  min?: number;
+  max?: number | string;
+  wrap?: boolean;
+  trigger?: "click" | "hover" | "load" | "interval";
+  intervalMs?: number;
+}
+
 /** Toggle `html.dark` and persist `ph-theme` (same contract as editor chrome + _document bootstrap). */
 export interface ToggleThemeAction extends ActionBase {
   type: "toggle-theme";
@@ -268,7 +313,9 @@ export type NodeAction =
   | RemoveLocalStorageAction
   | SetStateAction
   | ToggleStateAction
-  | ClearStateAction;
+  | ClearStateAction
+  | IncrementStateAction
+  | DecrementStateAction;
 
 export type LinkTarget = "_self" | "_blank" | "_parent" | "_top";
 
@@ -317,7 +364,9 @@ export function isHandlerAction(
   | RemoveLocalStorageAction
   | SetStateAction
   | ToggleStateAction
-  | ClearStateAction {
+  | ClearStateAction
+  | IncrementStateAction
+  | DecrementStateAction {
   if (!action) return false;
   return (
     action.type === "open-modal" ||
@@ -332,7 +381,9 @@ export function isHandlerAction(
     action.type === "remove-local-storage" ||
     action.type === "set-state" ||
     action.type === "toggle-state" ||
-    action.type === "clear-state"
+    action.type === "clear-state" ||
+    action.type === "increment-state" ||
+    action.type === "decrement-state"
   );
 }
 
@@ -409,6 +460,8 @@ export function actionToHref(
     case "set-state":
     case "toggle-state":
     case "clear-state":
+    case "increment-state":
+    case "decrement-state":
     case "copy-to-clipboard":
     case "download-file":
       return null; // Handled by JS
@@ -617,4 +670,6 @@ export const ACTION_TYPE_OPTIONS: { value: ActionType; label: string; group?: st
   { value: "set-state", label: "Set State", group: "State" },
   { value: "toggle-state", label: "Toggle State", group: "State" },
   { value: "clear-state", label: "Clear State", group: "State" },
+  { value: "increment-state", label: "Increment State", group: "State" },
+  { value: "decrement-state", label: "Decrement State", group: "State" },
 ];

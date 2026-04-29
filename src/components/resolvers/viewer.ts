@@ -23,7 +23,6 @@ import { Grid } from "../Grid";
 import { Header } from "../Header";
 import { Icon } from "../Icon";
 import { Image } from "../Image";
-import { ImageList } from "../ImageList";
 import { Link } from "../Link";
 import { List } from "../List";
 import { ListItem } from "../ListItem";
@@ -57,7 +56,6 @@ export const viewerResolver = {
   Header: cv(Header),
   Icon: cv(Icon),
   Image: cv(Image),
-  ImageList: cv(ImageList),
   Link: cv(Link),
   List: cv(List),
   ListItem: cv(ListItem),

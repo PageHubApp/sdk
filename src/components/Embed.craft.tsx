@@ -45,7 +45,7 @@ import { HoverNodeController, NameNodeController, DeleteNodeController } from ".
 export const EmbedDef = defineComponent(
   {
     name: "Embed",
-    description: "Embed a third-party service or custom HTML.",
+    description: "Drop in custom HTML or a third-party widget.",
     component: Embed,
     icon: TbCode,
     category: "Embeds",

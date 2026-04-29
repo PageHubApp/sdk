@@ -98,7 +98,7 @@ export const ConditionalContainerDef = defineComponent(
   {
     name: "ConditionalContainer",
     displayName: "Conditional",
-    description: "Show or hide content based on conditions.",
+    description: "Hides what's inside until rules say to show it.",
     component: ConditionalContainer,
     icon: TbGitBranch,
     category: "Layout",

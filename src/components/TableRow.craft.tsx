@@ -27,7 +27,7 @@ export const TableRowDef = defineComponent(
     displayName: "Table Row",
     component: TableRow,
     icon: TbLineDashed,
-    category: "List",
+    category: "Tables",
     canvas: true,
     settings: TableRowMainTab,
     toHTML,
@@ -50,7 +50,7 @@ export const TableRowDef = defineComponent(
     presets: [
       {
         label: "Row",
-        description: "One table row — add cells inside.",
+        description: "A single row of a table.",
         props: { className: "" },
       },
     ],

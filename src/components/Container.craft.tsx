@@ -15,8 +15,14 @@ import {
   TbLayoutNavbar,
   TbLayoutRows,
   TbMinus,
+  TbCarouselHorizontal,
+  TbColumns2,
+  TbInfinity,
+  TbLayoutGrid,
+  TbPhoto,
   TbPill,
   TbSection,
+  TbSlideshow,
   TbSpace,
   TbStack2,
   TbUserCircle,
@@ -349,6 +355,171 @@ function buildButtonGroupChildren() {
       canEditName={true}
     />
   ));
+}
+
+// ─── Image gallery preset helpers ───
+// All Image presets are plain Containers + Image children. The auto-list
+// detector renders the add/remove/reorder editor in the toolbar when there
+// are 3+ contiguous Image children. Marquee + carousel use animation /
+// state primitives (no per-component runtime).
+
+function buildSimpleImageChildren() {
+  return [0, 1, 2].map(i => (
+    <Element
+      key={i}
+      is={Image}
+      custom={{ displayName: `Image ${i + 1}` }}
+      alt={`Image ${i + 1}`}
+      className="w-full h-auto rounded-box object-cover"
+      canDelete={true}
+      canEditName={true}
+    />
+  ));
+}
+
+function buildMarqueeChildren() {
+  // Marquee animates 0 → -50%, so duplicated children with `gap-X` land half a
+  // gap off → visible jump. Use `mr-*` on each child instead. The CSS
+  // animation system (cssMarquee preset) handles the keyframe.
+  return [0, 1, 2, 3, 4, 5].map(i => (
+    <Element
+      key={i}
+      is={Image}
+      custom={{ displayName: `Image ${i + 1}` }}
+      alt={`Image ${i + 1}`}
+      className="w-40 h-24 mr-space-md shrink-0 rounded-box object-cover"
+      canDelete={true}
+      canEditName={true}
+    />
+  ));
+}
+
+function buildCarouselChildren(opts: { hero: boolean }) {
+  // Unique id per insert so multiple carousels on one page don't collide
+  // on `--carousel-index` state, prev/next targets, or dot bindings.
+  const uid = `carousel-${Math.random().toString(36).slice(2, 8)}`;
+  const stateKey = uid;
+  const slidesCount = 3;
+  const itemsPerView = opts.hero ? 1 : 3;
+  const slideClassName = opts.hero
+    ? "w-full h-80 shrink-0 object-cover"
+    : "h-56 shrink-0 object-cover px-space-xs";
+  const slideStyle = opts.hero
+    ? "flex-basis: 100%"
+    : "flex-basis: calc(100% / var(--carousel-items))";
+
+  const slides = Array.from({ length: slidesCount }).map((_, i) => (
+    <Element
+      key={`slide-${i}`}
+      is={Image}
+      custom={{ displayName: `Slide ${i + 1}` }}
+      alt={`Slide ${i + 1}`}
+      className={slideClassName}
+      root={{ style: slideStyle }}
+      canDelete={true}
+      canEditName={true}
+    />
+  ));
+
+  const dots = Array.from({ length: slidesCount }).map((_, i) => (
+    <Element
+      key={`dot-${i}`}
+      is={Button}
+      custom={{ displayName: `Dot ${i + 1}` }}
+      text=""
+      className="size-2 rounded-full bg-base-100/50 transition-all"
+      action={[{ type: "set-state", key: stateKey, kind: "value", value: String(i), trigger: "click" }]}
+      stateModifiers={[
+        {
+          conditions: [
+            {
+              logic: "all",
+              conditions: [
+                { type: "state", key: stateKey, operator: "equals", value: String(i) },
+              ],
+            },
+          ],
+          modifiers: ["tab-active"],
+        },
+      ]}
+      canDelete={true}
+      canEditName={true}
+    />
+  ));
+
+  return [
+    <Element
+      key="track"
+      canvas
+      is={Container}
+      custom={{ displayName: "Carousel Track" }}
+      attrs={{ "data-carousel-track": uid }}
+      className="flex transition-transform duration-500 ease-in-out"
+      root={{
+        style: `--carousel-items: ${itemsPerView}; transform: translateX(calc(var(--carousel-index, 0) * -100% / var(--carousel-items, 1)))`,
+      }}
+      stateStyleBindings={[
+        { key: stateKey, styleProp: "--carousel-index", defaultValue: "0" },
+      ]}
+      canDelete={true}
+      canEditName={true}
+    >
+      {slides}
+    </Element>,
+    <Element
+      key="prev"
+      is={Button}
+      custom={{ displayName: "Previous" }}
+      text=""
+      icon={{ value: "ref-icon:tb/TbChevronLeft", only: true, size: "w-6 h-6" }}
+      className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-base-100/80 text-base-content hover:bg-base-100 rounded-full p-2 shadow-md transition-colors"
+      action={[
+        {
+          type: "decrement-state",
+          key: stateKey,
+          step: 1,
+          min: 0,
+          max: slidesCount - 1,
+          wrap: true,
+          trigger: "click",
+        },
+      ]}
+      canDelete={true}
+      canEditName={true}
+    />,
+    <Element
+      key="next"
+      is={Button}
+      custom={{ displayName: "Next" }}
+      text=""
+      icon={{ value: "ref-icon:tb/TbChevronRight", only: true, size: "w-6 h-6" }}
+      className="absolute top-1/2 right-2 z-10 -translate-y-1/2 bg-base-100/80 text-base-content hover:bg-base-100 rounded-full p-2 shadow-md transition-colors"
+      action={[
+        {
+          type: "increment-state",
+          key: stateKey,
+          step: 1,
+          min: 0,
+          max: slidesCount - 1,
+          wrap: true,
+          trigger: "click",
+        },
+      ]}
+      canDelete={true}
+      canEditName={true}
+    />,
+    <Element
+      key="dots"
+      canvas
+      is={Container}
+      custom={{ displayName: "Dots" }}
+      className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2"
+      canDelete={true}
+      canEditName={true}
+    >
+      {dots}
+    </Element>,
+  ];
 }
 
 function buildModalChildren() {
@@ -1508,7 +1679,7 @@ export const ContainerDef = defineComponent(
       {
         label: "Section",
         icon: TbSection,
-        description: "Full-width page section with padding and a centered content wrapper.",
+        description: "A full-width strip of the page with built-in padding.",
         props: {
           type: "section",
           className:
@@ -1519,7 +1690,7 @@ export const ContainerDef = defineComponent(
       {
         label: "Row",
         icon: TbLayoutColumns,
-        description: "Horizontal flex layout. Smart defaults based on where you drop it.",
+        description: "Lay things side-by-side in a row.",
         props: {
           className: "flex flex-row flex-wrap gap-space-md items-start min-w-0 w-full",
         },
@@ -1527,13 +1698,13 @@ export const ContainerDef = defineComponent(
       {
         label: "Column",
         icon: TbLayoutRows,
-        description: "Vertical flex layout. Smart defaults based on where you drop it.",
+        description: "Stack things on top of each other in a column.",
         props: { className: "flex flex-col gap-space-md w-full" },
       },
       // ─── Pseudo-component presets (live in other toolbox categories) ───
       {
         label: "Badge",
-        description: "Small label pill for tags, status, or categories.",
+        description: "A tiny pill for tags, status, or labels.",
         icon: TbBadge,
         category: "Components",
         props: { className: "badge badge-primary font-medium self-start" },
@@ -1550,7 +1721,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Avatar",
-        description: "Circular image for profile photos or team members.",
+        description: "A round photo for profile or team headshots.",
         icon: TbUserCircle,
         category: "Components",
         props: { className: "w-16 h-16 rounded-full overflow-hidden shrink-0" },
@@ -1558,7 +1729,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Alert",
-        description: "Notification banner with icon and message.",
+        description: "A coloured banner that says 'heads up'.",
         icon: TbAlertTriangle,
         category: "Components",
         props: { className: "alert alert-info flex flex-row items-center gap-space-xs w-full" },
@@ -1566,7 +1737,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Stat",
-        description: "Number + label pair for counters and metrics.",
+        description: "A big number with a label underneath.",
         icon: TbChartBar,
         category: "Components",
         props: { className: "flex flex-col items-center gap-space-xs text-center" },
@@ -1574,7 +1745,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Modal",
-        description: "Click-triggered dialog — trigger button + dimmed backdrop + content panel, all plain Containers wired with show-hide.",
+        description: "A pop-up window that opens when something is clicked.",
         icon: TbAppWindow,
         category: "Interactive",
         props: { className: "contents" },
@@ -1582,7 +1753,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Tabs",
-        description: "Tab bar with switchable content panels.",
+        description: "Tabs you click to switch between sections.",
         icon: TbLayoutNavbar,
         category: "Interactive",
         props: { className: "flex flex-col w-full" },
@@ -1590,7 +1761,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Accordion",
-        description: "Collapsible panels that expand to reveal content.",
+        description: "Click a row to reveal what's hidden inside.",
         icon: TbLayoutList,
         category: "Interactive",
         props: { className: "flex flex-col w-full accordion-slide-fade" },
@@ -1611,7 +1782,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Cookie Consent",
-        description: "Bottom banner asking visitors to accept or reject cookies.",
+        description: "The 'accept cookies' bar at the bottom of the page.",
         icon: TbCookie,
         category: "Interactive",
         props: { className: "contents" },
@@ -1619,7 +1790,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Dropdown",
-        description: "Click-triggered menu — trigger button + panel revealed via group-focus-within. Pure CSS, zero JS.",
+        description: "A menu that drops down when you click the trigger.",
         icon: TbChevronDown,
         category: "Interactive",
         props: {
@@ -1630,9 +1801,9 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Spacer",
-        description: "Empty vertical gap. Adjust height via className.",
+        description: "An empty gap that pushes things apart.",
         icon: TbSpace,
-        category: "Content",
+        category: "Dividers",
         props: {
           className: "h-16 w-full bg-transparent",
           attrs: { "aria-hidden": "true" },
@@ -1640,9 +1811,9 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Divider",
-        description: "Horizontal rule between sections.",
+        description: "A thin line between sections.",
         icon: TbMinus,
-        category: "Content",
+        category: "Dividers",
         props: {
           className: "border-t w-full",
           attrs: { role: "separator" },
@@ -1650,7 +1821,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Navbar",
-        description: "Header with logo, desktop links, and a show-hide mobile drawer. Class-based, plain Containers.",
+        description: "A site header with logo, links, and a mobile menu.",
         icon: TbLayoutNavbar,
         category: "Navigation",
         props: { className: "contents" },
@@ -1658,7 +1829,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Navbar (mega)",
-        description: "Navbar with one show-hide mega panel for grouped links plus the standard mobile drawer.",
+        description: "A header with a big drop-down panel of grouped links.",
         icon: TbLayoutNavbar,
         category: "Navigation",
         props: { className: "contents" },
@@ -1666,7 +1837,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Mobile Menu",
-        description: "Just the hamburger button + slide-in drawer pair. Drop next to an existing header.",
+        description: "Just the hamburger button and slide-in drawer.",
         icon: TbLayoutNavbar,
         category: "Navigation",
         props: { className: "contents" },
@@ -1675,9 +1846,9 @@ export const ContainerDef = defineComponent(
       // ─── Button-group / nav-strip presets ───
       {
         label: "Button Group",
-        description: "Row of buttons. Add / remove / reorder via the auto-detected list editor.",
+        description: "A row of buttons sitting next to each other.",
         icon: TbStack2,
-        category: "Content",
+        category: "Buttons",
         props: {
           className:
             "flex flex-col items-center justify-start gap-space-xs md:flex-row md:items-center md:justify-start w-auto",
@@ -1686,7 +1857,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Social Nav",
-        description: "Social media icon buttons with brand fills.",
+        description: "A row of social icons with brand-colour fills.",
         icon: TbBrandTwitter,
         category: "Navigation",
         props: { className: navListClassName },
@@ -1694,7 +1865,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Social Icons",
-        description: "Social media icon buttons with brand colors.",
+        description: "A row of social icons coloured by brand.",
         icon: TbBrandTwitter,
         category: "Navigation",
         props: { className: navListClassName },
@@ -1702,7 +1873,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Plain Nav",
-        description: "Simple text navigation links.",
+        description: "A simple row of text links.",
         icon: TbMinus,
         category: "Navigation",
         props: { className: navListClassName },
@@ -1710,7 +1881,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Minimal Nav",
-        description: "Nav links with primary background fills.",
+        description: "Nav links with a coloured pill behind each.",
         icon: TbLayoutNavbar,
         category: "Navigation",
         props: { className: navListClassName },
@@ -1718,7 +1889,7 @@ export const ContainerDef = defineComponent(
       },
       {
         label: "Pill Nav",
-        description: "Compact pill-shaped navigation bar.",
+        description: "A compact pill-shaped row of nav links.",
         icon: TbPill,
         category: "Navigation",
         props: {
@@ -1726,6 +1897,68 @@ export const ContainerDef = defineComponent(
             "flex flex-row items-center gap-space-xs md:flex md:flex-row md:items-center md:gap-space-xs bg-primary rounded-full px-space-xs py-space-xs",
         },
         children: buildPillNavButtons,
+      },
+      // ─── Image gallery presets ───
+      {
+        label: "Image Group",
+        description: "A row of pictures sitting next to each other.",
+        icon: TbPhoto,
+        category: "Images",
+        props: {
+          className: "flex flex-row items-center gap-space-sm w-full",
+        },
+        children: buildSimpleImageChildren,
+      },
+      {
+        label: "Image Grid",
+        description: "A grid of pictures with equal-width columns.",
+        icon: TbLayoutGrid,
+        category: "Images",
+        props: {
+          className: "grid grid-cols-3 gap-space-sm w-full",
+        },
+        children: buildSimpleImageChildren,
+      },
+      {
+        label: "Image Masonry",
+        description: "A staggered Pinterest-style column layout.",
+        icon: TbColumns2,
+        category: "Images",
+        props: {
+          className: "columns-3 gap-space-sm w-full [&>*]:mb-space-sm [&>*]:break-inside-avoid",
+        },
+        children: buildSimpleImageChildren,
+      },
+      {
+        label: "Image Marquee",
+        description: "Pictures scrolling sideways in an endless loop.",
+        icon: TbInfinity,
+        category: "Images",
+        props: {
+          className: "flex w-full overflow-hidden hover:[animation-play-state:paused]",
+          root: { animation: "cssMarquee" },
+        },
+        children: buildMarqueeChildren,
+      },
+      {
+        label: "Image Carousel",
+        description: "A slideshow with prev/next arrows and dots.",
+        icon: TbCarouselHorizontal,
+        category: "Images",
+        props: {
+          className: "relative overflow-hidden w-full rounded-box",
+        },
+        children: () => buildCarouselChildren({ hero: false }),
+      },
+      {
+        label: "Image Hero",
+        description: "A full-width slideshow showing one big image at a time.",
+        icon: TbSlideshow,
+        category: "Images",
+        props: {
+          className: "relative overflow-hidden w-full rounded-box",
+        },
+        children: () => buildCarouselChildren({ hero: true }),
       },
     ],
     modifiers: [

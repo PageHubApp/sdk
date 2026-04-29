@@ -115,7 +115,7 @@ export const ListItemDef = defineComponent(
     displayName: "List Item",
     component: ListItem,
     icon: TbListDetails,
-    category: "List",
+    category: "Lists",
     canvas: false,
     settings: ListItemMainTab,
     toHTML,
@@ -142,7 +142,7 @@ export const ListItemDef = defineComponent(
     presets: [
       {
         label: "List item",
-        description: "One row of text with an inherited marker.",
+        description: "One row inside a list.",
         props: {
           text: "<p>Feature or benefit</p>",
           className: "text-base leading-relaxed",

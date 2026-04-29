@@ -258,7 +258,6 @@ const BUILT_IN_NAMES = new Set([
   "Header",
   "Icon",
   "Image",
-  "ImageList",
   "Link",
   "Map",
   "MapPoint",

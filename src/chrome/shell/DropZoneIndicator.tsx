@@ -497,7 +497,7 @@ export function DropZoneIndicator() {
   // ── Render ────────────────────────────────────────────────────────
 
   // CraftJS sets indicator.error when the drop is invalid (e.g. dragging Text
-  // into an ImageList that only accepts Images). Flip every chrome element red
+  // into a Table that only accepts TableRows). Flip every chrome element red
   // so the user sees the no-drop state on the zone, not just the cursor.
   const accent = indicator?.error ? EDITOR_ERROR : EDITOR_ACCENT;
 

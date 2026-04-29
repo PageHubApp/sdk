@@ -90,7 +90,7 @@ export const ImageDef = defineComponent(
     name: "Image",
     component: Image,
     icon: TbPhoto,
-    category: "Content",
+    category: "Images",
     settings: ImageMainTab,
     toHTML,
     disable: ["textColor", "bgColor", "background", "pattern", "font", "opacity"],
@@ -103,7 +103,7 @@ export const ImageDef = defineComponent(
     presets: [
       {
         label: "Image",
-        description: "Responsive image with cover fit.",
+        description: "A picture that scales to fit its slot.",
         props: {
           type: "cdn",
           className: "object-cover flex overflow-hidden md:h-auto",

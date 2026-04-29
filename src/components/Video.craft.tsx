@@ -115,7 +115,7 @@ export const VideoDef = defineComponent(
     presets: [
       {
         label: "Video",
-        description: "Embed YouTube, Vimeo, or other video players.",
+        description: "Embed a video from YouTube, Vimeo, or similar.",
         props: {
           className: "w-full h-full flex overflow-hidden",
         },

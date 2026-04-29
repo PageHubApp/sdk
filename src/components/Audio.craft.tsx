@@ -42,7 +42,7 @@ import { NameNodeController, HoverNodeController, DeleteNodeController } from ".
 export const AudioDef = defineComponent(
   {
     name: "Audio",
-    description: "Audio player with URL or upload.",
+    description: "An audio player you can drop a track into.",
     component: Audio,
     icon: TbMusic,
     category: "Media",

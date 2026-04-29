@@ -10,7 +10,6 @@ export { Form } from "./Form";
 export { FormElement, OnlyFormElement } from "./FormElement";
 export { Header } from "./Header";
 export { Image } from "./Image";
-export { ImageList } from "./ImageList";
 export { Map } from "./Map";
 export { MapPoint } from "./MapPoint";
 export { Text } from "./Text";

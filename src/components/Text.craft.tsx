@@ -116,7 +116,7 @@ export const TextDef = defineComponent(
     name: "Text",
     component: Text,
     icon: TbLetterT,
-    category: "Content",
+    category: "Text",
     settings: TextMainTab,
     defaultProps: {
       richText: { mode: "full" },
@@ -145,7 +145,7 @@ export const TextDef = defineComponent(
       {
         label: "Title",
         icon: TbH1,
-        description: "Large heading text.",
+        description: "A big heading at the top of a section.",
         props: {
           text: titleLorem.generateWords(4),
           className: "text-4xl",
@@ -154,7 +154,7 @@ export const TextDef = defineComponent(
       {
         label: "Sub-title",
         icon: TbH2,
-        description: "Secondary heading text.",
+        description: "A smaller heading under the main one.",
         props: {
           text: lorem.generateSentences(1),
           className: "text-xl",
@@ -163,7 +163,7 @@ export const TextDef = defineComponent(
       {
         label: "Paragraph",
         icon: TbBlockquote,
-        description: "Body text block.",
+        description: "A block of body copy.",
         props: {
           tagName: "p",
           text: paragraphLorem.generateParagraphs(1),

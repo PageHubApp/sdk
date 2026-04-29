@@ -14,8 +14,7 @@ export const DataDef = defineComponent(
     category: "Layout",
     canvas: true,
     settings: DataMainTab,
-    description:
-      "Data-aware container. Repeats its children per item from a connector (Stripe products, customer orders, nested scopes). Same layout as Container.",
+    description: "A list that repeats per item — products, orders, etc.",
     toHTML: containerToHTML,
     rules: {
       canDrag: () => true,

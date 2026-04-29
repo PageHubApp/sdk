@@ -80,7 +80,7 @@ export const LinkDef = defineComponent(
     name: "Link",
     component: Link,
     icon: TbLink,
-    category: "Content",
+    category: "Buttons",
     settings: LinkMainTab,
     toHTML,
     disable: ["opacity"],
@@ -90,7 +90,7 @@ export const LinkDef = defineComponent(
     presets: [
       {
         label: "Link",
-        description: "Plain text hyperlink — underlines on hover, inherits parent color.",
+        description: "Plain text you can click to go somewhere.",
         props: {
           text: "Learn more",
           className: "link link-hover",
@@ -98,7 +98,7 @@ export const LinkDef = defineComponent(
       },
       {
         label: "Arrow Link",
-        description: "Text link with trailing arrow icon — common 'read more' pattern.",
+        description: "A 'read more' style text link with an arrow on the end.",
         props: {
           text: "Read more",
           icon: {

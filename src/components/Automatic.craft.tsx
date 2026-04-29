@@ -20,7 +20,7 @@ export const AutomaticDef = defineComponent(
   {
     name: "Automatic",
     displayName: "Automatic",
-    description: "Smart container that adapts to where you drop it — becomes a content wrapper inside a section, or a card inside a nested container.",
+    description: "A box that figures out its own layout based on where you drop it.",
     component: Container,
     icon: TbAdjustmentsAlt,
     category: "Layout",

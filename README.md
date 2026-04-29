@@ -267,19 +267,15 @@ The SDK ships with these drag-and-drop components out of the box:
 | `Container`      | Flex/grid layout wrapper                  |
 | `ContainerGroup` | Grouped layout sections                   |
 | `Header`         | Page header with nav                      |
-| `Nav`            | Navigation menu                           |
 | `Footer`         | Page footer                               |
 | `Text`           | Rich text with inline editing             |
 | `Image`          | Responsive images                         |
-| `ImageList`      | Image gallery / grid                      |
 | `Button`         | CTA button with variants                  |
 | `Video`          | Video embed (YouTube, Vimeo, self-hosted) |
 | `Audio`          | Audio player                              |
 | `Embed`          | Raw HTML / iframe embed                   |
 | `Form`           | Form container                            |
 | `FormElement`    | Input, select, textarea, etc.             |
-| `Divider`        | Horizontal rule                           |
-| `Spacer`         | Vertical spacing                          |
 | `Background`     | Full-bleed background section             |
 
 ### Custom Components

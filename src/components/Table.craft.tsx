@@ -107,7 +107,7 @@ export const TableDef = defineComponent(
     displayName: "Table",
     component: Table,
     icon: TbTable,
-    category: "List",
+    category: "Tables",
     canvas: true,
     settings: TableMainTab,
     toHTML,
@@ -130,14 +130,14 @@ export const TableDef = defineComponent(
     presets: [
       {
         label: "Table",
-        description: "Scrollable table — add thead/tbody/tfoot sections.",
+        description: "A table you can drop rows and cells into.",
         props: {
           className: "border-base-300 text-base-content",
         },
       },
       {
         label: "Pricing table",
-        description: "thead + tbody + tfoot with three columns.",
+        description: "A three-column pricing table to start from.",
         props: {
           className: "border-base-300 text-base-content",
         },

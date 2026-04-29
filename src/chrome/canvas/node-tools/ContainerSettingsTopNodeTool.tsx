@@ -5,7 +5,7 @@ import { ViewAtom } from "../../viewport/atoms";
 import { getPropFinalValue } from "../../viewport/viewportExports";
 import { AddElement } from "../../viewport/toolbox/toolboxUtils";
 import { NodeInlineTooltip } from "./NodeInlineTooltip";
-import { TbContainer, TbNavigation, TbPlus } from "react-icons/tb";
+import { TbContainer, TbPlus } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { useAtomState } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
@@ -15,7 +15,6 @@ import { useSDK } from "../../../core/context";
 import { useAiEnabled } from "../../../utils/hooks/useAiEnabled";
 import { DeleteNodeButton } from "./DeleteNodeButton";
 import { DuplicateNodeButton } from "./DuplicateNodeButton";
-import SelectParentNodeTool from "./SelectParentNodeTool";
 
 export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   const { config } = useSDK();
@@ -93,23 +92,6 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
 
   return (
     <NodeToolWrapper col={direction !== "horizontal"} dense={compactToolbar}>
-      {direction == "horizontal" && (
-        <>
-          <SelectParentNodeTool
-            parentType="Nav"
-            icon={
-              <NodeInlineTooltip
-                variant={compactToolbar ? "strip-compact" : "container"}
-                content="Select navigation"
-                className={compactToolbar ? "" : segmentBorder}
-              >
-                <TbNavigation />
-              </NodeInlineTooltip>
-            }
-          ></SelectParentNodeTool>
-        </>
-      )}
-
       {direction === "horizontal" && !suppressContainerChromeTools && aiEnabled && renderNodeAi && (
         <NodeInlineTooltip
           variant="container"

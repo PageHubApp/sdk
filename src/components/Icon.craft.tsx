@@ -55,7 +55,7 @@ export const IconDef = defineComponent(
     name: "Icon",
     component: Icon,
     icon: TbIcons,
-    category: "Content",
+    category: "Icons",
     settings: IconMainTab,
     toHTML,
     disable: ["opacity"],
@@ -66,7 +66,7 @@ export const IconDef = defineComponent(
       {
         label: "Icon",
         icon: TbStarFilled,
-        description: "Standalone decorative icon — renders inline SVG at the chosen size/color.",
+        description: "A small standalone icon.",
         props: {
           value: "ref-icon:tb/TbStar",
           size: "w-6 h-6",
@@ -75,7 +75,7 @@ export const IconDef = defineComponent(
       {
         label: "Large Icon",
         icon: TbBolt,
-        description: "Feature-tile sized icon — use in hero badges, feature grids.",
+        description: "A bigger icon for feature tiles or hero badges.",
         props: {
           value: "ref-icon:tb/TbBolt",
           size: "w-12 h-12",

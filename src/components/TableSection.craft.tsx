@@ -30,7 +30,7 @@ export const TableSectionDef = defineComponent(
     displayName: "Table Section",
     component: TableSection,
     icon: TbLayoutRows,
-    category: "List",
+    category: "Tables",
     canvas: true,
     settings: TableSectionMainTab,
     toHTML,
@@ -53,17 +53,17 @@ export const TableSectionDef = defineComponent(
     presets: [
       {
         label: "Table body",
-        description: "tbody — holds data rows.",
+        description: "The body of a table — where the data rows live.",
         props: { tableSection: "tbody", className: "" },
       },
       {
         label: "Table header",
-        description: "thead — column headers.",
+        description: "The top row of a table — column titles.",
         props: { tableSection: "thead", className: "" },
       },
       {
         label: "Table footer",
-        description: "tfoot — totals or notes.",
+        description: "The bottom of a table — totals or notes.",
         props: { tableSection: "tfoot", className: "" },
       },
     ],
