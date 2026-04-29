@@ -161,6 +161,15 @@ export interface AddToCartAction extends ActionBase {
    * Falls back to `quantity` (static) if the field is missing or non-numeric.
    */
   quantityField?: string;
+  /**
+   * Read the matched variant from this state key (typically the output of a
+   * `computedStateBindings` entry with `compute.type === "variant-match"`).
+   * The handler reads `getStateValue(key)` (anchor tokens supported), parses
+   * it as JSON, and merges over the current item context as the cart payload.
+   * When unset or empty, the bare item context is used (single-variant
+   * products). Replaces the legacy `data-variant-form` DOM scrape.
+   */
+  variantMatchStateKey?: string;
 }
 
 /** Toggle the shopping cart drawer open/closed. */
@@ -181,9 +190,10 @@ export interface ManageSubscriptionAction extends ActionBase {
 /**
  * Send the current visitor-composed message to the nearest Agent chat.
  * Reads the value of `[name=field]` inside the closest `[data-ph-agent-chat]`
- * ancestor, dispatches `pagehub:agent-send` on that ancestor with `{ value }`,
- * then clears the field. The `AgentChat` app component listens and calls its
- * `send()` runtime.
+ * ancestor, then writes `${chatId}:outbox` (`{ nonce, value }` JSON) to the
+ * central state registry. The `AgentChat` wrapper subscribes via
+ * `useStateValue` and calls its `send()` runtime when the nonce changes.
+ * No CustomEvent bus — observable, gateable, testable via `getStateValue`.
  */
 export interface AgentSendAction extends ActionBase {
   type: "agent-send";

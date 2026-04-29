@@ -43,7 +43,7 @@ export const ToolbarRowFrame = ({
   if (variant === "swatch") {
     variantClass = `gap-1.5 pl-0! overflow-hidden ${hasTrailing ? "pr-1" : "pr-0!"}`;
   } else {
-    variantClass = `gap-1.5 ${hasTrailing ? "px-1" : "pl-1 pr-0"}`;
+    variantClass = `gap-1.5 px-1`;
   }
   return (
     <div

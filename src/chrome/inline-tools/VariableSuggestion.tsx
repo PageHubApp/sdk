@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { TbBuilding, TbCalendar, TbChevronRight, TbShoppingCart, TbVariable } from "react-icons/tb";
 import type { SuggestionProps } from "@/core/tiptapExtensions/VariableNode";
 import { useAnchoredPopover } from "@/chrome/overlays/useAnchoredPopover";
+import { OVERLAY_Z_INLINE_TOOLS } from "@/chrome/overlays/overlayZIndex";
 
 // ── Shared styles (same as ToolboxContextual) ───────────────────────────────
 
@@ -86,7 +87,7 @@ function GroupSubmenu({
   return ReactDOM.createPortal(
     <div
       ref={floating.refs.setFloating}
-      style={{ ...floating.floatingStyles, zIndex: 100000 }}
+      style={{ ...floating.floatingStyles, zIndex: OVERLAY_Z_INLINE_TOOLS }}
       className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto border py-1 shadow-xl select-none"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -169,7 +170,7 @@ export function VariableSuggestionPopup({ suggestion }: { suggestion: Suggestion
     return ReactDOM.createPortal(
       <div
         className="pagehub-sdk-root"
-        style={{ position: "fixed", top: rect.bottom + 6, left: rect.left, zIndex: 99999 }}
+        style={{ position: "fixed", top: rect.bottom + 6, left: rect.left, zIndex: OVERLAY_Z_INLINE_TOOLS }}
       >
         <div className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[14rem] overflow-hidden border py-1 shadow-xl">
           <div className="bg-base-200/80 text-neutral-content px-3 py-1 text-[10px] font-semibold tracking-wide uppercase">
@@ -212,7 +213,7 @@ export function VariableSuggestionPopup({ suggestion }: { suggestion: Suggestion
   return ReactDOM.createPortal(
     <div
       className="pagehub-sdk-root"
-      style={{ position: "fixed", top: rect.bottom + 6, left: rect.left, zIndex: 99999 }}
+      style={{ position: "fixed", top: rect.bottom + 6, left: rect.left, zIndex: OVERLAY_Z_INLINE_TOOLS }}
     >
       <div className="rounded-xl border-base-300/50 bg-base-100 text-base-content min-w-[12rem] overflow-visible border py-1 shadow-xl select-none">
         {grouped.map(([group, items]) => {

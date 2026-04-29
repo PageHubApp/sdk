@@ -67,6 +67,14 @@ export interface ConditionContext {
    * (Tailwind `md`) when not set. Per-site override via `theme.breakpoints.md`.
    */
   mobileBreakpoint?: number;
+  /**
+   * Anchor map from the nearest `<AnchorProvider>`. The `state` condition
+   * resolves `{{anchor.X}}` tokens in `Condition.key` against this map before
+   * looking up the registry. Lets a single preset (e.g. agent floating bubble)
+   * gate visibility against its own per-instance state without needing tree
+   * mutations to rewrite placeholder ids.
+   */
+  anchors?: Readonly<Record<string, string>>;
 }
 
 /** Branch definition for ConditionalContainer */

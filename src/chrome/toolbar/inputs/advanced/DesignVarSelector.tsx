@@ -12,6 +12,7 @@ import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { CATEGORY_LABELS } from "./designVarConstants";
 import { useDesignVarOptions, type DesignVar } from "./useDesignVarOptions";
 import { ToolbarIconButton } from "../../../primitives/ToolbarIconButton";
+import { OVERLAY_Z_MODAL } from "@/chrome/overlays/overlayZIndex";
 
 interface DesignVarSelectorProps {
   propKey: string;
@@ -160,7 +161,7 @@ function DesignVarDialog({
         position: "absolute" as const,
         bottom: window.innerHeight - rect.top + 6,
         left: rect.left,
-        zIndex: 10000,
+        zIndex: OVERLAY_Z_MODAL,
         maxHeight: Math.min(400, rect.top - 20, window.innerHeight * 0.6),
         width: 320,
       }
@@ -168,7 +169,7 @@ function DesignVarDialog({
         position: "absolute" as const,
         top: rect.bottom + 6,
         left: rect.left,
-        zIndex: 10000,
+        zIndex: OVERLAY_Z_MODAL,
         maxHeight,
         width: 320,
       };
@@ -178,13 +179,14 @@ function DesignVarDialog({
       <div
         role="presentation"
         aria-hidden="true"
-        className="pointer-events-auto fixed inset-0 z-9999"
+        className="pointer-events-auto fixed inset-0"
+        style={{ zIndex: OVERLAY_Z_MODAL - 1 }}
         onClick={closeDialog}
       />
 
       <div
         style={style}
-        className="pagehub-sdk-root pointer-events-auto z-10000"
+        className="pagehub-sdk-root pointer-events-auto"
         data-design-var-dialog
       >
         <div className="ph-panel overflow-hidden p-0">

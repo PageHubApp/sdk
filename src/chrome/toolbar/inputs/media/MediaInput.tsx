@@ -7,13 +7,19 @@ import { getMediaById, getMediaContent, registerMediaWithBackground, SideBarAtom
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
+import { VariableTextInput } from "../advanced/VariableTextInput";
 import { getMediaKind } from "./utils/media-helpers";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
 import { MiniPreviewTile } from "../../../primitives/MiniPreviewTile";
 import { PopoverChip } from "../../../primitives/PopoverChip";
+import { FloatingPanel } from "../../../floating/FloatingPanel";
+import { MediaManagerBody } from "./MediaManagerBody";
+import { MediaPreviewModal } from "./components/MediaPreviewModal";
+import { useMediaManager } from "./hooks/useMediaManager";
 import type { MediaKind } from "./utils/media-helpers";
 
 const POPOVER_PANEL_WIDTH = 480;
+const POPOVER_PANEL_HEIGHT = 600;
 
 const MediaManagerModalLazy = lazy(() =>
   import("./MediaManagerModal").then(m => ({ default: m.MediaManagerModal }))
@@ -99,6 +105,7 @@ export const MediaInput = (propa: MediaInputProps) => {
   } = props;
 
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
+  const [chipSourceMode, setChipSourceMode] = useState<"library" | "dynamic">("library");
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [popoverInitialPos, setPopoverInitialPos] = useState<
     { x: number; y: number } | undefined
@@ -113,6 +120,7 @@ export const MediaInput = (propa: MediaInputProps) => {
     } else {
       setPopoverInitialPos(undefined);
     }
+    setChipSourceMode(hasDynamicSource ? "dynamic" : "library");
     setShowMediaBrowser(true);
   };
 
@@ -143,11 +151,19 @@ export const MediaInput = (propa: MediaInputProps) => {
     setShowMediaBrowser(false);
   };
 
+  const manager = variant === "chip" ? useMediaManager({
+    isOpen: showMediaBrowser,
+    onClose: () => setShowMediaBrowser(false),
+    onSelect: handleBrowseSelect,
+    selectionMode: true,
+  }) : null;
+
   const mediaId = getPath(nodeProps, propKey);
   const contentUrl = getPath(nodeProps, contentKey);
   const hasMedia = !!mediaId;
-  const hasContentUrl =
-    !!contentUrl && typeof contentUrl === "string" && contentUrl.startsWith("http");
+  const contentValue = typeof contentUrl === "string" ? contentUrl.trim() : "";
+  const hasContentUrl = !!contentValue && contentValue.startsWith("http");
+  const hasDynamicSource = !!contentValue;
   const selectedMedia = hasMedia ? getMediaById(query, mediaId) : null;
   const isSvg = selectedMedia?.type === "svg";
   const svgContent = isSvg ? selectedMedia?.metadata?.svg : null;
@@ -189,8 +205,90 @@ export const MediaInput = (propa: MediaInputProps) => {
     });
   };
 
-  const renderBrowser = () =>
-    showMediaBrowser ? (
+  const renderBrowser = () => {
+    if (variant === "chip" && showMediaBrowser) {
+      return (
+        <Suspense fallback={null}>
+          <FloatingPanel
+            isOpen
+            onClose={() => setShowMediaBrowser(false)}
+            title="Select Media"
+            storageKey="media-input-chip-picker"
+            autoSize={false}
+            defaultWidth={POPOVER_PANEL_WIDTH}
+            defaultHeight={POPOVER_PANEL_HEIGHT}
+            minWidth={360}
+            maxWidth={720}
+            minHeight={420}
+            initialPosition={popoverInitialPos}
+            persistSize={false}
+            zIndex={1100}
+          >
+            <div className="flex h-full flex-col">
+              <div className="border-base-300 flex items-center gap-1 border-b p-2">
+                <button
+                  type="button"
+                  className={`btn btn-xs ${chipSourceMode === "library" ? "btn-primary" : "btn-ghost"}`}
+                  onClick={() => setChipSourceMode("library")}
+                >
+                  Library
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-xs ${chipSourceMode === "dynamic" ? "btn-primary" : "btn-ghost"}`}
+                  onClick={() => setChipSourceMode("dynamic")}
+                >
+                  Dynamic
+                </button>
+              </div>
+              {chipSourceMode === "library" && manager ? (
+                <MediaManagerBody
+                  manager={manager}
+                  selectionMode
+                  onSelect={handleBrowseSelect}
+                  onClose={() => setShowMediaBrowser(false)}
+                  popover
+                />
+              ) : (
+                <div className="space-y-2 p-3">
+                  <VariableTextInput
+                    id="media-chip-dynamic-src"
+                    value={contentValue}
+                    onChange={handleContentUrlChange}
+                    label="Image Source"
+                    placeholder="https://... or {{item.image}}"
+                    helpText='Use a URL or token like {{item.image}}.'
+                    intent="image-src"
+                    showExpressionHelp={false}
+                    snippets={[
+                      { label: "Item image", value: "{{item.image}}" },
+                      { label: "Image fallback", value: '{{item.image || "/placeholder.jpg"}}' },
+                      {
+                        label: "Connector image",
+                        value: "{{connector.provider.bindings.products.0.image}}",
+                      },
+                    ]}
+                  />
+                </div>
+              )}
+            </div>
+          </FloatingPanel>
+          {manager ? (
+            <MediaPreviewModal
+              previewMedia={manager.previewMedia}
+              filteredMedia={manager.filteredMedia}
+              onClose={() => manager.setPreviewMedia(null)}
+              onPrevious={manager.handlePreviewPrevious}
+              onNext={manager.handlePreviewNext}
+            />
+          ) : null}
+        </Suspense>
+      );
+    }
+
+    if (!showMediaBrowser) return null;
+
+    return (
       <Suspense fallback={null}>
         <MediaManagerModalLazy
           isOpen
@@ -200,7 +298,8 @@ export const MediaInput = (propa: MediaInputProps) => {
           kindFilter={kindFilter}
         />
       </Suspense>
-    ) : null;
+    );
+  };
 
   // ── Chip variant ──────────────────────────────────────────────────────
   if (variant === "chip") {
@@ -240,11 +339,11 @@ export const MediaInput = (propa: MediaInputProps) => {
           open={showMediaBrowser}
           onTriggerClick={openChipBrowser}
           onClear={handleClear}
-          triggerAriaLabel={hasPreview ? "Change media" : "Add media"}
+          triggerAriaLabel={hasPreview || hasDynamicSource ? "Change media" : "Add media"}
           clearAriaLabel="Clear media"
           variant={hasPreview ? "preview" : "default"}
           leading={previewLeading}
-          summary={hasPreview ? null : "Add..."}
+          summary={hasPreview ? null : hasDynamicSource ? contentValue : "Add..."}
         />
         {renderBrowser()}
       </div>

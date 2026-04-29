@@ -8,6 +8,7 @@ import { MediaManagerBody } from "./MediaManagerBody";
 import { MediaPreviewModal } from "./components/MediaPreviewModal";
 import { useMediaManager } from "./hooks/useMediaManager";
 import { type MediaKind } from "./utils/media-helpers";
+import { OVERLAY_Z_MEDIA_MANAGER } from "@/chrome/overlays/overlayZIndex";
 
 interface MediaManagerModalProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ interface MediaManagerModalProps {
 }
 
 const MEDIA_MANAGER_DEFAULT_WIDTH = 1080;
-const MEDIA_MANAGER_Z = 10050;
+const MEDIA_MANAGER_Z = OVERLAY_Z_MEDIA_MANAGER;
 
 export function MediaManagerModal({
   isOpen,

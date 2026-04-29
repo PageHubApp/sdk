@@ -7,6 +7,8 @@ import { FormField } from "@pagehub/ui";
 import { useItemContext } from "../utils/itemContext";
 import { replaceVariables } from "../utils/design/variables";
 import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
+import { useAnchors, resolveAnchors } from "../utils/anchors/anchorContext";
+import { setState, useStateValue } from "../utils/stateRegistry";
 
 import { addCustomHandlers } from "../utils/clickControls";
 import { applyAnimation } from "../utils/tailwind/tailwind";
@@ -78,6 +80,30 @@ export interface FormElementProps extends BaseSelectorProps {
   autocomplete?: string;
   options?: Array<{ value: string; label: string; disabled?: boolean }>;
   invalid?: boolean;
+  /**
+   * Two-way bind this input's value to a state-registry key. The single
+   * primitive that replaces every `data-storefront-input` scrape — authors
+   * set `stateBinding: { key: "url:q" }` on a search input and the URL
+   * bridge picks it up automatically.
+   *
+   * - `key`            — registry key (anchor tokens supported)
+   * - `defaultValue`   — written if state is unset on mount
+   * - `debounceMs`     — coalesce rapid input events (default 0; 300 for search)
+   * - `mode`           — `"value"` (default) | `"checked"` (checkbox / radio)
+   *
+   * Behavior:
+   *   On mount: if state has a value, the input renders it. Otherwise
+   *   `defaultValue` writes through.
+   *   On change: writes the new value to state (debounced).
+   *   On external state writes: re-syncs the input value (e.g. URL bridge
+   *   updating from popstate).
+   */
+  stateBinding?: {
+    key: string;
+    defaultValue?: string;
+    debounceMs?: number;
+    mode?: "value" | "checked";
+  };
 }
 
 export const FormElement = (incomingProps: Partial<FormElementProps>) => {
@@ -114,9 +140,21 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   // Repeater context — lets block authors write `name="facet.{{item.facetKey}}"`
   // and `attrs: { value: "{{item.value}}" }` on facet dropdown checkboxes.
   const itemContext = useItemContext();
+  const anchors = useAnchors();
   useRuntimeVarsVersion();
   const interp = (v: string | undefined) =>
-    v ? replaceVariables(v, query, itemContext) : v;
+    v ? replaceVariables(v, query, itemContext, anchors) : v;
+
+  // Resolve state binding — anchor tokens get expanded against the nearest
+  // <AnchorProvider> (e.g. an agent chat or PDP wrapper) so per-instance
+  // forms don't collide. `boundKey` is the canonical registry key.
+  const stateBinding = props.stateBinding as FormElementProps["stateBinding"] | undefined;
+  const boundKey = stateBinding?.key
+    ? resolveAnchors(stateBinding.key, anchors) || stateBinding.key
+    : undefined;
+  // Subscribe so external writes (URL bridge popstate, set-state actions
+  // elsewhere on the page) flow back into the input.
+  const externalValue = useStateValue(boundKey);
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -127,46 +165,100 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   // Generate a stable input ID for label association (WCAG 1.3.1)
   const inputId = `ph-input-${id}`;
 
-  // For checkbox/radio, prefillFromUrl reads the CSV list at the matching URL
-  // param and checks this input iff our `value` is one of the entries. Lets
-  // facet dropdown checkboxes reflect `?facet.color=red,blue` on page load.
-  const resolvedName =
-    props.name && itemContext ? replaceVariables(props.name, query, itemContext) : props.name;
-  const resolvedValue =
-    props.attrs && typeof (props.attrs as any).value === "string" && itemContext
-      ? replaceVariables((props.attrs as any).value, query, itemContext)
-      : (props.attrs as any)?.value;
-  const prefillChecked =
-    !enabled &&
-    props.prefillFromUrl &&
-    (props.type === "checkbox" || props.type === "radio") &&
-    resolvedName &&
-    typeof resolvedValue === "string" &&
-    typeof window !== "undefined" &&
-    (new URLSearchParams(window.location.search).get(resolvedName) || "")
-      .split(",")
-      .map(s => s.trim())
-      .includes(resolvedValue);
+  // ── State binding plumbing ─────────────────────────────────────────────
+  // Strategy: keep the input uncontrolled (browser autocomplete, form
+  // submit, defaultValue all keep working) but sync imperatively when state
+  // changes from outside.
+  const inputRef = React.useRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null>(null);
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Mirror external state writes onto the live DOM input (popstate, sibling
+  // set-state actions, etc.). Skip when the input is currently focused so a
+  // typing user isn't yanked mid-keystroke.
+  React.useEffect(() => {
+    if (enabled || !boundKey) return;
+    const el = inputRef.current;
+    if (!el) return;
+    if (document.activeElement === el) return;
+    const v = externalValue ?? "";
+    if (stateBinding?.mode === "checked") {
+      const target = el as HTMLInputElement;
+      const want = v === target.value || v === "on";
+      if (target.checked !== want) target.checked = want;
+    } else {
+      if (el.value !== v) (el as HTMLInputElement).value = v;
+    }
+  }, [enabled, boundKey, externalValue, stateBinding?.mode]);
+
+  // Seed default into state on mount when state is unset.
+  React.useEffect(() => {
+    if (enabled || !boundKey) return;
+    const current = externalValue;
+    const fallback = stateBinding?.defaultValue ?? props.defaultValue;
+    if ((current == null || current === "") && fallback) {
+      setState(boundKey, { kind: "value", value: String(fallback), source: "load" }, "form-element");
+    }
+    // Run only once per binding change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, boundKey]);
+
+  // Imperative onChange writer — debounced for text inputs, immediate for
+  // selects/checkboxes/radios.
+  const writeValueToState = React.useCallback(
+    (value: string) => {
+      if (!boundKey) return;
+      const ms = stateBinding?.debounceMs ?? 0;
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      const fire = () =>
+        setState(
+          boundKey,
+          { kind: "value", value, source: "runtime" },
+          "form-element"
+        );
+      if (ms > 0) debounceRef.current = setTimeout(fire, ms);
+      else fire();
+    },
+    [boundKey, stateBinding?.debounceMs]
+  );
 
   // Build props based on input type - only include relevant attributes
   const prop: any = {
-    ref: r => connect(drag(r)),
+    ref: (r: any) => {
+      inputRef.current = r;
+      connect(drag(r));
+    },
     id: inputId,
     className: props.className || "",
     type: props.type,
     defaultValue:
-      (!enabled &&
-      props.prefillFromUrl &&
-      props.name &&
-      typeof window !== "undefined" &&
-      props.type !== "checkbox" &&
-      props.type !== "radio"
-        ? new URLSearchParams(window.location.search).get(props.name)
+      // State binding owns the value. urlQueryStateBridge populates `url:*`
+      // keys before render, so first-paint correctness on URL-driven
+      // storefronts is preserved without a parallel prefill path.
+      (boundKey && !enabled && externalValue != null && externalValue !== ""
+        ? externalValue
         : null) ?? props.defaultValue ?? "",
     "aria-label": props.label || props.placeholder || props.name || `${props.type || "text"} input`,
   };
 
-  if (prefillChecked) prop.defaultChecked = true;
+
+  // Wire onChange when state-bound. For checkbox/radio in checked mode,
+  // write the input's `value` if checked, "" otherwise. Otherwise mirror the
+  // text/select value verbatim.
+  if (boundKey && !enabled) {
+    const isCheckedMode = stateBinding?.mode === "checked";
+    prop.onChange = (e: React.ChangeEvent<any>) => {
+      const target = e.target as HTMLInputElement;
+      if (isCheckedMode) {
+        writeValueToState(target.checked ? target.value || "on" : "");
+      } else {
+        writeValueToState(target.value);
+      }
+    };
+    if (isCheckedMode && externalValue && externalValue !== "") {
+      // Initial checked state from registry (e.g. ?facet.color=red,blue → red checkbox is checked).
+      prop.defaultChecked = externalValue === (props as any).attrs?.value || externalValue === "on";
+    }
+  }
 
   applyAriaProps(prop, props);
 
@@ -249,9 +341,12 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   if (props.type === "tel") prop["aria-describedby"] = `${inputId}-desc`;
   if (props.type === "url") prop["aria-describedby"] = `${inputId}-desc`;
 
-  // Pass through plain string attrs (data-*, etc.) so app hooks can wire DOM
-  // contracts. Interpolate against itemContext so a repeater of facet options
-  // can carry `value="{{item.value}}"` and `data-storefront-input="facet.{{item.facetKey}}"`.
+  // Pass through plain string attrs (data-*, etc.). Interpolate against
+  // itemContext so a repeater of facet options can carry e.g.
+  // `value="{{item.value}}"` for the submitted value when a checkbox is
+  // checked. Storefront wiring no longer needs `data-storefront-input` —
+  // use `stateBinding: { key: "url:facet.<facetKey>", mode: "checked" }`
+  // instead so the FormElement ↔ state ↔ URL bridge flow handles it.
   applyAttrs(prop, props.attrs, v => (typeof v === "string" ? replaceVariables(v, query, itemContext) : v));
 
   // Safety net: if a block passed `value` via attrs, treat it as the initial

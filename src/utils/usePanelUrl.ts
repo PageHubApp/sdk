@@ -95,8 +95,9 @@ function getSnapshot(): PanelUrlState {
   return currentSnapshot;
 }
 
+const SERVER_SNAPSHOT: PanelUrlState = { panel: null, cat: null, sub: null, sty: null, q: null };
 function getServerSnapshot(): PanelUrlState {
-  return { panel: null, cat: null, sub: null, sty: null, q: null };
+  return SERVER_SNAPSHOT;
 }
 
 function notify(): void {

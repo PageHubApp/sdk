@@ -16,6 +16,7 @@ import {
 import { useSDK } from "../../core/context";
 import { useEditorSidebarDockLeft } from "../../utils/lib";
 import { getLoadedPages, listPageNodeIds } from "../../utils/pageManagement";
+import { OVERLAY_Z_MODAL } from "../overlays/overlayZIndex";
 import { AccessTab } from "./page-settings/AccessTab";
 import { AdvancedTab } from "./page-settings/AdvancedTab";
 import { BasicTab } from "./page-settings/BasicTab";
@@ -573,7 +574,7 @@ export function PageSettingsModal({
       minHeight={400}
       maxHeight={modalMaxHeight}
       dockToEdge={dockRight ? "right" : "left"}
-      zIndex={10040}
+      zIndex={OVERLAY_Z_MODAL}
       tabs={tabs.map(tab => ({ key: tab.key, label: tab.label, icon: tab.icon }))}
       activeTab={activeTab}
       setActiveTab={setActiveTab}

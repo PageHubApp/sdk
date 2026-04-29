@@ -5,6 +5,7 @@ import { buildClientContext, buildStaticContext } from "./context";
 import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
 import { getConnectorData, replaceVariables } from "../design/variables";
 import { useItemContext } from "../itemContext";
+import { subscribe as subscribeStateTick } from "../stateRegistry";
 import type { Condition, ConditionGroup, ConditionLogic } from "./types";
 
 /**
@@ -118,14 +119,16 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     evaluate();
     const onPop = () => evaluate();
     const onResize = () => evaluate();
-    const onAuth = () => evaluate();
     window.addEventListener("popstate", onPop);
     window.addEventListener("resize", onResize);
-    window.addEventListener("pagehub:auth-changed", onAuth);
+    // Auth changes propagate via the central state registry —
+    // `setAuthState` writes `auth:status`, the global tick subscription
+    // re-runs `evaluate`. Replaces the legacy `pagehub:auth-changed` bus.
+    const offState = subscribeStateTick(evaluate);
     return () => {
       window.removeEventListener("popstate", onPop);
       window.removeEventListener("resize", onResize);
-      window.removeEventListener("pagehub:auth-changed", onAuth);
+      offState();
     };
   }, [hasConditions, enabled, rootProps, itemContext]);
 

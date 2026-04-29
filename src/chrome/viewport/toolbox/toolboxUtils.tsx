@@ -246,11 +246,13 @@ export const AddElement = ({
 
 export const ToolboxItemDisplay = ({ icon: Icon, label, isDragging = false }) => (
   <div
-    className={`border-base-300 bg-base-200 text-base-content hover:bg-accent pointer-events-auto w-full cursor-grab rounded-lg border active:cursor-grabbing ${isDragging ? "border-accent bg-accent text-accent-content" : ""}`}
+    className={`border-base-300 bg-base-200 text-base-content hover:bg-accent pointer-events-auto h-full w-full cursor-grab rounded-lg border active:cursor-grabbing ${isDragging ? "border-accent bg-accent text-accent-content" : ""}`}
   >
-    <div className="pointer-events-none flex min-h-[60px] w-full flex-col items-center justify-center gap-2 px-1 py-2 transition-colors">
-      <Icon className="text-base-content text-2xl" />
-      <span className="text-base-content text-center text-[10px]">{label}</span>
+    <div className="pointer-events-none flex h-full min-h-[60px] w-full flex-col items-center gap-1.5 px-1 pt-3 pb-2 transition-colors">
+      <Icon className="text-base-content text-2xl shrink-0" />
+      <div className="flex flex-1 items-center justify-center">
+        <span className="text-base-content text-center text-[10px]">{label}</span>
+      </div>
     </div>
   </div>
 );
@@ -286,7 +288,7 @@ export const RenderToolComponent = ({
   return (
     <ToolboxInsertHintTooltip description={description}>
       <div
-        className="w-full cursor-grab active:cursor-grabbing"
+        className="h-full w-full cursor-grab active:cursor-grabbing"
         ref={(ref: any) => create(ref, tool)}
         onMouseDown={() => setIsDragging(true)}
         onMouseUp={() => setIsDragging(false)}
@@ -301,7 +303,7 @@ export const RenderToolComponent = ({
           });
         }}
       >
-        {renderer || <div className={"w-full"}>{displayWithProps}</div>}
+        {renderer || <div className="h-full w-full">{displayWithProps}</div>}
       </div>
     </ToolboxInsertHintTooltip>
   );

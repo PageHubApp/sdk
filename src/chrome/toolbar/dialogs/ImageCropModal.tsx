@@ -4,6 +4,7 @@ import { CropCanvas } from "./ImageCrop/components/CropCanvas";
 import { CropControlsPanel } from "./ImageCrop/components/CropControlsPanel";
 import { useImageCrop } from "./ImageCrop/hooks/useImageCrop";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
+import { OVERLAY_Z_CRITICAL_MODAL } from "../../overlays/overlayZIndex";
 
 interface ImageCropModalProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ export function ImageCropModal({ isOpen, onClose, media, onSave, settings }: Ima
   return ReactDOM.createPortal(
     <div
       className="pagehub-sdk-root ph-modal-backdrop ph-modal-backdrop--center"
-      style={{ zIndex: 2147483000 }}
+      style={{ zIndex: OVERLAY_Z_CRITICAL_MODAL }}
       onClick={onClose}
     >
       <div

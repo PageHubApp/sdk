@@ -8,6 +8,7 @@ import { useGetNode } from "../../dialogs/toolHooks";
 import { renderComponentSlots } from "../helpers";
 import { PropertyRow } from "../PropertyRenderer";
 import { backgroundProperties } from "../registry/properties/background";
+import { ContainerStateSection } from "./ContainerStateSection";
 
 import { useNodeTypeHelpers } from "@/chrome/canvas/hooks/useNodeType";
 import { useEditor } from "@craftjs/core";
@@ -74,23 +75,33 @@ export const ContainerMainTab = () => {
   // imageContainer keeps its background-image content panel; layout preset
   // for all other containers now lives in the Layout tab > Alignment section
   // (registered via LayoutPresetSlot).
-  if (props?.type !== "imageContainer") return null;
+  if (props?.type === "imageContainer") {
+    return (
+      <>
+        {renderComponentSlots({
+          Content: (
+            <ToolbarSection collapsible={false}>
+              <SettingsAiSlot />
+              {/* Render through registry so the popover trigger lazy-loads via
+                  customInputs.tsx (chip skeleton fallback) — same pipeline the
+                  Design tab Background section uses. Direct imports would
+                  bypass code-splitting + Suspense. */}
+              <PropertyRow def={bgImageDef} />
+            </ToolbarSection>
+          ),
+          Type: <LayoutPresetInput lp={layoutPreset} />,
+        })}
+        {/* State section is available on every container type */}
+        <ContainerStateSection />
+      </>
+    );
+  }
 
   return (
     <>
-      {renderComponentSlots({
-        Content: (
-          <ToolbarSection collapsible={false}>
-            <SettingsAiSlot />
-            {/* Render through registry so the popover trigger lazy-loads via
-                customInputs.tsx (chip skeleton fallback) — same pipeline the
-                Design tab Background section uses. Direct imports would
-                bypass code-splitting + Suspense. */}
-            <PropertyRow def={bgImageDef} />
-          </ToolbarSection>
-        ),
-        Type: <LayoutPresetInput lp={layoutPreset} />,
-      })}
+      {/* State-binding section (visibilityStateKey + computedStateBindings) */}
+      <ContainerStateSection />
     </>
   );
 };
+

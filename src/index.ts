@@ -348,6 +348,41 @@ export { init };
 // CDN configuration for advanced use
 export { configureCdn } from "./utils/cdn";
 
+// State registry — central reactive state surface (visibility, flags,
+// selection, value). Wrappers write here; descendants read via conditions /
+// stateModifiers / `{{state.X}}` interpolation. Direct hook access is rare
+// (used by app-side cart provider / agent chat to bridge runtime hooks).
+export {
+  setState,
+  getState,
+  getStateValue,
+  setVisibility,
+  getVisibility,
+  toggleVisibility,
+  deleteState,
+  useStateEntry,
+  useStateValue,
+  useGlobalStateTick,
+} from "./utils/stateRegistry";
+export type { StateEntry, StateKind, WriterSource } from "./utils/stateRegistry";
+
+// URL ↔ state bridge — call once per viewer (from `useViewerSetup`) to mirror
+// `URLSearchParams` ↔ `state["url:*"]`. Replaces the legacy
+// `useUrlQueryCommerce` hook + `pagehub:url-query-changed` CustomEvent.
+export { mountUrlQueryStateBridge, getUrlState } from "./utils/state/urlQueryBridge";
+
+// Anchor context — wrappers (AgentFloatingBubble, AgentChat, CartDrawer, …)
+// publish per-instance ids so descendant presets can reference them via
+// `{{anchor.X}}` tokens in `id` / `action.target` / `state` condition keys.
+// Replaces the legacy first-mount `walkAndFix` placeholder-rewrite pattern.
+export {
+  AnchorProvider,
+  useAnchors,
+  resolveAnchors,
+  hasAnchorToken,
+} from "./utils/anchors/anchorContext";
+export type { AnchorMap } from "./utils/anchors/anchorContext";
+
 /** Default Craft resolver map and built-in `defineComponent` defs (extend / merge for custom blocks). */
 export {
   BUILTIN_COMPONENT_DEFS,

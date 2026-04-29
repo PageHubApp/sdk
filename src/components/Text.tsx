@@ -24,6 +24,8 @@ import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
 import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../utils/itemContext";
+import { useAnchors } from "../utils/anchors/anchorContext";
+import { useGlobalStateTick } from "../utils/stateRegistry";
 import { useScrollToSelected } from "./componentHooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
@@ -72,9 +74,10 @@ const renderLiveMode = (
   props: any,
   query: any,
   router: any,
-  itemContext?: Record<string, any> | null
+  itemContext?: Record<string, any> | null,
+  anchors?: Readonly<Record<string, string>> | null
 ) => {
-  const processedText = replaceVariables(props.text, query, itemContext);
+  const processedText = replaceVariables(props.text, query, itemContext, anchors);
   let tagName = sanitizeTagName(props.tagName);
 
   const firstLink = findLinkAction(migrateActions(props));
@@ -119,7 +122,13 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   const { query, enabled } = useEditor(state => getClonedState(props, state));
   const router = useRouter();
   const itemContext = useItemContext();
+  const anchors = useAnchors();
   useRuntimeVarsVersion();
+  // Re-render when ANY state value changes — Text nodes that interpolate
+  // `{{state.<key>}}` need to repaint when their key flips. Cheap (one
+  // global tick per state write); the registry already debounces same-value
+  // writes so idle pages don't churn.
+  useGlobalStateTick();
 
   const {
     connectors: { connect, drag },
@@ -155,8 +164,9 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   };
 
   applyAriaProps(prop, props);
-  // Pass through plain string attrs (data-*, role, etc.) — matches Container/Button/FormElement.
-  // Text-nodes needing runtime hooks (e.g. data-storefront-page-indicator) rely on this.
+  // Pass through plain string attrs (data-*, role, etc.) — matches
+  // Container / Button / FormElement. Author-supplied attrs only; SDK no
+  // longer scrapes Text nodes for any runtime contract.
   applyAttrs(prop, props.attrs);
   const actions = migrateActions(props);
   // Text wraps in <a> via renderLiveMode for single-link cases; here we attach
@@ -186,7 +196,7 @@ export const Text = (incomingProps: Partial<TextProps>) => {
       <React.Suspense
         fallback={
           <div
-            dangerouslySetInnerHTML={{ __html: replaceVariables(text || "", query, itemContext) }}
+            dangerouslySetInnerHTML={{ __html: replaceVariables(text || "", query, itemContext, anchors) }}
           />
         }
       >
@@ -201,7 +211,7 @@ export const Text = (incomingProps: Partial<TextProps>) => {
       </React.Suspense>
     );
   } else {
-    const liveContent = renderLiveMode(props, query, router, itemContext);
+    const liveContent = renderLiveMode(props, query, router, itemContext, anchors);
 
     const liveLink = findLinkAction(migrateActions(props));
     const liveHref = actionToHref(liveLink, query, router?.asPath);

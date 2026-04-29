@@ -7,8 +7,13 @@
 import { ToolbarItem } from "../../ToolbarItem";
 import { TypeInput } from "../typography/TypeInput";
 import { DataAttributesPopover } from "./DataAttributesPopover";
+import { useNode } from "@craftjs/core";
 
 export const PropertiesInput = () => {
+  const { componentName } = useNode(node => ({
+    componentName: String(node.data?.name || ""),
+  }));
+
   return (
     <>
       <ToolbarItem
@@ -21,6 +26,27 @@ export const PropertiesInput = () => {
       />
 
       <TypeInput />
+
+      {componentName === "Image" ? (
+        <>
+          <ToolbarItem
+            propKey="alt"
+            propType="component"
+            type="text"
+            label="Alt Text"
+            placeholder="Describe this image for screen readers"
+            labelHide={false}
+          />
+          <ToolbarItem
+            propKey="title"
+            propType="component"
+            type="text"
+            label="Title"
+            placeholder="Optional advisory title"
+            labelHide={false}
+          />
+        </>
+      ) : null}
 
       <DataAttributesPopover />
     </>

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { TbAlertTriangle, TbCheck } from "react-icons/tb";
 import { useFocusTrap, useAnnounce } from "../../../utils/hooks/useAccessibility";
+import { OVERLAY_Z_CRITICAL_MODAL } from "../../overlays/overlayZIndex";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -107,7 +108,7 @@ export const ConfirmDialog = ({
   return ReactDOM.createPortal(
     <div
       className="pagehub-sdk-root ph-modal-backdrop ph-modal-backdrop--center"
-      style={{ zIndex: 2147483000 }}
+      style={{ zIndex: OVERLAY_Z_CRITICAL_MODAL }}
       onClick={onClose}
     >
       <div

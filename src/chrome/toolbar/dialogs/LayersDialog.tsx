@@ -3,6 +3,7 @@ import { TbLayoutGrid } from "react-icons/tb";
 import { useEditorSidebarDockLeft } from "../../../utils/lib";
 import { FloatingPanel } from "../../floating/FloatingPanel";
 import { Layers } from "./Layers";
+import { OVERLAY_Z_MODAL } from "../../overlays/overlayZIndex";
 
 interface LayersDialogProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ export function LayersDialog({ isOpen, onClose }: LayersDialogProps) {
       maxHeight={700}
       dockToEdge={dockSide}
       closeButtonSide="right"
-      zIndex={10050}
+      zIndex={OVERLAY_Z_MODAL}
     >
       <div className="bg-base-100 text-base-content flex min-h-0 flex-1 flex-col overflow-hidden">
         <Layers expandRootOnLoad={true} />

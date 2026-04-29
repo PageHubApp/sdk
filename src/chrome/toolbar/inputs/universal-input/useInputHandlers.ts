@@ -140,6 +140,7 @@ export const useInputHandlers = (props: UseInputHandlersProps) => {
     if (
       relatedTarget &&
       (relatedTarget.closest("[data-unified-dropdown]") ||
+        relatedTarget.closest("[data-type-selector-dropdown]") ||
         relatedTarget.closest('[role="dialog"]'))
     ) {
       return;

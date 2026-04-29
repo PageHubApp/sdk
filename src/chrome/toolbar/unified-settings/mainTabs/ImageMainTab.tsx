@@ -17,6 +17,13 @@ export const ImageMainTab = () =>
             variant="chip"
             label="Image"
           />
+          <ToolbarItem
+            propKey="alt"
+            propType="component"
+            type="text"
+            label="Alt Text"
+            placeholder="Describe this image for screen readers"
+          />
           <TailwindInput propKey="objectFit" label="Object Fit" prop="objectFit" type="select" />
           <TailwindInput
             propKey="objectPosition"

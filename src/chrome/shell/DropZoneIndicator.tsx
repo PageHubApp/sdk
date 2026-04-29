@@ -12,6 +12,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { getDragOrigin, getCommittedAlignment, getAlignmentDom, getParentFlexDirection } from "./findPosition2D";
 import { getBesidePreviewLabel } from "./layoutInference";
+import { OVERLAY_Z_DRAG } from "../overlays/overlayZIndex";
 
 // ── Editor accent ────────────────────────────────────────────────────
 // Framer-style fixed accent for selection/drop chrome. Halo (below) keeps it
@@ -110,7 +111,7 @@ function DropLabel({ text, top, left, borderColor = "currentColor", transform, w
         top,
         left,
         transform,
-        zIndex: 100000,
+        zIndex: OVERLAY_Z_DRAG,
         pointerEvents: "none",
         background: "rgba(255,255,255,0.96)",
         color: "#111",

@@ -6,6 +6,7 @@ import { checkIfAncestorLinked } from "../../utils/componentUtils";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { ViewAtom } from "../viewport/atoms";
 import { useGapDrag } from "./gap/useGapDrag";
+import { OVERLAY_Z_CANVAS_CONTROLS } from "../overlays/overlayZIndex";
 
 const ACCENT = "rgb(59 130 246)";
 const LINE_LENGTH = 20; // visible marker length along the cross-axis
@@ -69,7 +70,7 @@ export function GapDragControl() {
         height: fillH,
         backgroundColor: isDragging ? "rgba(59, 130, 246, 0.35)" : "rgba(59, 130, 246, 0.18)",
         cursor: isVertical ? "ew-resize" : "ns-resize",
-        zIndex: 9998,
+        zIndex: OVERLAY_Z_CANVAS_CONTROLS,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

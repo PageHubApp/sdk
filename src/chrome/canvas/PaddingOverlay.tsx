@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { twMerge } from "tailwind-merge";
 import { buildVariantPrefix } from "../../utils/tailwind/className";
 import { isEdgeResizeActive, subscribeEdgeResize } from "./edgeResizeState";
+import { OVERLAY_Z_CANVAS_CONTROLS } from "../overlays/overlayZIndex";
 
 // ── Tailwind spacing snap ───────────────────────────────────────────────
 
@@ -483,7 +484,7 @@ export function PaddingOverlay({
         height: overlayRect.h / zoomVal,
         backgroundColor: bgColor,
         cursor,
-        zIndex: 9998,
+        zIndex: OVERLAY_Z_CANVAS_CONTROLS,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

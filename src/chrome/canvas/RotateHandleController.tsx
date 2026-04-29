@@ -22,6 +22,7 @@ import { checkIfAncestorLinked } from "../../utils/componentUtils";
 import { setEdgeResizeActive } from "./edgeResizeState";
 import { getNodeGeometry } from "./nodeGeometry";
 import { isRotateActive, setRotateActive } from "./rotateActiveState";
+import { OVERLAY_Z_CANVAS_CONTROLS } from "../overlays/overlayZIndex";
 
 const SKIP_DISPLAY_NAMES = new Set(["Container", "Background"]);
 const SKIP_TYPES = new Set(["page", "header", "footer"]);
@@ -321,7 +322,7 @@ export function RotateHandleController() {
         userSelect: "none",
         whiteSpace: "nowrap",
         boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-        zIndex: 9999,
+        zIndex: OVERLAY_Z_CANVAS_CONTROLS,
       }}
     >
       {pillDeg}°

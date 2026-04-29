@@ -328,10 +328,12 @@ export const RENDER_INVALID_TREE_MESSAGE =
 // ─── Default resolver ───────────────────────────────────────────────────────
 
 const cartBadgeToHTML: ToHTMLFn = (props, children, ctx) => {
-  const showCount = props.showCount !== false;
+  // CartBadge renders the count pill client-side via `state["cart:count"]`
+  // subscription (see components/stripe/CartBadge.tsx). Static export emits
+  // only the wrapper + children; the pill appears once cartContext mounts.
   const cls = props.className || "relative";
   cls.split(/\s+/).forEach(c => c && ctx.classes.add(c));
-  return `<div class="${cls}" data-cart-show-count="${showCount ? "true" : "false"}">${children || ""}</div>`;
+  return `<div class="${cls}">${children || ""}</div>`;
 };
 
 const defaultResolver: Record<string, ToHTMLFn> = {

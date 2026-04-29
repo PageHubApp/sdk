@@ -1,9 +1,10 @@
 import type { CSSProperties, ReactNode } from "react";
 import { TbHandGrab, TbHandClick, TbHandTwoFingers } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
+import { OVERLAY_Z_TOOLTIP } from "../overlays/overlayZIndex";
 
 const TT_STYLE: CSSProperties = {
-  zIndex: 100000,
+  zIndex: OVERLAY_Z_TOOLTIP,
   maxWidth: 220,
   borderRadius: 8,
   border: "1px solid rgba(0,0,0,0.12)",
@@ -33,6 +34,8 @@ export type EditorEmptyLeafHintProps = {
   /** Optional tiny type label rendered under action icons in selected mode (e.g. "Section", "Page Header"). */
   typeLabel?: string;
   className?: string;
+  /** When provided, the hint becomes clickable and fires this callback. */
+  onClick?: () => void;
 };
 
 /** Canvas empty-state for leaf components: fills available space and centers a compact label. */
@@ -45,6 +48,7 @@ export function EditorEmptyLeafHint({
   showActionIcons,
   typeLabel,
   className,
+  onClick,
 }: EditorEmptyLeafHintProps) {
   const activeIcon = selected && selectedIcon ? selectedIcon : icon;
   const activeLabel = selected ? selectedLabel : idleLabel;
@@ -55,54 +59,64 @@ export function EditorEmptyLeafHint({
 
   const iconOpacity = selected ? "opacity-75" : "opacity-60";
 
+  const inner = selected && showActionIcons ? (
+    <div className="flex flex-col items-center gap-0.5 leading-none">
+      <div
+        className="flex items-center gap-2"
+        aria-label="Drop, double-click, or right-click to insert"
+      >
+        <span className="tooltip tooltip-top">
+          <span className="tooltip-content" style={TT_STYLE}>
+            Drag from the sidebar
+          </span>
+          <TbHandGrab className="size-3 opacity-70" aria-hidden />
+        </span>
+        <span className="text-neutral-content/30 text-[7px]">·</span>
+        <span className="tooltip tooltip-top">
+          <span className="tooltip-content" style={TT_STYLE}>
+            Double-click to add
+          </span>
+          <TbHandClick className="size-3 opacity-70" aria-hidden />
+        </span>
+        <span className="text-neutral-content/30 text-[7px]">·</span>
+        <span className="tooltip tooltip-top">
+          <span className="tooltip-content" style={TT_STYLE}>
+            Right-click to add
+          </span>
+          <TbHandTwoFingers className="size-3 opacity-70" aria-hidden />
+        </span>
+      </div>
+      {typeLabel && (
+        <span className="truncate text-[8px] tracking-wide opacity-70">{typeLabel}</span>
+      )}
+    </div>
+  ) : (
+    <>
+      <span
+        className={`flex size-3.5 shrink-0 items-center justify-center ${iconOpacity} [&>svg]:size-3.5`}
+        aria-hidden
+      >
+        {activeIcon}
+      </span>
+      <span className="truncate whitespace-nowrap">{activeLabel}</span>
+    </>
+  );
+
+  const chipClassName = `flex min-h-8 items-center justify-center gap-1.5 border border-dashed px-2 py-1 text-[10px] font-medium uppercase ${colorClassName}`;
+
   return (
     <div className={twMerge("flex w-full flex-1 items-center justify-center", className)}>
-      <div
-        className={`flex min-h-8 items-center justify-center gap-1.5 border border-dashed px-2 py-1 text-[10px] font-medium uppercase ${colorClassName}`}
-      >
-        {selected && showActionIcons ? (
-          <div className="flex flex-col items-center gap-0.5 leading-none">
-            <div
-              className="flex items-center gap-2"
-              aria-label="Drop, double-click, or right-click to insert"
-            >
-              <span className="tooltip tooltip-top">
-                <span className="tooltip-content" style={TT_STYLE}>
-                  Drag from the sidebar
-                </span>
-                <TbHandGrab className="size-3 opacity-70" aria-hidden />
-              </span>
-              <span className="text-neutral-content/30 text-[7px]">·</span>
-              <span className="tooltip tooltip-top">
-                <span className="tooltip-content" style={TT_STYLE}>
-                  Double-click to add
-                </span>
-                <TbHandClick className="size-3 opacity-70" aria-hidden />
-              </span>
-              <span className="text-neutral-content/30 text-[7px]">·</span>
-              <span className="tooltip tooltip-top">
-                <span className="tooltip-content" style={TT_STYLE}>
-                  Right-click to add
-                </span>
-                <TbHandTwoFingers className="size-3 opacity-70" aria-hidden />
-              </span>
-            </div>
-            {typeLabel && (
-              <span className="truncate text-[8px] tracking-wide opacity-70">{typeLabel}</span>
-            )}
-          </div>
-        ) : (
-          <>
-            <span
-              className={`flex size-3.5 shrink-0 items-center justify-center ${iconOpacity} [&>svg]:size-3.5`}
-              aria-hidden
-            >
-              {activeIcon}
-            </span>
-            <span className="truncate whitespace-nowrap">{activeLabel}</span>
-          </>
-        )}
-      </div>
+      {onClick ? (
+        <button
+          type="button"
+          onClick={onClick}
+          className={`${chipClassName} cursor-pointer transition-opacity hover:opacity-100`}
+        >
+          {inner}
+        </button>
+      ) : (
+        <div className={chipClassName}>{inner}</div>
+      )}
     </div>
   );
 }

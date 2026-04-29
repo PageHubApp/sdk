@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { TbPencil, TbX } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
+import { OVERLAY_Z_CANVAS_CONTROLS } from "../overlays/overlayZIndex";
 import { ToolboxMenu, toolboxMenuInitialState } from "../rendering/toolboxMenuAtom";
 import { ToolboxContexual } from "./ToolboxContextual";
 import { ShowGridLinesAtom } from "../../utils/atoms";
@@ -1014,7 +1015,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
               width: "100%",
               height: "100%",
               pointerEvents: "none",
-              zIndex: 9997,
+              zIndex: OVERLAY_Z_CANVAS_CONTROLS,
             }}
           />
         )}

@@ -3,16 +3,13 @@ import React, { useEffect, useState } from "react";
 
 import { getClientDataFetcher, getConnectorData } from "./design/variables";
 import { ItemProvider, useItemContext } from "./itemContext";
-import { PAGEHUB_URL_QUERY_CHANGED_EVENT } from "./pagehubEvents";
+import { getStateValue, setState, useGlobalStateTick } from "./stateRegistry";
+import { getBindingMeta } from "./design/variables";
+import { useAnchors, resolveAnchors } from "./anchors/anchorContext";
 import { resolveNestedItems } from "./resolveNestedItems";
 import { applyRouteParamsToDataSource } from "./routeParamsDataSource";
 import { useRouteParams } from "./RouteParamsContext";
-import {
-  applyStorefrontUrlToDataSource,
-  dataSourceBindingId,
-  parseStorefrontUrlQuery,
-} from "./storefrontDataSource";
-import { useStorefrontUrlQuery } from "./StorefrontUrlQueryContext";
+import { dataSourceBindingId } from "./storefrontDataSource";
 
 /**
  * Bind a node to an external data source: Stripe products, customer orders,
@@ -33,11 +30,26 @@ export interface DataSource {
   /** Skip merging visitor URL query into this binding (SSR/fetch). */
   ignoreUrl?: boolean;
   /**
-   * When true, subscribe to URL query changes and re-run the registered client
-   * data fetcher (e.g. public connector endpoint). Omit or false for bindings that
-   * should only use SSR/hydrated connector data.
+   * Subscribe to specific state keys at fetch time. When any subscribed key
+   * changes, the connector refetches with the current snapshot merged into
+   * the request. Replaces the legacy `pagehub:url-query-changed` CustomEvent
+   * subscription with a typed, declarative wiring.
+   *
+   * Map shape: `{ <fetchOption>: <stateKey> }` — anchor tokens supported in
+   * the value side, e.g. `{ category: "url:category", page: "url:page" }`.
    */
-  refetchOnUrlChange?: boolean;
+  stateInputs?: Record<string, string>;
+  /**
+   * After each fetch resolves, write result metadata to the named state keys
+   * so pagination / "showing N of M" text can interpolate via
+   * `{{state.<key>}}` or gate visibility via `state` conditions.
+   */
+  publishStateKeys?: {
+    totalPages?: string;
+    totalCount?: string;
+    page?: string;
+    count?: string;
+  };
   /** Optional stable label for variable paths; included in binding id. */
   bindingKey?: string;
 }
@@ -124,16 +136,10 @@ export function useDataSource(
   const { enabled } = useEditor(state => ({ enabled: state.options.enabled }));
   const parentItem = useItemContext();
   const routeParams = useRouteParams();
-  const storefrontUrlQuery = useStorefrontUrlQuery();
 
   const connData = getConnectorData();
   const mergedDs =
-    ds && !ds.scope
-      ? applyStorefrontUrlToDataSource(
-          applyRouteParamsToDataSource(ds, routeParams),
-          storefrontUrlQuery
-        )
-      : null;
+    ds && !ds.scope ? applyRouteParamsToDataSource(ds, routeParams) : null;
   const bindingId = mergedDs ? dataSourceBindingId(mergedDs) : null;
   // `scope` → nested repeater: read from parent item, split if needed.
   // Otherwise → top-level repeater: read from connectorData[provider].bindings[id].
@@ -151,81 +157,50 @@ export function useDataSource(
   const [clientItems, setClientItems] = useState<any[] | null>(null);
   const [refetchKey, setRefetchKey] = useState(0);
 
-  const wantsUrlClientRefetch = ds?.refetchOnUrlChange === true && !ds?.scope;
+  const anchors = useAnchors();
 
+  // Subscribe to state changes for refetch when the dataSource declares
+  // `stateInputs`. We use the global tick (cheap module-level counter)
+  // instead of a per-key subscription because the actual refetch is gated
+  // downstream by query-override checks. Per-key subscription is a future
+  // optimization. popstate flows through the URL bridge → state writes →
+  // global tick bump; no window listener needed here.
+  const stateTick = useGlobalStateTick();
   useEffect(() => {
-    if (!wantsUrlClientRefetch) return;
-    const bump = () => setRefetchKey(k => k + 1);
-    window.addEventListener(PAGEHUB_URL_QUERY_CHANGED_EVENT, bump);
-    window.addEventListener("popstate", bump);
-    return () => {
-      window.removeEventListener(PAGEHUB_URL_QUERY_CHANGED_EVENT, bump);
-      window.removeEventListener("popstate", bump);
-    };
-  }, [wantsUrlClientRefetch]);
+    if (!ds?.stateInputs) return;
+    setRefetchKey(k => k + 1);
+  }, [stateTick, ds?.stateInputs]);
 
   useEffect(() => {
     if (!ds || enabled) return;
     if (ds.scope) return;
     const fetcher = getClientDataFetcher();
     if (!fetcher) return;
-    // `refetchOnUrlChange` only gates the URL-listener effect above. Initial
-    // mount fetch runs for any connector ds whenever SSR didn't produce items
-    // (customer/me, customer/orders, or anything that can't be fetched on the
-    // server). The `hasItems` guard below skips redundant fetches when SSR
-    // DID hydrate.
+    // Initial mount fetch runs for any connector ds whenever SSR didn't
+    // produce items (customer/me, customer/orders, or anything that can't be
+    // fetched on the server). The `hasItems` guard below skips redundant
+    // fetches when SSR DID hydrate.
 
-    // Read current URL params for client refetch (search/filter/pagination, etc.).
+    // Single client-side options pipe — declarative `stateInputs` map keys
+    // from the registry (typically `url:*` populated by urlQueryStateBridge,
+    // but any state key works) into fetch-option fields. No URL parsing,
+    // no parallel storefront URL merge.
     let options: Record<string, any> | undefined;
-    if (typeof window !== "undefined") {
-      const searchParams = new URLSearchParams(window.location.search);
-      const flat: Record<string, string | string[] | undefined> = {};
-      searchParams.forEach((v, k) => {
-        flat[k] = v;
-      });
-      const urlQ = parseStorefrontUrlQuery(flat);
-      const mergedForFetch = applyStorefrontUrlToDataSource(
-        applyRouteParamsToDataSource(ds, routeParams),
-        urlQ
-      );
-      options = {
-        ...(mergedForFetch.query ? { q: mergedForFetch.query } : {}),
-        ...(mergedForFetch.category ? { category: mergedForFetch.category } : {}),
-        ...(mergedForFetch.sort ? { sort: mergedForFetch.sort } : {}),
-        ...(typeof mergedForFetch.page === "number" ? { page: String(mergedForFetch.page) } : {}),
-        ...(typeof mergedForFetch.priceMin === "number"
-          ? { minPrice: String(mergedForFetch.priceMin) }
-          : {}),
-        ...(typeof mergedForFetch.priceMax === "number"
-          ? { maxPrice: String(mergedForFetch.priceMax) }
-          : {}),
-        ...(mergedForFetch.filter ? { filter: mergedForFetch.filter } : {}),
-        ...(typeof mergedForFetch.facetKeys === "string" && mergedForFetch.facetKeys
-          ? { facetKeys: mergedForFetch.facetKeys }
-          : {}),
-        ...(mergedForFetch.limit ? { limit: mergedForFetch.limit } : {}),
-      };
-      // Flatten facet selections to `facet.<key>` entries so the public-data
-      // endpoint picks them up via its `req.query["facet.*"]` scan. Matches
-      // the URL shape the storefront hook writes on form submit.
-      if (mergedForFetch.facetFilters && typeof mergedForFetch.facetFilters === "object") {
-        for (const [k, v] of Object.entries(mergedForFetch.facetFilters)) {
-          if (!Array.isArray(v) || v.length === 0) continue;
-          options[`facet.${k}`] = v.join(",");
-        }
+    if (ds.stateInputs && typeof ds.stateInputs === "object") {
+      options = {};
+      for (const [optKey, rawStateKey] of Object.entries(ds.stateInputs)) {
+        if (typeof rawStateKey !== "string") continue;
+        const stateKey = resolveAnchors(rawStateKey, anchors) || rawStateKey;
+        const v = getStateValue(stateKey);
+        if (v == null || v === "") continue;
+        options[optKey] = v;
       }
     }
 
-    // Only skip when we have SSR items AND no user-driven URL query overriding them.
-    const hasQueryOverride =
-      options &&
-      (options.q ||
-        options.category ||
-        options.page ||
-        options.minPrice ||
-        options.maxPrice ||
-        options.sort ||
-        (options.filter && Object.keys(options.filter).length > 0));
+    // Skip fetch when SSR already supplied items AND no state override is
+    // active (initial-mount only — refetchKey > 0 means a state input
+    // changed and we should re-run).
+    const hasQueryOverride = options && Object.keys(options).length > 0;
     if (hasItems && !hasQueryOverride && refetchKey === 0) return;
 
     // Clear stale clientItems so the fetch window falls back to fresh SSR
@@ -237,8 +212,25 @@ export function useDataSource(
     let cancelled = false;
     fetcher(ds.provider, ds.collection, options)
       .then(result => {
-        if (!cancelled && Array.isArray(result)) {
-          setClientItems(result);
+        if (cancelled || !Array.isArray(result)) return;
+        setClientItems(result);
+        // Publish per-fetch meta to state for pagination text + gating.
+        const pub = ds.publishStateKeys;
+        if (pub) {
+          const meta = bindingId ? getBindingMeta(ds.provider, bindingId) : null;
+          const writes: Array<[string | undefined, string | number | undefined]> = [
+            [pub.totalPages, meta?.totalPages],
+            [pub.totalCount, meta?.totalCount],
+            [pub.page, options?.page ?? 1],
+            [pub.count, result.length],
+          ];
+          for (const [rawKey, value] of writes) {
+            if (!rawKey || value == null) continue;
+            const key = resolveAnchors(rawKey, anchors) || rawKey;
+            const next = String(value);
+            if (getStateValue(key) === next) continue;
+            setState(key, { kind: "value", value: next, source: "runtime" }, "data-source");
+          }
         }
       })
       .catch(err => console.error("[Data] Client data fetch failed:", err));
@@ -249,9 +241,10 @@ export function useDataSource(
   }, [
     ds?.provider,
     ds?.collection,
-    ds?.refetchOnUrlChange,
     ds?.limit,
     JSON.stringify(ds?.filter ?? null),
+    JSON.stringify(ds?.stateInputs ?? null),
+    JSON.stringify(ds?.publishStateKeys ?? null),
     JSON.stringify(routeParams),
     enabled,
     hasItems,
@@ -265,7 +258,12 @@ export function useDataSource(
   const hasResolvedItems = Array.isArray(resolvedItems) && resolvedItems.length > 0;
 
   const serverFetchedEmpty = Array.isArray(items) && items.length === 0;
-  const pastLastPage = (mergedDs?.page ?? 1) > 1;
+  // Past-last-page detection used to read `mergedDs.page` (set by the legacy
+  // storefront URL merge). Now `url:page` lives in the registry; if it's
+  // anything > 1, the connector is paged forward and the empty result means
+  // "nothing on this page" (vs. "no products at all").
+  const pageStateValue = getStateValue("url:page");
+  const pastLastPage = pageStateValue ? parseInt(pageStateValue, 10) > 1 : false;
 
   const showLivePreview = props.livePreview !== false; // default on
 
@@ -315,19 +313,12 @@ export function useDataSource(
     return children;
   };
 
-  const attrs: Record<string, any> | undefined =
-    ds && bindingId && !ds.scope
-      ? {
-          "data-ph-connector-provider": ds.provider,
-          "data-ph-connector-binding-id": bindingId,
-          "data-ph-connector-count": String(
-            Array.isArray(resolvedItems) ? resolvedItems.length : 0
-          ),
-          ...(typeof mergedDs?.page === "number"
-            ? { "data-ph-connector-page": String(mergedDs.page) }
-            : {}),
-        }
-      : undefined;
+  // The legacy `data-ph-connector-*` DOM-attr stamping is gone — there is
+  // no external consumer (the URL hook that read them is deleted, and the
+  // rest of the SDK reads `getBindingMeta` directly). Pagination text /
+  // count gating now flows through `dataSource.publishStateKeys` →
+  // `{{state.<key>}}` interpolation.
+  const attrs: Record<string, any> | undefined = undefined;
 
   return { renderChildren, attrs };
 }

@@ -3,6 +3,7 @@ import { RenderIndicator, getDOMInfo } from "@craftjs/utils";
 import React from "react";
 import ReactDOM from "react-dom";
 import { getBesidePreviewLabel } from "./layoutInference";
+import { OVERLAY_Z_DRAG } from "../overlays/overlayZIndex";
 
 function getIndicatorColor(indicator: any, indicatorOptions: any) {
   return indicator?.error
@@ -41,7 +42,7 @@ export function BesideDropIndicator() {
         position: "fixed",
         top: nodeInfo.top + 12,
         left: overlayLeft + 12,
-        zIndex: 100000,
+        zIndex: OVERLAY_Z_DRAG,
         pointerEvents: "none",
         background: "rgba(255,255,255,0.96)",
         color: "#111",

@@ -467,6 +467,26 @@ function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void
           className="h-full w-full bg-transparent px-1 text-xs outline-none"
         />
       </ToolbarRowFrame>
+      <ToolbarRowFrame>
+        <label className="text-neutral-content shrink-0 px-1 text-xs">Qty field</label>
+        <input
+          type="text"
+          defaultValue={action.quantityField || ""}
+          onChange={e => patch({ quantityField: e.target.value || undefined })}
+          placeholder="input name (overrides static)"
+          className="h-full w-full bg-transparent px-1 text-xs outline-none"
+        />
+      </ToolbarRowFrame>
+      <ToolbarRowFrame>
+        <label className="text-neutral-content shrink-0 px-1 text-xs">Variant state</label>
+        <input
+          type="text"
+          defaultValue={action.variantMatchStateKey || ""}
+          onChange={e => patch({ variantMatchStateKey: e.target.value || undefined })}
+          placeholder="pdp:current:matching-variant"
+          className="h-full w-full bg-transparent px-1 text-xs outline-none"
+        />
+      </ToolbarRowFrame>
     </>
   );
 }

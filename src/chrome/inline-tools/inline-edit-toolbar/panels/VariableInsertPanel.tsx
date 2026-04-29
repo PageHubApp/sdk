@@ -13,6 +13,7 @@ import {
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { getEditorVariableOptions } from "@/utils/editorVariableOptions";
 import { useAnchoredPopover } from "@/chrome/overlays/useAnchoredPopover";
+import { OVERLAY_Z_INLINE_TOOLS } from "@/chrome/overlays/overlayZIndex";
 
 // ── Shared styles ───────────────────────────────────────────────────────────
 
@@ -88,7 +89,7 @@ function GroupSubmenu({
   return createPortal(
     <div
       ref={floating.refs.setFloating}
-      style={{ ...floating.floatingStyles, zIndex: 100000 }}
+      style={{ ...floating.floatingStyles, zIndex: OVERLAY_Z_INLINE_TOOLS }}
       className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto border py-1 shadow-xl select-none"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

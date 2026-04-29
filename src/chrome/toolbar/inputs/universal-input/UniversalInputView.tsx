@@ -70,6 +70,7 @@ export interface UniversalInputViewProps {
     parsed: { type: ValueType; value: string; numeric?: number };
     isEditing: boolean;
     setIsEditing: (v: boolean) => void;
+    isTypeSelectorOpen: boolean;
     setIsTypeSelectorOpen: (v: boolean) => void;
   };
 
@@ -130,6 +131,7 @@ export function UniversalInputView({
     parsed,
     isEditing,
     setIsEditing,
+    isTypeSelectorOpen,
     setIsTypeSelectorOpen,
   } = state;
 
@@ -209,14 +211,17 @@ export function UniversalInputView({
 
   const onTypeChangeHandler = (type: ValueType) => {
     const oldType = selectedType;
+    setShowAutocomplete(false);
     if (type === "calc") {
       setSelectedType("calc");
       setShowCalcDialog(true);
       return;
     }
     setSelectedType(type);
-    setIsEditing(false);
-    if (type === "tailwind" || type === "var") setShowAutocomplete(true);
+    setIsEditing(type === "tailwind" || type === "var");
+    if (type === "tailwind" || type === "var") {
+      setShowAutocomplete(true);
+    }
     const isOldNumeric = CSS_UNITS.includes(oldType);
     const isNewNumeric = CSS_UNITS.includes(type);
     if (type !== oldType) {
@@ -252,7 +257,7 @@ export function UniversalInputView({
       />
 
       {/* Tailwind autocomplete — only when not in var mode. */}
-      {showAutocomplete && selectedType !== "var" && (
+      {showAutocomplete && !isTypeSelectorOpen && selectedType !== "var" && (
         <UnifiedDropdown
           options={organizedOptions}
           filteredOptions={filteredOptions}
@@ -269,7 +274,7 @@ export function UniversalInputView({
       )}
 
       {/* Var picker — its own FloatingPanel anchored to the type chip. */}
-      {showVarSelector && selectedType === "var" && showAutocomplete && (
+      {showVarSelector && selectedType === "var" && showAutocomplete && !isTypeSelectorOpen && (
         <VarPicker
           open
           onOpenChange={open => {
@@ -295,7 +300,12 @@ export function UniversalInputView({
       types={availableTypes}
       selectedType={selectedType}
       onCalcClick={() => setShowCalcDialog(true)}
-      onOpenChange={setIsTypeSelectorOpen}
+      onOpenChange={open => {
+        setIsTypeSelectorOpen(open);
+        if (open) {
+          setShowAutocomplete(false);
+        }
+      }}
       onTypeChange={onTypeChangeHandler}
     />
   ) : null;

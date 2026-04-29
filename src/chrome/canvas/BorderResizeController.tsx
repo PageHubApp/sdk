@@ -28,6 +28,7 @@ import { setEdgeResizeActive } from "./edgeResizeState";
 import { getNodeGeometry, projectToLocalAxis } from "./nodeGeometry";
 import { getNodeOverlayPosition } from "./nodeOverlayPosition";
 import { isRotateActive, subscribeRotate } from "./rotateActiveState";
+import { OVERLAY_Z_CANVAS_CONTROLS } from "../overlays/overlayZIndex";
 
 const SKIP_DISPLAY_NAMES = new Set(["Container", "Background"]);
 const SKIP_TYPES = new Set(["page", "header", "footer"]);
@@ -297,7 +298,7 @@ export function BorderResizeController() {
         transform: `rotate(${pos.angle}deg)`,
         transformOrigin: "center center",
         pointerEvents: "none",
-        zIndex: 9998,
+        zIndex: OVERLAY_Z_CANVAS_CONTROLS,
       }}
     >
       {/* Edge line */}

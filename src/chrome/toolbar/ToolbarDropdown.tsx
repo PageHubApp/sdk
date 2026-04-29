@@ -2,6 +2,7 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headless
 import { Children, isValidElement, useMemo } from "react";
 import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
+import { OVERLAY_Z_TOOLBAR_DROPDOWN } from "@/chrome/overlays/overlayZIndex";
 
 const EMPTY = "__ph_empty__";
 const toInternal = (v: string) => (v === "" ? EMPTY : v);
@@ -151,7 +152,7 @@ export const ToolbarDropdown = ({
         className="pagehub-sdk-root ph-select-content"
         modal={false}
         portal
-        style={{ zIndex: 12000 }}
+        style={{ zIndex: OVERLAY_Z_TOOLBAR_DROPDOWN }}
       >
         <div className="scrollbar max-h-72 overflow-y-auto">
         {options.map((opt, i) => {

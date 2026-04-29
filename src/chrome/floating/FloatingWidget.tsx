@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { phStorage } from "../../utils/phStorage";
+import { OVERLAY_Z_FLOATING_WIDGET } from "../overlays/overlayZIndex";
 
 type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
@@ -70,7 +71,7 @@ export function FloatingWidget({
   storageKey,
   defaultCorner,
   margin = 24,
-  zIndex = 9999,
+  zIndex = OVERLAY_Z_FLOATING_WIDGET,
   children,
 }: FloatingWidgetProps) {
   const elRef = useRef<HTMLDivElement>(null);

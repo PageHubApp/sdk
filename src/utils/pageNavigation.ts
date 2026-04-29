@@ -71,8 +71,9 @@ function getSnapshot(): PageNavState {
   return currentSnapshot;
 }
 
+const SERVER_SNAPSHOT: PageNavState = { activePageId: null, siteId: null };
 function getServerSnapshot(): PageNavState {
-  return { activePageId: null, siteId: null };
+  return SERVER_SNAPSHOT;
 }
 
 function notify(): void {

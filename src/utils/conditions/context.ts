@@ -4,7 +4,8 @@ import type { ConditionContext } from "./types";
 /** Build a ConditionContext for client-side (viewer/editor) use. */
 export function buildClientContext(
   rootProps: any,
-  item: Record<string, any> | null = null
+  item: Record<string, any> | null = null,
+  anchors: Readonly<Record<string, string>> | undefined = undefined
 ): ConditionContext {
   return {
     urlParams: typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null,
@@ -15,6 +16,7 @@ export function buildClientContext(
     auth: getAuthState(),
     item,
     mobileBreakpoint: rootProps?.theme?.breakpoints?.md,
+    anchors,
   };
 }
 
@@ -22,7 +24,8 @@ export function buildClientContext(
 export function buildStaticContext(
   rootProps: Record<string, any> | null,
   item: Record<string, any> | null = null,
-  connectorData: ConditionContext["connectorData"] = null
+  connectorData: ConditionContext["connectorData"] = null,
+  anchors: Readonly<Record<string, string>> | undefined = undefined
 ): ConditionContext {
   return {
     urlParams: null,
@@ -33,5 +36,6 @@ export function buildStaticContext(
     auth: null,
     item,
     mobileBreakpoint: rootProps?.theme?.breakpoints?.md,
+    anchors,
   };
 }

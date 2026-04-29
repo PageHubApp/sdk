@@ -6,6 +6,7 @@ import { formatDimensions } from "@/utils/imageDimensions";
 import type { ReactNode } from "react";
 import type { PageHubMediaEditAiActionsContext } from "@/types";
 import { formatFileSize, type MediaItem } from "../utils/media-helpers";
+import { OVERLAY_Z_CRITICAL_MODAL } from "@/chrome/overlays/overlayZIndex";
 
 const BLUR_PLACEHOLDER =
   "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
@@ -43,7 +44,7 @@ export function MediaEditModal({
       role="button"
       tabIndex={0}
       className="bg-base-100/60 text-neutral-content fixed inset-0 flex items-center justify-center backdrop-blur-sm"
-      style={{ zIndex: 2147483000 }}
+      style={{ zIndex: OVERLAY_Z_CRITICAL_MODAL }}
       onClick={onClose}
       onKeyDown={e => {
         if (e.key === "Enter" || e.key === " ") {

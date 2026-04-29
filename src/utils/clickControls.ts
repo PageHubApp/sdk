@@ -191,7 +191,9 @@ function attachOne(
   enabled: boolean,
   context?: ActionContext
 ) {
-  // Anchor link — `scroll-to` or unified `link` with `href: "#…"`.
+  // Anchor link — `scroll-to` or unified `link` with `href: "#…"`. Special
+  // anchor keywords: `"top"` scrolls the window to the page top (used by
+  // pagination + back-to-top buttons without needing a real DOM element).
   const anchor =
     action.type === "scroll-to"
       ? action.anchor
@@ -204,6 +206,10 @@ function attachOne(
       if (enabled) return;
       if (!actionGatePasses(action)) return;
       e.preventDefault();
+      if (anchor === "top") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
       const el = document.getElementById(anchor);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -277,28 +283,106 @@ function attachOne(
       if (enabled) return;
       if (!actionGatePasses(action)) return;
       e.preventDefault();
-      const item = context?.itemContext;
-      if (!item) {
+      const baseItem = context?.itemContext;
+      console.log("[cart] add-to-cart click — baseItem=", baseItem ? { id: baseItem.id, hasMultipleVariants: (baseItem as any).hasMultipleVariants, priceId: (baseItem as any).metadata?.priceId } : null);
+      if (!baseItem) {
         console.warn(
           "[PageHub] add-to-cart action requires a data-bound Container parent. Place this button inside a Container with a dataSource."
         );
         return;
       }
       const cartAction = action as AddToCartAction;
+      // Quantity: prefer the named form field, fall back to static quantity,
+      // fall back to 1. Field lookup is intentionally lightweight — quantity
+      // pickers are author-controlled.
       let qty = cartAction.quantity || 1;
       if (cartAction.quantityField) {
         const btn = e.currentTarget as HTMLElement | null;
-        const scope = btn?.closest("form, [data-storefront-root], section, body");
+        const scope = btn?.closest("form, section, body");
         const field = scope?.querySelector(
           `[name="${cartAction.quantityField}"]`
         ) as HTMLInputElement | null;
         const parsed = field ? Number(field.value) : NaN;
         if (Number.isFinite(parsed) && parsed > 0) qty = Math.floor(parsed);
       }
+      // Variant resolution: read the matched-variant JSON from state (written
+      // by the variant Container's `computedStateBindings`). Merge over the
+      // base item — the matched variant carries `priceId`/`amount`/`image`
+      // overrides; the base item carries `id`/`title`/`hasMultipleVariants`/etc.
+      // No DOM scrape, no `[data-variant-selected]` walk.
+      let item = baseItem;
+      let matchedOk = false;
+      if (cartAction.variantMatchStateKey) {
+        const raw = getStateValue(cartAction.variantMatchStateKey);
+        if (raw) {
+          try {
+            const matched = JSON.parse(raw);
+            if (matched && typeof matched === "object") {
+              item = {
+                ...baseItem,
+                ...matched,
+                metadata: {
+                  ...((baseItem as any).metadata || {}),
+                  priceId: matched.priceId,
+                  sku: matched.sku || (baseItem as any).metadata?.sku,
+                },
+              };
+              matchedOk = true;
+            }
+          } catch {
+            /* malformed JSON — fall through to error path */
+          }
+        }
+      }
+      // Multi-variant products MUST resolve to a matched variant; otherwise
+      // the cart line gets the wrong priceId and Stripe checkout silently
+      // succeeds at the base price. Surface the error via state so author
+      // UI can gate on it (Container with `state cart:error exists`).
+      if ((baseItem as any).hasMultipleVariants && !matchedOk) {
+        try {
+          setState(
+            "cart:error",
+            {
+              kind: "value",
+              value: "Select an option before adding to cart",
+              source: "runtime",
+            },
+            "add-to-cart"
+          );
+        } catch {}
+        console.warn(
+          "[PageHub] add-to-cart: multi-variant product but no matched variant in state — wire `variantMatchStateKey` and a Container with `computedStateBindings: [{ compute: { type: 'variant-match', ... } }]`."
+        );
+        return;
+      }
+      // Clear any stale error from a prior incomplete attempt.
+      try {
+        setState(
+          "cart:error",
+          { kind: "value", value: "", source: "runtime" },
+          "add-to-cart"
+        );
+      } catch {}
+      console.log("[cart] add-to-cart writing state — qty=", qty, "matchedOk=", matchedOk, "priceId=", item.metadata?.priceId);
       context?.onAddToCart?.(item, qty);
-      document.dispatchEvent(
-        new CustomEvent("pagehub:add-to-cart", { detail: { item, quantity: qty } })
-      );
+      // Publish to the central state registry — cart provider subscribes via
+      // `useStateValue("cart:add-tick")`, then reads the JSON payload from
+      // `cart:add-payload`. Nonce makes repeated adds of the same item rerun.
+      try {
+        setState(
+          "cart:add-payload",
+          { kind: "value", value: JSON.stringify({ item, quantity: qty }) },
+          "add-to-cart"
+        );
+        setState(
+          "cart:add-tick",
+          { kind: "value", value: String(Date.now()) },
+          "add-to-cart"
+        );
+        console.log("[cart] add-to-cart state written — tick=", getStateValue("cart:add-tick"));
+      } catch (e) {
+        console.error("[cart] add-to-cart state write failed", e);
+      }
     });
     return;
   }
@@ -309,7 +393,12 @@ function attachOne(
       if (enabled) return;
       if (!actionGatePasses(action)) return;
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent("pagehub:toggle-cart"));
+      // Toggle the canonical cart visibility key. Drawer + provider both read
+      // `cart:open` via `useStateValue` — single source of truth.
+      const cur = getStateValue("cart:open");
+      const next = cur === "shown" ? "hidden" : "shown";
+      console.log("[cart] toggle-cart click — cur=", cur, "→", next);
+      setVisibility("cart:open", next, "toggle-cart");
     });
     return;
   }
@@ -320,7 +409,16 @@ function attachOne(
       if (enabled) return;
       if (!actionGatePasses(action)) return;
       e.preventDefault();
-      document.dispatchEvent(new CustomEvent("pagehub:cart-checkout"));
+      // Bump the checkout tick — provider subscribes and runs the network
+      // call. Tick value is `Date.now()` so each click rerenders the
+      // subscriber even when content is unchanged.
+      try {
+        setState(
+          "cart:checkout-tick",
+          { kind: "value", value: String(Date.now()) },
+          "cart-checkout"
+        );
+      } catch {}
     });
     return;
   }
@@ -340,12 +438,20 @@ function attachOne(
       ) as HTMLInputElement | HTMLTextAreaElement | null;
       const value = (field?.value || "").trim();
       if (!value) return;
-      root.dispatchEvent(
-        new CustomEvent("pagehub:agent-send", {
-          detail: { value, field: fieldName },
-          bubbles: false,
-        })
-      );
+      // Write to the chat's outbox state slot. The chat's DOM `id` (set by
+      // the wrapper from its anchor map, e.g. `ph-chat-${nodeId}`) is the
+      // namespace — multiple chats on one page can coexist without collision.
+      const chatId = root.id || "ph-chat-default";
+      try {
+        setState(
+          `${chatId}:outbox`,
+          {
+            kind: "value",
+            value: JSON.stringify({ nonce: Date.now(), value }),
+          },
+          "agent-send"
+        );
+      } catch {}
       if (field) {
         field.value = "";
         field.dispatchEvent(new Event("input", { bubbles: true }));

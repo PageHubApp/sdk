@@ -345,10 +345,23 @@ export function applyVisibilityOverride(
 ): string {
   if (!target) return className;
   const v = getVisibility(target);
-  if (v === undefined) return className;
+  const log = (typeof target === "string" && target.startsWith("cart:")) || target === "cart-drawer";
+  if (v === undefined) {
+    if (log) console.log("[cart] applyVis: target=", target, "no entry, leave alone");
+    return className;
+  }
   const tokens = (className || "").split(/\s+/).filter(Boolean);
   const hasHidden = tokens.includes("hidden");
-  if (v === "shown" && hasHidden) return tokens.filter(t => t !== "hidden").join(" ");
-  if (v === "hidden" && !hasHidden) return [...tokens, "hidden"].join(" ");
+  if (v === "shown" && hasHidden) {
+    const out = tokens.filter(t => t !== "hidden").join(" ");
+    if (log) console.log("[cart] applyVis: target=", target, "v=shown → strip hidden");
+    return out;
+  }
+  if (v === "hidden" && !hasHidden) {
+    const out = [...tokens, "hidden"].join(" ");
+    if (log) console.log("[cart] applyVis: target=", target, "v=hidden → add hidden");
+    return out;
+  }
+  if (log) console.log("[cart] applyVis: target=", target, "v=", v, "hasHidden=", hasHidden, "no change");
   return className;
 }

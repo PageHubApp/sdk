@@ -6,6 +6,7 @@ import { TbArrowDown, TbContainer, TbNote } from "react-icons/tb";
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { useIsolate, usePreview, useView } from "../core/store";
 import { ViewModeAtom } from "../utils/lib";
+import { usePanelUrl } from "../utils/usePanelUrl";
 import { registerLiveComponent } from "../utils/componentRegistry";
 import { mergeAccessibilityProps } from "../utils/accessibility";
 import {
@@ -38,9 +39,15 @@ import { replaceVariables } from "../utils/design/variables";
 import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { applyShowHideOverride, useShowHideVersion } from "../utils/showHideStore";
 import { applyStateModifiers } from "../utils/conditions/stateModifiers";
+import {
+  applyComputedStateBindings,
+  type ComputedStateBinding,
+} from "../utils/conditions/computedState";
 import { buildClientContext } from "../utils/conditions/context";
 import { useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
+import { useAnchors, resolveAnchors } from "../utils/anchors/anchorContext";
+import { resolveAnchorsInActions } from "../utils/anchors/resolveAnchorsInAction";
 import { ROOT_NODE } from "@craftjs/utils";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
@@ -51,6 +58,15 @@ export interface ContainerProps extends BaseSelectorProps {
   is404Page?: boolean;
   anchor?: string;
   tabGroup?: string;
+  /**
+   * Explicit registry key to read for `applyShowHideOverride` instead of the
+   * element's own DOM id. Lets sibling Containers (e.g. cart panel +
+   * backdrop) react to the SAME visibility entry without sharing a DOM `id`
+   * (which would be invalid HTML). `{{anchor.X}}` tokens are resolved
+   * against the nearest <AnchorProvider> the same way `id` / `action.target`
+   * are.
+   */
+  visibilityStateKey?: string;
   /**
    * Click action(s) — array for multi-action chains, single object for one
    * action, or a string when this Container is form-mode (`type === "form"`),
@@ -83,6 +99,14 @@ export interface ContainerProps extends BaseSelectorProps {
     /** Default when state is unset (or non-numeric). Defaults to `"0"`. */
     defaultValue?: string;
   }>;
+  /**
+   * Derived state — declarative replacement for ad-hoc JS handlers that
+   * recompute state from other state. The variant chip's selection state
+   * machine, "all required fields filled" gates, "first non-empty value"
+   * fallbacks etc. all become typed compute declarations the editor can
+   * pick from. See `utils/conditions/computedState.ts`.
+   */
+  computedStateBindings?: ComputedStateBinding[];
   actionProp?: NodeAction;
   click?: any; // Legacy — handled by migrateAction()
   scrollEffect?: string;
@@ -143,6 +167,8 @@ export function useContainerRender(
   const { query, enabled } = useEditor(state => getClonedState(props, state));
   const router = useRouter();
   const parentItem = useItemContext();
+  const anchors = useAnchors();
+  const { open: openPanel } = usePanelUrl();
   useRuntimeVarsVersion();
   useShowHideVersion();
 
@@ -207,6 +233,29 @@ export function useContainerRender(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
+  // Computed-state bindings — derived registry entries (variant matching,
+  // all-truthy gates, etc). Runs in an effect (not the render body) so the
+  // setState writes happen AFTER the render commits — never mid-render. The
+  // effect re-runs whenever the bindings declaration changes; the global
+  // state-tick subscription via `useShowHideVersion()` above ensures the
+  // outer render re-runs whenever any input key changes, which re-fires the
+  // effect with up-to-date values via the `interp` closure capture.
+  useEffect(() => {
+    const bindings = (props as any).computedStateBindings as
+      | ComputedStateBinding[]
+      | undefined;
+    if (!Array.isArray(bindings) || bindings.length === 0) return;
+    applyComputedStateBindings(bindings, raw =>
+      typeof raw === "string"
+        ? replaceVariables(raw, query, parentItem, anchors)
+        : (raw as any)
+    );
+    // Re-run whenever any input could have changed: the bindings array, the
+    // anchor map, the parent item context, or the global state tick (read via
+    // useShowHideVersion at the top of the function — its monotonic value is
+    // implicitly a dependency through render re-execution).
+  });
+
 
   const ref = useRef(null);
 
@@ -254,14 +303,24 @@ export function useContainerRender(
   // here so authors can see hidden targets (modal backdrops, drawers, etc.)
   // without leaving the trigger's settings panel.
   {
-    const showHideTarget =
-      (props.attrs && typeof props.attrs.id === "string" ? props.attrs.id : undefined) ||
-      (typeof props.id === "string" ? props.id : undefined) ||
-      (typeof props.anchor === "string" ? props.anchor : undefined);
+    // `visibilityStateKey` is the explicit opt-in: read visibility from this
+    // registry entry instead of the element's own DOM id. Lets multiple
+    // sibling Containers (e.g. cart panel + backdrop) react to the SAME
+    // visibility state without sharing a DOM id (which would be invalid HTML).
+    const showHideTarget = resolveAnchors(
+      (typeof props.visibilityStateKey === "string"
+        ? props.visibilityStateKey
+        : undefined) ||
+        (props.attrs && typeof props.attrs.id === "string" ? props.attrs.id : undefined) ||
+        (typeof props.id === "string" ? props.id : undefined) ||
+        (typeof props.anchor === "string" ? props.anchor : undefined),
+      anchors
+    );
     if (showHideTarget) {
       className = applyShowHideOverride(className, showHideTarget);
     }
   }
+
 
   // Apply state-bound modifier classes — author-declared "when state X, apply
   // modifier Y" bindings on `props.stateModifiers`. Subscribes to the global
@@ -276,7 +335,7 @@ export function useContainerRender(
     className = applyStateModifiers(
       className,
       props.stateModifiers,
-      buildClientContext(rootProps, parentItem),
+      buildClientContext(rootProps, parentItem, anchors),
       "Container",
       rootProps
     );
@@ -338,17 +397,7 @@ export function useContainerRender(
       ref.current = r;
       (scrollRef as React.MutableRefObject<HTMLDivElement | null>).current = r;
       setOverflowScrollEl(r);
-      if (
-        process.env.NODE_ENV === "development" &&
-        typeof id === "string" &&
-        (id.startsWith("kit_") || id.startsWith("sec_") || id.startsWith("page_"))
-      ) {
-        // Trace AI-path connectors: if `applyPatch` writes nodes that never
-        // reach this ref, `setDOM` never fires → node.dom stays null → drop
-        // crash + broken hover on AI-added sections.
-        console.log(`[Container.ref] ${r ? "mount" : "unmount"} id=${id}`);
-      }
-      // Canvas-mode pinning bridge: register every Container DOM in the live
+// Canvas-mode pinning bridge: register every Container DOM in the live
       // registry whenever it mounts/unmounts. Component cards key off
       // type === "component" containers; state cards (Modal panels, Tab panes,
       // show-hide targets) pin descendants by id, so the registry must cover
@@ -394,6 +443,7 @@ export function useContainerRender(
             }
             typeLabel={name}
             showActionIcons
+            onClick={props.type === "page" ? () => openPanel("blocks") : undefined}
           />
         ) : null}
       </RenderPattern>
@@ -403,14 +453,15 @@ export function useContainerRender(
   // Unified action system. Container respects the form-mode collision —
   // when `props.type === "form"`, `props.action` is a submission URL string
   // and `migrateActions` returns `[]` (see action.ts). Form path handled below.
-  const actions = migrateActions(props);
+  const rawActions = migrateActions(props);
+  const actions = resolveAnchorsInActions(rawActions, anchors) as NodeAction[];
   const firstLink = findLinkAction(actions);
   const rawUrl = actionToHref(firstLink, query, router?.asPath);
   const resolvedUrl =
     rawUrl && query
       ? (() => {
           try {
-            return replaceVariables(rawUrl, query, parentItem);
+            return replaceVariables(rawUrl, query, parentItem, anchors);
           } catch {
             return rawUrl;
           }
@@ -460,8 +511,16 @@ export function useContainerRender(
   addCustomHandlers(prop, props.handlers, enabled);
 
   if (props.scrollEffect) prop["data-scroll-effect"] = props.scrollEffect;
-  if (props.id || props.anchor) prop.id = props.id || props.anchor;
-  if (props.tabGroup) prop["data-tab-group"] = props.tabGroup;
+  {
+    const rawId = props.id || props.anchor;
+    const resolvedId = resolveAnchors(
+      typeof rawId === "string" ? rawId : undefined,
+      anchors
+    );
+    if (resolvedId) prop.id = resolvedId;
+    else if (rawId) prop.id = rawId;
+  }
+  if (props.tabGroup) prop["data-tab-group"] = resolveAnchors(props.tabGroup, anchors) || props.tabGroup;
   if (props.type === "details" && props.open) prop.open = true;
 
   // Data supplies connector binding attrs here.
@@ -479,7 +538,7 @@ export function useContainerRender(
   // author e.g. `data-ph-zero="{{item.count}}"` on per-item wrappers —
   // parity with Button + FormElement.
   applyAttrs(prop, props.attrs, v =>
-    typeof v === "string" ? replaceVariables(v, query, parentItem) : v
+    typeof v === "string" ? replaceVariables(v, query, parentItem, anchors) : v
   );
 
   if (enabled) {

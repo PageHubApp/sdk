@@ -5,6 +5,7 @@ import { buildClientContext, buildStaticContext } from "./context";
 import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
 import { getConnectorData } from "../design/variables";
 import { useItemContext } from "../itemContext";
+import { subscribe as subscribeStateTick } from "../stateRegistry";
 import type { Condition, ConditionGroup, ConditionLogic } from "./types";
 
 /**
@@ -69,14 +70,20 @@ export function useConditionalVisibility(): {
 
     evaluate();
 
+    // Re-evaluate when the URL changes (popstate is mirrored into `url:*`
+    // state by the bridge, but popstate also covers route param changes the
+    // bridge doesn't write) or the viewport resizes (device condition).
+    // Auth changes propagate via the state registry — `setAuthState` writes
+    // `auth:status`, which any state-tick subscriber (including this hook
+    // through the global subscribe below) picks up.
     window.addEventListener("popstate", evaluate);
     window.addEventListener("resize", evaluate);
-    window.addEventListener("pagehub:auth-changed", evaluate);
+    const offState = subscribeStateTick(evaluate);
 
     return () => {
       window.removeEventListener("popstate", evaluate);
       window.removeEventListener("resize", evaluate);
-      window.removeEventListener("pagehub:auth-changed", evaluate);
+      offState();
     };
   }, [hasConditions, enabled, rootProps, itemContext]);
 

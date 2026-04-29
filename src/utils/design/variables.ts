@@ -2,6 +2,7 @@
 // chain in @craftjs/core that breaks tsx/Node ESM resolution in CLI scripts
 // (e.g. backfill-template-previews.mjs). Same symbol, same value.
 import { ROOT_NODE } from "@craftjs/utils";
+import { getStateValue, setState } from "../stateRegistry";
 
 // ── Connector data context (set by editor when connector data is loaded) ────
 export interface SdkBindingMeta {
@@ -76,6 +77,21 @@ let _authState: AuthState | null = null;
 
 export function setAuthState(state: AuthState | null) {
   _authState = state;
+  // Mirror status into the central state registry so any subscriber (state
+  // condition, stateModifiers, useGlobalStateTick) re-evaluates without a
+  // dedicated CustomEvent. Replaces the legacy `pagehub:auth-changed` bus.
+  // The dedicated `auth.*` variable interpolation + `auth` condition
+  // evaluator continue to read `getAuthState()` directly — this state write
+  // is purely the reactivity propagation.
+  try {
+    setState(
+      "auth:status",
+      { kind: "value", value: state?.status ?? "logged-out", source: "runtime" },
+      "auth"
+    );
+  } catch {
+    /* registry might not be available in the same tick; safe to ignore */
+  }
 }
 
 export function getAuthState(): AuthState | null {
@@ -177,7 +193,8 @@ const DEFAULT_VALUES: Record<string, string> = {
 export const replaceVariables = (
   text: string | undefined,
   query: any,
-  itemContext?: Record<string, any> | null
+  itemContext?: Record<string, any> | null,
+  anchors?: Readonly<Record<string, string>> | null
 ): string => {
   // Ensure text is a string and not null/undefined
   if (!text || typeof text !== "string") {
@@ -197,6 +214,15 @@ export const replaceVariables = (
       (_, varName) => `{{${varName}}}`
     );
 
+    // Pre-pass: resolve `{{anchor.X}}` tokens against the wrapper-supplied
+    // anchor map FIRST, so nested forms like `{{state.{{anchor.chat}}:title}}`
+    // turn into `{{state.ph-chat-XYZ:title}}` before the main pass runs.
+    // Authors typically write anchor tokens inside state lookups; bare
+    // `{{anchor.X}}` is also valid (resolves to the id string).
+    if (anchors) {
+      processed = processed.replace(/\{\{anchor\.([a-zA-Z0-9_-]+)\}\}/g, (_, k) => anchors[k] ?? "");
+    }
+
     // Resolve a single variable key to its string value (or undefined if not found).
     // Shared by normal replacement and ternary branch evaluation.
     const resolveVar = (key: string): string | undefined => {
@@ -209,6 +235,42 @@ export const replaceVariables = (
         const parts = key.slice("auth.".length).split(".");
         const value = walkPath(auth, parts);
         if (value !== undefined && value !== null && value !== "") return String(value);
+        return undefined;
+      }
+
+      // state.<key>[.<dotPath>] — registry lookup, optionally walking into
+      // a parsed-JSON value. State values are stored as strings; if the
+      // entry is a JSON object/array (e.g. `pdp:abc:matching-variant` is the
+      // serialized matched variant) authors can interpolate nested fields:
+      //
+      //   {{state.pdp:abc:matching-variant.formatted}}
+      //
+      // Splits on the FIRST `.` after `state.<key>` where `<key>` may contain
+      // `:` and `-`. Practically: find the first `.` AFTER any `:` segment.
+      // The anchor-pre-pass above already substituted `{{anchor.X}}` into
+      // the key portion. Returns `undefined` for missing/empty so default-
+      // value handling applies (matches connector/auth behavior).
+      if (key.startsWith("state.")) {
+        const rest = key.slice("state.".length);
+        // Heuristic: state keys conventionally look like `ns:scope:field`
+        // (using `:`). The first `.` AFTER the last `:` segment opens a
+        // nested-path walk. When no `.` after a colon, treat the whole
+        // remainder as the key.
+        const lastColon = rest.lastIndexOf(":");
+        const dotAfter = rest.indexOf(".", lastColon === -1 ? 0 : lastColon);
+        const stateKey = dotAfter === -1 ? rest : rest.slice(0, dotAfter);
+        const tail = dotAfter === -1 ? "" : rest.slice(dotAfter + 1);
+        const raw = getStateValue(stateKey);
+        if (raw == null || raw === "") return undefined;
+        if (!tail) return String(raw);
+        // Tail present → try parsing the value as JSON and walk.
+        try {
+          const parsed = JSON.parse(raw);
+          const walked = walkPath(parsed, tail.split("."));
+          if (walked !== undefined && walked !== null && walked !== "") return String(walked);
+        } catch {
+          /* not JSON; fall through */
+        }
         return undefined;
       }
 

@@ -1,10 +1,12 @@
-import { useEditor } from "@craftjs/core";
+import { useEditor, useNode } from "@craftjs/core";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { IpsumGenerator } from "../../inputs/media/IpsumGenerator";
 import { SelectOptionsItem } from "../../items/SelectOptionsItem";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { TbLink } from "react-icons/tb";
 
 // Inlined to avoid circular dep (FormElement.tsx → UnifiedSettings → registry → this file)
 const inputTypes = [
@@ -30,6 +32,183 @@ const inputTypes = [
   "time",
   "week",
 ];
+
+// ─── Inline StateBinding editor ──────────────────────────────────────────────
+// Does NOT use ToolbarItem propKey magic because stateBinding is a nested object
+// (not a flat scalar), so we read/write via useNode setProp directly.
+
+const StateBindingSection = () => {
+  const { actions: { setProp }, stateBinding } = useNode(node => ({
+    stateBinding: node.data?.props?.stateBinding as
+      | { key?: string; debounceMs?: number; defaultValue?: string; mode?: "value" | "checked" }
+      | undefined,
+  }));
+  const { enabled } = useEditor(s => ({ enabled: s.options.enabled }));
+
+  const update = (patch: Partial<NonNullable<typeof stateBinding>>) => {
+    setProp((props: any) => {
+      if (!props.stateBinding) props.stateBinding = {};
+      Object.assign(props.stateBinding, patch);
+      // If the key was cleared, remove the whole binding to keep props clean.
+      if (!props.stateBinding.key) {
+        delete props.stateBinding;
+      }
+    });
+  };
+
+  const clearBinding = () => {
+    setProp((props: any) => {
+      delete props.stateBinding;
+    });
+  };
+
+  const modeOptions = [
+    { value: "value", label: "Value", hint: "Sync input value (text, select, textarea)" },
+    { value: "checked", label: "Checked", hint: "Sync checked state (checkbox / radio)" },
+  ];
+
+  return (
+    <ToolbarSection
+      title="State Binding"
+      icon={<TbLink />}
+      help="Two-way bind this input's value to a state-registry key. The URL bridge picks up url:* keys automatically. Set key only — debounce / mode / defaultValue are optional."
+      defaultOpen={!!stateBinding?.key}
+    >
+      {/* Key */}
+      <div className="col-span-full flex flex-col gap-1">
+        <label className="text-neutral-content text-[10px] font-medium uppercase tracking-wider">
+          State key
+          <span
+            className="ml-1 cursor-help opacity-60"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Registry key to bind. Convention: url:q for search, cart:promo for promo code, pdp:axis:Color for variant pickers. Supports {{anchor.X}} tokens."
+            data-tooltip-place="left"
+          >
+            ?
+          </span>
+        </label>
+        <div className="bg-base-200 border-base-300 flex items-center rounded border px-2 py-1">
+          <input
+            type="text"
+            className="input-plain flex-1 text-xs"
+            value={stateBinding?.key ?? ""}
+            placeholder="e.g. url:q"
+            onChange={e => update({ key: e.target.value })}
+            aria-label="State binding key"
+            autoComplete="off"
+            spellCheck={false}
+          />
+          {stateBinding?.key && (
+            <button
+              className="text-neutral-content hover:text-error ml-1 shrink-0 text-xs"
+              onClick={clearBinding}
+              aria-label="Clear state binding"
+              title="Clear binding"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Mode */}
+      <div className="col-span-full flex flex-col gap-1">
+        <label className="text-neutral-content text-[10px] font-medium uppercase tracking-wider">
+          Mode
+          <span
+            className="ml-1 cursor-help opacity-60"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Value: sync the text/select value (default). Checked: sync the checked state — use for checkbox / radio inputs where you want to record which option is selected."
+            data-tooltip-place="left"
+          >
+            ?
+          </span>
+        </label>
+        <div className="flex gap-2">
+          {modeOptions.map(opt => (
+            <label
+              key={opt.value}
+              className={`flex flex-1 cursor-pointer items-center justify-center rounded border px-2 py-1 text-xs transition-colors ${
+                (stateBinding?.mode ?? "value") === opt.value
+                  ? "border-primary text-primary bg-primary/10 font-medium"
+                  : "border-base-300 text-neutral-content"
+              }`}
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content={opt.hint}
+              data-tooltip-place="top"
+            >
+              <input
+                type="radio"
+                name="stateBindingMode"
+                className="sr-only"
+                checked={(stateBinding?.mode ?? "value") === opt.value}
+                onChange={() => update({ mode: opt.value as "value" | "checked" })}
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Debounce */}
+      <div className="col-span-full flex flex-col gap-1">
+        <label className="text-neutral-content text-[10px] font-medium uppercase tracking-wider">
+          Debounce (ms)
+          <span
+            className="ml-1 cursor-help opacity-60"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Delay before writing to state after the user stops typing. 0 = immediate. 300 is good for live-search inputs (reduces refetch churn). 0 for dropdowns/checkboxes."
+            data-tooltip-place="left"
+          >
+            ?
+          </span>
+        </label>
+        <div className="bg-base-200 border-base-300 flex items-center rounded border px-2 py-1">
+          <input
+            type="number"
+            className="input-plain flex-1 text-xs"
+            value={stateBinding?.debounceMs ?? 0}
+            min={0}
+            max={2000}
+            step={50}
+            placeholder="0"
+            onChange={e => update({ debounceMs: Number(e.target.value) || 0 })}
+            aria-label="Debounce milliseconds"
+            autoComplete="off"
+          />
+          <span className="text-neutral-content ml-1 shrink-0 text-[10px]">ms</span>
+        </div>
+      </div>
+
+      {/* Default value */}
+      <div className="col-span-full flex flex-col gap-1">
+        <label className="text-neutral-content text-[10px] font-medium uppercase tracking-wider">
+          Default value
+          <span
+            className="ml-1 cursor-help opacity-60"
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Written to state on first mount if the state key has no value yet. Useful for seeding default filters or toggle states without a separate set-state load action."
+            data-tooltip-place="left"
+          >
+            ?
+          </span>
+        </label>
+        <div className="bg-base-200 border-base-300 flex items-center rounded border px-2 py-1">
+          <input
+            type="text"
+            className="input-plain flex-1 text-xs"
+            value={stateBinding?.defaultValue ?? ""}
+            placeholder="(none)"
+            onChange={e => update({ defaultValue: e.target.value })}
+            aria-label="Default value"
+            autoComplete="off"
+            spellCheck={false}
+          />
+        </div>
+      </div>
+    </ToolbarSection>
+  );
+};
 
 export const FormElementMainTab = () => {
   const { query } = useEditor();
@@ -85,6 +264,9 @@ export const FormElementMainTab = () => {
           </ToolbarSection>
         )}
 
+        {/* ── State Binding (Phase 3) ──────────────────────────────────── */}
+        <StateBindingSection />
+
         <ToolbarSection
           title="Additional Properties"
           help="Required, disabled, read-only, and URL prefill."
@@ -114,16 +296,6 @@ export const FormElementMainTab = () => {
             propType="component"
             type="checkbox"
             label="Read Only"
-            labelHide={true}
-            labelWidth="flex-1"
-            inputWidth="w-auto"
-            on={true}
-          />
-          <ToolbarItem
-            propKey="prefillFromUrl"
-            propType="component"
-            type="checkbox"
-            label="Prefill from URL"
             labelHide={true}
             labelWidth="flex-1"
             inputWidth="w-auto"
@@ -229,4 +401,3 @@ export const FormElementMainTab = () => {
     ),
   });
 };
-

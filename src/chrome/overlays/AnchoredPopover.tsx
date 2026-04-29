@@ -17,6 +17,7 @@ import ReactDOM from "react-dom";
 import { useFloatingPanelPortalRegister } from "../floating/FloatingPanel";
 import { OVERLAY_Z_ANCHORED } from "./overlayZIndex";
 import { useAnchoredPopover } from "./useAnchoredPopover";
+import { getPortalTarget } from "./getPortalTarget";
 
 const FADE_OUT_MS = 75;
 
@@ -59,14 +60,6 @@ function resolveAnchor(
   if (!anchor) return null;
   if (anchor instanceof HTMLElement) return anchor;
   return (anchor as RefObject<HTMLElement | null>).current ?? null;
-}
-
-function getPortalTarget(target?: HTMLElement | null): HTMLElement {
-  if (target) return target;
-  if (typeof document === "undefined") return null as unknown as HTMLElement;
-  return (
-    (document.querySelector(".pagehub-sdk-root") as HTMLElement | null) ?? document.body
-  );
 }
 
 export function AnchoredPopover({

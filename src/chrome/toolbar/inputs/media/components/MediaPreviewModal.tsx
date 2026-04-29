@@ -6,6 +6,7 @@ import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
 import { formatFileSize, getMediaKind, type MediaItem } from "../utils/media-helpers";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../../primitives/layout/tooltipSurface";
+import { OVERLAY_Z_CRITICAL_MODAL } from "../../../../overlays/overlayZIndex";
 
 interface MediaPreviewModalProps {
   previewMedia: string | null;
@@ -44,7 +45,7 @@ export function MediaPreviewModal({
   return ReactDOM.createPortal(
     <div
       className="animate-backdrop-in fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-sm"
-      style={{ zIndex: 2147483000 }}
+      style={{ zIndex: OVERLAY_Z_CRITICAL_MODAL }}
       onClick={onClose}
     >
       {/* Header actions */}

@@ -13,10 +13,18 @@
 
 export type LintSeverity = "warn" | "error";
 
+export interface LintFix {
+  remove?: string[];
+  add?: string[];
+}
+
 export interface LintIssue {
   rule: string;
   severity: LintSeverity;
+  title: string;
   message: string;
+  tip?: string;
+  fix?: LintFix;
 }
 
 const RESPONSIVE_PREFIX = /^(?:sm|md|lg|xl|2xl|max-sm|max-md|max-lg|max-xl):/;
@@ -53,9 +61,20 @@ function ruleFixedWidthOverflowsMobile(cls: string): LintIssue | null {
   return {
     rule: "fixed-width-overflows-mobile",
     severity: "error",
-    message: `Fixed "${offender}" overflows mobile (390px). Add max-w-full or scope with md: prefix.`,
+    title: "Too wide for mobile",
+    message: `This element is likely wider than most phone screens.`,
+    tip: `Add max-w-full to let it shrink on small screens.`,
+    fix: { add: ["max-w-full"] },
   };
 }
+
+const HEADING_MOBILE_DOWNSCALE: Record<string, string> = {
+  "text-9xl": "text-4xl",
+  "text-8xl": "text-4xl",
+  "text-7xl": "text-3xl",
+  "text-6xl": "text-3xl",
+  "text-5xl": "text-2xl",
+};
 
 function ruleHugeHeadingOnMobile(cls: string): LintIssue | null {
   const base = baseTokens(cls);
@@ -63,12 +82,15 @@ function ruleHugeHeadingOnMobile(cls: string): LintIssue | null {
   const offender = base.find(t => LARGE.includes(t));
   if (!offender) return null;
 
-  // No intent-suppression here: `text-9xl` on a 390px phone is broken regardless
-  // of what `md:` does. The base IS the mobile size in mobile-first Tailwind.
+  const mobileSize = HEADING_MOBILE_DOWNSCALE[offender] ?? "text-2xl";
+
   return {
     rule: "huge-heading-on-mobile",
     severity: "warn",
-    message: `"${offender}" is the mobile size (Tailwind is mobile-first). Use a smaller base + sm:${offender} or md:${offender}.`,
+    title: "Heading may be too large on mobile",
+    message: `This heading could be oversized on small screens.`,
+    tip: `Apply ${offender} at md: and use ${mobileSize} as the mobile base.`,
+    fix: { remove: [offender], add: [mobileSize, `md:${offender}`] },
   };
 }
 
@@ -90,7 +112,10 @@ function ruleGridColsNoMobileFallback(cls: string, node: any): LintIssue | null 
   return {
     rule: "grid-cols-no-mobile-fallback",
     severity: "warn",
-    message: `"${cols}" applies at every width. Use "grid-cols-1 md:${cols}" so the grid stacks on mobile.`,
+    title: "Grid may be too wide on mobile",
+    message: `This grid layout may be cramped or overflow on small screens.`,
+    tip: `Stack to a single column on mobile with grid-cols-1 md:${cols}.`,
+    fix: { remove: [cols], add: ["grid-cols-1", `md:${cols}`] },
   };
 }
 
@@ -108,7 +133,9 @@ function ruleNegativeMarginNoScope(cls: string): LintIssue | null {
   return {
     rule: "negative-margin-no-scope",
     severity: "warn",
-    message: `Negative margin "${offender}" applies at every width. Often pulls content offscreen on mobile.`,
+    title: "Negative margin on mobile",
+    message: `This negative margin may push content offscreen on small screens.`,
+    tip: `Review how it looks on mobile — scope with md: if it's desktop-only.`,
   };
 }
 

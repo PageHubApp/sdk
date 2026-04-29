@@ -9,6 +9,7 @@
  */
 
 import { useEffect } from "react";
+import { OVERLAY_Z_DRAG } from "../overlays/overlayZIndex";
 
 const ACCENT = "rgb(59 130 246)"; // tailwind blue-500
 
@@ -64,7 +65,7 @@ export function DragPreviewLayer() {
       clone.style.width = `${rect.width}px`;
       clone.style.height = `${rect.height}px`;
       clone.style.margin = "0";
-      clone.style.zIndex = "100000";
+      clone.style.zIndex = String(OVERLAY_Z_DRAG);
       clone.style.pointerEvents = "none";
       clone.style.opacity = "0.88";
       clone.style.border = `1px dashed ${ACCENT}`;

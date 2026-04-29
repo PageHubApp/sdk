@@ -37,6 +37,6 @@ export function ToolboxInsertHintTooltip({
     "data-tooltip-delay-show": TOOLBOX_INSERT_HINT_DELAY_MS,
     "data-tooltip-place": placement,
     className:
-      `flex w-full min-w-0 ${(children as ReactElement<{ className?: string }>).props.className ?? ""}`.trim(),
+      `flex h-full w-full min-w-0 ${(children as ReactElement<{ className?: string }>).props.className ?? ""}`.trim(),
   });
 }

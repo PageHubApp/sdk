@@ -11,6 +11,8 @@ import { applyStateModifiers } from "../utils/conditions/stateModifiers";
 import { buildClientContext } from "../utils/conditions/context";
 import { useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
+import { useAnchors } from "../utils/anchors/anchorContext";
+import { resolveAnchorsInActions } from "../utils/anchors/resolveAnchorsInAction";
 import { useSDKSafe } from "../core/context";
 import {
   migrateActions,
@@ -102,6 +104,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   const router = useRouter();
   const itemContext = useItemContext();
+  const anchors = useAnchors();
   useRuntimeVarsVersion();
   const sdk = useSDKSafe();
 
@@ -140,7 +143,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     baseClassName = applyStateModifiers(
       baseClassName,
       props.stateModifiers,
-      buildClientContext(rootProps, itemContext),
+      buildClientContext(rootProps, itemContext, anchors),
       "Button",
       rootProps
     );
@@ -171,10 +174,14 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
   }
 
   // Resolve actions; first link in the chain drives the visible <a href>.
-  const actions = migrateActions(props);
+  // Anchor tokens (`{{anchor.X}}`) in target/key/anchor/value/field/dismissTarget
+  // are expanded against the nearest <AnchorProvider> so per-instance wrappers
+  // (AgentFloatingBubble, CartDrawer, …) can reference their own ids without
+  // tree-mutation hacks.
+  const actions = resolveAnchorsInActions(migrateActions(props), anchors) as NodeAction[];
   const firstLink = findLinkAction(actions);
   const rawUrl = actionToHref(firstLink, query, router?.asPath);
-  let resolvedUrl = rawUrl ? replaceVariables(rawUrl, query, itemContext) : rawUrl;
+  let resolvedUrl = rawUrl ? replaceVariables(rawUrl, query, itemContext, anchors) : rawUrl;
   if (resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("ref:")) {
     resolvedUrl = resolvePageRef(resolvedUrl, query, router?.asPath);
   }
@@ -212,10 +219,10 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
   // Pass through plain string attrs (data-*, role, etc.) so app URL/commerce hooks
   // and other runtime wiring can query the DOM. Resolves {{item.*}} templates
   // against the current item context so chips in a repeater get unique hrefs.
-  applyAttrs(prop, props.attrs, v => replaceVariables(v, query, itemContext));
+  applyAttrs(prop, props.attrs, v => replaceVariables(v, query, itemContext, anchors));
   // Also interpolate item vars into the href (action.href patterns like "?category={{item.slug}}")
   if (typeof prop.href === "string" && prop.href.includes("{{")) {
-    prop.href = replaceVariables(prop.href, query, itemContext);
+    prop.href = replaceVariables(prop.href, query, itemContext, anchors);
   }
 
   if (enabled && ele === "a") ele = "span";
@@ -290,7 +297,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     </span>
   );
 
-  const labelHtml = replaceVariables(String(props.text ?? ""), query, itemContext);
+  const labelHtml = replaceVariables(String(props.text ?? ""), query, itemContext, anchors);
   const hasIconValue = !!props.icon?.value;
   const isLeafEmpty = enabled && isMounted && !hasIconValue && isVisuallyEmptyRichText(labelHtml);
 
@@ -305,7 +312,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     <>
       {(props.icon?.position === "left" || props.icon?.position === "top") && iconSpan}
 
-      {!props.icon?.only && props.text && replaceVariables(props.text, query, itemContext)}
+      {!props.icon?.only && props.text && replaceVariables(props.text, query, itemContext, anchors)}
 
       {(props.icon?.position === "right" || props.icon?.position === "bottom") && iconSpan}
     </>
