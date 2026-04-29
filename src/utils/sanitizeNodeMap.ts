@@ -1,5 +1,13 @@
-import { BUILTIN_COMPONENT_DEFS } from "../core/builtinComponentDefs";
 import { expandModifiersInNodes } from "./modifierUtils";
+
+// Registry: builtin defs are registered by core/builtinComponentDefs.ts at load
+// time. Avoids a static import here, which would form a cycle:
+//   utils/lib → sanitizeNodeMap → builtinComponentDefs → definitions →
+//   <Component>.craft → ./<Component> (TDZ).
+let _registeredBuiltinDefs: any[] | undefined;
+export function setSanitizeBuiltinDefs(defs: any[]) {
+  _registeredBuiltinDefs = defs;
+}
 
 /** Craft's renderer expects every node to have a plain object `props`; missing props crashes DefaultRender. */
 function ensurePlainCraftProps(node: Record<string, any>) {
@@ -108,7 +116,7 @@ export function sanitizeCraftSerializedContent(
         );
       }
     }
-    expandModifiersInNodes(sanitized, BUILTIN_COMPONENT_DEFS);
+    expandModifiersInNodes(sanitized, _registeredBuiltinDefs);
     return JSON.stringify(sanitized);
   } catch {
     return serialized;
