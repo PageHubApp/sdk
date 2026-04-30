@@ -9,7 +9,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { TbTexture } from "react-icons/tb";
 import { generatePattern } from "../../../../utils/background";
 import { SideBarAtom } from "../../../../utils/lib";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
 import {
   PopoverOpenRequestAtom,
@@ -135,10 +135,10 @@ export default function PatternInputPopover({ def }: PropertyInputProps) {
   const label = def?.label ?? "Pattern";
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">{label}</span>
-      <PopoverChip
+    <>
+      <Chip mode="popover"
         ref={triggerRef}
+        label={label}
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
         onClear={() => {
@@ -183,6 +183,6 @@ export default function PatternInputPopover({ def }: PropertyInputProps) {
           />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }

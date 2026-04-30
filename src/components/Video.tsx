@@ -5,6 +5,7 @@ import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { getMediaContent } from "../utils/media";
 import { isDirectVideoFileUrl, nativeVideoPlaybackFields } from "../utils/nativeVideo";
+import { useMounted } from "../utils/hooks";
 
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../utils/lib";
@@ -115,11 +116,7 @@ export const Video = (incomingProps: VideoProps) => {
   const { provider } = props;
 
   const ref = useRef<HTMLElement | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   // Get appropriate icon for provider
   const getProviderIcon = () => {
@@ -137,7 +134,12 @@ export const Video = (incomingProps: VideoProps) => {
 
   // Render video player based on provider
   const renderVideoPlayer = () => {
-    if (!videoId) {
+    // A decoratively-styled video slot (placeholder gradient, colored block)
+    // is intentional — don't flag it as empty. Mirrors Button/Link/Image.
+    const cn = props.className || "";
+    const looksStyledShape =
+      /\bbg-/.test(cn) || /\bbg-gradient-/.test(cn) || /\bbg-linear-/.test(cn);
+    if (!videoId && !looksStyledShape) {
       return enabled ? (
         <EditorEmptyLeafHint
           selected={isActive}
@@ -147,6 +149,7 @@ export const Video = (incomingProps: VideoProps) => {
         />
       ) : null;
     }
+    if (!videoId) return null;
 
     const videoClassName = props.className || "";
 

@@ -15,7 +15,7 @@ import {
   SearchableMenuPopover,
   type SearchableMenuItem,
 } from "@/chrome/primitives/SearchableMenuPopover";
-import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
+import { Chip } from "@/chrome/primitives/Chip";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import {
   type ActionType,
@@ -456,7 +456,7 @@ function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void
       <p className="text-neutral-content text-[10px] leading-snug">
         Adds the current product to the shopping cart. Must be inside a data-bound Container.
       </p>
-      <ToolbarRowFrame>
+      <Chip>
         <label className="text-neutral-content shrink-0 px-1 text-xs">Quantity</label>
         <input
           type="number"
@@ -466,8 +466,8 @@ function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void
           onChange={e => patch({ quantity: parseInt(e.target.value) || 1 })}
           className="h-full w-full bg-transparent px-1 text-xs outline-none"
         />
-      </ToolbarRowFrame>
-      <ToolbarRowFrame>
+      </Chip>
+      <Chip>
         <label className="text-neutral-content shrink-0 px-1 text-xs">Qty field</label>
         <input
           type="text"
@@ -476,8 +476,8 @@ function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void
           placeholder="input name (overrides static)"
           className="h-full w-full bg-transparent px-1 text-xs outline-none"
         />
-      </ToolbarRowFrame>
-      <ToolbarRowFrame>
+      </Chip>
+      <Chip>
         <label className="text-neutral-content shrink-0 px-1 text-xs">Variant state</label>
         <input
           type="text"
@@ -486,7 +486,7 @@ function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void
           placeholder="pdp:current:matching-variant"
           className="h-full w-full bg-transparent px-1 text-xs outline-none"
         />
-      </ToolbarRowFrame>
+      </Chip>
     </>
   );
 }
@@ -543,7 +543,7 @@ function ShowHideForm({ action, patch }: { action: any; patch: (p: any) => void 
 
 function CopyToClipboardForm({ action, patch }: { action: any; patch: (p: any) => void }) {
   return (
-    <ToolbarRowFrame>
+    <Chip>
       <input
         type="text"
         defaultValue={action.text || ""}
@@ -552,14 +552,14 @@ function CopyToClipboardForm({ action, patch }: { action: any; patch: (p: any) =
         className="h-full w-full bg-transparent px-1 text-xs outline-none"
         aria-label="Text to copy"
       />
-    </ToolbarRowFrame>
+    </Chip>
   );
 }
 
 function DownloadFileForm({ action, patch }: { action: any; patch: (p: any) => void }) {
   return (
     <>
-      <ToolbarRowFrame>
+      <Chip>
         <input
           type="url"
           defaultValue={action.url || ""}
@@ -568,8 +568,8 @@ function DownloadFileForm({ action, patch }: { action: any; patch: (p: any) => v
           className="h-full w-full bg-transparent px-1 text-xs outline-none"
           aria-label="File URL"
         />
-      </ToolbarRowFrame>
-      <ToolbarRowFrame>
+      </Chip>
+      <Chip>
         <input
           type="text"
           defaultValue={action.filename || ""}
@@ -578,7 +578,7 @@ function DownloadFileForm({ action, patch }: { action: any; patch: (p: any) => v
           className="h-full w-full bg-transparent px-1 text-xs outline-none"
           aria-label="Download filename"
         />
-      </ToolbarRowFrame>
+      </Chip>
     </>
   );
 }
@@ -623,7 +623,7 @@ function StateKeyPickerInput({
     });
   }
   return (
-    <ToolbarRowFrame
+    <Chip
       trailing={
         <SearchableMenuPopover<string>
           items={items}
@@ -653,7 +653,7 @@ function StateKeyPickerInput({
         className="h-full w-full bg-transparent px-1 text-xs outline-none"
         aria-label="State key"
       />
-    </ToolbarRowFrame>
+    </Chip>
   );
 }
 
@@ -688,7 +688,7 @@ function TargetPickerInput({
   }));
   const lower = label.toLowerCase();
   return (
-    <ToolbarRowFrame
+    <Chip
       trailing={
         <SearchableMenuPopover<string>
           items={items}
@@ -710,6 +710,6 @@ function TargetPickerInput({
         className="h-full w-full bg-transparent px-1 text-xs outline-none"
         aria-label={label}
       />
-    </ToolbarRowFrame>
+    </Chip>
   );
 }

@@ -41,6 +41,11 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["layout", "preset", "row", "column", "grid", "block", "container"],
     input: { type: "custom", component: "LayoutPresetSlot" },
     pinned: true,
+    // Slot self-hides for non-container nodes (LayoutPresetSlot returns null
+    // when `props.type` is unset). Without this gate the section renders an
+    // empty padded body on Text/Image/etc. Mirrors the pattern used by
+    // `containerStateWiring` and `modifiers`.
+    isActive: (_cls, props) => props?.type != null,
     sortOrder: -10,
   },
 

@@ -11,12 +11,11 @@ import {
   parseGoogleFontFromArbitraryClass,
   tailwindTokenBase,
 } from "@/utils/tailwind/fontFamilyClass";
-import { Wrap } from "../../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 import { ViewSelectionAtom } from "../../Label";
 import { FontFamilyDialogAtom } from "../../dialogs/FontFamilyDialog";
 import { useDialog } from "../../dialogs/toolHooks";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
-import { ToolbarRowFrame } from "../../../primitives/ToolbarRowFrame";
 
 function displayFontFromToken(token: string, query: any): string {
   if (!token) return "";
@@ -40,8 +39,7 @@ export const FontFamilyAltInput = ({
   prefix = "",
   index = null,
   propItemKey = "",
-  propType = "class",
-  inline = true,
+  propType = "class", inline = true,
   inputWidth = "",
   labelWidth = "",
 }) => {
@@ -113,53 +111,53 @@ export const FontFamilyAltInput = ({
 
   return (
     <div ref={ref}>
-      <Wrap
-        props={{
-          label,
-          labelHide: false,
-          showVarSelector: true,
-          varSelectorPrefix: "",
-        }}
-        lab={value}
-        viewValue={String(viewValue)}
+      <Chip
+        label={label}
         propType={propType}
         propKey={propKey}
-        inline={inline}
-        inputWidth={inputWidth}
         labelWidth={labelWidth}
+        onLabelClick={() => {
+          setDialog({
+            enabled: true,
+            value: [],
+            originalValue: value || "",
+            prefix,
+            propKey,
+            changed,
+            preview,
+            e: getRect(ref.current),
+          });
+        }}
+        trailing={
+          value ? (
+            <InlineClearButton onClick={() => pushChange("", 2000)} tooltip="Clear font family" />
+          ) : null
+        }
       >
-        <ToolbarRowFrame
-          trailing={
-            value ? (
-              <InlineClearButton onClick={() => pushChange("", 2000)} tooltip="Clear font family" />
-            ) : null
-          }
+        <button
+          type="button"
+          title={displayValue}
+          id={propKey ? `input-${propKey}` : undefined}
+          onClick={() => {
+            setDialog({
+              enabled: true,
+              value: [],
+              originalValue: value || "",
+              prefix,
+              propKey,
+              changed,
+              preview,
+              e: getRect(ref.current),
+            });
+          }}
+          style={{
+            fontFamily: displayValue || undefined,
+          }}
+          className="input-plain flex min-w-0 flex-1 items-center truncate text-left"
         >
-          <button
-            type="button"
-            title={displayValue}
-            id={propKey ? `input-${propKey}` : undefined}
-            onClick={() => {
-              setDialog({
-                enabled: true,
-                value: [],
-                originalValue: value || "",
-                prefix,
-                propKey,
-                changed,
-                preview,
-                e: getRect(ref.current),
-              });
-            }}
-            style={{
-              fontFamily: displayValue || undefined,
-            }}
-            className="input-plain flex min-w-0 flex-1 items-center truncate text-left"
-          >
-            {displayValue || "Default"}
-          </button>
-        </ToolbarRowFrame>
-      </Wrap>
+          {displayValue || "Default"}
+        </button>
+      </Chip>
     </div>
   );
 };

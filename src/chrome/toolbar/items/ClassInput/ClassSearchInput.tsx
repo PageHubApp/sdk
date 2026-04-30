@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { TbSearch } from "react-icons/tb";
 import { AllStyles } from "@/utils/tailwind";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
-import { BgWrap, CardLight } from "../../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
+import { CardLight } from "../../ToolbarStyle";
 import { BREAKPOINT_PREFIXES } from "./classItemUtils";
 
 interface ClassSearchInputProps {
@@ -50,7 +51,7 @@ export function ClassSearchInput({
       <label htmlFor="class-search-input" className="text-base-content sr-only text-sm font-medium">
         Search
       </label>
-      <BgWrap>
+      <Chip>
         <div className="relative flex min-h-8 w-full items-stretch">
           <input
             type="text"
@@ -107,7 +108,7 @@ export function ClassSearchInput({
             <TbSearch className="size-3.5" aria-hidden />
           </button>
         </div>
-      </BgWrap>
+      </Chip>
 
       {searched && (
         <div className="ph-panel-soft absolute top-10 z-50 w-full overflow-hidden">

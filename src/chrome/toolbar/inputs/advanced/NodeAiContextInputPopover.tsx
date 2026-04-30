@@ -14,7 +14,7 @@ import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { TbWand } from "react-icons/tb";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { SideBarAtom } from "../../../../utils/lib";
 import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
 import {
@@ -133,7 +133,7 @@ export default function NodeAiContextInputPopover({ def }: PropertyInputProps) {
         // computePosition() can place the panel at the section's right edge.
         <span ref={triggerRef as any} aria-hidden className="block size-0" />
       ) : (
-        <PopoverChip
+        <Chip mode="popover"
           ref={triggerRef}
           open={open}
           onTriggerClick={() => (open ? setOpen(false) : openPanel())}

@@ -37,12 +37,10 @@ export { PaletteProvider, usePalette } from "./design/PaletteContext";
 // Action system
 export {
   addActionHandlers,
-  addClickControls,
   fireLoadAction,
   getLoadActionScript,
   PH_LOAD_ACTION_SCRIPT,
 } from "./clickControls";
-export type { ClickControl } from "./clickControls";
 export {
   migrateAction,
   actionToHref,

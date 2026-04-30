@@ -26,6 +26,7 @@ import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../utils/itemContext";
 import { useAnchors } from "../utils/anchors/anchorContext";
 import { useGlobalStateTick } from "../utils/stateRegistry";
+import { useMounted } from "../utils/hooks";
 import { useScrollToSelected } from "./componentHooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
@@ -140,10 +141,7 @@ export const Text = (incomingProps: Partial<TextProps>) => {
   props = setClonedProps(props, query);
 
   // In view mode (enabled=false), skip mount guard — no hydration concern, prevents FOUC
-  const [isMounted, setIsMounted] = useState(!enabled);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted(!enabled);
 
   // Re-render when a variable value is edited via the popover
   const [, forceUpdate] = useState(0);

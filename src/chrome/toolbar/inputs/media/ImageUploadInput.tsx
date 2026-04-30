@@ -10,7 +10,7 @@ import Spinner from "../../helpers/Spinner";
 import { MediaManagerModal } from "./MediaManagerModal";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
-import { Wrap } from "../../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 
 const handleFileSelection = (e, setErrors) => {
   const errors = [];
@@ -192,7 +192,7 @@ export const ImageUploadInput: any = ({
   }
 
   return (
-    <Wrap props={props}>
+    <Chip frame="bare" label={props?.labelHide ? undefined : props?.label}>
       <div className="flex gap-2">
         {/* Upload Button */}
         <label
@@ -208,7 +208,7 @@ export const ImageUploadInput: any = ({
             />
           )}
           <div className="relative z-10 flex gap-3">
-            <div className="">
+            <div>
               {errors.length ? <TbAlertTriangle /> : null}
               {!loading && !errors.length && <TbUpload />}
               {loading && <Spinner />}
@@ -253,7 +253,7 @@ export const ImageUploadInput: any = ({
         onClose={() => setShowMediaBrowser(false)}
         onSelect={handleBrowseSelect}
       />
-    </Wrap>
+    </Chip>
   );
 };
 

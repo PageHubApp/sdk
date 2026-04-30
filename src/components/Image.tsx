@@ -19,6 +19,7 @@ import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
 import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../utils/itemContext";
+import { useMounted } from "../utils/hooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
@@ -91,12 +92,7 @@ export const Image = (incomingProps: ImageProps) => {
     : rawSrcStr;
 
   props = setClonedProps(props, query);
-
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   const ref = useRef(null);
 
@@ -270,7 +266,12 @@ export const Image = (incomingProps: ImageProps) => {
     }
   }
 
-  const empty = !videoId && !srcStr;
+  // A decoratively-styled image slot (gradient placeholder, colored block,
+  // sized empty box) is intentional — don't flag it as empty just because src
+  // is unset. Mirrors the heuristic on Button/Link.
+  const looksStyledShape =
+    /\bbg-/.test(cn) || /\bbg-gradient-/.test(cn) || /\bbg-linear-/.test(cn);
+  const empty = !videoId && !srcStr && !looksStyledShape;
 
   if (enabled) {
     if (empty) {

@@ -10,7 +10,7 @@ import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { TbBolt, TbStack2 } from "react-icons/tb";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { SideBarAtom } from "../../../../utils/lib";
 import {
   PopoverOpenRequestAtom,
@@ -97,10 +97,10 @@ function StateBindingChipRow({
   };
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">When</span>
-      <PopoverChip
+    <>
+      <Chip mode="popover"
         ref={triggerRef}
+        label="When"
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
         onClear={handleClear}
@@ -119,7 +119,7 @@ function StateBindingChipRow({
           />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }
 

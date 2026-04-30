@@ -5,8 +5,35 @@ import { buildClientContext, buildStaticContext } from "./context";
 import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
 import { getConnectorData, replaceVariables } from "../design/variables";
 import { useItemContext } from "../itemContext";
-import { subscribe as subscribeStateTick } from "../stateRegistry";
+import { subscribe as subscribeState } from "../stateRegistry";
 import type { Condition, ConditionGroup, ConditionLogic } from "./types";
+
+/**
+ * Walk all conditions (top-level + groups) and collect the state keys they
+ * read. We subscribe per-key in the runtime evaluator so unrelated state
+ * writes (cart open, toast tick, search input on another grid) don't trigger
+ * a condition re-eval on every node with conditions. `auth` conditions are
+ * mirrored to `auth:status` by `setAuthState`, so subscribing to that key
+ * covers them. Other condition types (url-param, viewport, form-field) are
+ * handled by their own listeners (popstate/resize/etc).
+ */
+function collectStateKeys(
+  conditions: Condition[],
+  groups: ConditionGroup[] | null
+): string[] {
+  const keys = new Set<string>();
+  const visit = (c: Condition) => {
+    if (c.type === "state" && (c as any).key) keys.add((c as any).key);
+    if (c.type === "auth") keys.add("auth:status");
+  };
+  for (const c of conditions) visit(c);
+  if (groups) {
+    for (const g of groups) {
+      for (const c of g.conditions || []) visit(c);
+    }
+  }
+  return Array.from(keys);
+}
 
 /**
  * HOC that wraps a component with conditional visibility.
@@ -79,7 +106,11 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     const result = conditionGroups && conditionGroups.length > 0
       ? evaluateConditionGroups(conditionGroups, ctx)
       : evaluateConditions(conditions, conditionLogic, ctx);
-    return result === true;
+    // Match the runtime evaluator (L115): treat indeterminate (`null`) as
+    // visible. A static-context `null` for an auth/url-param/localStorage
+    // condition would otherwise flash `visible=false`, fire the page-level
+    // redirect, and beat the client useEffect that resolves correctly.
+    return result !== false;
   });
   const conditionsRef = useRef(conditions);
   const logicRef = useRef(conditionLogic);
@@ -121,14 +152,17 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     const onResize = () => evaluate();
     window.addEventListener("popstate", onPop);
     window.addEventListener("resize", onResize);
-    // Auth changes propagate via the central state registry —
-    // `setAuthState` writes `auth:status`, the global tick subscription
-    // re-runs `evaluate`. Replaces the legacy `pagehub:auth-changed` bus.
-    const offState = subscribeStateTick(evaluate);
+    // Subscribe per-key for `state` and `auth` conditions. Avoids the global
+    // state-tick fan-out that re-ran evaluate() on every node with conditions
+    // for every cart toggle / unrelated state write. Other condition types
+    // (url-param, viewport, form-field) are covered by popstate/resize and
+    // by their own listeners elsewhere.
+    const stateKeys = collectStateKeys(conditionsRef.current, groupsRef.current);
+    const offs = stateKeys.map(k => subscribeState(k, evaluate));
     return () => {
       window.removeEventListener("popstate", onPop);
       window.removeEventListener("resize", onResize);
-      offState();
+      offs.forEach(off => off());
     };
   }, [hasConditions, enabled, rootProps, itemContext]);
 

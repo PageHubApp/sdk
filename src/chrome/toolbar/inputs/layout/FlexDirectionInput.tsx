@@ -8,7 +8,7 @@ import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports
 import { getEffectiveViews, EditModifiersAtom } from "../../Label";
 import { MultiScopeAtom } from "../../breakpoint-chip/atoms";
 import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
-import { Wrap } from "../../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 
 type FlexMode = "columns" | "rows" | undefined;
 
@@ -86,14 +86,11 @@ export const FlexDirectionInput = ({ wrap = "", inline = true, mode }: FlexDirec
   };
 
   return (
-    <Wrap
-      props={{ label: "Direction", labelHide: true }}
-      lab={raw}
-      viewValue={viewValue}
+    <Chip
+      frame="bare"
       propType="class"
       propKey="flexDirection"
-      wrap={wrap}
-      inline={inline}
+      passthrough={!!wrap}
     >
       <ToolbarSegmentedControl
         aria-label="Flex direction"
@@ -118,6 +115,6 @@ export const FlexDirectionInput = ({ wrap = "", inline = true, mode }: FlexDirec
           };
         })}
       />
-    </Wrap>
+    </Chip>
   );
 };

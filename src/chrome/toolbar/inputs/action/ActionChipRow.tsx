@@ -1,7 +1,7 @@
 /**
  * ActionChipRow — single editable chip for one NodeAction in the chain.
  *
- * Renders a `PopoverChip` with the action-type icon + a one-line summary
+ * Renders a `Chip` with the action-type icon + a one-line summary
  * (e.g. "Link → /shop", "Show / Hide → mobile-nav"). Click → lazy-loads
  * `ActionEditorPanel` and floats it next to the chip. Clear → calls
  * `onRemove` to drop the action from the parent list.
@@ -32,7 +32,7 @@ import {
   TbBoltOff,
   TbToggleLeft,
 } from "react-icons/tb";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { SideBarAtom } from "../../../../utils/lib";
 import { ACTION_TYPE_OPTIONS, type ActionType, type NodeAction } from "../../../../utils/action";
 import { PeekTargetButton } from "./PeekTargetButton";
@@ -221,10 +221,10 @@ export function ActionChipRow({
     action.type === "show-hide" ? ((action as any).target as string | undefined) : undefined;
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">{typeLabel}</span>
-      <PopoverChip
+    <>
+      <Chip mode="popover"
         ref={triggerRef}
+        label={typeLabel}
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
         onClear={handleClear}
@@ -251,6 +251,6 @@ export function ActionChipRow({
           />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }

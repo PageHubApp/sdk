@@ -11,7 +11,7 @@ import { VariableTextInput } from "../advanced/VariableTextInput";
 import { getMediaKind } from "./utils/media-helpers";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
 import { MiniPreviewTile } from "../../../primitives/MiniPreviewTile";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { MediaManagerBody } from "./MediaManagerBody";
 import { MediaPreviewModal } from "./components/MediaPreviewModal";
@@ -65,7 +65,7 @@ interface MediaInputProps {
    *  - "full" (default) — preview tile + dashed Browse button + optional
    *    Object Properties body. Used by component main tabs that own the
    *    entire panel surface.
-   *  - "chip" — single-row PopoverChip (preview when set, "Add..." empty),
+   *  - "chip" — single-row Chip (preview when set, "Add..." empty),
    *    click opens picker. Matches Pattern / Gradient row shape. Caller is
    *    responsible for any Object Properties / URL editing — chip is just
    *    the picker.
@@ -330,12 +330,11 @@ export const MediaInput = (propa: MediaInputProps) => {
     );
 
     return (
-      <div className="flex items-center gap-0.5">
-        {label ? (
-          <span className="text-base-content w-20 shrink-0 truncate text-xs">{label}</span>
-        ) : null}
-        <PopoverChip
+      <>
+        <Chip
+          mode="popover"
           ref={triggerRef}
+          label={label}
           open={showMediaBrowser}
           onTriggerClick={openChipBrowser}
           onClear={handleClear}
@@ -346,7 +345,7 @@ export const MediaInput = (propa: MediaInputProps) => {
           summary={hasPreview ? null : hasDynamicSource ? contentValue : "Add..."}
         />
         {renderBrowser()}
-      </div>
+      </>
     );
   }
 

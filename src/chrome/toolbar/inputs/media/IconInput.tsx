@@ -15,8 +15,7 @@ import React, { useRef, useState } from "react";
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { TailwindStyles } from "@/utils/tailwind";
-import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
-import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
+import { Chip } from "@/chrome/primitives/Chip";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { SideBarAtom } from "../../../../utils/lib";
 import { parseIconRef } from "@/utils/icons/collectIconRefs";
@@ -109,34 +108,25 @@ export const IconInput = ({
   };
 
   /** Clear the entire icon stack — value, position, only, color, shadow, gap, size. */
-  const clearAll = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const clearAll = () => {
     setProp((p: any) => {
       delete p[propKey];
     }, 0);
   };
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">{label}</span>
-      <ToolbarRowFrame
+    <>
+      <Chip mode="popover"
+        ref={triggerRef}
+        label={label}
         open={open}
-        trailing={
-          iconValue ? (
-            <InlineClearButton onClick={clearAll} tooltip="Remove icon" />
-          ) : null
-        }
-      >
-        <button
-          ref={triggerRef}
-          type="button"
-          onClick={() => (open ? setOpen(false) : openPanel())}
-          aria-expanded={open}
-          aria-label={iconValue ? `Edit icon: ${iconValue}` : "Add icon"}
-          className="flex h-full min-w-0 flex-1 items-center gap-1.5 truncate px-1 text-left"
-        >
+        onTriggerClick={() => (open ? setOpen(false) : openPanel())}
+        onClear={clearAll}
+        triggerAriaLabel={iconValue ? `Edit icon: ${iconValue}` : "Add icon"}
+        clearAriaLabel="Remove icon"
+        leading={
           <span
-            className={`flex size-4 shrink-0 items-center justify-center ${
+            className={`flex size-4 items-center justify-center ${
               iconValue
                 ? "text-base-content"
                 : "border-base-300 text-neutral-content/60 rounded-sm border border-dashed"
@@ -145,11 +135,9 @@ export const IconInput = ({
           >
             {iconValue ? <ClientIconLoader value={iconValue} /> : null}
           </span>
-          <span className="text-neutral-content flex-1 truncate">
-            {iconValue ? humanizeIconValue(iconValue) : "Add..."}
-          </span>
-        </button>
-      </ToolbarRowFrame>
+        }
+        summary={iconValue ? humanizeIconValue(iconValue) : "Add..."}
+      />
       {open && (
         <FloatingPanel
           isOpen
@@ -232,7 +220,7 @@ export const IconInput = ({
           </div>
         </FloatingPanel>
       )}
-    </div>
+    </>
   );
 };
 

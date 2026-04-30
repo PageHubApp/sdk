@@ -15,8 +15,8 @@ import React, { useMemo } from "react";
 import { TbBraces, TbBrandTailwind, TbMathFunction } from "react-icons/tb";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
-import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
-import { MobileDesktopLabels } from "../../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
+import { BreakpointChip } from "../../breakpoint-chip/BreakpointChip";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { CalcDialog } from "./CalcDialog";
 import { TypeSelector } from "./TypeSelector";
@@ -330,10 +330,10 @@ export function UniversalInputView({
       {clearButton}
     </div>
   ) : (
-    <ToolbarRowFrame trailing={clearButton}>
+    <Chip trailing={clearButton}>
       {inputBody}
       {typeSelector}
-    </ToolbarRowFrame>
+    </Chip>
   );
 
   return (
@@ -348,18 +348,12 @@ export function UniversalInputView({
               {label}
             </label>
             {renderBreakpointPills && propType === "class" && (
-              <MobileDesktopLabels
-                lab={propKey}
-                prefix={labelPrefix}
-                suffix={labelSuffix}
-                propType={propType}
+              <BreakpointChip
                 propKey={propKey}
+                propType={propType}
                 index={index}
                 propItemKey={propItemKey}
-                icon={null}
-                showDeleteIcon={false}
-                showVarSelector={false}
-                varSelectorPrefix=""
+                label={propKey}
               />
             )}
           </div>

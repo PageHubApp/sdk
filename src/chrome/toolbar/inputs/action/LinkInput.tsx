@@ -22,7 +22,7 @@ import {
 } from "react-icons/tb";
 import { ChevronTrigger } from "../../../primitives/ChevronTrigger";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
-import { ToolbarRowFrame } from "../../../primitives/ToolbarRowFrame";
+import { Chip } from "../../../primitives/Chip";
 import { AnchoredPopover } from "../../../overlays/AnchoredPopover";
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
@@ -198,7 +198,7 @@ export function LinkInput({
           icon, or input chrome) opens the popover; the input still focuses for
           typing. The X clear and chevron stop propagation so they keep their own
           toggle/clear semantics. */}
-      <ToolbarRowFrame
+      <Chip
         onClick={() => setOpen(o => !o)}
         trailing={
           <>
@@ -238,7 +238,7 @@ export function LinkInput({
             aria-label="Link destination"
           />
         </div>
-      </ToolbarRowFrame>
+      </Chip>
 
       {/* Pages + Anchors picker — AnchoredPopover + unified ph-select chrome */}
       <AnchoredPopover

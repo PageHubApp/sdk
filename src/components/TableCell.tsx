@@ -11,6 +11,7 @@ import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import type { TableCellKind } from "./tableTypes";
+import { useMounted } from "../utils/hooks";
 
 export interface TableCellProps extends BaseSelectorProps {
   text?: string;
@@ -38,12 +39,7 @@ export const TableCell: UserComponent<TableCellProps> = (incomingProps: TableCel
   }));
 
   props = setClonedProps(props, query);
-
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   useScrollToSelected(id, enabled);
   useRuntimeVarsVersion();

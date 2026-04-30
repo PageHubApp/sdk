@@ -26,15 +26,6 @@ import { buildConditionEvalFns } from "./conditions/clientScript";
 import type { ConditionContext } from "./conditions/types";
 import { getAuthState } from "./design/variables";
 
-// ─── Legacy type (kept for migration period only) ──────────────────────
-export interface ClickControl {
-  type: "click" | "hover";
-  direction: "show" | "hide" | "toggle" | "tab";
-  value: string;
-  method?: "class" | "style";
-  group?: string;
-}
-
 // ─── Visibility helpers ────────────────────────────────────────────────
 
 function showElement(el: HTMLElement, method: "class" | "style" = "class") {
@@ -66,6 +57,32 @@ function toggleElement(el: HTMLElement, method: "class" | "style" = "class") {
   const willHide = !el.classList.contains("hidden");
   el.classList.toggle("hidden");
   if (el.id) setVisibility(el.id, willHide ? "hidden" : "shown");
+}
+
+// ─── Hover-revert state, keyed by action identity ────────────────────
+//
+// React re-renders rebuild the closure each time `addActionHandlers` runs,
+// so closure-local `didSet`/`prevValue` flags are LOST between a hover
+// `enter` and the corresponding `leave` if a state-driven re-render happens
+// in between. The `action` object reference stays stable across renders
+// (CraftJS preserves prop identity for unchanged props), so we key the
+// hover scratch state on the action itself via WeakMap. GC follows action
+// disposal automatically.
+
+interface HoverScratch {
+  didSet: boolean;
+  prevValue: string | null | undefined;
+  resolvedKey: string | undefined;
+  prevEntry?: ReturnType<typeof getState>;
+}
+const _hoverScratch = new WeakMap<object, HoverScratch>();
+function hoverState(action: NodeAction): HoverScratch {
+  let s = _hoverScratch.get(action as unknown as object);
+  if (!s) {
+    s = { didSet: false, prevValue: undefined, resolvedKey: undefined };
+    _hoverScratch.set(action as unknown as object, s);
+  }
+  return s;
 }
 
 // ─── Item interpolation (set-state / toggle-state values) ─────────────
@@ -102,6 +119,24 @@ function interpolateItem(
     const v = walkItem(item, cleaned.split("."));
     return v == null ? "" : String(v);
   });
+}
+
+/**
+ * Resolve a state-action `key` (set/toggle/clear/increment/decrement-state +
+ * variantMatchStateKey + agent-send field) against the current item context.
+ * Returns `""` when interp leaves un-interpolated `{{item.X}}` tokens —
+ * matches the variant-match guard in `computedState.ts`. Action handlers
+ * treat `""` as a no-op so writes to junk keys are silently dropped instead
+ * of polluting the registry with literal-template strings.
+ */
+function resolveActionKey(
+  raw: string | undefined | null,
+  item: Record<string, any> | null | undefined
+): string {
+  if (!raw) return "";
+  const out = interpolateItem(raw, item);
+  if (/\{\{\s*item\./i.test(out)) return "";
+  return out || raw;
 }
 
 // ─── Show/Hide + Tab logic ─────────────────────────────────────────────
@@ -284,7 +319,6 @@ function attachOne(
       if (!actionGatePasses(action)) return;
       e.preventDefault();
       const baseItem = context?.itemContext;
-      console.log("[cart] add-to-cart click — baseItem=", baseItem ? { id: baseItem.id, hasMultipleVariants: (baseItem as any).hasMultipleVariants, priceId: (baseItem as any).metadata?.priceId } : null);
       if (!baseItem) {
         console.warn(
           "[PageHub] add-to-cart action requires a data-bound Container parent. Place this button inside a Container with a dataSource."
@@ -313,7 +347,10 @@ function attachOne(
       let item = baseItem;
       let matchedOk = false;
       if (cartAction.variantMatchStateKey) {
-        const raw = getStateValue(cartAction.variantMatchStateKey);
+        const variantKey =
+          interpolateItem(cartAction.variantMatchStateKey, context?.itemContext) ??
+          cartAction.variantMatchStateKey;
+        const raw = getStateValue(variantKey);
         if (raw) {
           try {
             const matched = JSON.parse(raw);
@@ -363,7 +400,6 @@ function attachOne(
           "add-to-cart"
         );
       } catch {}
-      console.log("[cart] add-to-cart writing state — qty=", qty, "matchedOk=", matchedOk, "priceId=", item.metadata?.priceId);
       context?.onAddToCart?.(item, qty);
       // Publish to the central state registry — cart provider subscribes via
       // `useStateValue("cart:add-tick")`, then reads the JSON payload from
@@ -379,10 +415,7 @@ function attachOne(
           { kind: "value", value: String(Date.now()) },
           "add-to-cart"
         );
-        console.log("[cart] add-to-cart state written — tick=", getStateValue("cart:add-tick"));
-      } catch (e) {
-        console.error("[cart] add-to-cart state write failed", e);
-      }
+      } catch {}
     });
     return;
   }
@@ -396,9 +429,7 @@ function attachOne(
       // Toggle the canonical cart visibility key. Drawer + provider both read
       // `cart:open` via `useStateValue` — single source of truth.
       const cur = getStateValue("cart:open");
-      const next = cur === "shown" ? "hidden" : "shown";
-      console.log("[cart] toggle-cart click — cur=", cur, "→", next);
-      setVisibility("cart:open", next, "toggle-cart");
+      setVisibility("cart:open", cur === "shown" ? "hidden" : "shown", "toggle-cart");
     });
     return;
   }
@@ -432,7 +463,9 @@ function attachOne(
       const btn = e.currentTarget as HTMLElement | null;
       const root = btn?.closest("[data-ph-agent-chat]") as HTMLElement | null;
       if (!root) return;
-      const fieldName = (action as any).field || "agentMessage";
+      const rawFieldName = (action as any).field || "agentMessage";
+      const fieldName =
+        interpolateItem(rawFieldName, context?.itemContext) ?? rawFieldName;
       const field = root.querySelector(
         `[name="${fieldName}"]`
       ) as HTMLInputElement | HTMLTextAreaElement | null;
@@ -524,43 +557,44 @@ function attachOne(
       run(e);
       if (!enabled && !actionGatePasses(action)) return;
       if (!ss.key) return;
+      const k = resolveActionKey(ss.key, context?.itemContext);
       const v = interpolateItem(ss.value, context?.itemContext);
       setState(
-        ss.key,
+        k,
         { kind: ss.kind ?? "value", value: v, source: enabled ? "editor-preview" : "runtime" },
         "set-state"
       );
     };
     if (isHover) {
-      // Hover-restore captures prior value per closure so onMouseLeave
-      // returns the registry to its pre-hover state. Click triggers don't
-      // restore — they're intentionally sticky.
-      let didSet = false;
-      let prevValue: string | null | undefined;
+      // Hover-restore captures prior value via WeakMap keyed on the action
+      // identity — survives mid-hover re-renders that would blow away a
+      // closure-local flag. Click triggers don't restore (intentionally sticky).
       const hoverEnter = (e: any, run: any) => {
         run(e);
         if (!enabled && !actionGatePasses(action)) return;
         if (!ss.key) return;
-        prevValue = getStateValue(ss.key);
+        const s = hoverState(action);
+        s.resolvedKey = resolveActionKey(ss.key, context?.itemContext);
+        s.prevValue = getStateValue(s.resolvedKey);
         const v = interpolateItem(ss.value, context?.itemContext);
         setState(
-          ss.key,
+          s.resolvedKey,
           { kind: ss.kind ?? "value", value: v, source: enabled ? "editor-preview" : "runtime" },
           "set-state"
         );
-        didSet = true;
+        s.didSet = true;
       };
       const hoverLeave = (e: any, run: any) => {
         run(e);
-        if (!didSet) return;
-        didSet = false;
-        if (!ss.key) return;
-        if (prevValue === undefined) {
-          deleteState(ss.key);
+        const s = hoverState(action);
+        if (!s.didSet || !s.resolvedKey) return;
+        s.didSet = false;
+        if (s.prevValue === undefined) {
+          deleteState(s.resolvedKey);
         } else {
           setState(
-            ss.key,
-            { kind: ss.kind ?? "value", value: prevValue, source: enabled ? "editor-preview" : "runtime" },
+            s.resolvedKey,
+            { kind: ss.kind ?? "value", value: s.prevValue, source: enabled ? "editor-preview" : "runtime" },
             "set-state"
           );
         }
@@ -576,51 +610,53 @@ function attachOne(
   if (action.type === "toggle-state") {
     const ts = action as ToggleStateAction;
     const isHover = (ts.trigger || "click") === "hover";
-    const resolvePair = (kind: string): [string, string] | null => {
+    const resolveKey = (): string =>
+      resolveActionKey(ts.key, context?.itemContext);
+    const resolvePair = (kind: string, k: string): [string, string] | null => {
       if (ts.values) return ts.values;
       if (kind === "visibility") return ["shown", "hidden"];
       if (kind === "flag") return ["on", "off"];
       console.warn(
-        `[PageHub] toggle-state on key "${ts.key}" (kind: ${kind}) needs explicit values. Skipping.`
+        `[PageHub] toggle-state on key "${k}" (kind: ${kind}) needs explicit values. Skipping.`
       );
       return null;
     };
-    const writeFlip = (): void => {
-      if (!ts.key) return;
-      const current = getStateValue(ts.key);
-      const kind = ts.kind ?? getState(ts.key)?.kind ?? "flag";
-      const pair = resolvePair(kind);
+    const writeFlip = (k: string): void => {
+      if (!k) return;
+      const current = getStateValue(k);
+      const kind = ts.kind ?? getState(k)?.kind ?? "flag";
+      const pair = resolvePair(kind, k);
       if (!pair) return;
       const next = current === pair[0] ? pair[1] : pair[0];
       setState(
-        ts.key,
+        k,
         { kind, value: next, source: enabled ? "editor-preview" : "runtime" },
         "toggle-state"
       );
     };
     if (isHover) {
-      let didSet = false;
-      let prevValue: string | null | undefined;
       const hoverEnter = (e: any, run: any) => {
         run(e);
         if (!enabled && !actionGatePasses(action)) return;
         if (!ts.key) return;
-        prevValue = getStateValue(ts.key);
-        writeFlip();
-        didSet = true;
+        const s = hoverState(action);
+        s.resolvedKey = resolveKey();
+        s.prevValue = getStateValue(s.resolvedKey);
+        writeFlip(s.resolvedKey);
+        s.didSet = true;
       };
       const hoverLeave = (e: any, run: any) => {
         run(e);
-        if (!didSet) return;
-        didSet = false;
-        if (!ts.key) return;
-        const kind = ts.kind ?? getState(ts.key)?.kind ?? "flag";
-        if (prevValue === undefined) {
-          deleteState(ts.key);
+        const s = hoverState(action);
+        if (!s.didSet || !s.resolvedKey) return;
+        s.didSet = false;
+        const kind = ts.kind ?? getState(s.resolvedKey)?.kind ?? "flag";
+        if (s.prevValue === undefined) {
+          deleteState(s.resolvedKey);
         } else {
           setState(
-            ts.key,
-            { kind, value: prevValue, source: enabled ? "editor-preview" : "runtime" },
+            s.resolvedKey,
+            { kind, value: s.prevValue, source: enabled ? "editor-preview" : "runtime" },
             "toggle-state"
           );
         }
@@ -631,7 +667,8 @@ function attachOne(
       chain(prop, "onClick", (e, run) => {
         run(e);
         if (!enabled && !actionGatePasses(action)) return;
-        writeFlip();
+        if (!ts.key) return;
+        writeFlip(resolveKey());
       });
     }
     return;
@@ -645,7 +682,9 @@ function attachOne(
     const fire = (e: any, run: any) => {
       run(e);
       if (!enabled && !actionGatePasses(action)) return;
-      applyStateStep(sa);
+      const k = resolveActionKey(sa.key, context?.itemContext);
+      if (!k) return;
+      applyStateStep(sa, k);
     };
     if (trig === "hover") {
       chain(prop, "onMouseEnter", fire);
@@ -659,24 +698,25 @@ function attachOne(
     const cs = action as ClearStateAction;
     const isHover = (cs.trigger || "click") === "hover";
     if (isHover) {
-      let didDelete = false;
-      let prev: ReturnType<typeof getState>;
       const hoverEnter = (e: any, run: any) => {
         run(e);
         if (!enabled && !actionGatePasses(action)) return;
         if (!cs.key) return;
-        prev = getState(cs.key);
-        deleteState(cs.key);
-        didDelete = true;
+        const s = hoverState(action);
+        s.resolvedKey = resolveActionKey(cs.key, context?.itemContext);
+        s.prevEntry = getState(s.resolvedKey);
+        deleteState(s.resolvedKey);
+        s.didSet = true;
       };
       const hoverLeave = (e: any, run: any) => {
         run(e);
-        if (!didDelete) return;
-        didDelete = false;
-        if (!cs.key || !prev) return;
+        const s = hoverState(action);
+        if (!s.didSet || !s.resolvedKey) return;
+        s.didSet = false;
+        if (!s.prevEntry) return;
         setState(
-          cs.key,
-          { kind: prev.kind, value: prev.value, source: prev.source },
+          s.resolvedKey,
+          { kind: s.prevEntry.kind, value: s.prevEntry.value, source: s.prevEntry.source },
           "clear-state"
         );
       };
@@ -687,7 +727,8 @@ function attachOne(
         run(e);
         if (!enabled && !actionGatePasses(action)) return;
         if (!cs.key) return;
-        deleteState(cs.key);
+        const k = resolveActionKey(cs.key, context?.itemContext);
+        deleteState(k);
       });
     }
     return;
@@ -799,29 +840,6 @@ export function addCustomHandlers(
       }
     };
   }
-}
-
-/**
- * Legacy wrapper — forwards old ClickControl to new system.
- * Used during migration period; remove once all call sites are updated.
- */
-export function addClickControls(
-  prop: any,
-  click: ClickControl | undefined,
-  enabled: boolean,
-  _existingOnClick?: (e: any) => void
-) {
-  if (!click?.type || !click?.value) return;
-
-  const action: ShowHideAction = {
-    type: "show-hide",
-    target: click.value,
-    direction: click.direction || "toggle",
-    method: click.method,
-    group: click.group,
-    trigger: click.type,
-  };
-  addActionHandlers(prop, [action], enabled);
 }
 
 /**
@@ -1016,12 +1034,22 @@ function resolveBound(value: number | string | undefined): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-/** Apply increment-state / decrement-state arithmetic with min/max/wrap. */
-export function applyStateStep(action: IncrementStateAction | DecrementStateAction): void {
-  if (!action.key) return;
+/**
+ * Apply increment-state / decrement-state arithmetic with min/max/wrap.
+ * `keyOverride` lets callers with item context pass a pre-interpolated key
+ * (e.g. click-trigger handlers inside a repeater). Interval/load callers
+ * have no item context, so they pass undefined and the literal action.key
+ * is used.
+ */
+export function applyStateStep(
+  action: IncrementStateAction | DecrementStateAction,
+  keyOverride?: string
+): void {
+  const key = keyOverride || action.key;
+  if (!key) return;
   const sign = action.type === "increment-state" ? 1 : -1;
   const step = (action.step ?? 1) * sign;
-  const cur = parseInt(getStateValue(action.key) ?? "0", 10) || 0;
+  const cur = parseInt(getStateValue(key) ?? "0", 10) || 0;
   let next = cur + step;
   const min = action.min;
   const max = resolveBound(action.max);
@@ -1033,7 +1061,7 @@ export function applyStateStep(action: IncrementStateAction | DecrementStateActi
     if (min !== undefined) next = Math.max(min, next);
   }
   setState(
-    action.key,
+    key,
     { kind: "value", value: String(next), source: "runtime" },
     action.type
   );

@@ -2,7 +2,7 @@ import { useNode } from "@craftjs/core";
 import { changeProp } from "../../viewport/viewportExports";
 import { atom, useAtomState } from "@zedux/react";
 import { ToolbarItem, ToolbarItemProps } from "../ToolbarItem";
-import { Wrap } from "../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 import { ListEditor } from "../inputs/preset/ListEditor";
 
 // Create a simple state atom for managing which option is expanded
@@ -106,8 +106,13 @@ export const SelectOptionsItem = (__props: ToolbarItemProps) => {
   });
 
   return (
-    <Wrap {...__props} props={__props}>
+    <Chip
+      frame="bare"
+      label={__props?.labelHide ? undefined : __props?.label}
+      propKey={__props?.propKey}
+      propType={__props?.propType}
+    >
       <Input options={options} setProp={setProp} />
-    </Wrap>
+    </Chip>
   );
 };

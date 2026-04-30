@@ -8,11 +8,10 @@ import { useAtomValue } from "@zedux/react";
 import { generatePattern } from "@/utils/lib";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
-import { Wrap } from "../../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
 import { MiniPreviewTile } from "@/chrome/primitives/MiniPreviewTile";
-import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
 import { getPageHubApiBaseUrl } from "@/core/apiConfig";
 import { TbSearch, TbX } from "react-icons/tb";
 
@@ -110,37 +109,32 @@ export const PatternsDialogInput = ({
 
   return (
     <div className="relative">
-      <Wrap
-        props={{ label, labelHide: true }}
-        lab={value?.name}
+      <Chip
         propType={propType}
         propKey={propKey}
+        trailing={value ? <InlineClearButton onClick={clear} tooltip="Clear pattern" /> : null}
       >
-        <ToolbarRowFrame
-          trailing={value ? <InlineClearButton onClick={clear} tooltip="Clear pattern" /> : null}
+        <button
+          ref={triggerRef}
+          type="button"
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content={value?.title || "Select pattern"}
+          id={propKey ? `input-${propKey}` : undefined}
+          onClick={() => (isOpen ? setIsOpen(false) : openPicker())}
+          className="input-plain flex min-w-0 flex-1 items-center text-left"
         >
-          <button
-            ref={triggerRef}
-            type="button"
-            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content={value?.title || "Select pattern"}
-            id={propKey ? `input-${propKey}` : undefined}
-            onClick={() => (isOpen ? setIsOpen(false) : openPicker())}
-            className="input-plain flex min-w-0 flex-1 items-center text-left"
-          >
-            <div className="pointer-events-none flex min-h-0 w-full items-center gap-2">
-              <MiniPreviewTile
-                size="swatch"
-                rounded="md"
-                style={patt ? { backgroundImage: `url(${patt})` } : undefined}
-              />
-              <div className="min-w-0 flex-1 truncate text-left">
-                {value?.title || <span className="text-neutral-content">Select pattern</span>}
-              </div>
+          <div className="pointer-events-none flex min-h-0 w-full items-center gap-2">
+            <MiniPreviewTile
+              size="swatch"
+              rounded="md"
+              style={patt ? { backgroundImage: `url(${patt})` } : undefined}
+            />
+            <div className="min-w-0 flex-1 truncate text-left">
+              {value?.title || <span className="text-neutral-content">Select pattern</span>}
             </div>
-          </button>
-        </ToolbarRowFrame>
-      </Wrap>
+          </div>
+        </button>
+      </Chip>
 
       {isOpen &&
         pickerPos &&

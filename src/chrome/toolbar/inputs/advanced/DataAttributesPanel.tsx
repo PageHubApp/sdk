@@ -5,7 +5,7 @@
 import { useNode } from "@craftjs/core";
 import { useState } from "react";
 import { TbPlus, TbTrash } from "react-icons/tb";
-import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
+import { Chip } from "@/chrome/primitives/Chip";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 
@@ -80,7 +80,7 @@ function DataAttributesEditor() {
         <div key={i} className="flex min-w-0 items-center gap-1">
           <span className="text-neutral-content shrink-0">data-</span>
           <div className="w-20 shrink-0">
-            <ToolbarRowFrame>
+            <Chip>
               <input
                 type="text"
                 value={attr.key}
@@ -89,10 +89,10 @@ function DataAttributesEditor() {
                 placeholder="key"
                 {...toolbarInputNoAutocompleteProps}
               />
-            </ToolbarRowFrame>
+            </Chip>
           </div>
           <div className="min-w-0 flex-1">
-            <ToolbarRowFrame>
+            <Chip>
               <input
                 type="text"
                 value={attr.value}
@@ -101,7 +101,7 @@ function DataAttributesEditor() {
                 placeholder="value"
                 {...toolbarInputNoAutocompleteProps}
               />
-            </ToolbarRowFrame>
+            </Chip>
           </div>
           <button
             type="button"
@@ -116,7 +116,7 @@ function DataAttributesEditor() {
       <div className="flex min-w-0 items-center gap-1">
         <span className="text-neutral-content shrink-0">data-</span>
         <div className="w-20 shrink-0">
-          <ToolbarRowFrame>
+          <Chip>
             <input
               type="text"
               value={newKey}
@@ -126,10 +126,10 @@ function DataAttributesEditor() {
               placeholder="key"
               {...toolbarInputNoAutocompleteProps}
             />
-          </ToolbarRowFrame>
+          </Chip>
         </div>
         <div className="min-w-0 flex-1">
-          <ToolbarRowFrame>
+          <Chip>
             <input
               type="text"
               value={newValue}
@@ -139,7 +139,7 @@ function DataAttributesEditor() {
               placeholder="value"
               {...toolbarInputNoAutocompleteProps}
             />
-          </ToolbarRowFrame>
+          </Chip>
         </div>
         <button
           type="button"

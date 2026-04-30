@@ -14,7 +14,7 @@
  */
 import { useMemo, useState } from "react";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
-import { ToolbarRowFrame } from "../../../primitives/ToolbarRowFrame";
+import { Chip } from "../../../primitives/Chip";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 
 interface CalcDialogProps {
@@ -231,19 +231,16 @@ function ClampField({
   autoFocus?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">{label}</span>
-      <ToolbarRowFrame>
-        <input
-          type="text"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder={placeholder}
-          autoFocus={autoFocus}
-          className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
-          {...toolbarInputNoAutocompleteProps}
-        />
-      </ToolbarRowFrame>
-    </div>
+    <Chip label={label}>
+      <input
+        type="text"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
+        {...toolbarInputNoAutocompleteProps}
+      />
+    </Chip>
   );
 }

@@ -17,7 +17,7 @@ import {
 import { formatTailwindDisplayLabel } from "../../../../utils/tailwind/displayLabel";
 import { TRANSPARENT_CHECKER_BG } from "../../../../utils/design/colorSystem";
 import { SideBarAtom } from "../../../../utils/lib";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { ViewAtom } from "../../../viewport/atoms";
 import { getPropFinalValue } from "../../../viewport/propSystem";
 import { ViewSelectionAtom } from "../../Label";
@@ -186,10 +186,10 @@ export function BundleRow({ def, properties, icon }: Props) {
   ) : null;
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">{def.label}</span>
-      <PopoverChip
+    <>
+      <Chip mode="popover"
         ref={triggerRef}
+        label={def.label}
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
         onClear={() => remove()}
@@ -210,6 +210,6 @@ export function BundleRow({ def, properties, icon }: Props) {
           />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }

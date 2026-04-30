@@ -5,7 +5,7 @@
  * The component reads `def.id` to look up the matching `EffectType` and:
  *   - renders nothing while empty + not pending (so empty rows don't clutter
  *     the body — only ACTIVE effects show as chips)
- *   - renders a `PopoverChip` (icon + summary + clear) when active or pending
+ *   - renders a `Chip` (icon + summary + clear) when active or pending
  *   - lazy-mounts the per-effect editor panel on chip click
  *   - listens to `PopoverOpenRequestAtom` so AccordionAddMenu's `+` picker
  *     can dispatch open-requests (the standard pattern)
@@ -17,7 +17,7 @@
 import { useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { PopoverChip } from "@/chrome/primitives/PopoverChip";
+import { Chip } from "@/chrome/primitives/Chip";
 import { SideBarAtom } from "@/utils/lib";
 import {
   PopoverOpenRequestAtom,
@@ -126,10 +126,10 @@ export default function EffectRowInputPopover({ def }: PropertyInputProps) {
   const chipSummary = summary || "Add...";
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">{type.label}</span>
-      <PopoverChip
+    <>
+      <Chip mode="popover"
         ref={triggerRef}
+        label={type.label}
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
         onClear={handleClear}
@@ -143,6 +143,6 @@ export default function EffectRowInputPopover({ def }: PropertyInputProps) {
           <Editor onClose={() => setOpen(false)} initialPosition={initialPos} />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }

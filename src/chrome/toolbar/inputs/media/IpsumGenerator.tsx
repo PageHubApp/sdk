@@ -7,6 +7,7 @@ import { useAtomValue } from "@zedux/react";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { TbLetterA, TbMinus, TbAlignLeft } from "react-icons/tb";
+import { Chip } from "@/chrome/primitives/Chip";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 
 function capitalizeFirstLetter(string) {
@@ -64,8 +65,7 @@ export const IpsumGenerator = ({ propKey, propType }) => {
   ];
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">Sample</span>
+    <Chip label="Sample" frame="bare">
       <div className="bg-neutral ml-auto flex w-fit shrink-0 items-center gap-1 rounded-md p-1">
         {buttons.map(({ icon: Icon, label, generate }) => (
           <button
@@ -81,6 +81,6 @@ export const IpsumGenerator = ({ propKey, propType }) => {
           </button>
         ))}
       </div>
-    </div>
+    </Chip>
   );
 };

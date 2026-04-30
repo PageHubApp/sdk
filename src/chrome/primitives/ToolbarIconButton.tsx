@@ -8,7 +8,7 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "./layout/tooltipSurface";
  * `text-neutral-content hover:text-base-content`. Two visual variants:
  *
  *   - `ghost` (default) — no hover bg. Used by `InlineClearButton` and
- *     `ChevronTrigger` inside `ToolbarRowFrame` trailing slots.
+ *     `ChevronTrigger` inside `Chip` trailing slots.
  *   - `subtle` — `hover:bg-neutral` ramp. Used when the button stands alone
  *     outside a row frame (e.g. design-var picker trigger next to an input).
  *

@@ -16,7 +16,7 @@
  */
 import { lazy, Suspense, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
-import { PopoverChip } from "@/chrome/primitives/PopoverChip";
+import { Chip } from "@/chrome/primitives/Chip";
 import { SideBarAtom } from "@/utils/lib";
 import type { TypographyPresetRow } from "./TypographyPresetSelect";
 import type { TextStyleDraft } from "./TextStyleEditorPanel";
@@ -113,7 +113,7 @@ export function TextStylePicker({
 
   return (
     <>
-      <PopoverChip
+      <Chip mode="popover"
         ref={triggerRef}
         open={stage.kind !== "closed"}
         onTriggerClick={togglePicker}

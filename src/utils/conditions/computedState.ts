@@ -95,6 +95,16 @@ function axisToSlot(axes: string[]): Record<string, "option1" | "option2" | "opt
   return out;
 }
 
+/**
+ * Detects un-interpolated `{{item.X}}` tokens — when the binding's interp
+ * couldn't resolve them (no item context, missing repeater parent) we'd
+ * otherwise feed literal `{{item.id}}` into a state key and silently miss.
+ * Returns the same "incomplete" sentinel `""` to keep variant-match output stable.
+ */
+function hasUnresolvedItemToken(s: string): boolean {
+  return /\{\{\s*item\./i.test(s);
+}
+
 function toAxisArray(value: string[] | string | undefined): string[] {
   if (!value) return [];
   if (Array.isArray(value)) return value;
@@ -130,13 +140,20 @@ export function runComputedState(
       return values.filter(v => v != null && v !== "").join(sep);
     }
     case "variant-match": {
-      const variants = parseVariantMap(ctx.interp(c.variantMap));
-      const axes = toAxisArray(typeof c.axes === "string" ? ctx.interp(c.axes) : c.axes);
+      const rawMap = ctx.interp(c.variantMap);
+      const rawAxes = typeof c.axes === "string" ? ctx.interp(c.axes) : c.axes.join(",");
+      // Bail when item context didn't resolve — without a repeater parent,
+      // `{{item.X}}` survives interpolation and reading state under that
+      // literal key returns nothing forever.
+      if (hasUnresolvedItemToken(rawMap) || hasUnresolvedItemToken(rawAxes)) return "";
+      const variants = parseVariantMap(rawMap);
+      const axes = toAxisArray(rawAxes);
       const tmpl = c.axisKeyTemplate;
       const slots = axisToSlot(axes);
       const sel: Record<string, string> = {};
       for (const axisName of axes) {
         const stateKey = ctx.interp(tmpl.replace(/%axis%/g, axisName));
+        if (hasUnresolvedItemToken(stateKey)) return "";
         const v = getStateValue(stateKey);
         if (v != null && v !== "") sel[axisName] = v;
       }
@@ -148,16 +165,19 @@ export function runComputedState(
       return match ? JSON.stringify(match) : "";
     }
     case "variant-axis-availability": {
-      const variants = parseVariantMap(ctx.interp(c.variantMap));
-      const otherAxes = toAxisArray(
-        typeof c.otherAxes === "string" ? ctx.interp(c.otherAxes) : c.otherAxes
-      );
+      const rawMap = ctx.interp(c.variantMap);
+      const rawOther =
+        typeof c.otherAxes === "string" ? ctx.interp(c.otherAxes) : c.otherAxes.join(",");
+      if (hasUnresolvedItemToken(rawMap) || hasUnresolvedItemToken(rawOther)) return "";
+      const variants = parseVariantMap(rawMap);
+      const otherAxes = toAxisArray(rawOther);
       const allAxes = [c.axis, ...otherAxes];
       const tmpl = c.axisKeyTemplate;
       const slots = axisToSlot(allAxes);
       const sel: Record<string, string> = {};
       for (const axisName of otherAxes) {
         const stateKey = ctx.interp(tmpl.replace(/%axis%/g, axisName));
+        if (hasUnresolvedItemToken(stateKey)) return "";
         const v = getStateValue(stateKey);
         if (v != null && v !== "") sel[axisName] = v;
       }
@@ -180,6 +200,61 @@ export function runComputedState(
     default:
       return "";
   }
+}
+
+/**
+ * Build a stable snapshot string of every input that affects a binding's
+ * output. Container's effect uses this as its dep so we re-run on real input
+ * change instead of every render. Inputs covered:
+ *   - declared `from` keys (after interp)
+ *   - axis state keys for `variant-match` / `variant-axis-availability`
+ *     (derived from `axisKeyTemplate × axes`)
+ *   - the interpolated `variantMap` literal (so swapping products refires)
+ * Cheap: just key=value joins, no JSON.stringify of the binding shape.
+ */
+export function computeBindingInputSnapshot(
+  binding: ComputedStateBinding,
+  interp: (raw: string) => string
+): string {
+  const parts: string[] = [];
+  // Output key is part of the identity — same compute writing to a different
+  // key (e.g. per-iteration output) should re-run.
+  parts.push(`out=${interp(binding.key)}`);
+
+  for (const k of binding.from || []) {
+    const resolved = interp(k);
+    parts.push(`${resolved}=${getStateValue(resolved) ?? ""}`);
+  }
+
+  const c = binding.compute;
+  if (c.type === "variant-match") {
+    const map = interp(c.variantMap);
+    parts.push(`vm=${map}`);
+    const axes = toAxisArray(typeof c.axes === "string" ? interp(c.axes) : c.axes);
+    for (const axisName of axes) {
+      const sk = interp(c.axisKeyTemplate.replace(/%axis%/g, axisName));
+      parts.push(`${sk}=${getStateValue(sk) ?? ""}`);
+    }
+  } else if (c.type === "variant-axis-availability") {
+    const map = interp(c.variantMap);
+    parts.push(`vm=${map}`);
+    const otherAxes = toAxisArray(
+      typeof c.otherAxes === "string" ? interp(c.otherAxes) : c.otherAxes
+    );
+    for (const axisName of otherAxes) {
+      const sk = interp(c.axisKeyTemplate.replace(/%axis%/g, axisName));
+      parts.push(`${sk}=${getStateValue(sk) ?? ""}`);
+    }
+  }
+  return parts.join("|");
+}
+
+export function computeBindingsSnapshot(
+  bindings: ComputedStateBinding[] | undefined,
+  interp: (raw: string) => string
+): string {
+  if (!bindings || bindings.length === 0) return "";
+  return bindings.map(b => computeBindingInputSnapshot(b, interp)).join("||");
 }
 
 /**

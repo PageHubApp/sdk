@@ -9,6 +9,7 @@ import { CSStoObj } from "../utils/tailwind/tailwind";
 import { buildClientContext } from "../utils/conditions/context";
 import { evaluateConditions } from "../utils/conditions/evaluate";
 import type { ConditionBranch, ConditionLogic } from "../utils/conditions/types";
+import { useMounted } from "../utils/hooks";
 
 export interface ConditionalContainerProps extends BaseSelectorProps {
   branches?: ConditionBranch[];
@@ -33,11 +34,7 @@ export const ConditionalContainer = ({
   const { enabled } = useEditor(state => ({
     enabled: state.options.enabled,
   }));
-
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   // Get child node IDs
   const childIds = useMemo(() => {

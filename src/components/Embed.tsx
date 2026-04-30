@@ -8,6 +8,7 @@ import { motionIt } from "../utils/lib";
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { useScrollToSelected } from "./componentHooks";
 import { InjectedHeadTags, InjectedBodyTags } from "./InjectedHeadTags";
+import { useMounted } from "../utils/hooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
@@ -237,11 +238,7 @@ export const Embed = (incomingProps: EmbedProps) => {
   useScrollToSelected(id, enabled);
 
   const ref = useRef(null);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   props = setClonedProps(props, query);
 

@@ -46,9 +46,9 @@ type TabDef = { id: TabId; title: string; icon: React.ReactNode };
 
 const TABS: TabDef[] = [
   { id: "component", title: "Component", icon: null },
+  { id: "interactions", title: "Interactions", icon: <TbMouse /> },
   { id: "layout", title: "Layout", icon: <TbBoxPadding /> },
   { id: "design", title: "Design", icon: <TbBrush /> },
-  { id: "interactions", title: "Interactions", icon: <TbMouse /> },
   { id: "advanced", title: "Advanced", icon: <TbSettings /> },
 ];
 

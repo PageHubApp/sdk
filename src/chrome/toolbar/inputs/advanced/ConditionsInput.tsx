@@ -12,7 +12,7 @@
 import { useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { TbTrash } from "react-icons/tb";
-import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
+import { Chip } from "@/chrome/primitives/Chip";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { useElementPicker } from "../action/useElementPicker";
@@ -261,7 +261,7 @@ export function ConditionFields({
               </option>
             ))}
           </ToolbarDropdown>
-          <ToolbarRowFrame>
+          <Chip>
             <input
               type="text"
               value={cond.key}
@@ -269,12 +269,12 @@ export function ConditionFields({
               placeholder="field name"
               className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
             />
-          </ToolbarRowFrame>
+          </Chip>
         </>
       )}
 
       {cond.type === "url-param" && (
-        <ToolbarRowFrame>
+        <Chip>
           <input
             type="text"
             value={cond.key}
@@ -282,11 +282,11 @@ export function ConditionFields({
             placeholder="param name (e.g. ref)"
             className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
           />
-        </ToolbarRowFrame>
+        </Chip>
       )}
 
       {cond.type === "localStorage" && (
-        <ToolbarRowFrame>
+        <Chip>
           <input
             type="text"
             value={cond.key}
@@ -294,11 +294,11 @@ export function ConditionFields({
             placeholder="storage key (e.g. ph-cookie-consent)"
             className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
           />
-        </ToolbarRowFrame>
+        </Chip>
       )}
 
       {cond.type === "state" && (
-        <ToolbarRowFrame>
+        <Chip>
           <input
             type="text"
             value={cond.key}
@@ -306,7 +306,7 @@ export function ConditionFields({
             placeholder="state key (element id or named state)"
             className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
           />
-        </ToolbarRowFrame>
+        </Chip>
       )}
 
       {/* Operator — skip for device (implicit equals) */}
@@ -352,7 +352,7 @@ export function ConditionFields({
             ))}
           </ToolbarDropdown>
         ) : (
-          <ToolbarRowFrame>
+          <Chip>
             <input
               type="text"
               value={cond.value}
@@ -360,7 +360,7 @@ export function ConditionFields({
               placeholder="expected value"
               className="h-full w-full bg-transparent px-1 font-mono text-xs outline-none"
             />
-          </ToolbarRowFrame>
+          </Chip>
         ))}
     </>
   );

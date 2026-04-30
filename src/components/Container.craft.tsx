@@ -350,7 +350,7 @@ function buildButtonGroupChildren() {
       custom={{ displayName: text }}
       text={text}
       url="#"
-      className="btn btn-primary"
+      className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold"
       canDelete={true}
       canEditName={true}
     />
@@ -427,7 +427,7 @@ function buildCarouselChildren(opts: { hero: boolean }) {
       is={Button}
       custom={{ displayName: `Dot ${i + 1}` }}
       text=""
-      className="size-2 rounded-full bg-base-100/50 transition-all"
+      className="size-2.5 rounded-full bg-base-content/30 hover:bg-base-content/60 transition-all"
       action={[{ type: "set-state", key: stateKey, kind: "value", value: String(i), trigger: "click" }]}
       stateModifiers={[
         {
@@ -439,7 +439,7 @@ function buildCarouselChildren(opts: { hero: boolean }) {
               ],
             },
           ],
-          modifiers: ["tab-active"],
+          modifiers: ["dot-active"],
         },
       ]}
       canDelete={true}

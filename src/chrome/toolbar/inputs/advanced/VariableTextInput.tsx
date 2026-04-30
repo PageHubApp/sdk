@@ -2,7 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useMemo, useRef, useState } from "react";
 import { TbBraces, TbCode } from "react-icons/tb";
 import { getEditorVariableOptions } from "@/utils/editorVariableOptions";
-import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
+import { Chip } from "@/chrome/primitives/Chip";
 import { SearchInput } from "@/chrome/primitives/SearchInput";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { useAtomValue } from "@zedux/react";
@@ -157,7 +157,7 @@ export function VariableTextInput({
       ) : null}
 
       <div className="relative">
-        <ToolbarRowFrame
+        <Chip
           open={panel !== null}
           trailing={
             <div className="flex items-center gap-0.5">
@@ -205,7 +205,7 @@ export function VariableTextInput({
             placeholder={placeholder}
             className="input-plain h-full min-w-0 flex-1 px-2!"
           />
-        </ToolbarRowFrame>
+        </Chip>
 
         {panel === "variables" ? (
           <FloatingPanel
@@ -319,13 +319,13 @@ export function VariableTextInput({
               {exprMode === "fallback" ? (
                 <div>
                   <label className="toolbar-label mb-1 block">Fallback URL/value</label>
-                  <ToolbarRowFrame>
+                  <Chip>
                     <input
                       value={exprFallback}
                       onChange={e => setExprFallback(e.target.value)}
                       className="input-plain h-full min-w-0 flex-1 px-2!"
                     />
-                  </ToolbarRowFrame>
+                  </Chip>
                 </div>
               ) : null}
 
@@ -335,14 +335,14 @@ export function VariableTextInput({
                     <div>
                       <label className="toolbar-label mb-1 block">Compare to</label>
                       <div className="flex gap-1">
-                        <ToolbarRowFrame>
+                        <Chip>
                           <input
                             value={exprCompare}
                             onChange={e => setExprCompare(e.target.value)}
                             className="input-plain h-full min-w-0 flex-1 px-2!"
                             placeholder="logged-in"
                           />
-                        </ToolbarRowFrame>
+                        </Chip>
                         <div className="w-34">
                           <ToolbarDropdown
                             value=""
@@ -364,13 +364,13 @@ export function VariableTextInput({
                   <div>
                     <label className="toolbar-label mb-1 block">True value</label>
                     <div className="flex gap-1">
-                      <ToolbarRowFrame>
+                      <Chip>
                         <input
                           value={exprTrue}
                           onChange={e => setExprTrue(e.target.value)}
                           className="input-plain h-full min-w-0 flex-1 px-2!"
                         />
-                      </ToolbarRowFrame>
+                      </Chip>
                       <div className="w-34">
                         <ToolbarDropdown
                           value=""
@@ -391,13 +391,13 @@ export function VariableTextInput({
                   <div>
                     <label className="toolbar-label mb-1 block">False value</label>
                     <div className="flex gap-1">
-                      <ToolbarRowFrame>
+                      <Chip>
                         <input
                           value={exprFalse}
                           onChange={e => setExprFalse(e.target.value)}
                           className="input-plain h-full min-w-0 flex-1 px-2!"
                         />
-                      </ToolbarRowFrame>
+                      </Chip>
                       <div className="w-34">
                         <ToolbarDropdown
                           value=""

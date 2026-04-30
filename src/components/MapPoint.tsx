@@ -1,7 +1,8 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { getClonedState } from "../utils/cloneHelper";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { TbMapPin } from "react-icons/tb";
+import { useMounted } from "../utils/hooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
@@ -27,12 +28,7 @@ export const MapPoint = ({
   } = useNode();
 
   const { enabled } = useEditor(state => getClonedState(props, state));
-
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   // MapPoint is a data-only node — renders nothing in live mode
   if (!enabled) return null;

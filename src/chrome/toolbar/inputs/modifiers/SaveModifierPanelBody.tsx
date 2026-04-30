@@ -11,7 +11,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TbX } from "react-icons/tb";
-import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
+import { Chip } from "@/chrome/primitives/Chip";
 import { useModifiers } from "./useModifiers";
 
 interface Props {
@@ -80,7 +80,7 @@ export function SaveModifierPanelBody({ onClose }: Props) {
         <label className="text-neutral-content px-0.5 text-[10px] font-medium">
           Modifier name
         </label>
-        <ToolbarRowFrame>
+        <Chip>
           <input
             ref={labelInputRef}
             type="text"
@@ -93,14 +93,14 @@ export function SaveModifierPanelBody({ onClose }: Props) {
             }}
             className="h-full w-full bg-transparent px-1 text-xs outline-none"
           />
-        </ToolbarRowFrame>
+        </Chip>
       </div>
 
       <div className="flex flex-col gap-0.5">
         <label className="text-neutral-content px-0.5 text-[10px] font-medium">
           Component type
         </label>
-        <ToolbarRowFrame>
+        <Chip>
           <input
             type="text"
             value={targetType}
@@ -108,7 +108,7 @@ export function SaveModifierPanelBody({ onClose }: Props) {
             placeholder="e.g. Button, Container"
             className="h-full w-full bg-transparent px-1 text-xs outline-none"
           />
-        </ToolbarRowFrame>
+        </Chip>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-1">

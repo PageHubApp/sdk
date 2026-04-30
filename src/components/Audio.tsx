@@ -1,8 +1,9 @@
 import { useEditor, useNode } from "@craftjs/core";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { TbMusic } from "react-icons/tb";
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
+import { useMounted } from "../utils/hooks";
 
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../utils/lib";
@@ -52,11 +53,7 @@ export const Audio = (incomingProps: AudioProps) => {
   props = setClonedProps(props, query);
 
   const ref = useRef<HTMLElement | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   const prop: any = {
     ref: r => {
@@ -78,7 +75,7 @@ export const Audio = (incomingProps: AudioProps) => {
       >
         Your browser does not support the audio element.
       </audio>
-    ) : enabled ? (
+    ) : enabled && !/\bbg-/.test(props.className || "") ? (
       <EditorEmptyLeafHint
         selected={isActive}
         icon={<TbMusic aria-hidden />}

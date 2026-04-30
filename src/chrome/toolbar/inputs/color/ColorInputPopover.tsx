@@ -1,20 +1,20 @@
 /**
  * ColorInputPopover — popover-mode trigger chip for sidebar color properties.
  *
- * Replaces the inline `ColorInput` swatch row used by PropertyRenderer's
- * `case "color":` branch. The chip shows the current color via PopoverChip's
+ * Replaces the `ColorInput` swatch row used by PropertyRenderer's
+ * `case "color":` branch. The chip shows the current color via Chip's
  * preview variant (full-bleed swatch fill), and opens a draggable
  * FloatingPanel containing ColorPanelBody (HSV picker + palette + recent +
  * tailwind grids).
  *
  * Other callsites of `ColorInput` (inline TipTap, top-of-canvas text tool,
  * Gradient stop rows, Pattern body, Icon color, Button color, Divider) keep
- * the inline swatch behavior — they import `ColorInput` directly.
+ * the swatch behavior — they import `ColorInput` directly.
  */
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useCallback, useMemo, useRef, useState } from "react";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "@/chrome/primitives/Chip";
 import { SideBarAtom } from "../../../../utils/lib";
 import {
   cssColorShowsTransparency,
@@ -30,7 +30,6 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
 import { ViewAtom } from "../../../viewport/atoms";
 import { ViewSelectionAtom } from "../../Label";
-import { Wrap } from "../../ToolbarStyle";
 
 const ColorPanel = lazy(() => import("./ColorPanel"));
 
@@ -60,8 +59,7 @@ export function ColorInputPopover(__props: ColorInputPopoverProps) {
     propItemKey = "",
     propType = "class",
     onChange = () => {},
-    labelHide = false,
-    inline = false,
+    labelHide = false, inline = false,
     inputWidth = "",
     labelWidth = "",
   } = __props;
@@ -175,20 +173,16 @@ export function ColorInputPopover(__props: ColorInputPopoverProps) {
   const summary = hasStoredColor ? cpVal || "Color" : "Pick color";
 
   return (
-    <Wrap
-      props={{ label, labelHide }}
-      index={index}
-      lab={value}
-      viewValue={String(viewValue)}
-      propType={propType}
-      propKey={propKey}
-      propItemKey={propItemKey}
-      inline={inline}
-      inputWidth={inputWidth}
-      labelWidth={labelWidth}
-    >
-      <PopoverChip
+    <>
+      <Chip
+        mode="popover"
         ref={triggerRef}
+        label={labelHide ? undefined : label}
+        index={index}
+        propType={propType}
+        propKey={propKey}
+        propItemKey={propItemKey}
+        labelWidth={labelWidth}
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
         onClear={() => {
@@ -241,6 +235,6 @@ export function ColorInputPopover(__props: ColorInputPopoverProps) {
           />
         </Suspense>
       )}
-    </Wrap>
+    </>
   );
 }

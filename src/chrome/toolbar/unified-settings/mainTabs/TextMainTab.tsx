@@ -1,6 +1,7 @@
 import { Suspense, lazy, useState } from "react";
 import { useEditor, useNode } from "@craftjs/core";
 import { TbCode } from "react-icons/tb";
+import { Chip } from "@/chrome/primitives/Chip";
 import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { getEditorVariableOptions } from "../../../../utils/editorVariableOptions";
@@ -62,8 +63,7 @@ function FormatControl() {
   }));
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">Format</span>
+    <Chip label="Format" frame="bare">
       <div className="min-w-0 flex-1">
         <ToolbarSegmentedControl
           dense
@@ -78,7 +78,7 @@ function FormatControl() {
           options={FORMAT_OPTIONS}
         />
       </div>
-    </div>
+    </Chip>
   );
 }
 

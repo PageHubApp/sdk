@@ -2,7 +2,7 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headless
 import type { CSSProperties } from "react";
 import { useCallback, useRef, useState } from "react";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
-import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
+import { Chip } from "@/chrome/primitives/Chip";
 
 /** Same sentinel as ToolbarDropdown — not a real preset name */
 const EMPTY = "__ph_empty__";
@@ -166,7 +166,7 @@ export function TypographyPresetSelect({
 
   return (
     <Listbox value={internalValue} onChange={handleChange}>
-      <ToolbarRowFrame
+      <Chip
         trailing={
           <span
             className="text-neutral-content flex size-5 shrink-0 items-center justify-center"
@@ -184,7 +184,7 @@ export function TypographyPresetSelect({
         >
           <span className="truncate">{triggerLabel}</span>
         </ListboxButton>
-      </ToolbarRowFrame>
+      </Chip>
 
       <ListboxOptions
         anchor="bottom start"

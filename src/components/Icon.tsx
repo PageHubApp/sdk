@@ -1,6 +1,7 @@
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { TbIcons } from "react-icons/tb";
+import { useMounted } from "../utils/hooks";
 
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -40,11 +41,7 @@ export const Icon: UserComponent<IconProps> = (incomingProps: IconProps) => {
   }));
 
   props = setClonedProps(props, query);
-
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   useScrollToSelected(id, enabled);
 
@@ -82,7 +79,13 @@ export const Icon: UserComponent<IconProps> = (incomingProps: IconProps) => {
     if (isMounted) prop["node-id"] = id;
   }
 
-  const isLeafEmpty = enabled && isMounted && !iconElement;
+  // A decoratively-styled icon slot (colored circle, gradient swatch) is
+  // intentional — don't flag it as empty. Mirrors Button/Link/Image/Video.
+  const cn = props.className || "";
+  const looksStyledShape =
+    /\brounded-full\b/.test(cn) ||
+    (/\bbg-/.test(cn) && (/\bw-\S+/.test(cn) || /\bh-\S+/.test(cn) || /\bsize-\S+/.test(cn)));
+  const isLeafEmpty = enabled && isMounted && !iconElement && !looksStyledShape;
 
   prop.children = isLeafEmpty ? (
     <EditorEmptyLeafHint

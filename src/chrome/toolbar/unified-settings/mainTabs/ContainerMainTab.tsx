@@ -8,7 +8,6 @@ import { useGetNode } from "../../dialogs/toolHooks";
 import { renderComponentSlots } from "../helpers";
 import { PropertyRow } from "../PropertyRenderer";
 import { backgroundProperties } from "../registry/properties/background";
-import { ContainerStateSection } from "./ContainerStateSection";
 
 import { useNodeTypeHelpers } from "@/chrome/canvas/hooks/useNodeType";
 import { useEditor } from "@craftjs/core";
@@ -91,17 +90,10 @@ export const ContainerMainTab = () => {
           ),
           Type: <LayoutPresetInput lp={layoutPreset} />,
         })}
-        {/* State section is available on every container type */}
-        <ContainerStateSection />
       </>
     );
   }
 
-  return (
-    <>
-      {/* State-binding section (visibilityStateKey + computedStateBindings) */}
-      <ContainerStateSection />
-    </>
-  );
+  return null;
 };
 

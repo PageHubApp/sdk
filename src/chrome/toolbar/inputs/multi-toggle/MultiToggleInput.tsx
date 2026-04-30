@@ -11,7 +11,7 @@ import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports
 import { ViewAtom } from "../../../viewport/atoms";
 import { ViewSelectionAtom } from "../../Label";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
-import { Wrap } from "../../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 import {
   TOOLBAR_SEGMENTED_ACTIVE,
@@ -72,11 +72,11 @@ export const MultiToggleInput = ({ def }: Props) => {
   const anyActive = activeStates.some(Boolean);
 
   return (
-    <Wrap
-      props={{ label: def.label, labelHide: false }}
+    <Chip
+      frame="bare"
+      label={def.label}
       propKey={def.id}
       propType="class"
-      inline={def.inline !== false}
     >
       <div
         role="group"
@@ -116,6 +116,6 @@ export const MultiToggleInput = ({ def }: Props) => {
           );
         })}
       </div>
-    </Wrap>
+    </Chip>
   );
 };

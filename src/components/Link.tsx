@@ -24,6 +24,7 @@ import { replaceVariables } from "../utils/design/variables";
 import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { resolvePageRef } from "../utils/pageManagement";
 import { useScrollToSelected } from "./componentHooks";
+import { useMounted } from "../utils/hooks";
 
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
@@ -91,11 +92,7 @@ export const Link: UserComponent<LinkProps> = (incomingProps: LinkProps) => {
   useRuntimeVarsVersion();
 
   props = setClonedProps(props, query);
-
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   useScrollToSelected(id, enabled);
 
@@ -223,7 +220,13 @@ export const Link: UserComponent<LinkProps> = (incomingProps: LinkProps) => {
 
   const labelHtml = replaceVariables(String(props.text ?? ""), query, itemContext);
   const hasIconValue = !!props.icon?.value;
-  const isLeafEmpty = enabled && isMounted && !hasIconValue && isVisuallyEmptyRichText(labelHtml);
+  // Styled-shape links (carousel dots, pagination pips) are intentional chrome.
+  const cn = prop.className || "";
+  const looksStyledShape =
+    /\brounded-full\b/.test(cn) ||
+    (/\bbg-/.test(cn) && (/\bw-\S+/.test(cn) || /\bh-\S+/.test(cn) || /\bsize-\S+/.test(cn)));
+  const isLeafEmpty =
+    enabled && isMounted && !hasIconValue && !looksStyledShape && isVisuallyEmptyRichText(labelHtml);
 
   const content = isLeafEmpty ? (
     <EditorEmptyLeafHint

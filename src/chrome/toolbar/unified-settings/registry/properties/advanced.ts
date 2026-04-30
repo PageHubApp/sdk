@@ -227,7 +227,16 @@ export const advancedProperties: PropertyDef[] = [
     ],
     input: { type: "custom", component: "ConditionsInput" },
     pinned: true,
-    isActive: (_cls, props) => Array.isArray(props?.conditions) && props.conditions.length > 0,
+    isActive: (_cls, props) => {
+      if (Array.isArray(props?.conditions) && props.conditions.length > 0) return true;
+      const groups = props?.conditionGroups;
+      if (Array.isArray(groups)) {
+        for (const g of groups) {
+          if (Array.isArray(g?.conditions) && g.conditions.length > 0) return true;
+        }
+      }
+      return false;
+    },
     sortOrder: 0,
   },
   {
@@ -260,6 +269,25 @@ export const advancedProperties: PropertyDef[] = [
     keywords: ["add", "state", "binding", "active", "modifier"],
     input: { type: "custom", component: "StateBindingsAddPicker" },
     sortOrder: 1,
+  },
+  // Container-only registry-wiring: visibilityStateKey + computedStateBindings.
+  // Pinned body content rendered below the StateBindings chip-list.
+  {
+    id: "containerStateWiring",
+    label: "State wiring",
+    section: "stateBindings",
+    keywords: ["visibility", "state", "key", "computed", "binding", "registry"],
+    input: { type: "custom", component: "ContainerStateBody" },
+    pinned: true,
+    showWhen: (_cls, props) => props._craftName === "Container",
+    // Without `isActive` the row renders even when ContainerStateBody returns
+    // null, leaving an empty padded body inside the State accordion (matches
+    // the pattern used by `modifiers` / `stateBindings` to keep empty sections
+    // collapsed).
+    isActive: (_cls, props) =>
+      typeof props?.visibilityStateKey === "string" ||
+      (Array.isArray(props?.computedStateBindings) && props.computedStateBindings.length > 0),
+    sortOrder: 2,
   },
   // Animation + Scroll Effect are now rows inside the unified Effects
   // builder (see registry/properties/effects.ts + effects-builder/).

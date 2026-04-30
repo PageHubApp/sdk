@@ -27,6 +27,7 @@ import {
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { useResolvedIcon } from "../utils/iconResolver";
 import { motionIt } from "../utils/lib";
+import { useMounted } from "../utils/hooks";
 
 import { applyAnimation } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
@@ -109,12 +110,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
   const sdk = useSDKSafe();
 
   props = setClonedProps(props, query);
-
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   useScrollToSelected(id, enabled);
 
@@ -299,7 +295,15 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
 
   const labelHtml = replaceVariables(String(props.text ?? ""), query, itemContext, anchors);
   const hasIconValue = !!props.icon?.value;
-  const isLeafEmpty = enabled && isMounted && !hasIconValue && isVisuallyEmptyRichText(labelHtml);
+  // A button styled as a dot / pill / shape (rounded-full, or sized + bg-*) is
+  // intentional chrome — typically a carousel dot, pagination indicator, or
+  // status pip. Don't flag it as empty just because it has no text/icon.
+  const cn = prop.className || "";
+  const looksStyledShape =
+    /\brounded-full\b/.test(cn) ||
+    (/\bbg-/.test(cn) && (/\bw-\S+/.test(cn) || /\bh-\S+/.test(cn) || /\bsize-\S+/.test(cn)));
+  const isLeafEmpty =
+    enabled && isMounted && !hasIconValue && !looksStyledShape && isVisuallyEmptyRichText(labelHtml);
 
   const content = isLeafEmpty ? (
     <EditorEmptyLeafHint

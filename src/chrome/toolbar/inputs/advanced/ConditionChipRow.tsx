@@ -1,7 +1,7 @@
 /**
  * ConditionChipRow — single editable chip for one Condition.
  *
- * Renders a `PopoverChip` with the condition's category icon + a one-line
+ * Renders a `Chip` with the condition's category icon + a one-line
  * summary (e.g. "URL ?ref = signup", or just "URL Parameter" when fields
  * haven't been filled in yet). Click → lazy-loads `ConditionEditorPanel`
  * and floats it next to the chip. Clear → calls `onRemove` to drop the
@@ -20,7 +20,7 @@ import {
   TbEye,
   TbBolt,
 } from "react-icons/tb";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { SideBarAtom } from "../../../../utils/lib";
 import {
   NO_VALUE_OPERATORS,
@@ -147,10 +147,10 @@ export function ConditionChipRow({
   };
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">{typeLabel}</span>
-      <PopoverChip
+    <>
+      <Chip mode="popover"
         ref={triggerRef}
+        label={typeLabel}
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
         onClear={handleClear}
@@ -169,6 +169,6 @@ export function ConditionChipRow({
           />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }

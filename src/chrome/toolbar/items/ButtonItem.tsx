@@ -11,7 +11,7 @@ import { ListEditor } from "../inputs/preset/ListEditor";
 import { ToolbarItem, ToolbarItemProps } from "../ToolbarItem";
 import { ToolbarSection } from "../ToolbarSection";
 import { ViewSelectionAtom } from "../Label";
-import { Wrap } from "../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 
 const Input = ({ nodeProps, setProp }) => {
   const [activeIndex, setActiveIndex] = useAtomState(SelectedButtonAtom);
@@ -157,8 +157,8 @@ export const ButtonItem = (__props: ToolbarItemProps) => {
   }
 
   return (
-    <Wrap props={props} lab={lab} propKey={propKey}>
+    <Chip frame="bare" label={props?.labelHide ? undefined : props?.label} propKey={propKey}>
       <Input nodeProps={nodeProps} setProp={setProp} />
-    </Wrap>
+    </Chip>
   );
 };

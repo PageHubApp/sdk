@@ -8,7 +8,7 @@
  *
  * Two visual sizes:
  *   - "lg" (default) — full-height button next to the picker input.
- *   - "sm" — compact 5×5 chip-row affordance, matches PopoverChip's X size.
+ *   - "sm" — compact 5×5 chip-row affordance, matches Chip's X size.
  */
 import { TbEye, TbEyeOff } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";

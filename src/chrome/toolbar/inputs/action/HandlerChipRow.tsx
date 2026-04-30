@@ -1,7 +1,7 @@
 /**
  * HandlerChipRow — single editable chip for one entry in `props.handlers`.
  *
- * Renders a `PopoverChip` with the event icon + a one-line code summary
+ * Renders a `Chip` with the event icon + a one-line code summary
  * (e.g. "event.stopPropagation()", or "Add JS…" when blank). Click →
  * lazy-loads `HandlerEditorPanel` and floats it next to the chip. Clear →
  * calls `onRemove` to drop the handler from the parent map.
@@ -12,7 +12,7 @@
  */
 import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { SideBarAtom } from "../../../../utils/lib";
 import { HANDLER_EVENT_LABEL, getHandlerIcon } from "./handlerEvents";
 
@@ -95,10 +95,10 @@ export function HandlerChipRow({
   };
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">{typeLabel}</span>
-      <PopoverChip
+    <>
+      <Chip mode="popover"
         ref={triggerRef}
+        label={typeLabel}
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
         onClear={handleClear}
@@ -120,6 +120,6 @@ export function HandlerChipRow({
           />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }

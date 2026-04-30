@@ -121,6 +121,14 @@ export const ButtonDef = defineComponent(
           "Active styling for state-bound triggers — applied when the binding's state condition matches.",
         classes: "border-primary text-primary",
       },
+      {
+        name: "dot-active",
+        label: "Dot active",
+        category: "State",
+        description:
+          "Carousel / pagination dot indicator — fills with primary and scales up when the bound state matches.",
+        classes: "bg-primary scale-125",
+      },
       // Composite patterns — canonical CTA buttons with spatial tokens + consistent height
       {
         name: "cta-responsive",

@@ -8,7 +8,7 @@ import {
   TbPlus,
   TbSquare,
 } from "react-icons/tb";
-import { PopoverChip } from "@/chrome/primitives/PopoverChip";
+import { Chip } from "@/chrome/primitives/Chip";
 import { ToolbarIconButton } from "@/chrome/primitives/ToolbarIconButton";
 import { SideBarAtom } from "@/utils/lib";
 import { AddElement } from "../../../viewport/toolbox/toolboxUtils";
@@ -108,33 +108,31 @@ export function LayoutPresetInput({
 
   const inner = (
     <>
-      <div className="flex items-center gap-0.5">
-        <span className="text-base-content w-20 shrink-0 truncate text-xs">Layout</span>
-        <PopoverChip
-          ref={triggerRef}
-          open={open}
-          onTriggerClick={() => (open ? setOpen(false) : openPanel())}
-          onClear={() => {
-            if (open) setOpen(false);
-            if (!gridOnly) lp.switchToMode("block");
-          }}
-          triggerAriaLabel="Pick layout"
-          clearAriaLabel="Clear layout (Block)"
-          leading={leading}
-          summary={summary}
-          trailingExtras={
-            hasContainerType ? (
-              <ToolbarIconButton
-                ariaLabel="Add container"
-                tooltip="Add container"
-                onClick={addContainer}
-              >
-                <TbPlus className="size-3.5" aria-hidden />
-              </ToolbarIconButton>
-            ) : null
-          }
-        />
-      </div>
+      <Chip mode="popover"
+        ref={triggerRef}
+        label="Layout"
+        open={open}
+        onTriggerClick={() => (open ? setOpen(false) : openPanel())}
+        onClear={() => {
+          if (open) setOpen(false);
+          if (!gridOnly) lp.switchToMode("block");
+        }}
+        triggerAriaLabel="Pick layout"
+        clearAriaLabel="Clear layout (Block)"
+        leading={leading}
+        summary={summary}
+        trailingExtras={
+          hasContainerType ? (
+            <ToolbarIconButton
+              ariaLabel="Add container"
+              tooltip="Add container"
+              onClick={addContainer}
+            >
+              <TbPlus className="size-3.5" aria-hidden />
+            </ToolbarIconButton>
+          ) : null
+        }
+      />
 
       {open && (
         <Suspense fallback={null}>

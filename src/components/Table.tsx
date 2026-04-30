@@ -1,11 +1,12 @@
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { TbTable } from "react-icons/tb";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { motionIt } from "../utils/lib";
 import { applyAnimation, CSStoObj } from "../utils/tailwind/tailwind";
 import { useScrollToSelected } from "./componentHooks";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
+import { useMounted } from "../utils/hooks";
 
 export interface TableProps extends BaseSelectorProps {}
 
@@ -22,12 +23,7 @@ export const Table: UserComponent<TableProps> = (incomingProps: TableProps) => {
   const { query, enabled } = useEditor(state => getClonedState(props, state));
 
   props = setClonedProps(props, query);
-
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   useScrollToSelected(id, enabled);
 

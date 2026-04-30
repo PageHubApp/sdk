@@ -134,11 +134,17 @@ export function applyPeerClassInherit(
 
   const def = getBuiltinComponentDef(name);
   const cfg = def?.peerInherit;
-  if (!cfg) return;
+  if (!cfg) {
+    console.log(`[peerInherit] skip ${name} ${newNodeId}: no peerInherit config on def`);
+    return;
+  }
 
   const parent = query.node(parentId).get();
   const parentName = parent?.data?.name as string | undefined;
-  if (!parentName || !cfg.whenParentIs.includes(parentName)) return;
+  if (!parentName || !cfg.whenParentIs.includes(parentName)) {
+    console.log(`[peerInherit] skip ${name} ${newNodeId}: parent ${parentName} not in [${cfg.whenParentIs.join(",")}]`);
+    return;
+  }
 
   const nodes: string[] = parent.data?.nodes || [];
   const idx = nodes.indexOf(newNodeId);
@@ -170,18 +176,25 @@ export function applyPeerClassInherit(
   } else {
     refId = walk(idx + 1, +1) ?? walk(idx - 1, -1);
   }
-  if (!refId || refId === newNodeId) return;
+  if (!refId || refId === newNodeId) {
+    console.log(`[peerInherit] skip ${name} ${newNodeId}: no same-kind sibling in parent ${parentId}`);
+    return;
+  }
 
   const refNode = query.node(refId).get();
   const refClass = (refNode?.data?.props?.className as string) || "";
-  if (!refClass.trim()) return;
+  if (!refClass.trim()) {
+    console.log(`[peerInherit] skip ${name} ${newNodeId}: reference sibling ${refId} has empty className`);
+    return;
+  }
 
   const allMods = def.modifiers || [];
   const peerMods = allMods.filter(participatesInPeerInherit);
 
   actions.setProp(newNodeId, (props: Record<string, any>) => {
     if (!props || typeof props !== "object") return;
-    let classes = (props.className || "").split(/\s+/).filter(Boolean);
+    const before = (props.className || "") as string;
+    let classes = before.split(/\s+/).filter(Boolean);
     const activeModNames: string[] = [];
 
     for (const mod of peerMods) {
@@ -195,5 +208,9 @@ export function applyPeerClassInherit(
     props.className = classes.join(" ").replace(/\s+/g, " ").trim();
     if (!props.root) props.root = {};
     props.root.activeModifiers = activeModNames;
+
+    console.log(
+      `[peerInherit] applied ${name} ${newNodeId} ← ref ${refId}\n  ref:    ${refClass}\n  before: ${before}\n  after:  ${props.className}\n  mods:   [${activeModNames.join(", ")}]`
+    );
   });
 }

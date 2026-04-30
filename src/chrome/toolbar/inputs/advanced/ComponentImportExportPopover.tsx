@@ -4,7 +4,7 @@
  * per `popoverModeRegistry`) so a click on the header title opens the panel.
  *
  * No node value to read (import/export is always-actionable), so the trigger
- * always renders a small "JSON" chip — no PopoverChip + clear UI.
+ * always renders a small "JSON" chip — no Chip + clear UI.
  */
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";

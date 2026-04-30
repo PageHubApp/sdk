@@ -9,6 +9,7 @@ import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../utils/defaults";
 import { resolveTheme } from "../utils/design/resolveTheme";
 import { useLazyBackground } from "../utils/hooks/useLazyBackground";
+import { useMounted } from "../utils/hooks";
 
 import { Box } from "@pagehub/ui";
 import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../utils/lib";
@@ -90,7 +91,10 @@ export function Background({
     ...rest,
     background: {
       fetchPriority: "low",
-      placeholder: "rgba(0, 0, 0, 0.05)",
+      // Theme-aware placeholder: 5% of the current text color so dark themes
+      // get a light tint and light themes get a dark tint, instead of always
+      // flashing a near-black box.
+      placeholder: "color-mix(in oklab, currentColor 5%, transparent)",
       ...(background ?? {}),
     },
   };
@@ -109,7 +113,7 @@ export function Background({
   }));
 
   const ref = useRef<HTMLElement | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useMounted();
 
   // Lazy loading for background images
   const {
@@ -124,10 +128,6 @@ export function Background({
   const device = "desktop" as const;
   const preview = usePreview();
   const settings = null;
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // All side-effects (icon fonts, header/footer injection, link styles, design system vars)
   useBackgroundEffects({ enabled, query, nodeCount, props, nodeId: id });

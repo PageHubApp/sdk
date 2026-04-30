@@ -4,6 +4,7 @@ import { TbMap } from "react-icons/tb";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { motionIt } from "../utils/lib";
 import { applyAnimation } from "../utils/tailwind/tailwind";
+import { useMounted } from "../utils/hooks";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
@@ -72,11 +73,7 @@ export const Map = (incomingProps: MapProps) => {
   props = setClonedProps(props, query);
 
   const ref = useRef<HTMLElement | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   // Extract child MapPoint nodes
   let childPoints: Array<{

@@ -12,6 +12,7 @@ import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import type { ListMarkerIconProps, ListMarkerStyle } from "./List";
+import { useMounted } from "../utils/hooks";
 
 export interface ListItemProps extends BaseSelectorProps {
   text?: string;
@@ -62,12 +63,7 @@ export const ListItem: UserComponent<ListItemProps> = (incomingProps: ListItemPr
 
   const parentList = useParentListProps(id);
   useRuntimeVarsVersion();
-
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
 
   useScrollToSelected(id, enabled);
 

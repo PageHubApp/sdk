@@ -10,7 +10,7 @@ import { TbBolt, TbPlus } from "react-icons/tb";
 import { cssAnimationPresets } from "../../../../utils/animations";
 import { ANIMATION_PARAM_KEYS } from "./AnimationsInput";
 import { SideBarAtom } from "../../../../utils/lib";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
 import {
   PopoverOpenRequestAtom,
@@ -117,7 +117,7 @@ export default function AnimationsInputPopover({ def }: PropertyInputProps) {
           <TbPlus className="size-3.5" aria-hidden />
         </button>
       ) : (
-        <PopoverChip
+        <Chip mode="popover"
           ref={triggerRef}
           open={open}
           onTriggerClick={() => (open ? setOpen(false) : openPanel())}

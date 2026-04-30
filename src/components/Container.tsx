@@ -1,6 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useRouter } from "next/router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { TbArrowDown, TbContainer, TbNote } from "react-icons/tb";
 import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
@@ -10,30 +10,25 @@ import { usePanelUrl } from "../utils/usePanelUrl";
 import { registerLiveComponent } from "../utils/componentRegistry";
 import { mergeAccessibilityProps } from "../utils/accessibility";
 import {
-  addActionHandlers,
   addCustomHandlers,
   fireIntervalActions,
   fireLoadAction,
 } from "../utils/clickControls";
 import { getStateValue } from "../utils/stateRegistry";
-import {
-  migrateActions,
-  actionToHref,
-  actionTarget,
-  isLinkAction,
-  isHandlerAction,
-  isAnchorAction,
-  findLinkAction,
-  type NodeAction,
-} from "../utils/action";
+import { migrateActions, type NodeAction } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
-import { Section, Box } from "@pagehub/ui";
 import { applyBackgroundImage, motionIt } from "../utils/lib";
 
 import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
-import { useScrollEffect } from "../utils/hooks/useScrollEffect";
 import { useHorizontalDragScroll } from "../utils/hooks/useHorizontalDragScroll";
-import { HorizontalOverflowThumbOverlay } from "./primitives/HorizontalOverflowThumbOverlay";
+import { useContainerScrollEffect } from "./useContainerScrollEffect";
+import { useDragOverDetection, useMounted } from "../utils/hooks";
+import { applyContainerOverflowUX } from "./applyContainerOverflowUX";
+import {
+  applyContainerActions,
+  applyContainerEditorChrome,
+  pickContainerTag,
+} from "./containerPropHelpers";
 import { RenderPattern, inlayProps } from "./componentHooks";
 import { replaceVariables } from "../utils/design/variables";
 import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
@@ -41,13 +36,13 @@ import { applyShowHideOverride, useShowHideVersion } from "../utils/showHideStor
 import { applyStateModifiers } from "../utils/conditions/stateModifiers";
 import {
   applyComputedStateBindings,
+  computeBindingsSnapshot,
   type ComputedStateBinding,
 } from "../utils/conditions/computedState";
 import { buildClientContext } from "../utils/conditions/context";
 import { useItemContext } from "../utils/itemContext";
 import { applyAttrs } from "../utils/applyAttrs";
 import { useAnchors, resolveAnchors } from "../utils/anchors/anchorContext";
-import { resolveAnchorsInActions } from "../utils/anchors/resolveAnchorsInAction";
 import { ROOT_NODE } from "@craftjs/utils";
 
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
@@ -211,12 +206,9 @@ export function useContainerRender(
 
   const [overflowScrollEl, setOverflowScrollEl] = useState<HTMLElement | null>(null);
 
-  const [isMounted, setIsMounted] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useMounted();
+  const { ref, isDragOver } = useDragOverDetection();
+  const { wrapProp: scrollEffectWrap } = useContainerScrollEffect(props, enabled);
 
   // Fire load-trigger actions on mount in viewer mode. Skipped in editor —
   // `useShowOnLoadAutoReveal` keeps banners visible to the author regardless
@@ -235,64 +227,33 @@ export function useContainerRender(
 
   // Computed-state bindings — derived registry entries (variant matching,
   // all-truthy gates, etc). Runs in an effect (not the render body) so the
-  // setState writes happen AFTER the render commits — never mid-render. The
-  // effect re-runs whenever the bindings declaration changes; the global
-  // state-tick subscription via `useShowHideVersion()` above ensures the
-  // outer render re-runs whenever any input key changes, which re-fires the
-  // effect with up-to-date values via the `interp` closure capture.
+  // setState writes happen AFTER the render commits — never mid-render.
+  //
+  // Dep: a snapshot string that fingerprints (a) declared `from` keys'
+  // current values, (b) axis-derived input keys for variant-* computes,
+  // (c) interpolated variantMap literal. Render-on-tick still happens via
+  // `useShowHideVersion` above, but the EFFECT only re-runs when an actual
+  // input value changes — not every render. Avoids re-applying bindings on
+  // unrelated state tick bumps (e.g. cart open/close).
+  const bindings = (props as any).computedStateBindings as
+    | ComputedStateBinding[]
+    | undefined;
+  const computedSnapshot = computeBindingsSnapshot(bindings, raw =>
+    typeof raw === "string"
+      ? replaceVariables(raw, query, parentItem, anchors)
+      : (raw as any)
+  );
   useEffect(() => {
-    const bindings = (props as any).computedStateBindings as
-      | ComputedStateBinding[]
-      | undefined;
     if (!Array.isArray(bindings) || bindings.length === 0) return;
     applyComputedStateBindings(bindings, raw =>
       typeof raw === "string"
         ? replaceVariables(raw, query, parentItem, anchors)
         : (raw as any)
     );
-    // Re-run whenever any input could have changed: the bindings array, the
-    // anchor map, the parent item context, or the global state tick (read via
-    // useShowHideVersion at the top of the function — its monotonic value is
-    // implicitly a dependency through render re-execution).
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [computedSnapshot]);
 
 
-  const ref = useRef(null);
-
-  // Detect when something is being dragged over this container
-  useEffect(() => {
-    if (!ref.current) return;
-
-    const containerRef = ref.current;
-
-    const handleDragOver = (e: DragEvent) => {
-      if (e.target === containerRef) {
-        setIsDragOver(true);
-      } else {
-        setIsDragOver(false);
-      }
-    };
-
-    const handleDragLeave = (e: DragEvent) => {
-      if (e.target === containerRef) {
-        setIsDragOver(false);
-      }
-    };
-
-    const handleDragEnd = () => {
-      setIsDragOver(false);
-    };
-
-    document.addEventListener("dragover", handleDragOver);
-    document.addEventListener("dragleave", handleDragLeave);
-    document.addEventListener("dragend", handleDragEnd);
-
-    return () => {
-      document.removeEventListener("dragover", handleDragOver);
-      document.removeEventListener("dragleave", handleDragLeave);
-      document.removeEventListener("dragend", handleDragEnd);
-    };
-  }, []);
 
   const { children } = props;
 
@@ -450,61 +411,14 @@ export function useContainerRender(
     ),
   };
 
-  // Unified action system. Container respects the form-mode collision —
-  // when `props.type === "form"`, `props.action` is a submission URL string
-  // and `migrateActions` returns `[]` (see action.ts). Form path handled below.
-  const rawActions = migrateActions(props);
-  const actions = resolveAnchorsInActions(rawActions, anchors) as NodeAction[];
-  const firstLink = findLinkAction(actions);
-  const rawUrl = actionToHref(firstLink, query, router?.asPath);
-  const resolvedUrl =
-    rawUrl && query
-      ? (() => {
-          try {
-            return replaceVariables(rawUrl, query, parentItem, anchors);
-          } catch {
-            return rawUrl;
-          }
-        })()
-      : rawUrl;
-  const linkTarget = actionTarget(firstLink);
-  const isInternalLink =
-    !!firstLink && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
-
-  if (resolvedUrl && firstLink && !enabled) {
-    prop.href = resolvedUrl;
-    if (linkTarget) prop.target = linkTarget;
-    if (/^https?:\/\//.test(resolvedUrl)) prop.rel = "noopener noreferrer";
-    // Internal same-window links → SPA navigation via Next router (matches Link).
-    // Skip the SPA shortcut when the chain has more than one action; the JS
-    // dispatcher below handles ordered execution + nav at the link's turn.
-    if (isInternalLink && !linkTarget && actions.length === 1) {
-      prop.onClick = (e: any) => {
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
-        e.preventDefault();
-        router.push(resolvedUrl).catch(() => {});
-      };
-    }
-  }
-
-  // Multi-action chains, anchor links, and any handler-action route through
-  // `addActionHandlers`. Single-link cases above already wired native nav.
-  const needsJsDispatch =
-    actions.length > 1 ||
-    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
-    (actions.length === 1 && !isLinkAction(actions[0]));
-  if (needsJsDispatch) {
-    addActionHandlers(prop, actions, enabled, {
-      resolvedLinkHref: typeof resolvedUrl === "string" ? resolvedUrl : null,
-    });
-  }
-
-  if (props.type === "form") {
-    prop.action = typeof props.action === "string" ? props.action : "";
-    prop.method = props.method || "POST";
-    prop.onSubmit = props.onSubmit;
-    prop.target = props.target || "iframe";
-  }
+  const { resolvedUrl, firstLink } = applyContainerActions(prop, {
+    props,
+    enabled,
+    query,
+    router,
+    parentItem,
+    anchors,
+  });
 
   // After action + form setup so `handlers.onSubmit` composes with the form
   // submit handler instead of being overwritten by it.
@@ -542,26 +456,14 @@ export function useContainerRender(
   );
 
   if (enabled) {
-    prop["data-border"] = /\bborder(-[^\s])?/.test(props.className || "");
-
-    prop["data-bounding-box"] = enabled;
-    prop["data-empty-state"] = !children;
-    // Only add node-id after client-side mount to prevent hydration mismatch
-    if (isMounted) {
-      prop["node-id"] = id;
-    }
-    prop["data-enabled"] = true;
-    prop["data-node-type"] = props.type;
-
-    // Ensure all sections act as positioning bounds for the absolute AddSectionNodeController
-    if (props.type === "section" && !className.includes("relative")) {
-      prop.className = (prop.className || "") + " relative";
-    }
-  }
-
-  // Add drag-over styling to container props (editor only)
-  if (enabled) {
-    prop["data-dragged-over"] = isDragOver;
+    applyContainerEditorChrome(prop, {
+      props,
+      id,
+      isMounted,
+      isDragOver,
+      hasChildren: !!children,
+      className,
+    });
   }
 
   prop = mergeAccessibilityProps(
@@ -572,130 +474,19 @@ export function useContainerRender(
     props
   );
 
-  let tagName = "div";
+  const { tagName, UiComponent } = pickContainerTag(props.type, prop);
 
-  if (props?.type === "page") {
-    tagName = "article";
-    // Add skip navigation target for accessibility (WCAG 2.4.1)
-    if (!prop.id) prop.id = "main-content";
-  } else if (props?.type === "section") {
-    tagName = "section";
-  } else if (props?.type === "header") {
-    tagName = "header";
-  } else if (props?.type === "footer") {
-    tagName = "footer";
-  } else if (props?.type === "nav") {
-    tagName = "nav";
-  } else if (props?.type === "aside") {
-    tagName = "aside";
-  } else if (props?.type === "main") {
-    tagName = "main";
-  } else if (props?.type === "form") {
-    tagName = "form";
-  } else if (props?.type === "details") {
-    tagName = "details";
-  } else if (props?.type === "summary") {
-    tagName = "summary";
-  } else if (props?.type === "label") {
-    // Wrapping label — clicking anywhere inside toggles the first child input
-    // (native HTML behavior with no explicit `for` needed).
-    tagName = "label";
-  }
+  scrollEffectWrap(prop);
 
-  // Note: we intentionally do NOT force overflow:visible here.
-  // Doing so broke mx-auto + max-w centering in edit mode because it prevented
-  // the layout engine from properly constraining widths. Node controllers
-  // use position:absolute and escape bounds via position:relative on the parent
-  // (handled by data-bounding-box CSS), so they work fine without this hack.
-
-  // Pick @pagehub/ui component based on type
-  let UiComponent: any = Box;
-  if (props.type === "section" || props.type === "page") {
-    UiComponent = Section;
-  }
-
-  // ─── Scroll effects (GSAP ScrollTrigger) ────────────────────────────────
-  const hasScrollEffect = !!props.scrollEffect;
-  const isHScroll = props.scrollEffect === "horizontal-scroll";
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useScrollEffect(sectionRef, {
-    effect: props.scrollEffect || "",
-    direction: props.scrollDirection,
-    snap: props.scrollSnap,
-    speed: props.scrollSpeed,
-    smoothing: props.scrollSmoothing,
-    runway: props.scrollTimelineRunway,
-    enabled,
-  });
-
-  if (hasScrollEffect) {
-    const origRef = prop.ref;
-    prop.ref = (r: any) => {
-      sectionRef.current = r;
-      if (origRef) origRef(r);
-    };
-
-    // Horizontal scroll needs wrapper divs; other effects operate directly on the section
-    if (isHScroll) {
-      prop.className = (prop.className || "") + " relative";
-      if (!enabled) {
-        prop.children = (
-          <div className="ph-hscroll-sticky" style={{ height: "100vh", overflow: "hidden" }}>
-            <div
-              className="ph-hscroll-track"
-              style={{ display: "flex", height: "100%", willChange: "transform" }}
-            >
-              {prop.children}
-            </div>
-          </div>
-        );
-      }
-    }
-  }
-
-  // ─── CSS overflow UX (horizontal drag + autohide thumb; not GSAP horizontal-scroll) ──
-  if (overflowUxActive && overflow.autoHide) {
-    const inner = prop.children;
-    prop.children = (
-      <>
-        <HorizontalOverflowThumbOverlay
-          scrollEl={overflowScrollEl}
-          hideDelay={overflow.hideDelay ?? 1000}
-        />
-        {inner}
-      </>
-    );
-    prop.className = `${prop.className || ""} ph-overflow-hide-native-scrollbar`.trim();
-    prop.style = {
-      ...prop.style,
-      scrollbarWidth: "none",
-      msOverflowStyle: "none",
-    };
-  }
-  if (overflowUxActive && overflow.dragScroll && !enabled) {
-    prop.onPointerDown = onDragPointerDown;
-    prop.className = `${prop.className || ""} cursor-grab`.trim();
-    /** Native `<img>` drag steals pointer gestures; block so horizontal drag-scroll works on cards. */
-    const prevDragStart = prop.onDragStart;
-    prop.onDragStart = (e: React.DragEvent) => {
-      const el = e.target as Node | null;
-      if (el && (el as Element).nodeName === "IMG") {
-        e.preventDefault();
-      }
-      if (typeof prevDragStart === "function") prevDragStart(e);
-    };
-  }
   if (overflowUxActive) {
-    if (overflow.dragScroll) {
-      prop["data-ph-overflow-drag"] = "";
-      if (dragSmooth > 0) {
-        prop["data-ph-overflow-smooth"] = String(dragSmooth);
-      }
-    }
-    if (overflow.autoHide) prop["data-ph-overflow-autohide"] = "";
-    if (wheelMaps) prop["data-ph-overflow-wheel"] = "";
-    prop["data-ph-overflow-hide-delay"] = String(overflow.hideDelay ?? 1000);
+    applyContainerOverflowUX(prop, {
+      overflow,
+      enabled,
+      scrollEl: overflowScrollEl,
+      onDragPointerDown,
+      dragSmooth,
+      wheelMaps,
+    });
   }
 
   // If this Container has a link action and would otherwise render as a plain

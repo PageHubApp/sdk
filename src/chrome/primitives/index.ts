@@ -19,7 +19,8 @@ export type {
   SearchableMenuItem,
   SearchableMenuPopoverHandle,
 } from "./SearchableMenuPopover";
-export { PopoverChip } from "./PopoverChip";
+export { Chip } from "./Chip";
+export type { ChipProps } from "./Chip";
 export { InlineClearButton } from "./InlineClearButton";
 export { SearchInput } from "./SearchInput";
 export type { SearchInputProps } from "./SearchInput";
@@ -28,7 +29,6 @@ export { PanelBody, PanelScrollSpacer } from "./PanelBody";
 export { PanelLoadingState } from "./PanelLoadingState";
 export { FilterDropdown } from "./FilterDropdown";
 export type { FilterDropdownProps, FilterDropdownItem } from "./FilterDropdown";
-export { ToolbarRowFrame } from "./ToolbarRowFrame";
 export { ChevronTrigger } from "./ChevronTrigger";
 export { ToolbarIconButton } from "./ToolbarIconButton";
 export { MiniPreviewTile } from "./MiniPreviewTile";

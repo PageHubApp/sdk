@@ -3,7 +3,7 @@ import { TbChevronDown } from "react-icons/tb";
 import { ToolbarIconButton } from "./ToolbarIconButton";
 
 /**
- * Trailing chevron button for `ToolbarRowFrame`. Same shape and X position as
+ * Trailing chevron button for `Chip`. Same shape and X position as
  * `InlineClearButton`, so dropdowns and clear buttons line up at the same 4px
  * inset from the wrapper border. Composes from `ToolbarIconButton`.
  */

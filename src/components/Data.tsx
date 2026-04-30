@@ -17,12 +17,11 @@ export interface DataProps extends ContainerProps {
 }
 
 export const Data = (incomingProps: Partial<DataProps>) => {
-  const { renderChildren, attrs } = useDataSource(incomingProps.dataSource, {
+  const { renderChildren } = useDataSource(incomingProps.dataSource, {
     livePreview: incomingProps.livePreview,
   });
   return useContainerRender(incomingProps, {
     renderChildren,
-    extraAttrs: attrs,
   });
 };
 

@@ -1,9 +1,9 @@
 import { useEditor } from "@craftjs/core";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { getClientDataFetcher, getConnectorData } from "./design/variables";
 import { ItemProvider, useItemContext } from "./itemContext";
-import { getStateValue, setState, useGlobalStateTick } from "./stateRegistry";
+import { getStateValue, setState, subscribe as subscribeState } from "./stateRegistry";
 import { getBindingMeta } from "./design/variables";
 import { useAnchors, resolveAnchors } from "./anchors/anchorContext";
 import { resolveNestedItems } from "./resolveNestedItems";
@@ -120,8 +120,6 @@ function applyDataSourceScope(
 export interface DataBehavior {
   /** Wrap children for repeater rendering. Called from the container render hook. */
   renderChildren: (children: React.ReactNode) => React.ReactNode;
-  /** Extra DOM attrs (data-ph-connector-*). Merged onto the rendered element. */
-  attrs?: Record<string, any>;
 }
 
 /**
@@ -159,17 +157,36 @@ export function useDataSource(
 
   const anchors = useAnchors();
 
-  // Subscribe to state changes for refetch when the dataSource declares
-  // `stateInputs`. We use the global tick (cheap module-level counter)
-  // instead of a per-key subscription because the actual refetch is gated
-  // downstream by query-override checks. Per-key subscription is a future
-  // optimization. popstate flows through the URL bridge → state writes →
-  // global tick bump; no window listener needed here.
-  const stateTick = useGlobalStateTick();
+  // Subscribe to state changes for refetch — but only the keys this binding
+  // actually reads. Typing in a search input would otherwise refetch every
+  // unrelated grid on the page (global-tick fan-out). We resolve every
+  // `stateInputs` value (anchor-resolved) into a concrete state key, then
+  // build a snapshot string of `key=value` pairs. `useSyncExternalStore`
+  // re-runs the snapshot on every notify and React rerenders this component
+  // only when the snapshot string changes — so `cart:open` toggles, unrelated
+  // search keystrokes, etc. don't bump it.
+  const subscribedKeys = useMemo(() => {
+    if (!ds?.stateInputs) return [] as string[];
+    return Object.values(ds.stateInputs)
+      .filter((v): v is string => typeof v === "string")
+      .map(raw => resolveAnchors(raw, anchors) || raw);
+    // anchors map identity is stable per-page; stateInputs change on author edits.
+  }, [ds?.stateInputs, anchors]);
+
+  const stateInputsSnapshot = useSyncExternalStore(
+    cb => {
+      if (subscribedKeys.length === 0) return () => {};
+      const offs = subscribedKeys.map(k => subscribeState(k, cb));
+      return () => offs.forEach(off => off());
+    },
+    () => subscribedKeys.map(k => `${k}=${getStateValue(k) ?? ""}`).join("|"),
+    () => subscribedKeys.map(k => `${k}=${getStateValue(k) ?? ""}`).join("|")
+  );
+
   useEffect(() => {
     if (!ds?.stateInputs) return;
     setRefetchKey(k => k + 1);
-  }, [stateTick, ds?.stateInputs]);
+  }, [stateInputsSnapshot, ds?.stateInputs]);
 
   useEffect(() => {
     if (!ds || enabled) return;
@@ -313,12 +330,5 @@ export function useDataSource(
     return children;
   };
 
-  // The legacy `data-ph-connector-*` DOM-attr stamping is gone — there is
-  // no external consumer (the URL hook that read them is deleted, and the
-  // rest of the SDK reads `getBindingMeta` directly). Pagination text /
-  // count gating now flows through `dataSource.publishStateKeys` →
-  // `{{state.<key>}}` interpolation.
-  const attrs: Record<string, any> | undefined = undefined;
-
-  return { renderChildren, attrs };
+  return { renderChildren };
 }

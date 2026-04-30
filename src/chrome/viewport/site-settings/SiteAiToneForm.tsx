@@ -1,5 +1,5 @@
 import { normalizeDesignTags } from "../../../utils/normalizeDesignTags";
-import { BgWrap } from "../../toolbar/ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 import {
   SettingsFormField,
   SettingsTabIntro
@@ -99,7 +99,7 @@ export function SiteAiToneForm({
             <label htmlFor={idNotes} className="toolbar-label mb-2 block font-medium">
               Design notes
             </label>
-            <BgWrap flexible>
+            <Chip grow>
               <div className="flex w-full items-start gap-2">
                 <textarea
                   id={idNotes}
@@ -111,7 +111,7 @@ export function SiteAiToneForm({
                   placeholder="e.g. Dark editorial SaaS, generous whitespace, copy tone: confident but not hype…"
                 />
               </div>
-            </BgWrap>
+            </Chip>
           </>
         )}
         <p className="text-neutral-content mt-1 text-right text-xs">{notes.length}/1200</p>
@@ -144,7 +144,7 @@ export function SiteAiToneForm({
             <label htmlFor={idTags} className="toolbar-label mb-2 block font-medium">
               Tags
             </label>
-            <BgWrap>
+            <Chip>
               <div className="flex w-full items-center gap-2">
                 <input
                   id={idTags}
@@ -161,7 +161,7 @@ export function SiteAiToneForm({
                   placeholder="comma-separated: dark, minimal, fintech"
                 />
               </div>
-            </BgWrap>
+            </Chip>
           </>
         )}
         {!inputClass ? (

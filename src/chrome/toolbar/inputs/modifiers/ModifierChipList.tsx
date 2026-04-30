@@ -1,7 +1,7 @@
 /**
  * ModifierChipList — body for the list-style Modifiers section.
  *
- * Renders one PopoverChip per entry in `props.root.activeModifiers`. Click on
+ * Renders one Chip per entry in `props.root.activeModifiers`. Click on
  * a chip dispatches an open-request to the section's picker (so the user can
  * see context / change selection). X removes the modifier via the existing
  * `toggleModifier` (which strips the modifier's classes and updates
@@ -13,7 +13,7 @@
 import { useNode } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
 import { TbStack2 } from "react-icons/tb";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import {
   PopoverOpenRequestAtom,
   requestOpenPopover,
@@ -44,7 +44,7 @@ export function ModifierChipList() {
   return (
     <div className="flex flex-col gap-1">
       {resolved.map(mod => (
-        <PopoverChip
+        <Chip mode="popover"
           key={mod.name}
           onTriggerClick={openPicker}
           onClear={() => toggleModifier(mod)}

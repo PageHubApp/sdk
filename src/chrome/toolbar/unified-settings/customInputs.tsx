@@ -107,6 +107,15 @@ const lazyMap: Record<string, LazyEntry> = {
   StateBindingsAddPicker: chip(
     React.lazy(() => import("../inputs/state/StateBindingsAddPicker"))
   ),
+  // Container-only state-registry wiring: visibilityStateKey + computedStateBindings.
+  // Renders alongside StateBindingsInput in the Interactions > State section.
+  ContainerStateBody: block(
+    React.lazy(() =>
+      import("./mainTabs/ContainerStateSection").then(m => ({
+        default: m.ContainerStateBody,
+      }))
+    )
+  ),
   // Popover variant — chip + FloatingPanel.
   AnimationsInput: chip(React.lazy(() => import("../inputs/advanced/AnimationsInputPopover"))),
   ContainerScrollEffectSection: block(

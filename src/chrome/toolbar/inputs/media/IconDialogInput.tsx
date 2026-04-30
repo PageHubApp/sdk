@@ -4,7 +4,7 @@ import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { changeProp } from "../../../viewport/viewportExports";
 import { ViewAtom } from "../../../viewport/atoms";
 import { ViewSelectionAtom } from "../../Label";
-import { Wrap } from "../../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 import ClientIconLoader from "../../dialogs/ClientIconLoader";
 import { IconPickerPopover } from "../../dialogs/IconDialog/IconPickerPopover";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
@@ -15,8 +15,7 @@ export const IconDialogInput = ({
   prefix = "",
   index = null,
   propItemKey = "",
-  propType = "class",
-  inline = true,
+  propType = "class", inline = true,
   labelWidth = "",
   inputWidth = "",
 }) => {
@@ -64,13 +63,10 @@ export const IconDialogInput = ({
   }
 
   return (
-    <Wrap
-      props={{ label, labelHide: true }}
-      lab={value}
+    <Chip
+      frame="bare"
       propType={propType}
       propKey={propKey}
-      inline={inline}
-      inputWidth={inputWidth}
       labelWidth={labelWidth}
     >
       <div className="relative">
@@ -94,6 +90,6 @@ export const IconDialogInput = ({
           <InlineClearButton onClick={() => changed("")} tooltip="Clear icon" floating />
         )}
       </div>
-    </Wrap>
+    </Chip>
   );
 };

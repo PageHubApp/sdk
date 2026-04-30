@@ -1,4 +1,5 @@
 import { useNode } from "@craftjs/core";
+import { Chip } from "@/chrome/primitives/Chip";
 import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { IconInput } from "../../inputs/media/IconInput";
 import { ToolbarItem } from "../../ToolbarItem";
@@ -22,8 +23,7 @@ function ButtonTypeControl() {
   }));
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">Type</span>
+    <Chip label="Type" frame="bare">
       <div className="min-w-0 flex-1">
         <ToolbarSegmentedControl
           dense
@@ -37,7 +37,7 @@ function ButtonTypeControl() {
           options={TYPE_OPTIONS}
         />
       </div>
-    </div>
+    </Chip>
   );
 }
 

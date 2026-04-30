@@ -13,7 +13,8 @@ import { changeProp } from "../../viewport/viewportExports";
 import { getEffectiveViews, EditModifiersAtom } from "../Label";
 import { MultiScopeAtom } from "../breakpoint-chip/atoms";
 import { ToolbarItemProps } from "../ToolbarItem";
-import { Card, Wrap } from "../ToolbarStyle";
+import { Card } from "../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 import { ClassSearchInput } from "./ClassInput/ClassSearchInput";
 import { BreakpointBuckets, ClearAllStylesButton } from "./ClassInput/BreakpointBuckets";
 import {
@@ -297,7 +298,7 @@ export function ClassItem({
   if (props.valueLabels && props.valueLabels[value]) lab = props.valueLabels[value];
 
   return (
-    <Wrap props={props} lab={lab} propKey={propKey}>
+    <Chip frame="bare" label={props?.labelHide ? undefined : props?.label} propKey={propKey}>
       <Input
         nodeProps={{ ...nodeProps }}
         value={value}
@@ -309,6 +310,6 @@ export function ClassItem({
       >
         {children}
       </Input>
-    </Wrap>
+    </Chip>
   );
 }

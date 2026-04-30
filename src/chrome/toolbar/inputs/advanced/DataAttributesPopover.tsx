@@ -8,7 +8,7 @@ import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useRef, useState } from "react";
 import { TbCode } from "react-icons/tb";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { SideBarAtom } from "../../../../utils/lib";
 
 const DataAttributesPanel = lazy(() => import("./DataAttributesPanel"));
@@ -70,7 +70,7 @@ export function DataAttributesPopover() {
           <span>Add data-…</span>
         </button>
       ) : (
-        <PopoverChip
+        <Chip mode="popover"
           ref={triggerRef}
           open={open}
           onTriggerClick={() => (open ? setOpen(false) : openPanel())}

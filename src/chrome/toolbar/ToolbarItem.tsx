@@ -14,7 +14,7 @@ import { getEffectiveViews, EditModifiersAtom } from "./Label";
 import { MultiScopeAtom } from "./breakpoint-chip/atoms";
 import { ToolbarDropdown } from "./ToolbarDropdown";
 import { ToolbarSegmentedControl } from "./helpers/ToolbarSegmentedControl";
-import { BgWrap, Wrap } from "./ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
 
 const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, _ref) {
@@ -66,7 +66,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
 
   if (type === "number") {
     return (
-      <BgWrap wrap={wrap}>
+      <Chip passthrough={!!wrap}>
         <div className="flex w-full items-center gap-2">
           <input
             type="number"
@@ -79,7 +79,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
           />
           {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
         </div>
-      </BgWrap>
+      </Chip>
     );
   }
 
@@ -89,7 +89,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
     const match = regex.exec(str);
 
     return (
-      <BgWrap wrap={wrap}>
+      <Chip passthrough={!!wrap}>
         <div className="flex w-full items-center gap-2">
           <input
             type="number"
@@ -104,13 +104,13 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
           />
           {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
         </div>
-      </BgWrap>
+      </Chip>
     );
   }
 
   if (["url", "text", "email", "number"].includes(type)) {
     return (
-      <BgWrap wrap={wrap}>
+      <Chip passthrough={!!wrap}>
         <div className="flex w-full items-center gap-2">
           <input
             type={type}
@@ -124,13 +124,13 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
           />
           {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
         </div>
-      </BgWrap>
+      </Chip>
     );
   }
 
   if (type === "textarea") {
     return (
-      <BgWrap wrap={wrap} flexible>
+      <Chip passthrough={!!wrap} grow>
         <div className="flex w-full items-start gap-2">
           <textarea
             id={propKey ? `input-${propKey}` : undefined}
@@ -144,7 +144,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
           />
           {append && <div className="flex shrink-0 items-center gap-0.5">{append}</div>}
         </div>
-      </BgWrap>
+      </Chip>
     );
   }
 
@@ -223,9 +223,8 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
         widthClass,
       };
     });
-    // No `BgWrap` here — the segmented control is its own bordered surface.
-    // Wrapping it in `ToolbarRowFrame` produces a double-bordered row with
-    // extra inner padding that visibly offsets the leading clear chip.
+    // No `Chip` frame here — the segmented control owns its own bordered
+    // surface. The label gutter is supplied by the surrounding `Wrap`.
     return (
       <ToolbarSegmentedControl
         dense
@@ -245,7 +244,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
     options.push(!value ? opt[0] : opt.find(_ => _.value === value) || opt[0]);
 
     return (
-      <BgWrap wrap={wrap}>
+      <Chip passthrough={!!wrap}>
         <div
           className={`flex items-center justify-center gap-3 ${
             !props.cols ? "flex-col" : "flex-row"
@@ -280,7 +279,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
             </div>
           ))}
         </div>
-      </BgWrap>
+      </Chip>
     );
   }
 
@@ -308,7 +307,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
 
   // Default text input
   return (
-    <BgWrap wrap={wrap}>
+    <Chip passthrough={!!wrap}>
       <div className="flex w-full items-center gap-2">
         <input
           id={propKey ? `input-${propKey}` : undefined}
@@ -320,7 +319,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
           {...toolbarInputNoAutocompleteProps}
         />
       </div>
-    </BgWrap>
+    </Chip>
   );
 });
 
@@ -469,18 +468,15 @@ export const ToolbarItem = (__props: ToolbarItemProps) => {
   }
 
   return (
-    <Wrap
-      props={props}
-      lab={label}
-      viewValue={viewValue}
-      propType={propType}
+    <Chip
+      label={props?.labelHide ? undefined : props?.label}
       propKey={propKey}
+      propType={propType}
       index={index}
       propItemKey={propItemKey}
-      wrap={wrap}
-      inline={inline}
-      inputWidth={inputWidth}
       labelWidth={labelWidth}
+      passthrough={!!wrap}
+      frame="bare"
     >
       <Input
         props={props}
@@ -510,6 +506,6 @@ export const ToolbarItem = (__props: ToolbarItemProps) => {
           </>
         }
       />
-    </Wrap>
+    </Chip>
   );
 };

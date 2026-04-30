@@ -29,6 +29,16 @@ export const BUILTIN_STATE_MODIFIERS: Record<string, ComponentModifier[]> = {
       classes: "border-primary text-primary",
     },
     {
+      // Carousel / pagination dot — current slide indicator. Borderless dots
+      // (no text, no border) need an actual fill + scale change since
+      // `tab-active`'s border/text classes are invisible on a `size-2.5
+      // rounded-full` shape.
+      name: "dot-active",
+      label: "Dot active",
+      category: "State",
+      classes: "bg-primary scale-125",
+    },
+    {
       // Half-opacity + clicks disabled. Same as the Container variant; lives
       // here too because pagination prev/next are Buttons.
       name: "disabled-look",

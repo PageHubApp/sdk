@@ -1,6 +1,6 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { Children, isValidElement, useMemo } from "react";
-import { ToolbarRowFrame } from "@/chrome/primitives/ToolbarRowFrame";
+import { Chip } from "@/chrome/primitives/Chip";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 import { OVERLAY_Z_TOOLBAR_DROPDOWN } from "@/chrome/overlays/overlayZIndex";
 
@@ -143,7 +143,7 @@ export const ToolbarDropdown = ({
           {trailing}
         </div>
       ) : (
-        <ToolbarRowFrame trailing={trailing}>{trigger}</ToolbarRowFrame>
+        <Chip trailing={trailing}>{trigger}</Chip>
       )}
 
       <ListboxOptions

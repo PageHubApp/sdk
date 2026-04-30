@@ -1,7 +1,7 @@
 /**
  * BackgroundImageInputPopover — thin trigger chip that opens a draggable
  * FloatingPanel containing the slim media picker. Mirrors PatternInputPopover /
- * GradientInputPopover exactly: row label + PopoverChip with leading thumb /
+ * GradientInputPopover exactly: row label + Chip with leading thumb /
  * "Add..." + X. When an image is set, the chip's `trailingExtras` slot
  * renders a sliders icon button that opens `ImageSettingsPanel` (Focal Point
  * + the registered `image-settings` section). Same canonical pattern docs §1
@@ -18,7 +18,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { TbAdjustmentsHorizontal, TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
 import { getMediaById, getMediaContent, SideBarAtom } from "@/utils/lib";
-import { PopoverChip } from "../../../primitives/PopoverChip";
+import { Chip } from "../../../primitives/Chip";
 import { ToolbarIconButton } from "../../../primitives/ToolbarIconButton";
 import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
 import {
@@ -124,10 +124,10 @@ export default function BackgroundImageInputPopover({ def }: PropertyInputProps)
   const label = def?.label ?? "Image";
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-base-content w-20 shrink-0 truncate text-xs">{label}</span>
-      <PopoverChip
+    <>
+      <Chip mode="popover"
         ref={triggerRef}
+        label={label}
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
         onClear={() => {
@@ -184,6 +184,6 @@ export default function BackgroundImageInputPopover({ def }: PropertyInputProps)
           />
         </Suspense>
       )}
-    </div>
+    </>
   );
 }

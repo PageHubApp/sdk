@@ -17,10 +17,9 @@ import {
 } from "@/utils/design/colorSystem";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
-import { Wrap } from "../../ToolbarStyle";
+import { Chip } from "@/chrome/primitives/Chip";
 import { TokenPicker } from "./TokenPicker";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
-import { ToolbarRowFrame } from "../../../primitives/ToolbarRowFrame";
 import { useRegisterFloatingPanelPortal } from "../../../floating/FloatingPanel";
 import type { ReactNode } from "react";
 
@@ -34,8 +33,7 @@ export const ColorInput = (__props: any) => {
     propType = "class",
     showPalette = true,
     onChange = () => {},
-    labelHide = false,
-    inline = false,
+    labelHide = false, inline = false,
     inputWidth = "",
     labelWidth = "",
   } = __props;
@@ -177,55 +175,49 @@ export const ColorInput = (__props: any) => {
 
   return (
     <div ref={ref} className="relative">
-      <Wrap
-        props={{ label, labelHide }}
+      <Chip
+        variant="swatch"
+        label={labelHide ? undefined : label}
+        onLabelClick={() => setIsOpen(prev => !prev)}
         index={index}
-        lab={value}
-        viewValue={String(viewValue)}
         propType={propType}
         propKey={propKey}
         propItemKey={propItemKey}
-        inline={inline}
-        inputWidth={inputWidth}
         labelWidth={labelWidth}
+        trailing={value ? <InlineClearButton onClick={handleClear} tooltip="Clear color" /> : null}
       >
-        <ToolbarRowFrame
-          variant="swatch"
-          trailing={value ? <InlineClearButton onClick={handleClear} tooltip="Clear color" /> : null}
+        <button
+          ref={triggerRef}
+          type="button"
+          id={`input-${propKey}`}
+          className="relative h-full w-full min-w-0 flex-1 shrink rounded-none"
+          onClick={() => setIsOpen(prev => !prev)}
+          aria-label={label || propKey || "Color"}
         >
-          <button
-            ref={triggerRef}
-            type="button"
-            id={`input-${propKey}`}
-            className="relative h-full w-full min-w-0 flex-1 shrink rounded-none"
-            onClick={() => setIsOpen(prev => !prev)}
-            aria-label={label || propKey || "Color"}
-          >
-            {showChecker && (
-              <span
-                className="pointer-events-none absolute inset-0 z-0"
-                style={TRANSPARENT_CHECKER_BG}
-                aria-hidden
-              />
-            )}
-            {hasStoredColor && (
-              <span
-                className="pointer-events-none absolute inset-0 z-[1]"
-                style={{ backgroundColor: fillCss }}
-                aria-hidden
-              />
-            )}
-            {swatchLabel && (
-              <span
-                className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center px-2 text-[11px] font-medium tracking-tight text-white"
-                style={{ mixBlendMode: "difference" }}
-              >
-                <span className="block max-w-full truncate">{swatchLabel}</span>
-              </span>
-            )}
-          </button>
-        </ToolbarRowFrame>
-      </Wrap>
+          {showChecker && (
+            <span
+              className="pointer-events-none absolute inset-0 z-0"
+              style={TRANSPARENT_CHECKER_BG}
+              aria-hidden
+            />
+          )}
+          {hasStoredColor && (
+            <span
+              className="pointer-events-none absolute inset-0 z-[1]"
+              style={{ backgroundColor: fillCss }}
+              aria-hidden
+            />
+          )}
+          {swatchLabel && (
+            <span
+              className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center px-2 text-[11px] font-medium tracking-tight text-white"
+              style={{ mixBlendMode: "difference" }}
+            >
+              <span className="block max-w-full truncate">{swatchLabel}</span>
+            </span>
+          )}
+        </button>
+      </Chip>
 
       {isOpen && popoverPos && (
         <ColorPickerPortal top={popoverPos.top} right={popoverPos.right}>
