@@ -14,6 +14,9 @@ import {
   TbLayoutList,
   TbLayoutNavbar,
   TbLayoutRows,
+  TbList,
+  TbListCheck,
+  TbListNumbers,
   TbMinus,
   TbCarouselHorizontal,
   TbColumns2,
@@ -25,6 +28,7 @@ import {
   TbSlideshow,
   TbSpace,
   TbStack2,
+  TbTable,
   TbUserCircle,
 } from "react-icons/tb";
 const ContainerMainTab = React.lazy(() =>
@@ -74,6 +78,19 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   else if (props.type === "details") t = "details";
   else if (props.type === "summary") t = "summary";
   else if (props.type === "label") t = "label";
+  else if (
+    props.type === "ul" ||
+    props.type === "ol" ||
+    props.type === "li" ||
+    props.type === "table" ||
+    props.type === "thead" ||
+    props.type === "tbody" ||
+    props.type === "tfoot" ||
+    props.type === "tr" ||
+    props.type === "td" ||
+    props.type === "th"
+  )
+    t = props.type;
 
   const attrs: Record<string, any> = {
     class: staticClasses(props, ctx) || undefined,
@@ -204,6 +221,159 @@ function buildSectionChildren() {
       canEditName={true}
       className="gap-space-md max-w-page mx-auto flex w-full flex-col"
     />,
+  ];
+}
+
+// ─── List / Table preset helpers ───
+// All List/Table presets are plain Containers using props.type to set the
+// semantic HTML tag (ul/ol/li/table/tr/td/th/tbody/thead/tfoot). The legacy
+// List/ListItem/Table* components were removed in favor of Container.
+
+function buildBulletedListChildren() {
+  const items = ["First point", "Second point", "Third point"];
+  return items.map((label, i) => (
+    <Element
+      key={`item-${i}`}
+      canvas
+      is={Container}
+      type="li"
+      custom={{ displayName: `Item ${i + 1}` }}
+      canDelete={true}
+      canEditName={true}
+    >
+      <Element
+        is={Text}
+        custom={{ displayName: "Text" }}
+        text={`<p>${label}</p>`}
+        canDelete={true}
+        canEditName={true}
+      />
+    </Element>
+  ));
+}
+
+function buildNumberedListChildren() {
+  return buildBulletedListChildren();
+}
+
+function buildChecklistChildren() {
+  const items = ["First item", "Second item", "Third item"];
+  return items.map((label, i) => (
+    <Element
+      key={`item-${i}`}
+      canvas
+      is={Container}
+      type="li"
+      custom={{ displayName: `Item ${i + 1}` }}
+      className="flex flex-row items-start gap-space-xs"
+      canDelete={true}
+      canEditName={true}
+    >
+      <Element
+        is={Icon}
+        custom={{ displayName: "Marker" }}
+        value="ref-icon:tb/TbCheck"
+        className="text-primary h-5 w-5 shrink-0"
+        canDelete={true}
+        canEditName={true}
+      />
+      <Element
+        is={Text}
+        custom={{ displayName: "Text" }}
+        text={`<p>${label}</p>`}
+        className="min-w-0 flex-1"
+        canDelete={true}
+        canEditName={true}
+      />
+    </Element>
+  ));
+}
+
+function buildTableCell(displayName: string, text: string, isHeader: boolean) {
+  return (
+    <Element
+      canvas
+      is={Container}
+      type={isHeader ? "th" : "td"}
+      custom={{ displayName }}
+      className={
+        isHeader
+          ? "border-base-300 border-b px-space-sm py-space-xs text-left font-semibold"
+          : "border-base-300 border-b px-space-sm py-space-xs"
+      }
+      attrs={isHeader ? { scope: "col" } : undefined}
+      canDelete={true}
+      canEditName={true}
+    >
+      <Element
+        is={Text}
+        custom={{ displayName: "Text" }}
+        text={`<p>${text}</p>`}
+        canDelete={true}
+        canEditName={true}
+      />
+    </Element>
+  );
+}
+
+function buildTableChildren() {
+  return [
+    <Element
+      key="thead"
+      canvas
+      is={Container}
+      type="thead"
+      custom={{ displayName: "Head" }}
+      canDelete={true}
+      canEditName={true}
+    >
+      <Element
+        canvas
+        is={Container}
+        type="tr"
+        custom={{ displayName: "Row" }}
+        canDelete={true}
+        canEditName={true}
+      >
+        {buildTableCell("Header", "Column A", true)}
+        {buildTableCell("Header", "Column B", true)}
+        {buildTableCell("Header", "Column C", true)}
+      </Element>
+    </Element>,
+    <Element
+      key="tbody"
+      canvas
+      is={Container}
+      type="tbody"
+      custom={{ displayName: "Body" }}
+      canDelete={true}
+      canEditName={true}
+    >
+      <Element
+        canvas
+        is={Container}
+        type="tr"
+        custom={{ displayName: "Row 1" }}
+        canDelete={true}
+        canEditName={true}
+      >
+        {buildTableCell("Cell", "Row 1, A", false)}
+        {buildTableCell("Cell", "Row 1, B", false)}
+        {buildTableCell("Cell", "Row 1, C", false)}
+      </Element>
+      <Element
+        canvas
+        is={Container}
+        type="tr"
+        custom={{ displayName: "Row 2" }}
+        canDelete={true}
+        canEditName={true}
+      >
+        {buildTableCell("Cell", "Row 2, A", false)}
+        {buildTableCell("Cell", "Row 2, B", false)}
+        {buildTableCell("Cell", "Row 2, C", false)}
+      </Element>
+    </Element>,
   ];
 }
 
@@ -1799,6 +1969,177 @@ export const ContainerDef = defineComponent(
             }
           },
         },
+      },
+      {
+        label: "Bulleted List",
+        description: "A simple bulleted list of points.",
+        icon: TbList,
+        category: "Lists",
+        props: {
+          type: "ul",
+          className: "list-disc pl-space-md space-y-space-xs",
+        },
+        children: buildBulletedListChildren,
+      },
+      {
+        label: "Numbered List",
+        description: "An ordered list with numbers down the left.",
+        icon: TbListNumbers,
+        category: "Lists",
+        props: {
+          type: "ol",
+          className: "list-decimal pl-space-md space-y-space-xs",
+        },
+        children: buildNumberedListChildren,
+      },
+      {
+        label: "Checklist",
+        description: "A list of rows each with a leading check icon.",
+        icon: TbListCheck,
+        category: "Lists",
+        props: {
+          type: "ul",
+          className: "list-none flex flex-col gap-space-sm",
+        },
+        children: buildChecklistChildren,
+      },
+      {
+        label: "List Item",
+        description: "A single <li> row inside a list.",
+        icon: TbList,
+        category: "Lists",
+        props: { type: "li" },
+        children: () => [
+          <Element
+            key="text"
+            is={Text}
+            custom={{ displayName: "Text" }}
+            text="<p>List item</p>"
+            canDelete={true}
+            canEditName={true}
+          />,
+        ],
+      },
+      {
+        label: "Table",
+        description: "A data table with header row and body rows.",
+        icon: TbTable,
+        category: "Tables",
+        props: {
+          type: "table",
+          className: "table w-full border-collapse text-sm",
+        },
+        children: buildTableChildren,
+      },
+      {
+        label: "Table Head",
+        description: "A <thead> section — header rows for a table.",
+        icon: TbTable,
+        category: "Tables",
+        props: { type: "thead" },
+        children: () => [
+          <Element
+            key="row"
+            canvas
+            is={Container}
+            type="tr"
+            custom={{ displayName: "Row" }}
+            canDelete={true}
+            canEditName={true}
+          >
+            {buildTableCell("Header", "Column", true)}
+          </Element>,
+        ],
+      },
+      {
+        label: "Table Body",
+        description: "A <tbody> section — data rows for a table.",
+        icon: TbTable,
+        category: "Tables",
+        props: { type: "tbody" },
+        children: () => [
+          <Element
+            key="row"
+            canvas
+            is={Container}
+            type="tr"
+            custom={{ displayName: "Row" }}
+            canDelete={true}
+            canEditName={true}
+          >
+            {buildTableCell("Cell", "Cell", false)}
+          </Element>,
+        ],
+      },
+      {
+        label: "Table Foot",
+        description: "A <tfoot> section — footer rows for a table.",
+        icon: TbTable,
+        category: "Tables",
+        props: { type: "tfoot" },
+        children: () => [
+          <Element
+            key="row"
+            canvas
+            is={Container}
+            type="tr"
+            custom={{ displayName: "Row" }}
+            canDelete={true}
+            canEditName={true}
+          >
+            {buildTableCell("Cell", "Total", false)}
+          </Element>,
+        ],
+      },
+      {
+        label: "Table Row",
+        description: "A single <tr> with one cell.",
+        icon: TbTable,
+        category: "Tables",
+        props: { type: "tr" },
+        children: () => [buildTableCell("Cell", "Cell", false)],
+      },
+      {
+        label: "Table Cell",
+        description: "A single <td> data cell.",
+        icon: TbTable,
+        category: "Tables",
+        props: {
+          type: "td",
+          className: "border-base-300 border-b px-space-sm py-space-xs",
+        },
+        children: () => [
+          <Element
+            key="text"
+            is={Text}
+            custom={{ displayName: "Text" }}
+            text="<p>Cell</p>"
+            canDelete={true}
+            canEditName={true}
+          />,
+        ],
+      },
+      {
+        label: "Table Header Cell",
+        description: "A single <th> header cell with scope=col.",
+        icon: TbTable,
+        category: "Tables",
+        props: {
+          type: "th",
+          className:
+            "border-base-300 border-b px-space-sm py-space-xs text-left font-semibold",
+          attrs: { scope: "col" },
+        },
+        children: () => [
+          <Element
+            key="text"
+            is={Text}
+            custom={{ displayName: "Text" }}
+            text="<p>Header</p>"
+            canDelete={true}
+            canEditName={true}
+          />,
+        ],
       },
       {
         label: "Cookie Consent",

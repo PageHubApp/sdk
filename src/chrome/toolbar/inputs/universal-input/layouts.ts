@@ -238,6 +238,7 @@ export const DROPDOWN_LAYOUTS: Record<string, DropdownLayoutConfig> = {
   height: COMMON_SIZING_LAYOUT,
   maxWidth: COMMON_SIZING_LAYOUT,
   minHeight: COMMON_SIZING_LAYOUT,
+  size: COMMON_SIZING_LAYOUT,
 
   // ========== SPACING PROPERTIES (no fractions) ==========
   margin: COMMON_SPACING_LAYOUT,
@@ -440,6 +441,7 @@ export const PROP_TAG_MAPPINGS: Record<string, string> = {
   // Width & Height
   w: "width",
   h: "height",
+  size: "size",
 
   // Margin
   m: "margin",

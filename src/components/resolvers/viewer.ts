@@ -23,14 +23,8 @@ import { Header } from "../Header";
 import { Icon } from "../Icon";
 import { Image } from "../Image";
 import { Link } from "../Link";
-import { List } from "../List";
-import { ListItem } from "../ListItem";
 import { Map } from "../Map";
 import { MapPoint } from "../MapPoint";
-import { Table } from "../Table";
-import { TableSection } from "../TableSection";
-import { TableRow } from "../TableRow";
-import { TableCell } from "../TableCell";
 import { Text } from "../Text";
 import { Video } from "../Video";
 import { withConditionalVisibility } from "../../utils/conditions/withConditionalVisibility";
@@ -55,14 +49,8 @@ export const viewerResolver = {
   Icon: cv(Icon),
   Image: cv(Image),
   Link: cv(Link),
-  List: cv(List),
-  ListItem: cv(ListItem),
   Map: cv(Map),
   MapPoint: cv(MapPoint),
-  Table: cv(Table),
-  TableSection: cv(TableSection),
-  TableRow: cv(TableRow),
-  TableCell: cv(TableCell),
   Text: cv(Text),
   Video: cv(Video),
 };

@@ -23,14 +23,8 @@ import { Header } from "../components/Header";
 import { Icon } from "../components/Icon";
 import { Image } from "../components/Image";
 import { Link } from "../components/Link";
-import { List } from "../components/List";
-import { ListItem } from "../components/ListItem";
 import { Map } from "../components/Map";
 import { MapPoint } from "../components/MapPoint";
-import { Table } from "../components/Table";
-import { TableSection } from "../components/TableSection";
-import { TableRow } from "../components/TableRow";
-import { TableCell } from "../components/TableCell";
 import { Text } from "../components/Text";
 import { Video } from "../components/Video";
 import { SavedComponentLoader } from "./savedComponents";
@@ -64,14 +58,8 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Icon: cv(Icon),
   Image: cv(Image),
   Link: cv(Link),
-  List: cv(List),
-  ListItem: cv(ListItem),
   Map: cv(Map),
   MapPoint: cv(MapPoint),
-  Table: cv(Table),
-  TableSection: cv(TableSection),
-  TableRow: cv(TableRow),
-  TableCell: cv(TableCell),
   Text: cv(Text),
   Video: cv(Video),
   SavedComponentLoader,

@@ -409,14 +409,8 @@ export { Header } from "./components/Header";
 export { Icon } from "./components/Icon";
 export { Image } from "./components/Image";
 export { Link } from "./components/Link";
-export { List } from "./components/List";
-export { ListItem } from "./components/ListItem";
 export { Map } from "./components/Map";
 export { MapPoint } from "./components/MapPoint";
-export { Table } from "./components/Table";
-export { TableSection } from "./components/TableSection";
-export { TableRow } from "./components/TableRow";
-export { TableCell } from "./components/TableCell";
 export { Text } from "./components/Text";
 export { Video } from "./components/Video";
 

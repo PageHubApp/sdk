@@ -147,8 +147,6 @@ export const IconInput = ({
               propKey={`${propKey}.value`}
               propType={propType}
               label="Image"
-              labelWidth="w-full"
-              inputWidth="w-fit"
             />
 
             {showIconOnly && (

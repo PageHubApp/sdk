@@ -36,12 +36,10 @@ const GROUPABLE_NAMES = new Set([
   "Link",
   "FormElement",
   "MapPoint",
-  "TableRow",
 ]);
 
 // Skip when the wrapper's own MainTab renders a list editor — avoids double UI.
-// Map / Table* genuinely need bespoke editors.
-const LIST_WRAPPER_NAMES = new Set(["Map", "Table", "TableSection", "TableRow"]);
+const LIST_WRAPPER_NAMES = new Set(["Map"]);
 
 interface DetectedGroup {
   name: string;

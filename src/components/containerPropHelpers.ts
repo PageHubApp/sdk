@@ -50,6 +50,18 @@ export function pickContainerTag(
       // Wrapping label — clicking anywhere inside toggles the first child input.
       tagName = "label";
       break;
+    case "ul":
+    case "ol":
+    case "li":
+    case "table":
+    case "thead":
+    case "tbody":
+    case "tfoot":
+    case "tr":
+    case "td":
+    case "th":
+      tagName = type;
+      break;
   }
 
   const UiComponent: any = type === "section" || type === "page" ? Section : Box;

@@ -22,8 +22,4 @@ export type { PagehubTextRichMode } from "../core/tiptapExtensions/pagehubTextTi
 export { InlineEditToolbar as TiptapToolbar } from "./inline-tools/inline-edit-toolbar/InlineEditToolbar";
 export { ContainerSettingsTopNodeTool } from "./canvas/node-tools/ContainerSettingsTopNodeTool";
 export { ContainerSettingsNodeTool } from "./canvas/node-tools/ContainerSettingsNodeTool";
-export { SelectListTool } from "./canvas/node-tools/SelectListTool";
-export { SelectTableTool } from "./canvas/node-tools/SelectTableTool";
-export { SelectTableSectionTool } from "./canvas/node-tools/SelectTableSectionTool";
-export { SelectTableRowTool } from "./canvas/node-tools/SelectTableRowTool";
 export { SelectMapTool } from "./canvas/node-tools/SelectMapTool";

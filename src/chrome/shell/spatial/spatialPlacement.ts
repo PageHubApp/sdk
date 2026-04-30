@@ -96,15 +96,11 @@ export function shouldSkipCrossAxisAlignForParent(
 }
 
 /**
- * Beside (flex-col edge bands) does not apply to CSS table layout or the Table component root.
- * The Table node’s DOM is a block scroll wrapper, not `display: table`, so we also key off `name`.
+ * Beside (flex-col edge bands) does not apply to CSS table layout.
  */
 export function shouldSkipBesideInColumnForParent(
-  parent: Node,
+  _parent: Node,
   parentDom: HTMLElement | null
 ): boolean {
-  if (resolverName(parent) === "Table") {
-    return true;
-  }
   return isTableLayoutDisplay(parentDom);
 }

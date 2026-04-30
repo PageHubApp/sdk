@@ -14,8 +14,6 @@ import { BaseSelectorProps } from "./selectors";
 export interface IconProps extends BaseSelectorProps {
   /** Icon reference — `ref-icon:<set>/<ExportName>` or `ref-image:<mediaId>`. */
   value?: string;
-  /** Tailwind width/height classes (e.g. `w-6 h-6`). Default `w-6 h-6`. */
-  size?: string;
   /** Tailwind text color class (e.g. `text-primary`). Defaults to inheriting from parent. */
   color?: string;
   /** Optional accessible name — when omitted, the icon is treated as decorative (`aria-hidden`). */
@@ -26,7 +24,6 @@ export const Icon: UserComponent<IconProps> = (incomingProps: IconProps) => {
   let props: any = {
     canDelete: true,
     canEditName: true,
-    size: "w-6 h-6",
     ...incomingProps,
   };
 
@@ -47,10 +44,8 @@ export const Icon: UserComponent<IconProps> = (incomingProps: IconProps) => {
 
   const iconElement = useResolvedIcon(props.value, query);
 
-  const sizeClass = props.size || "w-6 h-6";
   const colorClass = props.color || "";
   const className = [
-    sizeClass,
     colorClass || "fill-current",
     "inline-flex",
     "items-center",

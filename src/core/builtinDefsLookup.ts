@@ -35,17 +35,9 @@ export function getBuiltinComponentDef(name: string): ResolvedComponentDef | und
 
 const SPATIAL_MAIN_AXIS_BY_NAME: Record<string, "row" | "column"> = {
   Grid: "row",
-  TableRow: "row",
-  TableSection: "column",
-  Table: "column",
 };
 
-const SUPPRESS_CROSS_AXIS_ALIGN_BY_NAME: Record<string, true> = {
-  Table: true,
-  TableSection: true,
-  TableRow: true,
-  TableCell: true,
-};
+const SUPPRESS_CROSS_AXIS_ALIGN_BY_NAME: Record<string, true> = {};
 
 export function getSpatialMainAxisForComponentName(
   name: string | undefined

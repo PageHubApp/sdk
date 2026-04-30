@@ -1,28 +1,22 @@
 import { IconDialogInput } from "../../inputs/media/IconDialogInput";
-import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
-import { TailwindStyles } from "@/utils/tailwind";
+import { UniversalInput } from "../../inputs/universal-input";
 import { renderComponentSlots } from "../helpers";
 
 export const IconMainTab = () =>
   renderComponentSlots({
     Content: (
       <ToolbarSection collapsible={false}>
-        <IconDialogInput
-          propKey="value"
-          propType="component"
-          label="Icon"
-          labelWidth="w-full"
-          inputWidth="w-fit"
-        />
-        <ToolbarItem
+        <IconDialogInput propKey="value" propType="component" label="Icon" />
+        <UniversalInput
           propKey="size"
-          propType="component"
-          type="select"
+          propType="class"
+          propTag="size"
           label="Size"
-          max={TailwindStyles.allWidths.length - 1}
-          min={0}
-          valueLabels={TailwindStyles.allWidths}
+          tailwindKey="size"
+          showVarSelector
+          allowedTypes={["tailwind", "calc", "px", "%", "em", "rem", "vw", "vh"]}
+          inputWidth="flex-1"
         />
       </ToolbarSection>
     ),

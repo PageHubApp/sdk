@@ -23,10 +23,8 @@ import { Icon } from "./Icon";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const value: string | undefined = props.value;
-  const size = props.size || "w-6 h-6";
   const color = props.color || "fill-current";
   const wrapCls = [
-    size,
     color,
     "inline-flex",
     "items-center",
@@ -81,7 +79,7 @@ export const IconDef = defineComponent(
         description: "A small standalone icon.",
         props: {
           value: "ref-icon:tb/TbStar",
-          size: "w-6 h-6",
+          className: "size-6",
         },
       },
       {
@@ -90,8 +88,7 @@ export const IconDef = defineComponent(
         description: "A bigger icon for feature tiles or hero badges.",
         props: {
           value: "ref-icon:tb/TbBolt",
-          size: "w-12 h-12",
-          color: "text-primary",
+          className: "size-12 text-primary",
         },
       },
     ],
