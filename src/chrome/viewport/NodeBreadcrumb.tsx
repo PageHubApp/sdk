@@ -7,6 +7,7 @@ import { IsolateAtom, hasPageIsolation } from "../../utils/lib";
 import { ToolbarPortalDropdown } from "../inline-tools/ToolbarPortalDropdown";
 import { PageSelector } from "./PageSelector";
 import { TabAtom } from "./atoms";
+import { useOpenNodeContextMenu } from "./hooks/useOpenNodeContextMenu";
 
 interface BreadcrumbItem {
   id: string;
@@ -134,8 +135,16 @@ export const NodeBreadcrumb = () => {
   // Don't show page context for Header/Footer components (they're not children of pages)
   const showPageContext = !isHeaderOrFooter;
 
+  const openNodeContextMenu = useOpenNodeContextMenu();
+
   const handleNodeClick = (nodeId: string) => {
     actions.selectNode(nodeId);
+  };
+
+  const handleNodeContextMenu = (e: React.MouseEvent, nodeId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openNodeContextMenu(nodeId, e.clientX, e.clientY);
   };
 
   const handlePageClick = () => {
@@ -222,6 +231,7 @@ export const NodeBreadcrumb = () => {
                   key={item.id}
                   type="button"
                   onClick={() => handleNodeClick(item.id)}
+                  onContextMenu={e => handleNodeContextMenu(e, item.id)}
                   className="ph-select-item items-center gap-2 text-xs"
                   style={{ paddingLeft: `${(index + (showPageContext ? 1 : 0)) * 8 + 8}px` }}
                 >
@@ -255,6 +265,7 @@ export const NodeBreadcrumb = () => {
             <button
               type="button"
               onClick={() => handleNodeClick(parentItem.id)}
+              onContextMenu={e => handleNodeContextMenu(e, parentItem.id)}
               className={`text-neutral-content hover:text-base-content max-w-[80px] min-w-0 ${crumbTextSegment} ${crumbOutlineIdle} hover:bg-base-200/80 active:scale-95`}
               data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
               data-tooltip-content={`Select ${parentItem.name} (${parentItem.type})`}
@@ -299,6 +310,7 @@ export const NodeBreadcrumb = () => {
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
+                onContextMenu={e => handleNodeContextMenu(e, currentItem.id)}
                 className={`text-base-content hover:outline-base-content/40 inline-flex w-fit max-w-full min-w-0 shrink ${crumbTextSegment} outline-base-content/25 bg-transparent outline-1 -outline-offset-1 outline-dashed active:scale-95`}
                 data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
                 data-tooltip-content={`Click to edit "${currentItem.name}"`}

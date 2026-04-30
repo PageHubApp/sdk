@@ -122,7 +122,7 @@ export interface ComponentModifier {
 
 /** When set on a component def, new nodes can inherit className chrome from a sibling (schema-driven). */
 export interface PeerInheritConfig {
-  /** Parent `name` values that enable this behavior (e.g. `["Container", "ContainerGroup"]`). */
+  /** Parent `name` values that enable this behavior (e.g. `["Container"]`). */
   whenParentIs: string[];
   /** Pick reference sibling: left neighbor first, else right. */
   reference: "left-neighbor" | "right-neighbor";
@@ -249,7 +249,6 @@ const BUILT_IN_NAMES = new Set([
   "Background",
   "Button",
   "Container",
-  "ContainerGroup",
   "Data",
   "Embed",
   "Footer",

@@ -124,7 +124,7 @@ export interface NamedColor {
 
 /**
  * Background image configuration — render a background image on any node.
- * Applied to Background (ROOT), Container, ContainerGroup, Header, Footer,
+ * Applied to Background (ROOT), Container, Header, Footer,
  * Nav, Button, Text, Image. CSS positioning (cover/center/repeat) is handled
  * via className utilities (`bg-cover bg-center bg-no-repeat`).
  */

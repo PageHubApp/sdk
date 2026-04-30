@@ -45,7 +45,6 @@ export function effectiveTag(node: any): string | null {
   switch (name) {
     case "Container":
     case "Data":
-    case "ContainerGroup":
     case "Background": {
       const t = props.type;
       if (t === "page") return "article";

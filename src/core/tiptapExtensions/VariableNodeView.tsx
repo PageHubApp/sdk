@@ -22,7 +22,8 @@ export function VariableNodeView({
 
   const { query, actions } = useCraftEditor();
 
-  const resolved = resolveVariable(varId, query);
+  const anchors = options.getAnchors ? options.getAnchors() : undefined;
+  const resolved = resolveVariable(varId, query, anchors);
   const initialDisplay = resolved && resolved !== varId ? resolved : varId;
   const [displayOverride, setDisplayOverride] = useState<string | null>(null);
   const displayText = displayOverride ?? initialDisplay;
@@ -39,7 +40,7 @@ export function VariableNodeView({
   // Listen for edits from other variable node popovers
   useEffect(() => {
     const handler = () => {
-      const fresh = resolveVariable(varId, query);
+      const fresh = resolveVariable(varId, query, options.getAnchors?.());
       const freshDisplay = fresh && fresh !== varId ? fresh : varId;
       setDisplayOverride(prev => (prev !== freshDisplay ? freshDisplay : prev));
     };

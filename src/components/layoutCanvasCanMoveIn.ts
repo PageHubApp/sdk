@@ -1,4 +1,4 @@
-/** Shared drag rules for layout canvases (Container, Grid). */
+/** Shared drag rules for layout canvases (Container). */
 
 const SECTION_PARENTS = new Set(["page", "component", "header", "footer"]);
 

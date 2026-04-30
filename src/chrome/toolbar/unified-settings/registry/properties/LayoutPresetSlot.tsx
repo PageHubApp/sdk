@@ -2,14 +2,20 @@ import { useNode } from "@craftjs/core";
 import { LayoutPresetInput } from "../../../inputs/layout/LayoutPresetInput";
 import { useLayoutPreset } from "../../../inputs/layout/hooks/useLayoutPreset";
 
+const LAYOUT_HOSTS = new Set(["Container", "Data", "Header", "Footer", "Form"]);
+
 /**
  * Registry slot wrapper around LayoutPresetInput.
- * Renders only on container-typed nodes. Wires the preset controller via
+ * Renders for any layout-host component (Container, Data, Header, Footer, Form),
+ * regardless of whether `props.type` is set — flex/grid presets need to be
+ * pickable on bare Container drops too. Wires the preset controller via
  * useLayoutPreset so the body shares state with Alignment shortcuts below.
  */
 export function LayoutPresetSlot() {
-  const hasContainerType = useNode(node => node.data?.props?.type != null) as unknown as boolean;
+  const { componentName } = useNode(node => ({
+    componentName: (node.data?.name || node.data?.displayName || "") as string,
+  }));
   const lp = useLayoutPreset({ propKey: "layoutPreset" });
-  if (!hasContainerType) return null;
+  if (!LAYOUT_HOSTS.has(componentName)) return null;
   return <LayoutPresetInput lp={lp} sectionWrapper={false} />;
 }

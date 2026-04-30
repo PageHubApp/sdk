@@ -265,7 +265,6 @@ The SDK ships with these drag-and-drop components out of the box:
 | Component        | Description                               |
 | ---------------- | ----------------------------------------- |
 | `Container`      | Flex/grid layout wrapper                  |
-| `ContainerGroup` | Grouped layout sections                   |
 | `Header`         | Page header with nav                      |
 | `Footer`         | Page footer                               |
 | `Text`           | Rich text with inline editing             |

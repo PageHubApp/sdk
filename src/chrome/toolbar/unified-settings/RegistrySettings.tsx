@@ -251,6 +251,22 @@ export const RegistrySettings = () => {
 };
 
 // ─── Search effects ────────────────────────────────────────────────────────
+// Injected here (not in styles.css) so Turbopack/lightningcss does not choke on `::highlight()`.
+const SETTINGS_SEARCH_HIGHLIGHT_STYLE_ID = "ph-settings-search-highlight-css";
+function ensureSettingsSearchHighlightStyles() {
+  if (typeof document === "undefined") return;
+  if (document.getElementById(SETTINGS_SEARCH_HIGHLIGHT_STYLE_ID)) return;
+  const el = document.createElement("style");
+  el.id = SETTINGS_SEARCH_HIGHLIGHT_STYLE_ID;
+  el.textContent =
+    "@supports selector(::highlight(x)){" +
+    "::highlight(settings-search){" +
+    "background-color:oklch(0.8 0.15 85);" +
+    "color:oklch(0.25 0.05 85);" +
+    "border-radius:2px;" +
+    "}}";
+  document.head.appendChild(el);
+}
 
 function SearchEffects({ search }: { search: string }) {
   const accordionCtx = useAccordionContext();
@@ -262,6 +278,7 @@ function SearchEffects({ search }: { search: string }) {
   }, [search]);
 
   useEffect(() => {
+    ensureSettingsSearchHighlightStyles();
     if (typeof CSS === "undefined" || !("highlights" in CSS)) return;
     const highlightName = "settings-search";
     (CSS as any).highlights.delete(highlightName);

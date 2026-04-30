@@ -33,9 +33,7 @@ export function getBuiltinComponentDef(name: string): ResolvedComponentDef | und
 // null / false — fall back to DOM-derived flex direction and normal
 // cross-axis zones.
 
-const SPATIAL_MAIN_AXIS_BY_NAME: Record<string, "row" | "column"> = {
-  Grid: "row",
-};
+const SPATIAL_MAIN_AXIS_BY_NAME: Record<string, "row" | "column"> = {};
 
 const SUPPRESS_CROSS_AXIS_ALIGN_BY_NAME: Record<string, true> = {};
 

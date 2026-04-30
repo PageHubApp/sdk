@@ -39,7 +39,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
     return (
       <label
         className={`relative flex h-8 w-full cursor-pointer items-center transition-transform active:scale-[0.98] ${
-          hasOption ? "flex-row justify-between gap-3" : "justify-center"
+          hasOption ? "flex-row justify-between gap-3" : "justify-end"
         }`}
       >
         {props.option && (

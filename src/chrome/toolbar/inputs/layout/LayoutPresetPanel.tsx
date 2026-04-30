@@ -15,8 +15,6 @@ interface PanelProps {
   initialPosition?: { x: number; y: number };
   onClose: () => void;
   lp: LayoutPresetHandle;
-  /** Restrict to grid presets — for hosts whose component is always grid (e.g. Grid). */
-  gridOnly?: boolean;
 }
 
 interface Section {
@@ -43,23 +41,19 @@ function isPresetActive(
   return Number(lp.currentLayoutColumns) === Number(preset.columns);
 }
 
-export default function LayoutPresetPanel({ initialPosition, onClose, lp, gridOnly }: PanelProps) {
-  const sections: Section[] = gridOnly
-    ? [{ label: "Grid", presets: GRID_PRESETS, layoutMode: "grid" }]
-    : [
-        { label: "Side by side", presets: getFlexPresets("column"), layoutMode: "flex-row" },
-        { label: "Stacked", presets: getFlexPresets("row"), layoutMode: "flex-col" },
-        { label: "Grid", presets: GRID_PRESETS, layoutMode: "grid" },
-      ];
+export default function LayoutPresetPanel({ initialPosition, onClose, lp }: PanelProps) {
+  const sections: Section[] = [
+    { label: "Side by side", presets: getFlexPresets("column"), layoutMode: "flex-row" },
+    { label: "Stacked", presets: getFlexPresets("row"), layoutMode: "flex-col" },
+    { label: "Grid", presets: GRID_PRESETS, layoutMode: "grid" },
+  ];
 
   const handlePick = (preset: LayoutPreset) => {
     lp.handlePresetSelect(preset);
     onClose();
   };
 
-  const displayVariants = gridOnly
-    ? DISPLAY_VARIANTS.filter(v => v.value !== "block")
-    : DISPLAY_VARIANTS;
+  const displayVariants = DISPLAY_VARIANTS;
 
   return (
     <FloatingPanel

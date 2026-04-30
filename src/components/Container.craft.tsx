@@ -19,9 +19,13 @@ import {
   TbListNumbers,
   TbMinus,
   TbCarouselHorizontal,
+  TbColumns1,
   TbColumns2,
+  TbColumns3,
   TbInfinity,
   TbLayoutGrid,
+  TbLayoutSidebar,
+  TbLayoutSidebarRight,
   TbPhoto,
   TbPill,
   TbSection,
@@ -391,6 +395,22 @@ function buildAvatarChildren() {
 }
 
 const alertSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+
+const baseGrid = "grid w-full min-w-0 text-base-content";
+
+function buildGridCells(count: number) {
+  return Array.from({ length: count }, (_, i) => (
+    <Element
+      key={`cell-${i}`}
+      canvas
+      is={Container}
+      custom={{ displayName: "Cell" }}
+      className="flex flex-col gap-space-sm p-space-sm min-h-24 w-full bg-base-200 rounded-box"
+      canDelete={true}
+      canEditName={true}
+    />
+  ));
+}
 
 function buildAlertChildren() {
   return [
@@ -2320,6 +2340,79 @@ export const ContainerDef = defineComponent(
           className: "relative overflow-hidden w-full rounded-box",
         },
         children: () => buildCarouselChildren({ hero: true }),
+      },
+      // ─── Grid layout presets ───
+      {
+        label: "Single column",
+        icon: TbColumns1,
+        category: "Grid",
+        description: "Just one column — everything stacks.",
+        props: { className: `${baseGrid} grid-cols-1 gap-space-md` },
+        children: () => buildGridCells(1),
+      },
+      {
+        label: "Two columns",
+        icon: TbColumns2,
+        category: "Grid",
+        description: "Two equal columns on desktop.",
+        props: { className: `${baseGrid} grid-cols-1 gap-space-md md:grid-cols-2` },
+        children: () => buildGridCells(2),
+      },
+      {
+        label: "Three columns",
+        icon: TbColumns3,
+        category: "Grid",
+        description: "Three columns on bigger screens.",
+        props: { className: `${baseGrid} grid-cols-1 gap-space-md sm:grid-cols-2 lg:grid-cols-3` },
+        children: () => buildGridCells(3),
+      },
+      {
+        label: "Four columns",
+        icon: TbLayoutGrid,
+        category: "Grid",
+        description: "Four columns — good for cards or icons.",
+        props: { className: `${baseGrid} grid-cols-2 gap-space-md md:grid-cols-4` },
+        children: () => buildGridCells(4),
+      },
+      {
+        label: "2x2 grid",
+        icon: TbLayoutGrid,
+        category: "Grid",
+        description: "Two columns by two rows.",
+        props: { className: `${baseGrid} grid-cols-2 grid-rows-2 gap-space-md` },
+        children: () => buildGridCells(4),
+      },
+      {
+        label: "3x2 grid",
+        icon: TbLayoutGrid,
+        category: "Grid",
+        description: "Three columns by two rows.",
+        props: { className: `${baseGrid} grid-cols-3 grid-rows-2 gap-space-md` },
+        children: () => buildGridCells(6),
+      },
+      {
+        label: "Wide left",
+        icon: TbLayoutSidebarRight,
+        category: "Grid",
+        description: "Big main column on the left, sidebar on the right.",
+        props: { className: `${baseGrid} grid-cols-1 gap-space-md md:grid-cols-[2fr_1fr]` },
+        children: () => buildGridCells(2),
+      },
+      {
+        label: "Wide right",
+        icon: TbLayoutSidebar,
+        category: "Grid",
+        description: "Sidebar on the left, big main column on the right.",
+        props: { className: `${baseGrid} grid-cols-1 gap-space-md md:grid-cols-[1fr_2fr]` },
+        children: () => buildGridCells(2),
+      },
+      {
+        label: "Wide middle",
+        icon: TbLayoutGrid,
+        category: "Grid",
+        description: "Three columns with the middle one bigger.",
+        props: { className: `${baseGrid} grid-cols-1 gap-space-md lg:grid-cols-[1fr_2fr_1fr]` },
+        children: () => buildGridCells(3),
       },
     ],
     modifiers: [

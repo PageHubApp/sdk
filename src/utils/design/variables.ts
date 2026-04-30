@@ -382,14 +382,51 @@ export const replaceVariables = (
  * Resolves a single variable ID to its display value.
  * Used by the VariableNode editor view to show rendered text.
  */
-export const resolveVariable = (varId: string, query: any): string => {
+export const resolveVariable = (
+  varId: string,
+  query: any,
+  anchors?: Readonly<Record<string, string>> | null
+): string => {
   if (!varId) return "";
 
   try {
+    // Resolve `{{anchor.X}}` tokens inside the varId so chips like
+    // `state.{{anchor.chat}}:assistantName` work in the editor preview.
+    let resolvedId = varId;
+    if (anchors && resolvedId.includes("{{anchor.")) {
+      resolvedId = resolvedId.replace(
+        /\{\{anchor\.([a-zA-Z0-9_-]+)\}\}/g,
+        (_, k) => anchors[k] ?? ""
+      );
+    }
+
     // Handle dynamic variables
-    if (varId === "year") {
+    if (resolvedId === "year") {
       return new Date().getFullYear().toString();
     }
+
+    // state.<key>[.<dotPath>] — central registry lookup. Mirrors the
+    // logic in replaceVariables so editor chips display live state.
+    if (resolvedId.startsWith("state.")) {
+      const rest = resolvedId.slice("state.".length);
+      const lastColon = rest.lastIndexOf(":");
+      const dotAfter = rest.indexOf(".", lastColon === -1 ? 0 : lastColon);
+      const stateKey = dotAfter === -1 ? rest : rest.slice(0, dotAfter);
+      const tail = dotAfter === -1 ? "" : rest.slice(dotAfter + 1);
+      const raw = getStateValue(stateKey);
+      if (raw == null || raw === "") return varId;
+      if (!tail) return String(raw);
+      try {
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+        const v = walkPath(parsed, tail.split("."));
+        return v == null ? varId : String(v);
+      } catch {
+        return varId;
+      }
+    }
+    // Replace the outer varId with anchor-resolved form for downstream
+    // branches so they see the resolved id.
+    varId = resolvedId;
 
     // Handle auth.* variables
     if (varId.startsWith("auth.")) {

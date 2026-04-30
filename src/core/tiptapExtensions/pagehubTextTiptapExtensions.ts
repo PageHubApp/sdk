@@ -25,6 +25,7 @@ import { OPEN_LINK_PANEL_EVENT } from "@/chrome/inline-tools/openLinkPanelEvent"
 import { VariableNode, type SuggestionProps } from "@/core/tiptapExtensions/VariableNode";
 import { getEditorVariableOptions } from "@/utils/editorVariableOptions";
 import { resolveVariable } from "@/utils/design/variables";
+import { getAnchorsForNode } from "@/utils/anchors/resolveAnchorsViaCraft";
 
 /** `inline` = ProseMirror `doc` with `inline*` only — getHTML() has no wrapping `<p>`. */
 export type PagehubTextRichMode = "full" | "inline";
@@ -209,7 +210,17 @@ const variableExtension = (
     getVariables: () => getEditorVariableOptions(queryRef?.current, nodeIdRef?.current),
     onSuggestion: onSuggestion || null,
     resolveVariable: (id: string) =>
-      queryRef?.current ? resolveVariable(id, queryRef.current) : id,
+      queryRef?.current
+        ? resolveVariable(
+            id,
+            queryRef.current,
+            nodeIdRef?.current ? getAnchorsForNode(nodeIdRef.current, queryRef.current) : undefined
+          )
+        : id,
+    getAnchors: () =>
+      queryRef?.current && nodeIdRef?.current
+        ? getAnchorsForNode(nodeIdRef.current, queryRef.current)
+        : {},
   });
 
 const marksAndShared = (

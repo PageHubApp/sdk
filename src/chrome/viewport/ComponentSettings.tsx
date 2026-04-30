@@ -173,7 +173,9 @@ export const ComponentSettings = () => {
 
             <div className="border-base-300 grid w-full grid-cols-3 gap-3 border-t p-3">
               {a.content.map((item, kk) => (
-                <div key={kk}>{item}</div>
+                <div key={kk} className="flex min-w-0 justify-center">
+                  {item}
+                </div>
               ))}
             </div>
           </div>

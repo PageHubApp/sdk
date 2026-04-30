@@ -399,7 +399,6 @@ export { Audio } from "./components/Audio";
 export { Background } from "./components/Background";
 export { Button } from "./components/Button";
 export { Container } from "./components/Container";
-export { ContainerGroup } from "./components/ContainerGroup";
 export { Data } from "./components/Data";
 export { Embed } from "./components/Embed";
 export { Footer } from "./components/Footer";

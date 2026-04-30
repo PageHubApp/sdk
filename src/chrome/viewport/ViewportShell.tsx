@@ -8,12 +8,10 @@ import { TbPencil, TbX } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../utils/atoms";
 import { OVERLAY_Z_CANVAS_CONTROLS } from "../overlays/overlayZIndex";
-import { ToolboxMenu, toolboxMenuInitialState } from "../rendering/toolboxMenuAtom";
 import { ToolboxContexual } from "./ToolboxContextual";
 import { ShowGridLinesAtom } from "../../utils/atoms";
 import {
   EDITOR_ALL_PAGES_STORAGE,
-  hasPageIsolation,
   IsolateAtom,
   LastActiveAtom,
   OnlineAtom,
@@ -42,6 +40,7 @@ import { SideBySideFrame, resolveSecondaryWidthPx } from "./SideBySideFrame";
 import { useSDK } from "../../core/context";
 import { ViewportMeta } from "./ViewportMeta";
 import { useEditorDocumentKeydown } from "../hooks/useEditorDocumentKeydown";
+import { useOpenNodeContextMenu } from "./hooks/useOpenNodeContextMenu";
 import { useViewportClickDeselect } from "./hooks/useViewportClickDeselect";
 import { useViewportKeyboard } from "./hooks/useViewportKeyboard";
 import { phStorage } from "../../utils/phStorage";
@@ -162,7 +161,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const setInitialLoadComplete = useSetAtomState(InitialLoadCompleteAtom);
   const { emitter, config } = useSDK();
   const { activePageId } = usePageNavigation();
-  const setToolboxMenu = useSetAtomState(ToolboxMenu);
+  const openNodeContextMenu = useOpenNodeContextMenu();
 
   /** Same rules as native context menu: opens element menu at pointer; skips text fields. */
   const tryOpenCanvasNodeContextMenu = useCallback(
@@ -174,49 +173,17 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       if (target.closest("input, textarea, select")) return false;
 
       const nodeEl = target.closest("[node-id]");
-      let nodeId = nodeEl?.getAttribute("node-id");
+      const nodeId = nodeEl?.getAttribute("node-id");
       if (!nodeId) return false;
 
-      // Letterboxing / short pages: clicks land on ROOT Background instead of the page surface.
-      if (nodeId === ROOT_NODE && hasPageIsolation(isolate)) {
-        const iso = query.node(isolate).get();
-        if (iso?.data?.props?.type === "page") {
-          nodeId = isolate;
-        }
-      }
-
-      const node = query.node(nodeId).get();
-      if (!node) return false;
+      const opened = openNodeContextMenu(nodeId, e.clientX, e.clientY);
+      if (!opened) return false;
 
       e.preventDefault();
       e.stopPropagation();
-
-      actions.selectNode(nodeId);
-
-      const parentNode = node.data.parent ? query.node(node.data.parent).get() : null;
-      setToolboxMenu({
-        ...toolboxMenuInitialState,
-        enabled: true,
-        x: e.clientX,
-        y: e.clientY,
-        id: nodeId,
-        name: String(node.data.name || ""),
-        parent: parentNode
-          ? {
-              name: String(parentNode.data.name || ""),
-              displayName: String(
-                (parentNode.data.custom?.displayName as string) ||
-                  (parentNode.data.displayName as string) ||
-                  parentNode.data.name ||
-                  ""
-              ),
-              props: parentNode.data.props || {},
-            }
-          : { ...toolboxMenuInitialState.parent },
-      });
       return true;
     },
-    [enabled, query, actions, setToolboxMenu, isolate]
+    [enabled, openNodeContextMenu]
   );
 
   const handleViewportContextMenuCapture = useCallback(

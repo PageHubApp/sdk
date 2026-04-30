@@ -32,8 +32,10 @@ const icoEl = (Cmp: React.ComponentType<{ className?: string; "aria-hidden"?: bo
   React.createElement(Cmp, { className: "size-3.5 shrink-0", "aria-hidden": true });
 
 export const alignmentProperties: PropertyDef[] = [
-  // ─── Container-only layout preset (always visible — slot self-hides
-  // for non-container nodes via useHasContainerType) ────────────────
+  // ─── Container-only layout preset (gated by component name, not
+  // props.type — bare Container drops with just className still need
+  // the layout chip). Without this gate the section renders an empty
+  // padded body on Text/Image/etc.
   {
     id: "layout.preset",
     label: "Layout",
@@ -41,11 +43,16 @@ export const alignmentProperties: PropertyDef[] = [
     keywords: ["layout", "preset", "row", "column", "grid", "block", "container"],
     input: { type: "custom", component: "LayoutPresetSlot" },
     pinned: true,
-    // Slot self-hides for non-container nodes (LayoutPresetSlot returns null
-    // when `props.type` is unset). Without this gate the section renders an
-    // empty padded body on Text/Image/etc. Mirrors the pattern used by
-    // `containerStateWiring` and `modifiers`.
-    isActive: (_cls, props) => props?.type != null,
+    isActive: (_cls, _props, ctx) => {
+      if (!ctx?.query || !ctx.nodeId) return false;
+      try {
+        const node = ctx.query.node(ctx.nodeId).get();
+        const name = node?.data?.name || node?.data?.displayName || "";
+        return ["Container", "Data", "Header", "Footer", "Form"].includes(name);
+      } catch {
+        return false;
+      }
+    },
     sortOrder: -10,
   },
 

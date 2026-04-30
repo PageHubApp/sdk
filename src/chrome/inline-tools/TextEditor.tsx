@@ -20,6 +20,7 @@ import { VariableSuggestionPopup } from "./VariableSuggestion";
 import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../../components/LazyEditorEmptyLeafHint";
 import { replaceVariables, resolveVariable } from "../../utils/design/variables";
 import { useItemContext } from "../../utils/itemContext";
+import { useAnchors } from "../../utils/anchors/anchorContext";
 import {
   isVisuallyEmptyRichText,
   persistedTextHtmlFromEditor,
@@ -62,6 +63,7 @@ function TextEditorMode({
   const [isEditing, setIsEditing] = React.useState(false);
   const isEditingRef = React.useRef(isEditing);
   const itemContext = useItemContext();
+  const anchors = useAnchors();
 
   useEffect(() => {
     isEditingRef.current = isEditing;
@@ -277,7 +279,7 @@ function TextEditorMode({
     }
   };
 
-  const previewHtml = replaceVariables(rawText, query, itemContext);
+  const previewHtml = replaceVariables(rawText, query, itemContext, anchors);
   const previewEmpty = isVisuallyEmptyRichText(previewHtml);
   const showEmptyChrome = enabled && previewEmpty && !isEditing && !isInsideLinkedComponent;
   const showEmptyBlockHint = showEmptyChrome && isActive;

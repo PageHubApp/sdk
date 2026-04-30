@@ -15,8 +15,6 @@ const PANEL_WIDTH = 320;
 interface LayoutPresetInputProps {
   /** Controller from `useLayoutPreset` in the parent (shared with Alignment shortcuts). */
   lp: LayoutPresetHandle;
-  /** Hide flex/block switcher; only grid presets in the panel (Grid component). */
-  gridOnly?: boolean;
   /**
    * When false, only the controls are rendered (no ToolbarSection wrapper).
    * Parent should wrap in `ToolbarSection title="Content"` per unified-settings helpers.
@@ -24,8 +22,13 @@ interface LayoutPresetInputProps {
   sectionWrapper?: boolean;
 }
 
+const LAYOUT_HOSTS = new Set(["Container", "Data", "Header", "Footer", "Form"]);
+
 function useHasContainerType(): boolean {
-  return useNode(node => node.data?.props?.type != null) as unknown as boolean;
+  const { match } = useNode(node => ({
+    match: LAYOUT_HOSTS.has((node.data?.name || node.data?.displayName || "") as string),
+  }));
+  return match;
 }
 
 function modeIcon(mode: LayoutPresetHandle["layoutMode"]) {
@@ -43,10 +46,9 @@ function titleCase(slug: string): string {
     .join(" ");
 }
 
-function summaryFor(lp: LayoutPresetHandle, gridOnly: boolean): string {
+function summaryFor(lp: LayoutPresetHandle): string {
   const slug = String(lp.currentPresetLayout || "").trim();
   if (slug) return titleCase(slug);
-  if (gridOnly) return "Pick a grid";
   if (lp.layoutMode === "block") return "Block";
   if (lp.layoutMode === "flex-row") return "Side by side";
   if (lp.layoutMode === "flex-col") return "Stacked";
@@ -54,7 +56,7 @@ function summaryFor(lp: LayoutPresetHandle, gridOnly: boolean): string {
   return "Pick layout";
 }
 
-export function LayoutPresetInput({ lp, gridOnly, sectionWrapper = true }: LayoutPresetInputProps) {
+export function LayoutPresetInput({ lp, sectionWrapper = true }: LayoutPresetInputProps) {
   const hasContainerType = useHasContainerType();
   const { actions, query } = useEditor();
   const [open, setOpen] = useState(false);
@@ -84,7 +86,7 @@ export function LayoutPresetInput({ lp, gridOnly, sectionWrapper = true }: Layou
     setOpen(true);
   };
 
-  const summary = summaryFor(lp, !!gridOnly);
+  const summary = summaryFor(lp);
   const leading = modeIcon(lp.layoutMode);
 
   const inner = (
@@ -97,7 +99,7 @@ export function LayoutPresetInput({ lp, gridOnly, sectionWrapper = true }: Layou
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
         onClear={() => {
           if (open) setOpen(false);
-          if (!gridOnly) lp.switchToMode("block");
+          lp.switchToMode("block");
         }}
         triggerAriaLabel="Pick layout"
         clearAriaLabel="Clear layout (Block)"
@@ -122,7 +124,6 @@ export function LayoutPresetInput({ lp, gridOnly, sectionWrapper = true }: Layou
             initialPosition={initialPos}
             onClose={() => setOpen(false)}
             lp={lp}
-            gridOnly={gridOnly}
           />
         </Suspense>
       )}
@@ -133,7 +134,7 @@ export function LayoutPresetInput({ lp, gridOnly, sectionWrapper = true }: Layou
 
   return (
     <ToolbarSection
-      title={gridOnly ? "Grid" : "Layout"}
+      title="Layout"
       icon={<TbLayoutGrid />}
       propKey="display"
       defaultOpen

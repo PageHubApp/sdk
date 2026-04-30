@@ -17,6 +17,11 @@ export interface VariableNodeOptions {
    * Resolves a variable ID to its display text (e.g. "company.name" -> "Acme Inc.")
    */
   resolveVariable?: (id: string) => string;
+  /**
+   * Returns the anchor map for the owning Craft Text node — lets chips like
+   * `state.{{anchor.chat}}:assistantName` resolve in the editor preview.
+   */
+  getAnchors?: () => Readonly<Record<string, string>>;
 }
 
 export interface SuggestionProps {
@@ -336,16 +341,26 @@ function isOffsetInsideHtmlAttributeValue(html: string, pos: number): boolean {
 export function preprocessVariables(html: string): string {
   if (!html || typeof html !== "string") return html;
 
-  return html.replace(/\{\{([^}]+)\}\}/g, (match, varName, offset) => {
+  // Stash nested `{{anchor.X}}` tokens so the outer `{{...}}` matcher doesn't
+  // see their `}}` as a terminator. Restored after the wrap pass so authored
+  // chips like `{{state.{{anchor.chat}}:assistantName}}` survive intact.
+  const stashed: string[] = [];
+  const stashed_html = html.replace(/\{\{anchor\.[a-zA-Z0-9_-]+\}\}/g, m => {
+    const idx = stashed.push(m) - 1;
+    return `PHANCH${idx}PHANCH`;
+  });
+
+  const wrapped = stashed_html.replace(/\{\{([^}]+)\}\}/g, (match, varName, offset) => {
     const trimmed = varName.trim();
-    // Check if already inside a data-variable span
-    const before = html.substring(Math.max(0, offset - 100), offset);
+    const before = stashed_html.substring(Math.max(0, offset - 100), offset);
     if (before.match(/<span[^>]*data-variable[^>]*>$/)) {
       return match;
     }
-    if (isOffsetInsideHtmlAttributeValue(html, offset)) {
+    if (isOffsetInsideHtmlAttributeValue(stashed_html, offset)) {
       return match;
     }
     return `<span data-variable="${trimmed}" class="variable-node">{{${trimmed}}}</span>`;
   });
+
+  return wrapped.replace(/PHANCH(\d+)PHANCH/g, (_, idx) => stashed[Number(idx)] ?? "");
 }

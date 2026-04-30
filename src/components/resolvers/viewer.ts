@@ -12,13 +12,11 @@ import { Audio } from "../Audio";
 import { Background } from "../Background";
 import { Button } from "../Button";
 import { Container } from "../Container";
-import { ContainerGroup } from "../ContainerGroup";
 import { Data } from "../Data";
 import { Embed } from "../Embed";
 import { Footer } from "../Footer";
 import { Form } from "../Form";
 import { FormElement, OnlyFormElement } from "../FormElement";
-import { Grid } from "../Grid";
 import { Header } from "../Header";
 import { Icon } from "../Icon";
 import { Image } from "../Image";
@@ -37,13 +35,11 @@ export const viewerResolver = {
   Background,
   Button: cv(Button),
   Container: cv(Container),
-  ContainerGroup: cv(ContainerGroup),
   Data: cv(Data),
   Embed: cv(Embed),
   Footer: cv(Footer),
   Form: cv(Form),
   FormElement: cv(FormElement),
-  Grid: cv(Grid),
   OnlyFormElement: cv(OnlyFormElement),
   Header: cv(Header),
   Icon: cv(Icon),

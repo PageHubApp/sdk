@@ -82,7 +82,7 @@ function RowLabel({
       data-tooltip-id={truncated ? PAGEHUB_RTT_GLOBAL_ID : undefined}
       data-tooltip-content={truncated ? label : undefined}
       data-tooltip-place="top"
-      className={`text-base-content hover:text-primary min-w-0 flex-1 cursor-pointer truncate text-left text-xs`}
+      className="text-base-content hover:text-primary min-w-0 flex-1 cursor-pointer truncate text-left text-xs outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/60"
     >
       {label}
     </button>
@@ -183,8 +183,9 @@ function frameClasses({
       ? `gap-1.5 pl-0! overflow-hidden ${hasTrailing ? "pr-1" : "pr-0!"}`
       : "gap-1.5 px-1";
   const heightClass = grow ? "min-h-8" : "h-8";
+  /* Open state: border only — wrapper `.input-wrapper` already owns focus-within; avoid stacking a second ring. */
   return `input-wrapper text-base-content flex ${heightClass} w-full min-w-0 items-center text-xs ${variantClass} ${
-    open ? "border-primary ring-ring/45 ring-1" : ""
+    open ? "border-primary" : ""
   }`;
 }
 
@@ -238,8 +239,9 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(props
           type="button"
           onClick={p.onTriggerClick}
           aria-expanded={open}
+          aria-haspopup="true"
           aria-label={p.triggerAriaLabel}
-          className="border-base-300 relative flex h-6 min-w-0 flex-1 items-center justify-center overflow-hidden rounded border"
+          className="border-base-300 relative flex h-6 min-w-0 flex-1 items-center justify-center overflow-hidden rounded border outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0"
         >
           {p.leading}
           {p.previewOverlay}
@@ -250,8 +252,9 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(props
           type="button"
           onClick={p.onTriggerClick}
           aria-expanded={open}
+          aria-haspopup="true"
           aria-label={p.triggerAriaLabel}
-          className="flex min-w-0 flex-1 items-center gap-1.5 truncate px-1 text-left"
+          className="flex min-w-0 flex-1 items-center gap-1.5 truncate px-1 text-left outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0"
         >
           {p.leading ? (
             <span className="text-neutral-content shrink-0" aria-hidden>

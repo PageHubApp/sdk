@@ -774,15 +774,6 @@
   -webkit-user-drag: none;
 }
 
-/* Settings search highlight — CSS Custom Highlight API */
-@supports selector(::highlight(x)) {
-  ::highlight(settings-search) {
-    background-color: oklch(0.8 0.15 85);
-    color: oklch(0.25 0.05 85);
-    border-radius: 2px;
-  }
-}
-
 /* Facet dropdown option — zero-count values still render (Shopify parity) but
  * appear dimmed and refuse input. Matches blocks that emit
  * `attrs: { "data-ph-zero": "{{item.count}}" }` on the option wrapper. */

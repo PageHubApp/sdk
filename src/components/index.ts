@@ -3,7 +3,6 @@ export { Audio } from "./Audio";
 export { Background } from "./Background";
 export { Button } from "./Button";
 export { Container } from "./Container";
-export { ContainerGroup } from "./ContainerGroup";
 export { Embed } from "./Embed";
 export { Footer } from "./Footer";
 export { Form } from "./Form";

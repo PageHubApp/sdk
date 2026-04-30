@@ -246,7 +246,7 @@ export const AddElement = ({
 
 export const ToolboxItemDisplay = ({ icon: Icon, label, isDragging = false }) => (
   <div
-    className={`border-base-300 bg-base-200 text-base-content hover:bg-accent pointer-events-auto h-full w-full cursor-grab rounded-lg border active:cursor-grabbing ${isDragging ? "border-accent bg-accent text-accent-content" : ""}`}
+    className={`border-base-300 bg-base-200 text-base-content hover:bg-accent pointer-events-auto mx-auto h-full w-full max-w-24 cursor-grab rounded-lg border active:cursor-grabbing ${isDragging ? "border-accent bg-accent text-accent-content" : ""}`}
   >
     <div className="pointer-events-none flex h-full min-h-[60px] w-full flex-col items-center gap-1.5 px-1 pt-3 pb-2 transition-colors">
       <Icon className="text-base-content shrink-0 text-2xl" />
@@ -303,7 +303,9 @@ export const RenderToolComponent = ({
           });
         }}
       >
-        {renderer || <div className="h-full w-full">{displayWithProps}</div>}
+        {renderer || (
+          <div className="flex h-full w-full items-stretch justify-center">{displayWithProps}</div>
+        )}
       </div>
     </ToolboxInsertHintTooltip>
   );
