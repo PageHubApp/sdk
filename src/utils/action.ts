@@ -334,7 +334,13 @@ export type LinkTarget = "_self" | "_blank" | "_parent" | "_top";
 /** Actions that resolve to an href (render as <a>) */
 export function isLinkAction(
   action: NodeAction | null | undefined
-): action is LinkAction | LinkUrlAction | LinkPageAction | EmailAction | PhoneAction | ScrollToAction {
+): action is
+  | LinkAction
+  | LinkUrlAction
+  | LinkPageAction
+  | EmailAction
+  | PhoneAction
+  | ScrollToAction {
   if (!action) return false;
   return (
     action.type === "link" ||
@@ -517,7 +523,11 @@ export function legacyActionToLink(action: any): LinkAction | null {
     case "link":
       return action as LinkAction;
     case "link-url":
-      return { type: "link", href: action.url ?? "", ...(action.target ? { target: action.target } : {}) };
+      return {
+        type: "link",
+        href: action.url ?? "",
+        ...(action.target ? { target: action.target } : {}),
+      };
     case "link-page":
       return {
         type: "link",
@@ -604,7 +614,9 @@ export function migrateActions(props: any): NodeAction[] {
 
   // (2) / (3) `props.action`
   if (Array.isArray(props.action)) {
-    return props.action.map(normalizeAction).filter((a: NodeAction | null): a is NodeAction => a !== null);
+    return props.action
+      .map(normalizeAction)
+      .filter((a: NodeAction | null): a is NodeAction => a !== null);
   }
   if (props.action && typeof props.action === "object") {
     const norm = normalizeAction(props.action);
@@ -613,7 +625,9 @@ export function migrateActions(props: any): NodeAction[] {
 
   // (4) Legacy plural-prop window
   if (Array.isArray(props.actions) && props.actions.length > 0) {
-    return props.actions.map(normalizeAction).filter((a: NodeAction | null): a is NodeAction => a !== null);
+    return props.actions
+      .map(normalizeAction)
+      .filter((a: NodeAction | null): a is NodeAction => a !== null);
   }
 
   // (5) Old link mode (props.url / props.urlTarget) — emit unified `link` directly
@@ -657,7 +671,14 @@ export function migrateAction(props: any): NodeAction | null {
 /** Find the first link-ish action in an array (for `<a href>` rendering). */
 export function findLinkAction(
   actions: NodeAction[]
-): LinkAction | LinkUrlAction | LinkPageAction | EmailAction | PhoneAction | ScrollToAction | undefined {
+):
+  | LinkAction
+  | LinkUrlAction
+  | LinkPageAction
+  | EmailAction
+  | PhoneAction
+  | ScrollToAction
+  | undefined {
   return actions.find(isLinkAction);
 }
 

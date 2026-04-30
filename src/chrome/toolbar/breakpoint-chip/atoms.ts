@@ -7,10 +7,7 @@ import { BP_KEYS, type BpKey } from "../../../utils/breakpointRewrite";
  * Empty by default → falls back to canvas-derived single-scope (the rule
  * "scope = canvas view" is the silent default).
  */
-export const MultiScopeAtom = atom<Set<BpKey>>(
-  "chip-multi-scope",
-  () => new Set<BpKey>()
-);
+export const MultiScopeAtom = atom<Set<BpKey>>("chip-multi-scope", () => new Set<BpKey>());
 
 /** Anchor for the currently-open chip popover. Null = nothing open. */
 export type ChipPopoverState = {
@@ -23,10 +20,7 @@ export type ChipPopoverState = {
   pulseBp?: BpKey | "mobile" | null;
 } | null;
 
-export const ChipPopoverAtom = atom<ChipPopoverState>(
-  "chip-popover",
-  null as ChipPopoverState
-);
+export const ChipPopoverAtom = atom<ChipPopoverState>("chip-popover", null as ChipPopoverState);
 
 /** Local helper: ordered breakpoint list including base, used by the chip + popover. */
 export const CHIP_BP_ORDER = ["mobile", ...BP_KEYS] as const;

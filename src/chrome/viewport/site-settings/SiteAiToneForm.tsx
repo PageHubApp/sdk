@@ -1,9 +1,6 @@
 import { normalizeDesignTags } from "../../../utils/normalizeDesignTags";
 import { Chip } from "@/chrome/primitives/Chip";
-import {
-  SettingsFormField,
-  SettingsTabIntro
-} from "../settings/SettingsTabChrome";
+import { SettingsFormField, SettingsTabIntro } from "../settings/SettingsTabChrome";
 import { settingsMultilineInputClass } from "../settings/settingsControlClasses";
 
 export const SITE_AI_TONE_SUGGESTED_TAGS = [
@@ -181,10 +178,11 @@ export function SiteAiToneForm({
                 key={tag}
                 type="button"
                 onClick={() => toggleSuggested(tag)}
-                className={`focus-visible:ring-ring rounded-lg border px-2 py-1.5 text-left text-sm capitalize transition-[color,background-color,border-color] focus:outline-none focus-visible:ring-2 ${on
-                  ? "border-primary bg-primary text-primary-content font-medium"
-                  : "border-base-300 bg-base-200/60 text-base-content hover:border-primary hover:bg-base-300/30"
-                  }`}
+                className={`focus-visible:ring-ring rounded-lg border px-2 py-1.5 text-left text-sm capitalize transition-[color,background-color,border-color] focus:outline-none focus-visible:ring-2 ${
+                  on
+                    ? "border-primary bg-primary text-primary-content font-medium"
+                    : "border-base-300 bg-base-200/60 text-base-content hover:border-primary hover:bg-base-300/30"
+                }`}
               >
                 {tag}
               </button>

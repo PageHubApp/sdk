@@ -169,13 +169,7 @@ function useReorderDrag(
       dragStateRef.current = null;
       setDragSource(null);
       setDragOver(null);
-      if (
-        commit &&
-        state &&
-        state.over !== null &&
-        state.over !== state.from &&
-        onReorder
-      ) {
+      if (commit && state && state.over !== null && state.over !== state.from && onReorder) {
         onReorder(state.from, state.over);
       }
     },
@@ -288,9 +282,7 @@ export const ListEditor = ({
                 isActive={activeIndex === index}
                 isDragSource={dragSource === index}
                 dropEdge={
-                  dragSource === null ||
-                  dragOver !== index ||
-                  dragSource === index
+                  dragSource === null || dragOver !== index || dragSource === index
                     ? null
                     : dragSource > index
                       ? "top"

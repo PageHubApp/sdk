@@ -84,7 +84,7 @@ export const LintBadgeController = () => {
           position: "fixed",
           zIndex: OVERLAY_Z_LINT_BADGE,
         }}
-        className={`pointer-events-auto block size-3 rounded-full ring-2 ring-white shadow-md ${
+        className={`pointer-events-auto block size-3 rounded-full shadow-md ring-2 ring-white ${
           severity === "error" ? "bg-red-500" : "bg-yellow-500"
         }`}
         aria-label={`${issues.length} responsive ${issues.length === 1 ? "issue" : "issues"}`}
@@ -93,7 +93,7 @@ export const LintBadgeController = () => {
         anchorSelect={`#${badgeId}`}
         place="top"
         clickable
-        className="rounded-lg! border! border-base-300! bg-base-100! p-0! shadow-lg!"
+        className="border-base-300! bg-base-100! rounded-lg! border! p-0! shadow-lg!"
         style={{ zIndex: OVERLAY_Z_TOOLTIP }}
         render={() => <LintTooltip issues={issues} onFix={handleFix} />}
       />
@@ -110,26 +110,24 @@ function LintTooltip({
   onFix: (issue: LintIssue) => void;
 }) {
   return (
-    <div className="flex max-w-[260px] cursor-default flex-col divide-y divide-base-300">
+    <div className="divide-base-300 flex max-w-[260px] cursor-default flex-col divide-y">
       {issues.map((issue, i) => (
         <div key={i} className="flex flex-col gap-1 px-3 py-2.5">
           <div className="flex items-center gap-1.5">
             {issue.severity === "error" ? (
-              <TbCircleX className="size-3 shrink-0 text-error" />
+              <TbCircleX className="text-error size-3 shrink-0" />
             ) : (
-              <TbAlertTriangle className="size-3 shrink-0 text-warning" />
+              <TbAlertTriangle className="text-warning size-3 shrink-0" />
             )}
-            <span className="text-[11px] font-semibold text-base-content">{issue.title}</span>
+            <span className="text-base-content text-[11px] font-semibold">{issue.title}</span>
           </div>
-          <p className="text-xs leading-snug text-base-content/70">{issue.message}</p>
-          {issue.tip && (
-            <p className="text-xs leading-snug text-base-content/50">{issue.tip}</p>
-          )}
+          <p className="text-base-content/70 text-xs leading-snug">{issue.message}</p>
+          {issue.tip && <p className="text-base-content/50 text-xs leading-snug">{issue.tip}</p>}
           {issue.fix && (
             <button
               type="button"
               onClick={() => onFix(issue)}
-              className="mt-1 flex w-fit items-center gap-1 rounded-md border border-base-300 bg-base-200 px-2 py-1 text-[11px] font-medium text-base-content transition-colors hover:bg-base-300"
+              className="border-base-300 bg-base-200 text-base-content hover:bg-base-300 mt-1 flex w-fit items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors"
             >
               <TbWand className="size-3" />
               Apply fix

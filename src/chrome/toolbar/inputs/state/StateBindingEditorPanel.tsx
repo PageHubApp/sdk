@@ -17,16 +17,11 @@ import { TbCheck } from "react-icons/tb";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { useElementPicker } from "../action/useElementPicker";
 import { getConnectorData } from "../../../../utils/design/variables";
-import {
-  ConditionGroupUI,
-  defaultCondition,
-} from "../advanced/ConditionsInput";
-import type {
-  Condition,
-  ConditionGroup,
-} from "../../../../utils/conditions/types";
+import { ConditionGroupUI, defaultCondition } from "../advanced/ConditionsInput";
+import type { Condition, ConditionGroup } from "../../../../utils/conditions/types";
 import type { ComponentModifier } from "../../../../define";
 import type { StateBinding } from "./StateBindingsInput";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   binding: StateBinding;
@@ -80,8 +75,10 @@ export default function StateBindingEditorPanel({
   );
 
   // Author single-group AND for v1 — same shape ConditionsInput uses.
-  const group: ConditionGroup =
-    binding.conditions?.[0] ?? { conditions: [defaultCondition("state")], logic: "all" };
+  const group: ConditionGroup = binding.conditions?.[0] ?? {
+    conditions: [defaultCondition("state")],
+    logic: "all",
+  };
 
   const updateGroup = (next: ConditionGroup) => {
     onChange({ ...binding, conditions: next.conditions.length > 0 ? [next] : [] });
@@ -110,7 +107,7 @@ export default function StateBindingEditorPanel({
       maxWidth={480}
       minHeight={300}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <div className="flex flex-col gap-3">
@@ -130,8 +127,8 @@ export default function StateBindingEditorPanel({
           <div className="text-base-content mb-1 text-[11px] font-medium">Apply modifiers</div>
           {allModifiers.length === 0 ? (
             <div className="text-neutral-content text-[10px]">
-              No modifiers registered for this component. Save a modifier from the
-              Modifiers section first.
+              No modifiers registered for this component. Save a modifier from the Modifiers section
+              first.
             </div>
           ) : (
             <div className="flex flex-wrap gap-1">

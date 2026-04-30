@@ -15,6 +15,7 @@ import { DesignVar } from "../types";
 import { useDesignVars } from "../hooks/useDesignVars";
 import { VarList } from "./VarList";
 import { VarEditor } from "./VarEditor";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../../overlays/overlayZIndex";
 
 export interface VarPickerProps {
   open: boolean;
@@ -178,7 +179,7 @@ export function VarPicker({
       minHeight={280}
       maxHeight={680}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       autoSize={false}
       persistSize={false}
       scrollable={false}

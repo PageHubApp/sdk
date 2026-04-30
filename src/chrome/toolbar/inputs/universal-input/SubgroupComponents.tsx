@@ -83,12 +83,7 @@ interface SubgroupItemProps {
   propTag?: string;
 }
 
-export function SubgroupItem({
-  subgroupName,
-  options,
-  onSelect,
-  propTag,
-}: SubgroupItemProps) {
+export function SubgroupItem({ subgroupName, options, onSelect, propTag }: SubgroupItemProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);

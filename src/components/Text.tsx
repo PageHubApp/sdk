@@ -32,7 +32,7 @@ import { useScrollToSelected } from "./componentHooks";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
 // Lazy-load the editor mode — keeps TipTap, chrome, etc. out of viewer bundle
-const TextEditorMode = React.lazy(() => import("./TextEditor"));
+const TextEditorMode = React.lazy(() => import("../chrome/inline-tools/TextEditor"));
 
 export interface TextProps extends BaseSelectorProps {
   text?: string;
@@ -194,7 +194,9 @@ export const Text = (incomingProps: Partial<TextProps>) => {
       <React.Suspense
         fallback={
           <div
-            dangerouslySetInnerHTML={{ __html: replaceVariables(text || "", query, itemContext, anchors) }}
+            dangerouslySetInnerHTML={{
+              __html: replaceVariables(text || "", query, itemContext, anchors),
+            }}
           />
         }
       >

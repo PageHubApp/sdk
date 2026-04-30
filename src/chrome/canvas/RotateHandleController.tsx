@@ -17,7 +17,10 @@ import { twMerge } from "tailwind-merge";
 import { useAtomValue } from "@zedux/react";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { ViewAtom } from "../viewport/atoms";
-import { editorCanvasViewToClassPrefixKey, buildVariantPrefix } from "../../utils/tailwind/className";
+import {
+  editorCanvasViewToClassPrefixKey,
+  buildVariantPrefix,
+} from "../../utils/tailwind/className";
 import { checkIfAncestorLinked } from "../../utils/componentUtils";
 import { setEdgeResizeActive } from "./edgeResizeState";
 import { getNodeGeometry } from "./nodeGeometry";
@@ -79,7 +82,6 @@ function stripRotation(className: string | undefined): string {
     .trim();
 }
 
-
 function isInCornerZone(el: HTMLElement, x: number, y: number): boolean {
   // Bottom-left corner in element-local coords is (-w/2, +h/2). Convert cursor
   // to local first so the zone tracks the rotated corner.
@@ -94,7 +96,8 @@ export function RotateHandleController() {
   const { selectedId, displayName, propsType, dom, isLocked } = useEditor((state, query) => {
     const all = query.getEvent("selected").all();
     const id = all[0];
-    if (!id) return { selectedId: null, displayName: null, propsType: null, dom: null, isLocked: false };
+    if (!id)
+      return { selectedId: null, displayName: null, propsType: null, dom: null, isLocked: false };
     const node = query.node(id).get();
     return {
       selectedId: id,
@@ -327,6 +330,6 @@ export function RotateHandleController() {
     >
       {pillDeg}°
     </div>,
-    document.body,
+    document.body
   );
 }

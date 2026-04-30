@@ -24,9 +24,9 @@ export function CanvasAnnotationLayer({ annotations, onChange }: Props) {
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
   const update = (id: string, patch: Partial<CanvasAnnotation>) =>
-    onChange(annotations.map((a) => (a.id === id ? { ...a, ...patch } : a)));
+    onChange(annotations.map(a => (a.id === id ? { ...a, ...patch } : a)));
 
-  const remove = (id: string) => onChange(annotations.filter((a) => a.id !== id));
+  const remove = (id: string) => onChange(annotations.filter(a => a.id !== id));
 
   // Delete key removes selected annotation when not editing
   React.useEffect(() => {
@@ -34,7 +34,8 @@ export function CanvasAnnotationLayer({ annotations, onChange }: Props) {
       if (editingId) return;
       if (!selectedId) return;
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable) return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable)
+        return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
         remove(selectedId);
@@ -47,7 +48,7 @@ export function CanvasAnnotationLayer({ annotations, onChange }: Props) {
 
   return (
     <>
-      {annotations.map((a) => (
+      {annotations.map(a => (
         <AnnotationItem
           key={a.id}
           a={a}
@@ -58,7 +59,7 @@ export function CanvasAnnotationLayer({ annotations, onChange }: Props) {
             setEditingId(a.id);
             setSelectedId(a.id);
           }}
-          onCommitText={(text) => {
+          onCommitText={text => {
             update(a.id, { text });
             setEditingId(null);
           }}
@@ -199,12 +200,8 @@ function AnnotationItem({
     dragRef.current = null;
   };
 
-  const sizeCls =
-    a.kind === "title"
-      ? "text-2xl font-semibold"
-      : "text-sm font-medium";
-  const colorCls =
-    a.kind === "title" ? "text-base-content" : "text-base-content/80";
+  const sizeCls = a.kind === "title" ? "text-2xl font-semibold" : "text-sm font-medium";
+  const colorCls = a.kind === "title" ? "text-base-content" : "text-base-content/80";
 
   return (
     <div
@@ -236,7 +233,7 @@ function AnnotationItem({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
-      onDoubleClick={(e) => {
+      onDoubleClick={e => {
         e.stopPropagation();
         onStartEdit();
       }}
@@ -253,11 +250,11 @@ function AnnotationItem({
               ? "ring-primary/50 rounded px-1 ring-2"
               : ""
         }`}
-        onBlur={(e) => {
+        onBlur={e => {
           if (!editing) return;
           onCommitText((e.target as HTMLElement).innerText.trim() || "Label");
         }}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === "Escape") {
             (e.target as HTMLElement).blur();
             e.stopPropagation();
@@ -274,7 +271,7 @@ function AnnotationItem({
         <button
           type="button"
           className="bg-error text-error-content absolute -top-2 -right-2 flex size-5 items-center justify-center rounded-full opacity-0 shadow group-hover:opacity-100"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation();
             onDelete();
           }}

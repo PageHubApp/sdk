@@ -1,7 +1,13 @@
 import { UserComponent } from "@craftjs/core";
-import { HeaderMainTab } from "../chrome/toolbar/unified-settings/mainTabs/HeaderMainTab";
+import React from "react";
 import { Container } from "./Container";
 import { LazyUnifiedSettings } from "./LazyUnifiedSettings";
+
+const HeaderMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/HeaderMainTab").then(mod => ({
+    default: mod.HeaderMainTab,
+  }))
+);
 
 export const Header: UserComponent<any> = (props: any) => {
   return <Container {...props} />;

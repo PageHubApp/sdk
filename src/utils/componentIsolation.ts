@@ -54,7 +54,8 @@ export function applyCanvasVisibility(
   if (!root?.data?.nodes) return;
 
   // Visibility flips are pure UI state — keep them off the undo stack.
-  const ignoreActions = typeof actions?.history?.ignore === "function" ? actions.history.ignore() : actions;
+  const ignoreActions =
+    typeof actions?.history?.ignore === "function" ? actions.history.ignore() : actions;
 
   for (const nodeId of root.data.nodes) {
     let node: any;
@@ -64,7 +65,13 @@ export function applyCanvasVisibility(
       continue;
     }
     const t = node?.data?.props?.type;
-    if (t !== "header" && t !== "footer" && t !== "page" && t !== "component" && t !== "componentCanvas") {
+    if (
+      t !== "header" &&
+      t !== "footer" &&
+      t !== "page" &&
+      t !== "component" &&
+      t !== "componentCanvas"
+    ) {
       continue;
     }
 

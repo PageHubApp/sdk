@@ -4,6 +4,7 @@
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ComponentImportExport } from "./ComponentImportExport";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -32,7 +33,7 @@ export default function ComponentImportExportPanel({
       minHeight={360}
       initialPosition={initialPosition}
       persistSize={false}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <ComponentImportExport />

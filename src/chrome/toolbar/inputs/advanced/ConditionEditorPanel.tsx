@@ -10,6 +10,7 @@ import { useElementPicker } from "../action/useElementPicker";
 import { getConnectorData } from "../../../../utils/design/variables";
 import type { Condition } from "../../../../utils/conditions/types";
 import { ConditionFields } from "./ConditionsInput";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   cond: Condition;
@@ -47,7 +48,7 @@ export default function ConditionEditorPanel({
       maxWidth={480}
       minHeight={240}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <ConditionFields

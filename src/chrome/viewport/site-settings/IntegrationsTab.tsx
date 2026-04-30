@@ -56,9 +56,7 @@ export function IntegrationsTab({
   const [picking, setPicking] = useState(false);
 
   const connectedKeys = Object.keys(INTEGRATION_PROVIDERS).filter(key => key in integrations);
-  const availableKeys = Object.keys(INTEGRATION_PROVIDERS).filter(
-    key => !(key in integrations)
-  );
+  const availableKeys = Object.keys(INTEGRATION_PROVIDERS).filter(key => !(key in integrations));
 
   const addProvider = (key: string) => {
     const meta = INTEGRATION_PROVIDERS[key];

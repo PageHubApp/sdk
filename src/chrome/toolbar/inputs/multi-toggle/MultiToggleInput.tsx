@@ -72,16 +72,8 @@ export const MultiToggleInput = ({ def }: Props) => {
   const anyActive = activeStates.some(Boolean);
 
   return (
-    <Chip
-      frame="bare"
-      label={def.label}
-      propKey={def.id}
-      propType="class"
-    >
-      <div
-        role="group"
-        className="bg-neutral flex w-full min-w-0 gap-1 rounded-md p-1"
-      >
+    <Chip frame="bare" label={def.label} propKey={def.id} propType="class">
+      <div role="group" className="bg-neutral flex w-full min-w-0 gap-1 rounded-md p-1">
         <button
           type="button"
           onClick={clearAll}

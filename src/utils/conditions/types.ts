@@ -77,13 +77,6 @@ export interface ConditionContext {
   anchors?: Readonly<Record<string, string>>;
 }
 
-/** Branch definition for ConditionalContainer */
-export interface ConditionBranch {
-  label: string;
-  conditions: Condition[];
-  conditionLogic: ConditionLogic;
-}
-
 /** Operators that don't need a comparison value */
 export const NO_VALUE_OPERATORS: Operator[] = ["exists", "not-exists"];
 

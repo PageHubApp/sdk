@@ -4,6 +4,7 @@
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { GradientInput } from "./GradientInput";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -21,7 +22,7 @@ export default function GradientPanel({ initialPosition, onClose }: PanelProps) 
       maxWidth={480}
       minHeight={320}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <GradientInput />

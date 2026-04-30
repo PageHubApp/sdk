@@ -7,9 +7,15 @@ import { defineComponent } from "../define";
 import { TableRow } from "./TableRow";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
 const TableRowMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/TableRowMainTab").then((mod) => ({ default: mod.TableRowMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/TableRowMainTab").then(mod => ({
+    default: mod.TableRowMainTab,
+  }))
 );
-import { HoverNodeController, DeleteNodeController, SelectTableSectionTool } from "./editor-chrome";
+import {
+  HoverNodeController,
+  DeleteNodeController,
+  SelectTableSectionTool,
+} from "../chrome/editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {
   return tag(

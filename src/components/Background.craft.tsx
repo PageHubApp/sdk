@@ -21,14 +21,16 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
   );
 };
 const BackgroundMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/BackgroundMainTab").then((mod) => ({ default: mod.BackgroundMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/BackgroundMainTab").then(mod => ({
+    default: mod.BackgroundMainTab,
+  }))
 );
 import {
   HoverNodeController,
   NameNodeController,
   ToolNodeController,
   ContainerSettingsNodeTool,
-} from "./editor-chrome";
+} from "../chrome/editor-chrome";
 
 export const BackgroundDef = defineComponent(
   {

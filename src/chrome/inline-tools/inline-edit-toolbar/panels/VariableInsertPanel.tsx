@@ -90,7 +90,7 @@ function GroupSubmenu({
     <div
       ref={floating.refs.setFloating}
       style={{ ...floating.floatingStyles, zIndex: OVERLAY_Z_INLINE_TOOLS }}
-      className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto border py-1 shadow-xl select-none"
+      className="border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto rounded-xl border py-1 shadow-xl select-none"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -265,7 +265,7 @@ export function VariableInsertPanel({ editor, query, nodeId, onAction }: Variabl
         <PopoverPanel
           anchor="bottom start"
           transition
-          className="pagehub-sdk-root rounded-xl border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 max-w-[20rem] min-w-[14rem] overflow-hidden border shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
+          className="pagehub-sdk-root border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 max-w-[20rem] min-w-[14rem] overflow-hidden rounded-xl border shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
         >
           <VariableInsertDropdownBody
             editor={editor}
@@ -294,7 +294,7 @@ export function VariableInsertPanel({ editor, query, nodeId, onAction }: Variabl
       <PopoverPanel
         anchor="bottom start"
         transition
-        className="pagehub-sdk-root rounded-xl border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 min-w-[12rem] overflow-visible border py-1 shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
+        className="pagehub-sdk-root border-base-300/50 bg-base-100 text-base-content z-[120] mt-1 min-w-[12rem] overflow-visible rounded-xl border py-1 shadow-xl [--anchor-gap:4px] data-closed:opacity-0"
       >
         <VariableInsertDropdownBody
           editor={editor}

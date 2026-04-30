@@ -478,8 +478,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
   // ─── Breakpoint canvas width (drag-resizable) ───
   const breakpointWidthPx = breakpointActive
-    ? (breakpointWidthOverride[view] ??
-      (resolvedBreakpointPx as Record<string, number>)[view])
+    ? (breakpointWidthOverride[view] ?? (resolvedBreakpointPx as Record<string, number>)[view])
     : null;
   // Responsive ON: clamp to editor area (`min(100%, X)`) so the canvas never overflows.
   // Responsive OFF: force exact breakpoint width — parent gets `overflow-auto` so the
@@ -519,7 +518,14 @@ export function Viewport({ children }: { children: React.ReactNode }) {
       window.addEventListener("pointercancel", onUp);
       window.addEventListener("blur", onUp);
     },
-    [breakpointActive, breakpointWidthPx, breakpointZoom, canvasZoomActive, setBreakpointWidthOverride, view]
+    [
+      breakpointActive,
+      breakpointWidthPx,
+      breakpointZoom,
+      canvasZoomActive,
+      setBreakpointWidthOverride,
+      view,
+    ]
   );
 
   // ─── Breakpoint marker drag (per Tailwind breakpoint sm/md/lg/xl/2xl) ───
@@ -570,10 +576,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
 
       const onMove = (ev: PointerEvent) => {
         const dxScreen = ev.clientX - startX;
-        const nextPx = Math.max(
-          minW,
-          Math.min(maxW, Math.round(startWidth + dxScreen / z))
-        );
+        const nextPx = Math.max(minW, Math.min(maxW, Math.round(startWidth + dxScreen / z)));
         setPendingBreakpointOverride(prevState => ({ ...prevState, [bp]: nextPx }));
       };
       const onUp = () => {
@@ -714,7 +717,9 @@ export function Viewport({ children }: { children: React.ReactNode }) {
         {enabled && viewMode !== "canvas" && <CanvasScopeBand />}
         <div
           className={`relative flex w-full min-w-0 flex-1 ${
-            breakpointActive && !responsive ? "overflow-x-auto overflow-y-hidden" : "overflow-hidden"
+            breakpointActive && !responsive
+              ? "overflow-x-auto overflow-y-hidden"
+              : "overflow-hidden"
           } ${
             deviceFrame || isEditorCanvasBreakpointView(view)
               ? "bg-neutral/50 items-center justify-center"
@@ -729,298 +734,298 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             onComplete={handleLoadComplete}
           />
           {enabled && viewMode !== "canvas" && <ViewportScopeCoachmark />}
-        {/* Preview edit button */}
-        {!enabled && !screenshot && (
-          <FloatingWidget
-            storageKey="preview-edit"
-            defaultCorner={sideBarLeft ? "top-left" : "top-right"}
-          >
-            <button
-              className="bg-neutral text-neutral-content hover:bg-neutral/90 inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg transition-colors select-none [&_svg]:size-[14px]"
-              aria-label="Edit page"
-              onClick={() => {
-                const viewport = document.getElementById("viewport");
-                const scrollTop = viewport?.scrollTop ?? 0;
-                const scrollLeft = viewport?.scrollLeft ?? 0;
-                setOptions(options => {
-                  options.enabled = true;
-                  setPreview(false);
-                  setTimeout(() => {
-                    if (!lastActive) return;
-                    const node = query.node(lastActive).get();
-                    if (node) actions.selectNode(lastActive);
-                  }, 0);
-                });
-                requestAnimationFrame(() => {
-                  if (viewport) {
-                    viewport.scrollTop = scrollTop;
-                    viewport.scrollLeft = scrollLeft;
-                  }
-                });
-              }}
+          {/* Preview edit button */}
+          {!enabled && !screenshot && (
+            <FloatingWidget
+              storageKey="preview-edit"
+              defaultCorner={sideBarLeft ? "top-left" : "top-right"}
             >
-              <TbPencil />
-              Edit
-            </button>
-          </FloatingWidget>
-        )}
-
-        {enabled && !online && <DeviceOffline />}
-
-        {enabled && viewMode === "canvas" && (
-          <ComponentCanvasViewport className="absolute inset-0 z-30" />
-        )}
-
-        {enabled && deviceFrame && (
-          <div className="absolute top-4 right-0 left-0 z-50">
-            <div className="bg-neutral/95 mx-auto flex w-fit items-center gap-4 rounded-xl px-4 py-2 shadow-lg backdrop-blur-sm">
-              {isPhoneFrame ? (
-                <DeviceSelector onClose={() => setDevice(false)} />
-              ) : (
-                <div className="text-neutral-content flex items-center gap-2 text-xs">
-                  <span className="font-medium capitalize">{deviceFrame.kind}</span>
-                  <span className="opacity-70">
-                    {deviceFrame.innerWidth} × {deviceFrame.innerHeight}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setDevice(false)}
-                    className="hover:text-base-content ml-2 transition-colors"
-                    data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                    data-tooltip-content="Exit device mode"
-                    aria-label="Exit device mode"
-                  >
-                    <TbX className="size-4" />
-                  </button>
-                </div>
-              )}
-              <div className="bg-border h-4 w-px" />
-              <CanvasZoom
-                zoomAtom={DeviceZoomAtom}
-                fitMode={{
-                  kind: "both",
-                  targetW: deviceFrame.innerWidth + deviceFrame.bezelX,
-                  targetH: deviceFrame.innerHeight + deviceFrame.bezelY,
-                  chromeOffsetW: 220,
-                  chromeOffsetH: 220,
-                  max: 1,
+              <button
+                className="bg-neutral text-neutral-content hover:bg-neutral/90 inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg transition-colors select-none [&_svg]:size-[14px]"
+                aria-label="Edit page"
+                onClick={() => {
+                  const viewport = document.getElementById("viewport");
+                  const scrollTop = viewport?.scrollTop ?? 0;
+                  const scrollLeft = viewport?.scrollLeft ?? 0;
+                  setOptions(options => {
+                    options.enabled = true;
+                    setPreview(false);
+                    setTimeout(() => {
+                      if (!lastActive) return;
+                      const node = query.node(lastActive).get();
+                      if (node) actions.selectNode(lastActive);
+                    }, 0);
+                  });
+                  requestAnimationFrame(() => {
+                    if (viewport) {
+                      viewport.scrollTop = scrollTop;
+                      viewport.scrollLeft = scrollLeft;
+                    }
+                  });
                 }}
-                activeKey="device"
-                storageKey="editor-device-zoom"
-              />
-            </div>
-          </div>
-        )}
+              >
+                <TbPencil />
+                Edit
+              </button>
+            </FloatingWidget>
+          )}
 
-        <div className={`${activeClass[0]} w-full relative`} style={canvasOuterStyle}>
-          {deviceFrame?.decoration === "notch" && (
-            <div className="pointer-events-none absolute top-[14px] right-0 left-0 z-60 flex justify-center">
-              <div className="h-[30px] w-[105px] rounded-full bg-[#0a0a0a]" />
-            </div>
+          {enabled && !online && <DeviceOffline />}
+
+          {enabled && viewMode === "canvas" && (
+            <ComponentCanvasViewport className="absolute inset-0 z-30" />
           )}
-          {deviceFrame?.decoration === "camera-top" && (
-            <div className="pointer-events-none absolute top-[6px] right-0 left-0 z-60 flex justify-center">
-              <div className="size-1.5 rounded-full bg-[#0a0a0a]" />
-            </div>
-          )}
-          {deviceFrame?.decoration === "camera-side" && (
-            <div className="pointer-events-none absolute top-0 bottom-0 left-[6px] z-60 flex items-center">
-              <div className="size-1.5 rounded-full bg-[#0a0a0a]" />
-            </div>
-          )}
-          {enabled && breakpointActive && (
-            <>
-              <div
-                role="separator"
-                aria-orientation="vertical"
-                aria-label="Resize canvas (drag) — double-click to reset"
-                onPointerDown={handlePointerDownEdge("left")}
-                onDoubleClick={resetBreakpointWidth}
-                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                data-tooltip-content={`${breakpointWidthPx}px — drag to resize, double-click to reset`}
-                data-tooltip-place="right"
-                className="group absolute top-0 left-0 z-40 flex h-full w-5 -translate-x-full cursor-ew-resize items-center justify-center select-none"
-              >
-                <div className="bg-base-content/30 group-hover:bg-base-content/60 h-10 w-1 rounded-full transition-colors" />
+
+          {enabled && deviceFrame && (
+            <div className="absolute top-4 right-0 left-0 z-50">
+              <div className="bg-neutral/95 mx-auto flex w-fit items-center gap-4 rounded-xl px-4 py-2 shadow-lg backdrop-blur-sm">
+                {isPhoneFrame ? (
+                  <DeviceSelector onClose={() => setDevice(false)} />
+                ) : (
+                  <div className="text-neutral-content flex items-center gap-2 text-xs">
+                    <span className="font-medium capitalize">{deviceFrame.kind}</span>
+                    <span className="opacity-70">
+                      {deviceFrame.innerWidth} × {deviceFrame.innerHeight}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setDevice(false)}
+                      className="hover:text-base-content ml-2 transition-colors"
+                      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                      data-tooltip-content="Exit device mode"
+                      aria-label="Exit device mode"
+                    >
+                      <TbX className="size-4" />
+                    </button>
+                  </div>
+                )}
+                <div className="bg-border h-4 w-px" />
+                <CanvasZoom
+                  zoomAtom={DeviceZoomAtom}
+                  fitMode={{
+                    kind: "both",
+                    targetW: deviceFrame.innerWidth + deviceFrame.bezelX,
+                    targetH: deviceFrame.innerHeight + deviceFrame.bezelY,
+                    chromeOffsetW: 220,
+                    chromeOffsetH: 220,
+                    max: 1,
+                  }}
+                  activeKey="device"
+                  storageKey="editor-device-zoom"
+                />
               </div>
-              <div
-                role="separator"
-                aria-orientation="vertical"
-                aria-label="Resize canvas (drag) — double-click to reset"
-                onPointerDown={handlePointerDownEdge("right")}
-                onDoubleClick={resetBreakpointWidth}
-                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                data-tooltip-content={`${breakpointWidthPx}px — drag to resize, double-click to reset`}
-                data-tooltip-place="left"
-                className="group absolute top-0 right-0 z-40 flex h-full w-5 translate-x-full cursor-ew-resize items-center justify-center select-none"
-              >
-                <div className="bg-base-content/30 group-hover:bg-base-content/60 h-10 w-1 rounded-full transition-colors" />
-              </div>
-            </>
+            </div>
           )}
-          {enabled && !device && showBreakpointMarkers && (
-            <>
-              {breakpointMarkerOrder.map(bp => {
-                const px = getEffectiveBpPx(bp);
-                const isPending = pendingBreakpointOverride[bp] !== undefined;
-                const isCustom = themeBreakpoints?.[bp] !== undefined;
-                return (
+
+          <div className={`${activeClass[0]} relative w-full`} style={canvasOuterStyle}>
+            {deviceFrame?.decoration === "notch" && (
+              <div className="pointer-events-none absolute top-[14px] right-0 left-0 z-60 flex justify-center">
+                <div className="h-[30px] w-[105px] rounded-full bg-[#0a0a0a]" />
+              </div>
+            )}
+            {deviceFrame?.decoration === "camera-top" && (
+              <div className="pointer-events-none absolute top-[6px] right-0 left-0 z-60 flex justify-center">
+                <div className="size-1.5 rounded-full bg-[#0a0a0a]" />
+              </div>
+            )}
+            {deviceFrame?.decoration === "camera-side" && (
+              <div className="pointer-events-none absolute top-0 bottom-0 left-[6px] z-60 flex items-center">
+                <div className="size-1.5 rounded-full bg-[#0a0a0a]" />
+              </div>
+            )}
+            {enabled && breakpointActive && (
+              <>
+                <div
+                  role="separator"
+                  aria-orientation="vertical"
+                  aria-label="Resize canvas (drag) — double-click to reset"
+                  onPointerDown={handlePointerDownEdge("left")}
+                  onDoubleClick={resetBreakpointWidth}
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content={`${breakpointWidthPx}px — drag to resize, double-click to reset`}
+                  data-tooltip-place="right"
+                  className="group absolute top-0 left-0 z-40 flex h-full w-5 -translate-x-full cursor-ew-resize items-center justify-center select-none"
+                >
+                  <div className="bg-base-content/30 group-hover:bg-base-content/60 h-10 w-1 rounded-full transition-colors" />
+                </div>
+                <div
+                  role="separator"
+                  aria-orientation="vertical"
+                  aria-label="Resize canvas (drag) — double-click to reset"
+                  onPointerDown={handlePointerDownEdge("right")}
+                  onDoubleClick={resetBreakpointWidth}
+                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                  data-tooltip-content={`${breakpointWidthPx}px — drag to resize, double-click to reset`}
+                  data-tooltip-place="left"
+                  className="group absolute top-0 right-0 z-40 flex h-full w-5 translate-x-full cursor-ew-resize items-center justify-center select-none"
+                >
+                  <div className="bg-base-content/30 group-hover:bg-base-content/60 h-10 w-1 rounded-full transition-colors" />
+                </div>
+              </>
+            )}
+            {enabled && !device && showBreakpointMarkers && (
+              <>
+                {breakpointMarkerOrder.map(bp => {
+                  const px = getEffectiveBpPx(bp);
+                  const isPending = pendingBreakpointOverride[bp] !== undefined;
+                  const isCustom = themeBreakpoints?.[bp] !== undefined;
+                  return (
+                    <div
+                      key={bp}
+                      role="separator"
+                      aria-orientation="vertical"
+                      aria-label={`Breakpoint ${bp.toUpperCase()} at ${px}px — drag to adjust, double-click to reset`}
+                      onPointerDown={handleMarkerPointerDown(bp)}
+                      onDoubleClick={resetMarkerBreakpoint(bp)}
+                      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                      data-tooltip-content={`${bp.toUpperCase()} · ${px}px — drag to adjust${isCustom ? ", double-click to reset" : ""}`}
+                      data-tooltip-place="right"
+                      className="group absolute top-0 bottom-0 z-30 w-3 -translate-x-1/2 cursor-ew-resize select-none"
+                      style={{ left: `${px}px` }}
+                    >
+                      <div
+                        className="pointer-events-none absolute inset-y-0 left-1/2"
+                        style={{
+                          borderLeft: isPending
+                            ? "1px dashed rgba(99,102,241,0.9)"
+                            : isCustom
+                              ? "1px dashed rgba(99,102,241,0.6)"
+                              : "1px dashed rgba(120,120,120,0.45)",
+                        }}
+                      />
+                      <span
+                        className={`bg-base-200 pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 rounded px-1 font-mono text-[10px] leading-none whitespace-nowrap ${
+                          isPending || isCustom
+                            ? "text-primary"
+                            : "text-base-content/70 group-hover:text-base-content"
+                        }`}
+                      >
+                        {bp.toUpperCase()} · {px}
+                      </span>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+            {enabled && !device && showDeviceGuides && (
+              <>
+                {DEVICE_GUIDES.map(g => (
                   <div
-                    key={bp}
-                    role="separator"
-                    aria-orientation="vertical"
-                    aria-label={`Breakpoint ${bp.toUpperCase()} at ${px}px — drag to adjust, double-click to reset`}
-                    onPointerDown={handleMarkerPointerDown(bp)}
-                    onDoubleClick={resetMarkerBreakpoint(bp)}
+                    key={g.id}
+                    role="presentation"
+                    aria-hidden="true"
                     data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                    data-tooltip-content={`${bp.toUpperCase()} · ${px}px — drag to adjust${isCustom ? ", double-click to reset" : ""}`}
+                    data-tooltip-content={`${g.label} · ${g.width}px (reference guide)`}
                     data-tooltip-place="right"
-                    className="group absolute top-0 bottom-0 z-30 w-3 -translate-x-1/2 cursor-ew-resize select-none"
-                    style={{ left: `${px}px` }}
+                    className="pointer-events-auto absolute top-0 bottom-0 z-20 w-3 -translate-x-1/2 select-none"
+                    style={{ left: `${g.width}px` }}
                   >
                     <div
                       className="pointer-events-none absolute inset-y-0 left-1/2"
-                      style={{
-                        borderLeft: isPending
-                          ? "1px dashed rgba(99,102,241,0.9)"
-                          : isCustom
-                            ? "1px dashed rgba(99,102,241,0.6)"
-                            : "1px dashed rgba(120,120,120,0.45)",
-                      }}
+                      style={{ borderLeft: "1px dotted rgba(120,120,120,0.35)" }}
                     />
-                    <span
-                      className={`pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 rounded bg-base-200 px-1 font-mono text-[10px] leading-none whitespace-nowrap ${
-                        isPending || isCustom
-                          ? "text-primary"
-                          : "text-base-content/70 group-hover:text-base-content"
-                      }`}
-                    >
-                      {bp.toUpperCase()} · {px}
+                    <span className="bg-base-200 text-base-content/60 pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 rounded px-1 font-mono text-[10px] leading-none whitespace-nowrap">
+                      {g.label} · {g.width}
                     </span>
                   </div>
-                );
-              })}
-            </>
-          )}
-          {enabled && !device && showDeviceGuides && (
-            <>
-              {DEVICE_GUIDES.map(g => (
-                <div
-                  key={g.id}
-                  role="presentation"
-                  aria-hidden="true"
-                  data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                  data-tooltip-content={`${g.label} · ${g.width}px (reference guide)`}
-                  data-tooltip-place="right"
-                  className="pointer-events-auto absolute top-0 bottom-0 z-20 w-3 -translate-x-1/2 select-none"
-                  style={{ left: `${g.width}px` }}
-                >
-                  <div
-                    className="pointer-events-none absolute inset-y-0 left-1/2"
-                    style={{ borderLeft: "1px dotted rgba(120,120,120,0.35)" }}
-                  />
-                  <span className="bg-base-200 text-base-content/60 pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 rounded px-1 font-mono text-[10px] leading-none whitespace-nowrap">
-                    {g.label} · {g.width}
-                  </span>
-                </div>
-              ))}
-            </>
-          )}
-          <div
-            id="viewport"
-            role="application"
-            onKeyDown={handleKeyDown}
-            onClick={handleViewportClick}
-            onDoubleClick={handleDoubleClick}
-            onDoubleClickCapture={handleViewportDoubleClickCapture}
-            onContextMenuCapture={handleViewportContextMenuCapture}
-            data-isolated={!!isolated}
-            tabIndex={0}
-            className={`${activeClass[1]} w-full${classDarkEdit ? "dark" : ""}`}
-            ref={(ref: any) => {
-              connectors.select(connectors.hover(ref, null), null);
-              // Phase 3: register primary container for scroll-sync.
-              scrollMirrorRef.current.primary = ref as HTMLDivElement | null;
-            }}
-            onScroll={
-              sideBySide.enabled
-                ? e => {
-                    const m = scrollMirrorRef.current;
-                    if (m.isMirroring || !m.secondary) return;
-                    m.isMirroring = true;
-                    try {
-                      m.secondary.scrollTop = (e.currentTarget as HTMLDivElement).scrollTop;
-                    } finally {
-                      requestAnimationFrame(() => {
-                        m.isMirroring = false;
-                      });
+                ))}
+              </>
+            )}
+            <div
+              id="viewport"
+              role="application"
+              onKeyDown={handleKeyDown}
+              onClick={handleViewportClick}
+              onDoubleClick={handleDoubleClick}
+              onDoubleClickCapture={handleViewportDoubleClickCapture}
+              onContextMenuCapture={handleViewportContextMenuCapture}
+              data-isolated={!!isolated}
+              tabIndex={0}
+              className={`${activeClass[1]} w-full${classDarkEdit ? "dark" : ""}`}
+              ref={(ref: any) => {
+                connectors.select(connectors.hover(ref, null), null);
+                // Phase 3: register primary container for scroll-sync.
+                scrollMirrorRef.current.primary = ref as HTMLDivElement | null;
+              }}
+              onScroll={
+                sideBySide.enabled
+                  ? e => {
+                      const m = scrollMirrorRef.current;
+                      if (m.isMirroring || !m.secondary) return;
+                      m.isMirroring = true;
+                      try {
+                        m.secondary.scrollTop = (e.currentTarget as HTMLDivElement).scrollTop;
+                      } finally {
+                        requestAnimationFrame(() => {
+                          m.isMirroring = false;
+                        });
+                      }
                     }
-                  }
-                : undefined
-            }
-          >
-            {children}
+                  : undefined
+              }
+            >
+              {children}
+            </div>
+            {deviceFrame?.decoration === "notch" && (
+              <div className="pointer-events-none absolute right-0 bottom-[14px] left-0 z-60 flex justify-center">
+                <div className="bg-foreground/30 h-[5px] w-[120px] rounded-full" />
+              </div>
+            )}
+            {deviceFrame?.decoration === "laptop-chin" && (
+              <div className="pointer-events-none absolute right-0 bottom-[8px] left-0 z-60 flex justify-center">
+                <div className="h-[3px] w-[120px] rounded-full bg-[#3a3a3a]" />
+              </div>
+            )}
+            {deviceFrame?.decoration === "monitor-stand" && (
+              <div className="pointer-events-none absolute right-0 bottom-[10px] left-0 z-60 flex justify-center">
+                <div className="h-[2px] w-[180px] rounded-full bg-[#3a3a3a]" />
+              </div>
+            )}
           </div>
-          {deviceFrame?.decoration === "notch" && (
-            <div className="pointer-events-none absolute right-0 bottom-[14px] left-0 z-60 flex justify-center">
-              <div className="bg-foreground/30 h-[5px] w-[120px] rounded-full" />
-            </div>
-          )}
-          {deviceFrame?.decoration === "laptop-chin" && (
-            <div className="pointer-events-none absolute right-0 bottom-[8px] left-0 z-60 flex justify-center">
-              <div className="h-[3px] w-[120px] rounded-full bg-[#3a3a3a]" />
-            </div>
-          )}
-          {deviceFrame?.decoration === "monitor-stand" && (
-            <div className="pointer-events-none absolute right-0 bottom-[10px] left-0 z-60 flex justify-center">
-              <div className="h-[2px] w-[180px] rounded-full bg-[#3a3a3a]" />
-            </div>
-          )}
-        </div>
 
-        {deviceFrame && enabled && (
-          <DeviceScrollbar
-            deviceWidth={deviceFrame.innerWidth + deviceFrame.bezelX}
-            deviceHeight={deviceFrame.innerHeight + deviceFrame.bezelY}
-            deviceZoom={deviceZoom}
-            sideBarOpen={sideBarOpen}
-            sideBarLeft={sideBarLeft}
-          />
-        )}
+          {deviceFrame && enabled && (
+            <DeviceScrollbar
+              deviceWidth={deviceFrame.innerWidth + deviceFrame.bezelX}
+              deviceHeight={deviceFrame.innerHeight + deviceFrame.bezelY}
+              deviceZoom={deviceZoom}
+              sideBarOpen={sideBarOpen}
+              sideBarLeft={sideBarLeft}
+            />
+          )}
 
-        {/* Phase 3: side-by-side read-only mirror.
+          {/* Phase 3: side-by-side read-only mirror.
             Suppress in component-isolation mode (`viewMode === "canvas"`):
             the primary canvas isolates a single component but the mirror has
             no isolation logic — it would render the full page tree, making
             the page editor appear to "leak" behind the component editor. */}
-        {enabled && sideBySide.enabled && !deviceFrame && viewMode !== "canvas" && (
-          <SideBySideFrame
-            secondaryView={sideBySide.secondaryView}
-            widthPx={resolveSecondaryWidthPx(sideBySide.secondaryView, themeBreakpoints)}
-            scrollMirrorRef={scrollMirrorRef}
-          />
-        )}
+          {enabled && sideBySide.enabled && !deviceFrame && viewMode !== "canvas" && (
+            <SideBySideFrame
+              secondaryView={sideBySide.secondaryView}
+              widthPx={resolveSecondaryWidthPx(sideBySide.secondaryView, themeBreakpoints)}
+              scrollMirrorRef={scrollMirrorRef}
+            />
+          )}
 
-        {deviceFrame && (
-          <div id="device-tools-portal" className="pointer-events-none absolute inset-0 z-100" />
-        )}
+          {deviceFrame && (
+            <div id="device-tools-portal" className="pointer-events-none absolute inset-0 z-100" />
+          )}
 
-        {enabled && (
-          <svg
-            id="measurement-lines-svg"
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              pointerEvents: "none",
-              zIndex: OVERLAY_Z_CANVAS_CONTROLS,
-            }}
-          />
-        )}
+          {enabled && (
+            <svg
+              id="measurement-lines-svg"
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                pointerEvents: "none",
+                zIndex: OVERLAY_Z_CANVAS_CONTROLS,
+              }}
+            />
+          )}
 
-        {enabled ? <ToolboxContexual /> : null}
+          {enabled ? <ToolboxContexual /> : null}
         </div>
       </div>
     </>

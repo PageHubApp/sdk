@@ -6,11 +6,7 @@ import { SettingsSearchAtom } from "../registry/atoms";
 import type { SectionId } from "../registry/propertyDefs";
 import { useInspectorPin } from "./InspectorPinContext";
 
-export function SectionPinButton({
-  sectionId,
-}: {
-  sectionId: SectionId;
-}) {
+export function SectionPinButton({ sectionId }: { sectionId: SectionId }) {
   const search = useAtomValue(SettingsSearchAtom);
   const { isPinned, togglePin } = useInspectorPin();
 

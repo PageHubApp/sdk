@@ -41,7 +41,8 @@ export function GapDragControl() {
 
   const portalTarget = typeof document !== "undefined" ? document.getElementById("viewport") : null;
   const showActive = (gapHoverInfo?.show || isDragging) && gapHoverInfo?.gapRect;
-  if (!portalTarget || !isSelected || isLocked || !showActive || !gapHoverInfo?.gapRect) return null;
+  if (!portalTarget || !isSelected || isLocked || !showActive || !gapHoverInfo?.gapRect)
+    return null;
 
   const portalRect = portalTarget.getBoundingClientRect();
   const ox = -portalRect.left + portalTarget.scrollLeft;

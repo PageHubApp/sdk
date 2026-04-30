@@ -33,7 +33,8 @@ export const ColorInput = (__props: any) => {
     propType = "class",
     showPalette = true,
     onChange = () => {},
-    labelHide = false, inline = false,
+    labelHide = false,
+    inline = false,
     inputWidth = "",
     labelWidth = "",
   } = __props;
@@ -250,11 +251,7 @@ function ColorPickerPortal({
   const ref = useRef<HTMLDivElement>(null);
   useRegisterFloatingPanelPortal(ref);
   return createPortal(
-    <div
-      ref={ref}
-      className="pagehub-sdk-root fixed z-[1200]"
-      style={{ top, right }}
-    >
+    <div ref={ref} className="pagehub-sdk-root fixed z-[1200]" style={{ top, right }}>
       {children}
     </div>,
     document.querySelector(".pagehub-sdk-root") || document.body

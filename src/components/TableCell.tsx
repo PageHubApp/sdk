@@ -7,7 +7,7 @@ import { applyAnimation, CSStoObj } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
 import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { useScrollToSelected } from "./componentHooks";
-import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
+import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "./LazyEditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import type { TableCellKind } from "./tableTypes";

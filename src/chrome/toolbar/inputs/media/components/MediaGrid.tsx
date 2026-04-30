@@ -121,7 +121,8 @@ export function MediaGrid({
           )}
           {uploadProgress.completedFiles.length > 0 && (
             <div className="text-secondary-content mt-1 text-xs">
-              <TbCheck className="mr-1 inline" /> Completed: {uploadProgress.completedFiles.join(", ")}
+              <TbCheck className="mr-1 inline" /> Completed:{" "}
+              {uploadProgress.completedFiles.join(", ")}
             </div>
           )}
         </div>
@@ -135,7 +136,9 @@ export function MediaGrid({
                 <TbSearch className="text-neutral-content text-5xl" />
               </div>
               <p className="text-base-content mb-2 text-xl font-semibold">No media found</p>
-              <p className="text-neutral-content text-sm">Try adjusting search or folder/type filters</p>
+              <p className="text-neutral-content text-sm">
+                Try adjusting search or folder/type filters
+              </p>
             </div>
           ) : (
             <EmptyState onSetAddMode={onSetAddMode} fileInputRef={fileInputRef} />
@@ -224,7 +227,9 @@ function EmptyState({
             label={
               <div>
                 <div className="text-base-content text-sm font-medium">Upload Files</div>
-                <div className="text-neutral-content text-xs">Drag & drop or click to upload files</div>
+                <div className="text-neutral-content text-xs">
+                  Drag & drop or click to upload files
+                </div>
               </div>
             }
             onClick={() => {
@@ -310,7 +315,9 @@ function MediaItemRow({
       className={`group relative cursor-pointer ${
         viewMode === "cards"
           ? `border-base-300 bg-base-200 overflow-hidden rounded-lg border ${
-              isSelected ? "ring-primary ring-offset-background ring-2 ring-offset-2" : "hover:border-primary"
+              isSelected
+                ? "ring-primary ring-offset-background ring-2 ring-offset-2"
+                : "hover:border-primary"
             }`
           : `border-base-300/70 grid ${LIST_GRID_COLS} items-center gap-3 border-b px-4 py-2 ${
               isSelected ? "bg-primary/10" : "hover:bg-base-200/55"
@@ -353,14 +360,16 @@ function MediaItemRow({
       {viewMode === "cards" ? (
         <CardView media={media} sortField={sortField} folderLabel={folderLabel} kind={kind} />
       ) : (
-        <ListView media={media} folderLabel={folderLabel} kind={kind} showLeadingSpacer={selectionMode} />
+        <ListView
+          media={media}
+          folderLabel={folderLabel}
+          kind={kind}
+          showLeadingSpacer={selectionMode}
+        />
       )}
 
       {!selectionMode && viewMode === "cards" && (
-        <div
-          className="absolute top-1 left-1"
-          onClick={e => e.stopPropagation()}
-        >
+        <div className="absolute top-1 left-1" onClick={e => e.stopPropagation()}>
           <input
             type="checkbox"
             checked={isSelected}
@@ -456,7 +465,9 @@ function CardView({
       </div>
 
       <div className="bg-base-100 flex min-h-[4.5rem] flex-col gap-0.5 p-2">
-        <p className="text-base-content truncate text-xs font-semibold">{media.metadata?.title || media.id}</p>
+        <p className="text-base-content truncate text-xs font-semibold">
+          {media.metadata?.title || media.id}
+        </p>
         <p className="text-neutral-content truncate text-[10px]">
           {media.metadata?.size ? formatFileSize(media.metadata.size) : "--"}
           {media.metadata?.dimensions ? ` • ${formatDimensions(media.metadata.dimensions)}` : ""}
@@ -512,7 +523,10 @@ function ListView({
               />
             </div>
           ) : media.type === "svg" ? (
-            <div className="size-full p-1" dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }} />
+            <div
+              className="size-full p-1"
+              dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }}
+            />
           ) : isVideo && deliveryURL ? (
             <video
               src={deliveryURL}
@@ -545,12 +559,16 @@ function ListView({
         </div>
 
         <div className="min-w-0">
-          <p className="text-base-content truncate text-sm font-medium">{media.metadata?.title || media.id}</p>
+          <p className="text-base-content truncate text-sm font-medium">
+            {media.metadata?.title || media.id}
+          </p>
           <p className="text-neutral-content truncate text-[10px]">{media.id}</p>
         </div>
       </div>
 
-      <div className="text-base-content/70 truncate text-xs font-medium">{MEDIA_KIND_LABELS[kind]}</div>
+      <div className="text-base-content/70 truncate text-xs font-medium">
+        {MEDIA_KIND_LABELS[kind]}
+      </div>
       <div className="text-base-content/75 truncate text-xs font-medium">
         {media.metadata?.size ? formatFileSize(media.metadata.size) : "--"}
       </div>

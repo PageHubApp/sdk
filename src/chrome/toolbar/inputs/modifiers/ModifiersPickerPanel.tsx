@@ -4,6 +4,7 @@
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ModifiersPickerBody } from "./ModifiersPickerBody";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -32,7 +33,7 @@ export default function ModifiersPickerPanel({
       minHeight={240}
       initialPosition={initialPosition}
       persistSize={false}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <ModifiersPickerBody />

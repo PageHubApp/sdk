@@ -127,11 +127,7 @@ export function VariablesTab({
           {customVariables
             .filter(v => v.key.trim())
             .map(v => (
-              <CopyTokenChip
-                key={v.key}
-                token={`{{variables.${v.key}}}`}
-                accent
-              />
+              <CopyTokenChip key={v.key} token={`{{variables.${v.key}}}`} accent />
             ))}
         </div>
       </SettingsFormCard>

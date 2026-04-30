@@ -149,8 +149,7 @@ const PagehubTextStyle = TextStyle.extend({
       ...this.parent?.(),
       inlineStyle: {
         default: null as string | null,
-        parseHTML: (element: HTMLElement) =>
-          remainderInlineStyle(element.getAttribute("style")),
+        parseHTML: (element: HTMLElement) => remainderInlineStyle(element.getAttribute("style")),
         renderHTML: (attributes: Record<string, unknown>) => {
           const s = attributes.inlineStyle;
           if (s == null || s === "") return {};
@@ -249,13 +248,7 @@ export function getPagehubTextTiptapExtensions(
   queryRef: { current: any } | undefined,
   nodeIdRef?: { current: string | undefined }
 ): Extensions {
-  const pagehubMarks = [
-    PagehubBold,
-    PagehubItalic,
-    PagehubStrike,
-    PagehubCode,
-    PagehubUnderline,
-  ];
+  const pagehubMarks = [PagehubBold, PagehubItalic, PagehubStrike, PagehubCode, PagehubUnderline];
 
   if (mode === "inline") {
     return [

@@ -3,7 +3,7 @@ import React from "react";
 import { TbIcons } from "react-icons/tb";
 import { useMounted } from "../utils/hooks";
 
-import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
+import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "./LazyEditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { useResolvedIcon } from "../utils/iconResolver";
 import { motionIt } from "../utils/lib";

@@ -7,9 +7,11 @@ import { defineComponent } from "../define";
 import { List } from "./List";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
 const ListMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/ListMainTab").then((mod) => ({ default: mod.ListMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/ListMainTab").then(mod => ({
+    default: mod.ListMainTab,
+  }))
 );
-import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
+import { HoverNodeController, DeleteNodeController } from "../chrome/editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {
   const Tag = props.ordered ? "ol" : "ul";

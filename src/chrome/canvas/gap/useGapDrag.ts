@@ -268,9 +268,12 @@ export function useGapDrag({
           if (detected) {
             // No dwell — show the marker the moment the cursor enters the gap zone.
             setGapHoverInfo(prev =>
-              prev && prev.childIndex === detected.childIndex && prev.x === detected.x && prev.y === detected.y
+              prev &&
+              prev.childIndex === detected.childIndex &&
+              prev.x === detected.x &&
+              prev.y === detected.y
                 ? prev
-                : detected,
+                : detected
             );
             return;
           }

@@ -1,6 +1,5 @@
 export type {
   Condition,
-  ConditionBranch,
   ConditionContext,
   ConditionGroup,
   ConditionLogic,
@@ -10,12 +9,7 @@ export type {
 
 export { NO_VALUE_OPERATORS, OPERATOR_LABELS, OPERATORS_BY_TYPE } from "./types";
 
-export {
-  evaluateBranches,
-  evaluateConditionGroups,
-  evaluateConditions,
-  evaluateSingleCondition,
-} from "./evaluate";
+export { evaluateConditionGroups, evaluateConditions, evaluateSingleCondition } from "./evaluate";
 
 export { buildClientContext, buildStaticContext } from "./context";
 

@@ -15,7 +15,8 @@ export const IconDialogInput = ({
   prefix = "",
   index = null,
   propItemKey = "",
-  propType = "class", inline = true,
+  propType = "class",
+  inline = true,
   labelWidth = "",
   inputWidth = "",
 }) => {
@@ -63,12 +64,7 @@ export const IconDialogInput = ({
   }
 
   return (
-    <Chip
-      frame="bare"
-      propType={propType}
-      propKey={propKey}
-      labelWidth={labelWidth}
-    >
+    <Chip frame="bare" propType={propType} propKey={propKey} labelWidth={labelWidth}>
       <div className="relative">
         <IconPickerPopover
           value={value}
@@ -86,9 +82,7 @@ export const IconDialogInput = ({
           }
         />
 
-        {value && (
-          <InlineClearButton onClick={() => changed("")} tooltip="Clear icon" floating />
-        )}
+        {value && <InlineClearButton onClick={() => changed("")} tooltip="Clear icon" floating />}
       </div>
     </Chip>
   );

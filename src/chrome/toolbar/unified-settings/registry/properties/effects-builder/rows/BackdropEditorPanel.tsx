@@ -2,6 +2,7 @@ import { TbWand } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { BackdropFields } from "@/chrome/toolbar/inputs/advanced/EffectsClassInput";
 import type { EditorPanelProps } from "../effectTypes";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../../../../overlays/overlayZIndex";
 
 export default function BackdropEditorPanel({ initialPosition, onClose }: EditorPanelProps) {
   return (
@@ -15,7 +16,7 @@ export default function BackdropEditorPanel({ initialPosition, onClose }: Editor
       maxWidth={480}
       minHeight={300}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <BackdropFields />

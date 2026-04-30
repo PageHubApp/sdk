@@ -13,7 +13,7 @@ import {
 } from "@/chrome/primitives";
 import { usePanelSearch } from "@/chrome/hooks";
 import { buildCustomToolboxEntries } from "./toolbox/customComponents";
-import { SavedComponentsToolbox } from "./toolbox/savedComponents";
+import { SavedComponentsToolbox } from "./toolbox/savedComponentsToolbox";
 
 // All built-in components now served via defineComponent() toolbox categories.
 // Categories are defined as empty shells here and populated dynamically
@@ -89,9 +89,7 @@ export const ComponentSettings = () => {
   }, [components, customItems]);
 
   useEffect(() => {
-    const scoped = categoryFilter
-      ? items.filter(item => item.title === categoryFilter)
-      : items;
+    const scoped = categoryFilter ? items.filter(item => item.title === categoryFilter) : items;
 
     if (search) {
       const searchTerm = search.toLowerCase();
@@ -137,7 +135,7 @@ export const ComponentSettings = () => {
       items
         .filter(item => item.content.length > 0 && !item.title.startsWith("__"))
         .map(item => ({ name: item.title, count: item.content.length })),
-    [items],
+    [items]
   );
 
   return (

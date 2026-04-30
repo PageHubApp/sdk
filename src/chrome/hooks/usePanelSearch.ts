@@ -50,7 +50,7 @@ export function usePanelSearch({
         panelUpdate({ q: meets ? next : null });
       }, debounceMs);
     },
-    [enterSearchMode, panelUpdate, minLength, debounceMs],
+    [enterSearchMode, panelUpdate, minLength, debounceMs]
   );
 
   const isSearchMode = value.trim().length >= minLength;

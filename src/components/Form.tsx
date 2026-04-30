@@ -191,8 +191,8 @@ export const Form = ({ children, ...props }: any) => {
 
       {!loading && !loaded && (!enabled || !props.view || props.view === "") && children}
 
-      {(loading || (enabled && props.view === "loading")) && (
-        enabled ? (
+      {(loading || (enabled && props.view === "loading")) &&
+        (enabled ? (
           <Element
             canvas
             id="loadingTextContainer"
@@ -218,14 +218,17 @@ export const Form = ({ children, ...props }: any) => {
             />
           </Element>
         ) : (
-          <div className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row" role="status" aria-live="polite">
+          <div
+            className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
+            role="status"
+            aria-live="polite"
+          >
             <p>{props.loading || "Sending..."}</p>
           </div>
-        )
-      )}
+        ))}
 
-      {(loaded || (enabled && props.view === "loaded")) && (
-        enabled ? (
+      {(loaded || (enabled && props.view === "loaded")) &&
+        (enabled ? (
           <Element
             canvas
             id="sentTextContainer"
@@ -251,11 +254,14 @@ export const Form = ({ children, ...props }: any) => {
             />
           </Element>
         ) : (
-          <div className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row" role="status" aria-live="polite">
+          <div
+            className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
+            role="status"
+            aria-live="polite"
+          >
             <p>{props.success || "Thank you!"}</p>
           </div>
-        )
-      )}
+        ))}
 
       {/* Debug panel - only shows in editor mode */}
       {enabled && debugData && (

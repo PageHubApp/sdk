@@ -59,48 +59,49 @@ export function EditorEmptyLeafHint({
 
   const iconOpacity = selected ? "opacity-75" : "opacity-60";
 
-  const inner = selected && showActionIcons ? (
-    <div className="flex flex-col items-center gap-0.5 leading-none">
-      <div
-        className="flex items-center gap-2"
-        aria-label="Drop, double-click, or right-click to insert"
-      >
-        <span className="tooltip tooltip-top">
-          <span className="tooltip-content" style={TT_STYLE}>
-            Drag from the sidebar
+  const inner =
+    selected && showActionIcons ? (
+      <div className="flex flex-col items-center gap-0.5 leading-none">
+        <div
+          className="flex items-center gap-2"
+          aria-label="Drop, double-click, or right-click to insert"
+        >
+          <span className="tooltip tooltip-top">
+            <span className="tooltip-content" style={TT_STYLE}>
+              Drag from the sidebar
+            </span>
+            <TbHandGrab className="size-3 opacity-70" aria-hidden />
           </span>
-          <TbHandGrab className="size-3 opacity-70" aria-hidden />
-        </span>
-        <span className="text-neutral-content/30 text-[7px]">·</span>
-        <span className="tooltip tooltip-top">
-          <span className="tooltip-content" style={TT_STYLE}>
-            Double-click to add
+          <span className="text-neutral-content/30 text-[7px]">·</span>
+          <span className="tooltip tooltip-top">
+            <span className="tooltip-content" style={TT_STYLE}>
+              Double-click to add
+            </span>
+            <TbHandClick className="size-3 opacity-70" aria-hidden />
           </span>
-          <TbHandClick className="size-3 opacity-70" aria-hidden />
-        </span>
-        <span className="text-neutral-content/30 text-[7px]">·</span>
-        <span className="tooltip tooltip-top">
-          <span className="tooltip-content" style={TT_STYLE}>
-            Right-click to add
+          <span className="text-neutral-content/30 text-[7px]">·</span>
+          <span className="tooltip tooltip-top">
+            <span className="tooltip-content" style={TT_STYLE}>
+              Right-click to add
+            </span>
+            <TbHandTwoFingers className="size-3 opacity-70" aria-hidden />
           </span>
-          <TbHandTwoFingers className="size-3 opacity-70" aria-hidden />
-        </span>
+        </div>
+        {typeLabel && (
+          <span className="truncate text-[8px] tracking-wide opacity-70">{typeLabel}</span>
+        )}
       </div>
-      {typeLabel && (
-        <span className="truncate text-[8px] tracking-wide opacity-70">{typeLabel}</span>
-      )}
-    </div>
-  ) : (
-    <>
-      <span
-        className={`flex size-3.5 shrink-0 items-center justify-center ${iconOpacity} [&>svg]:size-3.5`}
-        aria-hidden
-      >
-        {activeIcon}
-      </span>
-      <span className="truncate whitespace-nowrap">{activeLabel}</span>
-    </>
-  );
+    ) : (
+      <>
+        <span
+          className={`flex size-3.5 shrink-0 items-center justify-center ${iconOpacity} [&>svg]:size-3.5`}
+          aria-hidden
+        >
+          {activeIcon}
+        </span>
+        <span className="truncate whitespace-nowrap">{activeLabel}</span>
+      </>
+    );
 
   const chipClassName = `flex min-h-8 items-center justify-center gap-1.5 border border-dashed px-2 py-1 text-[10px] font-medium uppercase ${colorClassName}`;
 

@@ -3,7 +3,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { motion } from "framer-motion";
 import React from "react";
 import { TbLayoutColumns, TbLayoutRows, TbNote, TbPlus } from "react-icons/tb";
-import { useNodeTypeHelpers } from "../chrome/canvas/hooks/useNodeType";
+import { useNodeTypeHelpers } from "../utils/hooks/useNodeType";
 import { ImageDefault } from "./Image";
 
 // Lazy-load AddElementButton — editor-only, keeps chrome out of viewer bundle

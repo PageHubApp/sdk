@@ -129,7 +129,9 @@ export function cmdCopyUp(ctx: CommandCtx) {
 }
 
 /** Has any explicit override at any non-base bp? Determines context-menu enable state. */
-export function hasAnyOverride(ctx: Pick<CommandCtx, "propKey" | "propType" | "index" | "propItemKey" | "nodeProps">): boolean {
+export function hasAnyOverride(
+  ctx: Pick<CommandCtx, "propKey" | "propType" | "index" | "propItemKey" | "nodeProps">
+): boolean {
   for (const bp of BP_KEYS) {
     const r = getPropFinalValue(
       {
@@ -148,7 +150,9 @@ export function hasAnyOverride(ctx: Pick<CommandCtx, "propKey" | "propType" | "i
 }
 
 /** Has explicit value at active bp? Determines promote/copy enable state. */
-export function hasValueAtActive(ctx: Pick<CommandCtx, "propKey" | "propType" | "index" | "propItemKey" | "nodeProps" | "activeBp">): boolean {
+export function hasValueAtActive(
+  ctx: Pick<CommandCtx, "propKey" | "propType" | "index" | "propItemKey" | "nodeProps" | "activeBp">
+): boolean {
   const r = getPropFinalValue(
     {
       propKey: ctx.propKey,
@@ -164,7 +168,9 @@ export function hasValueAtActive(ctx: Pick<CommandCtx, "propKey" | "propType" | 
 }
 
 /** Resolve the bp where the currently-displayed value lives (Show source). */
-export function sourceBp(ctx: Pick<CommandCtx, "propKey" | "propType" | "index" | "propItemKey" | "nodeProps" | "activeBp">): ChipBp | null {
+export function sourceBp(
+  ctx: Pick<CommandCtx, "propKey" | "propType" | "index" | "propItemKey" | "nodeProps" | "activeBp">
+): ChipBp | null {
   const r = getPropFinalValue(
     {
       propKey: ctx.propKey,

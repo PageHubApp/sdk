@@ -94,10 +94,7 @@ export class SaveCoordinator {
     });
     if (next === "saved" || next === "failed") {
       // Auto-reset to idle so the indicator returns to its resting glyph.
-      this.statusTimer = setTimeout(
-        () => this.setStatus("idle"),
-        next === "saved" ? 3000 : 5000
-      );
+      this.statusTimer = setTimeout(() => this.setStatus("idle"), next === "saved" ? 3000 : 5000);
     }
   }
 

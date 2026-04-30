@@ -208,9 +208,8 @@ function SetStateForm({
   return (
     <div className="flex flex-col gap-2">
       <p className="text-neutral-content text-[10px] leading-snug">
-        Writes <code className="text-[9px]">key</code> →{" "}
-        <code className="text-[9px]">value</code> to the central state
-        registry. Pair with a State condition (visibility / className gating)
+        Writes <code className="text-[9px]">key</code> → <code className="text-[9px]">value</code>{" "}
+        to the central state registry. Pair with a State condition (visibility / className gating)
         elsewhere on the page to react.
       </p>
       {ensureSelfId && (
@@ -272,10 +271,9 @@ function ToggleStateForm({
   return (
     <div className="flex flex-col gap-2">
       <p className="text-neutral-content text-[10px] leading-snug">
-        Flips a state between two values on click. Defaults: visibility kind
-        toggles <code className="text-[9px]">shown / hidden</code>; flag kind
-        toggles <code className="text-[9px]">on / off</code>. Override with
-        explicit values.
+        Flips a state between two values on click. Defaults: visibility kind toggles{" "}
+        <code className="text-[9px]">shown / hidden</code>; flag kind toggles{" "}
+        <code className="text-[9px]">on / off</code>. Override with explicit values.
       </p>
       <label className="flex flex-col gap-1 text-[10px]">
         <span className="text-neutral-content">Key</span>
@@ -361,12 +359,10 @@ function SetLocalStorageForm({
   return (
     <div className="flex flex-col gap-2">
       <p className="text-neutral-content text-[10px] leading-snug">
-        Writes <code className="text-[9px]">key</code> →{" "}
-        <code className="text-[9px]">value</code> to{" "}
-        <code className="text-[9px]">window.localStorage</code> when the
-        button is clicked. Pairs with a load-trigger Show / Hide action whose
-        Local Storage condition watches the same key — once the key is set,
-        the target stays hidden on subsequent visits.
+        Writes <code className="text-[9px]">key</code> → <code className="text-[9px]">value</code>{" "}
+        to <code className="text-[9px]">window.localStorage</code> when the button is clicked. Pairs
+        with a load-trigger Show / Hide action whose Local Storage condition watches the same key —
+        once the key is set, the target stays hidden on subsequent visits.
       </p>
       <label className="flex flex-col gap-1 text-[10px]">
         <span className="text-neutral-content">Key</span>
@@ -401,8 +397,8 @@ function RemoveLocalStorageForm({
     <div className="flex flex-col gap-2">
       <p className="text-neutral-content text-[10px] leading-snug">
         Clears the <code className="text-[9px]">key</code> from{" "}
-        <code className="text-[9px]">window.localStorage</code> — useful for
-        &quot;show this banner again&quot; links.
+        <code className="text-[9px]">window.localStorage</code> — useful for &quot;show this banner
+        again&quot; links.
       </p>
       <label className="flex flex-col gap-1 text-[10px]">
         <span className="text-neutral-content">Key</span>

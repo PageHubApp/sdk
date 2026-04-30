@@ -11,7 +11,6 @@ import {
   AutomaticDef,
   BackgroundDef,
   ButtonDef,
-  ConditionalContainerDef,
   ContainerDef,
   ContainerGroupDef,
   EmbedDef,
@@ -42,7 +41,6 @@ import { setBuiltinDefsLookup } from "./builtinDefsLookup";
 export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
   AutomaticDef,
   ContainerDef,
-  ConditionalContainerDef,
   ContainerGroupDef,
   GridDef,
   BackgroundDef,

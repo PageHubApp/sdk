@@ -46,9 +46,7 @@ function ModifierChip({
   onToggle: () => void;
   onHoverPreview: () => void;
 }) {
-  const classCount = mod.classes
-    ? mod.classes.split(/\s+/).filter(Boolean).length
-    : 0;
+  const classCount = mod.classes ? mod.classes.split(/\s+/).filter(Boolean).length : 0;
   return (
     <div
       className={twMerge(
@@ -72,24 +70,15 @@ function ModifierChip({
           </span>
           <span className="flex shrink-0 items-center gap-1.5">
             {classCount > 0 && (
-              <span
-                className={twMerge(
-                  "text-[9px]",
-                  active ? "text-primary/60" : "opacity-50"
-                )}
-              >
+              <span className={twMerge("text-[9px]", active ? "text-primary/60" : "opacity-50")}>
                 ×{classCount}
               </span>
             )}
-            {mod.origin === "site" && (
-              <span className="text-[9px] opacity-40">custom</span>
-            )}
+            {mod.origin === "site" && <span className="text-[9px] opacity-40">custom</span>}
           </span>
         </div>
         {mod.description && (
-          <p className="line-clamp-2 text-[10px] leading-snug opacity-70">
-            {mod.description}
-          </p>
+          <p className="line-clamp-2 text-[10px] leading-snug opacity-70">{mod.description}</p>
         )}
       </button>
       <button
@@ -301,7 +290,8 @@ export function ModifiersPickerBody() {
         onChange={setSearch}
         placeholder="Search modifiers"
         className="mb-1"
-      size="slim" />
+        size="slim"
+      />
 
       {filtered.length === 0 ? (
         <div className="text-neutral-content py-6 text-center text-xs">
@@ -321,7 +311,6 @@ export function ModifiersPickerBody() {
           />
         ))
       )}
-
     </div>
   );
 }

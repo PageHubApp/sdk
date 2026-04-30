@@ -11,19 +11,19 @@
  * `BundleRow` reads className-based class props, so this is a parallel
  * implementation using the same FloatingPanel + chip visuals.
  */
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useNode } from "@craftjs/core";
-import { useAtomValue } from "@zedux/react";
 import { TailwindStyles } from "@/utils/tailwind";
 import { Chip } from "@/chrome/primitives/Chip";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
-import { SideBarAtom } from "../../../../utils/lib";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import { parseIconRef } from "@/utils/icons/collectIconRefs";
 import ClientIconLoader from "../../dialogs/ClientIconLoader";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ColorInput } from "../color/ColorInput";
 import { ShadowInput } from "../color/ShadowInput";
 import { IconDialogInput } from "./IconDialogInput";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface IconInputProps {
   /** Root prop key under which icon.* fields live (default "icon"). */
@@ -80,10 +80,8 @@ export const IconInput = ({
   positionLabel = "Position",
 }: IconInputProps) => {
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-
-  const sidebarLeft = useAtomValue(SideBarAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const {
     actions: { setProp },
@@ -94,13 +92,6 @@ export const IconInput = ({
         ? (readNested(node.data?.props || {}, `${propKey}.value`) as string)
         : "",
   }));
-
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
 
   const openPanel = () => {
     setInitialPos(computePosition());
@@ -116,7 +107,8 @@ export const IconInput = ({
 
   return (
     <>
-      <Chip mode="popover"
+      <Chip
+        mode="popover"
         ref={triggerRef}
         label={label}
         open={open}
@@ -148,7 +140,7 @@ export const IconInput = ({
           maxWidth={480}
           minHeight={200}
           initialPosition={initialPos}
-          zIndex={1100}
+          zIndex={OVERLAY_Z_FLOATING_PANEL}
         >
           <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
             <IconDialogInput

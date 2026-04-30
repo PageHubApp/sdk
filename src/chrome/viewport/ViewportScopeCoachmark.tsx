@@ -73,8 +73,8 @@ export function ViewportScopeCoachmark() {
           classes
         </div>
         <div className="text-base-content/70 mt-1 text-xs leading-relaxed">
-          Switch back to mobile to edit base defaults. The colored band reminds
-          you which breakpoint your changes will land on.
+          Switch back to mobile to edit base defaults. The colored band reminds you which breakpoint
+          your changes will land on.
         </div>
         <button
           type="button"

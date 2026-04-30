@@ -249,7 +249,7 @@ export const ToolboxItemDisplay = ({ icon: Icon, label, isDragging = false }) =>
     className={`border-base-300 bg-base-200 text-base-content hover:bg-accent pointer-events-auto h-full w-full cursor-grab rounded-lg border active:cursor-grabbing ${isDragging ? "border-accent bg-accent text-accent-content" : ""}`}
   >
     <div className="pointer-events-none flex h-full min-h-[60px] w-full flex-col items-center gap-1.5 px-1 pt-3 pb-2 transition-colors">
-      <Icon className="text-base-content text-2xl shrink-0" />
+      <Icon className="text-base-content shrink-0 text-2xl" />
       <div className="flex flex-1 items-center justify-center">
         <span className="text-base-content text-center text-[10px]">{label}</span>
       </div>

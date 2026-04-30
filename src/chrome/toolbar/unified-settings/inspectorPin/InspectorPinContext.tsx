@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { phStorage } from "../../../../utils/phStorage";
 import { getSectionDef } from "../registry/propertyRegistry";
 import type { SectionId } from "../registry/propertyDefs";
@@ -136,7 +129,5 @@ export function InspectorPinProvider({ children }: { children: React.ReactNode }
     [pinnedIds, togglePin, isPinned, slotEpoch, registerSlot, getSlotNode]
   );
 
-  return (
-    <InspectorPinContext.Provider value={value}>{children}</InspectorPinContext.Provider>
-  );
+  return <InspectorPinContext.Provider value={value}>{children}</InspectorPinContext.Provider>;
 }

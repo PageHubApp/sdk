@@ -14,9 +14,11 @@ import { defineComponent } from "../define";
 import { Grid } from "./Grid";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
 const GridMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/GridMainTab").then((mod) => ({ default: mod.GridMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/GridMainTab").then(mod => ({
+    default: mod.GridMainTab,
+  }))
 );
-import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
+import { HoverNodeController, DeleteNodeController } from "../chrome/editor-chrome";
 import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
 
 // Tabler-style preset icons for layouts not covered by react-icons/tb.
@@ -31,8 +33,7 @@ const svgBase = {
   width: "1em",
   height: "1em",
 };
-const outerRect =
-  "M3 3m0 1a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v16a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1z";
+const outerRect = "M3 3m0 1a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v16a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1z";
 
 const IconFourColumns: React.FC<{ className?: string }> = ({ className }) => (
   <svg {...svgBase} className={className}>

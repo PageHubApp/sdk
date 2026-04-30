@@ -13,11 +13,7 @@ import {
  * just calling the hook is enough to rerender on every setRuntimeVar call.
  */
 export function useRuntimeVarsVersion(): number {
-  return useSyncExternalStore(
-    subscribeRuntimeVars,
-    getRuntimeVarsVersion,
-    getRuntimeVarsVersion
-  );
+  return useSyncExternalStore(subscribeRuntimeVars, getRuntimeVarsVersion, getRuntimeVarsVersion);
 }
 
 /**

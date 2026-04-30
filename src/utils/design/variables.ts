@@ -220,7 +220,10 @@ export const replaceVariables = (
     // Authors typically write anchor tokens inside state lookups; bare
     // `{{anchor.X}}` is also valid (resolves to the id string).
     if (anchors) {
-      processed = processed.replace(/\{\{anchor\.([a-zA-Z0-9_-]+)\}\}/g, (_, k) => anchors[k] ?? "");
+      processed = processed.replace(
+        /\{\{anchor\.([a-zA-Z0-9_-]+)\}\}/g,
+        (_, k) => anchors[k] ?? ""
+      );
     }
 
     // Resolve a single variable key to its string value (or undefined if not found).
@@ -319,9 +322,7 @@ export const replaceVariables = (
 
       // ── Ternary: {{key == value ? ifTrue : ifFalse}} ──
       // Requires spaces around the else `:` to avoid matching ref: or https:
-      const ternaryMatch = trimmedVar.match(
-        /^(.+?)\s*(==|!=)\s*(.+?)\s*\?\s*(.+?)\s+:\s+(.+)$/
-      );
+      const ternaryMatch = trimmedVar.match(/^(.+?)\s*(==|!=)\s*(.+?)\s*\?\s*(.+?)\s+:\s+(.+)$/);
       if (ternaryMatch) {
         const [, lhsRaw, op, rhsRaw, ifTrue, ifFalse] = ternaryMatch;
         const lhs = resolveVar(lhsRaw.trim()) ?? "";

@@ -11,10 +11,11 @@ function buildTooltipHTML(description?: string): string {
   const desc = description
     ? `<div style="margin-bottom:4px;line-height:1.4">${description}</div>`
     : "";
-  const actions = `<div style="display:flex;gap:10px;opacity:0.6;font-size:10px;line-height:1">`
-    + `<span style="display:inline-flex;align-items:center;gap:3px">${dragIcon} Drag</span>`
-    + `<span style="display:inline-flex;align-items:center;gap:3px">${dblClickIcon} Double-click</span>`
-    + `</div>`;
+  const actions =
+    `<div style="display:flex;gap:10px;opacity:0.6;font-size:10px;line-height:1">` +
+    `<span style="display:inline-flex;align-items:center;gap:3px">${dragIcon} Drag</span>` +
+    `<span style="display:inline-flex;align-items:center;gap:3px">${dblClickIcon} Double-click</span>` +
+    `</div>`;
   return desc + actions;
 }
 

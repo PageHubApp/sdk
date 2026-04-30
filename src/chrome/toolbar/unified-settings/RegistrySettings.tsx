@@ -106,11 +106,7 @@ function AdvancedSettingsSection() {
 
 // ─── Static tab content — renders all sections, never rebuilds ─────────────
 
-const StaticTabContent = React.memo(function StaticTabContent({
-  tabId,
-}: {
-  tabId: TabId;
-}) {
+const StaticTabContent = React.memo(function StaticTabContent({ tabId }: { tabId: TabId }) {
   const sections = SECTIONS_BY_TAB[tabId];
 
   return (
@@ -238,7 +234,12 @@ export const RegistrySettings = () => {
           <UnifiedTabBody
             sections={
               isSearching
-                ? [{ title: `Results for "${search}"`, children: <SearchResults search={search} /> }]
+                ? [
+                    {
+                      title: `Results for "${search}"`,
+                      children: <SearchResults search={search} />,
+                    },
+                  ]
                 : visibleSections
             }
             isInitialMount={isInitialMount}

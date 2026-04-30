@@ -59,11 +59,7 @@ export function ContactTab({
               placeholder="Los Angeles, CA"
             />
           </SettingsFormField>
-          <SettingsFormField
-            label="Website"
-            htmlFor="company-website"
-            variable="company.website"
-          >
+          <SettingsFormField label="Website" htmlFor="company-website" variable="company.website">
             <input
               id="company-website"
               type="url"
@@ -75,11 +71,7 @@ export function ContactTab({
           </SettingsFormField>
         </div>
 
-        <SettingsFormField
-          label="Address"
-          htmlFor="company-address"
-          variable="company.address"
-        >
+        <SettingsFormField label="Address" htmlFor="company-address" variable="company.address">
           <textarea
             id="company-address"
             value={companyAddress}

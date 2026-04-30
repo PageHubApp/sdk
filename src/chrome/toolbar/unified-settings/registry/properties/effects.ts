@@ -66,7 +66,7 @@ export const effectsProperties: PropertyDef[] = [
     keywords: ["transition", "duration", "ease", "delay", "timing", "curve", "ms", "speed"],
     hideKey: "effectsClass",
     sortOrder: 30,
-    isActive: (cn) => classNameHasAnyPrefix(cn, TRANSITION_PREFIXES),
+    isActive: cn => classNameHasAnyPrefix(cn, TRANSITION_PREFIXES),
     input: { type: "custom", component: "EffectRowInput" },
   },
   {
@@ -86,7 +86,7 @@ export const effectsProperties: PropertyDef[] = [
     ],
     hideKey: "effectsClass",
     sortOrder: 40,
-    isActive: (cn) => classNameHasAnyPrefix(cn, TRANSFORM_PREFIXES),
+    isActive: cn => classNameHasAnyPrefix(cn, TRANSFORM_PREFIXES),
     input: { type: "custom", component: "EffectRowInput" },
   },
   {
@@ -106,7 +106,7 @@ export const effectsProperties: PropertyDef[] = [
     ],
     hideKey: "effectsClass",
     sortOrder: 50,
-    isActive: (cn) => classNameHasAnyPrefix(cn, FILTER_PREFIXES),
+    isActive: cn => classNameHasAnyPrefix(cn, FILTER_PREFIXES),
     input: { type: "custom", component: "EffectRowInput" },
   },
   {
@@ -116,7 +116,7 @@ export const effectsProperties: PropertyDef[] = [
     keywords: ["backdrop", "frosted", "glass", "blur", "filter"],
     hideKey: "effectsClass",
     sortOrder: 60,
-    isActive: (cn) => classNameHasAnyPrefix(cn, BACKDROP_PREFIXES),
+    isActive: cn => classNameHasAnyPrefix(cn, BACKDROP_PREFIXES),
     input: { type: "custom", component: "EffectRowInput" },
   },
 ];

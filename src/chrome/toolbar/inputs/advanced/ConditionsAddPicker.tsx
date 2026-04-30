@@ -53,7 +53,7 @@ export default function ConditionsAddPicker({ def }: PropertyInputProps) {
   const [popoverRequests, setPopoverRequests] = useAtomState(PopoverOpenRequestAtom);
   const popoverRef = useRef<SearchableMenuPopoverHandle>(null);
   useSectionPopoverOpenRequest(id, def.id, () =>
-    requestAnimationFrame(() => popoverRef.current?.open()),
+    requestAnimationFrame(() => popoverRef.current?.open())
   );
 
   const onPick = (item: SearchableMenuItem<ConditionType>) => {

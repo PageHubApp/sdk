@@ -2,4 +2,4 @@
    Single @reference for Tailwind theme tokens — paths resolve from src/css/editor.css
    ============================================================================= */
 
-@reference "../styles.css";
+@reference "./styles.css";

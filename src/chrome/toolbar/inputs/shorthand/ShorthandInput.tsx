@@ -19,7 +19,10 @@ import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { ViewAtom } from "../../../viewport/atoms";
 import { ViewSelectionAtom } from "../../Label";
 import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
-import type { PropertyInputProps, ShorthandMode } from "../../unified-settings/registry/propertyDefs";
+import type {
+  PropertyInputProps,
+  ShorthandMode,
+} from "../../unified-settings/registry/propertyDefs";
 
 export interface ShorthandInputConfig {
   modes: ShorthandMode[];

@@ -87,9 +87,7 @@ export function useResizable(options: UseResizableOptions) {
     }
   });
   const setSize = useCallback((next: { width: number; height: number }) => {
-    setSizeRaw(prev =>
-      prev.width === next.width && prev.height === next.height ? prev : next
-    );
+    setSizeRaw(prev => (prev.width === next.width && prev.height === next.height ? prev : next));
   }, []);
 
   const [positionDelta, setPositionDelta] = useState({ dx: 0, dy: 0 });

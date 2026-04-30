@@ -5,7 +5,14 @@ import { AnchoredPopover } from "@/chrome/overlays/AnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import debounce from "lodash.debounce";
 import { useEffect, useState } from "react";
-import { TbCheck, TbChevronDown, TbChevronRight, TbColorPicker, TbDeviceFloppy, TbX } from "react-icons/tb";
+import {
+  TbCheck,
+  TbChevronDown,
+  TbChevronRight,
+  TbColorPicker,
+  TbDeviceFloppy,
+  TbX,
+} from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import useEyeDropper from "use-eye-dropper";
 import { resolveTheme } from "../../../utils/design/resolveTheme";

@@ -10,7 +10,12 @@ import { useEditor } from "@craftjs/core";
 import { RenderIndicator, getDOMInfo } from "@craftjs/utils";
 import React from "react";
 import ReactDOM from "react-dom";
-import { getDragOrigin, getCommittedAlignment, getAlignmentDom, getParentFlexDirection } from "./findPosition2D";
+import {
+  getDragOrigin,
+  getCommittedAlignment,
+  getAlignmentDom,
+  getParentFlexDirection,
+} from "./findPosition2D";
 import { getBesidePreviewLabel } from "./layoutInference";
 import { OVERLAY_Z_DRAG } from "../overlays/overlayZIndex";
 
@@ -53,7 +58,8 @@ function getEffectiveBgColor(el: HTMLElement): [number, number, number] | null {
     const bg = window.getComputedStyle(current).backgroundColor;
     if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
       const rgba = cssColorToRGBA(bg);
-      if (rgba && rgba[3] > 75) { // alpha > ~30% means visually opaque enough
+      if (rgba && rgba[3] > 75) {
+        // alpha > ~30% means visually opaque enough
         return [rgba[0], rgba[1], rgba[2]];
       }
     }
@@ -102,7 +108,14 @@ interface DropLabelProps {
   width?: string;
 }
 
-function DropLabel({ text, top, left, borderColor = "currentColor", transform, width }: DropLabelProps) {
+function DropLabel({
+  text,
+  top,
+  left,
+  borderColor = "currentColor",
+  transform,
+  width,
+}: DropLabelProps) {
   return (
     <div
       className="pagehub-drop-indicator-label"
@@ -151,9 +164,7 @@ function BesideOverlay({
   }
 
   const nodeInfo = getDOMInfo(currentNode.dom);
-  const color = indicator?.error
-    ? indicatorOptions?.error || "rgb(153 27 27)"
-    : EDITOR_ACCENT;
+  const color = indicator?.error ? indicatorOptions?.error || "rgb(153 27 27)" : EDITOR_ACCENT;
 
   const labelText =
     parent?.id && currentNode?.id
@@ -200,7 +211,13 @@ function BesideOverlay({
 // Solid 2px ring around the drop target's parent. Renders for every drop path
 // (beside / alignment / reorder) so the user sees scope at a glance.
 
-function ParentOutline({ parentDom, accent = EDITOR_ACCENT }: { parentDom: HTMLElement; accent?: string }) {
+function ParentOutline({
+  parentDom,
+  accent = EDITOR_ACCENT,
+}: {
+  parentDom: HTMLElement;
+  accent?: string;
+}) {
   const info = getDOMInfo(parentDom);
   return (
     <RenderIndicator
@@ -215,7 +232,8 @@ function ParentOutline({ parentDom, accent = EDITOR_ACCENT }: { parentDom: HTMLE
         borderRadius: "4px",
         pointerEvents: "none",
         boxSizing: "border-box",
-        transition: "top 0.1s ease-out, left 0.1s ease-out, width 0.1s ease-out, height 0.1s ease-out",
+        transition:
+          "top 0.1s ease-out, left 0.1s ease-out, width 0.1s ease-out, height 0.1s ease-out",
       }}
       parentDom={parentDom}
     />
@@ -405,9 +423,10 @@ function GhostPreview({
     if (currentNode?.dom) {
       const nodeInfo = getDOMInfo(currentNode.dom);
       ghostTop = nodeInfo.top;
-      ghostLeft = where === "beside-left"
-        ? nodeInfo.left - ghostW - 8
-        : nodeInfo.left + nodeInfo.outerWidth + 8;
+      ghostLeft =
+        where === "beside-left"
+          ? nodeInfo.left - ghostW - 8
+          : nodeInfo.left + nodeInfo.outerWidth + 8;
     } else {
       return null;
     }
@@ -416,9 +435,8 @@ function GhostPreview({
     if (currentNode?.dom) {
       const nodeInfo = getDOMInfo(currentNode.dom);
       ghostTop = nodeInfo.top;
-      ghostLeft = where === "before"
-        ? nodeInfo.left - ghostW - 4
-        : nodeInfo.left + nodeInfo.outerWidth + 4;
+      ghostLeft =
+        where === "before" ? nodeInfo.left - ghostW - 4 : nodeInfo.left + nodeInfo.outerWidth + 4;
     } else {
       ghostTop = parentInfo.top + parentInfo.padding.top;
       ghostLeft = parentInfo.left + parentInfo.padding.left;
@@ -444,9 +462,8 @@ function GhostPreview({
       // Pure reorder — ghost at the insertion point
       if (currentNode?.dom) {
         const nodeInfo = getDOMInfo(currentNode.dom);
-        ghostTop = where === "before"
-          ? nodeInfo.top - ghostH - 4
-          : nodeInfo.top + nodeInfo.outerHeight + 4;
+        ghostTop =
+          where === "before" ? nodeInfo.top - ghostH - 4 : nodeInfo.top + nodeInfo.outerHeight + 4;
       } else {
         ghostTop = parentInfo.top + parentInfo.padding.top;
       }
@@ -503,7 +520,9 @@ export function DropZoneIndicator() {
   const accent = indicator?.error ? EDITOR_ERROR : EDITOR_ACCENT;
 
   // Ghost preview shows on all drag paths
-  const ghost = indicator ? <GhostPreview indicator={indicator} query={query} accent={accent} /> : null;
+  const ghost = indicator ? (
+    <GhostPreview indicator={indicator} query={query} accent={accent} />
+  ) : null;
   // Parent outline shows on all drag paths — solid 2px ring around the drop target's parent
   const parentDom = placement?.parent?.dom as HTMLElement | undefined;
   const parentOutline = parentDom ? <ParentOutline parentDom={parentDom} accent={accent} /> : null;

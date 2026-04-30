@@ -122,7 +122,7 @@ export function VariableTokenChip({ variable }: { variable: string }) {
       onClick={handleCopy}
       data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
       data-tooltip-content={copied ? "Copied" : "Click to copy"}
-      className="border-base-300 bg-base-200 text-neutral-content hover:border-primary hover:text-base-content flex min-w-0 max-w-[60%] items-center gap-1 rounded-md border px-2 py-0.5 font-mono text-xs transition-colors"
+      className="border-base-300 bg-base-200 text-neutral-content hover:border-primary hover:text-base-content flex max-w-[60%] min-w-0 items-center gap-1 rounded-md border px-2 py-0.5 font-mono text-xs transition-colors"
     >
       {copied ? (
         <TbCheck className="text-success size-3 shrink-0" />

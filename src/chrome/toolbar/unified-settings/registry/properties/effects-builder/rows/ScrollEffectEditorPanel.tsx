@@ -7,6 +7,7 @@ import { TbChevronsDown } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { ContainerScrollEffectSection } from "@/chrome/toolbar/unified-settings/mainTabs/ContainerScrollEffectSection";
 import type { EditorPanelProps } from "../effectTypes";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../../../../overlays/overlayZIndex";
 
 export default function ScrollEffectEditorPanel({ initialPosition, onClose }: EditorPanelProps) {
   return (
@@ -20,7 +21,7 @@ export default function ScrollEffectEditorPanel({ initialPosition, onClose }: Ed
       maxWidth={480}
       minHeight={260}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <ContainerScrollEffectSection />

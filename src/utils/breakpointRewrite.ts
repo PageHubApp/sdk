@@ -74,19 +74,13 @@ export function rewriteBreakpoints(
 
     // Editor container form (Tailwind spaced).
     out = out.replace(
-      new RegExp(
-        `@container\\s+ph-editor-canvas\\s+\\(width\\s+>=\\s+${fromPx}px\\)`,
-        "g"
-      ),
+      new RegExp(`@container\\s+ph-editor-canvas\\s+\\(width\\s+>=\\s+${fromPx}px\\)`, "g"),
       `@container ph-editor-canvas (width >= __PH_BP_${key}__)`
     );
 
     // Editor container form (DaisyUI compact).
     out = out.replace(
-      new RegExp(
-        `@container\\s+ph-editor-canvas\\s+\\(width>=${fromPx}px\\)`,
-        "g"
-      ),
+      new RegExp(`@container\\s+ph-editor-canvas\\s+\\(width>=${fromPx}px\\)`, "g"),
       `@container ph-editor-canvas (width>=__PH_BD_${key}__)`
     );
   }
@@ -115,11 +109,13 @@ export function rewriteBreakpoints(
  * single-frame case but per-canvas for dual-frame.
  */
 export function rewriteMediaToContainer(css: string): string {
-  return css
-    // Tailwind: `@media (width >= 768px)` → `@container ph-editor-canvas (width >= 768px)`
-    .replace(/@media\s+\(width\s+>=\s+(\d+)px\)/g, "@container ph-editor-canvas (width >= $1px)")
-    // DaisyUI: `@media (width>=768px)` → `@container ph-editor-canvas (width>=768px)`
-    .replace(/@media\s+\(width>=(\d+)px\)/g, "@container ph-editor-canvas (width>=$1px)");
+  return (
+    css
+      // Tailwind: `@media (width >= 768px)` → `@container ph-editor-canvas (width >= 768px)`
+      .replace(/@media\s+\(width\s+>=\s+(\d+)px\)/g, "@container ph-editor-canvas (width >= $1px)")
+      // DaisyUI: `@media (width>=768px)` → `@container ph-editor-canvas (width>=768px)`
+      .replace(/@media\s+\(width>=(\d+)px\)/g, "@container ph-editor-canvas (width>=$1px)")
+  );
 }
 
 /**

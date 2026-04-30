@@ -88,7 +88,7 @@ function GroupSubmenu({
     <div
       ref={floating.refs.setFloating}
       style={{ ...floating.floatingStyles, zIndex: OVERLAY_Z_INLINE_TOOLS }}
-      className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto border py-1 shadow-xl select-none"
+      className="border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[13rem] overflow-y-auto rounded-xl border py-1 shadow-xl select-none"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -170,9 +170,14 @@ export function VariableSuggestionPopup({ suggestion }: { suggestion: Suggestion
     return ReactDOM.createPortal(
       <div
         className="pagehub-sdk-root"
-        style={{ position: "fixed", top: rect.bottom + 6, left: rect.left, zIndex: OVERLAY_Z_INLINE_TOOLS }}
+        style={{
+          position: "fixed",
+          top: rect.bottom + 6,
+          left: rect.left,
+          zIndex: OVERLAY_Z_INLINE_TOOLS,
+        }}
       >
-        <div className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[14rem] overflow-hidden border py-1 shadow-xl">
+        <div className="border-base-300/50 bg-base-100 text-base-content max-w-[20rem] min-w-[14rem] overflow-hidden rounded-xl border py-1 shadow-xl">
           <div className="bg-base-200/80 text-neutral-content px-3 py-1 text-[10px] font-semibold tracking-wide uppercase">
             {group}
           </div>
@@ -213,9 +218,14 @@ export function VariableSuggestionPopup({ suggestion }: { suggestion: Suggestion
   return ReactDOM.createPortal(
     <div
       className="pagehub-sdk-root"
-      style={{ position: "fixed", top: rect.bottom + 6, left: rect.left, zIndex: OVERLAY_Z_INLINE_TOOLS }}
+      style={{
+        position: "fixed",
+        top: rect.bottom + 6,
+        left: rect.left,
+        zIndex: OVERLAY_Z_INLINE_TOOLS,
+      }}
     >
-      <div className="rounded-xl border-base-300/50 bg-base-100 text-base-content min-w-[12rem] overflow-visible border py-1 shadow-xl select-none">
+      <div className="border-base-300/50 bg-base-100 text-base-content min-w-[12rem] overflow-visible rounded-xl border py-1 shadow-xl select-none">
         {grouped.map(([group, items]) => {
           const GroupIcon = getGroupIcon(group);
           const ref = getRef(group);

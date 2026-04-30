@@ -5,6 +5,7 @@
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ImageSettingsSection } from "../../unified-settings/mainTabs/ImageSettingsSection";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -22,7 +23,7 @@ export default function ImageSettingsPanel({ initialPosition, onClose }: PanelPr
       maxWidth={520}
       minHeight={320}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <ImageSettingsSection />

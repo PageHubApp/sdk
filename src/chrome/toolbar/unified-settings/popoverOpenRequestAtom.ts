@@ -14,7 +14,7 @@ import { useEffect, useRef } from "react";
 
 export const PopoverOpenRequestAtom = atom<Map<string, number>>(
   "settingsPopoverOpenRequest",
-  () => new Map<string, number>(),
+  () => new Map<string, number>()
 );
 
 export const popoverRequestKey = (nodeId: string, defId: string) => `${nodeId}:${defId}`;
@@ -23,7 +23,7 @@ export function requestOpenPopover(
   current: Map<string, number>,
   setRequests: (next: Map<string, number>) => void,
   nodeId: string,
-  defId: string,
+  defId: string
 ) {
   const key = popoverRequestKey(nodeId, defId);
   const next = new Map(current);
@@ -43,11 +43,7 @@ export function requestOpenPopover(
  * picker. Picker-side: pass `() => popoverRef.current?.open()` (or a
  * direct create-callback for menuless pickers like State).
  */
-export function useSectionPopoverOpenRequest(
-  nodeId: string,
-  defId: string,
-  onOpen: () => void,
-) {
+export function useSectionPopoverOpenRequest(nodeId: string, defId: string, onOpen: () => void) {
   const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
   const version = popoverRequests.get(popoverRequestKey(nodeId, defId)) || 0;
   const lastVersionRef = useRef(0);

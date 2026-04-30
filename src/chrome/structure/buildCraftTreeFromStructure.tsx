@@ -47,8 +47,7 @@ export function buildCraftTreeFromStructure(
 
   if (options.mode === "preview") {
     if (structure.type === "Image") {
-      const isEmpty =
-        !structure.props.videoId && !structure.props.src && !structure.props.content;
+      const isEmpty = !structure.props.videoId && !structure.props.src && !structure.props.content;
       if (isEmpty) {
         working = {
           ...structure,
@@ -132,8 +131,7 @@ export function buildCraftTreeFromStructure(
     return React.createElement(Element, elementArgs, ...children);
   }
 
-  let cleanedClassName =
-    typeof working.props.className === "string" ? working.props.className : "";
+  let cleanedClassName = typeof working.props.className === "string" ? working.props.className : "";
   if (cleanedClassName && options.isRoot) {
     cleanedClassName = cleanedClassName
       .replace(/py-\d+/g, "py-2")

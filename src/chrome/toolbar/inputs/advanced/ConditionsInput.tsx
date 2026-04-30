@@ -508,8 +508,7 @@ export const ConditionsInput = () => {
     conditionGroups: node.data?.props?.conditionGroups as ConditionGroup[] | undefined,
   }));
   const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
-  const requestVersion =
-    popoverRequests.get(popoverRequestKey(id, CONDITIONS_BODY_DEF_ID)) || 0;
+  const requestVersion = popoverRequests.get(popoverRequestKey(id, CONDITIONS_BODY_DEF_ID)) || 0;
 
   // Toolbar surface only deals with a single AND list. Legacy conditionGroups
   // data is read flat (first group's conditions), and any save rewrites the
@@ -583,4 +582,3 @@ export const ConditionsInput = () => {
     </div>
   );
 };
-

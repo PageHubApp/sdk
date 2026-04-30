@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  SettingsTabIntro,
-  settingsTabFillRootClass,
-} from "../settings/SettingsTabChrome";
+import { SettingsTabIntro, settingsTabFillRootClass } from "../settings/SettingsTabChrome";
 
 const CodeEditor = React.lazy(() =>
   import("../../toolbar/inputs/typography/CodeEditor").then(m => ({ default: m.CodeEditor }))

@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useRef } from "react";
 import { TbMusic } from "react-icons/tb";
-import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
+import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "./LazyEditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
 import { useMounted } from "../utils/hooks";
 

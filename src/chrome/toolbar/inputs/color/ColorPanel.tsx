@@ -4,6 +4,7 @@
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ColorPanelBody } from "./ColorPanelBody";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -38,7 +39,7 @@ export default function ColorPanel({
       minHeight={420}
       initialPosition={initialPosition}
       persistSize={false}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <ColorPanelBody value={value} onChange={onChange} onClear={onClear} />

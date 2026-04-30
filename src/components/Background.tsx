@@ -5,7 +5,7 @@ import { CSStoObj, applyAnimation } from "../utils/tailwind/tailwind";
 
 import React, { useEffect, useRef, useState } from "react";
 import { TbContainer } from "react-icons/tb";
-import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
+import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "./LazyEditorEmptyLeafHint";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../utils/defaults";
 import { resolveTheme } from "../utils/design/resolveTheme";
 import { useLazyBackground } from "../utils/hooks/useLazyBackground";
@@ -27,7 +27,7 @@ import { InjectedHeadTags, InjectedBodyTags } from "./InjectedHeadTags";
  * the live setVar and drains the queue post-mount.
  */
 const RUNTIME_VARS_BOOTSTRAP =
-  'window.PageHub=window.PageHub||{_queue:[],setVar:function(k,v){this._queue.push([k,v])},getVar:function(){}};';
+  "window.PageHub=window.PageHub||{_queue:[],setVar:function(k,v){this._queue.push([k,v])},getVar:function(){}};";
 
 export interface NamedColor {
   name: string;
@@ -186,9 +186,7 @@ export function Background({
               />
             ) : null)}
         </RenderPattern>
-        {isRoot && props.inject?.footer ? (
-          <InjectedBodyTags html={props.inject.footer} />
-        ) : null}
+        {isRoot && props.inject?.footer ? <InjectedBodyTags html={props.inject.footer} /> : null}
       </RuntimeVarsProvider>
     </PaletteProvider>
   );

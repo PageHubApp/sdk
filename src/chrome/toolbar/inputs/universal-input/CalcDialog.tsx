@@ -16,6 +16,7 @@ import { useMemo, useState } from "react";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { Chip } from "../../../primitives/Chip";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface CalcDialogProps {
   value: string;
@@ -59,10 +60,7 @@ function computeInitialPosition(
 ): { x: number; y: number } | undefined {
   if (typeof window === "undefined" || !anchorEl) return undefined;
   const rect = anchorEl.getBoundingClientRect();
-  const x = Math.min(
-    Math.max(8, rect.left),
-    Math.max(8, window.innerWidth - panelWidth - 8)
-  );
+  const x = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - panelWidth - 8));
   const y = Math.max(8, rect.bottom + 6);
   return { x, y };
 }
@@ -142,7 +140,7 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
       maxWidth={520}
       maxHeight={Math.round(typeof window !== "undefined" ? window.innerHeight * 0.8 : 520)}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <div className="flex flex-col gap-3">
@@ -168,13 +166,30 @@ export function CalcDialog({ value, onSave, onClose, anchorEl }: CalcDialogProps
 
         {activeFunction === "clamp" ? (
           <div className="flex flex-col gap-1.5">
-            <ClampField label="Min" value={clampMin} onChange={setClampMin} placeholder="1rem" autoFocus />
-            <ClampField label="Preferred" value={clampPreferred} onChange={setClampPreferred} placeholder="5vw" />
+            <ClampField
+              label="Min"
+              value={clampMin}
+              onChange={setClampMin}
+              placeholder="1rem"
+              autoFocus
+            />
+            <ClampField
+              label="Preferred"
+              value={clampPreferred}
+              onChange={setClampPreferred}
+              placeholder="5vw"
+            />
             <ClampField label="Max" value={clampMax} onChange={setClampMax} placeholder="3rem" />
           </div>
         ) : activeFunction === "min" || activeFunction === "max" ? (
           <div className="flex flex-col gap-1.5">
-            <ClampField label="Value A" value={clampMin} onChange={setClampMin} placeholder="50vw" autoFocus />
+            <ClampField
+              label="Value A"
+              value={clampMin}
+              onChange={setClampMin}
+              placeholder="50vw"
+              autoFocus
+            />
             <ClampField
               label="Value B"
               value={clampMax}

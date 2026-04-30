@@ -49,9 +49,7 @@ const DEFAULT_OPEN = new Set(["Pattern", "Size", "Color", "Surface", "DaisyUI Co
 
 function deriveRenderType(name: string, mods: ResolvedModifier[]): ModifierRenderType {
   // Per-modifier override wins — first non-empty hint in the group decides.
-  const hinted = mods.find(m => (m as any).renderAs)?.renderAs as
-    | ModifierRenderType
-    | undefined;
+  const hinted = mods.find(m => (m as any).renderAs)?.renderAs as ModifierRenderType | undefined;
   if (hinted) return hinted;
   if (name === "Pattern") return "patterns";
   const allExclusive = mods.length > 0 && mods.every(m => m.exclusive);
@@ -175,16 +173,13 @@ export function useModifiers() {
     let activeMods = [...baseActiveMods];
 
     const modClasses = resolveClasses(mod);
-    const wasActive = baseActiveMods.includes(mod.name)
-      || (mod.classes
-        ? modClasses.every(c => classes.includes(c))
-        : classes.includes(mod.name));
+    const wasActive =
+      baseActiveMods.includes(mod.name) ||
+      (mod.classes ? modClasses.every(c => classes.includes(c)) : classes.includes(mod.name));
 
     // If exclusive and turning ON, clear sibling category mods first
     if (mod.exclusive && mod.category && !wasActive) {
-      const siblings = allModifiers.filter(
-        m => m.category === mod.category && m.name !== mod.name
-      );
+      const siblings = allModifiers.filter(m => m.category === mod.category && m.name !== mod.name);
       for (const sib of siblings) {
         const sibClasses = resolveClasses(sib);
         classes = classes.filter((c: string) => !sibClasses.includes(c));

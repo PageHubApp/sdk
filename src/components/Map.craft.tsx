@@ -6,9 +6,15 @@ import { TbMap, TbMap2, TbMapPin } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { Map } from "./Map";
 const MapMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/MapMainTab").then((mod) => ({ default: mod.MapMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/MapMainTab").then(mod => ({
+    default: mod.MapMainTab,
+  }))
 );
-import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
+import {
+  HoverNodeController,
+  NameNodeController,
+  DeleteNodeController,
+} from "../chrome/editor-chrome";
 
 export const MapDef = defineComponent(
   {

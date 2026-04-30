@@ -72,7 +72,7 @@ export function TiptapRichTextContextMenu({
   return createPortal(
     <div
       ref={rootRef}
-      className="pagehub-sdk-root rounded-xl border-base-300/50 bg-base-100 text-base-content fixed min-w-[12rem] overflow-visible border py-1 shadow-xl select-none"
+      className="pagehub-sdk-root border-base-300/50 bg-base-100 text-base-content fixed min-w-[12rem] overflow-visible rounded-xl border py-1 shadow-xl select-none"
       style={{ left, top, zIndex: MENU_Z }}
       role="menu"
       aria-label="Text actions"

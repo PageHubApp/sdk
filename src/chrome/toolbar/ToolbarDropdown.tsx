@@ -15,9 +15,7 @@ const extractText = (node: any): string => {
   return "";
 };
 
-type OptionItem =
-  | { kind: "item"; value: string; label: string }
-  | { kind: "group"; label: string };
+type OptionItem = { kind: "item"; value: string; label: string } | { kind: "group"; label: string };
 
 const useOptions = (children: any, valueLabels: string[], propKey?: string): OptionItem[] =>
   useMemo(() => {
@@ -155,35 +153,35 @@ export const ToolbarDropdown = ({
         style={{ zIndex: OVERLAY_Z_TOOLBAR_DROPDOWN }}
       >
         <div className="scrollbar max-h-72 overflow-y-auto">
-        {options.map((opt, i) => {
-          if (opt.kind === "group") {
-            const prev = options[i - 1];
-            const isFirst = !prev;
+          {options.map((opt, i) => {
+            if (opt.kind === "group") {
+              const prev = options[i - 1];
+              const isFirst = !prev;
+              return (
+                <div
+                  key={`group-${opt.label}-${i}`}
+                  className={`ph-select-group text-base-content px-2 pb-1.5 font-bold ${
+                    isFirst ? "pt-1" : "pt-2"
+                  }`}
+                >
+                  {opt.label}
+                </div>
+              );
+            }
             return (
-              <div
-                key={`group-${opt.label}-${i}`}
-                className={`ph-select-group text-base-content px-2 pb-1.5 font-bold ${
-                  isFirst ? "pt-1" : "pt-2"
-                }`}
+              <ListboxOption
+                key={opt.value}
+                value={opt.value}
+                className="ph-select-item data-selected:bg-primary data-selected:text-primary-content"
               >
-                {opt.label}
-              </div>
+                {opt.value === EMPTY ? (
+                  <span className="text-neutral-content">None</span>
+                ) : (
+                  opt.label
+                )}
+              </ListboxOption>
             );
-          }
-          return (
-            <ListboxOption
-              key={opt.value}
-              value={opt.value}
-              className="ph-select-item data-selected:bg-primary data-selected:text-primary-content"
-            >
-              {opt.value === EMPTY ? (
-                <span className="text-neutral-content">None</span>
-              ) : (
-                opt.label
-              )}
-            </ListboxOption>
-          );
-        })}
+          })}
         </div>
       </ListboxOptions>
     </Listbox>

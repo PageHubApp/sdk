@@ -636,8 +636,7 @@ export const Header = () => {
                 zoomAtom={BreakpointZoomAtom}
                 fitMode={{
                   kind: "width",
-                  target:
-                    (resolvedBreakpointPx as Record<string, number>)[view] ?? 1024,
+                  target: (resolvedBreakpointPx as Record<string, number>)[view] ?? 1024,
                   chromeOffset: 420,
                   max: 1,
                 }}

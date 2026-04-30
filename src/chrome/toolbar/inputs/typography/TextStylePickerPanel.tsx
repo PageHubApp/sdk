@@ -13,6 +13,7 @@ import { TbPencil, TbPlus, TbSearch } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import type { TypographyPresetRow } from "./TypographyPresetSelect";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   presets: TypographyPresetRow[];
@@ -86,7 +87,7 @@ export default function TextStylePickerPanel({
       minHeight={260}
       initialPosition={initialPosition}
       persistSize={false}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable={false}
     >
       <div className="flex min-h-0 flex-1 flex-col">

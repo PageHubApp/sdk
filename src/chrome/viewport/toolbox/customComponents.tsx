@@ -21,13 +21,18 @@ export interface CategorizedToolboxEntry {
  * entry per preset, each tagged with the toolbox category it should land
  * in (preset.category ?? def.category).
  */
-export function buildCustomToolboxEntries(
-  def: ResolvedComponentDef
-): CategorizedToolboxEntry[] {
+export function buildCustomToolboxEntries(def: ResolvedComponentDef): CategorizedToolboxEntry[] {
   const presets =
     def.presets.length > 0
       ? def.presets
-      : [{ label: def.displayName, description: def.description, icon: def.icon, props: def.defaultProps }];
+      : [
+          {
+            label: def.displayName,
+            description: def.description,
+            icon: def.icon,
+            props: def.defaultProps,
+          },
+        ];
 
   return presets.map((preset, i) => {
     const IconComp = resolveToolboxIcon(preset.icon || def.icon);

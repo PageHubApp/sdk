@@ -15,10 +15,7 @@ import {
 } from "../../utils/componentCanvas";
 import { useSetAtomState } from "../../utils/atoms";
 import { CanvasIsolateAtom } from "../../utils/componentIsolation";
-import {
-  getLiveComponent,
-  subscribeLive,
-} from "../../utils/componentRegistry";
+import { getLiveComponent, subscribeLive } from "../../utils/componentRegistry";
 
 interface Props {
   containerId: string;
@@ -369,8 +366,7 @@ export function ComponentCanvasItem({
       // Slot + inner-wrapper width: same auto-fit / committed-value pattern
       // as height. When liveW unset, follow the live element's natural width
       // so content doesn't overflow the card frame.
-      const targetW =
-        liveW !== undefined ? liveW : src.offsetWidth || CANVAS_SLOT_W;
+      const targetW = liveW !== undefined ? liveW : src.offsetWidth || CANVAS_SLOT_W;
       const targetWPx = `${targetW + CARD_PAD * 2}px`;
       if (innerRef.current) innerRef.current.style.width = targetWPx;
     };
@@ -420,7 +416,7 @@ export function ComponentCanvasItem({
           "min-width",
           "right",
           "bottom",
-        ].forEach((p) => src.style.removeProperty(p));
+        ].forEach(p => src.style.removeProperty(p));
       }
     };
   }, [containerId, isStatePin]);
@@ -453,12 +449,10 @@ export function ComponentCanvasItem({
   // visually overlap their slot, which is the bug.
   const HANDLE_TOTAL = HANDLE_HEIGHT + HANDLE_GAP;
   const measureCardBox = (
-    wrapperEl: HTMLElement,
+    wrapperEl: HTMLElement
   ): { x: number; y: number; w: number; h: number } | null => {
-    const wrapperX =
-      parseFloat(wrapperEl.style.getPropertyValue("--ph-item-x")) || 0;
-    const wrapperY =
-      parseFloat(wrapperEl.style.getPropertyValue("--ph-item-y")) || 0;
+    const wrapperX = parseFloat(wrapperEl.style.getPropertyValue("--ph-item-x")) || 0;
+    const wrapperY = parseFloat(wrapperEl.style.getPropertyValue("--ph-item-y")) || 0;
     // Find inner + slot (children[last] is inner; inner.firstElementChild is slot)
     const inner = (wrapperEl.children[wrapperEl.children.length - 1] as HTMLElement) || null;
     const slot = (inner?.firstElementChild as HTMLElement) || null;
@@ -494,13 +488,11 @@ export function ComponentCanvasItem({
     const surface = wrapper.closest(SURFACE_SELECTOR) as HTMLElement | null;
     if (!surface) return pos;
     const others: Array<{ x: number; y: number; w: number; h: number }> = [];
-    surface
-      .querySelectorAll<HTMLElement>("[data-ph-canvas-card='true']")
-      .forEach((el) => {
-        if (el === wrapper) return;
-        const box = measureCardBox(el);
-        if (box) others.push(box);
-      });
+    surface.querySelectorAll<HTMLElement>("[data-ph-canvas-card='true']").forEach(el => {
+      if (el === wrapper) return;
+      const box = measureCardBox(el);
+      if (box) others.push(box);
+    });
 
     const PAD = 4;
     let { x, y } = pos;
@@ -836,7 +828,9 @@ export function ComponentCanvasItem({
             onPointerDown={onPointerDown}
             onDoubleClick={onDoubleClick}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content={disableIsolate ? "Drag to move" : "Drag to move · Double-click to isolate"}
+            data-tooltip-content={
+              disableIsolate ? "Drag to move" : "Drag to move · Double-click to isolate"
+            }
             data-tooltip-place="bottom"
             data-tooltip-offset={10}
           >
@@ -867,77 +861,77 @@ export function ComponentCanvasItem({
           transformOrigin: "0 0",
         }}
       >
-      <div
-        ref={slotRef}
-        className="border-base-300 rounded-lg border bg-white bg-[radial-gradient(#bfdbfe_1px,transparent_1px)] bg-size-[20px_20px] transition-opacity duration-150 dark:bg-[#0a0a0a] dark:bg-[radial-gradient(#3b82f680_1px,transparent_1px)]"
-        style={{
-          minHeight: 60 + CARD_PAD * 2,
-          pointerEvents: "none",
-          opacity: 0,
-          position: "relative",
-        }}
-      >
-        {!isolated && (
-          <>
-            {/* Right edge — width resize. Sits half-outside the slot so the
+        <div
+          ref={slotRef}
+          className="border-base-300 rounded-lg border bg-white bg-[radial-gradient(#bfdbfe_1px,transparent_1px)] bg-size-[20px_20px] transition-opacity duration-150 dark:bg-[#0a0a0a] dark:bg-[radial-gradient(#3b82f680_1px,transparent_1px)]"
+          style={{
+            minHeight: 60 + CARD_PAD * 2,
+            pointerEvents: "none",
+            opacity: 0,
+            position: "relative",
+          }}
+        >
+          {!isolated && (
+            <>
+              {/* Right edge — width resize. Sits half-outside the slot so the
                 cursor flips just before the visible border. */}
-            <div
-              onPointerDown={onResizePointerDown("right")}
-              style={{
-                position: "absolute",
-                top: 0,
-                bottom: 0,
-                right: -RESIZE_BAND / 2,
-                width: RESIZE_BAND,
-                cursor: "ew-resize",
-                pointerEvents: "auto",
-                zIndex: 1,
-              }}
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Drag to resize width"
-              data-tooltip-place="left"
-              data-tooltip-offset={6}
-            />
-            {/* Bottom edge — height resize. */}
-            <div
-              onPointerDown={onResizePointerDown("bottom")}
-              style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                bottom: -RESIZE_BAND / 2,
-                height: RESIZE_BAND,
-                cursor: "ns-resize",
-                pointerEvents: "auto",
-                zIndex: 1,
-              }}
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Drag to resize height"
-              data-tooltip-place="top"
-              data-tooltip-offset={6}
-            />
-            {/* Bottom-right corner — both at once. Higher z-index so it wins
+              <div
+                onPointerDown={onResizePointerDown("right")}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  bottom: 0,
+                  right: -RESIZE_BAND / 2,
+                  width: RESIZE_BAND,
+                  cursor: "ew-resize",
+                  pointerEvents: "auto",
+                  zIndex: 1,
+                }}
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content="Drag to resize width"
+                data-tooltip-place="left"
+                data-tooltip-offset={6}
+              />
+              {/* Bottom edge — height resize. */}
+              <div
+                onPointerDown={onResizePointerDown("bottom")}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: -RESIZE_BAND / 2,
+                  height: RESIZE_BAND,
+                  cursor: "ns-resize",
+                  pointerEvents: "auto",
+                  zIndex: 1,
+                }}
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content="Drag to resize height"
+                data-tooltip-place="top"
+                data-tooltip-offset={6}
+              />
+              {/* Bottom-right corner — both at once. Higher z-index so it wins
                 over the right/bottom bands in the overlap. */}
-            <div
-              onPointerDown={onResizePointerDown("corner")}
-              style={{
-                position: "absolute",
-                right: -RESIZE_BAND,
-                bottom: -RESIZE_BAND,
-                width: RESIZE_BAND * 2,
-                height: RESIZE_BAND * 2,
-                cursor: "nwse-resize",
-                pointerEvents: "auto",
-                zIndex: 2,
-              }}
-              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-              data-tooltip-content="Drag to resize"
-              data-tooltip-place="top-end"
-              data-tooltip-offset={6}
-            />
-          </>
-        )}
-      </div>
+              <div
+                onPointerDown={onResizePointerDown("corner")}
+                style={{
+                  position: "absolute",
+                  right: -RESIZE_BAND,
+                  bottom: -RESIZE_BAND,
+                  width: RESIZE_BAND * 2,
+                  height: RESIZE_BAND * 2,
+                  cursor: "nwse-resize",
+                  pointerEvents: "auto",
+                  zIndex: 2,
+                }}
+                data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                data-tooltip-content="Drag to resize"
+                data-tooltip-place="top-end"
+                data-tooltip-offset={6}
+              />
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

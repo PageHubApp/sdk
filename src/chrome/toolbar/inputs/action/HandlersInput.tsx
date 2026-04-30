@@ -38,19 +38,13 @@ export function HandlersInput() {
     popoverRequests.get(popoverRequestKey(id, HANDLERS_BODY_DEF_ID)) || 0;
 
   const handlerEntries = useMemo(
-    () =>
-      Object.entries(handlers).filter(
-        ([, v]) => typeof v === "string"
-      ) as [string, string][],
+    () => Object.entries(handlers).filter(([, v]) => typeof v === "string") as [string, string][],
     [handlers]
   );
   const handlerKeys = useMemo(() => handlerEntries.map(([e]) => e), [handlerEntries]);
   const handlerKeysSig = handlerKeys.join("|");
 
-  const updateHandler = (
-    prevEvent: string,
-    next: { event: string; code: string }
-  ) => {
+  const updateHandler = (prevEvent: string, next: { event: string; code: string }) => {
     setProp((p: any) => {
       const map: Record<string, string> = { ...(p.handlers || {}) };
       if (prevEvent === next.event) {
@@ -89,10 +83,7 @@ export function HandlersInput() {
   // Init to 0 (NOT current version) — see editor-popover-pattern.md §4.
   const lastHandlerVersionRef = useRef(0);
   useEffect(() => {
-    if (
-      handlerRequestVersion === 0 ||
-      handlerRequestVersion === lastHandlerVersionRef.current
-    )
+    if (handlerRequestVersion === 0 || handlerRequestVersion === lastHandlerVersionRef.current)
       return;
     lastHandlerVersionRef.current = handlerRequestVersion;
     if (handlerKeys.length > 0) {

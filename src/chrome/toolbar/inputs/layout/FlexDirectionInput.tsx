@@ -86,12 +86,7 @@ export const FlexDirectionInput = ({ wrap = "", inline = true, mode }: FlexDirec
   };
 
   return (
-    <Chip
-      frame="bare"
-      propType="class"
-      propKey="flexDirection"
-      passthrough={!!wrap}
-    >
+    <Chip frame="bare" propType="class" propKey="flexDirection" passthrough={!!wrap}>
       <ToolbarSegmentedControl
         aria-label="Flex direction"
         dense

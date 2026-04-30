@@ -4,17 +4,12 @@
  * "preview" variant showing the pattern thumbnail when set, "Add..." when empty.
  */
 import { useNode } from "@craftjs/core";
-import { useAtomValue } from "@zedux/react";
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { TbTexture } from "react-icons/tb";
 import { generatePattern } from "../../../../utils/background";
-import { SideBarAtom } from "../../../../utils/lib";
 import { Chip } from "../../../primitives/Chip";
-import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
-import {
-  PopoverOpenRequestAtom,
-  popoverRequestKey,
-} from "../../unified-settings/popoverOpenRequestAtom";
+import { usePopoverAutoOpen } from "../../unified-settings/hooks/usePopoverAutoOpen";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
 
 const PatternPanel = lazy(() => import("./PatternPanel"));
@@ -54,11 +49,8 @@ function makePreviewDataUrl(pattern: any): string | null {
 
 export default function PatternInputPopover({ def }: PropertyInputProps) {
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
-  const sessionAdded = useAtomValue(SessionAddedAtom);
-  const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const {
     actions: { setProp },
@@ -73,45 +65,12 @@ export default function PatternInputPopover({ def }: PropertyInputProps) {
 
   const previewDataUrl = useMemo(() => makePreviewDataUrl(pattern), [pattern]);
 
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
-
   const openPanel = () => {
     setInitialPos(computePosition());
     setOpen(true);
   };
 
-  // Auto-open when this property was just session-added.
-  const autoOpenedRef = useRef(false);
-  useEffect(() => {
-    if (autoOpenedRef.current) return;
-    if (def && sessionAdded.has(sessionKey(id, def.id))) {
-      requestAnimationFrame(() => {
-        setInitialPos(computePosition());
-        setOpen(true);
-      });
-      autoOpenedRef.current = true;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionAdded, id, def?.id]);
-
-  // Open whenever a popover-open-request is dispatched for this property.
-  const lastRequestVersion = useRef(0);
-  useEffect(() => {
-    if (!def) return;
-    const version = popoverRequests.get(popoverRequestKey(id, def.id)) || 0;
-    if (version === 0 || version === lastRequestVersion.current) return;
-    lastRequestVersion.current = version;
-    requestAnimationFrame(() => {
-      setInitialPos(computePosition());
-      setOpen(true);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [popoverRequests, id, def?.id]);
+  usePopoverAutoOpen({ nodeId: id, defId: def?.id, onOpen: openPanel });
 
   const clearPattern = () => {
     setProp((p: any) => {
@@ -136,7 +95,8 @@ export default function PatternInputPopover({ def }: PropertyInputProps) {
 
   return (
     <>
-      <Chip mode="popover"
+      <Chip
+        mode="popover"
         ref={triggerRef}
         label={label}
         open={open}
@@ -152,9 +112,7 @@ export default function PatternInputPopover({ def }: PropertyInputProps) {
           hasPattern ? (
             <span
               className="absolute inset-0 bg-cover bg-center"
-              style={
-                previewDataUrl ? { backgroundImage: `url(${previewDataUrl})` } : undefined
-              }
+              style={previewDataUrl ? { backgroundImage: `url(${previewDataUrl})` } : undefined}
               aria-hidden
             />
           ) : (

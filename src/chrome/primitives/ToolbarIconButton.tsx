@@ -17,8 +17,10 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "./layout/tooltipSurface";
  */
 type Variant = "ghost" | "subtle";
 
-interface Props
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children" | "type" | "aria-label"> {
+interface Props extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "children" | "type" | "aria-label"
+> {
   children: ReactNode;
   variant?: Variant;
   tooltip?: string;

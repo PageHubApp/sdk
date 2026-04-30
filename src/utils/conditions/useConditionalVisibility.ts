@@ -34,10 +34,14 @@ export function useConditionalVisibility(): {
 
   const [visible, setVisible] = useState(() => {
     if (enabled || !hasConditions) return true;
-    const ctx = { ...buildStaticContext(rootProps, itemContext), connectorData: getConnectorData() };
-    const result = conditionGroups && conditionGroups.length > 0
-      ? evaluateConditionGroups(conditionGroups, ctx)
-      : evaluateConditions(conditions, conditionLogic, ctx);
+    const ctx = {
+      ...buildStaticContext(rootProps, itemContext),
+      connectorData: getConnectorData(),
+    };
+    const result =
+      conditionGroups && conditionGroups.length > 0
+        ? evaluateConditionGroups(conditionGroups, ctx)
+        : evaluateConditions(conditions, conditionLogic, ctx);
     return result === true;
   });
   const conditionsRef = useRef(conditions);

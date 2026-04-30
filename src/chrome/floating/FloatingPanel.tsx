@@ -1,4 +1,12 @@
-import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import ReactDOM from "react-dom";
 import { TbX } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
@@ -73,9 +81,7 @@ export function useFloatingPanelPortalRegister():
  * unregisters with the nearest ancestor FloatingPanel. Use in inline portals
  * where wiring a manual useEffect feels heavy.
  */
-export function useRegisterFloatingPanelPortal(
-  ref: React.RefObject<HTMLElement | null>
-): void {
+export function useRegisterFloatingPanelPortal(ref: React.RefObject<HTMLElement | null>): void {
   const register = useFloatingPanelPortalRegister();
   useEffect(() => {
     const node = ref.current;
@@ -392,7 +398,16 @@ export function FloatingPanel({
       x: Math.max(0, Math.min(prev.x, Math.max(0, viewport.width - (width ?? 0)))),
       y: Math.max(0, Math.min(prev.y, Math.max(0, viewport.height - (height ?? 0)))),
     }));
-  }, [isFitContent, dockToEdge, height, isOpen, setPosition, viewport.height, viewport.width, width]);
+  }, [
+    isFitContent,
+    dockToEdge,
+    height,
+    isOpen,
+    setPosition,
+    viewport.height,
+    viewport.width,
+    width,
+  ]);
 
   useEffect(() => {
     if (!isOpen) return;

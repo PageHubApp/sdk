@@ -3,9 +3,8 @@
  * on first open so HMR edits to the panel/tabs/icon grid don't ripple through
  * the toolbar import graph and re-render everything mounted.
  */
-import { useAtomValue } from "@zedux/react";
-import { lazy, Suspense, type ReactNode, useRef, useState } from "react";
-import { SideBarAtom } from "../../../../utils/lib";
+import { lazy, Suspense, type ReactNode, useState } from "react";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 
 const IconPickerPanel = lazy(() => import("./IconPickerPanel"));
 
@@ -33,17 +32,9 @@ export function IconPickerPopover({
   triggerAriaLabel,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
   // Sidebar docked left → panel opens on the RIGHT side of trigger; right → LEFT.
-  const sidebarLeft = useAtomValue(SideBarAtom);
-
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const openPanel = () => {
     setInitialPos(computePosition());

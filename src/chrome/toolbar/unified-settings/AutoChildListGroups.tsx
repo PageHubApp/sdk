@@ -90,10 +90,7 @@ function detectGroups(query: any, parentId: string): DetectedGroup[] {
   return groups;
 }
 
-const SelectedAutoListAtom = atom<Record<string, number | null>>(
-  "auto_child_list_selected",
-  {}
-);
+const SelectedAutoListAtom = atom<Record<string, number | null>>("auto_child_list_selected", {});
 
 function renderItemPopover(name: string, itemId: string): React.ReactNode {
   switch (name) {
@@ -145,8 +142,7 @@ function ChildListGroup({ parentId, group }: { parentId: string; group: Detected
   ];
   const groupKey = `${parentId}:${group.startIdx}:${group.name}`;
   const activeIndex = selectedMap[groupKey] ?? null;
-  const setActiveIndex = (v: number | null) =>
-    setSelectedMap({ ...selectedMap, [groupKey]: v });
+  const setActiveIndex = (v: number | null) => setSelectedMap({ ...selectedMap, [groupKey]: v });
 
   const def = getBuiltinComponentDef(group.name);
   const label = def?.name || group.name;

@@ -18,60 +18,60 @@ export const MapMainTab = () => {
   return renderComponentSlots({
     Content: (
       <>
-      <ToolbarSection collapsible={false}>
-        <CraftListEditor
-          parentId={id}
-          childTypeName="MapPoint"
-          mapItem={node => ({
-            title: node.data.props.title || "",
-            lat: node.data.props.lat || 0,
-            lng: node.data.props.lng || 0,
-            description: node.data.props.description || "",
-          })}
-          activeIndex={activeIndex}
-          setActiveIndex={setActiveIndex}
-          addLabel="Add Point"
-          editTooltip="Edit point"
-          renderLabel={(point: any, index) => point.title || `Point ${index + 1}`}
-          onAdd={({ query, addNode }) => {
-            const MapPoint = query.getOptions().resolver.MapPoint;
-            if (MapPoint) addNode(<MapPoint title="New Point" />);
-          }}
-          renderPopover={(point: any) => (
-            <NodeProvider id={point.id}>
-              <ToolbarSection title="Location">
-                <ToolbarItem
-                  propKey="lat"
-                  propType="component"
-                  type="number"
-                  label="Latitude"
-                  labelHide={false}
-                  placeholder="e.g. 51.505"
-                />
-                <ToolbarItem
-                  propKey="lng"
-                  propType="component"
-                  type="number"
-                  label="Longitude"
-                  labelHide={false}
-                  placeholder="e.g. -0.09"
-                />
-              </ToolbarSection>
-              <ToolbarSection title="Details">
-                <ToolbarItem
-                  propKey="description"
-                  propType="component"
-                  type="text"
-                  label="Description"
-                  labelHide={false}
-                  placeholder="Brief description"
-                />
-              </ToolbarSection>
-            </NodeProvider>
-          )}
-        />
-        <SettingsAiSlot />
-      </ToolbarSection>
+        <ToolbarSection collapsible={false}>
+          <CraftListEditor
+            parentId={id}
+            childTypeName="MapPoint"
+            mapItem={node => ({
+              title: node.data.props.title || "",
+              lat: node.data.props.lat || 0,
+              lng: node.data.props.lng || 0,
+              description: node.data.props.description || "",
+            })}
+            activeIndex={activeIndex}
+            setActiveIndex={setActiveIndex}
+            addLabel="Add Point"
+            editTooltip="Edit point"
+            renderLabel={(point: any, index) => point.title || `Point ${index + 1}`}
+            onAdd={({ query, addNode }) => {
+              const MapPoint = query.getOptions().resolver.MapPoint;
+              if (MapPoint) addNode(<MapPoint title="New Point" />);
+            }}
+            renderPopover={(point: any) => (
+              <NodeProvider id={point.id}>
+                <ToolbarSection title="Location">
+                  <ToolbarItem
+                    propKey="lat"
+                    propType="component"
+                    type="number"
+                    label="Latitude"
+                    labelHide={false}
+                    placeholder="e.g. 51.505"
+                  />
+                  <ToolbarItem
+                    propKey="lng"
+                    propType="component"
+                    type="number"
+                    label="Longitude"
+                    labelHide={false}
+                    placeholder="e.g. -0.09"
+                  />
+                </ToolbarSection>
+                <ToolbarSection title="Details">
+                  <ToolbarItem
+                    propKey="description"
+                    propType="component"
+                    type="text"
+                    label="Description"
+                    labelHide={false}
+                    placeholder="Brief description"
+                  />
+                </ToolbarSection>
+              </NodeProvider>
+            )}
+          />
+          <SettingsAiSlot />
+        </ToolbarSection>
 
         <ToolbarSection
           title="Map Settings"

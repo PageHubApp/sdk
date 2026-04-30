@@ -13,13 +13,7 @@
  * friendly editing; the stored value is always one `href` string.
  */
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  TbExternalLink,
-  TbHash,
-  TbLink,
-  TbMail,
-  TbPhone,
-} from "react-icons/tb";
+import { TbExternalLink, TbHash, TbLink, TbMail, TbPhone } from "react-icons/tb";
 import { ChevronTrigger } from "../../../primitives/ChevronTrigger";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
 import { Chip } from "../../../primitives/Chip";
@@ -28,10 +22,7 @@ import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
 import { useElementPicker } from "./useElementPicker";
-import {
-  type LinkAction,
-  type LinkTarget,
-} from "../../../../utils/action";
+import { type LinkAction, type LinkTarget } from "../../../../utils/action";
 
 interface PageOption {
   id: string;
@@ -104,11 +95,7 @@ function encodeMailto(email: string, subject?: string, body?: string): string {
 
 // ─── Component ─────────────────────────────────────────────────────────
 
-export function LinkInput({
-  action,
-  onChange,
-  placeholder = "Page or URL...",
-}: LinkInputProps) {
+export function LinkInput({ action, onChange, placeholder = "Page or URL..." }: LinkInputProps) {
   const href = action?.href ?? "";
   const target = action?.target;
   const parsed = useMemo(() => parseHref(href), [href]);
@@ -202,9 +189,7 @@ export function LinkInput({
         onClick={() => setOpen(o => !o)}
         trailing={
           <>
-            {href && (
-              <InlineClearButton onClick={() => writeHref("")} tooltip="Clear link" />
-            )}
+            {href && <InlineClearButton onClick={() => writeHref("")} tooltip="Clear link" />}
             <ChevronTrigger
               ref={triggerRef}
               open={open}

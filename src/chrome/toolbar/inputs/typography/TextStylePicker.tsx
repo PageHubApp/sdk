@@ -19,7 +19,7 @@ import { useAtomValue } from "@zedux/react";
 import { Chip } from "@/chrome/primitives/Chip";
 import { SideBarAtom } from "@/utils/lib";
 import type { TypographyPresetRow } from "./TypographyPresetSelect";
-import type { TextStyleDraft } from "./TextStyleEditorPanel";
+import type { TextStyleDraft } from "./textStyleDraft";
 
 const TextStylePickerPanel = lazy(() => import("./TextStylePickerPanel"));
 const TextStyleEditorPanel = lazy(() => import("./TextStyleEditorPanel"));
@@ -80,7 +80,7 @@ export function TextStylePicker({
   const sidebarLeft = useAtomValue(SideBarAtom);
 
   const selectedPreset =
-    selectedName != null ? presets.find(p => p.name === selectedName) ?? null : null;
+    selectedName != null ? (presets.find(p => p.name === selectedName) ?? null) : null;
 
   const triggerLabel = selectedPreset?.name ?? "Default";
   const triggerTag = selectedPreset ? styleTagShorthand(selectedPreset.name) : "—";
@@ -113,7 +113,8 @@ export function TextStylePicker({
 
   return (
     <>
-      <Chip mode="popover"
+      <Chip
+        mode="popover"
         ref={triggerRef}
         open={stage.kind !== "closed"}
         onTriggerClick={togglePicker}
@@ -145,9 +146,7 @@ export function TextStylePicker({
                 draft: buildEditDraft(preset),
               })
             }
-            onCreateNew={() =>
-              setStage({ kind: "editor", mode: "new", draft: buildNewDraft() })
-            }
+            onCreateNew={() => setStage({ kind: "editor", mode: "new", draft: buildNewDraft() })}
           />
         </Suspense>
       )}

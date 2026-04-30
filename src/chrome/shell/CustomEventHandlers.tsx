@@ -29,7 +29,7 @@ if (typeof document !== "undefined") {
     (de: DragEvent) => {
       lastDragPointer = { x: de.clientX, y: de.clientY };
     },
-    true,
+    true
   );
 }
 
@@ -72,7 +72,8 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
     const index = indicator.placement.index + (where === "after" ? 1 : 0);
     const parentId = indicator.placement.parent.id;
     const parentNodes = query.node(parentId).get()?.data?.nodes || [];
-    const currentIndex = dragTarget.type === "existing" ? parentNodes.indexOf(dragTarget.nodes[0]) : -1;
+    const currentIndex =
+      dragTarget.type === "existing" ? parentNodes.indexOf(dragTarget.nodes[0]) : -1;
 
     if (isBeside) {
       log("drop-beside", { where, placementIntent: getLastResolvedIntent() });
@@ -178,7 +179,8 @@ export default class CustomEventHandlers extends DefaultEventHandlers {
         });
 
         const unbindDragEnd = this.addCraftEventListener(el, "dragend", () => {
-          const cleanup = (el as HTMLElement & { __phShiftDragCleanup?: () => void }).__phShiftDragCleanup;
+          const cleanup = (el as HTMLElement & { __phShiftDragCleanup?: () => void })
+            .__phShiftDragCleanup;
           cleanup?.();
           document.body.removeAttribute("data-ph-drag-copy");
           setDragCopyIntent(false);

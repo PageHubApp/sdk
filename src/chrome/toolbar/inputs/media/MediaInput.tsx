@@ -1,9 +1,14 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import { lazy, Suspense, useRef, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
-import { getMediaById, getMediaContent, registerMediaWithBackground, SideBarAtom } from "@/utils/lib";
+import {
+  getMediaById,
+  getMediaContent,
+  registerMediaWithBackground,
+  SideBarAtom,
+} from "@/utils/lib";
 import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
@@ -14,16 +19,14 @@ import { MiniPreviewTile } from "../../../primitives/MiniPreviewTile";
 import { Chip } from "../../../primitives/Chip";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { MediaManagerBody } from "./MediaManagerBody";
+import { MediaManagerModal } from "./MediaManagerModal";
 import { MediaPreviewModal } from "./components/MediaPreviewModal";
 import { useMediaManager } from "./hooks/useMediaManager";
 import type { MediaKind } from "./utils/media-helpers";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 const POPOVER_PANEL_WIDTH = 480;
 const POPOVER_PANEL_HEIGHT = 600;
-
-const MediaManagerModalLazy = lazy(() =>
-  import("./MediaManagerModal").then(m => ({ default: m.MediaManagerModal }))
-);
 
 /** Read a value by dot-path (e.g. "background.image") from an object. */
 function getPath(obj: any, path: string): any {
@@ -222,7 +225,7 @@ export const MediaInput = (propa: MediaInputProps) => {
             minHeight={420}
             initialPosition={popoverInitialPos}
             persistSize={false}
-            zIndex={1100}
+            zIndex={OVERLAY_Z_FLOATING_PANEL}
           >
             <div className="flex h-full flex-col">
               <div className="border-base-300 flex items-center gap-1 border-b p-2">
@@ -257,7 +260,7 @@ export const MediaInput = (propa: MediaInputProps) => {
                     onChange={handleContentUrlChange}
                     label="Image Source"
                     placeholder="https://... or {{item.image}}"
-                    helpText='Use a URL or token like {{item.image}}.'
+                    helpText="Use a URL or token like {{item.image}}."
                     intent="image-src"
                     showExpressionHelp={false}
                     snippets={[
@@ -289,15 +292,13 @@ export const MediaInput = (propa: MediaInputProps) => {
     if (!showMediaBrowser) return null;
 
     return (
-      <Suspense fallback={null}>
-        <MediaManagerModalLazy
-          isOpen
-          onClose={() => setShowMediaBrowser(false)}
-          onSelect={handleBrowseSelect}
-          selectionMode
-          kindFilter={kindFilter}
-        />
-      </Suspense>
+      <MediaManagerModal
+        isOpen
+        onClose={() => setShowMediaBrowser(false)}
+        onSelect={handleBrowseSelect}
+        selectionMode
+        kindFilter={kindFilter}
+      />
     );
   };
 
@@ -381,7 +382,6 @@ export const MediaInput = (propa: MediaInputProps) => {
             </MiniPreviewTile>
 
             <InlineClearButton onClick={handleClear} tooltip="Clear media" floating />
-
           </div>
         ) : null}
 

@@ -2,6 +2,7 @@ import { TbTransitionRight } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { TransitionFields } from "@/chrome/toolbar/inputs/advanced/EffectsClassInput";
 import type { EditorPanelProps } from "../effectTypes";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../../../../overlays/overlayZIndex";
 
 export default function TransitionEditorPanel({ initialPosition, onClose }: EditorPanelProps) {
   return (
@@ -15,7 +16,7 @@ export default function TransitionEditorPanel({ initialPosition, onClose }: Edit
       maxWidth={460}
       minHeight={180}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <TransitionFields />

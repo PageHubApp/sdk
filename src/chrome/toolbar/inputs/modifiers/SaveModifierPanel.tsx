@@ -4,6 +4,7 @@
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { SaveModifierPanelBody } from "./SaveModifierPanelBody";
+import { OVERLAY_Z_FLOATING_PANEL_DROPDOWN } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -21,7 +22,7 @@ export default function SaveModifierPanel({ initialPosition, onClose }: PanelPro
       maxWidth={420}
       minHeight={320}
       initialPosition={initialPosition}
-      zIndex={1110}
+      zIndex={OVERLAY_Z_FLOATING_PANEL_DROPDOWN}
       scrollable
     >
       <SaveModifierPanelBody onClose={onClose} />

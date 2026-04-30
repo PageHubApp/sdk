@@ -35,7 +35,11 @@ export type CompoundSpatialIntent = {
   alignCross: AlignmentIntent;
 };
 
-export type SpatialIntent = ReorderMainIntent | BesideIntent | AlignCrossIntent | CompoundSpatialIntent;
+export type SpatialIntent =
+  | ReorderMainIntent
+  | BesideIntent
+  | AlignCrossIntent
+  | CompoundSpatialIntent;
 
 export function isBesideIntent(where: string): where is BesideSide {
   return where === "beside-left" || where === "beside-right";

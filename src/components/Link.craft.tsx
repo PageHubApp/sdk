@@ -5,7 +5,9 @@ import React from "react";
  */
 import { TbLink } from "react-icons/tb";
 const LinkMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/LinkMainTab").then((mod) => ({ default: mod.LinkMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/LinkMainTab").then(mod => ({
+    default: mod.LinkMainTab,
+  }))
 );
 import { defineComponent } from "../define";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../utils/action";
@@ -185,5 +187,5 @@ export const LinkDef = defineComponent(
       },
     ],
   },
-  { __internal: true },
+  { __internal: true }
 );

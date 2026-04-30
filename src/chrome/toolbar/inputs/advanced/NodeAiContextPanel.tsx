@@ -4,6 +4,7 @@
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { NodeAiContextSection } from "../../unified-settings/mainTabs/NodeAiContextSection";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -21,7 +22,7 @@ export default function NodeAiContextPanel({ initialPosition, onClose }: PanelPr
       maxWidth={560}
       minHeight={360}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <NodeAiContextSection />

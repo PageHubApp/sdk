@@ -131,9 +131,7 @@ export const ToolbarSection = ({
                 )}
                 {icon && <span className="text-neutral-content opacity-70">{icon}</span>}
                 {title}
-                {propKeys && propKeys.length > 0 && (
-                  <SectionOverrideDot propKeys={propKeys} />
-                )}
+                {propKeys && propKeys.length > 0 && <SectionOverrideDot propKeys={propKeys} />}
                 {showChevron && collapsible && (
                   <TbChevronRight
                     className={`text-neutral-content ml-auto size-4 shrink-0 transition-transform ${

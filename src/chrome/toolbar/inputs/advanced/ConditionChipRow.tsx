@@ -7,7 +7,6 @@
  * and floats it next to the chip. Clear → calls `onRemove` to drop the
  * condition from the parent list.
  */
-import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   TbDeviceMobile,
@@ -21,7 +20,7 @@ import {
   TbBolt,
 } from "react-icons/tb";
 import { Chip } from "../../../primitives/Chip";
-import { SideBarAtom } from "../../../../utils/lib";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import {
   NO_VALUE_OPERATORS,
   type Condition,
@@ -107,20 +106,12 @@ export function ConditionChipRow({
   onAutoOpenConsumed,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const Icon = TYPE_ICON[cond.type] || TbEye;
   const typeLabel = conditionTypeLabel(cond);
   const summary = describeCondition(cond) || "Add…";
-
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
 
   const openPanel = () => {
     setInitialPos(computePosition());
@@ -148,7 +139,8 @@ export function ConditionChipRow({
 
   return (
     <>
-      <Chip mode="popover"
+      <Chip
+        mode="popover"
         ref={triggerRef}
         label={typeLabel}
         open={open}

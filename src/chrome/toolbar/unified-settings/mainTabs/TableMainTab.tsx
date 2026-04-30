@@ -65,9 +65,7 @@ export const TableMainTab = () => {
               batchOp.setState(true);
               actions.addNodeTree(
                 query
-                  .parseReactElement(
-                    <Comp tableSection="tbody" custom={{ displayName: "Body" }} />
-                  )
+                  .parseReactElement(<Comp tableSection="tbody" custom={{ displayName: "Body" }} />)
                   .toNodeTree(),
                 id
               );

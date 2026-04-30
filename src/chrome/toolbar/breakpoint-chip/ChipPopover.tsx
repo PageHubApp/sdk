@@ -126,23 +126,15 @@ export function ChipPopover() {
       style={{ minWidth: 220 }}
     >
       <div className="flex items-center justify-between gap-2 px-1 pb-1">
-        <span className="text-base-content text-[11px] font-semibold">
-          {popover.propKey}
-        </span>
-        <span className="text-neutral-content text-[9px]">
-          alt-click = multi
-        </span>
+        <span className="text-base-content text-[11px] font-semibold">{popover.propKey}</span>
+        <span className="text-neutral-content text-[9px]">alt-click = multi</span>
       </div>
       {isMulti && (
         <div className="bg-primary/10 text-primary mb-1 flex items-center justify-between gap-2 rounded px-2 py-1 text-[10px]">
           <span>
             Editing {multi.size} breakpoint{multi.size === 1 ? "" : "s"} together
           </span>
-          <button
-            type="button"
-            onClick={clearMulti}
-            className="hover:underline"
-          >
+          <button type="button" onClick={clearMulti} className="hover:underline">
             clear
           </button>
         </div>
@@ -170,16 +162,14 @@ export function ChipPopover() {
             : isMultiBp
               ? "ring-1 ring-primary/60"
               : "";
-          const valueClass = explicit
-            ? "text-base-content"
-            : "text-neutral-content/40";
+          const valueClass = explicit ? "text-base-content" : "text-neutral-content/40";
           return (
             <button
               key={`v-${bp}`}
               type="button"
               onClick={e => onCellClick(bp as ChipBp, e)}
               className={`bg-base-200 hover:bg-base-300 flex h-9 w-full flex-col items-center justify-center rounded transition-colors ${ringClass} ${
-                shouldPulse ? "ring-2 ring-amber-400 animate-pulse" : ""
+                shouldPulse ? "animate-pulse ring-2 ring-amber-400" : ""
               }`}
               data-tooltip-content={
                 explicit

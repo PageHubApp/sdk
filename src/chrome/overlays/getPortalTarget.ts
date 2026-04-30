@@ -6,7 +6,5 @@
 export function getPortalTarget(target?: HTMLElement | null): HTMLElement {
   if (target) return target;
   if (typeof document === "undefined") return null as unknown as HTMLElement;
-  return (
-    (document.querySelector(".pagehub-sdk-root") as HTMLElement | null) ?? document.body
-  );
+  return (document.querySelector(".pagehub-sdk-root") as HTMLElement | null) ?? document.body;
 }

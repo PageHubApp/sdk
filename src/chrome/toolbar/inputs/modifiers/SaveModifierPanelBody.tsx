@@ -77,9 +77,7 @@ export function SaveModifierPanelBody({ onClose }: Props) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-2">
       <div className="flex flex-col gap-0.5">
-        <label className="text-neutral-content px-0.5 text-[10px] font-medium">
-          Modifier name
-        </label>
+        <label className="text-neutral-content px-0.5 text-[10px] font-medium">Modifier name</label>
         <Chip>
           <input
             ref={labelInputRef}
@@ -113,9 +111,7 @@ export function SaveModifierPanelBody({ onClose }: Props) {
 
       <div className="flex min-h-0 flex-1 flex-col gap-1">
         <div className="flex items-baseline justify-between px-0.5">
-          <span className="text-neutral-content text-[10px] font-medium">
-            Classes to include
-          </span>
+          <span className="text-neutral-content text-[10px] font-medium">Classes to include</span>
           <span className="text-neutral-content/70 text-[10px]">
             {includedTokens.length} / {allTokens.length}
           </span>
@@ -131,7 +127,7 @@ export function SaveModifierPanelBody({ onClose }: Props) {
                   onClick={() => toggleToken(token)}
                   className={
                     isExcluded
-                      ? "border-base-300 text-neutral-content/50 line-through inline-flex items-center gap-1 rounded border bg-transparent px-1.5 py-0.5 font-mono text-[10px]"
+                      ? "border-base-300 text-neutral-content/50 inline-flex items-center gap-1 rounded border bg-transparent px-1.5 py-0.5 font-mono text-[10px] line-through"
                       : "border-primary/40 bg-primary/10 text-primary inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-[10px]"
                   }
                   aria-pressed={!isExcluded}

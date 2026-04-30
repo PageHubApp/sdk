@@ -51,11 +51,7 @@ export function TwitterCardTab({
         </SettingsFormField>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <SettingsFormField
-            label="Site"
-            htmlFor="twitter-site"
-            hint="The site's @ handle."
-          >
+          <SettingsFormField label="Site" htmlFor="twitter-site" hint="The site's @ handle.">
             <input
               id="twitter-site"
               type="text"

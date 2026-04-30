@@ -119,10 +119,7 @@ interface ComputeRunCtx {
   interp: (raw: string) => string;
 }
 
-export function runComputedState(
-  binding: ComputedStateBinding,
-  ctx: ComputeRunCtx
-): string {
+export function runComputedState(binding: ComputedStateBinding, ctx: ComputeRunCtx): string {
   const c = binding.compute;
   switch (c.type) {
     case "all-truthy": {
@@ -159,8 +156,8 @@ export function runComputedState(
       }
       const complete = axes.length > 0 && axes.every(n => !!sel[n]);
       if (!complete) return "";
-      const match = variants.find(v =>
-        axes.every(n => v[slots[n]!] === sel[n]) && v.inventory !== 0
+      const match = variants.find(
+        v => axes.every(n => v[slots[n]!] === sel[n]) && v.inventory !== 0
       );
       return match ? JSON.stringify(match) : "";
     }

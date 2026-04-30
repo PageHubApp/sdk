@@ -4,18 +4,13 @@
  * IconPickerPopover / BundleRow.
  */
 import { useNode } from "@craftjs/core";
-import { useAtomValue } from "@zedux/react";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { TbBolt, TbPlus } from "react-icons/tb";
 import { cssAnimationPresets } from "../../../../utils/animations";
 import { ANIMATION_PARAM_KEYS } from "./AnimationsInput";
-import { SideBarAtom } from "../../../../utils/lib";
 import { Chip } from "../../../primitives/Chip";
-import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
-import {
-  PopoverOpenRequestAtom,
-  popoverRequestKey,
-} from "../../unified-settings/popoverOpenRequestAtom";
+import { usePopoverAutoOpen } from "../../unified-settings/hooks/usePopoverAutoOpen";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
 
 const AnimationsPanel = lazy(() => import("./AnimationsPanel"));
@@ -32,12 +27,8 @@ function describeAnimation(animation: string, engine: string): string {
 
 export default function AnimationsInputPopover({ def }: PropertyInputProps) {
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
-  const sessionAdded = useAtomValue(SessionAddedAtom);
-
-  const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const {
     actions: { setProp },
@@ -53,45 +44,12 @@ export default function AnimationsInputPopover({ def }: PropertyInputProps) {
   const summary = describeAnimation(animation, engine);
   const isEmpty = !animation;
 
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
-
   const openPanel = () => {
     setInitialPos(computePosition());
     setOpen(true);
   };
 
-  // Legacy auto-open from sessionAdded.
-  const autoOpenedRef = useRef(false);
-  useEffect(() => {
-    if (autoOpenedRef.current) return;
-    if (def && sessionAdded.has(sessionKey(id, def.id))) {
-      requestAnimationFrame(() => {
-        setInitialPos(computePosition());
-        setOpen(true);
-      });
-      autoOpenedRef.current = true;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionAdded, id, def?.id]);
-
-  // Open whenever a popover-open-request is dispatched for this row.
-  const lastRequestVersion = useRef(0);
-  useEffect(() => {
-    if (!def) return;
-    const version = popoverRequests.get(popoverRequestKey(id, def.id)) || 0;
-    if (version === 0 || version === lastRequestVersion.current) return;
-    lastRequestVersion.current = version;
-    requestAnimationFrame(() => {
-      setInitialPos(computePosition());
-      setOpen(true);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [popoverRequests, id, def?.id]);
+  usePopoverAutoOpen({ nodeId: id, defId: def?.id, onOpen: openPanel });
 
   const clearAnimation = () => {
     setProp((p: any) => {
@@ -117,7 +75,8 @@ export default function AnimationsInputPopover({ def }: PropertyInputProps) {
           <TbPlus className="size-3.5" aria-hidden />
         </button>
       ) : (
-        <Chip mode="popover"
+        <Chip
+          mode="popover"
           ref={triggerRef}
           open={open}
           onTriggerClick={() => (open ? setOpen(false) : openPanel())}

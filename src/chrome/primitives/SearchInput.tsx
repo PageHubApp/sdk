@@ -39,7 +39,20 @@ const SIZE_STYLES = {
 } as const;
 
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
-  ({ value, onChange, placeholder = "Search...", className = "", clearTooltip = "Clear", size = "default", autoFocus, onKeyDown, inputProps }, ref) => {
+  (
+    {
+      value,
+      onChange,
+      placeholder = "Search...",
+      className = "",
+      clearTooltip = "Clear",
+      size = "default",
+      autoFocus,
+      onKeyDown,
+      inputProps,
+    },
+    ref
+  ) => {
     const hasValue = value.length > 0;
     const s = SIZE_STYLES[size];
     return (
@@ -73,6 +86,6 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         )}
       </div>
     );
-  },
+  }
 );
 SearchInput.displayName = "SearchInput";

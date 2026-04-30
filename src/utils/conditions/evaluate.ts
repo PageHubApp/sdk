@@ -1,7 +1,6 @@
 import { getStateValue } from "../stateRegistry";
 import type {
   Condition,
-  ConditionBranch,
   ConditionContext,
   ConditionGroup,
   ConditionLogic,
@@ -229,25 +228,4 @@ export function evaluateConditionGroups(
     if (result === null) hasNull = true;
   }
   return hasNull ? null : false;
-}
-
-/**
- * Find the first matching branch index for ConditionalContainer.
- * Returns the index of the first branch whose conditions pass, or -1 if none match.
- * A branch with empty conditions always matches (it's the else/fallback).
- */
-export function evaluateBranches(
-  branches: ConditionBranch[],
-  ctx: ConditionContext
-): { index: number; indeterminate: boolean } {
-  for (let i = 0; i < branches.length; i++) {
-    const b = branches[i];
-    if (!b.conditions || b.conditions.length === 0) {
-      return { index: i, indeterminate: false };
-    }
-    const result = evaluateConditions(b.conditions, b.conditionLogic, ctx);
-    if (result === true) return { index: i, indeterminate: false };
-    if (result === null) return { index: i, indeterminate: true };
-  }
-  return { index: -1, indeterminate: false };
 }

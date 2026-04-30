@@ -10,10 +10,9 @@
  * the `autoOpen` prop fed by `ActionsInput`'s pendingHandlerOpen state — see
  * docs/sdk/editor-popover-pattern.md §8.
  */
-import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Chip } from "../../../primitives/Chip";
-import { SideBarAtom } from "../../../../utils/lib";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import { HANDLER_EVENT_LABEL, getHandlerIcon } from "./handlerEvents";
 
 const HandlerEditorPanel = lazy(() => import("./HandlerEditorPanel"));
@@ -57,20 +56,12 @@ export function HandlerChipRow({
   onAutoOpenConsumed,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const Icon = getHandlerIcon(event);
   const typeLabel = HANDLER_EVENT_LABEL[event] ?? event;
   const summary = describeHandler(code);
-
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
 
   const openPanel = () => {
     setInitialPos(computePosition());
@@ -96,7 +87,8 @@ export function HandlerChipRow({
 
   return (
     <>
-      <Chip mode="popover"
+      <Chip
+        mode="popover"
         ref={triggerRef}
         label={typeLabel}
         open={open}

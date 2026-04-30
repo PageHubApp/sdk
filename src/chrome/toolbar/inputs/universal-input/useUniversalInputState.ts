@@ -200,8 +200,8 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
       if (isDesignTokenClass(option, prefix)) {
         groups.tokens.push(option);
       } else if (
-        hasNoPrefix
-        || ["full", "screen", "auto", "min", "max", "fit", "none"].includes(value)
+        hasNoPrefix ||
+        ["full", "screen", "auto", "min", "max", "fit", "none"].includes(value)
       ) {
         groups.named.push(option);
       } else if (value.includes("/")) {

@@ -2,6 +2,7 @@ import { TbStack } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { TransformFields } from "@/chrome/toolbar/inputs/advanced/EffectsClassInput";
 import type { EditorPanelProps } from "../effectTypes";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../../../../overlays/overlayZIndex";
 
 export default function TransformEditorPanel({ initialPosition, onClose }: EditorPanelProps) {
   return (
@@ -15,7 +16,7 @@ export default function TransformEditorPanel({ initialPosition, onClose }: Edito
       maxWidth={480}
       minHeight={300}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <TransformFields />

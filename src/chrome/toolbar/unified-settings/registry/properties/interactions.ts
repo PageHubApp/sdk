@@ -42,8 +42,7 @@ export const interactionProperties: PropertyDef[] = [
       // string (form-mode submission URL — not an interaction). Plural
       // `props.actions` survives only for in-flight legacy data.
       const a = props?.action;
-      const hasAction =
-        (Array.isArray(a) && a.length > 0) || (a && typeof a === "object");
+      const hasAction = (Array.isArray(a) && a.length > 0) || (a && typeof a === "object");
       const hasLegacy =
         (Array.isArray(props?.actions) && props.actions.length > 0) ||
         !!props?.click ||

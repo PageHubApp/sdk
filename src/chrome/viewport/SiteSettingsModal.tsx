@@ -141,9 +141,7 @@ function createDraftFromRoot(props: Record<string, any>): SiteSettingsDraft {
   const inject = props.inject || {};
   const favicon = seo.favicon || {};
   const designTags = Array.isArray(design.tags)
-    ? normalizeDesignTags(
-        design.tags.filter((t: unknown): t is string => typeof t === "string")
-      )
+    ? normalizeDesignTags(design.tags.filter((t: unknown): t is string => typeof t === "string"))
     : [];
 
   return {

@@ -80,7 +80,6 @@ export function inferCrossAxisIntentFromCursorZones(
 
   if (rect.height < MIN_ALIGN_CONTAINER_PX) return null;
   const ratioY = (posY - rect.top) / rect.height;
-  const zone: AlignmentZone =
-    ratioY < START_ZONE ? "start" : ratioY > END_ZONE ? "end" : "center";
+  const zone: AlignmentZone = ratioY < START_ZONE ? "start" : ratioY > END_ZONE ? "end" : "center";
   return { zone, axis: "vertical" };
 }

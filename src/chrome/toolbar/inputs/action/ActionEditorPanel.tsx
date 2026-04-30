@@ -12,6 +12,7 @@ import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ACTION_TYPE_OPTIONS, type NodeAction, type ActionType } from "../../../../utils/action";
 import { ACTION_DEFAULTS, ActionSubForm } from "./ActionInput";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface Props {
   action: NodeAction;
@@ -56,7 +57,7 @@ export default function ActionEditorPanel({
       maxWidth={520}
       minHeight={240}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <div className="flex flex-col gap-2">

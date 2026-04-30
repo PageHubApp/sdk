@@ -4,7 +4,9 @@ import React from "react";
  */
 import { TbHandClick } from "react-icons/tb";
 const ButtonMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/ButtonMainTab").then((mod) => ({ default: mod.ButtonMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/ButtonMainTab").then(mod => ({
+    default: mod.ButtonMainTab,
+  }))
 );
 import { defineComponent } from "../define";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../utils/action";

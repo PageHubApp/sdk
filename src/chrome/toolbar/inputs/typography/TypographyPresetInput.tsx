@@ -25,7 +25,7 @@ import { toCSSVarName } from "@/utils/design/designSystemVars";
 import { resolveTheme, writeTheme } from "@/utils/design/resolveTheme";
 import type { PropertyDef } from "../../unified-settings/registry/propertyDefs";
 import { TextStylePicker } from "./TextStylePicker";
-import { emptyDraft, presetToDraft, type TextStyleDraft } from "./TextStyleEditorPanel";
+import { emptyDraft, presetToDraft, type TextStyleDraft } from "./textStyleDraft";
 import { type TypographyPresetRow } from "./TypographyPresetSelect";
 
 function presetClass(name: string): string {
@@ -76,7 +76,11 @@ function stripPresetClasses(className: string, knownPresetClasses: Set<string>):
 }
 
 export function TypographyPresetInput({ def }: Props = {}) {
-  const { actions: editorActions, presets, presetsRaw } = useEditor(state => {
+  const {
+    actions: editorActions,
+    presets,
+    presetsRaw,
+  } = useEditor(state => {
     const root = state.nodes[ROOT_NODE];
     const theme = resolveTheme(root?.data?.props || {});
     const list = (theme.typography || []) as any[];
@@ -99,8 +103,7 @@ export function TypographyPresetInput({ def }: Props = {}) {
     classNameStr,
     nodeId,
   } = useNode(node => ({
-    classNameStr:
-      typeof node.data?.props?.className === "string" ? node.data.props.className : "",
+    classNameStr: typeof node.data?.props?.className === "string" ? node.data.props.className : "",
     nodeId: node.id,
   }));
 
@@ -122,10 +125,7 @@ export function TypographyPresetInput({ def }: Props = {}) {
   const applyPresetToNode = (name: string | null, knownClassesOverride?: Set<string>) => {
     const known = knownClassesOverride ?? presetClassSet;
     setProp((p: any) => {
-      const cleaned = stripPresetClasses(
-        typeof p.className === "string" ? p.className : "",
-        known
-      );
+      const cleaned = stripPresetClasses(typeof p.className === "string" ? p.className : "", known);
       const cls = name ? presetClass(name) : "";
       p.className = cls ? (cleaned ? `${cleaned} ${cls}` : cls) : cleaned;
     });
@@ -159,9 +159,7 @@ export function TypographyPresetInput({ def }: Props = {}) {
     // Pull the raw preset (may carry color / textDecoration / textAlign that
     // `TypographyPresetRow` doesn't surface) so the editor can round-trip them.
     const raw =
-      presetsRaw.find(
-        p => p && typeof p.name === "string" && p.name === preset.name
-      ) ?? preset;
+      presetsRaw.find(p => p && typeof p.name === "string" && p.name === preset.name) ?? preset;
     return presetToDraft({ ...preset, ...raw });
   };
 

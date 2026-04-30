@@ -206,9 +206,7 @@ export const AnimationsInput = () => {
                     className="text-neutral-content group-hover:text-primary size-4 transition-colors"
                     aria-hidden
                   />
-                  <span className="text-[10px] font-medium tracking-wide uppercase">
-                    Replay
-                  </span>
+                  <span className="text-[10px] font-medium tracking-wide uppercase">Replay</span>
                 </button>
               );
             })()

@@ -77,8 +77,7 @@ function collectSeeds(props: any, out: SeedEntry[]): void {
     }
     if (a.type === "toggle-state" && (a as any).key) {
       const k = (a as any).kind ?? "flag";
-      const pair = (a as any).values ??
-        (k === "visibility" ? ["shown", "hidden"] : ["on", "off"]);
+      const pair = (a as any).values ?? (k === "visibility" ? ["shown", "hidden"] : ["on", "off"]);
       out.push({
         kind: "toggle-state",
         key: (a as any).key,
@@ -96,8 +95,7 @@ function collectSeeds(props: any, out: SeedEntry[]): void {
 function seedKey(s: SeedEntry): string {
   if (s.kind === "show-hide") return `show:${s.target}`;
   if (s.kind === "set-state") return `set:${s.key}=${s.value}|${s.stateKind}`;
-  if (s.kind === "toggle-state")
-    return `toggle:${s.key}|${s.stateKind}|${s.values.join(",")}`;
+  if (s.kind === "toggle-state") return `toggle:${s.key}|${s.stateKind}|${s.values.join(",")}`;
   return `clear:${s.key}`;
 }
 

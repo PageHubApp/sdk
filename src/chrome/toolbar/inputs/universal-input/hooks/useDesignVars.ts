@@ -42,10 +42,8 @@ export function useDesignVars(): DesignVar[] {
     const runtimeStyleGuide = theme.styleGuide;
     // Optional sidecar metadata for styleGuide tokens (custom flag, applies-to
     // override). Sparse — most tokens don't have an entry.
-    const styleGuideMeta: Record<
-      string,
-      { appliesTo?: StyleTokenCategory[]; custom?: boolean }
-    > = (theme as any).styleGuideMeta || {};
+    const styleGuideMeta: Record<string, { appliesTo?: StyleTokenCategory[]; custom?: boolean }> =
+      (theme as any).styleGuideMeta || {};
 
     const vars: DesignVar[] = [];
 

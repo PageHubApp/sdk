@@ -16,13 +16,11 @@
  */
 import { useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useState } from "react";
 import { Chip } from "@/chrome/primitives/Chip";
-import { SideBarAtom } from "@/utils/lib";
-import {
-  PopoverOpenRequestAtom,
-  popoverRequestKey,
-} from "../../../popoverOpenRequestAtom";
+import { usePopoverAutoOpen } from "../../../hooks/usePopoverAutoOpen";
+import { usePopoverPosition } from "../../../hooks/usePopoverPosition";
+import { PopoverOpenRequestAtom, popoverRequestKey } from "../../../popoverOpenRequestAtom";
 import { SessionAddedAtom, sessionKey } from "../../../sessionAddedAtom";
 import type { PropertyInputProps } from "../../propertyDefs";
 import { getEffectType, type EffectId, type EffectNodeView } from "./effectTypes";
@@ -32,9 +30,8 @@ const PANEL_WIDTH = 360;
 export default function EffectRowInputPopover({ def }: PropertyInputProps) {
   const type = getEffectType(def.id as EffectId);
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const [sessionAdded, setSessionAdded] = useAtomState(SessionAddedAtom);
   const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
@@ -58,38 +55,12 @@ export default function EffectRowInputPopover({ def }: PropertyInputProps) {
   const sessionPending = sessionAdded.has(sessionKey(id, def.id));
   const requestVersion = popoverRequests.get(popoverRequestKey(id, def.id)) || 0;
 
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
+  const openPanel = () => {
+    setInitialPos(computePosition());
+    setOpen(true);
   };
 
-  // Auto-open from legacy SessionAdded path. Only fires once per mount.
-  const autoOpenedRef = useRef(false);
-  useEffect(() => {
-    if (autoOpenedRef.current) return;
-    if (sessionPending) {
-      autoOpenedRef.current = true;
-      requestAnimationFrame(() => {
-        setInitialPos(computePosition());
-        setOpen(true);
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionPending]);
-
-  // Open whenever a popover-open-request is dispatched for this row.
-  const lastRequestVersion = useRef(0);
-  useEffect(() => {
-    if (requestVersion === 0 || requestVersion === lastRequestVersion.current) return;
-    lastRequestVersion.current = requestVersion;
-    requestAnimationFrame(() => {
-      setInitialPos(computePosition());
-      setOpen(true);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requestVersion]);
+  usePopoverAutoOpen({ nodeId: id, defId: def.id, onOpen: openPanel });
 
   if (!type) return null;
 
@@ -100,11 +71,6 @@ export default function EffectRowInputPopover({ def }: PropertyInputProps) {
   if (!visible) return null;
 
   const Icon = type.Icon;
-
-  const openPanel = () => {
-    setInitialPos(computePosition());
-    setOpen(true);
-  };
 
   const handleClear = () => {
     if (open) setOpen(false);
@@ -127,7 +93,8 @@ export default function EffectRowInputPopover({ def }: PropertyInputProps) {
 
   return (
     <>
-      <Chip mode="popover"
+      <Chip
+        mode="popover"
         ref={triggerRef}
         label={type.label}
         open={open}

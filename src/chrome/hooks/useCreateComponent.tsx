@@ -44,7 +44,7 @@ export function useCreateComponent(): () => void {
 
       requestAnimationFrame(() => {
         const contentTree = query.node(contentNodeId).toNodeTree();
-        const nodePairs = Object.keys(contentTree.nodes).map((id) => [
+        const nodePairs = Object.keys(contentTree.nodes).map(id => [
           id,
           query.node(id).toSerializedNode(),
         ]);

@@ -469,7 +469,7 @@ export function PageSelector({
                 className={`group flex w-full items-center gap-2 border-l-2 px-3 py-2 transition-colors ${
                   isSelected
                     ? "border-primary bg-base-200 text-base-content font-medium"
-                    : "border-transparent hover:border-base-300 hover:bg-base-200/60 text-base-content/80 hover:text-base-content"
+                    : "hover:border-base-300 hover:bg-base-200/60 text-base-content/80 hover:text-base-content border-transparent"
                 }`}
               >
                 {pickerMode ? (
@@ -481,7 +481,10 @@ export function PageSelector({
                     {isPageHomePage ? (
                       <TbHome className="text-base-content size-4 shrink-0" aria-hidden />
                     ) : (
-                      <TbFileText className="text-base-content size-4 shrink-0 opacity-80" aria-hidden />
+                      <TbFileText
+                        className="text-base-content size-4 shrink-0 opacity-80"
+                        aria-hidden
+                      />
                     )}
                     <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
                       <span className="text-base-content truncate text-sm">{page.displayName}</span>
@@ -499,7 +502,10 @@ export function PageSelector({
                     {isPageHomePage ? (
                       <TbHome className="text-base-content size-4 shrink-0" aria-hidden />
                     ) : (
-                      <TbFileText className="text-base-content size-4 shrink-0 opacity-80" aria-hidden />
+                      <TbFileText
+                        className="text-base-content size-4 shrink-0 opacity-80"
+                        aria-hidden
+                      />
                     )}
                     <div className="flex flex-1 items-center justify-between gap-2 overflow-hidden">
                       <span className="text-base-content truncate text-sm">{page.displayName}</span>

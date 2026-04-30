@@ -85,7 +85,10 @@ export function getPlacementMainAxis(
  * Cross-axis flex alignment is meaningless on table hosts and when the component def opts out.
  * Schema (`suppressCrossAxisAlign`) first; then CSS table `display` for unknown / auto defs (e.g. cells).
  */
-export function shouldSkipCrossAxisAlignForParent(parent: Node, parentDom: HTMLElement | null): boolean {
+export function shouldSkipCrossAxisAlignForParent(
+  parent: Node,
+  parentDom: HTMLElement | null
+): boolean {
   if (getSuppressCrossAxisAlignForComponentName(resolverName(parent))) {
     return true;
   }
@@ -96,7 +99,10 @@ export function shouldSkipCrossAxisAlignForParent(parent: Node, parentDom: HTMLE
  * Beside (flex-col edge bands) does not apply to CSS table layout or the Table component root.
  * The Table node’s DOM is a block scroll wrapper, not `display: table`, so we also key off `name`.
  */
-export function shouldSkipBesideInColumnForParent(parent: Node, parentDom: HTMLElement | null): boolean {
+export function shouldSkipBesideInColumnForParent(
+  parent: Node,
+  parentDom: HTMLElement | null
+): boolean {
   if (resolverName(parent) === "Table") {
     return true;
   }

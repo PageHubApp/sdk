@@ -111,9 +111,7 @@ export function CraftListEditor<T extends BaseCraftItem>({
   };
 
   const editLabel =
-    editTooltip === null
-      ? null
-      : (editTooltip ?? `Edit ${childTypeName?.toLowerCase() ?? "item"}`);
+    editTooltip === null ? null : (editTooltip ?? `Edit ${childTypeName?.toLowerCase() ?? "item"}`);
 
   return (
     <ListEditor

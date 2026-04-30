@@ -59,9 +59,10 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
     // Bump z-index when nested inside a FloatingPanel so the type chooser
     // sits above its host panel; default to the global type-selector layer.
     const floatingPanelZ = useFloatingPanelZIndex();
-    const dropdownZ = floatingPanelZ != null
-      ? Math.max(OVERLAY_Z_FLOATING_PANEL_DROPDOWN, floatingPanelZ + 10)
-      : OVERLAY_Z_TYPE_SELECTOR;
+    const dropdownZ =
+      floatingPanelZ != null
+        ? Math.max(OVERLAY_Z_FLOATING_PANEL_DROPDOWN, floatingPanelZ + 10)
+        : OVERLAY_Z_TYPE_SELECTOR;
     const hoverOpenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

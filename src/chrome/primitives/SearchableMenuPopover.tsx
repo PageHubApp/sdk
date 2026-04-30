@@ -8,12 +8,7 @@
  * Use this for any "click trigger → search → pick one" UX. Don't reach for
  * a hand-rolled `absolute + outside-click` popover.
  */
-import {
-  Combobox,
-  ComboboxInput,
-  ComboboxOption,
-  ComboboxOptions,
-} from "@headlessui/react";
+import { Combobox, ComboboxInput, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 import {
   forwardRef,
   useCallback,
@@ -47,15 +42,13 @@ export interface SearchableMenuPopoverHandle {
 
 type Anchor = "bottom start" | "bottom end" | "top start" | "top end";
 
-const ANCHOR_TO_PLACEMENT: Record<
-  Anchor,
-  "bottom-start" | "bottom-end" | "top-start" | "top-end"
-> = {
-  "bottom start": "bottom-start",
-  "bottom end": "bottom-end",
-  "top start": "top-start",
-  "top end": "top-end",
-};
+const ANCHOR_TO_PLACEMENT: Record<Anchor, "bottom-start" | "bottom-end" | "top-start" | "top-end"> =
+  {
+    "bottom start": "bottom-start",
+    "bottom end": "bottom-end",
+    "top start": "top-start",
+    "top end": "top-end",
+  };
 
 interface Props<TData> {
   /** Trigger content — sits inside the trigger button. */
@@ -109,9 +102,7 @@ function defaultRender<T>(item: SearchableMenuItem<T>): ReactNode {
   return (
     <>
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
-      {item.hint && (
-        <span className="text-neutral-content shrink-0 text-[10px]">{item.hint}</span>
-      )}
+      {item.hint && <span className="text-neutral-content shrink-0 text-[10px]">{item.hint}</span>}
     </>
   );
 }
@@ -230,8 +221,7 @@ function SearchableMenuPopoverInner<TData>(
               </div>
             ) : (
               filtered.map(item => {
-                const isSelected =
-                  multiSelect && selected.some(s => s.id === item.id);
+                const isSelected = multiSelect && selected.some(s => s.id === item.id);
                 return (
                   <ComboboxOption
                     key={item.id}
@@ -266,9 +256,7 @@ function SearchableMenuPopoverInner<TData>(
           {multiSelect && (
             <div className="border-base-300/60 mt-1 flex items-center justify-between gap-2 border-t px-2 py-1.5">
               <span className="text-neutral-content text-[10px]">
-                {selected.length
-                  ? `${selected.length} selected`
-                  : "Pick one or more"}
+                {selected.length ? `${selected.length} selected` : "Pick one or more"}
               </span>
               <button
                 type="button"

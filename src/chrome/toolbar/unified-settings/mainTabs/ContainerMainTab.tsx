@@ -9,7 +9,7 @@ import { renderComponentSlots } from "../helpers";
 import { PropertyRow } from "../PropertyRenderer";
 import { backgroundProperties } from "../registry/properties/background";
 
-import { useNodeTypeHelpers } from "@/chrome/canvas/hooks/useNodeType";
+import { useNodeTypeHelpers } from "@/utils/hooks/useNodeType";
 import { useEditor } from "@craftjs/core";
 
 const bgImageDef = backgroundProperties.find(p => p.id === "bgImage")!;
@@ -96,4 +96,3 @@ export const ContainerMainTab = () => {
 
   return null;
 };
-

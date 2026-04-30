@@ -6,12 +6,7 @@
  * Ring & Outline section — ring + outline width/color (main) + offsets + outline style (advanced)
  */
 import React from "react";
-import {
-  TbBorderCorners,
-  TbBorderInner,
-  TbBoxPadding,
-  TbSquare,
-} from "react-icons/tb";
+import { TbBorderCorners, TbBorderInner, TbBoxPadding, TbSquare } from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 import type { ValueType } from "../../../inputs/universal-input/types";
 
@@ -92,7 +87,18 @@ export const appearanceProperties: PropertyDef[] = [
     id: "border",
     label: "Border",
     section: "styles",
-    keywords: ["border", "width", "style", "color", "stroke", "thickness", "top", "right", "bottom", "left"],
+    keywords: [
+      "border",
+      "width",
+      "style",
+      "color",
+      "stroke",
+      "thickness",
+      "top",
+      "right",
+      "bottom",
+      "left",
+    ],
     hideKey: "border",
     sortOrder: 20,
     input: {

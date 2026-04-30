@@ -38,7 +38,10 @@ const inputTypes = [
 // (not a flat scalar), so we read/write via useNode setProp directly.
 
 const StateBindingSection = () => {
-  const { actions: { setProp }, stateBinding } = useNode(node => ({
+  const {
+    actions: { setProp },
+    stateBinding,
+  } = useNode(node => ({
     stateBinding: node.data?.props?.stateBinding as
       | { key?: string; debounceMs?: number; defaultValue?: string; mode?: "value" | "checked" }
       | undefined,
@@ -76,7 +79,7 @@ const StateBindingSection = () => {
     >
       {/* Key */}
       <div className="col-span-full flex flex-col gap-1">
-        <label className="text-neutral-content text-[10px] font-medium uppercase tracking-wider">
+        <label className="text-neutral-content text-[10px] font-medium tracking-wider uppercase">
           State key
           <span
             className="ml-1 cursor-help opacity-60"
@@ -113,7 +116,7 @@ const StateBindingSection = () => {
 
       {/* Mode */}
       <div className="col-span-full flex flex-col gap-1">
-        <label className="text-neutral-content text-[10px] font-medium uppercase tracking-wider">
+        <label className="text-neutral-content text-[10px] font-medium tracking-wider uppercase">
           Mode
           <span
             className="ml-1 cursor-help opacity-60"
@@ -152,7 +155,7 @@ const StateBindingSection = () => {
 
       {/* Debounce */}
       <div className="col-span-full flex flex-col gap-1">
-        <label className="text-neutral-content text-[10px] font-medium uppercase tracking-wider">
+        <label className="text-neutral-content text-[10px] font-medium tracking-wider uppercase">
           Debounce (ms)
           <span
             className="ml-1 cursor-help opacity-60"
@@ -182,7 +185,7 @@ const StateBindingSection = () => {
 
       {/* Default value */}
       <div className="col-span-full flex flex-col gap-1">
-        <label className="text-neutral-content text-[10px] font-medium uppercase tracking-wider">
+        <label className="text-neutral-content text-[10px] font-medium tracking-wider uppercase">
           Default value
           <span
             className="ml-1 cursor-help opacity-60"
@@ -220,37 +223,37 @@ export const FormElementMainTab = () => {
   return renderComponentSlots({
     Content: (
       <>
-      <ToolbarSection
-        title="Field"
-        help="The placeholder will be displayed when no text is entered. The name is how you identify this input."
-      >
-        <ToolbarItem
-          propKey="placeholder"
-          propType="component"
-          type="text"
-          labelHide={true}
-          label="Placeholder"
-        />
-        <ToolbarItem
-          propKey="name"
-          propType="component"
-          type="text"
-          labelHide={true}
-          label="Input Name"
-        />
-        <ToolbarItem
-          propKey="type"
-          propType="component"
-          type="select"
-          label="Type"
-          labelHide={true}
+        <ToolbarSection
+          title="Field"
+          help="The placeholder will be displayed when no text is entered. The name is how you identify this input."
         >
-          {inputTypes.map((_, k) => (
-            <option key={_}>{_}</option>
-          ))}
-        </ToolbarItem>
-        <SettingsAiSlot />
-      </ToolbarSection>
+          <ToolbarItem
+            propKey="placeholder"
+            propType="component"
+            type="text"
+            labelHide={true}
+            label="Placeholder"
+          />
+          <ToolbarItem
+            propKey="name"
+            propType="component"
+            type="text"
+            labelHide={true}
+            label="Input Name"
+          />
+          <ToolbarItem
+            propKey="type"
+            propType="component"
+            type="select"
+            label="Type"
+            labelHide={true}
+          >
+            {inputTypes.map((_, k) => (
+              <option key={_}>{_}</option>
+            ))}
+          </ToolbarItem>
+          <SettingsAiSlot />
+        </ToolbarSection>
 
         {fieldType === "select" && (
           <ToolbarSection title="Select Options" help="Manage options for select dropdowns">

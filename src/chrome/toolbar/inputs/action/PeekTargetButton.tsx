@@ -12,11 +12,7 @@
  */
 import { TbEye, TbEyeOff } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import {
-  getShowHideState,
-  toggleShowHideState,
-  useShowHideVersion,
-} from "@/utils/showHideStore";
+import { getShowHideState, toggleShowHideState, useShowHideVersion } from "@/utils/showHideStore";
 
 interface Props {
   target: string | undefined;
@@ -30,9 +26,7 @@ export function PeekTargetButton({ target, size = "lg" }: Props) {
   // in their authored className (modal backdrops, drawers, accordion panels).
   const shown = target ? getShowHideState(target) === "shown" : false;
   const sizeClass =
-    size === "sm"
-      ? "size-5 rounded-md"
-      : "px-2 rounded-md border border-base-300 bg-base-200/50";
+    size === "sm" ? "size-5 rounded-md" : "px-2 rounded-md border border-base-300 bg-base-200/50";
   const Icon = shown ? TbEye : TbEyeOff;
   return (
     <button
@@ -41,7 +35,7 @@ export function PeekTargetButton({ target, size = "lg" }: Props) {
       onClick={() => target && toggleShowHideState(target)}
       data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
       data-tooltip-content={shown ? "Hide target in editor" : "Show target in editor"}
-      className={`text-neutral-content hover:bg-base-200 hover:text-base-content disabled:opacity-40 inline-flex shrink-0 items-center justify-center transition-colors ${sizeClass}`}
+      className={`text-neutral-content hover:bg-base-200 hover:text-base-content inline-flex shrink-0 items-center justify-center transition-colors disabled:opacity-40 ${sizeClass}`}
       aria-label={shown ? "Hide target in editor" : "Show target in editor"}
     >
       <Icon className="size-3.5" />

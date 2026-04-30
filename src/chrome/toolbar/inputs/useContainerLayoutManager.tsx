@@ -50,9 +50,7 @@ export const useContainerLayoutManager = () => {
       if (!child) return;
       const cn = String(child.data?.props?.className || "");
       const stripped = stripWidthClasses(cn);
-      const next = (widthCn ? `${stripped} ${widthCn}` : stripped)
-        .trim()
-        .replace(/\s+/g, " ");
+      const next = (widthCn ? `${stripped} ${widthCn}` : stripped).trim().replace(/\s+/g, " ");
       if (next !== cn) {
         batch.setProp(childId, (props: any) => {
           props.className = next;
@@ -69,8 +67,7 @@ export const useContainerLayoutManager = () => {
         ? stripWidthClasses(String(lastChild.data.props.className))
         : "flex flex-col gap-4";
       const templateCn = sampledCn || "flex flex-col gap-4";
-      const templateDisplayName =
-        (lastChild?.data?.custom?.displayName as string) || "Container";
+      const templateDisplayName = (lastChild?.data?.custom?.displayName as string) || "Container";
 
       const baseCn = (widthCn ? `${templateCn} ${widthCn}` : templateCn)
         .trim()

@@ -17,10 +17,7 @@ import type { Condition, ConditionGroup, ConditionLogic } from "./types";
  * covers them. Other condition types (url-param, viewport, form-field) are
  * handled by their own listeners (popstate/resize/etc).
  */
-function collectStateKeys(
-  conditions: Condition[],
-  groups: ConditionGroup[] | null
-): string[] {
+function collectStateKeys(conditions: Condition[], groups: ConditionGroup[] | null): string[] {
   const keys = new Set<string>();
   const visit = (c: Condition) => {
     if (c.type === "state" && (c as any).key) keys.add((c as any).key);
@@ -102,10 +99,14 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     // company. No window access, so server and client first render agree → no
     // hydration mismatch. Client-only signals (URL params, viewport, auth) return
     // null here and are resolved by the useEffect below.
-    const ctx = { ...buildStaticContext(rootProps, itemContext), connectorData: getConnectorData() };
-    const result = conditionGroups && conditionGroups.length > 0
-      ? evaluateConditionGroups(conditionGroups, ctx)
-      : evaluateConditions(conditions, conditionLogic, ctx);
+    const ctx = {
+      ...buildStaticContext(rootProps, itemContext),
+      connectorData: getConnectorData(),
+    };
+    const result =
+      conditionGroups && conditionGroups.length > 0
+        ? evaluateConditionGroups(conditionGroups, ctx)
+        : evaluateConditions(conditions, conditionLogic, ctx);
     // Match the runtime evaluator (L115): treat indeterminate (`null`) as
     // visible. A static-context `null` for an auth/url-param/localStorage
     // condition would otherwise flash `visible=false`, fire the page-level

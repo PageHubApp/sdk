@@ -4,16 +4,14 @@
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ContainerOverflowSection } from "../../unified-settings/mainTabs/ContainerOverflowSection";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
   onClose: () => void;
 }
 
-export default function ContainerOverflowSectionPanel({
-  initialPosition,
-  onClose,
-}: PanelProps) {
+export default function ContainerOverflowSectionPanel({ initialPosition, onClose }: PanelProps) {
   return (
     <FloatingPanel
       isOpen
@@ -24,7 +22,7 @@ export default function ContainerOverflowSectionPanel({
       maxWidth={520}
       minHeight={320}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <ContainerOverflowSection />

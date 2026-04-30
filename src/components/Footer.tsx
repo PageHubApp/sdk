@@ -1,7 +1,13 @@
 import { UserComponent } from "@craftjs/core";
-import { FooterMainTab } from "../chrome/toolbar/unified-settings/mainTabs/FooterMainTab";
+import React from "react";
 import { Container } from "./Container";
 import { LazyUnifiedSettings } from "./LazyUnifiedSettings";
+
+const FooterMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/FooterMainTab").then(mod => ({
+    default: mod.FooterMainTab,
+  }))
+);
 
 export const Footer: UserComponent<any> = (props: any) => {
   return <Container {...props} />;

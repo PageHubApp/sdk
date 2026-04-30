@@ -1,12 +1,7 @@
 import { useEditor } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  TbArrowLeft,
-  TbChevronLeft,
-  TbChevronRight,
-  TbPalette,
-} from "react-icons/tb";
+import { TbArrowLeft, TbChevronLeft, TbChevronRight, TbPalette } from "react-icons/tb";
 import { SectionPickerDialogAtom } from "../../../utils/atoms";
 import { useSetAtomState } from "../../../utils/atoms";
 import type { BlockCategory } from "../../../utils/useBlockCategories";

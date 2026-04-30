@@ -14,13 +14,7 @@ import type {
   ToggleThemeAction,
 } from "./action";
 import { phStorage } from "./phStorage";
-import {
-  deleteState,
-  getState,
-  getStateValue,
-  setState,
-  setVisibility,
-} from "./stateRegistry";
+import { deleteState, getState, getStateValue, setState, setVisibility } from "./stateRegistry";
 import { evaluateConditionGroups } from "./conditions/evaluate";
 import { buildConditionEvalFns } from "./conditions/clientScript";
 import type { ConditionContext } from "./conditions/types";
@@ -220,12 +214,7 @@ export function addActionHandlers(
 }
 
 /** Compose one action's handlers onto `prop`. Never overwrites existing handlers. */
-function attachOne(
-  prop: any,
-  action: NodeAction,
-  enabled: boolean,
-  context?: ActionContext
-) {
+function attachOne(prop: any, action: NodeAction, enabled: boolean, context?: ActionContext) {
   // Anchor link — `scroll-to` or unified `link` with `href: "#…"`. Special
   // anchor keywords: `"top"` scrolls the window to the page top (used by
   // pagination + back-to-top buttons without needing a real DOM element).
@@ -394,11 +383,7 @@ function attachOne(
       }
       // Clear any stale error from a prior incomplete attempt.
       try {
-        setState(
-          "cart:error",
-          { kind: "value", value: "", source: "runtime" },
-          "add-to-cart"
-        );
+        setState("cart:error", { kind: "value", value: "", source: "runtime" }, "add-to-cart");
       } catch {}
       context?.onAddToCart?.(item, qty);
       // Publish to the central state registry — cart provider subscribes via
@@ -410,11 +395,7 @@ function attachOne(
           { kind: "value", value: JSON.stringify({ item, quantity: qty }) },
           "add-to-cart"
         );
-        setState(
-          "cart:add-tick",
-          { kind: "value", value: String(Date.now()) },
-          "add-to-cart"
-        );
+        setState("cart:add-tick", { kind: "value", value: String(Date.now()) }, "add-to-cart");
       } catch {}
     });
     return;
@@ -464,11 +445,11 @@ function attachOne(
       const root = btn?.closest("[data-ph-agent-chat]") as HTMLElement | null;
       if (!root) return;
       const rawFieldName = (action as any).field || "agentMessage";
-      const fieldName =
-        interpolateItem(rawFieldName, context?.itemContext) ?? rawFieldName;
-      const field = root.querySelector(
-        `[name="${fieldName}"]`
-      ) as HTMLInputElement | HTMLTextAreaElement | null;
+      const fieldName = interpolateItem(rawFieldName, context?.itemContext) ?? rawFieldName;
+      const field = root.querySelector(`[name="${fieldName}"]`) as
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | null;
       const value = (field?.value || "").trim();
       if (!value) return;
       // Write to the chat's outbox state slot. The chat's DOM `id` (set by
@@ -594,7 +575,11 @@ function attachOne(
         } else {
           setState(
             s.resolvedKey,
-            { kind: ss.kind ?? "value", value: s.prevValue, source: enabled ? "editor-preview" : "runtime" },
+            {
+              kind: ss.kind ?? "value",
+              value: s.prevValue,
+              source: enabled ? "editor-preview" : "runtime",
+            },
             "set-state"
           );
         }
@@ -610,8 +595,7 @@ function attachOne(
   if (action.type === "toggle-state") {
     const ts = action as ToggleStateAction;
     const isHover = (ts.trigger || "click") === "hover";
-    const resolveKey = (): string =>
-      resolveActionKey(ts.key, context?.itemContext);
+    const resolveKey = (): string => resolveActionKey(ts.key, context?.itemContext);
     const resolvePair = (kind: string, k: string): [string, string] | null => {
       if (ts.values) return ts.values;
       if (kind === "visibility") return ["shown", "hidden"];
@@ -860,7 +844,9 @@ export function addCustomHandlers(
  * `Container`'s mount effect fires `fireLoadAction` and this script is
  * unnecessary. Kept exclusive to static export to avoid double dispatch.
  */
-export function getLoadActionScript({ mobileBreakpoint = 768 }: { mobileBreakpoint?: number } = {}): string {
+export function getLoadActionScript({
+  mobileBreakpoint = 768,
+}: { mobileBreakpoint?: number } = {}): string {
   return `<script>
 (function(){
   window.__PH_STATE__ = window.__PH_STATE__ || {};
@@ -985,11 +971,7 @@ export function fireLoadAction(action: NodeAction): void {
   if (action.type === "set-state") {
     const ss = action as SetStateAction;
     if (!ss.key) return;
-    setState(
-      ss.key,
-      { kind: ss.kind ?? "value", value: ss.value, source: "load" },
-      "load"
-    );
+    setState(ss.key, { kind: ss.kind ?? "value", value: ss.value, source: "load" }, "load");
     return;
   }
   if (action.type === "toggle-state") {
@@ -1060,11 +1042,7 @@ export function applyStateStep(
     if (max !== undefined) next = Math.min(max, next);
     if (min !== undefined) next = Math.max(min, next);
   }
-  setState(
-    key,
-    { kind: "value", value: String(next), source: "runtime" },
-    action.type
-  );
+  setState(key, { kind: "value", value: String(next), source: "runtime" }, action.type);
 }
 
 /**

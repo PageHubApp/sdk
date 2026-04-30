@@ -9,12 +9,7 @@
  * individual property defs.
  */
 import React from "react";
-import {
-  TbBorderInner,
-  TbBoxPadding,
-  TbBoxMargin,
-  TbSquare,
-} from "react-icons/tb";
+import { TbBorderInner, TbBoxPadding, TbBoxMargin, TbSquare } from "react-icons/tb";
 import type { PropertyDef } from "../propertyDefs";
 
 const SPACING_TYPES = ["tailwind", "calc", "px", "em", "rem", "%"] as const;

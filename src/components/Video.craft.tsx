@@ -98,9 +98,15 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   );
 };
 const VideoMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/VideoMainTab").then((mod) => ({ default: mod.VideoMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/VideoMainTab").then(mod => ({
+    default: mod.VideoMainTab,
+  }))
 );
-import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
+import {
+  HoverNodeController,
+  NameNodeController,
+  DeleteNodeController,
+} from "../chrome/editor-chrome";
 
 export const VideoDef = defineComponent(
   {

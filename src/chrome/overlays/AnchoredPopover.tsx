@@ -54,9 +54,7 @@ export type AnchoredPopoverProps = {
   children: ReactNode;
 };
 
-function resolveAnchor(
-  anchor: AnchoredPopoverProps["anchor"]
-): HTMLElement | null {
+function resolveAnchor(anchor: AnchoredPopoverProps["anchor"]): HTMLElement | null {
   if (!anchor) return null;
   if (anchor instanceof HTMLElement) return anchor;
   return (anchor as RefObject<HTMLElement | null>).current ?? null;

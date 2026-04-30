@@ -13,9 +13,9 @@
  */
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import { lazy, Suspense, useCallback, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { Chip } from "@/chrome/primitives/Chip";
-import { SideBarAtom } from "../../../../utils/lib";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import {
   cssColorShowsTransparency,
   formatColorForStorage,
@@ -59,15 +59,15 @@ export function ColorInputPopover(__props: ColorInputPopoverProps) {
     propItemKey = "",
     propType = "class",
     onChange = () => {},
-    labelHide = false, inline = false,
+    labelHide = false,
+    inline = false,
     inputWidth = "",
     labelWidth = "",
   } = __props;
 
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
@@ -101,8 +101,7 @@ export function ColorInputPopover(__props: ColorInputPopoverProps) {
   const fillCss = finalStyle.backgroundColor ?? "";
   const showChecker = !hasStoredColor || cssColorShowsTransparency(fillCss);
 
-  const classWriteView =
-    propType === "class" ? editorCanvasViewToClassPrefixKey(view) : undefined;
+  const classWriteView = propType === "class" ? editorCanvasViewToClassPrefixKey(view) : undefined;
 
   const writeColor = useCallback(
     (val: string) => {
@@ -150,13 +149,6 @@ export function ColorInputPopover(__props: ColorInputPopoverProps) {
   const clearColor = useCallback(() => {
     writeColor("");
   }, [writeColor]);
-
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
 
   const openPanel = () => {
     setInitialPos(computePosition());

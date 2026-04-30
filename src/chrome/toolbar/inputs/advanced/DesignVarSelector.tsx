@@ -184,11 +184,7 @@ function DesignVarDialog({
         onClick={closeDialog}
       />
 
-      <div
-        style={style}
-        className="pagehub-sdk-root pointer-events-auto"
-        data-design-var-dialog
-      >
+      <div style={style} className="pagehub-sdk-root pointer-events-auto" data-design-var-dialog>
         <div className="ph-panel overflow-hidden p-0">
           {/* Search input */}
           <div className="border-base-300 bg-neutral shrink-0 border-b px-2 pt-2 pb-1">

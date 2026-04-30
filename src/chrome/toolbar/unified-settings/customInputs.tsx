@@ -8,11 +8,7 @@
 import React from "react";
 import type { ComponentType, ReactNode } from "react";
 import type { PropertyInputProps } from "./registry/propertyDefs";
-import {
-  BlockSkeleton,
-  ChipSkeleton,
-  RowSkeleton,
-} from "../../primitives/LoadingBar";
+import { BlockSkeleton, ChipSkeleton, RowSkeleton } from "../../primitives/LoadingBar";
 
 /**
  * Per-entry shape: lazy component + the Suspense fallback to render while
@@ -91,9 +87,7 @@ const lazyMap: Record<string, LazyEntry> = {
   // Section-header `+` picker. Popover-mode so AccordionAddMenu mounts it
   // inside the conditions section title row. Picking a category appends a
   // condition to `props.conditions` and the body auto-opens the new chip.
-  ConditionsAddPicker: chip(
-    React.lazy(() => import("../inputs/advanced/ConditionsAddPicker"))
-  ),
+  ConditionsAddPicker: chip(React.lazy(() => import("../inputs/advanced/ConditionsAddPicker"))),
   // State bindings — `props.stateModifiers` array. When the named state matches
   // the binding's conditions at runtime, modifier classes are appended to the
   // node's className.
@@ -104,9 +98,7 @@ const lazyMap: Record<string, LazyEntry> = {
       }))
     )
   ),
-  StateBindingsAddPicker: chip(
-    React.lazy(() => import("../inputs/state/StateBindingsAddPicker"))
-  ),
+  StateBindingsAddPicker: chip(React.lazy(() => import("../inputs/state/StateBindingsAddPicker"))),
   // Container-only state-registry wiring: visibilityStateKey + computedStateBindings.
   // Renders alongside StateBindingsInput in the Interactions > State section.
   ContainerStateBody: block(
@@ -173,9 +165,7 @@ const lazyMap: Record<string, LazyEntry> = {
       import("../inputs/action/HandlersInput").then(m => ({ default: m.HandlersInput }))
     )
   ),
-  HandlersAddPicker: chip(
-    React.lazy(() => import("../inputs/action/HandlersAddPicker"))
-  ),
+  HandlersAddPicker: chip(React.lazy(() => import("../inputs/action/HandlersAddPicker"))),
   FlexDirectionInput: row(
     React.lazy(() =>
       import("../inputs/layout/FlexDirectionInput").then(m => ({
@@ -201,9 +191,7 @@ const lazyMap: Record<string, LazyEntry> = {
   // inside the modifiers section title row. Opens a FloatingPanel with the
   // categorized preview-rich library (Pattern cards, exclusive segmented
   // controls, dropdowns, free chips) and the "Save as modifier" footer.
-  ModifiersAddPicker: chip(
-    React.lazy(() => import("../inputs/modifiers/ModifiersAddPicker"))
-  ),
+  ModifiersAddPicker: chip(React.lazy(() => import("../inputs/modifiers/ModifiersAddPicker"))),
   // Component-tab affordance for preset wrappers — Add Item / delete-row UI
   // driven by `node.data.custom.preset` + `presetRegistry.ts`. See
   // packages/sdk/src/chrome/toolbar/inputs/preset/PresetAddChildList.tsx.

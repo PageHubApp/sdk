@@ -14,10 +14,7 @@ import {
   TbX,
 } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
-import {
-  ComponentsAtom,
-  ViewModeAtom,
-} from "../../utils/lib";
+import { ComponentsAtom, ViewModeAtom } from "../../utils/lib";
 import { CanvasIsolateAtom } from "../../utils/componentIsolation";
 import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
 import { useCreateComponent } from "../hooks/useCreateComponent";

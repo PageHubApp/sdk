@@ -73,9 +73,10 @@ export function UnifiedDropdown({
   // Spacing, Conditions, etc.), bump z-index so the portaled list sits ABOVE
   // the host panel. Outside a panel, fall back to the default scale.
   const floatingPanelZ = useFloatingPanelZIndex();
-  const dropdownZ = floatingPanelZ != null
-    ? Math.max(OVERLAY_Z_FLOATING_PANEL_DROPDOWN, floatingPanelZ + 10)
-    : OVERLAY_Z_UNIFIED_DROPDOWN;
+  const dropdownZ =
+    floatingPanelZ != null
+      ? Math.max(OVERLAY_Z_FLOATING_PANEL_DROPDOWN, floatingPanelZ + 10)
+      : OVERLAY_Z_UNIFIED_DROPDOWN;
 
   // Don't show dropdown if there's nothing to display. Var mode is owned by
   // VarPicker — UnifiedDropdown is tailwind-only.
@@ -480,7 +481,10 @@ export function UnifiedDropdown({
       style={popoverStyle}
       className="pagehub-sdk-root ph-panel text-base-content flex w-fit flex-col overflow-hidden"
     >
-      <div data-unified-dropdown className="ph-select-item-host flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div
+        data-unified-dropdown
+        className="ph-select-item-host flex min-h-0 flex-1 flex-col overflow-hidden"
+      >
         {renderMainContent()}
 
         <button

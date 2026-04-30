@@ -169,7 +169,9 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   // Strategy: keep the input uncontrolled (browser autocomplete, form
   // submit, defaultValue all keep working) but sync imperatively when state
   // changes from outside.
-  const inputRef = React.useRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null>(null);
+  const inputRef = React.useRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null>(
+    null
+  );
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Mirror external state writes onto the live DOM input (popstate, sibling
@@ -196,7 +198,11 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
     const current = externalValue;
     const fallback = stateBinding?.defaultValue ?? props.defaultValue;
     if ((current == null || current === "") && fallback) {
-      setState(boundKey, { kind: "value", value: String(fallback), source: "load" }, "form-element");
+      setState(
+        boundKey,
+        { kind: "value", value: String(fallback), source: "load" },
+        "form-element"
+      );
     }
     // Run only once per binding change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -210,11 +216,7 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
       const ms = stateBinding?.debounceMs ?? 0;
       if (debounceRef.current) clearTimeout(debounceRef.current);
       const fire = () =>
-        setState(
-          boundKey,
-          { kind: "value", value, source: "runtime" },
-          "form-element"
-        );
+        setState(boundKey, { kind: "value", value, source: "runtime" }, "form-element");
       if (ms > 0) debounceRef.current = setTimeout(fire, ms);
       else fire();
     },
@@ -236,10 +238,11 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
       // storefronts is preserved without a parallel prefill path.
       (boundKey && !enabled && externalValue != null && externalValue !== ""
         ? externalValue
-        : null) ?? props.defaultValue ?? "",
+        : null) ??
+      props.defaultValue ??
+      "",
     "aria-label": props.label || props.placeholder || props.name || `${props.type || "text"} input`,
   };
-
 
   // Wire onChange when state-bound. For checkbox/radio in checked mode,
   // write the input's `value` if checked, "" otherwise. Otherwise mirror the
@@ -347,7 +350,9 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
   // checked. Storefront wiring no longer needs `data-storefront-input` —
   // use `stateBinding: { key: "url:facet.<facetKey>", mode: "checked" }`
   // instead so the FormElement ↔ state ↔ URL bridge flow handles it.
-  applyAttrs(prop, props.attrs, v => (typeof v === "string" ? replaceVariables(v, query, itemContext) : v));
+  applyAttrs(prop, props.attrs, v =>
+    typeof v === "string" ? replaceVariables(v, query, itemContext) : v
+  );
 
   // Safety net: if a block passed `value` via attrs, treat it as the initial
   // value. A bare `value` with no `onChange` makes React warn (read-only) and

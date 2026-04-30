@@ -2,8 +2,10 @@
  * Node tree operations — delete, add, save, clone, build trees.
  */
 
+import { Element } from "@craftjs/core";
 import { getRandomId, ROOT_NODE } from "@craftjs/utils";
 import React from "react";
+import { Container } from "../../components/Container";
 import generate from "../../utils/data/nameGenerator";
 import { DeleteMedia } from "./api";
 import { phStorage } from "../../utils/phStorage";
@@ -143,9 +145,6 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
     const originalParentNode = query.node(originalParent).get();
     const originalIndex = originalParentNode.data.nodes.indexOf(id);
 
-    const { Container } = await import("../../components/Container");
-    const Element = (await import("@craftjs/core")).Element;
-
     // Serialize the original tree BEFORE any mutations
     const masterTree = query.node(id).toNodeTree();
     const masterPairs = Object.keys(masterTree.nodes).map((nid: string) => [
@@ -257,54 +256,8 @@ export const getNodeTree = ({ tree, query }: any) => {
   return { rootNodeId: changeNodeId(tree.nodes[tree.rootNodeId]), nodes: newNodes };
 };
 
-export const buildClonedTree = ({ tree, query, setProp, createLinks = true }: any) => {
-  const newNodes: Record<string, any> = {};
-  const linksToCreate: Array<{ oldid: string; newNodeId: string }> = [];
-
-  const changeNodeId = (node: any, newParentId?: string): string => {
-    const newNodeId = getRandomId();
-    const childNodes = node.data.nodes.map((childId: string) =>
-      changeNodeId(tree.nodes[childId], newNodeId)
-    );
-    const linkedNodes = Object.keys(node.data.linkedNodes).reduce(
-      (acc: Record<string, string>, id) => {
-        acc[id] = changeNodeId(tree.nodes[node.data.linkedNodes[id]], newNodeId);
-        return acc;
-      },
-      {}
-    );
-
-    const oldid = node.id;
-    const freshNode = query
-      .parseFreshNode({
-        ...node,
-        id: newNodeId,
-        data: {
-          ...node.data,
-          parent: newParentId || node.data.parent,
-          nodes: childNodes,
-          linkedNodes,
-        },
-      })
-      .toNode();
-    newNodes[newNodeId] = freshNode;
-
-    if (createLinks && query.node(oldid).get()) linksToCreate.push({ oldid, newNodeId });
-    return newNodeId;
-  };
-
-  const rootNodeId = changeNodeId(tree.nodes[tree.rootNodeId]);
-
-  if (linksToCreate.length > 0) {
-    requestAnimationFrame(() => {
-      linksToCreate.forEach(({ oldid, newNodeId }) => {
-        setProp(oldid, (prop: any) => addHasMany(prop, newNodeId));
-      });
-    });
-  }
-
-  return { rootNodeId, nodes: newNodes, originalRootId: createLinks ? tree.rootNodeId : null };
-};
+import { buildClonedTree } from "../../core/cloneTree";
+export { buildClonedTree };
 
 export type Position = "top" | "bottom" | "left" | "right";
 export type Align = "start" | "middle" | "end";

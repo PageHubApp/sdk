@@ -5,7 +5,14 @@
  * SDK components without prop drilling.
  */
 
-import React, { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import type { ResolvedConfig } from "../config";
 import { EventEmitter } from "./events";
 import { getSaveCoordinator } from "./saveCoordinator";
@@ -102,13 +109,9 @@ export function PageHubProvider({ config, emitter, children }: PageHubProviderPr
     return () => setPageHubApiBaseUrl("");
   }, [config.apiBaseUrl]);
 
-  const save = useCallback(
-    (opts?: SaveMeta) => getSaveCoordinator(emitter).save(opts),
-    [emitter]
-  );
+  const save = useCallback((opts?: SaveMeta) => getSaveCoordinator(emitter).save(opts), [emitter]);
   const subscribeSaveStatus = useCallback(
-    (handler: (status: SaveStatus) => void) =>
-      getSaveCoordinator(emitter).subscribeStatus(handler),
+    (handler: (status: SaveStatus) => void) => getSaveCoordinator(emitter).subscribeStatus(handler),
     [emitter]
   );
   const invalidatePageList = useCallback(() => {

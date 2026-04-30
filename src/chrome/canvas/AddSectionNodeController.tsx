@@ -8,7 +8,7 @@ import { useSDK } from "../../core/context";
 import { useSetAtomState } from "../../utils/atoms";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { AddElement } from "../viewport/toolbox/toolboxUtils";
-import { NodeType, useNodeType } from "./hooks/useNodeType";
+import { NodeType, useNodeType } from "@/utils/hooks/useNodeType";
 
 import generate from "../../utils/data/nameGenerator";
 

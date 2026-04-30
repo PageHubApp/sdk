@@ -23,11 +23,9 @@ export function setBuiltinDefsLookup(defs: ResolvedComponentDef[]) {
   _defs = defs;
 }
 
-export function getBuiltinComponentDef(
-  name: string,
-): ResolvedComponentDef | undefined {
+export function getBuiltinComponentDef(name: string): ResolvedComponentDef | undefined {
   if (!name || !_defs) return undefined;
-  return _defs.find((d) => d.name === name);
+  return _defs.find(d => d.name === name);
 }
 
 // ─── Spatial layout hints ──────────────────────────────────────────────────
@@ -50,15 +48,13 @@ const SUPPRESS_CROSS_AXIS_ALIGN_BY_NAME: Record<string, true> = {
 };
 
 export function getSpatialMainAxisForComponentName(
-  name: string | undefined,
+  name: string | undefined
 ): "row" | "column" | null {
   if (!name) return null;
   return SPATIAL_MAIN_AXIS_BY_NAME[name] ?? null;
 }
 
-export function getSuppressCrossAxisAlignForComponentName(
-  name: string | undefined,
-): boolean {
+export function getSuppressCrossAxisAlignForComponentName(name: string | undefined): boolean {
   if (!name) return false;
   return SUPPRESS_CROSS_AXIS_ALIGN_BY_NAME[name] ?? false;
 }

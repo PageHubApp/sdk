@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbCheck, TbPhoto } from "react-icons/tb";
-import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
+import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "./LazyEditorEmptyLeafHint";
 import { Image as UiImage } from "@pagehub/ui";
 import { getCdnUrl } from "../utils/cdn";
 import {
@@ -269,8 +269,7 @@ export const Image = (incomingProps: ImageProps) => {
   // A decoratively-styled image slot (gradient placeholder, colored block,
   // sized empty box) is intentional — don't flag it as empty just because src
   // is unset. Mirrors the heuristic on Button/Link.
-  const looksStyledShape =
-    /\bbg-/.test(cn) || /\bbg-gradient-/.test(cn) || /\bbg-linear-/.test(cn);
+  const looksStyledShape = /\bbg-/.test(cn) || /\bbg-gradient-/.test(cn) || /\bbg-linear-/.test(cn);
   const empty = !videoId && !srcStr && !looksStyledShape;
 
   if (enabled) {

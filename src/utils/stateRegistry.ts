@@ -128,12 +128,7 @@ export function setState(
     source: patch.source ?? prev?.source ?? "runtime",
     lastWriter: writer ?? patch.lastWriter ?? prev?.lastWriter,
   };
-  if (
-    prev &&
-    prev.value === next.value &&
-    prev.kind === next.kind &&
-    prev.source === next.source
-  ) {
+  if (prev && prev.value === next.value && prev.kind === next.kind && prev.source === next.source) {
     // No reactive change, but `lastWriter` is a debug attribution signal —
     // keep it fresh even on no-op writes. Don't notify (nothing observable
     // changed for subscribers).
@@ -201,11 +196,7 @@ export function getGlobalTick(): number {
 
 // ─── Visibility sugar ───────────────────────────────────────────────────────
 
-export function setVisibility(
-  key: string,
-  value: "shown" | "hidden",
-  writer?: string
-): void {
+export function setVisibility(key: string, value: "shown" | "hidden", writer?: string): void {
   setState(key, { kind: "visibility", value, source: "runtime" }, writer);
 }
 
@@ -343,10 +334,7 @@ export function __resetForTests(): void {
  * strips `hidden`; `hidden` adds it; unknown keys leave the className alone.
  * Exists so render-path code (Container) can stay one-liner.
  */
-export function applyVisibilityOverride(
-  className: string,
-  target: string | undefined
-): string {
+export function applyVisibilityOverride(className: string, target: string | undefined): string {
   if (!target) return className;
   const v = getVisibility(target);
   if (v === undefined) return className;

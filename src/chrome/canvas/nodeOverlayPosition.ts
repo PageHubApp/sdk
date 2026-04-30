@@ -24,7 +24,7 @@ export interface NodeOverlayPosition {
 
 export function getNodeOverlayPosition(
   el: HTMLElement,
-  portalTarget: HTMLElement,
+  portalTarget: HTMLElement
 ): NodeOverlayPosition {
   const g = getNodeGeometry(el);
   const portalRect = portalTarget.getBoundingClientRect();

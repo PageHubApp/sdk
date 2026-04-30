@@ -20,9 +20,11 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
   return containerToHTML({ ...props, type: "form" }, HONEYPOT_HTML + children, ctx);
 };
 const FormMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/FormMainTab").then((mod) => ({ default: mod.FormMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/FormMainTab").then(mod => ({
+    default: mod.FormMainTab,
+  }))
 );
-import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
+import { HoverNodeController, DeleteNodeController } from "../chrome/editor-chrome";
 
 // ─── Child components used in presets ──────────────────────────────────────
 import { Container } from "./Container";
@@ -38,8 +40,7 @@ const inputBaseStyles = {
 
 const submitButtonProps = {
   type: "submit",
-  className:
-    "btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold w-full",
+  className: "btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold w-full",
   canDelete: true,
   canEditName: true,
 };

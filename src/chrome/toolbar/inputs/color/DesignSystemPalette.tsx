@@ -56,7 +56,9 @@ export function DesignSystemPalette({ selectedColor, onSelect, anchorEl }: Props
     try {
       const node = query.node(ROOT_NODE).get();
       const theme = resolveTheme(node?.data?.props || {});
-      const next = (mode === "dark" ? theme.darkPalette : theme.palette) as PaletteEntry[] | undefined;
+      const next = (mode === "dark" ? theme.darkPalette : theme.palette) as
+        | PaletteEntry[]
+        | undefined;
       setPalette(next || []);
     } catch (e) {
       console.error("DesignSystemPalette: failed to load palette", e);
@@ -154,8 +156,7 @@ export function DesignSystemPalette({ selectedColor, onSelect, anchorEl }: Props
           filtered.map(entry => {
             const hex = resolvePaletteHex(entry.color || "", palette);
             const paletteValue = `palette:${entry.name}`;
-            const isSelected =
-              selectedColor === paletteValue || selectedColor.includes(entry.name);
+            const isSelected = selectedColor === paletteValue || selectedColor.includes(entry.name);
             return (
               <div
                 key={entry.name}
@@ -184,7 +185,9 @@ export function DesignSystemPalette({ selectedColor, onSelect, anchorEl }: Props
                 >
                   {entry.name}
                 </span>
-                {isSelected && <TbCheck className="text-base-content size-3.5 shrink-0" aria-hidden />}
+                {isSelected && (
+                  <TbCheck className="text-base-content size-3.5 shrink-0" aria-hidden />
+                )}
                 <button
                   type="button"
                   onClick={e => handleEdit(e, entry)}
@@ -212,10 +215,7 @@ export function DesignSystemPalette({ selectedColor, onSelect, anchorEl }: Props
 
       {/* Shared create/edit dialog */}
       {dialog && (
-        <CreateTokenDialogPortal
-          left={dialog.pos.left}
-          top={dialog.pos.top}
-        >
+        <CreateTokenDialogPortal left={dialog.pos.left} top={dialog.pos.top}>
           <CreateTokenDialog
             paletteKey={paletteKey}
             {...(dialog.mode === "edit"
@@ -255,11 +255,7 @@ function CreateTokenDialogPortal({
   const ref = useRef<HTMLDivElement>(null);
   useRegisterFloatingPanelPortal(ref);
   return createPortal(
-    <div
-      ref={ref}
-      className="pagehub-sdk-root fixed"
-      style={{ left, top, zIndex: 1200 }}
-    >
+    <div ref={ref} className="pagehub-sdk-root fixed" style={{ left, top, zIndex: 1200 }}>
       {children}
     </div>,
     document.body

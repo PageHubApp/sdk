@@ -74,7 +74,7 @@ export function useIconDialog({
   // Synthesize the legacy `dialog` shape so IconsTab/MediaTab keep working.
   const dialog = useMemo(
     () => ({ value, prefix, enabled: isOpen, changed: onChange, onUseMedia }),
-    [value, prefix, isOpen, onChange, onUseMedia],
+    [value, prefix, isOpen, onChange, onUseMedia]
   );
 
   const getInitialTab = (): "media" | "icons" => {
@@ -174,7 +174,7 @@ export function useIconDialog({
 
   const categories: IconCategory[] = useMemo(
     () => deriveCategories(set, setNames || []),
-    [set, setNames],
+    [set, setNames]
   );
 
   const rowCount = Math.ceil(filteredIcons.length / COLUMN_COUNT);
@@ -225,7 +225,7 @@ export function useIconDialog({
       onChange(fullRef);
       onClose();
     },
-    [recordUse, onChange, onClose],
+    [recordUse, onChange, onClose]
   );
 
   const handleIconClick = useCallback(
@@ -234,14 +234,14 @@ export function useIconDialog({
       setSelectedIcon(fullRef);
       onChange(fullRef);
     },
-    [onChange],
+    [onChange]
   );
 
   const handleIconDoubleClick = useCallback(
     (iconRef: string) => {
       emitChange(iconRef);
     },
-    [emitChange],
+    [emitChange]
   );
 
   const handleMediaSelect = (mediaId: string) => {
@@ -323,7 +323,7 @@ export function useIconDialog({
           break;
       }
     },
-    [isOpen, activeTab, filteredIcons, focusedIndex, set, emitChange, closeDialog],
+    [isOpen, activeTab, filteredIcons, focusedIndex, set, emitChange, closeDialog]
   );
 
   useEffect(() => {

@@ -109,7 +109,8 @@ export const VideoMainTab = () => {
           </ToolbarSection>
         )}
 
-        {(provider === "r2" || provider === "url") && (provider === "r2" || isDirectVideoFileUrl(videoId)) ? (
+        {(provider === "r2" || provider === "url") &&
+        (provider === "r2" || isDirectVideoFileUrl(videoId)) ? (
           <ToolbarSection
             title="Playback"
             icon={SECTION_ICONS["Type"]}
@@ -158,10 +159,7 @@ export const VideoMainTab = () => {
           </ToolbarSection>
         ) : null}
 
-        <ToolbarSection
-          title="Accessibility"
-          help="Accessibility title for the video."
-        >
+        <ToolbarSection title="Accessibility" help="Accessibility title for the video.">
           <ToolbarItem
             propKey="title"
             propType="component"

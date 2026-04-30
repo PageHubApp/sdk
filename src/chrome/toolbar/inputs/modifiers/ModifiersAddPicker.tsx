@@ -24,7 +24,7 @@ import {
   SearchableMenuPopover,
   type SearchableMenuItem,
 } from "../../../primitives/SearchableMenuPopover";
-import { SideBarAtom } from "../../../../utils/lib";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
 import { useSectionPopoverOpenRequest } from "../../unified-settings/popoverOpenRequestAtom";
 import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
@@ -64,31 +64,28 @@ const ITEM_ICON: Record<MenuAction, React.ComponentType<{ className?: string }>>
 export default function ModifiersAddPicker({ def }: PropertyInputProps) {
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
-  const [libraryPos, setLibraryPos] = useState<{ x: number; y: number } | undefined>();
-  const [savePos, setSavePos] = useState<{ x: number; y: number } | undefined>();
   // Wrapper around the SearchableMenuPopover trigger button — needed because
   // the popover owns its own ref internally; we read the wrapper's rect to
   // dock both panels next to the `+` instead of the menu.
-  const triggerWrapRef = useRef<HTMLSpanElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
+  // Both panels are 320 wide so a single positioner suffices.
+  const {
+    triggerRef: triggerWrapRef,
+    initialPos: libraryPos,
+    setInitialPos: setLibraryPos,
+    computePosition,
+  } = usePopoverPosition<HTMLSpanElement>(LIBRARY_WIDTH);
+  const [savePos, setSavePos] = useState<{ x: number; y: number } | undefined>();
   const sessionAdded = useAtomValue(SessionAddedAtom);
 
   const { id } = useNode(node => ({ id: node.id }));
 
-  const computePosition = (panelWidth: number) => {
-    const rect = triggerWrapRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - panelWidth - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
-
   const openLibrary = () => {
-    setLibraryPos(computePosition(LIBRARY_WIDTH));
+    setLibraryPos(computePosition());
     setLibraryOpen(true);
   };
 
   const openSave = () => {
-    setSavePos(computePosition(SAVE_WIDTH));
+    setSavePos(computePosition());
     setSaveOpen(true);
   };
 

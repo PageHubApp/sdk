@@ -1,10 +1,9 @@
-import { useEditor } from "@craftjs/core";
+import { Element, useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useAtomState } from "@zedux/react";
 import type { CSSProperties } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Placement } from "@floating-ui/react-dom";
 import {
   TbBrush,
   TbCaretUp,
@@ -34,7 +33,7 @@ import { ComponentsAtom, SideBarOpen } from "../../utils/lib";
 import { phStorage } from "../../utils/phStorage";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { useUnifiedDelete } from "../hooks/useUnifiedDelete";
-import { NodeType, resolveNodeTypeFromQuery } from "../canvas/hooks/useNodeType";
+import { NodeType, resolveNodeTypeFromQuery } from "@/utils/hooks/useNodeType";
 import { ToolboxMenu, toolboxMenuInitialState } from "../rendering/toolboxMenuAtom";
 import {
   getSiblingMoveState,
@@ -45,9 +44,9 @@ import {
   OVERLAY_Z_CONTEXT_COMPONENT_FLYOUT,
   OVERLAY_Z_CONTEXT_INSERT_PANEL,
 } from "../overlays/overlayZIndex";
-import { useAnchoredPopover } from "../overlays/useAnchoredPopover";
 import { ContextMenuInsertComponentFlyout } from "./ContextMenuInsertComponentFlyout";
 import { duplicateNodeById } from "./duplicateNodeById";
+import { useInsertFlyout } from "./hooks/useInsertFlyout";
 import { addHandler, buildClonedTree, saveHandler } from "./viewportExports";
 import { AddElement } from "./toolbox/toolboxUtils";
 
@@ -60,21 +59,6 @@ const CTX_MENU_HOVER =
   "outline-none transition-[color,background-color] duration-150 ease-out hover:bg-accent hover:text-accent-content focus-visible:bg-accent focus-visible:text-accent-content active:bg-accent/90";
 const CTX_MENU_ITEM = `flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-left text-sm ${CTX_MENU_HOVER}`;
 const CTX_MENU_SUBMENU_TRIGGER = `flex w-full cursor-default select-none items-center justify-between gap-2 rounded-md px-3 py-2 text-left text-sm ${CTX_MENU_HOVER}`;
-
-const CONTEXT_SUBMENU_FALLBACKS: Placement[] = [
-  "left-start",
-  "right-end",
-  "left-end",
-  "top-start",
-  "bottom-start",
-  "top-end",
-  "bottom-end",
-];
-
-const CONTEXT_SUBMENU_FLIP = {
-  crossAxis: true,
-  fallbackPlacements: CONTEXT_SUBMENU_FALLBACKS,
-};
 
 function hasCraftClipboardPaste(): boolean {
   const raw = phStorage.get("clipboard");
@@ -99,16 +83,24 @@ function readClassClipboard(): { className: string; activeModifiers: string[] } 
 export const ToolboxContexual = () => {
   const [menu, setMenu] = useAtomState(ToolboxMenu);
   const ref = useRef<HTMLDivElement>(null);
-  const insertLeaveTimer = useRef<number | null>(null);
-  const componentFlyoutLeaveTimer = useRef<number | null>(null);
 
   const { actions, query } = useEditor();
   const { setProp } = actions;
   const setSectionPickerDialog = useSetAtomState(SectionPickerDialogAtom);
   const { open: openPanel } = usePanelUrl();
 
-  const [insertPanelOpen, setInsertPanelOpen] = useState(false);
-  const [componentFlyoutOpen, setComponentFlyoutOpen] = useState(false);
+  const {
+    insertPanelOpen,
+    setInsertPanelOpen,
+    componentFlyoutOpen,
+    setComponentFlyoutOpen,
+    insertPanelFloating,
+    componentPanelFloating,
+    cancelInsertLeaveTimer,
+    closeBoth: closeInsertFlyouts,
+    scheduleCloseInsertPanels,
+    scheduleCloseComponentFlyoutOnly,
+  } = useInsertFlyout();
 
   const getCloneTree = useCallback(
     (tree: any) => buildClonedTree({ tree, query, setProp, createLinks: false }),
@@ -126,44 +118,10 @@ export const ToolboxContexual = () => {
 
   const id = menu.id || "";
 
-  const cancelInsertLeaveTimer = () => {
-    if (insertLeaveTimer.current) {
-      window.clearTimeout(insertLeaveTimer.current);
-      insertLeaveTimer.current = null;
-    }
-    if (componentFlyoutLeaveTimer.current) {
-      window.clearTimeout(componentFlyoutLeaveTimer.current);
-      componentFlyoutLeaveTimer.current = null;
-    }
-  };
-
   const close = useCallback(() => {
-    cancelInsertLeaveTimer();
-    setInsertPanelOpen(false);
-    setComponentFlyoutOpen(false);
+    closeInsertFlyouts();
     setMenu({ ...toolboxMenuInitialState });
-  }, [setMenu]);
-
-  const scheduleCloseInsertPanels = () => {
-    cancelInsertLeaveTimer();
-    insertLeaveTimer.current = window.setTimeout(() => {
-      setInsertPanelOpen(false);
-      setComponentFlyoutOpen(false);
-      insertLeaveTimer.current = null;
-    }, 160);
-  };
-
-  /** Closing the nested component flyout only — not the whole Insert panel (sibling items like Add empty section). */
-  const scheduleCloseComponentFlyoutOnly = () => {
-    if (componentFlyoutLeaveTimer.current) {
-      window.clearTimeout(componentFlyoutLeaveTimer.current);
-      componentFlyoutLeaveTimer.current = null;
-    }
-    componentFlyoutLeaveTimer.current = window.setTimeout(() => {
-      setComponentFlyoutOpen(false);
-      componentFlyoutLeaveTimer.current = null;
-    }, 160);
-  };
+  }, [closeInsertFlyouts, setMenu]);
 
   const node = menu.enabled && id ? query.node(id).get() : null;
   const parentId = node?.data?.parent as string | undefined;
@@ -202,7 +160,9 @@ export const ToolboxContexual = () => {
 
   const isCanvas = Boolean(node?.data?.isCanvas);
   const canCopy = Boolean(id && id !== ROOT_NODE && !isPageOrBackground && mutateClipboardAllowed);
-  const canPasteHere = Boolean(id && id !== ROOT_NODE && !isPageOrBackground && mutateClipboardAllowed);
+  const canPasteHere = Boolean(
+    id && id !== ROOT_NODE && !isPageOrBackground && mutateClipboardAllowed
+  );
   const showPaste = canPasteHere && hasCraftClipboardPaste();
 
   const resolvedCraftType = menu.enabled && id ? resolveNodeTypeFromQuery(query, id) : null;
@@ -232,10 +192,7 @@ export const ToolboxContexual = () => {
 
   const classClipboard = readClassClipboard();
   const canPasteClasses = Boolean(
-    id &&
-    !isPageOrBackground &&
-    mutateClipboardAllowed &&
-    classClipboard?.className != null
+    id && !isPageOrBackground && mutateClipboardAllowed && classClipboard?.className != null
   );
 
   const showCopyBtn = canCopy;
@@ -268,26 +225,6 @@ export const ToolboxContexual = () => {
   );
 
   const [style, setStyle] = useState<CSSProperties>({});
-
-  const insertPanelFloating = useAnchoredPopover({
-    open: insertPanelOpen,
-    placement: "right-start",
-    strategy: "fixed",
-    mainAxisOffset: -6,
-    crossAxisOffset: 0,
-    flipOptions: CONTEXT_SUBMENU_FLIP,
-    shiftPadding: 8,
-  });
-
-  const componentPanelFloating = useAnchoredPopover({
-    open: componentFlyoutOpen,
-    placement: "right-start",
-    strategy: "fixed",
-    mainAxisOffset: -6,
-    crossAxisOffset: 0,
-    flipOptions: CONTEXT_SUBMENU_FLIP,
-    shiftPadding: 8,
-  });
 
   useEffect(() => {
     if (!menu.enabled) {
@@ -468,7 +405,6 @@ export const ToolboxContexual = () => {
   const handleAddSection = async () => {
     if (!showAddSection || !id) return;
     close();
-    const { Element } = await import("@craftjs/core");
     const liveResolver = query.getOptions().resolver;
     const ContainerComp = liveResolver?.["Container"];
     if (!ContainerComp) return;
@@ -494,7 +430,6 @@ export const ToolboxContexual = () => {
   const handleAddNestedContainer = async () => {
     if (!showAddContainer || !id) return;
     close();
-    const { Element } = await import("@craftjs/core");
     const liveResolver = query.getOptions().resolver;
     const ContainerComp = liveResolver?.["Container"];
     if (!ContainerComp) return;
@@ -557,11 +492,7 @@ export const ToolboxContexual = () => {
   const dividerBeforeInsert = dividerBeforeNav || showNavSection;
   const dividerBeforeDupDel = dividerBeforeInsert || hasInsertSubmenu;
   const anyAboveAi =
-    showDeselect ||
-    showCopyPasteSection ||
-    showNavSection ||
-    hasInsertSubmenu ||
-    showDupDelSection;
+    showDeselect || showCopyPasteSection || showNavSection || hasInsertSubmenu || showDupDelSection;
 
   return (
     <div
@@ -574,7 +505,7 @@ export const ToolboxContexual = () => {
         left: (style.left as number | undefined) ?? menu.x,
         top: (style.top as number | undefined) ?? menu.y,
       }}
-      className="rounded-xl border-base-300/50 bg-base-100 text-base-content z-10050 min-w-[12rem] overflow-visible border py-1 shadow-xl select-none"
+      className="border-base-300/50 bg-base-100 text-base-content z-10050 min-w-[12rem] overflow-visible rounded-xl border py-1 shadow-xl select-none"
     >
       {showDeselect ? (
         <button type="button" role="menuitem" className={CTX_MENU_ITEM} onClick={handleDeselect}>
@@ -686,7 +617,7 @@ export const ToolboxContexual = () => {
                     ...insertPanelFloating.floatingStyles,
                     zIndex: OVERLAY_Z_CONTEXT_INSERT_PANEL,
                   }}
-                  className="rounded-xl border-base-300/50 bg-base-100 text-base-content max-h-[min(70vh,28rem)] min-w-[11rem] overflow-x-visible overflow-y-auto border py-1 shadow-xl select-none"
+                  className="border-base-300/50 bg-base-100 text-base-content max-h-[min(70vh,28rem)] min-w-[11rem] overflow-x-visible overflow-y-auto rounded-xl border py-1 shadow-xl select-none"
                   onMouseEnter={cancelInsertLeaveTimer}
                   onMouseLeave={scheduleCloseInsertPanels}
                 >

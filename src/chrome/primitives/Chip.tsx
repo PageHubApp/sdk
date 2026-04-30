@@ -34,18 +34,8 @@
  * NEVER exported. Consumers always reach it via the `label` prop.
  */
 import { useAtomState } from "@zedux/react";
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import {
-  SessionAddedAtom,
-  sessionKey,
-} from "../toolbar/unified-settings/sessionAddedAtom";
+import { forwardRef, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { SessionAddedAtom, sessionKey } from "../toolbar/unified-settings/sessionAddedAtom";
 import { useProperty } from "../toolbar/unified-settings/propertyContext";
 import { BreakpointChip } from "../toolbar/breakpoint-chip/BreakpointChip";
 import { InlineClearButton } from "./InlineClearButton";
@@ -98,10 +88,10 @@ function RowLabel({
     </button>
   );
   if (!adornment) {
-    return <div className={`${widthClass} shrink-0 flex min-w-0 items-center`}>{button}</div>;
+    return <div className={`${widthClass} flex min-w-0 shrink-0 items-center`}>{button}</div>;
   }
   return (
-    <div className={`${widthClass} group/bp-row shrink-0 flex min-w-0 items-center gap-1`}>
+    <div className={`${widthClass} group/bp-row flex min-w-0 shrink-0 items-center gap-1`}>
       {button}
       {adornment}
     </div>
@@ -223,13 +213,7 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(props
   }
 
   // Common props
-  const {
-    label,
-    open = false,
-    frame = "bordered",
-    grow = false,
-    labelWidth,
-  } = props;
+  const { label, open = false, frame = "bordered", grow = false, labelWidth } = props;
 
   // Build frame contents per mode.
   let bodyChildren: ReactNode;
@@ -282,7 +266,8 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(props
     bodyChildren = p.children;
     trailing = p.trailing;
     onFrameClick = p.onClick;
-    onLabelClick = p.onLabelClick ?? (p.onClick ? () => p.onClick!({} as React.MouseEvent) : undefined);
+    onLabelClick =
+      p.onLabelClick ?? (p.onClick ? () => p.onClick!({} as React.MouseEvent) : undefined);
     variant = p.variant ?? "default";
   }
 
@@ -298,10 +283,7 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(props
   );
 
   if (label) {
-    const showBp =
-      !!props.propKey &&
-      props.propType !== "root" &&
-      props.propType !== "component";
+    const showBp = !!props.propKey && props.propType !== "root" && props.propType !== "component";
     const adornment = showBp ? (
       <BreakpointChip
         propKey={props.propKey!}
@@ -313,12 +295,7 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(props
     ) : null;
     return (
       <div className="flex min-w-0 items-center gap-0.5">
-        <RowLabel
-          label={label}
-          onClick={onLabelClick}
-          width={labelWidth}
-          adornment={adornment}
-        />
+        <RowLabel label={label} onClick={onLabelClick} width={labelWidth} adornment={adornment} />
         {frameNode}
       </div>
     );

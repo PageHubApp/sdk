@@ -20,19 +20,9 @@
 import type { NodeAction } from "../action";
 import { type AnchorMap, hasAnchorToken, resolveAnchors } from "./anchorContext";
 
-const ANCHORED_FIELDS = [
-  "target",
-  "anchor",
-  "key",
-  "value",
-  "field",
-  "dismissTarget",
-] as const;
+const ANCHORED_FIELDS = ["target", "anchor", "key", "value", "field", "dismissTarget"] as const;
 
-export function resolveAnchorsInAction(
-  action: NodeAction,
-  anchors: AnchorMap
-): NodeAction {
+export function resolveAnchorsInAction(action: NodeAction, anchors: AnchorMap): NodeAction {
   if (!action || typeof action !== "object") return action;
   let next: any = null;
   for (const field of ANCHORED_FIELDS) {

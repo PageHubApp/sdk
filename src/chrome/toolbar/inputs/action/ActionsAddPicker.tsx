@@ -26,11 +26,7 @@ import {
   requestOpenPopover,
   useSectionPopoverOpenRequest,
 } from "../../unified-settings/popoverOpenRequestAtom";
-import {
-  ACTION_TYPE_OPTIONS,
-  type ActionType,
-  migrateActions,
-} from "../../../../utils/action";
+import { ACTION_TYPE_OPTIONS, type ActionType, migrateActions } from "../../../../utils/action";
 import { ACTION_DEFAULTS } from "./ActionInput";
 import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
 
@@ -54,7 +50,7 @@ export default function ActionsAddPicker({ def }: PropertyInputProps) {
   const [popoverRequests, setPopoverRequests] = useAtomState(PopoverOpenRequestAtom);
   const popoverRef = useRef<SearchableMenuPopoverHandle>(null);
   useSectionPopoverOpenRequest(id, def.id, () =>
-    requestAnimationFrame(() => popoverRef.current?.open()),
+    requestAnimationFrame(() => popoverRef.current?.open())
   );
 
   const onPick = (item: SearchableMenuItem<ActionType>) => {

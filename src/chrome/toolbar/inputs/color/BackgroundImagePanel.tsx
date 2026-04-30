@@ -18,6 +18,7 @@ import { ImageCropModal } from "../../dialogs/ImageCropModal";
 import { MediaManagerBody } from "../media/MediaManagerBody";
 import { MediaPreviewModal } from "../media/components/MediaPreviewModal";
 import { useMediaManager } from "../media/hooks/useMediaManager";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -83,7 +84,7 @@ export default function BackgroundImagePanel({ initialPosition, onClose }: Panel
         minHeight={420}
         initialPosition={initialPosition}
         persistSize={false}
-        zIndex={1100}
+        zIndex={OVERLAY_Z_FLOATING_PANEL}
       >
         <MediaManagerBody
           manager={manager}

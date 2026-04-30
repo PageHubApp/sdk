@@ -11,9 +11,15 @@ import { TableRow } from "./TableRow";
 import { TableCell } from "./TableCell";
 import { staticClasses, getInlineStyle, tag, type ToHTMLFn } from "../utils/static-html";
 const TableMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/TableMainTab").then((mod) => ({ default: mod.TableMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/TableMainTab").then(mod => ({
+    default: mod.TableMainTab,
+  }))
 );
-import { HoverNodeController, DeleteNodeController, SelectTableTool } from "./editor-chrome";
+import {
+  HoverNodeController,
+  DeleteNodeController,
+  SelectTableTool,
+} from "../chrome/editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {
   "overflow-x-auto max-w-full w-full".split(/\s+/).forEach(c => c && ctx.classes.add(c));

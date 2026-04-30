@@ -1,7 +1,7 @@
 import { Element, useEditor, useNode } from "@craftjs/core";
 import { Container } from "../../components/Container";
 import { TbPlus } from "react-icons/tb";
-import { useNodeTypeHelpers } from "../canvas/hooks/useNodeType";
+import { useNodeTypeHelpers } from "@/utils/hooks/useNodeType";
 import { AddElement } from "../viewport/toolbox/toolboxUtils";
 
 interface AddElementButtonProps {

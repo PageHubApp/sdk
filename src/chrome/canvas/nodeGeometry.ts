@@ -81,7 +81,11 @@ export function getNodeGeometry(el: HTMLElement): NodeGeometry {
  * Used by resize drag math so dragging the rotated right edge grows the width
  * along the rotated x-axis instead of the screen x-axis.
  */
-export function projectToLocalAxis(dxScreen: number, dyScreen: number, angleDeg: number): {
+export function projectToLocalAxis(
+  dxScreen: number,
+  dyScreen: number,
+  angleDeg: number
+): {
   dx: number;
   dy: number;
 } {

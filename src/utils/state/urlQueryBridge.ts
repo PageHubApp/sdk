@@ -42,22 +42,14 @@ function syncUrlToState(source: "load" | "runtime"): void {
   const seen = new Set<string>();
   for (const [k, v] of params.entries()) {
     seen.add(k);
-    setState(
-      `${URL_PREFIX}${k}`,
-      { kind: "value", value: v, source },
-      BRIDGE_WRITER
-    );
+    setState(`${URL_PREFIX}${k}`, { kind: "value", value: v, source }, BRIDGE_WRITER);
   }
   for (const entry of listStates()) {
     if (!entry.key.startsWith(URL_PREFIX)) continue;
     const param = entry.key.slice(URL_PREFIX.length);
     if (!seen.has(param) && entry.value) {
       // URL no longer carries this param; clear the state entry to match.
-      setState(
-        entry.key,
-        { kind: "value", value: "", source },
-        BRIDGE_WRITER
-      );
+      setState(entry.key, { kind: "value", value: "", source }, BRIDGE_WRITER);
     }
   }
 }
@@ -76,9 +68,7 @@ function syncStateToUrl(): void {
   const currentSearch = window.location.search.replace(/^\?/, "");
   if (nextSearch === currentSearch) return;
   const url =
-    window.location.pathname +
-    (nextSearch ? "?" + nextSearch : "") +
-    window.location.hash;
+    window.location.pathname + (nextSearch ? "?" + nextSearch : "") + window.location.hash;
   window.history.pushState({}, "", url);
 }
 

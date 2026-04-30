@@ -18,9 +18,11 @@ import {
 } from "../utils/static-html";
 import type { ListMarkerStyle } from "./List";
 const ListItemMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/ListItemMainTab").then((mod) => ({ default: mod.ListItemMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/ListItemMainTab").then(mod => ({
+    default: mod.ListItemMainTab,
+  }))
 );
-import { HoverNodeController, DeleteNodeController, SelectListTool } from "./editor-chrome";
+import { HoverNodeController, DeleteNodeController, SelectListTool } from "../chrome/editor-chrome";
 
 function resolveName(n: { type?: { resolvedName?: string } } | undefined): string {
   if (!n?.type) return "";
@@ -42,7 +44,7 @@ function staticMarkerHtml(
       return `<span aria-hidden="true" class="text-primary mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center font-sans" style="line-height:1">&check;</span>`;
     case "icon": {
       const raw = icon?.value;
-      const sz = (icon?.size || "w-5 h-5");
+      const sz = icon?.size || "w-5 h-5";
       if (raw && raw.startsWith("ref-icon:")) {
         const entry = resolveIconSvgSync(raw);
         if (entry) {

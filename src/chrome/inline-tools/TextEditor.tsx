@@ -9,21 +9,21 @@ import { useEditor } from "@craftjs/core";
 import { EditorContent, useEditor as useTiptapEditor } from "@tiptap/react";
 import type { Editor as TiptapEditorInstance } from "@tiptap/core";
 
-import { useSDKSafe } from "../core/context";
-import { changeProp } from "../chrome/viewport/viewportExports";
-import { TiptapProvider } from "../chrome/inline-tools/TiptapContext";
-import { InlineEditToolbar } from "../chrome/inline-tools/inline-edit-toolbar/InlineEditToolbar";
-import { TiptapRichTextContextMenu } from "../chrome/inline-tools/inline-edit-toolbar/TiptapRichTextContextMenu";
-import { OPEN_LINK_PANEL_EVENT } from "../chrome/inline-tools/openLinkPanelEvent";
-import { VariableSuggestionPopup } from "../chrome/inline-tools/VariableSuggestion";
+import { useSDKSafe } from "../../core/context";
+import { changeProp } from "../viewport/viewportExports";
+import { TiptapProvider } from "./TiptapContext";
+import { InlineEditToolbar } from "./inline-edit-toolbar/InlineEditToolbar";
+import { TiptapRichTextContextMenu } from "./inline-edit-toolbar/TiptapRichTextContextMenu";
+import { OPEN_LINK_PANEL_EVENT } from "./openLinkPanelEvent";
+import { VariableSuggestionPopup } from "./VariableSuggestion";
 
-import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
-import { replaceVariables, resolveVariable } from "../utils/design/variables";
-import { useItemContext } from "../utils/itemContext";
+import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../../components/LazyEditorEmptyLeafHint";
+import { replaceVariables, resolveVariable } from "../../utils/design/variables";
+import { useItemContext } from "../../utils/itemContext";
 import {
   isVisuallyEmptyRichText,
   persistedTextHtmlFromEditor,
-} from "../utils/isVisuallyEmptyRichText";
+} from "../../utils/isVisuallyEmptyRichText";
 import { preprocessVariables } from "@/core/tiptapExtensions/VariableNode";
 import type { SuggestionProps } from "@/core/tiptapExtensions/VariableNode";
 import {

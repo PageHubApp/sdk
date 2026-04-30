@@ -44,7 +44,8 @@ function parseInline(text: string, onMediaClick?: (url: string) => void): React.
     } else if (match[7]) {
       const linkText = match[8];
       const linkUrl = match[9];
-      const isImage = linkText.toLowerCase() === "view image" || /\.(png|jpe?g|gif|webp)$/i.test(linkUrl);
+      const isImage =
+        linkText.toLowerCase() === "view image" || /\.(png|jpe?g|gif|webp)$/i.test(linkUrl);
 
       if (isImage) {
         parts.push(
@@ -53,7 +54,11 @@ function parseInline(text: string, onMediaClick?: (url: string) => void): React.
             onClick={() => onMediaClick?.(linkUrl)}
             className="mt-2 block overflow-hidden rounded-lg border border-black/10 transition-opacity hover:opacity-90 dark:border-white/10"
           >
-            <img src={linkUrl} alt={linkText} className="max-h-48 max-w-full object-contain bg-black/5 dark:bg-white/5" />
+            <img
+              src={linkUrl}
+              alt={linkText}
+              className="max-h-48 max-w-full bg-black/5 object-contain dark:bg-white/5"
+            />
           </button>
         );
       } else {
@@ -131,7 +136,11 @@ export function MarkdownText({ content, className, onMediaClick }: MarkdownTextP
     if (line.match(/^[\s]*[-•]\s+/)) {
       const items: React.ReactNode[] = [];
       while (i < lines.length && lines[i].match(/^[\s]*[-•]\s+/)) {
-        items.push(<li key={`li-${i}`}>{parseInline(lines[i].replace(/^[\s]*[-•]\s+/, ""), onMediaClick)}</li>);
+        items.push(
+          <li key={`li-${i}`}>
+            {parseInline(lines[i].replace(/^[\s]*[-•]\s+/, ""), onMediaClick)}
+          </li>
+        );
         i++;
       }
       elements.push(
@@ -147,7 +156,9 @@ export function MarkdownText({ content, className, onMediaClick }: MarkdownTextP
       const items: React.ReactNode[] = [];
       while (i < lines.length && lines[i].match(/^[\s]*\d+[.)]\s+/)) {
         items.push(
-          <li key={`oli-${i}`}>{parseInline(lines[i].replace(/^[\s]*\d+[.)]\s+/, ""), onMediaClick)}</li>
+          <li key={`oli-${i}`}>
+            {parseInline(lines[i].replace(/^[\s]*\d+[.)]\s+/, ""), onMediaClick)}
+          </li>
         );
         i++;
       }

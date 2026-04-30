@@ -3,17 +3,13 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { TbArrowDown, TbContainer, TbNote } from "react-icons/tb";
-import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
+import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "./LazyEditorEmptyLeafHint";
 import { useIsolate, usePreview, useView } from "../core/store";
 import { ViewModeAtom } from "../utils/lib";
 import { usePanelUrl } from "../utils/usePanelUrl";
 import { registerLiveComponent } from "../utils/componentRegistry";
 import { mergeAccessibilityProps } from "../utils/accessibility";
-import {
-  addCustomHandlers,
-  fireIntervalActions,
-  fireLoadAction,
-} from "../utils/clickControls";
+import { addCustomHandlers, fireIntervalActions, fireLoadAction } from "../utils/clickControls";
 import { getStateValue } from "../utils/stateRegistry";
 import { migrateActions, type NodeAction } from "../utils/action";
 import { getClonedState, setClonedProps } from "../utils/cloneHelper";
@@ -179,8 +175,7 @@ export function useContainerRender(
 
   const isGsaponHorizontalStrip = props.scrollEffect === "horizontal-scroll";
   const overflow: OverflowProps = props.overflow ?? {};
-  const overflowUxActive =
-    !!(overflow.dragScroll || overflow.autoHide) && !isGsaponHorizontalStrip;
+  const overflowUxActive = !!(overflow.dragScroll || overflow.autoHide) && !isGsaponHorizontalStrip;
 
   const dragDisabled = !overflow.dragScroll || enabled || !overflowUxActive;
   const wheelMaps = !!overflow.dragScroll && overflow.wheelHorizontal !== false;
@@ -235,25 +230,17 @@ export function useContainerRender(
   // `useShowHideVersion` above, but the EFFECT only re-runs when an actual
   // input value changes — not every render. Avoids re-applying bindings on
   // unrelated state tick bumps (e.g. cart open/close).
-  const bindings = (props as any).computedStateBindings as
-    | ComputedStateBinding[]
-    | undefined;
+  const bindings = (props as any).computedStateBindings as ComputedStateBinding[] | undefined;
   const computedSnapshot = computeBindingsSnapshot(bindings, raw =>
-    typeof raw === "string"
-      ? replaceVariables(raw, query, parentItem, anchors)
-      : (raw as any)
+    typeof raw === "string" ? replaceVariables(raw, query, parentItem, anchors) : (raw as any)
   );
   useEffect(() => {
     if (!Array.isArray(bindings) || bindings.length === 0) return;
     applyComputedStateBindings(bindings, raw =>
-      typeof raw === "string"
-        ? replaceVariables(raw, query, parentItem, anchors)
-        : (raw as any)
+      typeof raw === "string" ? replaceVariables(raw, query, parentItem, anchors) : (raw as any)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [computedSnapshot]);
-
-
 
   const { children } = props;
 
@@ -269,9 +256,7 @@ export function useContainerRender(
     // sibling Containers (e.g. cart panel + backdrop) react to the SAME
     // visibility state without sharing a DOM id (which would be invalid HTML).
     const showHideTarget = resolveAnchors(
-      (typeof props.visibilityStateKey === "string"
-        ? props.visibilityStateKey
-        : undefined) ||
+      (typeof props.visibilityStateKey === "string" ? props.visibilityStateKey : undefined) ||
         (props.attrs && typeof props.attrs.id === "string" ? props.attrs.id : undefined) ||
         (typeof props.id === "string" ? props.id : undefined) ||
         (typeof props.anchor === "string" ? props.anchor : undefined),
@@ -281,7 +266,6 @@ export function useContainerRender(
       className = applyShowHideOverride(className, showHideTarget);
     }
   }
-
 
   // Apply state-bound modifier classes — author-declared "when state X, apply
   // modifier Y" bindings on `props.stateModifiers`. Subscribes to the global
@@ -346,8 +330,7 @@ export function useContainerRender(
     for (const b of props.stateStyleBindings) {
       if (!b || !b.key || !b.styleProp) continue;
       const raw =
-        getStateValue(b.key) ??
-        (typeof b.defaultValue === "string" ? b.defaultValue : "0");
+        getStateValue(b.key) ?? (typeof b.defaultValue === "string" ? b.defaultValue : "0");
       const out = b.template ? b.template.replace(/\{\{value\}\}/g, raw) : raw;
       stateStyle[b.styleProp] = out;
     }
@@ -358,7 +341,7 @@ export function useContainerRender(
       ref.current = r;
       (scrollRef as React.MutableRefObject<HTMLDivElement | null>).current = r;
       setOverflowScrollEl(r);
-// Canvas-mode pinning bridge: register every Container DOM in the live
+      // Canvas-mode pinning bridge: register every Container DOM in the live
       // registry whenever it mounts/unmounts. Component cards key off
       // type === "component" containers; state cards (Modal panels, Tab panes,
       // show-hide targets) pin descendants by id, so the registry must cover
@@ -427,14 +410,12 @@ export function useContainerRender(
   if (props.scrollEffect) prop["data-scroll-effect"] = props.scrollEffect;
   {
     const rawId = props.id || props.anchor;
-    const resolvedId = resolveAnchors(
-      typeof rawId === "string" ? rawId : undefined,
-      anchors
-    );
+    const resolvedId = resolveAnchors(typeof rawId === "string" ? rawId : undefined, anchors);
     if (resolvedId) prop.id = resolvedId;
     else if (rawId) prop.id = rawId;
   }
-  if (props.tabGroup) prop["data-tab-group"] = resolveAnchors(props.tabGroup, anchors) || props.tabGroup;
+  if (props.tabGroup)
+    prop["data-tab-group"] = resolveAnchors(props.tabGroup, anchors) || props.tabGroup;
   if (props.type === "details" && props.open) prop.open = true;
 
   // Data supplies connector binding attrs here.
@@ -492,8 +473,7 @@ export function useContainerRender(
   // If this Container has a link action and would otherwise render as a plain
   // <div>, swap the tag to <a> so the card is a real, right-clickable link.
   // Don't override semantic tags (section/article/header/footer/etc).
-  const renderTag =
-    resolvedUrl && firstLink && !enabled && tagName === "div" ? "a" : tagName;
+  const renderTag = resolvedUrl && firstLink && !enabled && tagName === "div" ? "a" : tagName;
 
   return React.createElement(motionIt(props, UiComponent, enabled), {
     ...prop,

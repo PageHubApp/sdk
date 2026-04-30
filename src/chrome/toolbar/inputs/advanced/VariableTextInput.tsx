@@ -8,6 +8,7 @@ import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { useAtomValue } from "@zedux/react";
 import { SideBarAtom } from "@/utils/lib";
 import { ToolbarDropdown } from "@/chrome/toolbar/ToolbarDropdown";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 import {
   findAncestorDataSource,
   getConnectorCollectionLabel,
@@ -92,8 +93,10 @@ export function VariableTextInput({
       v.label.toLowerCase().includes(q) ||
       v.group?.toLowerCase().includes(q);
 
-    const imageTokenRegex = /(image|img|photo|thumbnail|thumb|src|url|avatar|logo|banner|cover|hero|media)/i;
-    const isImageLike = (v: (typeof options)[number]) => imageTokenRegex.test(v.id) || imageTokenRegex.test(v.label);
+    const imageTokenRegex =
+      /(image|img|photo|thumbnail|thumb|src|url|avatar|logo|banner|cover|hero|media)/i;
+    const isImageLike = (v: (typeof options)[number]) =>
+      imageTokenRegex.test(v.id) || imageTokenRegex.test(v.label);
 
     const base = q ? options.filter(matchesSearch) : options;
     if (intent !== "image-src") return base;
@@ -103,7 +106,8 @@ export function VariableTextInput({
 
   const sortedFiltered = useMemo(() => {
     if (intent !== "image-src") return filtered;
-    const imageTokenRegex = /(image|img|photo|thumbnail|thumb|src|url|avatar|logo|banner|cover|hero|media)/i;
+    const imageTokenRegex =
+      /(image|img|photo|thumbnail|thumb|src|url|avatar|logo|banner|cover|hero|media)/i;
     const score = (v: (typeof filtered)[number]) => {
       const id = v.id.toLowerCase();
       const label = v.label.toLowerCase();
@@ -139,11 +143,7 @@ export function VariableTextInput({
     return `{{${v} != ${exprCompare} ? ${tv} : "${fv}"}}`;
   }, [exprMode, exprVar, exprFallback, exprTrue, exprFalse, exprCompare]);
 
-  const setFieldFromVariable = (
-    setter: (value: string) => void,
-    varId: string,
-    wrap = false
-  ) => {
+  const setFieldFromVariable = (setter: (value: string) => void, varId: string, wrap = false) => {
     if (!varId) return;
     setter(wrap ? `{{${varId}}}` : varId);
   };
@@ -217,55 +217,57 @@ export function VariableTextInput({
             maxWidth={520}
             minHeight={280}
             initialPosition={initialPos}
-            zIndex={1100}
+            zIndex={OVERLAY_Z_FLOATING_PANEL}
           >
             <div className="flex flex-col gap-2 p-3">
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder="Search variables..."
-              size="slim"
-              clearTooltip="Clear variable search"
-            />
-            {intent === "image-src" ? (
-              <div className="flex items-center justify-between px-1">
-                <span className="text-neutral-content text-[10px] uppercase">Image-relevant fields</span>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-xs"
-                  onClick={() => setShowAllVariables(v => !v)}
-                >
-                  {showAllVariables ? "Show image fields" : "Show all variables"}
-                </button>
-              </div>
-            ) : null}
-            <div className="max-h-52 space-y-2 overflow-y-auto">
-              {grouped.map(([group, vars]) => (
-                <div key={group}>
-                  <div className="text-neutral-content px-2 pb-1 text-[10px] font-semibold uppercase">
-                    {group}
-                  </div>
-                  <div className="space-y-1">
-                    {vars.map(v => (
-                      <button
-                        key={`${group}-${v.id}`}
-                        type="button"
-                        className="hover:bg-base-200 flex w-full items-center justify-between rounded px-2 py-1 text-left"
-                        onClick={() => {
-                          const el = inputRef.current;
-                          if (!el) return;
-                          insertAtCursor(el, value || "", `{{${v.id}}}`, onChange);
-                          setPanel(null);
-                        }}
-                      >
-                        <span className="truncate text-xs">{v.label}</span>
-                        <span className="text-neutral-content ml-2 shrink-0 text-[10px]">{`{{${v.id}}}`}</span>
-                      </button>
-                    ))}
-                  </div>
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Search variables..."
+                size="slim"
+                clearTooltip="Clear variable search"
+              />
+              {intent === "image-src" ? (
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-neutral-content text-[10px] uppercase">
+                    Image-relevant fields
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-xs"
+                    onClick={() => setShowAllVariables(v => !v)}
+                  >
+                    {showAllVariables ? "Show image fields" : "Show all variables"}
+                  </button>
                 </div>
-              ))}
-            </div>
+              ) : null}
+              <div className="max-h-52 space-y-2 overflow-y-auto">
+                {grouped.map(([group, vars]) => (
+                  <div key={group}>
+                    <div className="text-neutral-content px-2 pb-1 text-[10px] font-semibold uppercase">
+                      {group}
+                    </div>
+                    <div className="space-y-1">
+                      {vars.map(v => (
+                        <button
+                          key={`${group}-${v.id}`}
+                          type="button"
+                          className="hover:bg-base-200 flex w-full items-center justify-between rounded px-2 py-1 text-left"
+                          onClick={() => {
+                            const el = inputRef.current;
+                            if (!el) return;
+                            insertAtCursor(el, value || "", `{{${v.id}}}`, onChange);
+                            setPanel(null);
+                          }}
+                        >
+                          <span className="truncate text-xs">{v.label}</span>
+                          <span className="text-neutral-content ml-2 shrink-0 text-[10px]">{`{{${v.id}}}`}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </FloatingPanel>
         ) : null}
@@ -280,7 +282,7 @@ export function VariableTextInput({
             maxWidth={560}
             minHeight={320}
             initialPosition={initialPos}
-            zIndex={1100}
+            zIndex={OVERLAY_Z_FLOATING_PANEL}
           >
             <div className="flex flex-col gap-2 p-3">
               <div>
@@ -421,7 +423,7 @@ export function VariableTextInput({
               <div>
                 <label className="toolbar-label mb-1 block">Preview</label>
                 <Chip grow>
-                  <code className="block w-full whitespace-pre-wrap break-all py-1 text-[11px]">
+                  <code className="block w-full py-1 text-[11px] break-all whitespace-pre-wrap">
                     {builtExpression}
                   </code>
                 </Chip>
@@ -469,7 +471,7 @@ export function VariableTextInput({
 
       {showExpressionHelp ? (
         <details className="text-neutral-content text-xs">
-          <summary className="cursor-pointer select-none font-medium">What works here</summary>
+          <summary className="cursor-pointer font-medium select-none">What works here</summary>
           <div className="mt-2 space-y-1">
             <div>
               Variables:

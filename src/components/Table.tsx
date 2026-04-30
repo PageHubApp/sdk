@@ -27,13 +27,7 @@ export const Table: UserComponent<TableProps> = (incomingProps: TableProps) => {
 
   useScrollToSelected(id, enabled);
 
-  const tableClassName = [
-    "table",
-    "w-full",
-    "border-collapse",
-    "text-sm",
-    props.className || "",
-  ]
+  const tableClassName = ["table", "w-full", "border-collapse", "text-sm", props.className || ""]
     .filter(Boolean)
     .join(" ");
 
@@ -74,26 +68,23 @@ export const Table: UserComponent<TableProps> = (incomingProps: TableProps) => {
 
   const { children } = props;
 
-  const inner = !hasSections && enabled ? (
-    <tbody>
-      <tr>
-        <td className="border-base-300 text-base-content/50 border p-4 text-center text-xs">
-          <span className="inline-flex items-center gap-2">
-            <TbTable className="h-4 w-4 shrink-0" aria-hidden />
-            Add sections (thead / tbody / tfoot) from the sidebar
-          </span>
-        </td>
-      </tr>
-    </tbody>
-  ) : (
-    children
-  );
+  const inner =
+    !hasSections && enabled ? (
+      <tbody>
+        <tr>
+          <td className="border-base-300 text-base-content/50 border p-4 text-center text-xs">
+            <span className="inline-flex items-center gap-2">
+              <TbTable className="h-4 w-4 shrink-0" aria-hidden />
+              Add sections (thead / tbody / tfoot) from the sidebar
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    ) : (
+      children
+    );
 
-  outer.children = (
-    <table className={tableClassName}>
-      {inner}
-    </table>
-  );
+  outer.children = <table className={tableClassName}>{inner}</table>;
 
   return React.createElement(motionIt(props, "div", enabled), {
     ...applyAnimation(outer, props, null, enabled),

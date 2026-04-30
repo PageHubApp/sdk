@@ -170,8 +170,12 @@ export function useMediaUpload({
         setUploadProgress(prev => (prev ? { ...prev, current: i, currentFile: file.name } : null));
 
         try {
-          const { mediaId, file: uploadedFile, destination, deliveryURL } =
-            await uploadImageToCdn(file);
+          const {
+            mediaId,
+            file: uploadedFile,
+            destination,
+            deliveryURL,
+          } = await uploadImageToCdn(file);
 
           setUploadProgress(prev =>
             prev ? { ...prev, completedFiles: [...prev.completedFiles, file.name] } : null
@@ -211,8 +215,12 @@ export function useMediaUpload({
 
     try {
       const file = files[0];
-      const { mediaId: newMediaId, file: uploaded, destination, deliveryURL } =
-        await uploadImageToCdn(file);
+      const {
+        mediaId: newMediaId,
+        file: uploaded,
+        destination,
+        deliveryURL,
+      } = await uploadImageToCdn(file);
 
       actions.setProp("ROOT", (props: Record<string, unknown>) => {
         const pageMedia = props.pageMedia as MediaItem[] | undefined;
@@ -246,8 +254,7 @@ export function useMediaUpload({
       refreshMediaList();
       setReplacingMedia(null);
     } catch (error) {
-      const message =
-        error instanceof MediaUploadError ? error.message : (error as Error)?.message;
+      const message = error instanceof MediaUploadError ? error.message : (error as Error)?.message;
       setUploadError(`Replace failed: ${message || "Unknown error"}`);
     } finally {
       setUploading(false);

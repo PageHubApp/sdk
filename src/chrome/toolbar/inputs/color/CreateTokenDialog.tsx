@@ -78,7 +78,8 @@ export function CreateTokenDialog({
     try {
       const node = query.node(ROOT_NODE).get();
       const theme = resolveTheme(node?.data?.props || {});
-      const palette = ((paletteKey === "darkPalette" ? theme.darkPalette : theme.palette) ?? []) as Array<{
+      const palette = ((paletteKey === "darkPalette" ? theme.darkPalette : theme.palette) ??
+        []) as Array<{
         name: string;
         color: string;
       }>;
@@ -115,7 +116,8 @@ export function CreateTokenDialog({
     try {
       const node = query.node(ROOT_NODE).get();
       const theme = resolveTheme(node?.data?.props || {});
-      const palette = ((paletteKey === "darkPalette" ? theme.darkPalette : theme.palette) ?? []) as Array<{
+      const palette = ((paletteKey === "darkPalette" ? theme.darkPalette : theme.palette) ??
+        []) as Array<{
         name: string;
         color: string;
       }>;

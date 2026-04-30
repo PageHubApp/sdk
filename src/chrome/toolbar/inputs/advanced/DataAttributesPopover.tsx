@@ -5,11 +5,10 @@
  * no `def` / SessionAddedAtom auto-open plumbing — just a click trigger.
  */
 import { useNode } from "@craftjs/core";
-import { useAtomValue } from "@zedux/react";
-import { lazy, Suspense, useRef, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { TbCode } from "react-icons/tb";
 import { Chip } from "../../../primitives/Chip";
-import { SideBarAtom } from "../../../../utils/lib";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 
 const DataAttributesPanel = lazy(() => import("./DataAttributesPanel"));
 
@@ -18,9 +17,8 @@ const PANEL_WIDTH = 360;
 
 export function DataAttributesPopover() {
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const {
     actions: { setProp },
@@ -36,13 +34,6 @@ export function DataAttributesPopover() {
     setProp((p: any) => {
       p.dataAttributes = [];
     });
-  };
-
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
   };
 
   const openPanel = () => {
@@ -70,7 +61,8 @@ export function DataAttributesPopover() {
           <span>Add data-…</span>
         </button>
       ) : (
-        <Chip mode="popover"
+        <Chip
+          mode="popover"
           ref={triggerRef}
           open={open}
           onTriggerClick={() => (open ? setOpen(false) : openPanel())}
@@ -86,10 +78,7 @@ export function DataAttributesPopover() {
       )}
       {open && (
         <Suspense fallback={null}>
-          <DataAttributesPanel
-            initialPosition={initialPos}
-            onClose={() => setOpen(false)}
-          />
+          <DataAttributesPanel initialPosition={initialPos} onClose={() => setOpen(false)} />
         </Suspense>
       )}
     </>

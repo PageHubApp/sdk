@@ -91,11 +91,7 @@ export const TextMainTab = () => {
         <IpsumGenerator propKey="text" propType="component" />
         <FormatControl />
         <div className="flex w-full gap-2 [&>*]:flex-1">
-          <button
-            type="button"
-            className="ph-toolbar-dashed-btn"
-            onClick={() => setHtmlOpen(true)}
-          >
+          <button type="button" className="ph-toolbar-dashed-btn" onClick={() => setHtmlOpen(true)}>
             <TbCode size={12} aria-hidden />
             Edit HTML
           </button>

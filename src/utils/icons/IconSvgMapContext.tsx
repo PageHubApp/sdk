@@ -52,7 +52,7 @@ export function isIconSpriteLoaded(setId: string): boolean {
 
 export function useIconSvg(ref: string | undefined): IconSvgEntry | null {
   const map = useContext(IconSvgMapContext);
-  return ref ? map[ref] ?? null : null;
+  return ref ? (map[ref] ?? null) : null;
 }
 
 /**

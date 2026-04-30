@@ -40,9 +40,15 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
 };
 
 const EmbedMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/EmbedMainTab").then((mod) => ({ default: mod.EmbedMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/EmbedMainTab").then(mod => ({
+    default: mod.EmbedMainTab,
+  }))
 );
-import { HoverNodeController, NameNodeController, DeleteNodeController } from "./editor-chrome";
+import {
+  HoverNodeController,
+  NameNodeController,
+  DeleteNodeController,
+} from "../chrome/editor-chrome";
 
 export const EmbedDef = defineComponent(
   {

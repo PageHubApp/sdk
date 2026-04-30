@@ -19,20 +19,11 @@ import { ToolbarDropdown } from "@/chrome/toolbar/ToolbarDropdown";
 import { ColorPickerAtom } from "@/chrome/toolbar/dialogs/ColorPickerDialog";
 import { FontFamilyDialogAtom } from "@/chrome/toolbar/dialogs/FontFamilyDialog";
 import { ToolbarSegmentedControl } from "@/chrome/toolbar/helpers/ToolbarSegmentedControl";
-import type { TypographyPresetRow } from "./TypographyPresetSelect";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import type { TextStyleDraft } from "./textStyleDraft";
 
-export type TextStyleDraft = {
-  name: string;
-  fontFamily: string;
-  fontSize: string;
-  fontWeight: string;
-  lineHeight: string;
-  letterSpacing: string;
-  textTransform: string;
-  color: string;
-  textDecoration: string;
-  textAlign: string;
-};
+export type { TextStyleDraft } from "./textStyleDraft";
+export { emptyDraft, presetToDraft } from "./textStyleDraft";
 
 export type TextStyleEditorMode = "new" | "edit";
 
@@ -200,9 +191,7 @@ export default function TextStyleEditorPanel({
   const nameError = useMemo(() => {
     if (!trimmed) return "Name is required";
     const lower = trimmed.toLowerCase();
-    const collides = existingNames.some(
-      n => n.toLowerCase() === lower && n !== originalName
-    );
+    const collides = existingNames.some(n => n.toLowerCase() === lower && n !== originalName);
     if (collides) return `A style named "${trimmed}" already exists`;
     return null;
   }, [trimmed, existingNames, originalName]);
@@ -251,9 +240,8 @@ export default function TextStyleEditorPanel({
     letterSpacing: draft.letterSpacing || "normal",
     textTransform: (draft.textTransform || "none") as CSSProperties["textTransform"],
     color: draft.color || undefined,
-    textDecoration: draft.textDecoration && draft.textDecoration !== "none"
-      ? draft.textDecoration
-      : undefined,
+    textDecoration:
+      draft.textDecoration && draft.textDecoration !== "none" ? draft.textDecoration : undefined,
     textAlign: (draft.textAlign || "left") as CSSProperties["textAlign"],
   };
 
@@ -273,7 +261,7 @@ export default function TextStyleEditorPanel({
       minHeight={420}
       initialPosition={initialPosition}
       persistSize={false}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
       bodyClassName="text-base-content flex flex-col gap-3 p-3 text-xs"
     >
@@ -453,38 +441,4 @@ export default function TextStyleEditorPanel({
       </div>
     </FloatingPanel>
   );
-}
-
-export function emptyDraft(): TextStyleDraft {
-  return {
-    name: "",
-    fontFamily: "Inter",
-    fontSize: "1rem",
-    fontWeight: "400",
-    lineHeight: "1.5",
-    letterSpacing: "normal",
-    textTransform: "none",
-    color: "",
-    textDecoration: "none",
-    textAlign: "left",
-  };
-}
-
-export function presetToDraft(p: TypographyPresetRow & {
-  color?: string;
-  textDecoration?: string;
-  textAlign?: string;
-}): TextStyleDraft {
-  return {
-    name: p.name,
-    fontFamily: p.fontFamily || "Inter",
-    fontSize: p.fontSize || "1rem",
-    fontWeight: p.fontWeight || "400",
-    lineHeight: p.lineHeight || "1.5",
-    letterSpacing: p.letterSpacing || "normal",
-    textTransform: p.textTransform || "none",
-    color: p.color || "",
-    textDecoration: p.textDecoration || "none",
-    textAlign: p.textAlign || "left",
-  };
 }

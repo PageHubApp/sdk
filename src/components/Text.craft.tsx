@@ -4,7 +4,9 @@ import React from "react";
  */
 import { TbBlockquote, TbH1, TbH2, TbLetterT } from "react-icons/tb";
 const TextMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/TextMainTab").then((mod) => ({ default: mod.TextMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/TextMainTab").then(mod => ({
+    default: mod.TextMainTab,
+  }))
 );
 import { defineComponent } from "../define";
 import { LoremIpsum } from "../utils/data/loremIpsum";
@@ -17,7 +19,7 @@ import {
   tag,
   type ToHTMLFn,
 } from "../utils/static-html";
-import { HoverNodeController } from "./editor-chrome";
+import { HoverNodeController } from "../chrome/editor-chrome";
 import { Text } from "./Text";
 
 // Guard against corrupted tagName data (e.g. `p, "text": "..."` from bad MCP writes)

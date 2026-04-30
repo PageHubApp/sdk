@@ -1,9 +1,9 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import { editorCanvasViewToClassPrefixKey } from "../utils/tailwind/className";
-import { ViewSelectionAtom } from "../chrome/toolbar/Label";
-import { ViewAtom } from "../chrome/viewport/atoms";
-import { PaddingOverlay } from "../chrome/canvas/PaddingOverlay";
+import { editorCanvasViewToClassPrefixKey } from "../../utils/tailwind/className";
+import { ViewSelectionAtom } from "../toolbar/Label";
+import { ViewAtom } from "../viewport/atoms";
+import { PaddingOverlay } from "./PaddingOverlay";
 
 export function ContainerPaddingOverlay() {
   const { id, dom } = useNode(node => ({ dom: node.dom }));

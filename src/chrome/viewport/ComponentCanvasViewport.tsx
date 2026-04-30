@@ -26,19 +26,13 @@ import {
   listComponentContainers,
 } from "../../utils/componentCanvas";
 import { findInherentComponentNodes, findStateNodes } from "../../utils/componentStateNodes";
-import {
-  applyCanvasVisibility,
-  CanvasIsolateAtom,
-} from "../../utils/componentIsolation";
+import { applyCanvasVisibility, CanvasIsolateAtom } from "../../utils/componentIsolation";
 import { useCanvasPan } from "../hooks/useCanvasPan";
 import { useCreateComponent } from "../hooks/useCreateComponent";
 import { CanvasZoom } from "./CanvasZoom";
 import { CanvasAnnotationLayer } from "./CanvasAnnotationLayer";
 import { ComponentCanvasItem } from "./ComponentCanvasItem";
-import {
-  ComponentCanvasPanAtom,
-  ComponentCanvasZoomAtom,
-} from "./atoms";
+import { ComponentCanvasPanAtom, ComponentCanvasZoomAtom } from "./atoms";
 
 interface Props {
   className?: string;
@@ -128,7 +122,7 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
         const pos = n?.data?.props?.custom?.canvasPos;
         const ipos = n?.data?.props?.custom?.canvasIsolatePos;
         parts.push(
-          `c:${nid}:${hidden}:${pos?.x ?? "?"}:${pos?.y ?? "?"}:${ipos?.x ?? "?"}:${ipos?.y ?? "?"}`,
+          `c:${nid}:${hidden}:${pos?.x ?? "?"}:${pos?.y ?? "?"}:${ipos?.x ?? "?"}:${ipos?.y ?? "?"}`
         );
       } else if (t === "componentCanvas") {
         const ann = n?.data?.props?.annotations ?? [];
@@ -268,7 +262,9 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
   // Pan/zoom snapshot — taken on isolation enter, restored on exit so the
   // user lands back where they were in the list view (instead of stuck at the
   // centered-on-component pan, which leaves siblings off to the side).
-  const preIsolatePanRef = React.useRef<{ pan: { x: number; y: number }; zoom: number } | null>(null);
+  const preIsolatePanRef = React.useRef<{ pan: { x: number; y: number }; zoom: number } | null>(
+    null
+  );
 
   React.useEffect(() => {
     if (!canvasIsolate) {
@@ -308,7 +304,7 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
         canvasIsolate,
         query,
         Math.max(0, containerIdx),
-        "canvasIsolatePos",
+        "canvasIsolatePos"
       );
       const masterSize = getComponentCanvasSize(canvasIsolate, query);
       const masterW = masterSize.w ?? CANVAS_SLOT_W;
@@ -382,16 +378,14 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
   const inherentIds = React.useMemo(
     () => findInherentComponentNodes(query),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sig],
+    [sig]
   );
   const allCardIds = React.useMemo(
     () => [...containerIds, ...inherentIds],
-    [containerIds, inherentIds],
+    [containerIds, inherentIds]
   );
   const canvasId = findComponentCanvasNode(query);
-  const annotations: CanvasAnnotation[] = canvasId
-    ? getCanvasAnnotations(canvasId, query)
-    : [];
+  const annotations: CanvasAnnotation[] = canvasId ? getCanvasAnnotations(canvasId, query) : [];
 
   // State cards: in isolation, walk the component subtree for hidden state
   // nodes (Modal panels, tab panes, show-hide / open-modal targets) and
@@ -433,7 +427,9 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
       let slotH = size.h;
       if (slotW === undefined || slotH === undefined) {
         const wrapper =
-          (document.querySelector(`[node-id="${id}"][data-component-container="true"]`) as HTMLElement | null) ||
+          (document.querySelector(
+            `[node-id="${id}"][data-component-container="true"]`
+          ) as HTMLElement | null) ||
           (document.querySelector(`[node-id="${id}"]`) as HTMLElement | null);
         if (wrapper) {
           if (slotW === undefined) slotW = wrapper.offsetWidth || CANVAS_SLOT_W;
@@ -532,19 +528,11 @@ export function ComponentCanvasViewport({ className = "" }: Props) {
           </>
         ) : (
           allCardIds.map((cid, idx) => (
-            <ComponentCanvasItem
-              key={cid}
-              containerId={cid}
-              index={idx}
-              isolated={false}
-            />
+            <ComponentCanvasItem key={cid} containerId={cid} index={idx} isolated={false} />
           ))
         )}
         {!canvasIsolate && (
-          <CanvasAnnotationLayer
-            annotations={annotations}
-            onChange={writeAnnotations}
-          />
+          <CanvasAnnotationLayer annotations={annotations} onChange={writeAnnotations} />
         )}
       </div>
 

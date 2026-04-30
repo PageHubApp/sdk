@@ -28,14 +28,14 @@ import {
   TbUserCircle,
 } from "react-icons/tb";
 const ContainerMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab").then(
-    (mod) => ({ default: mod.ContainerMainTab }),
-  ),
+  import("../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab").then(mod => ({
+    default: mod.ContainerMainTab,
+  }))
 );
 const HeaderFooterToggles = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab").then(
-    (mod) => ({ default: mod.HeaderFooterToggles }),
-  ),
+  import("../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab").then(mod => ({
+    default: mod.HeaderFooterToggles,
+  }))
 );
 import { defineComponent } from "../define";
 import { migrateActions } from "../utils/action";
@@ -49,7 +49,11 @@ import {
 } from "../utils/static-html";
 import { Button } from "./Button";
 import { Container } from "./Container";
-import { ContainerPaddingOverlay } from "./ContainerPaddingOverlay";
+const ContainerPaddingOverlay = React.lazy(() =>
+  import("../chrome/canvas/ContainerPaddingOverlay").then(mod => ({
+    default: mod.ContainerPaddingOverlay,
+  }))
+);
 import { Icon } from "./Icon";
 import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
 import { Text } from "./Text";
@@ -171,8 +175,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     if (overflow.dragScroll) {
       attrs["data-ph-overflow-drag"] = "";
       const rawS = overflow.smoothing;
-      const n =
-        typeof rawS === "number" ? rawS : typeof rawS === "string" ? parseFloat(rawS) : NaN;
+      const n = typeof rawS === "number" ? rawS : typeof rawS === "string" ? parseFloat(rawS) : NaN;
       const sm = Number.isNaN(n) ? 0 : Math.min(0.5, Math.max(0, n));
       if (sm > 0) attrs["data-ph-overflow-smooth"] = String(sm);
     }
@@ -199,7 +202,7 @@ function buildSectionChildren() {
       custom={{ displayName: "Content" }}
       canDelete={true}
       canEditName={true}
-      className="flex flex-col gap-space-md w-full max-w-page mx-auto"
+      className="gap-space-md max-w-page mx-auto flex w-full flex-col"
     />,
   ];
 }
@@ -212,7 +215,7 @@ function buildAvatarChildren() {
       custom={{ displayName: "Photo" }}
       canDelete={true}
       canEditName={true}
-      className="w-full h-full object-cover"
+      className="h-full w-full object-cover"
     />,
   ];
 }
@@ -247,7 +250,7 @@ function buildStatChildren() {
       is={Text}
       custom={{ displayName: "Value" }}
       text="2,400+"
-      className="text-4xl font-bold font-heading text-primary"
+      className="font-heading text-primary text-4xl font-bold"
       canDelete={true}
       canEditName={true}
     />,
@@ -256,7 +259,7 @@ function buildStatChildren() {
       is={Text}
       custom={{ displayName: "Label" }}
       text="Happy Customers"
-      className="text-sm text-base-content/60"
+      className="text-base-content/60 text-sm"
       canDelete={true}
       canEditName={true}
     />,
@@ -376,7 +379,7 @@ function buildSimpleImageChildren() {
       is={Image}
       custom={{ displayName: `Image ${i + 1}` }}
       alt={`Image ${i + 1}`}
-      className="w-full h-auto rounded-box object-cover"
+      className="rounded-box h-auto w-full object-cover"
       canDelete={true}
       canEditName={true}
     />
@@ -393,7 +396,7 @@ function buildMarqueeChildren() {
       is={Image}
       custom={{ displayName: `Image ${i + 1}` }}
       alt={`Image ${i + 1}`}
-      className="w-40 h-24 mr-space-md shrink-0 rounded-box object-cover"
+      className="mr-space-md rounded-box h-24 w-40 shrink-0 object-cover"
       canDelete={true}
       canEditName={true}
     />
@@ -433,16 +436,16 @@ function buildCarouselChildren(opts: { hero: boolean }) {
       is={Button}
       custom={{ displayName: `Dot ${i + 1}` }}
       text=""
-      className="size-2.5 rounded-full bg-base-content/30 hover:bg-base-content/60 transition-all"
-      action={[{ type: "set-state", key: stateKey, kind: "value", value: String(i), trigger: "click" }]}
+      className="bg-base-content/30 hover:bg-base-content/60 size-2.5 rounded-full transition-all"
+      action={[
+        { type: "set-state", key: stateKey, kind: "value", value: String(i), trigger: "click" },
+      ]}
       stateModifiers={[
         {
           conditions: [
             {
               logic: "all",
-              conditions: [
-                { type: "state", key: stateKey, operator: "equals", value: String(i) },
-              ],
+              conditions: [{ type: "state", key: stateKey, operator: "equals", value: String(i) }],
             },
           ],
           modifiers: ["dot-active"],
@@ -464,9 +467,7 @@ function buildCarouselChildren(opts: { hero: boolean }) {
       root={{
         style: `--carousel-items: ${itemsPerView}; transform: translateX(calc(var(--carousel-index, 0) * -100% / var(--carousel-items, 1)))`,
       }}
-      stateStyleBindings={[
-        { key: stateKey, styleProp: "--carousel-index", defaultValue: "0" },
-      ]}
+      stateStyleBindings={[{ key: stateKey, styleProp: "--carousel-index", defaultValue: "0" }]}
       canDelete={true}
       canEditName={true}
     >
@@ -478,7 +479,7 @@ function buildCarouselChildren(opts: { hero: boolean }) {
       custom={{ displayName: "Previous" }}
       text=""
       icon={{ value: "ref-icon:tb/TbChevronLeft", only: true, size: "w-6 h-6" }}
-      className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-base-100/80 text-base-content hover:bg-base-100 rounded-full p-2 shadow-md transition-colors"
+      className="bg-base-100/80 text-base-content hover:bg-base-100 absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full p-2 shadow-md transition-colors"
       action={[
         {
           type: "decrement-state",
@@ -499,7 +500,7 @@ function buildCarouselChildren(opts: { hero: boolean }) {
       custom={{ displayName: "Next" }}
       text=""
       icon={{ value: "ref-icon:tb/TbChevronRight", only: true, size: "w-6 h-6" }}
-      className="absolute top-1/2 right-2 z-10 -translate-y-1/2 bg-base-100/80 text-base-content hover:bg-base-100 rounded-full p-2 shadow-md transition-colors"
+      className="bg-base-100/80 text-base-content hover:bg-base-100 absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full p-2 shadow-md transition-colors"
       action={[
         {
           type: "increment-state",
@@ -573,7 +574,7 @@ function buildModalChildren() {
         custom={{ displayName: "Modal Content" }}
         canDelete={true}
         canEditName={true}
-        className="gap-container px-container-x py-container-y bg-base-100 rounded-box flex w-full max-w-lg flex-col shadow-xl relative"
+        className="gap-container px-container-x py-container-y bg-base-100 rounded-box relative flex w-full max-w-lg flex-col shadow-xl"
         handlers={{ onClick: "event.stopPropagation()" }}
       >
         <Element
@@ -603,7 +604,7 @@ function buildModalChildren() {
             trigger: "click",
             method: "class",
           }}
-          className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold self-end"
+          className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 self-end font-semibold"
         />
       </Element>
     </Element>,
@@ -649,15 +650,13 @@ function buildTabsChildren() {
           conditions: [
             {
               logic: "all",
-              conditions: [
-                { type: "state", key: group, operator: "equals", value: panel(i) },
-              ],
+              conditions: [{ type: "state", key: group, operator: "equals", value: panel(i) }],
             },
           ],
           modifiers: ["tab-active"],
         },
       ]}
-      className="rounded-none border-b-2 border-transparent px-4 py-2 text-sm font-medium text-base-content"
+      className="text-base-content rounded-none border-b-2 border-transparent px-4 py-2 text-sm font-medium"
     />
   );
   const tabPanel = (i: number, body: string, hidden: boolean) => {
@@ -709,9 +708,21 @@ function buildTabsChildren() {
       {tabBtn(1, "Features")}
       {tabBtn(2, "Pricing")}
     </Element>,
-    tabPanel(0, "<p>Overview content goes here. This is the first tab panel, visible by default.</p>", false),
-    tabPanel(1, "<p>Features content goes here. This panel is hidden until Tab 2 is clicked.</p>", true),
-    tabPanel(2, "<p>Pricing content goes here. This panel is hidden until Tab 3 is clicked.</p>", true),
+    tabPanel(
+      0,
+      "<p>Overview content goes here. This is the first tab panel, visible by default.</p>",
+      false
+    ),
+    tabPanel(
+      1,
+      "<p>Features content goes here. This panel is hidden until Tab 2 is clicked.</p>",
+      true
+    ),
+    tabPanel(
+      2,
+      "<p>Pricing content goes here. This panel is hidden until Tab 3 is clicked.</p>",
+      true
+    ),
   ];
 }
 
@@ -769,7 +780,7 @@ function buildAccordionItem(opts: {
           is={Icon}
           custom={{ displayName: "Chevron" }}
           value="ref-icon:tb/TbChevronDown"
-          className="w-5 h-5 transition-transform duration-200 group-open:rotate-180"
+          className="h-5 w-5 transition-transform duration-200 group-open:rotate-180"
           canDelete={true}
           canEditName={true}
         />
@@ -780,7 +791,7 @@ function buildAccordionItem(opts: {
         custom={{ displayName: "Body" }}
         canDelete={true}
         canEditName={true}
-        className="px-4 pb-4 text-base-content/80"
+        className="text-base-content/80 px-4 pb-4"
       >
         <Element
           is={Text}
@@ -859,8 +870,11 @@ function buildDropdownChildren() {
       custom={{ displayName: "Dropdown Panel" }}
       canDelete={true}
       canEditName={true}
-      handlers={{ onClick: "if (event.currentTarget.closest('[tabindex]')) event.currentTarget.closest('[tabindex]').blur()" }}
-      className="bg-base-200 text-base-content rounded-box border-base-300 absolute top-full left-0 z-50 mt-1 hidden min-w-48 flex-col overflow-hidden border py-space-xs shadow-lg group-focus-within:flex"
+      handlers={{
+        onClick:
+          "if (event.currentTarget.closest('[tabindex]')) event.currentTarget.closest('[tabindex]').blur()",
+      }}
+      className="bg-base-200 text-base-content rounded-box border-base-300 py-space-xs absolute top-full left-0 z-50 mt-1 hidden min-w-48 flex-col overflow-hidden border shadow-lg group-focus-within:flex"
     >
       <Element
         is={Button}
@@ -869,7 +883,7 @@ function buildDropdownChildren() {
         url="#"
         canDelete={true}
         canEditName={true}
-        className="hover:bg-neutral w-full rounded-none border-0 px-space-sm py-space-xs text-left text-sm"
+        className="hover:bg-neutral px-space-sm py-space-xs w-full rounded-none border-0 text-left text-sm"
       />
       <Element
         is={Button}
@@ -878,7 +892,7 @@ function buildDropdownChildren() {
         url="#"
         canDelete={true}
         canEditName={true}
-        className="hover:bg-neutral w-full rounded-none border-0 px-space-sm py-space-xs text-left text-sm"
+        className="hover:bg-neutral px-space-sm py-space-xs w-full rounded-none border-0 text-left text-sm"
       />
       <Element
         is={Button}
@@ -887,7 +901,7 @@ function buildDropdownChildren() {
         url="#"
         canDelete={true}
         canEditName={true}
-        className="hover:bg-neutral w-full rounded-none border-0 px-space-sm py-space-xs text-left text-sm"
+        className="hover:bg-neutral px-space-sm py-space-xs w-full rounded-none border-0 text-left text-sm"
       />
     </Element>,
   ];
@@ -939,7 +953,7 @@ function buildCookieConsentChildren() {
           },
         ],
       }}
-      className="hidden fixed bottom-0 left-0 right-0 z-[1100] bg-base-200 text-base-content shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
+      className="bg-base-200 text-base-content fixed right-0 bottom-0 left-0 z-[1100] hidden shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
     >
       <Element
         canvas
@@ -947,7 +961,7 @@ function buildCookieConsentChildren() {
         custom={{ displayName: "Banner Content" }}
         canDelete={true}
         canEditName={true}
-        className="flex flex-col sm:flex-row items-center justify-between gap-space-sm px-space-md py-space-sm max-w-page mx-auto"
+        className="gap-space-sm px-space-md py-space-sm max-w-page mx-auto flex flex-col items-center justify-between sm:flex-row"
       >
         <Element
           is={Text}
@@ -955,7 +969,7 @@ function buildCookieConsentChildren() {
           tagName="p"
           richText={{ mode: "inline" }}
           text="We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies."
-          className="text-sm text-base-content/80"
+          className="text-base-content/80 text-sm"
           canDelete={true}
           canEditName={true}
         />
@@ -965,7 +979,7 @@ function buildCookieConsentChildren() {
           custom={{ displayName: "Button Group" }}
           canDelete={true}
           canEditName={true}
-          className="flex flex-row items-center gap-space-xs shrink-0"
+          className="gap-space-xs flex shrink-0 flex-row items-center"
         >
           <Element
             is={Button}
@@ -1028,7 +1042,7 @@ function buildMobileMenuChildren() {
           method: "class",
         },
       ]}
-      className="lg:hidden bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+      className="text-base-content px-space-xs py-space-xs flex items-center justify-center bg-transparent lg:hidden"
       canDelete={true}
       canEditName={true}
     />,
@@ -1040,7 +1054,7 @@ function buildMobileMenuChildren() {
       canDelete={true}
       canEditName={true}
       attrs={{ id: anchor }}
-      className="hidden fixed inset-0 z-[1200] bg-base-100 lg:hidden h-full p-space-lg flex-col"
+      className="bg-base-100 p-space-lg fixed inset-0 z-[1200] hidden h-full flex-col lg:hidden"
       handlers={{
         onClick:
           "var a = event.target.closest('a, button[data-action]'); if (a) event.currentTarget.classList.add('hidden');",
@@ -1052,7 +1066,7 @@ function buildMobileMenuChildren() {
         custom={{ displayName: "Drawer Header" }}
         canDelete={true}
         canEditName={true}
-        className="flex items-center justify-end pb-space-md"
+        className="pb-space-md flex items-center justify-end"
       >
         <Element
           is={Button}
@@ -1069,7 +1083,7 @@ function buildMobileMenuChildren() {
               method: "class",
             },
           ]}
-          className="bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+          className="text-base-content px-space-xs py-space-xs flex items-center justify-center bg-transparent"
           canDelete={true}
           canEditName={true}
         />
@@ -1080,7 +1094,7 @@ function buildMobileMenuChildren() {
         custom={{ displayName: "Drawer Links" }}
         canDelete={true}
         canEditName={true}
-        className="flex flex-col gap-space-sm"
+        className="gap-space-sm flex flex-col"
       >
         <Element
           is={Button}
@@ -1088,7 +1102,7 @@ function buildMobileMenuChildren() {
           text="Home"
           url=""
           action={[{ type: "link", href: "#" }]}
-          className="text-base-content text-lg w-full justify-start py-space-sm"
+          className="text-base-content py-space-sm w-full justify-start text-lg"
           canDelete={true}
           canEditName={true}
         />
@@ -1098,7 +1112,7 @@ function buildMobileMenuChildren() {
           text="About"
           url=""
           action={[{ type: "link", href: "#" }]}
-          className="text-base-content text-lg w-full justify-start py-space-sm"
+          className="text-base-content py-space-sm w-full justify-start text-lg"
           canDelete={true}
           canEditName={true}
         />
@@ -1108,7 +1122,7 @@ function buildMobileMenuChildren() {
           text="Contact"
           url=""
           action={[{ type: "link", href: "#" }]}
-          className="text-base-content text-lg w-full justify-start py-space-sm"
+          className="text-base-content py-space-sm w-full justify-start text-lg"
           canDelete={true}
           canEditName={true}
         />
@@ -1130,7 +1144,7 @@ function buildNavbarChildren() {
       type="nav"
       canDelete={true}
       canEditName={true}
-      className="flex items-center justify-between w-full px-container-x py-space-sm bg-base-100"
+      className="px-container-x py-space-sm bg-base-100 flex w-full items-center justify-between"
     >
       <Element
         canvas
@@ -1138,7 +1152,7 @@ function buildNavbarChildren() {
         custom={{ displayName: "Logo" }}
         canDelete={true}
         canEditName={true}
-        className="flex flex-row items-center gap-space-sm"
+        className="gap-space-sm flex flex-row items-center"
       >
         <Element
           canvas
@@ -1146,13 +1160,13 @@ function buildNavbarChildren() {
           custom={{ displayName: "Logo Mark" }}
           canDelete={true}
           canEditName={true}
-          className="w-10 h-10 rounded-md bg-primary flex items-center justify-center"
+          className="bg-primary flex h-10 w-10 items-center justify-center rounded-md"
         >
           <Element
             is={Icon}
             custom={{ displayName: "Mark Icon" }}
             value="ref-icon:tb/TbBolt"
-            className="text-primary-content w-6 h-6"
+            className="text-primary-content h-6 w-6"
             canDelete={true}
             canEditName={true}
           />
@@ -1172,7 +1186,7 @@ function buildNavbarChildren() {
         custom={{ displayName: "Desktop Links" }}
         canDelete={true}
         canEditName={true}
-        className="hidden lg:flex items-center gap-space-md"
+        className="gap-space-md hidden items-center lg:flex"
       >
         <Element
           is={Button}
@@ -1230,7 +1244,7 @@ function buildNavbarChildren() {
             method: "class",
           },
         ]}
-        className="lg:hidden bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+        className="text-base-content px-space-xs py-space-xs flex items-center justify-center bg-transparent lg:hidden"
         canDelete={true}
         canEditName={true}
       />
@@ -1243,7 +1257,7 @@ function buildNavbarChildren() {
       canDelete={true}
       canEditName={true}
       attrs={{ id: anchor }}
-      className="hidden fixed inset-0 z-[1200] bg-base-100 lg:hidden h-full p-space-lg flex-col"
+      className="bg-base-100 p-space-lg fixed inset-0 z-[1200] hidden h-full flex-col lg:hidden"
       handlers={{
         onClick:
           "var a = event.target.closest('a, button[data-action]'); if (a) event.currentTarget.classList.add('hidden');",
@@ -1255,7 +1269,7 @@ function buildNavbarChildren() {
         custom={{ displayName: "Drawer Header" }}
         canDelete={true}
         canEditName={true}
-        className="flex items-center justify-end pb-space-md"
+        className="pb-space-md flex items-center justify-end"
       >
         <Element
           is={Button}
@@ -1272,7 +1286,7 @@ function buildNavbarChildren() {
               method: "class",
             },
           ]}
-          className="bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+          className="text-base-content px-space-xs py-space-xs flex items-center justify-center bg-transparent"
           canDelete={true}
           canEditName={true}
         />
@@ -1283,7 +1297,7 @@ function buildNavbarChildren() {
         custom={{ displayName: "Drawer Links" }}
         canDelete={true}
         canEditName={true}
-        className="flex flex-col gap-space-sm"
+        className="gap-space-sm flex flex-col"
       >
         <Element
           is={Button}
@@ -1291,7 +1305,7 @@ function buildNavbarChildren() {
           text="Home"
           url=""
           action={[{ type: "link", href: "#" }]}
-          className="text-base-content text-lg w-full justify-start py-space-sm"
+          className="text-base-content py-space-sm w-full justify-start text-lg"
           canDelete={true}
           canEditName={true}
         />
@@ -1301,7 +1315,7 @@ function buildNavbarChildren() {
           text="Features"
           url=""
           action={[{ type: "link", href: "#features" }]}
-          className="text-base-content text-lg w-full justify-start py-space-sm"
+          className="text-base-content py-space-sm w-full justify-start text-lg"
           canDelete={true}
           canEditName={true}
         />
@@ -1311,7 +1325,7 @@ function buildNavbarChildren() {
           text="Pricing"
           url=""
           action={[{ type: "link", href: "#pricing" }]}
-          className="text-base-content text-lg w-full justify-start py-space-sm"
+          className="text-base-content py-space-sm w-full justify-start text-lg"
           canDelete={true}
           canEditName={true}
         />
@@ -1321,7 +1335,7 @@ function buildNavbarChildren() {
           text="Get started"
           url=""
           action={[{ type: "link", href: "#" }]}
-          className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold mt-space-md"
+          className="btn btn-primary rounded-box px-space-md py-space-xs mt-space-md min-h-12 font-semibold"
           canDelete={true}
           canEditName={true}
         />
@@ -1345,7 +1359,7 @@ function buildNavbarMegaChildren() {
       type="nav"
       canDelete={true}
       canEditName={true}
-      className="relative flex items-center justify-between w-full px-container-x py-space-sm bg-base-100"
+      className="px-container-x py-space-sm bg-base-100 relative flex w-full items-center justify-between"
     >
       <Element
         canvas
@@ -1353,7 +1367,7 @@ function buildNavbarMegaChildren() {
         custom={{ displayName: "Logo" }}
         canDelete={true}
         canEditName={true}
-        className="flex flex-row items-center gap-space-sm"
+        className="gap-space-sm flex flex-row items-center"
       >
         <Element
           canvas
@@ -1361,13 +1375,13 @@ function buildNavbarMegaChildren() {
           custom={{ displayName: "Logo Mark" }}
           canDelete={true}
           canEditName={true}
-          className="w-10 h-10 rounded-md bg-primary flex items-center justify-center"
+          className="bg-primary flex h-10 w-10 items-center justify-center rounded-md"
         >
           <Element
             is={Icon}
             custom={{ displayName: "Mark Icon" }}
             value="ref-icon:tb/TbBolt"
-            className="text-primary-content w-6 h-6"
+            className="text-primary-content h-6 w-6"
             canDelete={true}
             canEditName={true}
           />
@@ -1387,7 +1401,7 @@ function buildNavbarMegaChildren() {
         custom={{ displayName: "Desktop Links" }}
         canDelete={true}
         canEditName={true}
-        className="hidden lg:flex items-center gap-space-md"
+        className="gap-space-md hidden items-center lg:flex"
       >
         <Element
           is={Button}
@@ -1444,7 +1458,7 @@ function buildNavbarMegaChildren() {
             method: "class",
           },
         ]}
-        className="lg:hidden bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+        className="text-base-content px-space-xs py-space-xs flex items-center justify-center bg-transparent lg:hidden"
         canDelete={true}
         canEditName={true}
       />
@@ -1456,128 +1470,128 @@ function buildNavbarMegaChildren() {
         canDelete={true}
         canEditName={true}
         attrs={{ id: megaAnchor }}
-        className="hidden absolute left-0 right-0 top-full z-[1100] bg-base-100 border-t border-base-200 shadow-xl px-container-x py-space-lg"
-      >
-      <Element
-        canvas
-        is={Container}
-        custom={{ displayName: "Mega Grid" }}
-        canDelete={true}
-        canEditName={true}
-        className="grid grid-cols-3 gap-space-lg max-w-page mx-auto w-full"
+        className="bg-base-100 border-base-200 px-container-x py-space-lg absolute top-full right-0 left-0 z-[1100] hidden border-t shadow-xl"
       >
         <Element
           canvas
           is={Container}
-          custom={{ displayName: "Column 1" }}
+          custom={{ displayName: "Mega Grid" }}
           canDelete={true}
           canEditName={true}
-          className="flex flex-col gap-space-xs"
+          className="gap-space-lg max-w-page mx-auto grid w-full grid-cols-3"
         >
           <Element
-            is={Text}
-            custom={{ displayName: "Heading" }}
-            tagName="h4"
-            text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Platform</h4>'
+            canvas
+            is={Container}
+            custom={{ displayName: "Column 1" }}
             canDelete={true}
             canEditName={true}
-          />
+            className="gap-space-xs flex flex-col"
+          >
+            <Element
+              is={Text}
+              custom={{ displayName: "Heading" }}
+              tagName="h4"
+              text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Platform</h4>'
+              canDelete={true}
+              canEditName={true}
+            />
+            <Element
+              is={Button}
+              custom={{ displayName: "Link" }}
+              text="Editor"
+              url=""
+              action={[{ type: "link", href: "#" }]}
+              className="text-base-content hover:text-primary justify-start"
+              canDelete={true}
+              canEditName={true}
+            />
+            <Element
+              is={Button}
+              custom={{ displayName: "Link" }}
+              text="Templates"
+              url=""
+              action={[{ type: "link", href: "#" }]}
+              className="text-base-content hover:text-primary justify-start"
+              canDelete={true}
+              canEditName={true}
+            />
+          </Element>
           <Element
-            is={Button}
-            custom={{ displayName: "Link" }}
-            text="Editor"
-            url=""
-            action={[{ type: "link", href: "#" }]}
-            className="text-base-content hover:text-primary justify-start"
+            canvas
+            is={Container}
+            custom={{ displayName: "Column 2" }}
             canDelete={true}
             canEditName={true}
-          />
+            className="gap-space-xs flex flex-col"
+          >
+            <Element
+              is={Text}
+              custom={{ displayName: "Heading" }}
+              tagName="h4"
+              text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Solutions</h4>'
+              canDelete={true}
+              canEditName={true}
+            />
+            <Element
+              is={Button}
+              custom={{ displayName: "Link" }}
+              text="Marketing"
+              url=""
+              action={[{ type: "link", href: "#" }]}
+              className="text-base-content hover:text-primary justify-start"
+              canDelete={true}
+              canEditName={true}
+            />
+            <Element
+              is={Button}
+              custom={{ displayName: "Link" }}
+              text="Storefront"
+              url=""
+              action={[{ type: "link", href: "#" }]}
+              className="text-base-content hover:text-primary justify-start"
+              canDelete={true}
+              canEditName={true}
+            />
+          </Element>
           <Element
-            is={Button}
-            custom={{ displayName: "Link" }}
-            text="Templates"
-            url=""
-            action={[{ type: "link", href: "#" }]}
-            className="text-base-content hover:text-primary justify-start"
+            canvas
+            is={Container}
+            custom={{ displayName: "Column 3" }}
             canDelete={true}
             canEditName={true}
-          />
+            className="gap-space-xs flex flex-col"
+          >
+            <Element
+              is={Text}
+              custom={{ displayName: "Heading" }}
+              tagName="h4"
+              text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Resources</h4>'
+              canDelete={true}
+              canEditName={true}
+            />
+            <Element
+              is={Button}
+              custom={{ displayName: "Link" }}
+              text="Docs"
+              url=""
+              action={[{ type: "link", href: "#" }]}
+              className="text-base-content hover:text-primary justify-start"
+              canDelete={true}
+              canEditName={true}
+            />
+            <Element
+              is={Button}
+              custom={{ displayName: "Link" }}
+              text="Blog"
+              url=""
+              action={[{ type: "link", href: "#" }]}
+              className="text-base-content hover:text-primary justify-start"
+              canDelete={true}
+              canEditName={true}
+            />
+          </Element>
         </Element>
-        <Element
-          canvas
-          is={Container}
-          custom={{ displayName: "Column 2" }}
-          canDelete={true}
-          canEditName={true}
-          className="flex flex-col gap-space-xs"
-        >
-          <Element
-            is={Text}
-            custom={{ displayName: "Heading" }}
-            tagName="h4"
-            text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Solutions</h4>'
-            canDelete={true}
-            canEditName={true}
-          />
-          <Element
-            is={Button}
-            custom={{ displayName: "Link" }}
-            text="Marketing"
-            url=""
-            action={[{ type: "link", href: "#" }]}
-            className="text-base-content hover:text-primary justify-start"
-            canDelete={true}
-            canEditName={true}
-          />
-          <Element
-            is={Button}
-            custom={{ displayName: "Link" }}
-            text="Storefront"
-            url=""
-            action={[{ type: "link", href: "#" }]}
-            className="text-base-content hover:text-primary justify-start"
-            canDelete={true}
-            canEditName={true}
-          />
-        </Element>
-        <Element
-          canvas
-          is={Container}
-          custom={{ displayName: "Column 3" }}
-          canDelete={true}
-          canEditName={true}
-          className="flex flex-col gap-space-xs"
-        >
-          <Element
-            is={Text}
-            custom={{ displayName: "Heading" }}
-            tagName="h4"
-            text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Resources</h4>'
-            canDelete={true}
-            canEditName={true}
-          />
-          <Element
-            is={Button}
-            custom={{ displayName: "Link" }}
-            text="Docs"
-            url=""
-            action={[{ type: "link", href: "#" }]}
-            className="text-base-content hover:text-primary justify-start"
-            canDelete={true}
-            canEditName={true}
-          />
-          <Element
-            is={Button}
-            custom={{ displayName: "Link" }}
-            text="Blog"
-            url=""
-            action={[{ type: "link", href: "#" }]}
-            className="text-base-content hover:text-primary justify-start"
-            canDelete={true}
-            canEditName={true}
-          />
-        </Element>
-      </Element>
       </Element>
     </Element>,
     <Element
@@ -1588,7 +1602,7 @@ function buildNavbarMegaChildren() {
       canDelete={true}
       canEditName={true}
       attrs={{ id: drawerAnchor }}
-      className="hidden fixed inset-0 z-[1200] bg-base-100 lg:hidden h-full p-space-lg flex-col"
+      className="bg-base-100 p-space-lg fixed inset-0 z-[1200] hidden h-full flex-col lg:hidden"
       handlers={{
         onClick:
           "var a = event.target.closest('a, button[data-action]'); if (a) event.currentTarget.classList.add('hidden');",
@@ -1600,7 +1614,7 @@ function buildNavbarMegaChildren() {
         custom={{ displayName: "Drawer Header" }}
         canDelete={true}
         canEditName={true}
-        className="flex items-center justify-end pb-space-md"
+        className="pb-space-md flex items-center justify-end"
       >
         <Element
           is={Button}
@@ -1617,7 +1631,7 @@ function buildNavbarMegaChildren() {
               method: "class",
             },
           ]}
-          className="bg-transparent text-base-content flex items-center justify-center px-space-xs py-space-xs"
+          className="text-base-content px-space-xs py-space-xs flex items-center justify-center bg-transparent"
           canDelete={true}
           canEditName={true}
         />
@@ -1628,7 +1642,7 @@ function buildNavbarMegaChildren() {
         custom={{ displayName: "Drawer Links" }}
         canDelete={true}
         canEditName={true}
-        className="flex flex-col gap-space-sm"
+        className="gap-space-sm flex flex-col"
       >
         <Element
           is={Button}
@@ -1636,7 +1650,7 @@ function buildNavbarMegaChildren() {
           text="Products"
           url=""
           action={[{ type: "link", href: "#" }]}
-          className="text-base-content text-lg w-full justify-start py-space-sm"
+          className="text-base-content py-space-sm w-full justify-start text-lg"
           canDelete={true}
           canEditName={true}
         />
@@ -1646,7 +1660,7 @@ function buildNavbarMegaChildren() {
           text="Pricing"
           url=""
           action={[{ type: "link", href: "#pricing" }]}
-          className="text-base-content text-lg w-full justify-start py-space-sm"
+          className="text-base-content py-space-sm w-full justify-start text-lg"
           canDelete={true}
           canEditName={true}
         />
@@ -1656,7 +1670,7 @@ function buildNavbarMegaChildren() {
           text="Get started"
           url=""
           action={[{ type: "link", href: "#" }]}
-          className="btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold mt-space-md"
+          className="btn btn-primary rounded-box px-space-md py-space-xs mt-space-md min-h-12 font-semibold"
           canDelete={true}
           canEditName={true}
         />

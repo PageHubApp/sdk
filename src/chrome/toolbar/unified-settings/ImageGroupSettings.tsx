@@ -1,5 +1,5 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { ToolbarItem, ToolbarSection } from "../chrome/toolbar";
+import { ToolbarItem, ToolbarSection } from "../../toolbar";
 import { TbPlus } from "react-icons/tb";
 
 export const ImageGroupSettings = ({ onAdd }: { onAdd: () => void }) => {

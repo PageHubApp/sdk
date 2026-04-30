@@ -17,9 +17,9 @@ import { toHTML } from "./Container.craft";
 import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
 
 const ContainerMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab").then(
-    (m) => ({ default: m.ContainerMainTab }),
-  ),
+  import("../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab").then(m => ({
+    default: m.ContainerMainTab,
+  }))
 );
 
 export const AutomaticDef = defineComponent(

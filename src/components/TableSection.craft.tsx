@@ -8,9 +8,15 @@ import { TableSection } from "./TableSection";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
 import type { TableSectionKind } from "./tableTypes";
 const TableSectionMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/TableSectionMainTab").then((mod) => ({ default: mod.TableSectionMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/TableSectionMainTab").then(mod => ({
+    default: mod.TableSectionMainTab,
+  }))
 );
-import { HoverNodeController, DeleteNodeController, SelectTableTool } from "./editor-chrome";
+import {
+  HoverNodeController,
+  DeleteNodeController,
+  SelectTableTool,
+} from "../chrome/editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {
   const kind = (props.tableSection || "tbody") as TableSectionKind;

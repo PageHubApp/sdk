@@ -130,11 +130,7 @@ const skeletonChunk = "bg-base-content/5 animate-pulse rounded";
 /** Ghost label (`w-20`) + ghost input — matches the canonical inline row. */
 export function RowSkeleton() {
   return (
-    <div
-      className="flex h-8 items-center gap-0.5"
-      aria-busy="true"
-      aria-label="Loading control"
-    >
+    <div className="flex h-8 items-center gap-0.5" aria-busy="true" aria-label="Loading control">
       <span className={`${skeletonChunk} h-3 w-20 shrink-0`} aria-hidden />
       <span className={`${skeletonChunk} ml-0.5 h-8 min-w-0 flex-1`} aria-hidden />
     </div>
@@ -148,11 +144,7 @@ export function RowSkeleton() {
  */
 export function BlockSkeleton() {
   return (
-    <div
-      className="flex flex-col gap-2"
-      aria-busy="true"
-      aria-label="Loading section"
-    >
+    <div className="flex flex-col gap-2" aria-busy="true" aria-label="Loading section">
       <span className={`${skeletonChunk} h-3 w-1/3`} aria-hidden />
       <span className={`${skeletonChunk} h-8 w-full`} aria-hidden />
       <span className={`${skeletonChunk} h-8 w-2/3`} aria-hidden />
@@ -163,11 +155,7 @@ export function BlockSkeleton() {
 /** Ghost chip — single button-height pill, e.g. for popover triggers. */
 export function ChipSkeleton() {
   return (
-    <div
-      className="flex h-8 items-center"
-      aria-busy="true"
-      aria-label="Loading control"
-    >
+    <div className="flex h-8 items-center" aria-busy="true" aria-label="Loading control">
       <span className={`${skeletonChunk} h-8 w-full`} aria-hidden />
     </div>
   );

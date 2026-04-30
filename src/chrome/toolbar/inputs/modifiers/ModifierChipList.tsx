@@ -44,7 +44,8 @@ export function ModifierChipList() {
   return (
     <div className="flex flex-col gap-1">
       {resolved.map(mod => (
-        <Chip mode="popover"
+        <Chip
+          mode="popover"
           key={mod.name}
           onTriggerClick={openPicker}
           onClear={() => toggleModifier(mod)}
@@ -55,9 +56,7 @@ export function ModifierChipList() {
             <span className="flex items-center gap-1.5">
               <span className="truncate">{mod.label}</span>
               {mod.category && (
-                <span className="text-neutral-content/60 shrink-0 text-[10px]">
-                  {mod.category}
-                </span>
+                <span className="text-neutral-content/60 shrink-0 text-[10px]">{mod.category}</span>
               )}
               {mod.origin === "site" && (
                 <span className="text-neutral-content/50 shrink-0 text-[10px]">custom</span>

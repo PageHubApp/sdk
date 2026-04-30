@@ -17,7 +17,7 @@ import { parseIconRef } from "./icons/collectIconRefs";
 export function resolveIcon(
   value: string | undefined,
   query?: any,
-  iconMap?: IconSvgMap,
+  iconMap?: IconSvgMap
 ): React.ReactNode {
   if (!value || typeof value !== "string") return null;
 
@@ -77,10 +77,7 @@ export function renderIconSvg(entry: IconSvgEntry): React.ReactElement {
  * React hook form — prefers the SSR-seeded map (inline SVG) and falls back to
  * a sprite-sheet `<use href>` reference for icons picked post-SSR in the editor.
  */
-export function useResolvedIcon(
-  value: string | undefined,
-  query?: any,
-): React.ReactNode {
+export function useResolvedIcon(value: string | undefined, query?: any): React.ReactNode {
   const iconRef = value?.startsWith("ref-icon:") ? value : undefined;
   const entry = useIconSvg(iconRef);
   const spriteReady = useIconSprite(entry ? undefined : iconRef);

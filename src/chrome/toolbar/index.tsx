@@ -90,11 +90,7 @@ export const Toolbar = () => {
       // working). Buttons are NOT in this list — most of the toolbar UI is
       // wrapped in buttons; the slop check below distinguishes a click from
       // a drag.
-      if (
-        target?.closest(
-          "input, textarea, select, [role='slider'], [contenteditable='true']"
-        )
-      ) {
+      if (target?.closest("input, textarea, select, [role='slider'], [contenteditable='true']")) {
         return;
       }
 
@@ -120,8 +116,7 @@ export const Toolbar = () => {
 
       const startX = e.clientX;
       const startY = e.clientY;
-      const startTime =
-        typeof performance !== "undefined" ? performance.now() : Date.now();
+      const startTime = typeof performance !== "undefined" ? performance.now() : Date.now();
       let decided: "h" | "v" | null = null;
       let lastDx = 0;
 
@@ -157,9 +152,7 @@ export const Toolbar = () => {
         const travel = dx * closeDir;
         aside.style.transition = "none";
         aside.style.transform =
-          travel > 0
-            ? `translateX(${closeDir * Math.min(travel, 360)}px)`
-            : "";
+          travel > 0 ? `translateX(${closeDir * Math.min(travel, 360)}px)` : "";
       };
 
       const onUp = () => {
@@ -171,12 +164,10 @@ export const Toolbar = () => {
         }
         const closeDir = cfgRef.current.sideBarLeft ? -1 : 1;
         const travel = lastDx * closeDir;
-        const now =
-          typeof performance !== "undefined" ? performance.now() : Date.now();
+        const now = typeof performance !== "undefined" ? performance.now() : Date.now();
         const dt = Math.max(now - startTime, 1);
         const velocity = travel / dt; // px/ms in close direction
-        const shouldClose =
-          travel >= 50 || (travel >= 25 && velocity >= 0.3);
+        const shouldClose = travel >= 50 || (travel >= 25 && velocity >= 0.3);
 
         if (shouldClose) {
           // Restore class-based transition (width/opacity) BEFORE flipping
@@ -237,9 +228,7 @@ export const Toolbar = () => {
         </div>
         <SidebarLayersPanel />
       </div>
-      {isOverlayLayout && isOpen ? (
-        <SidebarSwipeHint sideBarLeft={sideBarLeft} />
-      ) : null}
+      {isOverlayLayout && isOpen ? <SidebarSwipeHint sideBarLeft={sideBarLeft} /> : null}
     </aside>
   );
 };

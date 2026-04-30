@@ -1,6 +1,6 @@
 import type { ComponentType, ReactElement } from "react";
 import type { ResolvedComponentDef } from "../../define";
-import { SavedComponentLoader } from "./toolbox/savedComponents";
+import { SavedComponentLoader } from "../../core/savedComponents";
 
 export type ToolboxInsertDescriptor = {
   key: string;

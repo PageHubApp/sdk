@@ -47,7 +47,7 @@ export function ActionsInput() {
   const ensureSelfId = (): string => {
     if (selfId) return selfId;
     setProp((p: any) => {
-      const attrs = (p.attrs && typeof p.attrs === "object") ? { ...p.attrs } : {};
+      const attrs = p.attrs && typeof p.attrs === "object" ? { ...p.attrs } : {};
       if (typeof attrs.id !== "string" || !attrs.id) attrs.id = id;
       p.attrs = attrs;
     });
@@ -55,8 +55,7 @@ export function ActionsInput() {
   };
 
   const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
-  const actionRequestVersion =
-    popoverRequests.get(popoverRequestKey(id, ACTIONS_BODY_DEF_ID)) || 0;
+  const actionRequestVersion = popoverRequests.get(popoverRequestKey(id, ACTIONS_BODY_DEF_ID)) || 0;
 
   const writeActions = (next: NodeAction[]) => {
     setProp((p: any) => {
@@ -91,8 +90,7 @@ export function ActionsInput() {
   // Init to 0 (NOT current version) — see editor-popover-pattern.md §4.
   const lastActionVersionRef = useRef(0);
   useEffect(() => {
-    if (actionRequestVersion === 0 || actionRequestVersion === lastActionVersionRef.current)
-      return;
+    if (actionRequestVersion === 0 || actionRequestVersion === lastActionVersionRef.current) return;
     lastActionVersionRef.current = actionRequestVersion;
     if (actionList.length > 0) setPendingActionIdx(actionList.length - 1);
   }, [actionRequestVersion, actionList.length]);

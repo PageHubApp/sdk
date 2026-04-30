@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { PropertyRenderer } from "../../unified-settings/PropertyRenderer";
 import type { PropertyDef } from "../../unified-settings/registry/propertyDefs";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   title: string;
@@ -36,7 +37,7 @@ export default function BundleRowPanel({
       maxWidth={480}
       minHeight={120}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       {properties.map(child => (

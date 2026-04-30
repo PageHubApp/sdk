@@ -13,9 +13,7 @@ export const AccordionProvider = ({ children }) => {
   });
 
   /** Map<title, { defaultOpen, primary }>. Only `primary` sections are toggled by toggleAll. */
-  const registeredSections = useRef(
-    new Map<string, { defaultOpen: boolean; primary: boolean }>()
-  );
+  const registeredSections = useRef(new Map<string, { defaultOpen: boolean; primary: boolean }>());
 
   const persist = state => {
     try {
@@ -25,9 +23,7 @@ export const AccordionProvider = ({ children }) => {
 
   const sectionDefault = useCallback(
     (title: string, hint?: boolean) =>
-      hint ??
-      registeredSections.current.get(title)?.defaultOpen ??
-      title === DEFAULT_OPEN_SECTION,
+      hint ?? registeredSections.current.get(title)?.defaultOpen ?? title === DEFAULT_OPEN_SECTION,
     []
   );
 
@@ -42,8 +38,7 @@ export const AccordionProvider = ({ children }) => {
   const toggle = useCallback(
     (title, defaultOpenHint?: boolean) => {
       setOpenSections(prev => {
-        const currentlyOpen =
-          title in prev ? prev[title] : sectionDefault(title, defaultOpenHint);
+        const currentlyOpen = title in prev ? prev[title] : sectionDefault(title, defaultOpenHint);
         const next = { ...prev, [title]: !currentlyOpen };
         persist(next);
         return next;
@@ -130,7 +125,17 @@ export const AccordionProvider = ({ children }) => {
 
   return (
     <AccordionContext.Provider
-      value={{ getIsOpen, toggle, setOpen, toggleAll, openAll, openOnly, register, unregister, anyOpen }}
+      value={{
+        getIsOpen,
+        toggle,
+        setOpen,
+        toggleAll,
+        openAll,
+        openOnly,
+        register,
+        unregister,
+        anyOpen,
+      }}
     >
       {children}
     </AccordionContext.Provider>

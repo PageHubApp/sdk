@@ -37,7 +37,7 @@ const SIZE_CLASS: Record<TileSize, string> = {
 };
 
 const BG_CLASS: Record<TileBg, string> = {
-  "neutral": "bg-neutral",
+  neutral: "bg-neutral",
   "base-100": "bg-base-100",
   "base-200": "bg-base-200",
 };

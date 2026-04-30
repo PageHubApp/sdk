@@ -2,7 +2,9 @@ import React from "react";
 /** Data — Component definition via defineComponent(). */
 import { TbDatabase } from "react-icons/tb";
 const DataMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/DataMainTab").then((mod) => ({ default: mod.DataMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/DataMainTab").then(mod => ({
+    default: mod.DataMainTab,
+  }))
 );
 import { defineComponent } from "../define";
 import { toHTML as containerToHTML } from "./Container.craft";

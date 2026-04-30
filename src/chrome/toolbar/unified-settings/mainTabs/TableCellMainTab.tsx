@@ -10,66 +10,66 @@ export const TableCellMainTab = () => {
   return renderComponentSlots({
     Content: (
       <>
-      <ToolbarSection collapsible={false}>
-        <ToolbarItem
-          propKey="text"
-          propType="component"
-          type="textarea"
-          label="Text"
-          labelWidth="w-20"
-        />
-        <ToolbarItem
-          propKey="as"
-          propType="component"
-          type="select"
-          label="Tag"
-          labelWidth="w-20"
-        >
-          <option value="td">td</option>
-          <option value="th">th</option>
-        </ToolbarItem>
-        <SettingsAiSlot />
-      </ToolbarSection>
-
-      <ToolbarSection
-        title="Span"
-        icon={SECTION_ICONS["Type"]}
-        help="colspan / rowspan for merged cells."
-      >
-        <ToolbarItem
-          propKey="colSpan"
-          propType="component"
-          type="number"
-          label="colSpan"
-          labelWidth="w-24"
-          min={1}
-          max={99}
-        />
-        <ToolbarItem
-          propKey="rowSpan"
-          propType="component"
-          type="number"
-          label="rowSpan"
-          labelWidth="w-24"
-          min={1}
-          max={99}
-        />
-        {props?.as === "th" && (
+        <ToolbarSection collapsible={false}>
           <ToolbarItem
-            propKey="scope"
+            propKey="text"
+            propType="component"
+            type="textarea"
+            label="Text"
+            labelWidth="w-20"
+          />
+          <ToolbarItem
+            propKey="as"
             propType="component"
             type="select"
-            label="scope"
-            labelWidth="w-24"
+            label="Tag"
+            labelWidth="w-20"
           >
-            <option value="">(auto)</option>
-            <option value="col">col</option>
-            <option value="row">row</option>
-            <option value="colgroup">colgroup</option>
-            <option value="rowgroup">rowgroup</option>
+            <option value="td">td</option>
+            <option value="th">th</option>
           </ToolbarItem>
-        )}
-      </ToolbarSection>
+          <SettingsAiSlot />
+        </ToolbarSection>
+
+        <ToolbarSection
+          title="Span"
+          icon={SECTION_ICONS["Type"]}
+          help="colspan / rowspan for merged cells."
+        >
+          <ToolbarItem
+            propKey="colSpan"
+            propType="component"
+            type="number"
+            label="colSpan"
+            labelWidth="w-24"
+            min={1}
+            max={99}
+          />
+          <ToolbarItem
+            propKey="rowSpan"
+            propType="component"
+            type="number"
+            label="rowSpan"
+            labelWidth="w-24"
+            min={1}
+            max={99}
+          />
+          {props?.as === "th" && (
+            <ToolbarItem
+              propKey="scope"
+              propType="component"
+              type="select"
+              label="scope"
+              labelWidth="w-24"
+            >
+              <option value="">(auto)</option>
+              <option value="col">col</option>
+              <option value="row">row</option>
+              <option value="colgroup">colgroup</option>
+              <option value="rowgroup">rowgroup</option>
+            </ToolbarItem>
+          )}
+        </ToolbarSection>
       </>
     ),
   });

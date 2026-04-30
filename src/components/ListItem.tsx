@@ -8,7 +8,7 @@ import { applyAnimation, CSStoObj } from "../utils/tailwind/tailwind";
 import { replaceVariables } from "../utils/design/variables";
 import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { useScrollToSelected } from "./componentHooks";
-import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
+import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "./LazyEditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 import type { ListMarkerIconProps, ListMarkerStyle } from "./List";
@@ -84,14 +84,10 @@ export const ListItem: UserComponent<ListItemProps> = (incomingProps: ListItemPr
 
   const iconClass = useMemo(
     () =>
-      [
-        iconSizeEarly,
-        "fill-current text-primary shrink-0",
-        "flex items-center justify-center",
-      ]
+      [iconSizeEarly, "fill-current text-primary shrink-0", "flex items-center justify-center"]
         .filter(Boolean)
         .join(" "),
-    [iconSizeEarly],
+    [iconSizeEarly]
   );
 
   const renderMarker = () => {
@@ -140,7 +136,7 @@ export const ListItem: UserComponent<ListItemProps> = (incomingProps: ListItemPr
     />
   ) : (
     <div
-      className="min-w-0 flex-1 text-base-content [&_a]:text-primary [&_a]:underline-offset-2 [&_a]:hover:underline"
+      className="text-base-content [&_a]:text-primary min-w-0 flex-1 [&_a]:underline-offset-2 [&_a]:hover:underline"
       dangerouslySetInnerHTML={{ __html: rawHtml }}
     />
   );

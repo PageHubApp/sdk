@@ -102,9 +102,7 @@ function TokensSection() {
         )}
       </div>
 
-      {open && (
-        <VarPicker open onOpenChange={o => setOpen(o)} />
-      )}
+      {open && <VarPicker open onOpenChange={o => setOpen(o)} />}
     </div>
   );
 }
@@ -176,7 +174,7 @@ function BreakpointsSection() {
           <div key={key} className="flex items-center gap-2">
             <label
               htmlFor={`ds-bp-${key}`}
-              className="text-base-content w-12 text-xs font-mono uppercase"
+              className="text-base-content w-12 font-mono text-xs uppercase"
             >
               {key === "2xl" ? "2XL" : key.toUpperCase()}
             </label>
@@ -276,8 +274,8 @@ function IndicatorDensityRow() {
     <div className="flex flex-col gap-1">
       <label className="text-base-content text-xs font-medium">Indicator density</label>
       <p className="text-neutral-content text-[10px] leading-snug">
-        Per-property breakpoint chips next to labels. Right-click a chip for reset / promote /
-        copy commands.
+        Per-property breakpoint chips next to labels. Right-click a chip for reset / promote / copy
+        commands.
       </p>
       <div className="bg-base-200 mt-1 inline-flex gap-px rounded-md p-0.5">
         {opts.map(opt => (

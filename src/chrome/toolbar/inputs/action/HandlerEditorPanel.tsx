@@ -13,10 +13,8 @@ import { TbX } from "react-icons/tb";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { CodeEditor } from "../typography/CodeEditor";
-import {
-  HANDLER_EVENT_LABEL,
-  HANDLER_EVENT_OPTIONS,
-} from "./handlerEvents";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { HANDLER_EVENT_LABEL, HANDLER_EVENT_OPTIONS } from "./handlerEvents";
 
 interface Props {
   event: string;
@@ -53,7 +51,7 @@ export default function HandlerEditorPanel({
       maxWidth={560}
       minHeight={260}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <div className="flex flex-col gap-2">

@@ -75,10 +75,7 @@ export function findInherentComponentNodes(query: any): string[] {
     // container — those are part of that component's design surface already.
     const isInsideContainer = insideContainer || propsType === "component";
 
-    if (
-      !isInsideContainer &&
-      INHERENT_COMPONENT_DISPLAYNAMES.has(displayName)
-    ) {
+    if (!isInsideContainer && INHERENT_COMPONENT_DISPLAYNAMES.has(displayName)) {
       result.push(id);
       // Don't descend into an inherent component — its inner state nodes
       // are surfaced via state cards when it's isolated, not as their own
@@ -95,10 +92,7 @@ export function findInherentComponentNodes(query: any): string[] {
 
 /** BFS from componentRootId, collect every descendant node id that is itself
  *  a state subtree. Stops at nested `type === "component"` boundaries. */
-export function findStateNodes(
-  componentRootId: string,
-  query: any,
-): StateNodeRef[] {
+export function findStateNodes(componentRootId: string, query: any): StateNodeRef[] {
   // First pass: collect descendant ids (skipping nested components).
   const descendantIds: string[] = [];
   const queue: string[] = [];
@@ -113,9 +107,7 @@ export function findStateNodes(
   let walked = 0;
   while (queue.length > 0) {
     if (++walked > WALK_NODE_CAP) {
-      console.warn(
-        `[findStateNodes] walk cap (${WALK_NODE_CAP}) exceeded for ${componentRootId}`,
-      );
+      console.warn(`[findStateNodes] walk cap (${WALK_NODE_CAP}) exceeded for ${componentRootId}`);
       break;
     }
     const id = queue.shift()!;

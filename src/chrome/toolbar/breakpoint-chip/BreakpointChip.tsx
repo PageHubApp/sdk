@@ -204,23 +204,16 @@ export function BreakpointChip({
         aria-expanded={!!isOpen}
         className={`relative inline-flex h-3.5 min-w-[14px] cursor-pointer items-center justify-center gap-0.5 rounded-[3px] px-[3px] transition-[colors,opacity] duration-150 ${
           isOpen ? "bg-base-200" : "hover:bg-base-200"
-        } ${
-          isGhost
-            ? "opacity-0 group-hover/bp-row:opacity-40 hover:!opacity-100"
-            : ""
-        }`}
+        } ${isGhost ? "opacity-0 group-hover/bp-row:opacity-40 hover:!opacity-100" : ""}`}
       >
         <span
           className={`inline-block size-[6px] shrink-0 rounded-full ${
-            isGhost ? "border border-base-content/50 bg-transparent" : dotClass
+            isGhost ? "border-base-content/50 border bg-transparent" : dotClass
           }`}
           aria-hidden
         />
-        {(showHollow || showEmptyHollow || isGhost) ? null : (
-          <span
-            className="text-base-content font-mono text-[9px] leading-none"
-            aria-hidden
-          >
+        {showHollow || showEmptyHollow || isGhost ? null : (
+          <span className="text-base-content font-mono text-[9px] leading-none" aria-hidden>
             {badgeLetter}
           </span>
         )}

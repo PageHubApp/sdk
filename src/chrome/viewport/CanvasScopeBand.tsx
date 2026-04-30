@@ -13,11 +13,11 @@ import { useAtomValue } from "@zedux/react";
 import { AppliedBreakpointsAtom, ViewAtom } from "./atoms";
 
 const BAND_COLOR: Record<string, string> = {
-  base: "#64748b",  // slate-500 — neutral, distinct from breakpoint hues
-  sm: "#0ea5e9",   // sky-500
-  md: "#10b981",   // emerald-500
-  lg: "#8b5cf6",   // violet-500
-  xl: "#ec4899",   // pink-500
+  base: "#64748b", // slate-500 — neutral, distinct from breakpoint hues
+  sm: "#0ea5e9", // sky-500
+  md: "#10b981", // emerald-500
+  lg: "#8b5cf6", // violet-500
+  xl: "#ec4899", // pink-500
   "2xl": "#f43f5e", // rose-500
 };
 
@@ -40,7 +40,7 @@ export function CanvasScopeBand() {
       >
         <span>Editing Base</span>
         <span className="opacity-70">·</span>
-        <span className="normal-case tracking-normal opacity-90">applies to all sizes</span>
+        <span className="tracking-normal normal-case opacity-90">applies to all sizes</span>
       </div>
     );
   }
@@ -61,9 +61,9 @@ export function CanvasScopeBand() {
     >
       <span>Editing {label} breakpoint</span>
       <span className="opacity-70">·</span>
-      <span className="font-mono normal-case tracking-normal">{sizeText}</span>
+      <span className="font-mono tracking-normal normal-case">{sizeText}</span>
       <span className="opacity-70">·</span>
-      <span className="normal-case tracking-normal opacity-90">overrides Base</span>
+      <span className="tracking-normal normal-case opacity-90">overrides Base</span>
     </div>
   );
 }

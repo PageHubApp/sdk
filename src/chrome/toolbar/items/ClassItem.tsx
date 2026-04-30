@@ -197,9 +197,7 @@ const Input = ({
             : (APPLY_SCOPE_DISPLAY[canvasViewToClassScopeKey(canvasView)] ??
               canvasViewToClassScopeKey(canvasView))}
         </span>
-        {multiScope.size === 0 && (
-          <span className="text-neutral-content">(canvas layer)</span>
-        )}
+        {multiScope.size === 0 && <span className="text-neutral-content">(canvas layer)</span>}
       </div>
 
       <BreakpointBuckets

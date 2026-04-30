@@ -12,7 +12,6 @@
  */
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
-import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   TbLink,
@@ -33,7 +32,7 @@ import {
   TbToggleLeft,
 } from "react-icons/tb";
 import { Chip } from "../../../primitives/Chip";
-import { SideBarAtom } from "../../../../utils/lib";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import { ACTION_TYPE_OPTIONS, type ActionType, type NodeAction } from "../../../../utils/action";
 import { PeekTargetButton } from "./PeekTargetButton";
 
@@ -43,9 +42,7 @@ const ActionEditorPanel = lazy(() => import("./ActionEditorPanel"));
 // inside `ActionEditorPanel` (see editor-popover-pattern.md "FloatingPanel sizing").
 const PANEL_WIDTH = 340;
 
-const TYPE_ICON: Partial<
-  Record<ActionType, React.ComponentType<{ className?: string }>>
-> = {
+const TYPE_ICON: Partial<Record<ActionType, React.ComponentType<{ className?: string }>>> = {
   link: TbLink,
   "open-modal": TbWindowMaximize,
   "show-hide": TbEye,
@@ -156,9 +153,8 @@ export function ActionChipRow({
   ensureSelfId,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   // Resolve `ref:<pageId>` hrefs to page displayNames (chip mirrors LinkInput).
   // Skip the editor read entirely for non-link actions so we don't subscribe.
@@ -171,10 +167,7 @@ export function ActionChipRow({
       for (const childId of root.data.nodes) {
         const n = state.nodes[childId];
         if (n?.data?.props?.type === "page") {
-          map.set(
-            childId,
-            (n.data.custom?.displayName as string) || "Untitled Page"
-          );
+          map.set(childId, (n.data.custom?.displayName as string) || "Untitled Page");
         }
       }
     }
@@ -183,17 +176,7 @@ export function ActionChipRow({
 
   const Icon = TYPE_ICON[action.type as ActionType] || TbPointer;
   const typeLabel = actionTypeLabel(action);
-  const summary = useMemo(
-    () => describeAction(action, pageNames) || "Add…",
-    [action, pageNames]
-  );
-
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
+  const summary = useMemo(() => describeAction(action, pageNames) || "Add…", [action, pageNames]);
 
   const openPanel = () => {
     setInitialPos(computePosition());
@@ -222,7 +205,8 @@ export function ActionChipRow({
 
   return (
     <>
-      <Chip mode="popover"
+      <Chip
+        mode="popover"
         ref={triggerRef}
         label={typeLabel}
         open={open}

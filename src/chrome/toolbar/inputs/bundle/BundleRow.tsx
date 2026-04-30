@@ -10,17 +10,14 @@
 import React, { useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { useNode } from "@craftjs/core";
 import { useAtomValue, useAtomState } from "@zedux/react";
-import {
-  classPropKeyMatches,
-  splitClassVariants,
-} from "../../../../utils/tailwind/className";
+import { classPropKeyMatches, splitClassVariants } from "../../../../utils/tailwind/className";
 import { formatTailwindDisplayLabel } from "../../../../utils/tailwind/displayLabel";
 import { TRANSPARENT_CHECKER_BG } from "../../../../utils/design/colorSystem";
-import { SideBarAtom } from "../../../../utils/lib";
 import { Chip } from "../../../primitives/Chip";
 import { ViewAtom } from "../../../viewport/atoms";
 import { getPropFinalValue } from "../../../viewport/propSystem";
 import { ViewSelectionAtom } from "../../Label";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
 import type { PropertyDef, PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
 
@@ -40,13 +37,12 @@ const PANEL_WIDTH = 300;
 
 export function BundleRow({ def, properties, icon }: Props) {
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-
-  const [sessionAdded, setSessionAdded] = useAtomState(SessionAddedAtom);
   // Sidebar docked left → panel opens on the RIGHT side of the trigger.
   // Docked right → opens to the LEFT side. Either way: adjacent to the chip.
-  const sidebarLeft = useAtomValue(SideBarAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
+
+  const [sessionAdded, setSessionAdded] = useAtomState(SessionAddedAtom);
   const view = useAtomValue(ViewAtom);
   const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
 
@@ -111,13 +107,6 @@ export function BundleRow({ def, properties, icon }: Props) {
     }
     return null;
   })();
-
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
 
   const openPanel = () => {
     setInitialPos(computePosition());
@@ -187,7 +176,8 @@ export function BundleRow({ def, properties, icon }: Props) {
 
   return (
     <>
-      <Chip mode="popover"
+      <Chip
+        mode="popover"
         ref={triggerRef}
         label={def.label}
         open={open}

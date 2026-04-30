@@ -6,9 +6,11 @@ import { TbMapPin } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { MapPoint } from "./MapPoint";
 const MapPointMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/MapPointMainTab").then((mod) => ({ default: mod.MapPointMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/MapPointMainTab").then(mod => ({
+    default: mod.MapPointMainTab,
+  }))
 );
-import { DeleteNodeController, SelectMapTool } from "./editor-chrome";
+import { DeleteNodeController, SelectMapTool } from "../chrome/editor-chrome";
 
 export const MapPointDef = defineComponent(
   {

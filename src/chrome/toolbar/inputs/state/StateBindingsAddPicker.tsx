@@ -69,9 +69,7 @@ export default function StateBindingsAddPicker({ def }: PropertyInputProps) {
 
   const addStateBinding = () => {
     setProp((p: any) => {
-      const list: StateBinding[] = Array.isArray(p.stateModifiers)
-        ? [...p.stateModifiers]
-        : [];
+      const list: StateBinding[] = Array.isArray(p.stateModifiers) ? [...p.stateModifiers] : [];
       list.push({
         conditions: [{ conditions: [defaultCondition("state")], logic: "all" }],
         modifiers: [],

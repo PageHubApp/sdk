@@ -25,9 +25,10 @@ export function PresetAddChildList(_props: PropertyInputProps) {
   const { id, presetName } = useNode(node => ({
     presetName: (node.data?.custom as any)?.preset as string | undefined,
   }));
-  const [activeIndex, setActiveIndex] = useAtomState(
-    SelectedPresetItemAtom
-  ) as unknown as [number | null, (v: number | null) => void];
+  const [activeIndex, setActiveIndex] = useAtomState(SelectedPresetItemAtom) as unknown as [
+    number | null,
+    (v: number | null) => void,
+  ];
 
   const meta = getPresetMeta(presetName);
   const addChild = meta?.addChild;

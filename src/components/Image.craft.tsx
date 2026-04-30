@@ -83,9 +83,11 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   return imgTag;
 };
 const ImageMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/ImageMainTab").then((mod) => ({ default: mod.ImageMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/ImageMainTab").then(mod => ({
+    default: mod.ImageMainTab,
+  }))
 );
-import { ImageGroupSettings } from "./ImageGroupSettings";
+import { ImageGroupSettings } from "../chrome/toolbar/unified-settings/ImageGroupSettings";
 
 export const ImageDef = defineComponent(
   {

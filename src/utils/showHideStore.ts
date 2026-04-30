@@ -44,9 +44,6 @@ export function useShowHideVersion(): number {
   return useGlobalStateTick();
 }
 
-export function applyShowHideOverride(
-  className: string,
-  target: string | undefined
-): string {
+export function applyShowHideOverride(className: string, target: string | undefined): string {
   return applyVisibilityOverride(className, target);
 }

@@ -11,7 +11,6 @@ import type { ComponentType } from "react";
 import { Audio } from "../components/Audio";
 import { Background } from "../components/Background";
 import { Button } from "../components/Button";
-import { ConditionalContainer } from "../components/ConditionalContainer";
 import { Container } from "../components/Container";
 import { ContainerGroup } from "../components/ContainerGroup";
 import { Data } from "../components/Data";
@@ -34,7 +33,7 @@ import { TableRow } from "../components/TableRow";
 import { TableCell } from "../components/TableCell";
 import { Text } from "../components/Text";
 import { Video } from "../components/Video";
-import { SavedComponentLoader } from "../chrome/viewport/toolbox/savedComponents";
+import { SavedComponentLoader } from "./savedComponents";
 
 import { withConditionalVisibility } from "../utils/conditions/withConditionalVisibility";
 
@@ -52,7 +51,6 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   Automatic: cv(Container),
   Background,
   Button: cv(Button),
-  ConditionalContainer: cv(ConditionalContainer),
   Container: cv(Container),
   ContainerGroup: cv(ContainerGroup),
   Data: cv(Data),

@@ -61,7 +61,12 @@ export function getDragOrigin() {
   return sessionGetDragOrigin();
 }
 
-export function setDragOrigin(nodeId: NodeId, parentId: NodeId | undefined, startX?: number, startY?: number) {
+export function setDragOrigin(
+  nodeId: NodeId,
+  parentId: NodeId | undefined,
+  startX?: number,
+  startY?: number
+) {
   sessionSetDragOrigin(nodeId, parentId, startX, startY);
 }
 
@@ -100,7 +105,12 @@ function syncResolvedIntent(result: DropPosition) {
   }
 }
 
-export function findPosition2D(parent: Node, dims: NodeInfo[], posX: number, posY: number): DropPosition {
+export function findPosition2D(
+  parent: Node,
+  dims: NodeInfo[],
+  posX: number,
+  posY: number
+): DropPosition {
   const result: DropPosition = { parent, index: 0, where: "before" };
 
   const parentDom = parent.dom as HTMLElement | null;
@@ -126,7 +136,8 @@ export function findPosition2D(parent: Node, dims: NodeInfo[], posX: number, pos
 
   const h = buildMainAxisHelpers(isRow, posX, posY);
   const draggedId = sessionGetDragOrigin()?.nodeId as string | undefined;
-  if (isDev && draggedId) log("exclude-dragged", { draggedId, dimIds: dims.map(d => (d as { id?: string }).id) });
+  if (isDev && draggedId)
+    log("exclude-dragged", { draggedId, dimIds: dims.map(d => (d as { id?: string }).id) });
 
   const inFlow = sortInFlowChildren(dims, draggedId, h.getMainStart);
 

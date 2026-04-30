@@ -85,136 +85,133 @@ export const EmbedMainTab = () => {
   return renderComponentSlots({
     Content: (
       <>
-      <ToolbarSection
-        title="Embed"
-        icon={SECTION_ICONS["Content"]}
-        help="Pick a service and paste the URL or embed code."
-      >
-        <ToolbarItem
-          propKey="service"
-          propType="component"
-          type="select"
-          label="Service"
-          labelHide={false}
+        <ToolbarSection
+          title="Embed"
+          icon={SECTION_ICONS["Content"]}
+          help="Pick a service and paste the URL or embed code."
         >
-          <optgroup label="Booking">
-            <option value="calendly">Calendly</option>
-            <option value="cal">Cal.com</option>
-            <option value="google-calendar">Google Calendar</option>
-          </optgroup>
-          <optgroup label="Payments">
-            <option value="stripe">Stripe Buy Button</option>
-            <option value="gumroad">Gumroad</option>
-            <option value="kofi">Ko-fi</option>
-          </optgroup>
-          <optgroup label="Forms">
-            <option value="typeform">Typeform</option>
-            <option value="tally">Tally</option>
-            <option value="jotform">Jotform</option>
-          </optgroup>
-          <optgroup label="Newsletter">
-            <option value="mailchimp">Mailchimp</option>
-            <option value="convertkit">Kit (ConvertKit)</option>
-            <option value="beehiiv">Beehiiv</option>
-          </optgroup>
-          <optgroup label="Audio">
-            <option value="spotify">Spotify</option>
-            <option value="soundcloud">SoundCloud</option>
-            <option value="podcast">Apple Podcasts</option>
-          </optgroup>
-          <optgroup label="Social">
-            <option value="instagram">Instagram</option>
-            <option value="twitter">Twitter / X</option>
-            <option value="tiktok">TikTok</option>
-          </optgroup>
-          <optgroup label="Chat Widgets">
-            <option value="crisp">Crisp</option>
-            <option value="intercom">Intercom</option>
-            <option value="tidio">Tidio</option>
-          </optgroup>
-          <optgroup label="Other">
-            <option value="custom">Custom HTML</option>
-          </optgroup>
-        </ToolbarItem>
-
-        {isCodePaste ? (
           <ToolbarItem
-            propKey={service === "custom" ? "code" : "url"}
+            propKey="service"
             propType="component"
-            type="codemirror"
-            rows={10}
-            labelHide={true}
-            placeholder={EMBED_SERVICES[service]?.placeholder}
-            description={getServiceHelp(service)}
-          />
-        ) : (
-          <>
-            <ToolbarItem
-              propKey="url"
-              propType="component"
-              type="text"
-              label={getInputLabel(service)}
-              labelHide={false}
-              placeholder={EMBED_SERVICES[service]?.placeholder}
-            />
-            <p className="text-neutral-content col-span-full text-[11px] leading-snug">
-              {getServiceHelp(service)}
-            </p>
-          </>
-        )}
-        <SettingsAiSlot />
-      </ToolbarSection>
+            type="select"
+            label="Service"
+            labelHide={false}
+          >
+            <optgroup label="Booking">
+              <option value="calendly">Calendly</option>
+              <option value="cal">Cal.com</option>
+              <option value="google-calendar">Google Calendar</option>
+            </optgroup>
+            <optgroup label="Payments">
+              <option value="stripe">Stripe Buy Button</option>
+              <option value="gumroad">Gumroad</option>
+              <option value="kofi">Ko-fi</option>
+            </optgroup>
+            <optgroup label="Forms">
+              <option value="typeform">Typeform</option>
+              <option value="tally">Tally</option>
+              <option value="jotform">Jotform</option>
+            </optgroup>
+            <optgroup label="Newsletter">
+              <option value="mailchimp">Mailchimp</option>
+              <option value="convertkit">Kit (ConvertKit)</option>
+              <option value="beehiiv">Beehiiv</option>
+            </optgroup>
+            <optgroup label="Audio">
+              <option value="spotify">Spotify</option>
+              <option value="soundcloud">SoundCloud</option>
+              <option value="podcast">Apple Podcasts</option>
+            </optgroup>
+            <optgroup label="Social">
+              <option value="instagram">Instagram</option>
+              <option value="twitter">Twitter / X</option>
+              <option value="tiktok">TikTok</option>
+            </optgroup>
+            <optgroup label="Chat Widgets">
+              <option value="crisp">Crisp</option>
+              <option value="intercom">Intercom</option>
+              <option value="tidio">Tidio</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option value="custom">Custom HTML</option>
+            </optgroup>
+          </ToolbarItem>
 
-      <ToolbarSection
-        title="Advanced"
-        help="Title for accessibility and optional code override."
-      >
-        <ToolbarItem
-          propKey="title"
-          propType="component"
-          type="text"
-          label="Title"
-          labelHide={false}
-          placeholder="Describe the embedded content"
-        />
-        {service !== "custom" && (
+          {isCodePaste ? (
+            <ToolbarItem
+              propKey={service === "custom" ? "code" : "url"}
+              propType="component"
+              type="codemirror"
+              rows={10}
+              labelHide={true}
+              placeholder={EMBED_SERVICES[service]?.placeholder}
+              description={getServiceHelp(service)}
+            />
+          ) : (
+            <>
+              <ToolbarItem
+                propKey="url"
+                propType="component"
+                type="text"
+                label={getInputLabel(service)}
+                labelHide={false}
+                placeholder={EMBED_SERVICES[service]?.placeholder}
+              />
+              <p className="text-neutral-content col-span-full text-[11px] leading-snug">
+                {getServiceHelp(service)}
+              </p>
+            </>
+          )}
+          <SettingsAiSlot />
+        </ToolbarSection>
+
+        <ToolbarSection title="Advanced" help="Title for accessibility and optional code override.">
           <ToolbarItem
-            propKey="code"
+            propKey="title"
+            propType="component"
+            type="text"
+            label="Title"
+            labelHide={false}
+            placeholder="Describe the embedded content"
+          />
+          {service !== "custom" && (
+            <ToolbarItem
+              propKey="code"
+              propType="component"
+              type="codemirror"
+              rows={6}
+              label="Code Override"
+              labelHide={false}
+              description="Override the auto-generated embed code."
+            />
+          )}
+          <ToolbarItem
+            propKey="headCode"
             propType="component"
             type="codemirror"
             rows={6}
-            label="Code Override"
+            label="Head code"
             labelHide={false}
-            description="Override the auto-generated embed code."
+            description="Scripts, styles, meta tags rendered into <head> during SSR. Deduped across Embeds — paste the same snippet in multiple blocks, emitted once."
           />
-        )}
-        <ToolbarItem
-          propKey="headCode"
-          propType="component"
-          type="codemirror"
-          rows={6}
-          label="Head code"
-          labelHide={false}
-          description="Scripts, styles, meta tags rendered into <head> during SSR. Deduped across Embeds — paste the same snippet in multiple blocks, emitted once."
-        />
-        <ToolbarItem
-          propKey="footCode"
-          propType="component"
-          type="codemirror"
-          rows={6}
-          label="Footer code"
-          labelHide={false}
-          description="Scripts rendered inline where this Embed sits. Useful when the widget needs surrounding DOM to exist before init."
-        />
-        <ToolbarItem
-          propKey="runInEditor"
-          propType="component"
-          type="checkbox"
-          label="Run in editor"
-          labelHide={false}
-          description="Let head/footer scripts execute while editing. Off by default — prevents popups and widgets firing during design."
-        />
-      </ToolbarSection>
+          <ToolbarItem
+            propKey="footCode"
+            propType="component"
+            type="codemirror"
+            rows={6}
+            label="Footer code"
+            labelHide={false}
+            description="Scripts rendered inline where this Embed sits. Useful when the widget needs surrounding DOM to exist before init."
+          />
+          <ToolbarItem
+            propKey="runInEditor"
+            propType="component"
+            type="checkbox"
+            label="Run in editor"
+            labelHide={false}
+            description="Let head/footer scripts execute while editing. Off by default — prevents popups and widgets firing during design."
+          />
+        </ToolbarSection>
       </>
     ),
   });

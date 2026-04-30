@@ -11,7 +11,7 @@ import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { TbBolt, TbStack2 } from "react-icons/tb";
 import { Chip } from "../../../primitives/Chip";
-import { SideBarAtom } from "../../../../utils/lib";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import {
   PopoverOpenRequestAtom,
   popoverRequestKey,
@@ -41,7 +41,10 @@ function summarize(b: StateBinding): { left: string; right: string } {
           : `${cond.key || "?"} = ${cond.value || "?"}`
     : "(no condition)";
   const mods = Array.isArray(b.modifiers) ? b.modifiers : [];
-  const right = mods.length === 0 ? "(no modifiers)" : mods.slice(0, 3).join(", ") + (mods.length > 3 ? "…" : "");
+  const right =
+    mods.length === 0
+      ? "(no modifiers)"
+      : mods.slice(0, 3).join(", ") + (mods.length > 3 ? "…" : "");
   return { left, right };
 }
 
@@ -61,16 +64,8 @@ function StateBindingChipRow({
   onAutoOpenConsumed,
 }: ChipProps) {
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
-
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const openPanel = () => {
     setInitialPos(computePosition());
@@ -98,7 +93,8 @@ function StateBindingChipRow({
 
   return (
     <>
-      <Chip mode="popover"
+      <Chip
+        mode="popover"
         ref={triggerRef}
         label="When"
         open={open}

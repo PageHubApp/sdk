@@ -54,7 +54,7 @@ function IconCellImpl({
       {isFavorite && (
         <span
           aria-hidden="true"
-          className="bg-primary absolute right-1 top-1 size-1 rounded-full"
+          className="bg-primary absolute top-1 right-1 size-1 rounded-full"
         />
       )}
     </button>

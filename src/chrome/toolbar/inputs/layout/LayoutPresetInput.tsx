@@ -1,16 +1,9 @@
 import { Element, useEditor, useNode } from "@craftjs/core";
-import { lazy, Suspense, useRef, useState } from "react";
-import { useAtomValue } from "@zedux/react";
-import {
-  TbLayoutColumns,
-  TbLayoutGrid,
-  TbLayoutRows,
-  TbPlus,
-  TbSquare,
-} from "react-icons/tb";
+import { lazy, Suspense, useState } from "react";
+import { TbLayoutColumns, TbLayoutGrid, TbLayoutRows, TbPlus, TbSquare } from "react-icons/tb";
 import { Chip } from "@/chrome/primitives/Chip";
 import { ToolbarIconButton } from "@/chrome/primitives/ToolbarIconButton";
-import { SideBarAtom } from "@/utils/lib";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import { AddElement } from "../../../viewport/toolbox/toolboxUtils";
 import { ToolbarSection } from "../../ToolbarSection";
 import type { LayoutPresetHandle } from "./hooks/useLayoutPreset";
@@ -61,17 +54,12 @@ function summaryFor(lp: LayoutPresetHandle, gridOnly: boolean): string {
   return "Pick layout";
 }
 
-export function LayoutPresetInput({
-  lp,
-  gridOnly,
-  sectionWrapper = true,
-}: LayoutPresetInputProps) {
+export function LayoutPresetInput({ lp, gridOnly, sectionWrapper = true }: LayoutPresetInputProps) {
   const hasContainerType = useHasContainerType();
   const { actions, query } = useEditor();
   const [open, setOpen] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
+  const { triggerRef, initialPos, setInitialPos, computePosition } =
+    usePopoverPosition(PANEL_WIDTH);
 
   const addContainer = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -91,13 +79,6 @@ export function LayoutPresetInput({
     });
   };
 
-  const computePosition = () => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - PANEL_WIDTH - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
-
   const openPanel = () => {
     setInitialPos(computePosition());
     setOpen(true);
@@ -108,7 +89,8 @@ export function LayoutPresetInput({
 
   const inner = (
     <>
-      <Chip mode="popover"
+      <Chip
+        mode="popover"
         ref={triggerRef}
         label="Layout"
         open={open}

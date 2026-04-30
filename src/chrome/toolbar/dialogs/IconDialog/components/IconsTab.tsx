@@ -54,11 +54,7 @@ export function IconsTab({ d }: IconsTabProps) {
           className="flex-1"
         />
         <div className="w-32 shrink-0">
-          <ToolbarDropdown
-            value={d.set}
-            onChange={d.handleSetChange}
-            placeholder="Icon set"
-          >
+          <ToolbarDropdown value={d.set} onChange={d.handleSetChange} placeholder="Icon set">
             {(d.setIndex ?? [{ id: d.set, name: d.set, count: 0 } as any]).map(s => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -134,11 +130,7 @@ export function IconsTab({ d }: IconsTabProps) {
           </ToolbarSection>
 
           {d.recents.length > 0 && (
-            <ToolbarSection
-              title={`Recents · ${d.recents.length}`}
-              defaultOpen={false}
-              full={1}
-            >
+            <ToolbarSection title={`Recents · ${d.recents.length}`} defaultOpen={false} full={1}>
               <IconGrid
                 refs={d.recents}
                 selectedIcon={d.selectedIcon}
@@ -240,11 +232,17 @@ export function IconsTab({ d }: IconsTabProps) {
       <div className="border-base-300 bg-neutral text-neutral-content flex h-10 shrink-0 items-center gap-2 border-t px-3 text-xs">
         {captionName ? (
           <>
-            <svg className="text-base-content size-5 shrink-0" aria-hidden="true" fill="currentColor">
+            <svg
+              className="text-base-content size-5 shrink-0"
+              aria-hidden="true"
+              fill="currentColor"
+            >
               <use href={`#${captionName}`} />
             </svg>
             <span className="text-base-content truncate font-mono text-[11px]">{captionName}</span>
-            <span className="text-neutral-content/60 shrink-0 uppercase tracking-wide">{captionSet}</span>
+            <span className="text-neutral-content/60 shrink-0 tracking-wide uppercase">
+              {captionSet}
+            </span>
           </>
         ) : (
           <span className="text-neutral-content/60">Hover an icon to preview</span>

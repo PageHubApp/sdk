@@ -16,11 +16,7 @@ import { usePanelUrl } from "../../utils/usePanelUrl";
 import { ComponentsAtom } from "../../utils/lib";
 import { useBlockCategories, type BlockCategory } from "../../utils/useBlockCategories";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout";
-import {
-  CategoryCard,
-  CustomSectionCard,
-  BlockPreviewCard,
-} from "./sections-settings/components";
+import { CategoryCard, CustomSectionCard, BlockPreviewCard } from "./sections-settings/components";
 import { CategoryDetailView } from "./sections-settings/CategoryDetailView";
 import { MyBlocksCategoryView } from "./sections-settings/MyBlocksCategoryView";
 import { SearchResultsView } from "./sections-settings/SearchResultsView";

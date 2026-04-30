@@ -116,7 +116,7 @@ export function SideBySideFrame({
       style={{ width: `${widthPx}px` }}
       data-side-by-side-secondary
     >
-      <div className="bg-base-200 text-neutral-content flex h-6 shrink-0 items-center justify-between border-b border-base-300 px-2 text-[10px] font-mono uppercase tracking-wider">
+      <div className="bg-base-200 text-neutral-content border-base-300 flex h-6 shrink-0 items-center justify-between border-b px-2 font-mono text-[10px] tracking-wider uppercase">
         <span>{labelText} mirror</span>
         <span className="text-[9px] opacity-70">read-only</span>
       </div>
@@ -152,4 +152,3 @@ export function resolveSecondaryWidthPx(
   if (view === "desktop") return map["2xl"];
   return map[view as keyof typeof map] ?? 390;
 }
-

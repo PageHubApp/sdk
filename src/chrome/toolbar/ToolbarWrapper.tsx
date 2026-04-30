@@ -163,122 +163,123 @@ export const ToolbarWrapper = ({
       {/* Hide settings tabs for fully linked components */}
       {!isLinked && (
         <>
-        <div
-          id="toolbarTabs"
-          aria-label="Tabs"
-          role="tablist"
-          className="border-base-300/60 bg-base-100 text-base-content relative flex h-10 w-full min-w-0 shrink-0 items-center gap-2 border-b px-3 py-0 text-center font-semibold"
-        >
-          <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
-          <button
-            type="button"
-            onClick={toggleSearch}
-            className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-md transition-[color,background-color,transform] active:scale-90 ${
-              searchOpen ? "text-primary" : "text-secondary-content hover:text-base-content"
-            }`}
-            aria-label="Search settings"
-            aria-pressed={searchOpen}
-            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content="Search settings (⌘F)"
-            data-tooltip-place="top"
-            data-tooltip-offset={10}
-          >
-            <TbSearch className="size-4" />
-          </button>
-          <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
-          <TabBarDarkModeToggle />
-
-          <div className="min-h-px min-w-0 flex-1" aria-hidden />
-          <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
           <div
-            className="relative flex min-w-48 shrink-0 flex-row-reverse items-center gap-2 pr-3"
-            ref={tablistRef}
+            id="toolbarTabs"
+            aria-label="Tabs"
+            role="tablist"
+            className="border-base-300/60 bg-base-100 text-base-content relative flex h-10 w-full min-w-0 shrink-0 items-center gap-2 border-b px-3 py-0 text-center font-semibold"
           >
-            {indicatorStyle && (
-              <div
-                className="bg-primary absolute bottom-0 h-0.5 rounded-full"
-                style={{
-                  width: indicatorStyle.width,
-                  left: 0,
-                  transform: `translateX(${indicatorStyle.left}px)`,
-                  transition:
-                    "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                  zIndex: 0,
-                  pointerEvents: "none",
-                }}
-              />
-            )}
-            {head.map((_, key) => {
-              // If activeSection doesn't match any tab title (stale from previous node), default to tab 0
-              const sectionMatchesAny = unified && head.some(h => h.title === activeSection);
-              const isActive = unified
-                ? sectionMatchesAny
-                  ? activeSection === _.title
-                  : key === 0
-                : false;
-              return unified ? (
-                <UnifiedTab
-                  key={key}
-                  title={_.title}
-                  icon={_.icon}
-                  isActive={isActive}
-                  onClick={() => {
-                    setActiveTabFromClick(_.title, setActiveTab);
-                    scrollToSection(_.title, key);
-                    if (accordionCtx?.openOnly) {
-                      // Find all accordion section titles within this tab's DOM section (stable stack id — title can duplicate display names)
-                      const sectionEl = document.getElementById(toSectionId(`stack-${key}`));
-                      if (sectionEl) {
-                        const buttons = sectionEl.querySelectorAll(
-                          "[role='button'][aria-label]"
-                        );
-                        const titles: string[] = [];
-                        buttons.forEach(btn => {
-                          const label = btn.getAttribute("aria-label");
-                          if (label) titles.push(label);
-                        });
-                        if (titles.length > 0) {
-                          accordionCtx.openOnly(titles);
-                        }
-                      }
-                    }
+            <TabBarCollapseToggle unified={unified} accordionCtx={accordionCtx} />
+            <button
+              type="button"
+              onClick={toggleSearch}
+              className={`inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-md transition-[color,background-color,transform] active:scale-90 ${
+                searchOpen ? "text-primary" : "text-secondary-content hover:text-base-content"
+              }`}
+              aria-label="Search settings"
+              aria-pressed={searchOpen}
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content="Search settings (⌘F)"
+              data-tooltip-place="top"
+              data-tooltip-offset={10}
+            >
+              <TbSearch className="size-4" />
+            </button>
+            <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
+            <TabBarDarkModeToggle />
+
+            <div className="min-h-px min-w-0 flex-1" aria-hidden />
+            <div className="bg-border h-4 w-px shrink-0 self-center" aria-hidden />
+            <div
+              className="relative flex min-w-48 shrink-0 flex-row-reverse items-center gap-2 pr-3"
+              ref={tablistRef}
+            >
+              {indicatorStyle && (
+                <div
+                  className="bg-primary absolute bottom-0 h-0.5 rounded-full"
+                  style={{
+                    width: indicatorStyle.width,
+                    left: 0,
+                    transform: `translateX(${indicatorStyle.left}px)`,
+                    transition:
+                      "transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    zIndex: 0,
+                    pointerEvents: "none",
                   }}
                 />
-              ) : (
-                <Tab key={key} title={_.title} tabId={_.title} icon={_.icon} />
-              );
-            })}
+              )}
+              {head.map((_, key) => {
+                // If activeSection doesn't match any tab title (stale from previous node), default to tab 0
+                const sectionMatchesAny = unified && head.some(h => h.title === activeSection);
+                const isActive = unified
+                  ? sectionMatchesAny
+                    ? activeSection === _.title
+                    : key === 0
+                  : false;
+                return unified ? (
+                  <UnifiedTab
+                    key={key}
+                    title={_.title}
+                    icon={_.icon}
+                    isActive={isActive}
+                    onClick={() => {
+                      setActiveTabFromClick(_.title, setActiveTab);
+                      scrollToSection(_.title, key);
+                      if (accordionCtx?.openOnly) {
+                        // Find all accordion section titles within this tab's DOM section (stable stack id — title can duplicate display names)
+                        const sectionEl = document.getElementById(toSectionId(`stack-${key}`));
+                        if (sectionEl) {
+                          const buttons = sectionEl.querySelectorAll("[role='button'][aria-label]");
+                          const titles: string[] = [];
+                          buttons.forEach(btn => {
+                            const label = btn.getAttribute("aria-label");
+                            if (label) titles.push(label);
+                          });
+                          if (titles.length > 0) {
+                            accordionCtx.openOnly(titles);
+                          }
+                        }
+                      }
+                    }}
+                  />
+                ) : (
+                  <Tab key={key} title={_.title} tabId={_.title} icon={_.icon} />
+                );
+              })}
+            </div>
           </div>
 
-        </div>
-
-        {searchOpen && searchPos && (
-          <div
-            ref={searchPopupRef}
-            className="border-base-300 bg-base-100 fixed z-[100] flex items-center rounded-xl border px-2 py-1.5 shadow-xl"
-            style={{ left: searchPos.x, top: searchPos.y, width: SEARCH_POPUP_WIDTH }}
-          >
-            <SearchInput
-              ref={searchInputRef}
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search settings..."
-              size="slim"
-              autoFocus
-              onKeyDown={e => {
-                if (e.key === "Escape" || e.key === "Enter") {
-                  e.preventDefault();
-                  closeSearch();
-                }
-              }}
-              inputProps={toolbarInputNoAutocompleteProps}
-            />
-          </div>
-        )}
+          {searchOpen && searchPos && (
+            <div
+              ref={searchPopupRef}
+              className="border-base-300 bg-base-100 fixed z-[100] flex items-center rounded-xl border px-2 py-1.5 shadow-xl"
+              style={{ left: searchPos.x, top: searchPos.y, width: SEARCH_POPUP_WIDTH }}
+            >
+              <SearchInput
+                ref={searchInputRef}
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search settings..."
+                size="slim"
+                autoFocus
+                onKeyDown={e => {
+                  if (e.key === "Escape" || e.key === "Enter") {
+                    e.preventDefault();
+                    closeSearch();
+                  }
+                }}
+                inputProps={toolbarInputNoAutocompleteProps}
+              />
+            </div>
+          )}
         </>
       )}
 
-      <div id="toolbarItems" data-toolbar={true} className="flex min-h-0 flex-1 flex-col bg-base-100">
+      <div
+        id="toolbarItems"
+        data-toolbar={true}
+        className="bg-base-100 flex min-h-0 flex-1 flex-col"
+      >
         <RenderChildren props={props} query={query} actions={actions} id={id}>
           {children}
         </RenderChildren>

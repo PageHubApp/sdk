@@ -20,21 +20,13 @@ export function IconGrid({
   onHover,
 }: IconGridProps) {
   if (refs.length === 0) {
-    return (
-      <div className="text-neutral-content px-3 py-4 text-center text-xs">
-        No icons.
-      </div>
-    );
+    return <div className="text-neutral-content px-3 py-4 text-center text-xs">No icons.</div>;
   }
 
   const favSet = new Set(favorites);
 
   return (
-    <div
-      role="grid"
-      aria-label="Icons"
-      className="grid grid-cols-5 gap-1"
-    >
+    <div role="grid" aria-label="Icons" className="grid grid-cols-5 gap-1">
       {refs.map(ref => (
         <div key={ref} className="aspect-square">
           <IconCell

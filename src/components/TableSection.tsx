@@ -14,7 +14,9 @@ export interface TableSectionProps extends BaseSelectorProps {
   tableSection?: TableSectionKind;
 }
 
-export const TableSection: UserComponent<TableSectionProps> = (incomingProps: TableSectionProps) => {
+export const TableSection: UserComponent<TableSectionProps> = (
+  incomingProps: TableSectionProps
+) => {
   let props: any = {
     tableSection: "tbody" as TableSectionKind,
     ...incomingProps,

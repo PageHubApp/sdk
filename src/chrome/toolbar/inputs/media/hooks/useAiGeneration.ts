@@ -90,8 +90,7 @@ export function useAiGeneration({
       setAiSuccess("Image saved successfully!");
       setTimeout(() => setAiSuccess(""), 3000);
     } catch (error: unknown) {
-      const message =
-        error instanceof MediaUploadError ? error.message : (error as Error)?.message;
+      const message = error instanceof MediaUploadError ? error.message : (error as Error)?.message;
       setAiError(`Failed to save image: ${message}`);
     } finally {
       setUploading(false);

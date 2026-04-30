@@ -36,12 +36,7 @@ export function useCanvasPan({
       const el = t as HTMLElement | null;
       if (!el) return false;
       const tag = el.tagName;
-      return (
-        tag === "INPUT" ||
-        tag === "TEXTAREA" ||
-        tag === "SELECT" ||
-        el.isContentEditable
-      );
+      return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable;
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Space" && !isTypingTarget(e.target)) {

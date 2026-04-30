@@ -78,11 +78,7 @@ export function OpenGraphTab({
         </SettingsFormField>
 
         <SettingsFormField label="Image" hint="Recommended 1200×630px (1.91:1 ratio).">
-          <StandaloneImagePicker
-            value={ogImage}
-            onChange={setOgImage}
-            label="Upload OG image"
-          />
+          <StandaloneImagePicker value={ogImage} onChange={setOgImage} label="Upload OG image" />
         </SettingsFormField>
 
         <SettingsFormField label="Type" htmlFor="og-type">

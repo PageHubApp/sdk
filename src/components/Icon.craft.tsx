@@ -5,7 +5,9 @@ import React from "react";
  */
 import { TbBolt, TbIcons, TbStarFilled } from "react-icons/tb";
 const IconMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/IconMainTab").then((mod) => ({ default: mod.IconMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/IconMainTab").then(mod => ({
+    default: mod.IconMainTab,
+  }))
 );
 import { defineComponent } from "../define";
 import { resolveIconSvgSync } from "../utils/icons/serverResolve";
@@ -23,7 +25,14 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const value: string | undefined = props.value;
   const size = props.size || "w-6 h-6";
   const color = props.color || "fill-current";
-  const wrapCls = [size, color, "inline-flex", "items-center", "justify-center", staticClasses(props, ctx)]
+  const wrapCls = [
+    size,
+    color,
+    "inline-flex",
+    "items-center",
+    "justify-center",
+    staticClasses(props, ctx),
+  ]
     .filter(Boolean)
     .join(" ");
   collectClasses(wrapCls, ctx);
@@ -87,5 +96,5 @@ export const IconDef = defineComponent(
       },
     ],
   },
-  { __internal: true },
+  { __internal: true }
 );

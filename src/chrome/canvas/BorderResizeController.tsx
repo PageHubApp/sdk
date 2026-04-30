@@ -21,7 +21,10 @@ import ReactDOM from "react-dom";
 import { twMerge } from "tailwind-merge";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { ViewAtom } from "../viewport/atoms";
-import { editorCanvasViewToClassPrefixKey, buildVariantPrefix } from "../../utils/tailwind/className";
+import {
+  editorCanvasViewToClassPrefixKey,
+  buildVariantPrefix,
+} from "../../utils/tailwind/className";
 import { checkIfAncestorLinked } from "../../utils/componentUtils";
 import { useAtomValue } from "@zedux/react";
 import { setEdgeResizeActive } from "./edgeResizeState";
@@ -34,7 +37,7 @@ const SKIP_DISPLAY_NAMES = new Set(["Container", "Background"]);
 const SKIP_TYPES = new Set(["page", "header", "footer"]);
 const BORDER_BAND = 6; // px from edge to flip cursor
 const ROTATE_CORNER_RADIUS = 18; // skip resize zone inside this radius of bottom-left
-                                 // corner — RotateHandleController owns it.
+// corner — RotateHandleController owns it.
 
 const ACCENT = "rgb(59 130 246)"; // matches --ph-editor-accent
 
@@ -82,7 +85,8 @@ export function BorderResizeController() {
   const { selectedId, displayName, propsType, dom, isLocked } = useEditor((state, query) => {
     const all = query.getEvent("selected").all();
     const id = all[0];
-    if (!id) return { selectedId: null, displayName: null, propsType: null, dom: null, isLocked: false };
+    if (!id)
+      return { selectedId: null, displayName: null, propsType: null, dom: null, isLocked: false };
     const node = query.node(id).get();
     return {
       selectedId: id,
@@ -349,6 +353,6 @@ export function BorderResizeController() {
         {dim}px
       </div>
     </div>,
-    portalTarget,
+    portalTarget
   );
 }

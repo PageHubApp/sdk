@@ -735,12 +735,20 @@
      [data-open|data-closed] (see editor-partials/dropdowns.css)
    ──────────────────────────────────────────────────────────────────── */
 @keyframes ph-popover-fade-in {
-  from { opacity: 0 }
-  to { opacity: 1 }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes ph-popover-fade-out {
-  from { opacity: 1 }
-  to { opacity: 0 }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 [data-ph-popover][data-state="open"] {
   animation: ph-popover-fade-in 75ms ease-out;
@@ -767,10 +775,12 @@
 }
 
 /* Settings search highlight — CSS Custom Highlight API */
-::highlight(settings-search) {
-  background-color: oklch(0.8 0.15 85);
-  color: oklch(0.25 0.05 85);
-  border-radius: 2px;
+@supports selector(::highlight(x)) {
+  ::highlight(settings-search) {
+    background-color: oklch(0.8 0.15 85);
+    color: oklch(0.25 0.05 85);
+    border-radius: 2px;
+  }
 }
 
 /* Facet dropdown option — zero-count values still render (Shopify parity) but

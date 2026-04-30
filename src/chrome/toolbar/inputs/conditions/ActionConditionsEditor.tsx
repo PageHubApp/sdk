@@ -32,16 +32,9 @@ import {
   SearchableMenuPopover,
   type SearchableMenuItem,
 } from "../../../primitives/SearchableMenuPopover";
-import {
-  CONDITION_TYPE_OPTIONS,
-  defaultCondition,
-} from "../advanced/ConditionsInput";
+import { CONDITION_TYPE_OPTIONS, defaultCondition } from "../advanced/ConditionsInput";
 import { ConditionChipRow } from "../advanced/ConditionChipRow";
-import type {
-  Condition,
-  ConditionGroup,
-  ConditionType,
-} from "../../../../utils/conditions/types";
+import type { Condition, ConditionGroup, ConditionType } from "../../../../utils/conditions/types";
 
 interface Props {
   value: ConditionGroup[] | undefined;

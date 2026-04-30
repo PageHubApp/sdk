@@ -13,18 +13,14 @@
  * PropertyInputProps.
  */
 import { useEditor, useNode } from "@craftjs/core";
-import { useAtomValue } from "@zedux/react";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { TbAdjustmentsHorizontal, TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
-import { getMediaById, getMediaContent, SideBarAtom } from "@/utils/lib";
+import { getMediaById, getMediaContent } from "@/utils/lib";
 import { Chip } from "../../../primitives/Chip";
 import { ToolbarIconButton } from "../../../primitives/ToolbarIconButton";
-import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
-import {
-  PopoverOpenRequestAtom,
-  popoverRequestKey,
-} from "../../unified-settings/popoverOpenRequestAtom";
+import { usePopoverAutoOpen } from "../../unified-settings/hooks/usePopoverAutoOpen";
+import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
 import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
 
 const BackgroundImagePanel = lazy(() => import("./BackgroundImagePanel"));
@@ -36,13 +32,8 @@ const SETTINGS_PANEL_WIDTH = 360;
 export default function BackgroundImageInputPopover({ def }: PropertyInputProps) {
   const [open, setOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | undefined>();
-  const [settingsPos, setSettingsPos] = useState<{ x: number; y: number } | undefined>();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const settingsTriggerRef = useRef<HTMLButtonElement>(null);
-  const sidebarLeft = useAtomValue(SideBarAtom);
-  const sessionAdded = useAtomValue(SessionAddedAtom);
-  const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
+  const main = usePopoverPosition(PANEL_WIDTH);
+  const settings = usePopoverPosition(SETTINGS_PANEL_WIDTH);
   const { query } = useEditor();
 
   const {
@@ -70,48 +61,17 @@ export default function BackgroundImageInputPopover({ def }: PropertyInputProps)
     }
   }
 
-  const computePosition = (anchor: HTMLElement | null, panelWidth: number) => {
-    const rect = anchor?.getBoundingClientRect();
-    if (!rect) return undefined;
-    const x = sidebarLeft ? rect.right + 8 : rect.left - panelWidth - 8;
-    return { x: Math.max(8, x), y: Math.max(8, rect.top) };
-  };
-
   const openPanel = () => {
-    setInitialPos(computePosition(triggerRef.current, PANEL_WIDTH));
+    main.setInitialPos(main.computePosition());
     setOpen(true);
   };
 
   const openSettingsPanel = () => {
-    setSettingsPos(computePosition(settingsTriggerRef.current, SETTINGS_PANEL_WIDTH));
+    settings.setInitialPos(settings.computePosition());
     setShowSettings(true);
   };
 
-  const autoOpenedRef = useRef(false);
-  useEffect(() => {
-    if (autoOpenedRef.current) return;
-    if (def && sessionAdded.has(sessionKey(id, def.id))) {
-      requestAnimationFrame(() => {
-        setInitialPos(computePosition(triggerRef.current, PANEL_WIDTH));
-        setOpen(true);
-      });
-      autoOpenedRef.current = true;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionAdded, id, def?.id]);
-
-  const lastRequestVersion = useRef(0);
-  useEffect(() => {
-    if (!def) return;
-    const version = popoverRequests.get(popoverRequestKey(id, def.id)) || 0;
-    if (version === 0 || version === lastRequestVersion.current) return;
-    lastRequestVersion.current = version;
-    requestAnimationFrame(() => {
-      setInitialPos(computePosition(triggerRef.current, PANEL_WIDTH));
-      setOpen(true);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [popoverRequests, id, def?.id]);
+  usePopoverAutoOpen({ nodeId: id, defId: def?.id, onOpen: openPanel });
 
   const clearImage = () => {
     setProp((p: any) => {
@@ -125,8 +85,9 @@ export default function BackgroundImageInputPopover({ def }: PropertyInputProps)
 
   return (
     <>
-      <Chip mode="popover"
-        ref={triggerRef}
+      <Chip
+        mode="popover"
+        ref={main.triggerRef}
         label={label}
         open={open}
         onTriggerClick={() => (open ? setOpen(false) : openPanel())}
@@ -161,7 +122,7 @@ export default function BackgroundImageInputPopover({ def }: PropertyInputProps)
         trailingExtras={
           hasImage ? (
             <ToolbarIconButton
-              ref={settingsTriggerRef}
+              ref={settings.triggerRef}
               ariaLabel="Image settings"
               tooltip="Image settings"
               onClick={openSettingsPanel}
@@ -173,13 +134,13 @@ export default function BackgroundImageInputPopover({ def }: PropertyInputProps)
       />
       {open && (
         <Suspense fallback={null}>
-          <BackgroundImagePanel initialPosition={initialPos} onClose={() => setOpen(false)} />
+          <BackgroundImagePanel initialPosition={main.initialPos} onClose={() => setOpen(false)} />
         </Suspense>
       )}
       {showSettings && (
         <Suspense fallback={null}>
           <ImageSettingsPanel
-            initialPosition={settingsPos}
+            initialPosition={settings.initialPos}
             onClose={() => setShowSettings(false)}
           />
         </Suspense>

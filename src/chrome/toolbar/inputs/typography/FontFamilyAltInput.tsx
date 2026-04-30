@@ -39,7 +39,8 @@ export const FontFamilyAltInput = ({
   prefix = "",
   index = null,
   propItemKey = "",
-  propType = "class", inline = true,
+  propType = "class",
+  inline = true,
   inputWidth = "",
   labelWidth = "",
 }) => {

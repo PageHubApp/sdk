@@ -75,7 +75,10 @@ export function parseStorefrontUrlQuery(
     if (!FACET_KEY_PATTERN.test(key)) continue;
     const raw = typeof v === "string" ? v : Array.isArray(v) ? v.join(",") : "";
     if (!raw) continue;
-    const values = raw.split(",").map(s => s.trim()).filter(Boolean);
+    const values = raw
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
     if (values.length > 0) facetFilters[key] = values;
   }
   if (Object.keys(facetFilters).length > 0) out.facetFilters = facetFilters;

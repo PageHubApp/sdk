@@ -406,7 +406,7 @@ export function PreviewPanel({
       ) : null}
 
       <div
-        className={`scrollbar-light w-full min-w-0 overflow-x-hidden overflow-y-auto${inline ? "" : " flex-1"}`}
+        className={`scrollbar-light w-full min-w-0 overflow-x-hidden overflow-y-auto${inline ? "" : "flex-1"}`}
         style={scrollStyle}
       >
         {(() => {

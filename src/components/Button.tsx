@@ -35,7 +35,7 @@ import { useRuntimeVarsVersion } from "../utils/design/RuntimeVarsContext";
 import { resolvePageRef } from "../utils/pageManagement";
 import { useScrollToSelected } from "./componentHooks";
 
-import { EditorEmptyLeafHint } from "../chrome/primitives/EditorEmptyLeafHint";
+import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "./LazyEditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "./selectors";
 
@@ -284,7 +284,7 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
       ]
         .filter(Boolean)
         .join(" "),
-    [iconSize, props.icon?.color, props.icon?.shadow],
+    [iconSize, props.icon?.color, props.icon?.shadow]
   );
 
   const iconSpan = iconElement && (
@@ -303,7 +303,11 @@ export const Button: UserComponent<ButtonProps> = (incomingProps: ButtonProps) =
     /\brounded-full\b/.test(cn) ||
     (/\bbg-/.test(cn) && (/\bw-\S+/.test(cn) || /\bh-\S+/.test(cn) || /\bsize-\S+/.test(cn)));
   const isLeafEmpty =
-    enabled && isMounted && !hasIconValue && !looksStyledShape && isVisuallyEmptyRichText(labelHtml);
+    enabled &&
+    isMounted &&
+    !hasIconValue &&
+    !looksStyledShape &&
+    isVisuallyEmptyRichText(labelHtml);
 
   const content = isLeafEmpty ? (
     <EditorEmptyLeafHint

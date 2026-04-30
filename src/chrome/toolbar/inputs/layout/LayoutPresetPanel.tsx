@@ -9,6 +9,7 @@ import {
   type LayoutPreset,
 } from "./presets/layoutPresets";
 import type { LayoutPresetHandle } from "./hooks/useLayoutPreset";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };
@@ -34,7 +35,9 @@ function isPresetActive(
   lp: LayoutPresetHandle
 ): boolean {
   if (lp.currentLayoutMode !== layoutMode) return false;
-  const savedSlug = String(lp.currentPresetLayout ?? "").trim().toLowerCase();
+  const savedSlug = String(lp.currentPresetLayout ?? "")
+    .trim()
+    .toLowerCase();
   if (savedSlug !== presetSlug(preset)) return false;
   if (preset.columns === undefined) return true;
   return Number(lp.currentLayoutColumns) === Number(preset.columns);
@@ -67,7 +70,7 @@ export default function LayoutPresetPanel({ initialPosition, onClose, lp, gridOn
       minWidth={280}
       maxHeight={640}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
       scrollable
     >
       <div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-3">

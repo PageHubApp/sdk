@@ -53,7 +53,6 @@ export function nativeVideoPlaybackFields(props: Record<string, unknown> | undef
   const loop = !!p.loop;
   const playsInline = p.playsInline !== false;
   const controls = p.controls !== false;
-  const preload =
-    typeof p.preload === "string" && p.preload.trim() ? p.preload.trim() : "metadata";
+  const preload = typeof p.preload === "string" && p.preload.trim() ? p.preload.trim() : "metadata";
   return { autoPlay, muted, loop, playsInline, controls, preload };
 }

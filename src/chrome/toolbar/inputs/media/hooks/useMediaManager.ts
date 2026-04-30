@@ -8,10 +8,7 @@ import { getPageMedia, updateMediaMetadata } from "@/utils/lib";
 import { DeleteMedia } from "@/chrome/viewport/viewportExports";
 import { useSDK } from "@/core/context";
 import { useAiEnabled } from "@/utils/hooks/useAiEnabled";
-import type {
-  PageHubMediaEditAiActionsContext,
-  PageHubMediaMetadataSuggestion,
-} from "@/types";
+import type { PageHubMediaEditAiActionsContext, PageHubMediaMetadataSuggestion } from "@/types";
 import {
   cleanSvg,
   getMediaKind,
@@ -158,7 +155,7 @@ export function useMediaManager({
         out = out.filter(m => {
           const kindLabel = MEDIA_KIND_LABELS[getMediaKind(m)].toLowerCase();
           const folderName = m.metadata?.folderId
-            ? (folderNameById.get(m.metadata.folderId) || "")
+            ? folderNameById.get(m.metadata.folderId) || ""
             : "unfiled";
           const haystack = [
             m.id,
@@ -178,7 +175,15 @@ export function useMediaManager({
 
       return sortMedia(out, sf, sd);
     },
-    [folderFilter, folderNameById, kindFilter, searchQuery, sortDirection, sortField, validFolderIdSet]
+    [
+      folderFilter,
+      folderNameById,
+      kindFilter,
+      searchQuery,
+      sortDirection,
+      sortField,
+      validFolderIdSet,
+    ]
   );
 
   const refreshMediaList = useCallback(() => {
@@ -675,7 +680,8 @@ export function useMediaManager({
       if (e.key === "ArrowLeft") nextIndex = Math.max(0, currentIndex - 1);
       if (e.key === "ArrowRight") nextIndex = Math.min(filteredMedia.length - 1, currentIndex + 1);
       if (e.key === "ArrowUp") nextIndex = Math.max(0, currentIndex - step);
-      if (e.key === "ArrowDown") nextIndex = Math.min(filteredMedia.length - 1, currentIndex + step);
+      if (e.key === "ArrowDown")
+        nextIndex = Math.min(filteredMedia.length - 1, currentIndex + step);
 
       const nextId = filteredMedia[nextIndex]?.id;
       if (!nextId) return;

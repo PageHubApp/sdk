@@ -79,10 +79,7 @@ export {
   getRuntimeVarsVersion,
   subscribeRuntimeVars,
 } from "./design/variables";
-export {
-  RuntimeVarsProvider,
-  useRuntimeVarsVersion,
-} from "./design/RuntimeVarsContext";
+export { RuntimeVarsProvider, useRuntimeVarsVersion } from "./design/RuntimeVarsContext";
 
 // ─── CDN re-export ──────────────────────────────────────────────────────
 

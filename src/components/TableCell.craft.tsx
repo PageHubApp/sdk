@@ -5,17 +5,17 @@ import React from "react";
 import { TbBorderInner } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { TableCell } from "./TableCell";
-import {
-  staticClasses,
-  getInlineStyle,
-  tag,
-  ariaAttrs,
-  type ToHTMLFn,
-} from "../utils/static-html";
+import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
 const TableCellMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/TableCellMainTab").then((mod) => ({ default: mod.TableCellMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/TableCellMainTab").then(mod => ({
+    default: mod.TableCellMainTab,
+  }))
 );
-import { HoverNodeController, DeleteNodeController, SelectTableRowTool } from "./editor-chrome";
+import {
+  HoverNodeController,
+  DeleteNodeController,
+  SelectTableRowTool,
+} from "../chrome/editor-chrome";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const Tag = props.as === "th" ? "th" : "td";

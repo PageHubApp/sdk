@@ -6,11 +6,7 @@
 import type { Executor } from "../automaticIntent";
 import { CARD_CLASSNAME } from "../constants";
 
-export const morphToCard: Executor<{ kind: "card"; parentId: string }> = (
-  _intent,
-  batch,
-  ctx
-) => {
+export const morphToCard: Executor<{ kind: "card"; parentId: string }> = (_intent, batch, ctx) => {
   batch.setProp(ctx.nodeId, (props: any) => {
     const cls = props.className || "";
     if (!cls.includes("card") && !cls.includes("bg-base-200")) {

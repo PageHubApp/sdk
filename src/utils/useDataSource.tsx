@@ -84,9 +84,7 @@ function applyDataSourceScope(
     // `/shop` vs `/shop/tees`). The server-side pipeline drops them too;
     // keeping behavior symmetric so client-side post-filter doesn't gut
     // a correctly-fetched page.
-    const activeFilter = Object.entries(ds.filter).filter(
-      ([, v]) => v != null && v !== ""
-    );
+    const activeFilter = Object.entries(ds.filter).filter(([, v]) => v != null && v !== "");
     if (activeFilter.length > 0) {
       result = result.filter(it => {
         const md = it?.metadata;
@@ -136,8 +134,7 @@ export function useDataSource(
   const routeParams = useRouteParams();
 
   const connData = getConnectorData();
-  const mergedDs =
-    ds && !ds.scope ? applyRouteParamsToDataSource(ds, routeParams) : null;
+  const mergedDs = ds && !ds.scope ? applyRouteParamsToDataSource(ds, routeParams) : null;
   const bindingId = mergedDs ? dataSourceBindingId(mergedDs) : null;
   // `scope` → nested repeater: read from parent item, split if needed.
   // Otherwise → top-level repeater: read from connectorData[provider].bindings[id].

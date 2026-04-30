@@ -13,7 +13,10 @@ function interpolateParamsInString(s: string, params: Record<string, string>): s
   return out.replace(/\{\{params\.[^}]+\}\}/g, "");
 }
 
-export function applyRouteParamsToDataSource<T>(ds: T, params: Record<string, string> | null | undefined): T {
+export function applyRouteParamsToDataSource<T>(
+  ds: T,
+  params: Record<string, string> | null | undefined
+): T {
   if (ds == null) {
     return ds;
   }

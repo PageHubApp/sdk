@@ -51,11 +51,7 @@ export function BrandingTab({
         </SettingsFormField>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <SettingsFormField
-            label="Company name"
-            htmlFor="company-name"
-            variable="company.name"
-          >
+          <SettingsFormField label="Company name" htmlFor="company-name" variable="company.name">
             <input
               id="company-name"
               type="text"
@@ -65,11 +61,7 @@ export function BrandingTab({
               placeholder="Your company"
             />
           </SettingsFormField>
-          <SettingsFormField
-            label="Company type"
-            htmlFor="company-type"
-            variable="company.type"
-          >
+          <SettingsFormField label="Company type" htmlFor="company-type" variable="company.type">
             <input
               id="company-type"
               type="text"
@@ -98,7 +90,6 @@ export function BrandingTab({
           />
         </SettingsFormField>
       </SettingsFormCard>
-
     </div>
   );
 }

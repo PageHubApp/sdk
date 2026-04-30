@@ -1,10 +1,7 @@
 import { useEditor } from "@craftjs/core";
 import React, { useMemo } from "react";
 import { getEditorVariableOptions } from "../../../utils/editorVariableOptions";
-import {
-  SettingsTabIntro,
-  settingsTabFillRootClass,
-} from "../settings/SettingsTabChrome";
+import { SettingsTabIntro, settingsTabFillRootClass } from "../settings/SettingsTabChrome";
 
 const HTMLCodeInput = React.lazy(() =>
   import("../../toolbar/inputs/advanced/HTMLCodeInput").then(m => ({ default: m.HTMLCodeInput }))

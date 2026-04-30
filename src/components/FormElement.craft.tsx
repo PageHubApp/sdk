@@ -53,9 +53,11 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   return input;
 };
 const FormElementMainTab = React.lazy(() =>
-  import("../chrome/toolbar/unified-settings/mainTabs/FormElementMainTab").then((mod) => ({ default: mod.FormElementMainTab })),
+  import("../chrome/toolbar/unified-settings/mainTabs/FormElementMainTab").then(mod => ({
+    default: mod.FormElementMainTab,
+  }))
 );
-import { HoverNodeController, NameNodeController } from "./editor-chrome";
+import { HoverNodeController, NameNodeController } from "../chrome/editor-chrome";
 
 export const FormElementDef = defineComponent(
   {

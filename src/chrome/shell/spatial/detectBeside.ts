@@ -65,8 +65,10 @@ export function tryBesideInColumn(
   const sameChild = fingerprint === _lastBesideFingerprint;
   const edgeBand = Math.min(Math.max(w * BESIDE_ZONE, BESIDE_MIN_EDGE_PX), BESIDE_MAX_EDGE_PX);
 
-  const leftBand = edgeBand + (sameChild && _lastBesideSide === "beside-left" ? BESIDE_HYSTERESIS_PX : 0);
-  const rightBand = edgeBand + (sameChild && _lastBesideSide === "beside-right" ? BESIDE_HYSTERESIS_PX : 0);
+  const leftBand =
+    edgeBand + (sameChild && _lastBesideSide === "beside-left" ? BESIDE_HYSTERESIS_PX : 0);
+  const rightBand =
+    edgeBand + (sameChild && _lastBesideSide === "beside-right" ? BESIDE_HYSTERESIS_PX : 0);
 
   if (relX >= 0 && relX <= leftBand) {
     _lastBesideSide = "beside-left";

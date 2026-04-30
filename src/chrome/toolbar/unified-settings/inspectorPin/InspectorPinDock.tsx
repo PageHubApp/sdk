@@ -1,12 +1,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useAtomState } from "@zedux/react";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
-import {
-  TbChevronDown,
-  TbChevronUp,
-  TbPinned,
-  TbPinnedOff,
-} from "react-icons/tb";
+import { TbChevronDown, TbChevronUp, TbPinned, TbPinnedOff } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { InspectorPinDockOpenAtom } from "../../../../utils/atoms";
 import { phStorage } from "../../../../utils/phStorage";
@@ -37,9 +32,7 @@ export function InspectorPinDock() {
   heightRef.current = height;
 
   /** Stable ref callbacks — inline `ref={el => ...}` changes identity every render and retriggers ref churn + infinite setState. */
-  const slotRefById = useRef(
-    new Map<string, React.RefCallback<HTMLDivElement>>()
-  );
+  const slotRefById = useRef(new Map<string, React.RefCallback<HTMLDivElement>>());
 
   const refForSlot = (sectionId: SectionId) => {
     const k = String(sectionId);
@@ -141,7 +134,7 @@ export function InspectorPinDock() {
         <div className="bg-base-content/20 group-hover:bg-primary/50 h-0.5 w-8 rounded-full transition-colors" />
       </div>
 
-      <div className="text-sidebar-foreground/70 flex shrink-0 items-center gap-1.5 border-b border-base-300 px-3 pt-1 pb-2">
+      <div className="text-sidebar-foreground/70 border-base-300 flex shrink-0 items-center gap-1.5 border-b px-3 pt-1 pb-2">
         <TbPinned className="size-3 shrink-0 opacity-70" />
         <span className="text-[11px] font-semibold tracking-wide uppercase">Pinned</span>
         <button
@@ -161,13 +154,11 @@ export function InspectorPinDock() {
           return (
             <div
               key={sectionId}
-              className="border-base-300/80 flex min-h-0 min-w-0 flex-1 flex-col border-b basis-0 last:border-b-0"
+              className="border-base-300/80 flex min-h-0 min-w-0 flex-1 basis-0 flex-col border-b last:border-b-0"
             >
-              <div className="flex shrink-0 items-center justify-between gap-2 border-b border-base-300 px-3 py-1.5">
+              <div className="border-base-300 flex shrink-0 items-center justify-between gap-2 border-b px-3 py-1.5">
                 <div className="text-sidebar-foreground/85 flex min-w-0 items-center gap-1.5 text-[11px] font-semibold tracking-wide uppercase">
-                  {def?.icon && (
-                    <span className="text-neutral-content opacity-70">{def.icon}</span>
-                  )}
+                  {def?.icon && <span className="text-neutral-content opacity-70">{def.icon}</span>}
                   <span className="truncate">{title}</span>
                 </div>
                 <button

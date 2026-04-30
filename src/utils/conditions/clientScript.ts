@@ -2,8 +2,7 @@
  * Inline <script> for evaluating conditions in static HTML exports.
  *
  * Two consumers share the same evaluator function bodies:
- *   - `getConditionEvalScript()` — node visibility (`data-ph-conditions`)
- *     and ConditionalContainer branch picker (`data-ph-condition-group`).
+ *   - `getConditionEvalScript()` — node visibility (`data-ph-conditions`).
  *   - `getLoadActionScript()` — load-trigger show-hide reveals + state seeds
  *     (`data-ph-load-show`, `data-ph-load-set-state`). Lives in clickControls.ts
  *     and imports `buildConditionEvalFns` from here.
@@ -26,7 +25,9 @@
  * and treats missing keys as `null`, then runs the operator the author asked
  * for — same semantics as `evaluate.ts` so static and React routes agree.
  */
-export function buildConditionEvalFns({ mobileBreakpoint = 768 }: { mobileBreakpoint?: number } = {}): string {
+export function buildConditionEvalFns({
+  mobileBreakpoint = 768,
+}: { mobileBreakpoint?: number } = {}): string {
   const safeMobile = Number.isFinite(mobileBreakpoint) ? mobileBreakpoint : 768;
   return `
   var __PH_PARAMS = new URLSearchParams(window.location.search);
@@ -91,13 +92,14 @@ export function buildConditionEvalFns({ mobileBreakpoint = 768 }: { mobileBreakp
 }
 
 /**
- * Inline <script> for evaluating node-visibility + ConditionalContainer
- * branches in static HTML exports.
+ * Inline <script> for evaluating node-visibility in static HTML exports.
  *
  * @param mobileBreakpoint - px threshold for `device: mobile`. Defaults to 768
  *   (Tailwind `md`). Pass `theme.breakpoints?.md` to honor per-site overrides.
  */
-export function getConditionEvalScript({ mobileBreakpoint = 768 }: { mobileBreakpoint?: number } = {}): string {
+export function getConditionEvalScript({
+  mobileBreakpoint = 768,
+}: { mobileBreakpoint?: number } = {}): string {
   return `<script>
 (function(){${buildConditionEvalFns({ mobileBreakpoint })}
   function run(){
@@ -105,19 +107,6 @@ export function getConditionEvalScript({ mobileBreakpoint = 768 }: { mobileBreak
       var conds = JSON.parse(el.getAttribute('data-ph-conditions'));
       var logic = el.getAttribute('data-ph-condition-logic') || 'all';
       if (evalAll(conds, logic)) el.style.display = '';
-    });
-    document.querySelectorAll('[data-ph-condition-group]').forEach(function(el) {
-      var branches = JSON.parse(el.getAttribute('data-ph-branches'));
-      var children = el.children;
-      var matched = false;
-      for (var i = 0; i < branches.length && i < children.length; i++) {
-        if (!matched && evalAll(branches[i].conditions || [], branches[i].conditionLogic || 'all')) {
-          children[i].style.display = '';
-          matched = true;
-        } else {
-          children[i].style.display = 'none';
-        }
-      }
     });
   }
   // Wait for DOMContentLoaded so the load-action script has populated

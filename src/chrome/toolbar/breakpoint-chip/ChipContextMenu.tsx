@@ -25,12 +25,7 @@ import {
 } from "react-icons/tb";
 
 import { ViewAtom } from "../../viewport/atoms";
-import {
-  ChipPopoverAtom,
-  CHIP_BP_LABEL,
-  canvasViewToChipBp,
-  type ChipBp,
-} from "./atoms";
+import { ChipPopoverAtom, CHIP_BP_LABEL, canvasViewToChipBp, type ChipBp } from "./atoms";
 import {
   cmdCopyDown,
   cmdCopyUp,
@@ -66,9 +61,7 @@ export function useChipContextMenu(args: MenuArgs) {
   const open = useCallback((x: number, y: number) => setAnchor({ x, y }), []);
   const close = useCallback(() => setAnchor(null), []);
 
-  const menu = (
-    <ChipContextMenu args={args} anchor={anchor} onClose={close} />
-  );
+  const menu = <ChipContextMenu args={args} anchor={anchor} onClose={close} />;
 
   return { open, close, menu, isOpen: !!anchor };
 }
@@ -117,8 +110,7 @@ export function ChipContextMenu({
   const nodeProps = node?.data?.props ?? {};
   // changeProp expects a useNode-style setProp(cb, throttle). Adapt the editor
   // actions.setProp(nodeId, cb) signature so the existing helper can drive it.
-  const setProp = (cb: any, _throttle?: number) =>
-    actions.setProp(args.nodeId, cb);
+  const setProp = (cb: any, _throttle?: number) => actions.setProp(args.nodeId, cb);
 
   const activeBp: ChipBp = canvasViewToChipBp(view) ?? "mobile";
 
@@ -226,13 +218,7 @@ export function ChipContextMenu({
         Copy up (larger bps)
       </button>
       <div className="border-base-300 my-1 border-t" aria-hidden />
-      <button
-        type="button"
-        role="menuitem"
-        className={ITEM}
-        disabled={!sBp}
-        onClick={showSource}
-      >
+      <button type="button" role="menuitem" className={ITEM} disabled={!sBp} onClick={showSource}>
         <TbEye className="size-3.5 shrink-0 opacity-80" aria-hidden />
         Show source ({sBp ? CHIP_BP_LABEL[sBp] : "—"})
       </button>

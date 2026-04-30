@@ -16,7 +16,10 @@ function resolveModifierClassTokens(mod: ComponentModifier): string[] {
 function classNameHasRequires(className: string, requires?: string): boolean {
   if (!requires?.trim()) return true;
   const tokens = new Set(className.split(/\s+/).filter(Boolean));
-  return requires.split(/\s+/).filter(Boolean).every(t => tokens.has(t));
+  return requires
+    .split(/\s+/)
+    .filter(Boolean)
+    .every(t => tokens.has(t));
 }
 
 /** True if this modifier reads as active on reference className (aligned with useModifiers isActive, className-only). */
@@ -94,7 +97,12 @@ function isRawPeerToken(t: string): boolean {
   if (t.startsWith("tracking-")) return true;
   if (/^font-(bold|semibold|medium|normal|black)$/.test(t)) return true;
   if (/^text-(xs|sm|base|lg|xl|2xl)$/.test(t)) return true;
-  if (t.startsWith("px-") || t.startsWith("py-") || t.startsWith("min-h-") || t.startsWith("min-w-"))
+  if (
+    t.startsWith("px-") ||
+    t.startsWith("py-") ||
+    t.startsWith("min-h-") ||
+    t.startsWith("min-w-")
+  )
     return true;
   if (t.startsWith("self-")) return true;
   if (t === "w-full" || /^md:w-/.test(t) || /^sm:w-/.test(t) || /^lg:w-/.test(t)) return true;
@@ -142,7 +150,9 @@ export function applyPeerClassInherit(
   const parent = query.node(parentId).get();
   const parentName = parent?.data?.name as string | undefined;
   if (!parentName || !cfg.whenParentIs.includes(parentName)) {
-    console.log(`[peerInherit] skip ${name} ${newNodeId}: parent ${parentName} not in [${cfg.whenParentIs.join(",")}]`);
+    console.log(
+      `[peerInherit] skip ${name} ${newNodeId}: parent ${parentName} not in [${cfg.whenParentIs.join(",")}]`
+    );
     return;
   }
 
@@ -177,14 +187,18 @@ export function applyPeerClassInherit(
     refId = walk(idx + 1, +1) ?? walk(idx - 1, -1);
   }
   if (!refId || refId === newNodeId) {
-    console.log(`[peerInherit] skip ${name} ${newNodeId}: no same-kind sibling in parent ${parentId}`);
+    console.log(
+      `[peerInherit] skip ${name} ${newNodeId}: no same-kind sibling in parent ${parentId}`
+    );
     return;
   }
 
   const refNode = query.node(refId).get();
   const refClass = (refNode?.data?.props?.className as string) || "";
   if (!refClass.trim()) {
-    console.log(`[peerInherit] skip ${name} ${newNodeId}: reference sibling ${refId} has empty className`);
+    console.log(
+      `[peerInherit] skip ${name} ${newNodeId}: reference sibling ${refId} has empty className`
+    );
     return;
   }
 

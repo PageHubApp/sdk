@@ -42,16 +42,12 @@ export function getComponentCanvasPos(
   containerId: string,
   query: any,
   index: number,
-  posKey: CanvasPosKey = "canvasPos",
+  posKey: CanvasPosKey = "canvasPos"
 ): CanvasPos {
   try {
     const node = query.node(containerId).get();
     const saved = node?.data?.props?.custom?.[posKey];
-    if (
-      saved &&
-      typeof saved.x === "number" &&
-      typeof saved.y === "number"
-    ) {
+    if (saved && typeof saved.x === "number" && typeof saved.y === "number") {
       return { x: saved.x, y: saved.y };
     }
   } catch {
@@ -72,21 +68,12 @@ export function getComponentCanvasPos(
 
 /** Read canvasSize from a component container's props.custom. Width defaults to
  *  CANVAS_SLOT_W; height is left undefined when never set so the slot auto-fits. */
-export function getComponentCanvasSize(
-  containerId: string,
-  query: any
-): CanvasSize {
+export function getComponentCanvasSize(containerId: string, query: any): CanvasSize {
   try {
     const node = query.node(containerId).get();
     const saved = node?.data?.props?.custom?.canvasSize;
-    const w =
-      saved && typeof saved.w === "number" && saved.w >= CANVAS_MIN_W
-        ? saved.w
-        : undefined;
-    const h =
-      saved && typeof saved.h === "number" && saved.h >= CANVAS_MIN_H
-        ? saved.h
-        : undefined;
+    const w = saved && typeof saved.w === "number" && saved.w >= CANVAS_MIN_W ? saved.w : undefined;
+    const h = saved && typeof saved.h === "number" && saved.h >= CANVAS_MIN_H ? saved.h : undefined;
     return { w, h };
   } catch {
     return {};
@@ -102,7 +89,7 @@ export function getComponentCanvasSize(
 export function getStateNodeDefaultPos(
   masterId: string,
   stateIndex: number,
-  query: any,
+  query: any
 ): CanvasPos {
   let masterX = 0;
   let masterY = 0;
@@ -148,10 +135,7 @@ export function findComponentCanvasNode(query: any): string | null {
 }
 
 /** Get annotations array from canvas node's props (always returns an array). */
-export function getCanvasAnnotations(
-  canvasId: string,
-  query: any
-): CanvasAnnotation[] {
+export function getCanvasAnnotations(canvasId: string, query: any): CanvasAnnotation[] {
   try {
     const node = query.node(canvasId).get();
     const arr = node?.data?.props?.annotations;

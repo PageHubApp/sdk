@@ -80,14 +80,12 @@ export function VarEditor({ mode, token, onBack }: VarEditorProps) {
   const isBuiltIn = !!registry && !token?.custom;
 
   // Derived initial values.
-  const initialName = isEdit
-    ? registry?.label ?? token!.label.replace(/\s*\(Custom\)$/, "")
-    : "";
+  const initialName = isEdit ? (registry?.label ?? token!.label.replace(/\s*\(Custom\)$/, "")) : "";
   const initialType: StyleTokenType = isEdit
-    ? registry?.type ?? inferTokenType(token!.value)
+    ? (registry?.type ?? inferTokenType(token!.value))
     : "color";
   const initialCategory: StyleTokenCategory = isEdit
-    ? registry?.category ?? (token!.category as StyleTokenCategory)
+    ? (registry?.category ?? (token!.category as StyleTokenCategory))
     : "colors";
   const initialValue = isEdit ? token!.value : "";
 
@@ -107,8 +105,7 @@ export function VarEditor({ mode, token, onBack }: VarEditorProps) {
   // Validation for save
   const trimmedName = name.trim();
   const proposedKey = isEdit ? tokenKey! : nameToKey(trimmedName);
-  const wouldShadowBuiltin =
-    !isEdit && proposedKey in STYLE_TOKEN_REGISTRY ? true : false;
+  const wouldShadowBuiltin = !isEdit && proposedKey in STYLE_TOKEN_REGISTRY ? true : false;
   const canSave = useMemo(() => {
     if (!trimmedName) return false;
     if (wouldShadowBuiltin) return false;
@@ -117,9 +114,7 @@ export function VarEditor({ mode, token, onBack }: VarEditorProps) {
   }, [trimmedName, wouldShadowBuiltin, value, type]);
 
   const toggleAppliesTo = (cat: StyleTokenCategory) => {
-    setAppliesTo(prev =>
-      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
-    );
+    setAppliesTo(prev => (prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]));
   };
 
   const handleSave = () => {
@@ -134,9 +129,7 @@ export function VarEditor({ mode, token, onBack }: VarEditorProps) {
       upsertToken({
         key: finalKey,
         value,
-        meta: isBuiltIn
-          ? undefined
-          : { custom: true, appliesTo },
+        meta: isBuiltIn ? undefined : { custom: true, appliesTo },
       });
     } else {
       upsertToken({
@@ -183,7 +176,7 @@ export function VarEditor({ mode, token, onBack }: VarEditorProps) {
 
         {/* Name */}
         <label className="flex flex-col gap-1">
-          <span className="text-neutral-content text-[11px] uppercase tracking-wide">Name</span>
+          <span className="text-neutral-content text-[11px] tracking-wide uppercase">Name</span>
           <input
             type="text"
             value={name}
@@ -202,7 +195,7 @@ export function VarEditor({ mode, token, onBack }: VarEditorProps) {
 
         {/* Type */}
         <div className="flex flex-col gap-1">
-          <span className="text-neutral-content text-[11px] uppercase tracking-wide">Type</span>
+          <span className="text-neutral-content text-[11px] tracking-wide uppercase">Type</span>
           <div className="flex flex-wrap gap-1">
             {ALL_TYPES.map(t => (
               <button
@@ -224,7 +217,7 @@ export function VarEditor({ mode, token, onBack }: VarEditorProps) {
 
         {/* Applies to */}
         <div className="flex flex-col gap-1">
-          <span className="text-neutral-content text-[11px] uppercase tracking-wide">
+          <span className="text-neutral-content text-[11px] tracking-wide uppercase">
             Applies To
           </span>
           <div className="flex flex-wrap gap-1">
@@ -252,7 +245,7 @@ export function VarEditor({ mode, token, onBack }: VarEditorProps) {
         {/* Quick picks (above value editor) */}
         {quickPicks && quickPicks.length > 0 && (
           <div className="flex flex-col gap-1">
-            <span className="text-neutral-content text-[11px] uppercase tracking-wide">
+            <span className="text-neutral-content text-[11px] tracking-wide uppercase">
               Presets
             </span>
             <div className="flex flex-wrap gap-1">
@@ -276,7 +269,7 @@ export function VarEditor({ mode, token, onBack }: VarEditorProps) {
 
         {/* Value editor — type-driven */}
         <div className="flex flex-col gap-1">
-          <span className="text-neutral-content text-[11px] uppercase tracking-wide">Value</span>
+          <span className="text-neutral-content text-[11px] tracking-wide uppercase">Value</span>
           {type === "color" ? (
             <ColorValueEditor value={value} onChange={setValue} />
           ) : type === "dimension" ? (

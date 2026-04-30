@@ -11,6 +11,7 @@ import { MediaManagerModal } from "../../inputs/media/MediaManagerModal";
 import { IconsTab } from "./components/IconsTab";
 import { MediaTab } from "./components/MediaTab";
 import { useIconDialog } from "./hooks/useIconDialog";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {
   value: string;
@@ -44,7 +45,7 @@ export default function IconPickerPanel({
       maxWidth={640}
       minHeight={360}
       initialPosition={initialPosition}
-      zIndex={1100}
+      zIndex={OVERLAY_Z_FLOATING_PANEL}
     >
       <IconPickerBody value={value} prefix={prefix} onChange={onChange} onClose={onClose} />
     </FloatingPanel>

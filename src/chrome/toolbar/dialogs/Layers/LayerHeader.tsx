@@ -24,11 +24,7 @@ import { useLayerManager } from "./LayerManager";
 import { useLayerMove } from "./hooks/useLayerMove";
 import { useLayerDragDrop } from "./hooks/useLayerDragDrop";
 import { lintNode, maxSeverity } from "@/utils/lint/responsiveLint";
-import {
-  getShowHideState,
-  setShowHideState,
-  useShowHideVersion,
-} from "@/utils/showHideStore";
+import { getShowHideState, setShowHideState, useShowHideVersion } from "@/utils/showHideStore";
 
 interface LayerHeaderProps {
   nodeId: NodeId;
@@ -44,7 +40,7 @@ function resolveTypeIcon(
   isPage: boolean,
   isHeader: boolean,
   isFooter: boolean,
-  isSection: boolean,
+  isSection: boolean
 ): React.ComponentType<{ className?: string }> {
   if (isPage) return TbFile;
   if (isHeader) return TbLayoutNavbar;
@@ -86,10 +82,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
 
     return {
       displayName:
-        node?.data?.custom?.displayName ||
-        node?.data?.displayName ||
-        node?.data?.name ||
-        "Unnamed",
+        node?.data?.custom?.displayName || node?.data?.displayName || node?.data?.name || "Unnamed",
       craftHidden: node?.data?.hidden || false,
       isSelected: selectedId === nodeId,
       isHovered: hoveredId === nodeId,
@@ -116,9 +109,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   const classNameHasHidden = nodeClassName.split(/\s+/).includes("hidden");
   const storeState = showHideTarget ? getShowHideState(showHideTarget) : undefined;
   const isHidden =
-    craftHidden ||
-    (classNameHasHidden && storeState !== "shown") ||
-    storeState === "hidden";
+    craftHidden || (classNameHasHidden && storeState !== "shown") || storeState === "hidden";
 
   // Responsive lint — re-runs only when this node's className or child count changes.
   const lintIssues = useMemo(
@@ -145,7 +136,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
 
   const TypeIcon = useMemo(
     () => resolveTypeIcon(nodeName, isPage, isHeader, isFooter, isSection),
-    [nodeName, isPage, isHeader, isFooter, isSection],
+    [nodeName, isPage, isHeader, isFooter, isSection]
   );
 
   const roleIconColor = isSelected
@@ -355,9 +346,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             />
           ) : (
             <span
-              className={`block truncate text-xs leading-tight ${
-                isSelected ? "font-medium" : ""
-              }`}
+              className={`block truncate text-xs leading-tight ${isSelected ? "font-medium" : ""}`}
             >
               {isPage ? "Page" : displayName}
             </span>
@@ -384,7 +373,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             the toggle button, which would otherwise render two eyeballs). */}
         {isHidden && !isSelected && (
           <TbEyeOff
-            className="size-3.5 shrink-0 text-gray-400 dark:text-gray-500 group-hover:hidden"
+            className="size-3.5 shrink-0 text-gray-400 group-hover:hidden dark:text-gray-500"
             aria-hidden
           />
         )}
@@ -403,11 +392,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             aria-label="Toggle visibility"
             aria-pressed={!isHidden}
           >
-            {isHidden ? (
-              <TbEyeOff className="size-3.5" />
-            ) : (
-              <TbEye className="size-3.5" />
-            )}
+            {isHidden ? <TbEyeOff className="size-3.5" /> : <TbEye className="size-3.5" />}
           </button>
 
           <button
