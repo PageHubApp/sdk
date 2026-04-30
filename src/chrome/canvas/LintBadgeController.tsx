@@ -1,4 +1,4 @@
-import { useEditor, useNode } from "@craftjs/core";
+import { useEditor, useNode, type NodeId } from "@craftjs/core";
 import { useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Tooltip } from "react-tooltip";
@@ -14,26 +14,68 @@ import { getPortalTarget } from "../overlays/getPortalTarget";
  * on scroll/resize and on selection events.
  */
 export const LintBadgeController = () => {
-  const { nodeId, lintClassName, lintChildCount, lintIgnore, dom } = useNode(node => ({
+  const {
+    nodeId,
+    lintClassName,
+    lintChildCount,
+    lintIgnore,
+    nodeName,
+    nodeType,
+    nodeTagName,
+    parentId,
+    dom,
+  } = useNode(node => ({
     nodeId: node.id,
     lintClassName: (node.data.props?.className as string) || "",
     lintChildCount: node.data.nodes?.length ?? 0,
     lintIgnore: node.data.custom?.lintIgnore,
+    nodeName: node.data.name || "",
+    nodeType: (node.data.props?.type as string) || "",
+    nodeTagName: (node.data.props?.tagName as string) || "",
+    parentId: node.data.parent as NodeId | null,
     dom: node.dom as HTMLElement | null,
   }));
 
-  const { actions } = useEditor();
+  const { actions, parentName, parentType, parentTagName } = useEditor((state) => {
+    const parent = parentId ? state.nodes[parentId] : null;
+    return {
+      parentName: parent?.data.name || "",
+      parentType: (parent?.data.props?.type as string) || "",
+      parentTagName: (parent?.data.props?.tagName as string) || "",
+    };
+  });
 
   const issues = useMemo(
     () =>
-      lintNode({
-        data: {
-          props: { className: lintClassName },
-          nodes: new Array(lintChildCount),
-          custom: { lintIgnore },
+      lintNode(
+        {
+          data: {
+            name: nodeName,
+            props: { className: lintClassName, type: nodeType, tagName: nodeTagName },
+            nodes: new Array(lintChildCount),
+            custom: { lintIgnore },
+          },
         },
-      }),
-    [lintClassName, lintChildCount, lintIgnore]
+        parentName
+          ? {
+            data: {
+              name: parentName,
+              props: { type: parentType, tagName: parentTagName },
+            },
+          }
+          : undefined
+      ),
+    [
+      lintClassName,
+      lintChildCount,
+      lintIgnore,
+      nodeName,
+      nodeType,
+      nodeTagName,
+      parentName,
+      parentType,
+      parentTagName,
+    ]
   );
   const severity = maxSeverity(issues);
   const badgeRef = useRef<HTMLSpanElement>(null);

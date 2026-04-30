@@ -66,9 +66,13 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
     query,
     nodeName,
     nodeType,
+    nodeTagName,
     nodeClassName,
     nodeChildCount,
     nodeLintIgnore,
+    parentName,
+    parentType,
+    parentTagName,
     showHideTarget,
   } = useEditor((editorState, query) => {
     const node = editorState.nodes[nodeId];
@@ -79,6 +83,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
       (props?.attrs && typeof props.attrs.id === "string" ? props.attrs.id : undefined) ||
       (typeof props?.id === "string" ? props.id : undefined) ||
       (typeof props?.anchor === "string" ? props.anchor : undefined);
+    const parent = node?.data?.parent ? editorState.nodes[node.data.parent] : null;
 
     return {
       displayName:
@@ -88,9 +93,13 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
       isHovered: hoveredId === nodeId,
       nodeName: node?.data?.name || "",
       nodeType: node?.data?.props?.type || "",
+      nodeTagName: (node?.data?.props?.tagName as string) || "",
       nodeClassName: (node?.data?.props?.className as string) || "",
       nodeChildCount: node?.data?.nodes?.length ?? 0,
       nodeLintIgnore: node?.data?.custom?.lintIgnore,
+      parentName: parent?.data?.name || "",
+      parentType: (parent?.data?.props?.type as string) || "",
+      parentTagName: (parent?.data?.props?.tagName as string) || "",
       showHideTarget: target as string | undefined,
     };
   });
@@ -114,14 +123,35 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   // Responsive lint — re-runs only when this node's className or child count changes.
   const lintIssues = useMemo(
     () =>
-      lintNode({
-        data: {
-          props: { className: nodeClassName },
-          nodes: new Array(nodeChildCount), // we only need the length
-          custom: { lintIgnore: nodeLintIgnore },
+      lintNode(
+        {
+          data: {
+            name: nodeName,
+            props: { className: nodeClassName, type: nodeType, tagName: nodeTagName },
+            nodes: new Array(nodeChildCount), // we only need the length
+            custom: { lintIgnore: nodeLintIgnore },
+          },
         },
-      }),
-    [nodeClassName, nodeChildCount, nodeLintIgnore]
+        parentName
+          ? {
+            data: {
+              name: parentName,
+              props: { type: parentType, tagName: parentTagName },
+            },
+          }
+          : undefined
+      ),
+    [
+      nodeName,
+      nodeType,
+      nodeTagName,
+      nodeClassName,
+      nodeChildCount,
+      nodeLintIgnore,
+      parentName,
+      parentType,
+      parentTagName,
+    ]
   );
   const lintSeverity = maxSeverity(lintIssues);
 

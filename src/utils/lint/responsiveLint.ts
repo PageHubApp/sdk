@@ -141,7 +141,9 @@ function ruleNegativeMarginNoScope(cls: string): LintIssue | null {
 
 // ─── Public API ───────────────────────────────────────────────────────────
 
-const RULES: Array<(cls: string, node: any, parent: any) => LintIssue | null> = [
+import { ruleInvalidHtmlNesting } from "./htmlNestingLint";
+
+const CLASS_RULES: Array<(cls: string, node: any, parent: any) => LintIssue | null> = [
   ruleFixedWidthOverflowsMobile,
   ruleHugeHeadingOnMobile,
   ruleGridColsNoMobileFallback,
@@ -149,23 +151,30 @@ const RULES: Array<(cls: string, node: any, parent: any) => LintIssue | null> = 
 ];
 
 /**
- * Lint a single node's className against responsive rules.
- * Pure — call inside useMemo keyed on the className strings.
+ * Lint a single node against responsive + HTML-nesting rules.
+ * Pure — call inside useMemo keyed on the inputs that affect the rules.
  */
 export function lintNode(node: any, parent?: any): LintIssue[] {
-  const cls: string = node?.data?.props?.className || "";
-  if (!cls) return [];
-
   // Author opt-out: `node.data.custom.lintIgnore = true` or array of rule names.
   const ignore = node?.data?.custom?.lintIgnore;
   if (ignore === true) return [];
   const ignoreRules: string[] = Array.isArray(ignore) ? ignore : [];
 
   const issues: LintIssue[] = [];
-  for (const rule of RULES) {
-    const issue = rule(cls, node, parent);
-    if (issue && !ignoreRules.includes(issue.rule)) issues.push(issue);
+
+  const cls: string = node?.data?.props?.className || "";
+  if (cls) {
+    for (const rule of CLASS_RULES) {
+      const issue = rule(cls, node, parent);
+      if (issue && !ignoreRules.includes(issue.rule)) issues.push(issue);
+    }
   }
+
+  const nestingIssue = ruleInvalidHtmlNesting(node, parent);
+  if (nestingIssue && !ignoreRules.includes(nestingIssue.rule)) {
+    issues.push(nestingIssue);
+  }
+
   return issues;
 }
 
