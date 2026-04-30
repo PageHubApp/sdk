@@ -6,7 +6,7 @@ import type { Node } from "@craftjs/core";
 import {
   getSpatialMainAxisForComponentName,
   getSuppressCrossAxisAlignForComponentName,
-} from "../../../core/componentRegistry";
+} from "../../../core/builtinDefsLookup";
 
 function resolverName(parent: Node): string | undefined {
   return parent.data?.name as string | undefined;

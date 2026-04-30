@@ -18,7 +18,7 @@ import { NodeProvider, useEditor, useNode } from "@craftjs/core";
 import { atom, useAtomState } from "@zedux/react";
 import { CraftListEditor } from "../inputs/preset/CraftListEditor";
 import { ToolbarSection } from "../ToolbarSection";
-import { getBuiltinComponentDef } from "../../../core/componentRegistry";
+import { getBuiltinComponentDef } from "../../../core/builtinDefsLookup";
 import { applyPeerClassInherit } from "../../shell/peerInherit/applyPeerClassInherit";
 import { ActionsInput } from "../inputs/action/ActionsInput";
 import { IconInput } from "../inputs/media/IconInput";

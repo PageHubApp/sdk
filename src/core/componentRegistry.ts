@@ -38,7 +38,8 @@ import { SavedComponentLoader } from "../chrome/viewport/toolbox/savedComponents
 
 import { withConditionalVisibility } from "../utils/conditions/withConditionalVisibility";
 
-export { BUILTIN_COMPONENT_DEFS, getBuiltinComponentDef } from "./builtinComponentDefs";
+export { BUILTIN_COMPONENT_DEFS } from "./builtinComponentDefs";
+export { getBuiltinComponentDef } from "./builtinDefsLookup";
 
 /** Craft / viewer resolver: `resolvedName` from serialized nodes → React component. */
 export type BuiltInCraftResolver = Record<string, ComponentType<any>>;
@@ -78,34 +79,7 @@ export const DEFAULT_CRAFT_RESOLVER: BuiltInCraftResolver = {
   SavedComponentLoader,
 };
 
-// ─── Spatial layout hints ──────────────────────────────────────────────────
-// Opt-in per-component overrides for the 2D drag algorithm. Defaults — null /
-// false — fall back to DOM-derived flex direction and normal cross-axis zones.
-
-const SPATIAL_MAIN_AXIS_BY_NAME: Record<string, "row" | "column"> = {
-  Grid: "row",
-  TableRow: "row",
-  TableSection: "column",
-  Table: "column",
-};
-
-const SUPPRESS_CROSS_AXIS_ALIGN_BY_NAME: Record<string, true> = {
-  Table: true,
-  TableSection: true,
-  TableRow: true,
-  TableCell: true,
-};
-
-export function getSpatialMainAxisForComponentName(
-  name: string | undefined
-): "row" | "column" | null {
-  if (!name) return null;
-  return SPATIAL_MAIN_AXIS_BY_NAME[name] ?? null;
-}
-
-export function getSuppressCrossAxisAlignForComponentName(
-  name: string | undefined
-): boolean {
-  if (!name) return false;
-  return SUPPRESS_CROSS_AXIS_ALIGN_BY_NAME[name] ?? false;
-}
+export {
+  getSpatialMainAxisForComponentName,
+  getSuppressCrossAxisAlignForComponentName,
+} from "./builtinDefsLookup";

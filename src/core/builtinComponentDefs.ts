@@ -36,6 +36,7 @@ import {
 import type { ResolvedComponentDef } from "../define";
 import { setSanitizeBuiltinDefs } from "../utils/sanitizeNodeMap";
 import { setPresetRegistryDefs } from "./presetRegistry";
+import { setBuiltinDefsLookup } from "./builtinDefsLookup";
 
 /** Built-in `defineComponent` definitions, in toolbox / static-render order. */
 export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
@@ -75,3 +76,4 @@ export function getBuiltinComponentDef(name: string): ResolvedComponentDef | und
 // without sanitizeNodeMap importing this file (which would re-form the cycle).
 setSanitizeBuiltinDefs(BUILTIN_COMPONENT_DEFS);
 setPresetRegistryDefs(BUILTIN_COMPONENT_DEFS);
+setBuiltinDefsLookup(BUILTIN_COMPONENT_DEFS);

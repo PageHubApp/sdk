@@ -18,7 +18,7 @@ import {
 import { useAtomState } from "@zedux/react";
 import { IsolateAtom, isolatePageInTree } from "@/utils/lib";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { getBuiltinComponentDef } from "@/core/builtinComponentDefs";
+import { getBuiltinComponentDef } from "@/core/builtinDefsLookup";
 import { resolveToolboxIcon } from "@/chrome/viewport/toolbox/resolveToolboxIcon";
 import { useLayerManager } from "./LayerManager";
 import { useLayerMove } from "./hooks/useLayerMove";

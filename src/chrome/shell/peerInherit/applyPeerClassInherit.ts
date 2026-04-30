@@ -5,7 +5,7 @@
  */
 
 import type { ComponentModifier } from "../../../define";
-import { getBuiltinComponentDef } from "../../../core/componentRegistry";
+import { getBuiltinComponentDef } from "../../../core/builtinDefsLookup";
 
 function resolveModifierClassTokens(mod: ComponentModifier): string[] {
   if (mod.classes) return mod.classes.split(/\s+/).filter(Boolean);
