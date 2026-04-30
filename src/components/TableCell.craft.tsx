@@ -12,7 +12,9 @@ import {
   ariaAttrs,
   type ToHTMLFn,
 } from "../utils/static-html";
-import { TableCellMainTab } from "../chrome/toolbar/unified-settings/mainTabs/TableCellMainTab";
+const TableCellMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/TableCellMainTab").then((mod) => ({ default: mod.TableCellMainTab })),
+);
 import { HoverNodeController, DeleteNodeController, SelectTableRowTool } from "./editor-chrome";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {

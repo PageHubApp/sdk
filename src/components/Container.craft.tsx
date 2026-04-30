@@ -27,10 +27,16 @@ import {
   TbStack2,
   TbUserCircle,
 } from "react-icons/tb";
-import {
-  ContainerMainTab,
-  HeaderFooterToggles,
-} from "../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab";
+const ContainerMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab").then(
+    (mod) => ({ default: mod.ContainerMainTab }),
+  ),
+);
+const HeaderFooterToggles = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab").then(
+    (mod) => ({ default: mod.HeaderFooterToggles }),
+  ),
+);
 import { defineComponent } from "../define";
 import { migrateActions } from "../utils/action";
 import {

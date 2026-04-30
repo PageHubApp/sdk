@@ -20,7 +20,9 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
     children
   );
 };
-import { BackgroundMainTab } from "../chrome/toolbar/unified-settings/mainTabs/BackgroundMainTab";
+const BackgroundMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/BackgroundMainTab").then((mod) => ({ default: mod.BackgroundMainTab })),
+);
 import {
   HoverNodeController,
   NameNodeController,

@@ -17,7 +17,9 @@ import {
   type StaticRenderContext,
 } from "../utils/static-html";
 import type { ListMarkerStyle } from "./List";
-import { ListItemMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ListItemMainTab";
+const ListItemMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/ListItemMainTab").then((mod) => ({ default: mod.ListItemMainTab })),
+);
 import { HoverNodeController, DeleteNodeController, SelectListTool } from "./editor-chrome";
 
 function resolveName(n: { type?: { resolvedName?: string } } | undefined): string {

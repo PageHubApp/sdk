@@ -1,9 +1,12 @@
+import React from "react";
 /**
  * Icon — Standalone decorative/semantic icon. Renders inline SVG (react-icons) or
  * a media-library image. No actions — if clickable is needed, wrap in Container/Button.
  */
 import { TbBolt, TbIcons, TbStarFilled } from "react-icons/tb";
-import { IconMainTab } from "../chrome/toolbar/unified-settings/mainTabs/IconMainTab";
+const IconMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/IconMainTab").then((mod) => ({ default: mod.IconMainTab })),
+);
 import { defineComponent } from "../define";
 import { resolveIconSvgSync } from "../utils/icons/serverResolve";
 import {

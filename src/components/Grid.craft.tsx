@@ -13,7 +13,9 @@ import {
 import { defineComponent } from "../define";
 import { Grid } from "./Grid";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
-import { GridMainTab } from "../chrome/toolbar/unified-settings/mainTabs/GridMainTab";
+const GridMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/GridMainTab").then((mod) => ({ default: mod.GridMainTab })),
+);
 import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
 import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
 

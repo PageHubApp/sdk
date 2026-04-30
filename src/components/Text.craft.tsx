@@ -1,8 +1,11 @@
+import React from "react";
 /**
  * Text — Component definition via defineComponent()
  */
 import { TbBlockquote, TbH1, TbH2, TbLetterT } from "react-icons/tb";
-import { TextMainTab } from "../chrome/toolbar/unified-settings/mainTabs/TextMainTab";
+const TextMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/TextMainTab").then((mod) => ({ default: mod.TextMainTab })),
+);
 import { defineComponent } from "../define";
 import { LoremIpsum } from "../utils/data/loremIpsum";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../utils/action";

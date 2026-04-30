@@ -7,7 +7,9 @@ import { defineComponent } from "../define";
 import { TableSection } from "./TableSection";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
 import type { TableSectionKind } from "./tableTypes";
-import { TableSectionMainTab } from "../chrome/toolbar/unified-settings/mainTabs/TableSectionMainTab";
+const TableSectionMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/TableSectionMainTab").then((mod) => ({ default: mod.TableSectionMainTab })),
+);
 import { HoverNodeController, DeleteNodeController, SelectTableTool } from "./editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {

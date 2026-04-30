@@ -9,12 +9,18 @@
  * it into a nested container in a section morphs it into a "Card". Base Container
  * drops stay vanilla.
  */
+import React from "react";
 import { TbAdjustmentsAlt } from "react-icons/tb";
-import { ContainerMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab";
 import { defineComponent } from "../define";
 import { Container } from "./Container";
 import { toHTML } from "./Container.craft";
 import { layoutCanvasCanMoveIn } from "./layoutCanvasCanMoveIn";
+
+const ContainerMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/ContainerMainTab").then(
+    (m) => ({ default: m.ContainerMainTab }),
+  ),
+);
 
 export const AutomaticDef = defineComponent(
   {

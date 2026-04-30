@@ -10,7 +10,9 @@ import { TableSection } from "./TableSection";
 import { TableRow } from "./TableRow";
 import { TableCell } from "./TableCell";
 import { staticClasses, getInlineStyle, tag, type ToHTMLFn } from "../utils/static-html";
-import { TableMainTab } from "../chrome/toolbar/unified-settings/mainTabs/TableMainTab";
+const TableMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/TableMainTab").then((mod) => ({ default: mod.TableMainTab })),
+);
 import { HoverNodeController, DeleteNodeController, SelectTableTool } from "./editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {

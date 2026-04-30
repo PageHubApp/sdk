@@ -1,8 +1,11 @@
+import React from "react";
 /**
  * Button — Component definition via defineComponent()
  */
 import { TbHandClick } from "react-icons/tb";
-import { ButtonMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ButtonMainTab";
+const ButtonMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/ButtonMainTab").then((mod) => ({ default: mod.ButtonMainTab })),
+);
 import { defineComponent } from "../define";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../utils/action";
 import { resolveIconSvgSync } from "../utils/icons/serverResolve";

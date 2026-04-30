@@ -6,7 +6,9 @@ import { TbLineDashed } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { TableRow } from "./TableRow";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
-import { TableRowMainTab } from "../chrome/toolbar/unified-settings/mainTabs/TableRowMainTab";
+const TableRowMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/TableRowMainTab").then((mod) => ({ default: mod.TableRowMainTab })),
+);
 import { HoverNodeController, DeleteNodeController, SelectTableSectionTool } from "./editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {

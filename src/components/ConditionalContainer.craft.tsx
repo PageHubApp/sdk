@@ -12,7 +12,9 @@ import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "..
 import { buildStaticContext } from "../utils/conditions/context";
 import { evaluateConditions } from "../utils/conditions/evaluate";
 import type { ConditionBranch } from "../utils/conditions/types";
-import { ConditionalContainerMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ConditionalContainerMainTab";
+const ConditionalContainerMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/ConditionalContainerMainTab").then((mod) => ({ default: mod.ConditionalContainerMainTab })),
+);
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {
   const branches: ConditionBranch[] = props.branches || [];

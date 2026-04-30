@@ -36,7 +36,9 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     audio
   );
 };
-import { AudioMainTab } from "../chrome/toolbar/unified-settings/mainTabs/AudioMainTab";
+const AudioMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/AudioMainTab").then((mod) => ({ default: mod.AudioMainTab })),
+);
 import { NameNodeController, HoverNodeController, DeleteNodeController } from "./editor-chrome";
 
 export const AudioDef = defineComponent(

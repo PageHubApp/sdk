@@ -81,7 +81,11 @@ function ComponentSection() {
   return (
     <>
       <AutoChildListGroups />
-      {Settings ? <Settings /> : null}
+      {Settings ? (
+        <React.Suspense fallback={null}>
+          <Settings />
+        </React.Suspense>
+      ) : null}
     </>
   );
 }
@@ -93,7 +97,11 @@ function AdvancedSettingsSection() {
   const toolbar = getToolbarConfig(query, nodeData);
   const Adv = toolbar?.advancedSettings;
   // advancedSettings components render their own ToolbarSection wrappers — no outer wrapper needed
-  return Adv ? <Adv /> : null;
+  return Adv ? (
+    <React.Suspense fallback={null}>
+      <Adv />
+    </React.Suspense>
+  ) : null;
 }
 
 // ─── Static tab content — renders all sections, never rebuilds ─────────────

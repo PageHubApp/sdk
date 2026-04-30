@@ -19,7 +19,9 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
     children
   );
 };
-import { ContainerGroupMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ContainerGroupMainTab";
+const ContainerGroupMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/ContainerGroupMainTab").then((mod) => ({ default: mod.ContainerGroupMainTab })),
+);
 
 export const ContainerGroupDef = defineComponent(
   {

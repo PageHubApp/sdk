@@ -6,7 +6,9 @@ import { TbList } from "react-icons/tb";
 import { defineComponent } from "../define";
 import { List } from "./List";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../utils/static-html";
-import { ListMainTab } from "../chrome/toolbar/unified-settings/mainTabs/ListMainTab";
+const ListMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/ListMainTab").then((mod) => ({ default: mod.ListMainTab })),
+);
 import { HoverNodeController, DeleteNodeController } from "./editor-chrome";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {

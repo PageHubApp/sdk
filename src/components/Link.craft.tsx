@@ -1,9 +1,12 @@
+import React from "react";
 /**
  * Link — Text-styled hyperlink. Sibling of Button; always renders <a>, supports
  * only link-oriented actions (link-url, link-page, scroll-to, email, phone).
  */
 import { TbLink } from "react-icons/tb";
-import { LinkMainTab } from "../chrome/toolbar/unified-settings/mainTabs/LinkMainTab";
+const LinkMainTab = React.lazy(() =>
+  import("../chrome/toolbar/unified-settings/mainTabs/LinkMainTab").then((mod) => ({ default: mod.LinkMainTab })),
+);
 import { defineComponent } from "../define";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../utils/action";
 import { resolveIconSvgSync } from "../utils/icons/serverResolve";
