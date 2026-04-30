@@ -4,6 +4,10 @@
  */
 import React from "react";
 import {
+  TbAlignCenter,
+  TbAlignJustified,
+  TbAlignLeft,
+  TbAlignRight,
   TbBold,
   TbItalic,
   TbLineHeight,
@@ -29,7 +33,17 @@ export const typographyProperties: PropertyDef[] = [
     label: "Text Align",
     section: "typography",
     keywords: ["align", "left", "center", "right", "justify", "start", "end"],
-    input: { type: "tailwind-radio", tailwindKey: "textAlign", cols: true },
+    input: {
+      type: "tailwind-radio",
+      tailwindKey: "textAlign",
+      cols: true,
+      options: [
+        { value: "text-left", label: React.createElement(TbAlignLeft), hint: "Left" },
+        { value: "text-center", label: React.createElement(TbAlignCenter), hint: "Center" },
+        { value: "text-right", label: React.createElement(TbAlignRight), hint: "Right" },
+        { value: "text-justify", label: React.createElement(TbAlignJustified), hint: "Justify" },
+      ],
+    },
     sortOrder: 0,
   },
   {

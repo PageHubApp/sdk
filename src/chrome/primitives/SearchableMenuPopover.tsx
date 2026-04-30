@@ -23,8 +23,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { TbSearch } from "react-icons/tb";
+import { TbCheck, TbSearch } from "react-icons/tb";
 import { AnchoredPopover } from "../overlays/AnchoredPopover";
+import { PAGEHUB_RTT_GLOBAL_ID } from "./layout/tooltipSurface";
 
 export type SearchableMenuItem<TData = unknown> = {
   id: string;
@@ -80,6 +81,16 @@ interface Props<TData> {
   filterFn?: (item: SearchableMenuItem<TData>, query: string) => boolean;
   /** Optional renderer per item. Default = label + hint pill. */
   renderItem?: (item: SearchableMenuItem<TData>) => ReactNode;
+  /**
+   * Multi-select mode — checkbox column on the left + Apply button at the
+   * bottom. Picking a row toggles its selection instead of closing the menu.
+   * Apply fires `onSelectMany` with the chosen items in click order.
+   */
+  multiSelect?: boolean;
+  /** Required when `multiSelect` is true. Receives all picked items at apply. */
+  onSelectMany?: (items: SearchableMenuItem<TData>[]) => void;
+  /** Apply button label. Default `Add (N)`. */
+  applyLabel?: (count: number) => string;
 }
 
 const TRIGGER_DEFAULT =
@@ -97,7 +108,7 @@ function defaultFilter<T>(item: SearchableMenuItem<T>, query: string): boolean {
 function defaultRender<T>(item: SearchableMenuItem<T>): ReactNode {
   return (
     <>
-      <span className="truncate">{item.label}</span>
+      <span className="min-w-0 flex-1 truncate">{item.label}</span>
       {item.hint && (
         <span className="text-neutral-content shrink-0 text-[10px]">{item.hint}</span>
       )}
@@ -120,11 +131,15 @@ function SearchableMenuPopoverInner<TData>(
     panelWidthClass = "w-64",
     filterFn = defaultFilter,
     renderItem = defaultRender,
+    multiSelect = false,
+    onSelectMany,
+    applyLabel = (n: number) => `Add${n ? ` (${n})` : ""}`,
   }: Props<TData>,
   ref: React.Ref<SearchableMenuPopoverHandle>
 ) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<SearchableMenuItem<TData>[]>([]);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useImperativeHandle(
@@ -139,7 +154,21 @@ function SearchableMenuPopoverInner<TData>(
   const close = useCallback(() => {
     setOpen(false);
     setQuery("");
+    setSelected([]);
   }, []);
+
+  const toggleSelected = useCallback((item: SearchableMenuItem<TData>) => {
+    setSelected(prev => {
+      const idx = prev.findIndex(p => p.id === item.id);
+      if (idx === -1) return [...prev, item];
+      return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+    });
+  }, []);
+
+  const applyMulti = useCallback(() => {
+    if (selected.length && onSelectMany) onSelectMany(selected);
+    close();
+  }, [selected, onSelectMany, close]);
 
   const handleTriggerClick = useCallback(() => {
     onTriggerClick?.();
@@ -175,6 +204,10 @@ function SearchableMenuPopoverInner<TData>(
           value={null}
           onChange={item => {
             if (!item) return;
+            if (multiSelect) {
+              toggleSelected(item);
+              return;
+            }
             onSelect(item);
             close();
           }}
@@ -196,22 +229,57 @@ function SearchableMenuPopoverInner<TData>(
                 {items.length === 0 ? emptyMessage : noResultsMessage(query)}
               </div>
             ) : (
-              filtered.map(item => (
-                <ComboboxOption
-                  key={item.id}
-                  value={item}
-                  title={item.help}
-                  className={({ focus }) =>
-                    `flex w-full cursor-pointer items-center justify-between gap-2 rounded-md px-3 py-1.5 text-left text-xs transition-colors ${
-                      focus ? "bg-base-200 text-base-content" : "text-base-content"
-                    }`
-                  }
-                >
-                  {renderItem(item)}
-                </ComboboxOption>
-              ))
+              filtered.map(item => {
+                const isSelected =
+                  multiSelect && selected.some(s => s.id === item.id);
+                return (
+                  <ComboboxOption
+                    key={item.id}
+                    value={item}
+                    data-tooltip-id={item.help ? PAGEHUB_RTT_GLOBAL_ID : undefined}
+                    data-tooltip-content={item.help}
+                    data-tooltip-place="right"
+                    className={({ focus }) =>
+                      `flex w-full cursor-pointer items-center justify-between gap-2 rounded-md px-3 py-1.5 text-left text-xs transition-colors ${
+                        focus ? "bg-base-200 text-base-content" : "text-base-content"
+                      }`
+                    }
+                  >
+                    {multiSelect && (
+                      <span
+                        aria-hidden
+                        className={`flex size-3.5 shrink-0 items-center justify-center rounded-sm border transition-colors ${
+                          isSelected
+                            ? "bg-primary border-primary text-primary-content"
+                            : "border-base-300 bg-base-100"
+                        }`}
+                      >
+                        {isSelected && <TbCheck className="size-2.5" />}
+                      </span>
+                    )}
+                    {renderItem(item)}
+                  </ComboboxOption>
+                );
+              })
             )}
           </ComboboxOptions>
+          {multiSelect && (
+            <div className="border-base-300/60 mt-1 flex items-center justify-between gap-2 border-t px-2 py-1.5">
+              <span className="text-neutral-content text-[10px]">
+                {selected.length
+                  ? `${selected.length} selected`
+                  : "Pick one or more"}
+              </span>
+              <button
+                type="button"
+                onClick={applyMulti}
+                disabled={selected.length === 0}
+                className="bg-primary text-primary-content rounded-md px-2.5 py-1 text-xs font-medium transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {applyLabel(selected.length)}
+              </button>
+            </div>
+          )}
         </Combobox>
       </AnchoredPopover>
     </>

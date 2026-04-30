@@ -38,3 +38,9 @@ export const OVERLAY_Z_ASSISTANT_SUBMENU = 91;
 export const OVERLAY_Z_DRAG = 95;
 export const OVERLAY_Z_CRITICAL_MODAL = 98;
 export const OVERLAY_Z_TOOLTIP = 99;
+// Floating panels (Animations / Spacing / Conditions / etc.) live above the
+// rest of the editor chrome, and any portaled dropdown opened from inside
+// one (UnifiedDropdown, TypeSelector) must in turn sit above the panel.
+// Single source of truth — every FloatingPanel call site reads from here.
+export const OVERLAY_Z_FLOATING_PANEL = 1100;
+export const OVERLAY_Z_FLOATING_PANEL_DROPDOWN = 1110;

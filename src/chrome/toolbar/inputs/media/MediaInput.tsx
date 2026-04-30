@@ -151,12 +151,12 @@ export const MediaInput = (propa: MediaInputProps) => {
     setShowMediaBrowser(false);
   };
 
-  const manager = variant === "chip" ? useMediaManager({
-    isOpen: showMediaBrowser,
+  const manager = useMediaManager({
+    isOpen: variant === "chip" && showMediaBrowser,
     onClose: () => setShowMediaBrowser(false),
     onSelect: handleBrowseSelect,
     selectionMode: true,
-  }) : null;
+  });
 
   const mediaId = getPath(nodeProps, propKey);
   const contentUrl = getPath(nodeProps, contentKey);
@@ -241,7 +241,7 @@ export const MediaInput = (propa: MediaInputProps) => {
                   Dynamic
                 </button>
               </div>
-              {chipSourceMode === "library" && manager ? (
+              {chipSourceMode === "library" ? (
                 <MediaManagerBody
                   manager={manager}
                   selectionMode
@@ -273,7 +273,7 @@ export const MediaInput = (propa: MediaInputProps) => {
               )}
             </div>
           </FloatingPanel>
-          {manager ? (
+          {variant === "chip" && showMediaBrowser ? (
             <MediaPreviewModal
               previewMedia={manager.previewMedia}
               filteredMedia={manager.filteredMedia}

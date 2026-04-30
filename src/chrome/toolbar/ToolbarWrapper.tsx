@@ -4,7 +4,8 @@ import { checkIfAncestorLinked } from "@/utils/componentUtils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { TbSearch, TbX } from "react-icons/tb";
+import { TbSearch } from "react-icons/tb";
+import { SearchInput } from "@/chrome/primitives/SearchInput";
 import { useSetAtomState } from "../../utils/atoms";
 import { EDITOR_ALL_PAGES_STORAGE, IsolateAtom } from "../../utils/lib";
 import { phStorage } from "../../utils/phStorage";
@@ -254,35 +255,24 @@ export const ToolbarWrapper = ({
         {searchOpen && searchPos && (
           <div
             ref={searchPopupRef}
-            className="border-base-300 bg-base-100 fixed z-[100] flex items-center gap-2 rounded-xl border px-2 py-1.5 shadow-xl"
+            className="border-base-300 bg-base-100 fixed z-[100] flex items-center rounded-xl border px-2 py-1.5 shadow-xl"
             style={{ left: searchPos.x, top: searchPos.y, width: SEARCH_POPUP_WIDTH }}
           >
-            <TbSearch className="text-neutral-content size-4 shrink-0" />
-            <input
+            <SearchInput
               ref={searchInputRef}
-              type="text"
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={setSearchQuery}
+              placeholder="Search settings..."
+              size="slim"
+              autoFocus
               onKeyDown={e => {
                 if (e.key === "Escape" || e.key === "Enter") {
                   e.preventDefault();
                   closeSearch();
                 }
               }}
-              placeholder="Search settings..."
-              className="text-base-content placeholder:text-neutral-content min-w-0 flex-1 bg-transparent text-xs outline-none"
-              autoFocus
-              {...toolbarInputNoAutocompleteProps}
+              inputProps={toolbarInputNoAutocompleteProps}
             />
-            {searchQuery && (
-              <ToolbarIconButton
-                onClick={() => setSearchQuery("")}
-                ariaLabel="Clear search"
-                className="cursor-pointer"
-              >
-                <TbX className="size-3" />
-              </ToolbarIconButton>
-            )}
           </div>
         )}
         </>

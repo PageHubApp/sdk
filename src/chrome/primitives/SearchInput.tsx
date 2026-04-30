@@ -10,6 +10,10 @@ export interface SearchInputProps {
   clearTooltip?: string;
   /** `slim` is shorter (h-7) with smaller text (text-xs) for dense toolbars. Default matches `input-transparent`. */
   size?: "default" | "slim";
+  autoFocus?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  /** Passed through as `<input>` attributes — useful for `autoComplete`/`spellCheck`. */
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
 }
 
 const SIZE_STYLES = {
@@ -35,7 +39,7 @@ const SIZE_STYLES = {
 } as const;
 
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
-  ({ value, onChange, placeholder = "Search...", className = "", clearTooltip = "Clear", size = "default" }, ref) => {
+  ({ value, onChange, placeholder = "Search...", className = "", clearTooltip = "Clear", size = "default", autoFocus, onKeyDown, inputProps }, ref) => {
     const hasValue = value.length > 0;
     const s = SIZE_STYLES[size];
     return (
@@ -51,6 +55,9 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           className={`${s.input} ${s.inputPadL} ${hasValue ? s.inputPadRWithClear : s.inputPadR}`}
           value={value}
           onChange={e => onChange(e.target.value)}
+          autoFocus={autoFocus}
+          onKeyDown={onKeyDown}
+          {...inputProps}
         />
         {hasValue && (
           <button

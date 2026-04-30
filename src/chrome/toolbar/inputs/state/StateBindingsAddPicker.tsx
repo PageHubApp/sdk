@@ -31,9 +31,24 @@ const STATE_BINDINGS_BODY_DEF_ID = "stateBindings";
 type StateAddType = "visibility" | "computed" | "binding";
 
 const CONTAINER_ITEMS: SearchableMenuItem<StateAddType>[] = [
-  { id: "visibility", label: "Visibility key — read show/hide from a state key", data: "visibility" },
-  { id: "computed", label: "Computed binding — derive a new state value", data: "computed" },
-  { id: "binding", label: "State binding — apply modifiers when state matches", data: "binding" },
+  {
+    id: "visibility",
+    label: "Visibility key",
+    help: "Read show/hide from a state key",
+    data: "visibility",
+  },
+  {
+    id: "computed",
+    label: "Computed binding",
+    help: "Derive a new state value",
+    data: "computed",
+  },
+  {
+    id: "binding",
+    label: "State binding",
+    help: "Apply modifiers when state matches",
+    data: "binding",
+  },
 ];
 
 export default function StateBindingsAddPicker({ def }: PropertyInputProps) {

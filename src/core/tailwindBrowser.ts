@@ -103,7 +103,25 @@ const THEME_CSS = `
   --radius-2xl: 1rem;
   --radius-3xl: 1.5rem;
 
-
+  /* CSS Animation Presets — keep in sync with packages/sdk/src/css/styles.css */
+  --animate-css-fade-in: css-fade-in 0.6s ease-out both;
+  --animate-css-fade-up: css-fade-up 0.6s ease-out both;
+  --animate-css-fade-down: css-fade-down 0.6s ease-out both;
+  --animate-css-fade-left: css-fade-left 0.6s ease-out both;
+  --animate-css-fade-right: css-fade-right 0.6s ease-out both;
+  --animate-css-scale-up: css-scale-up 0.5s ease-out both;
+  --animate-css-blur-in: css-blur-in 0.7s ease-out both;
+  --animate-css-slide-up: css-slide-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  --animate-css-flip-in: css-flip-in 0.6s ease-out both;
+  --animate-css-spring: css-spring 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  --animate-css-bounce-in: css-bounce-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  --animate-css-thud-in: css-thud-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-css-tile-flip: css-tile-flip 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-css-spin: css-spin 2s linear infinite;
+  --animate-css-pulse: css-pulse 2s ease-in-out infinite;
+  --animate-css-wiggle: css-wiggle 1s ease-in-out infinite;
+  --animate-css-marquee: css-marquee 40s linear infinite;
+  --animate-css-marquee-slow: css-marquee 60s linear infinite;
 }
 `;
 

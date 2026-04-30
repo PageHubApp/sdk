@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { TbSearch } from "react-icons/tb";
 import { AllStyles } from "@/utils/tailwind";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
-import { Chip } from "@/chrome/primitives/Chip";
+import { SearchInput } from "@/chrome/primitives/SearchInput";
 import { CardLight } from "../../ToolbarStyle";
 import { BREAKPOINT_PREFIXES } from "./classItemUtils";
 
@@ -51,67 +50,59 @@ export function ClassSearchInput({
       <label htmlFor="class-search-input" className="text-base-content sr-only text-sm font-medium">
         Search
       </label>
-      <Chip>
-        <div className="relative flex min-h-8 w-full items-stretch">
-          <input
-            type="text"
-            id="class-search-input"
-            role="searchbox"
-            className="input-plain h-8 min-h-8 flex-1 pr-10! text-xs"
-            placeholder="Class Search"
-            required
-            value={classInput}
-            onChange={e => setClassInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Tab" && matches.length > 0) {
-                e.preventDefault();
-                const hasBreakpoint = BREAKPOINT_PREFIXES.some(bp => classInput.startsWith(bp));
-                if (hasBreakpoint) {
-                  const resp = matches.find(m => m.startsWith(classInput.split(":")[0] + ":"));
-                  setClassInput(resp || matches[0]);
-                } else {
-                  setClassInput(matches[0]);
-                }
+      <div className="relative w-full">
+        <SearchInput
+          value={classInput}
+          onChange={setClassInput}
+          placeholder="Class Search"
+          size="slim"
+          inputProps={{
+            id: "class-search-input",
+            role: "searchbox",
+            required: true,
+            ...toolbarInputNoAutocompleteProps,
+          }}
+          onKeyDown={e => {
+            if (e.key === "Tab" && matches.length > 0) {
+              e.preventDefault();
+              const hasBreakpoint = BREAKPOINT_PREFIXES.some(bp => classInput.startsWith(bp));
+              if (hasBreakpoint) {
+                const resp = matches.find(m => m.startsWith(classInput.split(":")[0] + ":"));
+                setClassInput(resp || matches[0]);
+              } else {
+                setClassInput(matches[0]);
               }
-              if (e.key === "ArrowDown" && matches.length > 0) {
-                e.preventDefault();
-                setSelectedIndex(prev => Math.min(prev + 1, matches.length - 1));
-              }
-              if (e.key === "ArrowUp" && matches.length > 0) {
-                e.preventDefault();
-                setSelectedIndex(prev => Math.max(prev - 1, 0));
-              }
-              if (e.key === "Enter" && matches.length > 0 && selectedIndex > 0) {
-                e.preventDefault();
+            }
+            if (e.key === "ArrowDown" && matches.length > 0) {
+              e.preventDefault();
+              setSelectedIndex(prev => Math.min(prev + 1, matches.length - 1));
+            }
+            if (e.key === "ArrowUp" && matches.length > 0) {
+              e.preventDefault();
+              setSelectedIndex(prev => Math.max(prev - 1, 0));
+            }
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (matches.length > 0 && selectedIndex > 0) {
                 setClassInput(matches[selectedIndex]);
+              } else {
+                onSave();
               }
-            }}
-            onKeyUp={e => {
-              if (e.key === "Enter") onSave();
-            }}
-            {...toolbarInputNoAutocompleteProps}
-          />
-          {classInput?.length > 0 && matches.length > 0 && matches[0].startsWith(classInput) && (
-            <div className="pointer-events-none absolute inset-0 z-0 flex items-center pr-10 pl-2">
-              <span className="invisible">{classInput}</span>
-              <span className="text-neutral-content font-mono">
-                {matches[0].slice(classInput.length)}
-              </span>
-            </div>
-          )}
-          <button
-            type="button"
-            className="btn-search"
-            onClick={() => onSave()}
-            aria-label="Apply class"
-          >
-            <TbSearch className="size-3.5" aria-hidden />
-          </button>
-        </div>
-      </Chip>
+            }
+          }}
+        />
+        {classInput?.length > 0 && matches.length > 0 && matches[0].startsWith(classInput) && (
+          <div className="pointer-events-none absolute inset-0 z-0 flex items-center pr-7 pl-7 text-xs">
+            <span className="invisible">{classInput}</span>
+            <span className="text-neutral-content font-mono">
+              {matches[0].slice(classInput.length)}
+            </span>
+          </div>
+        )}
+      </div>
 
       {searched && (
-        <div className="ph-panel-soft absolute top-10 z-50 w-full overflow-hidden">
+        <div className="ph-panel-soft absolute top-9 z-50 w-full overflow-hidden">
           <div className="scrollbar-light flex max-h-60 w-full flex-wrap gap-2 overflow-auto p-2">
             {matches.map((mat, k) => (
               <CardLight

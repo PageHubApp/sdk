@@ -420,9 +420,11 @@ export function VariableTextInput({
 
               <div>
                 <label className="toolbar-label mb-1 block">Preview</label>
-                <div className="input-wrapper text-base-content flex min-h-10 w-full items-start px-2 py-1 text-[11px]">
-                  <code className="block whitespace-pre-wrap break-all">{builtExpression}</code>
-                </div>
+                <Chip grow>
+                  <code className="block w-full whitespace-pre-wrap break-all py-1 text-[11px]">
+                    {builtExpression}
+                  </code>
+                </Chip>
               </div>
 
               <div className="flex justify-end">

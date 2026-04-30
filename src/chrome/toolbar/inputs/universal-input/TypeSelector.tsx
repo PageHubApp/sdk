@@ -1,6 +1,10 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { OVERLAY_Z_TYPE_SELECTOR } from "../../../overlays/overlayZIndex";
+import {
+  OVERLAY_Z_FLOATING_PANEL_DROPDOWN,
+  OVERLAY_Z_TYPE_SELECTOR,
+} from "../../../overlays/overlayZIndex";
+import { useFloatingPanelZIndex } from "../../../floating/FloatingPanel";
 import { useAnchoredPopover } from "../../../overlays/useAnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 import { ValueType } from "./types";
@@ -52,6 +56,12 @@ function tooltipPlaceForIndex(index: number): "left" | "bottom" | "right" {
 export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
   ({ types, selectedType, onTypeChange, onOpenChange }, forwardedRef) => {
     const [isOpen, setIsOpen] = useState(false);
+    // Bump z-index when nested inside a FloatingPanel so the type chooser
+    // sits above its host panel; default to the global type-selector layer.
+    const floatingPanelZ = useFloatingPanelZIndex();
+    const dropdownZ = floatingPanelZ != null
+      ? Math.max(OVERLAY_Z_FLOATING_PANEL_DROPDOWN, floatingPanelZ + 10)
+      : OVERLAY_Z_TYPE_SELECTOR;
     const hoverOpenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -172,7 +182,7 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
               ref={floating.refs.setFloating}
               style={{
                 ...floating.floatingStyles,
-                zIndex: OVERLAY_Z_TYPE_SELECTOR,
+                zIndex: dropdownZ,
               }}
               className="pagehub-sdk-root scrollbar-light ph-panel-soft pointer-events-auto grid min-w-32 grid-cols-3 gap-1 overflow-hidden p-0.5"
               onMouseEnter={handleMouseEnter}

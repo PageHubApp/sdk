@@ -14,6 +14,7 @@ import { TbBoltFilled, TbMathFunction } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { Chip } from "../../../primitives/Chip";
+import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { SideBarAtom } from "../../../../utils/lib";
 import type {
@@ -83,17 +84,19 @@ function VisibilityKeyPanel({
           visibility. Defaults to the container&apos;s DOM id. Anchor tokens
           like <code className="font-mono">{`{{anchor.X}}`}</code> are supported.
         </p>
-        <input
-          type="text"
-          className="input input-xs font-mono"
-          value={value}
-          placeholder="e.g. cart:open"
-          onChange={e => onChange(e.target.value)}
-          aria-label="Visibility state key"
-          autoComplete="off"
-          spellCheck={false}
-          autoFocus
-        />
+        <Chip>
+          <input
+            type="text"
+            className="input-plain w-full font-mono"
+            value={value}
+            placeholder="e.g. cart:open"
+            onChange={e => onChange(e.target.value)}
+            aria-label="Visibility state key"
+            autoComplete="off"
+            spellCheck={false}
+            autoFocus
+          />
+        </Chip>
       </div>
     </FloatingPanel>
   );
@@ -211,19 +214,18 @@ function ComputedBindingPanel({
 
         <label className="flex flex-col gap-0.5">
           <span className="text-base-content text-[11px] font-medium">Compute type</span>
-          <select
-            className="select select-xs"
+          <ToolbarDropdown
             value={c.type}
-            onChange={e => {
-              const type = e.target.value as ComputedStateCompute["type"];
+            onChange={(v: string) => {
+              const type = v as ComputedStateCompute["type"];
               onChange({ ...binding, compute: { type } as ComputedStateCompute });
             }}
-            aria-label="Compute type"
+            chevron
           >
             {COMPUTE_TYPES.map(t => (
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
-          </select>
+          </ToolbarDropdown>
           <p className="text-neutral-content text-[9px]">
             {COMPUTE_TYPES.find(t => t.value === c.type)?.description}
           </p>

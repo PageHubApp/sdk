@@ -16,9 +16,10 @@
  * Footer hosts the "Save as modifier" form.
  */
 import { useMemo, useState } from "react";
-import { TbEye, TbSearch, TbX } from "react-icons/tb";
+import { TbEye } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { SearchInput } from "@/chrome/primitives/SearchInput";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import {
   ToolbarSegmentedControl,
@@ -295,30 +296,12 @@ export function ModifiersPickerBody() {
 
   return (
     <div className="flex flex-col gap-1" onMouseLeave={endPreview}>
-      <div className="input-wrapper relative mb-1">
-        <TbSearch
-          className="text-neutral-content pointer-events-none absolute top-1/2 left-2 -translate-y-1/2"
-          size={14}
-          aria-hidden
-        />
-        <input
-          type="text"
-          placeholder="Search modifiers"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="input-plain h-8 min-h-8 w-full pr-8! pl-7! text-xs"
-        />
-        {search && (
-          <button
-            type="button"
-            onClick={() => setSearch("")}
-            aria-label="Clear search"
-            className="text-neutral-content hover:text-base-content absolute top-1/2 right-1.5 flex size-5 -translate-y-1/2 items-center justify-center rounded"
-          >
-            <TbX size={12} />
-          </button>
-        )}
-      </div>
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder="Search modifiers"
+        className="mb-1"
+      size="slim" />
 
       {filtered.length === 0 ? (
         <div className="text-neutral-content py-6 text-center text-xs">

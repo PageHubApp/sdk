@@ -23,7 +23,11 @@ import {
   TbZoomOut,
 } from "react-icons/tb";
 import { AnchoredPopover } from "../../../overlays/AnchoredPopover";
-import { OVERLAY_Z_UNIFIED_DROPDOWN } from "../../../overlays/overlayZIndex";
+import {
+  OVERLAY_Z_FLOATING_PANEL_DROPDOWN,
+  OVERLAY_Z_UNIFIED_DROPDOWN,
+} from "../../../overlays/overlayZIndex";
+import { useFloatingPanelZIndex } from "../../../floating/FloatingPanel";
 import { getLayoutConfig, groupFractionsByDenominator, groupNumericByRange } from "./config";
 import { SubgroupItem } from "./SubgroupComponents";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
@@ -64,6 +68,14 @@ export function UnifiedDropdown({
 }: UnifiedDropdownProps) {
   // Get layout configuration for this property type
   const layoutConfig = getLayoutConfig(propTag, tailwindKey);
+
+  // When this dropdown is rendered inside a FloatingPanel (Animations,
+  // Spacing, Conditions, etc.), bump z-index so the portaled list sits ABOVE
+  // the host panel. Outside a panel, fall back to the default scale.
+  const floatingPanelZ = useFloatingPanelZIndex();
+  const dropdownZ = floatingPanelZ != null
+    ? Math.max(OVERLAY_Z_FLOATING_PANEL_DROPDOWN, floatingPanelZ + 10)
+    : OVERLAY_Z_UNIFIED_DROPDOWN;
 
   // Don't show dropdown if there's nothing to display. Var mode is owned by
   // VarPicker — UnifiedDropdown is tailwind-only.
@@ -272,7 +284,7 @@ export function UnifiedDropdown({
         maxHeightCeiling={400}
         matchAnchorWidth={{ min: 120, max: 200 }}
         boundary={[]}
-        zIndex={OVERLAY_Z_UNIFIED_DROPDOWN}
+        zIndex={dropdownZ}
         disableDismiss
         style={popoverStyle}
         className="pagehub-sdk-root ph-panel text-base-content flex w-fit flex-col"
@@ -463,7 +475,7 @@ export function UnifiedDropdown({
       maxHeightCeiling={400}
       matchAnchorWidth={{ min: 120, max: 200 }}
       boundary={[]}
-      zIndex={OVERLAY_Z_UNIFIED_DROPDOWN}
+      zIndex={dropdownZ}
       disableDismiss
       style={popoverStyle}
       className="pagehub-sdk-root ph-panel text-base-content flex w-fit flex-col overflow-hidden"

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FixedSizeGrid as Grid } from "react-window";
 import { loadIconSprite } from "../../../../../utils/icons/IconSvgMapContext";
 import { AutoHideScrollbar } from "../../../../primitives/layout/AutoHideScrollbar";
+import { SearchInput } from "../../../../primitives/SearchInput";
 import { ToolbarDropdown } from "../../../ToolbarDropdown";
 import { ToolbarSection } from "../../../ToolbarSection";
 import { IconCell } from "./IconCell";
@@ -45,20 +46,13 @@ export function IconsTab({ d }: IconsTabProps) {
     >
       {/* Search + set selector */}
       <div className="flex shrink-0 items-center gap-2 px-3 py-2">
-        <div className="input-wrapper flex min-h-7 flex-1 items-stretch">
-          <input
-            ref={el => {
-              if (el) el.focus();
-            }}
-            type="text"
-            role="searchbox"
-            className="input-plain h-7 min-h-7 w-full text-xs"
-            placeholder="Search icons..."
-            value={d.search}
-            onChange={e => d.handleSearch(e.target.value)}
-            aria-label="Search icons"
-          />
-        </div>
+        <SearchInput
+          value={d.search}
+          onChange={d.handleSearch}
+          placeholder="Search icons..."
+          size="slim"
+          className="flex-1"
+        />
         <div className="w-32 shrink-0">
           <ToolbarDropdown
             value={d.set}

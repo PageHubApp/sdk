@@ -209,31 +209,64 @@ export const AccordionAddMenu = React.memo(
     return <PopoverComponent def={sectionPopoverProp} />;
   }
 
-  const onPick = (item: SearchableMenuItem<PropertyDef>) => {
-    const def = item.data!;
+  const applyDefs = (defs: PropertyDef[]) => {
+    if (!defs.length) return;
     ensureSectionOpen();
-    const defaultValue = resolveDefaultValue(def);
-    if (defaultValue != null) {
-      changeProp({
-        propKey: def.propKey || def.id,
-        value: defaultValue,
-        propType: def.propType || "class",
-        setProp,
-        view,
-        classDark,
-      });
-      // Persist click-order. hasValue keeps the row alive across reloads.
-      setProp((p: any) => {
-        const order: string[] = Array.isArray(p.toolbarOrder) ? p.toolbarOrder : [];
-        if (!order.includes(def.id)) p.toolbarOrder = [...order, def.id];
-      }, 0);
-    } else {
-      // No clean default — session-only. Row dies on reload if user never set a value.
+    const sessionOnlyKeys: string[] = [];
+    // Only fire the popover-open request for a *single* add. Multi-add
+    // shouldn't cascade-open N popovers — that's just visual chaos.
+    const shouldAutoOpenPopover = defs.length === 1;
+    defs.forEach(def => {
+      const defaultValue = resolveDefaultValue(def);
+      if (defaultValue != null) {
+        changeProp({
+          propKey: def.propKey || def.id,
+          value: defaultValue,
+          propType: def.propType || "class",
+          setProp,
+          view,
+          classDark,
+        });
+        // Persist click-order. hasValue keeps the row alive across reloads.
+        setProp((p: any) => {
+          const order: string[] = Array.isArray(p.toolbarOrder) ? p.toolbarOrder : [];
+          if (!order.includes(def.id)) p.toolbarOrder = [...order, def.id];
+        }, 0);
+      } else {
+        // No clean default — session-only. Row dies on reload if user never set a value.
+        // Popover-mode rows always render via PropertyRow (see PropertyRenderer),
+        // so sessionAdded is not needed to make them visible — and writing it
+        // would auto-open their FloatingPanel via the legacy sessionAdded
+        // effect. For multi-add (shouldAutoOpenPopover === false) that means
+        // every picked popover-mode prop pops its panel at once, which is the
+        // exact "cascade chaos" we're trying to avoid. Skip sessionAdded for
+        // popover-mode rows during multi-add; single-add still writes it so
+        // the legacy single-pick auto-open flow keeps working for non-popover
+        // session-only props.
+        const isPopoverModeProp =
+          def.input.type === "custom" && isPopoverModeComponent(def.input.component);
+        if (!(isPopoverModeProp && !shouldAutoOpenPopover)) {
+          sessionOnlyKeys.push(sessionKey(id, def.id));
+        }
+      }
+      if (
+        shouldAutoOpenPopover &&
+        def.input.type === "custom" &&
+        isPopoverModeComponent(def.input.component)
+      ) {
+        requestOpenPopover(popoverRequests, setPopoverRequests, id, def.id);
+      }
+    });
+    if (sessionOnlyKeys.length) {
       const next = new Set(sessionAdded);
-      next.add(sessionKey(id, def.id));
+      sessionOnlyKeys.forEach(k => next.add(k));
       setSessionAdded(next);
     }
   };
+
+  const onPick = (item: SearchableMenuItem<PropertyDef>) => applyDefs([item.data!]);
+  const onPickMany = (items: SearchableMenuItem<PropertyDef>[]) =>
+    applyDefs(items.map(i => i.data!));
 
   // Single addable option → skip the search popover.
   // For popover-mode custom inputs (Action, Animations, Conditions, …) the
@@ -272,6 +305,8 @@ export const AccordionAddMenu = React.memo(
       triggerAriaLabel="Add property"
       items={available}
       onSelect={onPick}
+      multiSelect
+      onSelectMany={onPickMany}
       emptyMessage="All properties added"
     />
   );

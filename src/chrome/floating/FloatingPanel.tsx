@@ -21,7 +21,20 @@ type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
  */
 const FloatingPanelContext = React.createContext<{
   registerPortal: (node: HTMLElement | null) => () => void;
+  /** This panel's z-index — exposed so portaled descendants (dropdowns,
+   *  nested popovers) can compute a z that sits above their host panel. */
+  zIndex: number;
 } | null>(null);
+
+/**
+ * Returns the z-index of the nearest ancestor FloatingPanel, or `null` when
+ * not inside one. Use from portaled overlays (UnifiedDropdown, TypeSelector,
+ * AnchoredPopover) so they render ABOVE the panel that hosts their trigger.
+ */
+export function useFloatingPanelZIndex(): number | null {
+  const ctx = useContext(FloatingPanelContext);
+  return ctx?.zIndex ?? null;
+}
 
 /**
  * Drag-handle context. Exposed so panels rendered with `headerless` can wire
@@ -243,7 +256,7 @@ export function FloatingPanel({
       portalsRef.current.delete(node);
     };
   }, []);
-  const ctxValue = useMemo(() => ({ registerPortal }), [registerPortal]);
+  const ctxValue = useMemo(() => ({ registerPortal, zIndex }), [registerPortal, zIndex]);
   // Drag context is built after handleMouseDown / isDragging are available
   // (see below — useDraggableWindow is called further down).
 

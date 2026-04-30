@@ -201,6 +201,22 @@ function frameClasses({
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(props, ref) {
+  const isPopover = props.mode === "popover";
+  const property = useProperty();
+  const [, setSessionAdded] = useAtomState(SessionAddedAtom);
+  const popoverOnClear = isPopover ? (props as ChipPopoverProps).onClear : undefined;
+  const handleClear = useCallback(() => {
+    if (!popoverOnClear) return;
+    popoverOnClear();
+    if (property) {
+      setSessionAdded(prev => {
+        const next = new Set(prev);
+        next.add(sessionKey(property.nodeId, property.propId));
+        return next;
+      });
+    }
+  }, [popoverOnClear, property, setSessionAdded]);
+
   // Passthrough escape hatch — render children unwrapped (input mode only).
   if (props.mode !== "popover" && props.passthrough) {
     return <>{props.children}</>;
@@ -214,24 +230,6 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(props
     grow = false,
     labelWidth,
   } = props;
-
-  const isPopover = props.mode === "popover";
-
-  // Popover mode owns its own clear bookkeeping.
-  const property = useProperty();
-  const [, setSessionAdded] = useAtomState(SessionAddedAtom);
-  const popoverOnClear = isPopover ? props.onClear : undefined;
-  const handleClear = useCallback(() => {
-    if (!popoverOnClear) return;
-    popoverOnClear();
-    if (property) {
-      setSessionAdded(prev => {
-        const next = new Set(prev);
-        next.add(sessionKey(property.nodeId, property.propId));
-        return next;
-      });
-    }
-  }, [popoverOnClear, property, setSessionAdded]);
 
   // Build frame contents per mode.
   let bodyChildren: ReactNode;

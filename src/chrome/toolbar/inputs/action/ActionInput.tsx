@@ -336,7 +336,7 @@ function ClearStateForm({
   return (
     <div className="flex flex-col gap-2">
       <p className="text-neutral-content text-[10px] leading-snug">
-        Removes the state entry entirely. Useful for "reset to default" buttons.
+        Removes the state entry entirely. Useful for &quot;reset to default&quot; buttons.
       </p>
       <label className="flex flex-col gap-1 text-[10px]">
         <span className="text-neutral-content">Key</span>
@@ -402,7 +402,7 @@ function RemoveLocalStorageForm({
       <p className="text-neutral-content text-[10px] leading-snug">
         Clears the <code className="text-[9px]">key</code> from{" "}
         <code className="text-[9px]">window.localStorage</code> — useful for
-        "show this banner again" links.
+        &quot;show this banner again&quot; links.
       </p>
       <label className="flex flex-col gap-1 text-[10px]">
         <span className="text-neutral-content">Key</span>
