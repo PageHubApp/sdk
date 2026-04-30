@@ -7,12 +7,16 @@
  * property registry uses `getPresetMeta(label)` to surface the Add Item /
  * delete UI.
  *
- * Lookup walks `BUILTIN_COMPONENT_DEFS` directly — single source of truth,
- * no parallel registry. Re-exports `PresetAddChildConfig` from `define.ts`
- * for backwards-compat callers.
+ * Defs are registered via {@link setPresetRegistryDefs} from
+ * `builtinComponentDefs.ts` at module load. Static-importing
+ * `BUILTIN_COMPONENT_DEFS` here would form a cycle:
+ *   ContainerMainTab → registry/properties → preset.ts → presetRegistry →
+ *   BUILTIN_COMPONENT_DEFS → definitions.ts → *.craft.tsx →
+ *   defineComponent({ settings: ContainerMainTab, … })
+ * which TDZ-crashes on `AutomaticDef` / `ContainerDef` in production builds.
+ * See [.claude/known-issues/sdk-circular-import-via-lib.md].
  */
-import { BUILTIN_COMPONENT_DEFS } from "./builtinComponentDefs";
-import type { PresetAddChildConfig } from "../define";
+import type { PresetAddChildConfig, ResolvedComponentDef } from "../define";
 
 export type { PresetAddChildConfig };
 
@@ -20,9 +24,15 @@ interface PresetMeta {
   addChild?: PresetAddChildConfig;
 }
 
+let _registeredDefs: ResolvedComponentDef[] | undefined;
+
+export function setPresetRegistryDefs(defs: ResolvedComponentDef[]) {
+  _registeredDefs = defs;
+}
+
 export function getPresetMeta(name: string | undefined): PresetMeta | undefined {
-  if (!name) return undefined;
-  for (const def of BUILTIN_COMPONENT_DEFS) {
+  if (!name || !_registeredDefs) return undefined;
+  for (const def of _registeredDefs) {
     for (const preset of def.presets) {
       if (preset.label === name && preset.addChild) {
         return { addChild: preset.addChild };
