@@ -1,6 +1,9 @@
 /* ═══ @pagehub/sdk Default Theme (DaisyUI 5) ═════════════════════════════════
    Canonical design tokens: palette, aliases, style, shadows, fonts.
    Import this in any Tailwind 4 entry point to get the full DaisyUI 5 theme.
+
+   ⚠️  GENERATED FILE — do not edit. Source: packages/sdk/src/utils/design/tokenSource.ts
+   Run `pnpm exec tsx scripts/generate-theme-css.mjs` (also runs in prebuild).
    ═════════════════════════════════════════════════════════════════════════════ */
 
 @custom-variant dark (&:is(.dark *):not(#viewport:not(.dark) *));
@@ -60,6 +63,10 @@
   --radius: var(--radius-box);
   --card-radius: var(--radius-box);
   --input-border-radius: var(--radius-field);
+
+  /* Sidebar chrome (editor only — kept here so --color-sidebar-* aliases resolve) */
+  --sidebar-foreground: var(--base-content);
+  --sidebar-border: var(--base-300);
 
   /* Font stacks */
   --font-sans:

@@ -1,6 +1,9 @@
 @import "tailwindcss";
-@import "./theme.css";
+/* Order: daisyui-spatial before theme.css. Currently inert (theme.css doesn't
+   redefine spatial tokens) but reserves the cascade for later phases that move
+   spatial into the schema. See Phase 0a in docs/sdk/token-system-implementation-blueprint.md. */
 @import "../../../daisyui-spatial/src/index.css";
+@import "./theme.css";
 
 @source "../";
 

@@ -17,113 +17,17 @@
  */
 
 import { rewriteMediaToContainer } from "../utils/breakpointRewrite";
+import { THEME_INLINE_CSS } from "./themeInline.generated";
 
 const SCRIPT_ID = "pagehub-tw-browser";
 const CONFIG_ID = "pagehub-tw-config";
 const LAYER_STRIP_ID = "pagehub-tw-unlayered";
 const DAISYUI_ID = "pagehub-daisyui";
 
-/**
- * The theme CSS that @tailwindcss/browser needs to understand
- * the SDK's design tokens. Mirrors styles.css @theme inline block.
- */
-const THEME_CSS = `
-@custom-variant dark (&:is(.dark *):not(#viewport:not(.dark) *));
-
-@theme inline {
-  /* DaisyUI 5 canonical tokens */
-  --color-primary: var(--primary);
-  --color-primary-content: var(--primary-content);
-  --color-secondary: var(--secondary);
-  --color-secondary-content: var(--secondary-content);
-  --color-accent: var(--accent);
-  --color-accent-content: var(--accent-content);
-  --color-neutral: var(--neutral);
-  --color-neutral-content: var(--neutral-content);
-  --color-base-100: var(--base-100);
-  --color-base-200: var(--base-200);
-  --color-base-300: var(--base-300);
-  --color-base-content: var(--base-content);
-  --color-error: var(--error);
-  --color-error-content: var(--error-content);
-  --color-info: var(--info);
-  --color-info-content: var(--info-content);
-  --color-success: var(--success);
-  --color-success-content: var(--success-content);
-  --color-warning: var(--warning);
-  --color-warning-content: var(--warning-content);
-  --color-border: var(--base-300);
-  --color-input: var(--base-300);
-  --color-ring: var(--ring);
-  /* Backwards-compat aliases */
-  --color-background: var(--base-100);
-  --color-foreground: var(--base-content);
-  --color-card: var(--base-200);
-  --color-card-foreground: var(--base-content);
-  --color-popover: var(--base-100);
-  --color-popover-foreground: var(--base-content);
-  --color-primary-foreground: var(--primary-content);
-  --color-secondary-foreground: var(--secondary-content);
-  --color-accent-foreground: var(--accent-content);
-  --color-muted: var(--neutral);
-  --color-muted-foreground: var(--neutral-content);
-  --color-destructive: var(--error);
-  --color-destructive-foreground: var(--error-content);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-
-  --font-sans: var(--font-sans), sans-serif;
-  --font-serif: var(--font-serif), serif;
-  --font-mono: var(--font-mono), monospace;
-  --font-heading: var(--heading-font-family), sans-serif;
-  --font-body: var(--body-font-family), sans-serif;
-  --font-accent: var(--accent-font-family), sans-serif;
-
-  /* Spatial scale: py-space-xl, gap-space-md, px-space-sm, etc. */
-  --spacing-space-xs: var(--space-xs);
-  --spacing-space-sm: var(--space-sm);
-  --spacing-space-md: var(--space-md);
-  --spacing-space-lg: var(--space-lg);
-  --spacing-space-xl: var(--space-xl);
-  --spacing-container-x: var(--container-padding-x);
-  --spacing-container-y: var(--container-padding-y);
-  --spacing-section: var(--section-gap);
-  --spacing-container: var(--container-gap);
-  --max-width-page: var(--content-width);
-
-  /* Radius */
-  --radius-box: var(--radius-box);
-  --radius-field: var(--radius-field);
-  --radius-selector: var(--radius-selector);
-  --radius-full: var(--radius-full, 9999px);
-  --radius-sm: 0.125rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.5rem;
-
-  /* CSS Animation Presets — keep in sync with packages/sdk/src/css/styles.css */
-  --animate-css-fade-in: css-fade-in 0.6s ease-out both;
-  --animate-css-fade-up: css-fade-up 0.6s ease-out both;
-  --animate-css-fade-down: css-fade-down 0.6s ease-out both;
-  --animate-css-fade-left: css-fade-left 0.6s ease-out both;
-  --animate-css-fade-right: css-fade-right 0.6s ease-out both;
-  --animate-css-scale-up: css-scale-up 0.5s ease-out both;
-  --animate-css-blur-in: css-blur-in 0.7s ease-out both;
-  --animate-css-slide-up: css-slide-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-  --animate-css-flip-in: css-flip-in 0.6s ease-out both;
-  --animate-css-spring: css-spring 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-  --animate-css-bounce-in: css-bounce-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-  --animate-css-thud-in: css-thud-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-css-tile-flip: css-tile-flip 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-css-spin: css-spin 2s linear infinite;
-  --animate-css-pulse: css-pulse 2s ease-in-out infinite;
-  --animate-css-wiggle: css-wiggle 1s ease-in-out infinite;
-  --animate-css-marquee: css-marquee 40s linear infinite;
-  --animate-css-marquee-slow: css-marquee 60s linear infinite;
-}
-`;
+/* Theme CSS for @tailwindcss/browser is `THEME_INLINE_CSS`, generated from
+ * `packages/sdk/src/utils/design/tokenSource.ts` by `scripts/generate-theme-css.mjs`.
+ * Same generator emits `packages/sdk/src/css/theme.css`. `pnpm verify:tokens`
+ * blocks drift. Do not edit `themeInline.generated.ts` by hand. */
 
 /**
  * Strip @layer wrappers from CSS text so utilities have normal (unlayered)
@@ -166,7 +70,7 @@ export function injectTailwindBrowser(): void {
   const configStyle = document.createElement("style");
   configStyle.id = CONFIG_ID;
   configStyle.setAttribute("type", "text/tailwindcss");
-  configStyle.textContent = THEME_CSS;
+  configStyle.textContent = THEME_INLINE_CSS;
   document.head.appendChild(configStyle);
 
   // 2. Inject DaisyUI component CSS (cherry-picked bundle, ~50KB gzipped)
