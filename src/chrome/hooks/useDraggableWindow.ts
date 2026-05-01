@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useDragGesture } from "./useDragGesture";
 
 interface Position {
   x: number;
@@ -16,48 +17,35 @@ interface UseDraggableWindowOptions {
 }
 
 /**
- * Hook to make a window/modal draggable
- * Returns position, drag handlers, and a ref for the draggable element
+ * Hook to make a window/modal draggable. Handler is wired to `onPointerDown`
+ * on the drag handle. Built on `useDragGesture` so missed pointerup, blur,
+ * and unmount can never strand the drag.
  */
 export const useDraggableWindow = (options: UseDraggableWindowOptions = {}) => {
   const { initialPosition = { x: 40, y: 40 }, bounds } = options;
 
   const [position, setPosition] = useState<Position>(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
-  const dragStartPos = useRef<Position>({ x: 0, y: 0 });
   const elementStartPos = useRef<Position>({ x: 0, y: 0 });
   const windowRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      // Only drag if clicking directly on the handle, not on buttons inside it
-      if ((e.target as HTMLElement).closest("button")) {
-        return;
-      }
-
+  const { onPointerDown: handlePointerDown } = useDragGesture({
+    onStart: (e) => {
+      // Only drag if clicking directly on the handle, not on buttons inside.
+      if ((e.target as HTMLElement).closest("button")) return false;
       e.preventDefault();
-      setIsDragging(true);
-      dragStartPos.current = { x: e.clientX, y: e.clientY };
       elementStartPos.current = { ...position };
+      setIsDragging(true);
+      document.body.style.cursor = "grabbing";
+      document.body.style.userSelect = "none";
     },
-    [position]
-  );
+    onMove: (_e, m) => {
+      let newX = elementStartPos.current.x + m.dx;
+      let newY = elementStartPos.current.y + m.dy;
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (!isDragging) return;
-
-      const deltaX = e.clientX - dragStartPos.current.x;
-      const deltaY = e.clientY - dragStartPos.current.y;
-
-      let newX = elementStartPos.current.x + deltaX;
-      let newY = elementStartPos.current.y + deltaY;
-
-      // Apply bounds if specified
       if (bounds) {
         if (bounds.left !== undefined) newX = Math.max(bounds.left, newX);
         if (bounds.top !== undefined) newY = Math.max(bounds.top, newY);
-
         if (windowRef.current) {
           const rect = windowRef.current.getBoundingClientRect();
           if (bounds.right !== undefined) {
@@ -71,36 +59,18 @@ export const useDraggableWindow = (options: UseDraggableWindowOptions = {}) => {
 
       setPosition({ x: newX, y: newY });
     },
-    [isDragging, bounds]
-  );
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-
-      // Add visual feedback
-      document.body.style.cursor = "grabbing";
-      document.body.style.userSelect = "none";
-
-      return () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
-        document.body.style.cursor = "";
-        document.body.style.userSelect = "";
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+    onEnd: () => {
+      setIsDragging(false);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    },
+  });
 
   return {
     position,
     isDragging,
     windowRef,
-    handleMouseDown,
+    handlePointerDown,
     setPosition,
   };
 };

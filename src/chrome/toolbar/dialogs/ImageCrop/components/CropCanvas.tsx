@@ -18,15 +18,13 @@ export function CropCanvas({ crop }: CropCanvasProps) {
         <div
           role="presentation"
           aria-hidden="true"
-          className="relative flex flex-1 cursor-grab items-center justify-center overflow-hidden select-none"
+          className="relative flex flex-1 cursor-grab touch-none items-center justify-center overflow-hidden select-none"
           style={{
             cursor: crop.isPanning ? "grabbing" : "grab",
             userSelect: "none",
             WebkitUserSelect: "none",
           }}
-          onMouseDown={crop.handleMouseDown}
-          onMouseMove={crop.handleMouseMove}
-          onMouseUp={crop.handleMouseUp}
+          onPointerDown={crop.handlePointerDown}
           onDragStart={e => e.preventDefault()}
           onWheel={crop.handleWheel}
           onTouchStart={crop.handleTouchStart}

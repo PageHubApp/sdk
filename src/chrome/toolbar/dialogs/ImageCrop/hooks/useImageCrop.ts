@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
 import { DeleteMedia } from "@/chrome/viewport/viewportExports";
 import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
+import { useDragGesture } from "@/chrome/hooks/useDragGesture";
 
 // ─── Types ───
 
@@ -60,12 +61,17 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
   const [viewportPosition, setViewportPosition] = useState({ x: 0, y: 0 });
 
   // ─── Drag state ───
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [dragType, setDragType] = useState<"move" | "resize" | null>(null);
-  const [resizeHandle, setResizeHandle] = useState<string | null>(null);
+  // Refs so onMove sees the values set in onStart synchronously — React would
+  // otherwise commit setState updates a frame later, dropping the first
+  // pointermove on fast drags.
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const dragTypeRef = useRef<"move" | "resize" | null>(null);
+  const resizeHandleRef = useRef<string | null>(null);
+  const isPanningRef = useRef(false);
+  const panStartPositionRef = useRef({ x: 0, y: 0 });
+  // Visible state mirrors isPanning for cursor styling in CropCanvas.
   const [isPanning, setIsPanning] = useState(false);
-  const [panStartPosition, setPanStartPosition] = useState({ x: 0, y: 0 });
   const [touchStartDistance, setTouchStartDistance] = useState(0);
   const [touchStartScale, setTouchStartScale] = useState(1);
 
@@ -146,101 +152,103 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
 
     setCropScale(1);
     setViewportPosition({ x: 0, y: 0 });
-    setPanStartPosition({ x: 0, y: 0 });
+    panStartPositionRef.current = { x: 0, y: 0 };
   };
 
   // ─── Mouse/touch handlers ───
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!containerRef.current || !imageRef.current) return;
-    const imageRect = imageRef.current.getBoundingClientRect();
-    const x = (e.clientX - imageRect.left) / previewScale;
-    const y = (e.clientY - imageRect.top) / previewScale;
-
-    const handleSize = 8;
-    const isOnHandle = (handle: string) => {
-      const hx = handle.includes("w") ? cropArea.x : cropArea.x + cropArea.width;
-      const hy = handle.includes("n") ? cropArea.y : cropArea.y + cropArea.height;
-      return Math.abs(x - hx) <= handleSize && Math.abs(y - hy) <= handleSize;
-    };
-
-    for (const handle of ["nw", "ne", "sw", "se"]) {
-      if (isOnHandle(handle)) {
-        setIsDragging(true);
-        setDragType("resize");
-        setResizeHandle(handle);
-        setDragStart({ x, y });
-        return;
-      }
-    }
-
-    if (
-      x >= cropArea.x &&
-      x <= cropArea.x + cropArea.width &&
-      y >= cropArea.y &&
-      y <= cropArea.y + cropArea.height
-    ) {
-      setIsDragging(true);
-      setDragType("move");
-      setDragStart({ x: x - cropArea.x, y: y - cropArea.y });
-    } else {
-      setIsPanning(true);
-      setDragStart({ x: e.clientX, y: e.clientY });
-      setPanStartPosition(viewportPosition);
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!containerRef.current || !imageRef.current) return;
-
-    if (isDragging) {
+  const { onPointerDown: handlePointerDown } = useDragGesture({
+    onStart: (e) => {
+      if (!containerRef.current || !imageRef.current) return false;
       const imageRect = imageRef.current.getBoundingClientRect();
       const x = (e.clientX - imageRect.left) / previewScale;
       const y = (e.clientY - imageRect.top) / previewScale;
 
-      if (dragType === "move") {
-        updateCropArea({ x: x - dragStart.x, y: y - dragStart.y });
-      } else if (dragType === "resize" && resizeHandle) {
-        const newArea = { ...cropArea };
-        switch (resizeHandle) {
-          case "nw":
-            newArea.width = cropArea.width + (cropArea.x - x);
-            newArea.height = cropArea.height + (cropArea.y - y);
-            newArea.x = x;
-            newArea.y = y;
-            break;
-          case "ne":
-            newArea.width = x - cropArea.x;
-            newArea.height = cropArea.height + (cropArea.y - y);
-            newArea.y = y;
-            break;
-          case "sw":
-            newArea.width = cropArea.width + (cropArea.x - x);
-            newArea.height = y - cropArea.y;
-            newArea.x = x;
-            break;
-          case "se":
-            newArea.width = x - cropArea.x;
-            newArea.height = y - cropArea.y;
-            break;
-        }
-        updateCropArea(newArea);
-      }
-    } else if (isPanning) {
-      setViewportPosition({
-        x: panStartPosition.x + (e.clientX - dragStart.x),
-        y: panStartPosition.y + (e.clientY - dragStart.y),
-      });
-    }
-  };
+      const handleSize = 8;
+      const isOnHandle = (handle: string) => {
+        const hx = handle.includes("w") ? cropArea.x : cropArea.x + cropArea.width;
+        const hy = handle.includes("n") ? cropArea.y : cropArea.y + cropArea.height;
+        return Math.abs(x - hx) <= handleSize && Math.abs(y - hy) <= handleSize;
+      };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    setDragType(null);
-    setResizeHandle(null);
-    setIsPanning(false);
-    setPanStartPosition({ x: 0, y: 0 });
-  };
+      for (const handle of ["nw", "ne", "sw", "se"]) {
+        if (isOnHandle(handle)) {
+          isDraggingRef.current = true;
+          dragTypeRef.current = "resize";
+          resizeHandleRef.current = handle;
+          dragStartRef.current = { x, y };
+          return;
+        }
+      }
+
+      if (
+        x >= cropArea.x &&
+        x <= cropArea.x + cropArea.width &&
+        y >= cropArea.y &&
+        y <= cropArea.y + cropArea.height
+      ) {
+        isDraggingRef.current = true;
+        dragTypeRef.current = "move";
+        dragStartRef.current = { x: x - cropArea.x, y: y - cropArea.y };
+      } else {
+        isPanningRef.current = true;
+        dragStartRef.current = { x: e.clientX, y: e.clientY };
+        panStartPositionRef.current = viewportPosition;
+        setIsPanning(true);
+      }
+    },
+    onMove: (e) => {
+      if (!containerRef.current || !imageRef.current) return;
+
+      if (isDraggingRef.current) {
+        const imageRect = imageRef.current.getBoundingClientRect();
+        const x = (e.clientX - imageRect.left) / previewScale;
+        const y = (e.clientY - imageRect.top) / previewScale;
+
+        if (dragTypeRef.current === "move") {
+          updateCropArea({ x: x - dragStartRef.current.x, y: y - dragStartRef.current.y });
+        } else if (dragTypeRef.current === "resize" && resizeHandleRef.current) {
+          const newArea = { ...cropArea };
+          switch (resizeHandleRef.current) {
+            case "nw":
+              newArea.width = cropArea.width + (cropArea.x - x);
+              newArea.height = cropArea.height + (cropArea.y - y);
+              newArea.x = x;
+              newArea.y = y;
+              break;
+            case "ne":
+              newArea.width = x - cropArea.x;
+              newArea.height = cropArea.height + (cropArea.y - y);
+              newArea.y = y;
+              break;
+            case "sw":
+              newArea.width = cropArea.width + (cropArea.x - x);
+              newArea.height = y - cropArea.y;
+              newArea.x = x;
+              break;
+            case "se":
+              newArea.width = x - cropArea.x;
+              newArea.height = y - cropArea.y;
+              break;
+          }
+          updateCropArea(newArea);
+        }
+      } else if (isPanningRef.current) {
+        setViewportPosition({
+          x: panStartPositionRef.current.x + (e.clientX - dragStartRef.current.x),
+          y: panStartPositionRef.current.y + (e.clientY - dragStartRef.current.y),
+        });
+      }
+    },
+    onEnd: () => {
+      isDraggingRef.current = false;
+      dragTypeRef.current = null;
+      resizeHandleRef.current = null;
+      isPanningRef.current = false;
+      panStartPositionRef.current = { x: 0, y: 0 };
+      setIsPanning(false);
+    },
+  });
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
@@ -461,14 +469,6 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
     }
   };
 
-  // ─── Effects ───
-
-  useEffect(() => {
-    const up = () => setIsDragging(false);
-    document.addEventListener("mouseup", up);
-    return () => document.removeEventListener("mouseup", up);
-  }, []);
-
   return {
     // Crop
     cropArea,
@@ -493,9 +493,7 @@ export function useImageCrop({ media, onSave, onClose, settings }: UseImageCropO
     setViewportPosition,
     isPanning,
     // Drag
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
+    handlePointerDown,
     handleWheel,
     handleTouchStart,
     handleTouchMove,

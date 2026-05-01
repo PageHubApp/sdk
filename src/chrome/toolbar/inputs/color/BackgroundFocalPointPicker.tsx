@@ -8,6 +8,7 @@ import { getBackgroundUrl } from "@/utils/background";
 import { ViewAtom } from "../../../viewport/atoms";
 import { getEffectiveViews, EditModifiersAtom } from "../../Label";
 import { MultiScopeAtom } from "../../breakpoint-chip/atoms";
+import { useDragGesture } from "../../../hooks/useDragGesture";
 
 interface BackgroundFocalPointPickerProps {
   imageUrl?: string;
@@ -38,7 +39,6 @@ export function BackgroundFocalPointPicker({
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [currentFocalPoint, setCurrentFocalPoint] = useState({ x: 50, y: 50 });
   const [savedFocalPoint, setSavedFocalPoint] = useState({ x: 50, y: 50 });
-  const [isDragging, setIsDragging] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const componentElementRef = useRef<HTMLElement | null>(null);
@@ -113,40 +113,15 @@ export function BackgroundFocalPointPicker({
     setIsPickerOpen(false);
   };
 
-  // Mouse/Touch event handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-    updateFocalPoint(e.clientX, e.clientY);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    updateFocalPoint(e.clientX, e.clientY);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-    const touch = e.touches[0];
-    updateFocalPoint(touch.clientX, touch.clientY);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    updateFocalPoint(touch.clientX, touch.clientY);
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-  };
+  const { onPointerDown: onPickerPointerDown } = useDragGesture({
+    onStart: (e, pos) => {
+      e.preventDefault();
+      updateFocalPoint(pos.clientX, pos.clientY);
+    },
+    onMove: (_e, m) => {
+      updateFocalPoint(m.clientX, m.clientY);
+    },
+  });
 
   // Reset to saved focal point
   const handleReset = () => {
@@ -209,26 +184,6 @@ export function BackgroundFocalPointPicker({
     onOpenChange?.(isPickerOpen);
   }, [isPickerOpen, onOpenChange]);
 
-  // Handle global mouse events when dragging
-  useEffect(() => {
-    if (isDragging) {
-      const handleGlobalMouseMove = (e: MouseEvent) => {
-        updateFocalPoint(e.clientX, e.clientY);
-      };
-      const handleGlobalMouseUp = () => {
-        setIsDragging(false);
-      };
-
-      document.addEventListener("mousemove", handleGlobalMouseMove);
-      document.addEventListener("mouseup", handleGlobalMouseUp);
-
-      return () => {
-        document.removeEventListener("mousemove", handleGlobalMouseMove);
-        document.removeEventListener("mouseup", handleGlobalMouseUp);
-      };
-    }
-  }, [isDragging]);
-
   // Cleanup inline style when component unmounts
   useEffect(() => {
     return () => {
@@ -262,13 +217,8 @@ export function BackgroundFocalPointPicker({
             ref={pickerRef}
             role="presentation"
             aria-hidden="true"
-            className="border-base-300 bg-neutral relative aspect-video w-full cursor-crosshair overflow-hidden rounded-lg border-2 select-none"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+            className="border-base-300 bg-neutral relative aspect-video w-full cursor-crosshair touch-none overflow-hidden rounded-lg border-2 select-none"
+            onPointerDown={onPickerPointerDown}
           >
             {/* Background Image */}
             <img

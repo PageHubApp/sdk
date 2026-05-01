@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { useDragGesture } from "../hooks/useDragGesture";
 
 interface DeviceScrollbarProps {
   deviceWidth: number;
@@ -68,38 +69,39 @@ export function DeviceScrollbar({ deviceWidth, deviceHeight, deviceZoom }: Devic
     };
   }, [deviceZoom, deviceWidth, deviceHeight]);
 
-  const onMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const viewport = document.getElementById("viewport");
-    const thumb = thumbRef.current;
-    const container = containerRef.current;
-    if (!viewport || !thumb || !container) return;
-    isDragging.current = true;
-    viewport.style.scrollBehavior = "auto";
-    const startY = e.clientY;
-    const startThumbTop = parseFloat(thumb.style.top || "0");
+  const startThumbTopRef = useRef(0);
+  const viewportRef = useRef<HTMLElement | null>(null);
 
-    const onMouseMove = (ev: MouseEvent) => {
+  const { onPointerDown } = useDragGesture({
+    onStart: (e) => {
+      e.preventDefault();
+      const viewport = document.getElementById("viewport");
+      const thumb = thumbRef.current;
+      if (!viewport || !thumb || !containerRef.current) return false;
+      viewportRef.current = viewport;
+      isDragging.current = true;
+      viewport.style.scrollBehavior = "auto";
+      startThumbTopRef.current = parseFloat(thumb.style.top || "0");
+    },
+    onMove: (_e, m) => {
+      const viewport = viewportRef.current;
+      const thumb = thumbRef.current;
+      const container = containerRef.current;
+      if (!viewport || !thumb || !container) return;
       const tH = container.clientHeight;
-      const delta = ev.clientY - startY;
       const trackRange = tH - thumbHeightRef.current;
       if (trackRange <= 0) return;
-      const newTop = Math.max(0, Math.min(trackRange, startThumbTop + delta));
+      const newTop = Math.max(0, Math.min(trackRange, startThumbTopRef.current + m.dy));
       thumb.style.top = `${newTop}px`;
       const scrollRange = viewport.scrollHeight - viewport.clientHeight;
       viewport.scrollTop = (newTop / trackRange) * scrollRange;
-    };
-
-    const onMouseUp = () => {
+    },
+    onEnd: () => {
       isDragging.current = false;
-      viewport.style.scrollBehavior = "";
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-  };
+      if (viewportRef.current) viewportRef.current.style.scrollBehavior = "";
+      viewportRef.current = null;
+    },
+  });
 
   return (
     <div
@@ -111,8 +113,8 @@ export function DeviceScrollbar({ deviceWidth, deviceHeight, deviceZoom }: Devic
         ref={thumbRef}
         role="presentation"
         aria-hidden="true"
-        onMouseDown={onMouseDown}
-        className="bg-neutral-foreground/50 hover:bg-neutral-foreground/80 absolute left-0 w-full cursor-grab rounded-full active:cursor-grabbing"
+        onPointerDown={onPointerDown}
+        className="bg-neutral-foreground/50 hover:bg-neutral-foreground/80 absolute left-0 w-full cursor-grab touch-none rounded-full active:cursor-grabbing"
       />
     </div>
   );

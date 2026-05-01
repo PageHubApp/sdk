@@ -20,82 +20,8 @@ import { getBesidePreviewLabel } from "./layoutInference";
 import { OVERLAY_Z_DRAG } from "../overlays/overlayZIndex";
 
 // ── Editor accent ────────────────────────────────────────────────────
-// Framer-style fixed accent for selection/drop chrome. Halo (below) keeps it
-// visible on any bg, even when the user's site palette uses a similar blue.
 const EDITOR_ACCENT = "rgb(59 130 246)"; // Tailwind blue-500
 const EDITOR_ERROR = "rgb(239 68 68)"; // Tailwind red-500
-
-// ── Contrast color helper ────────────────────────────────────────────
-// Reads the effective background color of a DOM element (walks parents
-// if transparent) and returns black or white for maximum contrast. Used
-// only by getContrastShadow now (halo behind the accent).
-// Cached by element — only recomputes when the element ref changes.
-
-// WeakMap — entries are GC'd when the DOM element is collected, no manual cleanup needed.
-const _contrastCache = new WeakMap<HTMLElement, string>();
-
-// Singleton canvas context for normalizing any CSS color (oklch, lab, etc.) to hex
-// Singleton 1px canvas — converts any CSS color (oklch, lab, etc.) to raw RGBA bytes.
-let _colorCtx: CanvasRenderingContext2D | null = null;
-function cssColorToRGBA(color: string): [number, number, number, number] | null {
-  if (!_colorCtx) {
-    const c = document.createElement("canvas");
-    c.width = 1;
-    c.height = 1;
-    _colorCtx = c.getContext("2d", { willReadFrequently: true });
-  }
-  if (!_colorCtx) return null;
-  _colorCtx.clearRect(0, 0, 1, 1);
-  _colorCtx.fillStyle = color;
-  _colorCtx.fillRect(0, 0, 1, 1);
-  const d = _colorCtx.getImageData(0, 0, 1, 1).data;
-  return [d[0], d[1], d[2], d[3]];
-}
-
-function getEffectiveBgColor(el: HTMLElement): [number, number, number] | null {
-  let current: HTMLElement | null = el;
-  while (current) {
-    const bg = window.getComputedStyle(current).backgroundColor;
-    if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
-      const rgba = cssColorToRGBA(bg);
-      if (rgba && rgba[3] > 75) {
-        // alpha > ~30% means visually opaque enough
-        return [rgba[0], rgba[1], rgba[2]];
-      }
-    }
-    current = current.parentElement;
-  }
-  return null;
-}
-
-function getContrastColor(el: HTMLElement | null | undefined): string {
-  if (!el) return "#111";
-  const cached = _contrastCache.get(el);
-  if (cached) return cached;
-
-  const rgb = getEffectiveBgColor(el);
-  if (!rgb) {
-    _contrastCache.set(el, "#111");
-    return "#111";
-  }
-
-  // Relative luminance (sRGB)
-  const [r, g, b] = rgb.map(c => {
-    const s = c / 255;
-    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  });
-  const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  const color = L > 0.4 ? "#111" : "#fff";
-  _contrastCache.set(el, color);
-  return color;
-}
-
-/** Contrasting halo shadow — white on dark, dark on light. */
-function getContrastShadow(el: HTMLElement | null | undefined): string {
-  const color = getContrastColor(el);
-  const halo = color === "#fff" ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.25)";
-  return `0 0 0 3px ${halo}`;
-}
 
 // ── Shared label ──────────────────────────────────────────────────────
 
@@ -247,6 +173,15 @@ const SECTION_PARENT_TYPES = new Set(["page", "header", "footer"]);
 const COL_SLOT_THICKNESS = 2;
 const COL_SECTION_ZONE_HEIGHT = 40;
 const COL_SECTION_BAR_THICKNESS = 2;
+/** Subtle vertical ticks at the ends of the horizontal slot (reads as insertion, stays thin). */
+const COL_SLOT_END_CAP_W = 2;
+const COL_SLOT_END_CAP_H = 8;
+const COL_SLOT_MIN_WIDTH_FOR_END_CAPS = 28;
+
+/** Row reorder: small horizontal ticks at top/bottom of the vertical insertion line. */
+const ROW_SLOT_END_CAP_LEN = 10;
+const ROW_SLOT_END_CAP_THICK = 2;
+const ROW_SLOT_MIN_HEIGHT_FOR_END_CAPS = 24;
 
 function ColReorderSlot({
   where,
@@ -269,8 +204,8 @@ function ColReorderSlot({
     parentInfo.margin.left -
     parentInfo.margin.right;
 
-  // Section drops keep the 40px visual reservation (faint zone) with a 2px solid bar
-  // centered on the boundary. Non-section reorders are just a 2px solid line.
+  // Section drops keep the 40px visual reservation (faint zone) with a solid bar
+  // centered on the boundary. Non-section reorders are a single accent bar + optional end caps.
   const isSectionDrop = SECTION_PARENT_TYPES.has(parent?.data?.props?.type);
 
   let boundary: number;
@@ -283,6 +218,7 @@ function ColReorderSlot({
 
   const barThickness = isSectionDrop ? COL_SECTION_BAR_THICKNESS : COL_SLOT_THICKNESS;
   const barTop = boundary - barThickness / 2;
+  const showEndCaps = slotWidth >= COL_SLOT_MIN_WIDTH_FOR_END_CAPS;
 
   return (
     <>
@@ -318,6 +254,38 @@ function ColReorderSlot({
         }}
         parentDom={parent.dom}
       />
+      {showEndCaps && (
+        <>
+          <RenderIndicator
+            className="pagehub-reorder-slot-cap"
+            style={{
+              top: `${boundary - COL_SLOT_END_CAP_H / 2}px`,
+              left: `${slotLeft - COL_SLOT_END_CAP_W / 2}px`,
+              width: `${COL_SLOT_END_CAP_W}px`,
+              height: `${COL_SLOT_END_CAP_H}px`,
+              backgroundColor: contrast,
+              borderRadius: "1px",
+              pointerEvents: "none",
+              transition: "top 0.1s ease-out, left 0.1s ease-out",
+            }}
+            parentDom={parent.dom}
+          />
+          <RenderIndicator
+            className="pagehub-reorder-slot-cap"
+            style={{
+              top: `${boundary - COL_SLOT_END_CAP_H / 2}px`,
+              left: `${slotLeft + slotWidth - COL_SLOT_END_CAP_W / 2}px`,
+              width: `${COL_SLOT_END_CAP_W}px`,
+              height: `${COL_SLOT_END_CAP_H}px`,
+              backgroundColor: contrast,
+              borderRadius: "1px",
+              pointerEvents: "none",
+              transition: "top 0.1s ease-out, left 0.1s ease-out",
+            }}
+            parentDom={parent.dom}
+          />
+        </>
+      )}
     </>
   );
 }
@@ -352,23 +320,60 @@ function RowReorderSlot({
     slotLeft = parentInfo.left + parentInfo.padding.left;
   }
 
+  const lineW = 3;
+  const cx = slotLeft + lineW / 2;
+  const showRowCaps = slotHeight >= ROW_SLOT_MIN_HEIGHT_FOR_END_CAPS;
+
   return (
-    <RenderIndicator
-      className="pagehub-reorder-slot"
-      style={{
-        top: `${slotTop}px`,
-        left: `${slotLeft}px`,
-        width: "3px",
-        height: `${slotHeight}px`,
-        backgroundColor: contrast,
-        opacity: 0.55,
-        borderRadius: "1.5px",
-        pointerEvents: "none",
-        boxShadow: getContrastShadow(parent.dom),
-        transition: "top 0.1s ease-out, left 0.1s ease-out, height 0.1s ease-out",
-      }}
-      parentDom={parent.dom}
-    />
+    <>
+      <RenderIndicator
+        className="pagehub-reorder-slot"
+        style={{
+          top: `${slotTop}px`,
+          left: `${slotLeft}px`,
+          width: `${lineW}px`,
+          height: `${slotHeight}px`,
+          backgroundColor: contrast,
+          opacity: 0.55,
+          borderRadius: "1.5px",
+          pointerEvents: "none",
+          transition: "top 0.1s ease-out, left 0.1s ease-out, height 0.1s ease-out",
+        }}
+        parentDom={parent.dom}
+      />
+      {showRowCaps && (
+        <>
+          <RenderIndicator
+            className="pagehub-reorder-slot-cap"
+            style={{
+              top: `${slotTop - ROW_SLOT_END_CAP_THICK / 2}px`,
+              left: `${cx - ROW_SLOT_END_CAP_LEN / 2}px`,
+              width: `${ROW_SLOT_END_CAP_LEN}px`,
+              height: `${ROW_SLOT_END_CAP_THICK}px`,
+              backgroundColor: contrast,
+              borderRadius: "1px",
+              pointerEvents: "none",
+              transition: "top 0.1s ease-out, left 0.1s ease-out",
+            }}
+            parentDom={parent.dom}
+          />
+          <RenderIndicator
+            className="pagehub-reorder-slot-cap"
+            style={{
+              top: `${slotTop + slotHeight - ROW_SLOT_END_CAP_THICK / 2}px`,
+              left: `${cx - ROW_SLOT_END_CAP_LEN / 2}px`,
+              width: `${ROW_SLOT_END_CAP_LEN}px`,
+              height: `${ROW_SLOT_END_CAP_THICK}px`,
+              backgroundColor: contrast,
+              borderRadius: "1px",
+              pointerEvents: "none",
+              transition: "top 0.1s ease-out, left 0.1s ease-out",
+            }}
+            parentDom={parent.dom}
+          />
+        </>
+      )}
+    </>
   );
 }
 

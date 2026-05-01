@@ -50,7 +50,7 @@ export function useFloatingPanelZIndex(): number | null {
  * rendered inside a sidebar).
  */
 interface FloatingPanelDragApi {
-  onMouseDown: (e: React.MouseEvent) => void;
+  onPointerDown: (e: React.PointerEvent) => void;
   isDragging: boolean;
   onClose: () => void;
 }
@@ -293,7 +293,7 @@ export function FloatingPanel({
     return parentRegister(node);
   }, [isOpen, parentRegister]);
 
-  const { position, isDragging, windowRef, handleMouseDown, setPosition } = useDraggableWindow({
+  const { position, isDragging, windowRef, handlePointerDown, setPosition } = useDraggableWindow({
     initialPosition: defaultPos,
     bounds: { top: 0, right: 0, bottom: 0, left: 0 },
   });
@@ -486,15 +486,15 @@ export function FloatingPanel({
         )}
 
         <FloatingPanelDragContext.Provider
-          value={{ onMouseDown: handleMouseDown, isDragging, onClose }}
+          value={{ onPointerDown: handlePointerDown, isDragging, onClose }}
         >
           <div className={autoSize ? "flex max-h-full flex-col" : "flex h-full flex-col"}>
             {!headerless && (
               <div
                 role="presentation"
                 aria-hidden="true"
-                onMouseDown={handleMouseDown}
-                className={`text-base-content flex items-center justify-between px-3 py-1.5 ${
+                onPointerDown={handlePointerDown}
+                className={`text-base-content flex touch-none items-center justify-between px-3 py-1.5 ${
                   isDragging ? "cursor-grabbing" : "cursor-grab"
                 }`}
               >

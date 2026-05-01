@@ -2,6 +2,7 @@ import React from "react";
 import { TbX } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import type { CanvasAnnotation } from "../../utils/component/componentCanvas";
+import { useDragGesture } from "../hooks/useDragGesture";
 
 interface Props {
   annotations: CanvasAnnotation[];
@@ -98,18 +99,13 @@ function AnnotationItem({
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const editableRef = React.useRef<HTMLDivElement>(null);
   const livePosRef = React.useRef({ x: a.x, y: a.y });
-  const dragRef = React.useRef<{
-    startCanvas: { x: number; y: number };
-    startScreenX: number;
-    startScreenY: number;
-    moved: boolean;
-  } | null>(null);
+  const dragStartRef = React.useRef<{ x: number; y: number } | null>(null);
   const moveRafRef = React.useRef<number>(0);
   const pendingPosRef = React.useRef<{ x: number; y: number } | null>(null);
 
   // Sync CSS vars when external position changes (and we're not dragging).
   React.useLayoutEffect(() => {
-    if (dragRef.current) return;
+    if (dragStartRef.current) return;
     livePosRef.current = { x: a.x, y: a.y };
     const w = wrapperRef.current;
     if (!w) return;
@@ -144,61 +140,47 @@ function AnnotationItem({
     return parseFloat(getComputedStyle(surface).getPropertyValue("--ph-zoom")) || 1;
   };
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (editing) return;
-    e.stopPropagation();
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    dragRef.current = {
-      startCanvas: { ...livePosRef.current },
-      startScreenX: e.clientX,
-      startScreenY: e.clientY,
-      moved: false,
-    };
-  };
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragRef.current) return;
-    const zoomNow = readZoom();
-    const dx = (e.clientX - dragRef.current.startScreenX) / zoomNow;
-    const dy = (e.clientY - dragRef.current.startScreenY) / zoomNow;
-    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) dragRef.current.moved = true;
-    pendingPosRef.current = {
-      x: dragRef.current.startCanvas.x + dx,
-      y: dragRef.current.startCanvas.y + dy,
-    };
-    if (moveRafRef.current) return;
-    moveRafRef.current = requestAnimationFrame(() => {
-      moveRafRef.current = 0;
-      const next = pendingPosRef.current;
+  const { onPointerDown } = useDragGesture({
+    threshold: 1,
+    onStart: (e) => {
+      if (editing) return false;
+      e.stopPropagation();
+      dragStartRef.current = { ...livePosRef.current };
+    },
+    onMove: (_e, m) => {
+      if (!dragStartRef.current) return;
+      const zoomNow = readZoom();
+      const dx = m.dx / zoomNow;
+      const dy = m.dy / zoomNow;
+      pendingPosRef.current = {
+        x: dragStartRef.current.x + dx,
+        y: dragStartRef.current.y + dy,
+      };
+      if (moveRafRef.current) return;
+      moveRafRef.current = requestAnimationFrame(() => {
+        moveRafRef.current = 0;
+        const next = pendingPosRef.current;
+        pendingPosRef.current = null;
+        if (!next || !wrapperRef.current) return;
+        livePosRef.current = next;
+        wrapperRef.current.style.setProperty("--ph-ann-x", `${next.x}px`);
+        wrapperRef.current.style.setProperty("--ph-ann-y", `${next.y}px`);
+      });
+    },
+    onEnd: (_e, moved) => {
+      if (!dragStartRef.current) return;
+      if (moveRafRef.current) {
+        cancelAnimationFrame(moveRafRef.current);
+        moveRafRef.current = 0;
+      }
+      const flushed = pendingPosRef.current;
       pendingPosRef.current = null;
-      if (!next || !wrapperRef.current) return;
-      livePosRef.current = next;
-      wrapperRef.current.style.setProperty("--ph-ann-x", `${next.x}px`);
-      wrapperRef.current.style.setProperty("--ph-ann-y", `${next.y}px`);
-    });
-  };
-
-  const onPointerUp = (e: React.PointerEvent) => {
-    if (!dragRef.current) return;
-    try {
-      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {
-      // ignore
-    }
-    if (moveRafRef.current) {
-      cancelAnimationFrame(moveRafRef.current);
-      moveRafRef.current = 0;
-    }
-    const flushed = pendingPosRef.current;
-    pendingPosRef.current = null;
-    const finalBasis = flushed ?? livePosRef.current;
-    if (dragRef.current.moved) {
-      onCommitPos(finalBasis.x, finalBasis.y);
-    } else {
-      onSelect();
-    }
-    dragRef.current = null;
-  };
+      const finalBasis = flushed ?? livePosRef.current;
+      dragStartRef.current = null;
+      if (moved) onCommitPos(finalBasis.x, finalBasis.y);
+      else onSelect();
+    },
+  });
 
   const sizeCls = a.kind === "title" ? "text-2xl font-semibold" : "text-sm font-medium";
   const colorCls = a.kind === "title" ? "text-base-content" : "text-base-content/80";
@@ -207,7 +189,7 @@ function AnnotationItem({
     <div
       ref={wrapperRef}
       className={`pointer-events-auto absolute ${sizeCls} ${colorCls} ${
-        editing ? "" : "cursor-move"
+        editing ? "" : "cursor-move touch-none"
       } group select-none`}
       style={
         {
@@ -230,9 +212,6 @@ function AnnotationItem({
         } as React.CSSProperties
       }
       onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
       onDoubleClick={e => {
         e.stopPropagation();
         onStartEdit();

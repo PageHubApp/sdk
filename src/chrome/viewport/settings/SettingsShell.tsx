@@ -125,8 +125,8 @@ function SettingsShellBody({
           <div
             role="presentation"
             aria-hidden="true"
-            onMouseDown={drag?.onMouseDown}
-            className={`text-base-content flex items-center px-4 py-3 ${dragCursor}`}
+            onPointerDown={drag?.onPointerDown}
+            className={`text-base-content flex touch-none items-center px-4 py-3 ${dragCursor}`}
           >
             <span className="min-w-0 truncate text-sm font-semibold">{title}</span>
           </div>

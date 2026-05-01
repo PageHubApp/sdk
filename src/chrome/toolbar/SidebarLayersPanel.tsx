@@ -3,6 +3,7 @@ import { useAtomState } from "@zedux/react";
 import { TbChevronDown, TbChevronUp, TbExternalLink, TbLayoutGrid } from "react-icons/tb";
 import { LayersDialogOpenAtom, SidebarLayersPanelAtom } from "../../utils/atoms";
 import { phStorage } from "../../utils/phStorage";
+import { useDragGesture } from "../hooks/useDragGesture";
 import { Layers } from "./dialogs/Layers";
 
 const MIN_HEIGHT = 120;
@@ -48,28 +49,23 @@ export function SidebarLayersPanel() {
     };
   }, [isOpen]);
 
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
-    e.preventDefault();
-    const startY = e.clientY;
-    const startH = heightRef.current;
-
-    const onMove = (ev: PointerEvent) => {
+  const startHRef = useRef(0);
+  const { onPointerDown } = useDragGesture({
+    onStart: (e) => {
+      e.preventDefault();
+      startHRef.current = heightRef.current;
+    },
+    onMove: (_e, m) => {
       const toolbar = document.getElementById("toolbar");
       const maxH = toolbar ? Math.floor(toolbar.getBoundingClientRect().height * MAX_RATIO) : 600;
-      const next = Math.max(MIN_HEIGHT, Math.min(maxH, startH + (startY - ev.clientY)));
+      const next = Math.max(MIN_HEIGHT, Math.min(maxH, startHRef.current - m.dy));
       setHeight(next);
       heightRef.current = next;
-    };
-
-    const onUp = () => {
+    },
+    onEnd: () => {
       phStorage.set("sidebar-layers-height", String(heightRef.current));
-      document.removeEventListener("pointermove", onMove);
-      document.removeEventListener("pointerup", onUp);
-    };
-
-    document.addEventListener("pointermove", onMove);
-    document.addEventListener("pointerup", onUp);
-  }, []);
+    },
+  });
 
   if (!isOpen) {
     return (
@@ -92,7 +88,7 @@ export function SidebarLayersPanel() {
       {/* Resize handle */}
       <div
         onPointerDown={onPointerDown}
-        className="border-base-300 hover:bg-primary/20 group flex h-1.5 w-full shrink-0 cursor-ns-resize items-center justify-center border-t transition-colors"
+        className="border-base-300 hover:bg-primary/20 group flex h-1.5 w-full shrink-0 cursor-ns-resize touch-none items-center justify-center border-t transition-colors"
         aria-label="Resize layers panel"
       >
         <div className="bg-base-content/20 group-hover:bg-primary/50 h-0.5 w-8 rounded-full transition-colors" />

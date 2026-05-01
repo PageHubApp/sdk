@@ -253,10 +253,10 @@ export const Dialog = ({
               <div
                 role="presentation"
                 aria-hidden="true"
-                className="border-base-300 bg-accent text-accent-content flex cursor-move items-center justify-between border-b px-3 py-2"
-                onMouseDown={e => {
+                className="border-base-300 bg-accent text-accent-content flex cursor-move touch-none items-center justify-between border-b px-3 py-2"
+                onPointerDown={e => {
                   setHasBeenDragged(true);
-                  draggableWindow.handleMouseDown(e);
+                  draggableWindow.handlePointerDown(e);
                 }}
               >
                 <div className="flex items-center gap-2">
