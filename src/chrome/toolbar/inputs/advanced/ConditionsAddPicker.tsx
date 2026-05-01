@@ -18,15 +18,15 @@ import {
   type SearchableMenuPopoverHandle,
 } from "../../../primitives/SearchableMenuPopover";
 import { useAccordionContext } from "../../AccordionContext";
-import { getSectionDef } from "../../unified-settings/registry/propertyRegistry";
+import { getSectionDef } from "../../inspector/registry/propertyRegistry";
 import {
   PopoverOpenRequestAtom,
   requestOpenPopover,
   useSectionPopoverOpenRequest,
-} from "../../unified-settings/popoverOpenRequestAtom";
+} from "../../inspector/popoverOpenRequestAtom";
 import type { Condition, ConditionType } from "../../../../utils/conditions/types";
 import { defaultCondition } from "./ConditionsInput";
-import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+import type { PropertyInputProps } from "../../inspector/registry/propertyDefs";
 
 const ITEMS: SearchableMenuItem<ConditionType>[] = [
   { id: "url-param", label: "URL Parameter", data: "url-param" },

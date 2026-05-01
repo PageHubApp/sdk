@@ -10,9 +10,9 @@ import { lazy, Suspense, useMemo, useState } from "react";
 import { TbGradienter } from "react-icons/tb";
 import { splitClassVariants } from "../../../../utils/tailwind/className";
 import { Chip } from "../../../primitives/Chip";
-import { usePopoverAutoOpen } from "../../unified-settings/hooks/usePopoverAutoOpen";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
-import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+import { usePopoverAutoOpen } from "../../inspector/hooks/usePopoverAutoOpen";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
+import type { PropertyInputProps } from "../../inspector/registry/propertyDefs";
 
 const GradientPanel = lazy(() => import("./GradientPanel"));
 

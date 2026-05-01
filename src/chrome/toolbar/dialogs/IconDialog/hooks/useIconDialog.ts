@@ -1,6 +1,6 @@
 import { useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getMediaContent } from "@/utils/lib";
+import { getMediaContent } from "@/utils/media/media";
 import { phStorage } from "../../../../../utils/phStorage";
 import { loadIconSprite } from "../../../../../utils/icons/IconSvgMapContext";
 import { deriveCategories, type IconCategory } from "../utils/deriveCategories";

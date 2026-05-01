@@ -1,6 +1,6 @@
 import { useEditor } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
-import { applyPattern } from "../utils/lib";
+import { applyPattern } from "../utils/background";
 export const RenderPattern = ({
   children,
   props,

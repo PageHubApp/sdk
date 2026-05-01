@@ -17,7 +17,7 @@ import { Chip } from "../../../primitives/Chip";
 import {
   PopoverOpenRequestAtom,
   requestOpenPopover,
-} from "../../unified-settings/popoverOpenRequestAtom";
+} from "../../inspector/popoverOpenRequestAtom";
 import { useModifiers, type ResolvedModifier } from "./useModifiers";
 
 // Picker's def id — chip click dispatches an open-request keyed by this so

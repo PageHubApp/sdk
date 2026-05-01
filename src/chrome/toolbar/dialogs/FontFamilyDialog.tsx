@@ -11,7 +11,7 @@ import {
   loadGoogleFont,
 } from "@/utils/fonts/googleFonts";
 import { fonts } from "@/utils/tailwind";
-import { ItemToggle } from "../helpers/ItemSelector";
+import { ItemToggle } from "../primitives/ItemSelector";
 
 export { FontFamilyDialogAtom } from "./dialogAtoms";
 

@@ -13,7 +13,7 @@
 import { useEditor } from "@craftjs/core";
 import { TbEye, TbEyeOff } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { getShowHideState, toggleShowHideState, useShowHideVersion } from "@/utils/showHideStore";
+import { getShowHideState, toggleShowHideState, useShowHideVersion } from "@/utils/state/showHideStore";
 import { resolveAnchorsForNode } from "@/utils/anchors/resolveAnchorsViaCraft";
 
 interface Props {

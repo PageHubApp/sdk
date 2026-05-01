@@ -14,8 +14,8 @@ import {
   TbSettings,
 } from "react-icons/tb";
 import { useSDK } from "../../core/context";
-import { useEditorSidebarDockLeft } from "../../utils/lib";
-import { getLoadedPages, listPageNodeIds } from "../../utils/pageManagement";
+import { useEditorSidebarDockLeft } from "../../utils/atoms";
+import { getLoadedPages, listPageNodeIds } from "../../utils/page/pageManagement";
 import { OVERLAY_Z_MODAL } from "../overlays/overlayZIndex";
 import { AccessTab } from "./page-settings/AccessTab";
 import { AdvancedTab } from "./page-settings/AdvancedTab";

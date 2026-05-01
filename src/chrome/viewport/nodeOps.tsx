@@ -5,8 +5,8 @@
 import { Element } from "@craftjs/core";
 import { getRandomId, ROOT_NODE } from "@craftjs/utils";
 import React from "react";
-import { Container } from "../../components/Container";
-import generate from "../../utils/data/nameGenerator";
+import { Container } from "../../components/Container/Container";
+import generate from "../../utils/seeds/nameGenerator";
 import { DeleteMedia } from "./api";
 import { phStorage } from "../../utils/phStorage";
 import {
@@ -192,7 +192,7 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
 
     // Link clone nodes to master nodes
     requestAnimationFrame(async () => {
-      const { setRecursiveBelongsTo } = await import("@/utils/componentUtils");
+      const { setRecursiveBelongsTo } = await import("@/utils/component/componentUtils");
 
       setRecursiveBelongsTo(
         clonedTree.rootNodeId,

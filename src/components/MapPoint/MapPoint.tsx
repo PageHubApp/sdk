@@ -1,0 +1,70 @@
+import { useEditor, useNode } from "@craftjs/core";
+import { getClonedState } from "../../utils/cloneState";
+import React from "react";
+import { TbMapPin } from "react-icons/tb";
+import { useMounted } from "../../utils/hooks";
+
+import { BaseSelectorProps, applyAriaProps } from "../selectors";
+
+export interface MapPointProps extends BaseSelectorProps {
+  lat: number;
+  lng: number;
+  title?: string;
+  description?: string;
+}
+
+export const MapPoint = ({
+  lat = 0,
+  lng = 0,
+  title = "",
+  description = "",
+  ...rest
+}: MapPointProps) => {
+  let props: any = { lat, lng, title, description, ...rest };
+
+  const {
+    connectors: { connect, drag },
+    id,
+  } = useNode();
+
+  const { enabled } = useEditor(state => getClonedState(props, state));
+  const isMounted = useMounted();
+
+  // MapPoint is a data-only node — renders nothing in live mode
+  if (!enabled) return null;
+
+  const prop: any = {
+    ref: r => {
+      connect(drag(r));
+    },
+    className:
+      "flex items-center gap-2 rounded-lg border border-dashed border-base-300 bg-neutral/50 px-3 py-2 text-sm text-neutral-content",
+    "data-bounding-box": true,
+    "data-empty-state": !props.lat && !props.lng,
+  };
+
+  applyAriaProps(prop, props);
+
+  if (isMounted) {
+    prop["node-id"] = id;
+  }
+
+  const label = props.title || `${props.lat.toFixed(4)}, ${props.lng.toFixed(4)}`;
+
+  prop.children = (
+    <>
+      <TbMapPin className="shrink-0" />
+      <span className="truncate">{label}</span>
+    </>
+  );
+
+  return React.createElement("div", { ...prop, key: id });
+};
+
+MapPoint.craft = {
+  displayName: "MapPoint",
+  rules: {
+    canDrag: () => true,
+    canMoveIn: () => false,
+  },
+};

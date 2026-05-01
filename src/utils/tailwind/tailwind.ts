@@ -2,13 +2,13 @@
  * Tailwind utilities — re-exports style data from ./tailwind-styles
  * and adds React/CraftJS-dependent helpers (applyAnimation, CSStoObj, etc.).
  *
- * Components should import from here. Pure/static contexts (static-html, MCP)
+ * Components should import from here. Pure/static contexts (staticHtml, MCP)
  * should import from ./tailwind-styles directly to avoid pulling in React.
  */
 
 import parse from "style-to-object";
 import { BaseSelectorProps } from "../../components/selectors";
-import { getFontFromComp, loadCombinedFonts } from "../lib";
+import { getFontFromComp, loadCombinedFonts } from "../fonts/fontLoader";
 import { isCSSAnimation, getCSSAnimationProps, scrollAnimRef } from "../animations";
 
 // ─── Re-export everything from the pure module ─────────────────────────────

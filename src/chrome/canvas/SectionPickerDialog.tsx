@@ -3,9 +3,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { TbLayoutGridAdd, TbSearch, TbX } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
-import { ComponentsAtom } from "../../utils/lib";
+import { ComponentsAtom } from "../../utils/atoms";
 import { useSectionTemplates } from "../../utils/useSectionTemplates";
-import { buildCraftTreeFromStructure } from "../structure/buildCraftTreeFromStructure";
+import { buildCraftTreeFromStructure } from "../buildCraftTreeFromStructure";
 import { ComponentPreview } from "./node-tools/ComponentPreview";
 
 /** Insert payload for built-in section presets (same tree builder as library toolbox). */

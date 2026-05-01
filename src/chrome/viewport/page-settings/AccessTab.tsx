@@ -7,7 +7,7 @@ import {
   defaultCondition,
   parseGroups,
 } from "../../toolbar/inputs/advanced/ConditionsInput";
-import { ToolbarDashedButton } from "../../toolbar/helpers/ToolbarDashedButton";
+import { ToolbarDashedButton } from "../../toolbar/primitives/ToolbarDashedButton";
 import {
   SettingsFormCard,
   SettingsFormField,

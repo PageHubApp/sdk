@@ -8,23 +8,23 @@
  * Every component is wrapped with conditional visibility so conditions
  * evaluate in any CraftJS context (editor, viewer, /view/, /static/).
  */
-import { Audio } from "../Audio";
-import { Background } from "../Background";
-import { Button } from "../Button";
-import { Container } from "../Container";
-import { Data } from "../Data";
-import { Embed } from "../Embed";
-import { Footer } from "../Footer";
-import { Form } from "../Form";
-import { FormElement, OnlyFormElement } from "../FormElement";
-import { Header } from "../Header";
-import { Icon } from "../Icon";
-import { Image } from "../Image";
-import { Link } from "../Link";
-import { Map } from "../Map";
-import { MapPoint } from "../MapPoint";
-import { Text } from "../Text";
-import { Video } from "../Video";
+import { Audio } from "../Audio/Audio";
+import { Background } from "../Background/Background";
+import { Button } from "../Button/Button";
+import { Container } from "../Container/Container";
+import { Data } from "../Data/Data";
+import { Embed } from "../Embed/Embed";
+import { Footer } from "../Footer/Footer";
+import { Form } from "../Form/Form";
+import { FormElement, OnlyFormElement } from "../FormElement/FormElement";
+import { Header } from "../Header/Header";
+import { Icon } from "../Icon/Icon";
+import { Image } from "../Image/Image";
+import { Link } from "../Link/Link";
+import { Map } from "../Map/Map";
+import { MapPoint } from "../MapPoint/MapPoint";
+import { Text } from "../Text/Text";
+import { Video } from "../Video/Video";
 import { withConditionalVisibility } from "../../utils/conditions/withConditionalVisibility";
 
 const cv = withConditionalVisibility;

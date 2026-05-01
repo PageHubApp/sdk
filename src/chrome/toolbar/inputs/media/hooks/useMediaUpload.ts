@@ -3,11 +3,11 @@ import { useEditor } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
 import { getImageDimensionsFromFile, getImageDimensionsFromUrl } from "@/utils/imageDimensions";
-import { registerMediaWithBackground } from "@/utils/lib";
+import { registerMediaWithBackground } from "@/utils/media/media";
 import { getUploadAccept, MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import { useSDK } from "@/core/context";
 import { useImageDrop } from "@/chrome/hooks/useImageDrop";
-import { getSiteId } from "@/utils/pageNavigation";
+import { getSiteId } from "@/utils/page/pageNavigation";
 import {
   cleanSvg,
   type AddMode,

@@ -3,7 +3,8 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useAtomValue } from "@zedux/react";
 import { useCallback } from "react";
 import { useSetAtomState } from "../../../utils/atoms";
-import { hasPageIsolation, IsolateAtom } from "../../../utils/lib";
+import { IsolateAtom } from "../../../utils/atoms";
+import { hasPageIsolation } from "../../../utils/page/pageManagement";
 import { ToolboxMenu, toolboxMenuInitialState } from "../../rendering/toolboxMenuAtom";
 
 /**

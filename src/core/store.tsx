@@ -13,7 +13,7 @@
  */
 
 import React, { createContext, useContext, useLayoutEffect, useMemo, useState } from "react";
-import { EDITOR_ALL_PAGES_STORAGE } from "../utils/pageManagement";
+import { EDITOR_ALL_PAGES_STORAGE } from "../utils/page/pageManagement";
 
 export type ViewMode = "mobile" | "desktop" | "tablet" | "sm" | "md" | "lg" | "xl" | "2xl";
 

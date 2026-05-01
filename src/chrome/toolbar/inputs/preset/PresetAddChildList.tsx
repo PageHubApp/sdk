@@ -11,7 +11,7 @@
 import { useNode } from "@craftjs/core";
 import { atom, useAtomState } from "@zedux/react";
 import { getPresetMeta } from "../../../../core/presetRegistry";
-import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+import type { PropertyInputProps } from "../../inspector/registry/propertyDefs";
 import { CraftListEditor } from "./CraftListEditor";
 
 const SelectedPresetItemAtom = atom<number | null>("preset_addchild_selected", null);

@@ -9,9 +9,9 @@ import { TbBolt, TbPlus } from "react-icons/tb";
 import { cssAnimationPresets } from "../../../../utils/animations";
 import { ANIMATION_PARAM_KEYS } from "./AnimationsInput";
 import { Chip } from "../../../primitives/Chip";
-import { usePopoverAutoOpen } from "../../unified-settings/hooks/usePopoverAutoOpen";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
-import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+import { usePopoverAutoOpen } from "../../inspector/hooks/usePopoverAutoOpen";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
+import type { PropertyInputProps } from "../../inspector/registry/propertyDefs";
 
 const AnimationsPanel = lazy(() => import("./AnimationsPanel"));
 

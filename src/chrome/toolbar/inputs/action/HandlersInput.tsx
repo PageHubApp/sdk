@@ -16,7 +16,7 @@ import { HANDLERS_BODY_DEF_ID } from "./HandlersAddPicker";
 import {
   PopoverOpenRequestAtom,
   popoverRequestKey,
-} from "../../unified-settings/popoverOpenRequestAtom";
+} from "../../inspector/popoverOpenRequestAtom";
 
 export function HandlersInput() {
   const {

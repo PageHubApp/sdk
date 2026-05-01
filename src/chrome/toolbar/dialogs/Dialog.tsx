@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { TbX } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { SideBarAtom } from "../../../utils/lib";
+import { SideBarAtom } from "../../../utils/atoms";
 import { useDraggableWindow } from "../../hooks/useDraggableWindow";
 
 export const Dialog = ({

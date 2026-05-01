@@ -12,7 +12,7 @@ import {
   TbX,
 } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { Container } from "../../components/Container";
+import { Container } from "../../components/Container/Container";
 import {
   CANVAS_SLOT_H,
   CANVAS_SLOT_W,
@@ -24,9 +24,9 @@ import {
   getComponentCanvasSize,
   getStateNodeDefaultPos,
   listComponentContainers,
-} from "../../utils/componentCanvas";
-import { findInherentComponentNodes, findStateNodes } from "../../utils/componentStateNodes";
-import { applyCanvasVisibility, CanvasIsolateAtom } from "../../utils/componentIsolation";
+} from "../../utils/component/componentCanvas";
+import { findInherentComponentNodes, findStateNodes } from "../../utils/component/componentStateNodes";
+import { applyCanvasVisibility, CanvasIsolateAtom } from "../../utils/component/componentIsolation";
 import { useCanvasPan } from "../hooks/useCanvasPan";
 import { useCreateComponent } from "../hooks/useCreateComponent";
 import { CanvasZoom } from "./CanvasZoom";

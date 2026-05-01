@@ -24,7 +24,7 @@ import { ToolbarDropdown } from "../../ToolbarDropdown";
 import {
   ToolbarSegmentedControl,
   type ToolbarSegmentedOption,
-} from "../../helpers/ToolbarSegmentedControl";
+} from "../../primitives/ToolbarSegmentedControl";
 import { useModifiers, type CategoryMeta, type ResolvedModifier } from "./useModifiers";
 
 function CategoryLabel({ name }: { name: string }) {

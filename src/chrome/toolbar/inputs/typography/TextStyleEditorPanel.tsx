@@ -18,7 +18,7 @@ import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { ToolbarDropdown } from "@/chrome/toolbar/ToolbarDropdown";
 import { ColorPickerAtom } from "@/chrome/toolbar/dialogs/ColorPickerDialog";
 import { FontFamilyDialogAtom } from "@/chrome/toolbar/dialogs/FontFamilyDialog";
-import { ToolbarSegmentedControl } from "@/chrome/toolbar/helpers/ToolbarSegmentedControl";
+import { ToolbarSegmentedControl } from "@/chrome/toolbar/primitives/ToolbarSegmentedControl";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 import type { TextStyleDraft } from "./textStyleDraft";
 

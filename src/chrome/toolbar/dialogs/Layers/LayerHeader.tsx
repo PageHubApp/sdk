@@ -16,7 +16,8 @@ import {
   TbTrash,
 } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
-import { IsolateAtom, isolatePageInTree } from "@/utils/lib";
+import { IsolateAtom } from "@/utils/atoms";
+import { isolatePageInTree } from "@/utils/page/pageManagement";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { getBuiltinComponentDef } from "@/core/builtinDefsLookup";
 import { resolveToolboxIcon } from "@/chrome/viewport/toolbox/resolveToolboxIcon";
@@ -24,7 +25,7 @@ import { useLayerManager } from "./LayerManager";
 import { useLayerMove } from "./hooks/useLayerMove";
 import { useLayerDragDrop } from "./hooks/useLayerDragDrop";
 import { lintNode, maxSeverity } from "@/utils/lint/responsiveLint";
-import { getShowHideState, setShowHideState, useShowHideVersion } from "@/utils/showHideStore";
+import { getShowHideState, setShowHideState, useShowHideVersion } from "@/utils/state/showHideStore";
 
 interface LayerHeaderProps {
   nodeId: NodeId;

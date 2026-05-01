@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
 import { useState } from "react";
-import { getMediaById, registerMediaWithBackground } from "../../../utils/lib";
+import { getMediaById, registerMediaWithBackground } from "../../../utils/media/media";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
 
 export const ImageMediaTool = () => {

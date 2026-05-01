@@ -17,9 +17,9 @@ import { Chip } from "../../../primitives/Chip";
 import { ViewAtom } from "../../../viewport/atoms";
 import { getPropFinalValue } from "../../../viewport/propSystem";
 import { ViewSelectionAtom } from "../../Label";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
-import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
-import type { PropertyDef, PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
+import { SessionAddedAtom, sessionKey } from "../../inspector/sessionAddedAtom";
+import type { PropertyDef, PropertyInputProps } from "../../inspector/registry/propertyDefs";
 
 // Lazy: panel body imports FloatingPanel + PropertyRenderer (huge transitive
 // graph). Keeping them out of the BundleRow module means HMR edits to either

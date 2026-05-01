@@ -8,7 +8,7 @@ import { useNode } from "@craftjs/core";
 import { lazy, Suspense, useState } from "react";
 import { TbCode } from "react-icons/tb";
 import { Chip } from "../../../primitives/Chip";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 
 const DataAttributesPanel = lazy(() => import("./DataAttributesPanel"));
 

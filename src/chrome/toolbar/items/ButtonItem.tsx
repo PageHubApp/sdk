@@ -1,8 +1,9 @@
 import { useNode } from "@craftjs/core";
 import { ViewAtom } from "../../viewport/atoms";
 import { changeProp, getProp } from "../../viewport/viewportExports";
-import { SelectedButtonAtom } from "../../../components/settings-stub";
-import { useAtomState, useAtomValue } from "@zedux/react";
+import { atom, useAtomState, useAtomValue } from "@zedux/react";
+
+const SelectedButtonAtom = atom<number | null>("selectedButton", null as number | null);
 import { ColorInput } from "../inputs/color/ColorInput";
 import { IconDialogInput } from "../inputs/media/IconDialogInput";
 import { ActionsInput } from "../inputs/action/ActionsInput";

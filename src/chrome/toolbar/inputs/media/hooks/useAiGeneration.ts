@@ -2,7 +2,7 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
 import { useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
-import { registerMediaWithBackground } from "@/utils/lib";
+import { registerMediaWithBackground } from "@/utils/media/media";
 import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import type { AiUsage, MediaItem } from "../utils/media-helpers";
 

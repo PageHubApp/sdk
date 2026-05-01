@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { TbChevronRight, TbGripVertical, TbTrash } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
-import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
+import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
 
 /**
  * ListEditor — Compact row + inline detail panel for list editors.

@@ -2,7 +2,7 @@ import { useEditor } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { useMemo, useState } from "react";
 import { TbLayoutSidebarRightExpand, TbSearch } from "react-icons/tb";
-import { ComponentsAtom } from "../../utils/lib";
+import { ComponentsAtom } from "../../utils/atoms";
 import { useCustomComponents } from "../../define";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout";

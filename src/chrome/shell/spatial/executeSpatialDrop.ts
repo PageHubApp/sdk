@@ -10,7 +10,7 @@ import { onBesideDrop } from "../besideDrop";
 import type { CommittedAlignmentState, DragOriginState } from "./spatialSession";
 import { getDragCopyIntent } from "./spatialSession";
 import { cleanupOldParentWrapper } from "./dropCleanup";
-import { applyPeerClassInherit } from "../peerInherit/applyPeerClassInherit";
+import { applyPeerClassInherit } from "../applyPeerClassInherit";
 import { buildClonedTree } from "../../viewport/nodeOps";
 import { createMergedActions, type MergedActions } from "./mergedActions";
 import { applyAutomaticMorph } from "../automatic/applyAutomaticMorph";

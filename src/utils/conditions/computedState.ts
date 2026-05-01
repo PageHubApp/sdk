@@ -30,7 +30,7 @@
  * can distinguish derived from author-written entries.
  */
 
-import { getStateValue, setState } from "../stateRegistry";
+import { getStateValue, setState } from "../state/stateRegistry";
 
 export type ComputedStateCompute =
   /**

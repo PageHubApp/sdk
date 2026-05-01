@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FixedSizeList as List } from "react-window";
 import { useAtomState } from "@zedux/react";
 import { PatternDialogAtom } from "./dialogAtoms";
-import { generatePattern } from "../../../utils/lib";
+import { generatePattern } from "../../../utils/background";
 import { Dialog } from "./Dialog";
 import { getPageHubApiBaseUrl } from "../../../core/apiConfig";
 

@@ -6,7 +6,7 @@ import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { ColorInput } from "./ColorInput";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
+import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";
 import { useCallback, useMemo } from "react";
 
 const DIRECTION_ARROWS: Record<string, string> = {

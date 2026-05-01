@@ -2,7 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { changeProp } from "../../../viewport/viewportExports";
 
 import { ViewAtom } from "../../../viewport/atoms";
-import { LoremIpsum } from "@/utils/data/loremIpsum";
+import { LoremIpsum } from "@/utils/seeds/loremIpsum";
 import { useAtomValue } from "@zedux/react";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";

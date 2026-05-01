@@ -20,15 +20,15 @@ import {
   type SearchableMenuPopoverHandle,
 } from "../../../primitives/SearchableMenuPopover";
 import { useAccordionContext } from "../../AccordionContext";
-import { getSectionDef } from "../../unified-settings/registry/propertyRegistry";
+import { getSectionDef } from "../../inspector/registry/propertyRegistry";
 import {
   PopoverOpenRequestAtom,
   requestOpenPopover,
   useSectionPopoverOpenRequest,
-} from "../../unified-settings/popoverOpenRequestAtom";
+} from "../../inspector/popoverOpenRequestAtom";
 import { ACTION_TYPE_OPTIONS, type ActionType, migrateActions } from "../../../../utils/action";
 import { ACTION_DEFAULTS } from "./ActionInput";
-import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+import type { PropertyInputProps } from "../../inspector/registry/propertyDefs";
 
 // Body's def id — matches the registry entry the picker pairs with.
 const ACTIONS_BODY_DEF_ID = "action";

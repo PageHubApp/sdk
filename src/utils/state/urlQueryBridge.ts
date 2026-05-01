@@ -26,7 +26,7 @@
  * `set-state` from author code) flow through both directions transparently.
  */
 
-import { setState, getStateValue, listStates, subscribe } from "../stateRegistry";
+import { setState, getStateValue, listStates, subscribe } from "./stateRegistry";
 
 const URL_PREFIX = "url:";
 const BRIDGE_WRITER = "url-bridge";

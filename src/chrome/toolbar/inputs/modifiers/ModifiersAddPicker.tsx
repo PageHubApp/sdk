@@ -24,10 +24,10 @@ import {
   SearchableMenuPopover,
   type SearchableMenuItem,
 } from "../../../primitives/SearchableMenuPopover";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
-import { SessionAddedAtom, sessionKey } from "../../unified-settings/sessionAddedAtom";
-import { useSectionPopoverOpenRequest } from "../../unified-settings/popoverOpenRequestAtom";
-import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
+import { SessionAddedAtom, sessionKey } from "../../inspector/sessionAddedAtom";
+import { useSectionPopoverOpenRequest } from "../../inspector/popoverOpenRequestAtom";
+import type { PropertyInputProps } from "../../inspector/registry/propertyDefs";
 
 const ModifiersPickerPanel = lazy(() => import("./ModifiersPickerPanel"));
 const SaveModifierPanel = lazy(() => import("./SaveModifierPanel"));

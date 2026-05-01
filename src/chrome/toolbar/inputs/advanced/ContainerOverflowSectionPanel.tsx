@@ -3,7 +3,7 @@
  * existing ContainerOverflowSection editor body unchanged.
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
-import { ContainerOverflowSection } from "../../unified-settings/mainTabs/ContainerOverflowSection";
+import { ContainerOverflowSection } from "../../inspector/mainTabs/ContainerOverflowSection";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {

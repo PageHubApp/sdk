@@ -499,7 +499,7 @@ export interface PageHubConfig {
    * (browser back/forward works). When omitted (standalone SDK),
    * page switching happens in-memory only.
    */
-  urlStrategy?: import("./utils/pageNavigation").UrlStrategy;
+  urlStrategy?: import("./utils/page/pageNavigation").UrlStrategy;
 }
 
 // ─── Instance API — returned by PageHub.init() ───────────────────────────────

@@ -20,7 +20,7 @@ import { Chip } from "../../../primitives/Chip";
 import { AnchoredPopover } from "../../../overlays/AnchoredPopover";
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
-import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
+import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";
 import { useElementPicker } from "./useElementPicker";
 import { type LinkAction, type LinkTarget } from "../../../../utils/action";
 

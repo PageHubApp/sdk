@@ -9,7 +9,7 @@ import { TbBoltFilled } from "react-icons/tb";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { Chip } from "../../../primitives/Chip";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 
 const PANEL_WIDTH = 380;
 

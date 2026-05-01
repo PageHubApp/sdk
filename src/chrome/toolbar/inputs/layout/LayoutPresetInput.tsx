@@ -3,7 +3,7 @@ import { lazy, Suspense, useState } from "react";
 import { TbLayoutColumns, TbLayoutGrid, TbLayoutRows, TbPlus, TbSquare } from "react-icons/tb";
 import { Chip } from "@/chrome/primitives/Chip";
 import { ToolbarIconButton } from "@/chrome/primitives/ToolbarIconButton";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 import { AddElement } from "../../../viewport/toolbox/toolboxUtils";
 import { ToolbarSection } from "../../ToolbarSection";
 import type { LayoutPresetHandle } from "./hooks/useLayoutPreset";
@@ -17,7 +17,7 @@ interface LayoutPresetInputProps {
   lp: LayoutPresetHandle;
   /**
    * When false, only the controls are rendered (no ToolbarSection wrapper).
-   * Parent should wrap in `ToolbarSection title="Content"` per unified-settings helpers.
+   * Parent should wrap in `ToolbarSection title="Content"` per inspector helpers.
    */
   sectionWrapper?: boolean;
 }
@@ -65,7 +65,7 @@ export function LayoutPresetInput({ lp, sectionWrapper = true }: LayoutPresetInp
 
   const addContainer = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    const { Container } = await import("../../../../components/Container");
+    const { Container } = await import("../../../../components/Container/Container");
     AddElement({
       element: (
         <Element

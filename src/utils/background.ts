@@ -4,7 +4,7 @@
 
 import React from "react";
 import { getCdnUrl } from "./cdn";
-import { getMediaContent, looksLikeCdnImageId, calculateOptimalBackgroundSize } from "./media";
+import { getMediaContent, looksLikeCdnImageId, calculateOptimalBackgroundSize } from "./media/media";
 
 // ─── Color helpers (needed by generatePattern) ───
 

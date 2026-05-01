@@ -41,7 +41,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 
 import { configureCdn } from "./utils/cdn";
-import { registerSubmissionHandler } from "./utils/lib";
+import { registerSubmissionHandler } from "./utils/submissions";
 import { resolveConfig } from "./config";
 import { PageHubProvider } from "./core/context";
 import { PageHubEditor } from "./editor";
@@ -65,9 +65,9 @@ import type {
 import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { setPageHubApiBaseUrl } from "./core/apiConfig";
 
-// Side-effect import: RegistrySettings self-registers with LazyUnifiedSettings
+// Side-effect import: RegistrySettings self-registers with LazyInspector
 // at module load time. Must come AFTER built-in component graph is loadable (see componentRegistry.ts).
-import "./chrome/toolbar/unified-settings/RegistrySettings";
+import "./chrome/toolbar/inspector/RegistrySettings";
 
 // Add spinner animation
 const SPINNER_CSS = `
@@ -363,8 +363,8 @@ export {
   useStateEntry,
   useStateValue,
   useGlobalStateTick,
-} from "./utils/stateRegistry";
-export type { StateEntry, StateKind, WriterSource } from "./utils/stateRegistry";
+} from "./utils/state/stateRegistry";
+export type { StateEntry, StateKind, WriterSource } from "./utils/state/stateRegistry";
 
 // URL ↔ state bridge — call once per viewer (from `useViewerSetup`) to mirror
 // `URLSearchParams` ↔ `state["url:*"]`. Replaces the legacy
@@ -395,30 +395,30 @@ export type { BuiltInCraftResolver } from "./core/componentRegistry";
 export { getPageHubApiBaseUrl, setPageHubApiBaseUrl } from "./core/apiConfig";
 
 // Export ported selector components for React users
-export { Audio } from "./components/Audio";
-export { Background } from "./components/Background";
-export { Button } from "./components/Button";
-export { Container } from "./components/Container";
-export { Data } from "./components/Data";
-export { Embed } from "./components/Embed";
-export { Footer } from "./components/Footer";
-export { Form } from "./components/Form";
-export { FormElement } from "./components/FormElement";
-export { Header } from "./components/Header";
-export { Icon } from "./components/Icon";
-export { Image } from "./components/Image";
-export { Link } from "./components/Link";
-export { Map } from "./components/Map";
-export { MapPoint } from "./components/MapPoint";
-export { Text } from "./components/Text";
-export { Video } from "./components/Video";
+export { Audio } from "./components/Audio/Audio";
+export { Background } from "./components/Background/Background";
+export { Button } from "./components/Button/Button";
+export { Container } from "./components/Container/Container";
+export { Data } from "./components/Data/Data";
+export { Embed } from "./components/Embed/Embed";
+export { Footer } from "./components/Footer/Footer";
+export { Form } from "./components/Form/Form";
+export { FormElement } from "./components/FormElement/FormElement";
+export { Header } from "./components/Header/Header";
+export { Icon } from "./components/Icon/Icon";
+export { Image } from "./components/Image/Image";
+export { Link } from "./components/Link/Link";
+export { Map } from "./components/Map/Map";
+export { MapPoint } from "./components/MapPoint/MapPoint";
+export { Text } from "./components/Text/Text";
+export { Video } from "./components/Video/Video";
 
 // Export store hooks for advanced use
 export { useView, usePreview, useEditorStore } from "./core/store";
 export type { ViewMode } from "./core/store";
 
 /** Main toolbar dock side + atom for integrations that need to mirror chrome. */
-export { SideBarAtom, useEditorSidebarDockLeft } from "./utils/lib";
+export { SideBarAtom, useEditorSidebarDockLeft } from "./utils/atoms";
 
 // Static rendering
 export { renderToHTML, buildRootThemeCss } from "./static-renderer";
@@ -435,7 +435,7 @@ export {
   getSectionDef,
   getProperties,
   searchProperties,
-} from "./chrome/toolbar/unified-settings/registry/propertyRegistry";
+} from "./chrome/toolbar/inspector/registry/propertyRegistry";
 
 export type {
   PropertyDef,
@@ -443,7 +443,7 @@ export type {
   SectionDef,
   SectionId,
   PropertyInputProps,
-} from "./chrome/toolbar/unified-settings/registry/propertyDefs";
+} from "./chrome/toolbar/inspector/registry/propertyDefs";
 
 // CSS compilation — server-side only, import from "@pagehub/sdk/compile-css"
 // NOT re-exported here to avoid Next.js/Turbopack treating readFileSync CSS paths as global imports

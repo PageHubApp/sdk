@@ -2,7 +2,7 @@ import { useNode } from "@craftjs/core";
 import { lazy, Suspense, useState } from "react";
 import { TbShieldCheck } from "react-icons/tb";
 import { Chip } from "../../../primitives/Chip";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 
 const ValidationPanel = lazy(() => import("./ValidationPanel"));
 

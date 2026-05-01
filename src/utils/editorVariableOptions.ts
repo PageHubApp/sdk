@@ -4,7 +4,7 @@ import {
   getConnectorFieldDefs,
   getConnectorProviderLabel,
   getConnectorCollectionLabel,
-} from "./dataSourceContext";
+} from "./data/dataSourceContext";
 
 /** One row in variable pickers (TipTap `{{` menu, More panel, future Link URL UI). */
 export type EditorVariableOption = { id: string; label: string; group?: string };

@@ -1,8 +1,8 @@
 import { useEditor } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { useMemo } from "react";
-import { IsolateAtom, hasPageIsolation } from "../../utils/lib";
-
+import { IsolateAtom } from "../../utils/atoms";
+import { hasPageIsolation } from "../../utils/page/pageManagement";
 export interface ActivePage {
   pageNodeId: string;
   displayName?: string;

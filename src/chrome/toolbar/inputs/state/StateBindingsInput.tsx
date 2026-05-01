@@ -11,11 +11,11 @@ import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { TbBolt, TbStack2 } from "react-icons/tb";
 import { Chip } from "../../../primitives/Chip";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 import {
   PopoverOpenRequestAtom,
   popoverRequestKey,
-} from "../../unified-settings/popoverOpenRequestAtom";
+} from "../../inspector/popoverOpenRequestAtom";
 import type { ConditionGroup } from "../../../../utils/conditions/types";
 
 const StateBindingEditorPanel = lazy(() => import("./StateBindingEditorPanel"));

@@ -4,7 +4,7 @@
 
 import React from "react";
 import { Element } from "@craftjs/core";
-import { Container } from "../../../components/Container";
+import { Container } from "../../../components/Container/Container";
 import type { MorphContext } from "./automaticIntent";
 import { CONTENT_CLASSNAME } from "./constants";
 

@@ -2,12 +2,11 @@ import { Element, useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useAtomState } from "@zedux/react";
 import React from "react";
-import { Container } from "../../components/Container";
-import { Text } from "../../components/Text";
+import { Container } from "../../components/Container/Container";
+import { Text } from "../../components/Text/Text";
 import { useSetAtomState } from "../../utils/atoms";
-import { CanvasIsolateAtom } from "../../utils/componentIsolation";
-import { ComponentsAtom, ViewModeAtom } from "../../utils/lib";
-
+import { CanvasIsolateAtom } from "../../utils/component/componentIsolation";
+import { ComponentsAtom, ViewModeAtom } from "../../utils/atoms";
 /**
  * Create a blank `type: "component"` Container under ROOT, register it in
  * ComponentsAtom, switch to canvas mode (if needed), and isolate it.

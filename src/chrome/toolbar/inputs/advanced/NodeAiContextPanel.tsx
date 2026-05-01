@@ -3,7 +3,7 @@
  * NodeAiContextSection body unchanged.
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
-import { NodeAiContextSection } from "../../unified-settings/mainTabs/NodeAiContextSection";
+import { NodeAiContextSection } from "../../inspector/mainTabs/NodeAiContextSection";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {

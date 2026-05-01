@@ -1,5 +1,5 @@
 import { Element, useEditor, useNode } from "@craftjs/core";
-import { Container } from "../../components/Container";
+import { Container } from "../../components/Container/Container";
 import { TbPlus } from "react-icons/tb";
 import { useNodeTypeHelpers } from "@/utils/hooks/useNodeType";
 import { AddElement } from "../viewport/toolbox/toolboxUtils";

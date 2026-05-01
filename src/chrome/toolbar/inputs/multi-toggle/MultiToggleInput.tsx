@@ -16,8 +16,8 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface
 import {
   TOOLBAR_SEGMENTED_ACTIVE,
   TOOLBAR_SEGMENTED_INACTIVE,
-} from "../../helpers/ToolbarSegmentedControl";
-import type { PropertyDef } from "../../unified-settings/registry/propertyDefs";
+} from "../../primitives/ToolbarSegmentedControl";
+import type { PropertyDef } from "../../inspector/registry/propertyDefs";
 
 interface Props {
   def: PropertyDef;

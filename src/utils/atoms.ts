@@ -7,6 +7,7 @@
  */
 import { atom, useAtomState, useAtomValue } from "@zedux/react";
 import { useCallback } from "react";
+import { EDITOR_ALL_PAGES_STORAGE } from "./page/pageManagement";
 import { phStorage } from "./phStorage";
 
 // Re-export atom for use in other files
@@ -157,3 +158,37 @@ export const InspectorPinDockOpenAtom = atom<boolean>(
 
 /** Whether the floating Layers dialog is open. Shared atom so both Header and SidebarLayersPanel can control it. */
 export const LayersDialogOpenAtom = atom("layersDialogOpen", false);
+
+// ─── Editor canvas atoms (formerly utils/lib.ts) ─────────────────────────
+
+export const IsolateAtom = atom<string>("isolate", EDITOR_ALL_PAGES_STORAGE);
+export const ComponentsAtom = atom<any[]>("components", []);
+export const OnlineAtom = atom<boolean>("online", true);
+export const ScreenshotAtom = atom<boolean>("ss", false);
+export const SideBarAtom = atom<boolean>("sidebar", true);
+export const SideBarOpen = atom<boolean>(
+  "sidebaropen",
+  (() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return !window.matchMedia("(max-width: 767px)").matches;
+    } catch {
+      return true;
+    }
+  })()
+);
+
+/**
+ * `true` = main editor settings toolbar is docked to the **left** of the canvas; `false` = docked to the **right**.
+ * Use for chrome that should align with the toolbar side (e.g. Site Settings docks the same way).
+ */
+export function useEditorSidebarDockLeft(): boolean {
+  return useAtomValue(SideBarAtom);
+}
+
+/** Canvas scope for component editor — not the same as responsive viewport `ViewMode` in store.tsx */
+export type EditorCanvasViewMode = "page" | "preview" | "canvas";
+export const ViewModeAtom = atom<EditorCanvasViewMode>("viewMode", "page");
+export const LastActiveAtom = atom<string>("lastActive", "");
+export const ActiveAtom = atom<string>("active", "");
+export const SelectedSectionAtom = atom<string | null>("selectedSection", null);

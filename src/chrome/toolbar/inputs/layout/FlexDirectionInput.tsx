@@ -7,7 +7,7 @@ import { ViewAtom } from "../../../viewport/atoms";
 import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
 import { getEffectiveViews, EditModifiersAtom } from "../../Label";
 import { MultiScopeAtom } from "../../breakpoint-chip/atoms";
-import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
+import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";
 import { Chip } from "@/chrome/primitives/Chip";
 
 type FlexMode = "columns" | "rows" | undefined;

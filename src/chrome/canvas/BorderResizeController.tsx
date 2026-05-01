@@ -25,7 +25,7 @@ import {
   editorCanvasViewToClassPrefixKey,
   buildVariantPrefix,
 } from "../../utils/tailwind/className";
-import { checkIfAncestorLinked } from "../../utils/componentUtils";
+import { checkIfAncestorLinked } from "../../utils/component/componentUtils";
 import { useAtomValue } from "@zedux/react";
 import { setEdgeResizeActive } from "./edgeResizeState";
 import { getNodeGeometry, projectToLocalAxis } from "./nodeGeometry";

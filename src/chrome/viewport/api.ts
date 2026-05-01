@@ -36,7 +36,7 @@ export const DeleteMedia = async (
       body: JSON.stringify({ mediaId, _id: settings._id }),
     });
     if (query && actions && mediaId) {
-      const { unregisterMediaFromBackground } = await import("../../utils/lib");
+      const { unregisterMediaFromBackground } = await import("../../utils/media/media");
       unregisterMediaFromBackground(query, actions, mediaId);
     }
     return res.json();

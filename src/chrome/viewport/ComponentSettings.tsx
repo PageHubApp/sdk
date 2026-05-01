@@ -1,7 +1,7 @@
 import { useAtomValue } from "@zedux/react";
 import { useEffect, useMemo, useState } from "react";
 import { TbCategory } from "react-icons/tb";
-import { ComponentsAtom } from "../../utils/lib";
+import { ComponentsAtom } from "../../utils/atoms";
 import { useCustomComponents } from "../../define";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout";
 import {

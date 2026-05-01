@@ -3,13 +3,9 @@ import { useAtomValue } from "@zedux/react";
 import { Suspense, useRef, useState } from "react";
 import { TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
-import {
-  getMediaById,
-  getMediaContent,
-  registerMediaWithBackground,
-  SideBarAtom,
-} from "@/utils/lib";
-import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
+import { SideBarAtom } from "@/utils/atoms";
+import { getMediaById, getMediaContent, registerMediaWithBackground } from "@/utils/media/media";
+import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
 import { VariableTextInput } from "../advanced/VariableTextInput";

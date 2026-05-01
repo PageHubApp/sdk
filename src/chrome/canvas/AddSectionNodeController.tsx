@@ -10,7 +10,7 @@ import { usePanelUrl } from "../../utils/usePanelUrl";
 import { AddElement } from "../viewport/toolbox/toolboxUtils";
 import { NodeType, useNodeType } from "@/utils/hooks/useNodeType";
 
-import generate from "../../utils/data/nameGenerator";
+import generate from "../../utils/seeds/nameGenerator";
 
 export const AddSectionNodeController = (props: { position; align }) => {
   const { position } = props as any;

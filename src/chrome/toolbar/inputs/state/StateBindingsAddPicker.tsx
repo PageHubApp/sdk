@@ -15,14 +15,14 @@ import {
   type SearchableMenuPopoverHandle,
 } from "../../../primitives/SearchableMenuPopover";
 import { useAccordionContext } from "../../AccordionContext";
-import { getSectionDef } from "../../unified-settings/registry/propertyRegistry";
+import { getSectionDef } from "../../inspector/registry/propertyRegistry";
 import {
   PopoverOpenRequestAtom,
   requestOpenPopover,
   useSectionPopoverOpenRequest,
-} from "../../unified-settings/popoverOpenRequestAtom";
+} from "../../inspector/popoverOpenRequestAtom";
 import { defaultCondition } from "../advanced/ConditionsInput";
-import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+import type { PropertyInputProps } from "../../inspector/registry/propertyDefs";
 import type { StateBinding } from "./StateBindingsInput";
 import type { ComputedStateBinding } from "../../../../utils/conditions/computedState";
 

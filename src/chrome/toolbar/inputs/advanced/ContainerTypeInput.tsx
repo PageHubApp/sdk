@@ -1,5 +1,5 @@
 import { Element, useEditor } from "@craftjs/core";
-import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
+import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
 import { AddElement } from "../../../viewport/toolbox/toolboxUtils";
 
 /**
@@ -12,7 +12,7 @@ export const ContainerTypeInput = (_props?: { hasHeader?: boolean; hasFooter?: b
   return (
     <ToolbarDashedButton
       onClick={async () => {
-        const { Container } = await import("../../../../components/Container");
+        const { Container } = await import("../../../../components/Container/Container");
 
         AddElement({
           element: (

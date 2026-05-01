@@ -1,23 +1,24 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { ToolbarIconButton } from "@/chrome/primitives/ToolbarIconButton";
-import { checkIfAncestorLinked } from "@/utils/componentUtils";
+import { checkIfAncestorLinked } from "@/utils/component/componentUtils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TbSearch } from "react-icons/tb";
 import { SearchInput } from "@/chrome/primitives/SearchInput";
 import { useSetAtomState } from "../../utils/atoms";
-import { EDITOR_ALL_PAGES_STORAGE, IsolateAtom } from "../../utils/lib";
+import { IsolateAtom } from "../../utils/atoms";
+import { EDITOR_ALL_PAGES_STORAGE } from "../../utils/page/pageManagement";
 import { phStorage } from "../../utils/phStorage";
 import { TabAtom } from "../viewport/atoms";
 import { useAccordionContext } from "./AccordionContext";
-import { RenderChildren } from "./helpers/CloneHelper";
+import { RenderChildren } from "./primitives/componentConverters";
 import Tab from "./Tab";
 import { TabBarCollapseToggle } from "./TabBarCollapseToggle";
 import { TabBarDarkModeToggle } from "./TabBarDarkModeToggle";
 import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
-import { SettingsSearchAtom, SettingsSearchOpenAtom } from "./unified-settings/registry/atoms";
-import { UnifiedTab, scrollToSection, setActiveTabFromClick, toSectionId } from "./UnifiedTab";
+import { SettingsSearchAtom, SettingsSearchOpenAtom } from "./inspector/registry/atoms";
+import { InspectorTab, scrollToSection, setActiveTabFromClick, toSectionId } from "./InspectorTab";
 
 export const ToolbarWrapper = ({
   children = null,
@@ -217,7 +218,7 @@ export const ToolbarWrapper = ({
                     : key === 0
                   : false;
                 return unified ? (
-                  <UnifiedTab
+                  <InspectorTab
                     key={key}
                     title={_.title}
                     icon={_.icon}

@@ -1,0 +1,21 @@
+/** Built-in component names — used for collision detection in `defineComponent`. */
+export const BUILT_IN_NAMES = new Set([
+  "Audio",
+  "Automatic",
+  "Background",
+  "Button",
+  "Container",
+  "Data",
+  "Embed",
+  "Footer",
+  "Form",
+  "FormElement",
+  "Header",
+  "Icon",
+  "Image",
+  "Link",
+  "Map",
+  "MapPoint",
+  "Text",
+  "Video",
+]);

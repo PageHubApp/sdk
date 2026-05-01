@@ -15,21 +15,13 @@ export {
 } from "./tailwind/tailwind";
 
 // Component utility functions
-export {
-  applyBackgroundImage,
-  applyPattern,
-  collectFont,
-  getBackgroundUrl,
-  getFontFromComp,
-  loadCombinedFonts,
-  motionIt,
-  replaceVariables,
-  resolvePageRef,
-  variants,
-} from "./lib";
+export { applyBackgroundImage, applyPattern, getBackgroundUrl } from "./background";
+export { collectFont, getFontFromComp, loadCombinedFonts } from "./fonts/fontLoader";
+export { motionIt } from "./motion";
+export { replaceVariables, resolvePageRef } from "./page/pageManagement";
 
 // Clone helpers
-export { getClonedState, setClonedProps } from "./cloneHelper";
+export { getClonedState, setClonedProps } from "./cloneState";
 
 // Palette context
 export { PaletteProvider, usePalette } from "./design/PaletteContext";
@@ -40,7 +32,7 @@ export {
   fireLoadAction,
   getLoadActionScript,
   PH_LOAD_ACTION_SCRIPT,
-} from "./clickControls";
+} from "./actions";
 export {
   migrateAction,
   actionToHref,

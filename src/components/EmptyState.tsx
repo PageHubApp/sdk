@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import React from "react";
 import { TbLayoutColumns, TbLayoutRows, TbNote, TbPlus } from "react-icons/tb";
 import { useNodeTypeHelpers } from "../utils/hooks/useNodeType";
-import { ImageDefault } from "./Image";
+import { ImageDefault } from "./Image/Image";
 
 // Lazy-load AddElementButton — editor-only, keeps chrome out of viewer bundle
 const AddElementButton = React.lazy(() =>

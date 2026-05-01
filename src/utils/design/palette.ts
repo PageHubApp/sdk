@@ -1,4 +1,4 @@
-import { NamedColor } from "../../components/Background";
+import { NamedColor } from "../../components/Background/Background";
 import { toCSSVarName } from "./designSystemVars";
 
 export { PaletteProvider, usePalette } from "./PaletteContext";

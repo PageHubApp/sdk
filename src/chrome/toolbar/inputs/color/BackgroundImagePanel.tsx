@@ -13,7 +13,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useEffect } from "react";
 import { ConfirmDialog } from "@/chrome/primitives/layout/ConfirmDialog";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
-import { getMediaById, registerMediaWithBackground } from "@/utils/lib";
+import { getMediaById, registerMediaWithBackground } from "@/utils/media/media";
 import { ImageCropModal } from "../../dialogs/ImageCropModal";
 import { MediaManagerBody } from "../media/MediaManagerBody";
 import { MediaPreviewModal } from "../media/components/MediaPreviewModal";

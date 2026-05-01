@@ -5,7 +5,7 @@
  * runtime migration helpers for palette arrays and className strings.
  */
 
-import { NamedColor } from "../../components/Background";
+import { NamedColor } from "../../components/Background/Background";
 import { toCSSVarName } from "./designSystemVars";
 
 // ---------------------------------------------------------------------------

@@ -10,7 +10,7 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
 import { TbBoxModel2, TbTrash } from "react-icons/tb";
 import { useSetAtomState } from "../../../utils/atoms";
-import { ComponentsAtom } from "../../../utils/lib";
+import { ComponentsAtom } from "../../../utils/atoms";
 import { SavedComponentLoader } from "../../../core/savedComponents";
 import { RenderToolComponent, ToolboxItemDisplay } from "./toolboxUtils";
 

@@ -12,7 +12,7 @@
  */
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Chip } from "../../../primitives/Chip";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 import { HANDLER_EVENT_LABEL, getHandlerIcon } from "./handlerEvents";
 
 const HandlerEditorPanel = lazy(() => import("./HandlerEditorPanel"));

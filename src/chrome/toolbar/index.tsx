@@ -2,19 +2,19 @@ import { NodeProvider, useEditor } from "@craftjs/core";
 import React, { useCallback, useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { SideBarAtom, SideBarOpen } from "../../utils/lib";
+import { SideBarAtom, SideBarOpen } from "../../utils/atoms";
 import { useEditorToolbarOverlayLayout } from "../../utils/hooks/useEditorToolbarOverlayLayout";
 import { PreviewAtom } from "../viewport/atoms";
 import { isFlyoutBlockingToolColumn, usePanelUrl } from "../../utils/usePanelUrl";
-import { Header } from "../viewport/Header";
-import { LazyUnifiedSettings } from "../../components/LazyUnifiedSettings";
+import { ViewportTopBar } from "../viewport/ViewportTopBar";
+import { LazyInspector } from "../../components/LazyInspector";
 import { EditorEmptyState } from "./EditorEmptyState";
 import { SidebarLayersPanel } from "./SidebarLayersPanel";
 import { SidebarSwipeHint } from "./SidebarSwipeHint";
 import { markManualSidebarClose } from "../hooks/useAutoOpenSidebar";
 
-export * from "./helpers/ToolbarDashedButton";
-export * from "./helpers/ToolbarSegmentedControl";
+export * from "./primitives/ToolbarDashedButton";
+export * from "./primitives/ToolbarSegmentedControl";
 export * from "./ToolbarDropdown";
 export * from "./ToolbarItem";
 export * from "./ToolbarSection";
@@ -49,11 +49,11 @@ export const Toolbar = () => {
     return { selectedNodeId: id };
   });
 
-  // Mount LazyUnifiedSettings ONCE. NodeProvider swaps the context id without
+  // Mount LazyInspector ONCE. NodeProvider swaps the context id without
   // remounting children — useNode() inside picks up the new id reactively.
   const tool = selectedNodeId ? (
     <NodeProvider id={selectedNodeId}>
-      <LazyUnifiedSettings />
+      <LazyInspector />
     </NodeProvider>
   ) : (
     <EditorEmptyState />
@@ -214,7 +214,7 @@ export const Toolbar = () => {
       ref={ref}
       onPointerDown={onSwipeStart}
     >
-      <Header />
+      <ViewportTopBar />
       <div
         className="text-sidebar-foreground z-0 flex w-full flex-1 flex-col overflow-hidden antialiased select-none"
         aria-expanded={isOpen ? "true" : "false"}

@@ -62,7 +62,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   const isSideBySide = ["flex-row", "flex-row-reverse"].includes(value);
 
   const addStructureChild = async () => {
-    const { Container } = await import("../../../components/Container");
+    const { Container } = await import("../../../components/Container/Container");
 
     const childDisplayName = isSideBySide ? "Column" : "Block";
     const childClassName = isSideBySide

@@ -4,11 +4,11 @@ import { TbBoxModel2, TbClick, TbLayoutGridAdd, TbPlus } from "react-icons/tb";
 import { useSDK } from "../../core/context";
 import { AssistantOpenAtom, useSetAtomState } from "../../utils/atoms";
 import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
-import { ComponentsAtom, SideBarOpen, ViewModeAtom } from "../../utils/lib";
+import { ComponentsAtom, SideBarOpen, ViewModeAtom } from "../../utils/atoms";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { markManualSidebarClose } from "../hooks/useAutoOpenSidebar";
 import { useCreateComponent } from "../hooks/useCreateComponent";
-import { ActionRow } from "./helpers/ActionRow";
+import { ActionRow } from "./primitives/ActionRow";
 
 export const EditorEmptyState = () => {
   const [components] = useAtomState(ComponentsAtom);

@@ -21,7 +21,7 @@ import {
   editorCanvasViewToClassPrefixKey,
   buildVariantPrefix,
 } from "../../utils/tailwind/className";
-import { checkIfAncestorLinked } from "../../utils/componentUtils";
+import { checkIfAncestorLinked } from "../../utils/component/componentUtils";
 import { setEdgeResizeActive } from "./edgeResizeState";
 import { getNodeGeometry } from "./nodeGeometry";
 import { isRotateActive, setRotateActive } from "./rotateActiveState";

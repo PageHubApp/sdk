@@ -2,7 +2,7 @@ import { useEditor } from "@craftjs/core";
 import { useCallback } from "react";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
-import { LastActiveAtom } from "../../../utils/lib";
+import { LastActiveAtom } from "../../../utils/atoms";
 import { useUnifiedDelete } from "../../hooks/useUnifiedDelete";
 import { PreviewAtom, EnabledAtom, TabAtom } from "../atoms";
 import {

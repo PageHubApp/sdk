@@ -18,8 +18,8 @@
       "default": "./dist/pagehub-viewer.umd.cjs"
     },
     "./static-renderer": {
-      "types": "./dist/static-renderer.d.ts",
-      "import": "./dist/static-renderer.js"
+      "types": "./dist/static-renderer/index.d.ts",
+      "import": "./dist/static-renderer/index.js"
     },
     "./editor.css": "./dist/editor.css",
     "./theme.css": "./src/css/theme.css",
@@ -118,8 +118,10 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.2.2",
     "@tailwindcss/postcss": "^4.2.2",
+    "@types/leaflet": "^1.9.21",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/react-window": "^1.8.8",
     "@vitejs/plugin-react": "^4.7.0",
     "daisyui": "^5.5.19",
     "lodash-es": "^4.18.1",

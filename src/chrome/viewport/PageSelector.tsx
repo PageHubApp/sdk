@@ -15,8 +15,9 @@ import {
 import useSWR from "swr";
 import { useSDK } from "../../core/context";
 import { SettingsAtom } from "../../utils/atoms";
-import { hasPageIsolation, IsolateAtom, isolatePageInTree } from "../../utils/lib";
-import { usePageNavigation } from "../../utils/pageNavigation";
+import { IsolateAtom } from "../../utils/atoms";
+import { hasPageIsolation, isolatePageInTree } from "../../utils/page/pageManagement";
+import { usePageNavigation } from "../../utils/page/pageNavigation";
 import { EditorSidebarPrimaryCta } from "../primitives/EditorSidebarPrimaryCta";
 import { EditorListPicker } from "./EditorListPicker";
 import { UnsavedChangesAtom } from "./atoms";
@@ -24,7 +25,7 @@ import { UnsavedChangesAtom } from "./atoms";
 const PageSettingsModal = lazy(() =>
   import("./PageSettingsModal").then(m => ({ default: m.PageSettingsModal }))
 );
-import { usePageCreation } from "./page-selector/usePageCreation";
+import { usePageCreation } from "./usePageCreation";
 
 import sluggit from "slug";
 

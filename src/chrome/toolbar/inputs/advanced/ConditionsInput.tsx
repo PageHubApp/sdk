@@ -13,7 +13,7 @@ import { useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { TbTrash } from "react-icons/tb";
 import { Chip } from "@/chrome/primitives/Chip";
-import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
+import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { useElementPicker } from "../action/useElementPicker";
 import { getConnectorData } from "../../../../utils/design/variables";
@@ -34,7 +34,7 @@ import { ConditionChipRow } from "./ConditionChipRow";
 import {
   PopoverOpenRequestAtom,
   popoverRequestKey,
-} from "../../unified-settings/popoverOpenRequestAtom";
+} from "../../inspector/popoverOpenRequestAtom";
 
 // ── Category labels ──────────────────────────────────────────────────────────
 

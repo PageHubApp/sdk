@@ -23,7 +23,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useMemo } from "react";
 import { toCSSVarName } from "@/utils/design/designSystemVars";
 import { resolveTheme, writeTheme } from "@/utils/design/resolveTheme";
-import type { PropertyDef } from "../../unified-settings/registry/propertyDefs";
+import type { PropertyDef } from "../../inspector/registry/propertyDefs";
 import { TextStylePicker } from "./TextStylePicker";
 import { emptyDraft, presetToDraft, type TextStyleDraft } from "./textStyleDraft";
 import { type TypographyPresetRow } from "./TypographyPresetSelect";

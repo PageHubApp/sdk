@@ -17,7 +17,7 @@
 import { lazy, Suspense, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { Chip } from "@/chrome/primitives/Chip";
-import { SideBarAtom } from "@/utils/lib";
+import { SideBarAtom } from "@/utils/atoms";
 import type { TypographyPresetRow } from "./TypographyPresetSelect";
 import type { TextStyleDraft } from "./textStyleDraft";
 

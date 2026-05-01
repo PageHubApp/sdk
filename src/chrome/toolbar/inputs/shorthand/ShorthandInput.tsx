@@ -15,14 +15,14 @@ import { useAtomValue } from "@zedux/react";
 import { UniversalInput } from "../universal-input";
 import type { ValueType } from "../universal-input/types";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
-import { ToolbarSegmentedControl } from "../../helpers/ToolbarSegmentedControl";
+import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";
 import { ViewAtom } from "../../../viewport/atoms";
 import { ViewSelectionAtom } from "../../Label";
 import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
 import type {
   PropertyInputProps,
   ShorthandMode,
-} from "../../unified-settings/registry/propertyDefs";
+} from "../../inspector/registry/propertyDefs";
 
 export interface ShorthandInputConfig {
   modes: ShorthandMode[];

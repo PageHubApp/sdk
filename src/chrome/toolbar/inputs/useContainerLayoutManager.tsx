@@ -30,7 +30,7 @@ export const useContainerLayoutManager = () => {
     layoutMode: "flex-row" | "flex-col" | "grid",
     options: { asymmetric?: boolean } = {}
   ) => {
-    const { Container } = await import("../../../components/Container");
+    const { Container } = await import("../../../components/Container/Container");
 
     const currentNode = query.node(id).get();
     const currentChildren: string[] = currentNode?.data?.nodes || [];

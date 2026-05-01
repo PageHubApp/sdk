@@ -5,8 +5,8 @@
  */
 import type { ReactNode } from "react";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
-import { PropertyRenderer } from "../../unified-settings/PropertyRenderer";
-import type { PropertyDef } from "../../unified-settings/registry/propertyDefs";
+import { PropertyRenderer } from "../../inspector/PropertyRenderer";
+import type { PropertyDef } from "../../inspector/registry/propertyDefs";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {

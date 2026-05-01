@@ -2,8 +2,8 @@ import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar"
 import { useAtomState } from "@zedux/react";
 import { v4 as uuidv4 } from "uuid";
 import { TabAtom } from "../viewport/atoms";
-import MenuItem from "./helpers/MenuIcon";
-import { UnifiedTab } from "./UnifiedTab";
+import MenuItem from "./primitives/MenuIcon";
+import { InspectorTab } from "./InspectorTab";
 
 const Tab = ({ tabId, icon = null, title = "" }) => {
   const [activeTab, setActiveTab] = useAtomState(TabAtom);
@@ -13,7 +13,7 @@ const Tab = ({ tabId, icon = null, title = "" }) => {
   if (!icon) return null;
 
   return (
-    <UnifiedTab title={title} icon={icon} isActive={isActive} onClick={() => setActiveTab(tabId)} />
+    <InspectorTab title={title} icon={icon} isActive={isActive} onClick={() => setActiveTab(tabId)} />
   );
 };
 

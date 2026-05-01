@@ -1,7 +1,7 @@
 import React from "react";
 import { TbX } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import type { CanvasAnnotation } from "../../utils/componentCanvas";
+import type { CanvasAnnotation } from "../../utils/component/componentCanvas";
 
 interface Props {
   annotations: CanvasAnnotation[];

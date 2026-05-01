@@ -15,7 +15,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { Chip } from "@/chrome/primitives/Chip";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 import {
   cssColorShowsTransparency,
   formatColorForStorage,

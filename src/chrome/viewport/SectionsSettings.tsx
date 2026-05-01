@@ -13,7 +13,7 @@ import {
 } from "@/chrome/primitives";
 import { usePanelSearch } from "@/chrome/hooks";
 import { usePanelUrl } from "../../utils/usePanelUrl";
-import { ComponentsAtom } from "../../utils/lib";
+import { ComponentsAtom } from "../../utils/atoms";
 import { useBlockCategories, type BlockCategory } from "../../utils/useBlockCategories";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout";
 import { CategoryCard, CustomSectionCard, BlockPreviewCard } from "./sections-settings/components";

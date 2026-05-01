@@ -3,7 +3,7 @@
  *
  * `defineComponent` presets can declare an `addChild` config — a label +
  * factory that returns one new child for the wrapper. The wrapper carries
- * `node.data.custom.preset = <label>` once dropped, and the unified-settings
+ * `node.data.custom.preset = <label>` once dropped, and the inspector
  * property registry uses `getPresetMeta(label)` to surface the Add Item /
  * delete UI.
  *

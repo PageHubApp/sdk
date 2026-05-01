@@ -10,7 +10,7 @@ import {
 } from "./findPosition2D";
 import { executeSpatialDrop } from "./spatial/executeSpatialDrop";
 import { setDragCopyIntent } from "./spatial/spatialSession";
-import { Container } from "../../components/Container";
+import { Container } from "../../components/Container/Container";
 
 const isDev = process.env.NODE_ENV === "development";
 const log = isDev

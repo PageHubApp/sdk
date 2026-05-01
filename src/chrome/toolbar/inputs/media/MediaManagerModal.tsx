@@ -1,6 +1,6 @@
 import { ConfirmDialog } from "@/chrome/primitives/layout/ConfirmDialog";
 import { SettingsShell } from "@/chrome/viewport/settings/SettingsShell";
-import { useEditorSidebarDockLeft } from "@/utils/lib";
+import { useEditorSidebarDockLeft } from "@/utils/atoms";
 import { useEffect, useMemo } from "react";
 import { TbFolder } from "react-icons/tb";
 import { ImageCropModal } from "../../dialogs/ImageCropModal";

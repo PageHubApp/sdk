@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { TbCheck, TbChevronRight, TbCopy, TbLayersSubtract, TbTrash } from "react-icons/tb";
-import { ToolbarDashedButton } from "../../helpers/ToolbarDashedButton";
+import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
 import { BreakpointBadge, Card } from "../../ToolbarStyle";
 import {
   BP_SCOPE_ROW_IDLE,

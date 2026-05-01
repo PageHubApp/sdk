@@ -8,9 +8,9 @@ import { lazy, Suspense, useMemo, useState } from "react";
 import { TbTexture } from "react-icons/tb";
 import { generatePattern } from "../../../../utils/background";
 import { Chip } from "../../../primitives/Chip";
-import { usePopoverAutoOpen } from "../../unified-settings/hooks/usePopoverAutoOpen";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
-import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+import { usePopoverAutoOpen } from "../../inspector/hooks/usePopoverAutoOpen";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
+import type { PropertyInputProps } from "../../inspector/registry/propertyDefs";
 
 const PatternPanel = lazy(() => import("./PatternPanel"));
 

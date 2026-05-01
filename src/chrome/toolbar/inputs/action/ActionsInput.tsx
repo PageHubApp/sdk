@@ -17,7 +17,7 @@ import { getNodeAnchor } from "./useElementPicker";
 import {
   PopoverOpenRequestAtom,
   popoverRequestKey,
-} from "../../unified-settings/popoverOpenRequestAtom";
+} from "../../inspector/popoverOpenRequestAtom";
 import { migrateActions, type NodeAction } from "../../../../utils/action";
 
 // Matches the def id registered in `registry/properties/interactions.ts`.

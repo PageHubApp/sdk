@@ -16,7 +16,7 @@ import { useNode } from "@craftjs/core";
 import { TailwindStyles } from "@/utils/tailwind";
 import { Chip } from "@/chrome/primitives/Chip";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 import { parseIconRef } from "@/utils/icons/collectIconRefs";
 import ClientIconLoader from "../../dialogs/ClientIconLoader";
 import { ToolbarItem } from "../../ToolbarItem";

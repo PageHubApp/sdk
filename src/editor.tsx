@@ -12,7 +12,7 @@
 import { Editor, Frame, useEditor } from "@craftjs/core";
 import { EcosystemProvider, useAtomState } from "@zedux/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { LazyUnifiedSettings } from "./components/LazyUnifiedSettings";
+import { LazyInspector } from "./components/LazyInspector";
 import { resolveConfig } from "./config";
 import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { PageHubProvider, useHasSDKProvider, useSDK } from "./core/context";
@@ -29,7 +29,7 @@ import type {
 } from "./types";
 import { BatchOperationAtom, EditorSaveBannerAtom, useSetAtomState } from "./utils/atoms";
 import { compressAsync, decompressAsync } from "./utils/compressionAsync";
-import { clearLoadedPages, listPageNodeIds, markPageLoaded } from "./utils/pageManagement";
+import { clearLoadedPages, listPageNodeIds, markPageLoaded } from "./utils/page/pageManagement";
 import { extractPageShard, extractSharedShard } from "./utils/treeSharding";
 
 // ─── Import the real Viewport, Toolbar, and all dialog components from the editor chrome ──
@@ -47,9 +47,9 @@ import { GlobalSectionPickerDialog } from "./chrome/shell/GlobalSectionPickerDia
 import { onBesideDrop } from "./chrome/shell/besideDrop";
 import { findPosition2D } from "./chrome/shell/findPosition2D";
 import { Toolbar } from "./chrome/toolbar";
-import { Viewport } from "./chrome/viewport/ViewportShell";
+import { Viewport } from "./chrome/viewport/Viewport";
 import { UnsavedChangesAtom } from "./chrome/viewport/atoms";
-import { Container } from "./components/Container";
+import { Container } from "./components/Container/Container";
 import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
 
 // Lazy-loaded dialogs — only loaded when user opens them
@@ -71,8 +71,8 @@ const ToolTipDialog = React.lazy(() =>
   import("./chrome/toolbar/dialogs/TooltipDialog").then(m => ({ default: m.ToolTipDialog }))
 );
 
-// Side-effect import: RegistrySettings self-registers with LazyUnifiedSettings
-import "./chrome/toolbar/unified-settings/RegistrySettings";
+// Side-effect import: RegistrySettings self-registers with LazyInspector
+import "./chrome/toolbar/inspector/RegistrySettings";
 
 // ─── Safe serialize — catches CraftJS invariant when nodes have unresolved types ─
 function safeSerialize(query: any): string | null {
@@ -386,7 +386,7 @@ function PageHubEditorInner({
   // Process component definitions (built-in migrated + consumer custom) into resolver + toolbox data
   const allDefs = React.useMemo(() => [...BUILTIN_COMPONENT_DEFS, ...components], [components]);
   const { resolver: customResolver, toolboxCategories } = React.useMemo(
-    () => processForEditor(allDefs, LazyUnifiedSettings),
+    () => processForEditor(allDefs, LazyInspector),
     [allDefs]
   );
 

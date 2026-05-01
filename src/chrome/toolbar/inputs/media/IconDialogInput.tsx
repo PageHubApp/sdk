@@ -8,7 +8,7 @@ import { changeProp } from "../../../viewport/viewportExports";
 import { ViewAtom } from "../../../viewport/atoms";
 import { ViewSelectionAtom } from "../../Label";
 import ClientIconLoader from "../../dialogs/ClientIconLoader";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 
 const IconPickerPanel = lazy(() => import("../../dialogs/IconDialog/IconPickerPanel"));
 

@@ -32,7 +32,7 @@ import {
   TbToggleLeft,
 } from "react-icons/tb";
 import { Chip } from "../../../primitives/Chip";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 import { ACTION_TYPE_OPTIONS, type ActionType, type NodeAction } from "../../../../utils/action";
 import { PeekTargetButton } from "./PeekTargetButton";
 

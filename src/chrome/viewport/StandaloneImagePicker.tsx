@@ -4,9 +4,9 @@ import { useState } from "react";
 import { TbAlertTriangle, TbPhoto, TbTrash, TbUpload } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "../../utils/atoms";
-import { getMediaContent } from "../../utils/lib";
+import { getMediaContent } from "../../utils/media/media";
 import { MediaUploadError, uploadImageToCdn } from "../../utils/media/upload";
-import Spinner from "../toolbar/helpers/Spinner";
+import Spinner from "../toolbar/primitives/Spinner";
 import { MediaManagerModal } from "../toolbar/inputs/media/MediaManagerModal";
 
 const handleFileSelection = (e, setErrors) => {

@@ -5,7 +5,7 @@ import { buildClientContext, buildStaticContext } from "./context";
 import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
 import { getConnectorData, replaceVariables } from "../design/variables";
 import { useItemContext } from "../itemContext";
-import { subscribe as subscribeState } from "../stateRegistry";
+import { subscribe as subscribeState } from "../state/stateRegistry";
 import type { Condition, ConditionGroup, ConditionLogic } from "./types";
 
 /**

@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRegisterFloatingPanelPortal } from "@/chrome/floating/FloatingPanel";
 import { useAtomValue } from "@zedux/react";
-import { generatePattern } from "@/utils/lib";
+import { generatePattern } from "@/utils/background";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { ViewSelectionAtom } from "../../Label";
 import { Chip } from "@/chrome/primitives/Chip";

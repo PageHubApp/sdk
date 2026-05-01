@@ -1,8 +1,7 @@
 import { useEditor } from "@craftjs/core";
 import { useEffect, useRef } from "react";
 import { useSetAtomState } from "../../utils/atoms";
-import { SideBarOpen } from "../../utils/lib";
-
+import { SideBarOpen } from "../../utils/atoms";
 // Module-level guard: when the user manually closes the sidebar (button or
 // swipe), the next selection-change tick must not re-open it. Cleared when a
 // new selection key arrives after the cooldown.

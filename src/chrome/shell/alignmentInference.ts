@@ -7,7 +7,7 @@
  */
 
 import { type Node, type NodeId } from "@craftjs/core";
-import { Container } from "../../components/Container";
+import { Container } from "../../components/Container/Container";
 import { SKIP_TYPES, makeContainerTree, getClassName, hasToken } from "./layoutInference";
 
 // ── Debug logging (dev only) ──────────────────────────────────────────

@@ -1,7 +1,6 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useSetAtomState } from "../../utils/atoms";
-import { OnlineAtom } from "../../utils/lib";
-
+import { OnlineAtom } from "../../utils/atoms";
 export const DeviceOffline = () => {
   const setOnline = useSetAtomState(OnlineAtom);
 

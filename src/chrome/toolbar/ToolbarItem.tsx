@@ -13,7 +13,7 @@ import { DesignVarSelector } from "./inputs/advanced/DesignVarSelector";
 import { getEffectiveViews, EditModifiersAtom } from "./Label";
 import { MultiScopeAtom } from "./breakpoint-chip/atoms";
 import { ToolbarDropdown } from "./ToolbarDropdown";
-import { ToolbarSegmentedControl } from "./helpers/ToolbarSegmentedControl";
+import { ToolbarSegmentedControl } from "./primitives/ToolbarSegmentedControl";
 import { Chip } from "@/chrome/primitives/Chip";
 import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
 

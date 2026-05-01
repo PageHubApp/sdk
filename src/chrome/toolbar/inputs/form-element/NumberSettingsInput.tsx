@@ -2,7 +2,7 @@ import { useNode } from "@craftjs/core";
 import { lazy, Suspense, useState } from "react";
 import { TbMathFunction } from "react-icons/tb";
 import { Chip } from "../../../primitives/Chip";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 
 const NumberSettingsPanel = lazy(() => import("./NumberSettingsPanel"));
 

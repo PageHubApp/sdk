@@ -6,7 +6,7 @@ import {
   buildModifierExpansionMap,
   expandStructureWithModifierMap,
 } from "../../../utils/modifierUtils";
-import { buildCraftTreeFromStructure } from "../../structure/buildCraftTreeFromStructure";
+import { buildCraftTreeFromStructure } from "../../buildCraftTreeFromStructure";
 
 /**
  * Error boundary that catches CraftJS invariant errors inside preview Editors.

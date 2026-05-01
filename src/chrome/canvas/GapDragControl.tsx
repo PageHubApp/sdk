@@ -2,7 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { createPortal } from "react-dom";
 import { editorCanvasViewToClassPrefixKey } from "../../utils/tailwind/className";
-import { checkIfAncestorLinked } from "../../utils/componentUtils";
+import { checkIfAncestorLinked } from "../../utils/component/componentUtils";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { ViewAtom } from "../viewport/atoms";
 import { useGapDrag } from "./gap/useGapDrag";

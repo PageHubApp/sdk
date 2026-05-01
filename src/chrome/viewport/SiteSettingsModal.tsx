@@ -13,7 +13,7 @@ import {
   TbVariable,
 } from "react-icons/tb";
 import { normalizeDesignTags } from "../../utils/normalizeDesignTags";
-import { useEditorSidebarDockLeft } from "../../utils/lib";
+import { useEditorSidebarDockLeft } from "../../utils/atoms";
 import { AITab } from "./site-settings/AITab";
 import { BrandingTab } from "./site-settings/BrandingTab";
 import { ContactTab } from "./site-settings/ContactTab";

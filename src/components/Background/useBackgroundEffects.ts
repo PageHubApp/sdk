@@ -14,7 +14,7 @@ import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
 import { injectDesignSystemVars } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
 
-import type { ContainerProps, NamedColor } from "../Background";
+import type { ContainerProps, NamedColor } from "./Background";
 
 interface UseBackgroundEffectsOptions {
   enabled: boolean;

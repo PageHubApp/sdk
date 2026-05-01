@@ -6,14 +6,14 @@ import { Chip } from "@/chrome/primitives/Chip";
 import { SearchInput } from "@/chrome/primitives/SearchInput";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { useAtomValue } from "@zedux/react";
-import { SideBarAtom } from "@/utils/lib";
+import { SideBarAtom } from "@/utils/atoms";
 import { ToolbarDropdown } from "@/chrome/toolbar/ToolbarDropdown";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 import {
   findAncestorDataSource,
   getConnectorCollectionLabel,
   getConnectorProviderLabel,
-} from "@/utils/dataSourceContext";
+} from "@/utils/data/dataSourceContext";
 
 interface VariableSnippet {
   label: string;

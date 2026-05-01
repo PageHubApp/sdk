@@ -35,8 +35,8 @@
  */
 import { useAtomState } from "@zedux/react";
 import { forwardRef, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { SessionAddedAtom, sessionKey } from "../toolbar/unified-settings/sessionAddedAtom";
-import { useProperty } from "../toolbar/unified-settings/propertyContext";
+import { SessionAddedAtom, sessionKey } from "../toolbar/inspector/sessionAddedAtom";
+import { useProperty } from "../toolbar/inspector/propertyContext";
 import { BreakpointChip } from "../toolbar/breakpoint-chip/BreakpointChip";
 import { InlineClearButton } from "./InlineClearButton";
 import { PAGEHUB_RTT_GLOBAL_ID } from "./layout/tooltipSurface";

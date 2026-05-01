@@ -4,9 +4,9 @@ import { useState } from "react";
 import { TbAlertTriangle, TbPhoto, TbUpload } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "@/utils/atoms";
-import { getMediaContent, registerMediaWithBackground } from "@/utils/lib";
+import { getMediaContent, registerMediaWithBackground } from "@/utils/media/media";
 import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
-import Spinner from "../../helpers/Spinner";
+import Spinner from "../../primitives/Spinner";
 import { MediaManagerModal } from "./MediaManagerModal";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 

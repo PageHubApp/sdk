@@ -13,7 +13,7 @@ import RenderNodeControl from "../rendering/RenderNodeControl";
 import RenderNodeControlInline from "../rendering/RenderNodeControlInline";
 import { ViewAtom } from "../viewport/atoms";
 import DragAdjust from "../viewport/toolbox/DragAdjust";
-import { checkIfAncestorLinked } from "../../utils/componentUtils";
+import { checkIfAncestorLinked } from "../../utils/component/componentUtils";
 import { useElementColor } from "./canvasUtils";
 
 // Tailwind spacing values mapping

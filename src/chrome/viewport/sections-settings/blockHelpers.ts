@@ -1,7 +1,7 @@
 import React from "react";
 import type { BlockCategory } from "../../../utils/useBlockCategories";
 import type { BlockItem } from "../../../utils/useCategoryBlocks";
-import { buildCraftTreeFromStructure } from "../../structure/buildCraftTreeFromStructure";
+import { buildCraftTreeFromStructure } from "../../buildCraftTreeFromStructure";
 
 /**
  * Reserved `cat` query value for user-saved blocks in the Blocks toolbox.

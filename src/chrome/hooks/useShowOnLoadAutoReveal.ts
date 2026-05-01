@@ -20,8 +20,8 @@
  */
 import { useEditor } from "@craftjs/core";
 import { useEffect } from "react";
-import { setShowHideState } from "@/utils/showHideStore";
-import { setState as setRegistryState, deleteState } from "@/utils/stateRegistry";
+import { setShowHideState } from "@/utils/state/showHideStore";
+import { setState as setRegistryState, deleteState } from "@/utils/state/stateRegistry";
 import { migrateActions } from "@/utils/action";
 import type { ShowHideAction } from "@/utils/action";
 

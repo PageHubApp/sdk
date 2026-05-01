@@ -6,9 +6,9 @@
 import { useEditor } from "@craftjs/core";
 import { useEffect, useRef } from "react";
 import { useAtomValue } from "@zedux/react";
-import { ComponentsAtom } from "../../utils/lib";
+import { ComponentsAtom } from "../../utils/atoms";
 import { buildClonedTree } from "../viewport/viewportExports";
-import { setRecursiveBelongsTo } from "@/utils/componentUtils";
+import { setRecursiveBelongsTo } from "@/utils/component/componentUtils";
 import { setRelationField } from "../../utils/relation";
 
 const CONTENT_PROPS = [

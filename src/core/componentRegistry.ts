@@ -8,23 +8,23 @@
 
 import type { ComponentType } from "react";
 
-import { Audio } from "../components/Audio";
-import { Background } from "../components/Background";
-import { Button } from "../components/Button";
-import { Container } from "../components/Container";
-import { Data } from "../components/Data";
-import { Embed } from "../components/Embed";
-import { Footer } from "../components/Footer";
-import { Form } from "../components/Form";
-import { FormElement, OnlyFormElement } from "../components/FormElement";
-import { Header } from "../components/Header";
-import { Icon } from "../components/Icon";
-import { Image } from "../components/Image";
-import { Link } from "../components/Link";
-import { Map } from "../components/Map";
-import { MapPoint } from "../components/MapPoint";
-import { Text } from "../components/Text";
-import { Video } from "../components/Video";
+import { Audio } from "../components/Audio/Audio";
+import { Background } from "../components/Background/Background";
+import { Button } from "../components/Button/Button";
+import { Container } from "../components/Container/Container";
+import { Data } from "../components/Data/Data";
+import { Embed } from "../components/Embed/Embed";
+import { Footer } from "../components/Footer/Footer";
+import { Form } from "../components/Form/Form";
+import { FormElement, OnlyFormElement } from "../components/FormElement/FormElement";
+import { Header } from "../components/Header/Header";
+import { Icon } from "../components/Icon/Icon";
+import { Image } from "../components/Image/Image";
+import { Link } from "../components/Link/Link";
+import { Map } from "../components/Map/Map";
+import { MapPoint } from "../components/MapPoint/MapPoint";
+import { Text } from "../components/Text/Text";
+import { Video } from "../components/Video/Video";
 import { SavedComponentLoader } from "./savedComponents";
 
 import { withConditionalVisibility } from "../utils/conditions/withConditionalVisibility";

@@ -4,7 +4,7 @@
  * body component (`ImageSettingsSection`).
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
-import { ImageSettingsSection } from "../../unified-settings/mainTabs/ImageSettingsSection";
+import { ImageSettingsSection } from "../../inspector/mainTabs/ImageSettingsSection";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
 
 interface PanelProps {

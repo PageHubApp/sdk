@@ -2,7 +2,7 @@
 // chain in @craftjs/core that breaks tsx/Node ESM resolution in CLI scripts
 // (e.g. backfill-template-previews.mjs). Same symbol, same value.
 import { ROOT_NODE } from "@craftjs/utils";
-import { getStateValue, setState } from "../stateRegistry";
+import { getStateValue, setState } from "../state/stateRegistry";
 
 // ── Connector data context (set by editor when connector data is loaded) ────
 export interface SdkBindingMeta {

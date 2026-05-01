@@ -16,12 +16,12 @@ import { useEditor, useNode } from "@craftjs/core";
 import { lazy, Suspense, useState } from "react";
 import { TbAdjustmentsHorizontal, TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
-import { getMediaById, getMediaContent } from "@/utils/lib";
+import { getMediaById, getMediaContent } from "@/utils/media/media";
 import { Chip } from "../../../primitives/Chip";
 import { ToolbarIconButton } from "../../../primitives/ToolbarIconButton";
-import { usePopoverAutoOpen } from "../../unified-settings/hooks/usePopoverAutoOpen";
-import { usePopoverPosition } from "../../unified-settings/hooks/usePopoverPosition";
-import type { PropertyInputProps } from "../../unified-settings/registry/propertyDefs";
+import { usePopoverAutoOpen } from "../../inspector/hooks/usePopoverAutoOpen";
+import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
+import type { PropertyInputProps } from "../../inspector/registry/propertyDefs";
 
 const BackgroundImagePanel = lazy(() => import("./BackgroundImagePanel"));
 const ImageSettingsPanel = lazy(() => import("./ImageSettingsPanel"));

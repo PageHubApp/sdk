@@ -4,7 +4,7 @@
  * Two consumers share the same evaluator function bodies:
  *   - `getConditionEvalScript()` — node visibility (`data-ph-conditions`).
  *   - `getLoadActionScript()` — load-trigger show-hide reveals + state seeds
- *     (`data-ph-load-show`, `data-ph-load-set-state`). Lives in clickControls.ts
+ *     (`data-ph-load-show`, `data-ph-load-set-state`). Lives in utils/actions/load.ts
  *     and imports `buildConditionEvalFns` from here.
  *
  * Keeping the function definitions in one place stops the two scripts from

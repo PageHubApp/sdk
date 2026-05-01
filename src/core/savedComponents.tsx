@@ -1,9 +1,9 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
-import { setRecursiveBelongsTo } from "@/utils/componentUtils";
+import { setRecursiveBelongsTo } from "@/utils/component/componentUtils";
 import { useEffect, useRef } from "react";
 import { useAtomValue } from "@zedux/react";
-import { ComponentsAtom } from "../utils/lib";
+import { ComponentsAtom } from "../utils/atoms";
 import { buildClonedTree } from "./cloneTree";
 
 // Track which loaders are currently processing to prevent duplicates

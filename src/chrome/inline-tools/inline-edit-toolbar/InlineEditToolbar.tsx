@@ -20,7 +20,7 @@ import {
   TbTextColor,
   TbUnderline,
 } from "react-icons/tb";
-import { getMediaContent } from "../../../utils/lib";
+import { getMediaContent } from "../../../utils/media/media";
 import { paletteToCSSVar } from "../../../utils/design/palette";
 import { useAtomValue } from "@zedux/react";
 import { hasOverflowAncestor } from "@/utils/hasOverflowAncestor";

@@ -3,7 +3,7 @@
  * with a single `action: NodeAction` prop on interactive components.
  */
 
-import { resolvePageRef } from "./pageManagement";
+import { resolvePageRef } from "./page/pageManagement";
 import type { ConditionGroup } from "./conditions/types";
 
 // ─── Types ─────────────────────────────────────────────────────────────

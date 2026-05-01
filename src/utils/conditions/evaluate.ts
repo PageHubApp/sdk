@@ -1,4 +1,4 @@
-import { getStateValue } from "../stateRegistry";
+import { getStateValue } from "../state/stateRegistry";
 import type {
   Condition,
   ConditionContext,

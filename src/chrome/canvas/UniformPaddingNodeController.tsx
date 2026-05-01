@@ -10,7 +10,7 @@ import {
 import RenderNodeControlInline from "../rendering/RenderNodeControlInline";
 import { ViewSelectionAtom } from "../toolbar/Label";
 import { ViewAtom } from "../viewport/atoms";
-import { checkIfAncestorLinked } from "../../utils/componentUtils";
+import { checkIfAncestorLinked } from "../../utils/component/componentUtils";
 import { useElementColor } from "./canvasUtils";
 import { SpacingOverlay } from "./SpacingOverlay";
 
