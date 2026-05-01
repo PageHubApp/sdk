@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AllStyles } from "@/utils/tailwind";
+import { AllStyles } from "../../../../utils/tailwind/tailwind";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { SearchInput } from "@/chrome/primitives/SearchInput";
 import { CardLight } from "../../ToolbarStyle";

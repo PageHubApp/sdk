@@ -14,7 +14,7 @@ import {
   PreviewAtom,
   UnsavedChangesAtom,
   ViewAtom,
-} from "../../atoms";
+} from "../../state/atoms";
 
 interface UseViewportSetupEffectsArgs {
   handleBodyKeyDown: (e: KeyboardEvent) => void;

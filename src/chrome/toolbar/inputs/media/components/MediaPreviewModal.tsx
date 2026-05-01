@@ -6,7 +6,7 @@ import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
 import { formatFileSize, getMediaKind, type MediaItem } from "../utils/media-helpers";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../../primitives/layout/tooltipSurface";
-import { OVERLAY_Z_CRITICAL_MODAL } from "../../../../overlays/overlayZIndex";
+import { OVERLAY_Z_CRITICAL_MODAL } from "../../../../popovers/overlayZIndex";
 
 interface MediaPreviewModalProps {
   previewMedia: string | null;

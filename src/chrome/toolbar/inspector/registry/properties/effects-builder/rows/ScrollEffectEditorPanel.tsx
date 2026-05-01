@@ -7,7 +7,7 @@ import { TbChevronsDown } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { ContainerScrollEffectSection } from "@/chrome/toolbar/inspector/mainTabs/ContainerScrollEffectSection";
 import type { EditorPanelProps } from "../effectTypes";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../../../../popovers/overlayZIndex";
 
 export default function ScrollEffectEditorPanel({ initialPosition, onClose }: EditorPanelProps) {
   return (

@@ -4,7 +4,7 @@ import { TbMap } from "react-icons/tb";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
-import { useMounted } from "../../utils/hooks";
+import { useMounted } from "../../utils/hooks/useMounted";
 
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 

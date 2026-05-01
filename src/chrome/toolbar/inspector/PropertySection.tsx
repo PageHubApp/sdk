@@ -15,7 +15,7 @@ import { AccordionAddMenu, type AccordionAddMenuHandle } from "./AccordionAddMen
 import { propertyHasValue } from "./propertyHasValue";
 import { SessionAddedAtom, sessionKey } from "./sessionAddedAtom";
 import { isPopoverModeComponent } from "./popoverModeRegistry";
-import { ViewAtom } from "../../viewport/atoms";
+import { ViewAtom } from "../../viewport/state/atoms";
 import { ViewSelectionAtom } from "../Label";
 import { getSectionDef, getProperties } from "./registry/propertyRegistry";
 import { HiddenKeysAtom } from "./registry/atoms";

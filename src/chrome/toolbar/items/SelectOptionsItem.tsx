@@ -1,5 +1,5 @@
 import { useNode } from "@craftjs/core";
-import { changeProp } from "../../viewport/viewportExports";
+import { changeProp } from "../../viewport/state/viewportExports";
 import { atom, useAtomState } from "@zedux/react";
 import { ToolbarItem, ToolbarItemProps } from "../ToolbarItem";
 import { Chip } from "@/chrome/primitives/Chip";

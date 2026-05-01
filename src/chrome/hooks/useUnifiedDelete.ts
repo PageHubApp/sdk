@@ -2,7 +2,7 @@ import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "../../utils/atoms";
-import { deleteNode } from "../viewport/viewportExports";
+import { deleteNode } from "../viewport/state/viewportExports";
 
 /**
  * Unified delete hook that handles node deletion consistently across all delete methods.

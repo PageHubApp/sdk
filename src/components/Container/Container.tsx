@@ -3,13 +3,15 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { TbArrowDown, TbContainer, TbNote } from "react-icons/tb";
-import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../LazyEditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { useIsolate, usePreview, useView } from "../../core/store";
 import { ViewModeAtom } from "../../utils/atoms";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { registerLiveComponent } from "../../utils/component/liveComponentRegistry";
 import { mergeAccessibilityProps } from "../../utils/accessibility";
-import { addCustomHandlers, fireIntervalActions, fireLoadAction } from "../../utils/actions";
+import { addCustomHandlers } from "../../utils/actions/customHandlers";
+import { fireIntervalActions } from "../../utils/actions/interval";
+import { fireLoadAction } from "../../utils/actions/load";
 import { getStateValue } from "../../utils/state/stateRegistry";
 import { migrateActions, type NodeAction } from "../../utils/action";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
@@ -18,7 +20,8 @@ import { motionIt } from "../../utils/motion";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
 import { useHorizontalDragScroll } from "../../utils/hooks/useHorizontalDragScroll";
 import { useContainerScrollEffect } from "./useContainerScrollEffect";
-import { useDragOverDetection, useMounted } from "../../utils/hooks";
+import { useDragOverDetection } from "../../utils/hooks/useDragOverDetection";
+import { useMounted } from "../../utils/hooks/useMounted";
 import { applyContainerOverflowUX } from "./applyContainerOverflowUX";
 import {
   applyContainerActions,

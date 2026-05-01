@@ -22,14 +22,15 @@ import {
   TbZoomIn,
   TbZoomOut,
 } from "react-icons/tb";
-import { AnchoredPopover } from "../../../overlays/AnchoredPopover";
+import { AnchoredPopover } from "../../../popovers/AnchoredPopover";
 import {
   OVERLAY_Z_FLOATING_PANEL_DROPDOWN,
   OVERLAY_Z_UNIFIED_DROPDOWN,
-} from "../../../overlays/overlayZIndex";
+} from "../../../popovers/overlayZIndex";
 import { useFloatingPanelZIndex } from "../../../floating/FloatingPanel";
 import { getLayoutConfig, groupFractionsByDenominator, groupNumericByRange } from "./config";
 import { SubgroupItem } from "./SubgroupComponents";
+import { extractFirstCssHex } from "@/utils/design/colorSystem";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 
 interface UnifiedDropdownProps {
@@ -187,9 +188,21 @@ export function UnifiedDropdown({
         // Wrapper provides padding so the shadow has room to render outside the swatch.
         // The inner card carries the actual shadow class — bigger (size-7) and colored
         // so it doesn't read as a checkbox at a glance.
+        // Arbitrary hex shadows often don't compile to a visible filter in the chrome
+        // context — show a solid hex chip whenever we detect `#rrggbb` in the class.
+        const hex = extractFirstCssHex(option);
         return (
-          <div className="flex size-9 shrink-0 items-center justify-center">
-            <div className={`bg-base-100 size-7 rounded ${option}`} />
+          <div className="flex size-9 shrink-0 items-center justify-center gap-1">
+            {hex ? (
+              <span
+                className="border-base-300 size-3 shrink-0 rounded-sm border"
+                style={{ backgroundColor: hex }}
+                aria-hidden
+              />
+            ) : null}
+            <div className="flex flex-1 items-center justify-center">
+              <div className={`bg-base-100 size-7 rounded ${option}`} />
+            </div>
           </div>
         );
       }
@@ -307,16 +320,24 @@ export function UnifiedDropdown({
             ) : (
               filteredOptions.map((option, index) => {
                 const isSelected = index === selectedIndex;
+                const hex = propTag === "shadow" ? extractFirstCssHex(option) : null;
                 return (
                   <button
                     key={option}
                     type="button"
                     onClick={() => onSelect(option)}
-                    className={`ph-select-item text-base-content ${
+                    className={`ph-select-item text-base-content flex items-center gap-2 ${
                       isSelected ? "bg-primary/10 text-primary font-semibold" : ""
                     }`}
                   >
-                    {getDisplayLabel(option)}
+                    {hex ? (
+                      <span
+                        className="border-base-300 size-3 shrink-0 rounded-sm border"
+                        style={{ backgroundColor: hex }}
+                        aria-hidden
+                      />
+                    ) : null}
+                    <span className="min-w-0 flex-1 truncate">{getDisplayLabel(option)}</span>
                   </button>
                 );
               })

@@ -10,7 +10,7 @@ import { useSetAtomState } from "../../utils/atoms";
 import { IsolateAtom } from "../../utils/atoms";
 import { EDITOR_ALL_PAGES_STORAGE } from "../../utils/page/pageManagement";
 import { phStorage } from "../../utils/phStorage";
-import { TabAtom } from "../viewport/atoms";
+import { TabAtom } from "../viewport/state/atoms";
 import { useAccordionContext } from "./AccordionContext";
 import { RenderChildren } from "./primitives/componentConverters";
 import Tab from "./Tab";

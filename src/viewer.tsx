@@ -14,7 +14,8 @@ import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { EditorStoreProvider } from "./core/store";
 import { injectTailwindBrowser } from "./core/tailwindBrowser";
 import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
-import { processForViewer, type ResolvedComponentDef } from "./define";
+import { processForViewer } from "./define/processors/forViewer";
+import type { ResolvedComponentDef } from "./define/types";
 
 interface PageHubViewerProps {
   /** Compressed page content (from PageData.content) */

@@ -9,7 +9,7 @@ const LinkMainTab = React.lazy(() =>
     default: mod.LinkMainTab,
   }))
 );
-import { defineComponent } from "../../define";
+import { defineComponent } from "../../define/defineComponent";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../../utils/action";
 import { resolveIconSvgSync } from "../../utils/icons/serverResolve";
 import {
@@ -22,6 +22,8 @@ import {
   type ToHTMLFn,
 } from "../../utils/staticHtml";
 import { Link } from "./Link";
+import { linkPresets } from "./Link.presets";
+import { linkModifiers } from "./Link.modifiers";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   let icon = props.icon;
@@ -92,100 +94,8 @@ export const LinkDef = defineComponent(
     rules: {
       canDrag: () => true,
     },
-    presets: [
-      {
-        label: "Link",
-        description: "Plain text you can click to go somewhere.",
-        props: {
-          text: "Learn more",
-          className: "link link-hover",
-        },
-      },
-      {
-        label: "Arrow Link",
-        description: "A 'read more' style text link with an arrow on the end.",
-        props: {
-          text: "Read more",
-          icon: {
-            value: "ref-icon:tb/TbArrowRight",
-            position: "right",
-            size: "w-4 h-4",
-          },
-          className: "link link-hover",
-        },
-      },
-    ],
-    modifiers: [
-      // DaisyUI link color variants
-      {
-        name: "link-primary",
-        label: "Primary",
-        category: "Color",
-        description: "Primary brand color",
-        exclusive: true,
-        requires: "link",
-      },
-      {
-        name: "link-secondary",
-        label: "Secondary",
-        category: "Color",
-        description: "Secondary brand color",
-        exclusive: true,
-        requires: "link",
-      },
-      {
-        name: "link-accent",
-        label: "Accent",
-        category: "Color",
-        description: "Accent color",
-        exclusive: true,
-        requires: "link",
-      },
-      {
-        name: "link-neutral",
-        label: "Neutral",
-        category: "Color",
-        description: "Neutral color",
-        exclusive: true,
-        requires: "link",
-      },
-      {
-        name: "link-info",
-        label: "Info",
-        category: "Color",
-        exclusive: true,
-        requires: "link",
-      },
-      {
-        name: "link-success",
-        label: "Success",
-        category: "Color",
-        exclusive: true,
-        requires: "link",
-      },
-      {
-        name: "link-warning",
-        label: "Warning",
-        category: "Color",
-        exclusive: true,
-        requires: "link",
-      },
-      {
-        name: "link-error",
-        label: "Error",
-        category: "Color",
-        exclusive: true,
-        requires: "link",
-      },
-      // DaisyUI link style variants
-      {
-        name: "link-hover",
-        label: "Underline on Hover",
-        category: "Style",
-        description: "Underline appears only on hover",
-        requires: "link",
-      },
-    ],
+    presets: linkPresets,
+    modifiers: linkModifiers,
   },
   { __internal: true }
 );

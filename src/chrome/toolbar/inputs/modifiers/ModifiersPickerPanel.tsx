@@ -4,7 +4,7 @@
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ModifiersPickerBody } from "./ModifiersPickerBody";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };

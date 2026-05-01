@@ -1,9 +1,9 @@
 import { useEditor, useNode, UserComponent } from "@craftjs/core";
 import React from "react";
 import { TbIcons } from "react-icons/tb";
-import { useMounted } from "../../utils/hooks";
+import { useMounted } from "../../utils/hooks/useMounted";
 
-import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../LazyEditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { useResolvedIcon } from "../../utils/icons/iconResolver";
 import { motionIt } from "../../utils/motion";

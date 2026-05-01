@@ -18,7 +18,7 @@
  * `ROOT.props.modifiers[<componentName>]` win, just like the editor.
  */
 
-import type { ComponentModifier } from "../../define";
+import type { ComponentModifier } from "../../define/types";
 
 export const BUILTIN_STATE_MODIFIERS: Record<string, ComponentModifier[]> = {
   Button: [

@@ -93,9 +93,9 @@ body[data-ph-rotate="true"] * {
   opacity: 0.8;
 }
 
-/* data-dragged-over is still emitted by Container for EmptyState's pointer-events
-   gating, but no layout-shifting CSS — parent ring + drop indicator handle the
-   visual feedback. */
+/* data-dragged-over is still emitted by Container for canvas empty chrome
+   pointer-events gating, but no layout-shifting CSS — parent ring + drop
+   indicator handle the visual feedback. */
 
 /* Highlight valid drop targets when dragging a section/block */
 body[data-dragging-type="section"] .pagehub-sdk-root [data-node-type="page"],

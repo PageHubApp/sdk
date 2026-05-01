@@ -12,7 +12,7 @@
  */
 import { useCallback, useRef, useState } from "react";
 import type { Placement } from "@floating-ui/react-dom";
-import { useAnchoredPopover } from "../../overlays/useAnchoredPopover";
+import { useAnchoredPopover } from "../../popovers/useAnchoredPopover";
 
 const CONTEXT_SUBMENU_FALLBACKS: Placement[] = [
   "left-start",

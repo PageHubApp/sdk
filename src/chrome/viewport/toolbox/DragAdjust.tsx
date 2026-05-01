@@ -1,4 +1,4 @@
-import { SpacingOverlay } from "../../canvas/SpacingOverlay";
+import { SpacingOverlay } from "../../canvas/overlays/SpacingOverlay";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useEffect, useRef, useState } from "react";
 

@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { PropertyRenderer } from "../../inspector/PropertyRenderer";
 import type { PropertyDef } from "../../inspector/registry/propertyDefs";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface PanelProps {
   title: string;

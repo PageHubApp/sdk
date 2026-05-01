@@ -12,8 +12,8 @@ import {
 } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { getEditorVariableOptions } from "@/utils/editorVariableOptions";
-import { useAnchoredPopover } from "@/chrome/overlays/useAnchoredPopover";
-import { OVERLAY_Z_INLINE_TOOLS } from "@/chrome/overlays/overlayZIndex";
+import { useAnchoredPopover } from "@/chrome/popovers/useAnchoredPopover";
+import { OVERLAY_Z_INLINE_TOOLS } from "@/chrome/popovers/overlayZIndex";
 
 // ── Shared styles ───────────────────────────────────────────────────────────
 

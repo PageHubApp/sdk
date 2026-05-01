@@ -23,10 +23,10 @@ import {
   moveNodeDown,
   moveNodeUp,
 } from "../../../toolbar/dialogs/Layers/siblingMoveOps";
-import { ContextMenuInsertComponentFlyout } from "../../ContextMenuInsertComponentFlyout";
-import { duplicateNodeById } from "../../duplicateNodeById";
+import { ContextMenuInsertComponentFlyout } from "../../pickers/ContextMenuInsertComponentFlyout";
+import { duplicateNodeById } from "../../state/duplicateNodeById";
 import { useInsertFlyout } from "../../hooks/useInsertFlyout";
-import { addHandler, buildClonedTree, saveHandler } from "../../viewportExports";
+import { addHandler, buildClonedTree, saveHandler } from "../../state/viewportExports";
 import { AddElement } from "../../toolbox/toolboxUtils";
 import {
   CANVAS_CLASS_CLIPBOARD,

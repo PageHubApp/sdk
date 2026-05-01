@@ -6,8 +6,8 @@
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { useMemo } from "react";
-import { getPropFinalValue } from "../../../../viewport/viewportExports";
-import { ViewAtom } from "../../../../viewport/atoms";
+import { getPropFinalValue } from "../../../../viewport/state/viewportExports";
+import { ViewAtom } from "../../../../viewport/state/atoms";
 import { ViewSelectionAtom } from "../../../Label";
 
 export type LayoutMode = "block" | "flex-row" | "flex-col" | "grid";

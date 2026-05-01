@@ -12,7 +12,7 @@ import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { ACTION_TYPE_OPTIONS, type NodeAction, type ActionType } from "../../../../utils/action";
 import { ACTION_DEFAULTS, ActionSubForm } from "./ActionInput";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface Props {
   action: NodeAction;

@@ -5,14 +5,14 @@
  * The viewer path tree-shakes these out.
  */
 export { InlineToolsRenderer } from "./rendering/InlineToolsRenderer";
-export { HoverNodeController } from "./canvas/HoverNodeController";
-export { NameNodeController } from "./canvas/NameNodeController";
-export { DeleteNodeController } from "./canvas/DeleteNodeController";
+export { HoverNodeController } from "./canvas/controllers/HoverNodeController";
+export { NameNodeController } from "./canvas/controllers/NameNodeController";
+export { DeleteNodeController } from "./canvas/controllers/DeleteNodeController";
 export { ImageMediaTool } from "./canvas/node-tools/ImageMediaTool";
-export { ToolNodeController } from "./canvas/ToolNodeController";
-export { DragAdjustNodeController } from "./canvas/DragAdjustNodeController";
-export { AddSectionNodeController } from "./canvas/AddSectionNodeController";
-export { UniformPaddingNodeController } from "./canvas/UniformPaddingNodeController";
+export { ToolNodeController } from "./canvas/controllers/ToolNodeController";
+export { DragAdjustNodeController } from "./canvas/controllers/DragAdjustNodeController";
+export { AddSectionNodeController } from "./canvas/controllers/AddSectionNodeController";
+export { UniformPaddingNodeController } from "./canvas/controllers/UniformPaddingNodeController";
 export { ToolboxMenu } from "./rendering/toolboxMenuAtom";
 export { AddElementButton } from "./primitives/AddElementButton";
 export { TiptapProvider } from "./inline-tools/TiptapContext";

@@ -8,7 +8,7 @@
  */
 import React from "react";
 import { RenderToolComponent, ToolboxItemDisplay } from "./toolboxUtils";
-import type { ResolvedComponentDef } from "../../../define";
+import type { ResolvedComponentDef } from "../../../define/types";
 import { resolveToolboxIcon } from "./resolveToolboxIcon";
 
 export interface CategorizedToolboxEntry {

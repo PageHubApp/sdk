@@ -9,7 +9,7 @@
  */
 
 import { useEffect } from "react";
-import { OVERLAY_Z_DRAG } from "../overlays/overlayZIndex";
+import { OVERLAY_Z_DRAG } from "../popovers/overlayZIndex";
 
 const ACCENT = "rgb(59 130 246)"; // tailwind blue-500
 

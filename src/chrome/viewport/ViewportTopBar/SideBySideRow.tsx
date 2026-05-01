@@ -1,6 +1,6 @@
 import { useAtomState } from "@zedux/react";
 import type { ViewMode as CanvasViewMode } from "../../../core/store";
-import { SideBySideAtom } from "../atoms";
+import { SideBySideAtom } from "../state/atoms";
 
 const CHOICES: { id: CanvasViewMode; label: string }[] = [
   { id: "mobile", label: "Mobile" },

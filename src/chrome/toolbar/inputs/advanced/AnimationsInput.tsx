@@ -1,8 +1,8 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useState } from "react";
-import { cssAnimationPresets, isCSSAnimation } from "@/utils/animations";
+import { cssAnimationPresets, isCSSAnimation } from "../../../../utils/animations/animations";
 import { motionIt } from "@/utils/motion";
-import { applyAnimation } from "@/utils/tailwind";
+import { applyAnimation } from "../../../../utils/tailwind/tailwind";
 import { TbPlayerPlay, TbRotate, TbTimeline } from "react-icons/tb";
 import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";
 import { ToolbarItem } from "../../ToolbarItem";

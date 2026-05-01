@@ -1,11 +1,11 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { changeProp } from "../../../viewport/viewportExports";
+import { changeProp } from "../../../viewport/state/viewportExports";
 import { useEffect, useRef, useState } from "react";
 import { TbTarget } from "react-icons/tb";
 import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
 import { useAtomValue } from "@zedux/react";
 import { getBackgroundUrl } from "@/utils/background";
-import { ViewAtom } from "../../../viewport/atoms";
+import { ViewAtom } from "../../../viewport/state/atoms";
 import { getEffectiveViews, EditModifiersAtom } from "../../Label";
 import { MultiScopeAtom } from "../../breakpoint-chip/atoms";
 import { useDragGesture } from "../../../hooks/useDragGesture";

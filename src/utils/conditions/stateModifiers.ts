@@ -9,7 +9,7 @@
  * className composer driven by the conditions evaluator.
  */
 
-import type { ComponentModifier } from "../../define";
+import type { ComponentModifier } from "../../define/types";
 import { BUILTIN_STATE_MODIFIERS } from "./stateBuiltinModifiers";
 import { evaluateConditionGroups } from "./evaluate";
 import type { ConditionContext, ConditionGroup } from "./types";

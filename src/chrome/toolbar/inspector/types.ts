@@ -1,5 +1,5 @@
 import { ComponentType, ReactElement, ReactNode } from "react";
-import type { ComponentModifier } from "../../../define";
+import type { ComponentModifier } from "../../../define/types";
 
 /**
  * Toolbar config — lives on each component's .craft.toolbar.

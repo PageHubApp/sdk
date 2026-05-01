@@ -1,7 +1,7 @@
 import { UserComponent } from "@craftjs/core";
 import React from "react";
 import { Container } from "../Container/Container";
-import { LazyInspector } from "../LazyInspector";
+import { Inspector } from "../InspectorRegistry";
 
 const HeaderMainTab = React.lazy(() =>
   import("../../chrome/toolbar/inspector/mainTabs/HeaderMainTab").then(mod => ({
@@ -35,7 +35,7 @@ Object.defineProperty(Header, "craft", {
         canMoveOut: () => true,
       },
       related: {
-        toolbar: LazyInspector,
+        toolbar: Inspector,
       },
       toolbar: {
         ...(containerCraft.toolbar || {}),

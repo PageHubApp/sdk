@@ -1,5 +1,5 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useSDK } from "../../../../core/context";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useState } from "react";
@@ -15,6 +15,7 @@ const VIEW_STATES = [
 export const FormMainTab = () => {
   const { id, props } = useNode(node => ({ props: node.data?.props }));
   const { actions } = useEditor();
+  const { config } = useSDK();
   const [formType, setFormType] = useState(props.submissionType);
   const currentView = props.view || "";
 
@@ -59,7 +60,7 @@ export const FormMainTab = () => {
               </button>
             ))}
           </div>
-          <SettingsAiSlot />
+          {config.editorChromeSlots?.settingsAiButton}
         </ToolbarSection>
 
         <ToolbarSection title="Submission" icon={SECTION_ICONS["Type"]} help={help}>

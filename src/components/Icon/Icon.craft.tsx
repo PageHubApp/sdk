@@ -9,7 +9,7 @@ const IconMainTab = React.lazy(() =>
     default: mod.IconMainTab,
   }))
 );
-import { defineComponent } from "../../define";
+import { defineComponent } from "../../define/defineComponent";
 import { resolveIconSvgSync } from "../../utils/icons/serverResolve";
 import {
   ariaAttrs,
@@ -20,6 +20,7 @@ import {
   type ToHTMLFn,
 } from "../../utils/staticHtml";
 import { Icon } from "./Icon";
+import { iconPresets } from "./Icon.presets";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const value: string | undefined = props.value;
@@ -72,26 +73,7 @@ export const IconDef = defineComponent(
     rules: {
       canDrag: () => true,
     },
-    presets: [
-      {
-        label: "Icon",
-        icon: TbStarFilled,
-        description: "A small standalone icon.",
-        props: {
-          value: "ref-icon:tb/TbStar",
-          className: "size-6",
-        },
-      },
-      {
-        label: "Large Icon",
-        icon: TbBolt,
-        description: "A bigger icon for feature tiles or hero badges.",
-        props: {
-          value: "ref-icon:tb/TbBolt",
-          className: "size-12 text-primary",
-        },
-      },
-    ],
+    presets: iconPresets,
   },
   { __internal: true }
 );

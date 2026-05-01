@@ -291,15 +291,6 @@ export interface PageHubLocale {
 
 // ─── Host-injected assistant panel (no AI implementation in the SDK) ─────────
 
-/** Context passed to `renderAiPanel` — same tree as `<PageHubEditor />` (inside Craft `<Editor>`). */
-export interface PageHubAiPanelContext {
-  /** SDK event bus from `PageHub.init` / provider (structurally matches `EventEmitter`). */
-  emitter: {
-    on: (event: string, handler: (...args: any[]) => void) => () => void;
-    emit: (event: string, ...args: any[]) => void;
-  };
-}
-
 export interface PageHubMediaMetadataSuggestion {
   title?: string;
   alt?: string;
@@ -339,12 +330,12 @@ export interface PageHubEditorChromeSlots {
   renderToolboxAiButton?: () => ReactNode;
   /** Rich-text floating toolbar — opens assistant for copy (text scope). */
   renderInlineCopyAssistantTrigger?: (ctx: { textNodeId: string; query: unknown }) => ReactNode;
-  /** Settings sidebar “Edit with AI” (per selected node). Host should pin `nodeId` to `AiChatAttachedNodesAtom` like “Add to context”. */
-  renderSettingsAiButton?: (ctx: {
-    nodeId: string;
-    displayName: string;
-    resolvedType?: string;
-  }) => ReactNode;
+  /**
+   * Settings sidebar “Edit with AI” chip. Host renders a single ReactNode that
+   * reads the selected node via `useNode()` and self-gates on `useAiEnabled()`.
+   * Mounted at the top of every component settings tab.
+   */
+  settingsAiButton?: ReactNode;
   /** Data source settings for Container — filter, limit, sort, offset controls. Host-rendered. */
   renderDataSourceSection?: (ctx: { nodeId: string }) => ReactNode;
   /** Container / add-section wand — opens assistant in create mode. */
@@ -482,13 +473,14 @@ export interface PageHubConfig {
   };
 
   /** Custom components registered via defineComponent() */
-  components?: import("./define").ResolvedComponentDef[];
+  components?: import("./define/types").ResolvedComponentDef[];
 
   /**
    * Host-rendered docked panel (e.g. AI assistant). Shown when `features.aiGeneration` is true.
    * The SDK provides layout placement only; all product UI and API calls live in the host.
+   * Use `useSDK()` inside your component if you need the emitter / config.
    */
-  renderAiPanel?: (ctx: PageHubAiPanelContext) => ReactNode;
+  aiPanel?: ReactNode;
 
   /** Optional slots for AI (and auth-gated) chrome — implemented by the host app. */
   editorChromeSlots?: PageHubEditorChromeSlots;
@@ -500,6 +492,19 @@ export interface PageHubConfig {
    * page switching happens in-memory only.
    */
   urlStrategy?: import("./utils/page/pageNavigation").UrlStrategy;
+
+  /**
+   * Google Fonts picker rails (`popular` / `funky` order) and extra names for API-less fallback.
+   * Omitted → stock `DEFAULT_CURATED_GOOGLE_FONT_FAMILIES` in `utils/fonts/curatedGoogleFontFamilies`.
+   */
+  curatedGoogleFontFamilies?: import("./utils/fonts/curatedGoogleFontFamilies").CuratedGoogleFontFamilies;
+
+  /**
+   * Responsive preview device frames (dropdown in device mode). Omitted → stock list in
+   * `chrome/viewport/viewportDevicePresets`. Use a non-empty array; `"Custom"` is optional but
+   * keeps the same UX as stock when users edit W×H manually.
+   */
+  viewportDevicePresets?: readonly import("./chrome/viewport/viewportDevicePresets").ViewportDevicePreset[];
 }
 
 // ─── Instance API — returned by PageHub.init() ───────────────────────────────
@@ -644,4 +649,4 @@ export type {
   ResolvedComponentDef,
   PropSchema,
   ComponentPreset,
-} from "./define";
+} from "./define/types";

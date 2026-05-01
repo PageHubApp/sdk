@@ -56,26 +56,9 @@
   --ring: hsl(0 0% 9%);
   --border: 1px;
 
-  /* Match @pagehub/sdk theme.css @theme inline — utilities use --color-* */
-  --color-primary: var(--primary);
-  --color-primary-content: var(--primary-content);
-  --color-secondary: var(--secondary);
-  --color-secondary-content: var(--secondary-content);
-  --color-accent: var(--accent);
-  --color-accent-content: var(--accent-content);
-  --color-neutral: var(--neutral);
-  --color-neutral-content: var(--neutral-content);
-  --color-base-100: var(--base-100);
-  --color-base-200: var(--base-200);
-  --color-base-300: var(--base-300);
-  --color-base-content: var(--base-content);
-  --color-background: var(--base-100);
-  --color-foreground: var(--base-content);
-  --color-muted: var(--neutral);
-  --color-muted-foreground: var(--neutral-content);
-  --color-border: var(--base-300);
-  --color-input: var(--base-300);
-  --color-ring: var(--ring);
+  /* --color-* aliases inherit from theme.css's @theme inline at :root.
+     Each alias is `var(--primary)` etc, resolved against this scope's overridden
+     base tokens — no need to redeclare here. */
 
   /* Radius / shadow: site styleGuide can override #viewport — keep chrome stable */
   --radius-box: 0.5rem;
@@ -149,25 +132,7 @@
   --ring: hsl(0 0% 93%);
   --border: 1px;
 
-  --color-primary: var(--primary);
-  --color-primary-content: var(--primary-content);
-  --color-secondary: var(--secondary);
-  --color-secondary-content: var(--secondary-content);
-  --color-accent: var(--accent);
-  --color-accent-content: var(--accent-content);
-  --color-neutral: var(--neutral);
-  --color-neutral-content: var(--neutral-content);
-  --color-base-100: var(--base-100);
-  --color-base-200: var(--base-200);
-  --color-base-300: var(--base-300);
-  --color-base-content: var(--base-content);
-  --color-background: var(--base-100);
-  --color-foreground: var(--base-content);
-  --color-muted: var(--neutral);
-  --color-muted-foreground: var(--neutral-content);
-  --color-border: var(--base-300);
-  --color-input: var(--base-300);
-  --color-ring: var(--ring);
+  /* --color-* aliases inherit from theme.css's @theme inline at :root (see light scope). */
 
   --radius-box: 0.5rem;
   --radius-field: 0.25rem;

@@ -4,7 +4,7 @@ import { TbChevronDown, TbChevronUp, TbExternalLink, TbLayoutGrid } from "react-
 import { LayersDialogOpenAtom, SidebarLayersPanelAtom } from "../../utils/atoms";
 import { phStorage } from "../../utils/phStorage";
 import { useDragGesture } from "../hooks/useDragGesture";
-import { Layers } from "./dialogs/Layers";
+import { Layers } from "./dialogs/Layers/Layers";
 
 const MIN_HEIGHT = 120;
 const DEFAULT_HEIGHT = 250;

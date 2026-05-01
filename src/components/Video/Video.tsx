@@ -1,11 +1,11 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbBrandVimeo, TbBrandYoutube, TbPlayerPlay, TbVideo } from "react-icons/tb";
-import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../LazyEditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { getMediaContent } from "../../utils/media/media";
 import { isDirectVideoFileUrl, nativeVideoPlaybackFields } from "../../utils/nativeVideo";
-import { useMounted } from "../../utils/hooks";
+import { useMounted } from "../../utils/hooks/useMounted";
 
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../../utils/motion";

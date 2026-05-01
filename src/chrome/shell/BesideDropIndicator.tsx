@@ -3,7 +3,7 @@ import { RenderIndicator, getDOMInfo } from "@craftjs/utils";
 import React from "react";
 import ReactDOM from "react-dom";
 import { getBesidePreviewLabel } from "./layoutInference";
-import { OVERLAY_Z_DRAG } from "../overlays/overlayZIndex";
+import { OVERLAY_Z_DRAG } from "../popovers/overlayZIndex";
 
 function getIndicatorColor(indicator: any, indicatorOptions: any) {
   return indicator?.error

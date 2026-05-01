@@ -1,8 +1,8 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
-import { useAnchoredPopover } from "../../../overlays/useAnchoredPopover";
-import { OVERLAY_Z_UNIFIED_DROPDOWN } from "../../../overlays/overlayZIndex";
+import { useAnchoredPopover } from "../../../popovers/useAnchoredPopover";
+import { OVERLAY_Z_UNIFIED_DROPDOWN } from "../../../popovers/overlayZIndex";
 
 interface SubgroupPopoutProps {
   isVisible: boolean;

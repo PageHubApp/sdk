@@ -1,6 +1,6 @@
 import { useNode } from "@craftjs/core";
-import { ViewAtom } from "../../viewport/atoms";
-import { changeProp, getProp } from "../../viewport/viewportExports";
+import { ViewAtom } from "../../viewport/state/atoms";
+import { changeProp, getProp } from "../../viewport/state/viewportExports";
 import { atom, useAtomState, useAtomValue } from "@zedux/react";
 
 const SelectedButtonAtom = atom<number | null>("selectedButton", null as number | null);

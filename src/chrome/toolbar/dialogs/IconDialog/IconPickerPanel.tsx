@@ -11,7 +11,7 @@ import { MediaManagerModal } from "../../inputs/media/MediaManagerModal";
 import { IconsTab } from "./components/IconsTab";
 import { MediaTab } from "./components/MediaTab";
 import { useIconDialog } from "./hooks/useIconDialog";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface PanelProps {
   value: string;

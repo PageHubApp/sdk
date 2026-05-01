@@ -1,6 +1,6 @@
 import { useNode } from "@craftjs/core";
 import { EMBED_SERVICES, type EmbedService } from "@/components/Embed/Embed";
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useSDK } from "../../../../core/context";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
@@ -78,6 +78,7 @@ export const EmbedMainTab = () => {
   const { props } = useNode(node => ({
     props: node.data?.props,
   }));
+  const { config } = useSDK();
 
   const service: EmbedService = props.service || "custom";
   const isCodePaste = CODE_PASTE_SERVICES.includes(service);
@@ -162,7 +163,7 @@ export const EmbedMainTab = () => {
               </p>
             </>
           )}
-          <SettingsAiSlot />
+          {config.editorChromeSlots?.settingsAiButton}
         </ToolbarSection>
 
         <ToolbarSection title="Advanced" help="Title for accessibility and optional code override.">

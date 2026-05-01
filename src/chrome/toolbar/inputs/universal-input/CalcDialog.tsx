@@ -16,7 +16,7 @@ import { useMemo, useState } from "react";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { Chip } from "../../../primitives/Chip";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface CalcDialogProps {
   value: string;

@@ -13,7 +13,7 @@
  */
 import React, { useState } from "react";
 import { useNode } from "@craftjs/core";
-import { TailwindStyles } from "@/utils/tailwind";
+import { TailwindStyles } from "../../../../utils/tailwind/tailwind";
 import { Chip } from "@/chrome/primitives/Chip";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
@@ -23,7 +23,7 @@ import { ToolbarItem } from "../../ToolbarItem";
 import { ColorInput } from "../color/ColorInput";
 import { ShadowInput } from "../color/ShadowInput";
 import { IconDialogInput } from "./IconDialogInput";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface IconInputProps {
   /** Root prop key under which icon.* fields live (default "icon"). */

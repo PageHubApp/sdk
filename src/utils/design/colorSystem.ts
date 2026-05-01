@@ -62,6 +62,16 @@ export const removeBrackets = (val: string): string => {
 };
 
 /**
+ * First `#rgb`, `#rrggbb`, or `#rrggbbaa` in a string — e.g. Tailwind
+ * `drop-shadow-[#6c88bb]` or bracket-only `[#6c88bb]` for sidebar previews.
+ */
+export function extractFirstCssHex(value: string): string | null {
+  if (!value || typeof value !== "string") return null;
+  const m = value.match(/#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})\b/);
+  return m ? m[0] : null;
+}
+
+/**
  * Parse Tailwind v4 arbitrary opacity bracket content → alpha 0–1
  * e.g. "50%" → 0.5, "0.5" → 0.5, ".35" → 0.35
  */

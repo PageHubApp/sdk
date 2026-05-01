@@ -1,14 +1,14 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbCode } from "react-icons/tb";
-import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../LazyEditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { useScrollToSelected } from "../componentHooks";
 import { InjectedHeadTags, InjectedBodyTags } from "../InjectedHeadTags";
-import { useMounted } from "../../utils/hooks";
+import { useMounted } from "../../utils/hooks/useMounted";
 
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 

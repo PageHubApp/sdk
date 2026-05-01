@@ -19,7 +19,7 @@ import { ToolbarDropdown } from "@/chrome/toolbar/ToolbarDropdown";
 import { ColorPickerAtom } from "@/chrome/toolbar/dialogs/ColorPickerDialog";
 import { FontFamilyDialogAtom } from "@/chrome/toolbar/dialogs/FontFamilyDialog";
 import { ToolbarSegmentedControl } from "@/chrome/toolbar/primitives/ToolbarSegmentedControl";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 import type { TextStyleDraft } from "./textStyleDraft";
 
 export type { TextStyleDraft } from "./textStyleDraft";

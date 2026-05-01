@@ -1,12 +1,12 @@
 import lz from "lzutf8";
-import { getLoadActionScript } from "../utils/actions";
+import { getLoadActionScript } from "../utils/actions/load";
 import { getConditionEvalScript } from "../utils/conditions/clientScript";
 import { resolveTheme } from "../utils/design/resolveTheme";
 import { collectIconRefs } from "../utils/icons/collectIconRefs";
 import { preloadIcons } from "../utils/icons/serverResolve";
 import { escapeHTML } from "../utils/staticHtml";
 import type { StaticRenderContext } from "../utils/staticHtml";
-import { processForStatic } from "../define";
+import { processForStatic } from "../define/processors/forStatic";
 import { styleGuideGoogleFontFamily } from "./fonts";
 import { defaultResolver } from "./resolver";
 import { PH_GSAP_CDN } from "./runtime/gsapCdn";

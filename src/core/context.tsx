@@ -17,6 +17,14 @@ import type { ResolvedConfig } from "../config";
 import { EventEmitter } from "./events";
 import { getSaveCoordinator } from "./saveCoordinator";
 import { setPageHubApiBaseUrl } from "./apiConfig";
+import {
+  resetCuratedGoogleFontFamilies,
+  setCuratedGoogleFontFamilies,
+} from "../utils/fonts/googleFonts";
+import {
+  resetViewportDevicePresets,
+  setViewportDevicePresets,
+} from "../chrome/viewport/viewportDevicePresets";
 import { EditorStoreProvider } from "./store";
 import type { PageHubFeatures, PageHubTheme, SaveMeta, SaveResult, SaveStatus } from "../types";
 import { Tooltip as ReactTooltip } from "react-tooltip";
@@ -108,6 +116,30 @@ export function PageHubProvider({ config, emitter, children }: PageHubProviderPr
     setPageHubApiBaseUrl(config.apiBaseUrl);
     return () => setPageHubApiBaseUrl("");
   }, [config.apiBaseUrl]);
+
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    if (config.curatedGoogleFontFamilies) {
+      setCuratedGoogleFontFamilies(config.curatedGoogleFontFamilies);
+    } else {
+      resetCuratedGoogleFontFamilies();
+    }
+    return () => {
+      resetCuratedGoogleFontFamilies();
+    };
+  }, [config.curatedGoogleFontFamilies]);
+
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    if (config.viewportDevicePresets && config.viewportDevicePresets.length > 0) {
+      setViewportDevicePresets(config.viewportDevicePresets);
+    } else {
+      resetViewportDevicePresets();
+    }
+    return () => {
+      resetViewportDevicePresets();
+    };
+  }, [config.viewportDevicePresets]);
 
   const save = useCallback((opts?: SaveMeta) => getSaveCoordinator(emitter).save(opts), [emitter]);
   const subscribeSaveStatus = useCallback(

@@ -13,7 +13,7 @@ import {
   TbUpload,
 } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { EditorMenuNavRow, EditorMenuSectionLabel } from "@/chrome/viewport/EditorMenuNav";
+import { EditorMenuNavRow, EditorMenuSectionLabel } from "@/chrome/viewport/nav/EditorMenuNav";
 import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
 import {

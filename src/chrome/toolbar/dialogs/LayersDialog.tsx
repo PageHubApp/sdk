@@ -2,8 +2,8 @@ import React from "react";
 import { TbLayoutGrid } from "react-icons/tb";
 import { useEditorSidebarDockLeft } from "../../../utils/atoms";
 import { FloatingPanel } from "../../floating/FloatingPanel";
-import { Layers } from "./Layers";
-import { OVERLAY_Z_MODAL } from "../../overlays/overlayZIndex";
+import { Layers } from "./Layers/Layers";
+import { OVERLAY_Z_MODAL } from "../../popovers/overlayZIndex";
 
 interface LayersDialogProps {
   isOpen: boolean;

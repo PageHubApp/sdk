@@ -1,8 +1,8 @@
 import { TbX } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { CanvasZoom } from "../../CanvasZoom";
-import { DeviceSelector } from "../../DeviceSelector";
-import { DeviceZoomAtom } from "../../atoms";
+import { CanvasZoom } from "../../canvas/CanvasZoom";
+import { DeviceSelector } from "../../canvas/DeviceSelector";
+import { DeviceZoomAtom } from "../../state/atoms";
 
 /**
  * Header bar that floats above the device-frame canvas. Phones get a

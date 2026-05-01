@@ -1,6 +1,6 @@
 import { toHTML as containerToHTML } from "../components/Container/Container.craft";
 import { BUILTIN_COMPONENT_DEFS } from "../core/componentRegistry";
-import { processForStatic } from "../define";
+import { processForStatic } from "../define/processors/forStatic";
 import type { ToHTMLFn } from "../utils/staticHtml";
 
 const cartBadgeToHTML: ToHTMLFn = (props, children, ctx) => {

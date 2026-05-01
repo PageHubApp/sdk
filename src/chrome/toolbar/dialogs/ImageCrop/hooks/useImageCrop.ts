@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { getCdnUrl } from "@/utils/cdn";
-import { DeleteMedia } from "@/chrome/viewport/viewportExports";
+import { DeleteMedia } from "@/chrome/viewport/state/viewportExports";
 import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import { useDragGesture } from "@/chrome/hooks/useDragGesture";
 

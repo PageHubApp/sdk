@@ -2,7 +2,7 @@ import { TbDroplet } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { FilterFields } from "@/chrome/toolbar/inputs/advanced/EffectsClassInput";
 import type { EditorPanelProps } from "../effectTypes";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../../../../popovers/overlayZIndex";
 
 export default function FilterEditorPanel({ initialPosition, onClose }: EditorPanelProps) {
   return (

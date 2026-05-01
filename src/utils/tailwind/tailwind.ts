@@ -9,7 +9,7 @@
 import parse from "style-to-object";
 import { BaseSelectorProps } from "../../components/selectors";
 import { getFontFromComp, loadCombinedFonts } from "../fonts/fontLoader";
-import { isCSSAnimation, getCSSAnimationProps, scrollAnimRef } from "../animations";
+import { isCSSAnimation, getCSSAnimationProps, scrollAnimRef } from "../animations/animations";
 
 // ─── Re-export everything from the pure module ─────────────────────────────
 

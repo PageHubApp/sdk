@@ -2,7 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { getClonedState } from "../../utils/cloneState";
 import React from "react";
 import { TbMapPin } from "react-icons/tb";
-import { useMounted } from "../../utils/hooks";
+import { useMounted } from "../../utils/hooks/useMounted";
 
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 

@@ -1,5 +1,5 @@
 import { useGetRectLater } from "../../inline-tools/Dialog";
-import { getRect } from "../../viewport/useRect";
+import { getRect } from "../../viewport/hooks/useRect";
 import { useRef } from "react";
 import { useAtomValue } from "@zedux/react";
 import { ToolTipDialogAtom } from "./dialogAtoms";

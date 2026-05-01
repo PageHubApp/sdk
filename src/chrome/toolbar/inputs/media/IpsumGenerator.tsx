@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { changeProp } from "../../../viewport/viewportExports";
+import { changeProp } from "../../../viewport/state/viewportExports";
 
-import { ViewAtom } from "../../../viewport/atoms";
+import { ViewAtom } from "../../../viewport/state/atoms";
 import { LoremIpsum } from "@/utils/seeds/loremIpsum";
 import { useAtomValue } from "@zedux/react";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";

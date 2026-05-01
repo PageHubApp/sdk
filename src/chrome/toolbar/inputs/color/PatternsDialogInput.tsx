@@ -1,6 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { changeProp } from "../../../viewport/viewportExports";
-import { ViewAtom } from "../../../viewport/atoms";
+import { changeProp } from "../../../viewport/state/viewportExports";
+import { ViewAtom } from "../../../viewport/state/atoms";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRegisterFloatingPanelPortal } from "@/chrome/floating/FloatingPanel";

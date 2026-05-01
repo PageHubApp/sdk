@@ -11,7 +11,7 @@
  */
 import React from "react";
 import { TbAdjustmentsAlt } from "react-icons/tb";
-import { defineComponent } from "../../define";
+import { defineComponent } from "../../define/defineComponent";
 import { Container } from "../Container/Container";
 import { toHTML } from "../Container/Container.craft";
 import { layoutCanvasCanMoveIn } from "../layoutCanvasCanMoveIn";

@@ -13,7 +13,7 @@ import { TbPencil, TbPlus, TbSearch } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import type { TypographyPresetRow } from "./TypographyPresetSelect";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface PanelProps {
   presets: TypographyPresetRow[];

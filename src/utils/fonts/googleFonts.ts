@@ -19,87 +19,59 @@ export interface GoogleFontsResponse {
   items: GoogleFont[];
 }
 
-// Popular fonts to show first (top 50 most used)
-const popularFonts = [
-  "Roboto",
-  "Open Sans",
-  "Lato",
-  "Montserrat",
-  "Oswald",
-  "Raleway",
-  "PT Sans",
-  "Merriweather",
-  "Poppins",
-  "Nunito",
-  "Roboto Condensed",
-  "Ubuntu",
-  "Playfair Display",
-  "Mukta",
-  "Noto Sans",
-  "Rubik",
-  "Work Sans",
-  "Inter",
-  "Fira Sans",
-  "Source Sans Pro",
-  "Noto Serif",
-  "Quicksand",
-  "Karla",
-  "Titillium Web",
-  "Libre Baskerville",
-  "Bitter",
-  "Hind",
-  "Cabin",
-  "Dosis",
-  "Crimson Text",
-  "Inconsolata",
-  "Oxygen",
-  "Droid Sans",
-  "Libre Franklin",
-  "Josefin Sans",
-  "Barlow",
-  "EB Garamond",
-  "PT Serif",
-  "Abel",
-  "Arimo",
-  "Heebo",
-  "DM Sans",
-  "Mulish",
-  "Manrope",
-  "Nanum Gothic",
-  "Archivo",
-  "Exo 2",
-  "Lora",
-  "IBM Plex Sans",
-  "Comfortaa",
-];
+import {
+  CURATED_GOOGLE_FONT_FAMILIES,
+  DEFAULT_CURATED_GOOGLE_FONT_FAMILIES,
+  type CuratedGoogleFontFamilies,
+} from "./curatedGoogleFontFamilies";
 
-// Fun/Display fonts to feature
-const funkyFonts = [
-  "Pacifico",
-  "Lobster",
-  "Righteous",
-  "Permanent Marker",
-  "Bebas Neue",
-  "Abril Fatface",
-  "Fredoka One",
-  "Staatliches",
-  "Russo One",
-  "Orbitron",
-  "Press Start 2P",
-  "Indie Flower",
-  "Architects Daughter",
-  "Shadows Into Light",
-  "Caveat",
-  "Dancing Script",
-  "Great Vibes",
-  "Satisfy",
-  "Tangerine",
-  "Kaushan Script",
-];
+export {
+  CURATED_GOOGLE_FONT_FAMILIES,
+  DEFAULT_CURATED_GOOGLE_FONT_FAMILIES,
+  type CuratedGoogleFontFamilies,
+};
 
 // Cache for Google Fonts API response
 let fontsCache: GoogleFont[] | null = null;
 let fetchPromise: Promise<GoogleFont[]> | null = null;
+
+function wipeFontsRequestCache(): void {
+  fontsCache = null;
+  fetchPromise = null;
+}
+
+/** Host override; `null` uses {@link DEFAULT_CURATED_GOOGLE_FONT_FAMILIES}. */
+let curatedFamiliesOverride: CuratedGoogleFontFamilies | null = null;
+
+function getActiveCuratedFamilies(): CuratedGoogleFontFamilies {
+  return curatedFamiliesOverride ?? DEFAULT_CURATED_GOOGLE_FONT_FAMILIES;
+}
+
+/** Active popular / funky / extended lists (override or default). */
+export function getCuratedGoogleFontFamilies(): Readonly<CuratedGoogleFontFamilies> {
+  return getActiveCuratedFamilies();
+}
+
+/**
+ * Imperative override for curated font buckets (picker order, funky rail, API-less fallback).
+ * Prefer `PageHubConfig.curatedGoogleFontFamilies` when using `PageHubProvider` / `PageHub.init`.
+ * Clears the in-memory Google Fonts cache so the next `extended` union applies on the next fetch.
+ */
+export function setCuratedGoogleFontFamilies(next: CuratedGoogleFontFamilies): void {
+  curatedFamiliesOverride = next;
+  wipeFontsRequestCache();
+}
+
+/** Restore stock {@link DEFAULT_CURATED_GOOGLE_FONT_FAMILIES} and clear the font cache. */
+export function resetCuratedGoogleFontFamilies(): void {
+  curatedFamiliesOverride = null;
+  wipeFontsRequestCache();
+}
+
+function curatedFamilyNamesUnique(): string[] {
+  const { popular, funky, extended } = getActiveCuratedFamilies();
+  return [...new Set([...popular, ...funky, ...extended])];
+}
 
 /**
  * Fetch all Google Fonts from the API
@@ -177,157 +149,7 @@ export const fetchGoogleFonts = async (apiKey?: string): Promise<GoogleFont[]> =
  * Includes 200+ popular and useful Google Fonts
  */
 const getFallbackFonts = (): GoogleFont[] => {
-  // Additional comprehensive font list (serif, sans-serif, display, etc.)
-  const additionalFonts = [
-    // Serif fonts
-    "Crimson Pro",
-    "Libre Baskerville",
-    "Playfair Display",
-    "Merriweather",
-    "Lora",
-    "PT Serif",
-    "Vollkorn",
-    "Cormorant",
-    "Spectral",
-    "Cardo",
-    "Alegreya",
-    "Noto Serif",
-    "Source Serif Pro",
-    "Tinos",
-    "Gelasio",
-    "Domine",
-    "Arvo",
-    "Bitter",
-    "Neuton",
-    "Old Standard TT",
-    "Crimson Text",
-    "Gentium Book Basic",
-    "Coustard",
-    "Alice",
-    "Amiri",
-    // Important: Goudy Bookletter 1911
-    "Goudy Bookletter 1911",
-
-    // Sans-serif fonts
-    "Inter",
-    "Roboto",
-    "Open Sans",
-    "Lato",
-    "Montserrat",
-    "Poppins",
-    "Nunito",
-    "Raleway",
-    "Ubuntu",
-    "Work Sans",
-    "Rubik",
-    "Source Sans Pro",
-    "Mukta",
-    "PT Sans",
-    "Oswald",
-    "Fira Sans",
-    "Hind",
-    "Cabin",
-    "Karla",
-    "Titillium Web",
-    "Quicksand",
-    "Oxygen",
-    "Dosis",
-    "Barlow",
-    "Manrope",
-    "DM Sans",
-    "Mulish",
-    "Heebo",
-    "Exo 2",
-    "IBM Plex Sans",
-    "Comfortaa",
-    "Abel",
-    "Archivo",
-    "Noto Sans",
-    "Red Hat Display",
-    "Jost",
-    "Asap",
-    "Catamaran",
-    "Public Sans",
-    "Space Grotesk",
-
-    // Display fonts
-    "Bebas Neue",
-    "Anton",
-    "Righteous",
-    "Staatliches",
-    "Monoton",
-    "Abril Fatface",
-    "Fredoka One",
-    "Audiowide",
-    "Bungee",
-    "Yellowtail",
-    "Alfa Slab One",
-    "Secular One",
-    "Black Ops One",
-    "Sigmar One",
-    "Bowlby One SC",
-    "Poiret One",
-    "Titan One",
-    "Creepster",
-    "Fugaz One",
-
-    // Handwriting & Script fonts
-    "Pacifico",
-    "Lobster",
-    "Dancing Script",
-    "Great Vibes",
-    "Satisfy",
-    "Kaushan Script",
-    "Tangerine",
-    "Allura",
-    "Cookie",
-    "Sacramento",
-    "Indie Flower",
-    "Shadows Into Light",
-    "Caveat",
-    "Architects Daughter",
-    "Patrick Hand",
-    "Amatic SC",
-    "Courgette",
-    "Kalam",
-    "Handlee",
-
-    // Monospace fonts
-    "Roboto Mono",
-    "Source Code Pro",
-    "JetBrains Mono",
-    "Fira Code",
-    "Inconsolata",
-    "Space Mono",
-    "IBM Plex Mono",
-    "Courier Prime",
-    "Anonymous Pro",
-    "Overpass Mono",
-    "Ubuntu Mono",
-    "PT Mono",
-
-    // More useful fonts
-    "Roboto Condensed",
-    "Libre Franklin",
-    "Josefin Sans",
-    "Nanum Gothic",
-    "PT Sans Narrow",
-    "Varela Round",
-    "Lexend",
-    "Merriweather Sans",
-    "Encode Sans",
-    "Sora",
-    "Outfit",
-    "Plus Jakarta Sans",
-    "Epilogue",
-    "Urbanist",
-    "Figtree",
-    "Albert Sans",
-    "Bricolage Grotesque",
-  ];
-
-  // Combine all unique fonts
-  const allFonts = [...new Set([...popularFonts, ...funkyFonts, ...additionalFonts])];
+  const allFonts = curatedFamilyNamesUnique();
 
   return allFonts.map(family => ({
     family,
@@ -342,10 +164,13 @@ const getFallbackFonts = (): GoogleFont[] => {
  */
 export const getOrganizedFonts = async (apiKey?: string) => {
   const allFonts = await fetchGoogleFonts(apiKey);
+  const curated = getActiveCuratedFamilies();
+  const popularSet = new Set<string>(curated.popular);
+  const funkySet = new Set<string>(curated.funky);
 
   // Sort fonts into categories
-  const popular = allFonts.filter(f => popularFonts.includes(f.family));
-  const funky = allFonts.filter(f => funkyFonts.includes(f.family));
+  const popular = allFonts.filter(f => popularSet.has(f.family));
+  const funky = allFonts.filter(f => funkySet.has(f.family));
   const serif = allFonts.filter(
     f => f.category === "serif" && !popular.includes(f) && !funky.includes(f)
   );
@@ -478,8 +303,7 @@ export const preloadFonts = (
  * Clear the font cache (useful for refreshing)
  */
 export const clearFontCache = () => {
-  fontsCache = null;
-  fetchPromise = null;
+  wipeFontsRequestCache();
 };
 
 /**
@@ -494,12 +318,12 @@ export const getFontFamilies = async (apiKey?: string): Promise<string[]> => {
  * Get popular fonts as simple array
  */
 export const getPopularFonts = (): string[] => {
-  return popularFonts;
+  return [...getActiveCuratedFamilies().popular];
 };
 
 /**
  * Get funky/display fonts as simple array
  */
 export const getFunkyFonts = (): string[] => {
-  return funkyFonts;
+  return [...getActiveCuratedFamilies().funky];
 };

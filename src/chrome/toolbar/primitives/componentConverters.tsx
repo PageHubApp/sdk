@@ -1,6 +1,6 @@
 import { getLinkedAncestorNode } from "@/utils/component/componentUtils";
 import { clearRelation, getBelongsTo, setRelationField } from "@/utils/relation";
-import { removeHasManyRelation } from "../../viewport/viewportExports";
+import { removeHasManyRelation } from "../../viewport/state/viewportExports";
 import { TbBoxModel2, TbLink, TbLinkOff, TbPalette, TbPencil } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";

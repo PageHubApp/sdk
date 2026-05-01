@@ -2,7 +2,7 @@ import { useNode } from "@craftjs/core";
 import { useFindScrollingParent } from "../../components/componentHooks";
 import { useCallback, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { getRect } from "../viewport/useRect";
+import { getRect } from "../viewport/hooks/useRect";
 
 const RenderNodeControl = ({
   position,

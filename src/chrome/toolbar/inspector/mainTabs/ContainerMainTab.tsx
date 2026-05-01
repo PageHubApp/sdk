@@ -1,5 +1,5 @@
 import { TbSection } from "react-icons/tb";
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useSDK } from "../../../../core/context";
 import { LayoutPresetInput } from "../../inputs/layout/LayoutPresetInput";
 import { useLayoutPreset } from "../../inputs/layout/hooks/useLayoutPreset";
 import { ToolbarItem } from "../../ToolbarItem";
@@ -70,6 +70,7 @@ export const ContainerMainTab = () => {
   const node = useGetNode();
   const props = node.data?.props;
   const layoutPreset = useLayoutPreset({ propKey: "layoutPreset" });
+  const { config } = useSDK();
 
   // imageContainer keeps its background-image content panel; layout preset
   // for all other containers now lives in the Layout tab > Alignment section
@@ -80,7 +81,7 @@ export const ContainerMainTab = () => {
         {renderComponentSlots({
           Content: (
             <ToolbarSection collapsible={false}>
-              <SettingsAiSlot />
+              {config.editorChromeSlots?.settingsAiButton}
               {/* Render through registry so the popover trigger lazy-loads via
                   customInputs.tsx (chip skeleton fallback) — same pipeline the
                   Design tab Background section uses. Direct imports would

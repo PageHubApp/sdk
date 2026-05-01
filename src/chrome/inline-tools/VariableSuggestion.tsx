@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import ReactDOM from "react-dom";
 import { TbBuilding, TbCalendar, TbChevronRight, TbShoppingCart, TbVariable } from "react-icons/tb";
 import type { SuggestionProps } from "@/core/tiptapExtensions/VariableNode";
-import { useAnchoredPopover } from "@/chrome/overlays/useAnchoredPopover";
-import { OVERLAY_Z_INLINE_TOOLS } from "@/chrome/overlays/overlayZIndex";
+import { useAnchoredPopover } from "@/chrome/popovers/useAnchoredPopover";
+import { OVERLAY_Z_INLINE_TOOLS } from "@/chrome/popovers/overlayZIndex";
 
 // ── Shared styles (same as ToolboxContextual) ───────────────────────────────
 

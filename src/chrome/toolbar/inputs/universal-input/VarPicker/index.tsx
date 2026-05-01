@@ -15,7 +15,7 @@ import { DesignVar } from "../types";
 import { useDesignVars } from "../hooks/useDesignVars";
 import { VarList } from "./VarList";
 import { VarEditor } from "./VarEditor";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../../popovers/overlayZIndex";
 
 export interface VarPickerProps {
   open: boolean;

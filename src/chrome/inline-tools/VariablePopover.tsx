@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { TbCheck, TbChevronDown, TbPencil, TbTrash } from "react-icons/tb";
-import { AnchoredPopover } from "../overlays/AnchoredPopover";
+import { AnchoredPopover } from "../popovers/AnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../primitives/layout/tooltipSurface";
 
 export interface VariablePopoverProps {

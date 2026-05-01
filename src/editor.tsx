@@ -12,14 +12,16 @@
 import { Editor, Frame, useEditor } from "@craftjs/core";
 import { EcosystemProvider, useAtomState } from "@zedux/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { LazyInspector } from "./components/LazyInspector";
+import { Inspector } from "./components/InspectorRegistry";
 import { resolveConfig } from "./config";
 import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { PageHubProvider, useHasSDKProvider, useSDK } from "./core/context";
 import { EventEmitter } from "./core/events";
 import { getSaveCoordinator } from "./core/saveCoordinator";
-import { CustomComponentsContext, processForEditor, type ResolvedComponentDef } from "./define";
-import { renderToHTML } from "./static-renderer";
+import { CustomComponentsContext } from "./define/context";
+import { processForEditor } from "./define/processors/forEditor";
+import type { ResolvedComponentDef } from "./define/types";
+import { renderToHTML } from "./static-renderer/renderToHTML";
 import type {
   PageData,
   PageHubCallbacks,
@@ -33,11 +35,10 @@ import { clearLoadedPages, listPageNodeIds, markPageLoaded } from "./utils/page/
 import { extractPageShard, extractSharedShard } from "./utils/treeSharding";
 
 // ─── Import the real Viewport, Toolbar, and all dialog components from the editor chrome ──
-import { AiPanelHost } from "./chrome/ai/AiPanelHost";
 import { RenderNodeNewer } from "./chrome/rendering/RenderNode";
 import CustomEventHandlers from "./chrome/shell/CustomEventHandlers";
-import { BorderResizeController } from "./chrome/canvas/BorderResizeController";
-import { RotateHandleController } from "./chrome/canvas/RotateHandleController";
+import { BorderResizeController } from "./chrome/canvas/controllers/BorderResizeController";
+import { RotateHandleController } from "./chrome/canvas/controllers/RotateHandleController";
 import { DragPreviewLayer } from "./chrome/shell/DragPreviewLayer";
 import { DropZoneIndicator } from "./chrome/shell/DropZoneIndicator";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
@@ -47,8 +48,8 @@ import { GlobalSectionPickerDialog } from "./chrome/shell/GlobalSectionPickerDia
 import { onBesideDrop } from "./chrome/shell/besideDrop";
 import { findPosition2D } from "./chrome/shell/findPosition2D";
 import { Toolbar } from "./chrome/toolbar";
-import { Viewport } from "./chrome/viewport/Viewport";
-import { UnsavedChangesAtom } from "./chrome/viewport/atoms";
+import { Viewport } from "./chrome/viewport/Viewport/Viewport";
+import { UnsavedChangesAtom } from "./chrome/viewport/state/atoms";
 import { Container } from "./components/Container/Container";
 import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
 
@@ -71,7 +72,7 @@ const ToolTipDialog = React.lazy(() =>
   import("./chrome/toolbar/dialogs/TooltipDialog").then(m => ({ default: m.ToolTipDialog }))
 );
 
-// Side-effect import: RegistrySettings self-registers with LazyInspector
+// Side-effect import: RegistrySettings self-registers with InspectorRegistry
 import "./chrome/toolbar/inspector/RegistrySettings";
 
 // ─── Safe serialize — catches CraftJS invariant when nodes have unresolved types ─
@@ -306,8 +307,8 @@ interface PageHubEditorProps {
   apiBaseUrl?: string;
   /** Start in read-only mode. Default: false */
   readOnly?: boolean;
-  /** Host-rendered docked panel (e.g. assistant). Same as `PageHubConfig.renderAiPanel`. */
-  renderAiPanel?: PageHubConfig["renderAiPanel"];
+  /** Host-rendered docked panel (e.g. assistant). Same as `PageHubConfig.aiPanel`. */
+  aiPanel?: PageHubConfig["aiPanel"];
   /** Content rendered inside the CraftJS <Editor> tree (has access to useEditor) */
   children?: React.ReactNode;
 }
@@ -352,7 +353,7 @@ function PageHubEditorStandalone(props: PageHubEditorProps & { callbacks: PageHu
       features: props.features,
       apiBaseUrl: props.apiBaseUrl ?? "",
       readOnly: props.readOnly,
-      renderAiPanel: props.renderAiPanel,
+      aiPanel: props.aiPanel,
     })
   );
 
@@ -386,7 +387,7 @@ function PageHubEditorInner({
   // Process component definitions (built-in migrated + consumer custom) into resolver + toolbox data
   const allDefs = React.useMemo(() => [...BUILTIN_COMPONENT_DEFS, ...components], [components]);
   const { resolver: customResolver, toolboxCategories } = React.useMemo(
-    () => processForEditor(allDefs, LazyInspector),
+    () => processForEditor(allDefs, Inspector),
     [allDefs]
   );
 
@@ -493,7 +494,7 @@ function PageHubEditorInner({
                     <Viewport>
                       <EditorInner onQueryReady={onQueryReady} />
                     </Viewport>
-                    {!readOnly && config.features?.aiGeneration && <AiPanelHost />}
+                    {!readOnly && config.features?.aiGeneration && config.aiPanel}
                   </div>
                 </div>
               </div>

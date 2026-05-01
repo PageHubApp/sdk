@@ -1,4 +1,4 @@
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useSDK } from "../../../../core/context";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
 
@@ -8,11 +8,13 @@ import { renderComponentSlots } from "../helpers";
  * the shared property registry, so the Component tab only surfaces the AI
  * helper slot, mirroring `BackgroundMainTab`.
  */
-export const FooterMainTab = () =>
-  renderComponentSlots({
+export const FooterMainTab = () => {
+  const { config } = useSDK();
+  return renderComponentSlots({
     Content: (
       <ToolbarSection collapsible={false}>
-        <SettingsAiSlot />
+        {config.editorChromeSlots?.settingsAiButton}
       </ToolbarSection>
     ),
   });
+};

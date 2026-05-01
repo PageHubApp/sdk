@@ -7,8 +7,8 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { TbBan } from "react-icons/tb";
-import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
-import { ViewAtom } from "../../../viewport/atoms";
+import { changeProp, getPropFinalValue } from "../../../viewport/state/viewportExports";
+import { ViewAtom } from "../../../viewport/state/atoms";
 import { ViewSelectionAtom } from "../../Label";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { Chip } from "@/chrome/primitives/Chip";

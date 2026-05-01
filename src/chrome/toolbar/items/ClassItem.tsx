@@ -2,14 +2,14 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useState, type ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
-import { classNameToVar } from "../../../utils/tailwind";
+import { classNameToVar } from "../../../utils/tailwind/tailwind";
 import {
   buildVariantPrefix,
   editorCanvasViewToClassPrefixKey,
   splitClassVariants,
 } from "../../../utils/tailwind/className";
-import { ViewAtom } from "../../viewport/atoms";
-import { changeProp } from "../../viewport/viewportExports";
+import { ViewAtom } from "../../viewport/state/atoms";
+import { changeProp } from "../../viewport/state/viewportExports";
 import { getEffectiveViews, EditModifiersAtom } from "../Label";
 import { MultiScopeAtom } from "../breakpoint-chip/atoms";
 import { ToolbarItemProps } from "../ToolbarItem";

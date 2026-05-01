@@ -1,6 +1,6 @@
 import { NodeProvider, useNode } from "@craftjs/core";
 import { atom, useAtomState } from "@zedux/react";
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useSDK } from "../../../../core/context";
 import { CraftListEditor } from "../../inputs/preset/CraftListEditor";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -10,6 +10,7 @@ export const SelectedMapPointAtom = atom<any>("selectedmappoint_unified", null);
 
 export const MapMainTab = () => {
   const { id } = useNode();
+  const { config } = useSDK();
   const [activeIndex, setActiveIndex] = useAtomState(SelectedMapPointAtom) as unknown as [
     number | null,
     (v: number | null) => void,
@@ -70,7 +71,7 @@ export const MapMainTab = () => {
               </NodeProvider>
             )}
           />
-          <SettingsAiSlot />
+          {config.editorChromeSlots?.settingsAiButton}
         </ToolbarSection>
 
         <ToolbarSection

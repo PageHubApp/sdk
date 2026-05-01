@@ -9,8 +9,8 @@ import {
   isEditorCanvasBreakpointView,
 } from "../../../utils/tailwind/className";
 import { ToolbarPortalDropdown } from "../../inline-tools/ToolbarPortalDropdown";
-import { CanvasZoom } from "../CanvasZoom";
-import { DEVICE_FRAME_BY_VIEW, getDeviceFrameSpec } from "../deviceFrames";
+import { CanvasZoom } from "../canvas/CanvasZoom";
+import { DEVICE_FRAME_BY_VIEW, getDeviceFrameSpec } from "../canvas/deviceFrames";
 import {
   BreakpointZoomAtom,
   DeviceAtom,
@@ -18,7 +18,7 @@ import {
   DeviceZoomAtom,
   ResponsiveAtom,
   ViewAtom,
-} from "../atoms";
+} from "../state/atoms";
 import { SideBySideRow } from "./SideBySideRow";
 
 const BREAKPOINT_DESCRIPTIONS: Record<string, string> = {

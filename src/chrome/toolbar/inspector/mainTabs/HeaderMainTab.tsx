@@ -1,4 +1,4 @@
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useSDK } from "../../../../core/context";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
 
@@ -8,11 +8,13 @@ import { renderComponentSlots } from "../helpers";
  * (sticky / transparent / backdrop-blur are className choices), so the
  * Component tab only surfaces the AI helper slot, mirroring `BackgroundMainTab`.
  */
-export const HeaderMainTab = () =>
-  renderComponentSlots({
+export const HeaderMainTab = () => {
+  const { config } = useSDK();
+  return renderComponentSlots({
     Content: (
       <ToolbarSection collapsible={false}>
-        <SettingsAiSlot />
+        {config.editorChromeSlots?.settingsAiButton}
       </ToolbarSection>
     ),
   });
+};

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { TbCheck, TbChevronDown, TbX } from "react-icons/tb";
 import { FixedSizeList as List } from "react-window";
 import { resolveTheme } from "@/utils/design/resolveTheme";
-import { fonts } from "@/utils/tailwind";
+import { fonts } from "../../../../utils/tailwind/tailwind";
 import type { PagehubTextRichMode } from "@/core/tiptapExtensions/pagehubTextTiptapExtensions";
 
 interface FontPanelProps {

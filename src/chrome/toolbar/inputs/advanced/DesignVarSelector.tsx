@@ -1,6 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { changeProp } from "../../../viewport/viewportExports";
-import { getRect } from "../../../viewport/useRect";
+import { changeProp } from "../../../viewport/state/viewportExports";
+import { getRect } from "../../../viewport/hooks/useRect";
 import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { TbSearch, TbVariable } from "react-icons/tb";
@@ -12,7 +12,7 @@ import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
 import { CATEGORY_LABELS } from "./designVarConstants";
 import { useDesignVarOptions, type DesignVar } from "./useDesignVarOptions";
 import { ToolbarIconButton } from "../../../primitives/ToolbarIconButton";
-import { OVERLAY_Z_MODAL } from "@/chrome/overlays/overlayZIndex";
+import { OVERLAY_Z_MODAL } from "@/chrome/popovers/overlayZIndex";
 
 interface DesignVarSelectorProps {
   propKey: string;

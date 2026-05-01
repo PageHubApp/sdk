@@ -3,7 +3,8 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
 import { TbPointer } from "react-icons/tb";
-import { addCustomHandlers, addActionHandlers } from "../../utils/actions";
+import { addCustomHandlers } from "../../utils/actions/customHandlers";
+import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { useItemContext } from "../../utils/itemContext";
 import { applyAttrs } from "../../utils/applyAttrs";
 import {
@@ -24,9 +25,9 @@ import { replaceVariables } from "../../utils/design/variables";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { resolvePageRef } from "../../utils/page/pageManagement";
 import { useScrollToSelected } from "../componentHooks";
-import { useMounted } from "../../utils/hooks";
+import { useMounted } from "../../utils/hooks/useMounted";
 
-import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../LazyEditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 

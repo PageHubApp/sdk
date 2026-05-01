@@ -1,7 +1,7 @@
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 import { useAtomState } from "@zedux/react";
 import { v4 as uuidv4 } from "uuid";
-import { TabAtom } from "../viewport/atoms";
+import { TabAtom } from "../viewport/state/atoms";
 import MenuItem from "./primitives/MenuIcon";
 import { InspectorTab } from "./InspectorTab";
 

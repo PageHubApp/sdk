@@ -13,6 +13,7 @@
 
 import React, { useMemo } from "react";
 import { TbBraces, TbBrandTailwind, TbMathFunction } from "react-icons/tb";
+import { extractFirstCssHex } from "@/utils/design/colorSystem";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
 import { Chip } from "@/chrome/primitives/Chip";
@@ -200,6 +201,11 @@ export function UniversalInputView({
     [inputRef, typeSelectorRef]
   );
 
+  const shadowHexSwatch = useMemo(() => {
+    if (propTag !== "shadow") return null;
+    return extractFirstCssHex(inputValue || currentValue);
+  }, [propTag, inputValue, currentValue]);
+
   const dynamicPlaceholder = useMemo(() => {
     const limitedTypes = ["%", "vh", "vw", "vmin", "vmax"];
     if (selectedType === "calc") return "";
@@ -331,6 +337,13 @@ export function UniversalInputView({
     </div>
   ) : (
     <Chip trailing={clearButton}>
+      {shadowHexSwatch ? (
+        <span
+          className="border-base-300 ml-0.5 size-3.5 shrink-0 self-center rounded-sm border"
+          style={{ backgroundColor: shadowHexSwatch }}
+          aria-hidden
+        />
+      ) : null}
       {inputBody}
       {typeSelector}
     </Chip>

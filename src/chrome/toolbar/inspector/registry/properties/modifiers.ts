@@ -19,7 +19,7 @@
  * expanded but with no chips — what the user reported as "holding space".
  */
 import { ROOT_NODE } from "@craftjs/utils";
-import type { ComponentModifier } from "../../../../../define";
+import type { ComponentModifier } from "../../../../../define/types";
 import type { PropertyDef } from "../propertyDefs";
 
 function collectModifierClassTokens(query: any, nodeId: string): Set<string> {

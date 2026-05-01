@@ -11,7 +11,7 @@ import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { Chip } from "../../../primitives/Chip";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 import type {
   ComputedStateBinding,

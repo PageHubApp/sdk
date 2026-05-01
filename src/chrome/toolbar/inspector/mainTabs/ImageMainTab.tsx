@@ -1,12 +1,13 @@
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useSDK } from "../../../../core/context";
 import { MediaInput } from "../../inputs/media/MediaInput";
 import { TailwindInput } from "../../inputs/advanced/TailwindInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
-export const ImageMainTab = () =>
-  renderComponentSlots({
+export const ImageMainTab = () => {
+  const { config } = useSDK();
+  return renderComponentSlots({
     Content: (
       <>
         <ToolbarSection collapsible={false}>
@@ -31,7 +32,7 @@ export const ImageMainTab = () =>
             prop="objectPosition"
             type="select"
           />
-          <SettingsAiSlot />
+          {config.editorChromeSlots?.settingsAiButton}
         </ToolbarSection>
 
         <ToolbarSection
@@ -53,3 +54,4 @@ export const ImageMainTab = () =>
       </>
     ),
   });
+};

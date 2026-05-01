@@ -24,7 +24,7 @@ import {
   TbTrash,
 } from "react-icons/tb";
 
-import { ViewAtom } from "../../viewport/atoms";
+import { ViewAtom } from "../../viewport/state/atoms";
 import { ChipPopoverAtom, CHIP_BP_LABEL, canvasViewToChipBp, type ChipBp } from "./atoms";
 import {
   cmdCopyDown,

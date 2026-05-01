@@ -9,7 +9,7 @@ import React, {
   useState,
   type CSSProperties,
 } from "react";
-import { useClampToViewport } from "../../overlays/useClampToViewport";
+import { useClampToViewport } from "../../popovers/useClampToViewport";
 import {
   TbAlphabetLatin,
   TbBold,
@@ -24,7 +24,7 @@ import { getMediaContent } from "../../../utils/media/media";
 import { paletteToCSSVar } from "../../../utils/design/palette";
 import { useAtomValue } from "@zedux/react";
 import { hasOverflowAncestor } from "@/utils/hasOverflowAncestor";
-import { DeviceAtom, ViewAtom } from "../../viewport/atoms";
+import { DeviceAtom, ViewAtom } from "../../viewport/state/atoms";
 import { isEditorCanvasBreakpointView } from "../../../utils/tailwind/className";
 import { PortalToolbarBelowNode } from "./PortalToolbarBelowNode";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";

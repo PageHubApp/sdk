@@ -1,9 +1,9 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue } from "@zedux/react";
-import { AllStyles, TailwindStyles } from "@/utils/tailwind";
-import { ViewAtom } from "../../../viewport/atoms";
-import { changeProp, getProp, getPropFinalValue } from "../../../viewport/viewportExports";
+import { AllStyles, TailwindStyles } from "../../../../utils/tailwind/tailwind";
+import { ViewAtom } from "../../../viewport/state/atoms";
+import { changeProp, getProp, getPropFinalValue } from "../../../viewport/state/viewportExports";
 import { getEffectiveViews, EditModifiersAtom } from "../../Label";
 import { MultiScopeAtom } from "../../breakpoint-chip/atoms";
 import { isDesignTokenClass } from "./designTokens";

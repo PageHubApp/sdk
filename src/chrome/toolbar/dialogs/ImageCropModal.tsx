@@ -4,7 +4,7 @@ import { CropCanvas } from "./ImageCrop/components/CropCanvas";
 import { CropControlsPanel } from "./ImageCrop/components/CropControlsPanel";
 import { useImageCrop } from "./ImageCrop/hooks/useImageCrop";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
-import { OVERLAY_Z_CRITICAL_MODAL } from "../../overlays/overlayZIndex";
+import { OVERLAY_Z_CRITICAL_MODAL } from "../../popovers/overlayZIndex";
 
 interface ImageCropModalProps {
   isOpen: boolean;

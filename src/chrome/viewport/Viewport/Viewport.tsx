@@ -13,21 +13,21 @@ import {
   ViewModeAtom,
   useSetAtomState,
 } from "../../../utils/atoms";
-import { OVERLAY_Z_CANVAS_CONTROLS } from "../../overlays/overlayZIndex";
+import { OVERLAY_Z_CANVAS_CONTROLS } from "../../popovers/overlayZIndex";
 import { useSDK } from "../../../core/context";
 import {
   getCanvasBreakpointPx,
   isEditorCanvasBreakpointView,
 } from "../../../utils/tailwind/className";
 import { LoadingBar } from "../../primitives/LoadingBar";
-import { CanvasScopeBand } from "../CanvasScopeBand";
-import { ComponentCanvasViewport } from "../ComponentCanvasViewport";
-import { DeviceScrollbar } from "../DeviceScrollbar";
-import { DEVICE_FRAME_BY_VIEW, getDeviceFrameSpec } from "../deviceFrames";
-import { SideBySideFrame, resolveSecondaryWidthPx } from "../SideBySideFrame";
-import { ToolboxContextual } from "../ToolboxContextual";
-import { ViewportMeta } from "../ViewportMeta";
-import { ViewportScopeCoachmark } from "../ViewportScopeCoachmark";
+import { CanvasScopeBand } from "../canvas/CanvasScopeBand";
+import { ComponentCanvasViewport } from "../canvas/ComponentCanvasViewport";
+import { DeviceScrollbar } from "../canvas/DeviceScrollbar";
+import { DEVICE_FRAME_BY_VIEW, getDeviceFrameSpec } from "../canvas/deviceFrames";
+import { SideBySideFrame, resolveSecondaryWidthPx } from "../canvas/SideBySideFrame";
+import { ToolboxContextual } from "../ToolboxContextual/ToolboxContextual";
+import { ViewportMeta } from "../canvas/ViewportMeta";
+import { ViewportScopeCoachmark } from "../canvas/ViewportScopeCoachmark";
 import { DeviceOffline } from "../../toolbar/DeviceOffline";
 import { EditModifiersAtom } from "../../toolbar/Label";
 import { useAutoOpenSidebar } from "../../hooks/useAutoOpenSidebar";
@@ -37,7 +37,7 @@ import { useShowOnLoadAutoReveal } from "../../hooks/useShowOnLoadAutoReveal";
 import { useViewportClickDeselect } from "../hooks/useViewportClickDeselect";
 import { useViewportKeyboard } from "../hooks/useViewportKeyboard";
 import { usePageNavigation } from "../../../utils/page/pageNavigation";
-import { getEditorWidthOnlyCanvasClasses } from "../editorCanvasLayout";
+import { getEditorWidthOnlyCanvasClasses } from "../canvas/editorCanvasLayout";
 import {
   AppliedBreakpointsAtom,
   BreakpointWidthOverrideAtom,
@@ -55,7 +55,7 @@ import {
   SideBySideAtom,
   UnsavedChangesAtom,
   ViewAtom,
-} from "../atoms";
+} from "../state/atoms";
 import { BreakpointMarkers } from "./parts/BreakpointMarkers";
 import { CanvasEdgeHandles } from "./parts/CanvasEdgeHandles";
 import { DeviceFrameChrome } from "./parts/DeviceFrameChrome";

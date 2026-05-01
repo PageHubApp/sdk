@@ -5,7 +5,7 @@
  * All writes go through `changeProp` from `viewportExports` so behavior
  * matches Label.tsx's existing handleRemove and toolbar inputs.
  */
-import { changeProp, getPropFinalValue, setPropOnView } from "../../viewport/viewportExports";
+import { changeProp, getPropFinalValue, setPropOnView } from "../../viewport/state/viewportExports";
 import { CHIP_BP_ORDER, type ChipBp } from "./atoms";
 import { BP_KEYS, type BpKey } from "../../../utils/breakpointRewrite";
 

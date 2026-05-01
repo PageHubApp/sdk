@@ -15,9 +15,9 @@ function resolveCraftComponent(
   return null;
 }
 import { InlineToolsRenderer } from "./InlineToolsRenderer";
-import { GapDragControl } from "../canvas/GapDragControl";
-import { ConditionBadgeController } from "../canvas/ConditionBadgeController";
-import { LintBadgeController } from "../canvas/LintBadgeController";
+import { GapDragControl } from "../canvas/gap/GapDragControl";
+import { ConditionBadgeController } from "../canvas/controllers/ConditionBadgeController";
+import { LintBadgeController } from "../canvas/controllers/LintBadgeController";
 import { RenderNodeDataStates } from "./RenderNodeDataStates";
 
 class NodeErrorBoundary extends React.Component<{ children?: React.ReactNode }> {

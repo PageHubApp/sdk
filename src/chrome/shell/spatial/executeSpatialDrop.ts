@@ -11,7 +11,7 @@ import type { CommittedAlignmentState, DragOriginState } from "./spatialSession"
 import { getDragCopyIntent } from "./spatialSession";
 import { cleanupOldParentWrapper } from "./dropCleanup";
 import { applyPeerClassInherit } from "../applyPeerClassInherit";
-import { buildClonedTree } from "../../viewport/nodeOps";
+import { buildClonedTree } from "../../viewport/state/nodeOps";
 import { createMergedActions, type MergedActions } from "./mergedActions";
 import { applyAutomaticMorph } from "../automatic/applyAutomaticMorph";
 import {

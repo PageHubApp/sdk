@@ -6,7 +6,7 @@
  * Use this from contexts where you need to evaluate visibility for many
  * properties at once (e.g. filtering arrays in a useMemo).
  */
-import { getPropFinalValue } from "../../viewport/propSystem";
+import { getPropFinalValue } from "../../viewport/state/propSystem";
 import type { PropertyDef } from "./registry/propertyDefs";
 
 export function propertyHasValue(

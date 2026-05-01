@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useRef, useState } from "react";
 import { TbCheck, TbPhoto } from "react-icons/tb";
-import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../LazyEditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { Image as UiImage } from "@pagehub/ui";
 import { getCdnUrl } from "../../utils/cdn";
 import {
@@ -12,7 +12,8 @@ import {
   isAnchorAction,
   findLinkAction,
 } from "../../utils/action";
-import { addActionHandlers, addCustomHandlers } from "../../utils/actions";
+import { addActionHandlers } from "../../utils/actions/dispatcher";
+import { addCustomHandlers } from "../../utils/actions/customHandlers";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { getResponsiveImageAttrs } from "../../utils/media/media";
 import { motionIt } from "../../utils/motion";
@@ -20,7 +21,7 @@ import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../../utils/itemContext";
-import { useMounted } from "../../utils/hooks";
+import { useMounted } from "../../utils/hooks/useMounted";
 
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 

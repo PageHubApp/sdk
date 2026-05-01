@@ -7,7 +7,7 @@ import {
   splitClassVariants,
   VIEW_BREAKPOINT_SCOPE_KEYS,
 } from "@/utils/tailwind/className";
-import { classNameToVar, isValidTailwindClass } from "@/utils/tailwind";
+import { classNameToVar, isValidTailwindClass } from "../../../../utils/tailwind/tailwind";
 
 // ─── Helpers ───
 

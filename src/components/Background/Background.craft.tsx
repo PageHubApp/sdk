@@ -3,7 +3,7 @@
  */
 import React from "react";
 import { TbContainer } from "react-icons/tb";
-import { defineComponent } from "../../define";
+import { defineComponent } from "../../define/defineComponent";
 import { Background } from "./Background";
 import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../../utils/staticHtml";
 import { resolveTheme } from "../../utils/design/resolveTheme";

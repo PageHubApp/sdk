@@ -19,7 +19,8 @@
 import { readFileSync, statSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, resolve, join } from "path";
-import { renderToHTML, type RenderToHTMLOptions } from "./static-renderer";
+import { renderToHTML } from "./static-renderer/renderToHTML";
+import type { RenderToHTMLOptions } from "./static-renderer/types";
 import { BUILTIN_COMPONENT_DEFS } from "./core/builtinComponentDefs";
 import { buildModifierExpansionMap, expandModifierClassName } from "./utils/modifierUtils";
 

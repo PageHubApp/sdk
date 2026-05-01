@@ -4,7 +4,7 @@ import React, { useCallback } from "react";
 import { TbWand } from "react-icons/tb";
 import { normalizeDesignTags } from "@/utils/normalizeDesignTags";
 import { ToolbarSection } from "../../ToolbarSection";
-import { SiteAiToneForm } from "../../../viewport/site-settings/SiteAiToneForm";
+import { SiteAiToneForm } from "../../../viewport/modals/site-settings/SiteAiToneForm";
 
 /**
  * Per-node AI context (designNotes / designTags). ROOT is edited in Site Settings only.

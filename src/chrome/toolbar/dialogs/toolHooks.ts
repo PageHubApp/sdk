@@ -1,10 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { getRect } from "../../viewport/useRect";
+import { getRect } from "../../viewport/hooks/useRect";
 import { useEffect } from "react";
 
 import { ViewSelectionAtom } from "../Label";
-import { ViewAtom } from "../../viewport/atoms";
-import { getProp, getPropFinalValue } from "../../viewport/viewportExports";
+import { ViewAtom } from "../../viewport/state/atoms";
+import { getProp, getPropFinalValue } from "../../viewport/state/viewportExports";
 import throttle from "lodash.throttle";
 import { useAtomValue } from "@zedux/react";
 

@@ -19,7 +19,7 @@ import {
   type ReactNode,
 } from "react";
 import { TbCheck, TbSearch } from "react-icons/tb";
-import { AnchoredPopover } from "../overlays/AnchoredPopover";
+import { AnchoredPopover } from "../popovers/AnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "./layout/tooltipSurface";
 
 export type SearchableMenuItem<TData = unknown> = {

@@ -14,7 +14,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AllStyles, TailwindStyles } from "@/utils/tailwind";
+import { AllStyles, TailwindStyles } from "../../../../../utils/tailwind/tailwind";
 import { isDesignTokenClass } from "../designTokens";
 import { CSS_UNITS, ValueType } from "../types";
 import { formatValue, parseValue } from "../utils";

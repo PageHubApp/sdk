@@ -27,8 +27,8 @@ import {
 import { editorCanvasViewToClassPrefixKey } from "../../../../utils/tailwind/className";
 import { resolveTheme } from "../../../../utils/design/resolveTheme";
 import { ROOT_NODE } from "@craftjs/utils";
-import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
-import { ViewAtom } from "../../../viewport/atoms";
+import { changeProp, getPropFinalValue } from "../../../viewport/state/viewportExports";
+import { ViewAtom } from "../../../viewport/state/atoms";
 import { ViewSelectionAtom } from "../../Label";
 
 const ColorPanel = lazy(() => import("./ColorPanel"));

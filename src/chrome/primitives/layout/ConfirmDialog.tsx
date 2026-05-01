@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { TbAlertTriangle, TbCheck } from "react-icons/tb";
 import { useFocusTrap, useAnnounce } from "../../../utils/hooks/useAccessibility";
-import { OVERLAY_Z_CRITICAL_MODAL } from "../../overlays/overlayZIndex";
+import { OVERLAY_Z_CRITICAL_MODAL } from "../../popovers/overlayZIndex";
 
 interface ConfirmDialogProps {
   isOpen: boolean;

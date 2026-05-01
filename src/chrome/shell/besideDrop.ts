@@ -26,7 +26,7 @@ import {
   setActiveCrossAxisAlign,
   setBesideDropInProgress,
 } from "./spatial/spatialSession";
-import { buildClonedTree } from "../viewport/nodeOps";
+import { buildClonedTree } from "../viewport/state/nodeOps";
 
 // ── Debug logging (dev only) ──────────────────────────────────────────
 

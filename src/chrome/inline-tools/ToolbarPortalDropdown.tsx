@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { OVERLAY_Z_TOOLBAR_DROPDOWN } from "../overlays/overlayZIndex";
-import { useAnchoredPopover } from "../overlays/useAnchoredPopover";
+import { OVERLAY_Z_TOOLBAR_DROPDOWN } from "../popovers/overlayZIndex";
+import { useAnchoredPopover } from "../popovers/useAnchoredPopover";
 
 /**
  * ToolbarPortalDropdown - Renders dropdown content through a React portal

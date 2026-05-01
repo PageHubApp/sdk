@@ -3,14 +3,14 @@ import ReactDOM from "react-dom";
 import { FixedSizeList as List } from "react-window";
 import { useAtomState } from "@zedux/react";
 import { FontFamilyDialogAtom } from "./dialogAtoms";
-import { OVERLAY_Z_MODAL } from "@/chrome/overlays/overlayZIndex";
+import { OVERLAY_Z_MODAL } from "@/chrome/popovers/overlayZIndex";
 import {
   fetchGoogleFonts,
   getFunkyFonts,
   getPopularFonts,
   loadGoogleFont,
 } from "@/utils/fonts/googleFonts";
-import { fonts } from "@/utils/tailwind";
+import { fonts } from "../../../utils/tailwind/tailwind";
 import { ItemToggle } from "../primitives/ItemSelector";
 
 export { FontFamilyDialogAtom } from "./dialogAtoms";

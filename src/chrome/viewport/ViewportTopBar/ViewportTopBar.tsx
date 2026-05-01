@@ -35,10 +35,10 @@ import { useSDK } from "../../../core/context";
 import { SaveIndicator } from "../../inline-tools/PublishButton";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
 import { ChipPopover } from "../../toolbar/breakpoint-chip/ChipPopover";
-import { EnabledAtom, PreviewAtom } from "../atoms";
-import { ComponentSelector } from "../ComponentSelector";
-import { EditorNavigation } from "../EditorNavigation";
-import { NodeBreadcrumb } from "../NodeBreadcrumb";
+import { EnabledAtom, PreviewAtom } from "../state/atoms";
+import { ComponentSelector } from "../pickers/ComponentSelector";
+import { EditorNavigation } from "../nav/EditorNavigation";
+import { NodeBreadcrumb } from "../nav/NodeBreadcrumb";
 import { BreakpointSwitcher } from "./BreakpointSwitcher";
 import { HeaderItem as Item } from "./HeaderItem";
 import { useDarkMode } from "./useDarkMode";
@@ -52,10 +52,10 @@ const LayersDialog = lazy(() =>
   import("../../toolbar/dialogs/LayersDialog").then(m => ({ default: m.LayersDialog }))
 );
 const ModifiersModal = lazy(() =>
-  import("../ModifiersModal").then(m => ({ default: m.ModifiersModal }))
+  import("../modals/ModifiersModal").then(m => ({ default: m.ModifiersModal }))
 );
 const SiteSettingsModal = lazy(() =>
-  import("../SiteSettingsModal").then(m => ({ default: m.SiteSettingsModal }))
+  import("../modals/SiteSettingsModal").then(m => ({ default: m.SiteSettingsModal }))
 );
 
 export const ViewportTopBar = () => {

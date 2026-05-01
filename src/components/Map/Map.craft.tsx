@@ -3,8 +3,9 @@
  */
 import React from "react";
 import { TbMap, TbMap2, TbMapPin } from "react-icons/tb";
-import { defineComponent } from "../../define";
+import { defineComponent } from "../../define/defineComponent";
 import { Map } from "./Map";
+import { mapPresets } from "./Map.presets";
 const MapMainTab = React.lazy(() =>
   import("../../chrome/toolbar/inspector/mainTabs/MapMainTab").then(mod => ({
     default: mod.MapMainTab,
@@ -33,36 +34,7 @@ export const MapDef = defineComponent(
     tools: props => [
       <NameNodeController key="mapNameController" position="top" align="end" placement="start" />,
     ],
-    presets: [
-      {
-        label: "Map",
-        icon: TbMap,
-        props: {
-          type: "interactive",
-          tileStyle: "osm",
-          className: "w-full aspect-video overflow-hidden",
-        },
-      },
-      {
-        label: "Static Map",
-        icon: TbMapPin,
-        props: {
-          type: "static",
-          tileStyle: "osm",
-          className: "w-full aspect-video overflow-hidden",
-        },
-      },
-      {
-        label: "Map BG",
-        icon: TbMap2,
-        props: {
-          type: "background",
-          tileStyle: "cartodb-positron",
-          grayscale: true,
-          className: "w-full aspect-video overflow-hidden",
-        },
-      },
-    ],
+    presets: mapPresets,
   },
   { __internal: true }
 );

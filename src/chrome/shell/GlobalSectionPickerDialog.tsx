@@ -1,7 +1,7 @@
 import { useEditor } from "@craftjs/core";
 import { useAtomState } from "@zedux/react";
 import { SectionPickerDialogAtom } from "../../utils/atoms";
-import { SectionPickerDialog } from "../canvas/SectionPickerDialog";
+import { SectionPickerDialog } from "../canvas/dialogs/SectionPickerDialog";
 import { AddElement } from "../viewport/toolbox/toolboxUtils";
 
 export const GlobalSectionPickerDialog = () => {

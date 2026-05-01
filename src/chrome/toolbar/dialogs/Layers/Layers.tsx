@@ -1,6 +1,6 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import React from "react";
-import { AutoHideScrollbar } from "@/chrome/primitives/layout";
+import { AutoHideScrollbar } from "../../../primitives/layout/AutoHideScrollbar";
 import { LayerManagerProvider } from "./LayerManager";
 import { LayerNode } from "./LayerNode";
 

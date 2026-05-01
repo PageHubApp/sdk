@@ -2,7 +2,7 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headless
 import { Children, isValidElement, useMemo } from "react";
 import { Chip } from "@/chrome/primitives/Chip";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
-import { OVERLAY_Z_TOOLBAR_DROPDOWN } from "@/chrome/overlays/overlayZIndex";
+import { OVERLAY_Z_TOOLBAR_DROPDOWN } from "@/chrome/popovers/overlayZIndex";
 
 const EMPTY = "__ph_empty__";
 const toInternal = (v: string) => (v === "" ? EMPTY : v);

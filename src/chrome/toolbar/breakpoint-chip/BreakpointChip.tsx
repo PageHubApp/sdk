@@ -19,8 +19,8 @@ import { useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
 
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
-import { getPropFinalValue } from "../../viewport/viewportExports";
-import { IndicatorDensityAtom, ViewAtom } from "../../viewport/atoms";
+import { getPropFinalValue } from "../../viewport/state/viewportExports";
+import { IndicatorDensityAtom, ViewAtom } from "../../viewport/state/atoms";
 import { BP_KEYS, type BpKey } from "../../../utils/breakpointRewrite";
 import {
   CHIP_BP_LABEL,

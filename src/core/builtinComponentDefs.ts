@@ -24,7 +24,7 @@ import {
   VideoDef,
 } from "../components/definitions";
 
-import type { ResolvedComponentDef } from "../define";
+import type { ResolvedComponentDef } from "../define/types";
 import { setSanitizeBuiltinDefs } from "../utils/sanitizeNodeMap";
 import { setPresetRegistryDefs } from "./presetRegistry";
 import { setBuiltinDefsLookup } from "./builtinDefsLookup";

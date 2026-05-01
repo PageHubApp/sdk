@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import { getPropFinalValue } from "../../viewport/viewportExports";
-import { IndicatorDensityAtom } from "../../viewport/atoms";
+import { getPropFinalValue } from "../../viewport/state/viewportExports";
+import { IndicatorDensityAtom } from "../../viewport/state/atoms";
 import { BP_KEYS } from "../../../utils/breakpointRewrite";
 
 /**

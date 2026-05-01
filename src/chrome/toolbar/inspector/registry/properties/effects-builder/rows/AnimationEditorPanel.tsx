@@ -7,7 +7,7 @@ import { TbBolt } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { AnimationsInput } from "@/chrome/toolbar/inputs/advanced/AnimationsInput";
 import type { EditorPanelProps } from "../effectTypes";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../../../../popovers/overlayZIndex";
 
 export default function AnimationEditorPanel({ initialPosition, onClose }: EditorPanelProps) {
   return (

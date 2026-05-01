@@ -7,8 +7,8 @@
  */
 import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
-import { getPropFinalValue } from "../../viewport/propSystem";
-import { ViewAtom } from "../../viewport/atoms";
+import { getPropFinalValue } from "../../viewport/state/propSystem";
+import { ViewAtom } from "../../viewport/state/atoms";
 import { ViewSelectionAtom } from "../Label";
 import { propertyHasValue } from "./propertyHasValue";
 

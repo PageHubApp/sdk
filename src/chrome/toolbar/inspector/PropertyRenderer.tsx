@@ -5,7 +5,7 @@
  * (ToolbarItem, UniversalInput, ColorInput, TailwindInput, or a custom component).
  */
 import React from "react";
-import { TailwindStyles } from "@/utils/tailwind";
+import { TailwindStyles } from "../../../utils/tailwind/tailwind";
 import { ToolbarItem } from "../ToolbarItem";
 import { TailwindInput } from "../inputs/advanced/TailwindInput";
 import { ColorInputPopover } from "../inputs/color/ColorInputPopover";

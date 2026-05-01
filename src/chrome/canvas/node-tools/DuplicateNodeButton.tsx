@@ -1,6 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { TbCopy } from "react-icons/tb";
-import { duplicateNodeById } from "../../viewport/duplicateNodeById";
+import { duplicateNodeById } from "../../viewport/state/duplicateNodeById";
 
 interface DuplicateNodeButtonProps {
   className?: string;

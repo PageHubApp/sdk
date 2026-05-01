@@ -10,7 +10,7 @@ import { useElementPicker } from "../action/useElementPicker";
 import { getConnectorData } from "../../../../utils/design/variables";
 import type { Condition } from "../../../../utils/conditions/types";
 import { ConditionFields } from "./ConditionsInput";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface PanelProps {
   cond: Condition;

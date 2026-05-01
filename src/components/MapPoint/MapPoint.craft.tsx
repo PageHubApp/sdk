@@ -3,7 +3,7 @@
  */
 import React from "react";
 import { TbMapPin } from "react-icons/tb";
-import { defineComponent } from "../../define";
+import { defineComponent } from "../../define/defineComponent";
 import { MapPoint } from "./MapPoint";
 const MapPointMainTab = React.lazy(() =>
   import("../../chrome/toolbar/inspector/mainTabs/MapPointMainTab").then(mod => ({

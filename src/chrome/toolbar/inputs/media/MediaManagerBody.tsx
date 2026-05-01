@@ -13,7 +13,7 @@ import { TbAlertTriangle, TbFolder, TbX } from "react-icons/tb";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { MediaEditModal } from "./components/MediaEditModal";
 import { MediaGrid } from "./components/MediaGrid";
-import { MediaToolbar } from "./components/MediaToolbar";
+import { MediaToolbar } from "./components/MediaToolbar/MediaToolbar";
 import { getReplaceAccept } from "./utils/media-helpers";
 import type { UseMediaManagerReturn } from "./hooks/useMediaManager";
 

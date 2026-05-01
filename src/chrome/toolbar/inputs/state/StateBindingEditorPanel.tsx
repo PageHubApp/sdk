@@ -19,9 +19,9 @@ import { useElementPicker } from "../action/useElementPicker";
 import { getConnectorData } from "../../../../utils/design/variables";
 import { ConditionGroupUI, defaultCondition } from "../advanced/ConditionsInput";
 import type { Condition, ConditionGroup } from "../../../../utils/conditions/types";
-import type { ComponentModifier } from "../../../../define";
+import type { ComponentModifier } from "../../../../define/types";
 import type { StateBinding } from "./StateBindingsInput";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface PanelProps {
   binding: StateBinding;

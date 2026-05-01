@@ -5,7 +5,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { TbPointer } from "react-icons/tb";
 import { Button as UiButton } from "@pagehub/ui";
 import { ROOT_NODE } from "@craftjs/utils";
-import { addActionHandlers, addCustomHandlers } from "../../utils/actions";
+import { addActionHandlers } from "../../utils/actions/dispatcher";
+import { addCustomHandlers } from "../../utils/actions/customHandlers";
 import { useShowHideVersion } from "../../utils/state/showHideStore";
 import { applyStateModifiers } from "../../utils/conditions/stateModifiers";
 import { buildClientContext } from "../../utils/conditions/context";
@@ -27,7 +28,7 @@ import {
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { useResolvedIcon } from "../../utils/icons/iconResolver";
 import { motionIt } from "../../utils/motion";
-import { useMounted } from "../../utils/hooks";
+import { useMounted } from "../../utils/hooks/useMounted";
 
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
@@ -35,7 +36,7 @@ import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { resolvePageRef } from "../../utils/page/pageManagement";
 import { useScrollToSelected } from "../componentHooks";
 
-import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../LazyEditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 

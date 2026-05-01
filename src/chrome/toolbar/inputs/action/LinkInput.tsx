@@ -17,7 +17,7 @@ import { TbExternalLink, TbHash, TbLink, TbMail, TbPhone } from "react-icons/tb"
 import { ChevronTrigger } from "../../../primitives/ChevronTrigger";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
 import { Chip } from "../../../primitives/Chip";
-import { AnchoredPopover } from "../../../overlays/AnchoredPopover";
+import { AnchoredPopover } from "../../../popovers/AnchoredPopover";
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";

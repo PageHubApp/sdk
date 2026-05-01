@@ -6,7 +6,7 @@
 import { useNode } from "@craftjs/core";
 import { lazy, Suspense, useState } from "react";
 import { TbBolt, TbPlus } from "react-icons/tb";
-import { cssAnimationPresets } from "../../../../utils/animations";
+import { cssAnimationPresets } from "../../../../utils/animations/animations";
 import { ANIMATION_PARAM_KEYS } from "./AnimationsInput";
 import { Chip } from "../../../primitives/Chip";
 import { usePopoverAutoOpen } from "../../inspector/hooks/usePopoverAutoOpen";

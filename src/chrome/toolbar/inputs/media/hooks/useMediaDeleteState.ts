@@ -1,6 +1,6 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useState } from "react";
-import { DeleteMedia } from "@/chrome/viewport/viewportExports";
+import { DeleteMedia } from "@/chrome/viewport/state/viewportExports";
 import type { MediaItem } from "../utils/media-helpers";
 
 interface UseMediaDeleteStateArgs {

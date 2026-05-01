@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useClampToViewport } from "../overlays/useClampToViewport";
+import { useClampToViewport } from "../popovers/useClampToViewport";
 
 const checkIfOffScreen = (ref, position) => {
   if (!ref.current || !ref.current.parentElement) return false;

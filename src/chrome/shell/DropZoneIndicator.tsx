@@ -17,7 +17,7 @@ import {
   getParentFlexDirection,
 } from "./findPosition2D";
 import { getBesidePreviewLabel } from "./layoutInference";
-import { OVERLAY_Z_DRAG } from "../overlays/overlayZIndex";
+import { OVERLAY_Z_DRAG } from "../popovers/overlayZIndex";
 
 // ── Editor accent ────────────────────────────────────────────────────
 const EDITOR_ACCENT = "rgb(59 130 246)"; // Tailwind blue-500

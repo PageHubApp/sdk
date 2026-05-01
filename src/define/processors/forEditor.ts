@@ -80,7 +80,7 @@ function buildAutoSettings(propsSchema: Record<string, PropSchema>): React.Compo
  */
 function attachCraft(
   def: ResolvedComponentDef,
-  LazyInspector: React.ComponentType,
+  inspectorToolbar: React.ComponentType,
   defaultTools?: (canvas: boolean) => React.ReactNode[] | ((props: any) => React.ReactNode[])
 ) {
   const component = def.component as any;
@@ -99,7 +99,7 @@ function attachCraft(
       ...(def.rules.canMoveOut ? { canMoveOut: def.rules.canMoveOut } : {}),
     },
     related: {
-      toolbar: LazyInspector,
+      toolbar: inspectorToolbar,
     },
     props: { ...def.craftProps },
   };
@@ -154,7 +154,7 @@ function attachCraft(
  */
 export function processForEditor(
   defs: ResolvedComponentDef[],
-  LazyInspector: React.ComponentType,
+  inspectorToolbar: React.ComponentType,
   defaultTools?: (canvas: boolean) => React.ReactNode[] | ((props: any) => React.ReactNode[])
 ): {
   resolver: Record<string, React.ComponentType>;
@@ -174,7 +174,7 @@ export function processForEditor(
     seen.add(def.name);
 
     // Attach .craft config
-    attachCraft(def, LazyInspector, defaultTools);
+    attachCraft(def, inspectorToolbar, defaultTools);
 
     // Add to resolver
     resolver[def.name] = def.component;

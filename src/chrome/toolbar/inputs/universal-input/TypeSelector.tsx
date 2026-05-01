@@ -3,9 +3,9 @@ import ReactDOM from "react-dom";
 import {
   OVERLAY_Z_FLOATING_PANEL_DROPDOWN,
   OVERLAY_Z_TYPE_SELECTOR,
-} from "../../../overlays/overlayZIndex";
+} from "../../../popovers/overlayZIndex";
 import { useFloatingPanelZIndex } from "../../../floating/FloatingPanel";
-import { useAnchoredPopover } from "../../../overlays/useAnchoredPopover";
+import { useAnchoredPopover } from "../../../popovers/useAnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 import { ValueType } from "./types";
 

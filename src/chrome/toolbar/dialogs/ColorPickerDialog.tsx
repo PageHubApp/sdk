@@ -1,7 +1,7 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
 import { SketchPicker } from "@hello-pangea/color-picker";
-import { AnchoredPopover } from "@/chrome/overlays/AnchoredPopover";
+import { AnchoredPopover } from "@/chrome/popovers/AnchoredPopover";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import debounce from "lodash.debounce";
 import { useEffect, useState } from "react";
@@ -24,7 +24,7 @@ import {
   splitOpacitySuffix,
   stripTailwindPrefix,
 } from "../../../utils/design/colorSystem";
-import { getColorPalette } from "../../../utils/tailwind";
+import { getColorPalette } from "../../../utils/tailwind/tailwind";
 
 export { ColorPaletteAtom, ColorPickerAtom } from "./dialogAtoms";
 import { ColorPaletteAtom, ColorPickerAtom } from "./dialogAtoms";

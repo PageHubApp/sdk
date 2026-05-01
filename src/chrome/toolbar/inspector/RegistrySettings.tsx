@@ -13,11 +13,11 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { TbBoxPadding, TbBrush, TbMouse, TbSettings } from "react-icons/tb";
 import { useDefaultTab } from "../../../utils/hooks/useDefaultTab";
 import { useScrollToActiveTab } from "../../../utils/hooks/useScrollToActiveTab";
-import { registerInspector } from "../../../components/LazyInspector";
+import { registerInspector } from "../../../components/InspectorRegistry";
 import { useSetAtomState } from "../../../utils/atoms";
 import { ToolboxMenu, toolboxMenuInitialState } from "../../rendering/toolboxMenuAtom";
 import { resolveToolboxIcon } from "../../viewport/toolbox/resolveToolboxIcon";
-import { TabAtom } from "../../viewport/atoms";
+import { TabAtom } from "../../viewport/state/atoms";
 import { TBWrap } from "../primitives/tableBodyControls";
 import { InspectorBody } from "../InspectorTab";
 import { AccordionProvider, useAccordionContext } from "../AccordionContext";
@@ -29,13 +29,8 @@ import { PropertySection } from "./PropertySection";
 import { InspectorPinProvider } from "./inspectorPin/InspectorPinContext";
 
 import type { HideKey, ToolbarConfig } from "./types";
-import {
-  SettingsSearchAtom,
-  HiddenKeysAtom,
-  getSectionDefs,
-  searchProperties,
-  getSectionDef,
-} from "./registry";
+import { SettingsSearchAtom, HiddenKeysAtom } from "./registry/atoms";
+import { getSectionDefs, searchProperties, getSectionDef } from "./registry/propertyRegistry";
 
 // Ensure property definitions are registered
 import "./registry";

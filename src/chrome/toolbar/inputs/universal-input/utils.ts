@@ -1,4 +1,4 @@
-import { AllStyles, TailwindStyles, isValidTailwindClass } from "@/utils/tailwind";
+import { AllStyles, TailwindStyles, isValidTailwindClass } from "../../../../utils/tailwind/tailwind";
 import { ParsedValue, ValueType } from "./types";
 
 // Parse a value to determine its type

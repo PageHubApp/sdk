@@ -1,10 +1,11 @@
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useSDK } from "../../../../core/context";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
 
-export const AudioMainTab = () =>
-  renderComponentSlots({
+export const AudioMainTab = () => {
+  const { config } = useSDK();
+  return renderComponentSlots({
     Content: (
       <>
         <ToolbarSection collapsible={false}>
@@ -16,7 +17,7 @@ export const AudioMainTab = () =>
             labelHide={true}
             placeholder="https://example.com/audio.mp3"
           />
-          <SettingsAiSlot />
+          {config.editorChromeSlots?.settingsAiButton}
         </ToolbarSection>
 
         <ToolbarSection title="Playback Options" help="Controls, autoplay, and loop settings.">
@@ -58,3 +59,4 @@ export const AudioMainTab = () =>
       </>
     ),
   });
+};

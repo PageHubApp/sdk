@@ -5,7 +5,8 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { Text as UiText } from "@pagehub/ui";
-import { addActionHandlers, addCustomHandlers } from "../../utils/actions";
+import { addActionHandlers } from "../../utils/actions/dispatcher";
+import { addCustomHandlers } from "../../utils/actions/customHandlers";
 import { applyAttrs } from "../../utils/applyAttrs";
 import {
   migrateActions,
@@ -25,7 +26,7 @@ import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../../utils/itemContext";
 import { useAnchors } from "../../utils/anchors/anchorContext";
 import { useGlobalStateTick } from "../../utils/state/stateRegistry";
-import { useMounted } from "../../utils/hooks";
+import { useMounted } from "../../utils/hooks/useMounted";
 import { useScrollToSelected } from "../componentHooks";
 
 import { BaseSelectorProps, applyAriaProps } from "../selectors";

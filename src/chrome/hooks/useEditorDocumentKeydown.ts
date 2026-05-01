@@ -13,7 +13,7 @@ import {
   addHandler,
   buildClonedTree,
   saveHandler,
-} from "../viewport/viewportExports";
+} from "../viewport/state/viewportExports";
 
 async function readHtmlFromSystemClipboard(): Promise<string | null> {
   let text = await navigator.clipboard.readText();

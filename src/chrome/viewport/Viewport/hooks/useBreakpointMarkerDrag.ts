@@ -7,7 +7,7 @@ import {
 import { EDITOR_CANVAS_BREAKPOINT_PX } from "../../../../utils/tailwind/className";
 import {
   type AppliedBreakpointsShape,
-} from "../../atoms";
+} from "../../state/atoms";
 import { breakpointMarkerOrder, type BpKey } from "../constants";
 
 interface UseBreakpointMarkerDragArgs {

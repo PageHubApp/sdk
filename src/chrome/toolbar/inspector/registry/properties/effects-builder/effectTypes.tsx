@@ -19,7 +19,7 @@ import {
   TbTransitionRight,
   TbWand,
 } from "react-icons/tb";
-import { cssAnimationPresets } from "@/utils/animations";
+import { cssAnimationPresets } from "../../../../../../utils/animations/animations";
 import type { HideKey } from "../../../types";
 
 // ─── Types ──────────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 import { Editor } from "@tiptap/react";
 import { useLayoutEffect, useState } from "react";
 import { TbFile, TbLink, TbLinkOff, TbX } from "react-icons/tb";
-import { PageSelector } from "../../../viewport/PageSelector";
+import { PageSelector } from "../../../viewport/pickers/PageSelector";
 
 interface LinkPanelProps {
   editor: Editor;

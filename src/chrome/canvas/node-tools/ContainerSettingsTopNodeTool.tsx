@@ -1,8 +1,8 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { NodeToolWrapper } from "../../inline-tools/NodeDialog";
 import { ViewSelectionAtom } from "../../toolbar/Label";
-import { ViewAtom } from "../../viewport/atoms";
-import { getPropFinalValue } from "../../viewport/viewportExports";
+import { ViewAtom } from "../../viewport/state/atoms";
+import { getPropFinalValue } from "../../viewport/state/viewportExports";
 import { AddElement } from "../../viewport/toolbox/toolboxUtils";
 import { NodeInlineTooltip } from "./NodeInlineTooltip";
 import { TbContainer, TbPlus } from "react-icons/tb";

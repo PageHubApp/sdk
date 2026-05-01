@@ -1,13 +1,14 @@
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useSDK } from "../../../../core/context";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
 
-export const MapPointMainTab = () =>
-  renderComponentSlots({
+export const MapPointMainTab = () => {
+  const { config } = useSDK();
+  return renderComponentSlots({
     Content: (
       <>
-        <SettingsAiSlot />
+        {config.editorChromeSlots?.settingsAiButton}
         <ToolbarSection title="Location" help="Latitude and longitude for this pin.">
           <ToolbarItem
             propKey="lat"
@@ -48,3 +49,4 @@ export const MapPointMainTab = () =>
       </>
     ),
   });
+};

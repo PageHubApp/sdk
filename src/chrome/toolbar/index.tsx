@@ -4,10 +4,10 @@ import { twMerge } from "tailwind-merge";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { SideBarAtom, SideBarOpen } from "../../utils/atoms";
 import { useEditorToolbarOverlayLayout } from "../../utils/hooks/useEditorToolbarOverlayLayout";
-import { PreviewAtom } from "../viewport/atoms";
+import { PreviewAtom } from "../viewport/state/atoms";
 import { isFlyoutBlockingToolColumn, usePanelUrl } from "../../utils/usePanelUrl";
-import { ViewportTopBar } from "../viewport/ViewportTopBar";
-import { LazyInspector } from "../../components/LazyInspector";
+import { ViewportTopBar } from "../viewport/ViewportTopBar/ViewportTopBar";
+import { Inspector } from "../../components/InspectorRegistry";
 import { EditorEmptyState } from "./EditorEmptyState";
 import { SidebarLayersPanel } from "./SidebarLayersPanel";
 import { SidebarSwipeHint } from "./SidebarSwipeHint";
@@ -49,11 +49,11 @@ export const Toolbar = () => {
     return { selectedNodeId: id };
   });
 
-  // Mount LazyInspector ONCE. NodeProvider swaps the context id without
+  // Mount Inspector ONCE. NodeProvider swaps the context id without
   // remounting children — useNode() inside picks up the new id reactively.
   const tool = selectedNodeId ? (
     <NodeProvider id={selectedNodeId}>
-      <LazyInspector />
+      <Inspector />
     </NodeProvider>
   ) : (
     <EditorEmptyState />

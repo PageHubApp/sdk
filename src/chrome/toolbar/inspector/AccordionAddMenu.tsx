@@ -15,9 +15,9 @@ import {
   type SearchableMenuItem,
   type SearchableMenuPopoverHandle,
 } from "../../primitives/SearchableMenuPopover";
-import { changeProp } from "../../viewport/viewportExports";
+import { changeProp } from "../../viewport/state/viewportExports";
 import { propertyHasValue } from "./propertyHasValue";
-import { ViewAtom } from "../../viewport/atoms";
+import { ViewAtom } from "../../viewport/state/atoms";
 import { ViewSelectionAtom } from "../Label";
 import { useAccordionContext } from "../AccordionContext";
 import { getProperties, getSectionDef } from "./registry/propertyRegistry";

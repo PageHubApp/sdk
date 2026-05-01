@@ -15,7 +15,7 @@
  * via {@link setBuiltinDefsLookup} at module load.
  */
 
-import type { ResolvedComponentDef } from "../define";
+import type { ResolvedComponentDef } from "../define/types";
 
 let _defs: ResolvedComponentDef[] | undefined;
 

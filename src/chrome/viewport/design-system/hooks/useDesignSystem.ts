@@ -5,7 +5,7 @@ import { injectDesignSystemVars } from "@/utils/design/designSystemVars";
 import { resolveTheme, writeTheme } from "@/utils/design/resolveTheme";
 import { DEFAULT_PALETTE, DEFAULT_DARK_PALETTE, DEFAULT_STYLE_GUIDE } from "@/utils/defaults";
 import { getStyleSheets } from "@/utils/dom";
-import { fonts } from "@/utils/tailwind";
+import { fonts } from "../../../../utils/tailwind/tailwind";
 import { DEFAULT_CUSTOM_FONTS } from "./defaults";
 import type { CustomFont, PaletteColor, StyleGuideState } from "./types";
 import { useDesignSystemUI } from "./useDesignSystemUI";

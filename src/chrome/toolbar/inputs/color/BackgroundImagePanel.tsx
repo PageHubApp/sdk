@@ -18,7 +18,7 @@ import { ImageCropModal } from "../../dialogs/ImageCropModal";
 import { MediaManagerBody } from "../media/MediaManagerBody";
 import { MediaPreviewModal } from "../media/components/MediaPreviewModal";
 import { useMediaManager } from "../media/hooks/useMediaManager";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };

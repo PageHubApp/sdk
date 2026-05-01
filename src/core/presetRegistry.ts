@@ -16,7 +16,7 @@
  * which TDZ-crashes on `AutomaticDef` / `ContainerDef` in production builds.
  * See [.claude/known-issues/sdk-circular-import-via-lib.md].
  */
-import type { PresetAddChildConfig, ResolvedComponentDef } from "../define";
+import type { PresetAddChildConfig, ResolvedComponentDef } from "../define/types";
 
 export type { PresetAddChildConfig };
 

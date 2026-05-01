@@ -11,7 +11,7 @@ import {
   type NodeAction,
 } from "../../utils/action";
 import { resolveAnchorsInActions } from "../../utils/anchors/resolveAnchorsInAction";
-import { addActionHandlers } from "../../utils/actions";
+import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { replaceVariables } from "../../utils/design/variables";
 
 /**

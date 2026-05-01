@@ -8,7 +8,7 @@ const TextMainTab = React.lazy(() =>
     default: mod.TextMainTab,
   }))
 );
-import { defineComponent } from "../../define";
+import { defineComponent } from "../../define/defineComponent";
 import { LoremIpsum } from "../../utils/seeds/loremIpsum";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../../utils/action";
 import {
@@ -21,6 +21,8 @@ import {
 } from "../../utils/staticHtml";
 import { HoverNodeController } from "../../chrome/editor-chrome";
 import { Text } from "./Text";
+import { textPresets } from "./Text.presets";
+import { textModifiers } from "./Text.modifiers";
 
 // Guard against corrupted tagName data (e.g. `p, "text": "..."` from bad MCP writes)
 const sanitizeTagName = (raw: unknown): string => {
@@ -102,20 +104,6 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   );
 };
 
-const lorem = new LoremIpsum({
-  sentencesPerParagraph: { max: 3, min: 2 },
-  wordsPerSentence: { max: 8, min: 4 },
-});
-
-const titleLorem = new LoremIpsum({
-  wordsPerSentence: { max: 5, min: 3 },
-});
-
-const paragraphLorem = new LoremIpsum({
-  sentencesPerParagraph: { max: 5, min: 4 },
-  wordsPerSentence: { max: 14, min: 8 },
-});
-
 export const TextDef = defineComponent(
   {
     name: "Text",
@@ -146,161 +134,8 @@ export const TextDef = defineComponent(
       canMoveIn: () => false,
     },
     tools: [],
-    presets: [
-      {
-        label: "Title",
-        icon: TbH1,
-        description: "A big heading at the top of a section.",
-        props: {
-          text: titleLorem.generateWords(4),
-          className: "text-4xl",
-        },
-      },
-      {
-        label: "Sub-title",
-        icon: TbH2,
-        description: "A smaller heading under the main one.",
-        props: {
-          text: lorem.generateSentences(1),
-          className: "text-xl",
-        },
-      },
-      {
-        label: "Paragraph",
-        icon: TbBlockquote,
-        description: "A block of body copy.",
-        props: {
-          tagName: "p",
-          text: paragraphLorem.generateParagraphs(1),
-        },
-      },
-    ],
-    modifiers: [
-      // Composite patterns (real CSS classes via @utility in daisyui-spatial)
-      {
-        name: "body-text",
-        label: "Body",
-        category: "Pattern",
-        description:
-          "Standard paragraph text — comfortable reading size, normal weight, relaxed line height",
-      },
-      {
-        name: "section-heading",
-        label: "Heading",
-        category: "Pattern",
-        description:
-          "Bold section heading — typically h2 size with heading font and tight line height",
-      },
-      {
-        name: "eyebrow",
-        label: "Eyebrow",
-        category: "Pattern",
-        description:
-          "Small uppercase label above a heading — wide letter spacing, muted color, small size",
-      },
-      {
-        name: "subhead",
-        label: "Subhead",
-        category: "Pattern",
-        description:
-          "Secondary heading below the main title — larger than body but smaller than the heading",
-      },
-      // Style
-      {
-        name: "uppercase",
-        label: "Uppercase",
-        category: "Style",
-        description: "Transforms all text to ALL CAPS",
-      },
-      { name: "italic", label: "Italic", category: "Style", description: "Italicizes the text" },
-      {
-        name: "tracking-wide",
-        label: "Wide Track",
-        category: "Style",
-        description: "Slightly increased letter spacing — good for subheadings",
-      },
-      {
-        name: "tracking-widest",
-        label: "Widest Track",
-        category: "Style",
-        description: "Very wide letter spacing — classic eyebrow/label treatment",
-      },
-      {
-        name: "leading-tight",
-        label: "Tight Lines",
-        category: "Style",
-        description: "Tighter line height — good for large headings",
-      },
-      {
-        name: "leading-relaxed",
-        label: "Relaxed Lines",
-        category: "Style",
-        description: "Looser line height — improves readability for body copy",
-      },
-      // DaisyUI
-      {
-        name: "link",
-        label: "Link",
-        category: "DaisyUI",
-        description: "Styles the text as a hyperlink with underline",
-      },
-      {
-        name: "link-primary",
-        label: "Link Primary",
-        category: "DaisyUI",
-        description: "Link styled in the primary brand color",
-      },
-      {
-        name: "link-hover",
-        label: "Link Hover",
-        category: "DaisyUI",
-        description: "Underline appears only on hover — cleaner look for nav links",
-      },
-      // Color
-      {
-        name: "text-primary",
-        label: "Primary",
-        category: "Color",
-        description: "Primary brand color",
-        exclusive: true,
-      },
-      {
-        name: "text-accent",
-        label: "Accent",
-        category: "Color",
-        description: "Accent color — good for highlights and callouts",
-        exclusive: true,
-      },
-      {
-        name: "text-neutral-content",
-        label: "Muted",
-        category: "Color",
-        description: "Muted secondary text — only use on bg-neutral surfaces",
-        exclusive: true,
-      },
-      {
-        name: "opacity-70",
-        label: "Faded",
-        category: "Color",
-        description: "Reduces opacity to 70% — softens text without changing color",
-        exclusive: true,
-      },
-      // Font family
-      {
-        name: "font-heading",
-        label: "Heading Font",
-        category: "Font",
-        description: "Uses the heading typeface defined in the design system",
-        exclusive: true,
-      },
-      {
-        name: "font-body",
-        label: "Body Font",
-        category: "Font",
-        description: "Uses the body typeface defined in the design system",
-        exclusive: true,
-      },
-    ],
+    presets: textPresets,
+    modifiers: textModifiers,
   },
   { __internal: true }
 );

@@ -10,14 +10,14 @@ import { EditorContent, useEditor as useTiptapEditor } from "@tiptap/react";
 import type { Editor as TiptapEditorInstance } from "@tiptap/core";
 
 import { useSDKSafe } from "../../core/context";
-import { changeProp } from "../viewport/viewportExports";
+import { changeProp } from "../viewport/state/viewportExports";
 import { TiptapProvider } from "./TiptapContext";
 import { InlineEditToolbar } from "./inline-edit-toolbar/InlineEditToolbar";
 import { TiptapRichTextContextMenu } from "./inline-edit-toolbar/TiptapRichTextContextMenu";
 import { OPEN_LINK_PANEL_EVENT } from "./openLinkPanelEvent";
 import { VariableSuggestionPopup } from "./VariableSuggestion";
 
-import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../../components/LazyEditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../primitives/EditorEmptyLeafHint";
 import { replaceVariables, resolveVariable } from "../../utils/design/variables";
 import { useItemContext } from "../../utils/itemContext";
 import { useAnchors } from "../../utils/anchors/anchorContext";

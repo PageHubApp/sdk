@@ -8,7 +8,7 @@ import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { useAtomValue } from "@zedux/react";
 import { SideBarAtom } from "@/utils/atoms";
 import { ToolbarDropdown } from "@/chrome/toolbar/ToolbarDropdown";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 import {
   findAncestorDataSource,
   getConnectorCollectionLabel,

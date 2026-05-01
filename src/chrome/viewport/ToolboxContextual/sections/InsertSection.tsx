@@ -3,8 +3,8 @@ import { createPortal } from "react-dom";
 import {
   OVERLAY_Z_CONTEXT_COMPONENT_FLYOUT,
   OVERLAY_Z_CONTEXT_INSERT_PANEL,
-} from "../../../overlays/overlayZIndex";
-import { ContextMenuInsertComponentFlyout } from "../../ContextMenuInsertComponentFlyout";
+} from "../../../popovers/overlayZIndex";
+import { ContextMenuInsertComponentFlyout } from "../../pickers/ContextMenuInsertComponentFlyout";
 import { CTX_MENU_ITEM, CTX_MENU_SUBMENU_TRIGGER } from "../utils/menuClasses";
 import type { ToolboxMenuModel } from "../hooks/useToolboxMenuModel";
 

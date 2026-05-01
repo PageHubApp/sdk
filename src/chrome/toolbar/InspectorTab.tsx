@@ -1,4 +1,4 @@
-import { TabAtom } from "../viewport/atoms";
+import { TabAtom } from "../viewport/state/atoms";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import React, { useEffect, useRef, useState } from "react";

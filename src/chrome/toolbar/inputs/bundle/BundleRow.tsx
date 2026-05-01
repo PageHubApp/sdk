@@ -14,8 +14,8 @@ import { classPropKeyMatches, splitClassVariants } from "../../../../utils/tailw
 import { formatTailwindDisplayLabel } from "../../../../utils/tailwind/displayLabel";
 import { TRANSPARENT_CHECKER_BG } from "../../../../utils/design/colorSystem";
 import { Chip } from "../../../primitives/Chip";
-import { ViewAtom } from "../../../viewport/atoms";
-import { getPropFinalValue } from "../../../viewport/propSystem";
+import { ViewAtom } from "../../../viewport/state/atoms";
+import { getPropFinalValue } from "../../../viewport/state/propSystem";
 import { ViewSelectionAtom } from "../../Label";
 import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 import { SessionAddedAtom, sessionKey } from "../../inspector/sessionAddedAtom";

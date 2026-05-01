@@ -2,7 +2,7 @@ import { Suspense, lazy, useState } from "react";
 import { useEditor, useNode } from "@craftjs/core";
 import { TbCode } from "react-icons/tb";
 import { Chip } from "@/chrome/primitives/Chip";
-import { SettingsAiSlot } from "../../../ai/SettingsAiSlot";
+import { useSDK } from "../../../../core/context";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { getEditorVariableOptions } from "../../../../utils/editorVariableOptions";
 import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";
@@ -84,6 +84,7 @@ function FormatControl() {
 
 export const TextMainTab = () => {
   const [htmlOpen, setHtmlOpen] = useState(false);
+  const { config } = useSDK();
 
   return renderComponentSlots({
     Content: (
@@ -95,7 +96,7 @@ export const TextMainTab = () => {
             <TbCode size={12} aria-hidden />
             Edit HTML
           </button>
-          <SettingsAiSlot />
+          {config.editorChromeSlots?.settingsAiButton}
         </div>
         <FloatingPanel
           isOpen={htmlOpen}

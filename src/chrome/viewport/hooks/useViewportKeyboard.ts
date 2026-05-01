@@ -4,7 +4,7 @@ import { useAtomState, useAtomValue } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
 import { LastActiveAtom } from "../../../utils/atoms";
 import { useUnifiedDelete } from "../../hooks/useUnifiedDelete";
-import { PreviewAtom, EnabledAtom, TabAtom } from "../atoms";
+import { PreviewAtom, EnabledAtom, TabAtom } from "../state/atoms";
 import {
   finalizeToolboxHistorySelectionSync,
   markToolboxHistorySelectionSync,

@@ -4,7 +4,7 @@
  */
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { SaveModifierPanelBody } from "./SaveModifierPanelBody";
-import { OVERLAY_Z_FLOATING_PANEL_DROPDOWN } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL_DROPDOWN } from "../../../popovers/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };

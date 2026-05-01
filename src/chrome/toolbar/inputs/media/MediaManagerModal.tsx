@@ -1,5 +1,5 @@
 import { ConfirmDialog } from "@/chrome/primitives/layout/ConfirmDialog";
-import { SettingsShell } from "@/chrome/viewport/settings/SettingsShell";
+import { SettingsShell } from "@/chrome/viewport/modals/settings/SettingsShell";
 import { useEditorSidebarDockLeft } from "@/utils/atoms";
 import { useEffect, useMemo } from "react";
 import { TbFolder } from "react-icons/tb";
@@ -8,7 +8,7 @@ import { MediaManagerBody } from "./MediaManagerBody";
 import { MediaPreviewModal } from "./components/MediaPreviewModal";
 import { useMediaManager } from "./hooks/useMediaManager";
 import { type MediaKind } from "./utils/media-helpers";
-import { OVERLAY_Z_MEDIA_MANAGER } from "@/chrome/overlays/overlayZIndex";
+import { OVERLAY_Z_MEDIA_MANAGER } from "@/chrome/popovers/overlayZIndex";
 
 interface MediaManagerModalProps {
   isOpen: boolean;

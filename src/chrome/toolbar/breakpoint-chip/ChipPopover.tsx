@@ -11,10 +11,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useEditor } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
 
-import { AnchoredPopover } from "../../overlays/AnchoredPopover";
-import { ViewAtom } from "../../viewport/atoms";
+import { AnchoredPopover } from "../../popovers/AnchoredPopover";
+import { ViewAtom } from "../../viewport/state/atoms";
 import type { ViewMode } from "../../../core/store";
-import { getPropFinalValue } from "../../viewport/viewportExports";
+import { getPropFinalValue } from "../../viewport/state/viewportExports";
 import { BP_KEYS, type BpKey } from "../../../utils/breakpointRewrite";
 import {
   CHIP_BP_LABEL,

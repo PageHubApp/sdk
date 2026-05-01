@@ -4,7 +4,7 @@
  * (rounded-*, border*, …) templates often use without modifier names.
  */
 
-import type { ComponentModifier } from "../../define";
+import type { ComponentModifier } from "../../define/types";
 import { getBuiltinComponentDef } from "../../core/builtinDefsLookup";
 
 function resolveModifierClassTokens(mod: ComponentModifier): string[] {

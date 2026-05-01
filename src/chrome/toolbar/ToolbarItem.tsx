@@ -2,8 +2,8 @@ import { useEditor, useNode } from "@craftjs/core";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import React from "react";
 import { useAtomValue } from "@zedux/react";
-import { ViewAtom } from "../viewport/atoms";
-import { changeProp, getPropFinalValue } from "../viewport/viewportExports";
+import { ViewAtom } from "../viewport/state/atoms";
+import { changeProp, getPropFinalValue } from "../viewport/state/viewportExports";
 import { getEditorVariableOptions } from "../../utils/editorVariableOptions";
 
 const CodeEditor = React.lazy(() =>

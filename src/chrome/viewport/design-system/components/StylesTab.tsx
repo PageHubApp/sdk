@@ -13,7 +13,7 @@ import {
   type AppliedBreakpointsShape,
   IndicatorDensityAtom,
   type IndicatorDensity,
-} from "../../atoms";
+} from "../../state/atoms";
 import { phStorage } from "../../../../utils/phStorage";
 import { rewriteBreakpoints } from "../../../../utils/breakpointRewrite";
 

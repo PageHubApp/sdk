@@ -6,7 +6,7 @@ const DataMainTab = React.lazy(() =>
     default: mod.DataMainTab,
   }))
 );
-import { defineComponent } from "../../define";
+import { defineComponent } from "../../define/defineComponent";
 import { toHTML as containerToHTML } from "../Container/Container.craft";
 import { Data } from "./Data";
 import { layoutCanvasCanMoveIn } from "../layoutCanvasCanMoveIn";

@@ -5,11 +5,11 @@ import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
 
 import React, { useEffect, useRef, useState } from "react";
 import { TbContainer } from "react-icons/tb";
-import { LazyEditorEmptyLeafHint as EditorEmptyLeafHint } from "../LazyEditorEmptyLeafHint";
+import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
 import { resolveTheme } from "../../utils/design/resolveTheme";
 import { useLazyBackground } from "../../utils/hooks/useLazyBackground";
-import { useMounted } from "../../utils/hooks";
+import { useMounted } from "../../utils/hooks/useMounted";
 
 import { Box } from "@pagehub/ui";
 import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../../utils/background";

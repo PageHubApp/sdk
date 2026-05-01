@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { phStorage } from "../../utils/phStorage";
-import { OVERLAY_Z_FLOATING_WIDGET } from "../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_WIDGET } from "../popovers/overlayZIndex";
 
 type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 

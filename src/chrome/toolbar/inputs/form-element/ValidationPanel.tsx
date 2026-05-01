@@ -1,6 +1,6 @@
 import { TbShieldCheck } from "react-icons/tb";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 import { ToolbarItem } from "../../ToolbarItem";
 
 interface PanelProps {

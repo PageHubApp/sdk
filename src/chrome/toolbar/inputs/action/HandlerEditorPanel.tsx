@@ -13,7 +13,7 @@ import { TbX } from "react-icons/tb";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
 import { CodeEditor } from "../typography/CodeEditor";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 import { HANDLER_EVENT_LABEL, HANDLER_EVENT_OPTIONS } from "./handlerEvents";
 
 interface Props {

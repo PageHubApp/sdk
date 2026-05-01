@@ -9,7 +9,7 @@ import {
   type LayoutPreset,
 } from "./presets/layoutPresets";
 import type { LayoutPresetHandle } from "./hooks/useLayoutPreset";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };

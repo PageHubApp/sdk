@@ -7,7 +7,7 @@
 
 import parse from "style-to-object";
 import { getCdnUrl } from "./cdn";
-import { isCSSAnimation, getCSSAnimationProps } from "./animations";
+import { isCSSAnimation, getCSSAnimationProps } from "./animations/animations";
 import { purifyToTailwind } from "./tailwind/daisyuiToTailwind";
 
 // ─── Types ──────────────────────────────────────────────────────────────────

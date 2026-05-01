@@ -1,7 +1,7 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
-import { ViewAtom } from "../../../viewport/atoms";
-import { changeProp, getPropFinalValue } from "../../../viewport/viewportExports";
+import { ViewAtom } from "../../../viewport/state/atoms";
+import { changeProp, getPropFinalValue } from "../../../viewport/state/viewportExports";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAtomValue } from "@zedux/react";

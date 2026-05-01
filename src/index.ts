@@ -41,14 +41,22 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 
 import { configureCdn } from "./utils/cdn";
+import {
+  resetCuratedGoogleFontFamilies,
+  setCuratedGoogleFontFamilies,
+} from "./utils/fonts/googleFonts";
+import {
+  resetViewportDevicePresets,
+  setViewportDevicePresets,
+} from "./chrome/viewport/viewportDevicePresets";
 import { registerSubmissionHandler } from "./utils/submissions";
 import { resolveConfig } from "./config";
 import { PageHubProvider } from "./core/context";
 import { PageHubEditor } from "./editor";
 import { EventEmitter } from "./core/events";
 import { getSaveCoordinator } from "./core/saveCoordinator";
-import { renderToHTML } from "./static-renderer";
-import type { RenderToHTMLOptions, RenderToHTMLResult } from "./static-renderer";
+import { renderToHTML } from "./static-renderer/renderToHTML";
+import type { RenderToHTMLOptions, RenderToHTMLResult } from "./static-renderer/types";
 import { injectTailwindBrowser, removeTailwindBrowser } from "./core/tailwindBrowser";
 import { injectTheme, removeTheme } from "./core/theme";
 import type {
@@ -65,7 +73,7 @@ import type {
 import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { setPageHubApiBaseUrl } from "./core/apiConfig";
 
-// Side-effect import: RegistrySettings self-registers with LazyInspector
+// Side-effect import: RegistrySettings self-registers with InspectorRegistry
 // at module load time. Must come AFTER built-in component graph is loadable (see componentRegistry.ts).
 import "./chrome/toolbar/inspector/RegistrySettings";
 
@@ -89,6 +97,18 @@ function init(config: PageHubConfig): PageHubInstance {
 
   // Configure CDN from init config
   if (config.cdn) configureCdn(config.cdn);
+
+  if (resolved.curatedGoogleFontFamilies) {
+    setCuratedGoogleFontFamilies(resolved.curatedGoogleFontFamilies);
+  } else {
+    resetCuratedGoogleFontFamilies();
+  }
+
+  if (resolved.viewportDevicePresets && resolved.viewportDevicePresets.length > 0) {
+    setViewportDevicePresets(resolved.viewportDevicePresets);
+  } else {
+    resetViewportDevicePresets();
+  }
 
   // Register the form submission handler so Form components can POST to the API
   registerSubmissionHandler(async (submission, settings, additional = {}) => {
@@ -213,6 +233,8 @@ function init(config: PageHubConfig): PageHubInstance {
       removeTailwindBrowser();
       emitter.removeAll();
       setPageHubApiBaseUrl("");
+      resetCuratedGoogleFontFamilies();
+      resetViewportDevicePresets();
 
       const globalStyle = document.getElementById("pagehub-global-css");
       if (globalStyle) globalStyle.remove();
@@ -287,26 +309,26 @@ const PageHub = { init };
 export default PageHub;
 
 // Named exports for React usage
-export { PageHubProvider } from "./core/context";
+export { PageHubProvider, useSDK, useSDKSafe } from "./core/context";
+export { useAiEnabled } from "./utils/hooks/useAiEnabled";
 export { PageHubEditor } from "./editor";
 export { resolveConfig } from "./config";
 export { PageHubViewer, renderViewer } from "./viewer";
 
 // Component registration API
-export { defineComponent } from "./define";
+export { defineComponent } from "./define/defineComponent";
 export type {
   ResolvedComponentDef,
   PropSchema,
   ComponentPreset,
   ComponentModifier,
   PeerInheritConfig,
-} from "./define";
+} from "./define/types";
 
 // Type exports
 export type {
   PageData,
   PageHubAIConfig,
-  PageHubAiPanelContext,
   PageHubCallbacks,
   PageHubEditorChromeSlots,
   PageHubMediaEditAiActionsContext,
@@ -421,8 +443,9 @@ export type { ViewMode } from "./core/store";
 export { SideBarAtom, useEditorSidebarDockLeft } from "./utils/atoms";
 
 // Static rendering
-export { renderToHTML, buildRootThemeCss } from "./static-renderer";
-export type { RenderToHTMLOptions, RenderToHTMLResult } from "./static-renderer";
+export { renderToHTML } from "./static-renderer/renderToHTML";
+export { buildRootThemeCss } from "./static-renderer/themeCss";
+export type { RenderToHTMLOptions, RenderToHTMLResult } from "./static-renderer/types";
 
 // ─── Property Registry — public API for extending the settings sidebar ─────
 export {

@@ -8,7 +8,7 @@ import { TbPlus, TbTrash } from "react-icons/tb";
 import { Chip } from "@/chrome/primitives/Chip";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
-import { OVERLAY_Z_FLOATING_PANEL } from "../../../overlays/overlayZIndex";
+import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface PanelProps {
   initialPosition?: { x: number; y: number };

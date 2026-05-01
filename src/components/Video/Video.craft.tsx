@@ -3,7 +3,7 @@
  */
 import React from "react";
 import { TbVideo } from "react-icons/tb";
-import { defineComponent } from "../../define";
+import { defineComponent } from "../../define/defineComponent";
 import { Video } from "./Video";
 import {
   isDirectVideoFileUrl,
@@ -11,6 +11,7 @@ import {
   resolveR2VideoSrcFromSerializedTree,
 } from "../../utils/nativeVideo";
 import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../../utils/staticHtml";
+import { videoPresets } from "./Video.presets";
 
 function emitNativeVideoHtml(
   props: Record<string, any>,
@@ -120,15 +121,7 @@ export const VideoDef = defineComponent(
     tools: props => [
       <NameNodeController key="videoNameController" position="top" align="end" placement="start" />,
     ],
-    presets: [
-      {
-        label: "Video",
-        description: "Embed a video from YouTube, Vimeo, or similar.",
-        props: {
-          className: "w-full h-full flex overflow-hidden",
-        },
-      },
-    ],
+    presets: videoPresets,
   },
   { __internal: true }
 );

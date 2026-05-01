@@ -3,8 +3,8 @@ import { TbTrash } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { atom, useAtomState, useAtomValue } from "@zedux/react";
 
-import { ViewAtom } from "../viewport/atoms";
-import { changeProp, getPropFinalValue } from "../viewport/viewportExports";
+import { ViewAtom } from "../viewport/state/atoms";
+import { changeProp, getPropFinalValue } from "../viewport/state/viewportExports";
 import { MultiScopeAtom } from "./breakpoint-chip/atoms";
 import type { BpKey } from "../../utils/breakpointRewrite";
 
