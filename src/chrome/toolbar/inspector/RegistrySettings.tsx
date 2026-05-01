@@ -13,7 +13,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { TbBoxPadding, TbBrush, TbMouse, TbSettings } from "react-icons/tb";
 import { useDefaultTab } from "../../../utils/hooks/useDefaultTab";
 import { useScrollToActiveTab } from "../../../utils/hooks/useScrollToActiveTab";
-import { registerInspector } from "../../../components/InspectorRegistry";
+import { registerInspector } from "./InspectorRegistry";
 import { useSetAtomState } from "../../../utils/atoms";
 import { ToolboxMenu, toolboxMenuInitialState } from "../../rendering/toolboxMenuAtom";
 import { resolveToolboxIcon } from "../../viewport/toolbox/resolveToolboxIcon";
@@ -33,7 +33,7 @@ import { SettingsSearchAtom, HiddenKeysAtom } from "./registry/atoms";
 import { getSectionDefs, searchProperties, getSectionDef } from "./registry/propertyRegistry";
 
 // Ensure property definitions are registered
-import "./registry";
+import "./registry/properties/register";
 
 // ─── Fixed tab structure ───────────────────────────────────────────────────
 

@@ -6,7 +6,6 @@ import { TbMusic } from "react-icons/tb";
 import { defineComponent } from "../../define/defineComponent";
 import { Audio } from "./Audio";
 import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../../utils/staticHtml";
-import { audioPresets } from "./Audio.presets";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const audioUrl = props.src ?? props.audioUrl;
@@ -70,7 +69,6 @@ export const AudioDef = defineComponent(
     tools: props => [
       <NameNodeController key="audioNameController" position="top" align="end" placement="start" />,
     ],
-    presets: audioPresets,
   },
   { __internal: true }
 );

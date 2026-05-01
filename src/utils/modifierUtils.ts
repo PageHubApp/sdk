@@ -7,6 +7,8 @@
  * so every rendering path sees actual classes — no @utility @apply needed.
  */
 
+import { getModifiers } from "../define/catalogRegistry";
+
 interface ModifierDef {
   name: string;
   classes?: string;
@@ -14,13 +16,12 @@ interface ModifierDef {
 }
 
 /**
- * Built-in component definitions can ship default modifiers via `def.modifiers`.
- * Callers (sanitizeNodeMap, compile-css) supply the resolved def list so this
- * leaf module doesn't need to import the resolver.
+ * Built-in component definitions ship default modifiers via the catalog
+ * registry (see `catalogRegistry.ts`). Callers (sanitizeNodeMap, compile-css)
+ * supply the resolved def list and we look up modifiers by `def.name`.
  */
 interface BuiltinDefWithModifiers {
   name: string;
-  modifiers?: ModifierDef[];
 }
 
 // ── Expansion map ──────────────────────────────────────────────────────────
@@ -56,8 +57,8 @@ export function buildModifierExpansionMap(
   // Builtins first — site overrides win by name
   if (builtinDefs) {
     for (const def of builtinDefs) {
-      if (!def?.modifiers) continue;
-      for (const mod of def.modifiers) addModifierToMap(map, mod);
+      if (!def?.name) continue;
+      for (const mod of getModifiers(def.name)) addModifierToMap(map, mod);
     }
   }
   for (const mods of Object.values(modifiers || {})) {
@@ -113,7 +114,7 @@ export function expandModifiersInNodes(
 ): Record<string, any> {
   const modifiers = (nodes?.ROOT?.props?.modifiers ?? {}) as Record<string, ModifierDef[]>;
   const hasSite = modifiers && typeof modifiers === "object" && Object.keys(modifiers).length > 0;
-  const hasBuiltins = builtinDefs && builtinDefs.some(d => d?.modifiers && d.modifiers.length > 0);
+  const hasBuiltins = builtinDefs && builtinDefs.some(d => d?.name && getModifiers(d.name).length > 0);
   if (!hasSite && !hasBuiltins) return nodes;
 
   const map = buildModifierExpansionMap(modifiers, builtinDefs);

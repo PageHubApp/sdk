@@ -1,6 +1,7 @@
 /** Image — presets extracted from Image.craft.tsx. */
 import { Image } from "./Image";
 import type { ComponentPreset } from "../../define/types";
+import { registerPresets } from "../../define/catalogRegistry";
 
 export const imagePresets: ComponentPreset[] = [
       {
@@ -12,3 +13,5 @@ export const imagePresets: ComponentPreset[] = [
         },
       },
 ];
+
+registerPresets("Image", imagePresets);

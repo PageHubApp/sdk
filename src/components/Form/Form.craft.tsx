@@ -5,7 +5,6 @@ import { defineComponent } from "../../define/defineComponent";
 import { Form } from "./Form";
 import { toHTML as containerToHTML } from "../Container/Container.craft";
 import type { ToHTMLFn } from "../../utils/staticHtml";
-import { formPresets } from "./Form.presets";
 
 const HONEYPOT_HTML =
   '<div aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;overflow:hidden"><input type="text" name="_ph_hp" autocomplete="off" tabindex="-1"/></div>';
@@ -40,7 +39,6 @@ export const FormDef = defineComponent(
         nodes.every(node => node.data?.type !== "Form" && node.data?.props?.type !== "form"),
     },
     tools: [],
-    presets: formPresets,
   },
   { __internal: true }
 );

@@ -1,5 +1,6 @@
 import type { ComponentType, ReactElement } from "react";
 import type { ResolvedComponentDef } from "../../../define/types";
+import { getPresets } from "../../../define/catalogRegistry";
 import { SavedComponentLoader } from "../../../core/savedComponents";
 
 export type ToolboxInsertDescriptor = {
@@ -37,9 +38,10 @@ export function buildToolboxInsertDescriptors(
 
   for (const cat of toolboxCategories || []) {
     for (const def of cat.content || []) {
+      const registered = getPresets(def.name);
       const presets =
-        def.presets.length > 0
-          ? def.presets
+        registered.length > 0
+          ? registered
           : [{ label: def.displayName, icon: def.icon, props: def.defaultProps } as any];
 
       presets.forEach((preset: any, i: number) => {

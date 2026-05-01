@@ -1,7 +1,7 @@
 import { useTiptapContext } from "../../inline-tools/TiptapContext";
 import { ToolbarItem } from "../../toolbar/ToolbarItem";
 import { ColorInput } from "../../toolbar/inputs/color/ColorInput";
-import { NodeToolWrapper } from "../../inline-tools/NodeDialog";
+import { NodeToolWrapper } from "./NodeDialog";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../primitives/layout/tooltipSurface";
 import { TbAlignCenter, TbAlignLeft, TbAlignRight } from "react-icons/tb";
 

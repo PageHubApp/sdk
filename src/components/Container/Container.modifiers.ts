@@ -1,5 +1,6 @@
 /** Container — modifier definitions (extracted from Container.craft.tsx). */
 import type { ComponentModifier } from "../../define/types";
+import { registerModifiers } from "../../define/catalogRegistry";
 
 export const containerModifiers: ComponentModifier[] = [
 // Composite patterns (real CSS classes via @utility in @pagehub/daisyui-spatial)
@@ -217,3 +218,5 @@ export const containerModifiers: ComponentModifier[] = [
     "[&_details::details-content]:[transition-behavior:allow-discrete]",
 },
 ];
+
+registerModifiers("Container", containerModifiers);

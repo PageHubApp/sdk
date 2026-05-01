@@ -5,7 +5,7 @@ import { useState } from "react";
 import { TbChevronRight, TbDots, TbFileText, TbHome } from "react-icons/tb";
 import { IsolateAtom } from "../../../utils/atoms";
 import { hasPageIsolation } from "../../../utils/page/pageManagement";
-import { ToolbarPortalDropdown } from "../../inline-tools/ToolbarPortalDropdown";
+import { ToolbarPortalDropdown } from "../../popovers/ToolbarPortalDropdown";
 import { PageSelector } from "../pickers/PageSelector";
 import { TabAtom } from "../state/atoms";
 import { useOpenNodeContextMenu } from "../hooks/useOpenNodeContextMenu";

@@ -104,7 +104,7 @@ export interface SaveMeta {
   isDraft?: boolean;
 }
 
-/** Status taps for the editor's save indicator (PublishButton, etc.). */
+/** Status taps for the editor's save indicator (`SaveIndicator`, etc.). */
 export type SaveStatus = "idle" | "saving" | "saved" | "failed";
 
 export class SaveConflictError extends Error {
@@ -484,6 +484,26 @@ export interface PageHubConfig {
 
   /** Optional slots for AI (and auth-gated) chrome — implemented by the host app. */
   editorChromeSlots?: PageHubEditorChromeSlots;
+
+  /**
+   * Override the toolbox preset list per component. **Replaces** the built-in
+   * list — host wins. Use the `@pagehub/sdk/presets/<component>` sub-path to
+   * compose with built-ins:
+   *
+   * ```ts
+   * import { containerPresets } from "@pagehub/sdk/presets/container";
+   * <PageHubProvider config={{
+   *   presets: { Container: [...containerPresets, mine] },
+   * }}>
+   * ```
+   */
+  presets?: Record<string, import("./define/types").ComponentPreset[]>;
+
+  /**
+   * Override the modifier list per component. **Replaces** the built-in list.
+   * Compose via `@pagehub/sdk/modifiers/<component>` sub-paths.
+   */
+  modifiers?: Record<string, import("./define/types").ComponentModifier[]>;
 
   /**
    * URL strategy for page navigation in the editor.

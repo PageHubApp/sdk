@@ -325,6 +325,15 @@ export type {
   PeerInheritConfig,
 } from "./define/types";
 
+// Catalog registry — register/override component presets + modifiers per name.
+// Built-in catalogs self-register at editor mount via loadBuiltinCatalogs().
+export {
+  registerPresets,
+  getPresets,
+  registerModifiers,
+  getModifiers,
+} from "./define/catalogRegistry";
+
 // Type exports
 export type {
   PageData,

@@ -2,6 +2,7 @@
 import { TbBlockquote, TbH1, TbH2, TbLetterT } from "react-icons/tb";
 import { LoremIpsum } from "../../utils/seeds/loremIpsum";
 import type { ComponentPreset } from "../../define/types";
+import { registerPresets } from "../../define/catalogRegistry";
 
 const lorem = new LoremIpsum({
   sentencesPerParagraph: { max: 3, min: 2 },
@@ -46,3 +47,5 @@ export const textPresets: ComponentPreset[] = [
         },
       },
 ];
+
+registerPresets("Text", textPresets);

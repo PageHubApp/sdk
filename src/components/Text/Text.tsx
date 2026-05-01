@@ -27,7 +27,7 @@ import { useItemContext } from "../../utils/itemContext";
 import { useAnchors } from "../../utils/anchors/anchorContext";
 import { useGlobalStateTick } from "../../utils/state/stateRegistry";
 import { useMounted } from "../../utils/hooks/useMounted";
-import { useScrollToSelected } from "../componentHooks";
+import { useScrollToSelected } from "../../core/componentHooks";
 
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 

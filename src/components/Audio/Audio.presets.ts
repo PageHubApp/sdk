@@ -1,6 +1,7 @@
 /** Audio — presets extracted from Audio.craft.tsx. */
 import { Audio } from "./Audio";
 import type { ComponentPreset } from "../../define/types";
+import { registerPresets } from "../../define/catalogRegistry";
 
 export const audioPresets: ComponentPreset[] = [
       {
@@ -10,3 +11,5 @@ export const audioPresets: ComponentPreset[] = [
         },
       },
 ];
+
+registerPresets("Audio", audioPresets);

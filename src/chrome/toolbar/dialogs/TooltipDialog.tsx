@@ -1,4 +1,4 @@
-import { useGetRectLater } from "../../inline-tools/Dialog";
+import { useGetRectLater } from "./DraggablePortalDialog";
 import { getRect } from "../../viewport/hooks/useRect";
 import { useRef } from "react";
 import { useAtomValue } from "@zedux/react";

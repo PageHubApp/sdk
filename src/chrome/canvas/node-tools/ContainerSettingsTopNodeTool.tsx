@@ -1,5 +1,5 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { NodeToolWrapper } from "../../inline-tools/NodeDialog";
+import { NodeToolWrapper } from "./NodeDialog";
 import { ViewSelectionAtom } from "../../toolbar/Label";
 import { ViewAtom } from "../../viewport/state/atoms";
 import { getPropFinalValue } from "../../viewport/state/viewportExports";

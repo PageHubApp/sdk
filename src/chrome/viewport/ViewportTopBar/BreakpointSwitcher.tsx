@@ -8,7 +8,7 @@ import {
   getCanvasBreakpointPx,
   isEditorCanvasBreakpointView,
 } from "../../../utils/tailwind/className";
-import { ToolbarPortalDropdown } from "../../inline-tools/ToolbarPortalDropdown";
+import { ToolbarPortalDropdown } from "../../popovers/ToolbarPortalDropdown";
 import { CanvasZoom } from "../canvas/CanvasZoom";
 import { DEVICE_FRAME_BY_VIEW, getDeviceFrameSpec } from "../canvas/deviceFrames";
 import {

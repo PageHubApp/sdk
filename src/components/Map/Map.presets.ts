@@ -2,6 +2,7 @@
 import { TbMap, TbMap2, TbMapPin } from "react-icons/tb";
 import { Map } from "./Map";
 import type { ComponentPreset } from "../../define/types";
+import { registerPresets } from "../../define/catalogRegistry";
 
 export const mapPresets: ComponentPreset[] = [
       {
@@ -33,3 +34,5 @@ export const mapPresets: ComponentPreset[] = [
         },
       },
 ];
+
+registerPresets("Map", mapPresets);

@@ -8,7 +8,7 @@ import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { useResolvedIcon } from "../../utils/icons/iconResolver";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
-import { useScrollToSelected } from "../componentHooks";
+import { useScrollToSelected } from "../../core/componentHooks";
 import { BaseSelectorProps } from "../selectors";
 
 export interface IconProps extends BaseSelectorProps {

@@ -7,7 +7,7 @@ import { useEditorToolbarOverlayLayout } from "../../utils/hooks/useEditorToolba
 import { PreviewAtom } from "../viewport/state/atoms";
 import { isFlyoutBlockingToolColumn, usePanelUrl } from "../../utils/usePanelUrl";
 import { ViewportTopBar } from "../viewport/ViewportTopBar/ViewportTopBar";
-import { Inspector } from "../../components/InspectorRegistry";
+import { Inspector } from "./inspector/InspectorRegistry";
 import { EditorEmptyState } from "./EditorEmptyState";
 import { SidebarLayersPanel } from "./SidebarLayersPanel";
 import { SidebarSwipeHint } from "./SidebarSwipeHint";

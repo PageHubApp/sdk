@@ -16,6 +16,7 @@ import {
   TbShoppingBag,
 } from "react-icons/tb";
 import type { ComponentPreset } from "../../define/types";
+import { registerPresets } from "../../define/catalogRegistry";
 
 export const embedPresets: ComponentPreset[] = [
       {
@@ -89,3 +90,5 @@ export const embedPresets: ComponentPreset[] = [
         props: { service: "crisp", className: "w-full" },
       },
 ];
+
+registerPresets("Embed", embedPresets);

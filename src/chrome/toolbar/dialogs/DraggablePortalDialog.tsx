@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { TbX } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
-import { getRect } from "../viewport/hooks/useRect";
-import { useFocusTrap } from "../../utils/hooks/useAccessibility";
+import { getRect } from "../../viewport/hooks/useRect";
+import { useFocusTrap } from "../../../utils/hooks/useAccessibility";
 
 export const useGetRectLater = localRef => {
   const [rect, setRect] = useState({
@@ -34,7 +34,7 @@ export const useGetRectLater = localRef => {
   return rect;
 };
 
-function Dialog({ children, target, state, opener }: any): any {
+function DraggablePortalDialog({ children, target, state, opener }: any): any {
   const [isDragging, setIsDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const dialogRef = useRef(null);
@@ -222,4 +222,4 @@ function Dialog({ children, target, state, opener }: any): any {
   );
 }
 
-export default Dialog;
+export default DraggablePortalDialog;

@@ -20,15 +20,15 @@
  */
 import { ROOT_NODE } from "@craftjs/utils";
 import type { ComponentModifier } from "../../../../../define/types";
+import { getModifiers } from "../../../../../define/catalogRegistry";
 import type { PropertyDef } from "../propertyDefs";
 
 function collectModifierClassTokens(query: any, nodeId: string): Set<string> {
   const out = new Set<string>();
   try {
     const node = query.node(nodeId).get();
-    const builtins =
-      ((node?.data?.type as any)?.craft?.toolbar?.modifiers as ComponentModifier[] | undefined) ||
-      [];
+    const typeName = node?.data?.name || node?.data?.displayName || "";
+    const builtins = typeName ? getModifiers(typeName) : [];
     for (const m of builtins) {
       // BOTH the literal name and the expanded classes count as "active token"
       // markers — matches per-chip isActive in useModifiers.ts (a className with
@@ -40,7 +40,6 @@ function collectModifierClassTokens(query: any, nodeId: string): Set<string> {
     }
     // Site-level custom modifiers live on ROOT, keyed by component type name.
     const rootProps = query.node(ROOT_NODE).get()?.data?.props;
-    const typeName = node?.data?.name || node?.data?.displayName || "";
     const siteForType =
       typeName && rootProps?.modifiers && typeof rootProps.modifiers === "object"
         ? (rootProps.modifiers[typeName] as ComponentModifier[] | undefined)

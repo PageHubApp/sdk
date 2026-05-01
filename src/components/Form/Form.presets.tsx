@@ -5,6 +5,7 @@ import { Container } from "../Container/Container";
 import { FormElement } from "../FormElement/FormElement";
 import { Button } from "../Button/Button";
 import type { ComponentPreset } from "../../define/types";
+import { registerPresets } from "../../define/catalogRegistry";
 
 const inputBaseStyles = {
   className:
@@ -115,3 +116,5 @@ export const formPresets: ComponentPreset[] = [
     children: buildContactChildren,
   },
 ];
+
+registerPresets("Form", formPresets);

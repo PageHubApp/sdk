@@ -37,11 +37,4 @@ export function validate<P extends Record<string, any>>(
       }
     }
   }
-  if (def.presets) {
-    for (let i = 0; i < def.presets.length; i++) {
-      if (!def.presets[i].label) {
-        throw new Error(`${tag}: presets[${i}] is missing "label"`);
-      }
-    }
-  }
 }

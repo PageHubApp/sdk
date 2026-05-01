@@ -72,6 +72,7 @@ import { buildCookieConsentChildren } from "./presets/banners";
 import { buildMobileMenuChildren } from "./presets/navigation/MobileMenu";
 import { buildNavbarChildren } from "./presets/navigation/Navbar";
 import { buildNavbarMegaChildren } from "./presets/navigation/NavbarMega";
+import { registerPresets } from "../../define/catalogRegistry";
 
 export const containerPresets: ComponentPreset[] = [
   {
@@ -602,3 +603,5 @@ export const containerPresets: ComponentPreset[] = [
     children: () => buildGridCells(3),
   },
 ];
+
+registerPresets("Container", containerPresets);

@@ -20,7 +20,6 @@ import {
   type ToHTMLFn,
 } from "../../utils/staticHtml";
 import { Icon } from "./Icon";
-import { iconPresets } from "./Icon.presets";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const value: string | undefined = props.value;
@@ -73,7 +72,6 @@ export const IconDef = defineComponent(
     rules: {
       canDrag: () => true,
     },
-    presets: iconPresets,
   },
   { __internal: true }
 );

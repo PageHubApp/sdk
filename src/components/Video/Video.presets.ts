@@ -1,6 +1,7 @@
 /** Video — presets extracted from Video.craft.tsx. */
 import { Video } from "./Video";
 import type { ComponentPreset } from "../../define/types";
+import { registerPresets } from "../../define/catalogRegistry";
 
 export const videoPresets: ComponentPreset[] = [
       {
@@ -11,3 +12,5 @@ export const videoPresets: ComponentPreset[] = [
         },
       },
 ];
+
+registerPresets("Video", videoPresets);

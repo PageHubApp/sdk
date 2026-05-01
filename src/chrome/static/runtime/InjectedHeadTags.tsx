@@ -12,7 +12,7 @@
 
 import Head from "next/head";
 import React, { useMemo } from "react";
-import { parseHeadHTML, hashTag, type HeadTag } from "../utils/parseHeadHTML";
+import { parseHeadHTML, hashTag, type HeadTag } from "../../../utils/parseHeadHTML";
 
 interface Props {
   html: string | undefined | null;

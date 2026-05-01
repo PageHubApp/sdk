@@ -8,7 +8,7 @@ import {
   removeClassForView,
 } from "../../../utils/tailwind/className";
 import { ViewSelectionAtom } from "../../toolbar/Label";
-import { useIsInlineRender } from "../../inline-tools/InlineRenderContext";
+import { useIsInlineRender } from "../../rendering/InlineRenderContext";
 import RenderNodeControl from "../../rendering/RenderNodeControl";
 import RenderNodeControlInline from "../../rendering/RenderNodeControlInline";
 import { ViewAtom } from "../../viewport/state/atoms";

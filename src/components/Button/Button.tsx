@@ -34,7 +34,7 @@ import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { resolvePageRef } from "../../utils/page/pageManagement";
-import { useScrollToSelected } from "../componentHooks";
+import { useScrollToSelected } from "../../core/componentHooks";
 
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../../utils/isVisuallyEmptyRichText";

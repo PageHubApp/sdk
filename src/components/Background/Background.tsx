@@ -15,10 +15,10 @@ import { Box } from "@pagehub/ui";
 import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../../utils/background";
 import { PaletteProvider } from "../../utils/design/PaletteContext";
 import { RuntimeVarsProvider } from "../../utils/design/RuntimeVarsContext";
-import { RenderPattern, inlayProps } from "../componentHooks";
+import { RenderPattern, inlayProps } from "../../core/componentHooks";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 import { useBackgroundEffects } from "./useBackgroundEffects";
-import { InjectedHeadTags, InjectedBodyTags } from "../InjectedHeadTags";
+import { InjectedHeadTags, InjectedBodyTags } from "../../chrome/static/runtime/InjectedHeadTags";
 
 /**
  * Bootstrap shim for runtime variables. Defines a queueing setVar synchronously

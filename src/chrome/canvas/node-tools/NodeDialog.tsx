@@ -2,10 +2,10 @@ import { atom } from "@zedux/react";
 import { useNode } from "@craftjs/core";
 import React, { useRef } from "react";
 import { TbSettings } from "react-icons/tb";
-import { useSetAtomState } from "../../utils/atoms";
+import { useSetAtomState } from "../../../utils/atoms";
 import { v4 as uuidv4 } from "uuid";
 import { AnimatedTooltipButton } from "./AnimatedButton";
-import Dialog from "./Dialog";
+import DraggablePortalDialog from "../../toolbar/dialogs/DraggablePortalDialog";
 
 const MemoizedAnimatedTooltipButton = React.memo(AnimatedTooltipButton);
 
@@ -27,9 +27,9 @@ export function NodeDialog({ tooltip = "", button = <TbSettings />, children = n
         {button}
       </MemoizedAnimatedTooltipButton>
 
-      <Dialog state={itemListState} target={dom} opener={ref}>
+      <DraggablePortalDialog state={itemListState} target={dom} opener={ref}>
         <div className="flex flex-col gap-3">{children}</div>
-      </Dialog>
+      </DraggablePortalDialog>
     </div>
   );
 }

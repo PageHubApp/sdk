@@ -11,7 +11,6 @@ import {
   resolveR2VideoSrcFromSerializedTree,
 } from "../../utils/nativeVideo";
 import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../../utils/staticHtml";
-import { videoPresets } from "./Video.presets";
 
 function emitNativeVideoHtml(
   props: Record<string, any>,
@@ -121,7 +120,6 @@ export const VideoDef = defineComponent(
     tools: props => [
       <NameNodeController key="videoNameController" position="top" align="end" placement="start" />,
     ],
-    presets: videoPresets,
   },
   { __internal: true }
 );

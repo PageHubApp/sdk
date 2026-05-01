@@ -21,8 +21,6 @@ import {
 } from "../../utils/staticHtml";
 import { HoverNodeController } from "../../chrome/editor-chrome";
 import { Text } from "./Text";
-import { textPresets } from "./Text.presets";
-import { textModifiers } from "./Text.modifiers";
 
 // Guard against corrupted tagName data (e.g. `p, "text": "..."` from bad MCP writes)
 const sanitizeTagName = (raw: unknown): string => {
@@ -134,8 +132,6 @@ export const TextDef = defineComponent(
       canMoveIn: () => false,
     },
     tools: [],
-    presets: textPresets,
-    modifiers: textModifiers,
   },
   { __internal: true }
 );

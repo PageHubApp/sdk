@@ -1,7 +1,7 @@
 import { UserComponent } from "@craftjs/core";
 import React from "react";
 import { Container } from "../Container/Container";
-import { Inspector } from "../InspectorRegistry";
+import { Inspector } from "../../chrome/toolbar/inspector/InspectorRegistry";
 
 const FooterMainTab = React.lazy(() =>
   import("../../chrome/toolbar/inspector/mainTabs/FooterMainTab").then(mod => ({

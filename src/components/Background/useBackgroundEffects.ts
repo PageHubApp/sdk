@@ -4,7 +4,7 @@
  *  - Design-system CSS variable injection
  *
  * Header/footer snippet injection is now emitted via next/head in Background.tsx
- * (InjectedHeadTags / InjectedBodyTags) so scripts land in initial SSR HTML.
+ * (`chrome/static/runtime/InjectedHeadTags`) so scripts land in initial SSR HTML.
  *
  * Extracted from Background.tsx.
  */

@@ -88,8 +88,6 @@ const ImageMainTab = React.lazy(() =>
   }))
 );
 import { ImageGroupSettings } from "../../chrome/toolbar/inspector/ImageGroupSettings";
-import { imagePresets } from "./Image.presets";
-import { imageModifiers } from "./Image.modifiers";
 
 export const ImageDef = defineComponent(
   {
@@ -106,8 +104,6 @@ export const ImageDef = defineComponent(
       canMoveIn: () => false,
     },
     groupSettings: ImageGroupSettings,
-    presets: imagePresets,
-    modifiers: imageModifiers,
   },
   { __internal: true }
 );

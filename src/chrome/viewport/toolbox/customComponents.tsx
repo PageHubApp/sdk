@@ -9,6 +9,7 @@
 import React from "react";
 import { RenderToolComponent, ToolboxItemDisplay } from "./toolboxUtils";
 import type { ResolvedComponentDef } from "../../../define/types";
+import { getPresets } from "../../../define/catalogRegistry";
 import { resolveToolboxIcon } from "./resolveToolboxIcon";
 
 export interface CategorizedToolboxEntry {
@@ -22,9 +23,10 @@ export interface CategorizedToolboxEntry {
  * in (preset.category ?? def.category).
  */
 export function buildCustomToolboxEntries(def: ResolvedComponentDef): CategorizedToolboxEntry[] {
+  const registered = getPresets(def.name);
   const presets =
-    def.presets.length > 0
-      ? def.presets
+    registered.length > 0
+      ? registered
       : [
           {
             label: def.displayName,

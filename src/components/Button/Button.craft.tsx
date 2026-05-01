@@ -21,7 +21,6 @@ import {
   type ToHTMLFn,
 } from "../../utils/staticHtml";
 import { Button } from "./Button";
-import { buttonModifiers } from "./Button.modifiers";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   let icon = props.icon;
@@ -102,18 +101,6 @@ export const ButtonDef = defineComponent(
       canDrag: () => true,
       canMoveIn: nodes => nodes.every(node => node.data?.name === "Button"),
     },
-    presets: [
-      {
-        label: "Button",
-        description: "A clickable button — your main call-to-action.",
-        props: {
-          text: "Button",
-          className:
-            "btn btn-primary rounded-box px-space-md py-space-xs min-h-12 font-semibold self-start",
-        },
-      },
-    ],
-    modifiers: buttonModifiers,
     peerInherit: {
       whenParentIs: ["Container"],
       reference: "left-neighbor",

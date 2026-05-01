@@ -3,7 +3,7 @@ import { useAtomValue } from "@zedux/react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { hasOverflowAncestor } from "@/utils/hasOverflowAncestor";
-import { InlineRenderContext } from "../inline-tools/InlineRenderContext";
+import { InlineRenderContext } from "./InlineRenderContext";
 import { DeviceAtom, ViewAtom } from "../viewport/state/atoms";
 import { isEditorCanvasBreakpointView } from "../../utils/tailwind/className";
 

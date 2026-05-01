@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { TbAlertTriangle, TbCheck, TbDeviceFloppy, TbLoader2 } from "react-icons/tb";
-import { useSDK } from "../../core/context";
-import type { SaveStatus } from "../../types";
+import { useSDK } from "../../../core/context";
+import type { SaveStatus } from "../../../types";
 
 /** Save status icon driven by the SDK save coordinator. */
 export function SaveIndicator() {

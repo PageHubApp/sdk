@@ -1,6 +1,7 @@
 /** Link — presets extracted from Link.craft.tsx. */
 import { Link } from "./Link";
 import type { ComponentPreset } from "../../define/types";
+import { registerPresets } from "../../define/catalogRegistry";
 
 export const linkPresets: ComponentPreset[] = [
       {
@@ -25,3 +26,5 @@ export const linkPresets: ComponentPreset[] = [
         },
       },
 ];
+
+registerPresets("Link", linkPresets);

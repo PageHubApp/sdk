@@ -1,5 +1,5 @@
 import { useNode } from "@craftjs/core";
-import { useFindScrollingParent } from "../../components/componentHooks";
+import { useFindScrollingParent } from "../../core/componentHooks";
 import { useCallback, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { getRect } from "../viewport/hooks/useRect";

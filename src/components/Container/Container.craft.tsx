@@ -5,8 +5,6 @@ import { defineComponent } from "../../define/defineComponent";
 import { Container } from "./Container";
 import { layoutCanvasCanMoveIn } from "../layoutCanvasCanMoveIn";
 import { toHTML } from "./toHTML";
-import { containerPresets } from "./Container.presets";
-import { containerModifiers } from "./Container.modifiers";
 
 const ContainerMainTab = React.lazy(() =>
   import("../../chrome/toolbar/inspector/mainTabs/ContainerMainTab").then(mod => ({
@@ -42,8 +40,6 @@ export const ContainerDef = defineComponent(
       canDelete: () => true,
       canMoveIn: (node, into) => layoutCanvasCanMoveIn(node, into),
     },
-    presets: containerPresets,
-    modifiers: containerModifiers,
   },
   { __internal: true }
 );

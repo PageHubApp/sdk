@@ -46,8 +46,6 @@ export function defineComponent<P extends Record<string, any> = Record<string, a
     groupSettings: def.groupSettings,
     defaultProps: def.defaultProps || {},
     craftProps: def.craftProps || {},
-    presets: def.presets || [],
-    modifiers: def.modifiers || [],
     peerInherit: def.peerInherit,
   };
 

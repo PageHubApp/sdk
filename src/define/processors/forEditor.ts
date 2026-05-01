@@ -136,11 +136,6 @@ function attachCraft(
     craft.props.tools = () => [];
   }
 
-  // Modifiers
-  if (def.modifiers.length > 0) {
-    craft.toolbar.modifiers = def.modifiers;
-  }
-
   if (def.toolbarExtra) {
     craft.toolbar.toolbarExtra = def.toolbarExtra;
   }

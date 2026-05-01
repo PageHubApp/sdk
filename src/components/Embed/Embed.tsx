@@ -6,8 +6,8 @@ import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
-import { useScrollToSelected } from "../componentHooks";
-import { InjectedHeadTags, InjectedBodyTags } from "../InjectedHeadTags";
+import { useScrollToSelected } from "../../core/componentHooks";
+import { InjectedHeadTags, InjectedBodyTags } from "../../chrome/static/runtime/InjectedHeadTags";
 import { useMounted } from "../../utils/hooks/useMounted";
 
 import { BaseSelectorProps, applyAriaProps } from "../selectors";

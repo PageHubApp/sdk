@@ -170,12 +170,6 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
   /** Extra properties merged into .craft.props (for CraftJS default prop values). */
   craftProps?: Record<string, any>;
 
-  /** Toolbox presets — each becomes a separate drag source in the sidebar. */
-  presets?: ComponentPreset[];
-
-  /** Modifiers — composable className toggles shown in the Design tab. */
-  modifiers?: ComponentModifier[];
-
   /** Optional: inherit visual chrome from a same-name sibling when inserting into matching parent containers. */
   peerInherit?: PeerInheritConfig;
 }
@@ -212,7 +206,5 @@ export interface ResolvedComponentDef<P = any> {
   readonly groupSettings: React.ComponentType<any> | undefined;
   readonly defaultProps: Record<string, any>;
   readonly craftProps: Record<string, any>;
-  readonly presets: ComponentPreset[];
-  readonly modifiers: ComponentModifier[];
   readonly peerInherit: PeerInheritConfig | undefined;
 }

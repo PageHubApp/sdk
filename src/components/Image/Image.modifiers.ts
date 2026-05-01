@@ -1,5 +1,6 @@
 /** Image — modifiers extracted from Image.craft.tsx. */
 import type { ComponentModifier } from "../../define/types";
+import { registerModifiers } from "../../define/catalogRegistry";
 
 export const imageModifiers: ComponentModifier[] = [
       // Shape (using design tokens)
@@ -146,3 +147,5 @@ export const imageModifiers: ComponentModifier[] = [
         description: "Reduces opacity to 80% — creates a subtle de-emphasized look",
       },
 ];
+
+registerModifiers("Image", imageModifiers);

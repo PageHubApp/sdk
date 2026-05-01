@@ -1,5 +1,6 @@
 /** Link — modifiers extracted from Link.craft.tsx. */
 import type { ComponentModifier } from "../../define/types";
+import { registerModifiers } from "../../define/catalogRegistry";
 
 export const linkModifiers: ComponentModifier[] = [
       // DaisyUI link color variants
@@ -72,3 +73,5 @@ export const linkModifiers: ComponentModifier[] = [
         requires: "link",
       },
 ];
+
+registerModifiers("Link", linkModifiers);

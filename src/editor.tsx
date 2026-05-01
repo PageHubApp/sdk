@@ -12,7 +12,7 @@
 import { Editor, Frame, useEditor } from "@craftjs/core";
 import { EcosystemProvider, useAtomState } from "@zedux/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Inspector } from "./components/InspectorRegistry";
+import { Inspector } from "./chrome/toolbar/inspector/InspectorRegistry";
 import { resolveConfig } from "./config";
 import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { PageHubProvider, useHasSDKProvider, useSDK } from "./core/context";
@@ -384,6 +384,34 @@ function PageHubEditorInner({
   const showToolbar = config.features?.toolbar !== false;
   const showSidebar = config.features?.sidebar !== false;
 
+  // Eager-load built-in catalog files (presets + modifiers) ONCE at editor mount,
+  // then apply per-component host overrides from `config.{presets,modifiers}`.
+  // Viewer / static-renderer never call this — their bundles drop catalog code.
+  const [catalogsReady, setCatalogsReady] = React.useState(false);
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [{ loadBuiltinCatalogs }, { registerPresets, registerModifiers }] = await Promise.all([
+        import("./define/loadBuiltinCatalogs"),
+        import("./define/catalogRegistry"),
+      ]);
+      await loadBuiltinCatalogs();
+      // Host overrides win — replace semantics keyed by component name
+      const hostPresets = config.presets;
+      if (hostPresets) {
+        for (const [name, list] of Object.entries(hostPresets)) registerPresets(name, list);
+      }
+      const hostModifiers = config.modifiers;
+      if (hostModifiers) {
+        for (const [name, list] of Object.entries(hostModifiers)) registerModifiers(name, list);
+      }
+      if (!cancelled) setCatalogsReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [config.presets, config.modifiers]);
+
   // Process component definitions (built-in migrated + consumer custom) into resolver + toolbox data
   const allDefs = React.useMemo(() => [...BUILTIN_COMPONENT_DEFS, ...components], [components]);
   const { resolver: customResolver, toolboxCategories } = React.useMemo(
@@ -397,6 +425,12 @@ function PageHubEditorInner({
   const mergedResolver = { ...DEFAULT_CRAFT_RESOLVER, ...customResolver, ...resolver };
 
   const customComponentsValue = React.useMemo(() => ({ toolboxCategories }), [toolboxCategories]);
+
+  // Hold render until built-in catalogs (presets + modifiers) are loaded — otherwise
+  // the toolbox flashes empty and AI-driven inserts may resolve to fallback presets.
+  if (!catalogsReady) {
+    return <EditorLoader />;
+  }
 
   return (
     <div

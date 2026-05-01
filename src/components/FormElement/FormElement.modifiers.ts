@@ -1,5 +1,6 @@
 /** FormElement — modifiers extracted from FormElement.craft.tsx. */
 import type { ComponentModifier } from "../../define/types";
+import { registerModifiers } from "../../define/catalogRegistry";
 
 export const formElementModifiers: ComponentModifier[] = [
       // DaisyUI input variants
@@ -86,3 +87,5 @@ export const formElementModifiers: ComponentModifier[] = [
       { name: "input-md", label: "MD", category: "Size", exclusive: true, requires: "input" },
       { name: "input-lg", label: "LG", category: "Size", exclusive: true, requires: "input" },
 ];
+
+registerModifiers("FormElement", formElementModifiers);

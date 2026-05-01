@@ -22,8 +22,6 @@ import {
   type ToHTMLFn,
 } from "../../utils/staticHtml";
 import { Link } from "./Link";
-import { linkPresets } from "./Link.presets";
-import { linkModifiers } from "./Link.modifiers";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   let icon = props.icon;
@@ -94,8 +92,6 @@ export const LinkDef = defineComponent(
     rules: {
       canDrag: () => true,
     },
-    presets: linkPresets,
-    modifiers: linkModifiers,
   },
   { __internal: true }
 );

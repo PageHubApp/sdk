@@ -1,5 +1,6 @@
 /** Text — modifiers extracted from Text.craft.tsx. */
 import type { ComponentModifier } from "../../define/types";
+import { registerModifiers } from "../../define/catalogRegistry";
 
 export const textModifiers: ComponentModifier[] = [
       // Composite patterns (real CSS classes via @utility in daisyui-spatial)
@@ -127,3 +128,5 @@ export const textModifiers: ComponentModifier[] = [
         exclusive: true,
       },
 ];
+
+registerModifiers("Text", textModifiers);

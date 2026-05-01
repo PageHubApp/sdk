@@ -5,6 +5,7 @@
  */
 
 import type { ComponentModifier } from "../../define/types";
+import { getModifiers } from "../../define/catalogRegistry";
 import { getBuiltinComponentDef } from "../../core/builtinDefsLookup";
 
 function resolveModifierClassTokens(mod: ComponentModifier): string[] {
@@ -202,7 +203,7 @@ export function applyPeerClassInherit(
     return;
   }
 
-  const allMods = def.modifiers || [];
+  const allMods = getModifiers(def.name);
   const peerMods = allMods.filter(participatesInPeerInherit);
 
   actions.setProp(newNodeId, (props: Record<string, any>) => {

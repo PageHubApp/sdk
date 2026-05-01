@@ -32,7 +32,7 @@ import {
   usePanelUrl,
 } from "../../../utils/usePanelUrl";
 import { useSDK } from "../../../core/context";
-import { SaveIndicator } from "../../inline-tools/PublishButton";
+import { SaveIndicator } from "./SaveIndicator";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
 import { ChipPopover } from "../../toolbar/breakpoint-chip/ChipPopover";
 import { EnabledAtom, PreviewAtom } from "../state/atoms";

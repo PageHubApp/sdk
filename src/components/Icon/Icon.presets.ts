@@ -2,6 +2,7 @@
 import { TbBolt, TbIcons, TbStarFilled } from "react-icons/tb";
 import { Icon } from "./Icon";
 import type { ComponentPreset } from "../../define/types";
+import { registerPresets } from "../../define/catalogRegistry";
 
 export const iconPresets: ComponentPreset[] = [
       {
@@ -23,3 +24,5 @@ export const iconPresets: ComponentPreset[] = [
         },
       },
 ];
+
+registerPresets("Icon", iconPresets);

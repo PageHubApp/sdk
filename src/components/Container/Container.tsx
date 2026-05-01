@@ -28,7 +28,7 @@ import {
   applyContainerEditorChrome,
   pickContainerTag,
 } from "./containerPropHelpers";
-import { RenderPattern, inlayProps } from "../componentHooks";
+import { RenderPattern, inlayProps } from "../../core/componentHooks";
 import { replaceVariables } from "../../utils/design/variables";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { applyShowHideOverride, useShowHideVersion } from "../../utils/state/showHideStore";

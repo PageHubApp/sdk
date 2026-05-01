@@ -21,7 +21,6 @@ import {
 import { defineComponent } from "../../define/defineComponent";
 import { Embed, resolveEmbedHTML } from "./Embed";
 import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../../utils/staticHtml";
-import { embedPresets } from "./Embed.presets";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const html = resolveEmbedHTML(props);
@@ -78,7 +77,6 @@ export const EmbedDef = defineComponent(
     tools: props => [
       <NameNodeController key="embedNameController" position="top" align="end" placement="start" />,
     ],
-    presets: embedPresets,
   },
   { __internal: true }
 );

@@ -1,5 +1,6 @@
 /** Button — modifier definitions (extracted from Button.craft.tsx). */
 import type { ComponentModifier } from "../../define/types";
+import { registerModifiers } from "../../define/catalogRegistry";
 
 export const buttonModifiers: ComponentModifier[] = [
 // State modifier — canonical "active" styling for any state-bound trigger
@@ -214,3 +215,5 @@ export const buttonModifiers: ComponentModifier[] = [
   peerInherit: false,
 },
 ];
+
+registerModifiers("Button", buttonModifiers);

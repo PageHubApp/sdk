@@ -17,6 +17,7 @@
  * See [.claude/known-issues/sdk-circular-import-via-lib.md].
  */
 import type { PresetAddChildConfig, ResolvedComponentDef } from "../define/types";
+import { getPresets } from "../define/catalogRegistry";
 
 export type { PresetAddChildConfig };
 
@@ -33,7 +34,7 @@ export function setPresetRegistryDefs(defs: ResolvedComponentDef[]) {
 export function getPresetMeta(name: string | undefined): PresetMeta | undefined {
   if (!name || !_registeredDefs) return undefined;
   for (const def of _registeredDefs) {
-    for (const preset of def.presets) {
+    for (const preset of getPresets(def.name)) {
       if (preset.label === name && preset.addChild) {
         return { addChild: preset.addChild };
       }
