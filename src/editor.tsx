@@ -46,7 +46,8 @@ import { EditorSaveBanner } from "./chrome/shell/EditorSaveBanner";
 import { EditorSelectionDomProvider } from "./chrome/shell/EditorSelectionDomContext";
 import { GlobalSectionPickerDialog } from "./chrome/shell/GlobalSectionPickerDialog";
 import { onBesideDrop } from "./chrome/shell/besideDrop";
-import { findPosition2D } from "./chrome/shell/findPosition2D";
+import { findPosition2DForEditor } from "./chrome/shell/findPosition2D";
+import { setFindPositionEditorQuery } from "./chrome/shell/findPositionQueryRef";
 import { Toolbar } from "./chrome/toolbar";
 import { Viewport } from "./chrome/viewport/Viewport/Viewport";
 import { UnsavedChangesAtom } from "./chrome/viewport/state/atoms";
@@ -458,7 +459,7 @@ function PageHubEditorInner({
               emitter.emitInternal("_nodes_changed");
               if (onNodesChange) onNodesChange(query);
             }}
-            findPosition={findPosition2D}
+            findPosition={findPosition2DForEditor}
             onBesideDrop={onBesideDrop(Container)}
             shouldPromoteToParent={(node, parent) => {
               // CraftJS calls this when cursor is within 10px of `node`'s border to ask
@@ -479,13 +480,14 @@ function PageHubEditorInner({
               }
               return true;
             }}
-            handlers={store =>
-              new CustomEventHandlers({
+            handlers={store => {
+              setFindPositionEditorQuery(store.query);
+              return new CustomEventHandlers({
                 store,
                 isMultiSelectEnabled: () => false,
                 removeHoverOnMouseleave: true,
-              })
-            }
+              });
+            }}
             indicator={{
               enabled: false,
               success: "currentColor",

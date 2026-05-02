@@ -1,27 +1,12 @@
 import { useEditor, useNode } from "@craftjs/core";
-import React, { useRef } from "react";
-import { TbMusic } from "react-icons/tb";
-import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
+import { useMemo } from "react";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { useMounted } from "../../utils/hooks/useMounted";
+import { extractRootDataFromQuery } from "../../utils/page/pageManagement";
+import type { RenderCtx } from "../../render/RenderCtx";
 
-import { Box } from "@pagehub/ui";
-import { motionIt } from "../../utils/motion";
-import { applyAnimation } from "../../utils/tailwind/tailwind";
-
-import { BaseSelectorProps, applyAriaProps } from "../selectors";
-
-export interface AudioProps extends BaseSelectorProps {
-  src?: string;
-  /** @deprecated Use `src` instead. */
-  audioUrl?: string;
-  title?: string;
-  controls?: boolean;
-  autoPlay?: boolean;
-  /** @deprecated Use `autoPlay` instead. */
-  autoplay?: boolean;
-  loop?: boolean;
-}
+import { renderAudioBody, type AudioProps } from "./Audio.body";
+export { renderAudioBody, type AudioProps };
 
 export const Audio = (incomingProps: AudioProps) => {
   let props: AudioProps = {
@@ -37,70 +22,27 @@ export const Audio = (incomingProps: AudioProps) => {
     connectors: { connect, drag },
     id,
   } = useNode();
-
   const { name } = useNode(node => ({
     name: node.data.custom.displayName || node.data.displayName,
   }));
-
   const { query, enabled } = useEditor(state => getClonedState(props, state));
   const { isActive } = useEditor((_, q) => ({
     isActive: q.getEvent("selected").contains(id),
   }));
-
-  const audioUrl = props.src ?? props.audioUrl;
-  const autoPlay = props.autoPlay ?? props.autoplay;
-
+  const isMounted = useMounted();
+  const { rootProps, pageMedia, pageIndex } = useMemo(
+    () => extractRootDataFromQuery(query),
+    [query]
+  );
   props = setClonedProps(props, query);
 
-  const ref = useRef<HTMLElement | null>(null);
-  const isMounted = useMounted();
-
-  const prop: any = {
-    ref: r => {
-      ref.current = r;
-      connect(drag(r));
-    },
-    className: "",
-    role: "region",
-    "aria-label": props.title || audioUrl ? `Audio: ${props.title || audioUrl}` : "Audio player",
-    children: audioUrl ? (
-      <audio
-        className={props.className || ""}
-        src={audioUrl}
-        controls={props.controls}
-        autoPlay={autoPlay && !enabled}
-        loop={props.loop}
-        preload="metadata"
-        style={{ width: "100%" }}
-      >
-        Your browser does not support the audio element.
-      </audio>
-    ) : enabled && !/\bbg-/.test(props.className || "") ? (
-      <EditorEmptyLeafHint
-        selected={isActive}
-        icon={<TbMusic aria-hidden />}
-        idleLabel="Empty audio"
-        selectedLabel="Drop here or right-click"
-      />
-    ) : null,
+  const ctx: RenderCtx = {
+    id, enabled, isMounted, isActive, isHovered: false,
+    hasChildNodes: false, isCanvasNode: false, name,
+    connect, drag, setProp: () => {},
+    rootProps, pageMedia, pageIndex,
   };
-
-  applyAriaProps(prop, props);
-
-  if (enabled) {
-    prop["data-bounding-box"] = enabled;
-    prop["data-empty-state"] = !audioUrl;
-    // Only add node-id after client-side mount to prevent hydration mismatch
-    if (isMounted) {
-      prop["node-id"] = id;
-    }
-    prop.onClick = e => e.preventDefault();
-  }
-
-  return React.createElement(
-    motionIt(props, Box, enabled),
-    applyAnimation({ ...prop, key: id }, props, null, enabled)
-  );
+  return renderAudioBody(props, ctx);
 };
 
 Audio.craft = {

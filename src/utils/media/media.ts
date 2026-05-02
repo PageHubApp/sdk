@@ -2,7 +2,7 @@
  * Media management utilities — CRUD for pageMedia on ROOT_NODE
  */
 
-import { ROOT_NODE } from "@craftjs/utils";
+import { ROOT_NODE } from "../../utils/rootNode";
 import { getCdnUrl, generateSrcSet, generateSizes } from "../cdn";
 
 // ─── Internal helpers ───
@@ -81,13 +81,20 @@ export const getPageMedia = (query: any) => {
   }
 };
 
-export const getMediaContent = (query: any, mediaId: string): string | null => {
+/**
+ * Get the resolved URL for a media id.
+ * @param pageMedia - Array of media records (from `ROOT.props.pageMedia`).
+ *   Editor call sites pass `query.node(ROOT_NODE).get()?.data?.props?.pageMedia`.
+ *   Walker call sites read from `rootProps.pageMedia` directly.
+ */
+export const getMediaContent = (
+  pageMedia: any[] | null | undefined,
+  mediaId: string
+): string | null => {
   try {
     if (!mediaId) return null;
-    const backgroundNode = query.node(ROOT_NODE).get();
-    if (!backgroundNode) return null;
+    if (!pageMedia || !Array.isArray(pageMedia)) return null;
 
-    const pageMedia = backgroundNode.data.props.pageMedia || [];
     const media = pageMedia.find((m: any) => m.id === mediaId);
     if (!media) return null;
 
@@ -108,18 +115,20 @@ export const getMediaContent = (query: any, mediaId: string): string | null => {
   }
 };
 
-export const getResponsiveImageAttrs = (query: any, mediaId: string) => {
+export const getResponsiveImageAttrs = (
+  pageMedia: any[] | null | undefined,
+  mediaId: string
+) => {
   try {
     if (!mediaId) return { src: null, srcset: null, sizes: null };
-    const backgroundNode = query.node(ROOT_NODE).get();
-    if (!backgroundNode) return { src: null, srcset: null, sizes: null };
+    if (!pageMedia || !Array.isArray(pageMedia))
+      return { src: null, srcset: null, sizes: null };
 
-    const pageMedia = backgroundNode.data.props.pageMedia || [];
     const media = pageMedia.find((m: any) => m.id === mediaId);
 
     if (!media || media.type === "url" || media.type === "svg" || media.type === "r2") {
       // No responsive variants for URL / SVG / R2 — just the raw src.
-      return { src: getMediaContent(query, mediaId), srcset: null, sizes: null };
+      return { src: getMediaContent(pageMedia, mediaId), srcset: null, sizes: null };
     }
 
     const cdnId = media.cdnId || media.id;
@@ -134,7 +143,7 @@ export const getResponsiveImageAttrs = (query: any, mediaId: string) => {
     };
   } catch (e) {
     console.error("Failed to get responsive image attrs:", e);
-    return { src: getMediaContent(query, mediaId), srcset: null, sizes: null };
+    return { src: getMediaContent(pageMedia, mediaId), srcset: null, sizes: null };
   }
 };
 

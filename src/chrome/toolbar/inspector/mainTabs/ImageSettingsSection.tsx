@@ -1,6 +1,8 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useState } from "react";
 import { getBackgroundUrl } from "@/utils/background";
+import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
+import { useMemo } from "react";
 import { BackgroundFocalPointPicker } from "../../inputs/color/BackgroundFocalPointPicker";
 import { PropertySection } from "../PropertySection";
 
@@ -19,6 +21,7 @@ import { PropertySection } from "../PropertySection";
 export function ImageSettingsSection() {
   const { query } = useEditor();
   const { props } = useNode(node => ({ props: node.data?.props }));
+  const { pageMedia } = useMemo(() => extractRootDataFromQuery(query), [query]);
   const hasImage = !!props?.background?.image;
   const [isPickingFocal, setIsPickingFocal] = useState(false);
 
@@ -33,7 +36,7 @@ export function ImageSettingsSection() {
   return (
     <div className="flex flex-col gap-3">
       <BackgroundFocalPointPicker
-        imageUrl={getBackgroundUrl(props, query)}
+        imageUrl={getBackgroundUrl(props, pageMedia)}
         onOpenChange={setIsPickingFocal}
       />
       {!isPickingFocal && <PropertySection sectionId="image-settings" />}

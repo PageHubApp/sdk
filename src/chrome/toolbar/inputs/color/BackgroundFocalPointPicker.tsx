@@ -5,6 +5,8 @@ import { TbTarget } from "react-icons/tb";
 import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
 import { useAtomValue } from "@zedux/react";
 import { getBackgroundUrl } from "@/utils/background";
+import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
+import { useMemo } from "react";
 import { ViewAtom } from "../../../viewport/state/atoms";
 import { getEffectiveViews, EditModifiersAtom } from "../../Label";
 import { MultiScopeAtom } from "../../breakpoint-chip/atoms";
@@ -44,7 +46,8 @@ export function BackgroundFocalPointPicker({
   const componentElementRef = useRef<HTMLElement | null>(null);
 
   // Get the actual background image URL
-  const backgroundUrl = imageUrl || getBackgroundUrl(props, query);
+  const { pageMedia } = useMemo(() => extractRootDataFromQuery(query), [query]);
+  const backgroundUrl = imageUrl || getBackgroundUrl(props, pageMedia);
 
   // Get reference to the actual DOM element being edited
   useEffect(() => {

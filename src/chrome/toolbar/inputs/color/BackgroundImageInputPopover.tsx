@@ -17,6 +17,8 @@ import { lazy, Suspense, useState } from "react";
 import { TbAdjustmentsHorizontal, TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
 import { getMediaById, getMediaContent } from "@/utils/media/media";
+import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
+import { useMemo } from "react";
 import { Chip } from "../../../primitives/Chip";
 import { ToolbarIconButton } from "../../../primitives/ToolbarIconButton";
 import { usePopoverAutoOpen } from "../../inspector/hooks/usePopoverAutoOpen";
@@ -45,6 +47,7 @@ export default function BackgroundImageInputPopover({ def }: PropertyInputProps)
     background: node.data?.props?.background,
   }));
 
+  const { pageMedia } = useMemo(() => extractRootDataFromQuery(query), [query]);
   const mediaId = background?.image;
   const hasImage = !!mediaId;
   const selectedMedia = hasImage ? getMediaById(query, mediaId) : null;
@@ -57,7 +60,7 @@ export default function BackgroundImageInputPopover({ def }: PropertyInputProps)
       const cdnId = selectedMedia.cdnId || selectedMedia.id;
       imageUrl = getCdnUrl(cdnId, { width: 600, format: "auto" });
     } else {
-      imageUrl = getMediaContent(query, mediaId);
+      imageUrl = getMediaContent(pageMedia, mediaId);
     }
   }
 

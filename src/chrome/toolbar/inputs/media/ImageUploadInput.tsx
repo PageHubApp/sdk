@@ -5,6 +5,7 @@ import { TbAlertTriangle, TbPhoto, TbUpload } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "@/utils/atoms";
 import { getMediaContent, registerMediaWithBackground } from "@/utils/media/media";
+import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import { MediaUploadError, uploadImageToCdn } from "@/utils/media/upload";
 import Spinner from "../../primitives/Spinner";
 import { MediaManagerModal } from "./MediaManagerModal";
@@ -185,7 +186,8 @@ export const ImageUploadInput: any = ({
   const mediaId = nodeProps[propKey];
   const hasUploadedImage = !!mediaId;
   // Use getMediaContent to handle both CDN and base64
-  const imageUrl = hasUploadedImage ? getMediaContent(query, mediaId) : null;
+  const pageMedia = extractRootDataFromQuery(query).pageMedia;
+  const imageUrl = hasUploadedImage ? getMediaContent(pageMedia, mediaId) : null;
 
   if (hasUploadedImage && !loading && !saved) {
     label = "Change Image";

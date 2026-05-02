@@ -19,6 +19,7 @@ import { VariableSuggestionPopup } from "./VariableSuggestion";
 
 import { EditorEmptyLeafHint } from "../primitives/EditorEmptyLeafHint";
 import { replaceVariables, resolveVariable } from "../../utils/design/variables";
+import { extractRootDataFromQuery } from "../../utils/page/pageManagement";
 import { useItemContext } from "../../utils/itemContext";
 import { useAnchors } from "../../utils/anchors/anchorContext";
 import {
@@ -279,7 +280,7 @@ function TextEditorMode({
     }
   };
 
-  const previewHtml = replaceVariables(rawText, query, itemContext, anchors);
+  const previewHtml = replaceVariables(rawText, extractRootDataFromQuery(query).rootProps, itemContext, anchors);
   const previewEmpty = isVisuallyEmptyRichText(previewHtml);
   const showEmptyChrome = enabled && previewEmpty && !isEditing && !isInsideLinkedComponent;
   const showEmptyBlockHint = showEmptyChrome && isActive;

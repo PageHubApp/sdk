@@ -1,6 +1,7 @@
 import { useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getMediaContent } from "@/utils/media/media";
+import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import { phStorage } from "../../../../../utils/phStorage";
 import { loadIconSprite } from "../../../../../utils/icons/IconSvgMapContext";
 import { deriveCategories, type IconCategory } from "../utils/deriveCategories";
@@ -70,6 +71,7 @@ export function useIconDialog({
   onUseMedia,
 }: UseIconDialogProps) {
   const { query } = useEditor();
+  const pageMedia = extractRootDataFromQuery(query).pageMedia;
 
   // Synthesize the legacy `dialog` shape so IconsTab/MediaTab keep working.
   const dialog = useMemo(
@@ -360,7 +362,7 @@ export function useIconDialog({
     showMediaBrowser,
     setShowMediaBrowser,
     handleMediaSelect,
-    query,
+    pageMedia,
     getMediaContent,
   };
 }

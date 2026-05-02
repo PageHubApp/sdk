@@ -12,18 +12,18 @@ import { parseIconRef } from "./collectIconRefs";
  * Sync resolver — used when caller already has the iconMap (SSR static HTML path).
  * Supports:
  *   ref-icon:<set>/<Name>  — e.g. ref-icon:tb/TbShoppingCart
- *   ref-image:<id>         — image from media library (requires query)
+ *   ref-image:<id>         — image from media library (requires pageMedia)
  */
 export function resolveIcon(
   value: string | undefined,
-  query?: any,
+  pageMedia?: any[] | null,
   iconMap?: IconSvgMap
 ): React.ReactNode {
   if (!value || typeof value !== "string") return null;
 
   if (value.startsWith("ref-image:")) {
     const imageId = value.replace("ref-image:", "");
-    const mediaUrl = query ? getMediaContent(query, imageId) : null;
+    const mediaUrl = pageMedia ? getMediaContent(pageMedia, imageId) : null;
     if (!mediaUrl) return null;
     return <img src={mediaUrl} alt="Icon" className="size-full object-contain" />;
   }
@@ -77,7 +77,10 @@ export function renderIconSvg(entry: IconSvgEntry): React.ReactElement {
  * React hook form — prefers the SSR-seeded map (inline SVG) and falls back to
  * a sprite-sheet `<use href>` reference for icons picked post-SSR in the editor.
  */
-export function useResolvedIcon(value: string | undefined, query?: any): React.ReactNode {
+export function useResolvedIcon(
+  value: string | undefined,
+  pageMedia?: any[] | null
+): React.ReactNode {
   const iconRef = value?.startsWith("ref-icon:") ? value : undefined;
   const entry = useIconSvg(iconRef);
   const spriteReady = useIconSprite(entry ? undefined : iconRef);
@@ -86,7 +89,7 @@ export function useResolvedIcon(value: string | undefined, query?: any): React.R
 
   if (value.startsWith("ref-image:")) {
     const imageId = value.replace("ref-image:", "");
-    const mediaUrl = query ? getMediaContent(query, imageId) : null;
+    const mediaUrl = pageMedia ? getMediaContent(pageMedia, imageId) : null;
     if (!mediaUrl) return null;
     return <img src={mediaUrl} alt="Icon" className="size-full object-contain" />;
   }

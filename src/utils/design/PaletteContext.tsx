@@ -1,4 +1,4 @@
-import { NamedColor } from "../../components/Background/Background";
+import type { NamedColor } from "../../components/Background/Background.body";
 import React, { createContext, useContext } from "react";
 
 interface PaletteContextType {

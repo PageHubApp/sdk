@@ -8,7 +8,7 @@ interface MediaTabProps {
 
 export function MediaTab({ d }: MediaTabProps) {
   const mediaContent = d.dialog.value?.startsWith("ref-image:")
-    ? d.getMediaContent(d.query, d.dialog.value.replace("ref-image:", ""))
+    ? d.getMediaContent(d.pageMedia, d.dialog.value.replace("ref-image:", ""))
     : null;
 
   return (

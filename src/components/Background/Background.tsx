@@ -116,11 +116,14 @@ export function Background({
   const isMounted = useMounted();
 
   // Lazy loading for background images
+  // Background renders ROOT — its own props.pageMedia IS the page media list.
+  const pageMediaForRoot: any[] | null = Array.isArray(props.pageMedia) ? props.pageMedia : null;
+
   const {
     ref: lazyRef,
     isLoaded,
     backgroundImage,
-  } = useLazyBackground(props.background?.image ? getBackgroundUrl(props, query) : null, {
+  } = useLazyBackground(props.background?.image ? getBackgroundUrl(props, pageMediaForRoot) : null, {
     enabled: props.background?.lazy && !enabled,
   });
 
@@ -197,13 +200,13 @@ export function Background({
 
   // Apply background image with lazy loading support
   if (props.background?.lazy && !enabled) {
-    applyLazyBackgroundImage(prop, props, settings, query, lazyRef);
+    applyLazyBackgroundImage(prop, props, settings, pageMediaForRoot, lazyRef);
     if (isLoaded && backgroundImage) {
       prop.style = prop.style || {};
       prop.style.backgroundImage = backgroundImage;
     }
   } else {
-    applyBackgroundImage(prop, props, settings, query);
+    applyBackgroundImage(prop, props, settings, pageMediaForRoot);
   }
 
   applyAnimation(prop, props, null, enabled);

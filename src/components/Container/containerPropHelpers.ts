@@ -13,6 +13,7 @@ import {
 import { resolveAnchorsInActions } from "../../utils/anchors/resolveAnchorsInAction";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { replaceVariables } from "../../utils/design/variables";
+import type { PageIndex } from "../../utils/page/pageManagement";
 
 /**
  * Pick the rendered HTML tag + @pagehub/ui component for a Container based on
@@ -71,7 +72,8 @@ export function pickContainerTag(
 interface ApplyActionsCtx {
   props: any;
   enabled: boolean;
-  query: any;
+  rootProps: Record<string, any> | null;
+  pageIndex: PageIndex;
   router: any;
   parentItem: any;
   anchors: any;
@@ -92,17 +94,17 @@ interface ApplyActionsResult {
  * submission URL string, not a `NodeAction[]`).
  */
 export function applyContainerActions(prop: any, ctx: ApplyActionsCtx): ApplyActionsResult {
-  const { props, enabled, query, router, parentItem, anchors } = ctx;
+  const { props, enabled, rootProps, pageIndex, router, parentItem, anchors } = ctx;
 
   const rawActions = migrateActions(props);
   const actions = resolveAnchorsInActions(rawActions, anchors) as NodeAction[];
   const firstLink = findLinkAction(actions);
-  const rawUrl = actionToHref(firstLink, query, router?.asPath);
+  const rawUrl = actionToHref(firstLink, pageIndex, router?.asPath);
   const resolvedUrl =
-    rawUrl && query
+    rawUrl && rootProps
       ? (() => {
           try {
-            return replaceVariables(rawUrl, query, parentItem, anchors);
+            return replaceVariables(rawUrl, rootProps, parentItem, anchors);
           } catch {
             return rawUrl;
           }

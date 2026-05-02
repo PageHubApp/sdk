@@ -1,4 +1,4 @@
-import { useEditor } from "@craftjs/core";
+import { useInWalker } from "../runtimeMode";
 import React, { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { getClientDataFetcher, getConnectorData } from "../design/variables";
@@ -127,9 +127,14 @@ export interface DataBehavior {
  */
 export function useDataSource(
   ds: DataSource | undefined,
-  props: { livePreview?: boolean } = {}
+  props: { livePreview?: boolean; enabled?: boolean } = {}
 ): DataBehavior {
-  const { enabled } = useEditor(state => ({ enabled: state.options.enabled }));
+  // Walker always passes `enabled: false`; editor passes its Craft enabled.
+  // When the caller doesn't supply, infer from the walker context (false) —
+  // never call useEditor() here, otherwise the body would pull `@craftjs/core`
+  // into the viewer bundle.
+  const inWalker = useInWalker();
+  const enabled = props.enabled ?? (inWalker ? false : true);
   const parentItem = useItemContext();
   const routeParams = useRouteParams();
 

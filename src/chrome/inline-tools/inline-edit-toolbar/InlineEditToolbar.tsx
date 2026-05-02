@@ -21,6 +21,7 @@ import {
   TbUnderline,
 } from "react-icons/tb";
 import { getMediaContent } from "../../../utils/media/media";
+import { extractRootDataFromQuery } from "../../../utils/page/pageManagement";
 import { paletteToCSSVar } from "../../../utils/design/palette";
 import { useAtomValue } from "@zedux/react";
 import { hasOverflowAncestor } from "@/utils/hasOverflowAncestor";
@@ -331,7 +332,7 @@ export function InlineEditToolbar({
         isOpen={showMediaModal}
         onClose={() => setShowMediaModal(false)}
         onSelect={mediaId => {
-          const imageUrl = getMediaContent(query, mediaId);
+          const imageUrl = getMediaContent(extractRootDataFromQuery(query).pageMedia, mediaId);
           if (imageUrl) editor?.chain().focus().setImage({ src: imageUrl }).run();
           setShowMediaModal(false);
         }}

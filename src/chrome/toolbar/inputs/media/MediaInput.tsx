@@ -5,6 +5,7 @@ import { TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
 import { SideBarAtom } from "@/utils/atoms";
 import { getMediaById, getMediaContent, registerMediaWithBackground } from "@/utils/media/media";
+import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
 import { ToolbarSection } from "../../ToolbarSection";
 import { TailwindInput } from "../advanced/TailwindInput";
@@ -174,7 +175,7 @@ export const MediaInput = (propa: MediaInputProps) => {
       const cdnId = selectedMedia.cdnId || selectedMedia.id;
       imageUrl = getCdnUrl(cdnId, { width: 600, format: "auto" });
     } else {
-      imageUrl = getMediaContent(query, mediaId);
+      imageUrl = getMediaContent(extractRootDataFromQuery(query).pageMedia, mediaId);
     }
   } else if (hasContentUrl) {
     // Use content URL for preview when no media library item is selected

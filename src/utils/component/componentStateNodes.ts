@@ -1,4 +1,4 @@
-import { ROOT_NODE } from "@craftjs/utils";
+import { ROOT_NODE } from "../../utils/rootNode";
 
 /**
  * State-node detection for the component canvas.

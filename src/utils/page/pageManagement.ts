@@ -2,9 +2,10 @@
  * Page management utilities — isolation, counting, ref resolution, variables
  */
 
-import { ROOT_NODE } from "@craftjs/utils";
+import { ROOT_NODE } from "../../utils/rootNode";
 import { phStorage } from "../phStorage";
-import { decompressAsync } from "../compressionAsync";
+// `decompressAsync` (lzutf8) is editor-only — `loadPage` dynamic-imports it
+// at call time so viewer/walker bundles don't drag the compression lib in.
 
 /** Persisted when the editor canvas shows every page (not isolated to one). */
 export const EDITOR_ALL_PAGES_STORAGE = "__all_pages__";
@@ -118,6 +119,7 @@ export async function isolatePageLazy(
   }
 
   try {
+    const { decompressAsync } = await import("../compressionAsync");
     const json = await decompressAsync(pageData.content);
     actions.history.ignore().deserialize(json);
     clearLoadedPages();
@@ -133,42 +135,92 @@ export async function isolatePageLazy(
 
 // ─── Page Ref Resolution ───
 
-export const resolvePageRef = (url: string, query: any, currentPath?: string): string => {
+/**
+ * Page index entry — produced either from the live Craft tree (editor) or
+ * from `rootProps._pageIndex` injected by SSR for sharded single-page loads.
+ */
+export interface PageIndexEntry {
+  isHomePage?: boolean;
+  displayName: string;
+}
+
+export type PageIndex = Record<string, PageIndexEntry>;
+
+/**
+ * One-stop extractor for editor call sites — reads ROOT_NODE.data.props once
+ * and pre-builds the page index. Replaces the query.node(ROOT_NODE) reads
+ * scattered throughout components. Returns empty/null for missing root.
+ *
+ * Walker callers do NOT use this — they have rootProps + pageIndex directly.
+ */
+export interface ExtractedRootData {
+  rootProps: Record<string, any>;
+  pageMedia: any[] | null;
+  pageIndex: PageIndex;
+}
+
+export function extractRootDataFromQuery(query: any): ExtractedRootData {
+  const empty: ExtractedRootData = { rootProps: {}, pageMedia: null, pageIndex: {} };
+  if (!query) return empty;
+  try {
+    const root = query.node(ROOT_NODE).get();
+    const rootProps = root?.data?.props ?? {};
+    return {
+      rootProps,
+      pageMedia: Array.isArray(rootProps.pageMedia) ? rootProps.pageMedia : null,
+      pageIndex: buildPageIndexFromQuery(query),
+    };
+  } catch {
+    return empty;
+  }
+}
+
+/**
+ * Build a PageIndex from a Craft query — editor call sites use this once
+ * per render to feed `resolvePageRef`. Walker callers read
+ * `rootProps._pageIndex` directly (already in PageIndex shape).
+ */
+export function buildPageIndexFromQuery(query: any): PageIndex {
+  const out: PageIndex = {};
+  if (!query) return out;
+  try {
+    const root = query.node(ROOT_NODE).get();
+    const ssrIndex = root?.data?.props?._pageIndex;
+    if (ssrIndex && typeof ssrIndex === "object") Object.assign(out, ssrIndex);
+    const childIds: string[] = root?.data?.nodes ?? [];
+    for (const id of childIds) {
+      try {
+        const n = query.node(id).get();
+        if (n?.data?.props?.type === "page") {
+          out[id] = {
+            isHomePage: n.data.props.isHomePage,
+            displayName: n.data.custom?.displayName || "Untitled",
+          };
+        }
+      } catch {
+        /* node missing — skip */
+      }
+    }
+  } catch {
+    /* root missing — return whatever we have */
+  }
+  return out;
+}
+
+export const resolvePageRef = (
+  url: string,
+  pageIndex: PageIndex | null | undefined,
+  currentPath?: string
+): string => {
   if (!url || typeof url !== "string" || !url.startsWith("ref:")) return url;
-  if (!query) return "#";
+  if (!pageIndex) return "#";
 
   try {
     const pageId = url.replace("ref:", "");
-
-    // Try CraftJS node first (works when all pages are loaded, e.g. editor)
-    let isHomePage: boolean | undefined;
-    let displayName: string | undefined;
-    try {
-      const pageNode = query.node(pageId).get();
-      if (pageNode?.data?.props?.type === "page") {
-        isHomePage = pageNode.data.props.isHomePage;
-        displayName = pageNode.data.custom?.displayName || "Untitled";
-      }
-    } catch {
-      // Node not in tree — expected for sharded single-page loads
-    }
-
-    // Fallback: check _pageIndex injected by server for SSR routes
-    if (displayName === undefined) {
-      try {
-        const rootNode = query.node(ROOT_NODE).get();
-        const pageIndex = rootNode?.data?.props?._pageIndex;
-        const entry = pageIndex?.[pageId];
-        if (entry) {
-          isHomePage = entry.isHomePage;
-          displayName = entry.displayName || "Untitled";
-        }
-      } catch {
-        // ROOT not available
-      }
-    }
-
-    if (displayName === undefined) return "#";
+    const entry = pageIndex[pageId];
+    if (!entry) return "#";
+    const isHomePage = entry.isHomePage;
+    const displayName = entry.displayName || "Untitled";
 
     let baseUrl = "";
     if (currentPath) {

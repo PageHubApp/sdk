@@ -1,8 +1,12 @@
-// Import directly from @craftjs/utils to avoid the broken ESM re-export
-// chain in @craftjs/core that breaks tsx/Node ESM resolution in CLI scripts
-// (e.g. backfill-template-previews.mjs). Same symbol, same value.
-import { ROOT_NODE } from "@craftjs/utils";
 import { getStateValue, setState } from "../state/stateRegistry";
+
+/**
+ * Shape of ROOT_NODE props that the variable / page / media / action helpers
+ * need to read at runtime. Editor call sites read this once via
+ * `query.node(ROOT_NODE).get()?.data?.props` and pass forward; the walker
+ * provides it directly from the parsed NodeMap.
+ */
+export type RootProps = Record<string, any>;
 
 // ── Connector data context (set by editor when connector data is loaded) ────
 export interface SdkBindingMeta {
@@ -187,12 +191,12 @@ const DEFAULT_VALUES: Record<string, string> = {
  * Uses default placeholder values when variables are not set.
  *
  * @param text - The text containing variable placeholders
- * @param query - The Craft.js query object to access ROOT_NODE
+ * @param rootProps - ROOT_NODE props (read once at the editor boundary or supplied by walker)
  * @returns Text with variables replaced by actual values or defaults
  */
 export const replaceVariables = (
   text: string | undefined,
-  query: any,
+  rootProps: RootProps | null | undefined,
   itemContext?: Record<string, any> | null,
   anchors?: Readonly<Record<string, string>> | null
 ): string => {
@@ -202,10 +206,7 @@ export const replaceVariables = (
   }
 
   try {
-    const root = query.node(ROOT_NODE).get();
-    if (!root) return text;
-
-    const rootProps = root.data.props;
+    if (!rootProps) return text;
 
     // First, unwrap <span data-variable="...">{{...}}</span> to just {{...}}
     // so the regex below can replace them cleanly without leftover wrapper spans
@@ -384,7 +385,7 @@ export const replaceVariables = (
  */
 export const resolveVariable = (
   varId: string,
-  query: any,
+  rootProps: RootProps | null | undefined,
   anchors?: Readonly<Record<string, string>> | null
 ): string => {
   if (!varId) return "";
@@ -466,10 +467,7 @@ export const resolveVariable = (
       return varId;
     }
 
-    const root = query.node(ROOT_NODE).get();
-    if (!root) return DEFAULT_VALUES[varId] || varId;
-
-    const rootProps = root.data.props;
+    if (!rootProps) return DEFAULT_VALUES[varId] || varId;
 
     // Handle custom variables
     if (varId.startsWith("variables.")) {
@@ -502,12 +500,10 @@ export const resolveVariable = (
 /**
  * Get available variables from ROOT_NODE for display/autocomplete
  */
-export const getAvailableVariables = (query: any): string[] => {
+export const getAvailableVariables = (rootProps: RootProps | null | undefined): string[] => {
   try {
-    const root = query.node(ROOT_NODE).get();
-    if (!root) return [];
+    if (!rootProps) return [];
 
-    const rootProps = root.data.props;
     const variables: string[] = [];
 
     // Add auth variables

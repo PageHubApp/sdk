@@ -5,8 +5,10 @@
  * Replaces CraftJS's built-in 1D findPosition (Editor option in @craftjs/core 0.2.17).
  */
 
-import type { Node, NodeInfo } from "@craftjs/core";
+import type { DropPosition, Node, NodeInfo } from "@craftjs/core";
 import type { NodeId } from "@craftjs/core";
+import { coerceRootSectionDropTowardPageCanvas } from "./coerceRootSectionDropTowardPageCanvas";
+import { getFindPositionEditorQuery } from "./findPositionQueryRef";
 import { updateAlignCrossFromDrag } from "./spatial/detectAlignCrossFromDrag";
 import { resetBesideHysteresis, tryBesideInColumn } from "./spatial/detectBeside";
 import {
@@ -32,12 +34,6 @@ import {
 export type { DragOriginState } from "./spatial/spatialSession";
 export type { SpatialIntent } from "./spatial/spatialIntent";
 export { getLastResolvedIntent } from "./spatial/spatialSession";
-
-interface DropPosition {
-  parent: Node;
-  index: number;
-  where: string;
-}
 
 const isDev = process.env.NODE_ENV === "development";
 const log = isDev
@@ -225,4 +221,23 @@ export function findPosition2D(
   });
   syncResolvedIntent(result);
   return result;
+}
+
+/** Re-run intent snapshot after externally adjusting placement (e.g. ROOT → page coercion). */
+export function resyncSpatialIntentForPlacement(result: DropPosition) {
+  syncResolvedIntent(result);
+}
+
+export function findPosition2DForEditor(
+  parent: Node,
+  dims: NodeInfo[],
+  posX: number,
+  posY: number
+): DropPosition {
+  const base = findPosition2D(parent, dims, posX, posY);
+  const coerced = coerceRootSectionDropTowardPageCanvas(getFindPositionEditorQuery(), parent, base);
+  if (coerced.parent.id !== base.parent.id) {
+    resyncSpatialIntentForPlacement(coerced);
+  }
+  return coerced;
 }

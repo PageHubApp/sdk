@@ -1,0 +1,19 @@
+import { renderImageBody, type ImageProps } from "./Image.body";
+import { useTreeRoot, useWalkerNode } from "../../render/contexts";
+import { makeWalkerCtx } from "../../render/RenderCtx";
+
+export const ImageRender = (incomingProps: ImageProps) => {
+  const props: any = { type: "cdn", loading: "lazy", fetchPriority: "low", ...incomingProps };
+  const tree = useTreeRoot();
+  const walker = useWalkerNode();
+  const ctx = makeWalkerCtx({
+    id: walker?.id ?? "",
+    isCanvas: false,
+    hasChildNodes: false,
+    displayName: walker?.displayName ?? "Image",
+    rootProps: tree?.rootProps ?? {},
+    pageMedia: tree?.pageMedia ?? null,
+    pageIndex: tree?.pageIndex ?? {},
+  });
+  return renderImageBody(props, ctx);
+};

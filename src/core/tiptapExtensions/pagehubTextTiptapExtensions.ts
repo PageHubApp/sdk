@@ -25,6 +25,7 @@ import { OPEN_LINK_PANEL_EVENT } from "@/chrome/inline-tools/openLinkPanelEvent"
 import { VariableNode, type SuggestionProps } from "@/core/tiptapExtensions/VariableNode";
 import { getEditorVariableOptions } from "@/utils/editorVariableOptions";
 import { resolveVariable } from "@/utils/design/variables";
+import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import { getAnchorsForNode } from "@/utils/anchors/resolveAnchorsViaCraft";
 
 /** `inline` = ProseMirror `doc` with `inline*` only — getHTML() has no wrapping `<p>`. */
@@ -213,7 +214,7 @@ const variableExtension = (
       queryRef?.current
         ? resolveVariable(
             id,
-            queryRef.current,
+            extractRootDataFromQuery(queryRef.current).rootProps,
             nodeIdRef?.current ? getAnchorsForNode(nodeIdRef.current, queryRef.current) : undefined
           )
         : id,

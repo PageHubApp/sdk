@@ -2,7 +2,7 @@ import { Element, useEditor, useNode } from "@craftjs/core";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { useEffect, useState } from "react";
 import { TbClipboardCheck } from "react-icons/tb";
-import { SaveSubmissions } from "../../utils/submissions";
+import { submitFormProduction } from "./submitFormProduction";
 import { Container } from "../Container/Container";
 import { Text } from "../Text/Text";
 
@@ -74,35 +74,7 @@ export const Form = ({ children, ...props }: any) => {
     // In preview mode, handle actual submission
     setLoading(true);
     if (props.submissionType === "iframe") return;
-
-    if (props.submissionType === "custom" && props.action) {
-      try {
-        await fetch(props.action, {
-          method: props.method || "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-      } catch (err) {
-        console.error("Custom form submission failed:", err);
-      }
-    } else {
-      const additional: any = {
-        mailTo: props.mailto,
-        formName: props.formName,
-        webhookUrl: props.webhookEnabled ? props.webhookUrl : undefined,
-      };
-
-      SaveSubmissions(formData, settings, additional);
-    }
-
-    // Fire analytics events if pixels are loaded
-    const w = window as any;
-    w.gtag?.("event", "form_submit", {
-      event_category: "forms",
-      event_label: props.formName || "form",
-    });
-    w.fbq?.("track", "Lead");
-    w.dataLayer?.push({ event: "form_submit", formName: props.formName || "form" });
+    await submitFormProduction(formData, props, settings);
 
     setTimeout(() => {
       if (props.successAction === "redirect" && props.successUrl) {

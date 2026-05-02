@@ -187,7 +187,7 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
 
     if (pageConditionFailAction === "redirect" && pageConditionRedirectUrl) {
       didRedirect.current = true;
-      const interpolated = replaceVariables(pageConditionRedirectUrl, query);
+      const interpolated = replaceVariables(pageConditionRedirectUrl, rootProps);
       window.location.href = resolveUrl(interpolated);
     } else if (pageConditionFailAction === "show-page" && pageConditionFallbackPageId) {
       didRedirect.current = true;

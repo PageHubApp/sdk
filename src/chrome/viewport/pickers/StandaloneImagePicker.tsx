@@ -5,6 +5,8 @@ import { TbAlertTriangle, TbPhoto, TbTrash, TbUpload } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "../../../utils/atoms";
 import { getMediaContent } from "../../../utils/media/media";
+import { extractRootDataFromQuery } from "../../../utils/page/pageManagement";
+import { useMemo } from "react";
 import { MediaUploadError, uploadImageToCdn } from "../../../utils/media/upload";
 import Spinner from "../../toolbar/primitives/Spinner";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
@@ -104,8 +106,9 @@ export const StandaloneImagePicker = ({
   if (saved) displayLabel = "Saved";
   if (errors.length) displayLabel = "Error";
 
+  const { pageMedia } = useMemo(() => extractRootDataFromQuery(query), [query]);
   const hasUploadedImage = !!value;
-  const mediaContent = hasUploadedImage ? getMediaContent(query, value) : null;
+  const mediaContent = hasUploadedImage ? getMediaContent(pageMedia, value) : null;
 
   return (
     <div className="space-y-2">

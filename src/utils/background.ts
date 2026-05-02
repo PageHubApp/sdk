@@ -164,7 +164,7 @@ export const generatePattern = (props: any) => {
 
 // ─── Background URL ───
 
-export const getBackgroundUrl = (props: any, query: any = null) => {
+export const getBackgroundUrl = (props: any, pageMedia: any[] | null = null) => {
   const bg = props.background;
   if (!bg?.image) return null;
 
@@ -175,8 +175,8 @@ export const getBackgroundUrl = (props: any, query: any = null) => {
     return content;
   }
 
-  if (query && content) {
-    const fromLibrary = getMediaContent(query, content);
+  if (pageMedia && content) {
+    const fromLibrary = getMediaContent(pageMedia, content);
     if (fromLibrary) return fromLibrary;
   }
 
@@ -206,11 +206,16 @@ export const applyPattern = (prop: any, props: any, settings: any) => {
   return prop;
 };
 
-export const applyBackgroundImage = (prop: any, props: any, settings: any, query: any = null) => {
+export const applyBackgroundImage = (
+  prop: any,
+  props: any,
+  settings: any,
+  pageMedia: any[] | null = null
+) => {
   const bg = props.background;
   if (!bg?.image) return prop;
 
-  const _imgProp = { src: getBackgroundUrl(props, query) };
+  const _imgProp = { src: getBackgroundUrl(props, pageMedia) };
   if (!_imgProp.src) return prop;
 
   prop.style = prop.style || {};
@@ -243,13 +248,13 @@ export const applyLazyBackgroundImage = (
   prop: any,
   props: any,
   settings: any,
-  query: any = null,
+  pageMedia: any[] | null = null,
   lazyRef: any = null
 ) => {
   const bg = props.background;
   if (!bg?.image) return prop;
 
-  const _imgProp = { src: getBackgroundUrl(props, query) };
+  const _imgProp = { src: getBackgroundUrl(props, pageMedia) };
   if (!_imgProp.src) return prop;
 
   prop.style = prop.style || {};

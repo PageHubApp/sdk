@@ -578,9 +578,17 @@ export async function compileTailwindCSS(
   opts?: { editor?: boolean }
 ): Promise<string | null> {
   try {
-    const lz = await import("lzutf8");
-    const decompressed = lz.decompress(lz.decodeBase64(pageData));
-    const nodes = JSON.parse(decompressed);
+    // pageData may arrive as plain JSON (post-PR5 viewer) or lz-base64
+    // (legacy / editor save format). Detect cheaply via the leading char.
+    let nodes: any;
+    const trimmed = pageData.trimStart();
+    if (trimmed.startsWith("{")) {
+      nodes = JSON.parse(trimmed);
+    } else {
+      const lz = await import("lzutf8");
+      const decompressed = lz.decompress(lz.decodeBase64(pageData));
+      nodes = JSON.parse(decompressed);
+    }
     const candidates = extractCandidatesFromNodes(nodes);
 
     if (candidates.length === 0) return null;

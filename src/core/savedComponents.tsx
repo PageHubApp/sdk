@@ -1,4 +1,4 @@
-import { ROOT_NODE } from "@craftjs/utils";
+import { ROOT_NODE } from "../utils/rootNode";
 import { useEditor, useNode } from "@craftjs/core";
 import { setRecursiveBelongsTo } from "@/utils/component/componentUtils";
 import { useEffect, useRef } from "react";

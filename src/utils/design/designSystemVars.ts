@@ -1,6 +1,6 @@
 // Utility functions for managing design system CSS variables
 
-import { NamedColor } from "../../components/Background/Background";
+import type { NamedColor } from "../../components/Background/Background.body";
 import { DEFAULT_STYLE_GUIDE } from "../defaults";
 import { autoGenerateContentColors, colorToOklch } from "./contentColor";
 import { generateCSSAliases } from "./tokenMigration";

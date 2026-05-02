@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { NodeViewWrapper } from "@tiptap/react";
 import type { NodeViewProps } from "@tiptap/core";
-import { ROOT_NODE } from "@craftjs/utils";
+import { ROOT_NODE } from "../../utils/rootNode";
 import { useEditor as useCraftEditor } from "@craftjs/core";
 import { OPEN_LINK_PANEL_EVENT } from "@/chrome/inline-tools/openLinkPanelEvent";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { VariablePopover } from "@/chrome/inline-tools/VariablePopover";
 import { resolveVariable } from "@/utils/design/variables";
+import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import type { VariableNodeOptions } from "./VariableNode";
 
 export function VariableNodeView({
@@ -23,7 +24,8 @@ export function VariableNodeView({
   const { query, actions } = useCraftEditor();
 
   const anchors = options.getAnchors ? options.getAnchors() : undefined;
-  const resolved = resolveVariable(varId, query, anchors);
+  const { rootProps } = extractRootDataFromQuery(query);
+  const resolved = resolveVariable(varId, rootProps, anchors);
   const initialDisplay = resolved && resolved !== varId ? resolved : varId;
   const [displayOverride, setDisplayOverride] = useState<string | null>(null);
   const displayText = displayOverride ?? initialDisplay;
@@ -40,7 +42,8 @@ export function VariableNodeView({
   // Listen for edits from other variable node popovers
   useEffect(() => {
     const handler = () => {
-      const fresh = resolveVariable(varId, query, options.getAnchors?.());
+      const { rootProps: rp } = extractRootDataFromQuery(query);
+      const fresh = resolveVariable(varId, rp, options.getAnchors?.());
       const freshDisplay = fresh && fresh !== varId ? fresh : varId;
       setDisplayOverride(prev => (prev !== freshDisplay ? freshDisplay : prev));
     };

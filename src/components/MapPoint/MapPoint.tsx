@@ -1,17 +1,10 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { getClonedState } from "../../utils/cloneState";
-import React from "react";
-import { TbMapPin } from "react-icons/tb";
 import { useMounted } from "../../utils/hooks/useMounted";
+import type { RenderCtx } from "../../render/RenderCtx";
 
-import { BaseSelectorProps, applyAriaProps } from "../selectors";
-
-export interface MapPointProps extends BaseSelectorProps {
-  lat: number;
-  lng: number;
-  title?: string;
-  description?: string;
-}
+import { renderMapPointBody, type MapPointProps } from "./MapPoint.body";
+export { renderMapPointBody, type MapPointProps };
 
 export const MapPoint = ({
   lat = 0,
@@ -20,45 +13,20 @@ export const MapPoint = ({
   description = "",
   ...rest
 }: MapPointProps) => {
-  let props: any = { lat, lng, title, description, ...rest };
-
+  const props: any = { lat, lng, title, description, ...rest };
   const {
     connectors: { connect, drag },
     id,
   } = useNode();
-
   const { enabled } = useEditor(state => getClonedState(props, state));
   const isMounted = useMounted();
-
-  // MapPoint is a data-only node — renders nothing in live mode
-  if (!enabled) return null;
-
-  const prop: any = {
-    ref: r => {
-      connect(drag(r));
-    },
-    className:
-      "flex items-center gap-2 rounded-lg border border-dashed border-base-300 bg-neutral/50 px-3 py-2 text-sm text-neutral-content",
-    "data-bounding-box": true,
-    "data-empty-state": !props.lat && !props.lng,
+  const ctx: RenderCtx = {
+    id, enabled, isMounted, isActive: false, isHovered: false,
+    hasChildNodes: false, isCanvasNode: false, name: "MapPoint",
+    connect, drag, setProp: () => {},
+    rootProps: {}, pageMedia: null, pageIndex: {},
   };
-
-  applyAriaProps(prop, props);
-
-  if (isMounted) {
-    prop["node-id"] = id;
-  }
-
-  const label = props.title || `${props.lat.toFixed(4)}, ${props.lng.toFixed(4)}`;
-
-  prop.children = (
-    <>
-      <TbMapPin className="shrink-0" />
-      <span className="truncate">{label}</span>
-    </>
-  );
-
-  return React.createElement("div", { ...prop, key: id });
+  return renderMapPointBody(props, ctx);
 };
 
 MapPoint.craft = {

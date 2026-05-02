@@ -1,0 +1,172 @@
+/**
+ * Craft-free walker — recurses a serialized CraftJS NodeMap and renders
+ * directly through `@pagehub/sdk` `*Render.tsx` components. Replaces
+ * `<Editor enabled={false}><Frame data={...}>` for viewer routes.
+ *
+ * Walks `[...node.nodes, ...Object.values(node.linkedNodes ?? {})]` in
+ * mount order (header/footer linkedNodes after canvas children). For
+ * `Data` / scope-bearing nodes the per-item ItemContext wrap is delegated
+ * to `<DataRender>` itself (it owns `useDataSource`).
+ *
+ * Conditional visibility — each node's `props.conditionGroups` /
+ * `props.conditions` are evaluated against the same context the editor
+ * HOC built; nodes that fail return `null`. The redirect/fallback
+ * page-level fail action is left to the existing
+ * `withConditionalVisibility` HOC behavior elsewhere — walker doesn't
+ * navigate away on its own.
+ */
+import React from "react";
+import { ItemProvider } from "../utils/itemContext";
+import {
+  evaluateConditionGroups,
+  evaluateConditions,
+} from "../utils/conditions/evaluate";
+import { buildClientContext } from "../utils/conditions/context";
+import { getConnectorData } from "../utils/design/variables";
+import type { Condition, ConditionGroup, ConditionLogic } from "../utils/conditions/types";
+import { WalkerNodeProvider, useTreeRoot, type WalkerNodeCtx } from "./contexts";
+import { uiResolver, type UiResolver } from "./resolver";
+
+export interface SerializedNode {
+  type: { resolvedName: string };
+  isCanvas?: boolean;
+  props: Record<string, any>;
+  nodes?: string[];
+  linkedNodes?: Record<string, string>;
+  parent?: string | null;
+  hidden?: boolean;
+  custom?: { displayName?: string };
+  displayName?: string;
+}
+
+export type SerializedNodes = Record<string, SerializedNode>;
+
+export interface RenderTreeProps {
+  /** Flat NodeMap from `prepareViewerProps` (server-side decompressed). */
+  nodes: SerializedNodes;
+  /** Entry node id — almost always `"ROOT"`. */
+  rootNodeId?: string;
+  /** Optional resolver override; defaults to the SDK's Craft-free uiResolver. */
+  resolver?: UiResolver;
+  /** Wrapped components (CartDrawer, AgentChat, etc.) — host app extras. */
+  extraResolver?: UiResolver;
+}
+
+interface NodeRendererProps {
+  id: string;
+  nodes: SerializedNodes;
+  resolver: UiResolver;
+}
+
+function evalNodeVisibility(
+  node: SerializedNode,
+  rootProps: Record<string, any>,
+  itemContext: any
+): boolean {
+  const conditions = (node.props.conditions || []) as Condition[];
+  const conditionGroups = (node.props.conditionGroups || null) as ConditionGroup[] | null;
+  const conditionLogic = (node.props.conditionLogic || "all") as ConditionLogic;
+  const has = (conditionGroups && conditionGroups.length > 0) || conditions.length > 0;
+  if (!has) return true;
+  // Use static-ish context for SSR; the runtime evaluator on mount inside
+  // each component (via useEffect listeners) keeps client-only conditions
+  // accurate. The walker's job here is to skip nodes whose server-resolvable
+  // conditions are definitively false.
+  const ctx = {
+    ...buildClientContext(rootProps, itemContext),
+    connectorData: getConnectorData(),
+  };
+  const result =
+    conditionGroups && conditionGroups.length > 0
+      ? evaluateConditionGroups(conditionGroups, ctx)
+      : evaluateConditions(conditions, conditionLogic, ctx);
+  return result !== false;
+}
+
+function NodeRenderer({ id, nodes, resolver }: NodeRendererProps) {
+  const node = nodes[id];
+  const tree = useTreeRoot();
+
+  if (!node) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`[RenderTree] node id "${id}" not in NodeMap`);
+    }
+    return null;
+  }
+  if (node.hidden) return null;
+
+  const visible = evalNodeVisibility(node, tree?.rootProps ?? {}, null);
+  if (!visible) return null;
+
+  const Component = resolver[node.type.resolvedName];
+  if (!Component) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[RenderTree] no resolver for "${node.type.resolvedName}" (node ${id})`
+      );
+    }
+    return null;
+  }
+
+  // Build child render order: canvas children first, then linkedNodes.
+  const childIds = [...(node.nodes ?? []), ...Object.values(node.linkedNodes ?? {})];
+  const children = childIds.map(cid => (
+    <NodeRenderer key={cid} id={cid} nodes={nodes} resolver={resolver} />
+  ));
+
+  // Special-case Map: pre-compute childPoints from MapPoint children.
+  let injectedProps: Record<string, any> = {};
+  if (node.type.resolvedName === "Map") {
+    const childPoints = (node.nodes ?? [])
+      .map(cid => {
+        const c = nodes[cid];
+        if (!c || c.type.resolvedName !== "MapPoint") return null;
+        return {
+          id: cid,
+          lat: parseFloat(c.props.lat) || 0,
+          lng: parseFloat(c.props.lng) || 0,
+          title: c.props.title || "",
+          description: c.props.description || "",
+        };
+      })
+      .filter(Boolean);
+    injectedProps.childPoints = childPoints;
+  }
+
+  // Filter out pages that aren't the active page. The walker doesn't yet
+  // know the active page; viewer routes pass it via props.* on the node
+  // (server-side single-page sharding) so non-active pages don't appear in
+  // `nodes`. As a safety net: skip any extra `type === "page"` siblings
+  // beyond the first one if we ever see them.
+  const ctx: WalkerNodeCtx = {
+    id,
+    isCanvas: !!node.isCanvas,
+    displayName: node.custom?.displayName || node.displayName,
+    childIds,
+  };
+
+  // For Data nodes with `dataSource.scope`, ItemProvider wrapping happens
+  // inside DataRender via useDataSource. For plain Container, no wrap.
+  return (
+    <WalkerNodeProvider value={ctx}>
+      {React.createElement(Component, { ...node.props, ...injectedProps }, children)}
+    </WalkerNodeProvider>
+  );
+}
+
+export function RenderTree({
+  nodes,
+  rootNodeId = "ROOT",
+  resolver,
+  extraResolver,
+}: RenderTreeProps) {
+  const merged = React.useMemo(
+    () => ({ ...uiResolver, ...(extraResolver || {}), ...(resolver || {}) }),
+    [resolver, extraResolver]
+  );
+  return <NodeRenderer id={rootNodeId} nodes={nodes} resolver={merged} />;
+}
+
+// Re-export ItemProvider so route code can wrap if needed without pulling
+// from `utils/`.
+export { ItemProvider };

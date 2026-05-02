@@ -281,9 +281,19 @@ export const applyAnimation = (
     if (Object.keys(cssStyle).length) {
       prop.style = { ...prop.style, ...cssStyle };
     }
-    // Attach IntersectionObserver ref for scroll-triggered animations
+    // Attach IntersectionObserver ref for scroll-triggered animations.
+    // Compose with any existing ref (e.g. Container.body's connect+drag+
+    // scrollEffect callback) instead of overwriting it — overwriting drops
+    // the original ref's side effects, which on the editor preview path
+    // (TemplateCraftPreview, /blocks/render) was leaving the element with
+    // no ref at all and IO was never attached.
     if (className.includes("ph-anim-scroll")) {
-      prop.ref = scrollAnimRef;
+      const prev = prop.ref;
+      prop.ref = (el: HTMLElement | null) => {
+        scrollAnimRef(el);
+        if (typeof prev === "function") prev(el);
+        else if (prev && typeof prev === "object") (prev as any).current = el;
+      };
     }
     return prop;
   }

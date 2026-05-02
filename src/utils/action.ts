@@ -3,7 +3,7 @@
  * with a single `action: NodeAction` prop on interactive components.
  */
 
-import { resolvePageRef } from "./page/pageManagement";
+import { resolvePageRef, type PageIndex } from "./page/pageManagement";
 import type { ConditionGroup } from "./conditions/types";
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -406,10 +406,14 @@ export function isHandlerAction(
 /**
  * Resolve any action to an href string for <a> tags and static HTML.
  * Returns null for actions that only work via JS handlers (open-modal, show-hide, toggle-theme).
+ *
+ * @param pageIndex - Page index for `ref:<pageId>` resolution. Editor callers
+ *   build via `buildPageIndexFromQuery(query)`; walker callers pass
+ *   `rootProps._pageIndex`. Pass null/undefined to skip ref resolution.
  */
 export function actionToHref(
   action: NodeAction | null | undefined,
-  query?: any,
+  pageIndex?: PageIndex | null,
   routerPath?: string
 ): string | null {
   if (!action) return null;
@@ -423,7 +427,7 @@ export function actionToHref(
         const m = h.match(/^ref:([^/?#]+)(.*)$/);
         if (!m) return null;
         const [, pageId, suffix] = m;
-        const base = resolvePageRef(`ref:${pageId}`, query, routerPath);
+        const base = resolvePageRef(`ref:${pageId}`, pageIndex, routerPath);
         if (!suffix) return base;
         const isQueryOrHash = suffix.startsWith("?") || suffix.startsWith("#");
         if (isQueryOrHash) return `${base}${suffix}`;
@@ -439,7 +443,7 @@ export function actionToHref(
 
     case "link-page": {
       if (!action.pageId) return null;
-      const base = resolvePageRef(`ref:${action.pageId}`, query, routerPath);
+      const base = resolvePageRef(`ref:${action.pageId}`, pageIndex, routerPath);
       if (!action.path) return base;
       const p = action.path;
       const isQueryOrHash = p.startsWith("?") || p.startsWith("#");
