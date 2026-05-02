@@ -32,6 +32,11 @@ const FloatingPanelContext = React.createContext<{
   /** This panel's z-index — exposed so portaled descendants (dropdowns,
    *  nested popovers) can compute a z that sits above their host panel. */
   zIndex: number;
+  /** This panel's root element, exposed so a nested FloatingPanel's
+   *  outside-click handler can treat clicks on its ancestor panel as
+   *  "inside" (otherwise opening a nested panel + clicking back into the
+   *  parent would dismiss the child). */
+  panelRef: React.RefObject<HTMLElement | null>;
 } | null>(null);
 
 /**
@@ -262,7 +267,11 @@ export function FloatingPanel({
       portalsRef.current.delete(node);
     };
   }, []);
-  const ctxValue = useMemo(() => ({ registerPortal, zIndex }), [registerPortal, zIndex]);
+  const selfPortalRef = useRef<HTMLElement | null>(null);
+  const ctxValue = useMemo(
+    () => ({ registerPortal, zIndex, panelRef: selfPortalRef }),
+    [registerPortal, zIndex]
+  );
   // Drag context is built after handleMouseDown / isDragging are available
   // (see below — useDraggableWindow is called further down).
 
@@ -271,8 +280,9 @@ export function FloatingPanel({
   // our root with the parent so its outside-click handler skips clicks that
   // land inside us. Without this, opening a nested panel would dismiss the
   // parent on the very next pointerdown.
-  const parentRegister = useContext(FloatingPanelContext)?.registerPortal;
-  const selfPortalRef = useRef<HTMLElement | null>(null);
+  const parentCtx = useContext(FloatingPanelContext);
+  const parentRegister = parentCtx?.registerPortal;
+  const parentPanelRef = parentCtx?.panelRef;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -295,7 +305,12 @@ export function FloatingPanel({
 
   const { position, isDragging, windowRef, handlePointerDown, setPosition } = useDraggableWindow({
     initialPosition: defaultPos,
-    bounds: { top: 0, right: 0, bottom: 0, left: 0 },
+    bounds: {
+      top: viewportInset,
+      right: viewportInset,
+      bottom: viewportInset,
+      left: viewportInset,
+    },
   });
 
   // Outside-click dismiss. Skip clicks inside the panel itself, inside any
@@ -326,6 +341,8 @@ export function FloatingPanel({
       for (const portal of portalsRef.current) {
         if (portal.contains(target)) return;
       }
+      const ancestor = parentPanelRef?.current;
+      if (ancestor && ancestor.contains(target)) return;
       if (ignoreOutsideClicks) {
         for (const ref of ignoreOutsideClicks) {
           const node = ref?.current;
@@ -340,7 +357,7 @@ export function FloatingPanel({
       cancelAnimationFrame(arm);
       document.removeEventListener("pointerdown", handlePointerDown, true);
     };
-  }, [isOpen, onClose, windowRef, ignoreOutsideClicks]);
+  }, [isOpen, onClose, windowRef, ignoreOutsideClicks, parentPanelRef]);
 
   // `autoSize` controls INITIAL layout (fit-content vs fixed default dims).
   // Resize is independent — handles always render. Once the user drags (or a
@@ -395,8 +412,14 @@ export function FloatingPanel({
     // already cap, and there's no committed measured width to clamp against.
     if (isFitContent) return;
     setPosition(prev => ({
-      x: Math.max(0, Math.min(prev.x, Math.max(0, viewport.width - (width ?? 0)))),
-      y: Math.max(0, Math.min(prev.y, Math.max(0, viewport.height - (height ?? 0)))),
+      x: Math.max(
+        viewportInset,
+        Math.min(prev.x, Math.max(viewportInset, viewport.width - (width ?? 0) - viewportInset))
+      ),
+      y: Math.max(
+        viewportInset,
+        Math.min(prev.y, Math.max(viewportInset, viewport.height - (height ?? 0) - viewportInset))
+      ),
     }));
   }, [
     isFitContent,

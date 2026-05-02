@@ -59,11 +59,9 @@ const TagChip = ({ tag }: { tag: string }) => (
   </span>
 );
 
-type Stage =
-  | { kind: "closed" }
-  | { kind: "picker" }
-  | { kind: "editor"; mode: "new"; draft: TextStyleDraft }
-  | { kind: "editor"; mode: "edit"; originalName: string; draft: TextStyleDraft };
+type EditorState =
+  | { mode: "new"; draft: TextStyleDraft }
+  | { mode: "edit"; originalName: string; draft: TextStyleDraft };
 
 export function TextStylePicker({
   presets,
@@ -75,7 +73,8 @@ export function TextStylePicker({
   onUpdate,
   onDelete,
 }: Props) {
-  const [stage, setStage] = useState<Stage>({ kind: "closed" });
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [editor, setEditor] = useState<EditorState | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const sidebarLeft = useAtomValue(SideBarAtom);
 
@@ -95,14 +94,20 @@ export function TextStylePicker({
   const computeEditorPosition = () => {
     const rect = triggerRef.current?.getBoundingClientRect();
     if (!rect) return undefined;
-    // Park the editor next to the picker so opening it doesn't yank focus
-    // across the screen.
-    const x = sidebarLeft ? rect.right + 8 : rect.left - EDITOR_WIDTH - 8;
+    // When the picker is open, park the editor on the far side of the picker
+    // so both panels are visible side-by-side instead of stacking.
+    const offset = pickerOpen ? PICKER_WIDTH + 16 : 8;
+    const x = sidebarLeft ? rect.right + offset : rect.left - EDITOR_WIDTH - offset;
     return { x: Math.max(8, x), y: Math.max(8, rect.top) };
   };
 
   const togglePicker = () => {
-    setStage(prev => (prev.kind === "closed" ? { kind: "picker" } : { kind: "closed" }));
+    if (editor) {
+      setEditor(null);
+      setPickerOpen(false);
+      return;
+    }
+    setPickerOpen(prev => !prev);
   };
 
   const handleClear = () => {
@@ -116,7 +121,7 @@ export function TextStylePicker({
       <Chip
         mode="popover"
         ref={triggerRef}
-        open={stage.kind !== "closed"}
+        open={pickerOpen || editor != null}
         onTriggerClick={togglePicker}
         onClear={handleClear}
         triggerAriaLabel={selectedPreset ? `Style: ${selectedPreset.name}` : "Pick style"}
@@ -125,7 +130,7 @@ export function TextStylePicker({
         summary={triggerLabel}
       />
 
-      {stage.kind === "picker" && (
+      {pickerOpen && (
         <Suspense fallback={null}>
           <TextStylePickerPanel
             presets={presets}
@@ -133,50 +138,56 @@ export function TextStylePicker({
             initialPosition={computePickerPosition()}
             defaultWidth={PICKER_WIDTH}
             defaultHeight={PICKER_HEIGHT}
-            onClose={() => setStage({ kind: "closed" })}
+            onClose={() => {
+              setPickerOpen(false);
+              setEditor(null);
+            }}
             onApply={preset => {
               onSelect(preset);
-              setStage({ kind: "closed" });
+              setPickerOpen(false);
+              setEditor(null);
             }}
             onEditPreset={preset =>
-              setStage({
-                kind: "editor",
+              setEditor({
                 mode: "edit",
                 originalName: preset.name,
                 draft: buildEditDraft(preset),
               })
             }
-            onCreateNew={() => setStage({ kind: "editor", mode: "new", draft: buildNewDraft() })}
-          />
-        </Suspense>
-      )}
-
-      {stage.kind === "editor" && (
-        <Suspense fallback={null}>
-          <TextStyleEditorPanel
-            mode={stage.mode}
-            initialDraft={stage.draft}
-            originalName={stage.mode === "edit" ? stage.originalName : null}
-            existingNames={existingNames}
-            initialPosition={computeEditorPosition()}
-            defaultWidth={EDITOR_WIDTH}
-            defaultHeight={EDITOR_HEIGHT}
-            onClose={() => setStage({ kind: "closed" })}
-            onSave={draft => {
-              if (stage.mode === "edit") {
-                onUpdate(stage.originalName, draft);
-              } else {
-                onCreate(draft);
-              }
-              setStage({ kind: "closed" });
-            }}
-            onDelete={
-              stage.mode === "edit"
-                ? () => {
-                    onDelete(stage.originalName);
-                    setStage({ kind: "closed" });
-                  }
-                : undefined
+            onCreateNew={() => setEditor({ mode: "new", draft: buildNewDraft() })}
+            overlay={
+              editor ? (
+                <Suspense fallback={null}>
+                  <TextStyleEditorPanel
+                    mode={editor.mode}
+                    initialDraft={editor.draft}
+                    originalName={editor.mode === "edit" ? editor.originalName : null}
+                    existingNames={existingNames}
+                    initialPosition={computeEditorPosition()}
+                    defaultWidth={EDITOR_WIDTH}
+                    defaultHeight={EDITOR_HEIGHT}
+                    onClose={() => setEditor(null)}
+                    onSave={draft => {
+                      if (editor.mode === "edit") {
+                        onUpdate(editor.originalName, draft);
+                      } else {
+                        onCreate(draft);
+                      }
+                      setEditor(null);
+                      setPickerOpen(false);
+                    }}
+                    onDelete={
+                      editor.mode === "edit"
+                        ? () => {
+                            onDelete(editor.originalName);
+                            setEditor(null);
+                            setPickerOpen(false);
+                          }
+                        : undefined
+                    }
+                  />
+                </Suspense>
+              ) : null
             }
           />
         </Suspense>

@@ -8,7 +8,7 @@
  *   - Click row Edit → open editor for that preset (parent handles).
  *   - Click "New Style" → open editor with captured node typography.
  */
-import { useMemo, useRef, useState, type CSSProperties } from "react";
+import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { TbPencil, TbPlus, TbSearch } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
@@ -25,6 +25,10 @@ interface PanelProps {
   onCreateNew: () => void;
   defaultWidth: number;
   defaultHeight: number;
+  /** Sibling overlay (e.g. the style editor) rendered as a React-tree child so
+   *  it self-registers with this panel's FloatingPanel context and clicks
+   *  inside it don't dismiss the picker. */
+  overlay?: ReactNode;
 }
 
 /** Heading short tag derived from the preset name, e.g. "Heading 3" → "H3". */
@@ -63,6 +67,7 @@ export default function TextStylePickerPanel({
   onCreateNew,
   defaultWidth,
   defaultHeight,
+  overlay,
 }: PanelProps) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -173,6 +178,7 @@ export default function TextStylePickerPanel({
           </button>
         </div>
       </div>
+      {overlay}
     </FloatingPanel>
   );
 }
