@@ -14,6 +14,7 @@ export const ImageRender = (incomingProps: ImageProps) => {
     rootProps: tree?.rootProps ?? {},
     pageMedia: tree?.pageMedia ?? null,
     pageIndex: tree?.pageIndex ?? {},
+    parentClassName: walker?.parentClassName,
   });
   return renderImageBody(props, ctx);
 };

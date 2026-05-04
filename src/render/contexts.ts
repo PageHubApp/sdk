@@ -43,6 +43,9 @@ export interface WalkerNodeCtx {
   displayName?: string;
   /** Pre-computed children node ids (canvas + linkedNodes order). */
   childIds: string[];
+  /** Immediate parent's `props.className` — used by Image.body to infer
+   *  responsive `sizes` when the image fills a fixed-width container. */
+  parentClassName?: string;
 }
 
 const WalkerNodeContext = createContext<WalkerNodeCtx | null>(null);

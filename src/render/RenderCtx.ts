@@ -35,6 +35,9 @@ export interface RenderCtx {
   rootProps: Record<string, any>;
   pageMedia: any[] | null;
   pageIndex: PageIndex;
+  /** Immediate parent's `props.className` — used by Image.body to infer
+   *  responsive `sizes` when the image fills a fixed-width container. */
+  parentClassName?: string;
   /**
    * Editor-only Craft query handle. Walker leaves undefined. Used by
    * editor-mode-only branches (TipTap, settings panel mounts) that
@@ -57,6 +60,7 @@ export function makeWalkerCtx(args: {
   rootProps: Record<string, any>;
   pageMedia: any[] | null;
   pageIndex: PageIndex;
+  parentClassName?: string;
 }): RenderCtx {
   return {
     id: args.id,
@@ -73,5 +77,6 @@ export function makeWalkerCtx(args: {
     rootProps: args.rootProps,
     pageMedia: args.pageMedia,
     pageIndex: args.pageIndex,
+    parentClassName: args.parentClassName,
   };
 }

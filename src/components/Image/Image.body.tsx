@@ -174,7 +174,9 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
     ) {
       _imgProp.src = getCdnUrl(srcStr, { width: 1280, format: "auto" });
       _imgProp.srcSet = generateSrcSet(srcStr, IMAGE_RESPONSIVE_WIDTHS, { format: "auto" });
-      _imgProp.sizes = inferFixedSizesFromClassName(props.className) || IMAGE_RESPONSIVE_SIZES;
+      _imgProp.sizes =
+        inferFixedSizesFromClassName(props.className, ctx.parentClassName) ||
+        IMAGE_RESPONSIVE_SIZES;
     } else {
       _imgProp.src = srcStr || null;
     }

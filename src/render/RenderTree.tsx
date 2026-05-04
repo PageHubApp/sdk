@@ -56,6 +56,7 @@ interface NodeRendererProps {
   id: string;
   nodes: SerializedNodes;
   resolver: UiResolver;
+  parentClassName?: string;
 }
 
 function evalNodeVisibility(
@@ -83,7 +84,7 @@ function evalNodeVisibility(
   return result !== false;
 }
 
-function NodeRenderer({ id, nodes, resolver }: NodeRendererProps) {
+function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProps) {
   const node = nodes[id];
   const tree = useTreeRoot();
 
@@ -110,8 +111,21 @@ function NodeRenderer({ id, nodes, resolver }: NodeRendererProps) {
 
   // Build child render order: canvas children first, then linkedNodes.
   const childIds = [...(node.nodes ?? []), ...Object.values(node.linkedNodes ?? {})];
+  // Accumulate ancestor classNames so descendants can infer responsive image
+  // `sizes` from any fixed-width ancestor (e.g. `<img w-full>` inside a chain
+  // like `w-64 > div > div > img` should still emit `sizes="256px"`).
+  const ownClassName = (node.props?.className as string) || "";
+  const childParentClassName = parentClassName
+    ? `${parentClassName} ${ownClassName}`
+    : ownClassName;
   const children = childIds.map(cid => (
-    <NodeRenderer key={cid} id={cid} nodes={nodes} resolver={resolver} />
+    <NodeRenderer
+      key={cid}
+      id={cid}
+      nodes={nodes}
+      resolver={resolver}
+      parentClassName={childParentClassName}
+    />
   ));
 
   // Special-case Map: pre-compute childPoints from MapPoint children.
@@ -143,6 +157,7 @@ function NodeRenderer({ id, nodes, resolver }: NodeRendererProps) {
     isCanvas: !!node.isCanvas,
     displayName: node.custom?.displayName || node.displayName,
     childIds,
+    parentClassName,
   };
 
   // For Data nodes with `dataSource.scope`, ItemProvider wrapping happens
