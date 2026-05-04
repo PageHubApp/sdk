@@ -4,7 +4,14 @@ import React, { useRef } from "react";
 import { TbCheck, TbPhoto } from "react-icons/tb";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { Image as UiImage } from "@pagehub/ui";
-import { getCdnUrl } from "../../utils/cdn";
+import { getCdnUrl, generateSrcSet, generateSizes } from "../../utils/cdn";
+
+const IMAGE_RESPONSIVE_WIDTHS = [320, 640, 960, 1280, 1920, 2560];
+const IMAGE_RESPONSIVE_SIZES = generateSizes({
+  "(max-width: 640px)": "100vw",
+  "(max-width: 1024px)": "50vw",
+  default: "33vw",
+});
 import {
   migrateActions,
   actionToHref,
@@ -166,6 +173,8 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
       !srcStr.startsWith("data:")
     ) {
       _imgProp.src = getCdnUrl(srcStr, { width: 1280, format: "auto" });
+      _imgProp.srcSet = generateSrcSet(srcStr, IMAGE_RESPONSIVE_WIDTHS, { format: "auto" });
+      _imgProp.sizes = IMAGE_RESPONSIVE_SIZES;
     } else {
       _imgProp.src = srcStr || null;
     }

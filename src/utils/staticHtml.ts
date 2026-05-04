@@ -6,7 +6,7 @@
  */
 
 import parse from "style-to-object";
-import { getCdnUrl } from "./cdn";
+import { getCdnUrl, generateSrcSet, generateSizes } from "./cdn";
 import { isCSSAnimation, getCSSAnimationProps } from "./animations/animations";
 import { purifyToTailwind } from "./tailwind/daisyuiToTailwind";
 
@@ -290,4 +290,4 @@ export function getInlineStyle(props: Record<string, any>): string {
 }
 
 // Re-export for component convenience
-export { getCdnUrl };
+export { getCdnUrl, generateSrcSet, generateSizes };

@@ -11,9 +11,18 @@ import {
   tag,
   buildAttrs,
   getCdnUrl,
+  generateSrcSet,
+  generateSizes,
   ariaAttrs,
   type ToHTMLFn,
 } from "../../utils/staticHtml";
+
+const RESPONSIVE_WIDTHS = [320, 640, 960, 1280, 1920, 2560];
+const RESPONSIVE_SIZES = generateSizes({
+  "(max-width: 640px)": "100vw",
+  "(max-width: 1024px)": "50vw",
+  default: "33vw",
+});
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const { videoId, type } = props;
@@ -38,10 +47,13 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     );
   }
 
-  // Resolve src
+  // Resolve src + responsive variants for CDN-hosted images
   let src = "";
+  let srcset = "";
+  let sizesAttr = "";
+  let cdnId: string | null = null;
   if (videoId) {
-    src = getCdnUrl(videoId, { width: 1280, format: "auto" });
+    cdnId = videoId;
   } else if (content) {
     if (
       type === "cdn" &&
@@ -49,15 +61,22 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
       !content.startsWith("/") &&
       !content.startsWith("data:")
     ) {
-      src = getCdnUrl(content, { width: 1280, format: "auto" });
+      cdnId = content;
     } else {
       src = content;
     }
+  }
+  if (cdnId) {
+    src = getCdnUrl(cdnId, { width: 1280, format: "auto" });
+    srcset = generateSrcSet(cdnId, RESPONSIVE_WIDTHS, { format: "auto" });
+    sizesAttr = RESPONSIVE_SIZES;
   }
   if (!src) return "";
 
   const imgAttrs: Record<string, any> = {
     src,
+    srcset: srcset || undefined,
+    sizes: srcset ? sizesAttr : undefined,
     alt,
     class: cls || undefined,
     title: title || undefined,
