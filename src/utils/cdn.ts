@@ -31,7 +31,7 @@ const _env = (key: string, fallback?: string): string | undefined => {
 
 /** Mutable CDN config — set via configureCdn() or env vars */
 let cdnConfig = {
-  baseUrl: _env("VITE_CDN_BASE_URL") ?? "",
+  baseUrl: _env("VITE_CDN_BASE_URL") ?? "https://imagedelivery.net",
   accountHash: _env("VITE_CDN_ACCOUNT_HASH") ?? "",
   variant: _env("VITE_CDN_VARIANT", "public")!,
 };
