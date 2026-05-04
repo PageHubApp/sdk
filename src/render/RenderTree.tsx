@@ -164,7 +164,14 @@ export function RenderTree({
     () => ({ ...uiResolver, ...(extraResolver || {}), ...(resolver || {}) }),
     [resolver, extraResolver]
   );
-  return <NodeRenderer id={rootNodeId} nodes={nodes} resolver={merged} />;
+  // Always-on Suspense boundary covers the React.lazy entries in `uiResolver`
+  // (Map / Video / Form / Embed). When a page has none of those node types,
+  // nothing suspends and the boundary is a cheap no-op.
+  return (
+    <React.Suspense fallback={null}>
+      <NodeRenderer id={rootNodeId} nodes={nodes} resolver={merged} />
+    </React.Suspense>
+  );
 }
 
 // Re-export ItemProvider so route code can wrap if needed without pulling
