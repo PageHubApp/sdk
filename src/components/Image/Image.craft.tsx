@@ -13,6 +13,7 @@ import {
   getCdnUrl,
   generateSrcSet,
   generateSizes,
+  inferFixedSizesFromClassName,
   ariaAttrs,
   type ToHTMLFn,
 } from "../../utils/staticHtml";
@@ -69,7 +70,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   if (cdnId) {
     src = getCdnUrl(cdnId, { width: 1280, format: "auto" });
     srcset = generateSrcSet(cdnId, RESPONSIVE_WIDTHS, { format: "auto" });
-    sizesAttr = RESPONSIVE_SIZES;
+    sizesAttr = inferFixedSizesFromClassName(cls) || RESPONSIVE_SIZES;
   }
   if (!src) return "";
 

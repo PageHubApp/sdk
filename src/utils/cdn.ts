@@ -91,6 +91,33 @@ export function generateSrcSet(
 }
 
 /**
+ * Infer a pixel-based `sizes` value from a Tailwind className when the image
+ * sits in a fixed-width slot (e.g. `w-64`, `max-w-md`). Returns the smallest
+ * applicable width in CSS pixels so the browser can pick the correct srcset
+ * candidate; returns null when the layout is fluid/unknown.
+ */
+const TW_MAX_W_PX: Record<string, number> = {
+  xs: 320, sm: 384, md: 448, lg: 512, xl: 576,
+  "2xl": 672, "3xl": 768, "4xl": 896, "5xl": 1024,
+  "6xl": 1152, "7xl": 1280,
+};
+export function inferFixedSizesFromClassName(className: string | undefined): string | null {
+  if (!className) return null;
+  const tokens = className.split(/\s+/).filter(Boolean);
+  let smallest: number | null = null;
+  for (const t of tokens) {
+    const bare = t.replace(/^(sm:|md:|lg:|xl:|2xl:|hover:|focus:|group-\w+:)+/, "");
+    let px: number | null = null;
+    const w = bare.match(/^w-(\d+(?:\.\d+)?)$/);
+    if (w) px = parseFloat(w[1]) * 4;
+    const mw = bare.match(/^max-w-(.+)$/);
+    if (mw && TW_MAX_W_PX[mw[1]] !== undefined) px = TW_MAX_W_PX[mw[1]];
+    if (px && (smallest === null || px < smallest)) smallest = px;
+  }
+  return smallest ? `${smallest}px` : null;
+}
+
+/**
  * Generate sizes attribute for responsive images
  */
 export function generateSizes(breakpoints: Record<string, string> = {}): string {
