@@ -102,7 +102,7 @@ function getDaisyUIDir(): string {
   } catch {
     // Bundled (Vercel): __dirname is the output bundle dir, not the source tree.
     // process.cwd() is always the project root on Vercel serverless.
-    _daisyuiDir = resolve(process.cwd(), "node_modules/daisyui/components");
+    _daisyuiDir = resolve(/*turbopackIgnore: true*/ process.cwd(), "node_modules/daisyui/components");
   }
   return _daisyuiDir;
 }
@@ -181,7 +181,10 @@ function getSpatialCSS(): string {
     const candidates = [
       resolve(__dirname, "../../daisyui-spatial/src/index.css"),
       resolve(__dirname, "../../../node_modules/@pagehub/daisyui-spatial/src/index.css"),
-      resolve(process.cwd(), "node_modules/@pagehub/daisyui-spatial/src/index.css"),
+      resolve(
+        /*turbopackIgnore: true*/ process.cwd(),
+        "node_modules/@pagehub/daisyui-spatial/src/index.css"
+      ),
     ];
     for (const p of candidates) {
       try {
