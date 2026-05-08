@@ -35,6 +35,18 @@ export {
 let fontsCache: GoogleFont[] | null = null;
 let fetchPromise: Promise<GoogleFont[]> | null = null;
 
+let fontsListEndpoint = "/api/fonts/list";
+
+/** Override the proxy endpoint the SDK calls to fetch the Google Fonts catalog. */
+export function setFontsListEndpoint(url: string): void {
+  fontsListEndpoint = url;
+  wipeFontsRequestCache();
+}
+
+function getFontsListEndpoint(): string {
+  return fontsListEndpoint;
+}
+
 function wipeFontsRequestCache(): void {
   fontsCache = null;
   fetchPromise = null;
@@ -74,64 +86,30 @@ function curatedFamilyNamesUnique(): string[] {
 }
 
 /**
- * Fetch all Google Fonts from the API
- * Uses caching to avoid repeated requests
- *
- * Setup Instructions:
- * 1. Go to https://console.cloud.google.com/apis/credentials
- * 2. Create a new API key or use existing
- * 3. Enable "Google Fonts Developer API" in your project
- * 4. Add to .env.local: NEXT_PUBLIC_GOOGLE_FONTS_API_KEY=your_key_here
+ * Fetch all Google Fonts via the host app's server-side proxy.
+ * The browser never sees a Google API key — the host route owns it.
+ * Default endpoint: /api/fonts/list. Override via {@link setFontsListEndpoint}.
  */
-export const fetchGoogleFonts = async (apiKey?: string): Promise<GoogleFont[]> => {
-  // Return cached fonts if available
+export const fetchGoogleFonts = async (_apiKey?: string): Promise<GoogleFont[]> => {
   if (fontsCache) {
     return fontsCache;
   }
-
-  // Return in-flight request if one exists
   if (fetchPromise) {
     return fetchPromise;
   }
 
-  // Create new fetch promise
   fetchPromise = (async () => {
     try {
-      const fromVite = (() => {
-        try {
-          return (import.meta as any).env?.VITE_GOOGLE_FONTS_API_KEY;
-        } catch {
-          return undefined;
-        }
-      })();
-      const fromNext =
-        typeof process !== "undefined" ? process.env.NEXT_PUBLIC_GOOGLE_FONTS_API_KEY : undefined;
-      const key = apiKey || fromVite || fromNext;
-
-      if (!key) {
-        console.warn(
-          "No Google Fonts API key found. Using fallback font list.\n" +
-            "For the full Google Fonts catalog, set NEXT_PUBLIC_GOOGLE_FONTS_API_KEY (Next.js) or VITE_GOOGLE_FONTS_API_KEY (Vite).\n" +
-            "Get a key at: https://console.cloud.google.com/apis/credentials"
-        );
-        return getFallbackFonts();
-      }
-
-      // Google Fonts API endpoint
-      const url = `https://www.googleapis.com/webfonts/v1/webfonts?key=${key}&sort=popularity`;
-
-      const response = await fetch(url);
+      const response = await fetch(getFontsListEndpoint());
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.warn("Failed to fetch Google Fonts from API:", errorData);
-        console.warn("Using fallback font list");
+        console.warn("Failed to fetch Google Fonts from proxy:", errorData);
         return getFallbackFonts();
       }
 
       const data: GoogleFontsResponse = await response.json();
       fontsCache = data.items;
-
       return fontsCache;
     } catch (error) {
       console.error("Error fetching Google Fonts:", error);
