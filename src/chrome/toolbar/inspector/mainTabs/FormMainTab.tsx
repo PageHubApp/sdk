@@ -33,6 +33,9 @@ export const FormMainTab = () => {
     case "custom":
       help = "POST form data as JSON to a custom URL.";
       break;
+    case "collection":
+      help = "Save each submission as a row in a collection.";
+      break;
   }
 
   return renderComponentSlots({
@@ -85,7 +88,37 @@ export const FormMainTab = () => {
             <option value="save">Save</option>
             <option value="emailSave">Email &amp; Save</option>
             <option value="custom">Custom URL</option>
+            <option value="collection">Collection Row</option>
           </ToolbarItem>
+
+          {formType === "collection" && (
+            <>
+              <ToolbarItem
+                propKey="collectionSlug"
+                propType="component"
+                type="text"
+                label="Collection slug"
+                placeholder="staff"
+                labelHide={true}
+              />
+              <ToolbarItem
+                propKey="collectionFieldMap"
+                propType="component"
+                type="textarea"
+                label="Field map (JSON)"
+                placeholder='{"name":"name","email":"email"}'
+                labelHide={true}
+              />
+              <ToolbarItem
+                propKey="collectionSkipEmail"
+                propType="component"
+                type="toggle"
+                label="Email"
+                option="Skip email notification"
+                on="true"
+              />
+            </>
+          )}
 
           {formType === "emailSave" && (
             <ToolbarItem

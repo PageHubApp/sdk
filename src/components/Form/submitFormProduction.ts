@@ -18,6 +18,9 @@ export interface FormProductionProps {
   formName?: string;
   webhookEnabled?: boolean;
   webhookUrl?: string;
+  collectionSlug?: string;
+  collectionFieldMap?: Record<string, string>;
+  collectionSkipEmail?: boolean;
 }
 
 export async function submitFormProduction(
@@ -42,6 +45,10 @@ export async function submitFormProduction(
       mailTo: props.mailto,
       formName: props.formName,
       webhookUrl: props.webhookEnabled ? props.webhookUrl : undefined,
+      collection: props.submissionType === "collection" ? props.collectionSlug : undefined,
+      collectionFieldMap:
+        props.submissionType === "collection" ? props.collectionFieldMap : undefined,
+      skipEmail: props.submissionType === "collection" ? !!props.collectionSkipEmail : undefined,
     });
   }
 
