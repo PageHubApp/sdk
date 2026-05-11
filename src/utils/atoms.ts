@@ -25,7 +25,13 @@ export const useSetAtomState = (atomTemplate: any) => {
 // ─── Integration atoms (host app ↔ SDK) ─────────────────────────────────
 
 /** Site settings injected by the host app. */
-export const SettingsAtom = atom("settings", null);
+export type SiteSettings = {
+  _id?: string;
+  draftId?: string;
+  name?: string;
+  [key: string]: any;
+};
+export const SettingsAtom = atom("settings", null as SiteSettings | null);
 
 /** Auth token injected by the host app (nullable). */
 export const SessionTokenAtom = atom("sessionToken", null);

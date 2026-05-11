@@ -14,7 +14,11 @@ export interface PageSettingsFieldDef {
   /** Dot-path on the CraftJS page node props. Defaults to `key` if omitted. */
   nodePath?: string;
   /** Default value when the field is missing */
-  defaultValue: string | string[] | Array<{ varName: string; value: string }>;
+  defaultValue:
+    | string
+    | string[]
+    | Array<{ varName: string; value: string }>
+    | unknown[];
 }
 
 /**
@@ -45,6 +49,7 @@ export const PAGE_SETTINGS_FIELDS: readonly PageSettingsFieldDef[] = [
   { key: "headCode", defaultValue: "" },
   { key: "bodyClass", defaultValue: "" },
   { key: "jsonLd", nodePath: "seo.jsonLd", defaultValue: "" },
+  { key: "schema", nodePath: "seo.schema", defaultValue: [] },
   { key: "pagePassword", defaultValue: "" },
   { key: "themeOverrides", defaultValue: [] },
   // Access Control (conditionGroups is the same prop used by node-level conditions)

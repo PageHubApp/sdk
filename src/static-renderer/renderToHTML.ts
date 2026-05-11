@@ -183,13 +183,15 @@ export function renderToHTML(
   const rootSeo = rootProps.seo || {};
   const seoTitle = rootSeo.title || rootProps.title || "";
   const seoDescription = rootSeo.description || rootProps.description || "";
+  const hasSchema = Array.isArray(rootSeo.schema) && rootSeo.schema.length > 0;
   const seo =
-    seoTitle || seoDescription || rootSeo.ogImage || rootSeo.jsonLd
+    seoTitle || seoDescription || rootSeo.ogImage || rootSeo.jsonLd || hasSchema
       ? {
           title: seoTitle,
           description: seoDescription,
           ...(rootSeo.ogImage ? { ogImage: rootSeo.ogImage } : {}),
           ...(rootSeo.jsonLd ? { jsonLd: rootSeo.jsonLd } : {}),
+          ...(hasSchema ? { schema: rootSeo.schema } : {}),
         }
       : null;
 

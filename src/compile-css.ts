@@ -23,6 +23,8 @@ import { renderToHTML } from "./static-renderer/renderToHTML";
 import type { RenderToHTMLOptions } from "./static-renderer/types";
 import { BUILTIN_COMPONENT_DEFS } from "./core/builtinComponentDefs";
 import { buildModifierExpansionMap, expandModifierClassName } from "./utils/modifierUtils";
+import { compileSchema, normalizeLegacyJsonLd } from "./utils/seo/compileSchema";
+import type { SchemaEntry } from "./utils/seo/schemaTypes";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -487,7 +489,8 @@ export async function buildStaticPage(
     title: string;
     description: string;
     ogImage?: string;
-    jsonLd?: object;
+    jsonLd?: unknown;
+    schema?: unknown[];
   } | null;
 }> {
   const { compressed = true, document: wrapDocument = false, title } = options || {};
@@ -522,9 +525,19 @@ export async function buildStaticPage(
       ? `<meta property="og:image" content="${renderResult.seo.ogImage.replace(/"/g, "&quot;")}" />`
       : "";
 
-    const jsonLdScript = renderResult.seo?.jsonLd
-      ? `<script type="application/ld+json">${JSON.stringify(renderResult.seo.jsonLd)}</script>`
-      : "";
+    const jsonLdObjects: Record<string, any>[] = [];
+    const legacyJsonLd = normalizeLegacyJsonLd(renderResult.seo?.jsonLd);
+    if (legacyJsonLd) jsonLdObjects.push(legacyJsonLd);
+    const schemaEntries = (renderResult.seo as { schema?: SchemaEntry[] } | null)?.schema;
+    if (Array.isArray(schemaEntries) && schemaEntries.length) {
+      jsonLdObjects.push(...compileSchema(schemaEntries));
+    }
+    const jsonLdScript = jsonLdObjects
+      .map(
+        obj =>
+          `<script type="application/ld+json">${JSON.stringify(obj).replace(/</g, "\\u003c")}</script>`
+      )
+      .join("\n    ");
 
     const doc = `<!DOCTYPE html>
 <html lang="en">

@@ -59,7 +59,10 @@ export interface RenderToHTMLResult {
     title: string;
     description: string;
     ogImage?: string;
-    jsonLd?: object;
+    /** Legacy raw JSON-LD (object or stringified JSON). */
+    jsonLd?: unknown;
+    /** Structured JSON-LD entries from the schema builder. Compiled at emit time. */
+    schema?: unknown[];
   } | null;
   /**
    * Set when the tree cannot be rendered (e.g. missing ROOT). Callers should show this

@@ -354,8 +354,9 @@ export function PageSettingsModal({
         icon: <TbJson />,
         render: ctx => (
           <SchemaTab
-            jsonLd={ctx.draft.jsonLd}
-            setJsonLd={value => ctx.updateField("jsonLd", value)}
+            schema={Array.isArray(ctx.draft.schema) ? ctx.draft.schema : []}
+            setSchema={value => ctx.updateField("schema", value)}
+            inputClass={ctx.inputClass}
           />
         ),
       },

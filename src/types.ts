@@ -62,8 +62,10 @@ export interface PageSeo {
   ogImage?: string;
   canonicalUrl?: string;
   robots?: string;
-  /** Structured data rendered as `<script type="application/ld+json">` (e.g. Organization / WebSite). */
-  jsonLd?: Record<string, unknown>;
+  /** Legacy raw JSON-LD (object or hand-written JSON string). Still rendered alongside `schema`. */
+  jsonLd?: Record<string, unknown> | string;
+  /** Structured JSON-LD entries from the Schema builder. Each entry renders as one `<script type="application/ld+json">`. */
+  schema?: Array<Record<string, unknown>>;
   /** Site favicon. ROOT-only — per-page favicon overrides fall back to ROOT. */
   favicon?: {
     /** Favicon href (URL or media library id). */
