@@ -181,17 +181,6 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
       _imgProp.src = srcStr || null;
     }
     if (props.fetchPriority) _imgProp.fetchPriority = props.fetchPriority;
-    if (props.loading === "eager" && typeof document !== "undefined" && _imgProp.src) {
-      const link = document.createElement("link");
-      link.rel = "preload";
-      link.href = _imgProp.src;
-      link.as = "image";
-      if (props.fetchPriority) link.fetchPriority = props.fetchPriority as "high" | "low" | "auto";
-      const preloadLink = document.querySelector(
-        `link[rel="preload"][href="${link.href}"][as="image"]`
-      );
-      if (!preloadLink) document.head.appendChild(link);
-    }
   }
 
   const looksStyledShape = /\bbg-/.test(cn) || /\bbg-gradient-/.test(cn) || /\bbg-linear-/.test(cn);
