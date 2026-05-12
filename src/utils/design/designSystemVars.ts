@@ -486,19 +486,19 @@ export function generateDesignSystemCSSVariables(
 
   const cssVars = `${scope} {\n  color-scheme: light;\n${paletteVars}\n${aliases}\n${styleVars}\n${typographyVars}\n}`;
 
-  // Dark mode palette: emit @media (prefers-color-scheme: dark) and .dark selector overrides
+  // Dark mode palette: emit @media (prefers-color-scheme: dark) and .dark selector overrides.
+  // Editor scope (#viewport) always emits so the "Edit dark: variants" toggle can preview.
+  // Published scope only emits when the site has explicitly opted in via darkModeEnabled —
+  // a stale darkPalette alone must not flip visitors on `prefers-color-scheme: dark`.
   let darkBlock = "";
   if (designSystem.darkPalette && designSystem.darkPalette.length > 0) {
     const darkPaletteVars = generatePaletteCSSVariables(
       autoGenerateContentColors(designSystem.darkPalette)
     );
     if (darkPaletteVars) {
-      // For #viewport scope, only activate dark palette when viewport itself has .dark class
-      // (the "Edit dark: variants" toggle), NOT when <html> has .dark (SDK chrome toggle).
-      // For :root scope (published sites), use both prefers-color-scheme and .dark ancestor.
       if (scope === "#viewport") {
         darkBlock = `\n${scope}.dark {\n  color-scheme: dark;\n${darkPaletteVars}\n}`;
-      } else {
+      } else if (designSystem.darkModeEnabled === true) {
         darkBlock =
           `\n@media (prefers-color-scheme: dark) {\n  ${scope} {\n  color-scheme: dark;\n${darkPaletteVars}\n  }\n}` +
           `\n.dark ${scope}, ${scope}.dark {\n  color-scheme: dark;\n${darkPaletteVars}\n}`;

@@ -59,6 +59,7 @@ export interface ImageProps extends BaseSelectorProps {
   loading?: string;
   alt?: string;
   title?: string;
+  quality?: number;
 }
 
 export function renderImageBody(props: ImageProps & Record<string, any>, ctx: RenderCtx) {
@@ -172,8 +173,14 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
       !srcStr.startsWith("/") &&
       !srcStr.startsWith("data:")
     ) {
-      _imgProp.src = getCdnUrl(srcStr, { width: 1280, format: "auto" });
-      _imgProp.srcSet = generateSrcSet(srcStr, IMAGE_RESPONSIVE_WIDTHS, { format: "auto" });
+      const quality = typeof props.quality === "number" ? props.quality : undefined;
+      const cdnOpts: Parameters<typeof getCdnUrl>[1] = { width: 1280, format: "auto" };
+      if (quality !== undefined) cdnOpts.quality = quality;
+      _imgProp.src = getCdnUrl(srcStr, cdnOpts);
+      _imgProp.srcSet = generateSrcSet(srcStr, IMAGE_RESPONSIVE_WIDTHS, {
+        format: "auto",
+        ...(quality !== undefined ? { quality } : {}),
+      });
       _imgProp.sizes =
         inferFixedSizesFromClassName(props.className, ctx.parentClassName) ||
         IMAGE_RESPONSIVE_SIZES;

@@ -68,8 +68,14 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     }
   }
   if (cdnId) {
-    src = getCdnUrl(cdnId, { width: 1280, format: "auto" });
-    srcset = generateSrcSet(cdnId, RESPONSIVE_WIDTHS, { format: "auto" });
+    const quality = typeof props.quality === "number" ? props.quality : undefined;
+    const cdnOpts: Parameters<typeof getCdnUrl>[1] = { width: 1280, format: "auto" };
+    if (quality !== undefined) cdnOpts.quality = quality;
+    src = getCdnUrl(cdnId, cdnOpts);
+    srcset = generateSrcSet(cdnId, RESPONSIVE_WIDTHS, {
+      format: "auto",
+      ...(quality !== undefined ? { quality } : {}),
+    });
     sizesAttr = inferFixedSizesFromClassName(cls) || RESPONSIVE_SIZES;
   }
   if (!src) return "";
