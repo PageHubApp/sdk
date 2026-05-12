@@ -57,19 +57,20 @@ export function getCdnUrl(
 
   if (!cdnConfig.accountHash) return "";
 
-  const baseUrl = `${cdnConfig.baseUrl}/${cdnConfig.accountHash}/${mediaId}/${cdnConfig.variant}`;
+  const namedVariantUrl = `${cdnConfig.baseUrl}/${cdnConfig.accountHash}/${mediaId}/${cdnConfig.variant}`;
 
-  if (Object.keys(options).length === 0) return baseUrl;
+  if (Object.keys(options).length === 0) return namedVariantUrl;
 
-  const params = new URLSearchParams();
-  if (options.width != null) params.append("width", String(options.width));
-  if (options.height != null) params.append("height", String(options.height));
-  if (options.fit) params.append("fit", options.fit);
-  if (options.format) params.append("format", options.format);
-  if (options.quality != null) params.append("quality", String(options.quality));
+  const parts: string[] = [];
+  if (options.width != null) parts.push(`w=${options.width}`);
+  if (options.height != null) parts.push(`h=${options.height}`);
+  if (options.fit) parts.push(`fit=${options.fit}`);
+  if (options.format) parts.push(`format=${options.format}`);
+  if (options.quality != null) parts.push(`quality=${options.quality}`);
 
-  const queryString = params.toString();
-  return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  return parts.length
+    ? `${cdnConfig.baseUrl}/${cdnConfig.accountHash}/${mediaId}/${parts.join(",")}`
+    : namedVariantUrl;
 }
 
 /**
