@@ -19,7 +19,7 @@ export const looksLikeCdnImageId = (content: string): boolean => {
 export const calculateOptimalBackgroundSize = (): number => {
   if (typeof window === "undefined") return 1920;
   const actualWidth = window.innerWidth * (window.devicePixelRatio || 1);
-  const breakpoints = [320, 640, 960, 1280, 1920, 2560, 3840];
+  const breakpoints = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840];
   return breakpoints.find(size => size >= actualWidth) || 3840;
 };
 
@@ -134,7 +134,7 @@ export const getResponsiveImageAttrs = (
     const cdnId = media.cdnId || media.id;
     return {
       src: getCdnUrl(cdnId, { width: 1280, format: "auto" }),
-      srcset: generateSrcSet(cdnId, [320, 640, 960, 1280, 1920, 2560], { format: "auto" }),
+      srcset: generateSrcSet(cdnId, [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840], { format: "auto" }),
       sizes: generateSizes({
         "(max-width: 640px)": "100vw",
         "(max-width: 1024px)": "50vw",

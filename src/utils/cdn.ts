@@ -77,7 +77,7 @@ export function getCdnUrl(
  */
 export function generateSrcSet(
   mediaId: string,
-  widths: number[] = [320, 640, 960, 1280, 1920],
+  widths: number[] = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
   options: { fit?: string; format?: string; quality?: number } = {}
 ): string {
   if (!mediaId) return "";

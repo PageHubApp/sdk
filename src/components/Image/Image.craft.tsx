@@ -18,7 +18,7 @@ import {
   type ToHTMLFn,
 } from "../../utils/staticHtml";
 
-const RESPONSIVE_WIDTHS = [320, 640, 960, 1280, 1920, 2560];
+const RESPONSIVE_WIDTHS = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840];
 const RESPONSIVE_SIZES = generateSizes({
   "(max-width: 640px)": "100vw",
   "(max-width: 1024px)": "50vw",
