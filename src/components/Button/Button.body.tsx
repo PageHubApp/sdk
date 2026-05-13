@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { TbPointer } from "react-icons/tb";
+import { TbPointer } from "../_emptyHintIcons";
 import { Button as UiButton } from "@pagehub/ui";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";

@@ -1,7 +1,7 @@
 /** Pure body for Image. NO `@craftjs/core`. */
 /* eslint-disable react-hooks/rules-of-hooks -- render*Body fns are invoked once from a wrapper component; hook order is preserved. Renamed to use* would change exported public-ish API across the SDK. */
 import React, { useRef } from "react";
-import { TbCheck, TbPhoto } from "react-icons/tb";
+import { TbCheck, TbPhoto } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { Image as UiImage } from "@pagehub/ui";
 import { getCdnUrl, generateSrcSet, generateSizes, inferFixedSizesFromClassName } from "../../utils/cdn";

@@ -1,7 +1,7 @@
 /** Pure body for Video. NO `@craftjs/core`. */
 /* eslint-disable react-hooks/rules-of-hooks -- render*Body fns are invoked once from a wrapper component; hook order is preserved. Renamed to use* would change exported public-ish API across the SDK. */
 import React, { useRef } from "react";
-import { TbBrandVimeo, TbBrandYoutube, TbPlayerPlay, TbVideo } from "react-icons/tb";
+import { TbBrandVimeo, TbBrandYoutube, TbPlayerPlay, TbVideo } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { getMediaContent } from "../../utils/media/media";
 import { isDirectVideoFileUrl, nativeVideoPlaybackFields } from "../../utils/nativeVideo";

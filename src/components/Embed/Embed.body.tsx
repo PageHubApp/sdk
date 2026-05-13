@@ -2,7 +2,7 @@
  * Pure render body for Embed. NO `@craftjs/core` imports.
  */
 import React from "react";
-import { TbCode } from "react-icons/tb";
+import { TbCode } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../../utils/motion";

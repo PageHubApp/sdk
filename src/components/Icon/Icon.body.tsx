@@ -1,6 +1,6 @@
 /** Pure body for Icon. NO `@craftjs/core`. */
 import React from "react";
-import { TbIcons } from "react-icons/tb";
+import { TbIcons } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";

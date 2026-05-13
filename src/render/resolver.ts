@@ -15,25 +15,21 @@
  * lazy components still render synchronously with no Suspense overhead.
  */
 import React from "react";
-import { AudioRender } from "../components/Audio/Audio.render";
 import { ButtonRender } from "../components/Button/Button.render";
 import { BackgroundRender } from "../components/Background/Background.render";
 import { ContainerRender } from "../components/Container/Container.render";
-import { DataRender } from "../components/Data/Data.render";
 import { FooterRender } from "../components/Footer/Footer.render";
 import { HeaderRender } from "../components/Header/Header.render";
-import { FormElementRender } from "../components/FormElement/FormElement.render";
 import { IconRender } from "../components/Icon/Icon.render";
 import { ImageRender } from "../components/Image/Image.render";
 import { LinkRender } from "../components/Link/Link.render";
-import { MapPointRender } from "../components/MapPoint/MapPoint.render";
 import { TextRender } from "../components/Text/Text.render";
 
-const LazyMapRender = React.lazy(() =>
-  import("../components/Map/Map.render").then(m => ({ default: m.MapRender }))
+const LazyAudioRender = React.lazy(() =>
+  import("../components/Audio/Audio.render").then(m => ({ default: m.AudioRender }))
 );
-const LazyVideoRender = React.lazy(() =>
-  import("../components/Video/Video.render").then(m => ({ default: m.VideoRender }))
+const LazyDataRender = React.lazy(() =>
+  import("../components/Data/Data.render").then(m => ({ default: m.DataRender }))
 );
 const LazyEmbedRender = React.lazy(() =>
   import("../components/Embed/Embed.render").then(m => ({ default: m.EmbedRender }))
@@ -41,29 +37,44 @@ const LazyEmbedRender = React.lazy(() =>
 const LazyFormRender = React.lazy(() =>
   import("../components/Form/Form.render").then(m => ({ default: m.FormRender }))
 );
+const LazyFormElementRender = React.lazy(() =>
+  import("../components/FormElement/FormElement.render").then(m => ({ default: m.FormElementRender }))
+);
+const LazyMapRender = React.lazy(() =>
+  import("../components/Map/Map.render").then(m => ({ default: m.MapRender }))
+);
+const LazyMapPointRender = React.lazy(() =>
+  import("../components/MapPoint/MapPoint.render").then(m => ({ default: m.MapPointRender }))
+);
+const LazyVideoRender = React.lazy(() =>
+  import("../components/Video/Video.render").then(m => ({ default: m.VideoRender }))
+);
 
 export interface UiResolver {
   [resolvedName: string]: React.ComponentType<any>;
 }
 
 export const uiResolver: UiResolver = {
-  Audio: AudioRender,
+  // Eager (every page renders these)
   Background: BackgroundRender,
   Button: ButtonRender,
   Container: ContainerRender,
   Automatic: ContainerRender,
-  Data: DataRender,
-  Embed: LazyEmbedRender,
   Footer: FooterRender,
-  Form: LazyFormRender,
-  FormElement: FormElementRender,
-  OnlyFormElement: FormElementRender,
   Header: HeaderRender,
   Icon: IconRender,
   Image: ImageRender,
   Link: LinkRender,
-  Map: LazyMapRender,
-  MapPoint: MapPointRender,
   Text: TextRender,
+
+  // Lazy (per-page) — Webpack emits separate chunks
+  Audio: LazyAudioRender,
+  Data: LazyDataRender,
+  Embed: LazyEmbedRender,
+  Form: LazyFormRender,
+  FormElement: LazyFormElementRender,
+  OnlyFormElement: LazyFormElementRender,
+  Map: LazyMapRender,
+  MapPoint: LazyMapPointRender,
   Video: LazyVideoRender,
 };

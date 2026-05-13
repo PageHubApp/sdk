@@ -3,7 +3,7 @@
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useAtomValue } from "@zedux/react";
-import { TbArrowDown, TbContainer, TbNote } from "react-icons/tb";
+import { TbArrowDown, TbContainer, TbNote } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { useIsolate, usePreview, useView } from "../../core/store";
 import { ViewModeAtom } from "../../utils/atoms";

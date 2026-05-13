@@ -4,7 +4,7 @@
  * this with their own `RenderCtx`. Editor-only branches gate on `ctx.enabled`.
  */
 import React from "react";
-import { TbMusic } from "react-icons/tb";
+import { TbMusic } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../../utils/motion";

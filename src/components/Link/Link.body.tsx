@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { TbPointer } from "react-icons/tb";
+import { TbPointer } from "../_emptyHintIcons";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { useItemContext } from "../../utils/itemContext";

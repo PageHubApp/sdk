@@ -6,6 +6,15 @@
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
+  "sideEffects": [
+    "*.css",
+    "**/*.css",
+    "src/index.ts",
+    "src/editor.tsx",
+    "src/css/vite-editor-css-entry.ts",
+    "src/chrome/toolbar/inspector/RegistrySettings.tsx",
+    "src/chrome/toolbar/inspector/registry/properties/register*"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

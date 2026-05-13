@@ -24,7 +24,27 @@ function renderScript(t: HeadTag, location: "head" | "body") {
   // which execute during browser HTML parse (before hydration). We render
   // them OUTSIDE <Head> to avoid Next's no-script-tags-in-head-component
   // warning — scripts emitted in body execute the same way.
-  return <script key={key} {...t.attrs} dangerouslySetInnerHTML={{ __html: t.inner }} />;
+  //
+  // Inline scripts that mutate the DOM (e.g. "open now" hours widgets) would
+  // run before React hydrates and corrupt the tree → hydration mismatch.
+  // We defer inline bodies until the `pagehub:hydrated` event (dispatched
+  // from useViewerSetup). External `src=` scripts pass through unchanged —
+  // authors can add their own defer/async as needed.
+  const hasSrc = t.attrs && (t.attrs.src || t.attrs.SRC);
+  const rawType = (t.attrs && (t.attrs.type || t.attrs.TYPE)) || "";
+  const type = String(rawType).toLowerCase().trim();
+  // Only defer scripts the browser actually executes as JS. Non-JS types
+  // (ld+json, importmap, speculationrules, etc.) are inert data — wrapping
+  // them in a function would corrupt their payload.
+  const isExecutableJs =
+    type === "" || type === "text/javascript" || type === "application/javascript" || type === "module";
+  if (hasSrc || !t.inner || !isExecutableJs) {
+    return <script key={key} {...t.attrs} dangerouslySetInnerHTML={{ __html: t.inner || "" }} />;
+  }
+  const deferred =
+    '(function(){function r(){' + t.inner + '}' +
+    'document.addEventListener("pagehub:hydrated",r,{once:true});})();';
+  return <script key={key} {...t.attrs} dangerouslySetInnerHTML={{ __html: deferred }} />;
 }
 
 export function InjectedHeadTags({ html }: Props) {
