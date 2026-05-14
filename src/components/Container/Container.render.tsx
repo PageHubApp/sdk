@@ -1,8 +1,5 @@
-import {
-  renderContainerBody,
-  type ContainerProps,
-  type ContainerRenderOptions,
-} from "./Container.body";
+import type { ContainerProps, ContainerRenderOptions } from "./Container.body";
+import { renderContainerViewerBody } from "./Container.viewerBody";
 import { useTreeRoot, useWalkerNode } from "../../render/contexts";
 import { makeWalkerCtx } from "../../render/RenderCtx";
 
@@ -21,7 +18,7 @@ export function useContainerRenderWalker(
     pageMedia: tree?.pageMedia ?? null,
     pageIndex: tree?.pageIndex ?? {},
   });
-  return renderContainerBody(incomingProps, ctx, opts);
+  return renderContainerViewerBody(incomingProps, ctx, opts);
 }
 
 export const ContainerRender = (props: Partial<ContainerProps>) =>
