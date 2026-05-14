@@ -169,9 +169,9 @@
   --color-destructive-foreground: var(--error-content);
 
   /* Fonts */
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-  --font-serif: var(--font-serif);
+  --font-sans: var(--sans-font-family, var(--font-sans));
+  --font-mono: var(--mono-font-family, var(--font-mono));
+  --font-serif: var(--serif-font-family, var(--font-serif));
   --font-heading: var(--heading-font-family), sans-serif;
   --font-body: var(--body-font-family), sans-serif;
   --font-accent: var(--accent-font-family), sans-serif;

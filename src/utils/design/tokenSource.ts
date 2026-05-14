@@ -299,12 +299,15 @@ export const DESIGN_TOKENS_SOURCE: DesignTokensSource = {
   themeFonts: [
     // theme.css uses bare `var(--font-sans)`, browser appends `, sans-serif`/etc.
     // Schema keeps both shapes by per-target value override.
-    { name: "--font-sans", value: "var(--font-sans)", targets: THEME_ONLY },
-    { name: "--font-mono", value: "var(--font-mono)", targets: THEME_ONLY },
-    { name: "--font-serif", value: "var(--font-serif)", targets: THEME_ONLY },
-    { name: "--font-sans", value: "var(--font-sans), sans-serif", targets: BROWSER_ONLY },
-    { name: "--font-serif", value: "var(--font-serif), serif", targets: BROWSER_ONLY },
-    { name: "--font-mono", value: "var(--font-mono), monospace", targets: BROWSER_ONLY },
+    // sans/serif/mono fall back through styleGuide.{sans,serif,mono}FontFamily when set,
+    // so `font-mono` etc. actually render in the theme's chosen family. When the styleGuide
+    // key is absent, the cascade lands on the root system stacks (rootFonts).
+    { name: "--font-sans", value: "var(--sans-font-family, var(--font-sans))", targets: THEME_ONLY },
+    { name: "--font-mono", value: "var(--mono-font-family, var(--font-mono))", targets: THEME_ONLY },
+    { name: "--font-serif", value: "var(--serif-font-family, var(--font-serif))", targets: THEME_ONLY },
+    { name: "--font-sans", value: "var(--sans-font-family, var(--font-sans)), sans-serif", targets: BROWSER_ONLY },
+    { name: "--font-serif", value: "var(--serif-font-family, var(--font-serif)), serif", targets: BROWSER_ONLY },
+    { name: "--font-mono", value: "var(--mono-font-family, var(--font-mono)), monospace", targets: BROWSER_ONLY },
     { name: "--font-heading", value: "var(--heading-font-family), sans-serif", targets: BOTH },
     { name: "--font-body", value: "var(--body-font-family), sans-serif", targets: BOTH },
     { name: "--font-accent", value: "var(--accent-font-family), sans-serif", targets: BOTH },
