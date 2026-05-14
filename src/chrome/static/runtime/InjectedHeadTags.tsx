@@ -18,8 +18,22 @@ interface Props {
   html: string | undefined | null;
 }
 
+// htmlparser2 reports boolean attributes (async, defer, nomodule) as empty
+// strings. Empty string is falsy in JS, so React's spread drops them — the
+// script renders WITHOUT async/defer and becomes render-blocking. Coerce
+// known boolean attrs to `true` so React emits them on the element.
+const BOOL_SCRIPT_ATTRS = new Set(["async", "defer", "nomodule"]);
+function normalizeScriptAttrs(attrs: Record<string, string>): Record<string, any> {
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(attrs)) {
+    out[k] = BOOL_SCRIPT_ATTRS.has(k.toLowerCase()) && v === "" ? true : v;
+  }
+  return out;
+}
+
 function renderScript(t: HeadTag, location: "head" | "body") {
   const key = `ph-${location}-${hashTag(t)}`;
+  const reactAttrs = normalizeScriptAttrs(t.attrs || {});
   // Real <script> React elements render to raw <script> tags in SSR HTML,
   // which execute during browser HTML parse (before hydration). We render
   // them OUTSIDE <Head> to avoid Next's no-script-tags-in-head-component
@@ -39,12 +53,12 @@ function renderScript(t: HeadTag, location: "head" | "body") {
   const isExecutableJs =
     type === "" || type === "text/javascript" || type === "application/javascript" || type === "module";
   if (hasSrc || !t.inner || !isExecutableJs) {
-    return <script key={key} {...t.attrs} dangerouslySetInnerHTML={{ __html: t.inner || "" }} />;
+    return <script key={key} {...reactAttrs} dangerouslySetInnerHTML={{ __html: t.inner || "" }} />;
   }
   const deferred =
     '(function(){function r(){' + t.inner + '}' +
     'document.addEventListener("pagehub:hydrated",r,{once:true});})();';
-  return <script key={key} {...t.attrs} dangerouslySetInnerHTML={{ __html: deferred }} />;
+  return <script key={key} {...reactAttrs} dangerouslySetInnerHTML={{ __html: deferred }} />;
 }
 
 export function InjectedHeadTags({ html }: Props) {
