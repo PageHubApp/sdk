@@ -1,6 +1,5 @@
 import lz from "lzutf8";
 import { getLoadActionScript } from "../utils/actions/load";
-import { getConditionEvalScript } from "../utils/conditions/clientScript";
 import { resolveTheme } from "../utils/design/resolveTheme";
 import { collectIconRefs } from "../utils/icons/collectIconRefs";
 import { preloadIcons } from "../utils/icons/serverResolve";
@@ -269,9 +268,12 @@ export function renderToHTML(
     (ctx.hasClientConditions
       ? buildConditionContextSeedScript(rootProps.company, options.connectorData ?? null)
       : "") +
-    (ctx.hasClientConditions
-      ? getConditionEvalScript({ mobileBreakpoint: rootProps.theme?.breakpoints?.md })
-      : "") +
+    // getConditionEvalScript was a standalone IIFE that ran a multi-shot
+    // DCL/load/setTimeout cascade to re-evaluate `data-ph-conditions` /
+    // `data-ph-condition-groups`. Replaced by Alpine directives registered
+    // inside the static-publish runtime IIFE — they wrap evalAll/evalGroups
+    // in Alpine.effect so visibility is now reactive to any setState write,
+    // not pinned to wall-clock timeouts.
     (includeRuntime
       ? getStaticPublishRuntimeScript({
           mobileBreakpoint: rootProps.theme?.breakpoints?.md,

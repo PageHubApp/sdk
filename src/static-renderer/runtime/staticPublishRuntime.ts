@@ -519,6 +519,32 @@ function actionGatePasses(action){
   return evalGroups(action.conditions) !== false;
 }
 
+// ─── Condition directives (supersedes the standalone getConditionEvalScript IIFE) ─
+// SSR emits the wrapper as <div data-ph-conditions="…" style="display:none">,
+// and the directive flips display to '' when evalAll passes. Reading
+// store.revision inside Alpine.effect makes conditions reactive to any
+// setState write — load-trigger script seeds run synchronously before init,
+// state writes from actions / forms / refetch all re-trigger automatically.
+// evalAll / evalGroups are defined by buildConditionEvalFns above and read
+// from window.__PH_STATE__ (mirrored by setState) + the captured params /
+// viewport. Attribute names come straight from walker.ts: 'conditions' and
+// 'condition-groups' resolve via Alpine.prefix('data-ph-') set at boot.
+Alpine.directive('conditions', function(el, _, opts){
+  var conds; try { conds = JSON.parse(el.getAttribute('data-ph-conditions') || '[]'); } catch(e){ conds = []; }
+  var logic = el.getAttribute('data-ph-condition-logic') || 'all';
+  opts.effect(function(){
+    void _store.revision;
+    el.style.display = evalAll(conds, logic) ? '' : 'none';
+  });
+});
+Alpine.directive('condition-groups', function(el, _, opts){
+  var groups; try { groups = JSON.parse(el.getAttribute('data-ph-condition-groups') || '[]'); } catch(e){ groups = []; }
+  opts.effect(function(){
+    void _store.revision;
+    el.style.display = evalGroups(groups) ? '' : 'none';
+  });
+});
+
 // ─── Item interpolation ───────────────────────────────────────────────
 function walkItem(obj, parts){
   var v = obj;
@@ -1286,7 +1312,10 @@ function attachCartItems(){
       });
     }
     render();
-    subscribe('cart:items-json', render);
+    // Re-render whenever cart:items-json mutates. Alpine.effect runs the
+    // body synchronously once (the render() call above is now redundant but
+    // harmless — render is idempotent), then re-runs on store mutation.
+    Alpine.effect(function(){ void _store.entries['cart:items-json']; render(); });
   })(nodes[i]);
 }
 
@@ -1342,7 +1371,13 @@ function attachConnectorRefetch(){
           if (pub && pub.totalCount) setState(pub.totalCount, { kind: 'value', value: String(d.items.length), source: 'runtime' }, 'publish');
         }).catch(function(){});
     }, 100);
-    for (var opt in inputs) subscribe(inputs[opt], refetch);
+    // One Alpine.effect reading every subscribed state key; any change to
+    // any input re-triggers refetch (debounced inside). Replaces the
+    // per-key subscribe() loop for fewer effect runners.
+    Alpine.effect(function(){
+      for (var opt in inputs) void _store.entries[inputs[opt]];
+      refetch();
+    });
   })(wrappers[i]);
 }
 
@@ -1462,6 +1497,14 @@ function init(){
   ensureAnalyticsStubs();
   // 9. Map (async)
   mountMaps();
+  // 10. Kick Alpine to walk the live DOM and pick up our prefix-scoped
+  // directives (data-ph-conditions, data-ph-condition-groups). Alpine.start
+  // only auto-walks elements rooted at an x-data scope, and the static
+  // export deliberately ships no x-data anywhere — initTree(body) is the
+  // unscoped entry point that fires the directive handlers regardless.
+  // Idempotent: Alpine guards each element's per-attribute cleanups, so a
+  // second initTree on the same tree just no-ops.
+  try { Alpine.initTree(document.body); } catch(e) {}
 
   // Hydration signal — late-load inject.head scripts wait for this event /
   // attribute before mutating the DOM. Mirrors the React-path useViewerSetup
@@ -1501,6 +1544,10 @@ function rebind(root){
   try { Alpine.initTree(scope); } catch(e){}
   attachCartItems();
   attachConnectorRefetch();
+  // Pick up late-injected DOM that carries our directive attributes
+  // (data-ph-conditions, data-ph-condition-groups). Alpine guards per-element
+  // so a re-walk is idempotent.
+  try { Alpine.initTree(root && root.nodeType === 1 ? root : document.body); } catch(e) {}
 }
 
 // Expose a tiny debug surface for tests / authors.

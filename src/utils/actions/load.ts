@@ -24,10 +24,11 @@ import { applyShowHide } from "./internal";
  *   - `data-ph-load-conditions="<json>"` (optional gate)
  *   - `data-ph-load-set-state="<json[]>"` for state seeds
  *
- * Condition evaluator function definitions are shared with
- * `getConditionEvalScript` via `buildConditionEvalFns` so the two scripts
- * agree on which condition types are honored and how indeterminate values
- * are handled.
+ * Condition evaluator function definitions are shared with the static-publish
+ * runtime IIFE's Alpine `data-ph-conditions` / `data-ph-condition-groups`
+ * directives via `buildConditionEvalFns` so load-trigger gating and node
+ * visibility agree on which condition types are honored and how indeterminate
+ * values are handled.
  *
  * In-app SSR routes (`/view`, `/static`, custom domains) hydrate React, so
  * `Container`'s mount effect fires `fireLoadAction` and this script is
