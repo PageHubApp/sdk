@@ -143,6 +143,225 @@ var _store = Alpine.store('ph');
 var _shownStack = [];
 var _escInstalled = false;
 
+// ─── data-state-* / data-visibility-* / data-publish-* / data-computed-* ─
+// These attributes sit OUTSIDE the data-ph- prefix. We rewrite the attribute
+// names to data-ph-<directive-suffix> so Alpine's directive resolver picks
+// them up. The original attribute remains in the DOM (Alpine renames only the
+// in-memory descriptor used for directive lookup; el.getAttribute still
+// returns the original). Each directive body reads via getAttribute, parses
+// JSON manually, and wraps reactive reads in effect(). No Alpine expression
+// evaluation — author-provided strings are state keys / JSON envelopes.
+Alpine.mapAttributes(function(pair){
+  var n = pair.name;
+  if (n === 'data-state-text' ||
+      n === 'data-state-show-when-truthy' ||
+      n === 'data-state-style-bindings' ||
+      n === 'data-state-modifiers' ||
+      n === 'data-state-binding' ||
+      n === 'data-visibility-state-key' ||
+      n === 'data-publish-state-keys' ||
+      n === 'data-computed-state-bindings') {
+    return { name: 'data-ph-' + n.slice('data-'.length), value: pair.value };
+  }
+  return pair;
+});
+
+// Alpine's initial document walk only descends roots that match a registered
+// root selector (default: [data-ph-data], inherited from x-data via prefix
+// swap). The SSR static-publish HTML has no data-ph-data wrapper — directives
+// sit directly on individual elements. Register one root selector per state-*
+// attribute so the initial walk picks them up. (Dynamically added elements
+// are handled by Alpine's MutationObserver, which calls initTree on every
+// added node regardless of root selectors.)
+Alpine.addRootSelector(function(){ return '[data-state-text]'; });
+Alpine.addRootSelector(function(){ return '[data-state-show-when-truthy]'; });
+Alpine.addRootSelector(function(){ return '[data-state-style-bindings]'; });
+Alpine.addRootSelector(function(){ return '[data-state-modifiers]'; });
+Alpine.addRootSelector(function(){ return '[data-state-binding]'; });
+Alpine.addRootSelector(function(){ return '[data-visibility-state-key]'; });
+Alpine.addRootSelector(function(){ return '[data-publish-state-keys]'; });
+Alpine.addRootSelector(function(){ return '[data-computed-state-bindings]'; });
+
+Alpine.directive('state-text', function(el, _dir, utils){
+  var key = el.getAttribute('data-state-text');
+  if (!key) return;
+  utils.effect(function(){
+    var entry = _store.entries[key];
+    el.textContent = entry && entry.value != null ? entry.value : '';
+  });
+});
+
+Alpine.directive('state-show-when-truthy', function(el, _dir, utils){
+  var key = el.getAttribute('data-state-show-when-truthy');
+  if (!key) return;
+  utils.effect(function(){
+    var entry = _store.entries[key];
+    var v = entry ? entry.value : undefined;
+    var truthy = v != null && v !== '' && v !== '0' && v !== 'false';
+    el.classList.toggle('hidden', !truthy);
+  });
+});
+
+Alpine.directive('visibility-state-key', function(el, _dir, utils){
+  var key = el.getAttribute('data-visibility-state-key');
+  if (!key) return;
+  utils.effect(function(){
+    var entry = _store.entries[key];
+    var v = entry ? entry.value : undefined;
+    if (v === 'shown') el.classList.remove('hidden');
+    else if (v === 'hidden') el.classList.add('hidden');
+  });
+});
+
+Alpine.directive('state-style-bindings', function(el, _dir, utils){
+  var raw = el.getAttribute('data-state-style-bindings');
+  var bindings;
+  try { bindings = JSON.parse(raw); } catch(e){ return; }
+  if (!Array.isArray(bindings) || !bindings.length) return;
+  utils.effect(function(){
+    for (var b=0; b<bindings.length; b++) {
+      var bd = bindings[b];
+      var entry = _store.entries[bd.key];
+      var val = entry ? entry.value : undefined;
+      if (val == null || val === '') val = bd.defaultValue != null ? bd.defaultValue : '0';
+      var out = bd.template ? bd.template.replace(/\\{\\{\\s*value\\s*\\}\\}/g, val) : val;
+      if (bd.styleProp.indexOf('--') === 0) el.style.setProperty(bd.styleProp, out);
+      else el.style[bd.styleProp] = out;
+    }
+  });
+});
+
+Alpine.directive('state-modifiers', function(el, _dir, utils){
+  var raw = el.getAttribute('data-state-modifiers');
+  var bindings;
+  try { bindings = JSON.parse(raw); } catch(e){ return; }
+  if (!Array.isArray(bindings) || !bindings.length) return;
+  // Pre-split class strings so we don't re-split on every effect run.
+  var classLists = bindings.map(function(bd){
+    if (typeof bd.classes === 'string' && bd.classes) return bd.classes.split(/\\s+/).filter(Boolean);
+    // Backwards-compat: legacy { conditions, modifiers: [...] } shape toggles
+    // placeholder ph-mod-<name> classes.
+    if (Array.isArray(bd.modifiers)) return bd.modifiers.map(function(m){ return 'ph-mod-' + m; });
+    return [];
+  });
+  // Walk conditions once to collect every state-key the directive reads, so
+  // the effect tracks them via _store.entries[k] (evalCond reads from
+  // window.__PH_STATE__, which is NOT reactive — so we touch the store proxy
+  // explicitly to register Alpine dependencies).
+  var trackedKeys = [];
+  var seen = {};
+  function collect(gs){
+    if (!Array.isArray(gs)) return;
+    for (var g=0; g<gs.length; g++) {
+      var conds = gs[g].conditions || [];
+      for (var c=0; c<conds.length; c++) {
+        var co = conds[c];
+        if (!co || !co.key) continue;
+        if (co.type !== 'state' && co.type !== 'url-param' && co.type !== 'localStorage') continue;
+        var sk = co.type === 'url-param' ? ('url:' + co.key) : co.key;
+        if (seen[sk]) continue;
+        seen[sk] = true;
+        trackedKeys.push(sk);
+      }
+    }
+  }
+  for (var bi=0; bi<bindings.length; bi++) collect(bindings[bi].conditions);
+  utils.effect(function(){
+    for (var ti=0; ti<trackedKeys.length; ti++) void _store.entries[trackedKeys[ti]];
+    for (var b=0; b<bindings.length; b++) {
+      var pass = evalGroups(bindings[b].conditions) === true;
+      var cls = classLists[b];
+      for (var ci=0; ci<cls.length; ci++) el.classList.toggle(cls[ci], pass);
+    }
+  });
+});
+
+Alpine.directive('state-binding', function(el, _dir, utils){
+  var raw = el.getAttribute('data-state-binding');
+  var b;
+  try { b = JSON.parse(raw); } catch(e){ return; }
+  if (!b || !b.key) return;
+  var input = el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT'
+    ? el : el.querySelector('input, textarea, select');
+  if (!input) return;
+  var isChecked = b.mode === 'checked';
+  var debounceMs = b.debounceMs || 0;
+  var timer = null;
+  var lastWrite = null;
+  function writeToState(v){
+    if (timer) clearTimeout(timer);
+    var fire = function(){ lastWrite = v; setState(b.key, { kind: 'value', value: v, source: 'runtime' }, 'form-element'); };
+    if (debounceMs > 0) timer = setTimeout(fire, debounceMs);
+    else fire();
+  }
+  // Seed default on first registration if state is empty.
+  var initial = _store.entries[b.key];
+  var initialVal = initial ? initial.value : undefined;
+  if (initialVal == null || initialVal === '') {
+    var dv = b.defaultValue;
+    if (dv) setState(b.key, { kind: 'value', value: String(dv), source: 'load' }, 'form-element');
+  }
+  function onChange(){
+    if (isChecked) writeToState(input.checked ? (input.value || 'on') : '');
+    else writeToState(input.value);
+  }
+  input.addEventListener(isChecked ? 'change' : 'input', onChange);
+  utils.cleanup(function(){
+    if (timer) clearTimeout(timer);
+    input.removeEventListener(isChecked ? 'change' : 'input', onChange);
+  });
+  utils.effect(function(){
+    var entry = _store.entries[b.key];
+    var v = entry ? entry.value : undefined;
+    if (v == null) v = '';
+    if (v === lastWrite) return;
+    if (document.activeElement === input) return;
+    if (isChecked) {
+      var want = v === (input.value || 'on') || v === 'on';
+      if (input.checked !== want) input.checked = want;
+    } else {
+      if (input.value !== v) input.value = v;
+    }
+  });
+});
+
+Alpine.directive('publish-state-keys', function(el){
+  // One-shot: on bind, count [data-item-id] children of this element and
+  // publish count / totalCount entries. No effect — value is static per
+  // hydration. Refetch publishes happen inside attachConnectorRefetch.
+  var raw = el.getAttribute('data-publish-state-keys');
+  var keys;
+  try { keys = JSON.parse(raw); } catch(e){ return; }
+  if (!keys || typeof keys !== 'object') return;
+  var count = el.querySelectorAll('[data-item-id]').length;
+  if (keys.count) setState(keys.count, { kind: 'value', value: String(count), source: 'load' }, 'publish');
+  if (keys.totalCount) setState(keys.totalCount, { kind: 'value', value: String(count), source: 'load' }, 'publish');
+});
+
+Alpine.directive('computed-state-bindings', function(el, _dir, utils){
+  var raw = el.getAttribute('data-computed-state-bindings');
+  var bindings;
+  try { bindings = JSON.parse(raw); } catch(e){ return; }
+  if (!Array.isArray(bindings) || !bindings.length) return;
+  var itemContext = readItemContext(el);
+  function interp(v){
+    if (typeof v !== 'string' || !v) return v == null ? '' : String(v);
+    return interpolateItem(v, itemContext);
+  }
+  utils.effect(function(){
+    for (var i=0; i<bindings.length; i++) {
+      var bd = bindings[i];
+      if (!bd || !bd.compute) continue;
+      var outKey = interp(bd.key);
+      if (!outKey) continue;
+      var nextVal = runComputed(bd, interp);
+      var cur = _store.entries[outKey];
+      if (cur && cur.value === nextVal) continue;
+      setState(outKey, { kind: 'value', value: nextVal, source: 'computed' }, 'computed');
+    }
+  });
+});
+
 function installEsc(){
   if (_escInstalled) return; _escInstalled = true;
   document.addEventListener('keydown', function(e){
@@ -735,221 +954,6 @@ function readItemContext(el){
   return null;
 }
 
-// ─── State bindings DOM walk ─────────────────────────────────────────
-// Idempotent — each per-element loop guards via __phBound* expandos.
-function attachStateBindings(){
-  // data-state-text: subscribe text content to a state key.
-  var textNodes = document.querySelectorAll('[data-state-text]');
-  for (var i=0; i<textNodes.length; i++) (function(el){
-    if (el.__phBoundStateText) return;
-    el.__phBoundStateText = 1;
-    var key = el.getAttribute('data-state-text');
-    var update = function(){ var v = getStateValue(key); el.textContent = v != null ? v : ''; };
-    update();
-    subscribe(key, update);
-  })(textNodes[i]);
-
-  // data-state-show-when-truthy: toggle hidden based on truthy state.
-  var truthyNodes = document.querySelectorAll('[data-state-show-when-truthy]');
-  for (var j=0; j<truthyNodes.length; j++) (function(el){
-    if (el.__phBoundTruthy) return;
-    el.__phBoundTruthy = 1;
-    var key = el.getAttribute('data-state-show-when-truthy');
-    var update = function(){
-      var v = getStateValue(key);
-      var truthy = v != null && v !== '' && v !== '0' && v !== 'false';
-      el.classList.toggle('hidden', !truthy);
-    };
-    update();
-    subscribe(key, update);
-  })(truthyNodes[j]);
-
-  // data-visibility-state-key: subscribe hidden class to visibility entry.
-  var visNodes = document.querySelectorAll('[data-visibility-state-key]');
-  for (var k=0; k<visNodes.length; k++) (function(el){
-    if (el.__phBoundVis) return;
-    el.__phBoundVis = 1;
-    var key = el.getAttribute('data-visibility-state-key');
-    var update = function(){
-      var v = getStateValue(key);
-      if (v === 'shown') el.classList.remove('hidden');
-      else if (v === 'hidden') el.classList.add('hidden');
-    };
-    update();
-    subscribe(key, update);
-  })(visNodes[k]);
-
-  // data-state-style-bindings: write state values into inline styles.
-  var styleNodes = document.querySelectorAll('[data-state-style-bindings]');
-  for (var m=0; m<styleNodes.length; m++) (function(el){
-    if (el.__phBoundStyle) return;
-    el.__phBoundStyle = 1;
-    var raw = el.getAttribute('data-state-style-bindings');
-    var bindings; try { bindings = JSON.parse(raw); } catch(e){ return; }
-    if (!Array.isArray(bindings)) return;
-    var update = function(){
-      for (var b=0; b<bindings.length; b++) {
-        var bd = bindings[b];
-        var val = getStateValue(bd.key);
-        if (val == null || val === '') val = bd.defaultValue != null ? bd.defaultValue : '0';
-        var out = bd.template ? bd.template.replace(/\\{\\{\\s*value\\s*\\}\\}/g, val) : val;
-        if (bd.styleProp.indexOf('--') === 0) el.style.setProperty(bd.styleProp, out);
-        else el.style[bd.styleProp] = out;
-      }
-    };
-    update();
-    for (var b=0; b<bindings.length; b++) subscribe(bindings[b].key, update);
-  })(styleNodes[m]);
-
-  // data-state-modifiers: reactive className composition. The SSR layer
-  // resolves modifier *names* to Tailwind class strings, so each binding is
-  // shaped { conditions, classes: "<class string>" }. We just toggle the
-  // class string when conditions pass.
-  var modNodes = document.querySelectorAll('[data-state-modifiers]');
-  for (var n=0; n<modNodes.length; n++) (function(el){
-    if (el.__phBoundMod) return;
-    el.__phBoundMod = 1;
-    var raw = el.getAttribute('data-state-modifiers');
-    var bindings; try { bindings = JSON.parse(raw); } catch(e){ return; }
-    if (!Array.isArray(bindings)) return;
-    // Pre-split classes per binding so we don't re-split on every update.
-    var classLists = bindings.map(function(bd){
-      if (typeof bd.classes === 'string' && bd.classes) return bd.classes.split(/\\s+/).filter(Boolean);
-      // Backwards-compat: legacy shape { conditions, modifiers: [...] } toggles
-      // the placeholder ph-mod-<name> classes (used to be the only behavior).
-      if (Array.isArray(bd.modifiers)) return bd.modifiers.map(function(m){ return 'ph-mod-' + m; });
-      return [];
-    });
-    var subscribedKeys = {};
-    var update = function(){
-      for (var b=0; b<bindings.length; b++) {
-        var bd = bindings[b];
-        var pass = evalGroups(bd.conditions) === true;
-        var cls = classLists[b];
-        for (var ci=0; ci<cls.length; ci++) el.classList.toggle(cls[ci], pass);
-      }
-    };
-    update();
-    // Subscribe to any state-keys referenced in conditions for reactivity.
-    var collectKeys = function(gs){
-      if (!Array.isArray(gs)) return;
-      for (var g=0; g<gs.length; g++) {
-        var conds = gs[g].conditions || [];
-        for (var c=0; c<conds.length; c++) {
-          var co = conds[c];
-          if ((co.type === 'state' || co.type === 'url-param' || co.type === 'localStorage') && co.key && !subscribedKeys[co.key]) {
-            subscribedKeys[co.key] = true;
-            var sk = co.type === 'url-param' ? ('url:' + co.key) : co.key;
-            subscribe(sk, update);
-          }
-        }
-      }
-    };
-    for (var b=0; b<bindings.length; b++) collectKeys(bindings[b].conditions);
-  })(modNodes[n]);
-
-  // data-state-binding: form input two-way binding.
-  var inputNodes = document.querySelectorAll('[data-state-binding]');
-  for (var p=0; p<inputNodes.length; p++) (function(el){
-    if (el.__phBoundStateBinding) return;
-    el.__phBoundStateBinding = 1;
-    var raw = el.getAttribute('data-state-binding');
-    var b; try { b = JSON.parse(raw); } catch(e){ return; }
-    if (!b || !b.key) return;
-    var input = el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT'
-      ? el : el.querySelector('input, textarea, select');
-    if (!input) return;
-    var isChecked = b.mode === 'checked';
-    var debounceMs = b.debounceMs || 0;
-    var timer = null;
-    var lastWrite = null;
-
-    var writeToState = function(v){
-      if (timer) clearTimeout(timer);
-      var fire = function(){ lastWrite = v; setState(b.key, { kind: 'value', value: v, source: 'runtime' }, 'form-element'); };
-      if (debounceMs > 0) timer = setTimeout(fire, debounceMs);
-      else fire();
-    };
-    var syncFromState = function(){
-      var v = getStateValue(b.key);
-      if (v == null) v = '';
-      if (v === lastWrite) return;
-      if (document.activeElement === input) return;
-      if (isChecked) {
-        var want = v === (input.value || 'on') || v === 'on';
-        if (input.checked !== want) input.checked = want;
-      } else {
-        if (input.value !== v) input.value = v;
-      }
-    };
-
-    var initial = getStateValue(b.key);
-    if (initial == null || initial === '') {
-      var dv = b.defaultValue;
-      if (dv) setState(b.key, { kind: 'value', value: String(dv), source: 'load' }, 'form-element');
-    } else {
-      syncFromState();
-    }
-    input.addEventListener(isChecked ? 'change' : 'input', function(){
-      if (isChecked) writeToState(input.checked ? (input.value || 'on') : '');
-      else writeToState(input.value);
-    });
-    subscribe(b.key, syncFromState);
-  })(inputNodes[p]);
-
-  // data-publish-state-keys: on a connector-backed wrapper, publish meta.
-  // (Real value writes happen in repeater refetch; on initial load, SSR has
-  // already populated the items — we just publish a count.)
-  var pubNodes = document.querySelectorAll('[data-publish-state-keys]');
-  for (var q=0; q<pubNodes.length; q++) (function(el){
-    if (el.__phBoundPublish) return;
-    el.__phBoundPublish = 1;
-    var raw = el.getAttribute('data-publish-state-keys');
-    var keys; try { keys = JSON.parse(raw); } catch(e){ return; }
-    if (!keys || typeof keys !== 'object') return;
-    var count = el.querySelectorAll('[data-item-id]').length;
-    if (keys.count) setState(keys.count, { kind: 'value', value: String(count), source: 'load' }, 'publish');
-    if (keys.totalCount) setState(keys.totalCount, { kind: 'value', value: String(count), source: 'load' }, 'publish');
-  })(pubNodes[q]);
-
-  // data-computed-state-bindings: declarative derived-state writes. Each
-  // binding declares { key, from?, compute }. Mirrors computedState.ts on the
-  // React path. Supported compute kinds:
-  //   - variant-match              (PDP variant pickers)
-  //   - variant-axis-availability  (chips' "unavailable" gating)
-  //   - all-truthy                 (form complete? CTA enable)
-  //   - first-truthy               (fallback chain)
-  //   - join                       (state CSV builder)
-  var cmpNodes = document.querySelectorAll('[data-computed-state-bindings]');
-  for (var cn=0; cn<cmpNodes.length; cn++) (function(el){
-    if (el.__phBoundComputed) return;
-    el.__phBoundComputed = 1;
-    var raw = el.getAttribute('data-computed-state-bindings');
-    var bindings; try { bindings = JSON.parse(raw); } catch(e){ return; }
-    if (!Array.isArray(bindings) || !bindings.length) return;
-    // Walk DOM upward to find the item context. interp() resolves
-    // {{item.X}} tokens against this. For PDP-scoped variant-match the
-    // item context is the product (carries variantMapJson + optionNamesCsv).
-    var itemContext = readItemContext(el);
-    var interp = function(raw){
-      if (typeof raw !== 'string' || !raw) return raw == null ? '' : String(raw);
-      return interpolateItem(raw, itemContext);
-    };
-    var subscribed = {};
-    var subKey = function(k){ if (!k || subscribed[k]) return; subscribed[k] = true; subscribe(k, update); };
-    var update = function(){
-      for (var i=0; i<bindings.length; i++) {
-        var bd = bindings[i]; if (!bd || !bd.compute) continue;
-        var outKey = interp(bd.key); if (!outKey) continue;
-        var nextVal = runComputed(bd, interp, subKey);
-        if (getStateValue(outKey) === nextVal) continue;
-        setState(outKey, { kind: 'value', value: nextVal, source: 'computed' }, 'computed');
-      }
-    };
-    update();
-  })(cmpNodes[cn]);
-}
-
 function toAxisArray(value){
   if (!value) return [];
   if (Object.prototype.toString.call(value) === '[object Array]') return value;
@@ -966,25 +970,29 @@ function parseVariantMap(raw){
 }
 function hasUnresolvedItemToken(s){ return /\\{\\{\\s*item\\./i.test(String(s)); }
 
-function runComputed(binding, interp, subKey){
+// runComputed reads state via getStateValue, which dereferences
+// _store.entries[k] — when called inside an Alpine.effect, the read is
+// auto-tracked and the effect reruns on dependency change. No explicit
+// subscribe callback needed.
+function runComputed(binding, interp){
   var c = binding.compute;
   var t = c && c.type;
   var i, k, v;
   if (t === 'all-truthy') {
     var fromKeys = binding.from || [];
-    for (i=0; i<fromKeys.length; i++) { k = interp(fromKeys[i]); if (k) { subKey(k); if (getStateValue(k) == null || getStateValue(k) === '') return ''; } }
+    for (i=0; i<fromKeys.length; i++) { k = interp(fromKeys[i]); if (k) { if (getStateValue(k) == null || getStateValue(k) === '') return ''; } }
     return fromKeys.length ? 'on' : '';
   }
   if (t === 'first-truthy') {
     var fk = binding.from || [];
-    for (i=0; i<fk.length; i++) { k = interp(fk[i]); if (!k) continue; subKey(k); v = getStateValue(k); if (v != null && v !== '') return v; }
+    for (i=0; i<fk.length; i++) { k = interp(fk[i]); if (!k) continue; v = getStateValue(k); if (v != null && v !== '') return v; }
     return '';
   }
   if (t === 'join') {
     var sep = c.separator != null ? c.separator : ',';
     var fk2 = binding.from || [];
     var vals = [];
-    for (i=0; i<fk2.length; i++) { k = interp(fk2[i]); if (!k) continue; subKey(k); v = getStateValue(k); if (v != null && v !== '') vals.push(v); }
+    for (i=0; i<fk2.length; i++) { k = interp(fk2[i]); if (!k) continue; v = getStateValue(k); if (v != null && v !== '') vals.push(v); }
     return vals.join(sep);
   }
   if (t === 'variant-match') {
@@ -998,7 +1006,6 @@ function runComputed(binding, interp, subKey){
     for (i=0; i<axes.length; i++) {
       var sk = interp(c.axisKeyTemplate.replace(/%axis%/g, axes[i]));
       if (hasUnresolvedItemToken(sk)) return '';
-      subKey(sk);
       v = getStateValue(sk);
       if (v != null && v !== '') sel[axes[i]] = v;
     }
@@ -1025,7 +1032,6 @@ function runComputed(binding, interp, subKey){
     for (i=0; i<otherAxes.length; i++) {
       var sk2 = interp(c.axisKeyTemplate.replace(/%axis%/g, otherAxes[i]));
       if (hasUnresolvedItemToken(sk2)) return '';
-      subKey(sk2);
       v = getStateValue(sk2);
       if (v != null && v !== '') sel2[otherAxes[i]] = v;
     }
@@ -1421,8 +1427,7 @@ function init(){
   seedFromWindow();
   // 2. URL bridge
   mountUrlBridge();
-  // 3. DOM bindings
-  attachStateBindings();
+  // 3. DOM bindings — handled by Alpine directives registered at IIFE top.
   // 4. Actions
   attachActionHandlers();
   // 5. Forms
@@ -1462,13 +1467,12 @@ else init();
 
 // Re-walk all data-* attach points. Use after injecting new DOM (custom JS
 // handler that appends an element, third-party script, etc.). Idempotent —
-// each attach function guards via a per-element flag.
+// Alpine.initTree tracks per-attribute cleanup via _x_attributeCleanups, so
+// already-bound directives are not re-bound; the remaining attach* legacy
+// functions guard via __phBound* flags.
 function rebind(root){
-  // Default scope is the whole document, but callers can pass a subtree.
-  // Each attachX function uses querySelectorAll on document, so we only
-  // re-run them all; cheap (<1ms typical) and safe (idempotent guards).
-  void root;
-  attachStateBindings();
+  var scope = root || document.body;
+  try { Alpine.initTree(scope); } catch(e){}
   attachActionHandlers();
   attachForms();
   attachCartItems();
