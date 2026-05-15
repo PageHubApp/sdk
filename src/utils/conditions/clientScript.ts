@@ -1,11 +1,17 @@
 /**
- * Inline <script> for evaluating conditions in static HTML exports.
+ * Inline <script> emitting condition evaluator function bodies for static
+ * HTML exports.
  *
- * Two consumers share the same evaluator function bodies:
- *   - `getConditionEvalScript()` — node visibility (`data-ph-conditions`).
+ * Two consumers share these evaluator definitions:
+ *   - The static-publish runtime IIFE — interpolates `buildConditionEvalFns`
+ *     directly and registers `data-ph-conditions` / `data-ph-condition-groups`
+ *     as Alpine directives that re-run `evalAll` / `evalGroups` inside
+ *     `Alpine.effect` whenever the state store mutates. Replaces the older
+ *     standalone `getConditionEvalScript()` IIFE (now removed) which only
+ *     re-ran on a DCL/load/setTimeout cascade.
  *   - `getLoadActionScript()` — load-trigger show-hide reveals + state seeds
- *     (`data-ph-load-show`, `data-ph-load-set-state`). Lives in utils/actions/load.ts
- *     and imports `buildConditionEvalFns` from here.
+ *     (`data-ph-load-show`, `data-ph-load-set-state`). Lives in
+ *     utils/actions/load.ts and imports `buildConditionEvalFns` from here.
  *
  * Keeping the function definitions in one place stops the two scripts from
  * drifting on which condition types they understand or how they treat
@@ -155,56 +161,3 @@ export function buildConditionEvalFns({
     return false;
   }`;
 }
-
-/**
- * Inline <script> for evaluating node-visibility in static HTML exports.
- *
- * @param mobileBreakpoint - px threshold for `device: mobile`. Defaults to 768
- *   (Tailwind `md`). Pass `theme.breakpoints?.md` to honor per-site overrides.
- */
-export function getConditionEvalScript({
-  mobileBreakpoint = 768,
-}: { mobileBreakpoint?: number } = {}): string {
-  return `<script>
-(function(){${buildConditionEvalFns({ mobileBreakpoint })}
-  function run(){
-    document.querySelectorAll('[data-ph-conditions]').forEach(function(el) {
-      var conds = JSON.parse(el.getAttribute('data-ph-conditions'));
-      var logic = el.getAttribute('data-ph-condition-logic') || 'all';
-      if (evalAll(conds, logic)) el.style.display = '';
-    });
-    // New conditionGroups shape — preferred by walker.ts for nodes that use
-    // the grouped form. evalGroups treats groups as OR-of-AND.
-    document.querySelectorAll('[data-ph-condition-groups]').forEach(function(el) {
-      var groups = JSON.parse(el.getAttribute('data-ph-condition-groups'));
-      if (evalGroups(groups)) el.style.display = '';
-    });
-  }
-  // Wait for DOMContentLoaded so the load-action script has populated
-  // window.__PH_STATE__ before state conditions read. End-of-body scripts
-  // usually run with readyState='interactive' (load script fires
-  // synchronously too), but DCL ordering is the only guaranteed contract.
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', run);
-  } else {
-    run();
-  }
-  // Re-run after window.load + a couple of timeouts. Next pages-router
-  // hydration may replace DOM nodes inside dangerouslySetInnerHTML
-  // subtrees, restoring the SSR display:none. run() is idempotent — once a
-  // node passes its conditions and gets display:'', re-running is a no-op.
-  if (document.readyState !== 'complete') {
-    window.addEventListener('load', run, { once: true });
-  }
-  setTimeout(run, 500);
-  setTimeout(run, 1500);
-})();
-</script>`;
-}
-
-/**
- * @deprecated Use `getConditionEvalScript()` instead — defaults to mobileBreakpoint=768
- * (matches the prior literal export). Kept as a back-compat shim; remove once no
- * consumers reference it.
- */
-export const CONDITION_EVAL_SCRIPT = getConditionEvalScript();

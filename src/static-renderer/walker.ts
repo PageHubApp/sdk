@@ -108,7 +108,8 @@ export function renderNode(
       const logic = node.props.conditionLogic || "all";
       // Prefer the new conditionGroups shape (an array of {logic, conditions}).
       // Fall back to flat conditions[] for legacy nodes. Either attr is consumed
-      // by getConditionEvalScript at hydration time.
+      // by the Alpine `data-ph-conditions` / `data-ph-condition-groups`
+      // directives registered in staticPublishRuntime.ts.
       if (conditionGroups && conditionGroups.length > 0) {
         const groupsData = JSON.stringify(conditionGroups).replace(/"/g, "&quot;");
         return `<div data-ph-condition-groups="${groupsData}" style="display:none">${inner}</div>`;
