@@ -132,6 +132,12 @@ var MOBILE = ${mobileBreakpoint};
 // directives) go through subscribe() below, which is implemented on top of
 // Alpine.effect.
 var Alpine = window.Alpine;
+// data-ph-* attributes resolve as Alpine directives via the prefix swap
+// (e.g. data-ph-actions matches the 'actions' directive). data-state-*,
+// data-visibility-*, data-publish-*, data-computed-* sit outside the prefix
+// and are aliased per-attribute via Alpine.mapAttributes by the agent that
+// owns those directives.
+Alpine.prefix('data-ph-');
 Alpine.store('ph', { entries: Object.create(null), revision: 0 });
 var _store = Alpine.store('ph');
 var _shownStack = [];
