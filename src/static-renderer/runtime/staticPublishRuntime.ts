@@ -140,6 +140,15 @@ var Alpine = window.Alpine;
 Alpine.prefix('data-ph-');
 Alpine.store('ph', { entries: Object.create(null), revision: 0 });
 var _store = Alpine.store('ph');
+// Alpine.start() only walks subtrees rooted at elements matching
+// addRootSelector() callbacks (default: [data-ph-data]). Our SSR HTML never
+// emits data-ph-data, so we register the directive-owning attributes
+// themselves as roots — Alpine will querySelectorAll(joined), initTree each,
+// and the MutationObserver auto-picks up late-inserted elements with the
+// same attribute. The directive names are bare ('actions', 'form'); Alpine's
+// prefix maps the attribute names to them.
+Alpine.addRootSelector(function(){ return '[data-ph-actions]'; });
+Alpine.addRootSelector(function(){ return '[data-ph-form]'; });
 var _shownStack = [];
 var _escInstalled = false;
 
@@ -868,72 +877,84 @@ function cartCheckout(){
   }).then(function(r){ return r.json(); }).then(function(d){ if (d && d.url) window.location.href = d.url; }).catch(function(){});
 }
 
-// Walk every node carrying actions and wire click/hover. Idempotent —
-// elements already attached are skipped via a per-element expando.
-function attachActionHandlers(){
-  var nodes = document.querySelectorAll('[data-ph-actions]');
-  for (var i=0; i<nodes.length; i++) {
-    (function(el){
-      if (el.__phBoundActions) return;
-      el.__phBoundActions = 1;
-      var raw = el.getAttribute('data-ph-actions');
-      if (!raw) return;
-      var actions; try { actions = JSON.parse(raw); } catch(e){ return; }
-      if (!Array.isArray(actions) || !actions.length) return;
-      var itemContext = readItemContext(el);
-      var clickActions = [], enterActions = [], leaveActions = [];
-      for (var k=0; k<actions.length; k++) {
-        var a = actions[k];
-        if (!a || a.trigger === 'load' || a.trigger === 'interval') continue;
-        if (a.trigger === 'hover') {
-          enterActions.push(a);
-          if (a.type === 'set-state' || a.type === 'toggle-state' || a.type === 'clear-state' || a.type === 'show-hide') leaveActions.push(a);
-        } else {
-          clickActions.push(a);
+// data-ph-actions → Alpine 'actions' directive (resolved via the
+// data-ph- prefix). Alpine walks the DOM on start + auto-rebinds on later
+// MutationObserver hits, so the previous attachActionHandlers DOM walk +
+// __phBoundActions expando are gone. Listener teardown rides on Alpine's
+// cleanup() utility so element removal frees the closures cleanly.
+Alpine.directive('actions', function(el, _meta, _ctx){
+  var cleanup = _ctx.cleanup;
+  var raw = el.getAttribute('data-ph-actions');
+  if (!raw) return;
+  var actions; try { actions = JSON.parse(raw); } catch(e){ return; }
+  if (!Array.isArray(actions) || !actions.length) return;
+  var itemContext = readItemContext(el);
+  var clickActions = [], enterActions = [], leaveActions = [];
+  for (var k=0; k<actions.length; k++) {
+    var a = actions[k];
+    if (!a || a.trigger === 'load' || a.trigger === 'interval') continue;
+    if (a.trigger === 'hover') {
+      enterActions.push(a);
+      if (a.type === 'set-state' || a.type === 'toggle-state' || a.type === 'clear-state' || a.type === 'show-hide') leaveActions.push(a);
+    } else {
+      clickActions.push(a);
+    }
+  }
+  var onClick = null, onEnter = null, onLeave = null;
+  if (clickActions.length) {
+    onClick = function(e){
+      for (var i=0; i<clickActions.length; i++) fireAction(clickActions[i], e, itemContext);
+    };
+    el.addEventListener('click', onClick);
+  }
+  // Per-element scratch for hover snapshots. Shared between enter/leave
+  // handlers via closure (replaces the old __phBoundActions expando model).
+  var hoverSnap = {};
+  if (enterActions.length) {
+    onEnter = function(e){
+      for (var i=0; i<enterActions.length; i++) {
+        var a = enterActions[i];
+        if (a.type === 'set-state' || a.type === 'toggle-state' || a.type === 'clear-state') {
+          var snapKey = resolveActionKey(a.key, itemContext);
+          if (snapKey && !(snapKey in hoverSnap)) {
+            var snapPrev = getState(snapKey);
+            // Store full entry shape so leave can restore exact kind/source.
+            hoverSnap[snapKey] = snapPrev
+              ? { kind: snapPrev.kind, value: snapPrev.value, source: snapPrev.source, existed: true }
+              : { existed: false };
+          }
+        }
+        fireAction(a, e, itemContext);
+      }
+    };
+    el.addEventListener('mouseenter', onEnter);
+  }
+  if (leaveActions.length) {
+    onLeave = function(e){
+      for (var i=0; i<leaveActions.length; i++) {
+        var a = leaveActions[i];
+        if (a.type === 'show-hide') { revertShowHide(a); continue; }
+        if (a.type === 'set-state' || a.type === 'toggle-state' || a.type === 'clear-state') {
+          var k = resolveActionKey(a.key, itemContext);
+          if (!k) continue;
+          var snap = hoverSnap[k];
+          delete hoverSnap[k];
+          if (snap && snap.existed) {
+            setState(k, { kind: snap.kind, value: snap.value, source: snap.source }, 'hover-revert');
+          } else {
+            deleteState(k);
+          }
         }
       }
-      if (clickActions.length) el.addEventListener('click', function(e){
-        for (var i=0; i<clickActions.length; i++) fireAction(clickActions[i], e, itemContext);
-      });
-      // Per-element scratch for hover snapshots. WeakMap-style via expando: a
-      // local closure variable shared between enter/leave handlers.
-      var hoverSnap = {};
-      if (enterActions.length) el.addEventListener('mouseenter', function(e){
-        for (var i=0; i<enterActions.length; i++) {
-          var a = enterActions[i];
-          if (a.type === 'set-state' || a.type === 'toggle-state' || a.type === 'clear-state') {
-            var snapKey = resolveActionKey(a.key, itemContext);
-            if (snapKey && !(snapKey in hoverSnap)) {
-              var snapPrev = getState(snapKey);
-              // Store full entry shape so leave can restore exact kind/source.
-              hoverSnap[snapKey] = snapPrev
-                ? { kind: snapPrev.kind, value: snapPrev.value, source: snapPrev.source, existed: true }
-                : { existed: false };
-            }
-          }
-          fireAction(a, e, itemContext);
-        }
-      });
-      if (leaveActions.length) el.addEventListener('mouseleave', function(e){
-        for (var i=0; i<leaveActions.length; i++) {
-          var a = leaveActions[i];
-          if (a.type === 'show-hide') { revertShowHide(a); continue; }
-          if (a.type === 'set-state' || a.type === 'toggle-state' || a.type === 'clear-state') {
-            var k = resolveActionKey(a.key, itemContext);
-            if (!k) continue;
-            var snap = hoverSnap[k];
-            delete hoverSnap[k];
-            if (snap && snap.existed) {
-              setState(k, { kind: snap.kind, value: snap.value, source: snap.source }, 'hover-revert');
-            } else {
-              deleteState(k);
-            }
-          }
-        }
-      });
-    })(nodes[i]);
+    };
+    el.addEventListener('mouseleave', onLeave);
   }
-}
+  cleanup(function(){
+    if (onClick) el.removeEventListener('click', onClick);
+    if (onEnter) el.removeEventListener('mouseenter', onEnter);
+    if (onLeave) el.removeEventListener('mouseleave', onLeave);
+  });
+});
 
 function readItemContext(el){
   // Walk up to find the nearest data-item-id (repeater item). Item context
@@ -1068,62 +1089,64 @@ function initCartDrawerVisibility(){
 }
 
 // ─── Form submit dispatcher ────────────────────────────────────────
-// Matches the routing matrix in submitFormProduction.ts. The data-ph-form
-// JSON stamped by Form.toHTML carries submissionType + per-type payload bits.
-function attachForms(){
-  var forms = document.querySelectorAll('form');
-  for (var i=0; i<forms.length; i++) (function(form){
-    if (form.__phBoundForm) return;
-    form.__phBoundForm = 1;
-    var metaRaw = form.getAttribute('data-ph-form');
-    var meta = null;
-    if (metaRaw) { try { meta = JSON.parse(metaRaw); } catch(e){} }
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      var fd = new FormData(form);
-      // Honeypot.
-      if (fd.get('_ph_hp')) return;
-      var data = {}; fd.forEach(function(v, k){ if (k !== '_ph_hp') data[k] = v; });
-      var t = (meta && meta.submissionType) || 'email';
-      var formName = (meta && meta.formName) || form.getAttribute('data-form-name') || 'form';
-      if (t === 'iframe') return;
-      if (t === 'custom' && meta && meta.action) {
-        fetch(meta.action, {
-          method: meta.method || 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        }).catch(function(){});
-      } else if (t === 'agent' && meta && meta.agentId) {
-        fetch('/api/agents/' + encodeURIComponent(meta.agentId) + '/intake', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pageId: PAGE_ID, formData: data }),
-          credentials: 'include',
-        }).catch(function(){});
-      } else {
-        // email / webhook / collection — all routed through /api/submissions
-        // with mode-specific extras. Mirrors SaveSubmissions in the SDK.
-        var body = { pageId: PAGE_ID, formData: data, formName: formName };
-        if (meta) {
-          if (meta.mailto) body.mailTo = meta.mailto;
-          if (t === 'webhook' && meta.webhookUrl) body.webhookUrl = meta.webhookUrl;
-          if (t === 'collection' && meta.collectionSlug) {
-            body.collection = meta.collectionSlug;
-            if (meta.collectionFieldMap) body.collectionFieldMap = meta.collectionFieldMap;
-            if (meta.collectionSkipEmail) body.skipEmail = true;
-          }
+// data-ph-form → Alpine 'form' directive (data-ph- prefix maps it).
+// Alpine 3.14 has no built-in 'form' directive (verified against
+// node_modules/alpinejs/dist/module.esm.js — only 'data', 'show', 'for',
+// 'model', 'bind', 'on', 'text', 'html', 'if', 'init', 'effect', 'cloak',
+// 'ref', 'id', 'teleport', 'modelable', 'transition', 'ignore'), so the
+// name 'form' is safe to claim. Routing matrix matches submitFormProduction.ts.
+Alpine.directive('form', function(form, _meta, _ctx){
+  var cleanup = _ctx.cleanup;
+  var metaRaw = form.getAttribute('data-ph-form');
+  var meta = null;
+  if (metaRaw) { try { meta = JSON.parse(metaRaw); } catch(e){} }
+  var onSubmit = function(e){
+    e.preventDefault();
+    var fd = new FormData(form);
+    // Honeypot.
+    if (fd.get('_ph_hp')) return;
+    var data = {}; fd.forEach(function(v, k){ if (k !== '_ph_hp') data[k] = v; });
+    var t = (meta && meta.submissionType) || 'email';
+    var formName = (meta && meta.formName) || form.getAttribute('data-form-name') || 'form';
+    if (t === 'iframe') return;
+    if (t === 'custom' && meta && meta.action) {
+      fetch(meta.action, {
+        method: meta.method || 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).catch(function(){});
+    } else if (t === 'agent' && meta && meta.agentId) {
+      fetch('/api/agents/' + encodeURIComponent(meta.agentId) + '/intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageId: PAGE_ID, formData: data }),
+        credentials: 'include',
+      }).catch(function(){});
+    } else {
+      // email / webhook / collection — all routed through /api/submissions
+      // with mode-specific extras. Mirrors SaveSubmissions in the SDK.
+      var body = { pageId: PAGE_ID, formData: data, formName: formName };
+      if (meta) {
+        if (meta.mailto) body.mailTo = meta.mailto;
+        if (t === 'webhook' && meta.webhookUrl) body.webhookUrl = meta.webhookUrl;
+        if (t === 'collection' && meta.collectionSlug) {
+          body.collection = meta.collectionSlug;
+          if (meta.collectionFieldMap) body.collectionFieldMap = meta.collectionFieldMap;
+          if (meta.collectionSkipEmail) body.skipEmail = true;
         }
-        fetch('/api/submissions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        }).catch(function(){});
       }
-      fireAnalytics('form_submit', { formName: formName });
-      try { form.reset(); } catch(e){}
-    });
-  })(forms[i]);
-}
+      fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }).catch(function(){});
+    }
+    fireAnalytics('form_submit', { formName: formName });
+    try { form.reset(); } catch(e){}
+  };
+  form.addEventListener('submit', onSubmit);
+  cleanup(function(){ form.removeEventListener('submit', onSubmit); });
+});
 
 // ─── Connector refetch watcher ─────────────────────────────────────
 // Walk a value via dot path, supporting numeric indices (matches React's
@@ -1427,11 +1450,10 @@ function init(){
   seedFromWindow();
   // 2. URL bridge
   mountUrlBridge();
-  // 3. DOM bindings — handled by Alpine directives registered at IIFE top.
-  // 4. Actions
-  attachActionHandlers();
-  // 5. Forms
-  attachForms();
+  // 3. DOM bindings (data-state-*) — Alpine directives registered at IIFE top.
+  // 4. Actions (data-ph-actions) — Alpine.directive('actions').
+  // 5. Forms (data-ph-form) — Alpine.directive('form'). Alpine.start walks the
+  //    DOM after init() and applies all three sets.
   // 6. Connector refetch
   attachConnectorRefetch();
   // 7. Customer token
@@ -1471,10 +1493,12 @@ else init();
 // already-bound directives are not re-bound; the remaining attach* legacy
 // functions guard via __phBound* flags.
 function rebind(root){
+  // data-state-*, data-ph-actions, data-ph-form are all Alpine directives now —
+  // Alpine.initTree walks the subtree and applies them; idempotent via
+  // _x_attributeCleanups. attachCartItems and attachConnectorRefetch are still
+  // legacy DOM walks (idempotent via __phBound* flags).
   var scope = root || document.body;
   try { Alpine.initTree(scope); } catch(e){}
-  attachActionHandlers();
-  attachForms();
   attachCartItems();
   attachConnectorRefetch();
 }
