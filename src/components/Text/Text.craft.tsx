@@ -12,9 +12,13 @@ import { defineComponent } from "../../define/defineComponent";
 import { LoremIpsum } from "../../utils/seeds/loremIpsum";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../../utils/action";
 import {
+  actionsAttr,
   ariaAttrs,
+  attrsPassthrough,
   getInlineStyle,
   handlerAttrs,
+  interpolate,
+  stateAttrs,
   staticClasses,
   tag,
   type ToHTMLFn,
@@ -33,11 +37,13 @@ const sanitizeTagName = (raw: unknown): string => {
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const cls = staticClasses(props, ctx);
   const style = getInlineStyle(props);
-  const text = props.text || "";
+  const text = interpolate(props.text || "", ctx);
   const safeName = sanitizeTagName(props.tagName);
 
-  const firstLink = findLinkAction(migrateActions(props));
-  const href = actionToHref(firstLink);
+  const actions = migrateActions(props);
+  const firstLink = findLinkAction(actions);
+  const rawHref = actionToHref(firstLink);
+  const href = rawHref ? interpolate(rawHref, ctx) : rawHref;
   const target = actionTarget(firstLink);
 
   if (href) {
@@ -58,6 +64,9 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         style: style || undefined,
         ...ariaAttrs(props),
         ...handlerAttrs(props),
+        ...actionsAttr(props),
+        ...stateAttrs(props, ctx),
+        ...attrsPassthrough(props),
       },
       linkTag
     );
@@ -85,6 +94,9 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         style: fitStyle,
         ...ariaAttrs(props),
         ...handlerAttrs(props),
+        ...actionsAttr(props),
+        ...stateAttrs(props, ctx),
+        ...attrsPassthrough(props),
       },
       text
     );
@@ -97,6 +109,9 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
       style: style || undefined,
       ...ariaAttrs(props),
       ...handlerAttrs(props),
+      ...actionsAttr(props),
+      ...stateAttrs(props, ctx),
+      ...attrsPassthrough(props),
     },
     text
   );

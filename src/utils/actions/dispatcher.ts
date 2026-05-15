@@ -18,6 +18,8 @@ import {
   attachToggleCart,
 } from "./handlers/cart";
 import { attachAgentSend } from "./handlers/agent";
+import { attachCopyToClipboard } from "./handlers/clipboard";
+import { attachDownloadFile } from "./handlers/download";
 import { attachLink } from "./handlers/link";
 import { attachRemoveLocalStorage, attachSetLocalStorage } from "./handlers/localStorage";
 import { attachModal } from "./handlers/modal";
@@ -95,6 +97,12 @@ function attachOne(prop: any, action: NodeAction, enabled: boolean, context?: Ac
       return;
     case "show-hide":
       attachShowHide(prop, action, enabled);
+      return;
+    case "copy-to-clipboard":
+      attachCopyToClipboard(prop, action, enabled, context);
+      return;
+    case "download-file":
+      attachDownloadFile(prop, action, enabled, context);
       return;
   }
 }

@@ -7,9 +7,9 @@ const DataMainTab = React.lazy(() =>
   }))
 );
 import { defineComponent } from "../../define/defineComponent";
-import { toHTML as containerToHTML } from "../Container/Container.craft";
 import { Data } from "./Data";
 import { layoutCanvasCanMoveIn } from "../layoutCanvasCanMoveIn";
+import { toHTML as dataToHTML } from "./toHTML";
 
 export const DataDef = defineComponent(
   {
@@ -20,7 +20,7 @@ export const DataDef = defineComponent(
     canvas: true,
     settings: DataMainTab,
     description: "A list that repeats per item — products, orders, etc.",
-    toHTML: containerToHTML,
+    toHTML: dataToHTML,
     rules: {
       canDrag: () => true,
       canDelete: () => true,

@@ -13,10 +13,13 @@ import { defineComponent } from "../../define/defineComponent";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../../utils/action";
 import { resolveIconSvgSync } from "../../utils/icons/serverResolve";
 import {
+  actionsAttr,
   ariaAttrs,
   collectClasses,
   escapeAttr,
   handlerAttrs,
+  interpolate,
+  stateAttrs,
   staticClasses,
   tag,
   type ToHTMLFn,
@@ -44,21 +47,34 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
 
   const fullCls = [cls, extra].filter(Boolean).join(" ");
-  const firstLink = findLinkAction(migrateActions(props));
-  const href = actionToHref(firstLink);
+  const actions = migrateActions(props);
+  const firstLink = findLinkAction(actions);
+  const rawHref = actionToHref(firstLink);
+  const href = rawHref ? interpolate(rawHref, ctx) : rawHref;
   const target = actionTarget(firstLink);
 
   const attrs: Record<string, any> = {
     class: fullCls || undefined,
     ...ariaAttrs(props),
     ...handlerAttrs(props),
+    ...actionsAttr(props),
+    ...stateAttrs(props, ctx),
   };
   if (href) {
     attrs.href = href;
     if (target) attrs.target = target;
     if (/^https?:\/\//.test(href)) attrs.rel = "noopener noreferrer";
   }
-  if (icon?.only && !attrs["aria-label"]) attrs["aria-label"] = props.text || "Link";
+  if (props.attrs && typeof props.attrs === "object") {
+    for (const [k, v] of Object.entries(props.attrs)) {
+      if (typeof v === "string") {
+        attrs[k] = interpolate(v, ctx);
+      } else if (typeof v === "number" || typeof v === "boolean") {
+        attrs[k] = v as any;
+      }
+    }
+  }
+  if (icon?.only && !attrs["aria-label"]) attrs["aria-label"] = interpolate(props.text || "Link", ctx);
 
   let iconHTML = "";
   if (icon?.value && icon.value.startsWith("ref-icon:")) {
@@ -73,7 +89,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
 
   // Persisted label HTML like Text.craft (variable spans, TipTap); escaping breaks static previews.
-  const textHTML = !icon?.only && props.text ? String(props.text) : "";
+  const textHTML = !icon?.only && props.text ? interpolate(String(props.text), ctx) : "";
   const before = icon?.position === "left" || icon?.position === "top";
   const inner = before ? iconHTML + textHTML : textHTML + iconHTML;
 

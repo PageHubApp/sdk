@@ -39,6 +39,30 @@ export interface RenderToHTMLOptions {
   /** Server-fetched connector data — resolves connector-backed conditions at SSR
    *  instead of wrapping them for the client-only reveal script. */
   connectorData?: Record<string, { bindings: Record<string, any[]> }> | null;
+  /**
+   * Optional request hints from the calling Next.js page. When supplied, the
+   * walker resolves `auth` / `device` / `url-param` conditions at SSR instead
+   * of wrapping the node for the client re-eval script:
+   *  - `isAuthenticated` — cookie-derived (e.g. `ph-customer` presence)
+   *  - `userAgentClass`  — UA-derived viewport class
+   *  - `urlParams`       — parsed query (only meaningful for `getServerSideProps`)
+   * Any field omitted leaves the corresponding condition type indeterminate.
+   */
+  requestContext?: {
+    isAuthenticated?: boolean;
+    userAgentClass?: "mobile" | "tablet" | "desktop";
+    urlParams?: Record<string, string>;
+  };
+  /**
+   * Emit the vanilla static-publish runtime alongside the document.
+   * Adds a tiny blocking `<head>` cart-bridge script + a main IIFE at the
+   * end of `<body>` that hydrates `data-state-*`, `data-ph-actions`,
+   * `data-ph-map`, forms, connector refetch, and customer-token detection.
+   * Default: false (Wave 4 opt-in).
+   */
+  runtime?: boolean;
+  /** Page id (used by runtime to scope cart localStorage). */
+  pageId?: string;
 }
 
 export interface RenderToHTMLResult {

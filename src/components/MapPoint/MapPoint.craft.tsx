@@ -5,6 +5,11 @@ import React from "react";
 import { TbMapPin } from "react-icons/tb";
 import { defineComponent } from "../../define/defineComponent";
 import { MapPoint } from "./MapPoint";
+import type { ToHTMLFn } from "../../utils/staticHtml";
+
+// MapPoint data is encoded into the parent Map's `data-ph-map` JSON,
+// so the point itself emits nothing in static HTML.
+const toHTML: ToHTMLFn = () => "";
 const MapPointMainTab = React.lazy(() =>
   import("../../chrome/toolbar/inspector/mainTabs/MapPointMainTab").then(mod => ({
     default: mod.MapPointMainTab,
@@ -21,6 +26,7 @@ export const MapPointDef = defineComponent(
     icon: TbMapPin,
     category: "Media",
     settings: MapPointMainTab,
+    toHTML,
     disable: [
       "textColor",
       "bgColor",

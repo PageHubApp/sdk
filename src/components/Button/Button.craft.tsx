@@ -12,10 +12,13 @@ import { defineComponent } from "../../define/defineComponent";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../../utils/action";
 import { resolveIconSvgSync } from "../../utils/icons/serverResolve";
 import {
+  actionsAttr,
   ariaAttrs,
   collectClasses,
   escapeAttr,
   handlerAttrs,
+  interpolate,
+  stateAttrs,
   staticClasses,
   tag,
   type ToHTMLFn,
@@ -44,12 +47,14 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
 
   const fullCls = [cls, extra].filter(Boolean).join(" ");
-  // Static export carries no JS runtime — multi-action chains can't fire.
-  // Render the first link's href on `<a>` (preserves SEO + right-click) and
-  // accept the chain-fidelity loss; in-app SSR (/view, /static, custom
-  // domains) hydrate React and dispatch the full chain via Button.tsx.
-  const firstLink = findLinkAction(migrateActions(props));
-  const href = actionToHref(firstLink);
+  // First link stays on `<a href>` for SEO + no-JS fallback. The full
+  // action chain ALSO ships as `data-ph-actions` so the vanilla runtime
+  // dispatches every entry in click order — matches Button.body's behavior
+  // on hydrated routes.
+  const actions = migrateActions(props);
+  const firstLink = findLinkAction(actions);
+  const rawHref = actionToHref(firstLink);
+  const href = rawHref ? interpolate(rawHref, ctx) : rawHref;
   const target = actionTarget(firstLink);
   const t = href ? "a" : "button";
 
@@ -57,6 +62,8 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     class: fullCls || undefined,
     ...ariaAttrs(props),
     ...handlerAttrs(props),
+    ...actionsAttr(props),
+    ...stateAttrs(props, ctx),
   };
   if (t === "a" && href) {
     attrs.href = href;
@@ -65,7 +72,16 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   } else {
     attrs.type = props.type || "button";
   }
-  if (icon?.only && !attrs["aria-label"]) attrs["aria-label"] = props.text || "Button";
+  if (props.attrs && typeof props.attrs === "object") {
+    for (const [k, v] of Object.entries(props.attrs)) {
+      if (typeof v === "string") {
+        attrs[k] = interpolate(v, ctx);
+      } else if (typeof v === "number" || typeof v === "boolean") {
+        attrs[k] = v as any;
+      }
+    }
+  }
+  if (icon?.only && !attrs["aria-label"]) attrs["aria-label"] = interpolate(props.text || "Button", ctx);
 
   let iconHTML = "";
   if (icon?.value && icon.value.startsWith("ref-icon:")) {
@@ -80,7 +96,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
 
   // Persisted label HTML like Text.craft (variable spans, TipTap); escaping breaks static previews.
-  const textHTML = !icon?.only && props.text ? String(props.text) : "";
+  const textHTML = !icon?.only && props.text ? interpolate(String(props.text), ctx) : "";
   const before = icon?.position === "left" || icon?.position === "top";
   const inner = before ? iconHTML + textHTML : textHTML + iconHTML;
 

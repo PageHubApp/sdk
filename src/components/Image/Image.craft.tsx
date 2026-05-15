@@ -7,14 +7,19 @@ import { defineComponent } from "../../define/defineComponent";
 import { migrateActions, actionToHref, findLinkAction } from "../../utils/action";
 import { Image } from "./Image";
 import {
+  actionsAttr,
+  ariaAttrs,
+  attrsPassthrough,
+  buildAttrs,
+  generateSizes,
+  generateSrcSet,
+  getCdnUrl,
+  handlerAttrs,
+  inferFixedSizesFromClassName,
+  interpolate,
+  stateAttrs,
   staticClasses,
   tag,
-  buildAttrs,
-  getCdnUrl,
-  generateSrcSet,
-  generateSizes,
-  inferFixedSizesFromClassName,
-  ariaAttrs,
   type ToHTMLFn,
 } from "../../utils/staticHtml";
 
@@ -27,10 +32,14 @@ const RESPONSIVE_SIZES = generateSizes({
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const { videoId, type } = props;
-  const content = props.src ?? props.content;
+  const rawContent = props.src ?? props.content;
+  const content =
+    typeof rawContent === "string" && rawContent.includes("{{")
+      ? interpolate(rawContent, ctx)
+      : rawContent;
   const cls = staticClasses(props, ctx);
-  const alt = props.alt || props.title || "";
-  const title = props.title || "";
+  const alt = interpolate(props.alt || props.title || "", ctx);
+  const title = interpolate(props.title || "", ctx);
 
   // Inline SVG
   if (type === "svg" && content) {
@@ -43,6 +52,9 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         role: alt ? undefined : "presentation",
         "aria-label": alt || undefined,
         ...ariaAttrs(props),
+        ...handlerAttrs(props),
+        ...actionsAttr(props),
+        ...stateAttrs(props, ctx),
       },
       content
     );
@@ -91,11 +103,18 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     role: !alt ? "presentation" : undefined,
     fetchpriority: props.fetchPriority || undefined,
     ...ariaAttrs(props),
+    ...handlerAttrs(props),
+    ...actionsAttr(props),
+    ...stateAttrs(props, ctx),
+    ...attrsPassthrough(props),
   };
 
   const imgTag = `<img${buildAttrs(imgAttrs)} />`;
 
-  const href = actionToHref(findLinkAction(migrateActions(props))) || props.url;
+  const rawHref = actionToHref(findLinkAction(migrateActions(props))) || props.url;
+  const href = typeof rawHref === "string" && rawHref.includes("{{")
+    ? interpolate(rawHref, ctx)
+    : rawHref;
   if (href) {
     return tag(
       "a",

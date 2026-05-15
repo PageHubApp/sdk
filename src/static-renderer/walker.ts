@@ -1,11 +1,44 @@
 import { buildStaticContext } from "../utils/conditions/context";
 import { evaluateConditionGroups, evaluateConditions } from "../utils/conditions/evaluate";
+import type { AuthState } from "../utils/design/variables";
 import type { StaticRenderContext, ToHTMLFn } from "../utils/staticHtml";
 import type { SerializedNode, SerializedNodes } from "./types";
 
 export function resolveType(node: SerializedNode): string {
   if (typeof node.type === "string") return node.type;
   return node.type?.resolvedName || "Container";
+}
+
+/**
+ * Build a ConditionContext for a node, layering `requestContext` hints from
+ * the host (Next.js page) onto the base static context so `auth` / `device` /
+ * `url-param` conditions can resolve definitively at SSR.
+ *
+ * Hint mapping:
+ *  - `isAuthenticated` → `auth = { status: "logged-in" | "logged-out" }`
+ *  - `userAgentClass`  → `viewportWidth` (375 mobile, 768 tablet, 1280 desktop)
+ *  - `urlParams`       → `URLSearchParams`
+ */
+function buildWalkerContext(
+  rootProps: Record<string, any>,
+  item: Record<string, any> | null,
+  ctx: StaticRenderContext
+) {
+  const base = buildStaticContext(rootProps, item, ctx.connectorData ?? null);
+  const hints = ctx.requestContext;
+  if (!hints) return base;
+  if (typeof hints.isAuthenticated === "boolean") {
+    const auth: AuthState = { status: hints.isAuthenticated ? "logged-in" : "logged-out" };
+    base.auth = auth;
+  }
+  if (hints.userAgentClass) {
+    base.viewportWidth =
+      hints.userAgentClass === "mobile" ? 375 : hints.userAgentClass === "tablet" ? 768 : 1280;
+  }
+  if (hints.urlParams) {
+    base.urlParams = new URLSearchParams(hints.urlParams);
+  }
+  return base;
 }
 
 export function renderNode(
@@ -25,7 +58,7 @@ export function renderNode(
 
   if (hasConditions) {
     const rootProps = nodes["ROOT"]?.props || {};
-    const condCtx = buildStaticContext(rootProps, null, ctx.connectorData ?? null);
+    const condCtx = buildWalkerContext(rootProps, ctx.currentItem ?? null, ctx);
 
     // Prefer conditionGroups (new format), fall back to flat conditions
     const result =
@@ -41,25 +74,46 @@ export function renderNode(
       const typeName = resolveType(node);
       const toHTML = resolver[typeName];
       const childIds = [...(node.nodes || []), ...Object.values(node.linkedNodes || {})];
-      const childrenHTML = childIds
-        .map(id => renderNode(id as string, nodes, resolver, ctx))
-        .filter(Boolean)
-        .join("\n");
+      const isRepeater = typeName === "Data";
       let inner = "";
-      if (toHTML) {
+      if (isRepeater && toHTML) {
         const prevId = ctx.renderingNodeId;
+        const prevChildIds = ctx.repeaterChildIds;
         ctx.renderingNodeId = nodeId;
+        ctx.repeaterChildIds = childIds as string[];
         try {
-          inner = toHTML(node.props || {}, childrenHTML, ctx);
+          inner = toHTML(node.props || {}, "", ctx);
         } finally {
           ctx.renderingNodeId = prevId;
+          ctx.repeaterChildIds = prevChildIds;
         }
-      } else if (childrenHTML) {
-        inner = `<div>${childrenHTML}</div>`;
+      } else {
+        const childrenHTML = childIds
+          .map(id => renderNode(id as string, nodes, resolver, ctx))
+          .filter(Boolean)
+          .join("\n");
+        if (toHTML) {
+          const prevId = ctx.renderingNodeId;
+          ctx.renderingNodeId = nodeId;
+          try {
+            inner = toHTML(node.props || {}, childrenHTML, ctx);
+          } finally {
+            ctx.renderingNodeId = prevId;
+          }
+        } else if (childrenHTML) {
+          inner = `<div>${childrenHTML}</div>`;
+        }
       }
       if (!inner) return "";
-      const condData = JSON.stringify(conditions || []).replace(/"/g, "&quot;");
       const logic = node.props.conditionLogic || "all";
+      // Prefer the new conditionGroups shape (an array of {logic, conditions}).
+      // Fall back to flat conditions[] for legacy nodes. Either attr is consumed
+      // by getConditionEvalScript at hydration time.
+      if (conditionGroups && conditionGroups.length > 0) {
+        const groupsData = JSON.stringify(conditionGroups).replace(/"/g, "&quot;");
+        return `<div data-ph-condition-groups="${groupsData}" style="display:none">${inner}</div>`;
+      }
+      const condData = JSON.stringify(conditions || []).replace(/"/g, "&quot;");
       return `<div data-ph-conditions="${condData}" data-ph-condition-logic="${logic}" style="display:none">${inner}</div>`;
     }
     // result === true: render normally, fall through
@@ -70,6 +124,24 @@ export function renderNode(
 
   // Render children + linked nodes
   const childIds = [...(node.nodes || []), ...Object.values(node.linkedNodes || {})];
+
+  // Data nodes own their own iteration — pass raw child IDs through ctx and
+  // let Data.toHTML render children per-item (with `ctx.currentItem` set).
+  // Pre-rendering once here would lose per-item interpolation.
+  const isRepeater = typeName === "Data";
+  if (isRepeater && toHTML) {
+    const prevId = ctx.renderingNodeId;
+    const prevChildIds = ctx.repeaterChildIds;
+    ctx.renderingNodeId = nodeId;
+    ctx.repeaterChildIds = childIds as string[];
+    try {
+      return toHTML(node.props || {}, "", ctx);
+    } finally {
+      ctx.renderingNodeId = prevId;
+      ctx.repeaterChildIds = prevChildIds;
+    }
+  }
+
   const childrenHTML = childIds
     .map(id => renderNode(id as string, nodes, resolver, ctx))
     .filter(Boolean)

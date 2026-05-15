@@ -15,6 +15,7 @@ import {
   ariaAttrs,
   collectClasses,
   escapeAttr,
+  handlerAttrs,
   staticClasses,
   tag,
   type ToHTMLFn,
@@ -41,6 +42,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const attrs: Record<string, any> = {
     class: wrapCls || undefined,
     ...aria,
+    ...handlerAttrs(props),
   };
   if (hasLabel) {
     attrs.role = "img";

@@ -6,9 +6,13 @@
  */
 
 import parse from "style-to-object";
+import { migrateActions } from "./action";
 import { getCdnUrl, generateSrcSet, generateSizes, inferFixedSizesFromClassName } from "./cdn";
 import { isCSSAnimation, getCSSAnimationProps } from "./animations/animations";
 import { purifyToTailwind } from "./tailwind/daisyuiToTailwind";
+import { replaceVariables } from "./design/variables";
+import { BUILTIN_STATE_MODIFIERS } from "./conditions/stateBuiltinModifiers";
+import type { ComponentModifier } from "../define/types";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -36,6 +40,30 @@ export interface StaticRenderContext {
   hasLoadActions?: boolean;
   /** Server-fetched connector data — enables connector-backed condition eval at SSR. */
   connectorData?: Record<string, { bindings: Record<string, any[]> }> | null;
+  /**
+   * Current repeater item context. Set by `Data.toHTML` around each iteration's
+   * child render pass so component toHTMLs can resolve `{{item.*}}` tokens via
+   * `interpolate()`. Null at the top level.
+   */
+  currentItem?: Record<string, any> | null;
+  /**
+   * Set by the walker when entering a `Data` node — Data.toHTML reads these IDs
+   * and renders them once per resolved item via `ctx.renderChildren`. The
+   * walker skips its normal pre-render for Data so per-item interpolation works.
+   */
+  repeaterChildIds?: string[];
+  /**
+   * Optional request hints supplied by the host (Next.js page) for SSR
+   * condition resolution: cookie-derived auth state, UA-derived viewport
+   * class, parsed URL query. Lets `auth` / `device` / `url-param`
+   * conditions resolve definitively at SSR instead of deferring to the
+   * client re-eval script.
+   */
+  requestContext?: {
+    isAuthenticated?: boolean;
+    userAgentClass?: "mobile" | "tablet" | "desktop";
+    urlParams?: Record<string, string>;
+  };
 }
 
 /** Signature every `.craft.toHTML` must implement */
@@ -174,6 +202,28 @@ export function handlerAttrs(props: Record<string, any>): Record<string, string 
   return out;
 }
 
+/**
+ * Pass `props.attrs` (plain HTML attribute map) through to the rendered tag.
+ * Mirrors the Container.toHTML inline passthrough; extracted so Text /
+ * Button / Link / Image / FormElement can share the same semantics.
+ *
+ * Only string/number/boolean values are accepted (matches what React
+ * DOM attribute serialization tolerates).
+ */
+export function attrsPassthrough(
+  props: Record<string, any>
+): Record<string, string | number | boolean | undefined> {
+  const a = props.attrs;
+  if (!a || typeof a !== "object") return {};
+  const out: Record<string, string | number | boolean> = {};
+  for (const [k, v] of Object.entries(a as Record<string, unknown>)) {
+    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+      out[k] = v as string | number | boolean;
+    }
+  }
+  return out;
+}
+
 // ─── Class resolution ───────────────────────────────────────────────────────
 
 /** Responsive prefix regex — matches md:, lg:, xl:, 2xl: */
@@ -287,6 +337,183 @@ export function getInlineStyle(props: Record<string, any>): string {
   }
 
   return styleObjToString(styleObj);
+}
+
+// ─── Multi-action stamping ──────────────────────────────────────────────────
+
+/**
+ * Emit the full `props.action` chain (normalized via `migrateActions`) as a
+ * `data-ph-actions` JSON attribute. The vanilla static runtime dispatches the
+ * chain in click order; the first link action also stays on the `<a href>`
+ * fallback for no-JS / right-click semantics, so emitting it here doesn't
+ * double-fire (the runtime dedupes against the anchor href on click).
+ *
+ * Load-trigger actions are filtered out — they're separately stamped as
+ * `data-ph-load-show` / `data-ph-load-set-state` and fire on mount, not
+ * click. Including them here would re-fire on every click.
+ */
+export function actionsAttr(props: Record<string, any>): Record<string, string | undefined> {
+  const all = migrateActions(props);
+  const actions = all.filter((a: any) => a?.trigger !== "load");
+  if (!actions.length) return {};
+  return { "data-ph-actions": JSON.stringify(actions) };
+}
+
+// ─── State-binding attributes ───────────────────────────────────────────────
+
+/** Emit `data-state-binding` for `<FormElement>`-style state-binding props. */
+export function stateBindingAttrs(props: Record<string, any>): Record<string, string | undefined> {
+  const b = props.stateBinding;
+  if (!b || typeof b !== "object" || !b.key) return {};
+  return { "data-state-binding": JSON.stringify(b) };
+}
+
+/**
+ * Resolve a modifier name to its class list. Mirrors
+ * `applyStateModifiers` — reads the viewer-safe builtin registry and any
+ * site-saved overrides on `ROOT.props.modifiers[<componentName>]`.
+ */
+function resolveModifierClasses(
+  componentName: string,
+  modifierName: string,
+  rootProps: any
+): string {
+  const builtin = BUILTIN_STATE_MODIFIERS[componentName] ?? [];
+  const siteSaved =
+    (rootProps?.modifiers?.[componentName] as ComponentModifier[] | undefined) ?? [];
+  const available = builtin.concat(siteSaved);
+  const mod = available.find(m => m.name === modifierName);
+  if (!mod) return "";
+  if (mod.classes) return mod.classes;
+  return mod.name;
+}
+
+/**
+ * Emit `data-state-modifiers` for state-driven className modifier rules.
+ *
+ * The runtime is state-table-free: we resolve modifier *names* to Tailwind
+ * class strings here at SSR, so the emitted payload is
+ * `[{ conditions, classes: "<class string>" }, ...]`. The runtime just
+ * toggles the resolved class string when the binding's conditions pass.
+ *
+ * Resolves against the same `BUILTIN_STATE_MODIFIERS` registry the React
+ * path uses, plus any site-saved overrides on
+ * `ROOT.props.modifiers[<componentName>]`. The component name comes from
+ * `ctx.renderingNodeId` (set by the walker).
+ */
+export function stateModifiersAttrs(
+  props: Record<string, any>,
+  ctx?: StaticRenderContext
+): Record<string, string | undefined> {
+  const m = props.stateModifiers;
+  if (!Array.isArray(m) || m.length === 0) return {};
+  // Without ctx we can't resolve names → classes; emit the raw shape (legacy
+  // behavior). Every component-side caller now threads ctx through.
+  if (!ctx) return { "data-state-modifiers": JSON.stringify(m) };
+
+  const node = ctx.renderingNodeId ? ctx.nodes?.[ctx.renderingNodeId] : null;
+  const componentName =
+    (node && (typeof node.type === "string" ? node.type : node.type?.resolvedName)) || "Container";
+  const rootProps = ctx.nodes?.["ROOT"]?.props || {};
+
+  const resolved = m.map((binding: any) => {
+    const classes = Array.isArray(binding?.modifiers)
+      ? binding.modifiers
+          .map((name: string) => resolveModifierClasses(componentName, name, rootProps))
+          .filter(Boolean)
+          .join(" ")
+      : "";
+    return { conditions: binding?.conditions || [], classes };
+  });
+  // Filter bindings with no resolved classes (unknown modifier names) so the
+  // runtime doesn't iterate dead bindings.
+  const filtered = resolved.filter(b => b.classes);
+  if (!filtered.length) return {};
+  return { "data-state-modifiers": JSON.stringify(filtered) };
+}
+
+/** Emit `data-state-style-bindings` for state-driven inline style bindings. */
+export function stateStyleBindingsAttrs(
+  props: Record<string, any>
+): Record<string, string | undefined> {
+  const m = props.stateStyleBindings;
+  if (!Array.isArray(m) || m.length === 0) return {};
+  return { "data-state-style-bindings": JSON.stringify(m) };
+}
+
+/** Emit `data-computed-state-bindings` for compute-on-mount state writes. */
+export function computedStateBindingsAttrs(
+  props: Record<string, any>
+): Record<string, string | undefined> {
+  const m = props.computedStateBindings;
+  if (!Array.isArray(m) || m.length === 0) return {};
+  return { "data-computed-state-bindings": JSON.stringify(m) };
+}
+
+/** Emit `data-visibility-state-key` so the runtime can toggle the node. */
+export function visibilityStateKeyAttr(
+  props: Record<string, any>
+): Record<string, string | undefined> {
+  const k = props.visibilityStateKey;
+  if (typeof k !== "string" || !k) return {};
+  return { "data-visibility-state-key": k };
+}
+
+/** Emit `data-publish-state-keys` so connector-backed nodes can publish meta. */
+export function publishStateKeysAttr(
+  props: Record<string, any>
+): Record<string, string | undefined> {
+  const k = props.dataSource?.publishStateKeys;
+  if (!k || typeof k !== "object") return {};
+  return { "data-publish-state-keys": JSON.stringify(k) };
+}
+
+/** All state-related data-attrs in one spread. */
+export function stateAttrs(
+  props: Record<string, any>,
+  ctx?: StaticRenderContext
+): Record<string, string | undefined> {
+  return {
+    ...stateBindingAttrs(props),
+    ...stateModifiersAttrs(props, ctx),
+    ...stateStyleBindingsAttrs(props),
+    ...computedStateBindingsAttrs(props),
+    ...visibilityStateKeyAttr(props),
+    ...publishStateKeysAttr(props),
+  };
+}
+
+// ─── Variable interpolation ─────────────────────────────────────────────────
+
+/**
+ * Build a minimal interpolation context for static toHTML. The walker exposes
+ * the full node tree via `ctx.nodes`; ROOT props carry company / theme /
+ * variables / pageMedia which `replaceVariables` walks. Item context is
+ * threaded through when toHTML is called inside a repeater (Wave 3).
+ */
+export function buildInterpContext(ctx: StaticRenderContext): Record<string, any> {
+  return ctx.nodes?.["ROOT"]?.props || {};
+}
+
+/**
+ * Run `replaceVariables` against a string using the walker's ROOT props.
+ * Returns the input unchanged if it has no `{{...}}` tokens (cheap fast-path)
+ * or if interpolation fails. Item-scoped tokens (`{{item.*}}`) resolve to
+ * empty string until repeater iteration lands in Wave 3.
+ */
+export function interpolate(
+  text: string | null | undefined,
+  ctx: StaticRenderContext,
+  item: Record<string, any> | null = null
+): string {
+  if (typeof text !== "string" || !text) return "";
+  if (!text.includes("{{")) return text;
+  const rootProps = buildInterpContext(ctx);
+  // Fall back to ctx.currentItem when caller didn't pass an explicit item —
+  // Data.toHTML sets ctx.currentItem around each iteration so component
+  // toHTMLs resolve `{{item.*}}` without each one being item-aware.
+  const resolvedItem = item ?? ctx.currentItem ?? null;
+  return replaceVariables(text, rootProps, resolvedItem);
 }
 
 // Re-export for component convenience

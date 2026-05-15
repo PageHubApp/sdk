@@ -1,8 +1,10 @@
 import { migrateActions } from "../../utils/action";
 import {
+  actionsAttr,
   ariaAttrs,
   getInlineStyle,
   handlerAttrs,
+  stateAttrs,
   staticClasses,
   tag,
   type ToHTMLFn,
@@ -43,6 +45,8 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     id: props.id || props.anchor || undefined,
     ...ariaAttrs(props),
     ...handlerAttrs(props),
+    ...(t === "form" ? {} : actionsAttr(props)),
+    ...stateAttrs(props, ctx),
     action: t === "form" ? props.action || "" : undefined,
     method: t === "form" ? props.method || "POST" : undefined,
     open: t === "details" && props.open ? "" : undefined,

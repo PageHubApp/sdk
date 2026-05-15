@@ -5,7 +5,7 @@ import React from "react";
 import { TbContainer } from "react-icons/tb";
 import { defineComponent } from "../../define/defineComponent";
 import { Background } from "./Background";
-import { staticClasses, getInlineStyle, tag, ariaAttrs, type ToHTMLFn } from "../../utils/staticHtml";
+import { staticClasses, getInlineStyle, tag, ariaAttrs, handlerAttrs, type ToHTMLFn } from "../../utils/staticHtml";
 import { resolveTheme } from "../../utils/design/resolveTheme";
 
 const toHTML: ToHTMLFn = (props, children, ctx) => {
@@ -16,6 +16,7 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
       class: staticClasses(props, bgCtx) || undefined,
       style: getInlineStyle(props) || undefined,
       ...ariaAttrs(props),
+      ...handlerAttrs(props),
     },
     children
   );

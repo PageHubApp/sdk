@@ -14,6 +14,10 @@ import { PH_HORIZONTAL_SCROLL_SCRIPT } from "./runtime/horizontalScroll";
 import { PH_SCROLL_OBSERVER_SCRIPT } from "./runtime/intersectionObserver";
 import { PH_OVERFLOW_SITE_SCRIPT } from "./runtime/overflowUx";
 import { PH_SCROLL_TIMELINE_SCRIPT } from "./runtime/scrollTimeline";
+import {
+  getCartBridgeScript,
+  getStaticPublishRuntimeScript,
+} from "./runtime/staticPublishRuntime";
 import { generateThemeVars } from "./themeCss";
 import {
   RENDER_INVALID_TREE_MESSAGE,
@@ -22,6 +26,46 @@ import {
   type SerializedNodes,
 } from "./types";
 import { renderNode } from "./walker";
+
+/**
+ * Inline `<script>` that seeds `window.__PH_AUTH__` (from `ph-customer`
+ * cookie presence), `window.__PH_COMPANY__` (from `ROOT.props.company`), and
+ * `window.__PH_CONNECTOR__` (from server-fetched connector data) so the
+ * condition evaluator's `auth` / `company` / `connector` branches see real
+ * data instead of fail-open `null`. Emitted only when the page actually
+ * carries client-side conditions (parity with `getConditionEvalScript`).
+ *
+ * Cookie detection is presence-only — the JWT itself is HttpOnly and lives
+ * in `ph-customer`, but a parallel non-HttpOnly marker is set by the
+ * `/api/customer/verify` flow. For the static export we settle for "cookie
+ * present = logged-in" which matches what `setAuthState` ends up writing
+ * on the React routes. Pages that need finer-grained customer fields
+ * (orderCount etc.) hydrate via the client data fetcher.
+ */
+function buildConditionContextSeedScript(
+  company: Record<string, any> | undefined,
+  connectorData: Record<string, { bindings: Record<string, any[]> }> | null
+): string {
+  const safeJSON = (v: any) =>
+    JSON.stringify(v ?? null).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
+  const companyLit = company && typeof company === "object" ? safeJSON(company) : "null";
+  const connectorLit = connectorData ? safeJSON(connectorData) : "null";
+  return `<script>
+(function(){
+  try {
+    var hasCookie = false;
+    try {
+      hasCookie = (document.cookie || '').split(';').some(function(c){
+        return c.trim().indexOf('ph-customer=') === 0;
+      });
+    } catch (e) {}
+    window.__PH_AUTH__ = { status: hasCookie ? 'logged-in' : 'logged-out' };
+    window.__PH_COMPANY__ = ${companyLit};
+    window.__PH_CONNECTOR__ = ${connectorLit};
+  } catch (e) {}
+})();
+</script>`;
+}
 
 function renderInvalidTreeResult(
   opts: Pick<
@@ -96,6 +140,9 @@ export function renderToHTML(
     components: componentDefs = [],
     pureTailwind = false,
     connectorData = null,
+    requestContext,
+    runtime: includeRuntime = false,
+    pageId = "",
   } = options;
 
   // 1. Decompress
@@ -148,6 +195,7 @@ export function renderToHTML(
         .join("\n"),
     pureTailwind,
     connectorData,
+    requestContext,
   };
 
   // 5a. Preload referenced icon SVGs so Button.craft / ListItem.craft can
@@ -213,8 +261,22 @@ export function renderToHTML(
     (ctx.hasLoadActions || ctx.hasClientConditions
       ? getLoadActionScript({ mobileBreakpoint: rootProps.theme?.breakpoints?.md })
       : "") +
+    // Seed window globals the condition evaluator's `auth` / `company` /
+    // `connector` branches read. Without this seed those branches would
+    // see `null` and fail-open — auth-gated content would briefly leak.
+    // Emitted only when client-side conditions exist (matches the
+    // condition-eval script's emission gate).
+    (ctx.hasClientConditions
+      ? buildConditionContextSeedScript(rootProps.company, options.connectorData ?? null)
+      : "") +
     (ctx.hasClientConditions
       ? getConditionEvalScript({ mobileBreakpoint: rootProps.theme?.breakpoints?.md })
+      : "") +
+    (includeRuntime
+      ? getStaticPublishRuntimeScript({
+          mobileBreakpoint: rootProps.theme?.breakpoints?.md,
+          pageId,
+        })
       : "");
 
   // 10. Wrap in document
@@ -223,6 +285,7 @@ export function renderToHTML(
       .map(url => `<link rel="stylesheet" href="${url}" />`)
       .join("\n    ");
     const themeVars = includeThemeVars ? themeCSS : "";
+    const cartBridge = includeRuntime ? getCartBridgeScript({ pageId }) : "";
 
     const doc = `<!DOCTYPE html>
 <html lang="en">
@@ -230,6 +293,7 @@ export function renderToHTML(
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${escapeHTML(title || rootProps.seo?.title || "")}</title>
+    ${cartBridge}
     ${fontLinks}
     ${extraHead}
     <style>

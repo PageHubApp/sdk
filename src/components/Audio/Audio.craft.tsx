@@ -5,7 +5,7 @@ import React from "react";
 import { TbMusic } from "react-icons/tb";
 import { defineComponent } from "../../define/defineComponent";
 import { Audio } from "./Audio";
-import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../../utils/staticHtml";
+import { staticClasses, tag, ariaAttrs, handlerAttrs, type ToHTMLFn } from "../../utils/staticHtml";
 
 const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const audioUrl = props.src ?? props.audioUrl;
@@ -32,6 +32,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
       role: "region",
       "aria-label": title || `Audio: ${audioUrl}`,
       ...ariaAttrs(props),
+      ...handlerAttrs(props),
     },
     audio
   );

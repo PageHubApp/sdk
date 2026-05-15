@@ -17,13 +17,20 @@
  * in the enclosing scope. Caller wraps in its own IIFE + run loop.
  *
  * Supported condition types: `url-param`, `device`, `form-field`,
- * `localStorage`, `state`. Any other type returns `true` (can't evaluate
- * client-side without server data — connector/company/auth/item — graceful
- * degrade to "show / fire").
+ * `localStorage`, `state`, `auth`, `company`, `connector`. `item` returns
+ * `true` defensively — item-context conditions only make sense inside a
+ * repeater iteration, which the static renderer resolves at SSR time before
+ * any node ever reaches this eval pass.
  *
  * `state` reads from `window.__PH_STATE__` (seeded by the load-action script)
  * and treats missing keys as `null`, then runs the operator the author asked
  * for — same semantics as `evaluate.ts` so static and React routes agree.
+ *
+ * `auth` reads from `window.__PH_AUTH__` (seeded by an inline script emitted
+ * by `renderToHTML.ts` that reads the `ph-customer` cookie). `company` reads
+ * from `window.__PH_COMPANY__` (serialized rootProps.company). `connector`
+ * reads from `window.__PH_CONNECTOR__` (serialized connectorData, when
+ * present). All three walk dot-paths matching `evaluate.ts`.
  */
 export function buildConditionEvalFns({
   mobileBreakpoint = 768,
@@ -33,6 +40,24 @@ export function buildConditionEvalFns({
   var __PH_PARAMS = new URLSearchParams(window.location.search);
   var __PH_VW = window.innerWidth;
   var __PH_MOBILE = ${safeMobile};
+  function walkPath(obj, parts) {
+    var value = obj;
+    for (var i = 0; i < parts.length; i++) {
+      var part = parts[i];
+      if (value && typeof value === 'object') {
+        if (Array.isArray(value) && /^\\d+$/.test(part)) {
+          value = value[parseInt(part, 10)];
+        } else if (part in value) {
+          value = value[part];
+        } else {
+          return undefined;
+        }
+      } else {
+        return undefined;
+      }
+    }
+    return value;
+  }
   function applyOp(actual, op, expected) {
     if (op === 'exists') return actual != null && actual !== '';
     if (op === 'not-exists') return actual == null || actual === '';
@@ -70,6 +95,46 @@ export function buildConditionEvalFns({
       var sv = hasEntry ? s[c.key].value : null;
       return applyOp(sv, c.operator, c.value);
     }
+    if (c.type === 'auth') {
+      var auth = window.__PH_AUTH__ || null;
+      if (!auth) {
+        if (c.operator === 'not-exists') return true;
+        if (c.operator === 'exists') return false;
+        return false;
+      }
+      var av = walkPath(auth, c.key.split('.'));
+      return applyOp(av == null ? null : String(av), c.operator, c.value);
+    }
+    if (c.type === 'company') {
+      var company = window.__PH_COMPANY__ || null;
+      if (!company) {
+        if (c.operator === 'not-exists') return true;
+        if (c.operator === 'exists') return false;
+        return false;
+      }
+      var cv = walkPath(company, c.key.split('.'));
+      return applyOp(cv == null ? null : String(cv), c.operator, c.value);
+    }
+    if (c.type === 'connector') {
+      var conn = window.__PH_CONNECTOR__ || null;
+      if (!conn) {
+        if (c.operator === 'not-exists') return true;
+        if (c.operator === 'exists') return false;
+        return false;
+      }
+      var nv = walkPath(conn, c.key.split('.'));
+      if (Array.isArray(nv) && (c.operator === 'exists' || c.operator === 'not-exists')) {
+        return applyOp(nv.length > 0 ? 'true' : null, c.operator, c.value);
+      }
+      if (Array.isArray(nv) && (c.operator === 'greater-than' || c.operator === 'less-than' || c.operator === 'equals')) {
+        return applyOp(String(nv.length), c.operator, c.value);
+      }
+      return applyOp(nv == null ? null : String(nv), c.operator, c.value);
+    }
+    // 'item' conditions only make sense inside a repeater. The static renderer
+    // resolves them DURING render (inside the iteration), so the client should
+    // never see one. Defensive fail-open if a stray one slips through.
+    if (c.type === 'item') return true;
     return true;
   }
   function evalAll(conds, logic) {
@@ -108,6 +173,12 @@ export function getConditionEvalScript({
       var logic = el.getAttribute('data-ph-condition-logic') || 'all';
       if (evalAll(conds, logic)) el.style.display = '';
     });
+    // New conditionGroups shape — preferred by walker.ts for nodes that use
+    // the grouped form. evalGroups treats groups as OR-of-AND.
+    document.querySelectorAll('[data-ph-condition-groups]').forEach(function(el) {
+      var groups = JSON.parse(el.getAttribute('data-ph-condition-groups'));
+      if (evalGroups(groups)) el.style.display = '';
+    });
   }
   // Wait for DOMContentLoaded so the load-action script has populated
   // window.__PH_STATE__ before state conditions read. End-of-body scripts
@@ -118,6 +189,15 @@ export function getConditionEvalScript({
   } else {
     run();
   }
+  // Re-run after window.load + a couple of timeouts. Next pages-router
+  // hydration may replace DOM nodes inside dangerouslySetInnerHTML
+  // subtrees, restoring the SSR display:none. run() is idempotent — once a
+  // node passes its conditions and gets display:'', re-running is a no-op.
+  if (document.readyState !== 'complete') {
+    window.addEventListener('load', run, { once: true });
+  }
+  setTimeout(run, 500);
+  setTimeout(run, 1500);
 })();
 </script>`;
 }
