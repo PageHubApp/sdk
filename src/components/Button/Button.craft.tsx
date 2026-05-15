@@ -91,7 +91,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         .filter(Boolean)
         .join(" ");
       collectClasses(ic, ctx);
-      iconHTML = `<span class="${escapeAttr(ic)}" aria-hidden="true"><svg fill="currentColor" viewBox="${entry.viewBox}" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">${entry.svg}</svg></span>`;
+      iconHTML = `<span class="${escapeAttr(ic)}" aria-hidden="true"><svg fill="currentColor" viewBox="${entry.viewBox}" xmlns="http://www.w3.org/2000/svg" class="ph-icon-svg">${entry.svg}</svg></span>`;
     }
   }
 

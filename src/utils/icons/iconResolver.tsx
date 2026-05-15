@@ -66,8 +66,7 @@ export function renderIconSvg(entry: IconSvgEntry): React.ReactElement {
   return React.createElement("svg", {
     dangerouslySetInnerHTML: { __html: entry.svg },
     ...(hasPreserved ? preserved : { fill: "currentColor" }),
-    width: "100%",
-    height: "100%",
+    className: "ph-icon-svg",
     viewBox: entry.viewBox,
     xmlns: "http://www.w3.org/2000/svg",
   });
@@ -104,7 +103,7 @@ export function useResolvedIcon(
     // inherit from the symbol. Keep fill="currentColor" as a safe fallback for
     // older sprites rebuilt pre-fix.
     return (
-      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+      <svg className="ph-icon-svg" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
         <use href={`#${parsed.name}`} />
       </svg>
     );

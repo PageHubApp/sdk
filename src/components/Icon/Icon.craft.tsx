@@ -54,7 +54,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   if (value && typeof value === "string" && value.startsWith("ref-icon:")) {
     const entry = resolveIconSvgSync(value);
     if (entry) {
-      inner = `<svg fill="currentColor" viewBox="${escapeAttr(entry.viewBox)}" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">${entry.svg}</svg>`;
+      inner = `<svg fill="currentColor" viewBox="${escapeAttr(entry.viewBox)}" xmlns="http://www.w3.org/2000/svg" class="ph-icon-svg">${entry.svg}</svg>`;
     }
   }
   // ref-image: static export relies on runtime media resolution — skipped here, matching Button.craft toHTML parity.
