@@ -40,7 +40,13 @@ export function generateThemeVars(rootProps: Record<string, any>): string {
     .filter(Boolean)
     .join("\n");
 
-  return `:root {\n${paletteVars}\n${dsVars}\n}`;
+  // `.ph-icon-svg` lets the SVG fill its sized parent (e.g. `w-6 h-6` span)
+  // once CSS lands. Class-based instead of width="100%" attribute so the SVG
+  // falls back to viewBox-intrinsic size (24×24) during the FOUC window
+  // instead of the browser default (300×150 or larger). Shipped on every page.
+  const baseUtilities = `.ph-icon-svg{width:100%;height:100%;display:block}`;
+
+  return `:root {\n${paletteVars}\n${dsVars}\n}\n${baseUtilities}`;
 }
 
 /** `:root { … }` from ROOT/Background theme (palette + styleGuide) for static hand-off zips. */
