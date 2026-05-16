@@ -125,71 +125,31 @@ var PAGE_ID = ${pageIdLit};
 var PUBLIC_DATA_ENDPOINT = ${endpointLit};
 var MOBILE = ${mobileBreakpoint};
 
-// ─── State registry — Alpine.store('ph') is the single source of truth ─
-// Alpine wraps the store value in a reactive Proxy on creation, so any
-// Alpine.effect that reads store.entries[k] reruns automatically when that
-// entry mutates. Subscribers (legacy DOM-walk attach loops, future
-// directives) go through subscribe() below, which is implemented on top of
-// Alpine.effect.
+// ─── State registry — Alpine.store('ph') is the single source of truth ──
+// See docs/sdk/alpine-runtime.md for the store / directive / root-selector
+// model; this file just registers and uses it.
 var Alpine = window.Alpine;
-// data-ph-* attributes resolve as Alpine directives via the prefix swap
-// (e.g. data-ph-actions matches the 'actions' directive). data-state-*,
-// data-visibility-*, data-publish-*, data-computed-* sit outside the prefix
-// and are aliased per-attribute via Alpine.mapAttributes by the agent that
-// owns those directives.
 Alpine.prefix('data-ph-');
 Alpine.store('ph', { entries: Object.create(null), revision: 0 });
 var _store = Alpine.store('ph');
-// Alpine.start() only walks subtrees rooted at elements matching
-// addRootSelector() callbacks (default: [data-ph-data]). Our SSR HTML never
-// emits data-ph-data, so we register the directive-owning attributes
-// themselves as roots — Alpine will querySelectorAll(joined), initTree each,
-// and the MutationObserver auto-picks up late-inserted elements with the
-// same attribute. The directive names are bare ('actions', 'form'); Alpine's
-// prefix maps the attribute names to them.
-Alpine.addRootSelector(function(){ return '[data-ph-actions]'; });
-Alpine.addRootSelector(function(){ return '[data-ph-form]'; });
 var _shownStack = [];
 var _escInstalled = false;
 
-// ─── data-state-* / data-visibility-* / data-publish-* / data-computed-* ─
-// These attributes sit OUTSIDE the data-ph- prefix. We rewrite the attribute
-// names to data-ph-<directive-suffix> so Alpine's directive resolver picks
-// them up. The original attribute remains in the DOM (Alpine renames only the
-// in-memory descriptor used for directive lookup; el.getAttribute still
-// returns the original). Each directive body reads via getAttribute, parses
-// JSON manually, and wraps reactive reads in effect(). No Alpine expression
-// evaluation — author-provided strings are state keys / JSON envelopes.
+var STATE_ATTRS = [
+  'data-state-text','data-state-show-when-truthy','data-state-style-bindings',
+  'data-state-modifiers','data-state-binding','data-visibility-state-key',
+  'data-publish-state-keys','data-computed-state-bindings','data-state-inputs'
+];
+var ROOT_ATTRS = STATE_ATTRS.concat(['data-ph-actions','data-ph-form','data-ph-cart-items']);
 Alpine.mapAttributes(function(pair){
-  var n = pair.name;
-  if (n === 'data-state-text' ||
-      n === 'data-state-show-when-truthy' ||
-      n === 'data-state-style-bindings' ||
-      n === 'data-state-modifiers' ||
-      n === 'data-state-binding' ||
-      n === 'data-visibility-state-key' ||
-      n === 'data-publish-state-keys' ||
-      n === 'data-computed-state-bindings') {
-    return { name: 'data-ph-' + n.slice('data-'.length), value: pair.value };
+  if (STATE_ATTRS.indexOf(pair.name) !== -1) {
+    return { name: 'data-ph-' + pair.name.slice('data-'.length), value: pair.value };
   }
   return pair;
 });
-
-// Alpine's initial document walk only descends roots that match a registered
-// root selector (default: [data-ph-data], inherited from x-data via prefix
-// swap). The SSR static-publish HTML has no data-ph-data wrapper — directives
-// sit directly on individual elements. Register one root selector per state-*
-// attribute so the initial walk picks them up. (Dynamically added elements
-// are handled by Alpine's MutationObserver, which calls initTree on every
-// added node regardless of root selectors.)
-Alpine.addRootSelector(function(){ return '[data-state-text]'; });
-Alpine.addRootSelector(function(){ return '[data-state-show-when-truthy]'; });
-Alpine.addRootSelector(function(){ return '[data-state-style-bindings]'; });
-Alpine.addRootSelector(function(){ return '[data-state-modifiers]'; });
-Alpine.addRootSelector(function(){ return '[data-state-binding]'; });
-Alpine.addRootSelector(function(){ return '[data-visibility-state-key]'; });
-Alpine.addRootSelector(function(){ return '[data-publish-state-keys]'; });
-Alpine.addRootSelector(function(){ return '[data-computed-state-bindings]'; });
+for (var _ri=0; _ri<ROOT_ATTRS.length; _ri++) (function(a){
+  Alpine.addRootSelector(function(){ return '[' + a + ']'; });
+})(ROOT_ATTRS[_ri]);
 
 Alpine.directive('state-text', function(el, _dir, utils){
   var key = el.getAttribute('data-state-text');
@@ -446,11 +406,8 @@ function setVisibility(key, value, writer){
 function listStates(){
   var out = []; for (var k in _store.entries) out.push(_store.entries[k]); return out;
 }
-// subscribe — keyed: rerun fn whenever entries[key] mutates; global: rerun
-// whenever store.revision bumps (which setState does on every distinct write).
-// Effects fire synchronously on first call, matching the existing "update();
-// subscribe(key, update);" idiom (the explicit pre-call becomes redundant but
-// harmless because update bodies are idempotent).
+// subscribe — keyed: rerun fn on entries[key] mutation; global: rerun on
+// store.revision bump. First call fires synchronously.
 function subscribe(keyOrFn, fn){
   var runner;
   if (typeof keyOrFn === 'function') {
@@ -519,16 +476,8 @@ function actionGatePasses(action){
   return evalGroups(action.conditions) !== false;
 }
 
-// ─── Condition directives (supersedes the standalone getConditionEvalScript IIFE) ─
-// SSR emits the wrapper as <div data-ph-conditions="…" style="display:none">,
-// and the directive flips display to '' when evalAll passes. Reading
-// store.revision inside Alpine.effect makes conditions reactive to any
-// setState write — load-trigger script seeds run synchronously before init,
-// state writes from actions / forms / refetch all re-trigger automatically.
-// evalAll / evalGroups are defined by buildConditionEvalFns above and read
-// from window.__PH_STATE__ (mirrored by setState) + the captured params /
-// viewport. Attribute names come straight from walker.ts: 'conditions' and
-// 'condition-groups' resolve via Alpine.prefix('data-ph-') set at boot.
+// SSR emits <div data-ph-conditions="…" style="display:none">; this flips
+// display to '' when evalAll passes. _store.revision read makes it reactive.
 Alpine.directive('conditions', function(el, _, opts){
   var conds; try { conds = JSON.parse(el.getAttribute('data-ph-conditions') || '[]'); } catch(e){ conds = []; }
   var logic = el.getAttribute('data-ph-condition-logic') || 'all';
@@ -903,11 +852,6 @@ function cartCheckout(){
   }).then(function(r){ return r.json(); }).then(function(d){ if (d && d.url) window.location.href = d.url; }).catch(function(){});
 }
 
-// data-ph-actions → Alpine 'actions' directive (resolved via the
-// data-ph- prefix). Alpine walks the DOM on start + auto-rebinds on later
-// MutationObserver hits, so the previous attachActionHandlers DOM walk +
-// __phBoundActions expando are gone. Listener teardown rides on Alpine's
-// cleanup() utility so element removal frees the closures cleanly.
 Alpine.directive('actions', function(el, _meta, _ctx){
   var cleanup = _ctx.cleanup;
   var raw = el.getAttribute('data-ph-actions');
@@ -933,8 +877,6 @@ Alpine.directive('actions', function(el, _meta, _ctx){
     };
     el.addEventListener('click', onClick);
   }
-  // Per-element scratch for hover snapshots. Shared between enter/leave
-  // handlers via closure (replaces the old __phBoundActions expando model).
   var hoverSnap = {};
   if (enterActions.length) {
     onEnter = function(e){
@@ -983,11 +925,7 @@ Alpine.directive('actions', function(el, _meta, _ctx){
 });
 
 function readItemContext(el){
-  // Walk up to find the nearest data-item-id (repeater item). Item context
-  // is needed for interpolation of action.value, link.href, etc. Real item
-  // payload isn't in the DOM — we approximate with { id } only. For the few
-  // surfaces that need full item (add-to-cart), authors stamp data-item-json
-  // on the iteration wrapper. Fallback: undefined.
+  // Walk up to find data-item-json (full item) or data-item-id (just { id }).
   var cur = el;
   while (cur) {
     if (cur.hasAttribute && cur.hasAttribute('data-item-json')) {
@@ -1017,10 +955,6 @@ function parseVariantMap(raw){
 }
 function hasUnresolvedItemToken(s){ return /\\{\\{\\s*item\\./i.test(String(s)); }
 
-// runComputed reads state via getStateValue, which dereferences
-// _store.entries[k] — when called inside an Alpine.effect, the read is
-// auto-tracked and the effect reruns on dependency change. No explicit
-// subscribe callback needed.
 function runComputed(binding, interp){
   var c = binding.compute;
   var t = c && c.type;
@@ -1175,8 +1109,6 @@ Alpine.directive('form', function(form, _meta, _ctx){
 });
 
 // ─── Connector refetch watcher ─────────────────────────────────────
-// Walk a value via dot path, supporting numeric indices (matches React's
-// walkPath fallback). Returns null when path doesn't resolve.
 function walkSlotPath(obj, parts){
   var v = obj;
   for (var i=0; i<parts.length; i++) {
@@ -1188,10 +1120,6 @@ function walkSlotPath(obj, parts){
   }
   return v;
 }
-// Substitute {{slot:<path>}} markers in an HTML string with values from an
-// item. Empty / missing paths → empty string. HTML-escapes string values (the
-// runtime ships raw template HTML; refetched payloads come from JSON and may
-// carry < or & in titles).
 function renderTemplate(tmpl, item){
   return String(tmpl).replace(/\\{\\{slot:([\\w.]+)\\}\\}/g, function(_, path){
     var v = walkSlotPath(item, path.split('.'));
@@ -1244,142 +1172,114 @@ function reconcileItems(wrapper, template, items){
   }
 }
 
-// Cart drawer items — re-renders the list whenever cart:items-json changes.
-// CartItems.craft toHTML emits a placeholder div[data-ph-cart-items] with
-// the empty-state / row class names stamped as data-attrs so the same theme
-// resolves on first paint. Delegated click handlers wire +/-/remove.
 function escapeHTML(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-function attachCartItems(){
-  var nodes = document.querySelectorAll('[data-ph-cart-items]');
-  for (var i=0; i<nodes.length; i++) (function(el){
-    if (el.__phBoundCartItems) return;
-    el.__phBoundCartItems = 1;
-    var cls = function(name, fallback){ return el.getAttribute('data-' + name) || fallback; };
-    var emptyBox = cls('empty-class', 'text-base-content/50 flex flex-col items-center justify-center gap-4 py-16');
-    var emptyText = cls('empty-text', 'Your cart is empty');
-    var emptyTextCls = cls('empty-text-class', 'text-sm');
-    var listCls = cls('list-class', 'flex flex-col gap-4');
-    var rowCls = cls('row-class', 'flex gap-4');
-    var imgCls = cls('image-class', 'size-20 shrink-0 rounded-lg object-cover');
-    var bodyCls = cls('body-class', 'flex flex-1 flex-col gap-1');
-    var titleCls = cls('title-class', 'line-clamp-2 text-sm font-semibold');
-    var variantCls = cls('variant-class', 'text-base-content/60 text-xs');
-    var priceCls = cls('price-class', 'text-primary text-sm font-bold');
-    var controlsCls = cls('controls-class', 'mt-1 flex items-center gap-2');
-    var qtyCls = cls('quantity-class', 'min-w-[1.5rem] text-center text-sm font-medium');
-    var btnCls = cls('control-button-class', 'btn btn-ghost btn-xs btn-circle');
-    var removeBtnCls = cls('remove-button-class', 'btn btn-ghost btn-xs btn-circle text-error ml-auto');
-    var render = function(){
-      var items = readCartFromStorage();
-      if (!items.length) { el.innerHTML = '<div class="' + escapeHTML(emptyBox) + '"><p class="' + escapeHTML(emptyTextCls) + '">' + escapeHTML(emptyText) + '</p></div>'; return; }
-      var html = '<div class="' + escapeHTML(listCls) + '">';
-      for (var j=0; j<items.length; j++) {
-        var line = items[j] || {}; var it = line.item || {}; var qty = Number(line.quantity) || 0;
-        var pid = it.priceId || it.id || '';
-        html += '<div class="' + escapeHTML(rowCls) + '">';
-        if (it.image) html += '<img src="' + escapeHTML(it.image) + '" alt="' + escapeHTML(it.title || '') + '" class="' + escapeHTML(imgCls) + '" />';
-        html += '<div class="' + escapeHTML(bodyCls) + '">';
-        html += '<p class="' + escapeHTML(titleCls) + '">' + escapeHTML(it.title || '') + '</p>';
-        if (it.variantLabel) html += '<p class="' + escapeHTML(variantCls) + '">' + escapeHTML(it.variantLabel) + '</p>';
-        if (it.priceFormatted) html += '<p class="' + escapeHTML(priceCls) + '">' + escapeHTML(it.priceFormatted) + '</p>';
-        html += '<div class="' + escapeHTML(controlsCls) + '">';
-        html += '<button type="button" data-ph-cart-action="dec" data-ph-cart-priceid="' + escapeHTML(pid) + '" class="' + escapeHTML(btnCls) + '">&minus;</button>';
-        html += '<span class="' + escapeHTML(qtyCls) + '">' + qty + '</span>';
-        html += '<button type="button" data-ph-cart-action="inc" data-ph-cart-priceid="' + escapeHTML(pid) + '" class="' + escapeHTML(btnCls) + '">+</button>';
-        html += '<button type="button" data-ph-cart-action="remove" data-ph-cart-priceid="' + escapeHTML(pid) + '" class="' + escapeHTML(removeBtnCls) + '">&times;</button>';
-        html += '</div></div></div>';
-      }
-      html += '</div>';
-      el.innerHTML = html;
-    };
-    if (!el.__phCartClickBound) {
-      el.__phCartClickBound = 1;
-      el.addEventListener('click', function(ev){
-        var btn = ev.target && ev.target.closest && ev.target.closest('[data-ph-cart-action]');
-        if (!btn) return;
-        var pid = btn.getAttribute('data-ph-cart-priceid');
-        var act = btn.getAttribute('data-ph-cart-action');
-        if (!pid) return;
-        var items = readCartFromStorage();
-        var current = 0;
-        for (var k=0; k<items.length; k++) {
-          var lk = items[k].item && (items[k].item.priceId || items[k].item.id);
-          if (lk === pid) { current = Number(items[k].quantity) || 0; break; }
-        }
-        if (act === 'inc') setCartQuantity(pid, current + 1);
-        else if (act === 'dec') setCartQuantity(pid, current - 1);
-        else if (act === 'remove') removeCartItem(pid);
-      });
+var CART_DEFAULTS = {
+  'empty-class': 'text-base-content/50 flex flex-col items-center justify-center gap-4 py-16',
+  'empty-text': 'Your cart is empty',
+  'empty-text-class': 'text-sm',
+  'list-class': 'flex flex-col gap-4',
+  'row-class': 'flex gap-4',
+  'image-class': 'size-20 shrink-0 rounded-lg object-cover',
+  'body-class': 'flex flex-1 flex-col gap-1',
+  'title-class': 'line-clamp-2 text-sm font-semibold',
+  'variant-class': 'text-base-content/60 text-xs',
+  'price-class': 'text-primary text-sm font-bold',
+  'controls-class': 'mt-1 flex items-center gap-2',
+  'quantity-class': 'min-w-[1.5rem] text-center text-sm font-medium',
+  'control-button-class': 'btn btn-ghost btn-xs btn-circle',
+  'remove-button-class': 'btn btn-ghost btn-xs btn-circle text-error ml-auto'
+};
+function renderCartItems(el, c){
+  var items = readCartFromStorage();
+  if (!items.length) return '<div class="' + escapeHTML(c['empty-class']) + '"><p class="' + escapeHTML(c['empty-text-class']) + '">' + escapeHTML(c['empty-text']) + '</p></div>';
+  var parts = ['<div class="' + escapeHTML(c['list-class']) + '">'];
+  for (var j=0; j<items.length; j++) {
+    var line = items[j] || {}; var it = line.item || {}; var qty = Number(line.quantity) || 0;
+    var pid = escapeHTML(it.priceId || it.id || '');
+    var img = it.image ? '<img src="' + escapeHTML(it.image) + '" alt="' + escapeHTML(it.title || '') + '" class="' + escapeHTML(c['image-class']) + '" />' : '';
+    var variant = it.variantLabel ? '<p class="' + escapeHTML(c['variant-class']) + '">' + escapeHTML(it.variantLabel) + '</p>' : '';
+    var price = it.priceFormatted ? '<p class="' + escapeHTML(c['price-class']) + '">' + escapeHTML(it.priceFormatted) + '</p>' : '';
+    var btn = escapeHTML(c['control-button-class']);
+    parts.push('<div class="' + escapeHTML(c['row-class']) + '">' + img + '<div class="' + escapeHTML(c['body-class']) + '"><p class="' + escapeHTML(c['title-class']) + '">' + escapeHTML(it.title || '') + '</p>' + variant + price + '<div class="' + escapeHTML(c['controls-class']) + '">' +
+      '<button type="button" data-ph-cart-action="dec" data-ph-cart-priceid="' + pid + '" class="' + btn + '">&minus;</button>' +
+      '<span class="' + escapeHTML(c['quantity-class']) + '">' + qty + '</span>' +
+      '<button type="button" data-ph-cart-action="inc" data-ph-cart-priceid="' + pid + '" class="' + btn + '">+</button>' +
+      '<button type="button" data-ph-cart-action="remove" data-ph-cart-priceid="' + pid + '" class="' + escapeHTML(c['remove-button-class']) + '">&times;</button>' +
+      '</div></div></div>');
+  }
+  parts.push('</div>');
+  return parts.join('');
+}
+Alpine.directive('cart-items', function(el, _meta, utils){
+  var cfg = {};
+  for (var k in CART_DEFAULTS) cfg[k] = el.getAttribute('data-' + k) || CART_DEFAULTS[k];
+  function render(){ el.innerHTML = renderCartItems(el, cfg); }
+  function onClick(ev){
+    var btn = ev.target && ev.target.closest && ev.target.closest('[data-ph-cart-action]');
+    if (!btn) return;
+    var pid = btn.getAttribute('data-ph-cart-priceid');
+    var act = btn.getAttribute('data-ph-cart-action');
+    if (!pid) return;
+    var items = readCartFromStorage();
+    var current = 0;
+    for (var k=0; k<items.length; k++) {
+      var lk = items[k].item && (items[k].item.priceId || items[k].item.id);
+      if (lk === pid) { current = Number(items[k].quantity) || 0; break; }
     }
-    render();
-    // Re-render whenever cart:items-json mutates. Alpine.effect runs the
-    // body synchronously once (the render() call above is now redundant but
-    // harmless — render is idempotent), then re-runs on store mutation.
-    Alpine.effect(function(){ void _store.entries['cart:items-json']; render(); });
-  })(nodes[i]);
-}
+    if (act === 'inc') setCartQuantity(pid, current + 1);
+    else if (act === 'dec') setCartQuantity(pid, current - 1);
+    else if (act === 'remove') removeCartItem(pid);
+  }
+  el.addEventListener('click', onClick);
+  utils.cleanup(function(){ el.removeEventListener('click', onClick); });
+  utils.effect(function(){ void _store.entries['cart:items-json']; render(); });
+});
 
-function attachConnectorRefetch(){
-  var wrappers = document.querySelectorAll('[data-connector-id][data-state-inputs]');
-  for (var i=0; i<wrappers.length; i++) (function(el){
-    if (el.__phBoundConnector) return;
-    el.__phBoundConnector = 1;
-    var provider = el.getAttribute('data-connector-id');
-    var collection = el.getAttribute('data-binding-collection') || el.getAttribute('data-binding-key') || '';
-    var inputsRaw = el.getAttribute('data-state-inputs');
-    var inputs; try { inputs = JSON.parse(inputsRaw); } catch(e){ return; }
-    if (!inputs || typeof inputs !== 'object') return;
-    // Cache the template HTML once — DOM mutations on reconcile shouldn't
-    // affect the source-of-truth template.
-    var tplEl = el.querySelector(':scope > template[data-item-template]');
-    var templateHTML = tplEl ? tplEl.innerHTML : '';
-    // Map { fetchOpt: stateKey } → trigger refetch whenever any subscribed key changes.
-    var refetch = debounce(function(){
-      if (!PAGE_ID || !provider) return;
-      var params = new URLSearchParams();
-      params.set('pageId', PAGE_ID);
-      params.set('provider', provider);
-      // bindingKey is "<collection>::<filterHash>" — first segment is collection.
-      var col = collection.split('::')[0] || 'products';
-      params.set('collection', col);
-      for (var opt in inputs) {
-        var v = getStateValue(inputs[opt]);
-        if (v != null && v !== '') params.set(opt, v);
-      }
-      // Allow tests / pre-population to short-circuit the network. The
-      // smoke harness stamps __PH_CONNECTOR__[provider][col] = [...items];
-      // when present, skip fetch and reconcile directly.
-      var seed = window.__PH_CONNECTOR__ && window.__PH_CONNECTOR__[provider] && window.__PH_CONNECTOR__[provider][col];
-      var promise;
-      if (Object.prototype.toString.call(seed) === '[object Array]') {
-        promise = Promise.resolve({ items: seed });
-      } else {
-        promise = fetch(PUBLIC_DATA_ENDPOINT + '?' + params.toString()).then(function(r){ return r.json(); });
-      }
-      promise
-        .then(function(d){
-          if (!d || Object.prototype.toString.call(d.items) !== '[object Array]') return;
-          // DOM swap via per-item template substitution.
-          reconcileItems(el, templateHTML, d.items);
-          // Also let author scripts hook in if needed.
-          var ev = new CustomEvent('pagehub:repeater-refresh', { detail: { collection: col, items: d.items } });
-          el.dispatchEvent(ev);
-          // Publish counts to publishStateKeys, if declared.
-          var pubRaw = el.getAttribute('data-publish-state-keys');
-          var pub; try { pub = JSON.parse(pubRaw || ''); } catch(e){}
-          if (pub && pub.count) setState(pub.count, { kind: 'value', value: String(d.items.length), source: 'runtime' }, 'publish');
-          if (pub && pub.totalCount) setState(pub.totalCount, { kind: 'value', value: String(d.items.length), source: 'runtime' }, 'publish');
-        }).catch(function(){});
-    }, 100);
-    // One Alpine.effect reading every subscribed state key; any change to
-    // any input re-triggers refetch (debounced inside). Replaces the
-    // per-key subscribe() loop for fewer effect runners.
-    Alpine.effect(function(){
-      for (var opt in inputs) void _store.entries[inputs[opt]];
-      refetch();
-    });
-  })(wrappers[i]);
-}
+Alpine.directive('state-inputs', function(el, _meta, utils){
+  if (!el.getAttribute('data-connector-id')) return;
+  var provider = el.getAttribute('data-connector-id');
+  var collection = el.getAttribute('data-binding-collection') || el.getAttribute('data-binding-key') || '';
+  var inputs; try { inputs = JSON.parse(el.getAttribute('data-state-inputs') || ''); } catch(e){ return; }
+  if (!inputs || typeof inputs !== 'object') return;
+  var tplEl = el.querySelector(':scope > template[data-item-template]');
+  var templateHTML = tplEl ? tplEl.innerHTML : '';
+  var refetch = debounce(function(){
+    if (!PAGE_ID || !provider) return;
+    var params = new URLSearchParams();
+    params.set('pageId', PAGE_ID);
+    params.set('provider', provider);
+    // bindingKey is "<collection>::<filterHash>" — first segment is collection.
+    var col = collection.split('::')[0] || 'products';
+    params.set('collection', col);
+    for (var opt in inputs) {
+      var v = getStateValue(inputs[opt]);
+      if (v != null && v !== '') params.set(opt, v);
+    }
+    // Smoke harness short-circuit: __PH_CONNECTOR__[provider][col] = [...].
+    var seed = window.__PH_CONNECTOR__ && window.__PH_CONNECTOR__[provider] && window.__PH_CONNECTOR__[provider][col];
+    var promise;
+    if (Object.prototype.toString.call(seed) === '[object Array]') {
+      promise = Promise.resolve({ items: seed });
+    } else {
+      promise = fetch(PUBLIC_DATA_ENDPOINT + '?' + params.toString()).then(function(r){ return r.json(); });
+    }
+    promise
+      .then(function(d){
+        if (!d || Object.prototype.toString.call(d.items) !== '[object Array]') return;
+        reconcileItems(el, templateHTML, d.items);
+        var ev = new CustomEvent('pagehub:repeater-refresh', { detail: { collection: col, items: d.items } });
+        el.dispatchEvent(ev);
+        var pubRaw = el.getAttribute('data-publish-state-keys');
+        var pub; try { pub = JSON.parse(pubRaw || ''); } catch(e){}
+        if (pub && pub.count) setState(pub.count, { kind: 'value', value: String(d.items.length), source: 'runtime' }, 'publish');
+        if (pub && pub.totalCount) setState(pub.totalCount, { kind: 'value', value: String(d.items.length), source: 'runtime' }, 'publish');
+      }).catch(function(){});
+  }, 100);
+  utils.effect(function(){
+    for (var opt in inputs) void _store.entries[inputs[opt]];
+    refetch();
+  });
+});
 
 function debounce(fn, ms){
   var t = null;
@@ -1481,35 +1381,12 @@ function mountMaps(){
 
 // ─── Init ─────────────────────────────────────────────────────────
 function init(){
-  // 1. Cart bridge already ran in <head>; seedFromWindow picks it up.
   seedFromWindow();
-  // 2. URL bridge
   mountUrlBridge();
-  // 3. DOM bindings (data-state-*) — Alpine directives registered at IIFE top.
-  // 4. Actions (data-ph-actions) — Alpine.directive('actions').
-  // 5. Forms (data-ph-form) — Alpine.directive('form'). Alpine.start walks the
-  //    DOM after init() and applies all three sets.
-  // 6. Connector refetch
-  attachConnectorRefetch();
-  // 7. Customer token
   detectCustomerToken();
-  // 8. Analytics stubs
   ensureAnalyticsStubs();
-  // 9. Map (async)
   mountMaps();
-  // 10. Kick Alpine to walk the live DOM and pick up our prefix-scoped
-  // directives (data-ph-conditions, data-ph-condition-groups). Alpine.start
-  // only auto-walks elements rooted at an x-data scope, and the static
-  // export deliberately ships no x-data anywhere — initTree(body) is the
-  // unscoped entry point that fires the directive handlers regardless.
-  // Idempotent: Alpine guards each element's per-attribute cleanups, so a
-  // second initTree on the same tree just no-ops.
   try { Alpine.initTree(document.body); } catch(e) {}
-
-  // Hydration signal — late-load inject.head scripts wait for this event /
-  // attribute before mutating the DOM. Mirrors the React-path useViewerSetup
-  // signal so the same author-side patterns work in both routes. Idempotent
-  // via attribute guard.
   try {
     var docEl = document.documentElement;
     if (!docEl.hasAttribute('data-ph-hydrated')) {
@@ -1517,37 +1394,15 @@ function init(){
       document.dispatchEvent(new Event('pagehub:hydrated'));
     }
   } catch (e) {}
-
-  // Re-render bindings on state changes is implicit — listeners attached above.
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
-// Multi-shot init (window.load + 2× rAF + 500ms + 1500ms) was needed when the
-// runtime shipped through pages-router's dangerouslySetInnerHTML — React
-// hydration could swap DOM nodes after our attach pass, dropping __phBound*
-// expandos. The flagged path now goes through pages/api/published/[...slug].ts
-// which is framework-less, so a single init is enough. Late-injected DOM
-// (custom JS handler, third-party script) goes through rebind() below.
 
-// Re-walk all data-* attach points. Use after injecting new DOM (custom JS
-// handler that appends an element, third-party script, etc.). Idempotent —
-// Alpine.initTree tracks per-attribute cleanup via _x_attributeCleanups, so
-// already-bound directives are not re-bound; the remaining attach* legacy
-// functions guard via __phBound* flags.
+// Re-walk attach points for late-injected DOM (custom JS handlers, 3rd-party
+// scripts). Idempotent via Alpine's _x_attributeCleanups.
 function rebind(root){
-  // data-state-*, data-ph-actions, data-ph-form are all Alpine directives now —
-  // Alpine.initTree walks the subtree and applies them; idempotent via
-  // _x_attributeCleanups. attachCartItems and attachConnectorRefetch are still
-  // legacy DOM walks (idempotent via __phBound* flags).
-  var scope = root || document.body;
-  try { Alpine.initTree(scope); } catch(e){}
-  attachCartItems();
-  attachConnectorRefetch();
-  // Pick up late-injected DOM that carries our directive attributes
-  // (data-ph-conditions, data-ph-condition-groups). Alpine guards per-element
-  // so a re-walk is idempotent.
-  try { Alpine.initTree(root && root.nodeType === 1 ? root : document.body); } catch(e) {}
+  try { Alpine.initTree(root || document.body); } catch(e){}
 }
 
 // Expose a tiny debug surface for tests / authors.
