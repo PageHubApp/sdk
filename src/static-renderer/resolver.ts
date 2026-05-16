@@ -47,10 +47,12 @@ const cartBadgeToHTML: ToHTMLFn = (props, children, ctx) => {
   const showCount = props.showCount !== false;
   let pill = "";
   if (showCount) {
-    const pillClass = "bg-primary text-primary-content hidden";
-    ["bg-primary", "text-primary-content", "hidden"].forEach(c => ctx.classes.add(c));
+    // `hidden` MUST win at count=0 — keep display in a class (`flex`) not inline
+    // style. Inline `display:flex` beats `.hidden { display:none }` via specificity.
+    const pillClass = "bg-primary text-primary-content hidden flex items-center justify-center absolute pointer-events-none";
+    pillClass.split(" ").forEach(c => ctx.classes.add(c));
     const pillStyle =
-      "position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; border-radius: 9999px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; pointer-events: none";
+      "top: -4px; right: -4px; min-width: 18px; height: 18px; border-radius: 9999px; font-size: 10px; font-weight: 700";
     pill = tag(
       "span",
       {
