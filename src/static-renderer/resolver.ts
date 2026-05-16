@@ -47,12 +47,15 @@ const cartBadgeToHTML: ToHTMLFn = (props, children, ctx) => {
   const showCount = props.showCount !== false;
   let pill = "";
   if (showCount) {
-    // `hidden` MUST win at count=0 — keep display in a class (`flex`) not inline
-    // style. Inline `display:flex` beats `.hidden { display:none }` via specificity.
-    const pillClass = "bg-primary text-primary-content hidden flex items-center justify-center absolute pointer-events-none";
+    // Color via CSS vars (always emitted via design-system-vars) instead of
+    // bg-primary/text-primary-content classes — Tailwind's scanner doesn't see
+    // dynamically-added pill classes, so the .bg-primary rule wouldn't ship.
+    // `hidden` must win at count=0 — keep display in a class (`flex`) not
+    // inline (inline beats class on specificity).
+    const pillClass = "hidden flex items-center justify-center absolute pointer-events-none";
     pillClass.split(" ").forEach(c => ctx.classes.add(c));
     const pillStyle =
-      "top: -4px; right: -4px; min-width: 18px; height: 18px; border-radius: 9999px; font-size: 10px; font-weight: 700";
+      "top: -4px; right: -4px; min-width: 18px; height: 18px; border-radius: 9999px; font-size: 10px; font-weight: 700; background-color: var(--color-primary); color: var(--color-primary-content)";
     pill = tag(
       "span",
       {
