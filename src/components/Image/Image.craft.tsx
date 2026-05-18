@@ -14,6 +14,7 @@ import {
   generateSizes,
   generateSrcSet,
   getCdnUrl,
+  getPageIndex,
   handlerAttrs,
   inferFixedSizesFromClassName,
   interpolate,
@@ -53,7 +54,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         "aria-label": alt || undefined,
         ...ariaAttrs(props),
         ...handlerAttrs(props),
-        ...actionsAttr(props),
+        ...actionsAttr(props, ctx),
         ...stateAttrs(props, ctx),
       },
       content
@@ -104,14 +105,14 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     fetchpriority: props.fetchPriority || undefined,
     ...ariaAttrs(props),
     ...handlerAttrs(props),
-    ...actionsAttr(props),
+    ...actionsAttr(props, ctx),
     ...stateAttrs(props, ctx),
     ...attrsPassthrough(props),
   };
 
   const imgTag = `<img${buildAttrs(imgAttrs)} />`;
 
-  const rawHref = actionToHref(findLinkAction(migrateActions(props))) || props.url;
+  const rawHref = actionToHref(findLinkAction(migrateActions(props)), getPageIndex(ctx), ctx?.currentPath) || props.url;
   const href = typeof rawHref === "string" && rawHref.includes("{{")
     ? interpolate(rawHref, ctx)
     : rawHref;

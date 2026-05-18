@@ -40,11 +40,13 @@ export function generateThemeVars(rootProps: Record<string, any>): string {
     .filter(Boolean)
     .join("\n");
 
-  // `.ph-icon-svg` lets the SVG fill its sized parent (e.g. `w-6 h-6` span)
-  // once CSS lands. Class-based instead of width="100%" attribute so the SVG
-  // falls back to viewBox-intrinsic size (24×24) during the FOUC window
-  // instead of the browser default (300×150 or larger). Shipped on every page.
-  const baseUtilities = `.ph-icon-svg{width:100%;height:100%;display:block}`;
+  // `.ph-icon-svg` defaults icons to 1em (font-relative, matches react-icons).
+  // Wrappers with explicit width/height (w-N, h-N, size-N) get the SVG
+  // tagged `ph-icon-fill` by the emitter so it stretches to fill the box.
+  // Wrappers carrying only `text-xl` (font-size, no width) keep the 1em
+  // default — without this, the SVG would blow up to the browser default
+  // (300×150) when the wrapper has no width constraint.
+  const baseUtilities = `.ph-icon-svg{width:1em;height:1em;display:inline-block;vertical-align:-0.125em}.ph-icon-fill{width:100%;height:100%}`;
 
   return `:root {\n${paletteVars}\n${dsVars}\n}\n${baseUtilities}`;
 }

@@ -59,10 +59,34 @@ export function isolatePageInTree(
   setIsolate: (v: string) => void
 ) {
   const root = query.node(ROOT_NODE).get();
+  let hideHeader = false;
+  let hideFooter = false;
+  let hideChrome = false;
   for (const nodeId of root.data.nodes) {
     const node = query.node(nodeId).get();
     if (!node || node.data?.props?.type !== "page") continue;
-    actions.setHidden(nodeId, pageId != null && nodeId !== pageId);
+    const hidden = pageId != null && nodeId !== pageId;
+    actions.setHidden(nodeId, hidden);
+    if (pageId && nodeId === pageId) {
+      hideHeader = node.data?.props?.hideHeader === true;
+      hideFooter = node.data?.props?.hideFooter === true;
+      hideChrome = node.data?.props?.hideChrome === true;
+    }
+  }
+  // Mirror the walker's chrome-suppression. When `pageId` is null
+  // (show all pages), all chrome stays visible.
+  for (const nodeId of root.data.nodes) {
+    const node = query.node(nodeId).get();
+    const t = node?.data?.props?.type;
+    if (t === "page") continue;
+    if (pageId == null) {
+      actions.setHidden(nodeId, false);
+      continue;
+    }
+    if (hideChrome) actions.setHidden(nodeId, true);
+    else if (t === "header") actions.setHidden(nodeId, hideHeader);
+    else if (t === "footer") actions.setHidden(nodeId, hideFooter);
+    else actions.setHidden(nodeId, false);
   }
 
   const value = pageId ?? EDITOR_ALL_PAGES_STORAGE;
@@ -227,7 +251,10 @@ export const resolvePageRef = (
       // asPath includes ?query and #hash — do not bake them into baseUrl or /slug appends to ?ref=...
       const pathOnly = currentPath.split(/[?#]/)[0];
       const pathParts = pathOnly.split("/").filter((p: string) => p && !p.startsWith("?"));
-      if (pathParts.length >= 2 && (pathParts[0] === "build" || pathParts[0] === "view")) {
+      if (
+        pathParts.length >= 2 &&
+        (pathParts[0] === "build" || pathParts[0] === "view" || pathParts[0] === "static")
+      ) {
         baseUrl = `/${pathParts[0]}/${pathParts[1]}`;
       }
     }

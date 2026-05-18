@@ -332,6 +332,12 @@ export function PageSettingsModal({
             setBodyClass={value => ctx.updateField("bodyClass", value)}
             pagePassword={ctx.draft.pagePassword}
             setPagePassword={value => ctx.updateField("pagePassword", value)}
+            hideHeader={!!ctx.draft.hideHeader}
+            setHideHeader={value => ctx.updateField("hideHeader", value)}
+            hideFooter={!!ctx.draft.hideFooter}
+            setHideFooter={value => ctx.updateField("hideFooter", value)}
+            hideChrome={!!ctx.draft.hideChrome}
+            setHideChrome={value => ctx.updateField("hideChrome", value)}
           />
         ),
       },
@@ -514,6 +520,26 @@ export function PageSettingsModal({
               });
             }
           });
+
+          // Mirror chrome suppression in the canvas — toggle every non-page
+          // ROOT sibling based on the active page's flags. Skipped when
+          // viewing "all pages" (no isolation), since chrome stays visible
+          // there.
+          try {
+            const root = query.node(ROOT_NODE).get();
+            const hideChrome = !!snapshot.hideChrome;
+            for (const id of root?.data?.nodes || []) {
+              const child = query.node(id).get();
+              const t = child?.data?.props?.type;
+              if (t === "page") continue;
+              if (hideChrome) actions.setHidden(id, true);
+              else if (t === "header") actions.setHidden(id, !!snapshot.hideHeader);
+              else if (t === "footer") actions.setHidden(id, !!snapshot.hideFooter);
+              else actions.setHidden(id, false);
+            }
+          } catch {
+            /* ignore — best-effort canvas mirror */
+          }
         } catch (e) {
           console.error("Error saving page settings:", e);
         }

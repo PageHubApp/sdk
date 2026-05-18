@@ -208,7 +208,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     id: props.id || props.anchor || undefined,
     ...ariaAttrs(props),
     ...handlerAttrs(props),
-    ...(t === "form" ? {} : actionsAttr(props)),
+    ...(t === "form" ? {} : actionsAttr(props, ctx)),
     ...stateAttrs(props, ctx),
     action: t === "form" ? props.action || "" : undefined,
     method: t === "form" ? props.method || "POST" : undefined,

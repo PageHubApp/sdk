@@ -12,11 +12,13 @@ const LinkMainTab = React.lazy(() =>
 import { defineComponent } from "../../define/defineComponent";
 import { migrateActions, actionToHref, actionTarget, findLinkAction } from "../../utils/action";
 import { resolveIconSvgSync } from "../../utils/icons/serverResolve";
+import { pickIconSvgClass, serializeIconSvgAttrs } from "../../utils/icons/iconResolver";
 import {
   actionsAttr,
   ariaAttrs,
   collectClasses,
   escapeAttr,
+  getPageIndex,
   handlerAttrs,
   interpolate,
   stateAttrs,
@@ -49,7 +51,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const fullCls = [cls, extra].filter(Boolean).join(" ");
   const actions = migrateActions(props);
   const firstLink = findLinkAction(actions);
-  const rawHref = actionToHref(firstLink);
+  const rawHref = actionToHref(firstLink, getPageIndex(ctx), ctx?.currentPath);
   const href = rawHref ? interpolate(rawHref, ctx) : rawHref;
   const target = actionTarget(firstLink);
 
@@ -57,7 +59,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
     class: fullCls || undefined,
     ...ariaAttrs(props),
     ...handlerAttrs(props),
-    ...actionsAttr(props),
+    ...actionsAttr(props, ctx),
     ...stateAttrs(props, ctx),
   };
   if (href) {
@@ -84,7 +86,9 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         .filter(Boolean)
         .join(" ");
       collectClasses(ic, ctx);
-      iconHTML = `<span class="${escapeAttr(ic)}" aria-hidden="true"><svg fill="currentColor" viewBox="${entry.viewBox}" xmlns="http://www.w3.org/2000/svg" class="ph-icon-svg">${entry.svg}</svg></span>`;
+      const iconSvgCls = pickIconSvgClass(ic);
+      const svgAttrs = serializeIconSvgAttrs(entry.attrs);
+      iconHTML = `<span class="${escapeAttr(ic)}" aria-hidden="true"><svg ${svgAttrs} viewBox="${entry.viewBox}" xmlns="http://www.w3.org/2000/svg" class="${iconSvgCls}">${entry.svg}</svg></span>`;
     }
   }
 

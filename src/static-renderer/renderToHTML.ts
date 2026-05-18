@@ -25,6 +25,27 @@ import {
   type SerializedNodes,
 } from "./types";
 import { renderNode } from "./walker";
+import type { PageIndex } from "../utils/page/pageManagement";
+
+/** Build a PageIndex from the serialized node tree by scanning ROOT's direct
+ *  children for nodes whose `props.type === "page"`. Mirrors
+ *  `buildPageIndexFromQuery` but reads raw serialized nodes instead of a
+ *  Craft query. Used by the static renderer so `ref:<pageId>` action hrefs
+ *  resolve to real paths instead of collapsing to "#". */
+function buildPageIndexFromNodes(nodes: SerializedNodes): PageIndex {
+  const out: PageIndex = {};
+  const root = nodes["ROOT"];
+  const childIds: string[] = Array.isArray(root?.nodes) ? root.nodes : [];
+  for (const id of childIds) {
+    const n = nodes[id];
+    if (!n || n.props?.type !== "page") continue;
+    out[id] = {
+      isHomePage: !!n.props?.isHomePage,
+      displayName: n.custom?.displayName || "Untitled",
+    };
+  }
+  return out;
+}
 
 /**
  * Inline `<script>` that seeds `window.__PH_AUTH__` (from `ph-customer`
@@ -140,6 +161,7 @@ export function renderToHTML(
     pureTailwind = false,
     connectorData = null,
     requestContext,
+    currentPath,
     runtime: includeRuntime = false,
     pageId = "",
   } = options;
@@ -195,6 +217,8 @@ export function renderToHTML(
     pureTailwind,
     connectorData,
     requestContext,
+    pageIndex: buildPageIndexFromNodes(nodes),
+    currentPath,
   };
 
   // 5a. Preload referenced icon SVGs so Button.craft / ListItem.craft can

@@ -16,6 +16,7 @@ import {
   ariaAttrs,
   attrsPassthrough,
   getInlineStyle,
+  getPageIndex,
   handlerAttrs,
   interpolate,
   stateAttrs,
@@ -42,7 +43,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
 
   const actions = migrateActions(props);
   const firstLink = findLinkAction(actions);
-  const rawHref = actionToHref(firstLink);
+  const rawHref = actionToHref(firstLink, getPageIndex(ctx), ctx?.currentPath);
   const href = rawHref ? interpolate(rawHref, ctx) : rawHref;
   const target = actionTarget(firstLink);
 
@@ -64,7 +65,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         style: style || undefined,
         ...ariaAttrs(props),
         ...handlerAttrs(props),
-        ...actionsAttr(props),
+        ...actionsAttr(props, ctx),
         ...stateAttrs(props, ctx),
         ...attrsPassthrough(props),
       },
@@ -94,7 +95,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
         style: fitStyle,
         ...ariaAttrs(props),
         ...handlerAttrs(props),
-        ...actionsAttr(props),
+        ...actionsAttr(props, ctx),
         ...stateAttrs(props, ctx),
         ...attrsPassthrough(props),
       },
@@ -109,7 +110,7 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
       style: style || undefined,
       ...ariaAttrs(props),
       ...handlerAttrs(props),
-      ...actionsAttr(props),
+      ...actionsAttr(props, ctx),
       ...stateAttrs(props, ctx),
       ...attrsPassthrough(props),
     },

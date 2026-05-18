@@ -124,7 +124,30 @@ export function renderNode(
   const toHTML = resolver[typeName];
 
   // Render children + linked nodes
-  const childIds = [...(node.nodes || []), ...Object.values(node.linkedNodes || {})];
+  let childIds = [...(node.nodes || []), ...Object.values(node.linkedNodes || {})];
+
+  // ROOT-level chrome suppression — a page can opt out of the global header
+  // and/or footer via `hideHeader` / `hideFooter` on its own props. With
+  // sharding only the active page sits in ROOT.nodes, so we read its flags
+  // and strip the matching header/footer siblings before recursing. Mirrors
+  // the runtime RenderTree filter for static-published pages.
+  if (nodeId === "ROOT") {
+    const activePage = childIds
+      .map(cid => ({ id: cid, n: nodes[cid] }))
+      .find(({ n }) => n?.props?.type === "page");
+    const hideHeader = activePage?.n?.props?.hideHeader === true;
+    const hideFooter = activePage?.n?.props?.hideFooter === true;
+    const hideChrome = activePage?.n?.props?.hideChrome === true;
+    if (hideHeader || hideFooter || hideChrome) {
+      childIds = childIds.filter(cid => {
+        const t = nodes[cid]?.props?.type;
+        if (hideChrome && t !== "page") return false;
+        if (hideHeader && t === "header") return false;
+        if (hideFooter && t === "footer") return false;
+        return true;
+      });
+    }
+  }
 
   // Data nodes own their own iteration — pass raw child IDs through ctx and
   // let Data.toHTML render children per-item (with `ctx.currentItem` set).

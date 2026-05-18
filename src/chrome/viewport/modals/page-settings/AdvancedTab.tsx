@@ -14,6 +14,12 @@ interface AdvancedTabProps {
   setBodyClass: (v: string) => void;
   pagePassword: string;
   setPagePassword: (v: string) => void;
+  hideHeader: boolean;
+  setHideHeader: (v: boolean) => void;
+  hideFooter: boolean;
+  setHideFooter: (v: boolean) => void;
+  hideChrome: boolean;
+  setHideChrome: (v: boolean) => void;
 }
 
 /** SHA-256 hash via Web Crypto API — runs in browser only */
@@ -35,6 +41,12 @@ export function AdvancedTab({
   setBodyClass,
   pagePassword,
   setPagePassword,
+  hideHeader,
+  setHideHeader,
+  hideFooter,
+  setHideFooter,
+  hideChrome,
+  setHideChrome,
 }: AdvancedTabProps) {
   const [rawPassword, setRawPassword] = useState("");
 
@@ -90,6 +102,83 @@ export function AdvancedTab({
             placeholder="e.g. dark overflow-hidden"
           />
         </SettingsFormField>
+      </SettingsFormCard>
+
+      <SettingsFormCard title="Site chrome">
+        <p className="text-neutral-content text-sm">
+          Hide the global header, footer, or all chrome on this page only. Use for ad landing pages
+          or conversion-focused funnels. <strong>Hide all chrome</strong> also suppresses sticky
+          CTAs, floating buttons, and mobile drawers — the right switch for Google Ads pages.
+        </p>
+        <div className="border-base-300 bg-base-200/20 flex items-center justify-between gap-3 rounded-xl border p-4">
+          <div>
+            <p className="text-base-content text-sm font-semibold">Hide all chrome</p>
+            <p className="text-neutral-content mt-1 text-xs">
+              Strip header, footer, and every other ROOT-level sibling. Supersedes hide header /
+              hide footer.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setHideChrome(!hideChrome)}
+            className={`focus:ring-ring relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+              hideChrome ? "bg-primary" : "bg-base-300"
+            }`}
+            aria-pressed={hideChrome}
+          >
+            <span
+              className={`bg-base-100 inline-block size-4 rounded-full transition-transform ${
+                hideChrome ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="border-base-300 bg-base-200/20 flex items-center justify-between gap-3 rounded-xl border p-4">
+            <div>
+              <p className="text-base-content text-sm font-semibold">Hide header</p>
+              <p className="text-neutral-content mt-1 text-xs">
+                Suppress the site header on this page.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setHideHeader(!hideHeader)}
+              className={`focus:ring-ring relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                hideHeader ? "bg-primary" : "bg-base-300"
+              }`}
+              aria-pressed={hideHeader}
+            >
+              <span
+                className={`bg-base-100 inline-block size-4 rounded-full transition-transform ${
+                  hideHeader ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+          <div className="border-base-300 bg-base-200/20 flex items-center justify-between gap-3 rounded-xl border p-4">
+            <div>
+              <p className="text-base-content text-sm font-semibold">Hide footer</p>
+              <p className="text-neutral-content mt-1 text-xs">
+                Suppress the site footer on this page.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setHideFooter(!hideFooter)}
+              className={`focus:ring-ring relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                hideFooter ? "bg-primary" : "bg-base-300"
+              }`}
+              aria-pressed={hideFooter}
+            >
+              <span
+                className={`bg-base-100 inline-block size-4 rounded-full transition-transform ${
+                  hideFooter ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
       </SettingsFormCard>
 
       <SettingsFormCard title="Password protection">

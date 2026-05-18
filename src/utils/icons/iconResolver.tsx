@@ -57,7 +57,41 @@ function toReactSvgAttrs(attrs: Record<string, string> | undefined): Record<stri
   return out;
 }
 
-export function renderIconSvg(entry: IconSvgEntry): React.ReactElement {
+/**
+ * Pick the `<svg>` className based on whether the parent wrapper has an
+ * explicit width/height (`w-N`, `h-N`, `size-N`). Wrappers that only set
+ * `text-xl` etc. omit `ph-icon-fill` so the SVG falls back to 1em — without
+ * this, the 1em default would render too small inside w-N boxes.
+ */
+export function pickIconSvgClass(wrapperClassName: string | undefined): string {
+  if (!wrapperClassName) return "ph-icon-svg";
+  return /\b(?:w-|h-|size-)\S+/.test(wrapperClassName)
+    ? "ph-icon-svg ph-icon-fill"
+    : "ph-icon-svg";
+}
+
+/**
+ * Serialize an IconSvgEntry's preserved presentation attrs (stroke,
+ * fill, stroke-width, stroke-linecap, stroke-linejoin, …) into an HTML
+ * attribute string for the static-export `<svg>` tag. Returns
+ * `fill="currentColor"` as a fallback for older registries without attrs,
+ * matching the runtime path in renderIconSvg().
+ */
+export function serializeIconSvgAttrs(
+  attrs: Record<string, string> | undefined
+): string {
+  if (!attrs) return `fill="currentColor"`;
+  const keys = Object.keys(attrs);
+  if (keys.length === 0) return `fill="currentColor"`;
+  return keys
+    .map(
+      k =>
+        `${k}="${String(attrs[k]).replace(/&/g, "&amp;").replace(/"/g, "&quot;")}"`
+    )
+    .join(" ");
+}
+
+export function renderIconSvg(entry: IconSvgEntry, wrapperClassName?: string): React.ReactElement {
   // Preserved attrs (stroke/fill/stroke-width/etc.) from the original react-icons
   // component. If absent (older registry), fall back to fill="currentColor" for
   // compatibility with solid icon sets.
@@ -66,7 +100,7 @@ export function renderIconSvg(entry: IconSvgEntry): React.ReactElement {
   return React.createElement("svg", {
     dangerouslySetInnerHTML: { __html: entry.svg },
     ...(hasPreserved ? preserved : { fill: "currentColor" }),
-    className: "ph-icon-svg",
+    className: pickIconSvgClass(wrapperClassName),
     viewBox: entry.viewBox,
     xmlns: "http://www.w3.org/2000/svg",
   });

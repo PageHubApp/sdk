@@ -9,6 +9,7 @@ export interface SerializedNode {
   nodes: string[];
   linkedNodes?: Record<string, string>;
   hidden?: boolean;
+  custom?: Record<string, any>;
 }
 
 export type SerializedNodes = Record<string, SerializedNode>;
@@ -53,6 +54,14 @@ export interface RenderToHTMLOptions {
     userAgentClass?: "mobile" | "tablet" | "desktop";
     urlParams?: Record<string, string>;
   };
+  /**
+   * Current request path (e.g. `/static/<siteId>/about` or `/about`). Passed
+   * through to toHTML emitters so `ref:<pageId>` action hrefs prefix correctly
+   * for preview routes (`/static/<id>`, `/view/<id>`, `/build/<id>`). On
+   * custom-domain production hits this is the bare slug path — `resolvePageRef`
+   * only prefixes recognized preview prefixes, so no false prefixing occurs.
+   */
+  currentPath?: string;
   /**
    * Emit the vanilla static-publish runtime alongside the document.
    * Adds a tiny blocking `<head>` cart-bridge script + a main IIFE at the

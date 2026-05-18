@@ -788,12 +788,23 @@
   pointer-events: none;
 }
 
-/* Icon SVG — fill the parent wrapper (which carries the size class like w-6 h-6).
-   Class-based instead of width="100%" attribute so when Tailwind hasn't applied
-   yet the SVG falls back to its viewBox-intrinsic size instead of the browser
-   default (300×150 or larger) that caused massive-icon FOUC. */
+/* Icon SVG — default to 1em (font-relative), matching react-icons's native
+   behavior. Wrappers with explicit `w-N h-N` get the SVG stretched via the
+   `[&>svg]:w-full [&>svg]:h-full` pattern when the template author wants
+   fill behavior. Without 1em as the default, wrappers carrying only
+   `text-xl` (font-size, no width) let SVGs blow up to the browser default
+   (300x150). */
 .ph-icon-svg {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.125em;
+}
+/* When the wrapper carries explicit width/height classes (w-N, h-N, size-N),
+   the toHTML / React body adds `ph-icon-fill` so the SVG stretches to fill
+   the box instead of staying at 1em. Templates with only `text-xl` etc.
+   omit the modifier and the 1em default applies. */
+.ph-icon-fill {
   width: 100%;
   height: 100%;
-  display: block;
 }

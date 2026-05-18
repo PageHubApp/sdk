@@ -422,17 +422,25 @@ export function actionToHref(
     case "link": {
       const h = action.href;
       if (!h) return null;
-      // ref:<pageId>[/<path>|?<query>|#<hash>] — internal page reference
+      // ref:<pageId>[/<path>][?<query>][#<hash>] — internal page reference.
+      // Path / query / hash are parsed independently so an author-written
+      // `ref:<pageId>/#anchor` (a bare slash before the hash) collapses to
+      // `<base>#anchor` instead of `<base>/#anchor` — same-page hash links
+      // must keep the URL identical so the browser scrolls instead of
+      // reloading.
       if (h.startsWith("ref:")) {
-        const m = h.match(/^ref:([^/?#]+)(.*)$/);
+        const m = h.match(/^ref:([^/?#]+)(\/[^?#]*)?(\?[^#]*)?(#.*)?$/);
         if (!m) return null;
-        const [, pageId, suffix] = m;
+        const [, pageId, rawPath, queryPart, hashPart] = m;
         const base = resolvePageRef(`ref:${pageId}`, pageIndex, routerPath);
-        if (!suffix) return base;
-        const isQueryOrHash = suffix.startsWith("?") || suffix.startsWith("#");
-        if (isQueryOrHash) return `${base}${suffix}`;
-        const slash = suffix.startsWith("/") ? suffix : `/${suffix}`;
-        return base === "/" ? slash : `${base}${slash}`;
+        // Drop a bare "/" path — it carries no information and would force
+        // `<base>/#hash` (different URL → page reload).
+        const pathPart = rawPath && rawPath !== "/" ? rawPath : "";
+        let out = base;
+        if (pathPart) out = base === "/" ? pathPart : `${base}${pathPart}`;
+        if (queryPart) out += queryPart;
+        if (hashPart) out += hashPart;
+        return out;
       }
       // mailto:, tel:, #anchor, https://, /relative — all use as-is
       return h;

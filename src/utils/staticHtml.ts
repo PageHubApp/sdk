@@ -6,7 +6,8 @@
  */
 
 import parse from "style-to-object";
-import { migrateActions } from "./action";
+import { migrateActions, actionToHref } from "./action";
+import type { PageIndex } from "./page/pageManagement";
 import { getCdnUrl, generateSrcSet, generateSizes, inferFixedSizesFromClassName } from "./cdn";
 import { isCSSAnimation, getCSSAnimationProps } from "./animations/animations";
 import { purifyToTailwind } from "./tailwind/daisyuiToTailwind";
@@ -64,6 +65,20 @@ export interface StaticRenderContext {
     userAgentClass?: "mobile" | "tablet" | "desktop";
     urlParams?: Record<string, string>;
   };
+  /**
+   * Map of page node id → `{ isHomePage, displayName }` for ROOT's `page`-typed
+   * children. Seeded by the static renderer before walking so toHTML emitters
+   * can resolve `ref:<pageId>` action hrefs to real paths.
+   */
+  pageIndex?: PageIndex;
+  /**
+   * Current request path (e.g. `/static/<siteId>/about` or `/about`). Lets
+   * `resolvePageRef` prefix internal `ref:<pageId>` hrefs so navigation works
+   * under preview routes (`/static/<id>`, `/view/<id>`, `/build/<id>`). On
+   * production custom domains this is the bare slug path and no prefix is
+   * applied — that's intentional.
+   */
+  currentPath?: string;
 }
 
 /** Signature every `.craft.toHTML` must implement */
@@ -352,11 +367,43 @@ export function getInlineStyle(props: Record<string, any>): string {
  * `data-ph-load-show` / `data-ph-load-set-state` and fire on mount, not
  * click. Including them here would re-fire on every click.
  */
-export function actionsAttr(props: Record<string, any>): Record<string, string | undefined> {
+/** Read the page index for `ref:<pageId>` resolution. Prefers the value seeded
+ *  on `ctx` by the static renderer; falls back to legacy spots on ROOT.props. */
+export function getPageIndex(ctx?: StaticRenderContext): PageIndex | null {
+  return (ctx?.pageIndex ??
+    ctx?.nodes?.ROOT?.props?._pageIndex ??
+    ctx?.nodes?.ROOT?.props?.pageIndex ??
+    null) as PageIndex | null;
+}
+
+/**
+ * Resolve any action to an href string for static `<a>` tags, with the page
+ * index plumbed in. Mirrors `actionToHref` but reads `pageIndex` from `ctx`
+ * so callers don't have to.
+ */
+export function resolveActionHref(action: any, ctx?: StaticRenderContext): string | null {
+  return actionToHref(action, getPageIndex(ctx), ctx?.currentPath);
+}
+
+export function actionsAttr(
+  props: Record<string, any>,
+  ctx?: StaticRenderContext
+): Record<string, string | undefined> {
   const all = migrateActions(props);
   const actions = all.filter((a: any) => a?.trigger !== "load");
   if (!actions.length) return {};
-  return { "data-ph-actions": JSON.stringify(actions) };
+  // Resolve `ref:<pageId>[/path|?query|#hash]` hrefs to real paths so the
+  // runtime's window.location.assign(href) doesn't try to launch a "ref:"
+  // scheme. Same resolver the <a href> path uses.
+  const pageIndex = getPageIndex(ctx);
+  const resolved = actions.map((a: any) => {
+    if (a?.type === "link" && typeof a.href === "string" && a.href.startsWith("ref:")) {
+      const real = actionToHref(a, pageIndex, ctx?.currentPath);
+      return real ? { ...a, href: real } : a;
+    }
+    return a;
+  });
+  return { "data-ph-actions": JSON.stringify(resolved) };
 }
 
 // ─── State-binding attributes ───────────────────────────────────────────────

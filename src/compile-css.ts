@@ -283,6 +283,16 @@ function extractCandidatesFromNodes(nodes: Record<string, any>): string[] {
     "overflow-hidden",
     "relative",
     "absolute",
+    // Button/Link icon wrapper defaults (Button.craft.tsx): when an author omits
+    // `icon.size`, the runtime stamps `w-6 h-6` plus the hard-coded wrapper
+    // classes. None of these live on any `props.className`, so they're invisible
+    // to the candidate scanner.
+    "w-6",
+    "h-6",
+    "fill-current",
+    "flex",
+    "items-center",
+    "justify-center",
   ];
   for (const c of implicit) candidates.add(c);
 
@@ -321,6 +331,19 @@ function extractCandidatesFromNodes(nodes: Record<string, any>): string[] {
     }
     const hoverClass = props.root?.hoverAnimation;
     if (typeof hoverClass === "string" && hoverClass.trim()) candidates.add(hoverClass);
+
+    // Button/Link icon prop — `size`, `gap`, `color` are className strings the
+    // renderer stamps onto the wrapper span. Pull them in so author-supplied
+    // sizes (e.g. `size-5`, `w-8 h-8`) compile.
+    const icon = props.icon;
+    if (icon && typeof icon === "object") {
+      for (const key of ["size", "gap", "color", "className"]) {
+        const val = (icon as any)[key];
+        if (typeof val === "string" && val.trim()) {
+          for (const cls of val.split(/\s+/)) if (cls) candidates.add(cls);
+        }
+      }
+    }
   }
   return [...candidates];
 }
@@ -429,11 +452,15 @@ export async function compileCSS(options: {
   const compiler = await getCompiler();
   const css = compiler.build(classes);
 
-  // Strip @layer base (consumer provides their own reset)
-  let stripped = css.replace(/@layer base \{[\s\S]*?\n\}/m, "");
-
-  // Remove bare @layer declarations and unwrap @layer blocks
-  stripped = stripped.replace(/@layer\s+[^{]+;/g, "");
+  // Keep Tailwind's preflight intact — `unwrapLayerBlocks` below flattens the
+  // `@layer base { … }` block so it ships as plain CSS in the static export
+  // (no host preflight to rely on). For host-embedded paths (/view, /static
+  // React, /build) the host's own globals.css ships preflight too — the
+  // duplicate rules are byte-bloat but byte-for-byte identical, so they're
+  // harmless. The previous approach (strip + manually re-emit a curated
+  // subset) silently lost rules every time Tailwind preflight grew, and was
+  // the source of the link-color, heading-size, and list-bullet regressions.
+  let stripped = css.replace(/@layer\s+[^{]+;/g, "");
   stripped = unwrapLayerBlocks(stripped);
 
   // Prepend DaisyUI CSS (unwrapped, with --color-* remapped)

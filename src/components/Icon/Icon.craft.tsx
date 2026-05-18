@@ -11,6 +11,7 @@ const IconMainTab = React.lazy(() =>
 );
 import { defineComponent } from "../../define/defineComponent";
 import { resolveIconSvgSync } from "../../utils/icons/serverResolve";
+import { pickIconSvgClass, serializeIconSvgAttrs } from "../../utils/icons/iconResolver";
 import {
   ariaAttrs,
   collectClasses,
@@ -54,7 +55,9 @@ const toHTML: ToHTMLFn = (props, _children, ctx) => {
   if (value && typeof value === "string" && value.startsWith("ref-icon:")) {
     const entry = resolveIconSvgSync(value);
     if (entry) {
-      inner = `<svg fill="currentColor" viewBox="${escapeAttr(entry.viewBox)}" xmlns="http://www.w3.org/2000/svg" class="ph-icon-svg">${entry.svg}</svg>`;
+      const svgCls = pickIconSvgClass(wrapCls);
+      const svgAttrs = serializeIconSvgAttrs(entry.attrs);
+      inner = `<svg ${svgAttrs} viewBox="${escapeAttr(entry.viewBox)}" xmlns="http://www.w3.org/2000/svg" class="${svgCls}">${entry.svg}</svg>`;
     }
   }
   // ref-image: static export relies on runtime media resolution — skipped here, matching Button.craft toHTML parity.

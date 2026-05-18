@@ -16,6 +16,7 @@ export interface PageSettingsFieldDef {
   /** Default value when the field is missing */
   defaultValue:
     | string
+    | boolean
     | string[]
     | Array<{ varName: string; value: string }>
     | unknown[];
@@ -48,6 +49,9 @@ export const PAGE_SETTINGS_FIELDS: readonly PageSettingsFieldDef[] = [
   { key: "canonicalUrl", nodePath: "seo.canonicalUrl", defaultValue: "" },
   { key: "headCode", defaultValue: "" },
   { key: "bodyClass", defaultValue: "" },
+  { key: "hideHeader", defaultValue: false },
+  { key: "hideFooter", defaultValue: false },
+  { key: "hideChrome", defaultValue: false },
   { key: "jsonLd", nodePath: "seo.jsonLd", defaultValue: "" },
   { key: "schema", nodePath: "seo.schema", defaultValue: [] },
   { key: "pagePassword", defaultValue: "" },
