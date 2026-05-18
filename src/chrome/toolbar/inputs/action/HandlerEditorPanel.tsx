@@ -19,9 +19,10 @@ import { HANDLER_EVENT_LABEL, HANDLER_EVENT_OPTIONS } from "./handlerEvents";
 interface Props {
   event: string;
   code: string;
+  preventDefault: boolean;
   /** Other events already in use on this node — filtered out of the dropdown. */
   takenEvents: string[];
-  onChange: (next: { event: string; code: string }) => void;
+  onChange: (next: { event: string; code: string; preventDefault: boolean }) => void;
   onRemove: () => void;
   initialPosition?: { x: number; y: number };
   onClose: () => void;
@@ -30,6 +31,7 @@ interface Props {
 export default function HandlerEditorPanel({
   event,
   code,
+  preventDefault,
   takenEvents,
   onChange,
   onRemove,
@@ -59,7 +61,7 @@ export default function HandlerEditorPanel({
           <div className="min-w-0 flex-1">
             <ToolbarDropdown
               value={event}
-              onChange={(val: string) => onChange({ event: val, code })}
+              onChange={(val: string) => onChange({ event: val, code, preventDefault })}
               propKey="handlerEvent"
             >
               {eventOptions.map(opt => (
@@ -86,9 +88,21 @@ export default function HandlerEditorPanel({
           Runs after the action. <code className="text-[9px]">event</code> is in scope.
         </p>
 
+        <label className="text-neutral-content flex items-center gap-1.5 text-[10px] leading-snug">
+          <input
+            type="checkbox"
+            checked={preventDefault}
+            onChange={e => onChange({ event, code, preventDefault: e.target.checked })}
+            className="size-3"
+          />
+          <span>
+            Prevent default — skips form submit / link navigation / etc. before this handler runs.
+          </span>
+        </label>
+
         <CodeEditor
           value={code}
-          onChange={next => onChange({ event, code: next })}
+          onChange={next => onChange({ event, code: next, preventDefault })}
           language="javascript"
           minHeight="120px"
           maxHeight="320px"

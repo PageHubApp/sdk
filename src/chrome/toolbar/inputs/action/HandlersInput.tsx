@@ -23,13 +23,19 @@ export function HandlersInput() {
     id,
     actions: { setProp },
     handlers,
+    handlerOptions,
   } = useNode(node => {
     const props = node.data.props;
     const handlersMap: Record<string, string> =
       props.handlers && typeof props.handlers === "object" ? props.handlers : {};
+    const optionsMap: Record<string, { preventDefault?: boolean }> =
+      props.handlerOptions && typeof props.handlerOptions === "object"
+        ? props.handlerOptions
+        : {};
     return {
       id: node.id,
       handlers: handlersMap,
+      handlerOptions: optionsMap,
     };
   });
 
@@ -44,16 +50,32 @@ export function HandlersInput() {
   const handlerKeys = useMemo(() => handlerEntries.map(([e]) => e), [handlerEntries]);
   const handlerKeysSig = handlerKeys.join("|");
 
-  const updateHandler = (prevEvent: string, next: { event: string; code: string }) => {
+  const updateHandler = (
+    prevEvent: string,
+    next: { event: string; code: string; preventDefault: boolean }
+  ) => {
     setProp((p: any) => {
       const map: Record<string, string> = { ...(p.handlers || {}) };
+      const optMap: Record<string, { preventDefault?: boolean }> = {
+        ...(p.handlerOptions || {}),
+      };
       if (prevEvent === next.event) {
         map[prevEvent] = next.code;
       } else {
         delete map[prevEvent];
+        delete optMap[prevEvent];
         map[next.event] = next.code;
       }
       p.handlers = map;
+      if (next.preventDefault) {
+        optMap[next.event] = { ...(optMap[next.event] || {}), preventDefault: true };
+      } else if (optMap[next.event]) {
+        const { preventDefault: _, ...rest } = optMap[next.event];
+        if (Object.keys(rest).length === 0) delete optMap[next.event];
+        else optMap[next.event] = rest;
+      }
+      if (Object.keys(optMap).length === 0) delete p.handlerOptions;
+      else p.handlerOptions = optMap;
     });
   };
   const removeHandler = (event: string) => {
@@ -61,10 +83,13 @@ export function HandlersInput() {
       if (!p.handlers) return;
       const map: Record<string, string> = { ...p.handlers };
       delete map[event];
-      if (Object.keys(map).length === 0) {
-        delete p.handlers;
-      } else {
-        p.handlers = map;
+      if (Object.keys(map).length === 0) delete p.handlers;
+      else p.handlers = map;
+      if (p.handlerOptions) {
+        const optMap = { ...p.handlerOptions };
+        delete optMap[event];
+        if (Object.keys(optMap).length === 0) delete p.handlerOptions;
+        else p.handlerOptions = optMap;
       }
     });
   };
@@ -99,6 +124,7 @@ export function HandlersInput() {
           key={`handler-${event}`}
           event={event}
           code={code}
+          preventDefault={!!handlerOptions[event]?.preventDefault}
           takenEvents={handlerKeys}
           autoOpen={event === pendingHandlerEvent}
           onAutoOpenConsumed={consumeHandlerAutoOpen}

@@ -4,6 +4,8 @@ import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useState } from "react";
 import { TbForms, TbLoader, TbCheck } from "react-icons/tb";
+import type { ActionConversion } from "../../../../utils/action";
+import { ConversionFields } from "../../inputs/action/subforms/ConversionFields";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 const VIEW_STATES = [
@@ -202,6 +204,22 @@ export const FormMainTab = () => {
             )}
           </ToolbarSection>
         )}
+
+        <ToolbarSection
+          title="Conversion tracking"
+          icon={SECTION_ICONS["Type"]}
+          help="Fire a Google Ads / GA4 / Meta conversion when the form submits. Set up site-level integrations first under Site Settings → Integrations."
+        >
+          <ConversionFields
+            conversion={props.conversion}
+            onChange={(conversion: ActionConversion | undefined) =>
+              actions.setProp(id, (p: any) => {
+                p.conversion = conversion;
+              })
+            }
+            fallbackEventName="Lead"
+          />
+        </ToolbarSection>
       </>
     ),
   });

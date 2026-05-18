@@ -4,6 +4,8 @@
  * existing action runs first, custom handler second.
  */
 
+import { applyHandlerOptions, readHandlerOptions } from "./handlerCode";
+
 const handlerCache = new Map<string, (event: any) => void>();
 
 function compileHandler(code: string): ((event: any) => void) | null {
@@ -30,14 +32,16 @@ function compileHandler(code: string): ((event: any) => void) | null {
 export function addCustomHandlers(
   prop: Record<string, any>,
   handlers: unknown,
-  enabled: boolean
+  enabled: boolean,
+  handlerOptions?: unknown
 ): void {
   if (enabled) return;
   if (!handlers || typeof handlers !== "object") return;
   for (const [eventName, code] of Object.entries(handlers as Record<string, unknown>)) {
     if (typeof code !== "string" || !code.trim()) continue;
     if (!/^on[A-Z]/.test(eventName)) continue;
-    const compiled = compileHandler(code);
+    const finalCode = applyHandlerOptions(code, readHandlerOptions(handlerOptions, eventName));
+    const compiled = compileHandler(finalCode);
     if (!compiled) continue;
 
     const existing = prop[eventName];

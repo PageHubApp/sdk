@@ -42,6 +42,38 @@ function fireAnalytics(event, params){
     if (w.dataLayer && typeof w.dataLayer.push === 'function') w.dataLayer.push(Object.assign({ event: event }, params || {}));
   } catch(e){}
 }
+// Author-configured conversion (Google Ads / GA4 / Meta). Mirrors
+// packages/sdk/src/utils/actions/conversion.ts for the static-publish runtime.
+// Accepts an optional navigate callback so same-tab link actions can defer
+// navigation through gtag's event_callback (+1 s safety timer).
+function fireConversion(c, opts){
+  var w = window;
+  var navigate = opts && opts.navigate;
+  var fired = false;
+  var safeNavigate = navigate ? function(){ if (fired) return; fired = true; try { navigate(); } catch(e){} } : null;
+  if (!c) { if (safeNavigate) safeNavigate(); return; }
+  var value = (typeof c.value === 'number' && !isNaN(c.value)) ? c.value : undefined;
+  var currency = c.currency || undefined;
+  if (c.provider === 'meta') {
+    try { if (typeof w.fbq === 'function') w.fbq('track', c.eventName, { value: value, currency: currency }); } catch(e){}
+    if (safeNavigate) safeNavigate();
+    return;
+  }
+  var payload = {};
+  if (value !== undefined) payload.value = value;
+  if (currency) payload.currency = currency;
+  if (c.provider === 'google-ads') {
+    if (!c.sendTo) { if (safeNavigate) safeNavigate(); return; }
+    payload.send_to = c.sendTo;
+  }
+  if (safeNavigate) {
+    payload.event_callback = safeNavigate;
+    payload.event_timeout = 1000;
+    setTimeout(safeNavigate, 1000);
+  }
+  var eventName = c.provider === 'google-ads' ? 'conversion' : c.eventName;
+  try { if (typeof w.gtag === 'function') w.gtag('event', eventName, payload); } catch(e){}
+}
 
 var LEAFLET_CSS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
 var LEAFLET_JS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';

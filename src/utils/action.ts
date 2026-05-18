@@ -38,6 +38,28 @@ export type ActionType =
   | "increment-state"
   | "decrement-state";
 
+/**
+ * Conversion-tracking metadata attached to a single action. The runtime fires
+ * a `gtag('event', …)` or `fbq('track', …)` call after the action runs.
+ *
+ * Provider semantics:
+ *   - `google-ads`: `gtag('event','conversion',{ send_to, value, currency })`
+ *     — `eventName` is ignored; `sendTo` is REQUIRED (`AW-XXXXXXXXXX/AbCdEf`).
+ *   - `ga4`: `gtag('event', eventName, { value, currency })`
+ *   - `meta`: `fbq('track', eventName, { value, currency })`
+ *
+ * Same-tab `link` actions (no `target: "_blank"`) honor `event_callback` +
+ * a 1 s safety timer so the network beacon fires before navigation. External
+ * tabs / `tel:` / `mailto:` fire-and-forget (popup or dialer is already open).
+ */
+export interface ActionConversion {
+  provider: "google-ads" | "ga4" | "meta";
+  eventName: string;
+  sendTo?: string;
+  value?: number;
+  currency?: string;
+}
+
 interface ActionBase {
   type: ActionType;
   /**
@@ -51,6 +73,12 @@ interface ActionBase {
    * Click/hover gating in `addActionHandlers` is a follow-up.
    */
   conditions?: ConditionGroup[];
+  /**
+   * Optional conversion-tracking metadata. Fires once after the action runs.
+   * Same-tab `link` actions defer navigation through `event_callback` so the
+   * gtag beacon completes (with a 1 s safety timer to guarantee navigation).
+   */
+  conversion?: ActionConversion;
 }
 
 /**

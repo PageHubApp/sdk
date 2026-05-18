@@ -46,6 +46,10 @@ Alpine.directive('form', function(form, _meta, _ctx){
       }).catch(function(){});
     }
     fireAnalytics('form_submit', { formName: formName });
+    // Author-configured conversion (Google Ads / GA4 / Meta).
+    if (meta && meta.conversion) {
+      try { fireConversion(meta.conversion); } catch(e){}
+    }
     try { form.reset(); } catch(e){}
   };
   form.addEventListener('submit', onSubmit);

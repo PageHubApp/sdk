@@ -141,11 +141,22 @@ export function useDataSource(
   const connData = getConnectorData();
   const mergedDs = ds && !ds.scope ? applyRouteParamsToDataSource(ds, routeParams) : null;
   const bindingId = mergedDs ? dataSourceBindingId(mergedDs) : null;
-  // `scope` → nested repeater: read from parent item, split if needed.
+
+  // `scope: "state:<key>"` — subscribe so writes from custom JS handlers
+  // (`window.__phSetData`) or `set-state` actions rerender the repeater.
+  const stateScopedKey =
+    ds?.scope && ds.scope.startsWith("state:") ? ds.scope.slice("state:".length) : null;
+  useSyncExternalStore(
+    cb => (stateScopedKey ? subscribeState(stateScopedKey, cb) : () => {}),
+    () => (stateScopedKey ? (getStateValue(stateScopedKey) ?? "") : ""),
+    () => (stateScopedKey ? (getStateValue(stateScopedKey) ?? "") : "")
+  );
+
+  // `scope` → nested repeater: read from parent item OR state, split if needed.
   // Otherwise → top-level repeater: read from connectorData[provider].bindings[id].
   const rawItems: any[] | null = ds
     ? ds.scope
-      ? resolveNestedItems(parentItem, ds.scope, ds.splitBy)
+      ? resolveNestedItems(parentItem, ds.scope, ds.splitBy, getStateValue)
       : bindingId
         ? (connData?.[ds.provider]?.bindings?.[bindingId] ?? null)
         : null

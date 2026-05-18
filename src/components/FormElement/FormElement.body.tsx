@@ -318,7 +318,7 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
 
   prop["data-border"] = /\bborder(-[^\s])?/.test(props.className || "");
 
-  addCustomHandlers(prop, props.handlers, ctx.enabled);
+  addCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
   if (ctx.enabled) {
     prop["data-bounding-box"] = ctx.enabled;

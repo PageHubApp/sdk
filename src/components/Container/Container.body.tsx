@@ -380,7 +380,7 @@ export function renderContainerBody(
     anchors,
   });
 
-  addCustomHandlers(prop, props.handlers, ctx.enabled);
+  addCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
   if (props.scrollEffect) prop["data-scroll-effect"] = props.scrollEffect;
   {

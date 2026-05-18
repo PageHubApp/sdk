@@ -104,7 +104,8 @@ var _escInstalled = false;
 var STATE_ATTRS = [
   'data-state-text','data-state-show-when-truthy','data-state-style-bindings',
   'data-state-modifiers','data-state-binding','data-visibility-state-key',
-  'data-publish-state-keys','data-computed-state-bindings','data-state-inputs'
+  'data-publish-state-keys','data-computed-state-bindings','data-state-inputs',
+  'data-state-scope'
 ];
 var ROOT_ATTRS = STATE_ATTRS.concat(['data-ph-actions','data-ph-form','data-ph-cart-items']);
 Alpine.mapAttributes(function(pair){

@@ -11,23 +11,41 @@ function fireAction(action, ev, itemContext){
     var anchor = (t === 'scroll-to') ? action.anchor : (typeof href === 'string' && href.charAt(0) === '#' ? href.slice(1) : null);
     if (anchor) {
       if (ev) ev.preventDefault();
-      if (anchor === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-      var el = document.getElementById(anchor);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (anchor === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      else {
+        var el = document.getElementById(anchor);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
       // Match native <a href="#x"> URL semantics; replaceState avoids back-stack pollution.
-      if (t === 'link') {
+      if (t === 'link' && anchor !== 'top') {
         try { history.replaceState(history.state, '', '#' + anchor); } catch(e){}
       }
+      // Anchor scroll happens immediately; fire-and-forget conversion.
+      if (action.conversion) { try { fireConversion(action.conversion); } catch(e){} }
       return;
     }
     if (t === 'link' && href) {
       if (ev) ev.preventDefault();
       var resolved = interpolateItem(href, itemContext);
-      if (action.target === '_blank') window.open(resolved, '_blank', 'noopener,noreferrer');
-      else window.location.assign(resolved);
+      if (action.target === '_blank') {
+        // Popup must open synchronously inside the user-gesture handler.
+        window.open(resolved, '_blank', 'noopener,noreferrer');
+        if (action.conversion) { try { fireConversion(action.conversion); } catch(e){} }
+      } else {
+        // Same-tab nav defers through gtag event_callback (+1 s safety timer).
+        if (action.conversion) {
+          try { fireConversion(action.conversion, { navigate: function(){ window.location.assign(resolved); } }); } catch(e){ window.location.assign(resolved); }
+        } else {
+          window.location.assign(resolved);
+        }
+      }
     }
     return;
   }
+
+  // Non-link dispatch — wrapped in an IIFE so each branch's \`return;\` only
+  // exits the dispatcher. After it returns, fire the optional conversion.
+  (function(){
   if (t === 'open-modal') {
     if (ev) ev.preventDefault();
     var mEl = document.getElementById(action.anchor);
@@ -212,6 +230,11 @@ function fireAction(action, ev, itemContext){
     if (fld2) { fld2.value = ''; fld2.focus(); }
     return;
   }
+  })();
+
+  // Author-configured conversion (Google Ads / GA4 / Meta) for non-link actions.
+  // Link branch fires its own (nav-aware) and returned above before this point.
+  if (action.conversion) { try { fireConversion(action.conversion); } catch(e){} }
 }
 
 Alpine.directive('actions', function(el, _meta, _ctx){

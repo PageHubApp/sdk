@@ -40,6 +40,12 @@ export const INTEGRATION_PROVIDERS: Record<string, ProviderMeta> = {
     field: "pixelId",
     help: "Facebook/Meta Pixel ID for conversion tracking.",
   },
+  googleAds: {
+    label: "Google Ads",
+    placeholder: "AW-XXXXXXXXXX",
+    field: "conversionId",
+    help: "Google Ads Conversion ID (AW-…). Required for per-action 'google-ads' conversion firing.",
+  },
 };
 
 interface IntegrationsTabProps {

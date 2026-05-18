@@ -39,10 +39,30 @@ function slugify(s: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+function wrapPrimitive(scope: string, v: any, idx: number) {
+  if (typeof v === "string" || typeof v === "number") {
+    const str = String(v);
+    return {
+      id: `${scope}-${idx}`,
+      value: str,
+      title: str,
+      slug: slugify(str),
+      // For image arrays specifically — when the value is a URL, expose
+      // it under both `src` and `image` for natural template binding.
+      src: str,
+      image: str,
+    };
+  }
+  return v;
+}
+
 /**
- * Resolve a string-keyed path (e.g. "item.images", "item.metadata.sizes")
- * from the current item context to an array of items.
+ * Resolve a string-keyed path (e.g. "item.images", "item.metadata.sizes",
+ * "state:calc:results") to an array of items.
  *
+ * - `state:<key>` reads from the state registry (via `stateLookup`), parses
+ *   the value as JSON, and iterates the array. Lets custom JS handlers
+ *   stash computed results that a `Data` repeater renders.
  * - Paths starting with `item.` are resolved against `itemContext`.
  * - Arrays of primitives (strings/numbers) are wrapped as `{ value, slug }`.
  * - Arrays of objects pass through unchanged.
@@ -51,9 +71,28 @@ function slugify(s: string): string {
 export function resolveNestedItems(
   itemContext: Record<string, any> | null,
   scope: string,
-  splitBy?: string
+  splitBy?: string,
+  stateLookup?: (key: string) => string | null | undefined
 ): any[] | null {
-  if (!itemContext || !scope) return null;
+  if (!scope) return null;
+
+  // state:<key> — JSON-decoded array from the state registry.
+  if (scope.startsWith("state:")) {
+    if (!stateLookup) return null;
+    const key = scope.slice("state:".length);
+    const raw = stateLookup(key);
+    if (raw == null || raw === "") return null;
+    let parsed: any;
+    try {
+      parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    } catch {
+      return null;
+    }
+    if (!Array.isArray(parsed)) return null;
+    return parsed.map((v, idx) => wrapPrimitive(scope, v, idx));
+  }
+
+  if (!itemContext) return null;
   const parts = scope.split(".");
   // Drop leading "item" if present — it's the anchor, not a real key.
   if (parts[0] === "item") parts.shift();
@@ -72,21 +111,5 @@ export function resolveNestedItems(
 
   if (!Array.isArray(value)) return null;
 
-  // Wrap primitive items as { value, slug } so templates stay uniform.
-  return value.map((v, idx) => {
-    if (typeof v === "string" || typeof v === "number") {
-      const str = String(v);
-      return {
-        id: `${scope}-${idx}`,
-        value: str,
-        title: str,
-        slug: slugify(str),
-        // For image arrays specifically — when the value is a URL, expose
-        // it under both `src` and `image` for natural template binding.
-        src: str,
-        image: str,
-      };
-    }
-    return v;
-  });
+  return value.map((v, idx) => wrapPrimitive(scope, v, idx));
 }

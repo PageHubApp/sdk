@@ -141,7 +141,7 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
     addActionHandlers(prop, actions, ctx.enabled, actionCtx);
   }
 
-  addCustomHandlers(prop, props.handlers, ctx.enabled);
+  addCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
   if (actions.length > 0 && !ctx.enabled) {
     prop["data-action"] = actions.map(a => a.type).join(" ");

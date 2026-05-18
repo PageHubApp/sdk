@@ -135,7 +135,7 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
     actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
     (actions.length === 1 && !isLinkAction(actions[0]));
   if (needsJsDispatch) addActionHandlers(prop, actions, ctx.enabled);
-  addCustomHandlers(prop, props.handlers, ctx.enabled);
+  addCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
   if (ctx.enabled) {
     prop["data-bounding-box"] = ctx.enabled;

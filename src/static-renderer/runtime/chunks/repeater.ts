@@ -68,6 +68,44 @@ function debounce(fn, ms){
   };
 }
 
+// state-scope: repeater whose items come from a JSON-encoded array in the
+// state registry. Author writes via window.__phSetData(key, [...]); this
+// directive subscribes to the key, parses, and reconciles.
+Alpine.directive('state-scope', function(el, _meta, utils){
+  var key = el.getAttribute('data-state-scope');
+  if (!key) return;
+  var tplEl = el.querySelector(':scope > template[data-item-template]');
+  var templateHTML = tplEl ? tplEl.innerHTML : '';
+  utils.effect(function(){
+    void _store.entries[key];
+    var raw = getStateValue(key);
+    var items = null;
+    if (raw != null && raw !== '') {
+      try {
+        var parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (Object.prototype.toString.call(parsed) === '[object Array]') items = parsed;
+      } catch(e){}
+    }
+    reconcileItems(el, templateHTML, items || []);
+  });
+});
+
+// __phSetData / __phGetData — author globals for custom JS handlers that
+// produce an array for a state-scoped Data repeater. JSON-encodes on write,
+// JSON-decodes on read; state registry stays string-valued.
+window.__phSetData = function(key, value){
+  if (!key) return;
+  var enc;
+  try { enc = JSON.stringify(value == null ? null : value); } catch(e){ enc = 'null'; }
+  setState(key, { kind: 'value', value: enc, source: 'runtime' }, 'user-script');
+};
+window.__phGetData = function(key){
+  if (!key) return null;
+  var raw = getStateValue(key);
+  if (raw == null || raw === '') return null;
+  try { return JSON.parse(raw); } catch(e){ return null; }
+};
+
 Alpine.directive('state-inputs', function(el, _meta, utils){
   if (!el.getAttribute('data-connector-id')) return;
   var provider = el.getAttribute('data-connector-id');

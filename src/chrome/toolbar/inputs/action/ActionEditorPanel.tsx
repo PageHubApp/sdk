@@ -10,8 +10,14 @@
 import { TbX } from "react-icons/tb";
 import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { ToolbarDropdown } from "../../ToolbarDropdown";
-import { ACTION_TYPE_OPTIONS, type NodeAction, type ActionType } from "../../../../utils/action";
+import {
+  ACTION_TYPE_OPTIONS,
+  type ActionConversion,
+  type ActionType,
+  type NodeAction,
+} from "../../../../utils/action";
 import { ACTION_DEFAULTS, ActionSubForm } from "./ActionInput";
+import { ConversionFields } from "./subforms/ConversionFields";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
 
 interface Props {
@@ -110,6 +116,13 @@ export default function ActionEditorPanel({
           replace={onChange}
           selfId={selfId}
           ensureSelfId={ensureSelfId}
+        />
+
+        <ConversionFields
+          conversion={action.conversion}
+          onChange={(conversion: ActionConversion | undefined) => patch({ conversion })}
+          actionType={action.type}
+          href={(action as { href?: string }).href}
         />
       </div>
     </FloatingPanel>

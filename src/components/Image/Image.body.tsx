@@ -122,7 +122,7 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
       resolvedLinkHref: typeof resolvedHref === "string" ? resolvedHref : null,
     });
   }
-  addCustomHandlers(prop, (props as any).handlers, ctx.enabled);
+  addCustomHandlers(prop, (props as any).handlers, ctx.enabled, (props as any).handlerOptions);
   if (actions.length > 0 && !ctx.enabled) {
     prop["data-action"] = actions.map(a => a.type).join(" ");
   }

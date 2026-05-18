@@ -8,6 +8,8 @@
  * not touch this helper.
  */
 
+import type { ActionConversion } from "../../utils/action";
+import { fireConversion } from "../../utils/actions/conversion";
 import { SaveSubmissions } from "../../utils/submissions";
 
 export interface FormProductionProps {
@@ -21,6 +23,8 @@ export interface FormProductionProps {
   collectionSlug?: string;
   collectionFieldMap?: Record<string, string>;
   collectionSkipEmail?: boolean;
+  /** Optional Google Ads / GA4 / Meta conversion fired after a successful submit. */
+  conversion?: ActionConversion;
 }
 
 export async function submitFormProduction(
@@ -59,4 +63,8 @@ export async function submitFormProduction(
   });
   w.fbq?.("track", "Lead");
   w.dataLayer?.push({ event: "form_submit", formName: props.formName || "form" });
+
+  // Author-configured conversion (Google Ads / GA4 / Meta) — fires on top of
+  // the default form_submit / Lead events above. No navigation, fire-and-forget.
+  if (props.conversion) fireConversion(props.conversion);
 }

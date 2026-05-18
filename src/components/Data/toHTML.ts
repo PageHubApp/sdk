@@ -183,8 +183,9 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   // `{{slot:<path>}}` placeholders for every `{{item.*}}` interpolation. The
   // runtime substitutes the placeholders per refetched item and replaces the
   // wrapper's child rows. Reconciler keeps DOM by `data-item-id`.
+  const isStateScope = !!ds?.scope && ds.scope.startsWith("state:");
   let itemTemplateHTML = "";
-  if (ds && (ds.stateInputs || ds.provider) && childIds.length > 0) {
+  if (ds && (ds.stateInputs || ds.provider || isStateScope) && childIds.length > 0) {
     const prevItem = ctx.currentItem;
     try {
       ctx.currentItem = makeSlotProxy() as any;
@@ -221,6 +222,11 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   if (ds?.collection) attrs["data-binding-collection"] = ds.collection;
   if (ds?.stateInputs && Object.keys(ds.stateInputs).length > 0) {
     attrs["data-state-inputs"] = JSON.stringify(ds.stateInputs);
+  }
+  // State-scoped repeater (no connector fetch — iterate JSON-encoded array
+  // sitting at `state:<key>`). Runtime directive subscribes + reconciles.
+  if (isStateScope) {
+    attrs["data-state-scope"] = ds!.scope!.slice("state:".length);
   }
   // Pass-through attrs (mirror Container.toHTML).
   if (props.attrs && typeof props.attrs === "object") {

@@ -7,6 +7,7 @@
 
 import parse from "style-to-object";
 import { migrateActions, actionToHref } from "./action";
+import { applyHandlerOptions, readHandlerOptions } from "./actions/handlerCode";
 import type { PageIndex } from "./page/pageManagement";
 import { getCdnUrl, generateSrcSet, generateSizes, inferFixedSizesFromClassName } from "./cdn";
 import { isCSSAnimation, getCSSAnimationProps } from "./animations/animations";
@@ -212,7 +213,7 @@ export function handlerAttrs(props: Record<string, any>): Record<string, string 
     if (typeof v !== "string" || !v.trim()) continue;
     if (!/^on[A-Z]/.test(k)) continue;
     const attr = REACT_EVENT_TO_HTML[k] ?? k.toLowerCase();
-    out[attr] = v;
+    out[attr] = applyHandlerOptions(v, readHandlerOptions(props.handlerOptions, k));
   }
   return out;
 }

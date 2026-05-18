@@ -11,6 +11,7 @@
  * natively (faster, no JS hop) — see Button.tsx for the policy.
  */
 import type { NodeAction } from "../action";
+import { fireConversion } from "./conversion";
 import {
   attachAddToCart,
   attachCartCheckout,
@@ -31,7 +32,7 @@ import {
   attachToggleState,
 } from "./handlers/state";
 import { attachTheme } from "./handlers/theme";
-import type { ActionContext } from "./internal";
+import { chain, type ActionContext } from "./internal";
 
 export type { ActionContext } from "./internal";
 
@@ -50,59 +51,71 @@ export function addActionHandlers(
 }
 
 function attachOne(prop: any, action: NodeAction, enabled: boolean, context?: ActionContext) {
-  // Link family handles its own anchor-vs-URL branching and returns true
-  // when it's claimed the action.
+  // Link family handles its own anchor-vs-URL branching AND owns conversion
+  // firing (it needs the navigation-aware event_callback path), so we return
+  // early without the conversion post-pass below when it claims the action.
   if (attachLink(prop, action, enabled, context)) return;
 
   switch (action.type) {
     case "open-modal":
       attachModal(prop, action, enabled);
-      return;
+      break;
     case "toggle-theme":
       attachTheme(prop, action, enabled);
-      return;
+      break;
     case "add-to-cart":
       attachAddToCart(prop, action, enabled, context);
-      return;
+      break;
     case "toggle-cart":
       attachToggleCart(prop, action, enabled);
-      return;
+      break;
     case "cart-checkout":
       attachCartCheckout(prop, action, enabled);
-      return;
+      break;
     case "agent-send":
       attachAgentSend(prop, action, enabled, context);
-      return;
+      break;
     case "set-local-storage":
       attachSetLocalStorage(prop, action, enabled);
-      return;
+      break;
     case "remove-local-storage":
       attachRemoveLocalStorage(prop, action, enabled);
-      return;
+      break;
     case "manage-subscription":
       attachManageSubscription(prop, action, enabled);
-      return;
+      break;
     case "set-state":
       attachSetState(prop, action, enabled, context);
-      return;
+      break;
     case "toggle-state":
       attachToggleState(prop, action, enabled, context);
-      return;
+      break;
     case "clear-state":
       attachClearState(prop, action, enabled, context);
-      return;
+      break;
     case "increment-state":
     case "decrement-state":
       attachStateStep(prop, action, enabled, context);
-      return;
+      break;
     case "show-hide":
       attachShowHide(prop, action, enabled);
-      return;
+      break;
     case "copy-to-clipboard":
       attachCopyToClipboard(prop, action, enabled, context);
-      return;
+      break;
     case "download-file":
       attachDownloadFile(prop, action, enabled, context);
+      break;
+    default:
       return;
+  }
+
+  // Post-pass: fire conversion after the action's onClick has run. Skipped
+  // for link/scroll actions (link.ts fires its own — see attachLink).
+  if (action.conversion && !enabled) {
+    chain(prop, "onClick", (e, run) => {
+      run(e);
+      fireConversion(action.conversion);
+    });
   }
 }

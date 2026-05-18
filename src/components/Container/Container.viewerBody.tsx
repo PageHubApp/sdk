@@ -207,7 +207,7 @@ export function renderContainerViewerBody(
     anchors,
   });
 
-  addCustomHandlers(prop, props.handlers, false);
+  addCustomHandlers(prop, props.handlers, false, (props as any).handlerOptions);
 
   if (props.scrollEffect) prop["data-scroll-effect"] = props.scrollEffect;
   {

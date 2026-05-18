@@ -34,10 +34,11 @@ function describeHandler(code: string): string {
 interface Props {
   event: string;
   code: string;
+  preventDefault: boolean;
   /** All currently-taken event names on this node (passed through to the
    *  editor panel so the event dropdown can filter duplicates). */
   takenEvents: string[];
-  onChange: (next: { event: string; code: string }) => void;
+  onChange: (next: { event: string; code: string; preventDefault: boolean }) => void;
   onRemove: () => void;
   /** When true on first render, auto-open the editor (used by the header `+`
    *  picker so the just-added chip surfaces its form immediately). */
@@ -49,6 +50,7 @@ interface Props {
 export function HandlerChipRow({
   event,
   code,
+  preventDefault,
   takenEvents,
   onChange,
   onRemove,
@@ -104,6 +106,7 @@ export function HandlerChipRow({
           <HandlerEditorPanel
             event={event}
             code={code}
+            preventDefault={preventDefault}
             takenEvents={takenEvents}
             onChange={onChange}
             onRemove={onRemove}
