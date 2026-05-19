@@ -1,32 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { submitFormProduction } from "./submitFormProduction";
 import { useContainerRenderWalker } from "../Container/Container.render";
+import { useWalkerNode } from "../../render/contexts";
+import { setVisibility } from "../../utils/state/stateRegistry";
 
 /**
- * Walker render path for Form. Editor-only `<Element canvas>` chrome
- * (loadingTextContainer / sentTextContainer) is intentionally dropped —
- * walker emits plain styled `<div>`s for the loading/success states.
+ * Walker / viewer render path for Form. Children include the canvas
+ * sub-trees (formFieldsContainer / loadingTextContainer / sentTextContainer)
+ * passed in via Craft's render order (`nodes` + `linkedNodes`). Their
+ * `visibilityStateKey` props feed through Container.viewerBody and respond
+ * to the state-registry visibility toggles fired below on submit.
  */
 export const FormRender = ({ children, ...props }: any) => {
-  const formType = props.formType || "subscribe";
   const settings = null;
-
-  const [loaded, setLoaded] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const walker = useWalkerNode();
+  const formId = walker?.id ?? "";
+  const fieldsKey = formId ? `form:${formId}:fields` : "";
+  const loadingKey = formId ? `form:${formId}:loading` : "";
+  const loadedKey = formId ? `form:${formId}:loaded` : "";
 
   useEffect(() => {
     const iframe = document.querySelector("iframe");
     if (!iframe) return;
     const fnu = () => {
-      setLoaded(true);
-      setLoading(false);
+      if (loadingKey) setVisibility(loadingKey, "hidden", "form-iframe");
+      if (loadedKey) setVisibility(loadedKey, "shown", "form-iframe");
     };
     iframe.addEventListener("load", fnu, true);
     return () => iframe.removeEventListener("load", fnu);
-  }, []);
+  }, [loadingKey, loadedKey]);
 
   const handleFormSubmit = async (formData: any) => {
-    setLoading(true);
+    if (fieldsKey) setVisibility(fieldsKey, "hidden", "form-submit");
+    if (loadingKey) setVisibility(loadingKey, "shown", "form-submit");
     if (props.submissionType === "iframe") return;
     await submitFormProduction(formData, props, settings);
     setTimeout(() => {
@@ -34,8 +40,8 @@ export const FormRender = ({ children, ...props }: any) => {
         window.location.href = props.successUrl;
         return;
       }
-      setLoaded(true);
-      setLoading(false);
+      if (loadingKey) setVisibility(loadingKey, "hidden", "form-submit");
+      if (loadedKey) setVisibility(loadedKey, "shown", "form-submit");
     }, 1000);
   };
 
@@ -47,7 +53,6 @@ export const FormRender = ({ children, ...props }: any) => {
     "aria-label": props.formName || "Form",
     onSubmit: async (e: any) => {
       e.preventDefault();
-      setLoaded(false);
       const formElement = e.target;
       const formFields = formElement.querySelectorAll("input, select, textarea");
       const formData: any = {};
@@ -69,17 +74,7 @@ export const FormRender = ({ children, ...props }: any) => {
       >
         <input type="text" name="_ph_hp" autoComplete="off" tabIndex={-1} />
       </div>
-      {!loading && !loaded && children}
-      {loading && (
-        <div className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row" role="status" aria-live="polite">
-          <p>{props.loading || "Sending..."}</p>
-        </div>
-      )}
-      {loaded && (
-        <div className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row" role="status" aria-live="polite">
-          <p>{props.success || "Thank you!"}</p>
-        </div>
-      )}
+      {children}
       {props.submissionType === "iframe" && (
         <iframe className="hidden" name="iframe" id="iframe" title="Submission Frame" />
       )}

@@ -30,6 +30,8 @@ function buildFormMetaAttrs(props: Record<string, any>): Record<string, string> 
   if (props.collectionSkipEmail) meta.collectionSkipEmail = !!props.collectionSkipEmail;
   if (props.agentId) meta.agentId = props.agentId;
   if (props.conversion) meta.conversion = props.conversion;
+  if (props.successAction) meta.successAction = props.successAction;
+  if (props.successUrl) meta.successUrl = props.successUrl;
   return { "data-ph-form": JSON.stringify(meta) };
 }
 
@@ -39,7 +41,9 @@ const toHTML: ToHTMLFn = (props, children, ctx) => {
   // generated HTML post-hoc — cheap and avoids extending the Container API.
   const html = containerToHTML({ ...props, type: "form" }, HONEYPOT_HTML + children, ctx);
   const meta = buildFormMetaAttrs(props);
-  const attrStr = ` data-ph-form="${escapeQuotedAttr(meta["data-ph-form"]!)}"`;
+  const formId = ctx?.renderingNodeId ?? "";
+  const idAttr = formId ? ` data-ph-form-id="${escapeQuotedAttr(formId)}"` : "";
+  const attrStr = ` data-ph-form="${escapeQuotedAttr(meta["data-ph-form"]!)}"${idAttr}`;
   return html.replace(/^(\s*<form\b)/i, "$1" + attrStr);
 };
 

@@ -5,6 +5,7 @@ import { TbClipboardCheck } from "react-icons/tb";
 import { submitFormProduction } from "./submitFormProduction";
 import { Container } from "../Container/Container";
 import { Text } from "../Text/Text";
+import { setVisibility } from "../../utils/state/stateRegistry";
 
 export const Form = ({ children, ...props }: any) => {
   const formType = props.formType || "subscribe";
@@ -20,11 +21,34 @@ export const Form = ({ children, ...props }: any) => {
 
   props = setClonedProps(props, query);
 
-  const [loaded, setLoaded] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [debugData, setDebugData] = useState<any>(null);
   const [debugTab, setDebugTab] = useState<"data" | "config">("data");
   const settings = null;
+
+  const fieldsKey = `form:${id}:fields`;
+  const loadingKey = `form:${id}:loading`;
+  const loadedKey = `form:${id}:loaded`;
+
+  // Mirror the FormMainTab segmented control onto the visibility registry so
+  // editor canvas preview reflects the chosen view without re-rendering paths
+  // that read `props.view` directly.
+  useEffect(() => {
+    if (!enabled) return;
+    const view = props.view || "";
+    if (view === "loading") {
+      setVisibility(fieldsKey, "hidden", "form-view");
+      setVisibility(loadingKey, "shown", "form-view");
+      setVisibility(loadedKey, "hidden", "form-view");
+    } else if (view === "loaded") {
+      setVisibility(fieldsKey, "hidden", "form-view");
+      setVisibility(loadingKey, "hidden", "form-view");
+      setVisibility(loadedKey, "shown", "form-view");
+    } else {
+      setVisibility(fieldsKey, "shown", "form-view");
+      setVisibility(loadingKey, "hidden", "form-view");
+      setVisibility(loadedKey, "hidden", "form-view");
+    }
+  }, [enabled, props.view, fieldsKey, loadingKey, loadedKey]);
 
   useEffect(() => {
     const iframe = document.querySelector("iframe");
@@ -33,12 +57,12 @@ export const Form = ({ children, ...props }: any) => {
       return;
     }
     const fnu = () => {
-      setLoaded(true);
-      setLoading(false);
+      setVisibility(loadingKey, "hidden", "form-iframe");
+      setVisibility(loadedKey, "shown", "form-iframe");
     };
     iframe.addEventListener("load", fnu, true);
     return () => iframe.removeEventListener("load", fnu);
-  }, []);
+  }, [loadingKey, loadedKey]);
 
   // Handle form submission - called by both submit button and double-click
   const handleFormSubmit = async (formData: any) => {
@@ -55,24 +79,27 @@ export const Form = ({ children, ...props }: any) => {
       };
 
       setDebugData(submissionData);
-      setLoading(true);
+      setVisibility(fieldsKey, "hidden", "form-submit");
+      setVisibility(loadingKey, "shown", "form-submit");
 
       // Show loading for 2 seconds
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      setLoading(false);
-      setLoaded(true);
+      setVisibility(loadingKey, "hidden", "form-submit");
+      setVisibility(loadedKey, "shown", "form-submit");
 
       // In editor mode, automatically go back to form after showing thank you
       setTimeout(() => {
-        setLoaded(false);
+        setVisibility(loadedKey, "hidden", "form-submit");
+        setVisibility(fieldsKey, "shown", "form-submit");
       }, 3000); // Show thank you for 3 seconds
 
       return;
     }
 
     // In preview mode, handle actual submission
-    setLoading(true);
+    setVisibility(fieldsKey, "hidden", "form-submit");
+    setVisibility(loadingKey, "shown", "form-submit");
     if (props.submissionType === "iframe") return;
     await submitFormProduction(formData, props, settings);
 
@@ -81,8 +108,8 @@ export const Form = ({ children, ...props }: any) => {
         window.location.href = props.successUrl;
         return;
       }
-      setLoaded(true);
-      setLoading(false);
+      setVisibility(loadingKey, "hidden", "form-submit");
+      setVisibility(loadedKey, "shown", "form-submit");
     }, 1000);
   };
 
@@ -123,8 +150,6 @@ export const Form = ({ children, ...props }: any) => {
           return;
         }
 
-        setLoaded(false);
-
         // Extract form data for logging
         const formElement = e.target;
         const formFields = formElement.querySelectorAll("input, select, textarea");
@@ -160,79 +185,76 @@ export const Form = ({ children, ...props }: any) => {
         </div>
       )}
 
-      {!loading && !loaded && (!enabled || !props.view || props.view === "") && children}
+      {/* Form fields canvas — wraps the author-editable children. Visibility is
+          toggled via the central state registry. `formFieldsContainer` is the
+          stable linkedNode id consumed by the migration script. */}
+      <Element
+        canvas
+        id="formFieldsContainer"
+        is={Container}
+        canDelete={true}
+        canEditName={true}
+        visibilityStateKey={fieldsKey}
+        className="contents"
+        custom={{
+          displayName: "Form Fields",
+          id: "formFieldsContainer",
+        }}
+      >
+        {children}
+      </Element>
 
-      {(loading || (enabled && props.view === "loading")) &&
-        (enabled ? (
-          <Element
-            canvas
-            id="loadingTextContainer"
-            is={Container}
-            role="status"
-            aria-live="polite"
-            canDelete={true}
-            canEditName={true}
-            className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
-            custom={{
-              displayName: "Loading Text Container",
-              id: "loadingTextContainer",
-            }}
-          >
-            <Element
-              canvas
-              id="loadingText"
-              is={Text}
-              custom={{ displayName: "Loading Text", id: "loadingText" }}
-              canDelete={true}
-              canEditName={true}
-              text={props.loading || "Sending..."}
-            />
-          </Element>
-        ) : (
-          <div
-            className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
-            role="status"
-            aria-live="polite"
-          >
-            <p>{props.loading || "Sending..."}</p>
-          </div>
-        ))}
+      <Element
+        canvas
+        id="loadingTextContainer"
+        is={Container}
+        role="status"
+        aria-live="polite"
+        canDelete={true}
+        canEditName={true}
+        visibilityStateKey={loadingKey}
+        className="hidden flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
+        custom={{
+          displayName: "Loading Text Container",
+          id: "loadingTextContainer",
+        }}
+      >
+        <Element
+          canvas
+          id="loadingText"
+          is={Text}
+          custom={{ displayName: "Loading Text", id: "loadingText" }}
+          canDelete={true}
+          canEditName={true}
+          text={props.loading || "Sending..."}
+        />
+      </Element>
 
-      {(loaded || (enabled && props.view === "loaded")) &&
-        (enabled ? (
-          <Element
-            canvas
-            id="sentTextContainer"
-            is={Container}
-            role="status"
-            aria-live="polite"
-            canDelete={true}
-            canEditName={true}
-            className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
-            custom={{
-              displayName: "Sent Text",
-              id: "sentTextContainer",
-            }}
-          >
-            <Element
-              canvas
-              id="sentText"
-              is={Text}
-              custom={{ displayName: "Text", id: "sentText" }}
-              canDelete={true}
-              canEditName={true}
-              text={"Thank you!"}
-            />
-          </Element>
-        ) : (
-          <div
-            className="flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
-            role="status"
-            aria-live="polite"
-          >
-            <p>{props.success || "Thank you!"}</p>
-          </div>
-        ))}
+      <Element
+        canvas
+        id="sentTextContainer"
+        is={Container}
+        role="status"
+        aria-live="polite"
+        canDelete={true}
+        canEditName={true}
+        visibilityStateKey={loadedKey}
+        className="hidden flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
+        custom={{
+          displayName: "Sent Text",
+          id: "sentTextContainer",
+        }}
+      >
+        <Element
+          canvas
+          id="sentText"
+          is={Text}
+          custom={{ displayName: "Text", id: "sentText" }}
+          canDelete={true}
+          canEditName={true}
+          text={props.success || "Thank you!"}
+        />
+      </Element>
 
       {/* Debug panel - only shows in editor mode */}
       {enabled && debugData && (

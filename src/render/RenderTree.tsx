@@ -16,7 +16,7 @@
  * navigate away on its own.
  */
 import React from "react";
-import { ItemProvider } from "../utils/itemContext";
+import { ItemProvider, useItemContext } from "../utils/itemContext";
 import {
   evaluateConditionGroups,
   evaluateConditions,
@@ -87,6 +87,10 @@ function evalNodeVisibility(
 function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProps) {
   const node = nodes[id];
   const tree = useTreeRoot();
+  // Item context flows in via DataRender's ItemProvider for repeater children.
+  // Without this, `item.*` conditions on Buttons/Text/etc. inside a repeater
+  // evaluate against a null item and fall through to visible.
+  const itemContext = useItemContext();
 
   if (!node) {
     if (process.env.NODE_ENV !== "production") {
@@ -96,7 +100,7 @@ function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProp
   }
   if (node.hidden) return null;
 
-  const visible = evalNodeVisibility(node, tree?.rootProps ?? {}, null);
+  const visible = evalNodeVisibility(node, tree?.rootProps ?? {}, itemContext);
   if (!visible) return null;
 
   const Component = resolver[node.type.resolvedName];
