@@ -77,6 +77,16 @@ function linearize(c: number): number {
 }
 
 function srgbToOklch(r: number, g: number, b: number): [number, number, number] {
+  // Achromatic shortcut: when R=G=B the result is pure grayscale (chroma=0).
+  // The OKLab matrix multiply below accumulates floating-point error that
+  // produces a misleading chroma ~0.015 with a yellow-green hue for pure
+  // white/black inputs, which then renders the canvas cream instead of white.
+  if (r === g && g === b) {
+    const l = linearize(r);
+    const L = Math.cbrt(l);
+    return [L, 0, 0];
+  }
+
   const lr = linearize(r);
   const lg = linearize(g);
   const lb = linearize(b);

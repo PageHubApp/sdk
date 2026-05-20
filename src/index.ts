@@ -165,7 +165,13 @@ function init(config: PageHubConfig): PageHubInstance {
       PageHubProvider,
       { config: resolved, emitter },
       React.createElement(PageHubEditor, {
-        resolver: { ...DEFAULT_CRAFT_RESOLVER, ...(config as any).resolver },
+        // Pass the host's resolver overrides ONLY. editor.tsx layers them on
+        // top of DEFAULT_CRAFT_RESOLVER + the editor-variant customResolver
+        // from processForEditor. Pre-merging DEFAULT here would re-add the
+        // viewer-variant components AFTER the editor variants, clobbering
+        // them and breaking editor-only behavior (empty-state hints, drag
+        // chrome, etc.).
+        resolver: (config as any).resolver,
         components: config.components,
         onQueryReady: handleQueryReady,
       })
@@ -332,7 +338,55 @@ export {
   getPresets,
   registerModifiers,
   getModifiers,
+  registerCatalogFilter,
+  resetCatalogFilter,
+  getCatalogFilter,
 } from "./define/catalogRegistry";
+export type {
+  CatalogFilterKind,
+  CatalogFilterPredicate,
+  CatalogEntry,
+} from "./define/catalogRegistry";
+
+// Host constraints — restrict which components show in the toolbox / are accepted.
+// See docs/sdk/host-constraints.md.
+export {
+  registerComponentAllowlist,
+  resetComponentAllowlist,
+  getComponentAllowlist,
+  isComponentAllowed,
+} from "./define/componentAllowlist";
+
+// Compression helpers — needed when a host seeds initial page content at runtime
+// (the SDK's load path expects an LZ-base64 compressed string).
+export { compressAsync, decompressAsync } from "./utils/compressionAsync";
+
+// Default palette + style guide — what a fresh PageHub site ships with.
+// Standalone consumers should seed these on the ROOT Background's `theme` prop
+// so the canvas uses the same neutral white/black tokens the real app does.
+export {
+  DEFAULT_PALETTE,
+  DEFAULT_DARK_PALETTE,
+  DEFAULT_STYLE_GUIDE,
+  DEFAULT_BREAKPOINTS,
+  DENSITY_STEPS,
+} from "./utils/defaults";
+
+// Blocks provider — host-injected source for the Blocks toolbox panel catalog.
+// Default is the legacy HTTP fetcher at `/api/v1/components*`.
+export {
+  registerBlocksProvider,
+  resetBlocksProvider,
+  getBlocksProvider,
+  defaultHttpProvider as defaultHttpBlocksProvider,
+} from "./define/blocksProvider";
+export type {
+  BlocksProvider,
+  BlocksProviderQuery,
+  BlockCategory,
+  BlockSubcategory,
+  BlockItem,
+} from "./define/blocksProvider";
 
 // Type exports
 export type {
@@ -358,6 +412,18 @@ export type {
 
 // Save error classes — value exports (consumers `instanceof` against these).
 export { SaveConflictError, SaveEmptyError, SaveFailedError } from "./types";
+
+// Typed error hierarchy — all SDK-throws-host-can-catch extend PageHubError.
+// Consumers branch on `e instanceof PageHubError` and `e.code`. See
+// docs/sdk/extensibility.md for the full code table.
+export {
+  BlocksProviderError,
+  CatalogRegistryError,
+  ComponentDefinitionError,
+  ConfigError,
+  PageHubError,
+} from "./utils/errors";
+export type { PageHubErrorInit } from "./utils/errors";
 
 // Alias
 export type { PageSeo as PageHubSeo } from "./types";
@@ -406,12 +472,15 @@ export { mountUrlQueryStateBridge, getUrlState } from "./utils/state/urlQueryBri
 // publish per-instance ids so descendant presets can reference them via
 // `{{anchor.X}}` tokens in `id` / `action.target` / `state` condition keys.
 // Replaces the legacy first-mount `walkAndFix` placeholder-rewrite pattern.
-export {
-  AnchorProvider,
-  useAnchors,
-  resolveAnchors,
-  hasAnchorToken,
-} from "./utils/anchors/anchorContext";
+/** @internal */
+export { AnchorProvider } from "./utils/anchors/anchorContext";
+/** @internal */
+export { useAnchors } from "./utils/anchors/anchorContext";
+/** @internal */
+export { resolveAnchors } from "./utils/anchors/anchorContext";
+/** @internal */
+export { hasAnchorToken } from "./utils/anchors/anchorContext";
+/** @internal */
 export type { AnchorMap } from "./utils/anchors/anchorContext";
 
 /** Default Craft resolver map and built-in `defineComponent` defs (extend / merge for custom blocks). */
@@ -445,11 +514,29 @@ export { Text } from "./components/Text/Text";
 export { Video } from "./components/Video/Video";
 
 // Export store hooks for advanced use
-export { useView, usePreview, useEditorStore } from "./core/store";
+/** @internal */
+export { useView } from "./core/store";
+/** @internal */
+export { usePreview } from "./core/store";
+/** @internal */
+export { useEditorStore } from "./core/store";
+/** @internal */
 export type { ViewMode } from "./core/store";
 
-/** Main toolbar dock side + atom for integrations that need to mirror chrome. */
-export { SideBarAtom, useEditorSidebarDockLeft } from "./utils/atoms";
+/**
+ * Main toolbar dock side + atom for integrations that need to mirror chrome.
+ * @internal
+ */
+export { SideBarAtom } from "./utils/atoms";
+/** @internal */
+export { useEditorSidebarDockLeft } from "./utils/atoms";
+
+/**
+ * `React.lazy` helper for modules that use named exports. Used internally by
+ * `*.craft.tsx` files to avoid repeating `.then(m => ({ default: m.X }))`.
+ * @internal
+ */
+export { lazyNamed } from "./utils/lazyNamed";
 
 // Static rendering
 export { renderToHTML } from "./static-renderer/renderToHTML";

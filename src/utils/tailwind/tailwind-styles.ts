@@ -7,6 +7,7 @@
  */
 
 import colors from "tailwindcss/colors";
+import { ringOutlineClassKey } from "./ringOutlineClassKey";
 
 // ─── RootClassGenProps ─────────────────────────────────────────────────────
 
@@ -16,51 +17,16 @@ export const RootClassGenProps = [];
 // ─── Fonts ─────────────────────────────────────────────────────────────────
 
 export const fonts = [
-  ["Roboto"],
-  ["Open Sans"],
-  ["Lato"],
-  ["Montserrat"],
-  ["Oswald"],
-  ["Raleway"],
-  ["PT Sans"],
-  ["Source Sans Pro"],
-  ["Noto Sans"],
-  ["Merriweather"],
-  ["Playfair Display"],
-  ["Nunito"],
-  ["Inter"],
-  ["Rubik"],
-  ["Fira Sans"],
-  ["Poppins"],
-  ["Work Sans"],
-  ["Ubuntu"],
-  ["Mukta"],
-  ["Quicksand"],
-  ["Karla"],
-  ["Titillium Web"],
-  ["Bitter"],
-  ["Hind"],
-  ["Cabin"],
-  ["Crimson Text"],
-  ["Inconsolata"],
-  ["Oxygen"],
-  ["Droid Sans"],
-  ["Josefin Sans"],
-  ["EB Garamond"],
-  ["Abel"],
-  ["Lora"],
-  ["Noto Serif"],
-  ["Archivo Narrow"],
-  ["Pacifico"],
-  ["Orbitron"],
-  ["Press Start 2P"],
-  ["Permanent Marker"],
-  ["Bebas Neue"],
-  ["Russo One"],
-  ["Fredoka One"],
-  ["Lobster"],
-  ["Righteous"],
-  ["Indie Flower"],
+  ["Roboto"], ["Open Sans"], ["Lato"], ["Montserrat"], ["Oswald"],
+  ["Raleway"], ["PT Sans"], ["Source Sans Pro"], ["Noto Sans"], ["Merriweather"],
+  ["Playfair Display"], ["Nunito"], ["Inter"], ["Rubik"], ["Fira Sans"],
+  ["Poppins"], ["Work Sans"], ["Ubuntu"], ["Mukta"], ["Quicksand"],
+  ["Karla"], ["Titillium Web"], ["Bitter"], ["Hind"], ["Cabin"],
+  ["Crimson Text"], ["Inconsolata"], ["Oxygen"], ["Droid Sans"], ["Josefin Sans"],
+  ["EB Garamond"], ["Abel"], ["Lora"], ["Noto Serif"], ["Archivo Narrow"],
+  ["Pacifico"], ["Orbitron"], ["Press Start 2P"], ["Permanent Marker"],
+  ["Bebas Neue"], ["Russo One"], ["Fredoka One"], ["Lobster"],
+  ["Righteous"], ["Indie Flower"],
 ];
 
 // ─── Color palette helper ──────────────────────────────────────────────────
@@ -71,10 +37,9 @@ export function getColorPalette() {
   return Object.keys(colors)
     .filter(_ => !colorExclude.includes(_))
     .map(key => {
-      const color =
-        typeof colors[key] === "object"
-          ? Object.keys(colors[key]).map(_ => ({ key: _, color: colors[key][_] }))
-          : null;
+      const color = typeof colors[key] === "object"
+        ? Object.keys(colors[key]).map(_ => ({ key: _, color: colors[key][_] }))
+        : null;
       return color ? { key, color } : null;
     })
     .filter(_ => _);
@@ -1737,7 +1702,12 @@ export const TailwindStyles = {
     "rounded-field",
     "rounded-selector",
   ],
-  border: ["border", "border-2", "border-4", "border-8"],
+  border: [
+    "border",
+    "border-2",
+    "border-4",
+    "border-8",
+  ],
   borderStyle: [
     "border-solid",
     "border-dashed",
@@ -1746,7 +1716,15 @@ export const TailwindStyles = {
     "border-hidden",
     "border-none",
   ],
-  ringWidth: ["ring-0", "ring-1", "ring-2", "ring-4", "ring-8", "ring", "ring-inset"],
+  ringWidth: [
+    "ring-0",
+    "ring-1",
+    "ring-2",
+    "ring-4",
+    "ring-8",
+    "ring",
+    "ring-inset",
+  ],
   outlineWidth: [
     "outline-0",
     "outline-1",
@@ -1776,7 +1754,13 @@ export const TailwindStyles = {
     "outline-offset-8",
     "outline-offset",
   ],
-  outlineStyle: ["outline-none", "outline", "outline-dashed", "outline-dotted", "outline-double"],
+  outlineStyle: [
+    "outline-none",
+    "outline",
+    "outline-dashed",
+    "outline-dotted",
+    "outline-double",
+  ],
   shadow: [
     "shadow-sm",
     "shadow",
@@ -2013,48 +1997,6 @@ export const TailwindStyles = {
     "h-space-sm",
     "h-space-xl",
     "h-space-xs",
-  ],
-  size: [
-    "size-0",
-    "size-px",
-    "size-0.5",
-    "size-1",
-    "size-1.5",
-    "size-2",
-    "size-2.5",
-    "size-3",
-    "size-3.5",
-    "size-4",
-    "size-5",
-    "size-6",
-    "size-7",
-    "size-8",
-    "size-9",
-    "size-10",
-    "size-11",
-    "size-12",
-    "size-14",
-    "size-16",
-    "size-20",
-    "size-24",
-    "size-28",
-    "size-32",
-    "size-36",
-    "size-40",
-    "size-44",
-    "size-48",
-    "size-52",
-    "size-56",
-    "size-60",
-    "size-64",
-    "size-72",
-    "size-80",
-    "size-96",
-    "size-auto",
-    "size-full",
-    "size-min",
-    "size-max",
-    "size-fit",
   ],
   maxWidths: [
     "max-w-0",
@@ -3760,9 +3702,29 @@ export const TailwindStyles = {
     "divide-double",
     "divide-none",
   ],
-  divideX: ["divide-x", "divide-x-0", "divide-x-2", "divide-x-4", "divide-x-8", "divide-x-reverse"],
-  divideY: ["divide-y", "divide-y-0", "divide-y-2", "divide-y-4", "divide-y-8", "divide-y-reverse"],
-  divideStyle: ["divide-solid", "divide-dashed", "divide-dotted", "divide-double", "divide-none"],
+  divideX: [
+    "divide-x",
+    "divide-x-0",
+    "divide-x-2",
+    "divide-x-4",
+    "divide-x-8",
+    "divide-x-reverse",
+  ],
+  divideY: [
+    "divide-y",
+    "divide-y-0",
+    "divide-y-2",
+    "divide-y-4",
+    "divide-y-8",
+    "divide-y-reverse",
+  ],
+  divideStyle: [
+    "divide-solid",
+    "divide-dashed",
+    "divide-dotted",
+    "divide-double",
+    "divide-none",
+  ],
   opacity: [
     "opacity-0",
     "opacity-5",
@@ -3809,7 +3771,13 @@ export const TailwindStyles = {
     "contents",
     "list-item",
   ],
-  position: ["static", "fixed", "absolute", "relative", "sticky"],
+  position: [
+    "static",
+    "fixed",
+    "absolute",
+    "relative",
+    "sticky",
+  ],
   overflow: [
     "overflow-auto",
     "overflow-hidden",
@@ -3827,13 +3795,29 @@ export const TailwindStyles = {
     "overflow-x-scroll",
     "overflow-y-scroll",
   ],
-  flexDirection: ["flex-row", "flex-row-reverse", "flex-col", "flex-col-reverse"],
-  flexBase: ["flex-1", "flex-auto", "flex-initial", "flex-none"],
+  flexDirection: [
+    "flex-row",
+    "flex-row-reverse",
+    "flex-col",
+    "flex-col-reverse",
+  ],
+  flexBase: [
+    "flex-1",
+    "flex-auto",
+    "flex-initial",
+    "flex-none",
+  ],
   helpers: ["flex", "grid"],
   wrap: ["flex-wrap", "flex-wrap-reverse", "flex-nowrap"],
   grow: ["grow", "grow-0"],
   shrink: ["shrink", "shrink-0"],
-  alignItems: ["items-start", "items-end", "items-center", "items-baseline", "items-stretch"],
+  alignItems: [
+    "items-start",
+    "items-end",
+    "items-center",
+    "items-baseline",
+    "items-stretch",
+  ],
   justifyContent: [
     "justify-start",
     "justify-end",
@@ -3895,9 +3879,24 @@ export const TailwindStyles = {
     "grid-rows-none",
     "grid-rows-subgrid",
   ],
-  gridAutoFlow: ["grid-flow-row", "grid-flow-col", "grid-flow-row-dense", "grid-flow-col-dense"],
-  gridAutoColumns: ["auto-cols-auto", "auto-cols-min", "auto-cols-max", "auto-cols-fr"],
-  gridAutoRows: ["auto-rows-auto", "auto-rows-min", "auto-rows-max", "auto-rows-fr"],
+  gridAutoFlow: [
+    "grid-flow-row",
+    "grid-flow-col",
+    "grid-flow-row-dense",
+    "grid-flow-col-dense",
+  ],
+  gridAutoColumns: [
+    "auto-cols-auto",
+    "auto-cols-min",
+    "auto-cols-max",
+    "auto-cols-fr",
+  ],
+  gridAutoRows: [
+    "auto-rows-auto",
+    "auto-rows-min",
+    "auto-rows-max",
+    "auto-rows-fr",
+  ],
   gridColSpan: [
     "col-span-1",
     "col-span-2",
@@ -3997,7 +3996,12 @@ export const TailwindStyles = {
     "place-content-evenly",
     "place-content-stretch",
   ],
-  placeItems: ["place-items-start", "place-items-end", "place-items-center", "place-items-stretch"],
+  placeItems: [
+    "place-items-start",
+    "place-items-end",
+    "place-items-center",
+    "place-items-stretch",
+  ],
   placeSelf: [
     "place-self-auto",
     "place-self-start",
@@ -4421,7 +4425,15 @@ export const TailwindStyles = {
     "left-space-xl",
     "left-space-xs",
   ],
-  zIndex: ["z-0", "z-10", "z-20", "z-30", "z-40", "z-50", "z-auto"],
+  zIndex: [
+    "z-0",
+    "z-10",
+    "z-20",
+    "z-30",
+    "z-40",
+    "z-50",
+    "z-auto",
+  ],
   cursor: [
     "cursor-auto",
     "cursor-default",
@@ -4477,7 +4489,13 @@ export const TailwindStyles = {
     "order-last",
     "order-none",
   ],
-  objectFit: ["object-contain", "object-cover", "object-fill", "object-none", "object-scale-down"],
+  objectFit: [
+    "object-contain",
+    "object-cover",
+    "object-fill",
+    "object-none",
+    "object-scale-down",
+  ],
   objectPosition: [
     "object-bottom",
     "object-center",
@@ -4490,7 +4508,12 @@ export const TailwindStyles = {
     "object-top",
   ],
   aspectRatio: ["aspect-auto", "aspect-square", "aspect-video"],
-  textDecoration: ["underline", "overline", "line-through", "no-underline"],
+  textDecoration: [
+    "underline",
+    "overline",
+    "line-through",
+    "no-underline",
+  ],
   decorationStyle: [
     "decoration-solid",
     "decoration-double",
@@ -4507,10 +4530,27 @@ export const TailwindStyles = {
     "decoration-4",
     "decoration-8",
   ],
-  transform: ["uppercase", "lowercase", "capitalize", "normal-case"],
-  wordBreak: ["break-normal", "wrap-break-word", "break-all", "break-keep"],
+  transform: [
+    "uppercase",
+    "lowercase",
+    "capitalize",
+    "normal-case",
+  ],
+  wordBreak: [
+    "break-normal",
+    "wrap-break-word",
+    "break-all",
+    "break-keep",
+  ],
   textOverflow: ["truncate", "text-ellipsis", "text-clip"],
-  textAlign: ["text-left", "text-center", "text-right", "text-justify", "text-start", "text-end"],
+  textAlign: [
+    "text-left",
+    "text-center",
+    "text-right",
+    "text-justify",
+    "text-start",
+    "text-end",
+  ],
   whiteSpace: [
     "whitespace-normal",
     "whitespace-nowrap",
@@ -4518,7 +4558,12 @@ export const TailwindStyles = {
     "whitespace-pre-line",
     "whitespace-pre-wrap",
   ],
-  textWrap: ["text-wrap", "text-nowrap", "text-balance", "text-pretty"],
+  textWrap: [
+    "text-wrap",
+    "text-nowrap",
+    "text-balance",
+    "text-pretty",
+  ],
   hyphens: ["hyphens-none", "hyphens-manual", "hyphens-auto"],
   verticalAlign: [
     "align-baseline",
@@ -4535,8 +4580,18 @@ export const TailwindStyles = {
   float: ["float-right", "float-left", "float-none"],
   visibility: ["visible", "invisible", "collapse"],
   pointerEvents: ["pointer-events-none", "pointer-events-auto"],
-  userSelect: ["select-none", "select-text", "select-all", "select-auto"],
-  resize: ["resize-none", "resize-y", "resize-x", "resize"],
+  userSelect: [
+    "select-none",
+    "select-text",
+    "select-all",
+    "select-auto",
+  ],
+  resize: [
+    "resize-none",
+    "resize-y",
+    "resize-x",
+    "resize",
+  ],
   touchAction: [
     "touch-auto",
     "touch-none",
@@ -4558,13 +4613,23 @@ export const TailwindStyles = {
     "snap-mandatory",
     "snap-proximity",
   ],
-  scrollSnapAlign: ["snap-start", "snap-end", "snap-center", "snap-align-none"],
+  scrollSnapAlign: [
+    "snap-start",
+    "snap-end",
+    "snap-center",
+    "snap-align-none",
+  ],
   scrollSnapStop: ["snap-normal", "snap-always"],
   overscrollBehavior: ["overscroll-auto", "overscroll-contain", "overscroll-none"],
   overscrollBehaviorX: ["overscroll-x-auto", "overscroll-x-contain", "overscroll-x-none"],
   overscrollBehaviorY: ["overscroll-y-auto", "overscroll-y-contain", "overscroll-y-none"],
   appearance: ["appearance-none", "appearance-auto"],
-  bgClip: ["bg-clip-border", "bg-clip-padding", "bg-clip-content", "bg-clip-text"],
+  bgClip: [
+    "bg-clip-border",
+    "bg-clip-padding",
+    "bg-clip-content",
+    "bg-clip-text",
+  ],
   bgBlend: [
     "bg-blend-normal",
     "bg-blend-multiply",
@@ -4665,8 +4730,18 @@ export const TailwindStyles = {
   captionSide: ["caption-top", "caption-bottom"],
   content: ["content-none"],
   srOnly: ["sr-only", "not-sr-only"],
-  fill: ["fill-none", "fill-inherit", "fill-current", "fill-transparent"],
-  stroke: ["stroke-none", "stroke-inherit", "stroke-current", "stroke-transparent"],
+  fill: [
+    "fill-none",
+    "fill-inherit",
+    "fill-current",
+    "fill-transparent",
+  ],
+  stroke: [
+    "stroke-none",
+    "stroke-inherit",
+    "stroke-current",
+    "stroke-transparent",
+  ],
   strokeWidth: ["stroke-0", "stroke-1", "stroke-2"],
   indent: [
     "indent-0",
@@ -4752,8 +4827,20 @@ export const TailwindStyles = {
     "delay-700",
     "delay-1000",
   ],
-  ease: ["ease", "ease-linear", "ease-in", "ease-out", "ease-in-out"],
-  twAnimate: ["animate-none", "animate-spin", "animate-ping", "animate-pulse", "animate-bounce"],
+  ease: [
+    "ease",
+    "ease-linear",
+    "ease-in",
+    "ease-out",
+    "ease-in-out",
+  ],
+  twAnimate: [
+    "animate-none",
+    "animate-spin",
+    "animate-ping",
+    "animate-pulse",
+    "animate-bounce",
+  ],
   scale: [
     "scale-0",
     "scale-50",
@@ -4809,8 +4896,22 @@ export const TailwindStyles = {
     "-rotate-90",
     "-rotate-180",
   ],
-  skewX: ["skew-x-0", "skew-x-1", "skew-x-2", "skew-x-3", "skew-x-6", "skew-x-12"],
-  skewY: ["skew-y-0", "skew-y-1", "skew-y-2", "skew-y-3", "skew-y-6", "skew-y-12"],
+  skewX: [
+    "skew-x-0",
+    "skew-x-1",
+    "skew-x-2",
+    "skew-x-3",
+    "skew-x-6",
+    "skew-x-12",
+  ],
+  skewY: [
+    "skew-y-0",
+    "skew-y-1",
+    "skew-y-2",
+    "skew-y-3",
+    "skew-y-6",
+    "skew-y-12",
+  ],
   transformOrigin: [
     "origin-center",
     "origin-top",
@@ -5029,7 +5130,13 @@ export const TailwindStyles = {
   ],
   invert: ["invert-0", "invert"],
   backdropInvert: ["backdrop-invert-0", "backdrop-invert"],
-  saturate: ["saturate-0", "saturate-50", "saturate-100", "saturate-150", "saturate-200"],
+  saturate: [
+    "saturate-0",
+    "saturate-50",
+    "saturate-100",
+    "saturate-150",
+    "saturate-200",
+  ],
   backdropSaturate: [
     "backdrop-saturate-0",
     "backdrop-saturate-50",
@@ -5080,20 +5187,7 @@ for (const key of Object.keys(TailwindStyles)) {
 }
 // Custom PageHub color variants
 for (const color of ["primary", "secondary", "accent"]) {
-  for (const shade of [
-    "50",
-    "100",
-    "200",
-    "300",
-    "400",
-    "500",
-    "600",
-    "700",
-    "800",
-    "900",
-    "950",
-    "DEFAULT",
-  ]) {
+  for (const shade of ["50","100","200","300","400","500","600","700","800","900","950","DEFAULT"]) {
     const suffix = shade === "DEFAULT" ? "" : `-${shade}`;
     _allSet.add(`bg-${color}${suffix}`);
     _allSet.add(`text-${color}${suffix}`);
@@ -5219,9 +5313,8 @@ export const PREFIX_TO_KEY: Record<string, string> = {
 };
 
 // Sorted longest-prefix-first for correct matching
-export const PREFIX_ENTRIES: [string, string][] = Object.entries(PREFIX_TO_KEY).sort(
-  (a, b) => b[0].length - a[0].length
-);
+export const PREFIX_ENTRIES: [string, string][] = Object.entries(PREFIX_TO_KEY)
+  .sort((a, b) => b[0].length - a[0].length);
 
 // ─── Validation ────────────────────────────────────────────────────────────
 
@@ -5235,6 +5328,47 @@ export function isValidTailwindClass(cls: string): boolean {
   return false;
 }
 
-// `classNameToVar` lives in `./className.ts` — single resolution path so the
-// `text-` / `border-` / `font-` shadow-bug gates and the reverse index don't
-// drift between two parallel implementations.
+// ─── classNameToVar ────────────────────────────────────────────────────────
+
+/** Stems after `text-` that are font-size utilities, not text colors. */
+const CLASSNAME_TO_VAR_TEXT_SIZE_STEM =
+  /^(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)$/;
+
+/**
+ * Map a Tailwind class to its prop key.
+ * Uses reverse index for known classes, falls back to prefix matching for arbitrary values.
+ * Aligns with toolbar / className-first keys: `TailwindStyles` stores text colors under `text` but UI uses `color`.
+ */
+export const classNameToVar = (name: string): string | undefined => {
+  for (const key of Object.keys(TailwindStyles)) {
+    if (RootClassGenProps.includes(key)) continue;
+    if (Array.isArray(TailwindStyles[key]) && TailwindStyles[key].includes(name)) {
+      if (key === "text") return "color";
+      return key;
+    }
+  }
+  const ro = ringOutlineClassKey(name);
+  if (ro) return ro;
+  if (/^font-\(--[^)]+\)$/.test(name)) return "fontFamily";
+  if (name.startsWith("font-[") && name.endsWith("]")) {
+    const inner = name.slice(6, -1).trim();
+    const q0 = inner.charAt(0);
+    if (q0 === "'" || q0 === '"' || q0 === String.fromCharCode(96)) return "fontFamily";
+    if (/^family-name\s*:/.test(inner)) return "fontFamily";
+    if (/^\d{1,3}$/.test(inner)) return "fontWeight";
+    if (/^[A-Za-z0-9_\s-]+$/.test(inner) && /[A-Za-z]/.test(inner)) return "fontFamily";
+  }
+  for (const [prefix, key] of PREFIX_ENTRIES) {
+    if (name.startsWith(prefix)) {
+      if (
+        key === "fontSize" &&
+        name.startsWith("text-") &&
+        !CLASSNAME_TO_VAR_TEXT_SIZE_STEM.test(name.slice(5))
+      ) {
+        return "color";
+      }
+      return key;
+    }
+  }
+  return undefined;
+};

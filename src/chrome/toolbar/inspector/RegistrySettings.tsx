@@ -11,6 +11,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { TbBoxPadding, TbBrush, TbMouse, TbSettings } from "react-icons/tb";
+import { useSDK } from "../../../core/context";
 import { useDefaultTab } from "../../../utils/hooks/useDefaultTab";
 import { useScrollToActiveTab } from "../../../utils/hooks/useScrollToActiveTab";
 import { registerInspector } from "./InspectorRegistry";
@@ -153,19 +154,13 @@ function SearchResults({ search }: { search: string }) {
   );
 }
 
-// ─── Static sections array (built once, never changes) ─────────────────────
-
-const STATIC_SECTIONS = TABS.map(tab => ({
-  id: tab.id,
-  title: tab.title,
-  children: <StaticTabContent tabId={tab.id} />,
-}));
-
 // ─── Main shell ────────────────────────────────────────────────────────────
 
 export const RegistrySettings = () => {
   const { id } = useNode();
   const { query, actions } = useEditor();
+  const { config } = useSDK();
+  const inspectorTabsConfig = config.features?.inspectorTabs;
 
   // Force CraftJS store subscribers to re-collect after node context changes.
   // Without this, useNode(collector) in child components returns stale data
@@ -202,20 +197,33 @@ export const RegistrySettings = () => {
 
   const isInitialMount = useScrollToActiveTab(activeTab, setActiveTab, id);
 
-  // Head: update component tab title + icon via ref mutation — no new array
-  const headRef = useRef(TABS.map(t => ({ title: t.title, icon: t.icon })));
-  headRef.current[0].title = displayName || "Component";
-  const NodeIcon = resolveToolboxIcon(toolbar?.icon);
-  headRef.current[0].icon = <NodeIcon />;
+  // Per-component tab allowlist (host feature). Falls back to all tabs when unset.
+  // Keyed by displayName so the host can constrain Button/Text/etc. independently.
+  // Memoized so stable array identity flows through visibleHead / visibleSections.
+  const allowedTabIds = inspectorTabsConfig?.[displayName];
+  const filteredTabs = useMemo(() => {
+    if (!allowedTabIds || allowedTabIds.length === 0) return TABS;
+    const allowed = new Set(allowedTabIds);
+    return TABS.filter(t => allowed.has(t.id));
+  }, [allowedTabIds]);
 
-  const visibleHead = headRef.current;
+  const iconRef = toolbar?.icon;
+  const visibleHead = useMemo(() => {
+    const NodeIcon = resolveToolboxIcon(iconRef);
+    return filteredTabs.map(t =>
+      t.id === "component"
+        ? { title: displayName || "Component", icon: <NodeIcon /> }
+        : { title: t.title, icon: t.icon }
+    );
+  }, [filteredTabs, displayName, iconRef]);
+
   const visibleSections = useMemo(
     () =>
-      STATIC_SECTIONS.map((s, i) => ({
-        title: i === 0 ? displayName || "Component" : s.title,
-        children: s.children,
+      filteredTabs.map(t => ({
+        title: t.id === "component" ? displayName || "Component" : t.title,
+        children: <StaticTabContent tabId={t.id} />,
       })),
-    [displayName]
+    [filteredTabs, displayName]
   );
 
   useDefaultTab(visibleHead, activeTab, setActiveTab);

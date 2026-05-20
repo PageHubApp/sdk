@@ -24,6 +24,7 @@ export const EditorEmptyState = () => {
 
   const isCanvasMode = viewMode === "canvas";
   const hasComponents = components.length > 0;
+  const blocksEnabled = config.features?.blocksPanel?.enabled !== false;
 
   const handleComponentsClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -42,12 +43,14 @@ export const EditorEmptyState = () => {
           <div className="flex max-w-md flex-wrap items-center justify-center gap-1 text-sm">
             <div className="w-full space-y-6">
               <div className="grid grid-cols-1 gap-1">
-                <ActionRow
-                  icon={<TbLayoutGridAdd className="size-6" />}
-                  title="Add Blocks"
-                  description="Like heroes, CTAs, cards, and more…"
-                  onClick={handleAddSectionClick}
-                />
+                {blocksEnabled && (
+                  <ActionRow
+                    icon={<TbLayoutGridAdd className="size-6" />}
+                    title="Add Blocks"
+                    description="Like heroes, CTAs, cards, and more…"
+                    onClick={handleAddSectionClick}
+                  />
+                )}
 
                 <ActionRow
                   icon={<TbPlus className="size-6" />}

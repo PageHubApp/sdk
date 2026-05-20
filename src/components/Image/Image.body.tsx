@@ -30,6 +30,7 @@ import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../../utils/itemContext";
 import type { RenderCtx } from "../../render/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
+import { getImageSrcString, type ImageSrcSource } from "./imageProps";
 
 export const ImageDefault = ({ tab, props }: any) => {
   const setActiveTab = (_: any) => {};
@@ -48,11 +49,14 @@ export const ImageDefault = ({ tab, props }: any) => {
   );
 };
 
-export interface ImageProps extends BaseSelectorProps {
+export interface ImageProps extends BaseSelectorProps, ImageSrcSource {
   videoId?: string;
   type?: string;
   src?: string;
-  /** @deprecated Use `src` instead. */
+  /**
+   * @deprecated Legacy alias for `src`. Kept for back-compat reading of saved
+   * pages — never write to this field. See `imageProps.ts` for context.
+   */
   content?: string;
   url?: string;
   fetchPriority?: "high" | "low" | "auto" | "";
@@ -67,15 +71,7 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
   useRuntimeVarsVersion();
 
   const { videoId } = props;
-  const rawSrc = props.src ?? props.content;
-  const rawSrcStr =
-    rawSrc == null
-      ? ""
-      : typeof rawSrc === "string"
-        ? rawSrc
-        : typeof rawSrc === "number" || typeof rawSrc === "boolean"
-          ? String(rawSrc)
-          : "";
+  const rawSrcStr = getImageSrcString(props);
   const srcStr = rawSrcStr.includes("{{")
     ? replaceVariables(rawSrcStr, ctx.rootProps, itemContext)
     : rawSrcStr;

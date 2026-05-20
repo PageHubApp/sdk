@@ -86,7 +86,13 @@ export const ComponentSettings = () => {
   }, [components, customItems]);
 
   useEffect(() => {
-    const scoped = categoryFilter ? items.filter(item => item.title === categoryFilter) : items;
+    // Always drop empty categories from the render set so hardcoded `baseItems`
+    // shells (Forms, Media, Lists, etc.) don't render their headers when nothing
+    // is bucketed under them. The filter dropdown already does the same trim.
+    const nonEmpty = items.filter(item => item.content.length > 0 && !item.title.startsWith("__"));
+    const scoped = categoryFilter
+      ? nonEmpty.filter(item => item.title === categoryFilter)
+      : nonEmpty;
 
     if (search) {
       const searchTerm = search.toLowerCase();

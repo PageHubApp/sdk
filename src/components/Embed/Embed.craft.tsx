@@ -1,7 +1,6 @@
 /**
  * Embed — Component definition via defineComponent()
  */
-import React from "react";
 import {
   TbBrandInstagram,
   TbBrandSpotify,
@@ -19,30 +18,15 @@ import {
   TbShoppingBag,
 } from "react-icons/tb";
 import { defineComponent } from "../../define/defineComponent";
-import { Embed, resolveEmbedHTML } from "./Embed";
-import { staticClasses, tag, ariaAttrs, type ToHTMLFn } from "../../utils/staticHtml";
+import { lazyNamed } from "../../utils/lazyNamed";
+import { Embed } from "./Embed";
+import { toHTML } from "./Embed.toHTML";
 
-const toHTML: ToHTMLFn = (props, _children, ctx) => {
-  const html = resolveEmbedHTML(props);
+export { toHTML };
 
-  if (!html) return "";
-  const cls = staticClasses(props, ctx);
-  return tag(
-    "div",
-    {
-      class: cls || undefined,
-      role: "region",
-      "aria-label": props.title || "Embedded content",
-      ...ariaAttrs(props),
-    },
-    html
-  );
-};
-
-const EmbedMainTab = React.lazy(() =>
-  import("../../chrome/toolbar/inspector/mainTabs/EmbedMainTab").then(mod => ({
-    default: mod.EmbedMainTab,
-  }))
+const EmbedMainTab = lazyNamed(
+  () => import("../../chrome/toolbar/inspector/mainTabs/EmbedMainTab"),
+  "EmbedMainTab",
 );
 import {
   HoverNodeController,

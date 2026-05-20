@@ -127,9 +127,13 @@ export function useToolboxMenuModel() {
   const showPaste = canPasteHere && hasCraftClipboardPaste();
 
   const resolvedCraftType = menu.enabled && id ? resolveNodeTypeFromQuery(query, id) : null;
+  const blocksPanelEnabled = config.features?.blocksPanel?.enabled !== false;
   const showAddSection = Boolean(isCanvas && nodeType === "page");
   const showAddContainer = Boolean(isCanvas && nodeType !== "page" && nodeType !== "background");
-  const showBlockInsert = resolvedCraftType === NodeType.Section;
+  // `showBlockInsert` gates the contextual-menu "Insert block above/below" entries
+  // that open the Blocks panel via `openPanel("blocks")`. Hide them when the host
+  // has disabled the panel — otherwise the menu opens a non-existent surface.
+  const showBlockInsert = resolvedCraftType === NodeType.Section && blocksPanelEnabled;
   const showInsertComponentRow =
     resolvedCraftType === NodeType.Section ||
     resolvedCraftType === NodeType.Container ||

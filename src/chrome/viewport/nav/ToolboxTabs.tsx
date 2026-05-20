@@ -11,7 +11,15 @@ export const ToolboxTabs = () => {
   const renderToolboxAi = config.editorChromeSlots?.renderToolboxAiButton;
   const { panel, switchTab } = usePanelUrl();
 
-  const currentTab = panel === "blocks" ? "blocks" : "components";
+  const blocksEnabled = config.features?.blocksPanel?.enabled !== false;
+  const currentTab = panel === "blocks" && blocksEnabled ? "blocks" : "components";
+
+  // When blocks are disabled there's only one panel — skip the tab nav and
+  // render the components panel directly. Keeps the chrome honest (no single-
+  // tab dropdown) and reclaims the row of header space.
+  if (!blocksEnabled) {
+    return <ComponentSettings />;
+  }
 
   return (
     <SidebarTabsPane

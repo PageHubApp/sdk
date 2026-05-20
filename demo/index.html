@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PageHub SDK — Integration Demo</title>
 
-    <!-- Editor CSS — bundled from the SDK build -->
-    <link rel="stylesheet" href="../dist/editor.css" />
+    <!-- Editor CSS — bundled from the SDK build. ?v cache-buster: bump when dist rebuilt. -->
+    <link rel="stylesheet" href="../dist/editor.css?v=22" />
     <!-- Tailwind utilities for demo chrome -->
     <link rel="stylesheet" href="./demo.tailwind.css" />
 
@@ -344,6 +344,14 @@
       <div class="config-modal-content">
         <h2>SDK Configuration</h2>
         <div class="config-form-group">
+          <label>Editor Mode</label>
+          <select id="cfg-mode" style="width:100%;padding:8px;border-radius:6px;background:#1e293b;border:1px solid #334155;color:#e2e8f0;font-size:14px;">
+            <option value="default">Default — full editor</option>
+            <option value="email">Email — constrained (Text / Container / Button / Image, no Blocks)</option>
+            <option value="minimal">Minimal — toolbar only, no sidebar</option>
+          </select>
+        </div>
+        <div class="config-form-group">
           <label>API Base URL</label>
           <input type="text" id="cfg-apiBaseUrl" placeholder="http://localhost:3000 (optional)" />
         </div>
@@ -385,6 +393,10 @@
           <input type="checkbox" id="cfg-importExport" />
           <label for="cfg-importExport">Allow Import/Export</label>
         </div>
+        <div class="config-form-group config-form-flex">
+          <input type="checkbox" id="cfg-blocksPanel" />
+          <label for="cfg-blocksPanel">Show Blocks panel (uses bundled fixture provider)</label>
+        </div>
         <div class="config-buttons">
           <button onclick="document.getElementById('config-modal').style.display = 'none'">
             Cancel
@@ -418,9 +430,10 @@
       window.jsxRuntime.jsxDEV = window.jsxRuntime.jsx;
     </script>
 
-    <!-- Template data + SDK -->
+    <!-- Template data + SDK. ?v cache-buster: bump when dist rebuilt. -->
     <script src="./template-data-umd.js"></script>
-    <script src="../dist/pagehub.umd.cjs"></script>
+    <script src="./demo-blocks.js"></script>
+    <script src="../dist/pagehub.umd.cjs?v=22"></script>
 
     <!-- Demo app logic -->
     <script src="./demo.js"></script>

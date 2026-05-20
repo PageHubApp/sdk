@@ -185,14 +185,22 @@ export const ViewportTopBar = () => {
         data-tutorial="header"
       >
         <Item
-          ariaLabel="Insert blocks and components"
+          ariaLabel={
+            features?.blocksPanel?.enabled !== false
+              ? "Insert blocks and components"
+              : "Insert components"
+          }
           onMouseDown={e => e.stopPropagation()}
           onClick={e => {
             toggleToolboxInsert();
             e.stopPropagation();
           }}
           data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content="Insert blocks & components"
+          data-tooltip-content={
+            features?.blocksPanel?.enabled !== false
+              ? "Insert blocks & components"
+              : "Insert components"
+          }
           data-tooltip-place="bottom"
           data-tooltip-offset={10}
         >

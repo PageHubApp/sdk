@@ -7,6 +7,8 @@
 
 import type { Dispatch, MouseEvent, ReactNode, SetStateAction, WheelEvent } from "react";
 
+import { PageHubError } from "./utils/errors";
+
 // ─── Page data ────────────────────────────────────────────────────────────────
 
 /** Serialized page data — opaque to the customer, created/consumed by PageHub */
@@ -109,33 +111,36 @@ export interface SaveMeta {
 /** Status taps for the editor's save indicator (`SaveIndicator`, etc.). */
 export type SaveStatus = "idle" | "saving" | "saved" | "failed";
 
-export class SaveConflictError extends Error {
-  override name = "SaveConflictError";
+export class SaveConflictError extends PageHubError {
   constructor(
     public currentUpdatedAt: string,
     public reload: () => Promise<SaveResult>,
     public override: () => Promise<SaveResult>,
     public isDraft: boolean
   ) {
-    super("Save conflict");
+    super({ code: "SAVE_CONFLICT", message: "Save conflict" });
+    this.name = "SaveConflictError";
   }
 }
 
-export class SaveEmptyError extends Error {
-  override name = "SaveEmptyError";
+export class SaveEmptyError extends PageHubError {
   constructor() {
-    super("Nothing to save — editor canvas is empty or invalid");
+    super({
+      code: "SAVE_EMPTY",
+      message: "Nothing to save — editor canvas is empty or invalid",
+    });
+    this.name = "SaveEmptyError";
   }
 }
 
-export class SaveFailedError extends Error {
-  override name = "SaveFailedError";
+export class SaveFailedError extends PageHubError {
   constructor(
     message: string,
     public status?: number,
     public cause?: unknown
   ) {
-    super(message);
+    super({ code: "SAVE_FAILED", message });
+    this.name = "SaveFailedError";
   }
 }
 
@@ -273,6 +278,44 @@ export interface PageHubFeatures {
   responsivePreview?: boolean;
   /** Save directly without showing the domain/publish picker. Default: false */
   directSave?: boolean;
+  /**
+   * Blocks panel config. Object (not boolean) so future block-related settings
+   * can land here without another flag rename. Omit to keep stock behavior.
+   * See docs/sdk/host-constraints.md.
+   */
+  blocksPanel?: BlocksPanelFeature;
+  /**
+   * Per-component allowlist of inspector tabs. Omit a component to keep all tabs.
+   * Tab names: "component" | "layout" | "design" | "interactions" | "advanced".
+   * See docs/sdk/host-constraints.md.
+   */
+  inspectorTabs?: Partial<Record<string, InspectorTabName[]>>;
+  /**
+   * Filter classNames + inline style props at the input boundary. Used for
+   * constrained editor modes (e.g. email) where the output can't support all CSS.
+   * See docs/sdk/host-constraints.md.
+   */
+  cssAllowlist?: CssAllowlistFeature;
+}
+
+/** Inspector tab name — kept as string union here to avoid import cycle with the inspector registry. */
+export type InspectorTabName =
+  | "component"
+  | "layout"
+  | "design"
+  | "interactions"
+  | "advanced";
+
+export interface BlocksPanelFeature {
+  /** Show the Blocks tab in the toolbox. Default: true */
+  enabled?: boolean;
+}
+
+export interface CssAllowlistFeature {
+  /** A class is allowed if at least one regex matches its full token. */
+  classes?: RegExp[];
+  /** Whitelist of inline style property names (kebab-case as they appear in CSS). */
+  properties?: string[];
 }
 
 // ─── AI Configuration ─────────────────────────────────────────────────────────

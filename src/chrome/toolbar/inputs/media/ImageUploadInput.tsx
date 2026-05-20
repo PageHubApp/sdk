@@ -67,7 +67,7 @@ const updateNodeProps = (
   propKey = null,
   typeKey = null,
   id = null,
-  contentKey = "content"
+  contentKey = "src"
 ) => {
   setProp(_props => {
     _props.isLoading = isLoading;
@@ -87,7 +87,7 @@ export const ImageUploadInput: any = ({
   multiple = false,
   propKey,
   typeKey,
-  contentKey = "content",
+  contentKey = "src",
   onChange,
   index,
   label = "Upload Image",

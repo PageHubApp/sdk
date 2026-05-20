@@ -1,30 +1,17 @@
 /**
  * Background — Component definition via defineComponent()
  */
-import React from "react";
 import { TbContainer } from "react-icons/tb";
 import { defineComponent } from "../../define/defineComponent";
+import { lazyNamed } from "../../utils/lazyNamed";
 import { Background } from "./Background";
-import { staticClasses, getInlineStyle, tag, ariaAttrs, handlerAttrs, type ToHTMLFn } from "../../utils/staticHtml";
-import { resolveTheme } from "../../utils/design/resolveTheme";
+import { toHTML } from "./Background.toHTML";
 
-const toHTML: ToHTMLFn = (props, children, ctx) => {
-  const bgCtx = { ...ctx, palette: resolveTheme(props).palette };
-  return tag(
-    "main",
-    {
-      class: staticClasses(props, bgCtx) || undefined,
-      style: getInlineStyle(props) || undefined,
-      ...ariaAttrs(props),
-      ...handlerAttrs(props),
-    },
-    children
-  );
-};
-const BackgroundMainTab = React.lazy(() =>
-  import("../../chrome/toolbar/inspector/mainTabs/BackgroundMainTab").then(mod => ({
-    default: mod.BackgroundMainTab,
-  }))
+export { toHTML };
+
+const BackgroundMainTab = lazyNamed(
+  () => import("../../chrome/toolbar/inspector/mainTabs/BackgroundMainTab"),
+  "BackgroundMainTab",
 );
 import {
   HoverNodeController,

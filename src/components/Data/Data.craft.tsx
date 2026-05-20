@@ -1,15 +1,15 @@
-import React from "react";
 /** Data — Component definition via defineComponent(). */
 import { TbDatabase } from "react-icons/tb";
-const DataMainTab = React.lazy(() =>
-  import("../../chrome/toolbar/inspector/mainTabs/DataMainTab").then(mod => ({
-    default: mod.DataMainTab,
-  }))
-);
 import { defineComponent } from "../../define/defineComponent";
+import { lazyNamed } from "../../utils/lazyNamed";
 import { Data } from "./Data";
 import { layoutCanvasCanMoveIn } from "../layoutCanvasCanMoveIn";
-import { toHTML as dataToHTML } from "./toHTML";
+import { toHTML as dataToHTML } from "./Data.toHTML";
+
+const DataMainTab = lazyNamed(
+  () => import("../../chrome/toolbar/inspector/mainTabs/DataMainTab"),
+  "DataMainTab",
+);
 
 export const DataDef = defineComponent(
   {

@@ -1,30 +1,21 @@
 import useSWR from "swr";
+import { getBlocksProvider } from "../define/blocksProvider";
+import type { BlockCategory, BlockSubcategory } from "../define/blocksProvider";
 
-export interface BlockSubcategory {
-  name: string;
-  count: number;
-}
-
-export interface BlockCategory {
-  id: string;
-  name: string;
-  total: number;
-  subcategories: BlockSubcategory[];
-  styles: BlockSubcategory[];
-}
-
-const fetcher = (url: string) => fetch(url).then(r => r.json());
+// Re-export for backwards-compat with existing imports.
+export type { BlockCategory, BlockSubcategory };
 
 /**
  * Lightweight hook that fetches category metadata (names, counts, subcategories).
- * No structure data — fast and small payload.
+ * Goes through the registered BlocksProvider (HTTP by default — see
+ * `registerBlocksProvider`).
  */
 export function useBlockCategories() {
-  const { data, isLoading } = useSWR<{ categories: BlockCategory[] }>(
-    "/api/v1/components/categories",
-    fetcher,
+  const { data, isLoading } = useSWR<BlockCategory[]>(
+    "pagehub:blocks:categories",
+    () => getBlocksProvider().listCategories(),
     { revalidateOnFocus: false, revalidateOnReconnect: false, dedupingInterval: 120000 }
   );
 
-  return { categories: data?.categories || [], isLoading };
+  return { categories: data || [], isLoading };
 }

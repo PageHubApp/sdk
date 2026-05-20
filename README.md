@@ -220,9 +220,23 @@ editor.destroy();
 
 ---
 
-## Viewer
+## Three runtimes — import only what you need
 
-Display saved pages in read-only mode — no editor UI, smaller bundle:
+The SDK ships as three independent entry points. Pages built in the full editor render identically through all three:
+
+| Entry                          | Use for                                          | Ships                                                                | Doesn't ship                                              |
+| ------------------------------ | ------------------------------------------------ | -------------------------------------------------------------------- | --------------------------------------------------------- |
+| `@pagehub/sdk`                 | The visual editor                                | Full editor chrome, toolbox, inspector, TipTap, CodeMirror, GSAP    | —                                                         |
+| `@pagehub/sdk/viewer`          | Live published pages (React)                     | React render runtime, theme + animation presets, action handlers     | Editor chrome, TipTap, CodeMirror, GSAP editor harness    |
+| `@pagehub/sdk/static-renderer` | SSG / Node / edge / email HTML / build scripts   | Pure string-based HTML walker, theme CSS, class collector            | React, ReactDOM, any browser API                          |
+
+Use the editor on `/edit/[id]`, the viewer on `/preview/[id]`, and the static renderer in `getStaticProps`, an edge function, or a Node export script. Mix and match — same `content` payload everywhere.
+
+---
+
+## Viewer — read-only React mode
+
+Render saved pages with interactivity (forms, modals, scroll animations, conditional visibility) but without the editor:
 
 ```tsx
 import { PageHubViewer } from "@pagehub/sdk/viewer";
@@ -230,13 +244,18 @@ import { PageHubViewer } from "@pagehub/sdk/viewer";
 <PageHubViewer content={savedContent} resolver={resolver} />;
 ```
 
-> The viewer injects Tailwind CSS at runtime — no stylesheet import needed.
+- **No editor chrome.** Toolbox, inspector, settings panels, and the `pagehub-sdk-root` shell are all gone — just the page.
+- **No heavy editor deps.** TipTap, CodeMirror, GSAP editor harness, and the prop-system UI are tree-shaken out.
+- **Tailwind injected at runtime.** No stylesheet import needed; pass your own theme CSS via the host page if you want SSR-correct styling.
+- **Same `content` payload.** Whatever `onSave` gave you is what the viewer reads — no transform step.
+
+Good fit for: live published sites, preview routes, in-app page rendering, A/B test variants.
 
 ---
 
-## Static HTML Renderer
+## Static HTML Renderer — no React, no browser
 
-Render pages to HTML on the server — no React, no browser required. Works in Node, edge workers, or build scripts:
+Render pages to a plain HTML string from anywhere a function can run — Node scripts, edge workers, `getStaticProps`, email-template pipelines, search-engine snapshots:
 
 ```ts
 import { renderToHTML } from "@pagehub/sdk/static-renderer";
@@ -254,7 +273,14 @@ const { html } = renderToHTML(savedContent, {
 });
 ```
 
-When a **Container** uses **`overflow.dragScroll`**, **`overflow.autoHide`**, **`overflow.wheelHorizontal`**, **`overflow.smoothing`**, or **`overflow.hideDelay`** (all nested under `props.overflow`), the runtime and static HTML output add **`overflow-x-auto`** to **`className`** if there is no other **`overflow-x-*`** utility (so you can override in Classes). **`overflow.smoothing`** (0–0.5) optionally eases scroll toward the pointer each frame for a more fluid drag (0 = 1:1). `renderToHTML` may append a small script (alongside `scrollObserverScript`) that enables pointer-drag scrolling and wheel-to-horizontal behavior in the exported HTML. Layout the strip with a horizontal row (e.g. flex). These options are **CSS overflow UX**, not the GSAP **`scrollEffect`** (`horizontal-scroll` / `scroll-timeline`).
+- **Zero React dependency.** Walks the node tree and emits strings directly — runs in Cloudflare Workers, Deno, Bun, and Node without polyfills.
+- **Returns everything you need to ship.** `html` for the body, `classes` for Tailwind compilation/purging, `fontUrls` for `<link>` tags.
+- **Identical output to the viewer.** Same theme, same component registry, same action wiring — interactive scripts are inlined into the HTML where needed.
+- **`document: true`** wraps the output in a full `<html><head>...</head><body>` document, ready to write to disk or pipe into an email.
+
+Good fit for: SSG (Next.js / Astro / 11ty), `next export`, on-publish HTML uploads to a CDN, email rendering, search-engine prerender, static site exports for hosting elsewhere.
+
+> **Note on `Container.overflow.*`** — when a container uses `overflow.dragScroll`, `overflow.autoHide`, `overflow.wheelHorizontal`, `overflow.smoothing`, or `overflow.hideDelay`, both the viewer and `renderToHTML` add `overflow-x-auto` to `className` (unless another `overflow-x-*` utility is already set) and inline a small script that enables pointer-drag and wheel-to-horizontal scrolling. These are CSS overflow UX options, not the GSAP `scrollEffect` (`horizontal-scroll` / `scroll-timeline`).
 
 ---
 
@@ -279,20 +305,48 @@ The SDK ships with these drag-and-drop components out of the box:
 
 ### Custom Components
 
-Pass additional components via the `resolver`:
+Register your own draggable component with [`defineComponent`](../../docs/sdk/registration-host.md). One file, one function call, no SDK fork — the same `components` array is read by the editor, viewer, and static renderer.
 
 ```tsx
-<PageHubEditor resolver={{ ...defaultComponents, MyWidget }} />
-```
+import { PageHubEditor, defineComponent } from "@pagehub/sdk";
 
-Or in vanilla JS:
+const PricingCard = ({ title, price, period }) => (
+  <div className="rounded-box border p-6">
+    <h3>{title}</h3>
+    <p>${price}/{period}</p>
+  </div>
+);
 
-```ts
-PageHub.init({
-  resolver: { MyWidget },
-  // ...
+const PricingCardDef = defineComponent({
+  name: "PricingCard",
+  category: "Marketing",
+  component: PricingCard,
+  defaultProps: { title: "Pro", price: 29, period: "mo" },
+  props: {
+    title: { type: "text", label: "Plan Name" },
+    price: { type: "number", label: "Price", min: 0 },
+    period: { type: "select", label: "Period", options: [
+      { label: "Month", value: "mo" },
+      { label: "Year", value: "yr" },
+    ]},
+  },
+  toHTML: ({ props }) =>
+    `<div class="rounded-box border p-6"><h3>${props.title}</h3><p>$${props.price}/${props.period}</p></div>`,
 });
+
+<PageHubEditor
+  components={[PricingCardDef]}
+  callbacks={{ onLoad, onSave }}
+/>;
 ```
+
+Vanilla JS is the same — pass `components: [PricingCardDef]` into `PageHub.init()`.
+
+**Working starter:** [`examples/hello-component/`](./examples/hello-component) — copy/paste to get a custom component running in a few minutes.
+
+**Full reference:** [`docs/sdk/registration-host.md`](../../docs/sdk/registration-host.md) — every field on `defineComponent`, custom inspector UIs, `toHTML` rules, viewer/static parity, common gotchas.
+
+> If you're modifying the SDK itself to add a new **built-in** (alongside Container / Text / Button), the surface is different — 8 registrations inside `packages/sdk`. See [`docs/sdk/registration.md`](../../docs/sdk/registration.md). Host-app custom components do **not** need that checklist.
 
 ---
 

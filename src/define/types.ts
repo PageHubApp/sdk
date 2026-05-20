@@ -117,8 +117,12 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
   /** The React component that renders this element. */
   component: React.ComponentType<P>;
 
-  /** Static HTML renderer. Auto-generated fallback if omitted. */
-  toHTML?: ToHTMLFn;
+  /** Static HTML renderer. Auto-generated fallback if omitted.
+   *
+   * `props` is typed as `P` so authors get type narrowing on the props they
+   * declared via the generic — `defineComponent<{ title: string }>({ toHTML: ({ props }) => props.title.toUpperCase() })`.
+   */
+  toHTML?: ToHTMLFn<P>;
 
   /** Icon for the toolbox. react-icons name string, element, or component. */
   icon?: string | React.ReactElement | React.ComponentType;
@@ -129,14 +133,24 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
   /** Can hold child components? Default: false */
   canvas?: boolean;
 
-  /** Main settings panel component. */
+  /** Main settings panel component.
+   *
+   * NOTE: settings panels read props via CraftJS `useNode()` at runtime, not
+   * via a `props` React prop, so `P` is not propagated here. See
+   * `chrome/toolbar/inspector/mainTabs/*MainTab.tsx` for the canonical
+   * pattern (each panel calls `useNode(...)` internally).
+   */
   settings?: React.ComponentType;
 
-  /** Advanced settings tab (second tab). */
+  /** Advanced settings tab (second tab). Same `useNode()` pattern as `settings` — `P` is not propagated. */
   advancedSettings?: React.ComponentType;
 
-  /** Auto-generate settings panel from prop schema. Ignored if `settings` is provided. */
-  props?: Record<string, PropSchema>;
+  /** Auto-generate settings panel from prop schema. Ignored if `settings` is provided.
+   *
+   * Keys are constrained to `keyof P` so typos (`tittle` for `title`) are
+   * caught at type-check time when authors pass a typed generic.
+   */
+  props?: Partial<Record<keyof P, PropSchema>>;
 
   /** Sections of Inspector to hide. */
   disable?: string[];
@@ -164,8 +178,9 @@ export interface PageHubComponentDef<P extends Record<string, any> = Record<stri
   /** Group settings component (e.g. Image uses this). */
   groupSettings?: React.ComponentType<any>;
 
-  /** Default props for new instances. */
-  defaultProps?: Record<string, any>;
+  /** Default props for new instances. Typed as `Partial<P>` so authors get
+   *  IntelliSense + typo-checking when they pass a typed generic. */
+  defaultProps?: Partial<P>;
 
   /** Extra properties merged into .craft.props (for CraftJS default prop values). */
   craftProps?: Record<string, any>;

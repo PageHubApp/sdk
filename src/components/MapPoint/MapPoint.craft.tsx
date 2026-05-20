@@ -1,19 +1,17 @@
 /**
  * MapPoint — Component definition via defineComponent()
  */
-import React from "react";
 import { TbMapPin } from "react-icons/tb";
 import { defineComponent } from "../../define/defineComponent";
 import { MapPoint } from "./MapPoint";
-import type { ToHTMLFn } from "../../utils/staticHtml";
+import { toHTML } from "./MapPoint.toHTML";
+import { lazyNamed } from "../../utils/lazyNamed";
 
-// MapPoint data is encoded into the parent Map's `data-ph-map` JSON,
-// so the point itself emits nothing in static HTML.
-const toHTML: ToHTMLFn = () => "";
-const MapPointMainTab = React.lazy(() =>
-  import("../../chrome/toolbar/inspector/mainTabs/MapPointMainTab").then(mod => ({
-    default: mod.MapPointMainTab,
-  }))
+export { toHTML };
+
+const MapPointMainTab = lazyNamed(
+  () => import("../../chrome/toolbar/inspector/mainTabs/MapPointMainTab"),
+  "MapPointMainTab",
 );
 import { DeleteNodeController, SelectMapTool } from "../../chrome/editor-chrome";
 

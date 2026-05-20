@@ -4,6 +4,7 @@
  */
 
 import { twMerge } from "tailwind-merge";
+import { filterClassName, filterInlineStyle } from "../../../core/cssAllowlist";
 import {
   buildVariantPrefix,
   getClassForView,
@@ -205,5 +206,16 @@ export const changeProp = (props: PropType, delay = 2000) => {
           : props.view;
 
   const classDark = props.classDark ?? false;
-  setPropOnView({ ...props, view, classDark }, delay);
+
+  // Apply host-configured CSS allowlist at the single write chokepoint.
+  // Strings only — chip-driven inputs that pass arrays/objects are uneffected.
+  // Programmatic writes that bypass changeProp (CraftJS setProp direct, node
+  // creation from blocks/templates) are intentionally not filtered.
+  let filtered: any = props.value;
+  if (typeof filtered === "string") {
+    if (props.propKey === "className") filtered = filterClassName(filtered);
+    else if (props.propKey === "style") filtered = filterInlineStyle(filtered);
+  }
+
+  setPropOnView({ ...props, value: filtered, view, classDark }, delay);
 };

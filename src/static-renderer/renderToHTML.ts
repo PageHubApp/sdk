@@ -3,6 +3,7 @@ import { getLoadActionScript } from "../utils/actions/load";
 import { resolveTheme } from "../utils/design/resolveTheme";
 import { collectIconRefs } from "../utils/icons/collectIconRefs";
 import { preloadIcons } from "../utils/icons/serverResolve";
+import { PageHubError } from "../utils/errors";
 import { escapeHTML } from "../utils/staticHtml";
 import type { StaticRenderContext } from "../utils/staticHtml";
 import { processForStatic } from "../define/processors/forStatic";
@@ -179,7 +180,11 @@ export function renderToHTML(
   try {
     nodes = typeof json === "string" ? JSON.parse(json) : json;
   } catch (err) {
-    throw new Error(`[renderToHTML] Failed to parse node tree: ${err}`);
+    throw new PageHubError({
+      code: "STATIC_RENDER_PARSE_FAILED",
+      message: `[renderToHTML] Failed to parse node tree: ${err}`,
+      hint: "The `json` argument must be either a SerializedNodes object or a JSON string of one.",
+    });
   }
 
   if (!nodes || typeof nodes !== "object" || Array.isArray(nodes) || !nodes["ROOT"]) {

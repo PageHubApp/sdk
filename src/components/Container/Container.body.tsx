@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useAtomValue } from "@zedux/react";
 import { TbArrowDown, TbContainer, TbNote } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
+import { useSDKSafe } from "../../core/context";
 import { useIsolate, usePreview, useView } from "../../core/store";
 import { ViewModeAtom } from "../../utils/atoms";
 import { usePanelUrl } from "../../utils/usePanelUrl";
@@ -172,6 +173,8 @@ export function renderContainerBody(
   const parentItem = useItemContext();
   const anchors = useAnchors();
   const { open: openPanel } = usePanelUrl();
+  const sdk = useSDKSafe();
+  const blocksEnabled = sdk?.config?.features?.blocksPanel?.enabled !== false;
   useRuntimeVarsVersion();
   useShowHideVersion();
 
@@ -342,7 +345,11 @@ export function renderContainerBody(
     ...(props.type === "componentCanvas" ? { "data-component-canvas": "true" } : {}),
     children: (
       <RenderPatternBody props={props}>
-        {resolvedChildren ? (
+        {/* React passes `children` as an empty array (truthy!) for canvas
+            containers with no child nodes — `resolvedChildren ?` would always
+            take the truthy branch and the empty-state hint would never render.
+            Gate explicitly on `hasChildNodes` instead. */}
+        {ctx.hasChildNodes && resolvedChildren ? (
           resolvedChildren
         ) : ctx.isCanvasNode && !ctx.hasChildNodes && ctx.enabled && !suppressEmptyCanvasHint ? (
           <EditorEmptyLeafHint
@@ -363,7 +370,9 @@ export function renderContainerBody(
             }
             typeLabel={ctx.name}
             showActionIcons
-            onClick={props.type === "page" ? () => openPanel("blocks") : undefined}
+            onClick={
+              props.type === "page" && blocksEnabled ? () => openPanel("blocks") : undefined
+            }
           />
         ) : null}
       </RenderPatternBody>

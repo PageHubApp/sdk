@@ -51,6 +51,20 @@ export const Tools: any = {};
 
 export const SelectedNodeAtom = atom("selectedNode", { id: null, position: "" });
 
+/** Look up a component's resolver name. Checks `.craft.displayName` FIRST
+ *  because that's the only identifier guaranteed to survive minification
+ *  (Function.name gets mangled to e.g. "tne" in UMD builds). */
+function resolveCraftName(comp: any): string | undefined {
+  if (!comp) return undefined;
+  if (typeof comp === "string") return comp;
+  return (
+    comp.craft?.displayName ||
+    comp.resolvedName ||
+    comp.displayName ||
+    comp.name
+  );
+}
+
 function normalizeElementRefs(element: any, resolver: Record<string, any>): any {
   if (Array.isArray(element)) {
     return element.map(c => normalizeElementRefs(c, resolver));
@@ -63,17 +77,13 @@ function normalizeElementRefs(element: any, resolver: Record<string, any>): any 
 
   let newType: any = (element as any).type;
   if (typeof newType === "function") {
-    const n =
-      (newType as any).resolvedName || (newType as any).displayName || (newType as any).name;
+    const n = resolveCraftName(newType);
     if (n && resolver[n]) newType = resolver[n];
   }
 
   let newIs = is;
   if (is !== undefined) {
-    const n =
-      typeof is === "string"
-        ? is
-        : (is as any)?.resolvedName || (is as any)?.displayName || (is as any)?.name;
+    const n = resolveCraftName(is);
     if (n && resolver[n]) newIs = resolver[n];
   }
 
@@ -114,8 +124,7 @@ export function buildToolboxCanvasElement(
     if (typeof element === "string") {
       resolvedElement = resolver[element] ?? element;
     } else if (element) {
-      const el = element as any;
-      const name = el.resolvedName || el.displayName || el.name;
+      const name = resolveCraftName(element);
       if (name && resolver[name]) resolvedElement = resolver[name];
     }
   }

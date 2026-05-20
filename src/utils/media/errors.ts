@@ -1,3 +1,5 @@
+import { PageHubError } from "../errors";
+
 export type MediaUploadErrorCode =
   | "too_large"
   | "bad_mime"
@@ -8,14 +10,36 @@ export type MediaUploadErrorCode =
   | "network"
   | "unknown";
 
-export class MediaUploadError extends Error {
-  code: MediaUploadErrorCode;
+/**
+ * Map the lowercase MediaUploadErrorCode → canonical SCREAMING_SNAKE_CASE
+ * `code` exposed via `PageHubError.code`. The original lowercase value is
+ * preserved on the instance as `code` (typed as MediaUploadErrorCode) for
+ * existing consumers; new consumers can rely on `e instanceof PageHubError`
+ * and `e.code`.
+ */
+const MEDIA_CODE_MAP: Record<MediaUploadErrorCode, string> = {
+  too_large: "MEDIA_TOO_LARGE",
+  bad_mime: "MEDIA_BAD_MIME",
+  quota: "MEDIA_QUOTA",
+  cf_rejected: "MEDIA_CF_REJECTED",
+  auth: "MEDIA_AUTH",
+  rate_limited: "MEDIA_RATE_LIMITED",
+  network: "MEDIA_NETWORK",
+  unknown: "MEDIA_UNKNOWN",
+};
+
+export class MediaUploadError extends PageHubError {
+  // Override the base `code` with the narrower legacy lowercase union for
+  // backwards compat — consumers that destructure `{ code }` keep working with
+  // the same values. The SCREAMING_SNAKE_CASE PageHubError code is still
+  // assigned via super().
+  declare readonly code: MediaUploadErrorCode;
   status?: number;
 
   constructor(code: MediaUploadErrorCode, message: string, status?: number) {
-    super(message);
+    super({ code: MEDIA_CODE_MAP[code] ?? "MEDIA_UNKNOWN", message });
     this.name = "MediaUploadError";
-    this.code = code;
+    (this as { code: MediaUploadErrorCode }).code = code;
     this.status = status;
   }
 }

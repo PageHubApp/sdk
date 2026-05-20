@@ -18,6 +18,7 @@ import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/component
 import { PageHubProvider, useHasSDKProvider, useSDK } from "./core/context";
 import { EventEmitter } from "./core/events";
 import { getSaveCoordinator } from "./core/saveCoordinator";
+import { getComponentAllowlist } from "./define/componentAllowlist";
 import { CustomComponentsContext } from "./define/context";
 import { processForEditor } from "./define/processors/forEditor";
 import type { ResolvedComponentDef } from "./define/types";
@@ -31,6 +32,7 @@ import type {
 } from "./types";
 import { BatchOperationAtom, EditorSaveBannerAtom, useSetAtomState } from "./utils/atoms";
 import { compressAsync, decompressAsync } from "./utils/compressionAsync";
+import { ConfigError } from "./utils/errors";
 import { clearLoadedPages, listPageNodeIds, markPageLoaded } from "./utils/page/pageManagement";
 import { extractPageShard, extractSharedShard } from "./utils/treeSharding";
 
@@ -334,9 +336,12 @@ export function PageHubEditor(props: PageHubEditorProps) {
   if (!hasProvider) {
     // Standalone mode — create provider + emitter automatically
     if (!props.callbacks) {
-      throw new Error(
-        "[PageHub] <PageHubEditor> requires callbacks prop when used without <PageHubProvider>"
-      );
+      throw new ConfigError({
+        code: "CONFIG_CALLBACKS_REQUIRED",
+        message:
+          "[PageHub] <PageHubEditor> requires callbacks prop when used without <PageHubProvider>",
+        hint: "Either pass `callbacks={{ onSave, onLoad }}` directly, or wrap the editor in <PageHubProvider config={...}>.",
+      });
     }
     return <PageHubEditorStandalone {...props} callbacks={props.callbacks} />;
   }
@@ -413,8 +418,27 @@ function PageHubEditorInner({
     };
   }, [config.presets, config.modifiers]);
 
-  // Process component definitions (built-in migrated + consumer custom) into resolver + toolbox data
-  const allDefs = React.useMemo(() => [...BUILTIN_COMPONENT_DEFS, ...components], [components]);
+  // Process component definitions (built-in migrated + consumer custom) into resolver + toolbox data.
+  //
+  // Two host-supplied filters apply here before the toolbox is built:
+  //  1. `registerComponentAllowlist(...)` — when set, ONLY listed components survive.
+  //  2. `features.restrictedComponents` — deny-list applied after the allowlist.
+  //
+  // The resolver still receives every built-in component (so deserialized nodes from
+  // pre-existing data can hydrate) — only the toolbox-visible defs are trimmed.
+  const restrictedSet = React.useMemo(
+    () => new Set(config.features?.restrictedComponents ?? []),
+    [config.features?.restrictedComponents]
+  );
+  const allDefs = React.useMemo(() => {
+    const allowlist = getComponentAllowlist();
+    const merged = [...BUILTIN_COMPONENT_DEFS, ...components];
+    return merged.filter(def => {
+      if (allowlist && !allowlist.has(def.name)) return false;
+      if (restrictedSet.has(def.name)) return false;
+      return true;
+    });
+  }, [components, restrictedSet]);
   const { resolver: customResolver, toolboxCategories } = React.useMemo(
     () => processForEditor(allDefs, Inspector),
     [allDefs]

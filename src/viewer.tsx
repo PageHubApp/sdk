@@ -14,6 +14,7 @@ import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { EditorStoreProvider } from "./core/store";
 import { injectTailwindBrowser } from "./core/tailwindBrowser";
 import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
+import { ConfigError } from "./utils/errors";
 import { processForViewer } from "./define/processors/forViewer";
 import type { ResolvedComponentDef } from "./define/types";
 
@@ -134,7 +135,12 @@ export function renderViewer(options: ViewerRenderOptions): () => void {
   let containerEl: HTMLElement;
   if (typeof options.container === "string") {
     const el = document.querySelector(options.container);
-    if (!el) throw new Error(`[PageHub Viewer] Element not found: ${options.container}`);
+    if (!el)
+      throw new ConfigError({
+        code: "CONFIG_CONTAINER_NOT_FOUND",
+        message: `[PageHub Viewer] Element not found: ${options.container}`,
+        hint: "The selector did not match any DOM node. Confirm the element exists before calling PageHubViewer.init().",
+      });
     containerEl = el as HTMLElement;
   } else {
     containerEl = options.container;

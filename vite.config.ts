@@ -59,6 +59,15 @@ export default defineConfig(({ mode, command }) => {
     },
     define: {
       "process.env.NODE_ENV": JSON.stringify("production"),
+      // SDK standalone builds run in browsers where `process` is undefined.
+      // Code in utils/cdn.ts references literal `process.env.NEXT_PUBLIC_*`
+      // because Next.js requires literal access for client-side inlining;
+      // replace them at build time with empty strings so the standalone bundle
+      // doesn't crash on `process is not defined`. Hosts that need a CDN call
+      // `configureCdn()` at runtime instead of relying on env.
+      "process.env.NEXT_PUBLIC_CDN_BASE_URL": JSON.stringify(""),
+      "process.env.NEXT_PUBLIC_CDN_ACCOUNT_HASH": JSON.stringify(""),
+      "process.env.NEXT_PUBLIC_CDN_VARIANT": JSON.stringify(""),
     },
     build: {
       minify: true,

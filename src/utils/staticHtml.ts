@@ -82,9 +82,16 @@ export interface StaticRenderContext {
   currentPath?: string;
 }
 
-/** Signature every `.craft.toHTML` must implement */
-export type ToHTMLFn = (
-  props: Record<string, any>,
+/** Signature every `.craft.toHTML` must implement.
+ *
+ * Generic over the component's props shape so `defineComponent<P>(...)` can
+ * narrow `props` for host authors. Defaults to `Record<string, any>` so
+ * existing non-generic call sites (every built-in toHTML module, the
+ * fallback in `helpers.ts`, processor resolvers in `forStatic.ts`) keep
+ * compiling untouched.
+ */
+export type ToHTMLFn<P = Record<string, any>> = (
+  props: P,
   childrenHTML: string,
   ctx: StaticRenderContext
 ) => string;

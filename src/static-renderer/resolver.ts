@@ -1,5 +1,5 @@
 import { toHTML as containerToHTML } from "../components/Container/Container.craft";
-import { toHTML as dataToHTML } from "../components/Data/toHTML";
+import { toHTML as dataToHTML } from "../components/Data/Data.toHTML";
 import { BUILTIN_COMPONENT_DEFS } from "../core/componentRegistry";
 import { processForStatic } from "../define/processors/forStatic";
 import {

@@ -113,6 +113,19 @@ pnpm run dev
 pnpm run typecheck
 ```
 
+## Generated files (do NOT hand-edit)
+
+A few files in the SDK are auto-generated and committed. The generators run automatically in `prebuild`; you only need to invoke them manually when you bump a dependency and want to refresh the snapshot.
+
+| File                                                          | Generator                                                  | Regen / Verify                                                                |
+| ------------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `packages/sdk/src/utils/tailwind/tailwind-styles.ts`          | `scripts/generate-tailwind-styles.js`                      | `pnpm gen:tailwind-styles` / `pnpm verify:tailwind-styles` (CI drift gate)    |
+| `public/vendor/daisyui-blocks.css`                            | `scripts/generate-daisyui-blocks-css.mjs`                  | `pnpm gen:daisyui-blocks` / `pnpm verify:daisyui-blocks`                      |
+| `packages/sdk/src/data/icon-svgs/*.json`                      | `scripts/generate-react-icons-svg-registry.mjs`            | `pnpm gen:icons`                                                              |
+| `packages/sdk/src/core/themeInline.generated.ts` + `theme.css` | `scripts/generate-theme-css.mjs`                           | `pnpm gen:tokens` / `pnpm verify:tokens`                                      |
+
+When you bump Tailwind, DaisyUI, or `react-icons`, run the corresponding `gen:` script and commit the resulting file. CI's `verify:` gate will fail otherwise.
+
 ## Pull Requests
 
 1. Fork the repo and create a branch from `main`

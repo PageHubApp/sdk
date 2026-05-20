@@ -1,4 +1,6 @@
 import React from "react";
+
+import { ComponentDefinitionError } from "../../utils/errors";
 import type {
   PropSchema,
   ResolvedComponentDef,
@@ -141,6 +143,15 @@ function attachCraft(
   }
 
   component.craft = craft;
+
+  // Mirror craft.displayName onto the React component's own displayName so
+  // CraftJS internals + React DevTools identify the component correctly. In
+  // minified UMD builds, Function.name gets mangled (e.g. "tne") — without
+  // this assignment the resolver-by-reference lookup in @craftjs/core's
+  // toNodeTree fails with a bare "Invariant failed" on every toolbox drag.
+  if (!component.displayName) {
+    component.displayName = def.displayName;
+  }
 }
 
 /**
@@ -162,9 +173,11 @@ export function processForEditor(
   const seen = new Set<string>();
   for (const def of defs) {
     if (seen.has(def.name)) {
-      throw new Error(
-        `[PageHub] Duplicate component name: "${def.name}". Each component must have a unique name.`
-      );
+      throw new ComponentDefinitionError({
+        code: "COMPONENT_NAME_DUPLICATE",
+        message: `[PageHub] Duplicate component name: "${def.name}". Each component must have a unique name.`,
+        hint: "Two defineComponent calls used the same name. Rename one or de-duplicate the registration.",
+      });
     }
     seen.add(def.name);
 

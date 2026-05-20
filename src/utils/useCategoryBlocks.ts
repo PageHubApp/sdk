@@ -1,33 +1,9 @@
 import useSWR from "swr";
-import { tryDecompressBase64LzToJson } from "./lz";
+import { getBlocksProvider } from "../define/blocksProvider";
+import type { BlockItem } from "../define/blocksProvider";
 
-export interface BlockItem {
-  _id: string;
-  slug: string;
-  name: string;
-  category: string;
-  subcategory?: string;
-  styles?: string[];
-  description?: string;
-  structure: any;
-  modifiers?: Record<string, { name: string; classes: string }[]>;
-}
-
-const fetcher = (url: string) =>
-  fetch(url)
-    .then(r => r.json())
-    .then(data => ({
-      ...data,
-      components: Array.isArray(data?.components)
-        ? data.components.map((component: any) => {
-            const structure =
-              typeof component?.structure === "string"
-                ? tryDecompressBase64LzToJson(component.structure)
-                : component?.structure;
-            return structure ? { ...component, structure } : component;
-          })
-        : [],
-    }));
+// Re-export for backwards-compat with existing imports.
+export type { BlockItem };
 
 /**
  * Fetches blocks for a specific category (with full structure) on demand.
@@ -38,32 +14,26 @@ export function useCategoryBlocks(
   subcategory?: string | null,
   style?: string | null
 ) {
-  const params = new URLSearchParams();
-  if (category) {
-    params.set("category", category);
-    params.set("include", "structure");
-    params.set("limit", "100");
-    params.set("sort", "name");
-  }
-  if (subcategory) {
-    params.set("subcategory", subcategory);
-  }
-  if (style) {
-    params.set("style", style);
-  }
+  // SWR key uses delimiters that won't collide with category/subcategory/style strings.
+  const key = category
+    ? `pagehub:blocks:category|${category}|${subcategory ?? ""}|${style ?? ""}`
+    : null;
 
-  const key = category ? `/api/v1/components?${params.toString()}` : null;
+  const { data, isLoading } = useSWR<BlockItem[]>(
+    key,
+    () =>
+      getBlocksProvider().listBlocks({
+        category: category!,
+        subcategory: subcategory || undefined,
+        style: style || undefined,
+        limit: 100,
+        sort: "name",
+        includeStructure: true,
+      }),
+    { revalidateOnFocus: false, revalidateOnReconnect: false, dedupingInterval: 120000 }
+  );
 
-  const { data, isLoading } = useSWR(key, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 120000,
-  });
-
-  return {
-    blocks: (data?.components || []) as BlockItem[],
-    isLoading,
-  };
+  return { blocks: data || [], isLoading };
 }
 
 /**
@@ -72,23 +42,20 @@ export function useCategoryBlocks(
  */
 export function useBlockSearch(query: string | null, style?: string | null) {
   const trimmed = query?.trim() ?? "";
-  const params = new URLSearchParams();
-  if (trimmed.length >= 2) {
-    params.set("q", trimmed);
-    params.set("include", "structure");
-    params.set("limit", "30");
-    params.set("sort", "name");
-    if (style) params.set("style", style);
-  }
-  const key = trimmed.length >= 2 ? `/api/v1/components?${params.toString()}` : null;
+  const key = trimmed.length >= 2 ? `pagehub:blocks:search|${trimmed}|${style ?? ""}` : null;
 
-  const { data, isLoading } = useSWR(key, fetcher, {
-    revalidateOnFocus: false,
-    dedupingInterval: 30000,
-  });
+  const { data, isLoading } = useSWR<BlockItem[]>(
+    key,
+    () =>
+      getBlocksProvider().listBlocks({
+        search: trimmed,
+        style: style || undefined,
+        limit: 30,
+        sort: "name",
+        includeStructure: true,
+      }),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    blocks: (data?.components || []) as BlockItem[],
-    isLoading,
-  };
+  return { blocks: data || [], isLoading };
 }

@@ -9,17 +9,16 @@
  * it into a nested container in a section morphs it into a "Card". Base Container
  * drops stay vanilla.
  */
-import React from "react";
 import { TbAdjustmentsAlt } from "react-icons/tb";
 import { defineComponent } from "../../define/defineComponent";
+import { lazyNamed } from "../../utils/lazyNamed";
 import { Container } from "../Container/Container";
-import { toHTML } from "../Container/Container.craft";
+import { toHTML } from "../Container/Container.toHTML";
 import { layoutCanvasCanMoveIn } from "../layoutCanvasCanMoveIn";
 
-const ContainerMainTab = React.lazy(() =>
-  import("../../chrome/toolbar/inspector/mainTabs/ContainerMainTab").then(m => ({
-    default: m.ContainerMainTab,
-  }))
+const ContainerMainTab = lazyNamed(
+  () => import("../../chrome/toolbar/inspector/mainTabs/ContainerMainTab"),
+  "ContainerMainTab",
 );
 
 export const AutomaticDef = defineComponent(
