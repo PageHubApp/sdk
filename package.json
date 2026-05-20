@@ -65,6 +65,7 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build && vite build --config vite.editor-css.config.ts && pnpm run build:viewer && pnpm run build:demo-css",
+    "build:editor-css": "vite build --config vite.editor-css.config.ts",
     "build:viewer": "vite build --mode viewer",
     "build:demo-css": "tailwindcss -i ./demo/tailwind.input.css -o ./demo/demo.tailwind.css --minify",
     "preview": "vite preview",
