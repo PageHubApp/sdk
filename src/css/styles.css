@@ -1,9 +1,15 @@
-@import "tailwindcss";
 /* Order: daisyui-spatial before theme.css. Currently inert (theme.css doesn't
    redefine spatial tokens) but reserves the cascade for later phases that move
    spatial into the schema. See Phase 0a in docs/sdk/token-system-implementation-blueprint.md. */
 @import "../../../daisyui-spatial/src/index.css";
 @import "./theme.css";
+
+/* Tailwind core is brought in by the host app (e.g. styles/globals.css).
+   Using `@reference` here makes the file's `@theme inline` block aware of
+   the tailwind theme without re-emitting all utilities — preventing two
+   parallel Tailwind builds (one layered, one unlayered) from fighting in
+   the cascade. Must come AFTER @imports per postcss-import. */
+@reference "tailwindcss";
 
 @source "../";
 

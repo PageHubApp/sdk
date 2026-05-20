@@ -1,4 +1,3 @@
-@import "tailwindcss";
 @import "./editor-partials/tailwind-theme-reference.css";
 @import "./editor-partials/utilities.css";
 @import "./editor-partials/icons-and-mobile-preview.css";
@@ -11,5 +10,11 @@
 
 @import "./editor-partials/modifiers.css";
 @import "./editor-partials/viewport-canvas-chrome-vars.css";
+
+/* Host (styles/globals.css) already brings in tailwindcss; @reference makes the
+   @apply directives in editor-partials/ resolve without re-emitting utilities,
+   avoiding the layered-vs-unlayered cascade collision documented in
+   .claude/rules/css-architecture.md. Must come AFTER @imports per postcss-import. */
+@reference "tailwindcss";
 
 @source "../"; /* scan SDK source (.tsx/.ts) for class usage */
