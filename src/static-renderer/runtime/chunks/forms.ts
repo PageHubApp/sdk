@@ -129,6 +129,7 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
             pageId: PAGE_ID,
             formData: data,
             formName: formName,
+            pagePath: location.pathname,
           };
           if (meta) {
             if (meta.mailto) body.mailTo = meta.mailto;
