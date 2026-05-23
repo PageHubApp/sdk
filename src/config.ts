@@ -22,6 +22,9 @@ const DEFAULT_FEATURES: Required<PageHubFeatures> = {
   restrictedComponents: [],
   responsivePreview: true,
   directSave: false,
+  saveButton: true,
+  settingsPanelSwitcher: true,
+  darkModeSwitcher: true,
   // Default disabled — the Blocks panel fetches its catalog from the host app
   // (/api/v1/components*). Standalone SDK consumers don't have that endpoint,
   // so opt-in via `features.blocksPanel: { enabled: true }` after wiring a

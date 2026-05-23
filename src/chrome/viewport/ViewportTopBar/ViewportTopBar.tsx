@@ -307,16 +307,18 @@ export const ViewportTopBar = () => {
           {viewMode === "page" ? <TbBoxModel2 /> : <TbFileText />}
         </Item>
 
-        <Item
-          ariaLabel="Publish"
-          onClick={() => open("publish")}
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content="Publish"
-          data-tooltip-place="bottom"
-          data-tooltip-offset={10}
-        >
-          <SaveIndicator />
-        </Item>
+        {features.saveButton !== false && (
+          <Item
+            ariaLabel="Publish"
+            onClick={() => open("publish")}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Publish"
+            data-tooltip-place="bottom"
+            data-tooltip-offset={10}
+          >
+            <SaveIndicator />
+          </Item>
+        )}
 
         <Item
           ariaLabel="More Options"

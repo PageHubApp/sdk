@@ -278,6 +278,12 @@ export interface PageHubFeatures {
   responsivePreview?: boolean;
   /** Save directly without showing the domain/publish picker. Default: false */
   directSave?: boolean;
+  /** Show the save/publish button in the top toolbar. Default: true */
+  saveButton?: boolean;
+  /** Show the "Left/Right Settings Panel" toggle in the More menu. Default: true */
+  settingsPanelSwitcher?: boolean;
+  /** Show the "Switch to Dark/Light Theme" toggle in the More menu. Default: true */
+  darkModeSwitcher?: boolean;
   /**
    * Blocks panel config. Object (not boolean) so future block-related settings
    * can land here without another flag rename. Omit to keep stock behavior.

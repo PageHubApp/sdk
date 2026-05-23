@@ -143,15 +143,18 @@ Toggle editor capabilities on or off:
 
 ```ts
 features: {
-  sidebar: true,              // component panel
-  toolbar: true,              // top toolbar
-  aiGeneration: false,        // AI content generation (requires ai config)
-  multiPage: true,            // multi-page site editing
-  responsivePreview: true,    // device preview toggle
-  seoPanel: true,             // SEO settings
-  importExport: false,        // JSON import/export UI
-  customCSS: false,           // CSS editor panel
-  restrictedComponents: [],   // component names to hide from toolbox
+  sidebar: true,                  // component panel
+  toolbar: true,                  // top toolbar
+  saveButton: true,               // save/publish button in top toolbar
+  aiGeneration: false,            // AI content generation (requires ai config)
+  multiPage: true,                // multi-page site editing
+  responsivePreview: true,        // device preview toggle
+  seoPanel: true,                 // SEO settings
+  importExport: true,             // Import/Export row in More menu
+  settingsPanelSwitcher: true,    // "Left/Right Settings Panel" row in More menu
+  darkModeSwitcher: true,         // "Switch to Dark/Light Theme" row in More menu
+  customCSS: false,               // CSS editor panel
+  restrictedComponents: [],       // component names to hide from toolbox
 }
 ```
 

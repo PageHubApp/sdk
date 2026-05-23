@@ -330,43 +330,52 @@ export const EditorNavigation = ({
                         }}
                       />
 
-                      <EditorMenuNavRow
-                        icon={<TbDownload />}
-                        label={<div className="text-sm">Import / Export</div>}
-                        kbd={<EditorMenuKbd>⌘⇧E</EditorMenuKbd>}
-                        onClick={() => {
-                          open("import-export");
-                        }}
-                      />
+                      {config.features?.importExport !== false && (
+                        <EditorMenuNavRow
+                          icon={<TbDownload />}
+                          label={<div className="text-sm">Import / Export</div>}
+                          kbd={<EditorMenuKbd>⌘⇧E</EditorMenuKbd>}
+                          onClick={() => {
+                            open("import-export");
+                          }}
+                        />
+                      )}
 
                       {/* ── Preferences ── */}
-                      <EditorMenuSectionLabel>Preferences</EditorMenuSectionLabel>
+                      {(config.features?.settingsPanelSwitcher !== false ||
+                        config.features?.darkModeSwitcher !== false) && (
+                        <EditorMenuSectionLabel>Preferences</EditorMenuSectionLabel>
+                      )}
 
-                      <EditorMenuNavRow
-                        icon={sideBarLeft ? <TbLayoutSidebarRight /> : <TbLayoutSidebar />}
-                        label={
-                          <div className="text-sm">
-                            {sideBarLeft ? "Right" : "Left"} Settings Panel
-                          </div>
-                        }
-                        onClick={() => {
-                          setSideBarLeft(!sideBarLeft);
-                          close();
-                        }}
-                      />
+                      {config.features?.settingsPanelSwitcher !== false && (
+                        <EditorMenuNavRow
+                          icon={sideBarLeft ? <TbLayoutSidebarRight /> : <TbLayoutSidebar />}
+                          label={
+                            <div className="text-sm">
+                              {sideBarLeft ? "Right" : "Left"} Settings Panel
+                            </div>
+                          }
+                          onClick={() => {
+                            setSideBarLeft(!sideBarLeft);
+                            close();
+                          }}
+                        />
+                      )}
 
-                      <EditorMenuNavRow
-                        icon={isDarkMode ? <TbSun /> : <TbMoon />}
-                        label={
-                          <div className="text-sm">
-                            Switch to {isDarkMode ? "Light" : "Dark"} Theme
-                          </div>
-                        }
-                        onClick={() => {
-                          toggleTheme();
-                          close();
-                        }}
-                      />
+                      {config.features?.darkModeSwitcher !== false && (
+                        <EditorMenuNavRow
+                          icon={isDarkMode ? <TbSun /> : <TbMoon />}
+                          label={
+                            <div className="text-sm">
+                              Switch to {isDarkMode ? "Light" : "Dark"} Theme
+                            </div>
+                          }
+                          onClick={() => {
+                            toggleTheme();
+                            close();
+                          }}
+                        />
+                      )}
                     </>
                   )}
                 </>

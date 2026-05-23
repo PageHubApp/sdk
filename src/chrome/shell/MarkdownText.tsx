@@ -11,6 +11,12 @@ interface MarkdownTextProps {
   content: string;
   className?: string;
   onMediaClick?: (url: string) => void;
+  /**
+   * When provided, every list item (ordered or unordered) renders as a button
+   * that calls this handler with the item's raw text. Used by chat consumers
+   * to turn "here are 4 things you could do" into one-tap actions.
+   */
+  onListItemClick?: (rawText: string) => void;
 }
 
 function parseInline(text: string, onMediaClick?: (url: string) => void): React.ReactNode[] {
@@ -85,7 +91,22 @@ function parseInline(text: string, onMediaClick?: (url: string) => void): React.
   return parts;
 }
 
-export function MarkdownText({ content, className, onMediaClick }: MarkdownTextProps) {
+export function MarkdownText({ content, className, onMediaClick, onListItemClick }: MarkdownTextProps) {
+  const renderListItem = (raw: string, key: string): React.ReactNode => {
+    const parsed = parseInline(raw, onMediaClick);
+    if (!onListItemClick) return <li key={key}>{parsed}</li>;
+    return (
+      <li key={key} className="list-none">
+        <button
+          type="button"
+          onClick={() => onListItemClick(raw)}
+          className="border-base-300 bg-base-100 hover:bg-base-200 my-0.5 w-full rounded-md border px-2 py-1.5 text-left text-[13px] transition-colors"
+        >
+          {parsed}
+        </button>
+      </li>
+    );
+  };
   const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
   let i = 0;
@@ -137,9 +158,7 @@ export function MarkdownText({ content, className, onMediaClick }: MarkdownTextP
       const items: React.ReactNode[] = [];
       while (i < lines.length && lines[i].match(/^[\s]*[-•]\s+/)) {
         items.push(
-          <li key={`li-${i}`}>
-            {parseInline(lines[i].replace(/^[\s]*[-•]\s+/, ""), onMediaClick)}
-          </li>
+          renderListItem(lines[i].replace(/^[\s]*[-•]\s+/, ""), `li-${i}`)
         );
         i++;
       }
@@ -156,9 +175,7 @@ export function MarkdownText({ content, className, onMediaClick }: MarkdownTextP
       const items: React.ReactNode[] = [];
       while (i < lines.length && lines[i].match(/^[\s]*\d+[.)]\s+/)) {
         items.push(
-          <li key={`oli-${i}`}>
-            {parseInline(lines[i].replace(/^[\s]*\d+[.)]\s+/, ""), onMediaClick)}
-          </li>
+          renderListItem(lines[i].replace(/^[\s]*\d+[.)]\s+/, ""), `oli-${i}`)
         );
         i++;
       }

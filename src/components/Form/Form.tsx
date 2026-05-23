@@ -213,6 +213,8 @@ export const Form = ({ children, ...props }: any) => {
         canDelete={true}
         canEditName={true}
         visibilityStateKey={loadingKey}
+        // hidden + flex: default hidden; showHide strips hidden when state=shown
+        // eslint-disable-next-line tailwindcss/no-contradicting-classname
         className="hidden flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
         custom={{
           displayName: "Loading Text Container",
@@ -239,6 +241,8 @@ export const Form = ({ children, ...props }: any) => {
         canDelete={true}
         canEditName={true}
         visibilityStateKey={loadedKey}
+        // hidden + flex: default hidden; showHide strips hidden when state=shown
+        // eslint-disable-next-line tailwindcss/no-contradicting-classname
         className="hidden flex w-full flex-col justify-center gap-3 px-6 py-6 md:flex-row"
         custom={{
           displayName: "Sent Text",
