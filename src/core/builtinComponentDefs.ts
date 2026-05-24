@@ -12,6 +12,7 @@ import {
   BackgroundDef,
   ButtonDef,
   ContainerDef,
+  DataDef,
   EmbedDef,
   FormDef,
   FormElementDef,
@@ -33,6 +34,7 @@ import { setBuiltinDefsLookup } from "./builtinDefsLookup";
 export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
   AutomaticDef,
   ContainerDef,
+  DataDef,
   BackgroundDef,
   TextDef,
   ImageDef,

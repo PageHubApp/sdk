@@ -51,13 +51,15 @@ export const Tools: any = {};
 
 export const SelectedNodeAtom = atom("selectedNode", { id: null, position: "" });
 
-/** Look up a component's resolver name. Checks `.craft.displayName` FIRST
- *  because that's the only identifier guaranteed to survive minification
- *  (Function.name gets mangled to e.g. "tne" in UMD builds). */
+/** Look up a component's resolver name. Prefers `.craft.name` (the canonical
+ *  resolver key, matches `defineComponent({ name })`), then falls back to
+ *  `.craft.displayName` for components that historically aliased the two.
+ *  Function.name comes last because it gets mangled in UMD builds. */
 function resolveCraftName(comp: any): string | undefined {
   if (!comp) return undefined;
   if (typeof comp === "string") return comp;
   return (
+    comp.craft?.name ||
     comp.craft?.displayName ||
     comp.resolvedName ||
     comp.displayName ||

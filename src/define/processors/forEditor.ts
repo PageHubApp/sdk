@@ -88,6 +88,7 @@ function attachCraft(
   const component = def.component as any;
 
   const craft: any = {
+    name: def.name,
     displayName: def.displayName,
     toolbar: {
       icon: def.icon ?? null,

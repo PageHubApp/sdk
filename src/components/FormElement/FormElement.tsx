@@ -63,6 +63,7 @@ export const FormElement = (incomingProps: Partial<FormElementProps>) => {
 };
 
 FormElement.craft = {
+  name: "FormElement",
   displayName: "Form Item",
   rules: {
     canDrag: () => true,

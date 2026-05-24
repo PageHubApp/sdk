@@ -185,9 +185,12 @@ export const Form = ({ children, ...props }: any) => {
         </div>
       )}
 
-      {/* Form fields canvas — wraps the author-editable children. Visibility is
-          toggled via the central state registry. `formFieldsContainer` is the
-          stable linkedNode id consumed by the migration script. */}
+      {/* Form's CraftJS direct children render here (preset fields + submit). The
+          formFieldsContainer linkedNode below is created empty on first render and
+          holds an optional visibility-toggleable group — passing `{children}` into
+          it would force CraftJS to re-parse the rendered NodeElements as a fresh
+          tree, which crashes (NodeElement isn't in the resolver). */}
+      {children}
       <Element
         canvas
         id="formFieldsContainer"
@@ -200,9 +203,7 @@ export const Form = ({ children, ...props }: any) => {
           displayName: "Form Fields",
           id: "formFieldsContainer",
         }}
-      >
-        {children}
-      </Element>
+      />
 
       <Element
         canvas
