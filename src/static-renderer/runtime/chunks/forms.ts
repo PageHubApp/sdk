@@ -33,6 +33,10 @@ type FormMeta = {
 };
 
 export const FORMS_CHUNK = stringifyChunk(function $forms() {
+  // Cross-chunk function bindings via runtime registry. See
+  // staticPublishRuntime.ts preamble for the why.
+  const { setVisibility, fireAnalytics, fireConversion } = __phRT;
+
   // Belt-and-suspenders: a capture-phase, document-level submit guard. The
   // Alpine `data-ph-form` directive below binds the real handler (toggles
   // state, fetches /api/submissions). But if a visitor clicks submit before

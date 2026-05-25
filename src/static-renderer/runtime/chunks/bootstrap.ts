@@ -6,6 +6,26 @@
 import { stringifyChunk } from "./stringifyChunk";
 
 export const BOOTSTRAP_CHUNK = stringifyChunk(function $bootstrap() {
+  // Pull cross-chunk functions from the runtime registry. STRING property
+  // keys survive minification (see staticPublishRuntime.ts preamble). All
+  // definer chunks have already populated __phRT by the time this chunk
+  // runs (bootstrap is the last chunk in the IIFE concat order).
+  const {
+    getState,
+    getStateValue,
+    setState,
+    listStates,
+    subscribe,
+    seedFromWindow,
+    mountUrlBridge,
+    detectCustomerToken,
+    ensureAnalyticsStubs,
+    mountMaps,
+    addToCart,
+    setCartQuantity,
+    removeCartItem,
+  } = __phRT;
+
   function init() {
     seedFromWindow();
     mountUrlBridge();

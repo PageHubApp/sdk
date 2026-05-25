@@ -101,6 +101,18 @@ var _store = Alpine.store('ph');
 var _shownStack = [];
 var _escInstalled = false;
 
+// Cross-chunk function registry. Each chunk is authored as a separate
+// stringifyChunk(function $name(){...}) call; when minified independently
+// by SWC/esbuild, internal function declarations get renamed to single
+// letters (e.g. setState → e). Cross-chunk calls (bootstrap chunk reaching
+// state chunk's setState) break because identifiers don't match. The fix:
+// definer chunks publish their cross-chunk-shared functions onto __phRT via
+// STRING property names (which minifiers don't mangle). Caller chunks
+// destructure from __phRT at the top of their body. Property-key strings
+// survive any minifier renaming pass intact. __phRT itself is a shared
+// runtime registry — namespaced so it doesn't collide with consumer globals.
+var __phRT = {};
+
 var STATE_ATTRS = [
   'data-state-text','data-state-show-when-truthy','data-state-style-bindings',
   'data-state-modifiers','data-state-binding','data-visibility-state-key',

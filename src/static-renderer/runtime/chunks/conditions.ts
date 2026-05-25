@@ -56,9 +56,8 @@ const CONDITIONS_BODY = stringifyChunk(function $conditions() {
     }
   );
 
-  // Suppress the unused-var warning for the helper symbol consumed only by
-  // the rest of the runtime.
-  void actionGatePasses;
+  // Publish cross-chunk functions to the runtime registry. See state.ts.
+  Object.assign(__phRT, { actionGatePasses, evalGroups, evalCond, evalAll });
 });
 
 export function getConditionsChunk(mobileBreakpoint: number): string {

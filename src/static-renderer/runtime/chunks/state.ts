@@ -522,14 +522,20 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
     });
   }
 
-  // Silence "unused" — these are consumed by other chunks via outer-IIFE scope.
-  void getState;
-  void getStateValue;
-  void setState;
-  void deleteState;
-  void setVisibility;
-  void listStates;
-  void subscribe;
-  void seedFromWindow;
-  void mountUrlBridge;
+  // Publish cross-chunk functions to the runtime registry by STRING keys.
+  // Object-literal shorthand: `{ getState }` is `{ "getState": getState }`,
+  // so even after a minifier renames the local `getState` binding, the
+  // property KEY `"getState"` survives. Caller chunks destructure from
+  // __phRT at the top of their body. See staticPublishRuntime.ts preamble.
+  Object.assign(__phRT, {
+    getState,
+    getStateValue,
+    setState,
+    deleteState,
+    setVisibility,
+    listStates,
+    subscribe,
+    seedFromWindow,
+    mountUrlBridge,
+  });
 });

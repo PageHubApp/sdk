@@ -6,6 +6,25 @@
 import { stringifyChunk } from "./stringifyChunk";
 
 export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
+  // Cross-chunk function bindings via runtime registry. See
+  // staticPublishRuntime.ts preamble for the why.
+  const {
+    setState,
+    getState,
+    getStateValue,
+    setVisibility,
+    deleteState,
+    actionGatePasses,
+    readItemContext,
+    resolveActionKey,
+    applyShowHide,
+    revertShowHide,
+    interpolateItem,
+    fireConversion,
+    addToCart,
+    cartCheckout,
+  } = __phRT;
+
   function fireAction(action: any, ev: any, itemContext: any) {
     if (!action || !action.type) return;
     if (!actionGatePasses(action)) return;

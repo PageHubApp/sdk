@@ -6,6 +6,10 @@
 import { stringifyChunk } from "./stringifyChunk";
 
 export const CART_CHUNK = stringifyChunk(function $cart() {
+  // Cross-chunk function bindings via runtime registry. See
+  // staticPublishRuntime.ts preamble for the why.
+  const { setState, getStateValue, fireAnalytics } = __phRT;
+
   function readCartFromStorage() {
     if (!PAGE_ID) return [];
     try {
@@ -283,4 +287,17 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
       });
     }
   );
+
+  // Publish cross-chunk functions to the runtime registry. See state.ts.
+  // Bootstrap also surfaces setCartQuantity and removeCartItem via
+  // `window.PageHub`; the registry covers cross-chunk callers internally.
+  Object.assign(__phRT, {
+    readCartFromStorage,
+    writeCartToStorage,
+    recomputeCartState,
+    addToCart,
+    setCartQuantity,
+    removeCartItem,
+    cartCheckout,
+  });
 });

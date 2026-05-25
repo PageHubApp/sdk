@@ -6,6 +6,10 @@
 import { stringifyChunk } from "./stringifyChunk";
 
 export const AUX_CHUNK = stringifyChunk(function $aux() {
+  // Cross-chunk function bindings via runtime registry. See
+  // staticPublishRuntime.ts preamble for the why.
+  const { setState } = __phRT;
+
   function detectCustomerToken() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
@@ -222,4 +226,13 @@ export const AUX_CHUNK = stringifyChunk(function $aux() {
       })
       .catch(function () {});
   }
+
+  // Publish cross-chunk functions to the runtime registry. See state.ts.
+  Object.assign(__phRT, {
+    detectCustomerToken,
+    ensureAnalyticsStubs,
+    fireAnalytics,
+    fireConversion,
+    mountMaps,
+  });
 });

@@ -6,6 +6,10 @@
 import { stringifyChunk } from "./stringifyChunk";
 
 export const ITEMS_CHUNK = stringifyChunk(function $items() {
+  // Cross-chunk function bindings via runtime registry. See
+  // staticPublishRuntime.ts preamble for the why.
+  const { getStateValue, setVisibility } = __phRT;
+
   function walkItem(obj: any, parts: string[]) {
     let v = obj;
     for (let i = 0; i < parts.length; i++) {
@@ -263,11 +267,13 @@ export const ITEMS_CHUNK = stringifyChunk(function $items() {
     return "";
   }
 
-  // Silence "unused" — these are consumed by other chunks via outer-IIFE scope.
-  void resolveActionKey;
-  void readItemContext;
-  void applyShowHide;
-  void revertShowHide;
-  void runComputed;
-  void interpolateItem;
+  // Publish cross-chunk functions to the runtime registry. See state.ts.
+  Object.assign(__phRT, {
+    resolveActionKey,
+    readItemContext,
+    applyShowHide,
+    revertShowHide,
+    runComputed,
+    interpolateItem,
+  });
 });

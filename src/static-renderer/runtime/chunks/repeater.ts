@@ -6,6 +6,10 @@
 import { stringifyChunk } from "./stringifyChunk";
 
 export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
+  // Cross-chunk function bindings via runtime registry. See
+  // staticPublishRuntime.ts preamble for the why.
+  const { setState, getStateValue } = __phRT;
+
   function walkSlotPath(obj: any, parts: string[]) {
     let v = obj;
     for (let i = 0; i < parts.length; i++) {

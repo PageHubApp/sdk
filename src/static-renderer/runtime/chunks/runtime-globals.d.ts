@@ -16,6 +16,11 @@ declare global {
   const Alpine: any;
   const _store: { entries: Record<string, any>; revision: number };
   const _shownStack: string[];
+  // Cross-chunk function registry — see staticPublishRuntime.ts preamble for
+  // the why. Definer chunks write functions here via STRING property names;
+  // caller chunks destructure at the top of their body. Property keys survive
+  // minifier identifier-mangling because they're strings, not bindings.
+  const __phRT: Record<string, any>;
   // `let` (not const) — state.ts reassigns this once on first ESC handler install.
   // eslint-disable-next-line no-var
   var _escInstalled: boolean;
