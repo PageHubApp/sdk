@@ -33,6 +33,35 @@ type FormMeta = {
 };
 
 export const FORMS_CHUNK = stringifyChunk(function $forms() {
+  // Belt-and-suspenders: a capture-phase, document-level submit guard. The
+  // Alpine `data-ph-form` directive below binds the real handler (toggles
+  // state, fetches /api/submissions). But if a visitor clicks submit before
+  // Alpine has hydrated that specific form node — race conditions on slow
+  // devices, network jitter, or a single throwing directive aborting the
+  // walk — native submit fires. With `method="POST"` and an empty `action`,
+  // browsers POST to the page URL → the edge proxy routes that to the
+  // GET-only `/api/published/[...slug]` handler → 405. This guard runs in
+  // capture phase, before Alpine's bubble-phase listener, and unconditionally
+  // calls `preventDefault()` on every non-iframe `data-ph-form` submit.
+  // Alpine's per-form handler still runs (preventDefault doesn't cancel
+  // listeners) and does the real work. iframe forms intentionally use native
+  // submit to a hidden `<iframe target>`, so they're skipped.
+  document.addEventListener(
+    "submit",
+    function (e: Event) {
+      const t = e.target;
+      if (!t || !(t instanceof HTMLFormElement)) return;
+      if (!t.hasAttribute("data-ph-form")) return;
+      let meta: FormMeta | null = null;
+      try {
+        meta = JSON.parse(t.getAttribute("data-ph-form") || "null");
+      } catch (err) {}
+      if (meta && meta.submissionType === "iframe") return;
+      e.preventDefault();
+    },
+    true
+  );
+
   Alpine.directive(
     "form",
     function (
