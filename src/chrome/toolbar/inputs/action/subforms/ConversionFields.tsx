@@ -184,8 +184,8 @@ export function ConversionFields({
 
           {!configured[conversion.provider] ? (
             <p className="text-warning text-[10px] leading-snug">
-              {PROVIDER_LABELS[conversion.provider]} isn&rsquo;t set up at the site level. Add it
-              under Site Settings → Integrations or this conversion won&rsquo;t fire.
+              {PROVIDER_LABELS[conversion.provider]} isn&rsquo;t set up at the site level. Add its
+              integration ID in your site&rsquo;s settings or this conversion won&rsquo;t fire.
             </p>
           ) : null}
         </div>

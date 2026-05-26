@@ -1,10 +1,8 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
-import React, { useCallback } from "react";
-import { TbWand } from "react-icons/tb";
+import { useCallback } from "react";
 import { normalizeDesignTags } from "@/utils/normalizeDesignTags";
-import { ToolbarSection } from "../../ToolbarSection";
-import { SiteAiToneForm } from "../../../viewport/modals/site-settings/SiteAiToneForm";
+import { useSDK } from "../../../../core/context";
 
 /**
  * Per-node AI context (designNotes / designTags). ROOT is edited in Site Settings only.
@@ -12,16 +10,17 @@ import { SiteAiToneForm } from "../../../viewport/modals/site-settings/SiteAiTon
 export function NodeAiContextSection() {
   const { id } = useNode();
   const { actions } = useEditor();
+  const { config } = useSDK();
+  const renderEditor = config.editorChromeSlots?.renderNodeAiContextEditor;
 
-  const designNotes = useEditor(state => {
+  const { designNotes, designTags } = useEditor(state => {
     const design = state.nodes[id]?.data?.props?.design;
-    return typeof design?.notes === "string" ? design.notes : "";
-  });
-
-  const designTags = useEditor(state => {
-    const design = state.nodes[id]?.data?.props?.design;
+    const notes: string = typeof design?.notes === "string" ? design.notes : "";
     const dt = Array.isArray(design?.tags) ? design.tags : [];
-    return normalizeDesignTags(dt.filter((t: unknown): t is string => typeof t === "string"));
+    const tags: string[] = normalizeDesignTags(
+      dt.filter((t: unknown): t is string => typeof t === "string")
+    );
+    return { designNotes: notes, designTags: tags };
   });
 
   const setDesignNotes = useCallback(
@@ -54,8 +53,7 @@ export function NodeAiContextSection() {
   if (id === ROOT_NODE) {
     return (
       <p className="text-neutral-content text-sm">
-        Page-wide design notes and tags are edited in{" "}
-        <span className="text-base-content font-medium">Site Settings → AI</span>.
+        Page-wide design notes and tags are edited in your site&apos;s settings.
       </p>
     );
   }
@@ -64,16 +62,19 @@ export function NodeAiContextSection() {
     <>
       <p className="text-neutral-content mb-3 text-xs">
         Optional brief for models when this node is in scope. Page-wide defaults still apply from
-        Site Settings → AI.
+        your site&apos;s settings.
       </p>
-      <SiteAiToneForm
-        fieldIdPrefix={`toolbar-ai-ctx-${id}-`}
-        designNotes={designNotes}
-        setDesignNotes={setDesignNotes}
-        designTags={designTags}
-        setDesignTags={setDesignTags}
-        showIntroHeading={false}
-      />
+      {renderEditor ? (
+        renderEditor({
+          designNotes,
+          setDesignNotes,
+          designTags,
+          setDesignTags,
+          fieldIdPrefix: `toolbar-ai-ctx-${id}-`,
+        })
+      ) : (
+        <p className="text-neutral-content text-xs italic">AI editor not available.</p>
+      )}
     </>
   );
 }

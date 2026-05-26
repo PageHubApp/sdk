@@ -85,3 +85,23 @@ export function getEditorVariableOptions(
 
   return vars;
 }
+
+/**
+ * CraftJS-free variant for dashboard / SSR contexts. Builds the variable
+ * picker list from a plain `customVariables` array (the same shape stored
+ * in `ROOT.props.variables`). Built-ins are included; scoped connector
+ * fields are not (no node context outside the editor).
+ */
+export function buildVariableOptionsFromCustomVars(
+  customVars: Array<{ key?: string }> | null | undefined
+): EditorVariableOption[] {
+  const vars: EditorVariableOption[] = [...BUILTIN_EDITOR_VARIABLE_OPTIONS];
+  if (Array.isArray(customVars)) {
+    for (const v of customVars) {
+      if (v?.key?.trim()) {
+        vars.push({ id: `variables.${v.key}`, label: v.key, group: "Custom" });
+      }
+    }
+  }
+  return vars;
+}

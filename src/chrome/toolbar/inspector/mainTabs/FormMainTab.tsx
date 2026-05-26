@@ -208,7 +208,7 @@ export const FormMainTab = () => {
         <ToolbarSection
           title="Conversion tracking"
           icon={SECTION_ICONS["Type"]}
-          help="Fire a Google Ads / GA4 / Meta conversion when the form submits. Set up site-level integrations first under Site Settings → Integrations."
+          help="Fire a Google Ads / GA4 / Meta conversion when the form submits. Configure site-level integration IDs in your site's settings first."
         >
           <ConversionFields
             conversion={props.conversion}

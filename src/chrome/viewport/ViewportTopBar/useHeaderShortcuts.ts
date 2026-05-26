@@ -3,7 +3,6 @@ import { usePanelUrl } from "../../../utils/usePanelUrl";
 
 interface UseHeaderShortcutsOptions {
   setIsMediaManagerModalOpen: (fn: (prev: boolean) => boolean) => void;
-  setIsSiteSettingsModalOpen: (fn: (prev: boolean) => boolean) => void;
   setIsLayersDialogOpen: (fn: (prev: boolean) => boolean) => void;
   setShowGridLines: (fn: (prev: boolean) => boolean) => void;
   setIsModifiersModalOpen: (fn: (prev: boolean) => boolean) => void;
@@ -12,7 +11,6 @@ interface UseHeaderShortcutsOptions {
 
 export function useHeaderShortcuts({
   setIsMediaManagerModalOpen,
-  setIsSiteSettingsModalOpen,
   setIsLayersDialogOpen,
   setShowGridLines,
   setIsModifiersModalOpen,
@@ -54,14 +52,6 @@ export function useHeaderShortcuts({
       if (key === "d" && e.shiftKey) {
         e.preventDefault();
         toggle("theme");
-        return;
-      }
-
-      // Cmd+, -- Site Settings
-      if (key === ",") {
-        e.preventDefault();
-        setIsSiteSettingsModalOpen(v => !v);
-        close();
         return;
       }
 

@@ -54,9 +54,6 @@ const LayersDialog = lazy(() =>
 const ModifiersModal = lazy(() =>
   import("../modals/ModifiersModal").then(m => ({ default: m.ModifiersModal }))
 );
-const SiteSettingsModal = lazy(() =>
-  import("../modals/SiteSettingsModal").then(m => ({ default: m.SiteSettingsModal }))
-);
 
 export const ViewportTopBar = () => {
   const { enabled, canUndo, canRedo, actions, query, componentFingerprint } = useEditor(
@@ -86,14 +83,12 @@ export const ViewportTopBar = () => {
   const { isOpen, toggleToolboxInsert, open, close } = usePanelUrl();
   const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useState(false);
   const [isLayersDialogOpen, setIsLayersDialogOpen] = useAtomState(LayersDialogOpenAtom);
-  const [isSiteSettingsModalOpen, setIsSiteSettingsModalOpen] = useState(false);
   const [isModifiersModalOpen, setIsModifiersModalOpen] = useState(false);
 
   const setEnabled = useSetAtomState(EnabledAtom);
 
-  const { features, config } = useSDK();
+  const { features } = useSDK();
   const isTenant = features.directSave;
-  const siteSettingsExtraTabs = config.editorChromeSlots?.siteSettingsExtraTabs;
 
   const [preview, setPreview] = useAtomState(PreviewAtom);
 
@@ -167,7 +162,6 @@ export const ViewportTopBar = () => {
   // Keyboard shortcuts
   useHeaderShortcuts({
     setIsMediaManagerModalOpen,
-    setIsSiteSettingsModalOpen,
     setIsLayersDialogOpen,
     setShowGridLines,
     setIsModifiersModalOpen,
@@ -354,7 +348,6 @@ export const ViewportTopBar = () => {
         setSideBarLeft={setSideBarLeft}
         setIsLayersDialogOpen={setIsLayersDialogOpen}
         setIsMediaManagerModalOpen={setIsMediaManagerModalOpen}
-        setIsSiteSettingsModalOpen={setIsSiteSettingsModalOpen}
         setIsModifiersModalOpen={setIsModifiersModalOpen}
         showHidden={showHidden}
         setShowHidden={setShowHidden}
@@ -370,16 +363,6 @@ export const ViewportTopBar = () => {
       {isLayersDialogOpen && (
         <Suspense fallback={null}>
           <LayersDialog isOpen onClose={() => setIsLayersDialogOpen(false)} />
-        </Suspense>
-      )}
-
-      {isSiteSettingsModalOpen && (
-        <Suspense fallback={null}>
-          <SiteSettingsModal
-            isOpen
-            onClose={() => setIsSiteSettingsModalOpen(false)}
-            extraTabs={siteSettingsExtraTabs}
-          />
         </Suspense>
       )}
 

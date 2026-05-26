@@ -7,7 +7,7 @@
  * Notes only:      chip with truncated note preview + clear
  * Tags only:       chip with tag preview / "{N} tags" + clear
  * Both:            chip with combined summary + clear
- * ROOT_NODE:       always shows `+` (body redirects to Site Settings)
+ * ROOT_NODE:       always shows `+` (body redirects users to the site's settings)
  */
 import { ROOT_NODE } from "@craftjs/utils";
 import { useNode } from "@craftjs/core";

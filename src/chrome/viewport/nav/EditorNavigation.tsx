@@ -20,7 +20,6 @@ import {
   TbMoon,
   TbPalette,
   TbPhoto,
-  TbSettings,
   TbStack2,
   TbSun,
 } from "react-icons/tb";
@@ -44,7 +43,6 @@ interface EditorNavigationProps {
   setSideBarLeft: (value: boolean) => void;
   setIsLayersDialogOpen: (value: boolean) => void;
   setIsMediaManagerModalOpen: (value: boolean) => void;
-  setIsSiteSettingsModalOpen: (value: boolean) => void;
   setIsModifiersModalOpen: (value: boolean) => void;
   showHidden: boolean;
   setShowHidden: (fn: (prev: boolean) => boolean) => void;
@@ -62,7 +60,6 @@ export const EditorNavigation = ({
   setSideBarLeft,
   setIsLayersDialogOpen,
   setIsMediaManagerModalOpen,
-  setIsSiteSettingsModalOpen,
   setIsModifiersModalOpen,
   showHidden,
   setShowHidden,
@@ -183,16 +180,6 @@ export const EditorNavigation = ({
 
                       {/* ── Settings ── */}
                       <EditorMenuSectionLabel>Settings</EditorMenuSectionLabel>
-
-                      <EditorMenuNavRow
-                        icon={<TbSettings />}
-                        label={<div className="text-sm">Site Settings</div>}
-                        kbd={<EditorMenuKbd>⌘,</EditorMenuKbd>}
-                        onClick={() => {
-                          setIsSiteSettingsModalOpen(true);
-                          close();
-                        }}
-                      />
 
                       <EditorMenuNavRow
                         icon={<TbPalette />}

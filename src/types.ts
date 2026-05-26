@@ -410,6 +410,19 @@ export interface PageHubEditorChromeSlots {
   }) => ReactNode;
   /** Empty canvas “Build with AI” card. */
   renderEmptyStateAiCard?: (ctx: { onOpenAssistant: () => void }) => ReactNode;
+  /**
+   * Per-node AI tone editor (designNotes + designTags textarea/chips). The
+   * SDK orchestrates the Craft state read/write — the host supplies the
+   * actual form UI. Without this slot, the inspector section renders a
+   * short "AI editing not available" placeholder.
+   */
+  renderNodeAiContextEditor?: (ctx: {
+    designNotes: string;
+    setDesignNotes: (v: string) => void;
+    designTags: string[];
+    setDesignTags: (v: string[]) => void;
+    fieldIdPrefix: string;
+  }) => ReactNode;
   /** Editor nav menu row — AI Assistant + shortcut hint lives in host. */
   renderNavAiMenuItem?: (ctx: { onSelect: () => void }) => ReactNode;
   /** Top of editor nav — page-level actions (View Draft, Duplicate, Delete, etc.) from host. */
@@ -423,26 +436,6 @@ export interface PageHubEditorChromeSlots {
    * Host owns API calls/auth; SDK provides apply callback for metadata fields.
    */
   renderMediaEditAiActions?: (ctx: PageHubMediaEditAiActionsContext) => ReactNode;
-  /**
-   * Extra tabs injected into the Site Settings modal (e.g. Data Connectors).
-   * Host owns all API calls, auth, and business logic; SDK provides the tab slot.
-   */
-  siteSettingsExtraTabs?: Array<{
-    key: string;
-    label: string;
-    order?: number;
-    render: (ctx: {
-      inputClass: string;
-      selectClass: string;
-      query: any;
-      actions: any;
-      draft?: Record<string, any>;
-      setDraft?: Dispatch<SetStateAction<Record<string, any>>>;
-      requestSave?: () => void;
-      flushSave?: () => void;
-    }) => ReactNode;
-    onSave?: (setProp: (cb: (props: any) => void) => void) => void;
-  }>;
   /**
    * Extra tabs injected into the Page Settings modal.
    * Host owns all API calls, auth, and business logic; SDK provides the tab slot.
