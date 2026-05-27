@@ -32,6 +32,18 @@ import {
   PAGEHUB_RTT_GLOBAL_ID,
   REACT_TOOLTIP_SURFACE_CLASS,
 } from "../chrome/primitives/layout/tooltipSurface";
+import {
+  RegistriesProvider,
+  createRegistriesBundle,
+  applyEditorChromeSlotsShim,
+} from "../registry";
+import type {
+  CommandsRegistry,
+  MenusRegistry,
+  SlotsRegistry,
+  KeybindingsRegistry,
+  ContextRegistry,
+} from "../registry";
 
 interface SDKContextValue {
   config: ResolvedConfig;
@@ -52,6 +64,16 @@ interface SDKContextValue {
   subscribeSaveStatus: (handler: (status: SaveStatus) => void) => () => void;
   /** Tell the SDK that the page list is stale; PageSelector etc. refetch. */
   invalidatePageList: () => void;
+  /** Command registry — register/unregister/execute commands. */
+  commands: CommandsRegistry;
+  /** Menu registry — contribute commands to named menu locations. */
+  menus: MenusRegistry;
+  /** Slot registry — host renders arbitrary React inside named slots. */
+  slots: SlotsRegistry;
+  /** Keybinding registry — register keyboard shortcuts (dispatch in Wave B). */
+  keybindings: KeybindingsRegistry;
+  /** Context registry — single source of truth for `when` / `enablement` inputs. */
+  commandContext: ContextRegistry;
 }
 
 const SDKContext = createContext<SDKContextValue | null>(null);
@@ -80,13 +102,49 @@ export function useHasSDKProvider(): boolean {
 export interface PageHubProviderProps {
   config: ResolvedConfig;
   emitter: EventEmitter;
+  /**
+   * Optional pre-built registries bundle. When provided (e.g. by `PageHub.init()`
+   * so it can hand the same instance to host code via the returned API), the
+   * Provider uses it as-is — builtin commands/slots/keybindings and the
+   * `editorChromeSlots` shim are assumed to already be applied.
+   *
+   * Omit when mounting `<PageHubProvider>` directly from React: the Provider
+   * builds its own bundle.
+   */
+  registries?: Omit<import("../registry").RegistriesBundle, "tick">;
   children?: React.ReactNode;
 }
 
-export function PageHubProvider({ config, emitter, children }: PageHubProviderProps) {
+export function PageHubProvider({
+  config,
+  emitter,
+  registries: hostRegistries,
+  children,
+}: PageHubProviderProps) {
   const [theme, setThemeState] = useState<Required<PageHubTheme>>(config.theme);
   const [features, setFeaturesState] = useState<Required<PageHubFeatures>>(config.features);
   const [readOnly, setReadOnly] = useState(config.readOnly ?? false);
+
+  // Registries are created once per provider mount when the host hasn't
+  // supplied a pre-built bundle. Builtins + the editorChromeSlots shim are
+  // applied immediately so menus/slots resolve correctly on first render.
+  const registries = useMemo(() => {
+    if (hostRegistries) return hostRegistries;
+    const bundle = createRegistriesBundle();
+    try {
+      applyEditorChromeSlotsShim(config.editorChromeSlots, bundle.slots);
+    } catch (err) {
+      console.error("[PageHub] editorChromeSlots shim failed:", err);
+    }
+    bundle.context.setCommandContext({ features });
+    return bundle;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hostRegistries]);
+
+  // Keep features in the command context in sync as the host re-configures.
+  React.useEffect(() => {
+    registries.context.setCommandContext({ features });
+  }, [registries, features]);
 
   const setTheme = (patch: Partial<PageHubTheme>) => {
     setThemeState(prev => ({ ...prev, ...patch }));
@@ -163,19 +221,36 @@ export function PageHubProvider({ config, emitter, children }: PageHubProviderPr
       save,
       subscribeSaveStatus,
       invalidatePageList,
+      commands: registries.commands,
+      menus: registries.menus,
+      slots: registries.slots,
+      keybindings: registries.keybindings,
+      commandContext: registries.context,
     }),
-    [config, emitter, theme, features, readOnly, save, subscribeSaveStatus, invalidatePageList]
+    [
+      config,
+      emitter,
+      theme,
+      features,
+      readOnly,
+      save,
+      subscribeSaveStatus,
+      invalidatePageList,
+      registries,
+    ]
   );
 
   return (
     <SDKContext.Provider value={value}>
-      <EditorStoreProvider>{children}</EditorStoreProvider>
-      <ReactTooltip
-        id={PAGEHUB_RTT_GLOBAL_ID}
-        variant="light"
-        classNameArrow="hidden"
-        className={REACT_TOOLTIP_SURFACE_CLASS}
-      />
+      <RegistriesProvider registries={registries}>
+        <EditorStoreProvider>{children}</EditorStoreProvider>
+        <ReactTooltip
+          id={PAGEHUB_RTT_GLOBAL_ID}
+          variant="light"
+          classNameArrow="hidden"
+          className={REACT_TOOLTIP_SURFACE_CLASS}
+        />
+      </RegistriesProvider>
     </SDKContext.Provider>
   );
 }

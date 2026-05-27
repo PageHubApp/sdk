@@ -165,6 +165,22 @@ export const InspectorPinDockOpenAtom = atom<boolean>(
 /** Whether the floating Layers dialog is open. Shared atom so both Header and SidebarLayersPanel can control it. */
 export const LayersDialogOpenAtom = atom("layersDialogOpen", false);
 
+// ─── Registry-driven UI atoms (lifted in Phase 1 Wave A) ────────────────
+// These were previously `useState` inside `ViewportTopBar` and prop-drilled
+// into `EditorNavigation`. Lifting them to atoms is a Phase 1 prerequisite
+// so the command registry can drive them from anywhere (palette, keybindings,
+// host code). The topbar surface still owns the actual modal mounts; Wave A
+// only ADDS the atoms, Phase 2 wires the topbar to consume them.
+
+/** Whether the Media Manager modal is currently open. */
+export const MediaManagerModalAtom = atom("mediaManagerModal", false);
+
+/** Whether the Modifiers modal is currently open. */
+export const ModifiersModalAtom = atom("modifiersModal", false);
+
+/** Show or hide nodes whose visibility was authored as "hidden". Default true. */
+export const ShowHiddenAtom = atom("showHidden", true);
+
 // ─── Editor canvas atoms (formerly utils/lib.ts) ─────────────────────────
 
 export const IsolateAtom = atom<string>("isolate", EDITOR_ALL_PAGES_STORAGE);

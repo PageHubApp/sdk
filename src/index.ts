@@ -72,6 +72,7 @@ import type {
 } from "./types";
 import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { setPageHubApiBaseUrl } from "./core/apiConfig";
+import { applyEditorChromeSlotsShim, createRegistriesBundle } from "./registry";
 
 // Side-effect import: RegistrySettings self-registers with InspectorRegistry
 // at module load time. Must come AFTER built-in component graph is loadable (see componentRegistry.ts).
@@ -94,6 +95,16 @@ const SPINNER_CSS = `
 function init(config: PageHubConfig): PageHubInstance {
   const resolved = resolveConfig(config);
   const emitter = new EventEmitter();
+
+  // Build the registries bundle once and hand it to the Provider so the
+  // returned instance and the React tree see the same maps.
+  const registries = createRegistriesBundle();
+  try {
+    applyEditorChromeSlotsShim(resolved.editorChromeSlots, registries.slots);
+  } catch (err) {
+    console.error("[PageHub] editorChromeSlots shim failed:", err);
+  }
+  registries.context.setCommandContext({ features: resolved.features });
 
   // Configure CDN from init config
   if (config.cdn) configureCdn(config.cdn);
@@ -163,7 +174,7 @@ function init(config: PageHubConfig): PageHubInstance {
   root.render(
     React.createElement(
       PageHubProvider,
-      { config: resolved, emitter },
+      { config: resolved, emitter, registries },
       React.createElement(PageHubEditor, {
         // Pass the host's resolver overrides ONLY. editor.tsx layers them on
         // top of DEFAULT_CRAFT_RESOLVER + the editor-variant customResolver
@@ -277,6 +288,12 @@ function init(config: PageHubConfig): PageHubInstance {
         return "";
       }
     },
+
+    commands: registries.commands,
+    menus: registries.menus,
+    slots: registries.slots,
+    keybindings: registries.keybindings,
+    context: registries.context,
 
     exportHTML(options: Omit<RenderToHTMLOptions, "compressed"> = {}): RenderToHTMLResult {
       if (!editorQueryRef)
@@ -563,6 +580,54 @@ export type {
   SectionId,
   PropertyInputProps,
 } from "./chrome/toolbar/inspector/registry/propertyDefs";
+
+// ─── Command / Menu / Slot / Keybinding registries (Phase 1 Wave A) ──
+//
+// Bedrock data layer. Surface code still uses its current code paths;
+// these registries are populated with builtin catalogs and the
+// editorChromeSlots adapter shim so host integrations keep working.
+// Phase 2 migrates surfaces one PR at a time.
+export {
+  SlotRenderer,
+  useCommandContext,
+  useMenuItems,
+  useSlot,
+  useSlotList,
+  applyEditorChromeSlotsShim,
+  createRegistriesBundle,
+  BUILTIN_COMMANDS,
+  BUILTIN_SLOTS,
+  BUILTIN_KEYBINDINGS,
+} from "./registry";
+export type {
+  CommandDef,
+  CommandContext,
+  CommandRunContext,
+  MenuItem,
+  MenuLocation,
+  ResolvedMenuItem,
+  KeybindingDef,
+  SlotDef,
+  SlotContribution,
+  SlotCardinality,
+  ResolvedContribution,
+  CommandsRegistry,
+  MenusRegistry,
+  SlotsRegistry,
+  KeybindingsRegistry,
+  ContextRegistry,
+  RegistriesBundle,
+  SlotRendererProps,
+} from "./registry";
+
+// Atoms lifted for the registry (still owned by the topbar surface in Wave A;
+// Phase 2 wires them in).
+/** @internal */
+export {
+  MediaManagerModalAtom,
+  ModifiersModalAtom,
+  ShowHiddenAtom,
+} from "./utils/atoms";
 
 // CSS compilation — server-side only, import from "@pagehub/sdk/compile-css"
 // NOT re-exported here to avoid Next.js/Turbopack treating readFileSync CSS paths as global imports
