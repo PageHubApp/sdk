@@ -15,6 +15,7 @@ import { CreateTokenDialog } from "./CreateTokenDialog";
 import { resolveTheme } from "@/utils/design/resolveTheme";
 import { useHorizontalDragScroll } from "@/utils/hooks/useHorizontalDragScroll";
 import { phStorage } from "@/utils/phStorage";
+import { useOverlay } from "../../../../registry/hooks/useOverlay";
 
 const MAX_RECENT = 8;
 
@@ -111,14 +112,12 @@ export function TokenPicker({
     return () => document.removeEventListener("mousedown", handle, true);
   }, [onClose]);
 
-  useEffect(() => {
-    if (!onClose) return;
-    const handle = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handle);
-    return () => document.removeEventListener("keydown", handle);
-  }, [onClose]);
+  // Escape dismissal: registry overlay stack.
+  useOverlay({
+    id: "token-picker",
+    isOpen: Boolean(onClose),
+    onDismiss: onClose ?? (() => {}),
+  });
 
   const handlePick = useCallback(
     (name: string) => {

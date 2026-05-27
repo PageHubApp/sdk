@@ -26,6 +26,7 @@ import { hasOverflowAncestor } from "@/utils/hasOverflowAncestor";
 import { DeviceAtom, ViewAtom } from "../../viewport/state/atoms";
 import { InlineEditActivePanelAtom } from "../../../utils/atoms";
 import { useRegistries } from "../../../registry";
+import { useOverlay } from "../../../registry/hooks/useOverlay";
 import { isEditorCanvasBreakpointView } from "../../../utils/tailwind/className";
 import { PortalToolbarBelowNode } from "./PortalToolbarBelowNode";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
@@ -118,15 +119,14 @@ export function InlineEditToolbar({
     return () => document.removeEventListener("mousedown", handleMouseDown, true);
   }, [activePanel]);
 
-  // Close on Escape
-  useEffect(() => {
-    if (!activePanel) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setActivePanel(null);
-    };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [activePanel]);
+  // Escape closes the active panel (not the whole toolbar). Wired through
+  // the registry overlay stack so nested overlays (e.g. a font dialog
+  // opened from the font panel) get a chance to dismiss first.
+  useOverlay({
+    id: "inline-edit-toolbar-panel",
+    isOpen: activePanel != null,
+    onDismiss: () => setActivePanel(null),
+  });
 
   useEffect(() => {
     const openLink = () => {

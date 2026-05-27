@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import { useEffect } from "react";
+import { useOverlay } from "../../../../registry/hooks/useOverlay";
 
 interface UseMenuDismissalArgs {
   enabled: boolean;
@@ -23,8 +24,13 @@ interface UseMenuDismissalArgs {
  * catching the right-click event that opened the menu. Clicks inside either
  * floating panel (insert / component flyout) do NOT dismiss.
  *
- * Escape cascade closes the deepest open layer first: component flyout →
- * insert panel → main menu.
+ * Escape cascade — formerly an inline `keydown` listener — now uses per-layer
+ * overlay-stack registrations. Each layer registers under its own overlay id;
+ * the registry dispatcher's LIFO ordering handles the cascade naturally:
+ *
+ *   1. component-flyout (registered last when open) is dismissed first
+ *   2. then insert-panel
+ *   3. then the main menu
  */
 export function useMenuDismissal({
   enabled,
@@ -73,25 +79,24 @@ export function useMenuDismissal({
     closeMenu,
   ]);
 
-  useEffect(() => {
-    if (!enabled) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      if (componentFlyoutOpen) {
-        setComponentFlyoutOpen(false);
-        e.preventDefault();
-        return;
-      }
-      if (insertPanelOpen) {
-        setInsertPanelOpen(false);
-        e.preventDefault();
-        return;
-      }
-      closeMenu();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [enabled, insertPanelOpen, componentFlyoutOpen, setInsertPanelOpen, setComponentFlyoutOpen, closeMenu]);
+  // Escape cascade via per-layer overlay-stack registrations. The push order
+  // (main menu → insert panel → component flyout) matches the visual layering;
+  // LIFO pop dismisses the deepest layer first.
+  useOverlay({
+    id: `toolbox-context-menu:${id}`,
+    isOpen: enabled,
+    onDismiss: closeMenu,
+  });
+  useOverlay({
+    id: `toolbox-context-menu:${id}:insert-panel`,
+    isOpen: enabled && insertPanelOpen,
+    onDismiss: () => setInsertPanelOpen(false),
+  });
+  useOverlay({
+    id: `toolbox-context-menu:${id}:component-flyout`,
+    isOpen: enabled && componentFlyoutOpen,
+    onDismiss: () => setComponentFlyoutOpen(false),
+  });
 
   // Auto-close when no menu items would render.
   useEffect(() => {

@@ -1,8 +1,8 @@
-import { useEffect } from "react";
 import ReactDOM from "react-dom";
 import { TbAlertTriangle, TbCheck } from "react-icons/tb";
 import { useFocusTrap, useAnnounce } from "../../../utils/hooks/useAccessibility";
 import { OVERLAY_Z_CRITICAL_MODAL } from "../../popovers/overlayZIndex";
+import { useOverlay } from "../../../registry/hooks/useOverlay";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -30,14 +30,12 @@ export const ConfirmDialog = ({
   const focusTrapRef = useFocusTrap(isOpen);
   const announce = useAnnounce();
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
+  // Escape dismissal: registry overlay stack.
+  useOverlay({
+    id: `confirm-dialog:${title}`,
+    isOpen,
+    onDismiss: onClose,
+  });
 
   if (!isOpen) return null;
 

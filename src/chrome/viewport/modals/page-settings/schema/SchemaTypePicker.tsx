@@ -9,6 +9,7 @@ import {
   type SchemaTypeDef,
   type SchemaTypeKey,
 } from "../../../../../utils/seo/schemaTypes";
+import { useOverlay } from "../../../../../registry/hooks/useOverlay";
 
 interface SchemaTypePickerProps {
   open: boolean;
@@ -36,14 +37,12 @@ export function SchemaTypePicker({ open, onClose, onPickType, onPickRaw }: Schem
     return registerWithParentPanel(node);
   }, [open, mounted, registerWithParentPanel]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  // Escape dismissal: registry overlay stack.
+  useOverlay({
+    id: "schema-type-picker",
+    isOpen: open,
+    onDismiss: onClose,
+  });
 
   const grouped = useMemo(() => {
     const q = query.trim().toLowerCase();

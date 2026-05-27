@@ -16,6 +16,7 @@ import { BlockPreviewCard, BlockQuickLook } from "./components";
 import { buildElementFromStructure } from "./blockHelpers";
 import { useRegistries } from "../../../../registry";
 import { setSectionsBackref } from "../../../../registry/sectionsBackref";
+import { useOverlay } from "../../../../registry/hooks/useOverlay";
 
 const PAGE_SIZE = 6;
 
@@ -160,18 +161,17 @@ export function CategoryDetailView({
 
   // Space (toggle quick look) migrated to `ph.sections.toggleQuickLook`
   // via the registry dispatcher (priority 50 — beats `ph.editor.clearSelection`
-  // since the modal hosts non-canvas focus). Escape closer stays inline:
-  // the quick-look overlay is a transient peek, not a stacked dialog.
-  useEffect(() => {
-    if (!quickLookBlock) return;
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
+  // since the modal hosts non-canvas focus). Escape closer routed through
+  // the registry overlay stack so the quick-look peek dismisses cleanly even
+  // when other surfaces have pushed onto the stack above it.
+  useOverlay({
+    id: "sections-quick-look",
+    isOpen: quickLookBlock != null,
+    onDismiss: () => {
       setQuickLookBlock(null);
       setQuickLookRect(null);
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [quickLookBlock]);
+    },
+  });
 
   // Publish surface context + register the Space-key toggle so the registry
   // chord can drive the same code path.

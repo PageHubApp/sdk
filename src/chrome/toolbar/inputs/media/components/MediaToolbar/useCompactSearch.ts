@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { useOverlay } from "../../../../../../registry/hooks/useOverlay";
 
 /**
  * State + effects for the toolbar's compact search bar.
  * - Auto-focuses the input when opened.
- * - Closes on outside-click (anywhere outside `toolbarRef`) or Escape.
+ * - Closes on outside-click (anywhere outside `toolbarRef`).
+ * - Escape dismissal routed through the registry overlay stack.
  */
 export function useCompactSearch(toolbarRef: React.RefObject<HTMLElement | null>) {
   const [showCompactSearch, setShowCompactSearch] = useState(false);
@@ -22,16 +24,17 @@ export function useCompactSearch(toolbarRef: React.RefObject<HTMLElement | null>
       if (toolbarRef.current?.contains(target)) return;
       setShowCompactSearch(false);
     };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setShowCompactSearch(false);
-    };
     document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
     };
   }, [showCompactSearch, toolbarRef]);
+
+  useOverlay({
+    id: "media-compact-search",
+    isOpen: showCompactSearch,
+    onDismiss: () => setShowCompactSearch(false),
+  });
 
   return { showCompactSearch, setShowCompactSearch, compactSearchInputRef };
 }

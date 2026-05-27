@@ -4,6 +4,7 @@ import { TbX } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { getRect } from "../../viewport/hooks/useRect";
 import { useFocusTrap } from "../../../utils/hooks/useAccessibility";
+import { useOverlay } from "../../../registry/hooks/useOverlay";
 
 export const useGetRectLater = localRef => {
   const [rect, setRect] = useState({
@@ -158,21 +159,21 @@ function DraggablePortalDialog({ children, target, state, opener }: any): any {
     }
   };
 
-  const handleKeyDown = event => {
-    if (event.key === "Escape") {
-      setIsOpen(false);
-    }
-  };
-
   useEffect(() => {
     document.addEventListener("click", handleClickOutside, true);
-    document.addEventListener("keydown", handleKeyDown, true);
-
     return () => {
       document.removeEventListener("click", handleClickOutside, true);
-      document.removeEventListener("keydown", handleKeyDown, true);
     };
   }, [dialogRef]);
+
+  // Escape dismissal goes through the registry overlay stack. `target` is
+  // the host's atom name and is unique enough to disambiguate concurrent
+  // draggable portal dialogs.
+  useOverlay({
+    id: `draggable-portal-dialog:${target}`,
+    isOpen: Boolean(isOpen),
+    onDismiss: () => setIsOpen(false),
+  });
 
   return ReactDOM.createPortal(
     <>

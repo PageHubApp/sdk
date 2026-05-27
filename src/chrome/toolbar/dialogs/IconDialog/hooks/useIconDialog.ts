@@ -5,6 +5,7 @@ import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import { phStorage } from "../../../../../utils/phStorage";
 import { loadIconSprite } from "../../../../../utils/icons/IconSvgMapContext";
 import { deriveCategories, type IconCategory } from "../utils/deriveCategories";
+import { useOverlay } from "../../../../../registry/hooks/useOverlay";
 
 export interface IconSetMeta {
   id: string;
@@ -319,13 +320,10 @@ export function useIconDialog({
             emitChange(`${set}/${icons[focusedIndex]}`);
           }
           break;
-        case "Escape":
-          e.preventDefault();
-          closeDialog();
-          break;
+        // Escape moved to useOverlay below — registry overlay stack owns it.
       }
     },
-    [isOpen, activeTab, filteredIcons, focusedIndex, set, emitChange, closeDialog]
+    [isOpen, activeTab, filteredIcons, focusedIndex, set, emitChange]
   );
 
   useEffect(() => {
@@ -333,6 +331,8 @@ export function useIconDialog({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleKeyDown]);
+
+  useOverlay({ id: "icon-dialog", isOpen, onDismiss: closeDialog });
 
   return {
     dialog,

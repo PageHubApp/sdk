@@ -7,6 +7,7 @@ import { ComponentsAtom } from "../../../utils/atoms";
 import { useSectionTemplates } from "../../../utils/useSectionTemplates";
 import { buildCraftTreeFromStructure } from "../../buildCraftTreeFromStructure";
 import { ComponentPreview } from "../node-tools/ComponentPreview";
+import { useOverlay } from "../../../registry/hooks/useOverlay";
 
 /** Insert payload for built-in section presets (same tree builder as library toolbox). */
 function buildTemplateElement(template: any, resolver: any) {
@@ -143,22 +144,21 @@ export const SectionPickerDialog = ({
       }
     };
 
-    const handleKeyDown = event => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
+
+  // Escape dismissal: registry overlay stack.
+  useOverlay({
+    id: "section-picker-dialog",
+    isOpen,
+    onDismiss: onClose,
+  });
 
   const templates = useMemo(() => {
     const resolver = query.getOptions().resolver;

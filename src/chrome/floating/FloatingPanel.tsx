@@ -14,6 +14,7 @@ import { useDraggableWindow } from "../hooks/useDraggableWindow";
 import { useResizable } from "../hooks/useResizable";
 import { useFocusTrap } from "../../utils/hooks/useAccessibility";
 import { AutoHideScrollbar } from "../primitives/layout/AutoHideScrollbar";
+import { useOverlay } from "../../registry/hooks/useOverlay";
 
 type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
@@ -284,14 +285,10 @@ export function FloatingPanel({
   const parentRegister = parentCtx?.registerPortal;
   const parentPanelRef = parentCtx?.panelRef;
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
+  // Escape dismissal is handled by the registry dispatcher via the editor
+  // overlay stack — see [.../registry/overlayStack.ts]. Each FloatingPanel
+  // registers under its `storageKey` so nested panels stack correctly.
+  useOverlay({ id: `floating-panel:${storageKey}`, isOpen, onDismiss: onClose });
 
   // Register our root with the parent FloatingPanel (if any) so its outside-
   // click handler skips clicks on us. Re-runs when isOpen flips so the parent

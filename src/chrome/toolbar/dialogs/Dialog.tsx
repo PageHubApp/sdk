@@ -4,6 +4,7 @@ import { TbX } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { SideBarAtom } from "../../../utils/atoms";
 import { useDraggableWindow } from "../../hooks/useDraggableWindow";
+import { useOverlay } from "../../../registry/hooks/useOverlay";
 
 export const Dialog = ({
   dialogName,
@@ -187,10 +188,11 @@ export const Dialog = ({
       }
     };
 
+    // Escape moved to the registry overlay stack — see useOverlay below.
+    // Arrow / Enter remain inline because they're picker UX, not overlay
+    // dismissal, and the registry intentionally doesn't model picker nav.
     const handleKeyDown = event => {
-      if (event.key === "Escape") {
-        closed();
-      } else if (event.key === "ArrowDown") {
+      if (event.key === "ArrowDown") {
         event.preventDefault();
         const totalItems = (!searchValue ? 1 : 0) + itemList.length;
         setSelectedIndex(prev => Math.min(prev + 1, totalItems - 1));
@@ -216,6 +218,12 @@ export const Dialog = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dialog.enabled]);
+
+  useOverlay({
+    id: `dialog:${dialogName}`,
+    isOpen: Boolean(dialog.enabled),
+    onDismiss: closed,
+  });
 
   const refIe = useRef(null);
 

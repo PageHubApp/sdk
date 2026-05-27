@@ -2,6 +2,7 @@ import type { Editor } from "@tiptap/react";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useMenuItems, useRegistries } from "../../../registry";
+import { useOverlay } from "../../../registry/hooks/useOverlay";
 import { VariableInsertDropdownBody } from "./panels/VariableInsertPanel";
 
 const MENU_Z = 100060;
@@ -56,20 +57,24 @@ export function TiptapRichTextContextMenu({
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
     const onPointer = (e: MouseEvent) => {
       if (rootRef.current?.contains(e.target as Node)) return;
       onClose();
     };
-    document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onPointer, true);
     return () => {
-      document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onPointer, true);
     };
   }, [open, onClose]);
+
+  // Escape dismissal via registry overlay stack. Note: this menu has two
+  // phases (root → variables), but Escape always closes the whole menu —
+  // mirrors the legacy listener's behavior.
+  useOverlay({
+    id: "tiptap-context-menu",
+    isOpen: open,
+    onDismiss: onClose,
+  });
 
   if (!open || !anchor || !editor) return null;
 

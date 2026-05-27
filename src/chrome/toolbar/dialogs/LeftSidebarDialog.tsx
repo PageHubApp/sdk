@@ -1,6 +1,7 @@
 import React, { ReactNode, useEffect, useRef } from "react";
 import { TbX } from "react-icons/tb";
 import { useFocusTrap } from "../../../utils/hooks/useAccessibility";
+import { useOverlay } from "../../../registry/hooks/useOverlay";
 
 interface LeftSidebarDialogProps {
   isOpen: boolean;
@@ -62,19 +63,14 @@ export function LeftSidebarDialog({
   const finalWidth = width || (position === "absolute" ? "100%" : "360px");
   const finalTop = top ?? (position === "absolute" ? "var(--editor-nav-height, 3rem)" : "40px");
 
-  // Handle Escape key
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
+  // Escape dismissal is handled by the registry dispatcher via the editor
+  // overlay stack — the dialog title is unique enough to disambiguate, and
+  // multiple LeftSidebarDialogs are not stacked in practice.
+  useOverlay({
+    id: `left-sidebar-dialog:${title}`,
+    isOpen,
+    onDismiss: onClose,
+  });
 
   // Handle click outside
   useEffect(() => {

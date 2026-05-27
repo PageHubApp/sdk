@@ -12,6 +12,7 @@ import {
 } from "@/utils/fonts/googleFonts";
 import { fonts } from "../../../utils/tailwind/tailwind";
 import { ItemToggle } from "../primitives/ItemSelector";
+import { useOverlay } from "../../../registry/hooks/useOverlay";
 
 export { FontFamilyDialogAtom } from "./dialogAtoms";
 
@@ -163,10 +164,8 @@ export const FontFamilyDialog = () => {
             changed(filteredFonts[hoveredIndex]);
           }
           break;
-        case "Escape":
-          e.preventDefault();
-          closeDialog();
-          break;
+        // Escape moved to useOverlay below — registry overlay stack owns it
+        // so nested dialogs dismiss in LIFO order.
       }
     };
 
@@ -181,6 +180,12 @@ export const FontFamilyDialog = () => {
     }
     setDialog({ ...dialog, enabled: false });
   };
+
+  useOverlay({
+    id: "font-family-dialog",
+    isOpen: Boolean(dialog.enabled),
+    onDismiss: closeDialog,
+  });
 
   const changed = value => {
     if (!dialog.changed) return;

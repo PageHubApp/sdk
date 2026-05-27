@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { TbCheck, TbTrash, TbX } from "react-icons/tb";
 import { resolveTheme } from "@/utils/design/resolveTheme";
 import { useTokenUsage } from "../universal-input/hooks/useTokenUsage";
+import { useOverlay } from "../../../../registry/hooks/useOverlay";
 
 interface CreateTokenDialogProps {
   /** When set, dialog is in edit mode: pre-fills name + color, shows Delete button.
@@ -60,13 +61,12 @@ export function CreateTokenDialog({
     return () => document.removeEventListener("mousedown", handle, true);
   }, [onClose]);
 
-  useEffect(() => {
-    const handle = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handle);
-    return () => document.removeEventListener("keydown", handle);
-  }, [onClose]);
+  // Escape dismissal: registry overlay stack.
+  useOverlay({
+    id: `create-token-dialog:${existing?.originalName ?? "new"}`,
+    isOpen: true,
+    onDismiss: onClose,
+  });
 
   const handleSave = () => {
     const trimmed = name.trim();

@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useId, useMemo, useRef } from "react";
 import {
   autoUpdate,
   flip,
@@ -14,6 +14,7 @@ import {
   type RootBoundary,
   type Strategy,
 } from "@floating-ui/react-dom";
+import { useOverlay } from "../../registry/hooks/useOverlay";
 
 export type AnchoredPopoverDismissOptions = {
   onDismiss: () => void;
@@ -134,17 +135,22 @@ export function useAnchoredPopover({
       d.onDismiss();
     };
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") d.onDismiss();
-    };
-
     document.addEventListener("pointerdown", onPointerDown, true);
-    document.addEventListener("keydown", onKeyDown, true);
     return () => {
       document.removeEventListener("pointerdown", onPointerDown, true);
-      document.removeEventListener("keydown", onKeyDown, true);
     };
   }, [open, floating.refs.reference, floating.refs.floating]);
+
+  // Escape dismissal: registry overlay stack. Each call site gets a stable
+  // React useId so concurrent anchored popovers don't collide.
+  const overlayId = useId();
+  useOverlay({
+    id: `anchored-popover:${overlayId}`,
+    isOpen: Boolean(open && dismiss),
+    onDismiss: () => {
+      dismissRef.current?.onDismiss();
+    },
+  });
 
   return floating;
 }

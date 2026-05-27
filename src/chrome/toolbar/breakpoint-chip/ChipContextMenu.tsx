@@ -25,6 +25,7 @@ import {
 } from "react-icons/tb";
 
 import { ViewAtom } from "../../viewport/state/atoms";
+import { useOverlay } from "../../../registry/hooks/useOverlay";
 import { ChipPopoverAtom, CHIP_BP_LABEL, canvasViewToChipBp, type ChipBp } from "./atoms";
 import {
   cmdCopyDown,
@@ -88,20 +89,17 @@ export function ChipContextMenu({
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
     const onPointer = (e: MouseEvent) => {
       if (rootRef.current?.contains(e.target as Node)) return;
       onClose();
     };
-    document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onPointer, true);
     return () => {
-      document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onPointer, true);
     };
   }, [open, onClose]);
+
+  useOverlay({ id: "chip-context-menu", isOpen: open, onDismiss: onClose });
 
   if (!open || !anchor) return null;
 

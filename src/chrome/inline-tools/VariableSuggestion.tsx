@@ -4,6 +4,7 @@ import { TbBuilding, TbCalendar, TbChevronRight, TbShoppingCart, TbVariable } fr
 import type { SuggestionProps } from "@/core/tiptapExtensions/VariableNode";
 import { useAnchoredPopover } from "@/chrome/popovers/useAnchoredPopover";
 import { OVERLAY_Z_INLINE_TOOLS } from "@/chrome/popovers/overlayZIndex";
+import { useOverlay } from "@/registry/hooks/useOverlay";
 
 // ── Shared styles (same as ToolboxContextual) ───────────────────────────────
 
@@ -143,18 +144,14 @@ export function VariableSuggestionPopup({ suggestion }: { suggestion: Suggestion
     groupRefs.current.clear();
   }, [suggestion?.query]);
 
-  // Keyboard: Escape closes
-  useEffect(() => {
-    if (!suggestion) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        setOpenGroup(null);
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown, true);
-    return () => document.removeEventListener("keydown", handleKeyDown, true);
-  }, [suggestion]);
+  // Escape closes the open group via the registry overlay stack. Only
+  // registers while a sub-group is open — Escape with no group open lets
+  // the parent (suggestion list) dismissal handle itself.
+  useOverlay({
+    id: "variable-suggestion-group",
+    isOpen: suggestion != null && openGroup != null,
+    onDismiss: () => setOpenGroup(null),
+  });
 
   if (!suggestion || !suggestion.items.length) return null;
 
