@@ -703,6 +703,7 @@ function openComponentsTabRun(): void {
 
 import { getActiveTiptapEditor } from "../tiptapBackref";
 import { getMediaBackref } from "../mediaBackref";
+import { getAnnotationBackref } from "../annotationBackref";
 import { buildInlineCopyAssistantOpenState } from "../../utils/buildInlineCopyAssistantOpenState";
 import { paletteToCSSVar } from "../../utils/design/palette";
 
@@ -1795,7 +1796,9 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
         !isInsideTextEditingSurfaceCtx(ctx)
       );
     },
-    run: stub("ph.annotation.delete"),
+    run: () => {
+      getAnnotationBackref()?.deleteSelected();
+    },
     paletteHide: true,
   },
   {
@@ -1856,10 +1859,6 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  *    we introduce a centralized overlay stack later, replace those inline
  *    handlers with a real run body and publish `overlay.stackDepth` from
  *    the stack manager.
- *  - `ph.annotation.delete` — the annotation system doesn't publish
- *    `annotation.selectedId` / `annotation.editingId` yet. When the
- *    annotation surface migrates to publish context and owns its own
- *    delete action, fill the run body here.
  *  - `ph.sections.toggleQuickLook` — Sections modal quick-look (Space key
  *    to peek at a hovered block) is handled inline today. When the
  *    Sections modal publishes `sections.modalOpen` /
@@ -1868,7 +1867,6 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
 const STILL_STUB_IDS = new Set<string>([
   "ph.sidebar.search",
   "ph.overlay.dismissTop",
-  "ph.annotation.delete",
   "ph.sections.toggleQuickLook",
 ]);
 

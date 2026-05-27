@@ -2,8 +2,9 @@ import React from "react";
 import { TbX } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import type { CanvasAnnotation } from "../../../utils/component/componentCanvas";
-import { isInsideTextEditingSurface } from "../../../utils/keyboard";
 import { useDragGesture } from "../../hooks/useDragGesture";
+import { useRegistries } from "../../../registry";
+import { setAnnotationBackref } from "../../../registry/annotationBackref";
 
 interface Props {
   annotations: CanvasAnnotation[];
@@ -30,21 +31,28 @@ export function CanvasAnnotationLayer({ annotations, onChange }: Props) {
 
   const remove = (id: string) => onChange(annotations.filter(a => a.id !== id));
 
-  // Delete key removes selected annotation when not editing
+  // Publish annotation context + delete callback so the registry-dispatched
+  // Backspace/Delete chord (`ph.annotation.delete`) can drive the surface.
+  // Replaces the inline window keydown listener — same precedence (media
+  // modal > annotation selection > node delete) is now enforced by
+  // keybindings priority instead of mount order.
+  const { context } = useRegistries();
   React.useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (editingId) return;
-      if (!selectedId) return;
-      if (isInsideTextEditingSurface(e.target)) return;
-      if (e.key === "Delete" || e.key === "Backspace") {
-        e.preventDefault();
+    context.set("annotation.selectedId", selectedId);
+  }, [context, selectedId]);
+  React.useEffect(() => {
+    context.set("annotation.editingId", editingId);
+  }, [context, editingId]);
+  React.useEffect(() => {
+    setAnnotationBackref({
+      deleteSelected: () => {
+        if (!selectedId || editingId) return;
         remove(selectedId);
         setSelectedId(null);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selectedId, editingId, annotations]);
+      },
+    });
+    return () => setAnnotationBackref(null);
+  }, [selectedId, editingId, annotations]); // remove closure captures the latest
 
   return (
     <>
