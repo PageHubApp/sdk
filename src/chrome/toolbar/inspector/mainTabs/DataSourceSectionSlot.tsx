@@ -1,14 +1,12 @@
 import { useNode } from "@craftjs/core";
-import { useSDK } from "../../../../core/context";
+import { SlotRenderer } from "../../../../registry";
 
 /**
- * Renders the host app data source panel (editorChromeSlots.renderDataSourceSection).
- * Used from Container main tab and Advanced properties — same UI as app DataSourceSection.
+ * Renders the host data source panel via the `node/data-source-section`
+ * slot. Used from Container main tab and Advanced properties — same UI as
+ * the app's DataSourceSection.
  */
 export function DataSourceSectionSlot() {
   const { id } = useNode();
-  const { config } = useSDK();
-  const render = config.editorChromeSlots?.renderDataSourceSection;
-  if (!render) return null;
-  return <>{render({ nodeId: id })}</>;
+  return <SlotRenderer id="node/data-source-section" ctx={{ nodeId: id }} />;
 }

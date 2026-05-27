@@ -3,8 +3,8 @@ import ReactDOM from "react-dom";
 import { TbCheck, TbEdit, TbLoader2, TbX } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
-import type { ReactNode } from "react";
 import type { PageHubMediaEditAiActionsContext } from "@/types";
+import { SlotRenderer } from "@/registry";
 import { formatFileSize, type MediaItem } from "../utils/media-helpers";
 import { OVERLAY_Z_CRITICAL_MODAL } from "@/chrome/popovers/overlayZIndex";
 
@@ -16,7 +16,6 @@ interface MediaEditModalProps {
   savingMetadata: "idle" | "saving" | "saved";
   canUseImageAnalyze: boolean;
   mediaEditAiActionsContext: PageHubMediaEditAiActionsContext | null;
-  renderMediaEditAiActions?: (ctx: PageHubMediaEditAiActionsContext) => ReactNode;
   onClose: () => void;
   onSave: () => void;
   onUpdate: (media: MediaItem) => void;
@@ -27,7 +26,6 @@ export function MediaEditModal({
   savingMetadata,
   canUseImageAnalyze,
   mediaEditAiActionsContext,
-  renderMediaEditAiActions,
   onClose,
   onSave,
   onUpdate,
@@ -207,7 +205,7 @@ export function MediaEditModal({
           {/* AI Metadata */}
           {canUseImageAnalyze && editingMedia.type !== "svg" && mediaEditAiActionsContext && (
             <div className="border-base-300 border-t pt-4">
-              {renderMediaEditAiActions?.(mediaEditAiActionsContext)}
+              <SlotRenderer id="media-edit/ai-actions" ctx={mediaEditAiActionsContext} />
             </div>
           )}
         </div>

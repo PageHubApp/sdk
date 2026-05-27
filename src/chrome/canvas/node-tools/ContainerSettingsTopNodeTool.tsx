@@ -11,16 +11,21 @@ import { useAtomState } from "@zedux/react";
 import { useSetAtomState } from "../../../utils/atoms";
 import { AiChatAttachedNodesAtom, AssistantOpenAtom } from "../../../utils/atoms";
 import { usePanelUrl } from "../../../utils/usePanelUrl";
-import { useSDK } from "../../../core/context";
+import { useSlot } from "../../../registry";
 import { useAiEnabled } from "../../../utils/hooks/useAiEnabled";
 import { DeleteNodeButton } from "./DeleteNodeButton";
 import { DuplicateNodeButton } from "./DuplicateNodeButton";
 
 export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
-  const { config } = useSDK();
   const aiEnabled = useAiEnabled();
-  const renderNodeAi = config.editorChromeSlots?.renderNodeAiGenerateButton;
-  const renderNodeContext = config.editorChromeSlots?.renderNodeAiContextButton;
+  const aiGenerateSlot = useSlot<{ onClick: () => void; className?: string }>(
+    "node/ai-generate-button",
+    undefined
+  );
+  const aiContextSlot = useSlot<{ onClick: () => void; className?: string }>(
+    "node/ai-context-button",
+    undefined
+  );
   const [, setAttachedNodes] = useAtomState(AiChatAttachedNodesAtom);
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const view = useAtomValue(ViewAtom);
@@ -92,13 +97,13 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
 
   return (
     <NodeToolWrapper col={direction !== "horizontal"} dense={compactToolbar}>
-      {direction === "horizontal" && !suppressContainerChromeTools && aiEnabled && renderNodeAi && (
+      {direction === "horizontal" && !suppressContainerChromeTools && aiEnabled && aiGenerateSlot && (
         <NodeInlineTooltip
           variant="container"
           content="Add something with AI"
           className={segmentBorder}
         >
-          {renderNodeAi({
+          {aiGenerateSlot.render({
             onClick: () => setAssistantOpen({ nodeId: id, mode: "create", revealPanel: true }),
             className: "tool-button",
           })}
@@ -107,11 +112,11 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
 
       {direction === "horizontal" &&
         aiEnabled &&
-        renderNodeContext &&
+        aiContextSlot &&
         id !== "ROOT" &&
         (compactToolbar ? (
           <NodeInlineTooltip variant="strip-compact" content="Include in AI chat">
-            {renderNodeContext({
+            {aiContextSlot.render({
               onClick: pinNodeInAiChat,
               className: "tool-button",
             })}
@@ -122,7 +127,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
             content="Include in AI chat"
             className={segmentBorder}
           >
-            {renderNodeContext({
+            {aiContextSlot.render({
               onClick: pinNodeInAiChat,
               className: "tool-button",
             })}

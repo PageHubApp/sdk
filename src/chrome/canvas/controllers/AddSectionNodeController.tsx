@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { TbLayoutGridAdd } from "react-icons/tb";
 import { AssistantOpenAtom, SectionPickerDialogAtom } from "../../../utils/atoms";
 import { useAiEnabled } from "../../../utils/hooks/useAiEnabled";
-import { useSDK } from "../../../core/context";
+import { useSlot } from "../../../registry";
 import { useSetAtomState } from "../../../utils/atoms";
 import { usePanelUrl } from "../../../utils/usePanelUrl";
 import { AddElement } from "../../viewport/toolbox/toolboxUtils";
@@ -17,9 +17,11 @@ export const AddSectionNodeController = (props: { position; align }) => {
   const ref = useRef(null);
   const { id } = useNode();
   const [isControllerHovered, setIsControllerHovered] = useState(false);
-  const { config } = useSDK();
   const aiEnabled = useAiEnabled();
-  const renderNodeAi = config.editorChromeSlots?.renderNodeAiGenerateButton;
+  const aiGenerateSlot = useSlot<{ onClick: () => void; className?: string }>(
+    "node/ai-generate-button",
+    undefined
+  );
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
 
   const { isHover } = useNode(node => ({
@@ -124,8 +126,8 @@ export const AddSectionNodeController = (props: { position; align }) => {
       </button>
 
       {aiEnabled &&
-        renderNodeAi &&
-        renderNodeAi({
+        aiGenerateSlot &&
+        aiGenerateSlot.render({
           onClick: () =>
             setAssistantOpen({
               nodeId: id,

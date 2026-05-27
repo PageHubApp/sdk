@@ -1,10 +1,9 @@
-import { useSDK } from "../../../../core/context";
+import { SlotRenderer } from "../../../../registry";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
 
 export const AudioMainTab = () => {
-  const { config } = useSDK();
   return renderComponentSlots({
     Content: (
       <>
@@ -17,7 +16,7 @@ export const AudioMainTab = () => {
             labelHide={true}
             placeholder="https://example.com/audio.mp3"
           />
-          {config.editorChromeSlots?.settingsAiButton}
+          <SlotRenderer id="settings/ai-button" />
         </ToolbarSection>
 
         <ToolbarSection title="Playback Options" help="Controls, autoplay, and loop settings.">

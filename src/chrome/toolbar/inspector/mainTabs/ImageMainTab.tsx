@@ -1,4 +1,4 @@
-import { useSDK } from "../../../../core/context";
+import { SlotRenderer } from "../../../../registry";
 import { MediaInput } from "../../inputs/media/MediaInput";
 import { TailwindInput } from "../../inputs/advanced/TailwindInput";
 import { ToolbarItem } from "../../ToolbarItem";
@@ -6,7 +6,6 @@ import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots, SECTION_ICONS } from "../helpers";
 
 export const ImageMainTab = () => {
-  const { config } = useSDK();
   return renderComponentSlots({
     Content: (
       <>
@@ -32,7 +31,7 @@ export const ImageMainTab = () => {
             prop="objectPosition"
             type="select"
           />
-          {config.editorChromeSlots?.settingsAiButton}
+          <SlotRenderer id="settings/ai-button" />
         </ToolbarSection>
 
         <ToolbarSection

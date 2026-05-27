@@ -14,6 +14,8 @@ import {
 } from "react-icons/tb";
 import useSWR from "swr";
 import { useSDK } from "../../../core/context";
+import { useSlotList } from "../../../registry";
+import type { PageSettingsExtraTab } from "../modals/PageSettingsModal";
 import { SettingsAtom } from "../../../utils/atoms";
 import { IsolateAtom } from "../../../utils/atoms";
 import { hasPageIsolation, isolatePageInTree } from "../../../utils/page/pageManagement";
@@ -129,8 +131,15 @@ export function PageSelector({
   const [settingsPageId, setSettingsPageId] = useState<string | null>(null);
   const [unsavedChangesRaw, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
   const unsavedChanges = unsavedChangesRaw as unknown as string | null;
-  const { emitter, config } = useSDK();
-  const pageSettingsExtraTabs = config.editorChromeSlots?.pageSettingsExtraTabs || [];
+  const { emitter } = useSDK();
+  // Resolve the page-settings/extra-tabs list slot. Each contribution's
+  // render() returns the tab descriptor itself (host-supplied shape) — the
+  // adapter forwards it untouched so PageSettingsModal can keep using the
+  // existing {key,label,order,render,onSave} contract.
+  const extraTabContributions = useSlotList("page-settings/extra-tabs");
+  const pageSettingsExtraTabs = extraTabContributions
+    .map(c => c.render(undefined) as unknown as PageSettingsExtraTab | null)
+    .filter((t): t is PageSettingsExtraTab => !!t && typeof t === "object");
 
   // Home page ID from SWR data
   const homePageId = (pageData?.pages || []).find((p: any) => p.isHomePage)?.nodeId || pages[0]?.id;

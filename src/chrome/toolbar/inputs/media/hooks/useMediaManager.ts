@@ -2,7 +2,7 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useEffect } from "react";
 import { useAtomValue } from "@zedux/react";
 import { SettingsAtom } from "@/utils/atoms";
-import { useSDK } from "@/core/context";
+import { useSlot } from "@/registry";
 import { useAiEnabled } from "@/utils/hooks/useAiEnabled";
 import { useAiGeneration } from "./useAiGeneration";
 import { useMediaDeleteState } from "./useMediaDeleteState";
@@ -28,13 +28,15 @@ export function useMediaManager({
   onSelect,
   selectionMode,
 }: UseMediaManagerOptions) {
-  const { config } = useSDK();
   const aiEnabled = useAiEnabled();
   const settings = useAtomValue(SettingsAtom);
 
-  const mediaEditAiActionsSlot = config.editorChromeSlots?.renderMediaEditAiActions;
+  // `media-edit/ai-actions` is rendered via <SlotRenderer> inside
+  // MediaEditModal; here we only need to know whether a contribution exists
+  // (gates the "Analyze with AI" affordances at the manager level).
+  const mediaEditAiActionsSlot = useSlot("media-edit/ai-actions", undefined);
   const canUseImageGenerate = aiEnabled;
-  const canUseImageAnalyze = aiEnabled && typeof mediaEditAiActionsSlot === "function";
+  const canUseImageAnalyze = aiEnabled && mediaEditAiActionsSlot !== null;
 
   const list = useMediaListState();
   const view = useMediaViewState();
@@ -182,7 +184,6 @@ export function useMediaManager({
     canUseImageAnalyze,
     canUseImageGenerate,
     canEditSelected,
-    renderMediaEditAiActions: mediaEditAiActionsSlot,
     mediaEditAiActionsContext: editing.mediaEditAiActionsContext,
 
     setSearchQuery: view.setSearchQuery,

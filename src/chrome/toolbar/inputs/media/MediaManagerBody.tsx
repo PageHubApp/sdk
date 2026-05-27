@@ -243,7 +243,6 @@ export function MediaManagerBody({
           savingMetadata={manager.savingMetadata}
           canUseImageAnalyze={manager.canUseImageAnalyze}
           mediaEditAiActionsContext={manager.mediaEditAiActionsContext}
-          renderMediaEditAiActions={manager.renderMediaEditAiActions}
           onClose={manager.closeEditModal}
           onSave={manager.saveEditedMetadata}
           onUpdate={manager.setEditingMedia}

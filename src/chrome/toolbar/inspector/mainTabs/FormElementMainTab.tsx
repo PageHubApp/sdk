@@ -1,5 +1,5 @@
 import { useEditor, useNode } from "@craftjs/core";
-import { useSDK } from "../../../../core/context";
+import { SlotRenderer } from "../../../../registry";
 import { SelectOptionsItem } from "../../items/SelectOptionsItem";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -162,7 +162,6 @@ const StateBindingSection = () => {
 
 export const FormElementMainTab = () => {
   const { query } = useEditor();
-  const { config } = useSDK();
 
   // Get the current field type
   const selected = query.getEvent("selected").first();
@@ -204,7 +203,7 @@ export const FormElementMainTab = () => {
           <PropertiesInput />
           <ValidationInput />
 
-          {config.editorChromeSlots?.settingsAiButton}
+          <SlotRenderer id="settings/ai-button" />
         </ToolbarSection>
 
         {/* ── State Binding (Phase 3) ──────────────────────────────────── */}

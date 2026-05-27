@@ -4,15 +4,12 @@ import { useLayoutPreset } from "../../inputs/layout/hooks/useLayoutPreset";
 import { ToolbarSection } from "../../ToolbarSection";
 import { useGetNode } from "../../dialogs/toolHooks";
 import { renderComponentSlots } from "../helpers";
-import { useSDK } from "../../../../core/context";
+import { SlotRenderer } from "../../../../registry";
 
-/** Renders the host-provided data source section via editorChromeSlots. */
+/** Renders the host-provided data source section via the slot registry. */
 const DataSourceSlot = () => {
   const { id } = useNode();
-  const { config } = useSDK();
-  const render = config.editorChromeSlots?.renderDataSourceSection;
-  if (!render) return null;
-  return <>{render({ nodeId: id })}</>;
+  return <SlotRenderer id="node/data-source-section" ctx={{ nodeId: id }} />;
 };
 
 export const DataMainTab = () => {

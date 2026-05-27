@@ -1,13 +1,12 @@
-import { useSDK } from "../../../../core/context";
+import { SlotRenderer } from "../../../../registry";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
 
 export const BackgroundMainTab = () => {
-  const { config } = useSDK();
   return renderComponentSlots({
     Content: (
       <ToolbarSection collapsible={false}>
-        {config.editorChromeSlots?.settingsAiButton}
+        <SlotRenderer id="settings/ai-button" />
       </ToolbarSection>
     ),
   });

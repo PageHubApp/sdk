@@ -1,6 +1,6 @@
 import { useNode } from "@craftjs/core";
 import { useEffect, useRef } from "react";
-import { useSDK } from "../../../../core/context";
+import { SlotRenderer } from "../../../../registry";
 import { MediaInput } from "../../inputs/media/MediaInput";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
@@ -16,7 +16,6 @@ export const VideoMainTab = () => {
     provider: node.data?.props.provider,
     videoId: node.data?.props.videoId,
   }));
-  const { config } = useSDK();
 
   // Clear `videoId` when crossing the r2 boundary — R2 mediaIds are not
   // valid for remote providers (and vice versa), so a stale value would
@@ -171,7 +170,7 @@ export const VideoMainTab = () => {
           />
         </ToolbarSection>
 
-        {config.editorChromeSlots?.settingsAiButton}
+        <SlotRenderer id="settings/ai-button" />
       </>
     ),
   });

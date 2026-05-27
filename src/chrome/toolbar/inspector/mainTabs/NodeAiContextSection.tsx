@@ -2,7 +2,7 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useCallback } from "react";
 import { normalizeDesignTags } from "@/utils/normalizeDesignTags";
-import { useSDK } from "../../../../core/context";
+import { SlotRenderer } from "../../../../registry";
 
 /**
  * Per-node AI context (designNotes / designTags). ROOT is edited in Site Settings only.
@@ -10,8 +10,6 @@ import { useSDK } from "../../../../core/context";
 export function NodeAiContextSection() {
   const { id } = useNode();
   const { actions } = useEditor();
-  const { config } = useSDK();
-  const renderEditor = config.editorChromeSlots?.renderNodeAiContextEditor;
 
   const { designNotes, designTags } = useEditor(state => {
     const design = state.nodes[id]?.data?.props?.design;
@@ -64,17 +62,19 @@ export function NodeAiContextSection() {
         Optional brief for models when this node is in scope. Page-wide defaults still apply from
         your site&apos;s settings.
       </p>
-      {renderEditor ? (
-        renderEditor({
+      <SlotRenderer
+        id="node/ai-context-editor"
+        ctx={{
           designNotes,
           setDesignNotes,
           designTags,
           setDesignTags,
           fieldIdPrefix: `toolbar-ai-ctx-${id}-`,
-        })
-      ) : (
-        <p className="text-neutral-content text-xs italic">AI editor not available.</p>
-      )}
+        }}
+        fallback={
+          <p className="text-neutral-content text-xs italic">AI editor not available.</p>
+        }
+      />
     </>
   );
 }

@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { TbChevronRight, TbComponents, TbPlus } from "react-icons/tb";
-import { useSDK } from "../../../core/context";
-import { useMenuItems, useRegistries } from "../../../registry";
+import { useMenuItems, useRegistries, useSlot } from "../../../registry";
 import { useAiEnabled } from "../../../utils/hooks/useAiEnabled";
 import {
   OVERLAY_Z_CONTEXT_COMPONENT_FLYOUT,
@@ -32,9 +31,13 @@ export const ToolboxContextual = () => {
   const model = useToolboxMenuModel();
   const ref = useRef<HTMLDivElement>(null);
   const { commands } = useRegistries();
-  const { config } = useSDK();
   const aiEnabled = useAiEnabled();
-  const renderAiSlot = config.editorChromeSlots?.renderNodeAiContextButton;
+  // useSlot with `undefined` ctx to detect contribution; per-call ctx is
+  // passed at render time so we can include the onClick/label per item.
+  const aiContextSlot = useSlot<{ onClick: () => void; className?: string; label?: string }>(
+    "node/ai-context-button",
+    undefined
+  );
 
   const { menu, id, closeMenu } = model;
 
@@ -175,7 +178,7 @@ export const ToolboxContextual = () => {
         ) : null;
 
         if (isAiRow) {
-          if (!aiEnabled || !renderAiSlot) return submenuTrigger;
+          if (!aiEnabled || !aiContextSlot) return submenuTrigger;
           return (
             <div
               key={`${item.command}-${idx}`}
@@ -184,7 +187,7 @@ export const ToolboxContextual = () => {
               onMouseDownCapture={e => e.stopPropagation()}
             >
               {submenuTrigger}
-              {renderAiSlot({
+              {aiContextSlot.render({
                 onClick: () => closeAndExec(item.command, item.args),
                 className: CTX_MENU_ITEM,
                 label: item.title,

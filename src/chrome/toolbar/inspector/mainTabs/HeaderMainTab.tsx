@@ -1,4 +1,4 @@
-import { useSDK } from "../../../../core/context";
+import { SlotRenderer } from "../../../../registry";
 import { ToolbarSection } from "../../ToolbarSection";
 import { renderComponentSlots } from "../helpers";
 
@@ -9,11 +9,10 @@ import { renderComponentSlots } from "../helpers";
  * Component tab only surfaces the AI helper slot, mirroring `BackgroundMainTab`.
  */
 export const HeaderMainTab = () => {
-  const { config } = useSDK();
   return renderComponentSlots({
     Content: (
       <ToolbarSection collapsible={false}>
-        {config.editorChromeSlots?.settingsAiButton}
+        <SlotRenderer id="settings/ai-button" />
       </ToolbarSection>
     ),
   });

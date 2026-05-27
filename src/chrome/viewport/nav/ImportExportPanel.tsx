@@ -3,7 +3,7 @@ import { useEditor } from "@craftjs/core";
 import lz from "lzutf8";
 import { useState } from "react";
 import { TbDownload, TbUpload } from "react-icons/tb";
-import { useSDK } from "../../../core/context";
+import { SlotRenderer } from "../../../registry";
 import { SidebarTabsPane } from "../../primitives/SidebarTabsPane";
 
 export interface ImportExportPanelProps {
@@ -11,8 +11,6 @@ export interface ImportExportPanelProps {
 }
 
 export function ImportExportPanel({ onClose }: ImportExportPanelProps) {
-  const { config } = useSDK();
-  const handoffExtras = config.editorChromeSlots?.renderImportExportHandoffExtras;
   const [activeTab, setActiveTab] = useState<"import" | "export">("export");
   const [stateToLoad, setStateToLoad] = useState("");
 
@@ -58,13 +56,14 @@ export function ImportExportPanel({ onClose }: ImportExportPanelProps) {
           icon: <TbDownload className="size-4 shrink-0 opacity-80" aria-hidden />,
           content: (
             <div className="p-6">
-              {handoffExtras ? (
-                handoffExtras()
-              ) : (
-                <p className="text-base-content/70 text-sm">
-                  Site downloads are not configured for this editor build.
-                </p>
-              )}
+              <SlotRenderer
+                id="import-export/handoff-extras"
+                fallback={
+                  <p className="text-base-content/70 text-sm">
+                    Site downloads are not configured for this editor build.
+                  </p>
+                }
+              />
             </div>
           ),
         },

@@ -10,6 +10,7 @@ import { EditorContent, useEditor as useTiptapEditor } from "@tiptap/react";
 import type { Editor as TiptapEditorInstance } from "@tiptap/core";
 
 import { useSDKSafe } from "../../core/context";
+import { useRegistriesSafe } from "../../registry/provider";
 import {
   clearActiveTiptapEditorIf,
   setActiveTiptapEditor,
@@ -100,9 +101,14 @@ function TextEditorMode({
   );
 
   const sdk = useSDKSafe();
+  const registries = useRegistriesSafe();
+  // Resolve the inline-copy-assistant slot directly off the registry — no
+  // subscription needed here because the trigger contribution is stable for
+  // the lifetime of an editor session.
   const hasInlineAiChrome =
-    sdk?.features.aiGeneration &&
-    Boolean(sdk.config.editorChromeSlots?.renderInlineCopyAssistantTrigger);
+    !!sdk?.features.aiGeneration &&
+    !!registries &&
+    registries.slots.resolve("tiptap/inline-copy-assistant").length > 0;
 
   const queryRef = React.useRef(query);
   queryRef.current = query;
