@@ -73,6 +73,7 @@ import type {
 import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { setPageHubApiBaseUrl } from "./core/apiConfig";
 import { applyEditorChromeSlotsShim, createRegistriesBundle } from "./registry";
+import { mountKeybindingDispatcher } from "./registry/dispatcher";
 
 // Side-effect import: RegistrySettings self-registers with InspectorRegistry
 // at module load time. Must come AFTER built-in component graph is loadable (see componentRegistry.ts).
@@ -105,6 +106,15 @@ function init(config: PageHubConfig): PageHubInstance {
     console.error("[PageHub] editorChromeSlots shim failed:", err);
   }
   registries.context.setCommandContext({ features: resolved.features });
+
+  // Wave B1 — mount the doc-level keybinding dispatcher. Coexists harmlessly
+  // with existing keyboard handlers while built-in commands are stubbed.
+  // Returned unmount fn is invoked from `destroy()` below.
+  const unmountKeybindingDispatcher = mountKeybindingDispatcher({
+    commands: registries.commands,
+    keybindings: registries.keybindings,
+    context: registries.context,
+  });
 
   // Configure CDN from init config
   if (config.cdn) configureCdn(config.cdn);
@@ -245,6 +255,7 @@ function init(config: PageHubConfig): PageHubInstance {
     },
 
     destroy() {
+      unmountKeybindingDispatcher();
       root.unmount();
       removeTheme(resolved.containerEl);
       removeTailwindBrowser();
@@ -619,6 +630,12 @@ export type {
   RegistriesBundle,
   SlotRendererProps,
 } from "./registry";
+
+// Canonical keyboard predicates (used by registry dispatcher + any surface
+// that still mounts its own listeners during the Phase 2 transition).
+export { isInsideTextEditingSurface } from "./utils/keyboard";
+export { mountKeybindingDispatcher } from "./registry/dispatcher";
+export type { KeybindingDispatcherOptions } from "./registry/dispatcher";
 
 // Atoms lifted for the registry (still owned by the topbar surface in Wave A;
 // Phase 2 wires them in).

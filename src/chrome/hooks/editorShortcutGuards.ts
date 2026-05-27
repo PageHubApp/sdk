@@ -2,15 +2,19 @@
  * Shared rules for when editor chord shortcuts (Craft copy/paste, etc.)
  * must defer to the browser (native copy/paste, inputs, dialogs).
  */
+import { isInsideTextEditingSurface } from "../../utils/keyboard";
 
-const FORM_FIELD_SELECTOR = "input, textarea, select, [contenteditable='true'], [role='textbox']";
-
+/**
+ * Kept as a named export for callers that prefer the chord-oriented name.
+ * Delegates to the canonical `isInsideTextEditingSurface` (R3 — single source).
+ * Also matches `[role='textbox']` for ARIA-defined textboxes that aren't real
+ * inputs (covered by closest() since the canonical predicate doesn't).
+ */
 export function isFormFieldOrRichTextTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof Element)) return false;
-  const el = target instanceof HTMLElement ? target : null;
-  if (!el) return false;
-  if (el.closest(FORM_FIELD_SELECTOR)) return true;
-  if (el.closest(".ProseMirror")) return true;
+  if (isInsideTextEditingSurface(target)) return true;
+  if (target instanceof Element) {
+    if (target.closest("[role='textbox']")) return true;
+  }
   return false;
 }
 

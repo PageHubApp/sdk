@@ -9,18 +9,7 @@ import {
   finalizeToolboxHistorySelectionSync,
   markToolboxHistorySelectionSync,
 } from "../../../utils/usePanelUrl";
-
-/** True when the key event target is inside a text field — skip viewport chrome shortcuts (Backspace delete, Tab cycle, etc.). */
-function isInsideTextEditingSurface(target: EventTarget | null): boolean {
-  const el = target as HTMLElement | null;
-  if (!el || typeof el.closest !== "function") return false;
-  if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") return true;
-  if (el.isContentEditable || el.getAttribute?.("contenteditable") === "true") return true;
-  if (el.closest(".ProseMirror")) return true;
-  if (el.closest(".cm-editor")) return true;
-  if (el.closest(".monaco-editor")) return true;
-  return false;
-}
+import { isInsideTextEditingSurface } from "../../../utils/keyboard";
 
 export function useViewportKeyboard() {
   const { enabled, canUndo, canRedo, actions, query } = useEditor((state, query) => ({

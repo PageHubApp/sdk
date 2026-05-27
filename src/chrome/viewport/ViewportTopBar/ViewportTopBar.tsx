@@ -54,6 +54,9 @@ const LayersDialog = lazy(() =>
 const ModifiersModal = lazy(() =>
   import("../modals/ModifiersModal").then(m => ({ default: m.ModifiersModal }))
 );
+const CommandPaletteRoot = lazy(() =>
+  import("../../palette").then(m => ({ default: m.CommandPaletteRoot }))
+);
 
 export const ViewportTopBar = () => {
   const { enabled, canUndo, canRedo, actions, query, componentFingerprint } = useEditor(
@@ -374,6 +377,11 @@ export const ViewportTopBar = () => {
 
       {/* Singleton breakpoint-chip popover — anchored to whichever chip is open. */}
       <ChipPopover />
+
+      {/* Singleton command palette (⌘K) — listens for the chord on its own. */}
+      <Suspense fallback={null}>
+        <CommandPaletteRoot />
+      </Suspense>
     </>
   );
 };

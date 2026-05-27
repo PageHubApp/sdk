@@ -12,6 +12,7 @@ import { FilterDropdown } from "../../../primitives/FilterDropdown";
 import { PanelHeaderRow } from "../../../primitives/PanelHeaderRow";
 import { PanelLoadingState } from "../../../primitives/PanelLoadingState";
 import { AddElement } from "../../toolbox/toolboxUtils";
+import { isInsideTextEditingSurface } from "../../../../utils/keyboard";
 import { BlockPreviewCard, BlockQuickLook } from "./components";
 import { buildElementFromStructure } from "./blockHelpers";
 
@@ -154,7 +155,7 @@ export function CategoryDetailView({
       if (
         e.key === " " &&
         !e.repeat &&
-        !(e.target as HTMLElement)?.closest("input, textarea, [contenteditable]")
+        !isInsideTextEditingSurface(e.target)
       ) {
         e.preventDefault();
         if (quickLookBlock) {

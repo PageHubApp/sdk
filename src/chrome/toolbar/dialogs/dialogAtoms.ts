@@ -48,3 +48,6 @@ export const ToolTipDialogAtom = atom("tooltip", {
   e: null,
   placement: "bottom",
 } as any);
+
+/** Command palette (⌘K) — open/close state. */
+export const CommandPaletteAtom = atom("commandPalette", { open: false });

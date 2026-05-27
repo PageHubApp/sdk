@@ -98,6 +98,13 @@ export interface CommandDef<Args = void> {
   enablement?: (ctx: CommandContext, args?: Args) => boolean;
   /** Hide from the command palette even when visible elsewhere (e.g. selection-context-only). */
   paletteHide?: boolean;
+  /**
+   * Sentinel: command body is a placeholder (logs a warning). The keybinding
+   * dispatcher skips `preventDefault()` when the matched command is stubbed,
+   * so existing real handlers keep owning the chord during the Phase 2
+   * migration. Phase 2 deletes the duplicates and clears this flag.
+   */
+  stub?: boolean;
   run: (ctx: CommandRunContext, args?: Args) => void | Promise<void>;
 }
 

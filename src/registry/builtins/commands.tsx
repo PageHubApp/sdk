@@ -67,7 +67,7 @@ function isInsideTextEditingSurfaceCtx(ctx: { tiptap: { active: boolean } }): bo
   return Boolean(ctx.tiptap?.active);
 }
 
-export const BUILTIN_COMMANDS: CommandDef[] = [
+const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
   // ─── Editor ──────────────────────────────────────────────────────────
   {
     id: "ph.editor.insert",
@@ -897,3 +897,14 @@ export const BUILTIN_COMMANDS: CommandDef[] = [
   // ─── Sidebar / general UI ────────────────────────────────────────────
   // (`ph.sidebar.search` defined above next to other tools.)
 ];
+
+/**
+ * Every Wave A command body is a stub. Flag all of them so the keybinding
+ * dispatcher (Wave B1) skips `preventDefault()` and lets the existing
+ * surface-level handlers keep owning the real behavior during Phase 2.
+ * Phase 2 will remove `stub: true` from each command as it migrates.
+ */
+export const BUILTIN_COMMANDS: CommandDef[] = _BUILTIN_COMMANDS_RAW.map(def => ({
+  ...def,
+  stub: true,
+}));

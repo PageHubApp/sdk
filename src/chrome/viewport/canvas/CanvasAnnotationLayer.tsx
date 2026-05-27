@@ -2,6 +2,7 @@ import React from "react";
 import { TbX } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import type { CanvasAnnotation } from "../../../utils/component/componentCanvas";
+import { isInsideTextEditingSurface } from "../../../utils/keyboard";
 import { useDragGesture } from "../../hooks/useDragGesture";
 
 interface Props {
@@ -34,9 +35,7 @@ export function CanvasAnnotationLayer({ annotations, onChange }: Props) {
     const onKeyDown = (e: KeyboardEvent) => {
       if (editingId) return;
       if (!selectedId) return;
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable)
-        return;
+      if (isInsideTextEditingSurface(e.target)) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
         remove(selectedId);

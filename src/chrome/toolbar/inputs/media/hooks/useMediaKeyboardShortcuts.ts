@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { MediaItem } from "../utils/media-helpers";
+import { isInsideTextEditingSurface } from "../../../../../utils/keyboard";
 
 interface UseMediaKeyboardShortcutsArgs {
   isOpen: boolean;
@@ -39,16 +40,7 @@ export function useMediaKeyboardShortcuts({
   useEffect(() => {
     if (!isOpen || previewMedia || editingMedia) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
+      if (isInsideTextEditingSurface(e.target)) return;
 
       const hasSelection = selectedMediaIds.length > 0;
 
