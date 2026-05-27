@@ -37,6 +37,7 @@ import {
   createRegistriesBundle,
   applyEditorChromeSlotsShim,
 } from "../registry";
+import { mountKeybindingDispatcher } from "../registry/dispatcher";
 import type {
   CommandsRegistry,
   MenusRegistry,
@@ -145,6 +146,21 @@ export function PageHubProvider({
   React.useEffect(() => {
     registries.context.setCommandContext({ features });
   }, [registries, features]);
+
+  // Mount the keybinding dispatcher exactly once per registries bundle.
+  // PageHub.init() also mounts a dispatcher; when the host uses the provider
+  // directly (the common path in pages/_app.tsx) we still need keyboard chords
+  // to reach commands. If the host pre-built and passed `hostRegistries`, the
+  // init() path already mounted — skip remounting.
+  React.useEffect(() => {
+    if (hostRegistries) return;
+    const unmount = mountKeybindingDispatcher({
+      commands: registries.commands,
+      keybindings: registries.keybindings,
+      context: registries.context,
+    });
+    return () => unmount();
+  }, [registries, hostRegistries]);
 
   const setTheme = (patch: Partial<PageHubTheme>) => {
     setThemeState(prev => ({ ...prev, ...patch }));
