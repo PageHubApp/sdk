@@ -177,6 +177,79 @@ const SIDEBAR_TABS: MenuItem[] = [
   { command: "ph.editor.openBlocksPanel", group: "tabs@20" },
 ];
 
+/**
+ * Tiptap inline-edit floating toolbar — Phase 2 C2g.
+ *
+ * Group order matches the visual segments in the legacy toolbar:
+ *  - format marks (bold/italic/underline)
+ *  - font panel toggle
+ *  - link panel toggle
+ *  - text color / highlight swatches
+ *  - more panel toggle
+ *
+ * Color swatches and `more` carry inline UX (TokenPicker / sub-rows) that
+ * the surface renders alongside; the menu entries here just drive the
+ * toggle-active styling and the `sdk.commands.execute(openX)` dispatch.
+ */
+const TIPTAP_INLINE: MenuItem[] = [
+  { command: "ph.text.bold", group: "marks@10" },
+  { command: "ph.text.italic", group: "marks@20" },
+  { command: "ph.text.underline", group: "marks@30" },
+  { command: "ph.text.openFontPanel", group: "font@40" },
+  { command: "ph.text.openLinkPanel", group: "link@50" },
+  { command: "ph.text.openTextColorPanel", group: "color@60" },
+  { command: "ph.text.openHighlightPanel", group: "color@70" },
+  { command: "ph.text.openMorePanel", group: "more@80" },
+];
+
+/**
+ * Tiptap "More" panel — second row of the toolbar.
+ *
+ * Note: `ph.node.delete` and the variable-picker submenu are also rendered
+ * here by the surface (Delete button has its own canDelete predicate; the
+ * variable picker is a Popover). They aren't menu items because both need
+ * bespoke chrome — keeping them inline keeps the menu mechanical.
+ */
+const TIPTAP_INLINE_MORE_PANEL: MenuItem[] = [
+  {
+    command: "ph.text.setAlign",
+    args: { dir: "left" },
+    group: "align@10",
+  },
+  {
+    command: "ph.text.setAlign",
+    args: { dir: "center" },
+    group: "align@20",
+  },
+  {
+    command: "ph.text.setAlign",
+    args: { dir: "right" },
+    group: "align@30",
+  },
+  { command: "ph.text.toggleBulletList", group: "list@40" },
+  { command: "ph.text.toggleOrderedList", group: "list@50" },
+  { command: "ph.text.outdentListItem", group: "list@60" },
+  { command: "ph.text.indentListItem", group: "list@70" },
+  { command: "ph.text.toggleStrike", group: "marks@80" },
+  { command: "ph.text.toggleSuperscript", group: "marks@90" },
+  { command: "ph.text.toggleSubscript", group: "marks@100" },
+  { command: "ph.text.insertImage", group: "insert@110" },
+  { command: "ph.text.insertHorizontalRule", group: "insert@120" },
+  { command: "ph.text.clearFormatting", group: "clear@130" },
+];
+
+/**
+ * Tiptap right-click context menu — Phase 2 C2h.
+ *
+ * AI "Include in chat" is gated on `tiptap.active && features.aiEnabled` via
+ * the command's own `when`. The variable picker entry opens the bespoke
+ * sub-menu (data-driven, kept inline as local phase state in the surface).
+ */
+const TIPTAP_INLINE_CONTEXT_MENU: MenuItem[] = [
+  { command: "ph.ai.includeTextInChat", group: "ai@10" },
+  { command: "ph.text.openVariablePicker", group: "insert@20" },
+];
+
 export const BUILTIN_MENUS: Array<{ location: MenuLocation; items: MenuItem[] }> = [
   { location: "topbar", items: TOPBAR },
   { location: "navmenu/settings", items: NAVMENU_SETTINGS },
@@ -185,4 +258,7 @@ export const BUILTIN_MENUS: Array<{ location: MenuLocation; items: MenuItem[] }>
   { location: "navmenu/preferences", items: NAVMENU_PREFERENCES },
   { location: "canvas/context", items: CANVAS_CONTEXT },
   { location: "sidebar/tabs", items: SIDEBAR_TABS },
+  { location: "tiptap/inline", items: TIPTAP_INLINE },
+  { location: "tiptap/inline/more-panel", items: TIPTAP_INLINE_MORE_PANEL },
+  { location: "tiptap/inline/context-menu", items: TIPTAP_INLINE_CONTEXT_MENU },
 ];

@@ -10,6 +10,10 @@ import { EditorContent, useEditor as useTiptapEditor } from "@tiptap/react";
 import type { Editor as TiptapEditorInstance } from "@tiptap/core";
 
 import { useSDKSafe } from "../../core/context";
+import {
+  clearActiveTiptapEditorIf,
+  setActiveTiptapEditor,
+} from "../../registry/tiptapBackref";
 import { changeProp } from "../viewport/state/viewportExports";
 import { TiptapProvider } from "./TiptapContext";
 import { InlineEditToolbar } from "./inline-edit-toolbar/InlineEditToolbar";
@@ -189,12 +193,19 @@ function TextEditorMode({
           });
         }
       },
-      onFocus: () => {
+      onFocus: ({ editor }: { editor: any }) => {
+        // Register this Tiptap instance as the active editor so registry
+        // commands (`ph.text.*`) can dispatch from outside the React mount.
+        setActiveTiptapEditor(editor);
         if (enabled && isActive && !isEditingRef.current) {
           setIsEditing(true);
         }
       },
       onBlur: ({ editor }: { editor: any }) => {
+        // Only clear the backref if we're the currently-registered editor.
+        // A rapid focus-swap into a sibling Text node fires our blur AFTER
+        // the sibling's focus has already set itself active — don't clobber.
+        clearActiveTiptapEditorIf(editor);
         if (!enabled || !isEditingRef.current || isInsideLinkedComponent) return;
         changeProp({
           setProp,
@@ -209,6 +220,12 @@ function TextEditorMode({
 
   useEffect(() => {
     tiptapEditorRef.current = tiptapEditor ?? null;
+    // Defensive clear on instance teardown — Tiptap doesn't always fire blur
+    // on unmount, and a stale activeEditorRef would let commands dispatch
+    // into a destroyed view.
+    return () => {
+      if (tiptapEditor) clearActiveTiptapEditorIf(tiptapEditor);
+    };
   }, [tiptapEditor]);
 
   const [tiptapVisuallyEmpty, setTiptapVisuallyEmpty] = React.useState(true);

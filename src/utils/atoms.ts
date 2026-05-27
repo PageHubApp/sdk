@@ -234,3 +234,26 @@ export const BreadcrumbRenameRequestedAtom = atom(
   "breadcrumbRenameRequested",
   null as string | null
 );
+
+/**
+ * Currently-open Tiptap inline-edit toolbar panel. Lifted out of
+ * `InlineEditToolbar` local state in Phase 2 C2g so `ph.text.openFontPanel` /
+ * `openLinkPanel` / `openMorePanel` / `openTextColorPanel` /
+ * `openHighlightPanel` / `closeActivePanel` commands can drive it from the
+ * registry (palette, keybindings, right-click menu, etc.).
+ *
+ * Set to `null` when no panel is open. The toolbar mounts a useEffect that
+ * watches selection / mount transitions and resets to null on outside click
+ * or Escape.
+ */
+export type InlineEditActivePanel =
+  | "font"
+  | "link"
+  | "more"
+  | "bgcolor"
+  | "textcolor"
+  | null;
+export const InlineEditActivePanelAtom = atom<InlineEditActivePanel>(
+  "inlineEditActivePanel",
+  null as InlineEditActivePanel
+);

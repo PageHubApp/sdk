@@ -34,6 +34,7 @@ import { useAutoOpenSidebar } from "../../hooks/useAutoOpenSidebar";
 import { useComponentSync } from "../../hooks/useComponentSync";
 import { useShowOnLoadAutoReveal } from "../../hooks/useShowOnLoadAutoReveal";
 import { useRegisterSelectionContext } from "../hooks/useRegisterSelectionContext";
+import { useRegisterTiptapContext } from "../../inline-tools/useRegisterTiptapContext";
 import { useViewportClickDeselect } from "../hooks/useViewportClickDeselect";
 import { usePageNavigation } from "../../../utils/page/pageNavigation";
 import { getEditorWidthOnlyCanvasClasses } from "../canvas/editorCanvasLayout";
@@ -105,6 +106,9 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   // every canvas chord (delete / copy / paste / undo / redo / tab cycle /
   // escape / etc.). Selection-context predicates feed the dispatcher.
   useRegisterSelectionContext();
+  // Phase 2 C2g: publish active-Tiptap-editor + selection snapshot into
+  // CommandContext.tiptap so `ph.text.*` when/enablement predicates work.
+  useRegisterTiptapContext();
   const { handleViewportClick } = useViewportClickDeselect();
 
   // Double-click on a node label exits the active inspector tab; keep this

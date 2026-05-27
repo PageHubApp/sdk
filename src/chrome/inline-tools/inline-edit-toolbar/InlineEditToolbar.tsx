@@ -2,7 +2,6 @@ import { useEditor as useCraftEditor, useNode } from "@craftjs/core";
 import { Editor, useEditorState } from "@tiptap/react";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import React, {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -22,10 +21,11 @@ import {
 } from "react-icons/tb";
 import { getMediaContent } from "../../../utils/media/media";
 import { extractRootDataFromQuery } from "../../../utils/page/pageManagement";
-import { paletteToCSSVar } from "../../../utils/design/palette";
-import { useAtomValue } from "@zedux/react";
+import { useAtomState, useAtomValue } from "@zedux/react";
 import { hasOverflowAncestor } from "@/utils/hasOverflowAncestor";
 import { DeviceAtom, ViewAtom } from "../../viewport/state/atoms";
+import { InlineEditActivePanelAtom } from "../../../utils/atoms";
+import { useRegistries } from "../../../registry";
 import { isEditorCanvasBreakpointView } from "../../../utils/tailwind/className";
 import { PortalToolbarBelowNode } from "./PortalToolbarBelowNode";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
@@ -36,6 +36,9 @@ import { LinkPanel } from "./panels/LinkPanel";
 import { MorePanel } from "./panels/MorePanel";
 import type { PagehubTextRichMode } from "@/core/tiptapExtensions/pagehubTextTiptapExtensions";
 
+// PanelId lives in InlineEditActivePanelAtom — Phase 2 C2g lifted the local
+// useState into an atom so `ph.text.openLinkPanel` / `openFontPanel` /
+// `openMorePanel` / `closeActivePanel` can drive it from outside React.
 type PanelId = "font" | "link" | "more" | "bgcolor" | "textcolor" | null;
 
 /** Checkerboard for “no explicit color / inherited” swatches (aligned with TokenPicker). */
@@ -59,13 +62,17 @@ export function InlineEditToolbar({
   onSave,
   richTextMode = "full",
 }: InlineEditToolbarProps) {
-  const [activePanel, setActivePanel] = useState<PanelId>(null);
+  const [activePanel, setActivePanel] = useAtomState(InlineEditActivePanelAtom) as [
+    PanelId,
+    (next: PanelId | ((prev: PanelId) => PanelId)) => void,
+  ];
   const [linkPanelKey, setLinkPanelKey] = useState(0);
   const [showMediaModal, setShowMediaModal] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useClampToViewport<HTMLDivElement>();
   const { id: textNodeId } = useNode();
   const { query } = useCraftEditor();
+  const { commands } = useRegistries();
   const tipTap = useEditorState({
     editor,
     selector: ({ editor: ed }) => {
@@ -100,11 +107,6 @@ export function InlineEditToolbar({
     prevSelectionEmptyRef.current = tipTap.selectionEmpty;
   }, [tipTap.selectionEmpty]);
 
-  // Toggle panel — same panel closes it, different panel switches
-  const toggle = useCallback((id: PanelId) => {
-    setActivePanel(prev => (prev === id ? null : id));
-  }, []);
-
   // Close on outside click
   useEffect(() => {
     if (!activePanel) return;
@@ -128,12 +130,16 @@ export function InlineEditToolbar({
 
   useEffect(() => {
     const openLink = () => {
-      setActivePanel("link");
+      // Bridge legacy CustomEvent dispatchers (Tiptap ⌘K keymap, single-click
+      // / dblclick on existing <a>, VariableNodeView edit) to the new atom +
+      // command path. The event channel stays as a non-React signal so the
+      // Tiptap keymap doesn't need to reach into useRegistries.
+      void commands.execute("ph.text.openLinkPanel", undefined, { trigger: "keybinding" });
       setLinkPanelKey(k => k + 1);
     };
     document.addEventListener(OPEN_LINK_PANEL_EVENT, openLink);
     return () => document.removeEventListener(OPEN_LINK_PANEL_EVENT, openLink);
-  }, []);
+  }, [commands]);
 
   const { dom } = useNode(node => ({
     dom: (node.dom as HTMLElement | null) ?? null,
@@ -157,11 +163,30 @@ export function InlineEditToolbar({
     callback();
   };
 
+  // Button click → dispatch via registry. Same-panel-closes toggle UX is
+  // preserved by branching on current activePanel before dispatching the
+  // open command (which always sets, never toggles).
+  const dispatchOpenPanel = (panel: PanelId) => {
+    if (activePanel === panel) {
+      void commands.execute("ph.text.closeActivePanel", undefined, { trigger: "menu" });
+    } else if (panel === "font") {
+      void commands.execute("ph.text.openFontPanel", undefined, { trigger: "menu" });
+    } else if (panel === "link") {
+      void commands.execute("ph.text.openLinkPanel", undefined, { trigger: "menu" });
+    } else if (panel === "textcolor") {
+      void commands.execute("ph.text.openTextColorPanel", undefined, { trigger: "menu" });
+    } else if (panel === "bgcolor") {
+      void commands.execute("ph.text.openHighlightPanel", undefined, { trigger: "menu" });
+    } else if (panel === "more") {
+      void commands.execute("ph.text.openMorePanel", undefined, { trigger: "menu" });
+    }
+  };
+
   const fullToolbarRow = (
     <div className="tool-bg flex h-10 flex-row items-center justify-center gap-0">
       <FormatButton
         editor={editor}
-        command={() => editor.chain().focus().toggleBold().run()}
+        command={() => commands.execute("ph.text.bold", undefined, { trigger: "menu" })}
         active={tipTap.isBold}
         tooltip="Bold (⌘B)"
         icon={<TbBold />}
@@ -169,7 +194,7 @@ export function InlineEditToolbar({
       />
       <FormatButton
         editor={editor}
-        command={() => editor.chain().focus().toggleItalic().run()}
+        command={() => commands.execute("ph.text.italic", undefined, { trigger: "menu" })}
         active={tipTap.isItalic}
         tooltip="Italic (⌘I)"
         icon={<TbItalic />}
@@ -177,7 +202,7 @@ export function InlineEditToolbar({
       />
       <FormatButton
         editor={editor}
-        command={() => editor.chain().focus().toggleUnderline().run()}
+        command={() => commands.execute("ph.text.underline", undefined, { trigger: "menu" })}
         active={tipTap.isUnderline}
         tooltip="Underline (⌘U)"
         icon={<TbUnderline />}
@@ -190,7 +215,7 @@ export function InlineEditToolbar({
         type="button"
         aria-label="Font"
         className={`tool-button ${activePanel === "font" ? "bg-base-200 text-base-content" : ""}`}
-        onClick={() => toggle("font")}
+        onClick={() => dispatchOpenPanel("font")}
         data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
         data-tooltip-content="Font"
         data-tooltip-place="top"
@@ -204,7 +229,7 @@ export function InlineEditToolbar({
       <button
         className={`tool-button ${tipTap.isLink ? "bg-primary/15 text-primary" : activePanel === "link" ? "bg-base-200 text-base-content" : ""}`}
         onMouseDown={e => e.preventDefault()}
-        onClick={() => toggle("link")}
+        onClick={() => dispatchOpenPanel("link")}
         data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
         data-tooltip-content="Insert Link (⌘K)"
         data-tooltip-place="top"
@@ -220,7 +245,7 @@ export function InlineEditToolbar({
           active={activePanel === "textcolor"}
           fill={tipTap.textStyleColor}
           label={tipTap.textStyleColor ? "Text color" : "Text color (inherited)"}
-          onClick={() => toggle("textcolor")}
+          onClick={() => dispatchOpenPanel("textcolor")}
         >
           <TbTextColor className="size-3" aria-hidden />
         </InlineColorSwatch>
@@ -228,7 +253,7 @@ export function InlineEditToolbar({
           active={activePanel === "bgcolor"}
           fill={tipTap.highlightColor}
           label={tipTap.highlightColor ? "Highlight color" : "Highlight (none)"}
-          onClick={() => toggle("bgcolor")}
+          onClick={() => dispatchOpenPanel("bgcolor")}
         >
           <TbHighlight className="size-3" aria-hidden />
         </InlineColorSwatch>
@@ -238,7 +263,7 @@ export function InlineEditToolbar({
 
       <button
         className={`tool-button ${activePanel === "more" ? "bg-base-200 text-base-content" : ""}`}
-        onClick={() => toggle("more")}
+        onClick={() => dispatchOpenPanel("more")}
         data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
         data-tooltip-content="More"
         data-tooltip-place="top"
@@ -257,7 +282,9 @@ export function InlineEditToolbar({
             editor={editor}
             richTextMode={richTextMode}
             onAction={handleButtonClick}
-            onClose={() => setActivePanel(null)}
+            onClose={() =>
+              void commands.execute("ph.text.closeActivePanel", undefined, { trigger: "menu" })
+            }
           />
         </div>
       ) : activePanel === "more" ? (
@@ -269,10 +296,12 @@ export function InlineEditToolbar({
             richTextMode={richTextMode}
             onAction={handleButtonClick}
             onInsertImage={() => {
-              setActivePanel(null);
+              void commands.execute("ph.text.closeActivePanel", undefined, { trigger: "menu" });
               setShowMediaModal(true);
             }}
-            onClose={() => setActivePanel(null)}
+            onClose={() =>
+              void commands.execute("ph.text.closeActivePanel", undefined, { trigger: "menu" })
+            }
           />
         </div>
       ) : activePanel === "link" ? (
@@ -280,7 +309,9 @@ export function InlineEditToolbar({
           <LinkPanel
             key={linkPanelKey}
             editor={editor}
-            onClose={() => setActivePanel(null)}
+            onClose={() =>
+              void commands.execute("ph.text.closeActivePanel", undefined, { trigger: "menu" })
+            }
             onSave={onSave}
           />
         </div>
@@ -295,26 +326,24 @@ export function InlineEditToolbar({
                 {activePanel === "textcolor" && (
                   <TokenPicker
                     value={tipTap.textStyleColor}
-                    onChange={data => {
-                      const cssVar = paletteToCSSVar(data.value);
-                      editor.chain().focus().setColor(cssVar).run();
-                    }}
+                    onChange={data =>
+                      void commands.execute("ph.text.setColor", { value: data.value }, { trigger: "menu" })
+                    }
                     onClear={() => {
-                      editor.chain().focus().unsetColor().run();
-                      setActivePanel(null);
+                      void commands.execute("ph.text.unsetColor", undefined, { trigger: "menu" });
+                      void commands.execute("ph.text.closeActivePanel", undefined, { trigger: "menu" });
                     }}
                   />
                 )}
                 {activePanel === "bgcolor" && (
                   <TokenPicker
                     value={tipTap.highlightColor}
-                    onChange={data => {
-                      const cssVar = paletteToCSSVar(data.value);
-                      editor.chain().focus().setHighlight({ color: cssVar }).run();
-                    }}
+                    onChange={data =>
+                      void commands.execute("ph.text.setHighlight", { value: data.value }, { trigger: "menu" })
+                    }
                     onClear={() => {
-                      editor.chain().focus().unsetHighlight().run();
-                      setActivePanel(null);
+                      void commands.execute("ph.text.unsetHighlight", undefined, { trigger: "menu" });
+                      void commands.execute("ph.text.closeActivePanel", undefined, { trigger: "menu" });
                     }}
                   />
                 )}
