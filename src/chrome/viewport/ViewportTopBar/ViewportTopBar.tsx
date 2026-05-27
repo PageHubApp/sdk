@@ -27,8 +27,6 @@ import {
   ModifiersModalAtom,
   SessionTokenAtom,
   SettingsAtom,
-  ShowHiddenAtom,
-  SideBarAtom,
   ViewModeAtom,
 } from "../../../utils/atoms";
 import { useSDK } from "../../../core/context";
@@ -91,14 +89,14 @@ export const ViewportTopBar = () => {
   );
   const [isLayersDialogOpen, setIsLayersDialogOpen] = useAtomState(LayersDialogOpenAtom);
   const [isModifiersModalOpen, setIsModifiersModalOpen] = useAtomState(ModifiersModalAtom);
-  const [showHidden, setShowHidden] = useAtomState(ShowHiddenAtom);
 
   const [preview] = useAtomState(PreviewAtom);
   const [settings] = useAtomState(SettingsAtom);
   useAtomValue(SessionTokenAtom);
-  const [sideBarLeft, setSideBarLeft] = useAtomState(SideBarAtom);
   const [viewMode] = useAtomState(ViewModeAtom);
-  const { isDarkMode, toggleTheme } = useDarkMode();
+  // C2b lifted dark-mode into an atom; hook still mounts to hydrate from
+  // phStorage / matchMedia on first render and to mirror atom -> DOM.
+  useDarkMode();
 
   // Feed live history / mode / viewMode into the command context so registry
   // `when` / `enablement` predicates evaluate correctly (e.g. undo enables
@@ -196,19 +194,7 @@ export const ViewportTopBar = () => {
         )}
       </div>
 
-      <EditorNavigation
-        settings={settings}
-        isTenant={isTenant}
-        sideBarLeft={sideBarLeft}
-        setSideBarLeft={setSideBarLeft}
-        setIsLayersDialogOpen={setIsLayersDialogOpen}
-        setIsMediaManagerModalOpen={setIsMediaManagerModalOpen}
-        setIsModifiersModalOpen={setIsModifiersModalOpen}
-        showHidden={showHidden}
-        setShowHidden={setShowHidden}
-        toggleTheme={toggleTheme}
-        isDarkMode={isDarkMode}
-      />
+      <EditorNavigation settings={settings} isTenant={isTenant} />
 
       <MediaManagerModal
         isOpen={isMediaManagerModalOpen}

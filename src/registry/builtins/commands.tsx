@@ -37,8 +37,8 @@ import {
   TbPalette,
   TbPhoto,
   TbPlus,
-  TbSettings,
   TbStack2,
+  TbSun,
   TbTrash,
   TbWand,
   TbX,
@@ -66,6 +66,8 @@ import {
   DeviceZoomAtom,
 } from "../../chrome/viewport/state/atoms";
 import {
+  AssistantOpenAtom,
+  DarkModeAtom,
   LastActiveAtom,
   LayersDialogOpenAtom,
   MediaManagerModalAtom,
@@ -76,6 +78,7 @@ import {
   SidebarLayersPanelAtom,
   ViewModeAtom,
 } from "../../utils/atoms";
+import { getEditorActions } from "../editorBackref";
 import { applyCanvasVisibility } from "../../utils/component/componentIsolation";
 import { phStorage } from "../../utils/phStorage";
 import { SaveIndicator } from "../../chrome/viewport/ViewportTopBar/SaveIndicator";
@@ -509,13 +512,10 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
   },
 
   // ─── Site / theme / media / tools ────────────────────────────────────
-  {
-    id: "ph.site.openSettings",
-    title: "Site settings",
-    category: "Tools",
-    icon: <TbSettings />,
-    run: stub("ph.site.openSettings"),
-  },
+  // NOTE: `ph.site.openSettings` was removed in Phase 2 C2b — Site Settings
+  // was moved out of the SDK (main commit fd8aa69e: `/dashboard/sites/[id]/settings`).
+  // Hosts that want a settings entry register their own command via
+  // `commands.register({ id: "host.settings.open", ... })`.
   {
     id: "ph.site.selectBackground",
     title: "Select background",
@@ -525,7 +525,17 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
       const features = (ctx.features ?? {}) as { directSave?: boolean };
       return features.directSave === true;
     },
-    run: stub("ph.site.selectBackground"),
+    run: () => {
+      const actions = getEditorActions();
+      panelClose();
+      if (actions?.selectNode) {
+        try {
+          actions.selectNode(ROOT_NODE);
+        } catch (err) {
+          console.error("[ph.commands] ph.site.selectBackground failed:", err);
+        }
+      }
+    },
   },
   {
     id: "ph.theme.open",
@@ -635,14 +645,23 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
   },
   {
     id: "ph.ui.toggleDarkMode",
-    title: "Toggle dark mode",
+    title: ctx => {
+      const dark = Boolean((ctx as Record<string, unknown>)["editorDarkMode"]);
+      return dark ? "Switch to light theme" : "Switch to dark theme";
+    },
     category: "Preferences",
-    icon: <TbMoon />,
+    icon: ctx => {
+      const dark = Boolean((ctx as Record<string, unknown>)["editorDarkMode"]);
+      return dark ? <TbSun /> : <TbMoon />;
+    },
     when: ctx => {
       const features = (ctx.features ?? {}) as { darkModeSwitcher?: boolean };
       return features.darkModeSwitcher !== false;
     },
-    run: stub("ph.ui.toggleDarkMode"),
+    run: () => {
+      const next = !(getAtomExternal<boolean>(DarkModeAtom) ?? false);
+      setAtomExternal(DarkModeAtom, next);
+    },
   },
   {
     id: "ph.sidebar.search",
@@ -661,7 +680,17 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "AI",
     icon: <TbWand />,
     when: ctx => Boolean(ctx.isAiEnabled),
-    run: stub("ph.ai.openAssistant"),
+    run: (_ctx, args) => {
+      const a = (args ?? {}) as Record<string, unknown>;
+      // Default: reveal the panel. Allow callers to pass through any
+      // AssistantOpen payload (mode, promptHint, scope, etc.) via `args`.
+      const payload = {
+        revealPanel: true,
+        ...a,
+      };
+      setAtomExternal(AssistantOpenAtom, payload as any);
+      panelClose();
+    },
   },
   {
     id: "ph.ai.includeTextInChat",
@@ -1184,13 +1213,9 @@ const STILL_STUB_IDS = new Set<string>([
   "ph.editor.openComponentsPanel",
   "ph.editor.openComponentsTab",
   "ph.editor.closeSidebar",
-  "ph.site.openSettings",
-  "ph.site.selectBackground",
   "ph.media.selectAll",
   "ph.media.deleteSelected",
-  "ph.ui.toggleDarkMode",
   "ph.sidebar.search",
-  "ph.ai.openAssistant",
   "ph.ai.includeTextInChat",
   "ph.ai.includeNodeInChat",
   // ph.node.* — Phase 2 C2c (right-click menu) owns these.

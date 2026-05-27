@@ -181,6 +181,14 @@ export const ModifiersModalAtom = atom("modifiersModal", false);
 /** Show or hide nodes whose visibility was authored as "hidden". Default true. */
 export const ShowHiddenAtom = atom("showHidden", true);
 
+/**
+ * Editor chrome dark mode. Default `false`; the `useDarkMode` hook hydrates
+ * from `phStorage["theme"]` + `prefers-color-scheme` on mount. Lifted to an
+ * atom in Phase 2 C2b so `ph.ui.toggleDarkMode` can fire from outside React
+ * (keybinding dispatcher / command palette / host code).
+ */
+export const DarkModeAtom = atom<boolean>("darkMode", false);
+
 // ─── Editor canvas atoms (formerly utils/lib.ts) ─────────────────────────
 
 export const IsolateAtom = atom<string>("isolate", EDITOR_ALL_PAGES_STORAGE);

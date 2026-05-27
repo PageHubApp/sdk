@@ -1,36 +1,45 @@
-import { ROOT_NODE } from "@craftjs/utils";
+/**
+ * Editor navigation drawer — Phase 2 C2b (command-registry migration).
+ *
+ * Thin renderer: the four `panel === "menu"` sections come from
+ * `useMenuItems("navmenu/settings" | "navmenu/view" | "navmenu/tools" |
+ * "navmenu/preferences")`. Click dispatches via
+ * `sdk.commands.execute(id, args, { trigger: "menu" })`. Host slots route
+ * through `<SlotRenderer>` for `navmenu/header-items` and `navmenu/ai-row`
+ * (the existing `editorChromeSlots.renderNav*` adapter shim wires these up).
+ *
+ * Other panel values (`components`, `blocks`, `theme`, `import-export`,
+ * `publish`) keep their existing bodies — they're routed content, not menu
+ * rows. C2b only touches `panel === "menu"`.
+ *
+ * Dynamic titles ("Hide Layers Panel" vs "Dock Layers Panel", etc.) flow
+ * from atom state into the command context via host-set keys
+ * (`sidebarLayersOpen`, `showGridLines`, `editorDarkMode`, etc.) so menu
+ * `titleOverride` resolvers can read them without prop-drilling.
+ */
 import { useEditor } from "@craftjs/core";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
 import { useEffect, useRef } from "react";
+import { useAtomState } from "@zedux/react";
 import {
   isFlyoutBlockingToolColumn,
   takeToolboxHistorySelectionSyncForRebaseline,
   usePanelUrl,
 } from "../../../utils/usePanelUrl";
 import {
-  TbArrowsHorizontal,
-  TbBoxModel2,
-  TbDeviceMobile,
-  TbDownload,
-  TbEye,
-  TbEyeOff,
-  TbLayoutGrid,
-  TbLayoutSidebar,
-  TbLayoutSidebarRight,
-  TbMoon,
-  TbPalette,
-  TbPhoto,
-  TbStack2,
-  TbSun,
-} from "react-icons/tb";
-import { useAtomState } from "@zedux/react";
-import { useSetAtomState } from "../../../utils/atoms";
-import { AssistantOpenAtom, ShowGridLinesAtom, SidebarLayersPanelAtom } from "../../../utils/atoms";
+  DarkModeAtom,
+  ShowGridLinesAtom,
+  ShowHiddenAtom,
+  SideBarAtom,
+  SidebarLayersPanelAtom,
+} from "../../../utils/atoms";
 import { ShowBreakpointMarkersAtom, ShowDeviceGuidesAtom } from "../state/atoms";
-import { phStorage } from "../../../utils/phStorage";
-import { useAiEnabled } from "../../../utils/hooks/useAiEnabled";
 import { useSDK } from "../../../core/context";
-import { EditorMenuKbd, EditorMenuNavRow, EditorMenuSectionLabel } from "./EditorMenuNav";
+import { useRegistries } from "../../../registry/provider";
+import { useMenuItems } from "../../../registry/hooks";
+import { SlotRenderer } from "../../../registry/SlotRenderer";
+import type { ResolvedMenuItem } from "../../../registry/types";
+import { EditorMenuNavRow, EditorMenuSectionLabel } from "./EditorMenuNav";
 import { SidebarFlyoutSurface } from "../../primitives/SidebarFlyoutSurface";
 import { ImportExportPanel } from "./ImportExportPanel";
 import { ThemeSettingsPanel } from "../modals/ThemeSettingsPanel";
@@ -39,47 +48,85 @@ import { ToolboxTabs } from "./ToolboxTabs";
 interface EditorNavigationProps {
   settings: any;
   isTenant: boolean;
-  sideBarLeft: boolean;
-  setSideBarLeft: (value: boolean) => void;
-  setIsLayersDialogOpen: (value: boolean) => void;
-  setIsMediaManagerModalOpen: (value: boolean) => void;
-  setIsModifiersModalOpen: (value: boolean) => void;
-  showHidden: boolean;
-  setShowHidden: (fn: (prev: boolean) => boolean) => void;
-  toggleTheme: () => void;
-  isDarkMode: boolean;
 }
 
 export const EDITOR_NAV_FOOTER_ID = "editor-nav-footer";
 export const EDITOR_NAV_PUBLISH_ID = "editor-nav-publish";
 
-export const EditorNavigation = ({
-  settings,
-  isTenant,
-  sideBarLeft,
-  setSideBarLeft,
-  setIsLayersDialogOpen,
-  setIsMediaManagerModalOpen,
-  setIsModifiersModalOpen,
-  showHidden,
-  setShowHidden,
-  toggleTheme,
-  isDarkMode,
-}: EditorNavigationProps) => {
-  const { actions, selectedId } = useEditor((state, query) => ({
+/**
+ * Map a list of resolved menu items to clickable rows. Hidden when empty.
+ * The label is split into icon / text + optional kbd; we render text in a
+ * `<div className="text-sm">` to match the prior visual treatment.
+ */
+function NavMenuSection({ items }: { items: ResolvedMenuItem[] }) {
+  const { commands } = useSDK();
+  if (items.length === 0) return null;
+  return (
+    <>
+      {items.map(item => (
+        <EditorMenuNavRow
+          key={item.command + JSON.stringify(item.args ?? null)}
+          icon={item.icon}
+          label={<div className="text-sm">{item.title}</div>}
+          onClick={() => {
+            void commands.execute(item.command, item.args, { trigger: "menu" });
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
+export const EditorNavigation = ({ settings: _settings, isTenant }: EditorNavigationProps) => {
+  const { selectedId } = useEditor((_state, query) => ({
     selectedId: query.getEvent("selected").first() ?? null,
   }));
-  const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
-  const [showBreakpointMarkers, setShowBreakpointMarkers] = useAtomState(ShowBreakpointMarkersAtom);
-  const [showDeviceGuides, setShowDeviceGuides] = useAtomState(ShowDeviceGuidesAtom);
-  const [sidebarLayersOpen, setSidebarLayersOpen] = useAtomState(SidebarLayersPanelAtom);
-  const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
-  const { config } = useSDK();
-  const isAiEnabled = useAiEnabled();
-  const renderNavAi = config.editorChromeSlots?.renderNavAiMenuItem;
-  const renderNavHeader = config.editorChromeSlots?.renderNavHeaderItems;
+  const { commands } = useSDK();
+  // Subscribe to the atoms that drive dynamic titles so this component
+  // re-renders and re-runs the title resolvers. We also mirror them into
+  // the command context (below) so the `titleOverride` callbacks see them.
+  const [showGridLines] = useAtomState(ShowGridLinesAtom);
+  const [showBreakpointMarkers] = useAtomState(ShowBreakpointMarkersAtom);
+  const [showDeviceGuides] = useAtomState(ShowDeviceGuidesAtom);
+  const [showHidden] = useAtomState(ShowHiddenAtom);
+  const [sidebarLayersOpen] = useAtomState(SidebarLayersPanelAtom);
+  const [sideBarLeft] = useAtomState(SideBarAtom);
+  const [editorDarkMode] = useAtomState(DarkModeAtom);
+  const { context: commandContext } = useRegistries();
 
-  const { isOpen, panel, close, open } = usePanelUrl();
+  const { isOpen, panel, close } = usePanelUrl();
+
+  // Feed the dynamic-title inputs into the command context so each
+  // menu item's `titleOverride` (and `ph.ui.toggleDarkMode`'s built-in
+  // dynamic title) can read them via ctx[key]. Host-set keys are flat on
+  // CommandContext; we already mirror SDK-derived fields elsewhere.
+  useEffect(() => {
+    commandContext.setCommandContext({
+      showGridLines,
+      showBreakpointMarkers,
+      showDeviceGuides,
+      showHidden,
+      sidebarLayersOpen,
+      sideBarLeft,
+      editorDarkMode,
+    } as never);
+  }, [
+    commandContext,
+    showGridLines,
+    showBreakpointMarkers,
+    showDeviceGuides,
+    showHidden,
+    sidebarLayersOpen,
+    sideBarLeft,
+    editorDarkMode,
+  ]);
+
+  // Resolve the four navmenu locations. The registry handles `when`
+  // gating (e.g. `ph.site.selectBackground` only renders for tenants).
+  const settingsItems = useMenuItems("navmenu/settings");
+  const viewItems = useMenuItems("navmenu/view");
+  const toolsItems = useMenuItems("navmenu/tools");
+  const preferenceItems = useMenuItems("navmenu/preferences");
 
   // Baseline Craft selection when entering Components/Blocks — close panel when it changes (see below).
   const selectedIdAtToolboxOpenRef = useRef<string | null | undefined>(undefined);
@@ -126,6 +173,15 @@ export const EditorNavigation = ({
 
   if (!isOpen) return null;
 
+  // The Preferences label only renders if at least one preference item
+  // is visible (matches the legacy guard on settingsPanelSwitcher /
+  // darkModeSwitcher feature flags).
+  const showPreferencesLabel = preferenceItems.length > 0;
+  // The Tools label hides only when no built-in tool items AND no AI slot
+  // contribution exists. We can't easily probe slot resolution from here
+  // without rendering, so we always show the label when there are any tool
+  // items; AI slot fallback handles its own visibility. (Matches legacy.)
+
   return (
     <>
       <nav
@@ -155,214 +211,55 @@ export const EditorNavigation = ({
               {panel === "menu" && (
                 <>
                   {isTenant ? (
-                    // For tenant users, show background and settings panel buttons
-                    <>
-                      <EditorMenuNavRow
-                        icon={<TbBoxModel2 />}
-                        label="Select Background"
-                        onClick={() => {
-                          close();
-                          actions.selectNode(ROOT_NODE);
-                        }}
-                      />
-
-                      <EditorMenuNavRow
-                        icon={sideBarLeft ? <TbLayoutSidebarRight /> : <TbLayoutSidebar />}
-                        label={`Move this panel to the ${sideBarLeft ? "right" : "left"} side`}
-                        onClick={() => setSideBarLeft(!sideBarLeft)}
-                      />
-                    </>
+                    // Tenant short list — `ph.site.selectBackground` and the
+                    // sidebar-side toggle. Both are gated via `when`
+                    // predicates (directSave / settingsPanelSwitcher).
+                    <NavMenuSection
+                      items={[
+                        ...settingsItems.filter(it => it.command === "ph.site.selectBackground"),
+                        ...preferenceItems.filter(it => it.command === "ph.ui.toggleSidebarSide"),
+                      ]}
+                    />
                   ) : (
-                    // For regular users, show all the original items
                     <>
-                      {/* ── Page actions (from host app) ── */}
-                      {renderNavHeader && renderNavHeader({ close })}
+                      {/* ── Page actions (host slot) ── */}
+                      <SlotRenderer id="navmenu/header-items" ctx={{ close }} />
 
                       {/* ── Settings ── */}
-                      <EditorMenuSectionLabel>Settings</EditorMenuSectionLabel>
-
-                      <EditorMenuNavRow
-                        icon={<TbPalette />}
-                        label={<div className="text-sm">Theme Settings</div>}
-                        kbd={<EditorMenuKbd>⌘⇧D</EditorMenuKbd>}
-                        onClick={() => {
-                          open("theme", { cat: "colors" });
-                        }}
-                      />
-
-                      <EditorMenuNavRow
-                        icon={<TbPhoto />}
-                        label={<div className="text-sm">Media Manager</div>}
-                        kbd={<EditorMenuKbd>⌘⇧M</EditorMenuKbd>}
-                        onClick={() => {
-                          setIsMediaManagerModalOpen(true);
-                          close();
-                        }}
-                      />
+                      {settingsItems.length > 0 && (
+                        <EditorMenuSectionLabel>Settings</EditorMenuSectionLabel>
+                      )}
+                      <NavMenuSection items={settingsItems} />
 
                       {/* ── View ── */}
-                      <EditorMenuSectionLabel>View</EditorMenuSectionLabel>
-
-                      <EditorMenuNavRow
-                        icon={<TbLayoutGrid />}
-                        label={<div className="text-sm">Pop Out Layers</div>}
-                        kbd={<EditorMenuKbd>⌘⇧L</EditorMenuKbd>}
-                        onClick={() => {
-                          setIsLayersDialogOpen(true);
-                          close();
-                        }}
-                      />
-
-                      <EditorMenuNavRow
-                        icon={<TbLayoutGrid />}
-                        label={
-                          <div className="text-sm">
-                            {sidebarLayersOpen ? "Hide" : "Dock"} Layers Panel
-                          </div>
-                        }
-                        onClick={() => {
-                          setSidebarLayersOpen(prev => {
-                            const next = !prev;
-                            phStorage.set("sidebar-layers-panel", String(next));
-                            return next;
-                          });
-                          close();
-                        }}
-                      />
-
-                      <EditorMenuNavRow
-                        icon={<TbBoxModel2 />}
-                        label={
-                          <div className="text-sm">{`${showGridLines ? "Hide" : "Show"} Grid Lines`}</div>
-                        }
-                        kbd={<EditorMenuKbd>⌘⇧G</EditorMenuKbd>}
-                        onClick={() => {
-                          const viewport = document.getElementById("viewport");
-                          setShowGridLines(!showGridLines);
-                          viewport?.setAttribute(
-                            "data-show-gridlines",
-                            (!showGridLines).toString()
-                          );
-                        }}
-                      />
-
-                      <EditorMenuNavRow
-                        icon={<TbArrowsHorizontal />}
-                        label={
-                          <div className="text-sm">{`${showBreakpointMarkers ? "Hide" : "Show"} Breakpoint Lines`}</div>
-                        }
-                        onClick={() => {
-                          setShowBreakpointMarkers(prev => {
-                            const next = !prev;
-                            try {
-                              phStorage.set("show-breakpoint-markers", String(next));
-                            } catch {}
-                            return next;
-                          });
-                        }}
-                      />
-
-                      <EditorMenuNavRow
-                        icon={<TbDeviceMobile />}
-                        label={
-                          <div className="text-sm">{`${showDeviceGuides ? "Hide" : "Show"} Device Guides`}</div>
-                        }
-                        onClick={() => {
-                          setShowDeviceGuides(prev => {
-                            const next = !prev;
-                            try {
-                              phStorage.set("show-device-guides", String(next));
-                            } catch {}
-                            return next;
-                          });
-                        }}
-                      />
-
-                      <EditorMenuNavRow
-                        icon={showHidden ? <TbEyeOff /> : <TbEye />}
-                        label={
-                          <div className="text-sm">{`${showHidden ? "Show" : "Hide"} Hidden Components`}</div>
-                        }
-                        kbd={<EditorMenuKbd>⌘⇧H</EditorMenuKbd>}
-                        onClick={() => {
-                          setShowHidden(prev => {
-                            const next = !prev;
-                            document
-                              .getElementById("viewport")
-                              ?.setAttribute("data-show-hidden", next.toString());
-                            return next;
-                          });
-                        }}
-                      />
-
-                      {/* ── Tools ── */}
-                      <EditorMenuSectionLabel>Tools</EditorMenuSectionLabel>
-
-                      {isAiEnabled &&
-                        renderNavAi &&
-                        renderNavAi({
-                          onSelect: () => {
-                            setAssistantOpen({ revealPanel: true });
-                            close();
-                          },
-                        })}
-
-                      <EditorMenuNavRow
-                        icon={<TbStack2 />}
-                        label={<div className="text-sm">Modifiers</div>}
-                        kbd={<EditorMenuKbd>⌘⇧O</EditorMenuKbd>}
-                        onClick={() => {
-                          setIsModifiersModalOpen(true);
-                          close();
-                        }}
-                      />
-
-                      {config.features?.importExport !== false && (
-                        <EditorMenuNavRow
-                          icon={<TbDownload />}
-                          label={<div className="text-sm">Import / Export</div>}
-                          kbd={<EditorMenuKbd>⌘⇧E</EditorMenuKbd>}
-                          onClick={() => {
-                            open("import-export");
-                          }}
-                        />
+                      {viewItems.length > 0 && (
+                        <EditorMenuSectionLabel>View</EditorMenuSectionLabel>
                       )}
+                      <NavMenuSection items={viewItems} />
+
+                      {/* ── Tools (AI row from host slot, then built-ins) ── */}
+                      {toolsItems.length > 0 && (
+                        <EditorMenuSectionLabel>Tools</EditorMenuSectionLabel>
+                      )}
+                      <SlotRenderer
+                        id="navmenu/ai-row"
+                        ctx={{
+                          onSelect: () => {
+                            void commands.execute(
+                              "ph.ai.openAssistant",
+                              undefined,
+                              { trigger: "menu" }
+                            );
+                          },
+                        }}
+                      />
+                      <NavMenuSection items={toolsItems} />
 
                       {/* ── Preferences ── */}
-                      {(config.features?.settingsPanelSwitcher !== false ||
-                        config.features?.darkModeSwitcher !== false) && (
+                      {showPreferencesLabel && (
                         <EditorMenuSectionLabel>Preferences</EditorMenuSectionLabel>
                       )}
-
-                      {config.features?.settingsPanelSwitcher !== false && (
-                        <EditorMenuNavRow
-                          icon={sideBarLeft ? <TbLayoutSidebarRight /> : <TbLayoutSidebar />}
-                          label={
-                            <div className="text-sm">
-                              {sideBarLeft ? "Right" : "Left"} Settings Panel
-                            </div>
-                          }
-                          onClick={() => {
-                            setSideBarLeft(!sideBarLeft);
-                            close();
-                          }}
-                        />
-                      )}
-
-                      {config.features?.darkModeSwitcher !== false && (
-                        <EditorMenuNavRow
-                          icon={isDarkMode ? <TbSun /> : <TbMoon />}
-                          label={
-                            <div className="text-sm">
-                              Switch to {isDarkMode ? "Light" : "Dark"} Theme
-                            </div>
-                          }
-                          onClick={() => {
-                            toggleTheme();
-                            close();
-                          }}
-                        />
-                      )}
+                      <NavMenuSection items={preferenceItems} />
                     </>
                   )}
                 </>

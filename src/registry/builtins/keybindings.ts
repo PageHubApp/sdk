@@ -43,7 +43,9 @@ export const BUILTIN_KEYBINDINGS: KeybindingDef[] = [
   { command: "ph.modifiers.open", key: "shift+mod+o", when: notInTextEditing },
 
   // ─── Site / palette / search ────────────────────────────────────────
-  { command: "ph.site.openSettings", key: "mod+," },
+  // NOTE: `ph.site.openSettings` (⌘,) was removed in Phase 2 C2b — Site
+  // Settings was moved out of the SDK in main commit fd8aa69e. Hosts that
+  // want a `⌘,` chord register their own command + keybinding.
   {
     command: "ph.editor.openCommandPalette",
     key: "mod+k",
