@@ -375,27 +375,65 @@ export interface PageHubMediaEditAiActionsContext {
 /**
  * Host-rendered AI affordances (same contract external integrators use).
  * When a slot is omitted, that control is not shown.
+ *
+ * @deprecated Every field here is being migrated to the unified slot
+ *   registry. Prefer `sdk.slots.contribute({ slot: "<id>", render: ... })`
+ *   for new code; see [docs/sdk/host-configuration.md → Extending the
+ *   editor](../../../docs/sdk/host-configuration.md#extending-the-editor--commands-menus-slots-keybindings)
+ *   for the field → slot id mapping. The adapter shim keeps these fields
+ *   working today; they'll be removed in the next major version.
  */
 export interface PageHubEditorChromeSlots {
-  /** Toolbox tab strip — wand opens assistant (host typically uses `AssistantOpenAtom`). */
+  /**
+   * Toolbox tab strip — wand opens assistant (host typically uses `AssistantOpenAtom`).
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "toolbox/ai-button", render: ... })`
+   *   instead. This field still works via the adapter shim — will be
+   *   removed in the next major version.
+   */
   renderToolboxAiButton?: () => ReactNode;
-  /** Rich-text floating toolbar — opens assistant for copy (text scope). */
+  /**
+   * Rich-text floating toolbar — opens assistant for copy (text scope).
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "tiptap/inline-copy-assistant", render: ... })`
+   *   instead. Will be removed in the next major version.
+   */
   renderInlineCopyAssistantTrigger?: (ctx: { textNodeId: string; query: unknown }) => ReactNode;
   /**
    * Settings sidebar “Edit with AI” chip. Host renders a single ReactNode that
    * reads the selected node via `useNode()` and self-gates on `useAiEnabled()`.
    * Mounted at the top of every component settings tab.
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "settings/ai-button", render: () => node })`
+   *   instead. Note: this is the only field that took a `ReactNode` directly —
+   *   wrap your node in a render function (`() => node`) when migrating. Will
+   *   be removed in the next major version.
    */
   settingsAiButton?: ReactNode;
-  /** Data source settings for Container — filter, limit, sort, offset controls. Host-rendered. */
+  /**
+   * Data source settings for Container — filter, limit, sort, offset controls. Host-rendered.
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "node/data-source-section", render: ... })`
+   *   instead. Will be removed in the next major version.
+   */
   renderDataSourceSection?: (ctx: { nodeId: string }) => ReactNode;
-  /** Container / add-section wand — opens assistant in create mode. */
+  /**
+   * Container / add-section wand — opens assistant in create mode.
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "node/ai-generate-button", render: ... })`
+   *   instead. Will be removed in the next major version.
+   */
   renderNodeAiGenerateButton?: (ctx: {
     onClick: () => void;
     className?: string;
     disabled?: boolean;
   }) => ReactNode;
-  /** Floating node chip — pin this element to AI chat context (deduped in `AiChatAttachedNodesAtom`). */
+  /**
+   * Floating node chip — pin this element to AI chat context (deduped in `AiChatAttachedNodesAtom`).
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "node/ai-context-button", render: ... })`
+   *   instead. Will be removed in the next major version.
+   */
   renderNodeAiContextButton?: (ctx: {
     onClick: () => void;
     className?: string;
@@ -408,13 +446,21 @@ export interface PageHubEditorChromeSlots {
     "data-tooltip-place"?: string;
     "data-tooltip-offset"?: number | string;
   }) => ReactNode;
-  /** Empty canvas “Build with AI” card. */
+  /**
+   * Empty canvas “Build with AI” card.
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "empty-state/ai-card", render: ... })`
+   *   instead. Will be removed in the next major version.
+   */
   renderEmptyStateAiCard?: (ctx: { onOpenAssistant: () => void }) => ReactNode;
   /**
    * Per-node AI tone editor (designNotes + designTags textarea/chips). The
    * SDK orchestrates the Craft state read/write — the host supplies the
    * actual form UI. Without this slot, the inspector section renders a
    * short "AI editing not available" placeholder.
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "node/ai-context-editor", render: ... })`
+   *   instead. Will be removed in the next major version.
    */
   renderNodeAiContextEditor?: (ctx: {
     designNotes: string;
@@ -423,22 +469,42 @@ export interface PageHubEditorChromeSlots {
     setDesignTags: (v: string[]) => void;
     fieldIdPrefix: string;
   }) => ReactNode;
-  /** Editor nav menu row — AI Assistant + shortcut hint lives in host. */
+  /**
+   * Editor nav menu row — AI Assistant + shortcut hint lives in host.
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "navmenu/ai-row", render: ... })`
+   *   instead. Will be removed in the next major version.
+   */
   renderNavAiMenuItem?: (ctx: { onSelect: () => void }) => ReactNode;
-  /** Top of editor nav — page-level actions (View Draft, Duplicate, Delete, etc.) from host. */
+  /**
+   * Top of editor nav — page-level actions (View Draft, Duplicate, Delete, etc.) from host.
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "navmenu/header-items", render: ... })`
+   *   instead. Will be removed in the next major version.
+   */
   renderNavHeaderItems?: (ctx: { close: () => void }) => ReactNode;
   /**
    * Host-only block in Import/Export → Export tab (e.g. static HTML ZIP). SDK does not call app APIs.
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "import-export/handoff-extras", render: ... })`
+   *   instead. Will be removed in the next major version.
    */
   renderImportExportHandoffExtras?: () => ReactNode;
   /**
    * Media edit modal AI metadata action block.
    * Host owns API calls/auth; SDK provides apply callback for metadata fields.
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "media-edit/ai-actions", render: ... })`
+   *   instead. Will be removed in the next major version.
    */
   renderMediaEditAiActions?: (ctx: PageHubMediaEditAiActionsContext) => ReactNode;
   /**
    * Extra tabs injected into the Page Settings modal.
    * Host owns all API calls, auth, and business logic; SDK provides the tab slot.
+   *
+   * @deprecated Use `sdk.slots.contribute({ slot: "page-settings/extra-tabs", render: ... })`
+   *   (list cardinality — `group: "key@order"` controls tab order) instead.
+   *   Will be removed in the next major version.
    */
   pageSettingsExtraTabs?: Array<{
     key: string;
