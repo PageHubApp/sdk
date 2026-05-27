@@ -1,9 +1,7 @@
 import type { Editor } from "@tiptap/react";
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { TbBraces, TbWand } from "react-icons/tb";
-import { AssistantOpenAtom, useSetAtomState } from "../../../utils/atoms";
-import { buildInlineCopyAssistantOpenState } from "../../../utils/buildInlineCopyAssistantOpenState";
+import { useMenuItems, useRegistries } from "../../../registry";
 import { VariableInsertDropdownBody } from "./panels/VariableInsertPanel";
 
 const MENU_Z = 100060;
@@ -12,6 +10,18 @@ const ITEM =
 
 type Phase = "root" | "variables";
 
+/**
+ * Right-click context menu for inline Tiptap editing.
+ *
+ * Phase 2 C2h — root phase is rendered from
+ * `useMenuItems("tiptap/inline/context-menu")`. AI "Include in chat" and
+ * "Insert variable" both flow through registry commands; the variable
+ * sub-menu (groups + flyout) is bespoke chrome and stays inline.
+ *
+ * The `showAi` prop comes from the host's `editorChromeSlots.renderInlineCopyAssistantTrigger`
+ * presence check — when the slot isn't wired, the AI row hides regardless of
+ * the underlying `features.aiEnabled` flag.
+ */
 export function TiptapRichTextContextMenu({
   open,
   anchor,
@@ -29,20 +39,20 @@ export function TiptapRichTextContextMenu({
   textNodeId: string;
   showAi: boolean;
 }) {
-  const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
+  const { commands } = useRegistries();
+  const items = useMenuItems("tiptap/inline/context-menu");
   const [phase, setPhase] = useState<Phase>("root");
   const rootRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     if (!open) return;
-    // Skip the two-item root when AI is unavailable — go straight to variables.
-    setPhase(showAi ? "root" : "variables");
-  }, [open, anchor?.x, anchor?.y, showAi]);
-
-  const handleAi = useCallback(() => {
-    setAssistantOpen(buildInlineCopyAssistantOpenState(query, textNodeId));
-    onClose();
-  }, [onClose, query, setAssistantOpen, textNodeId]);
+    // Skip the two-item root when AI is unavailable — go straight to
+    // variables. We honor the host slot gate (showAi) on top of the menu
+    // `when` (which already gates on features.aiEnabled).
+    const hasAi =
+      showAi && items.some(i => i.command === "ph.ai.includeTextInChat");
+    setPhase(hasAi ? "root" : "variables");
+  }, [open, anchor?.x, anchor?.y, showAi, items]);
 
   useEffect(() => {
     if (!open) return;
@@ -69,6 +79,16 @@ export function TiptapRichTextContextMenu({
   const left = Math.max(pad, Math.min(anchor.x, window.innerWidth - estW - pad));
   const top = Math.max(pad, Math.min(anchor.y, window.innerHeight - estH - pad));
 
+  const handleItemClick = (commandId: string) => {
+    if (commandId === "ph.text.openVariablePicker") {
+      // Sub-menu nav — keep phase as local UI state, not a command.
+      setPhase("variables");
+      return;
+    }
+    void commands.execute(commandId, undefined, { trigger: "menu" });
+    onClose();
+  };
+
   return createPortal(
     <div
       ref={rootRef}
@@ -79,21 +99,27 @@ export function TiptapRichTextContextMenu({
     >
       {phase === "root" ? (
         <>
-          {showAi ? (
-            <button type="button" role="menuitem" className={ITEM} onClick={handleAi}>
-              <TbWand className="size-4 shrink-0 opacity-80" aria-hidden />
-              Include in AI chat
-            </button>
-          ) : null}
-          <button
-            type="button"
-            role="menuitem"
-            className={ITEM}
-            onClick={() => setPhase("variables")}
-          >
-            <TbBraces className="size-4 shrink-0 opacity-80" aria-hidden />
-            Insert variable
-          </button>
+          {items.map(item => {
+            // Honor host slot gate on top of the command-level `when`.
+            if (item.command === "ph.ai.includeTextInChat" && !showAi) return null;
+            return (
+              <button
+                key={item.command}
+                type="button"
+                role="menuitem"
+                className={ITEM}
+                disabled={!item.enabled}
+                onClick={() => handleItemClick(item.command)}
+              >
+                {item.icon ? (
+                  <span className="size-4 shrink-0 opacity-80" aria-hidden>
+                    {item.icon}
+                  </span>
+                ) : null}
+                {item.title}
+              </button>
+            );
+          })}
         </>
       ) : (
         <div className="max-h-[min(320px,70vh)] overflow-y-auto py-1">

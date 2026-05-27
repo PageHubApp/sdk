@@ -1184,7 +1184,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "AI",
     icon: <TbWand />,
     when: ctx => Boolean(ctx.tiptap?.active && ctx.isAiEnabled),
-    run: stub("ph.ai.includeTextInChat"),
+    run: () => tiptapIncludeTextInChatRun(),
   },
   {
     id: "ph.ai.includeNodeInChat",
@@ -1826,13 +1826,12 @@ const STILL_STUB_IDS = new Set<string>([
   "ph.media.selectAll",
   "ph.media.deleteSelected",
   "ph.sidebar.search",
-  "ph.ai.includeTextInChat",
   "ph.ai.includeNodeInChat",
   // Phase 2 C2c: most ph.node.* commands are now real. C2d filled the
   // breadcrumb-owned commands (selectAncestor / renameDisplayName).
   // Isolate stays a stub — canvas-card chrome is migrated separately.
   "ph.node.isolate",
-  // Phase 2 C2g: all ph.text.* run bodies are real (C2h fills includeTextInChat).
+  // Phase 2 C2g/h: all ph.text.* + ph.ai.includeTextInChat run bodies real.
   // Misc — owned by other surfaces.
   "ph.overlay.dismissTop",
   "ph.annotation.delete",
