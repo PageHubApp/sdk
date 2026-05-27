@@ -800,15 +800,22 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
       const features = (ctx.features ?? {}) as { blocksPanel?: { enabled?: boolean } };
       return features.blocksPanel?.enabled !== false;
     },
-    run: stub("ph.editor.openBlocksPanel"),
+    run: () => {
+      panelOpen("blocks");
+    },
   },
   {
     id: "ph.editor.openComponentsPanel",
     title: "Browse components",
     category: "Insert",
     icon: <TbBoxModel2 />,
-    when: ctx => ctx.viewMode !== "canvas",
-    run: stub("ph.editor.openComponentsPanel"),
+    // Surface decides visibility: sidebar/tabs always shows this pill;
+    // EditorEmptyState's "Add Components" row uses JSX-side conditional
+    // (viewMode !== "canvas"). No command-level `when` so the pill stays
+    // visible in canvas mode too — empty-state still gates its own JSX.
+    run: () => {
+      panelOpen("components");
+    },
   },
   {
     id: "ph.editor.openComponentsTab",
@@ -1643,8 +1650,6 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  */
 const STILL_STUB_IDS = new Set<string>([
   "ph.editor.openCommandPalette",
-  "ph.editor.openBlocksPanel",
-  "ph.editor.openComponentsPanel",
   "ph.editor.closeSidebar",
   "ph.media.selectAll",
   "ph.media.deleteSelected",

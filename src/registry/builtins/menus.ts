@@ -162,6 +162,21 @@ const CANVAS_CONTEXT: MenuItem[] = [
   { command: "ph.node.aiContext", group: "ai@170" },
 ];
 
+/**
+ * Sidebar tab strip — Phase 2 C2e.
+ *
+ * Two pills: Components / Blocks. The Blocks pill is gated by
+ * `features.blocksPanel.enabled !== false` via the command's own `when`
+ * predicate; no per-location override needed.
+ *
+ * The trailing AI button stays a `toolbox/ai-button` slot contribution —
+ * ToolboxTabs renders it via `<SlotRenderer>` outside this list.
+ */
+const SIDEBAR_TABS: MenuItem[] = [
+  { command: "ph.editor.openComponentsPanel", group: "tabs@10" },
+  { command: "ph.editor.openBlocksPanel", group: "tabs@20" },
+];
+
 export const BUILTIN_MENUS: Array<{ location: MenuLocation; items: MenuItem[] }> = [
   { location: "topbar", items: TOPBAR },
   { location: "navmenu/settings", items: NAVMENU_SETTINGS },
@@ -169,4 +184,5 @@ export const BUILTIN_MENUS: Array<{ location: MenuLocation; items: MenuItem[] }>
   { location: "navmenu/tools", items: NAVMENU_TOOLS },
   { location: "navmenu/preferences", items: NAVMENU_PREFERENCES },
   { location: "canvas/context", items: CANVAS_CONTEXT },
+  { location: "sidebar/tabs", items: SIDEBAR_TABS },
 ];
