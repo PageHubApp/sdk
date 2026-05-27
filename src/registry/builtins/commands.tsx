@@ -86,6 +86,7 @@ import {
 } from "../../utils/atoms";
 import { getEditorActions, getEditorQuery } from "../editorBackref";
 import { applyCanvasVisibility } from "../../utils/component/componentIsolation";
+import { markManualSidebarClose } from "../../chrome/hooks/useAutoOpenSidebar";
 import { phStorage } from "../../utils/phStorage";
 import { SaveIndicator } from "../../chrome/viewport/ViewportTopBar/SaveIndicator";
 import {
@@ -829,7 +830,19 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "Close sidebar",
     category: "View",
     icon: <TbX />,
-    run: stub("ph.editor.closeSidebar"),
+    run: ctx => {
+      const { actions } = ctx as { actions: any };
+      // Match the legacy EditorEmptyState "close sidebar" body verbatim:
+      // mark the close as manual (so useAutoOpenSidebar doesn't re-open on
+      // the same tick) → clear Craft selection → flip the open atom.
+      markManualSidebarClose();
+      try {
+        actions?.clearEvents?.();
+      } catch (e) {
+        console.error("[ph.editor.closeSidebar] clearEvents failed:", e);
+      }
+      setAtomExternal(SideBarOpen, false);
+    },
   },
 
   // ─── Canvas view ─────────────────────────────────────────────────────
@@ -1631,7 +1644,14 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     id: "ph.component.createReusable",
     title: "Save as reusable component",
     category: "Edit",
-    run: stub("ph.component.createReusable"),
+    run: () => {
+      // Lazy-import to avoid a runtime TDZ cycle (useCreateComponent.tsx
+      // pulls Container/Text which transitively reach the component
+      // resolver — see [.claude/known-issues/sdk-circular-import-via-lib.md]).
+      void import("../../chrome/hooks/useCreateComponent").then(m => {
+        m.createReusableComponentRun();
+      });
+    },
   },
 
   // ─── Sidebar / general UI ────────────────────────────────────────────
@@ -1650,7 +1670,6 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  */
 const STILL_STUB_IDS = new Set<string>([
   "ph.editor.openCommandPalette",
-  "ph.editor.closeSidebar",
   "ph.media.selectAll",
   "ph.media.deleteSelected",
   "ph.sidebar.search",
@@ -1697,7 +1716,6 @@ const STILL_STUB_IDS = new Set<string>([
   "ph.overlay.dismissTop",
   "ph.annotation.delete",
   "ph.sections.toggleQuickLook",
-  "ph.component.createReusable",
 ]);
 
 export const BUILTIN_COMMANDS: CommandDef[] = _BUILTIN_COMMANDS_RAW.map(def => ({

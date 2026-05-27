@@ -7,47 +7,56 @@ import { Text } from "../../components/Text/Text";
 import { useSetAtomState } from "../../utils/atoms";
 import { CanvasIsolateAtom } from "../../utils/component/componentIsolation";
 import { ComponentsAtom, ViewModeAtom } from "../../utils/atoms";
+import { getAtomExternal, setAtomExternal } from "../../utils/atoms/external";
+import { getEditorActions, getEditorQuery } from "../../registry/editorBackref";
+
 /**
- * Create a blank `type: "component"` Container under ROOT, register it in
- * ComponentsAtom, switch to canvas mode (if needed), and isolate it.
+ * Non-hook helper that does the actual work — extracted so the registry
+ * command `ph.component.createReusable` can fire it from outside React.
  *
- * Single source of truth — used by ComponentSelector, EditorEmptyState, and
- * the canvas viewport's "+ component" toolbar button.
+ * Reads the live CraftJS query/actions from the editor backref (set by
+ * EditorInner on mount) and the relevant atoms via the external accessors.
+ * Falls back to host-passed args when present (so the hook can keep its
+ * memoized closure semantics and the helper stays pure).
  */
-export function useCreateComponent(): () => void {
-  const { query, actions } = useEditor();
-  const [components, setComponents] = useAtomState(ComponentsAtom);
-  const [viewModeRaw, setViewMode] = useAtomState(ViewModeAtom);
-  const setCanvasIsolate = useSetAtomState(CanvasIsolateAtom);
-  const viewMode = viewModeRaw as unknown as string;
+export function createReusableComponentRun(args?: {
+  query?: any;
+  actions?: any;
+}): void {
+  const query = args?.query ?? getEditorQuery();
+  const actions = args?.actions ?? getEditorActions();
+  if (!query || !actions) {
+    console.warn("[createReusableComponentRun] missing editor backref");
+    return;
+  }
+  try {
+    const componentName = "New Component";
+    const tree = query
+      .parseReactElement(
+        <Element
+          canvas
+          is={Container}
+          type="component"
+          custom={{ displayName: componentName }}
+          className="flex flex-col items-start gap-4 bg-transparent p-6"
+        >
+          <Text text="Start editing your component..." />
+        </Element>
+      )
+      .toNodeTree();
+    actions.addNodeTree(tree, ROOT_NODE);
+    const containerId = tree.rootNodeId;
+    const contentNodeId = tree.nodes[containerId].data.nodes[0];
 
-  return React.useCallback(() => {
-    try {
-      const componentName = "New Component";
-      const tree = query
-        .parseReactElement(
-          <Element
-            canvas
-            is={Container}
-            type="component"
-            custom={{ displayName: componentName }}
-            className="flex flex-col items-start gap-4 bg-transparent p-6"
-          >
-            <Text text="Start editing your component..." />
-          </Element>
-        )
-        .toNodeTree();
-      actions.addNodeTree(tree, ROOT_NODE);
-      const containerId = tree.rootNodeId;
-      const contentNodeId = tree.nodes[containerId].data.nodes[0];
-
-      requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      try {
         const contentTree = query.node(contentNodeId).toNodeTree();
         const nodePairs = Object.keys(contentTree.nodes).map(id => [
           id,
           query.node(id).toSerializedNode(),
         ]);
-        setComponents([
+        const components = (getAtomExternal<any[]>(ComponentsAtom) ?? []) as any[];
+        setAtomExternal(ComponentsAtom, [
           ...components,
           {
             rootNodeId: contentNodeId,
@@ -55,11 +64,38 @@ export function useCreateComponent(): () => void {
             name: componentName,
           } as any,
         ]);
-        if (viewMode !== "canvas") setViewMode("canvas" as any);
-        setCanvasIsolate(containerId as any);
-      });
-    } catch (e) {
-      console.error("[useCreateComponent] failed to create component", e);
-    }
-  }, [query, actions, components, setComponents, viewMode, setViewMode, setCanvasIsolate]);
+        const currentViewMode = getAtomExternal(ViewModeAtom) as unknown as string;
+        if (currentViewMode !== "canvas") {
+          setAtomExternal(ViewModeAtom, "canvas" as any);
+        }
+        setAtomExternal(CanvasIsolateAtom, containerId as any);
+      } catch (e) {
+        console.error("[createReusableComponentRun] post-frame failed", e);
+      }
+    });
+  } catch (e) {
+    console.error("[createReusableComponentRun] failed to create component", e);
+  }
+}
+
+/**
+ * Create a blank `type: "component"` Container under ROOT, register it in
+ * ComponentsAtom, switch to canvas mode (if needed), and isolate it.
+ *
+ * Single source of truth — used by ComponentSelector, EditorEmptyState, and
+ * the canvas viewport's "+ component" toolbar button. Thin wrapper around
+ * the non-hook `createReusableComponentRun` so React consumers get a
+ * memoized callback bound to the current editor.
+ */
+export function useCreateComponent(): () => void {
+  const { query, actions } = useEditor();
+  // Subscribe to atoms so consumers re-render on the same triggers as
+  // before; the helper itself reads via external accessors.
+  useAtomState(ComponentsAtom);
+  useAtomState(ViewModeAtom);
+  useSetAtomState(CanvasIsolateAtom);
+
+  return React.useCallback(() => {
+    createReusableComponentRun({ query, actions });
+  }, [query, actions]);
 }
