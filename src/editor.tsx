@@ -15,6 +15,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { setEditorBackref, clearEditorBackref } from "./registry/editorBackref";
 import { useRegistries } from "./registry";
 import { mountMouseOverTracker } from "./registry/mouseOverTracker";
+import { useRegisterOverlayContext } from "./registry/hooks/useRegisterOverlayContext";
 import { Inspector } from "./chrome/toolbar/inspector/InspectorRegistry";
 import { resolveConfig } from "./config";
 import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
@@ -130,6 +131,11 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
       unmount();
     };
   }, [registries.context]);
+
+  // Wire the editor overlay stack into the command context so the Escape
+  // priority chain (`ph.overlay.dismissTop`) sees real `stackDepth` /
+  // `topId` values. Surfaces register via `useOverlay({ id, isOpen, ... })`.
+  useRegisterOverlayContext();
 
   // Load initial data
   useEffect(() => {

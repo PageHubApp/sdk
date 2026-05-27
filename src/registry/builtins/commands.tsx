@@ -706,6 +706,7 @@ import { getMediaBackref } from "../mediaBackref";
 import { getAnnotationBackref } from "../annotationBackref";
 import { getSectionsBackref } from "../sectionsBackref";
 import { getSidebarBackref } from "../sidebarBackref";
+import { dismissTopOverlay } from "../overlayStack";
 import { buildInlineCopyAssistantOpenState } from "../../utils/buildInlineCopyAssistantOpenState";
 import { paletteToCSSVar } from "../../utils/design/palette";
 
@@ -1785,7 +1786,13 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "Close",
     category: "View",
     when: ctx => (ctx.overlay?.stackDepth ?? 0) > 0,
-    run: stub("ph.overlay.dismissTop"),
+    // Pop the top entry from the editor overlay stack and invoke its
+    // dismiss callback. Surfaces register via `useOverlay({ id, isOpen,
+    // onDismiss })`; the stack lives in `../overlayStack.ts` (separate
+    // from the visitor-facing `_shownStack` in `utils/state/stateRegistry`).
+    run: () => {
+      dismissTopOverlay();
+    },
     paletteHide: true,
   },
   {
@@ -1849,22 +1856,13 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  * doc-level chord set (⌘S, ⌘⇧M/D/L/G/H/E/O, plus topbar buttons).
  */
 /**
- * Each remaining id documents *why* it stays stubbed. The dispatcher skips
- * `preventDefault()` for stubs so any inline listener still owns the chord
- * if one exists. All listed commands carry `paletteHide: true` so they don't
- * surface in the user-facing palette while their backing surfaces are wired.
- *
- * TODO when the relevant surface migrates:
- *  - `ph.overlay.dismissTop` — generic overlay-stack helper. Modal /
- *    drawer ESC is currently handled inline by the SDK show-hide store
- *    ([packages/sdk/src/utils/showHide.ts]) and per-popover listeners. If
- *    we introduce a centralized overlay stack later, replace those inline
- *    handlers with a real run body and publish `overlay.stackDepth` from
- *    the stack manager.
+ * Phase 3 finished — every command has a real `run` body. The dispatcher
+ * always `preventDefault()`s a matched chord now (no surviving inline
+ * Escape / chord listeners outside the dispatcher own anything in the
+ * registry catalog). Keep the set so a regression that ships a new stub
+ * is obvious.
  */
-const STILL_STUB_IDS = new Set<string>([
-  "ph.overlay.dismissTop",
-]);
+const STILL_STUB_IDS = new Set<string>([]);
 
 export const BUILTIN_COMMANDS: CommandDef[] = _BUILTIN_COMMANDS_RAW.map(def => ({
   ...def,
