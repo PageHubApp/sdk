@@ -12,9 +12,10 @@ import { FilterDropdown } from "../../../primitives/FilterDropdown";
 import { PanelHeaderRow } from "../../../primitives/PanelHeaderRow";
 import { PanelLoadingState } from "../../../primitives/PanelLoadingState";
 import { AddElement } from "../../toolbox/toolboxUtils";
-import { isInsideTextEditingSurface } from "../../../../utils/keyboard";
 import { BlockPreviewCard, BlockQuickLook } from "./components";
 import { buildElementFromStructure } from "./blockHelpers";
+import { useRegistries } from "../../../../registry";
+import { setSectionsBackref } from "../../../../registry/sectionsBackref";
 
 const PAGE_SIZE = 6;
 
@@ -120,16 +121,23 @@ export function CategoryDetailView({
 
   const hasUsedQuickLook = useRef(false);
 
+  // Registry hookup for the Space-key quick-look toggle. Lives here (above
+  // handleBlockHover) so the context.set call inside the hover callback can
+  // reach the registry.
+  const { context } = useRegistries();
+
   const handleBlockHover = useCallback(
     (block: BlockItem, rect: DOMRect) => {
       hoveredRef.current = { block, rect };
       setIsHoveringCard(true);
+      // Publish for `ph.sections.toggleQuickLook` when-clause gating.
+      context.set("sections.hoveredBlock", block.slug);
       if (quickLookBlock) {
         setQuickLookBlock(block);
         setQuickLookRect(rect);
       }
     },
-    [quickLookBlock]
+    [context, quickLookBlock]
   );
 
   useEffect(() => {
@@ -150,30 +158,47 @@ export function CategoryDetailView({
     return () => observer.disconnect();
   }, [visibleCount, blocks.length]);
 
+  // Space (toggle quick look) migrated to `ph.sections.toggleQuickLook`
+  // via the registry dispatcher (priority 50 — beats `ph.editor.clearSelection`
+  // since the modal hosts non-canvas focus). Escape closer stays inline:
+  // the quick-look overlay is a transient peek, not a stacked dialog.
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (
-        e.key === " " &&
-        !e.repeat &&
-        !isInsideTextEditingSurface(e.target)
-      ) {
-        e.preventDefault();
+    if (!quickLookBlock) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setQuickLookBlock(null);
+      setQuickLookRect(null);
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [quickLookBlock]);
+
+  // Publish surface context + register the Space-key toggle so the registry
+  // chord can drive the same code path.
+  useEffect(() => {
+    context.set("sections.modalOpen", true);
+    return () => {
+      context.set("sections.modalOpen", false);
+      context.set("sections.hoveredBlock", null);
+    };
+  }, [context]);
+
+  useEffect(() => {
+    setSectionsBackref({
+      toggleQuickLook: () => {
         if (quickLookBlock) {
           setQuickLookBlock(null);
           setQuickLookRect(null);
-        } else if (hoveredRef.current) {
+          return;
+        }
+        if (hoveredRef.current) {
           setQuickLookBlock(hoveredRef.current.block);
           setQuickLookRect(hoveredRef.current.rect);
           hasUsedQuickLook.current = true;
         }
-      }
-      if (e.key === "Escape" && quickLookBlock) {
-        setQuickLookBlock(null);
-        setQuickLookRect(null);
-      }
-    };
-    window.addEventListener("keydown", handleKey, { capture: true });
-    return () => window.removeEventListener("keydown", handleKey, { capture: true });
+      },
+    });
+    return () => setSectionsBackref(null);
   }, [quickLookBlock]);
 
   const activeLabel = activeSubcategory
@@ -251,7 +276,11 @@ export function CategoryDetailView({
         <AutoHideScrollbar className="flex-1">
           <div
             className="grid w-full grid-cols-1 gap-3 p-3 pt-1"
-            onMouseLeave={() => setIsHoveringCard(false)}
+            onMouseLeave={() => {
+              setIsHoveringCard(false);
+              hoveredRef.current = null;
+              context.set("sections.hoveredBlock", null);
+            }}
           >
             {visibleBlocks.map(block => (
               <BlockPreviewCard

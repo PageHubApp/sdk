@@ -704,6 +704,7 @@ function openComponentsTabRun(): void {
 import { getActiveTiptapEditor } from "../tiptapBackref";
 import { getMediaBackref } from "../mediaBackref";
 import { getAnnotationBackref } from "../annotationBackref";
+import { getSectionsBackref } from "../sectionsBackref";
 import { buildInlineCopyAssistantOpenState } from "../../utils/buildInlineCopyAssistantOpenState";
 import { paletteToCSSVar } from "../../utils/design/palette";
 
@@ -1809,7 +1810,9 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
       const rec = ctx as Record<string, unknown>;
       return Boolean(rec["sections.modalOpen"] && rec["sections.hoveredBlock"] != null);
     },
-    run: stub("ph.sections.toggleQuickLook"),
+    run: () => {
+      getSectionsBackref()?.toggleQuickLook();
+    },
     paletteHide: true,
   },
 
@@ -1859,15 +1862,10 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  *    we introduce a centralized overlay stack later, replace those inline
  *    handlers with a real run body and publish `overlay.stackDepth` from
  *    the stack manager.
- *  - `ph.sections.toggleQuickLook` — Sections modal quick-look (Space key
- *    to peek at a hovered block) is handled inline today. When the
- *    Sections modal publishes `sections.modalOpen` /
- *    `sections.hoveredBlock`, lift the run body here.
  */
 const STILL_STUB_IDS = new Set<string>([
   "ph.sidebar.search",
   "ph.overlay.dismissTop",
-  "ph.sections.toggleQuickLook",
 ]);
 
 export const BUILTIN_COMMANDS: CommandDef[] = _BUILTIN_COMMANDS_RAW.map(def => ({
