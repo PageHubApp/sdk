@@ -16,11 +16,7 @@ import {
   ViewAtom,
 } from "../../state/atoms";
 
-interface UseViewportSetupEffectsArgs {
-  handleBodyKeyDown: (e: KeyboardEvent) => void;
-}
-
-export function useViewportSetupEffects({ handleBodyKeyDown }: UseViewportSetupEffectsArgs) {
+export function useViewportSetupEffects() {
   const { actions, query } = useEditor();
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
   const [, setOnline] = useAtomState(OnlineAtom);
@@ -91,12 +87,6 @@ export function useViewportSetupEffects({ handleBodyKeyDown }: UseViewportSetupE
       window.removeEventListener("online", handler);
       window.removeEventListener("offline", handler);
     };
-  }, []);
-
-  // Document-level keyboard listener (e.g. Cmd+S handlers, Escape)
-  useEffect(() => {
-    document.addEventListener("keydown", handleBodyKeyDown);
-    return () => document.removeEventListener("keydown", handleBodyKeyDown);
   }, []);
 
   // Reset breakpoint zoom when view changes — a 50% zoom set for 2XL would

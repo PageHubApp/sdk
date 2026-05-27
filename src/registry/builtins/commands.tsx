@@ -66,22 +66,44 @@ import {
   DeviceZoomAtom,
 } from "../../chrome/viewport/state/atoms";
 import {
+  AiChatAttachedNodesAtom,
   AssistantOpenAtom,
+  ComponentsAtom,
   DarkModeAtom,
   LastActiveAtom,
   LayersDialogOpenAtom,
   MediaManagerModalAtom,
   ModifiersModalAtom,
+  SectionPickerDialogAtom,
+  SettingsAtom,
   ShowGridLinesAtom,
   ShowHiddenAtom,
   SideBarAtom,
+  SideBarOpen,
   SidebarLayersPanelAtom,
   ViewModeAtom,
 } from "../../utils/atoms";
-import { getEditorActions } from "../editorBackref";
+import { getEditorActions, getEditorQuery } from "../editorBackref";
 import { applyCanvasVisibility } from "../../utils/component/componentIsolation";
 import { phStorage } from "../../utils/phStorage";
 import { SaveIndicator } from "../../chrome/viewport/ViewportTopBar/SaveIndicator";
+import {
+  addHandler,
+  buildClonedTree,
+  saveHandler,
+} from "../../chrome/viewport/state/viewportExports";
+import { duplicateNodeById } from "../../chrome/viewport/state/duplicateNodeById";
+import {
+  CANVAS_CLASS_CLIPBOARD,
+  readClassClipboard,
+} from "../../chrome/viewport/ToolboxContextual/utils/clipboardChecks";
+import {
+  moveNodeDown,
+  moveNodeUp,
+} from "../../chrome/toolbar/dialogs/Layers/siblingMoveOps";
+import { unifiedDeleteNode } from "../../chrome/hooks/unifiedDelete";
+import { AddElement } from "../../chrome/viewport/toolbox/toolboxUtils";
+import { Element } from "@craftjs/core";
 
 /**
  * Wave A stub — log so missing wiring is loud but the editor keeps working.
@@ -269,6 +291,367 @@ function toggleHiddenRun(): void {
   }
 }
 
+// ─── Node-scoped run helpers (Phase 2 C2c right-click menu) ──────────────────
+
+/**
+ * Resolve the selection id the command should operate on. Commands fired
+ * from the right-click menu or keyboard rely on the currently-selected
+ * Craft node — there's no per-invocation arg yet.
+ */
+function selectedId(query: any): string | null {
+  if (!query) return null;
+  try {
+    const id = query.getEvent("selected").first();
+    return id || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Helper: getCloneTree closure used by addHandler. */
+function makeGetCloneTree(query: any, actions: any) {
+  const setProp = actions?.setProp;
+  return (tree: any) =>
+    buildClonedTree({ tree, query, setProp, createLinks: false });
+}
+
+function nodeCopyRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  void saveHandler({ query, id, component: null, actions }).catch(e =>
+    console.error("[ph.node.copy] failed:", e)
+  );
+}
+
+function nodePasteRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  actions.selectNode(id);
+  const getCloneTree = makeGetCloneTree(query, actions);
+  if (typeof requestAnimationFrame !== "undefined") {
+    requestAnimationFrame(() => {
+      try {
+        addHandler({
+          actions,
+          query,
+          getCloneTree,
+          id,
+          setProp: actions.setProp,
+        });
+      } catch (e) {
+        console.error("[ph.node.paste] failed:", e);
+      }
+    });
+  } else {
+    try {
+      addHandler({
+        actions,
+        query,
+        getCloneTree,
+        id,
+        setProp: actions.setProp,
+      });
+    } catch (e) {
+      console.error("[ph.node.paste] failed:", e);
+    }
+  }
+}
+
+function nodeCopyClassesRun(ctx: any): void {
+  const { query } = ctx as { query: any };
+  const id = selectedId(query);
+  if (!id) return;
+  let node: any;
+  try {
+    node = query.node(id).get();
+  } catch {
+    return;
+  }
+  const props = node?.data?.props ?? {};
+  const cn = typeof props.className === "string" ? props.className : "";
+  const active = (props.root?.activeModifiers as string[]) || [];
+  phStorage.set(CANVAS_CLASS_CLIPBOARD, {
+    className: cn,
+    activeModifiers: active,
+  });
+}
+
+function nodePasteClassesRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  const clip = readClassClipboard();
+  if (!clip) return;
+  actions.setProp(id, (props: any) => {
+    props.className = clip.className || "";
+    if (!props.root) props.root = {};
+    props.root.activeModifiers = [...(clip.activeModifiers || [])];
+  });
+}
+
+function nodeSelectParentRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  const node = query.node(id).get();
+  const parentId = node?.data?.parent as string | undefined;
+  if (!parentId) return;
+  actions.selectNode(parentId);
+}
+
+function nodeSelectPageRun(ctx: any): void {
+  const { actions } = ctx as { actions: any };
+  const ec = ctx as { hasPageIsolation?: boolean; pageIsolation?: string };
+  const pageId = (ctx as { pageIsolation?: string }).pageIsolation;
+  if (!pageId || typeof pageId !== "string") return;
+  if (!ec.hasPageIsolation) return;
+  actions.selectNode(pageId);
+}
+
+function nodeDeselectRun(ctx: any): void {
+  const { actions } = ctx as { actions: any };
+  if (!actions) return;
+  try {
+    actions.selectNode(null);
+  } catch (e) {
+    console.error("[ph.node.deselect] failed:", e);
+  }
+  setAtomExternal(SideBarOpen, false);
+}
+
+function nodeMoveUpRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  try {
+    moveNodeUp(query, actions, id);
+  } catch (e) {
+    console.error("[ph.node.moveUp] failed:", e);
+  }
+}
+
+function nodeMoveDownRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  try {
+    moveNodeDown(query, actions, id);
+  } catch (e) {
+    console.error("[ph.node.moveDown] failed:", e);
+  }
+}
+
+function nodeDuplicateRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  void duplicateNodeById({
+    query,
+    actions,
+    setProp: actions.setProp,
+    id,
+  }).catch(e => console.error("[ph.node.duplicate] failed:", e));
+}
+
+function nodeDeleteRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  // Match legacy useToolboxMenuModel.handleDelete behavior: re-select
+  // (defensive — keeps the unified-delete path happy when fired from the
+  // palette without an explicit click) then schedule.
+  try {
+    actions.selectNode(id);
+  } catch {}
+  const settings = getAtomExternal(SettingsAtom);
+  setTimeout(() => {
+    void unifiedDeleteNode(query, actions, { settings });
+  }, 10);
+}
+
+function nodeConvertToComponentRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  void (async () => {
+    try {
+      const comp = await saveHandler({
+        query,
+        id,
+        component: "component",
+        actions,
+      });
+      setAtomExternal(ComponentsAtom, (prev: unknown[]) => [...(prev || []), comp]);
+    } catch (e) {
+      console.error("[ph.node.convertToComponent] failed:", e);
+    }
+  })();
+}
+
+/**
+ * Add an empty Section / Container as the next child of the canvas node.
+ * Matches the legacy `handleAddSection` / `handleAddNestedContainer`.
+ */
+function addCanvasChild(
+  query: any,
+  actions: any,
+  id: string,
+  displayName: string
+): void {
+  const liveResolver = query.getOptions().resolver;
+  const ContainerComp = liveResolver?.["Container"];
+  if (!ContainerComp) return;
+  const n = query.node(id).get();
+  if (!n) return;
+  const index = n.data.nodes.length;
+  AddElement({
+    element: (
+      <Element
+        canvas
+        is={ContainerComp}
+        canDelete={true}
+        className="gap-section flex w-full flex-col"
+        custom={{ displayName }}
+      />
+    ),
+    actions,
+    query,
+    addTo: id,
+    index,
+  });
+}
+
+function nodeAddEmptySectionRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  addCanvasChild(query, actions, id, "Section");
+}
+
+function nodeAddContainerRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  const id = selectedId(query);
+  if (!id) return;
+  addCanvasChild(query, actions, id, "Container");
+}
+
+function nodeAddBlockAtRun(position: "top" | "bottom") {
+  return (ctx: any): void => {
+    const { query } = ctx as { query: any };
+    const id = selectedId(query);
+    if (!id) return;
+    const node = query.node(id).get();
+    const parentId = node?.data?.parent as string | undefined;
+    if (!parentId) return;
+    setAtomExternal(SectionPickerDialogAtom, {
+      isOpen: false,
+      nodeId: id,
+      parent: parentId,
+      position,
+    } as any);
+    panelOpen("blocks");
+  };
+}
+
+function nodeAiContextRun(ctx: any): void {
+  const { query } = ctx as { query: any };
+  const id = selectedId(query);
+  if (!id) return;
+  let displayName = "Element";
+  try {
+    const node = query.node(id).get();
+    displayName =
+      (node?.data?.custom?.displayName as string | undefined) ||
+      (node?.data?.displayName as string | undefined) ||
+      String(node?.data?.name || "Element");
+  } catch {}
+  setAtomExternal(AiChatAttachedNodesAtom, (prev: any[]) => {
+    const list = prev || [];
+    if (list.some(n => n.id === id)) return list;
+    return [...list, { id, displayName }];
+  });
+  setAtomExternal(AssistantOpenAtom, { nodeId: id, revealPanel: true } as any);
+}
+
+/** Cycle sibling selection — Tab / Shift+Tab. */
+function cycleSiblingRun(direction: 1 | -1) {
+  return (ctx: any): void => {
+    const { query, actions } = ctx as { query: any; actions: any };
+    if (!query || !actions) return;
+    try {
+      const active = query.getEvent("selected").first();
+      if (!active) return;
+      const node = query.node(active).get();
+      const parentId = node?.data?.parent;
+      if (!parentId) return;
+      const parent = query.node(parentId).get();
+      const siblings: string[] = parent?.data?.nodes || [];
+      if (siblings.length === 0) return;
+      const idx = siblings.indexOf(active);
+      let next = idx + direction;
+      if (next >= siblings.length) next = 0;
+      if (next < 0) next = siblings.length - 1;
+      const target = siblings[next];
+      if (!target) return;
+      actions.selectNode(target);
+    } catch (e) {
+      console.error("[ph.node.cycleSibling] failed:", e);
+    }
+  };
+}
+
+/** Escape — clear selection (the canvas-chord variant). */
+function clearSelectionRun(ctx: any): void {
+  const { query, actions } = ctx as { query: any; actions: any };
+  try {
+    const active = query?.getEvent("selected").first();
+    if (active) actions.selectNode(null);
+  } catch (e) {
+    console.error("[ph.editor.clearSelection] failed:", e);
+  }
+}
+
+/** Escape — exit preview (mirrors the body of useViewportKeyboard.handleBodyKeyDown). */
+function exitPreviewRun(): void {
+  const query = getEditorQuery();
+  const actions = getEditorActions();
+  if (!query || !actions) return;
+  if (typeof document === "undefined") return;
+  const viewport = document.getElementById("viewport");
+  const scrollTop = viewport?.scrollTop ?? 0;
+  const scrollLeft = viewport?.scrollLeft ?? 0;
+  const lastActive = getAtomExternal<string | null>(LastActiveAtom);
+
+  actions.setOptions((options: any) => {
+    options.enabled = true;
+    setAtomExternal(PreviewAtom, false);
+    setAtomExternal(EnabledAtom, true);
+    setTimeout(() => {
+      if (!lastActive) return;
+      try {
+        const node = query.node(lastActive).get();
+        if (node) actions.selectNode(lastActive);
+      } catch {}
+    }, 100);
+  });
+
+  if (typeof requestAnimationFrame !== "undefined") {
+    requestAnimationFrame(() => {
+      if (viewport) {
+        viewport.scrollTop = scrollTop;
+        viewport.scrollLeft = scrollLeft;
+      }
+    });
+  }
+}
+
+/** Open Components tab via URL panel state. */
+function openComponentsTabRun(): void {
+  panelOpen("components");
+}
+
 const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
   // ─── Editor ──────────────────────────────────────────────────────────
   {
@@ -332,7 +715,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "Exit preview",
     category: "View",
     when: ctx => ctx.mode === "preview",
-    run: stub("ph.editor.exitPreview"),
+    run: () => exitPreviewRun(),
     paletteHide: true,
   },
   {
@@ -343,7 +726,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
       ctx.selection.id != null &&
       !isInsideTextEditingSurfaceCtx(ctx) &&
       ctx.mode !== "preview",
-    run: stub("ph.editor.clearSelection"),
+    run: ctx => clearSelectionRun(ctx),
     paletteHide: true,
   },
   {
@@ -392,7 +775,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "Components tab",
     category: "Insert",
     icon: <TbBoxModel2 />,
-    run: stub("ph.editor.openComponentsTab"),
+    run: () => openComponentsTabRun(),
   },
   {
     id: "ph.editor.closeSidebar",
@@ -721,7 +1104,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
       hasNonRootSelection(ctx) &&
       ctx.selection.canDelete &&
       !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.node.delete"),
+    run: ctx => nodeDeleteRun(ctx),
   },
   {
     id: "ph.node.duplicate",
@@ -729,7 +1112,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Edit",
     icon: <TbCopy />,
     when: ctx => canCopySelection(ctx),
-    run: stub("ph.node.duplicate"),
+    run: ctx => nodeDuplicateRun(ctx),
   },
   {
     id: "ph.node.copy",
@@ -737,7 +1120,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Edit",
     icon: <TbCopy />,
     when: ctx => canCopySelection(ctx) && !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.node.copy"),
+    run: ctx => nodeCopyRun(ctx),
   },
   {
     id: "ph.node.paste",
@@ -746,15 +1129,15 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     when: ctx =>
       canCopySelection(ctx) &&
       !isInsideTextEditingSurfaceCtx(ctx) &&
-      (ctx.clipboard?.hasNode === true || typeof navigator !== "undefined"),
-    run: stub("ph.node.paste"),
+      ctx.clipboard?.hasNode === true,
+    run: ctx => nodePasteRun(ctx),
   },
   {
     id: "ph.node.copyClasses",
     title: "Copy classes",
     category: "Edit",
     when: ctx => canCopySelection(ctx),
-    run: stub("ph.node.copyClasses"),
+    run: ctx => nodeCopyClassesRun(ctx),
   },
   {
     id: "ph.node.pasteClasses",
@@ -765,7 +1148,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
       !isPageOrBackground(ctx.selection.type) &&
       ctx.selection.isDeletable &&
       ctx.clipboard?.hasClasses === true,
-    run: stub("ph.node.pasteClasses"),
+    run: ctx => nodePasteClassesRun(ctx),
   },
   {
     id: "ph.node.selectParent",
@@ -773,14 +1156,14 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Edit",
     when: ctx =>
       Boolean(ctx.parent?.id) && ctx.parent?.displayName !== "Background",
-    run: stub("ph.node.selectParent"),
+    run: ctx => nodeSelectParentRun(ctx),
   },
   {
     id: "ph.node.selectPage",
     title: "Select current page",
     category: "Edit",
     when: ctx => Boolean((ctx as Record<string, unknown>)["hasPageIsolation"]),
-    run: stub("ph.node.selectPage"),
+    run: ctx => nodeSelectPageRun(ctx),
   },
   {
     id: "ph.node.selectAncestor",
@@ -796,7 +1179,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Edit",
     when: ctx =>
       Boolean(ctx.selection.id) && !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.node.deselect"),
+    run: ctx => nodeDeselectRun(ctx),
   },
   {
     id: "ph.node.moveUp",
@@ -804,7 +1187,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Edit",
     when: ctx => canCopySelection(ctx) && Boolean(ctx.parent?.id),
     enablement: ctx => Boolean((ctx as Record<string, unknown>)["siblingMove.canMoveUp"]),
-    run: stub("ph.node.moveUp"),
+    run: ctx => nodeMoveUpRun(ctx),
   },
   {
     id: "ph.node.moveDown",
@@ -812,7 +1195,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Edit",
     when: ctx => canCopySelection(ctx) && Boolean(ctx.parent?.id),
     enablement: ctx => Boolean((ctx as Record<string, unknown>)["siblingMove.canMoveDown"]),
-    run: stub("ph.node.moveDown"),
+    run: ctx => nodeMoveDownRun(ctx),
   },
   {
     id: "ph.node.isolate",
@@ -841,7 +1224,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
         ctx.selection.type === "Section" && features.blocksPanel?.enabled !== false
       );
     },
-    run: stub("ph.node.addBlockAbove"),
+    run: ctx => nodeAddBlockAtRun("top")(ctx),
   },
   {
     id: "ph.node.addBlockBelow",
@@ -853,14 +1236,14 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
         ctx.selection.type === "Section" && features.blocksPanel?.enabled !== false
       );
     },
-    run: stub("ph.node.addBlockBelow"),
+    run: ctx => nodeAddBlockAtRun("bottom")(ctx),
   },
   {
     id: "ph.node.addEmptySection",
     title: "Add empty section",
     category: "Insert",
     when: ctx => ctx.selection.isCanvas && ctx.selection.type === "page",
-    run: stub("ph.node.addEmptySection"),
+    run: ctx => nodeAddEmptySectionRun(ctx),
   },
   {
     id: "ph.node.addContainer",
@@ -868,7 +1251,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Insert",
     when: ctx =>
       ctx.selection.isCanvas && !isPageOrBackground(ctx.selection.type),
-    run: stub("ph.node.addContainer"),
+    run: ctx => nodeAddContainerRun(ctx),
   },
   {
     id: "ph.node.insertComponent",
@@ -878,7 +1261,10 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
       const t = ctx.selection.type;
       return t === "Section" || t === "Container" || t === "page";
     },
-    run: stub("ph.node.insertComponent"),
+    // Insert-component opens a hover-only flyout (chrome-owned) — the
+    // command exists so the palette can expose the affordance, but its
+    // run body just opens the Components panel as the next-best action.
+    run: () => openComponentsTabRun(),
   },
   {
     id: "ph.node.convertToComponent",
@@ -887,7 +1273,15 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     when: ctx => canCopySelection(ctx),
     enablement: ctx =>
       Boolean((ctx as Record<string, unknown>)["canMakeSavedComponent"]),
-    run: stub("ph.node.convertToComponent"),
+    run: ctx => nodeConvertToComponentRun(ctx),
+  },
+  {
+    id: "ph.node.aiContext",
+    title: "Include in AI chat",
+    category: "AI",
+    icon: <TbWand />,
+    when: ctx => hasNonRootSelection(ctx) && Boolean(ctx.isAiEnabled),
+    run: ctx => nodeAiContextRun(ctx),
   },
   {
     id: "ph.node.cycleNextSibling",
@@ -895,7 +1289,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Edit",
     when: ctx =>
       Boolean(ctx.selection.id) && !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.node.cycleNextSibling"),
+    run: ctx => cycleSiblingRun(1)(ctx),
     paletteHide: true,
   },
   {
@@ -904,7 +1298,7 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Edit",
     when: ctx =>
       Boolean(ctx.selection.id) && !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.node.cyclePrevSibling"),
+    run: ctx => cycleSiblingRun(-1)(ctx),
     paletteHide: true,
   },
 
@@ -1206,41 +1600,21 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  * doc-level chord set (⌘S, ⌘⇧M/D/L/G/H/E/O, plus topbar buttons).
  */
 const STILL_STUB_IDS = new Set<string>([
-  "ph.editor.exitPreview",
-  "ph.editor.clearSelection",
   "ph.editor.openCommandPalette",
   "ph.editor.openBlocksPanel",
   "ph.editor.openComponentsPanel",
-  "ph.editor.openComponentsTab",
   "ph.editor.closeSidebar",
   "ph.media.selectAll",
   "ph.media.deleteSelected",
   "ph.sidebar.search",
   "ph.ai.includeTextInChat",
   "ph.ai.includeNodeInChat",
-  // ph.node.* — Phase 2 C2c (right-click menu) owns these.
-  "ph.node.delete",
-  "ph.node.duplicate",
-  "ph.node.copy",
-  "ph.node.paste",
-  "ph.node.copyClasses",
-  "ph.node.pasteClasses",
-  "ph.node.selectParent",
-  "ph.node.selectPage",
+  // Phase 2 C2c: most ph.node.* commands are now real. These remain stubs
+  // because their surface (canvas chip / breadcrumb rename / canvas
+  // isolate) is owned by a later wave.
   "ph.node.selectAncestor",
-  "ph.node.deselect",
-  "ph.node.moveUp",
-  "ph.node.moveDown",
   "ph.node.isolate",
   "ph.node.renameDisplayName",
-  "ph.node.addBlockAbove",
-  "ph.node.addBlockBelow",
-  "ph.node.addEmptySection",
-  "ph.node.addContainer",
-  "ph.node.insertComponent",
-  "ph.node.convertToComponent",
-  "ph.node.cycleNextSibling",
-  "ph.node.cyclePrevSibling",
   // ph.text.* — Phase 2 C2g/h (tiptap surface) owns these.
   "ph.text.bold",
   "ph.text.italic",

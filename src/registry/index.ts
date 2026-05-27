@@ -35,6 +35,9 @@ export {
 
 export { applyEditorChromeSlotsShim, FIELD_TO_SLOT } from "./adapter";
 
+export { deriveSelectionContext } from "./selectionContext";
+export type { DerivedSelectionContext } from "./selectionContext";
+
 export { BUILTIN_COMMANDS } from "./builtins/commands";
 export { BUILTIN_SLOTS } from "./builtins/slots";
 export { BUILTIN_KEYBINDINGS } from "./builtins/keybindings";

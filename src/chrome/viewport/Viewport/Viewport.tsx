@@ -1,6 +1,6 @@
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
-import React, { useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import {
   IsolateAtom,
@@ -32,10 +32,9 @@ import { DeviceOffline } from "../../toolbar/DeviceOffline";
 import { EditModifiersAtom } from "../../toolbar/Label";
 import { useAutoOpenSidebar } from "../../hooks/useAutoOpenSidebar";
 import { useComponentSync } from "../../hooks/useComponentSync";
-import { useEditorDocumentKeydown } from "../../hooks/useEditorDocumentKeydown";
 import { useShowOnLoadAutoReveal } from "../../hooks/useShowOnLoadAutoReveal";
+import { useRegisterSelectionContext } from "../hooks/useRegisterSelectionContext";
 import { useViewportClickDeselect } from "../hooks/useViewportClickDeselect";
-import { useViewportKeyboard } from "../hooks/useViewportKeyboard";
 import { usePageNavigation } from "../../../utils/page/pageNavigation";
 import { getEditorWidthOnlyCanvasClasses } from "../canvas/editorCanvasLayout";
 import {
@@ -53,6 +52,7 @@ import {
   ShowBreakpointMarkersAtom,
   ShowDeviceGuidesAtom,
   SideBySideAtom,
+  TabAtom,
   UnsavedChangesAtom,
   ViewAtom,
 } from "../state/atoms";
@@ -100,11 +100,26 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   useComponentSync();
   useAutoOpenSidebar();
   useShowOnLoadAutoReveal();
-  const { handleKeyDown, handleDoubleClick, handleBodyKeyDown } = useViewportKeyboard();
+  // Phase 2 C2c: the legacy `useViewportKeyboard` / `useEditorDocumentKeydown`
+  // chord listeners are gone — the registry's doc-level dispatcher owns
+  // every canvas chord (delete / copy / paste / undo / redo / tab cycle /
+  // escape / etc.). Selection-context predicates feed the dispatcher.
+  useRegisterSelectionContext();
   const { handleViewportClick } = useViewportClickDeselect();
-  useEditorDocumentKeydown();
 
-  useViewportSetupEffects({ handleBodyKeyDown });
+  // Double-click on a node label exits the active inspector tab; keep this
+  // tiny inline handler — it's UX glue, not a chord.
+  const setActiveTab = useSetAtomState(TabAtom);
+  const handleDoubleClick = useCallback(
+    (event: React.MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const nodeId = target.closest("[node-id]")?.getAttribute("node-id");
+      if (nodeId) setTimeout(() => setActiveTab(""), 600);
+    },
+    [setActiveTab]
+  );
+
+  useViewportSetupEffects();
 
   // ─── Atoms (reads only) ───
   const editModifiers = useAtomValue(EditModifiersAtom);
@@ -321,7 +336,6 @@ export function Viewport({ children }: { children: React.ReactNode }) {
             <div
               id="viewport"
               role="application"
-              onKeyDown={handleKeyDown}
               onClick={handleViewportClick}
               onDoubleClick={handleDoubleClick}
               onDoubleClickCapture={handleViewportDoubleClickCapture}

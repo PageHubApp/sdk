@@ -114,10 +114,59 @@ const NAVMENU_PREFERENCES: MenuItem[] = [
   },
 ];
 
+/**
+ * Right-click canvas context menu. Group order matches the visual
+ * sections in the legacy `ToolboxContextual` layout:
+ *  - deselect (1)
+ *  - copy / paste / copy-classes / paste-classes (2)
+ *  - select parent / move up / move down (3)
+ *  - insert submenu items (4) — note: the chrome renders a hover submenu;
+ *    these rows are also discoverable from the palette
+ *  - duplicate / convert / delete (5)
+ *  - AI (6)
+ *
+ * Group@N is globally monotonic so resolved sort matches visual order.
+ */
+const CANVAS_CONTEXT: MenuItem[] = [
+  // Deselect
+  { command: "ph.node.deselect", group: "deselect@10" },
+  // Copy / Paste
+  { command: "ph.node.copy", group: "copyPaste@20" },
+  { command: "ph.node.copyClasses", group: "copyPaste@30" },
+  { command: "ph.node.paste", group: "copyPaste@40" },
+  { command: "ph.node.pasteClasses", group: "copyPaste@50" },
+  // Nav
+  { command: "ph.node.selectParent", group: "nav@60" },
+  { command: "ph.node.moveUp", group: "nav@70" },
+  { command: "ph.node.moveDown", group: "nav@80" },
+  // Insert submenu rows
+  { command: "ph.node.addBlockAbove", group: "insert@90" },
+  { command: "ph.node.addBlockBelow", group: "insert@100" },
+  { command: "ph.node.insertComponent", group: "insert@110" },
+  { command: "ph.node.addEmptySection", group: "insert@120" },
+  { command: "ph.node.addContainer", group: "insert@130" },
+  // Duplicate / Convert / Delete
+  { command: "ph.node.duplicate", group: "dupDel@140" },
+  {
+    command: "ph.node.convertToComponent",
+    group: "dupDel@150",
+    titleOverride: ctx => {
+      const canMake = Boolean(
+        (ctx as Record<string, unknown>)["canMakeSavedComponent"]
+      );
+      return canMake ? "Convert to component" : "Component exists";
+    },
+  },
+  { command: "ph.node.delete", group: "dupDel@160" },
+  // AI
+  { command: "ph.node.aiContext", group: "ai@170" },
+];
+
 export const BUILTIN_MENUS: Array<{ location: MenuLocation; items: MenuItem[] }> = [
   { location: "topbar", items: TOPBAR },
   { location: "navmenu/settings", items: NAVMENU_SETTINGS },
   { location: "navmenu/view", items: NAVMENU_VIEW },
   { location: "navmenu/tools", items: NAVMENU_TOOLS },
   { location: "navmenu/preferences", items: NAVMENU_PREFERENCES },
+  { location: "canvas/context", items: CANVAS_CONTEXT },
 ];
