@@ -8,7 +8,6 @@ export { CommandPalette } from "./CommandPalette";
 export { CommandPaletteRoot } from "./CommandPaletteRoot";
 export {
   useCommandPalette,
-  useCommandPaletteShortcut,
   type UseCommandPaletteResult,
 } from "./useCommandPalette";
 export {

@@ -2,7 +2,7 @@ import { useEditor } from "@craftjs/core";
 import React from "react";
 import { TbFocus2, TbGripVertical } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
-import { useSetAtomState } from "../../../utils/atoms";
+import { useRegistries } from "../../../registry";
 import {
   CANVAS_SLOT_W,
   CanvasPos,
@@ -11,7 +11,6 @@ import {
   getComponentCanvasPos,
   getComponentCanvasSize,
 } from "../../../utils/component/componentCanvas";
-import { CanvasIsolateAtom } from "../../../utils/component/componentIsolation";
 import {
   CARD_PAD,
   HANDLE_GAP,
@@ -76,7 +75,7 @@ export function ComponentCanvasItem({
   isIsolationCanvas = false,
 }: Props) {
   const { query, actions } = useEditor();
-  const setCanvasIsolate = useSetAtomState(CanvasIsolateAtom);
+  const { commands } = useRegistries();
 
   const posKey: CanvasPosKey = isIsolationCanvas ? "canvasIsolatePos" : "canvasPos";
 
@@ -216,13 +215,24 @@ export function ComponentCanvasItem({
   const onIsolate = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (disableIsolate) return;
-    setCanvasIsolate(containerId);
+    void commands.execute(
+      "ph.node.isolate",
+      { id: containerId },
+      { trigger: "menu" }
+    );
   };
 
+  // Double-click on the drag handle is a gesture (not a button click) — we
+  // dispatch the same command to keep the action body in one place, but
+  // could revert to inline if drag-handle UX ever diverges from isolate.
   const onDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (disableIsolate) return;
-    setCanvasIsolate(containerId);
+    void commands.execute(
+      "ph.node.isolate",
+      { id: containerId },
+      { trigger: "menu" }
+    );
   };
 
   // Two-wrapper structure to keep chrome (drag handle) sharp at any zoom:

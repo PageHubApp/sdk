@@ -163,6 +163,23 @@ const CANVAS_CONTEXT: MenuItem[] = [
 ];
 
 /**
+ * Canvas selection chip — Phase 2 C2i.
+ *
+ * Today the only "chip-style" surface that exists is the canvas slot card
+ * chrome on `ComponentCanvasItem` (drag handle + isolate button shown above
+ * a component card in component-canvas view). Registering the location with
+ * a single isolate entry makes it real today and gives hosts a hook to add
+ * more chip buttons later via `sdk.menus.contribute("canvas/chip", ...)`.
+ *
+ * The chip surface caller passes the target id explicitly via
+ * `args: { id: containerId }` so the command doesn't have to assume
+ * selection state.
+ */
+const CANVAS_CHIP: MenuItem[] = [
+  { command: "ph.node.isolate", group: "view@10" },
+];
+
+/**
  * Sidebar tab strip — Phase 2 C2e.
  *
  * Two pills: Components / Blocks. The Blocks pill is gated by
@@ -257,6 +274,7 @@ export const BUILTIN_MENUS: Array<{ location: MenuLocation; items: MenuItem[] }>
   { location: "navmenu/tools", items: NAVMENU_TOOLS },
   { location: "navmenu/preferences", items: NAVMENU_PREFERENCES },
   { location: "canvas/context", items: CANVAS_CONTEXT },
+  { location: "canvas/chip", items: CANVAS_CHIP },
   { location: "sidebar/tabs", items: SIDEBAR_TABS },
   { location: "tiptap/inline", items: TIPTAP_INLINE },
   { location: "tiptap/inline/more-panel", items: TIPTAP_INLINE_MORE_PANEL },

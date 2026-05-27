@@ -1,15 +1,13 @@
 /**
  * Singleton mount point for the command palette.
  *
- * Mounted once at editor chrome level. Owns the global ⌘K listener (Wave B2
- * temporary — Wave B1 will eventually drive open via the
- * `ph.editor.openCommandPalette` keybinding through the registry dispatcher)
- * and renders <CommandPalette /> when open.
+ * Mounted once at editor chrome level. The ⌘K chord is owned by the
+ * `ph.editor.openCommandPalette` builtin keybinding (Phase 2 C2i); this
+ * component just renders <CommandPalette /> — open/close state reads from
+ * `CommandPaletteAtom` via `useCommandPalette()`.
  */
 import { CommandPalette } from "./CommandPalette";
-import { useCommandPaletteShortcut } from "./useCommandPalette";
 
 export function CommandPaletteRoot() {
-  useCommandPaletteShortcut();
   return <CommandPalette />;
 }

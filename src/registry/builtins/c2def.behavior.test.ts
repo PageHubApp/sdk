@@ -26,6 +26,7 @@ import {
   BreadcrumbRenameRequestedAtom,
   SideBarOpen,
 } from "../../utils/atoms";
+import { CanvasIsolateAtom } from "../../utils/component/componentIsolation";
 
 // ─── Fakes ───────────────────────────────────────────────────────────────
 
@@ -270,6 +271,138 @@ test("c2f: ph.component.createReusable is callable from the registry without thr
     await commands.execute("ph.component.createReusable");
     // If we got here without throwing, the command body executed.
     assert.ok(true);
+  } finally {
+    clearEditorBackref();
+    uninstallFakeBrowser();
+  }
+});
+
+// ─── C2i: canvas selection chip — ph.node.isolate ────────────────────────
+
+test("c2i: ph.node.isolate writes CanvasIsolateAtom with args.id (chip surface)", async () => {
+  installFakeBrowser();
+  const eco = installFakeEcosystem();
+  const { context, commands } = setupCommands();
+  // when() requires selection.type === "component"; synthesize one.
+  context.setCommandContext({
+    selection: {
+      id: "selected-anchor",
+      type: "component",
+      isCanvas: true,
+      isDeletable: true,
+      isLinked: false,
+      canDelete: true,
+    },
+  });
+  try {
+    await commands.execute(
+      "ph.node.isolate",
+      { id: "container-7" },
+      { trigger: "menu" }
+    );
+    // Args id wins over current selection.id.
+    assert.equal(eco.atomState.get(CanvasIsolateAtom), "container-7");
+  } finally {
+    clearEditorBackref();
+    uninstallFakeBrowser();
+  }
+});
+
+test("c2i: ph.node.isolate falls back to ctx.selection.id when args omitted", async () => {
+  installFakeBrowser();
+  const eco = installFakeEcosystem();
+  const { context, commands } = setupCommands();
+  // Selection-context bypass: pass a synthetic component selection.
+  context.setCommandContext({
+    selection: {
+      id: "selected-container",
+      type: "component",
+      isCanvas: true,
+      isDeletable: true,
+      isLinked: false,
+      canDelete: true,
+    },
+  });
+  try {
+    await commands.execute("ph.node.isolate", undefined, { trigger: "palette" });
+    assert.equal(eco.atomState.get(CanvasIsolateAtom), "selected-container");
+  } finally {
+    clearEditorBackref();
+    uninstallFakeBrowser();
+  }
+});
+
+test("c2i: canvas/chip menu surfaces ph.node.isolate when selection is a component", () => {
+  installFakeBrowser();
+  installFakeEcosystem();
+  const { context, menus } = setupCommands();
+  context.setCommandContext({
+    selection: {
+      id: "n1",
+      type: "component",
+      isCanvas: true,
+      isDeletable: true,
+      isLinked: false,
+      canDelete: true,
+    },
+  });
+  try {
+    const ids = menus.items("canvas/chip").map(i => i.command);
+    assert.deepEqual(ids, ["ph.node.isolate"]);
+  } finally {
+    clearEditorBackref();
+    uninstallFakeBrowser();
+  }
+});
+
+test("c2i: canvas/chip menu hides ph.node.isolate when disableIsolate flag set", () => {
+  installFakeBrowser();
+  installFakeEcosystem();
+  const { context, menus } = setupCommands();
+  context.setCommandContext({
+    selection: {
+      id: "n1",
+      type: "component",
+      isCanvas: true,
+      isDeletable: true,
+      isLinked: false,
+      canDelete: true,
+    },
+  });
+  context.set("disableIsolate", true);
+  try {
+    const ids = menus.items("canvas/chip").map(i => i.command);
+    assert.deepEqual(ids, []);
+  } finally {
+    clearEditorBackref();
+    uninstallFakeBrowser();
+  }
+});
+
+// ─── C2i: ph.editor.openCommandPalette ───────────────────────────────────
+
+test("c2i: ph.editor.openCommandPalette toggles CommandPaletteAtom", async () => {
+  installFakeBrowser();
+  const eco = installFakeEcosystem();
+  const { commands } = setupCommands();
+  try {
+    // First execute opens.
+    await commands.execute(
+      "ph.editor.openCommandPalette",
+      undefined,
+      { trigger: "keybinding" }
+    );
+    const { CommandPaletteAtom } = await import(
+      "../../chrome/toolbar/dialogs/dialogAtoms"
+    );
+    assert.deepEqual(eco.atomState.get(CommandPaletteAtom), { open: true });
+    // Second execute closes (Spotlight toggle).
+    await commands.execute(
+      "ph.editor.openCommandPalette",
+      undefined,
+      { trigger: "keybinding" }
+    );
+    assert.deepEqual(eco.atomState.get(CommandPaletteAtom), { open: false });
   } finally {
     clearEditorBackref();
     uninstallFakeBrowser();

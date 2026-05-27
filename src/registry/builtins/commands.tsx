@@ -86,8 +86,12 @@ import {
   SidebarLayersPanelAtom,
   ViewModeAtom,
 } from "../../utils/atoms";
+import { CommandPaletteAtom } from "../../chrome/toolbar/dialogs/dialogAtoms";
 import { getEditorActions, getEditorQuery } from "../editorBackref";
-import { applyCanvasVisibility } from "../../utils/component/componentIsolation";
+import {
+  applyCanvasVisibility,
+  CanvasIsolateAtom,
+} from "../../utils/component/componentIsolation";
 import { markManualSidebarClose } from "../../chrome/hooks/useAutoOpenSidebar";
 import { phStorage } from "../../utils/phStorage";
 import { SaveIndicator } from "../../chrome/viewport/ViewportTopBar/SaveIndicator";
@@ -833,7 +837,14 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "Command palette",
     category: "View",
     when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.editor.openCommandPalette"),
+    // Don't list the palette inside itself.
+    paletteHide: true,
+    run: () => {
+      // Toggle: if already open, close (matches macOS Spotlight behavior).
+      setAtomExternal(CommandPaletteAtom, prev => ({
+        open: !(prev as { open?: boolean })?.open,
+      }));
+    },
   },
   {
     id: "ph.editor.openBlocksPanel",
@@ -1186,14 +1197,9 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     when: ctx => Boolean(ctx.tiptap?.active && ctx.isAiEnabled),
     run: () => tiptapIncludeTextInChatRun(),
   },
-  {
-    id: "ph.ai.includeNodeInChat",
-    title: "Include node in AI chat",
-    category: "AI",
-    icon: <TbWand />,
-    when: ctx => hasNonRootSelection(ctx) && Boolean(ctx.isAiEnabled),
-    run: stub("ph.ai.includeNodeInChat"),
-  },
+  // `ph.ai.includeNodeInChat` was a duplicate of `ph.node.aiContext` (same
+  // semantics: append the selected node to AiChatAttachedNodesAtom + reveal
+  // panel). Removed in Phase 2 C2i; use `ph.node.aiContext` instead.
 
   // ─── Layers (placeholder for canvas.* layer interactions) ────────────
 
@@ -1309,7 +1315,14 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     when: ctx =>
       ctx.selection.type === "component" &&
       !((ctx as Record<string, unknown>)["disableIsolate"] === true),
-    run: stub("ph.node.isolate"),
+    run: (ctx, args) => {
+      // Args take precedence (canvas chip passes the container id explicitly);
+      // fall back to the current selection when invoked from the palette.
+      const argId = (args as unknown as { id?: string } | undefined)?.id ?? null;
+      const id = argId || ctx.selection.id;
+      if (!id) return;
+      setAtomExternal(CanvasIsolateAtom, id);
+    },
   },
   {
     id: "ph.node.renameDisplayName",
@@ -1821,18 +1834,40 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  * `run` body that owns its chord. Wave C2a flipped the topbar / navmenu
  * doc-level chord set (⌘S, ⌘⇧M/D/L/G/H/E/O, plus topbar buttons).
  */
+/**
+ * Each remaining id documents *why* it stays stubbed. The dispatcher skips
+ * `preventDefault()` for stubs so any inline listener still owns the chord
+ * if one exists. All listed commands carry `paletteHide: true` so they don't
+ * surface in the user-facing palette while their backing surfaces are wired.
+ *
+ * TODO when the relevant surface migrates:
+ *  - `ph.media.selectAll` / `ph.media.deleteSelected` — Media Manager modal
+ *    needs to publish `media.modalOpen` / `media.selectionMode` /
+ *    `media.selectedCount` into the context registry and own the real run
+ *    bodies (select-all / delete-selected actions live in MediaGrid today).
+ *  - `ph.sidebar.search` — there is no global sidebar search UI yet; the
+ *    keybinding (⌘F when mouseOver = "sidebar") is registered as a stub so
+ *    we don't steal browser find-in-page; once a sidebar search input
+ *    lands, wire the real focus action and unstub.
+ *  - `ph.overlay.dismissTop` — generic overlay-stack helper. Modal /
+ *    drawer ESC is currently handled inline by the SDK show-hide store
+ *    ([packages/sdk/src/utils/showHide.ts]) and per-popover listeners. If
+ *    we introduce a centralized overlay stack later, replace those inline
+ *    handlers with a real run body and publish `overlay.stackDepth` from
+ *    the stack manager.
+ *  - `ph.annotation.delete` — the annotation system doesn't publish
+ *    `annotation.selectedId` / `annotation.editingId` yet. When the
+ *    annotation surface migrates to publish context and owns its own
+ *    delete action, fill the run body here.
+ *  - `ph.sections.toggleQuickLook` — Sections modal quick-look (Space key
+ *    to peek at a hovered block) is handled inline today. When the
+ *    Sections modal publishes `sections.modalOpen` /
+ *    `sections.hoveredBlock`, lift the run body here.
+ */
 const STILL_STUB_IDS = new Set<string>([
-  "ph.editor.openCommandPalette",
   "ph.media.selectAll",
   "ph.media.deleteSelected",
   "ph.sidebar.search",
-  "ph.ai.includeNodeInChat",
-  // Phase 2 C2c: most ph.node.* commands are now real. C2d filled the
-  // breadcrumb-owned commands (selectAncestor / renameDisplayName).
-  // Isolate stays a stub — canvas-card chrome is migrated separately.
-  "ph.node.isolate",
-  // Phase 2 C2g/h: all ph.text.* + ph.ai.includeTextInChat run bodies real.
-  // Misc — owned by other surfaces.
   "ph.overlay.dismissTop",
   "ph.annotation.delete",
   "ph.sections.toggleQuickLook",
