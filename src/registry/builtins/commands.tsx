@@ -1,12 +1,22 @@
 /**
- * Builtin command catalog — Phase 1 Wave A.
+ * Builtin command catalog.
  *
- * Every command's `run` body is a stub that logs a warning. Phase 2 wires
- * real behavior surface-by-surface. `when` and `enablement` predicates ARE
- * real — they read CommandContext and return correct booleans so menus and
- * keybindings filter correctly without surface migration.
+ * Phase 1 Wave A landed every command as a stub. Phase 2 fills the real
+ * `run` bodies surface by surface; commands still marked `stub: true` here
+ * have NOT yet been migrated (their old surface handler still owns the
+ * chord). When a surface migrates, the command's `stub: true` flag is
+ * removed so the dispatcher `preventDefault`s the chord and the legacy
+ * inline handler can be deleted.
+ *
+ * Phase 2 C2a — topbar surface — owns:
+ *   ph.editor.{insert,undo,redo,save,togglePreview,openMore}
+ *   ph.canvas.{toggleViewMode,setView,toggleDevice,toggleResponsive,
+ *               toggleGridLines,toggleHidden,zoomIn,zoomOut,zoomReset}
+ *   ph.media.open · ph.theme.open · ph.layers.popOut
+ *   ph.modifiers.open · ph.importExport.open
  */
 import React from "react";
+import { ROOT_NODE } from "@craftjs/utils";
 import {
   TbArrowBackUp,
   TbArrowForwardUp,
@@ -34,6 +44,41 @@ import {
   TbX,
 } from "react-icons/tb";
 import type { CommandDef } from "../types";
+import {
+  panelOpen,
+  panelClose,
+  panelToggle,
+  panelToggleToolboxInsert,
+  getPanelState,
+  markToolboxHistorySelectionSync,
+  finalizeToolboxHistorySelectionSync,
+} from "../../utils/usePanelUrl";
+import { setAtomExternal, getAtomExternal } from "../../utils/atoms/external";
+import {
+  EnabledAtom,
+  PreviewAtom,
+  ViewAtom,
+  DeviceAtom,
+  ResponsiveAtom,
+  ShowBreakpointMarkersAtom,
+  ShowDeviceGuidesAtom,
+  BreakpointZoomAtom,
+  DeviceZoomAtom,
+} from "../../chrome/viewport/state/atoms";
+import {
+  LastActiveAtom,
+  LayersDialogOpenAtom,
+  MediaManagerModalAtom,
+  ModifiersModalAtom,
+  ShowGridLinesAtom,
+  ShowHiddenAtom,
+  SideBarAtom,
+  SidebarLayersPanelAtom,
+  ViewModeAtom,
+} from "../../utils/atoms";
+import { applyCanvasVisibility } from "../../utils/component/componentIsolation";
+import { phStorage } from "../../utils/phStorage";
+import { SaveIndicator } from "../../chrome/viewport/ViewportTopBar/SaveIndicator";
 
 /**
  * Wave A stub — log so missing wiring is loud but the editor keeps working.
@@ -67,6 +112,160 @@ function isInsideTextEditingSurfaceCtx(ctx: { tiptap: { active: boolean } }): bo
   return Boolean(ctx.tiptap?.active);
 }
 
+// ─── Real-run helpers (Phase 2 C2a topbar surface) ───────────────────────────
+
+/**
+ * Wrap a history mutation with the toolbox-history sync flags so the
+ * Components/Blocks panel doesn't slam shut when undo/redo changes the
+ * Craft selection. Mirrors the inline pattern that used to live in
+ * `ViewportTopBar.tsx`.
+ */
+function runHistoryWithToolboxSync(
+  query: any,
+  actions: any,
+  fn: () => void
+): void {
+  if (!actions || !query) return;
+  markToolboxHistorySelectionSync();
+  fn();
+  const active = query.getEvent?.("selected")?.first?.();
+  if (!active) actions.selectNode?.(ROOT_NODE);
+  finalizeToolboxHistorySelectionSync();
+}
+
+/**
+ * Toggle preview mode (eyeball icon). Heavy DOM cleanup lives here so it
+ * fires the same way from chord / palette / topbar button.
+ */
+function togglePreviewRun(query: any, actions: any): void {
+  if (!actions || !query) return;
+  const viewport = typeof document !== "undefined" ? document.getElementById("viewport") : null;
+  const scrollTop = viewport?.scrollTop ?? 0;
+  const scrollLeft = viewport?.scrollLeft ?? 0;
+
+  let nextEnabled = true;
+  actions.setOptions((options: any) => {
+    options.enabled = !options.enabled;
+    nextEnabled = options.enabled;
+    if (!options.enabled && viewport) {
+      const arr = viewport.getElementsByTagName("*") || [];
+      const elmsLen = arr.length;
+      for (let i = 0; i < elmsLen; i++) {
+        for (const attr of [
+          "data-bounding-box",
+          "data-empty-state",
+          "data-renderer",
+          "contenteditable",
+          "data-no-scrollbars",
+          "draggable",
+          "data-enabled",
+          "data-selected",
+          "data-border",
+          "data-hover",
+          "main-node",
+          "node-id",
+        ]) {
+          arr[i].removeAttribute(attr);
+        }
+      }
+    }
+    const active = query.getEvent("selected").first();
+    setAtomExternal(LastActiveAtom, active);
+    setAtomExternal(EnabledAtom, options.enabled);
+  });
+
+  // Flip preview atom (true = previewing, false = editing).
+  setAtomExternal(PreviewAtom, (prev: boolean) => !prev);
+  // When leaving edit mode, drop the selection so chrome detaches.
+  if (!nextEnabled) actions.selectNode?.(null);
+  viewport?.focus({ preventScroll: true });
+  if (typeof requestAnimationFrame !== "undefined") {
+    requestAnimationFrame(() => {
+      if (viewport) {
+        viewport.scrollTop = scrollTop;
+        viewport.scrollLeft = scrollLeft;
+      }
+    });
+  }
+}
+
+/** Flip canvas page<->component view mode and refresh visibility. */
+function toggleViewModeRun(query: any, actions: any): void {
+  if (!actions || !query) return;
+  const current = getAtomExternal(ViewModeAtom) ?? "page";
+  const next = current === "page" ? "canvas" : "page";
+  setAtomExternal(ViewModeAtom, next);
+  actions.selectNode?.(null);
+  if (next === "page") {
+    import("../../utils/page/pageManagement")
+      .then(({ isolatePageInTree }) => {
+        try {
+          isolatePageInTree(query, actions, null, () => {});
+        } catch (err) {
+          console.error("[ph.commands] isolatePageInTree failed:", err);
+        }
+      })
+      .catch(err => {
+        console.error("[ph.commands] page/pageManagement import failed:", err);
+      });
+  }
+  applyCanvasVisibility(query, actions, { mode: next });
+}
+
+/**
+ * Active zoom atom is whichever CanvasZoom mount has `data-canvas-zoom-*=true`.
+ * Mirrors the inline window-level listener in CanvasZoom.tsx so chord / palette
+ * dispatch goes through the same path.
+ */
+function zoomStep(direction: 1 | -1 | 0): void {
+  if (typeof document === "undefined") return;
+  // Determine which CanvasZoom mount is live.
+  const deviceLive = document.querySelector(`[data-canvas-zoom-device-menu="true"]`);
+  const atomKey: "device" | "breakpoint" = deviceLive ? "device" : "breakpoint";
+  const atomTpl = atomKey === "device" ? DeviceZoomAtom : BreakpointZoomAtom;
+  const current = getAtomExternal<number>(atomTpl) ?? 1;
+  let next: number;
+  if (direction === 0) {
+    next = 1;
+  } else {
+    // Inlined nextZoomPreset to avoid a cross-import; both paths share semantics.
+    const presets = [
+      0.25, 0.33, 0.5, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 3, 5, 7.5, 10,
+    ];
+    const idx = presets.findIndex(v => v >= current);
+    const ni =
+      direction === 1
+        ? Math.min(idx + 1, presets.length - 1)
+        : Math.max(idx - 1, 0);
+    next = presets[ni];
+  }
+  setAtomExternal(atomTpl, next);
+  try {
+    const storageKey =
+      atomKey === "device" ? "editor-device-zoom" : "editor-breakpoint-zoom";
+    phStorage.set(storageKey, String(next));
+    phStorage.set(`${storageKey}-fit`, "false");
+  } catch {}
+}
+
+/** Toggle `data-show-gridlines` on `#viewport` and persist the atom. */
+function toggleGridLinesRun(): void {
+  const next = !(getAtomExternal<boolean>(ShowGridLinesAtom) ?? false);
+  setAtomExternal(ShowGridLinesAtom, next);
+  if (typeof document !== "undefined") {
+    document.getElementById("viewport")?.setAttribute("data-show-gridlines", String(next));
+  }
+}
+
+/** Toggle `data-show-hidden` on `#viewport` and persist the atom. */
+function toggleHiddenRun(): void {
+  const next = !(getAtomExternal<boolean>(ShowHiddenAtom) ?? true);
+  setAtomExternal(ShowHiddenAtom, next);
+  if (typeof document !== "undefined") {
+    document.getElementById("viewport")?.setAttribute("data-show-hidden", String(next));
+  }
+}
+
 const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
   // ─── Editor ──────────────────────────────────────────────────────────
   {
@@ -74,7 +273,9 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "Insert blocks & components",
     category: "Edit",
     icon: <TbPlus />,
-    run: stub("ph.editor.insert"),
+    run: () => {
+      panelToggleToolboxInsert();
+    },
   },
   {
     id: "ph.editor.undo",
@@ -83,7 +284,10 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     icon: <TbArrowBackUp />,
     when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
     enablement: ctx => Boolean(ctx.canUndo),
-    run: stub("ph.editor.undo"),
+    run: ctx => {
+      const { query, actions } = ctx as { query: any; actions: any };
+      runHistoryWithToolboxSync(query, actions, () => actions.history.undo());
+    },
   },
   {
     id: "ph.editor.redo",
@@ -92,25 +296,33 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     icon: <TbArrowForwardUp />,
     when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
     enablement: ctx => Boolean(ctx.canRedo),
-    run: stub("ph.editor.redo"),
+    run: ctx => {
+      const { query, actions } = ctx as { query: any; actions: any };
+      runHistoryWithToolboxSync(query, actions, () => actions.history.redo());
+    },
   },
   {
     id: "ph.editor.save",
     title: "Publish",
     category: "File",
-    icon: <TbDeviceFloppy />,
+    icon: () => <SaveIndicator />,
     when: ctx => {
       const features = (ctx.features ?? {}) as { saveButton?: boolean };
       return features.saveButton !== false && !isInsideTextEditingSurfaceCtx(ctx);
     },
-    run: stub("ph.editor.save"),
+    run: () => {
+      panelOpen("publish");
+    },
   },
   {
     id: "ph.editor.togglePreview",
     title: ctx => (ctx.mode === "preview" ? "Exit preview" : "Toggle preview"),
     category: "View",
     icon: ctx => (ctx.mode === "preview" ? <TbCode /> : <TbEye />),
-    run: stub("ph.editor.togglePreview"),
+    run: ctx => {
+      const { query, actions } = ctx as { query: any; actions: any };
+      togglePreviewRun(query, actions);
+    },
   },
   {
     id: "ph.editor.exitPreview",
@@ -136,7 +348,14 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "More options",
     category: "View",
     icon: <TbMenu2 />,
-    run: stub("ph.editor.openMore"),
+    run: () => {
+      const state = getPanelState();
+      if (state.panel !== null) {
+        panelClose();
+      } else {
+        panelOpen("menu");
+      }
+    },
     paletteHide: true,
   },
   {
@@ -189,46 +408,71 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     },
     category: "View",
     icon: <TbDeviceMobile />,
-    run: stub("ph.canvas.setView"),
+    run: (_ctx, args) => {
+      const view = (args as unknown as { view?: string } | undefined)?.view;
+      if (!view) return;
+      setAtomExternal(ViewAtom, view as any);
+    },
   },
   {
     id: "ph.canvas.toggleDevice",
     title: "Toggle device",
     category: "View",
     icon: <TbDeviceMobile />,
-    run: stub("ph.canvas.toggleDevice"),
+    run: () => {
+      setAtomExternal(DeviceAtom, (prev: boolean) => !prev);
+    },
   },
   {
     id: "ph.canvas.toggleResponsive",
     title: "Toggle responsive",
     category: "View",
-    run: stub("ph.canvas.toggleResponsive"),
+    run: () => {
+      setAtomExternal(ResponsiveAtom, (prev: boolean) => !prev);
+    },
   },
   {
     id: "ph.canvas.toggleViewMode",
     title: ctx => (ctx.viewMode === "canvas" ? "Switch to page editor" : "Switch to components editor"),
     category: "View",
     icon: ctx => (ctx.viewMode === "canvas" ? <TbFileText /> : <TbBoxModel2 />),
-    run: stub("ph.canvas.toggleViewMode"),
+    run: ctx => {
+      const { query, actions } = ctx as { query: any; actions: any };
+      toggleViewModeRun(query, actions);
+    },
   },
   {
     id: "ph.canvas.toggleGridLines",
     title: "Toggle grid lines",
     category: "View",
     when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.canvas.toggleGridLines"),
+    run: () => {
+      toggleGridLinesRun();
+    },
   },
   {
     id: "ph.canvas.toggleBreakpointMarkers",
     title: "Toggle breakpoint lines",
     category: "View",
-    run: stub("ph.canvas.toggleBreakpointMarkers"),
+    run: () => {
+      const next = !(getAtomExternal<boolean>(ShowBreakpointMarkersAtom) ?? false);
+      setAtomExternal(ShowBreakpointMarkersAtom, next);
+      try {
+        phStorage.set("show-breakpoint-markers", String(next));
+      } catch {}
+    },
   },
   {
     id: "ph.canvas.toggleDeviceGuides",
     title: "Toggle device guides",
     category: "View",
-    run: stub("ph.canvas.toggleDeviceGuides"),
+    run: () => {
+      const next = !(getAtomExternal<boolean>(ShowDeviceGuidesAtom) ?? false);
+      setAtomExternal(ShowDeviceGuidesAtom, next);
+      try {
+        phStorage.set("show-device-guides", String(next));
+      } catch {}
+    },
   },
   {
     id: "ph.canvas.toggleHidden",
@@ -236,14 +480,16 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "View",
     icon: <TbEyeOff />,
     when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.canvas.toggleHidden"),
+    run: () => {
+      toggleHiddenRun();
+    },
   },
   {
     id: "ph.canvas.zoomIn",
     title: "Zoom in",
     category: "View",
     when: ctx => ctx.mouseOver !== "topbar" && ctx.mouseOver !== "sidebar",
-    run: stub("ph.canvas.zoomIn"),
+    run: () => zoomStep(1),
     paletteHide: true,
   },
   {
@@ -251,14 +497,14 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "Zoom out",
     category: "View",
     when: ctx => ctx.mouseOver !== "topbar" && ctx.mouseOver !== "sidebar",
-    run: stub("ph.canvas.zoomOut"),
+    run: () => zoomStep(-1),
     paletteHide: true,
   },
   {
     id: "ph.canvas.zoomReset",
     title: "Reset zoom",
     category: "View",
-    run: stub("ph.canvas.zoomReset"),
+    run: () => zoomStep(0),
     paletteHide: true,
   },
 
@@ -286,7 +532,10 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "Theme settings",
     category: "Tools",
     icon: <TbPalette />,
-    run: stub("ph.theme.open"),
+    run: (_ctx, args) => {
+      const a = (args as unknown as { cat?: string } | undefined) ?? {};
+      panelToggle("theme", { cat: a.cat ?? "colors" });
+    },
   },
   {
     id: "ph.media.open",
@@ -294,7 +543,10 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Tools",
     icon: <TbPhoto />,
     when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.media.open"),
+    run: () => {
+      setAtomExternal(MediaManagerModalAtom, (prev: boolean) => !prev);
+      panelClose();
+    },
   },
   {
     id: "ph.media.selectAll",
@@ -326,14 +578,23 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "View",
     icon: <TbLayoutGrid />,
     when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.layers.popOut"),
+    run: () => {
+      setAtomExternal(LayersDialogOpenAtom, (prev: boolean) => !prev);
+      panelClose();
+    },
   },
   {
     id: "ph.layers.toggleDock",
     title: "Dock / hide layers panel",
     category: "View",
     icon: <TbLayoutGrid />,
-    run: stub("ph.layers.toggleDock"),
+    run: () => {
+      const next = !(getAtomExternal<boolean>(SidebarLayersPanelAtom) ?? false);
+      setAtomExternal(SidebarLayersPanelAtom, next);
+      try {
+        phStorage.set("sidebar-layers-panel", String(next));
+      } catch {}
+    },
   },
   {
     id: "ph.modifiers.open",
@@ -341,7 +602,10 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "Tools",
     icon: <TbStack2 />,
     when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
-    run: stub("ph.modifiers.open"),
+    run: () => {
+      setAtomExternal(ModifiersModalAtom, (prev: boolean) => !prev);
+      panelClose();
+    },
   },
   {
     id: "ph.importExport.open",
@@ -352,7 +616,9 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
       const features = (ctx.features ?? {}) as { importExport?: boolean };
       return features.importExport !== false && !isInsideTextEditingSurfaceCtx(ctx);
     },
-    run: stub("ph.importExport.open"),
+    run: () => {
+      panelToggle("import-export");
+    },
   },
   {
     id: "ph.ui.toggleSidebarSide",
@@ -363,7 +629,9 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
       const features = (ctx.features ?? {}) as { settingsPanelSwitcher?: boolean };
       return features.settingsPanelSwitcher !== false;
     },
-    run: stub("ph.ui.toggleSidebarSide"),
+    run: () => {
+      setAtomExternal(SideBarAtom, (prev: boolean) => !prev);
+    },
   },
   {
     id: "ph.ui.toggleDarkMode",
@@ -899,12 +1167,96 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
 ];
 
 /**
- * Every Wave A command body is a stub. Flag all of them so the keybinding
- * dispatcher (Wave B1) skips `preventDefault()` and lets the existing
- * surface-level handlers keep owning the real behavior during Phase 2.
- * Phase 2 will remove `stub: true` from each command as it migrates.
+ * Phase 2 marks commands as `stub: false` once their surface has migrated.
+ * The dispatcher reads `stub` to decide whether to `preventDefault`/
+ * `stopPropagation` on the matched chord: migrated commands take ownership;
+ * unmigrated ones leave the chord to whatever inline handler still exists.
+ *
+ * IDs listed here are the ones STILL stubbed. Everything else has a real
+ * `run` body that owns its chord. Wave C2a flipped the topbar / navmenu
+ * doc-level chord set (⌘S, ⌘⇧M/D/L/G/H/E/O, plus topbar buttons).
  */
+const STILL_STUB_IDS = new Set<string>([
+  "ph.editor.exitPreview",
+  "ph.editor.clearSelection",
+  "ph.editor.openCommandPalette",
+  "ph.editor.openBlocksPanel",
+  "ph.editor.openComponentsPanel",
+  "ph.editor.openComponentsTab",
+  "ph.editor.closeSidebar",
+  "ph.site.openSettings",
+  "ph.site.selectBackground",
+  "ph.media.selectAll",
+  "ph.media.deleteSelected",
+  "ph.ui.toggleDarkMode",
+  "ph.sidebar.search",
+  "ph.ai.openAssistant",
+  "ph.ai.includeTextInChat",
+  "ph.ai.includeNodeInChat",
+  // ph.node.* — Phase 2 C2c (right-click menu) owns these.
+  "ph.node.delete",
+  "ph.node.duplicate",
+  "ph.node.copy",
+  "ph.node.paste",
+  "ph.node.copyClasses",
+  "ph.node.pasteClasses",
+  "ph.node.selectParent",
+  "ph.node.selectPage",
+  "ph.node.selectAncestor",
+  "ph.node.deselect",
+  "ph.node.moveUp",
+  "ph.node.moveDown",
+  "ph.node.isolate",
+  "ph.node.renameDisplayName",
+  "ph.node.addBlockAbove",
+  "ph.node.addBlockBelow",
+  "ph.node.addEmptySection",
+  "ph.node.addContainer",
+  "ph.node.insertComponent",
+  "ph.node.convertToComponent",
+  "ph.node.cycleNextSibling",
+  "ph.node.cyclePrevSibling",
+  // ph.text.* — Phase 2 C2g/h (tiptap surface) owns these.
+  "ph.text.bold",
+  "ph.text.italic",
+  "ph.text.underline",
+  "ph.text.toggleStrike",
+  "ph.text.toggleSuperscript",
+  "ph.text.toggleSubscript",
+  "ph.text.setBlockType",
+  "ph.text.setFontFamily",
+  "ph.text.setFontSize",
+  "ph.text.applyTypographyPreset",
+  "ph.text.setAlign",
+  "ph.text.toggleBulletList",
+  "ph.text.toggleOrderedList",
+  "ph.text.indentListItem",
+  "ph.text.outdentListItem",
+  "ph.text.openLinkPanel",
+  "ph.text.setLink",
+  "ph.text.unsetLink",
+  "ph.text.openFontPanel",
+  "ph.text.openTextColorPanel",
+  "ph.text.openHighlightPanel",
+  "ph.text.openMorePanel",
+  "ph.text.setColor",
+  "ph.text.unsetColor",
+  "ph.text.setHighlight",
+  "ph.text.unsetHighlight",
+  "ph.text.insertImage",
+  "ph.text.insertHorizontalRule",
+  "ph.text.clearFormatting",
+  "ph.text.openVariablePicker",
+  "ph.text.insertVariable",
+  "ph.text.closeActivePanel",
+  // Misc — owned by other surfaces.
+  "ph.overlay.dismissTop",
+  "ph.annotation.delete",
+  "ph.sections.toggleQuickLook",
+  "ph.component.createReusable",
+]);
+
 export const BUILTIN_COMMANDS: CommandDef[] = _BUILTIN_COMMANDS_RAW.map(def => ({
   ...def,
-  stub: true,
+  stub: STILL_STUB_IDS.has(def.id),
 }));

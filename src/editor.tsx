@@ -10,8 +10,9 @@
 // For Next.js, import styles/globals.css in pages/_app.tsx.
 
 import { Editor, Frame, useEditor } from "@craftjs/core";
-import { EcosystemProvider, useAtomState } from "@zedux/react";
+import { EcosystemProvider, useAtomState, useEcosystem } from "@zedux/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { setEditorBackref, clearEditorBackref } from "./registry/editorBackref";
 import { Inspector } from "./chrome/toolbar/inspector/InspectorRegistry";
 import { resolveConfig } from "./config";
 import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
@@ -92,6 +93,7 @@ function safeSerialize(query: any): string | null {
 function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) {
   const { config, emitter, readOnly } = useSDK();
   const { actions, query, connectors } = useEditor();
+  const ecosystem = useEcosystem();
   const [loaded, setLoaded] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const setBatchOperation = useSetAtomState(BatchOperationAtom);
@@ -101,6 +103,15 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
   useEffect(() => {
     if (onQueryReady) onQueryReady(query);
   }, [query, onQueryReady]);
+
+  // Capture editor backrefs into the registry so command `run` bodies and
+  // the keybinding dispatcher can reach CraftJS + Zedux without React.
+  useEffect(() => {
+    setEditorBackref({ query, actions, ecosystem });
+    return () => {
+      clearEditorBackref();
+    };
+  }, [query, actions, ecosystem]);
 
   // Load initial data
   useEffect(() => {

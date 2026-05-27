@@ -7,6 +7,7 @@
  */
 import type { CommandDef, CommandRunContext, CommandContext } from "./types";
 import type { ContextRegistry } from "./context";
+import { getEditorActions, getEditorQuery } from "./editorBackref";
 
 export interface CommandsRegistry {
   register: <Args = void>(def: CommandDef<Args>) => void;
@@ -129,10 +130,13 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
         return;
       }
     }
+    // Fall back to the registered editor backrefs so command bodies don't
+    // need a hook context to reach CraftJS. Callers that pass explicit
+    // query/actions (tests, host APIs) still win.
     const runCtx: CommandRunContext = {
       ...(baseCtx as CommandContext),
-      query: options.query,
-      actions: options.actions,
+      query: options.query ?? getEditorQuery(),
+      actions: options.actions ?? getEditorActions(),
       trigger: options.trigger ?? "api",
     };
     try {

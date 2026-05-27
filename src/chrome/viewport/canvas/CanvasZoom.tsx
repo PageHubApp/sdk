@@ -4,7 +4,7 @@ import { useAtomState } from "@zedux/react";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { phStorage } from "../../../utils/phStorage";
 
-const zoomPresets = [
+export const zoomPresets = [
   { label: "25%", value: 0.25 },
   { label: "33%", value: 0.33 },
   { label: "50%", value: 0.5 },
@@ -23,6 +23,20 @@ const zoomPresets = [
   { label: "750%", value: 7.5 },
   { label: "1000%", value: 10 },
 ];
+
+/**
+ * Step a numeric zoom value to the next preset in the given direction.
+ * Used by the inline window listener AND by the registry `ph.canvas.zoom*`
+ * commands so both paths agree on which preset is "next".
+ */
+export function nextZoomPreset(current: number, direction: 1 | -1): number {
+  const currentIndex = zoomPresets.findIndex(p => p.value >= current);
+  const nextIndex =
+    direction === 1
+      ? Math.min(currentIndex + 1, zoomPresets.length - 1)
+      : Math.max(currentIndex - 1, 0);
+  return zoomPresets[nextIndex].value;
+}
 
 type FitMode =
   | { kind: "height"; target: number; chromeOffset?: number; max?: number }

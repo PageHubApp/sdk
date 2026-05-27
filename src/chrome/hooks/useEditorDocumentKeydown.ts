@@ -28,8 +28,10 @@ async function readHtmlFromSystemClipboard(): Promise<string | null> {
  * Single document-level owner for Craft tree Cmd/Ctrl+C and Cmd/Ctrl+V on the canvas.
  * Defers to the browser for text selection, form fields, sidebar, dialogs, and node chrome.
  *
- * Cmd+S (publish) and other header chords stay in useHeaderShortcuts; viewport still suppresses
- * Cmd+S on #viewport keydown so the browser save dialog does not fire when the canvas is focused.
+ * Cmd+S (publish) and the other doc-level chords are owned by the registry
+ * keybinding dispatcher (`ph.editor.save`, `ph.media.open`, etc.); the
+ * viewport-element listener in `useViewportKeyboard.ts` still suppresses
+ * Cmd+S so the browser save dialog does not fire when the canvas is focused.
  */
 export function useEditorDocumentKeydown() {
   const { readOnly } = useSDK();

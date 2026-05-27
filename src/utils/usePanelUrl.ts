@@ -106,9 +106,88 @@ function notify(): void {
   for (const l of listeners) l();
 }
 
-// ── Hook ────────────────────────────────────────────────────────────────────
+// ── Non-hook accessors (for command `run` bodies) ───────────────────────────
 
 export type PanelType = "menu" | "components" | "blocks" | "publish" | "import-export" | "theme";
+
+/** Open a panel from outside React (registry commands, dispatcher). */
+export function panelOpen(
+  panelType: PanelType,
+  params?: Partial<Omit<PanelUrlState, "panel">>
+): void {
+  if (typeof window === "undefined") return;
+  const url = buildUrl({
+    panel: panelType,
+    cat: null,
+    sub: null,
+    sty: null,
+    q: null,
+    ...params,
+  });
+  history.pushState({ source: "panelUrl" }, "", url);
+  notify();
+}
+
+/** Close any open panel from outside React. */
+export function panelClose(): void {
+  if (typeof window === "undefined") return;
+  const url = stripAllPanelParams();
+  history.pushState({ source: "panelUrl" }, "", url);
+  notify();
+}
+
+/** Toggle a specific panel from outside React (close if open, else open). */
+export function panelToggle(
+  panelType: PanelType,
+  params?: Partial<Omit<PanelUrlState, "panel">>
+): void {
+  if (typeof window === "undefined") return;
+  const current = readParams();
+  if (current.panel === panelType) {
+    const url = stripAllPanelParams();
+    history.pushState({ source: "panelUrl" }, "", url);
+  } else {
+    const url = buildUrl({
+      panel: panelType,
+      cat: null,
+      sub: null,
+      sty: null,
+      q: null,
+      ...params,
+    });
+    history.pushState({ source: "panelUrl" }, "", url);
+  }
+  notify();
+}
+
+/** Toggle the toolbox insert panel (components/blocks) from outside React. */
+export function panelToggleToolboxInsert(): void {
+  if (typeof window === "undefined") return;
+  const current = readParams();
+  if (current.panel === "components" || current.panel === "blocks") {
+    const url = stripAllPanelParams();
+    history.pushState({ source: "panelUrl" }, "", url);
+  } else {
+    const snap = lastToolboxSnapshot;
+    const panel = snap?.panel === "blocks" ? "blocks" : "components";
+    const url = buildUrl({
+      panel,
+      cat: snap?.cat ?? null,
+      sub: snap?.sub ?? null,
+      sty: snap?.sty ?? null,
+      q: snap?.q ?? null,
+    });
+    history.pushState({ source: "panelUrl" }, "", url);
+  }
+  notify();
+}
+
+/** Read the current panel state from outside React. */
+export function getPanelState(): PanelUrlState {
+  return currentSnapshot;
+}
+
+// ── Hook ────────────────────────────────────────────────────────────────────
 
 /** Full-column flyout over the unified settings stack — disable tool column pointer-events and skip click-away close. */
 export function isFlyoutBlockingToolColumn(panel: string | null): boolean {
@@ -133,62 +212,30 @@ export function usePanelUrl() {
   /** Open a panel — pushState so back button closes it */
   const open = useCallback(
     (panelType: PanelType, params?: Partial<Omit<PanelUrlState, "panel">>) => {
-      const url = buildUrl({
-        panel: panelType,
-        cat: null,
-        sub: null,
-        sty: null,
-        q: null,
-        ...params,
-      });
-      history.pushState({ source: "panelUrl" }, "", url);
-      notify();
+      panelOpen(panelType, params);
     },
     []
   );
 
   /** Close panel — pushState stripping all panel params */
   const close = useCallback(() => {
-    const url = stripAllPanelParams();
-    history.pushState({ source: "panelUrl" }, "", url);
-    notify();
+    panelClose();
   }, []);
 
   /** Toggle a specific panel — close if it's already open, open otherwise */
-  const toggle = useCallback((panelType: PanelType) => {
-    const current = readParams();
-    if (current.panel === panelType) {
-      const url = stripAllPanelParams();
-      history.pushState({ source: "panelUrl" }, "", url);
-    } else {
-      const url = buildUrl({ panel: panelType, cat: null, sub: null, sty: null, q: null });
-      history.pushState({ source: "panelUrl" }, "", url);
-    }
-    notify();
-  }, []);
+  const toggle = useCallback(
+    (panelType: PanelType, params?: Partial<Omit<PanelUrlState, "panel">>) => {
+      panelToggle(panelType, params);
+    },
+    []
+  );
 
   /**
    * Header (+): toggles Components/Blocks insert flyout. When opening from closed, restores
    * last tab + category/filters (survives auto-close on canvas selection).
    */
   const toggleToolboxInsert = useCallback(() => {
-    const current = readParams();
-    if (current.panel === "components" || current.panel === "blocks") {
-      const url = stripAllPanelParams();
-      history.pushState({ source: "panelUrl" }, "", url);
-    } else {
-      const snap = lastToolboxSnapshot;
-      const panel = snap?.panel === "blocks" ? "blocks" : "components";
-      const url = buildUrl({
-        panel,
-        cat: snap?.cat ?? null,
-        sub: snap?.sub ?? null,
-        sty: snap?.sty ?? null,
-        q: snap?.q ?? null,
-      });
-      history.pushState({ source: "panelUrl" }, "", url);
-    }
-    notify();
+    panelToggleToolboxInsert();
   }, []);
 
   /** Switch tab — pushState so back button navigates between tabs */

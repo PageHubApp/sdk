@@ -68,10 +68,11 @@ import { createContextRegistry } from "./context";
 import { BUILTIN_COMMANDS } from "./builtins/commands";
 import { BUILTIN_SLOTS } from "./builtins/slots";
 import { BUILTIN_KEYBINDINGS } from "./builtins/keybindings";
+import { BUILTIN_MENUS } from "./builtins/menus";
 
 /**
  * Creates the five registries and pre-registers all builtin commands,
- * slots, and keybindings. The host (SDK boot) calls this once.
+ * slots, menus, and keybindings. The host (SDK boot) calls this once.
  */
 export function createRegistriesBundle() {
   const context = createContextRegistry();
@@ -83,6 +84,7 @@ export function createRegistriesBundle() {
   for (const def of BUILTIN_COMMANDS) commands.register(def);
   for (const def of BUILTIN_SLOTS) slots.register(def);
   for (const def of BUILTIN_KEYBINDINGS) keybindings.register(def);
+  for (const entry of BUILTIN_MENUS) menus.contribute(entry.location, entry.items);
 
   return { context, commands, menus, slots, keybindings };
 }

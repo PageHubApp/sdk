@@ -1,48 +1,48 @@
+/**
+ * Editor top bar — Phase 2 C2a (command-registry migration).
+ *
+ * Thin renderer: every button comes from `useMenuItems("topbar")`. Click
+ * dispatches via `sdk.commands.execute(id, args, { trigger: "menu" })`. The
+ * keybinding dispatcher owns chord handling — there is no longer a
+ * `useHeaderShortcuts` hook.
+ *
+ * Special-cases kept inline:
+ *  - <BreakpointSwitcher /> — its dropdown is a custom popover (mode grid +
+ *    breakpoint chips + zoom slider), not a single button. Mounted in the
+ *    "view" group slot.
+ *  - The breadcrumb / page selector row below the header.
+ *  - Lazy modal mounts (Layers, Modifiers, MediaManager) — driven by atoms,
+ *    no longer prop-drilled.
+ *  - --editor-nav-height ResizeObserver.
+ *  - <CommandPaletteRoot /> singleton.
+ */
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
-import { lazy, Suspense, useLayoutEffect, useRef, useState } from "react";
+import React, { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import {
-  TbArrowBackUp,
-  TbArrowForwardUp,
-  TbBoxModel2,
-  TbCode,
-  TbEye,
-  TbFileText,
-  TbMenu2,
-  TbPlayerPlay,
-  TbPlus,
-  TbX,
-} from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import {
-  LastActiveAtom,
   LayersDialogOpenAtom,
+  MediaManagerModalAtom,
+  ModifiersModalAtom,
   SessionTokenAtom,
   SettingsAtom,
-  ShowGridLinesAtom,
+  ShowHiddenAtom,
   SideBarAtom,
   ViewModeAtom,
-  useSetAtomState,
 } from "../../../utils/atoms";
-import { applyCanvasVisibility } from "../../../utils/component/componentIsolation";
-import {
-  finalizeToolboxHistorySelectionSync,
-  markToolboxHistorySelectionSync,
-  usePanelUrl,
-} from "../../../utils/usePanelUrl";
 import { useSDK } from "../../../core/context";
-import { SaveIndicator } from "./SaveIndicator";
+import { useRegistries } from "../../../registry/provider";
+import { useMenuItems } from "../../../registry/hooks";
 import { MediaManagerModal } from "../../toolbar/inputs/media/MediaManagerModal";
 import { ChipPopover } from "../../toolbar/breakpoint-chip/ChipPopover";
-import { EnabledAtom, PreviewAtom } from "../state/atoms";
+import { PreviewAtom } from "../state/atoms";
 import { ComponentSelector } from "../pickers/ComponentSelector";
 import { EditorNavigation } from "../nav/EditorNavigation";
 import { NodeBreadcrumb } from "../nav/NodeBreadcrumb";
 import { BreakpointSwitcher } from "./BreakpointSwitcher";
 import { HeaderItem as Item } from "./HeaderItem";
 import { useDarkMode } from "./useDarkMode";
-import { useHeaderShortcuts } from "./useHeaderShortcuts";
 import { useTopBarComponents } from "./useTopBarComponents";
 
 // Lazy: rarely-open modals — fetch on first open so HMR edits to them
@@ -59,8 +59,8 @@ const CommandPaletteRoot = lazy(() =>
 );
 
 export const ViewportTopBar = () => {
-  const { enabled, canUndo, canRedo, actions, query, componentFingerprint } = useEditor(
-    (state, query) => {
+  const { enabled, canUndo, canRedo, query, componentFingerprint } = useEditor(
+    (state, q) => {
       const root = state.nodes[ROOT_NODE];
       const fp =
         root?.data?.nodes
@@ -72,8 +72,8 @@ export const ViewportTopBar = () => {
           .join(",") || "";
       return {
         enabled: state.options.enabled,
-        canUndo: query.history.canUndo(),
-        canRedo: query.history.canRedo(),
+        canUndo: q.history.canUndo(),
+        canRedo: q.history.canRedo(),
         componentFingerprint: fp,
       };
     }
@@ -81,66 +81,36 @@ export const ViewportTopBar = () => {
 
   useTopBarComponents({ query, enabled, componentFingerprint });
 
-  const setActive = useSetAtomState(LastActiveAtom);
-
-  const { isOpen, toggleToolboxInsert, open, close } = usePanelUrl();
-  const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useState(false);
-  const [isLayersDialogOpen, setIsLayersDialogOpen] = useAtomState(LayersDialogOpenAtom);
-  const [isModifiersModalOpen, setIsModifiersModalOpen] = useState(false);
-
-  const setEnabled = useSetAtomState(EnabledAtom);
-
-  const { features } = useSDK();
+  const { features, commands } = useSDK();
+  const { context: commandContext } = useRegistries();
   const isTenant = features.directSave;
 
-  const [preview, setPreview] = useAtomState(PreviewAtom);
+  // Atom-backed modal state — lifted in Phase 1 Wave A, consumed here in C2a.
+  const [isMediaManagerModalOpen, setIsMediaManagerModalOpen] = useAtomState(
+    MediaManagerModalAtom
+  );
+  const [isLayersDialogOpen, setIsLayersDialogOpen] = useAtomState(LayersDialogOpenAtom);
+  const [isModifiersModalOpen, setIsModifiersModalOpen] = useAtomState(ModifiersModalAtom);
+  const [showHidden, setShowHidden] = useAtomState(ShowHiddenAtom);
 
-  const toggleEditorEnabled = () =>
-    actions.setOptions(options => {
-      options.enabled = !enabled;
-
-      if (!options.enabled) {
-        const dom = document.getElementById("viewport");
-
-        const arr_elms = dom.getElementsByTagName("*") || [];
-        const elms_len = arr_elms.length;
-
-        for (var i = 0; i < elms_len; i++) {
-          [
-            "data-bounding-box",
-            "data-empty-state",
-            "data-renderer",
-            "contenteditable",
-            "data-no-scrollbars",
-            "draggable",
-            "data-enabled",
-            "data-selected",
-            "data-border",
-            "data-hover",
-            "draggable",
-            "main-node",
-            "node-id",
-          ].forEach(_ => arr_elms[i].removeAttribute(_));
-        }
-      }
-
-      const active = query.getEvent("selected").first();
-      setActive(active);
-
-      setEnabled(options.enabled);
-    });
-
-  const { isDarkMode, toggleTheme } = useDarkMode();
-
-  const animate = false;
-
+  const [preview] = useAtomState(PreviewAtom);
   const [settings] = useAtomState(SettingsAtom);
   useAtomValue(SessionTokenAtom);
-
   const [sideBarLeft, setSideBarLeft] = useAtomState(SideBarAtom);
-  const [viewMode, setViewMode] = useAtomState(ViewModeAtom);
-  const [, setShowGridLines] = useAtomState(ShowGridLinesAtom);
-  const [showHidden, setShowHidden] = useState(true);
+  const [viewMode] = useAtomState(ViewModeAtom);
+  const { isDarkMode, toggleTheme } = useDarkMode();
+
+  // Feed live history / mode / viewMode into the command context so registry
+  // `when` / `enablement` predicates evaluate correctly (e.g. undo enables
+  // only when `canUndo`, save chord respects features.saveButton, etc.).
+  useEffect(() => {
+    commandContext.setCommandContext({
+      canUndo,
+      canRedo,
+      mode: preview ? "preview" : "editor",
+      viewMode: viewMode === "canvas" ? "canvas" : "page",
+    });
+  }, [commandContext, canUndo, canRedo, preview, viewMode]);
 
   /** Single source for overlay / flyout `top` under the icon toolbar (not page selector). */
   const editorChromeNavRef = useRef<HTMLElement>(null);
@@ -162,14 +132,7 @@ export const ViewportTopBar = () => {
     };
   }, [enabled]);
 
-  // Keyboard shortcuts
-  useHeaderShortcuts({
-    setIsMediaManagerModalOpen,
-    setIsLayersDialogOpen,
-    setShowGridLines,
-    setIsModifiersModalOpen,
-    setShowHidden,
-  });
+  const topbarItems = useMenuItems("topbar");
 
   if (!enabled) return null;
 
@@ -181,156 +144,45 @@ export const ViewportTopBar = () => {
         className="border-base-300 bg-base-100 text-base-content pointer-events-auto relative z-50 flex flex-row-reverse items-center justify-between border-b px-1 py-1"
         data-tutorial="header"
       >
-        <Item
-          ariaLabel={
-            features?.blocksPanel?.enabled !== false
-              ? "Insert blocks and components"
-              : "Insert components"
-          }
-          onMouseDown={e => e.stopPropagation()}
-          onClick={e => {
-            toggleToolboxInsert();
-            e.stopPropagation();
-          }}
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content={
-            features?.blocksPanel?.enabled !== false
-              ? "Insert blocks & components"
-              : "Insert components"
-          }
-          data-tooltip-place="bottom"
-          data-tooltip-offset={10}
-        >
-          <TbPlus />
-        </Item>
-
-        <Item
-          ariaLabel="Redo"
-          disabled={!canRedo}
-          onClick={() => {
-            markToolboxHistorySelectionSync();
-            actions.history.redo();
-            const active = query.getEvent("selected");
-            if (!active) actions.selectNode(ROOT_NODE);
-            finalizeToolboxHistorySelectionSync();
-          }}
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content="Redo"
-          data-tooltip-place="bottom"
-          data-tooltip-offset={10}
-        >
-          <TbArrowForwardUp />
-        </Item>
-
-        <Item
-          ariaLabel="Undo"
-          disabled={!canUndo}
-          onClick={() => {
-            markToolboxHistorySelectionSync();
-            actions.history.undo();
-            const active = query.getEvent("selected");
-            if (!active) actions.selectNode(ROOT_NODE);
-            finalizeToolboxHistorySelectionSync();
-          }}
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content="Undo"
-          data-tooltip-place="bottom"
-          data-tooltip-offset={10}
-        >
-          <TbArrowBackUp />
-        </Item>
-
-        {animate && (
-          <Item
-            ariaLabel="Play Animations"
-            onClick={() => {}}
-            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content="Play Animations"
-            data-tooltip-place="bottom"
-            data-tooltip-offset={10}
-          >
-            <TbPlayerPlay />
-          </Item>
-        )}
-
-        <BreakpointSwitcher />
-
-        <Item
-          ariaLabel="Preview"
-          onClick={() => {
-            const viewport = document.getElementById("viewport");
-            const scrollTop = viewport?.scrollTop ?? 0;
-            const scrollLeft = viewport?.scrollLeft ?? 0;
-
-            toggleEditorEnabled();
-            setPreview(!preview);
-            if (enabled) actions.selectNode(null);
-            viewport?.focus({ preventScroll: true });
-
-            requestAnimationFrame(() => {
-              if (viewport) {
-                viewport.scrollTop = scrollTop;
-                viewport.scrollLeft = scrollLeft;
+        {topbarItems.map((item, idx) => {
+          const node = (
+            <Item
+              key={item.command + JSON.stringify(item.args ?? null)}
+              ariaLabel={item.title}
+              disabled={!item.enabled}
+              onClick={e => {
+                e.stopPropagation();
+                void commands.execute(item.command, item.args, { trigger: "menu" });
+              }}
+              onMouseDown={
+                item.command === "ph.editor.insert" || item.command === "ph.editor.openMore"
+                  ? e => e.stopPropagation()
+                  : undefined
               }
-            });
-          }}
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content="Preview"
-          data-tooltip-place="bottom"
-          data-tooltip-offset={10}
-        >
-          {enabled ? <TbEye /> : <TbCode />}
-        </Item>
-
-        <Item
-          ariaLabel={`Switch to ${viewMode === "page" ? "Components" : "Page"} Editor`}
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content={`Switch to ${viewMode === "page" ? "Components" : "Page"} Editor`}
-          data-tooltip-place="bottom"
-          data-tooltip-offset={10}
-          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-            e.currentTarget.blur();
-            const newMode = viewMode === "page" ? "canvas" : "page";
-            setViewMode(newMode);
-            actions.selectNode(null);
-            if (newMode === "page") {
-              import("@/utils/page/pageManagement").then(({ isolatePageInTree }) => {
-                isolatePageInTree(query, actions, null, () => {});
-              });
-            }
-            applyCanvasVisibility(query, actions, { mode: newMode });
-          }}
-        >
-          {viewMode === "page" ? <TbBoxModel2 /> : <TbFileText />}
-        </Item>
-
-        {features.saveButton !== false && (
-          <Item
-            ariaLabel="Publish"
-            onClick={() => open("publish")}
-            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-            data-tooltip-content="Publish"
-            data-tooltip-place="bottom"
-            data-tooltip-offset={10}
-          >
-            <SaveIndicator />
-          </Item>
-        )}
-
-        <Item
-          ariaLabel="More Options"
-          onMouseDown={e => e.stopPropagation()}
-          onClick={() => {
-            if (isOpen) close();
-            else open("menu");
-          }}
-          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-          data-tooltip-content="More Options"
-          data-tooltip-place="bottom"
-          data-tooltip-offset={10}
-        >
-          {isOpen ? <TbX /> : <TbMenu2 />}
-        </Item>
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content={item.title}
+              data-tooltip-place="bottom"
+              data-tooltip-offset={10}
+            >
+              {item.icon}
+            </Item>
+          );
+          // BreakpointSwitcher is a custom popover surface (mode toggle +
+          // breakpoint chip grid + zoom slider) — not a single button, so
+          // it can't be a registered menu item. Inject it at the natural
+          // visual slot between `history` and `view` groups (i.e. after
+          // ph.editor.undo and before ph.editor.togglePreview in array order;
+          // under flex-row-reverse that places it left of undo).
+          if (item.command === "ph.editor.undo") {
+            return (
+              <React.Fragment key={`__frag_${idx}`}>
+                {node}
+                <BreakpointSwitcher />
+              </React.Fragment>
+            );
+          }
+          return node;
+        })}
       </header>
 
       {/* Combined breadcrumb / page selector row - Below Header */}

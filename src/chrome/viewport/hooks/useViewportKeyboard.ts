@@ -108,7 +108,8 @@ export function useViewportKeyboard() {
       return;
     }
 
-    // Ctrl+S — just suppress browser save dialog; document-level useHeaderShortcuts handles Cmd+S
+    // Ctrl+S — just suppress browser save dialog; the doc-level registry
+    // dispatcher (ph.editor.save) fires the actual publish action.
     if ((event.ctrlKey || event.metaKey) && charCode === "s") {
       event.preventDefault();
       return;
