@@ -110,6 +110,24 @@ export interface CommandDef<Args = void> {
 
 // ─── Menus ──────────────────────────────────────────────────────────────────
 
+/**
+ * Menu locations recognized by `useMenuItems(location)` consumers.
+ *
+ * Most locations are populated by `BUILTIN_MENUS` entries. Two are reserved
+ * for host contributions only — built-ins intentionally don't populate them:
+ *
+ *  - `node/breadcrumb` — breadcrumb crumbs are data-driven (ancestor IDs
+ *    from the live selection array), not static contributions. Reserved
+ *    so hosts can append actions to a node's crumb without forking the
+ *    breadcrumb component.
+ *  - `empty-state/cta` — empty-state CTAs are intentionally bespoke layout
+ *    (large cards with copy + illustrations), not generic menu rendering.
+ *    Reserved so hosts can register additional CTAs without re-skinning
+ *    the empty-state component.
+ *
+ * Removing either id from the union is a breaking change for hosts that
+ * have already wired contributions against it.
+ */
 export type MenuLocation =
   | "topbar"
   | "navmenu/header"
@@ -119,7 +137,7 @@ export type MenuLocation =
   | "navmenu/preferences"
   | "canvas/context"
   | "canvas/chip"
-  | "node/breadcrumb"
+  | "node/breadcrumb" // host-only — see comment above
   | "tiptap/inline"
   | "tiptap/inline/font-panel"
   | "tiptap/inline/link-panel"
@@ -128,7 +146,7 @@ export type MenuLocation =
   | "tiptap/inline/highlight-panel"
   | "tiptap/inline/context-menu"
   | "sidebar/tabs"
-  | "empty-state/cta"
+  | "empty-state/cta" // host-only — see comment above
   | "palette"
   | (string & {});
 

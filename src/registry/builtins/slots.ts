@@ -1,5 +1,5 @@
 /**
- * Builtin slot catalog — 12 slots that today map 1:1 to the existing
+ * Builtin slot catalog — 13 slots that today map 1:1 to the existing
  * `editorChromeSlots.render*` fields. The adapter shim in
  * `../adapter.ts` translates host-supplied render functions into
  * contributions against these slots.
