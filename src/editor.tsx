@@ -13,6 +13,8 @@ import { Editor, Frame, useEditor } from "@craftjs/core";
 import { EcosystemProvider, useAtomState, useEcosystem } from "@zedux/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { setEditorBackref, clearEditorBackref } from "./registry/editorBackref";
+import { useRegistries } from "./registry";
+import { mountMouseOverTracker } from "./registry/mouseOverTracker";
 import { Inspector } from "./chrome/toolbar/inspector/InspectorRegistry";
 import { resolveConfig } from "./config";
 import { BUILTIN_COMPONENT_DEFS, DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
@@ -112,6 +114,22 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
       clearEditorBackref();
     };
   }, [query, actions, ecosystem]);
+
+  // Mount the mouse-region tracker once after the editor DOM is in place.
+  // Powers the `mouseOver` context key required by `ph.sidebar.search` (⌘F).
+  // Uses mouseenter / mouseleave on labeled regions — no mousemove cost.
+  const registries = useRegistries();
+  useEffect(() => {
+    // Defer to next tick so #viewport / #toolbar are in the DOM.
+    let unmount = () => {};
+    const raf = requestAnimationFrame(() => {
+      unmount = mountMouseOverTracker({ context: registries.context });
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      unmount();
+    };
+  }, [registries.context]);
 
   // Load initial data
   useEffect(() => {

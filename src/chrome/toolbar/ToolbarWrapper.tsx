@@ -19,6 +19,8 @@ import { TabBarDarkModeToggle } from "./TabBarDarkModeToggle";
 import { toolbarInputNoAutocompleteProps } from "./toolbarInputAttrs";
 import { SettingsSearchAtom, SettingsSearchOpenAtom } from "./inspector/registry/atoms";
 import { InspectorTab, scrollToSection, setActiveTabFromClick, toSectionId } from "./InspectorTab";
+import { useRegistries } from "../../registry";
+import { setSidebarBackref } from "../../registry/sidebarBackref";
 
 export const ToolbarWrapper = ({
   children = null,
@@ -65,7 +67,6 @@ export const ToolbarWrapper = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchPopupRef = useRef<HTMLDivElement>(null);
   const mousePosRef = useRef({ x: 0, y: 0 });
-  const mouseInsideSidebarRef = useRef(false);
   const [searchPos, setSearchPos] = useState<{ x: number; y: number } | null>(null);
 
   const setActiveTab = useSetAtomState(TabAtom);
@@ -107,44 +108,48 @@ export const ToolbarWrapper = ({
     if (iso && iso !== "null" && iso !== EDITOR_ALL_PAGES_STORAGE) setIsolate(iso);
   }, [setIsolate]);
 
-  // Track mouse position + hover state for the sidebar so Cmd/Ctrl+F can pop the
-  // search wherever the user is currently looking.
+  // Track mouse position over the sidebar so the popup can spawn at the
+  // user's cursor. The chord trigger itself (Cmd/Ctrl+F) is owned by
+  // `ph.sidebar.search` via the registry dispatcher — see [docs/sdk/
+  // command-registry-architecture-v2.md]. `mouseOver` context is published
+  // by the SDK-level `mountMouseOverTracker`; we also publish a
+  // `focusInSidebar` boolean from a focusin/focusout listener for the
+  // keyboard-only path.
   useEffect(() => {
     const toolbar = document.getElementById("toolbar");
     if (!toolbar) return;
     const handleMove = (e: MouseEvent) => {
       mousePosRef.current = { x: e.clientX, y: e.clientY };
     };
-    const handleEnter = () => {
-      mouseInsideSidebarRef.current = true;
-    };
-    const handleLeave = () => {
-      mouseInsideSidebarRef.current = false;
-    };
     toolbar.addEventListener("mousemove", handleMove);
-    toolbar.addEventListener("mouseenter", handleEnter);
-    toolbar.addEventListener("mouseleave", handleLeave);
     return () => {
       toolbar.removeEventListener("mousemove", handleMove);
-      toolbar.removeEventListener("mouseenter", handleEnter);
-      toolbar.removeEventListener("mouseleave", handleLeave);
     };
   }, []);
 
-  // Cmd/Ctrl+F → open settings search at the mouse. Fires when the mouse is
-  // hovering the sidebar OR focus is inside it; otherwise native browser find runs.
+  const { context } = useRegistries();
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key?.toLowerCase() !== "f") return;
-      if (!(e.metaKey || e.ctrlKey)) return;
-      const target = e.target as HTMLElement | null;
-      const focusInSidebar = !!target?.closest?.("#toolbar");
-      if (!focusInSidebar && !mouseInsideSidebarRef.current) return;
-      e.preventDefault();
-      toggleSearch();
+    const toolbar = document.getElementById("toolbar");
+    if (!toolbar) return;
+    const handleFocusIn = () => context.set("focusInSidebar", true);
+    const handleFocusOut = (e: FocusEvent) => {
+      // Only clear when focus leaves the toolbar entirely.
+      const next = e.relatedTarget as Node | null;
+      if (next && toolbar.contains(next)) return;
+      context.set("focusInSidebar", false);
     };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    toolbar.addEventListener("focusin", handleFocusIn);
+    toolbar.addEventListener("focusout", handleFocusOut);
+    return () => {
+      toolbar.removeEventListener("focusin", handleFocusIn);
+      toolbar.removeEventListener("focusout", handleFocusOut);
+      context.set("focusInSidebar", false);
+    };
+  }, [context]);
+
+  useEffect(() => {
+    setSidebarBackref({ toggleSearch });
+    return () => setSidebarBackref(null);
   }, [toggleSearch]);
 
   // Close the floating search popup when the user clicks outside of it.

@@ -705,6 +705,7 @@ import { getActiveTiptapEditor } from "../tiptapBackref";
 import { getMediaBackref } from "../mediaBackref";
 import { getAnnotationBackref } from "../annotationBackref";
 import { getSectionsBackref } from "../sectionsBackref";
+import { getSidebarBackref } from "../sidebarBackref";
 import { buildInlineCopyAssistantOpenState } from "../../utils/buildInlineCopyAssistantOpenState";
 import { paletteToCSSVar } from "../../utils/design/palette";
 
@@ -1173,7 +1174,9 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     category: "View",
     when: ctx =>
       ctx.mouseOver === "sidebar" || Boolean((ctx as Record<string, unknown>)["focusInSidebar"]),
-    run: stub("ph.sidebar.search"),
+    run: () => {
+      getSidebarBackref()?.toggleSearch();
+    },
     paletteHide: true,
   },
 
@@ -1852,10 +1855,6 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  * surface in the user-facing palette while their backing surfaces are wired.
  *
  * TODO when the relevant surface migrates:
- *  - `ph.sidebar.search` — there is no global sidebar search UI yet; the
- *    keybinding (⌘F when mouseOver = "sidebar") is registered as a stub so
- *    we don't steal browser find-in-page; once a sidebar search input
- *    lands, wire the real focus action and unstub.
  *  - `ph.overlay.dismissTop` — generic overlay-stack helper. Modal /
  *    drawer ESC is currently handled inline by the SDK show-hide store
  *    ([packages/sdk/src/utils/showHide.ts]) and per-popover listeners. If
@@ -1864,7 +1863,6 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  *    the stack manager.
  */
 const STILL_STUB_IDS = new Set<string>([
-  "ph.sidebar.search",
   "ph.overlay.dismissTop",
 ]);
 
