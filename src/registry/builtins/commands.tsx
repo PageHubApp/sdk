@@ -68,6 +68,7 @@ import {
 import {
   AiChatAttachedNodesAtom,
   AssistantOpenAtom,
+  BreadcrumbRenameRequestedAtom,
   ComponentsAtom,
   DarkModeAtom,
   LastActiveAtom,
@@ -573,6 +574,45 @@ function nodeAiContextRun(ctx: any): void {
     return [...list, { id, displayName }];
   });
   setAtomExternal(AssistantOpenAtom, { nodeId: id, revealPanel: true } as any);
+}
+
+/**
+ * Select an ancestor node by id — parameterized so the breadcrumb's
+ * data-driven ancestry rows all share a single command.
+ */
+function nodeSelectAncestorRun(
+  _ctx: any,
+  args: { id?: string } | undefined
+): void {
+  const actions = getEditorActions();
+  if (!actions) return;
+  const id = args?.id;
+  if (!id || typeof id !== "string") return;
+  try {
+    actions.selectNode(id);
+  } catch (e) {
+    console.error("[ph.node.selectAncestor] failed:", e);
+  }
+}
+
+/**
+ * Request inline rename on the current selection (or an explicit `{ id }`).
+ * NodeBreadcrumb watches `BreadcrumbRenameRequestedAtom` and enters edit
+ * mode when its `currentItem.id` matches; it clears the atom on exit so a
+ * second invocation re-fires.
+ */
+function nodeRenameDisplayNameRun(
+  ctx: any,
+  args: { id?: string } | undefined
+): void {
+  const { query } = ctx as { query: any };
+  const explicit = args?.id;
+  const target =
+    typeof explicit === "string" && explicit.length > 0
+      ? explicit
+      : selectedId(query);
+  if (!target) return;
+  setAtomExternal(BreadcrumbRenameRequestedAtom, target);
 }
 
 /** Cycle sibling selection — Tab / Shift+Tab. */
@@ -1170,7 +1210,8 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "Select ancestor",
     category: "Edit",
     when: ctx => Number((ctx as Record<string, unknown>)["breadcrumbLength"] ?? 0) > 1,
-    run: stub("ph.node.selectAncestor"),
+    run: (ctx, args) =>
+      nodeSelectAncestorRun(ctx, args as unknown as { id?: string } | undefined),
     paletteHide: true,
   },
   {
@@ -1212,7 +1253,8 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
     title: "Rename",
     category: "Edit",
     when: ctx => Boolean(ctx.selection.id),
-    run: stub("ph.node.renameDisplayName"),
+    run: (ctx, args) =>
+      nodeRenameDisplayNameRun(ctx, args as unknown as { id?: string } | undefined),
   },
   {
     id: "ph.node.addBlockAbove",
@@ -1609,12 +1651,10 @@ const STILL_STUB_IDS = new Set<string>([
   "ph.sidebar.search",
   "ph.ai.includeTextInChat",
   "ph.ai.includeNodeInChat",
-  // Phase 2 C2c: most ph.node.* commands are now real. These remain stubs
-  // because their surface (canvas chip / breadcrumb rename / canvas
-  // isolate) is owned by a later wave.
-  "ph.node.selectAncestor",
+  // Phase 2 C2c: most ph.node.* commands are now real. C2d filled the
+  // breadcrumb-owned commands (selectAncestor / renameDisplayName).
+  // Isolate stays a stub — canvas-card chrome is migrated separately.
   "ph.node.isolate",
-  "ph.node.renameDisplayName",
   // ph.text.* — Phase 2 C2g/h (tiptap surface) owns these.
   "ph.text.bold",
   "ph.text.italic",

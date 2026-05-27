@@ -1,10 +1,11 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useEditor } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TbChevronRight, TbDots, TbFileText, TbHome } from "react-icons/tb";
-import { IsolateAtom } from "../../../utils/atoms";
+import { BreadcrumbRenameRequestedAtom, IsolateAtom } from "../../../utils/atoms";
 import { hasPageIsolation } from "../../../utils/page/pageManagement";
+import { useRegistries } from "../../../registry";
 import { ToolbarPortalDropdown } from "../../popovers/ToolbarPortalDropdown";
 import { PageSelector } from "../pickers/PageSelector";
 import { TabAtom } from "../state/atoms";
@@ -27,6 +28,14 @@ export const NodeBreadcrumb = () => {
   const [isolate, setIsolate] = useAtomState(IsolateAtom);
   const selectedId = query.getEvent("selected").first();
   const [isEditing, setIsEditing] = useState(false);
+  const { commands } = useRegistries();
+  // Subscribe to the rename-request signal — when an external command (or
+  // palette / keybinding) writes a target id matching the current crumb, we
+  // enter edit mode. Clearing happens locally on exit so the signal can
+  // re-fire later.
+  const [renameTarget, setRenameTarget] = useAtomState(
+    BreadcrumbRenameRequestedAtom
+  );
 
   // Helper function to remove parent prefixes from breadcrumb names
   const removeParentPrefixes = (breadcrumb: BreadcrumbItem[]): BreadcrumbItem[] => {
@@ -138,8 +147,22 @@ export const NodeBreadcrumb = () => {
 
   const openNodeContextMenu = useOpenNodeContextMenu();
 
-  const handleNodeClick = (nodeId: string) => {
-    actions.selectNode(nodeId);
+  // ── Registry-routed click handlers ─────────────────────────────────────
+  // Parent pill calls `ph.node.selectParent` (selection-resolved). Ancestry
+  // rows pass an explicit id via args. Page pill dispatches `selectPage`.
+  // Right-click on any crumb continues to open the canvas context menu
+  // surface (already migrated in C2c).
+
+  const handleAncestorClick = (nodeId: string) => {
+    void commands.execute(
+      "ph.node.selectAncestor",
+      { id: nodeId },
+      { trigger: "menu" }
+    );
+  };
+
+  const handleParentClick = () => {
+    void commands.execute("ph.node.selectParent", undefined, { trigger: "menu" });
   };
 
   const handleNodeContextMenu = (e: React.MouseEvent, nodeId: string) => {
@@ -149,18 +172,29 @@ export const NodeBreadcrumb = () => {
   };
 
   const handlePageClick = () => {
-    if (!hasPageIsolation(isolate)) {
-      // No specific page selected, can't select page node
-      return;
-    }
-
-    try {
-      // Select the page node itself
-      actions.selectNode(isolate);
-    } catch (e) {
-      console.warn("Could not select page node:", e);
-    }
+    if (!hasPageIsolation(isolate)) return;
+    void commands.execute("ph.node.selectPage", undefined, { trigger: "menu" });
   };
+
+  const handleRenameClick = () => {
+    // Dispatch through the registry — single source of truth, palette /
+    // keybinding can fire the same path. Pass the current crumb id so the
+    // command works even if selection drifts before the effect runs.
+    void commands.execute(
+      "ph.node.renameDisplayName",
+      currentItem ? { id: currentItem.id } : undefined,
+      { trigger: "menu" }
+    );
+  };
+
+  // Atom-driven rename entry: when the rename signal matches the current
+  // crumb, flip to edit mode. Local state owns the input itself.
+  useEffect(() => {
+    if (!renameTarget || !currentItem) return;
+    if (renameTarget !== currentItem.id) return;
+    setIsEditing(true);
+    setRenameTarget(null);
+  }, [renameTarget, currentItem, setRenameTarget]);
 
   // Short breadcrumb: just the immediate parent (if any)
   const parentItem = breadcrumb.length >= 2 ? breadcrumb[breadcrumb.length - 2] : null;
@@ -231,7 +265,7 @@ export const NodeBreadcrumb = () => {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => handleNodeClick(item.id)}
+                  onClick={() => handleAncestorClick(item.id)}
                   onContextMenu={e => handleNodeContextMenu(e, item.id)}
                   className="ph-select-item items-center gap-2 text-xs"
                   style={{ paddingLeft: `${(index + (showPageContext ? 1 : 0)) * 8 + 8}px` }}
@@ -265,7 +299,7 @@ export const NodeBreadcrumb = () => {
           <div className="flex min-w-0 items-center gap-1">
             <button
               type="button"
-              onClick={() => handleNodeClick(parentItem.id)}
+              onClick={handleParentClick}
               onContextMenu={e => handleNodeContextMenu(e, parentItem.id)}
               className={`text-neutral-content hover:text-base-content max-w-[80px] min-w-0 ${crumbTextSegment} ${crumbOutlineIdle} hover:bg-base-200/80 active:scale-95`}
               data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
@@ -310,7 +344,7 @@ export const NodeBreadcrumb = () => {
             ) : (
               <button
                 type="button"
-                onClick={() => setIsEditing(true)}
+                onClick={handleRenameClick}
                 onContextMenu={e => handleNodeContextMenu(e, currentItem.id)}
                 className={`text-base-content hover:outline-base-content/40 inline-flex w-fit max-w-full min-w-0 shrink ${crumbTextSegment} outline-base-content/25 bg-transparent outline-1 -outline-offset-1 outline-dashed active:scale-95`}
                 data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}

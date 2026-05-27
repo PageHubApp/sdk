@@ -222,3 +222,15 @@ export const ViewModeAtom = atom<EditorCanvasViewMode>("viewMode", "page");
 export const LastActiveAtom = atom<string>("lastActive", "");
 export const ActiveAtom = atom<string>("active", "");
 export const SelectedSectionAtom = atom<string | null>("selectedSection", null);
+
+/**
+ * Signal atom used by `ph.node.renameDisplayName` to drive the inline rename
+ * UI in `NodeBreadcrumb` from outside React. The command writes the target
+ * node id; the breadcrumb consumes the atom — when the current crumb's id
+ * matches it enters edit mode and clears the atom back to `null` so the
+ * signal can fire again. Cleared on exit (Enter / Escape / blur).
+ */
+export const BreadcrumbRenameRequestedAtom = atom(
+  "breadcrumbRenameRequested",
+  null as string | null
+);
