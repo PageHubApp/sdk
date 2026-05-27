@@ -13,13 +13,19 @@ interface UseMediaKeyboardShortcutsArgs {
   previewMedia: string | null;
   editingMedia: MediaItem | null;
   viewMode: "cards" | "list";
-  selectAllVisible: () => void;
   clearSelection: () => void;
   selectSingle: (id: string | null) => void;
   setPreviewMedia: (id: string | null) => void;
-  handleDeleteSelected: () => void;
 }
 
+/**
+ * Modal-local keyboard handlers. ⌘A (select all) and Backspace/Delete are
+ * owned by the registry (`ph.media.selectAll` / `ph.media.deleteSelected`)
+ * — see [.claude/rules/templates.md] command-registry section. This hook
+ * keeps Escape (clear selection), Enter (pick/preview), and arrow-key
+ * navigation inline because they are media-grid-specific and a11y plumbing
+ * (per command-registry audit doc 4 § Arrow-key navigation).
+ */
 export function useMediaKeyboardShortcuts({
   isOpen,
   selectionMode,
@@ -31,11 +37,9 @@ export function useMediaKeyboardShortcuts({
   previewMedia,
   editingMedia,
   viewMode,
-  selectAllVisible,
   clearSelection,
   selectSingle,
   setPreviewMedia,
-  handleDeleteSelected,
 }: UseMediaKeyboardShortcutsArgs) {
   useEffect(() => {
     if (!isOpen || previewMedia || editingMedia) return;
@@ -43,14 +47,6 @@ export function useMediaKeyboardShortcuts({
       if (isInsideTextEditingSurface(e.target)) return;
 
       const hasSelection = selectedMediaIds.length > 0;
-
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "a") {
-        if (!selectionMode) {
-          e.preventDefault();
-          selectAllVisible();
-        }
-        return;
-      }
 
       if (e.key === "Escape") {
         if (hasSelection) {
@@ -68,12 +64,6 @@ export function useMediaKeyboardShortcuts({
         } else {
           setPreviewMedia(selectedMedia);
         }
-        return;
-      }
-
-      if ((e.key === "Delete" || e.key === "Backspace") && hasSelection && !selectionMode) {
-        e.preventDefault();
-        handleDeleteSelected();
         return;
       }
 
@@ -119,13 +109,11 @@ export function useMediaKeyboardShortcuts({
     onClose,
     onSelect,
     previewMedia,
-    selectAllVisible,
     selectSingle,
     selectedMedia,
     selectedMediaIds.length,
     selectionMode,
     viewMode,
     setPreviewMedia,
-    handleDeleteSelected,
   ]);
 }

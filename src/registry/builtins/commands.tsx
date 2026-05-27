@@ -702,6 +702,7 @@ function openComponentsTabRun(): void {
 // ─── Tiptap run helpers (Phase 2 C2g/h — inline toolbar + context menu) ─────
 
 import { getActiveTiptapEditor } from "../tiptapBackref";
+import { getMediaBackref } from "../mediaBackref";
 import { buildInlineCopyAssistantOpenState } from "../../utils/buildInlineCopyAssistantOpenState";
 import { paletteToCSSVar } from "../../utils/design/palette";
 
@@ -1064,7 +1065,9 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
         (ctx as Record<string, unknown>)["media.modalOpen"] &&
           !(ctx as Record<string, unknown>)["media.selectionMode"]
       ),
-    run: stub("ph.media.selectAll"),
+    run: () => {
+      getMediaBackref()?.selectAllVisible();
+    },
     paletteHide: true,
   },
   {
@@ -1076,7 +1079,9 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
       const rec = ctx as Record<string, unknown>;
       return Boolean(rec["media.modalOpen"]) && Number(rec["media.selectedCount"] ?? 0) > 0;
     },
-    run: stub("ph.media.deleteSelected"),
+    run: () => {
+      getMediaBackref()?.handleDeleteSelected();
+    },
     paletteHide: true,
   },
   {
@@ -1841,10 +1846,6 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  * surface in the user-facing palette while their backing surfaces are wired.
  *
  * TODO when the relevant surface migrates:
- *  - `ph.media.selectAll` / `ph.media.deleteSelected` — Media Manager modal
- *    needs to publish `media.modalOpen` / `media.selectionMode` /
- *    `media.selectedCount` into the context registry and own the real run
- *    bodies (select-all / delete-selected actions live in MediaGrid today).
  *  - `ph.sidebar.search` — there is no global sidebar search UI yet; the
  *    keybinding (⌘F when mouseOver = "sidebar") is registered as a stub so
  *    we don't steal browser find-in-page; once a sidebar search input
@@ -1865,8 +1866,6 @@ const _BUILTIN_COMMANDS_RAW: CommandDef[] = [
  *    `sections.hoveredBlock`, lift the run body here.
  */
 const STILL_STUB_IDS = new Set<string>([
-  "ph.media.selectAll",
-  "ph.media.deleteSelected",
   "ph.sidebar.search",
   "ph.overlay.dismissTop",
   "ph.annotation.delete",

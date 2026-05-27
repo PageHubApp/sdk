@@ -9,6 +9,7 @@ import { useMediaDeleteState } from "./useMediaDeleteState";
 import { useMediaEditingState } from "./useMediaEditingState";
 import { useMediaFilters } from "./useMediaFilters";
 import { useMediaKeyboardShortcuts } from "./useMediaKeyboardShortcuts";
+import { useRegisterMediaContext } from "./useRegisterMediaContext";
 import { useMediaListState } from "./useMediaListState";
 import { useMediaPreviewState } from "./useMediaPreviewState";
 import { useMediaSelectionState } from "./useMediaSelectionState";
@@ -136,10 +137,19 @@ export function useMediaManager({
     previewMedia: preview.previewMedia,
     editingMedia: editing.editingMedia,
     viewMode: view.viewMode,
-    selectAllVisible: selection.selectAllVisible,
     clearSelection: selection.clearSelection,
     selectSingle: selection.selectSingle,
     setPreviewMedia: preview.setPreviewMedia,
+  });
+
+  // Publish modal state + live select-all / delete callbacks so the
+  // registry-dispatched ⌘A / Backspace chords (`ph.media.selectAll`,
+  // `ph.media.deleteSelected`) can reach this surface.
+  useRegisterMediaContext({
+    isOpen: isOpen && !preview.previewMedia && !editing.editingMedia,
+    selectionMode,
+    selectedCount: selection.selectedMediaIds.length,
+    selectAllVisible: selection.selectAllVisible,
     handleDeleteSelected: del.handleDeleteSelected,
   });
 
