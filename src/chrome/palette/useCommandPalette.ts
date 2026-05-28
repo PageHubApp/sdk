@@ -3,7 +3,7 @@
  *
  * Phase 2 C2i: the ⌘K chord is now owned by the
  * `ph.editor.openCommandPalette` builtin command + keybinding (see
- * `packages/sdk/src/registry/builtins/commands.tsx` and
+ * `packages/sdk/src/registry/builtins/commands/` and
  * `packages/sdk/src/registry/builtins/keybindings.ts`). Surfaces that need
  * the open/close state still use this hook; the dispatcher handles the
  * keybinding centrally.

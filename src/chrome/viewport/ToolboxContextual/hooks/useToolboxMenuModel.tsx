@@ -5,7 +5,7 @@ import { ToolboxMenu, toolboxMenuInitialState } from "../../../rendering/toolbox
 /**
  * Minimal menu state hook — Phase 2 C2c slimmed this down to just menu
  * open/close. Selection gates / handlers / clipboard checks all live in
- * the command registry now (`packages/sdk/src/registry/builtins/commands.tsx`
+ * the command registry now (`packages/sdk/src/registry/builtins/commands/`
  * + `packages/sdk/src/registry/selectionContext.ts`).
  */
 export function useToolboxMenuModel() {
