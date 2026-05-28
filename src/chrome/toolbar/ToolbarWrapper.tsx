@@ -110,8 +110,8 @@ export const ToolbarWrapper = ({
 
   // Track mouse position over the sidebar so the popup can spawn at the
   // user's cursor. The chord trigger itself (Cmd/Ctrl+F) is owned by
-  // `ph.sidebar.search` via the registry dispatcher — see [docs/sdk/
-  // command-registry-architecture-v2.md]. `mouseOver` context is published
+  // `ph.sidebar.search` via the registry dispatcher — see [docs/internal/
+  // sdk/command-registry/architecture.md]. `mouseOver` context is published
   // by the SDK-level `mountMouseOverTracker`; we also publish a
   // `focusInSidebar` boolean from a focusin/focusout listener for the
   // keyboard-only path.

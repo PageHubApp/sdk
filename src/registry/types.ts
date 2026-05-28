@@ -2,7 +2,7 @@
  * Command / Menu / Slot / Keybinding registry types.
  *
  * Phase 1 Wave A — bedrock data shapes. See
- * `docs/sdk/command-registry-architecture-v2.md` for the spec.
+ * `docs/internal/sdk/command-registry/architecture.md` for the spec.
  */
 import type { ReactNode } from "react";
 import type { PageHubFeatures } from "../types";

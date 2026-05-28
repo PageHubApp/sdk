@@ -3,7 +3,7 @@
  *
  * Replaces six near-duplicate implementations that disagreed on edge cases
  * (SELECT, contentEditable="" vs "true", Monaco vs CodeMirror, etc.).
- * See `docs/sdk/command-registry-audit/4-keyboard-shortcuts.md` for the
+ * See `docs/internal/sdk/command-registry/audit/4-keyboard-shortcuts.md` for the
  * pre-merge inventory.
  *
  * Pure: no DOM mutation, no closures. Safe to call on every keydown.
