@@ -38,10 +38,6 @@ interface IconInputProps {
   showPosition?: boolean;
   iconOnlyLabel?: string;
   positionLabel?: string;
-  // Legacy props kept so existing callers don't break — no longer affect layout.
-  labelWidth?: string;
-  inputWidth?: string;
-  collapsible?: boolean;
 }
 
 // Hint width for chip-anchored initial position only — panel is auto-sized.

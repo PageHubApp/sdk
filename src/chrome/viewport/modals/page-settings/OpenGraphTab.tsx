@@ -6,10 +6,7 @@ import {
   SettingsTabIntro,
   settingsTabRootClass,
 } from "../settings/SettingsTabChrome";
-import {
-  settingsModalSelectClass,
-  settingsMultilineInputClass,
-} from "../settings/settingsControlClasses";
+import { SETTINGS_TEXTAREA_CLASS } from "../settings/settingsControlClasses";
 
 interface OpenGraphTabProps {
   inputClass: string;
@@ -36,8 +33,8 @@ export function OpenGraphTab({
   ogType,
   setOgType,
 }: OpenGraphTabProps) {
-  const multiline = settingsMultilineInputClass(inputClass);
-  const selectField = settingsModalSelectClass(selectClass);
+  const multiline = SETTINGS_TEXTAREA_CLASS;
+  const selectField = selectClass;
 
   return (
     <div className={settingsTabRootClass}>

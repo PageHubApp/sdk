@@ -21,7 +21,7 @@ import { sdkLog } from "../utils/logger";
 type OnSaveFn = (
   pageData: PageData,
   meta?: SaveMeta
-) => Promise<SaveResponse | void> | SaveResponse | void;
+) => Promise<SaveResponse> | SaveResponse;
 
 type OnConflictReloadFn = () => Promise<{ content: any; updatedAt: string } | null>;
 
@@ -136,7 +136,7 @@ export class SaveCoordinator {
       throw new SaveEmptyError();
     }
 
-    let response: SaveResponse | void;
+    let response: SaveResponse;
     try {
       response = await wiring.onSave(pageData, meta);
     } catch (err) {
@@ -146,11 +146,6 @@ export class SaveCoordinator {
         undefined,
         err
       );
-    }
-
-    if (!response) {
-      this.setStatus("failed");
-      throw new SaveFailedError("Host onSave returned no result", 0);
     }
 
     if (response.ok === true) {

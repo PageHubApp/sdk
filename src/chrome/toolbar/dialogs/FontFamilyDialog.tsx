@@ -19,7 +19,7 @@ export { FontFamilyDialogAtom } from "./dialogAtoms";
 
 export const FontFamilyDialog = () => {
   const [dialog, setDialog] = useAtomState(FontFamilyDialogAtom);
-  const [allFonts, setAllFonts] = useState<string[][]>(fonts); // Start with legacy fonts
+  const [allFonts, setAllFonts] = useState<string[][]>(fonts); // Start with bundled fallback
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredIndex, setHoveredIndex] = useState(-1);
@@ -49,7 +49,7 @@ export const FontFamilyDialog = () => {
         setAllFonts(allFontsList);
       } catch (error) {
         sdkLog.error("Error loading fonts:", error);
-        // Fallback to legacy fonts
+        // Fallback to bundled font list on fetch failure
         setAllFonts(fonts);
       } finally {
         setLoading(false);

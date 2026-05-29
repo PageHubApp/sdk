@@ -11,13 +11,3 @@ export const SETTINGS_SELECT_CLASS = "select w-full";
 
 export const SETTINGS_TEXTAREA_CLASS =
   "textarea w-full min-h-[4.5rem] resize-y placeholder:text-neutral-content";
-
-/** Back-compat: returns the canonical textarea class regardless of `base`. */
-export function settingsMultilineInputClass(_base: string) {
-  return SETTINGS_TEXTAREA_CLASS;
-}
-
-/** Back-compat: select already gets the right sizing from `.select`. */
-export function settingsModalSelectClass(selectBase: string) {
-  return selectBase;
-}

@@ -5,7 +5,6 @@ import {
   SettingsTabIntro,
   settingsTabRootClass,
 } from "../settings/SettingsTabChrome";
-import { settingsModalSelectClass } from "../settings/settingsControlClasses";
 
 interface TwitterCardTabProps {
   inputClass: string;
@@ -28,7 +27,7 @@ export function TwitterCardTab({
   twitterCreator,
   setTwitterCreator,
 }: TwitterCardTabProps) {
-  const selectField = settingsModalSelectClass(selectClass);
+  const selectField = selectClass;
 
   return (
     <div className={settingsTabRootClass}>

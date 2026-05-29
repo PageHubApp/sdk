@@ -75,7 +75,7 @@ export function useIconDialog({
   const { query } = useEditor();
   const pageMedia = extractRootDataFromQuery(query).pageMedia;
 
-  // Synthesize the legacy `dialog` shape so IconsTab/MediaTab keep working.
+  // Bundle the `dialog` shape consumed by IconsTab / MediaTab.
   const dialog = useMemo(
     () => ({ value, prefix, enabled: isOpen, changed: onChange, onUseMedia }),
     [value, prefix, isOpen, onChange, onUseMedia]

@@ -288,10 +288,9 @@ export function useDataSource(
   const hasResolvedItems = Array.isArray(resolvedItems) && resolvedItems.length > 0;
 
   const serverFetchedEmpty = Array.isArray(items) && items.length === 0;
-  // Past-last-page detection used to read `mergedDs.page` (set by the legacy
-  // storefront URL merge). Now `url:page` lives in the registry; if it's
-  // anything > 1, the connector is paged forward and the empty result means
-  // "nothing on this page" (vs. "no products at all").
+  // Past-last-page detection: `url:page` lives in the state registry; if
+  // it's anything > 1, the connector is paged forward and the empty
+  // result means "nothing on this page" (vs. "no products at all").
   const pageStateValue = getStateValue("url:page");
   const pastLastPage = pageStateValue ? parseInt(pageStateValue, 10) > 1 : false;
 

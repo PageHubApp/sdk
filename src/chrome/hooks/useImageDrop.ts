@@ -6,8 +6,6 @@ export type ImageDropRejectReason = "bad_mime" | "too_large" | "over_max_count";
 function matchesAccept(fileType: string, accept: string): boolean {
   const a = accept.trim();
   if (!a || a === "*" || a === "*/*") return true;
-  // Legacy single prefix (e.g. "image/")
-  if (!a.includes(",") && a.endsWith("/")) return fileType.startsWith(a);
   return a.split(",").some(raw => {
     const p = raw.trim();
     if (!p) return false;
@@ -24,7 +22,7 @@ interface UseImageDropOptions {
   /**
    * Accept filter. Supports the same shapes as HTML `<input accept>`:
    * - `"*"` or `"*\/*"` — accept everything
-   * - single MIME prefix — `"image/"` (legacy default)
+   * - single MIME prefix — `"image/"` (default)
    * - comma-separated MIME list with wildcards — `"image/png,video/*,application/pdf"`
    */
   accept?: string;

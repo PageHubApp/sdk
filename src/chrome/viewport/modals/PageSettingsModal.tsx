@@ -139,7 +139,9 @@ function getDraftSignature(draft: PageSettingsDraft): string {
 
 // ── Extra tabs adapter ────────────────────────────────────────────────────────
 
-function adaptLegacyExtraTabs(
+/** Adapt the public `PageSettingsExtraTab` host-config shape to the internal
+ *  `SettingsTabDefinition` consumed by SettingsTabHost. */
+function adaptExtraTabs(
   extraTabs: PageSettingsExtraTab[]
 ): Array<SettingsTabDefinition<PageSettingsDraft, PageSettingsTabContext>> {
   return extraTabs.map(tab => ({
@@ -420,7 +422,7 @@ export function PageSettingsModal({
     [actions, autoSlug, onClose, pageSlug, showDeleteConfirm]
   );
 
-  const injectedTabs = useMemo(() => adaptLegacyExtraTabs(extraTabs), [extraTabs]);
+  const injectedTabs = useMemo(() => adaptExtraTabs(extraTabs), [extraTabs]);
   const allTabs = useMemo(
     () => mergeSettingsTabs(builtInTabs, injectedTabs),
     [builtInTabs, injectedTabs]

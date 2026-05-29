@@ -1,12 +1,8 @@
 /**
  * Action sub-forms shared by `ActionEditorPanel` (chip-list flow) and the
- * Action type defaults shared by `ActionsAddPicker`.
- *
- * The legacy default-export (single-action UI + inline `HandlersInput`) was
- * removed when the chip-list flow took over every callsite — see
- * `ActionsInput.tsx` and docs/sdk/editor-popover-pattern.md §8 "Mixed-source
- * body". This file hosts `ACTION_DEFAULTS` and the `ActionSubForm` dispatcher;
- * each per-type sub-form lives under `subforms/`.
+ * Action type defaults shared by `ActionsAddPicker`. This file hosts
+ * `ACTION_DEFAULTS` and the `ActionSubForm` dispatcher; each per-type
+ * sub-form lives under `subforms/`.
  */
 import type { ActionType, NodeAction, ToggleThemeAction } from "@/utils/action";
 import { AddToCartForm } from "./subforms/CartSubForm";

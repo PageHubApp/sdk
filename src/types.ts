@@ -152,13 +152,12 @@ export interface PageHubCallbacks {
    *
    * Return a `SaveResponse` so the SDK coordinator can resolve the
    * `instance.save()` promise with a typed result (success / conflict /
-   * failure). Returning `void` is supported for back-compat but is treated as
-   * a generic failure when the caller is awaiting a result.
+   * failure).
    */
   onSave: (
     pageData: PageData,
     meta?: SaveMeta
-  ) => Promise<SaveResponse | void> | SaveResponse | void;
+  ) => Promise<SaveResponse> | SaveResponse;
 
   /**
    * Optional: when the save coordinator surfaces a conflict and the caller

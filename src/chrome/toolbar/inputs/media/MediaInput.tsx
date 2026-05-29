@@ -74,9 +74,6 @@ interface MediaInputProps {
   /** Optional row label rendered to the left of the chip (chip variant
    *  only). Falls back to no gutter when absent. */
   label?: string;
-  /** Existing prop kept for back-compat with the full variant's
-   *  ToolbarSection title; chip variant prefers `label`. */
-  props?: any;
 }
 
 export const MediaInput = (propa: MediaInputProps) => {

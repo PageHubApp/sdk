@@ -239,12 +239,12 @@ export const AccordionAddMenu = React.memo(
           // No clean default — session-only. Row dies on reload if user never set a value.
           // Popover-mode rows always render via PropertyRow (see PropertyRenderer),
           // so sessionAdded is not needed to make them visible — and writing it
-          // would auto-open their FloatingPanel via the legacy sessionAdded
-          // effect. For multi-add (shouldAutoOpenPopover === false) that means
-          // every picked popover-mode prop pops its panel at once, which is the
+          // would auto-open their FloatingPanel via the sessionAdded effect.
+          // For multi-add (shouldAutoOpenPopover === false) that means every
+          // picked popover-mode prop pops its panel at once, which is the
           // exact "cascade chaos" we're trying to avoid. Skip sessionAdded for
           // popover-mode rows during multi-add; single-add still writes it so
-          // the legacy single-pick auto-open flow keeps working for non-popover
+          // the single-pick auto-open flow keeps working for non-popover
           // session-only props.
           const isPopoverModeProp =
             def.input.type === "custom" && isPopoverModeComponent(def.input.component);

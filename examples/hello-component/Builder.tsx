@@ -23,11 +23,14 @@ export default function Builder() {
           return res.ok ? await res.json() : null;
         },
         onSave: async (pageData) => {
-          await fetch("/api/pages/home", {
+          const res = await fetch("/api/pages/home", {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify(pageData),
           });
+          if (!res.ok) return { ok: false, reason: `HTTP ${res.status}`, status: res.status };
+          const data = await res.json().catch(() => ({}));
+          return { ok: true, pageId: data.pageId ?? "home", updatedAt: data.updatedAt ?? new Date().toISOString() };
         },
       }}
     />

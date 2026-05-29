@@ -27,8 +27,7 @@ export function isInsideTextEditingSurface(target: EventTarget | null): boolean 
   if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
 
   // contentEditable — `isContentEditable` is the canonical DOM property; some
-  // hosts mount `contenteditable=""` (empty string) which `isContentEditable`
-  // already handles, but legacy code reads the attribute directly. Cover both.
+  // host code paths read the attribute directly, so cover both shapes.
   if (el.isContentEditable) return true;
   const ceAttr = typeof el.getAttribute === "function" ? el.getAttribute("contenteditable") : null;
   if (ceAttr === "true" || ceAttr === "") return true;

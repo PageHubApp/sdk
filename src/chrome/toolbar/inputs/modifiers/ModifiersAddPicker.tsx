@@ -11,7 +11,7 @@
  * Bypass paths (skip the menu, go straight to the library):
  *   - Chip click in ModifierChipList dispatches PopoverOpenRequestAtom for
  *     this def → opens the library directly.
- *   - SessionAddedAtom (legacy `+ Add` flow) → opens the library directly.
+ *   - SessionAddedAtom (`+ Add` flow) → opens the library directly.
  *
  * Both panels (library + save) are independent FloatingPanels with their
  * own state and lazy chunks.
@@ -90,7 +90,7 @@ export default function ModifiersAddPicker({ def }: PropertyInputProps) {
   };
 
   // Auto-open the library directly when this property was just session-added
-  // (legacy `+ Add` flow). Bypasses the menu so the user lands on the picker.
+  // (`+ Add` flow). Bypasses the menu so the user lands on the picker.
   const autoOpenedRef = useRef(false);
   useEffect(() => {
     if (autoOpenedRef.current) return;

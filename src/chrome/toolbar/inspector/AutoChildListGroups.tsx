@@ -101,11 +101,8 @@ function renderItemPopover(name: string, itemId: string): React.ReactNode {
             propKey="icon"
             propType="component"
             label="Icon"
-            labelWidth="w-full"
-            inputWidth="w-fit"
             iconOnlyLabel="Only Show Icon"
             positionLabel="Position"
-            collapsible={false}
           />
         </NodeProvider>
       );
@@ -122,9 +119,6 @@ function renderItemPopover(name: string, itemId: string): React.ReactNode {
             propKey="icon"
             propType="component"
             label="Icon"
-            labelWidth="w-full"
-            inputWidth="w-fit"
-            collapsible={false}
           />
         </NodeProvider>
       );

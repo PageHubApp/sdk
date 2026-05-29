@@ -2,10 +2,12 @@
  * usePopoverAutoOpen — combined auto-open driver for property-row popover
  * triggers. Replaces ~17 copies of:
  *
- *   - SessionAddedAtom  (legacy "added but no value yet" signal — opens once
- *                        on first mount when the row was just created)
- *   - PopoverOpenRequestAtom (versioned bump bus from AccordionAddMenu /
- *                              PropertySection empty-state title click)
+ *   - SessionAddedAtom         "added but no value yet" signal — opens once
+ *                              on first mount when the row was just created
+ *                              (also keeps the chip visible in PropertySection
+ *                              until the user picks a value).
+ *   - PopoverOpenRequestAtom   versioned bump bus from AccordionAddMenu /
+ *                              PropertySection empty-state title click.
  *
  * Both fire `onOpen` inside `requestAnimationFrame` so the trigger has laid
  * out before measuring.
@@ -37,7 +39,7 @@ export function usePopoverAutoOpen({
   const onOpenRef = useRef(onOpen);
   onOpenRef.current = onOpen;
 
-  // Legacy auto-open from sessionAdded — fire once.
+  // Auto-open from sessionAdded — fire once per mount.
   const autoOpenedRef = useRef(false);
   useEffect(() => {
     if (!enabled || autoOpenedRef.current || !defId) return;

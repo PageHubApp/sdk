@@ -130,10 +130,10 @@ export function InlineEditToolbar({
 
   useEffect(() => {
     const openLink = () => {
-      // Bridge legacy CustomEvent dispatchers (Tiptap ⌘K keymap, single-click
-      // / dblclick on existing <a>, VariableNodeView edit) to the new atom +
-      // command path. The event channel stays as a non-React signal so the
-      // Tiptap keymap doesn't need to reach into useRegistries.
+      // Bridge non-React dispatchers (Tiptap ⌘K keymap, single-click /
+      // dblclick on existing <a>, VariableNodeView edit) into the atom +
+      // command path. The CustomEvent channel stays so the Tiptap keymap
+      // doesn't need to reach into useRegistries.
       void commands.execute("ph.text.openLinkPanel", undefined, { trigger: "keybinding" });
       setLinkPanelKey(k => k + 1);
     };

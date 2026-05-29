@@ -9,7 +9,7 @@
  *   - lazy-mounts the per-effect editor panel on chip click
  *   - listens to `PopoverOpenRequestAtom` so AccordionAddMenu's `+` picker
  *     can dispatch open-requests (the standard pattern)
- *   - listens to `SessionAddedAtom` for the legacy add → auto-open path
+ *   - listens to `SessionAddedAtom` for the inline add → auto-open path
  *
  * Follows the popover-mode contract documented in
  * `docs/sdk/editor-popover-pattern.md` §3.

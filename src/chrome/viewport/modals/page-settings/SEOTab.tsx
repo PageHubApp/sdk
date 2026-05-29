@@ -5,7 +5,7 @@ import {
   SettingsTabIntro,
   settingsTabRootClass,
 } from "../settings/SettingsTabChrome";
-import { settingsMultilineInputClass } from "../settings/settingsControlClasses";
+import { SETTINGS_TEXTAREA_CLASS } from "../settings/settingsControlClasses";
 
 interface SEOTabProps {
   inputClass: string;
@@ -30,7 +30,7 @@ export function SEOTab({
   pageAuthor,
   setPageAuthor,
 }: SEOTabProps) {
-  const multiline = settingsMultilineInputClass(inputClass);
+  const multiline = SETTINGS_TEXTAREA_CLASS;
 
   return (
     <div className={settingsTabRootClass}>

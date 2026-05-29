@@ -7,7 +7,7 @@ interface JsonLdScriptsProps {
    * Page-level seo bag from the page Container node. May carry a raw `jsonLd`
    * object plus a structured `schema: SchemaEntry[]` array from the builder.
    */
-  seo: { jsonLd?: unknown; schema?: SchemaEntry[] | null } | null | undefined;
+  seo: { jsonLd?: Record<string, unknown>; schema?: SchemaEntry[] | null } | null | undefined;
 }
 
 /**

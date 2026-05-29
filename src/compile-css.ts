@@ -626,7 +626,7 @@ export async function buildStaticPage(
     title: string;
     description: string;
     ogImage?: string;
-    jsonLd?: unknown;
+    jsonLd?: Record<string, unknown>;
     schema?: unknown[];
   } | null;
 }> {

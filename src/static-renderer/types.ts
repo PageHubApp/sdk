@@ -92,8 +92,8 @@ export interface RenderToHTMLResult {
     title: string;
     description: string;
     ogImage?: string;
-    /** Legacy raw JSON-LD (object or stringified JSON). */
-    jsonLd?: unknown;
+    /** Raw JSON-LD object (single entry). */
+    jsonLd?: Record<string, unknown>;
     /** Structured JSON-LD entries from the schema builder. Compiled at emit time. */
     schema?: unknown[];
   } | null;

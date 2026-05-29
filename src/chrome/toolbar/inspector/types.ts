@@ -33,7 +33,7 @@ export type HideKey =
   | "importExport";
 
 export interface ToolbarConfig {
-  /** Icon component, element, or legacy string name */
+  /** Icon component, element, or emoji string */
   icon?: string | ReactElement | ComponentType;
   /** Component-specific settings panel content */
   settings: ComponentType;

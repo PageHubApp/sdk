@@ -13,7 +13,6 @@ import {
   SettingsTabIntro,
   settingsTabRootClass,
 } from "../settings/SettingsTabChrome";
-import { settingsModalSelectClass } from "../settings/settingsControlClasses";
 import type { ConditionGroup } from "../../../../utils/conditions/types";
 
 interface AccessTabProps {
@@ -56,7 +55,7 @@ export function AccessTab({
   const rawFormElements = useElementPicker("all");
   const formElements = Array.isArray(rawFormElements) ? rawFormElements : [];
   const connectorOptions = useConnectorOptions();
-  const selectField = settingsModalSelectClass(selectClass);
+  const selectField = selectClass;
 
   const groups: ConditionGroup[] = pageConditions?.length ? pageConditions : [];
 

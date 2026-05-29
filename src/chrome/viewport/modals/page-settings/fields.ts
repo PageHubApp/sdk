@@ -26,7 +26,7 @@ export interface PageSettingsFieldDef {
  * Page-level settings stored as props on the page Container node.
  * Order matches the UI tabs (Basic → SEO → Advanced).
  *
- * Draft keys stay flat (back-compat for API/UI); `nodePath` gives the
+ * Draft keys stay flat (the UI / API contract); `nodePath` gives the
  * canonical dot-path when storing under a nested namespace like `seo.*`.
  */
 export const PAGE_SETTINGS_FIELDS: readonly PageSettingsFieldDef[] = [
@@ -97,9 +97,8 @@ export function pageSettingsDefaults(): Record<string, any> {
 export function readSettingsProps(source: Record<string, any>): Record<string, any> {
   const out: Record<string, any> = {};
   for (const f of PAGE_SETTINGS_FIELDS) {
-    const nodeVal = f.nodePath ? readPath(source, f.nodePath) : undefined;
-    const legacyVal = source[f.key];
-    const value = nodeVal !== undefined ? nodeVal : legacyVal;
+    const path = f.nodePath || f.key;
+    const value = readPath(source, path);
     out[f.key] = value !== undefined ? value : f.defaultValue;
   }
   return out;
