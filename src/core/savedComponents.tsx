@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { useAtomValue } from "@zedux/react";
 import { ComponentsAtom } from "../utils/atoms";
 import { buildClonedTree } from "./cloneTree";
+import { sdkLog } from "../utils/logger";
 
 // Track which loaders are currently processing to prevent duplicates
 const processingLoaders = new Set();
@@ -121,7 +122,7 @@ export const SavedComponentLoader = ({ componentData }) => {
         processingLoaders.delete(id);
       }, 100);
     } catch (error) {
-      console.error("Error loading saved component:", error);
+      sdkLog.error("Error loading saved component:", error);
       // Clean up on error
       processingLoaders.delete(id);
       if (query.node(id).get()) {

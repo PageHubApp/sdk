@@ -7,6 +7,7 @@
  */
 
 import { getPageHubApiBaseUrl } from "../../../core/apiConfig";
+import { sdkLog } from "../../../utils/logger";
 
 const getApiBase = () => getPageHubApiBaseUrl();
 
@@ -19,7 +20,7 @@ export const GetHtmlToComponent = async (html: string) => {
     });
     return res.json();
   } catch (e) {
-    console.error(e);
+    sdkLog.error(e);
   }
 };
 
@@ -41,7 +42,7 @@ export const DeleteMedia = async (
     }
     return res.json();
   } catch (e) {
-    console.error(e);
+    sdkLog.error(e);
     throw e;
   }
 };

@@ -11,6 +11,7 @@
 import type { ActionConversion } from "../../utils/action";
 import { fireConversion } from "../../utils/actions/conversion";
 import { SaveSubmissions } from "../../utils/submissions";
+import { sdkLog } from "../../utils/logger";
 
 export interface FormProductionProps {
   submissionType?: string;
@@ -42,7 +43,7 @@ export async function submitFormProduction(
         body: JSON.stringify(formData),
       });
     } catch (err) {
-      console.error("Custom form submission failed:", err);
+      sdkLog.error("Custom form submission failed:", err);
     }
   } else {
     SaveSubmissions(formData, settings, {

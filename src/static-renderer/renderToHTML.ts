@@ -27,6 +27,7 @@ import {
 } from "./types";
 import { renderNode } from "./walker";
 import type { PageIndex } from "../utils/page/pageManagement";
+import { sdkLog } from "../utils/logger";
 
 /** Build a PageIndex from the serialized node tree by scanning ROOT's direct
  *  children for nodes whose `props.type === "page"`. Mirrors
@@ -101,7 +102,7 @@ function renderInvalidTreeResult(
     extraCSS = "",
     extraHead = "",
   } = opts;
-  console.warn("[renderToHTML]", RENDER_INVALID_TREE_MESSAGE);
+  sdkLog.warn("[renderToHTML]", RENDER_INVALID_TREE_MESSAGE);
   const scrollObserverScript = "";
   const renderError = RENDER_INVALID_TREE_MESSAGE;
   if (wrapDocument) {

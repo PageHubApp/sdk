@@ -12,7 +12,7 @@ import {
   tailwindTokenBase,
 } from "@/utils/tailwind/fontFamilyClass";
 import { Chip } from "@/chrome/primitives/Chip";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 import { FontFamilyDialogAtom } from "../../dialogs/FontFamilyDialog";
 import { useDialog } from "../../dialogs/toolHooks";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
@@ -47,7 +47,7 @@ export const FontFamilyAltInput = ({
   const [dialog, setDialog] = useAtomState(FontFamilyDialogAtom);
   const { actions, query } = useEditor();
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
 
   const {
     actions: { setProp },

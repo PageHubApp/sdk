@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { twMerge } from "tailwind-merge";
 import { useAtomValue } from "@zedux/react";
-import { ViewSelectionAtom } from "../../toolbar/Label";
+import { EditModifiersAtom } from "../../toolbar/Label";
 import { ViewAtom } from "../../viewport/state/atoms";
 import {
   editorCanvasViewToClassPrefixKey,
@@ -26,6 +26,7 @@ import { setEdgeResizeActive } from "../state/edgeResizeState";
 import { getNodeGeometry } from "../state/nodeGeometry";
 import { isRotateActive, setRotateActive } from "../state/rotateActiveState";
 import { OVERLAY_Z_CANVAS_CONTROLS } from "../../popovers/overlayZIndex";
+import { sdkLog } from "../../../utils/logger";
 
 const SKIP_DISPLAY_NAMES = new Set(["Container", "Background"]);
 const SKIP_TYPES = new Set(["page", "header", "footer"]);
@@ -34,7 +35,7 @@ const SNAP_DEG = 15; // hold Shift to snap
 
 const isDev = process.env.NODE_ENV === "development";
 const log = isDev
-  ? (label: string, data?: Record<string, any>) => console.log(`[rotate] ${label}`, data ?? "")
+  ? (label: string, data?: Record<string, any>) => sdkLog.log(`[rotate] ${label}`, data ?? "")
   : () => {};
 
 // Custom rotate cursor — extracted CgCornerDoubleDownRight path, scaled down
@@ -110,7 +111,7 @@ export function RotateHandleController() {
 
   const { actions } = useEditor();
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classPrefixView = editorCanvasViewToClassPrefixKey(view);
 
   // Inject --ph-rotate-cursor on first mount.

@@ -25,6 +25,7 @@ import { ViewAtom } from "../state/atoms";
 import { getCanvasBreakpointPx } from "../../../utils/tailwind/className";
 import { viewerResolver } from "../../../components/resolvers/viewer";
 import type { ViewMode } from "../../../core/store";
+import { sdkLog } from "../../../utils/logger";
 
 interface Props {
   /** Which bp width the secondary should render at. */
@@ -62,7 +63,7 @@ export function SideBySideFrame({
         const cleaned = sanitizeCraftNodeReferences(raw);
         setSerialized(JSON.stringify(cleaned));
       } catch (err) {
-        console.warn("[SideBySideFrame] serialize failed", err);
+        sdkLog.warn("[SideBySideFrame] serialize failed", err);
       }
     };
     reserialize();

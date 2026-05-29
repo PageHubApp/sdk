@@ -72,8 +72,9 @@ import type {
 } from "./types";
 import { DEFAULT_CRAFT_RESOLVER } from "./core/componentRegistry";
 import { setPageHubApiBaseUrl } from "./core/apiConfig";
-import { applyEditorChromeSlotsShim, createRegistriesBundle } from "./registry";
+import { createRegistriesBundle } from "./registry";
 import { mountKeybindingDispatcher } from "./registry/dispatcher";
+import { sdkLog } from "./utils/logger";
 
 // Side-effect import: RegistrySettings self-registers with InspectorRegistry
 // at module load time. Must come AFTER built-in component graph is loadable (see componentRegistry.ts).
@@ -100,11 +101,6 @@ function init(config: PageHubConfig): PageHubInstance {
   // Build the registries bundle once and hand it to the Provider so the
   // returned instance and the React tree see the same maps.
   const registries = createRegistriesBundle();
-  try {
-    applyEditorChromeSlotsShim(resolved.editorChromeSlots, registries.slots);
-  } catch (err) {
-    console.error("[PageHub] editorChromeSlots shim failed:", err);
-  }
   registries.context.setCommandContext({ features: resolved.features });
 
   // Wave B1 — mount the doc-level keybinding dispatcher. Coexists harmlessly
@@ -147,7 +143,7 @@ function init(config: PageHubConfig): PageHubInstance {
       });
       return res.json();
     } catch (e) {
-      console.error("Form submission error:", e);
+      sdkLog.error("Form submission error:", e);
     }
   });
 
@@ -236,7 +232,7 @@ function init(config: PageHubConfig): PageHubInstance {
         const { html, classes, scrollObserverScript } = renderToHTML(json, { compressed: false });
         return { content: compressed, html, classes, scrollObserverScript };
       } catch (err) {
-        console.error("[PageHub] getPageData error:", err);
+        sdkLog.error("[PageHub] getPageData error:", err);
         return { content: "" };
       }
     },
@@ -279,7 +275,7 @@ function init(config: PageHubConfig): PageHubInstance {
       try {
         return editorQueryRef.serialize();
       } catch (err) {
-        console.error("[PageHub] exportJSON error:", err);
+        sdkLog.error("[PageHub] exportJSON error:", err);
         return "{}";
       }
     },
@@ -295,7 +291,7 @@ function init(config: PageHubConfig): PageHubInstance {
         const json = editorQueryRef.serialize();
         return renderToHTML(json, { compressed: false }).html;
       } catch (err) {
-        console.error("[PageHub] getHTML error:", err);
+        sdkLog.error("[PageHub] getHTML error:", err);
         return "";
       }
     },
@@ -320,7 +316,7 @@ function init(config: PageHubConfig): PageHubInstance {
         const json = editorQueryRef.serialize();
         return renderToHTML(json, { ...options, compressed: false });
       } catch (err) {
-        console.error("[PageHub] exportHTML error:", err);
+        sdkLog.error("[PageHub] exportHTML error:", err);
         return {
           html: "",
           classes: [],
@@ -351,6 +347,21 @@ export { PageHubViewer, renderViewer } from "./viewer";
 
 // Component registration API
 export { defineComponent } from "./define/defineComponent";
+export {
+  createLiveDoc,
+  createStaticDoc,
+} from "./doc";
+export type {
+  ComponentTypeName,
+  Doc,
+  InsertTarget,
+  NodeData,
+  NodeInput,
+  NodeRef,
+  CraftQuery,
+  CraftActions,
+  FlatNodeMap,
+} from "./doc";
 export type {
   ResolvedComponentDef,
   PropSchema,
@@ -401,7 +412,7 @@ export {
 } from "./utils/defaults";
 
 // Blocks provider — host-injected source for the Blocks toolbox panel catalog.
-// Default is the legacy HTTP fetcher at `/api/v1/components*`.
+// Default: HTTP fetcher at `/api/v1/components*` (PageHub cloud).
 export {
   registerBlocksProvider,
   resetBlocksProvider,
@@ -421,7 +432,6 @@ export type {
   PageData,
   PageHubAIConfig,
   PageHubCallbacks,
-  PageHubEditorChromeSlots,
   PageHubMediaEditAiActionsContext,
   PageHubMediaMetadataSuggestion,
   PageHubComponentDef,
@@ -452,6 +462,16 @@ export {
   PageHubError,
 } from "./utils/errors";
 export type { PageHubErrorInit } from "./utils/errors";
+
+// SDK logger — hosts can silence or redirect every internal console call.
+// See utils/logger.ts.
+export {
+  createScopedLogger,
+  getSdkLogger,
+  sdkLog,
+  setSdkLogger,
+} from "./utils/logger";
+export type { SdkLogger, SdkLogLevel } from "./utils/logger";
 
 // Alias
 export type { PageSeo as PageHubSeo } from "./types";
@@ -592,19 +612,17 @@ export type {
   PropertyInputProps,
 } from "./chrome/toolbar/inspector/registry/propertyDefs";
 
-// ─── Command / Menu / Slot / Keybinding registries (Phase 1 Wave A) ──
+// ─── Command / Menu / Slot / Keybinding registries ─────────────────
 //
-// Bedrock data layer. Surface code still uses its current code paths;
-// these registries are populated with builtin catalogs and the
-// editorChromeSlots adapter shim so host integrations keep working.
-// Phase 2 migrates surfaces one PR at a time.
+// Public registry API for host integrations. Hosts build a bundle via
+// `createRegistriesBundle()`, call `bundle.slots.contribute(...)` etc., then
+// pass the bundle to `<PageHubProvider registries={bundle}>`.
 export {
   SlotRenderer,
   useCommandContext,
   useMenuItems,
   useSlot,
   useSlotList,
-  applyEditorChromeSlotsShim,
   createRegistriesBundle,
   BUILTIN_COMMANDS,
   BUILTIN_SLOTS,

@@ -1,3 +1,4 @@
+import { sdkLog } from "../logger";
 /**
  * Live-component registry — bridges CraftJS-rendered DOM to canvas-mode pinning.
  *
@@ -22,7 +23,7 @@ function notify(id: string): void {
     try {
       fn();
     } catch (e) {
-      console.error("[componentRegistry] subscriber threw", e);
+      sdkLog.error("[componentRegistry] subscriber threw", e);
     }
   }
 }

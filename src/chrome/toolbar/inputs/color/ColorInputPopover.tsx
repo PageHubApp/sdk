@@ -29,7 +29,7 @@ import { resolveTheme } from "../../../../utils/design/resolveTheme";
 import { ROOT_NODE } from "@craftjs/utils";
 import { changeProp, getPropFinalValue } from "../../../viewport/state/viewportExports";
 import { ViewAtom } from "../../../viewport/state/atoms";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 
 const ColorPanel = lazy(() => import("./ColorPanel"));
 
@@ -70,7 +70,7 @@ export function ColorInputPopover(__props: ColorInputPopoverProps) {
     usePopoverPosition(PANEL_WIDTH);
 
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const { actions, query } = useEditor();
 
   const {

@@ -6,7 +6,7 @@ import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { Chip } from "@/chrome/primitives/Chip";
 import { changeProp } from "../../../viewport/state/viewportExports";
 import { ViewAtom } from "../../../viewport/state/atoms";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 import ClientIconLoader from "../../dialogs/ClientIconLoader";
 import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 
@@ -41,7 +41,7 @@ export const IconDialogInput = ({
 }) => {
   const { actions, query } = useEditor();
   const canvasView = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classWriteView = editorCanvasViewToClassPrefixKey(canvasView);
 
   const {

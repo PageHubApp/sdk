@@ -38,7 +38,7 @@ export interface StaticRenderContext {
   pureTailwind?: boolean;
   /** Set to true by the tree walker when a node has client-only conditions */
   hasClientConditions?: boolean;
-  /** Set to true by `toHTML` when it stamps a `data-ph-load-show` marker on a node — opts the static export into shipping `PH_LOAD_ACTION_SCRIPT`. */
+  /** Set to true by `toHTML` when it stamps a `data-ph-load-show` marker on a node — opts the static export into shipping the load-action bootstrap script (`getLoadActionScript()`). */
   hasLoadActions?: boolean;
   /** Server-fetched connector data — enables connector-backed condition eval at SSR. */
   connectorData?: Record<string, { bindings: Record<string, any[]> }> | null;
@@ -376,11 +376,10 @@ export function getInlineStyle(props: Record<string, any>): string {
  * click. Including them here would re-fire on every click.
  */
 /** Read the page index for `ref:<pageId>` resolution. Prefers the value seeded
- *  on `ctx` by the static renderer; falls back to legacy spots on ROOT.props. */
+ *  on `ctx` by the static renderer; falls back to `ROOT.props._pageIndex`. */
 export function getPageIndex(ctx?: StaticRenderContext): PageIndex | null {
   return (ctx?.pageIndex ??
     ctx?.nodes?.ROOT?.props?._pageIndex ??
-    ctx?.nodes?.ROOT?.props?.pageIndex ??
     null) as PageIndex | null;
 }
 
@@ -462,8 +461,8 @@ export function stateModifiersAttrs(
 ): Record<string, string | undefined> {
   const m = props.stateModifiers;
   if (!Array.isArray(m) || m.length === 0) return {};
-  // Without ctx we can't resolve names → classes; emit the raw shape (legacy
-  // behavior). Every component-side caller now threads ctx through.
+  // Without ctx we can't resolve names → classes; emit the raw JSON shape
+  // as a degraded fallback (component-side callers always thread ctx through).
   if (!ctx) return { "data-state-modifiers": JSON.stringify(m) };
 
   const node = ctx.renderingNodeId ? ctx.nodes?.[ctx.renderingNodeId] : null;

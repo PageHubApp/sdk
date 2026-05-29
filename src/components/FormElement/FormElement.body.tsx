@@ -59,8 +59,6 @@ export interface FormElementProps extends BaseSelectorProps {
   step?: string;
   pattern?: string;
   autoComplete?: string;
-  /** @deprecated Use `autoComplete` instead. */
-  autocomplete?: string;
   options?: Array<{ value: string; label: string; disabled?: boolean }>;
   invalid?: boolean;
   /**
@@ -230,9 +228,8 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
   }
 
   // Autocomplete attribute for accessibility (WCAG 1.3.5)
-  const autoCompleteValue = props.autoComplete ?? props.autocomplete;
-  if (autoCompleteValue) {
-    prop.autoComplete = autoCompleteValue;
+  if (props.autoComplete) {
+    prop.autoComplete = props.autoComplete;
   } else {
     // Infer autocomplete from name/type when not explicitly set
     const nameLC = (props.name || "").toLowerCase();

@@ -9,14 +9,14 @@ import { useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { getPropFinalValue } from "../../viewport/state/propSystem";
 import { ViewAtom } from "../../viewport/state/atoms";
-import { ViewSelectionAtom } from "../Label";
+import { EditModifiersAtom } from "../Label";
 import { propertyHasValue } from "./propertyHasValue";
 
 import type { PropertyDef } from "./registry/propertyDefs";
 
 export function usePropertyHasValue(def: PropertyDef): boolean {
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const propsForRead = useNode(node => ({
     className: node.data?.props?.className || "",
     componentProps: node.data?.props || {},

@@ -333,8 +333,6 @@ export const useUniversalInputState = (props: UniversalInputProps) => {
     // CraftJS data
     id,
     view,
-    /** @deprecated Phase 2 renamed → use `modifiers`. Kept for callers that destructure. */
-    viewSelection: modifiers,
     modifiers,
     multiScope,
     query,

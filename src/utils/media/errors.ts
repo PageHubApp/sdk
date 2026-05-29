@@ -29,10 +29,9 @@ const MEDIA_CODE_MAP: Record<MediaUploadErrorCode, string> = {
 };
 
 export class MediaUploadError extends PageHubError {
-  // Override the base `code` with the narrower legacy lowercase union for
-  // backwards compat — consumers that destructure `{ code }` keep working with
-  // the same values. The SCREAMING_SNAKE_CASE PageHubError code is still
-  // assigned via super().
+  // Narrow the base `code` field to the lowercase domain union so consumers
+  // destructuring `{ code }` get the typed media-specific values. The
+  // SCREAMING_SNAKE_CASE PageHubError code is still assigned via super().
   declare readonly code: MediaUploadErrorCode;
   status?: number;
 

@@ -2,7 +2,6 @@ import { useNode } from "@craftjs/core";
 import React from "react";
 import { TabBody } from "../Tab";
 import { ToolbarSection } from "../ToolbarSection";
-import { TruncatedLabelTooltip } from "../ToolbarStyle";
 import { ToolbarWrapper } from "../ToolbarWrapper";
 import { NoSettings } from "./componentConverters";
 
@@ -28,12 +27,9 @@ export const TableBodyStyleControl = ({ children, actions, activeTab, head, tab,
 };
 
 export const TBWrap = ({ head, children, unified = false, activeSection = "" }) => (
-  <React.Fragment>
-    <ToolbarWrapper head={head} unified={unified} activeSection={activeSection}>
-      {children}
-    </ToolbarWrapper>
-    <TruncatedLabelTooltip />
-  </React.Fragment>
+  <ToolbarWrapper head={head} unified={unified} activeSection={activeSection}>
+    {children}
+  </ToolbarWrapper>
 );
 
 export const TBNoSettings = ({ query, actions, id }) => (

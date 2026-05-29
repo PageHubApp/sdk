@@ -16,7 +16,7 @@ import { propertyHasValue } from "./propertyHasValue";
 import { SessionAddedAtom, sessionKey } from "./sessionAddedAtom";
 import { isPopoverModeComponent } from "./popoverModeRegistry";
 import { ViewAtom } from "../../viewport/state/atoms";
-import { ViewSelectionAtom } from "../Label";
+import { EditModifiersAtom } from "../Label";
 import { getSectionDef, getProperties } from "./registry/propertyRegistry";
 import { HiddenKeysAtom } from "./registry/atoms";
 import type { PropertyDef, SectionId } from "./registry/propertyDefs";
@@ -48,7 +48,7 @@ export const PropertySection = React.memo(function PropertySection({ sectionId }
     componentProps: node.data?.props || {},
   }));
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const sessionAdded = useAtomValue(SessionAddedAtom);
   const { query } = useEditor();
 

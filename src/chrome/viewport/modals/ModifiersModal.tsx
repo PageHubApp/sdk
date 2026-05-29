@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { TbCheck, TbChevronDown, TbEdit, TbPlus, TbTrash } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { FloatingPanel } from "../../floating/FloatingPanel";
+import { sdkLog } from "../../../utils/logger";
 
 interface Modifier {
   name: string;
@@ -41,7 +42,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
         const types = Object.keys(m);
         if (!selectedType && types.length > 0) setSelectedType(types[0]);
       } catch (e) {
-        console.error("Error loading modifiers:", e);
+        sdkLog.error("Error loading modifiers:", e);
       }
     }
   }, [isOpen, query]);

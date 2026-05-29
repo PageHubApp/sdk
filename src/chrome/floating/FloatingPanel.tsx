@@ -15,6 +15,7 @@ import { useResizable } from "../hooks/useResizable";
 import { useFocusTrap } from "../../utils/hooks/useAccessibility";
 import { AutoHideScrollbar } from "../primitives/layout/AutoHideScrollbar";
 import { useOverlay } from "../../registry/hooks/useOverlay";
+import { sdkLog } from "../../utils/logger";
 
 type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
@@ -222,7 +223,7 @@ export function FloatingPanel({
 }: FloatingPanelProps) {
   if (process.env.NODE_ENV !== "production" && !autoSize) {
     if (defaultWidth == null || defaultHeight == null) {
-      console.error(
+      sdkLog.error(
         "[FloatingPanel] defaultWidth/defaultHeight are required when autoSize is false"
       );
     }

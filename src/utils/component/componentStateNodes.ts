@@ -1,4 +1,5 @@
 import { ROOT_NODE } from "../../utils/rootNode";
+import { sdkLog } from "../logger";
 
 /**
  * State-node detection for the component canvas.
@@ -57,7 +58,7 @@ export function findInherentComponentNodes(query: any): string[] {
   }
   while (stack.length > 0) {
     if (++walked > 5000) {
-      console.warn("[findInherentComponentNodes] tree walk cap exceeded");
+      sdkLog.warn("[findInherentComponentNodes] tree walk cap exceeded");
       break;
     }
     const { id, insideContainer } = stack.pop()!;
@@ -107,7 +108,7 @@ export function findStateNodes(componentRootId: string, query: any): StateNodeRe
   let walked = 0;
   while (queue.length > 0) {
     if (++walked > WALK_NODE_CAP) {
-      console.warn(`[findStateNodes] walk cap (${WALK_NODE_CAP}) exceeded for ${componentRootId}`);
+      sdkLog.warn(`[findStateNodes] walk cap (${WALK_NODE_CAP}) exceeded for ${componentRootId}`);
       break;
     }
     const id = queue.shift()!;

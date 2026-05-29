@@ -12,6 +12,7 @@
  * the merged snapshot. React hook in `./hooks.ts`.
  */
 import type { CommandContext } from "./types";
+import { sdkLog } from "../utils/logger";
 
 export interface ContextRegistry {
   /** Replace / merge SDK-derived fields. */
@@ -64,7 +65,7 @@ export function createContextRegistry(): ContextRegistry {
       try {
         l();
       } catch (err) {
-        console.error("[ph.context] listener error:", err);
+        sdkLog.error("[ph.context] listener error:", err);
       }
     });
   };

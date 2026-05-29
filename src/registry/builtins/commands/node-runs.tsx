@@ -33,6 +33,7 @@ import {
 } from "../../../chrome/toolbar/dialogs/Layers/siblingMoveOps";
 import { unifiedDeleteNode } from "../../../chrome/hooks/unifiedDelete";
 import { AddElement } from "../../../chrome/viewport/toolbox/toolboxUtils";
+import { sdkLog } from "../../../utils/logger";
 
 /**
  * Resolve the selection id the command should operate on. Commands fired
@@ -61,7 +62,7 @@ export function nodeCopyRun(ctx: any): void {
   const id = selectedId(query);
   if (!id) return;
   void saveHandler({ query, id, component: null, actions }).catch(e =>
-    console.error("[ph.node.copy] failed:", e)
+    sdkLog.error("[ph.node.copy] failed:", e)
   );
 }
 
@@ -82,7 +83,7 @@ export function nodePasteRun(ctx: any): void {
           setProp: actions.setProp,
         });
       } catch (e) {
-        console.error("[ph.node.paste] failed:", e);
+        sdkLog.error("[ph.node.paste] failed:", e);
       }
     });
   } else {
@@ -95,7 +96,7 @@ export function nodePasteRun(ctx: any): void {
         setProp: actions.setProp,
       });
     } catch (e) {
-      console.error("[ph.node.paste] failed:", e);
+      sdkLog.error("[ph.node.paste] failed:", e);
     }
   }
 }
@@ -157,7 +158,7 @@ export function nodeDeselectRun(ctx: any): void {
   try {
     actions.selectNode(null);
   } catch (e) {
-    console.error("[ph.node.deselect] failed:", e);
+    sdkLog.error("[ph.node.deselect] failed:", e);
   }
   setAtomExternal(SideBarOpen, false);
 }
@@ -169,7 +170,7 @@ export function nodeMoveUpRun(ctx: any): void {
   try {
     moveNodeUp(query, actions, id);
   } catch (e) {
-    console.error("[ph.node.moveUp] failed:", e);
+    sdkLog.error("[ph.node.moveUp] failed:", e);
   }
 }
 
@@ -180,7 +181,7 @@ export function nodeMoveDownRun(ctx: any): void {
   try {
     moveNodeDown(query, actions, id);
   } catch (e) {
-    console.error("[ph.node.moveDown] failed:", e);
+    sdkLog.error("[ph.node.moveDown] failed:", e);
   }
 }
 
@@ -193,7 +194,7 @@ export function nodeDuplicateRun(ctx: any): void {
     actions,
     setProp: actions.setProp,
     id,
-  }).catch(e => console.error("[ph.node.duplicate] failed:", e));
+  }).catch(e => sdkLog.error("[ph.node.duplicate] failed:", e));
 }
 
 export function nodeDeleteRun(ctx: any): void {
@@ -226,7 +227,7 @@ export function nodeConvertToComponentRun(ctx: any): void {
       });
       setAtomExternal(ComponentsAtom, (prev: unknown[]) => [...(prev || []), comp]);
     } catch (e) {
-      console.error("[ph.node.convertToComponent] failed:", e);
+      sdkLog.error("[ph.node.convertToComponent] failed:", e);
     }
   })();
 }
@@ -331,7 +332,7 @@ export function nodeSelectAncestorRun(
   try {
     actions.selectNode(id);
   } catch (e) {
-    console.error("[ph.node.selectAncestor] failed:", e);
+    sdkLog.error("[ph.node.selectAncestor] failed:", e);
   }
 }
 
@@ -377,7 +378,7 @@ export function cycleSiblingRun(direction: 1 | -1) {
       if (!target) return;
       actions.selectNode(target);
     } catch (e) {
-      console.error("[ph.node.cycleSibling] failed:", e);
+      sdkLog.error("[ph.node.cycleSibling] failed:", e);
     }
   };
 }

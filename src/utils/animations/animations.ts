@@ -323,5 +323,3 @@ export function scrollAnimRef(el: HTMLElement | null): void {
   if (observer) observer.observe(el);
 }
 
-// Legacy export — kept for backwards compat with AnimationsInput
-export const animationClasses: any[] = [];

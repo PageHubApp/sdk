@@ -1,5 +1,6 @@
 import { TailwindStyles } from "../../../../utils/tailwind/tailwind";
 import { ToolbarItem } from "../../ToolbarItem";
+import { sdkLog } from "../../../../utils/logger";
 
 function getTailwindStyleStringList(prop: string): string[] | null {
   const raw = (TailwindStyles as Record<string, unknown>)[prop];
@@ -12,7 +13,7 @@ export const TailwindInput = ({ type = "select", propKey, min = 0, label, prop }
   const valueLabels = getTailwindStyleStringList(prop);
   if (!valueLabels) {
     if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
-      console.warn(
+      sdkLog.warn(
         `[TailwindInput] Missing or empty TailwindStyles["${String(prop)}"] (propKey=${String(propKey)})`
       );
     }

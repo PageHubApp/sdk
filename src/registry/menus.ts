@@ -14,6 +14,7 @@ import type {
 } from "./types";
 import type { CommandsRegistry } from "./commands";
 import type { ContextRegistry } from "./context";
+import { sdkLog } from "../utils/logger";
 
 export interface MenusRegistry {
   contribute: <Args = unknown>(location: MenuLocation, items: MenuItem<Args>[]) => void;
@@ -51,7 +52,7 @@ function resolveValue<T>(v: T | ((ctx: CommandContext) => T) | undefined, ctx: C
     try {
       return (v as (ctx: CommandContext) => T)(ctx);
     } catch (err) {
-      console.error("[ph.menus] dynamic value threw:", err);
+      sdkLog.error("[ph.menus] dynamic value threw:", err);
       return undefined;
     }
   }
@@ -68,7 +69,7 @@ export function createMenusRegistry(deps: MenusRegistryDeps): MenusRegistry {
       try {
         l();
       } catch (err) {
-        console.error("[ph.menus] listener error:", err);
+        sdkLog.error("[ph.menus] listener error:", err);
       }
     });
   };
@@ -108,7 +109,7 @@ export function createMenusRegistry(deps: MenusRegistryDeps): MenusRegistry {
         try {
           if (!def.when(ctx, it.args as never)) continue;
         } catch (err) {
-          console.error(`[ph.menus] command when() threw for "${it.command}":`, err);
+          sdkLog.error(`[ph.menus] command when() threw for "${it.command}":`, err);
           continue;
         }
       }
@@ -117,7 +118,7 @@ export function createMenusRegistry(deps: MenusRegistryDeps): MenusRegistry {
         try {
           if (!it.when(ctx)) continue;
         } catch (err) {
-          console.error(`[ph.menus] item when() threw for "${it.command}":`, err);
+          sdkLog.error(`[ph.menus] item when() threw for "${it.command}":`, err);
           continue;
         }
       }
@@ -129,7 +130,7 @@ export function createMenusRegistry(deps: MenusRegistryDeps): MenusRegistry {
               try {
                 return (def.title as (c: CommandContext, a?: unknown) => string)(ctx, it.args);
               } catch (err) {
-                console.error(`[ph.menus] title() threw for "${it.command}":`, err);
+                sdkLog.error(`[ph.menus] title() threw for "${it.command}":`, err);
                 return String(it.command);
               }
             })()
@@ -140,7 +141,7 @@ export function createMenusRegistry(deps: MenusRegistryDeps): MenusRegistry {
         try {
           enabled = Boolean(def.enablement(ctx, it.args as never));
         } catch (err) {
-          console.error(`[ph.menus] enablement() threw for "${it.command}":`, err);
+          sdkLog.error(`[ph.menus] enablement() threw for "${it.command}":`, err);
           enabled = false;
         }
       }

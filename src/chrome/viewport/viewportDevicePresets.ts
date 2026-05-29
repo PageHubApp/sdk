@@ -1,3 +1,4 @@
+import { sdkLog } from "../../utils/logger";
 /**
  * Default responsive preview device frames (viewport chrome).
  *
@@ -51,7 +52,7 @@ export function getViewportDevicePresets(): readonly ViewportDevicePreset[] {
 export function setViewportDevicePresets(next: readonly ViewportDevicePreset[]): void {
   if (!Array.isArray(next) || next.length === 0) {
     if (Array.isArray(next) && next.length === 0) {
-      console.warn("[PageHub] viewportDevicePresets: empty array ignored; using defaults");
+      sdkLog.warn("[PageHub] viewportDevicePresets: empty array ignored; using defaults");
     }
     viewportDevicePresetsOverride = null;
     return;

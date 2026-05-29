@@ -4,6 +4,7 @@
 
 import { ROOT_NODE } from "../../utils/rootNode";
 import { phStorage } from "../phStorage";
+import { sdkLog } from "../logger";
 // `decompressAsync` (lzutf8) is editor-only — `loadPage` dynamic-imports it
 // at call time so viewer/walker bundles don't drag the compression lib in.
 
@@ -138,7 +139,7 @@ export async function isolatePageLazy(
 
   const pageData = await fetchPage(active);
   if (!pageData?.content) {
-    console.warn(`[PageHub] fetchPage(${active}) returned no content`);
+    sdkLog.warn(`[PageHub] fetchPage(${active}) returned no content`);
     return false;
   }
 
@@ -152,7 +153,7 @@ export async function isolatePageLazy(
     phStorage.set("isolated", active);
     return true;
   } catch (e) {
-    console.error(`[PageHub] Failed to load page shard ${active}:`, e);
+    sdkLog.error(`[PageHub] Failed to load page shard ${active}:`, e);
     return false;
   }
 }
@@ -269,7 +270,7 @@ export const resolvePageRef = (
       return baseUrl ? `${baseUrl}/${pageSlug}` : `/${pageSlug}`;
     }
   } catch (e) {
-    console.error("Error resolving page reference:", e);
+    sdkLog.error("Error resolving page reference:", e);
     return "#";
   }
 };

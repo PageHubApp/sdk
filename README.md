@@ -137,6 +137,15 @@ theme: {
 }
 ```
 
+**Adopting host design tokens (shadcn / Tailwind v4):** if your app already defines a shadcn-style palette under `--color-*` vars, add one import to rebind PageHub's DaisyUI tokens to the host vars:
+
+```ts
+import "@pagehub/sdk/editor.css";
+import "@pagehub/sdk/themes/shadcn.css";   // load AFTER editor.css
+```
+
+Maps `--color-background → --base-100`, `--color-foreground → --base-content`, `--color-primary → --primary`, `--radius → --radius-box/-field/-selector`, etc. Each binding falls back to the DaisyUI default if the host hasn't defined the matching shadcn var. See [docs/sdk/theme.md](../../docs/sdk/theme.md#adopting-host-design-tokens-shadcn--tailwind-v4) for the full mapping table.
+
 ### Features
 
 Toggle editor capabilities on or off:

@@ -209,7 +209,6 @@ export function TokenPicker({
               type="button"
               onClick={() => setShowAll(prev => !prev)}
               className="text-neutral-content hover:text-base-content flex shrink-0 items-center"
-              title={showAll ? "Less" : "All tokens"}
               data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
               data-tooltip-content={showAll ? "Less" : "All tokens"}
               data-tooltip-place="bottom"

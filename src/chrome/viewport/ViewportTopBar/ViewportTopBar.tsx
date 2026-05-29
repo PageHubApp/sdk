@@ -197,7 +197,7 @@ export const ViewportTopBar = () => {
       <EditorNavigation settings={settings} isTenant={isTenant} />
 
       <MediaManagerModal
-        isOpen={isMediaManagerModalOpen}
+        isOpen={isMediaManagerModalOpen && features.mediaManager !== false}
         onClose={() => setIsMediaManagerModalOpen(false)}
       />
 
@@ -207,7 +207,7 @@ export const ViewportTopBar = () => {
         </Suspense>
       )}
 
-      {isModifiersModalOpen && (
+      {isModifiersModalOpen && features.modifiers !== false && (
         <Suspense fallback={null}>
           <ModifiersModal isOpen onClose={() => setIsModifiersModalOpen(false)} />
         </Suspense>

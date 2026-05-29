@@ -1,5 +1,7 @@
 import React from "react";
 
+import { ToolbarItem } from "../../chrome/toolbar/ToolbarItem";
+import { ToolbarSection } from "../../chrome/toolbar/ToolbarSection";
 import { ComponentDefinitionError } from "../../utils/errors";
 import type {
   PropSchema,
@@ -19,19 +21,6 @@ function buildAutoSettings(propsSchema: Record<string, PropSchema>): React.Compo
     sections.get(section)!.push([key, schema]);
   }
 
-  // Dynamic import to avoid pulling ToolbarItem into viewer/static bundles.
-  // This function is only called inside attachCraft → processForEditor → editor.tsx.
-  let ToolbarItem: React.ComponentType<any> | null = null;
-  let ToolbarSection: React.ComponentType<any> | null = null;
-
-  const loadDeps = () => {
-    if (!ToolbarItem) {
-      // These are editor-only imports, resolved at render time
-      ToolbarItem = require("../../chrome/toolbar/ToolbarItem").ToolbarItem;
-      ToolbarSection = require("../../chrome/toolbar/ToolbarSection").ToolbarSection;
-    }
-  };
-
   // Map schema type → ToolbarItem type
   const typeMap: Record<string, string> = {
     text: "text",
@@ -45,9 +34,8 @@ function buildAutoSettings(propsSchema: Record<string, PropSchema>): React.Compo
   };
 
   return function AutoSettings() {
-    loadDeps();
-    const TI = ToolbarItem!;
-    const TS = ToolbarSection!;
+    const TI = ToolbarItem;
+    const TS = ToolbarSection;
 
     return React.createElement(
       React.Fragment,

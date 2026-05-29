@@ -4,6 +4,7 @@ import {
   CanvasPosKey,
 } from "../../../../utils/component/componentCanvas";
 import { resolveOverlap } from "../utils/cardCollision";
+import { sdkLog } from "../../../../utils/logger";
 
 interface Args {
   containerId: string;
@@ -86,7 +87,7 @@ export function useCanvasItemDrag({
         p.custom[posKey] = finalPos;
       });
     } catch (err) {
-      console.error("[ComponentCanvasItem] failed to commit pos", err);
+      sdkLog.error("[ComponentCanvasItem] failed to commit pos", err);
     }
     dragRef.current = null;
   }, [actions, applyPinRef, containerId, detachListeners, livePosRef, posKey, wrapperRef]);

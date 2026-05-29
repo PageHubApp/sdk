@@ -9,6 +9,7 @@ import React, { cloneElement, isValidElement, useMemo, useState } from "react";
 import { ToolboxInsertHintTooltip } from "../../primitives/ToolboxInsertHintTooltip";
 import { applySmartDefaultsForNewNode } from "../../shell/spatial/executeSpatialDrop";
 import { createMergedActions } from "../../shell/spatial/mergedActions";
+import { sdkLog } from "../../../utils/logger";
 
 /**
  * Allowed `props.root` keys (non-class styling). Must stay aligned with
@@ -231,7 +232,7 @@ export const AddElement = ({
     if (!addToNode) return false;
 
     if (!addToNode.rules.canMoveIn([newElement?.nodes[newElement?.rootNodeId]])) {
-      console.error("Cant move in.", addToNode, newElement);
+      sdkLog.error("Cant move in.", addToNode, newElement);
       return false;
     }
 
@@ -249,7 +250,7 @@ export const AddElement = ({
 
     return newElement;
   } catch (e) {
-    console.error(e);
+    sdkLog.error(e);
   }
 
   return false;

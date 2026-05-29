@@ -24,6 +24,7 @@ import {
   DEFAULT_CURATED_GOOGLE_FONT_FAMILIES,
   type CuratedGoogleFontFamilies,
 } from "./curatedGoogleFontFamilies";
+import { sdkLog } from "../logger";
 
 export {
   CURATED_GOOGLE_FONT_FAMILIES,
@@ -104,7 +105,7 @@ export const fetchGoogleFonts = async (_apiKey?: string): Promise<GoogleFont[]> 
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.warn("Failed to fetch Google Fonts from proxy:", errorData);
+        sdkLog.warn("Failed to fetch Google Fonts from proxy:", errorData);
         return getFallbackFonts();
       }
 
@@ -112,7 +113,7 @@ export const fetchGoogleFonts = async (_apiKey?: string): Promise<GoogleFont[]> 
       fontsCache = data.items;
       return fontsCache;
     } catch (error) {
-      console.error("Error fetching Google Fonts:", error);
+      sdkLog.error("Error fetching Google Fonts:", error);
       return getFallbackFonts();
     } finally {
       fetchPromise = null;

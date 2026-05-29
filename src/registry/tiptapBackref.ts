@@ -19,6 +19,7 @@
  * `TextEditor` mount touch it.
  */
 import type { Editor } from "@tiptap/core";
+import { sdkLog } from "../utils/logger";
 
 let activeEditorRef: Editor | null = null;
 const listeners = new Set<() => void>();
@@ -28,7 +29,7 @@ function notify() {
     try {
       l();
     } catch (err) {
-      console.error("[ph.tiptap] listener error:", err);
+      sdkLog.error("[ph.tiptap] listener error:", err);
     }
   });
 }

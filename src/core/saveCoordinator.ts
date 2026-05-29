@@ -16,6 +16,7 @@
 
 import type { PageData, SaveMeta, SaveResponse, SaveResult, SaveStatus } from "../types";
 import { SaveConflictError, SaveEmptyError, SaveFailedError } from "../types";
+import { sdkLog } from "../utils/logger";
 
 type OnSaveFn = (
   pageData: PageData,
@@ -89,7 +90,7 @@ export class SaveCoordinator {
       try {
         cb(next);
       } catch (err) {
-        console.error("[PageHub] save status listener threw:", err);
+        sdkLog.error("[PageHub] save status listener threw:", err);
       }
     });
     if (next === "saved" || next === "failed") {
@@ -147,10 +148,9 @@ export class SaveCoordinator {
       );
     }
 
-    // Back-compat: hosts that haven't migrated to SaveResponse return void.
     if (!response) {
       this.setStatus("failed");
-      throw new SaveFailedError("Host onSave returned no result (legacy void)", 0);
+      throw new SaveFailedError("Host onSave returned no result", 0);
     }
 
     if (response.ok === true) {
@@ -202,7 +202,7 @@ export class SaveCoordinator {
       try {
         wiring.onConflict?.(conflict);
       } catch (notifyErr) {
-        console.error("[PageHub] onConflict notifier threw:", notifyErr);
+        sdkLog.error("[PageHub] onConflict notifier threw:", notifyErr);
       }
       throw conflict;
     }

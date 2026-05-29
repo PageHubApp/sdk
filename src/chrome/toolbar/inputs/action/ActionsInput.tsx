@@ -62,12 +62,6 @@ export function ActionsInput() {
       // Single field, always the array shape — runtime + editor agree on one
       // schema. Empty list → null so isActive gating sees an unset action.
       p.action = next.length > 0 ? next : null;
-      // Drop legacy / dual-write props on every save so old data converges.
-      delete p.actions;
-      delete p.click;
-      delete p.url;
-      delete p.urlTarget;
-      delete p.clickMode;
     });
   };
 

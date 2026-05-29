@@ -22,9 +22,6 @@ export const EditModifiersAtom = atom<EditModifiers>("toolbar-edit-modifiers", {
   dark: false,
 });
 
-/** @deprecated Backwards-compat alias. New code should import EditModifiersAtom. */
-export const ViewSelectionAtom = EditModifiersAtom;
-
 /**
  * Class writes target the canvas-derived breakpoint by default. When the user
  * has alt-clicked cells in the chip popover to opt into multi-scope writes,
@@ -63,11 +60,6 @@ export function getEffectiveViews(
     return Array.from(multiScope);
   }
   return defaultEffectiveViewsForCanvas(currentView);
-}
-
-/** @deprecated Always returns false now — multi-scope is owned by `MultiScopeAtom`. */
-export function breakpointScopeHasSelection(_viewSelection: any): boolean {
-  return false;
 }
 
 // Re-export so consumers can still import the multi-scope atom from here if they want.

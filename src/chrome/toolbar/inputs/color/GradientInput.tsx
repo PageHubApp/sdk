@@ -3,7 +3,7 @@ import { useAtomValue } from "@zedux/react";
 import { changeProp } from "../../../viewport/state/viewportExports";
 import { ViewAtom } from "../../../viewport/state/atoms";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 import { ColorInput } from "./ColorInput";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";
@@ -61,7 +61,7 @@ const replacePosition = (cn: string, prefix: string, value: number | null): stri
 
 export const GradientInput = () => {
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const { actions, query } = useEditor();
   const {
     actions: { setProp },

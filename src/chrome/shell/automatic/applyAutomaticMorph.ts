@@ -23,6 +23,7 @@ import { morphToContent } from "./executors/morphToContent";
 import { morphToCard } from "./executors/morphToCard";
 import { morphToSegment } from "./executors/morphToSegment";
 import { morphToPlainContainer } from "./executors/morphToPlainContainer";
+import { sdkLog } from "../../../utils/logger";
 
 const DETECTOR_PIPELINE: Detector[] = [
   detectStructural,
@@ -67,7 +68,7 @@ export function applyAutomaticMorph(
     const intent: AutomaticIntent | null = detect(ctx);
     if (!intent) continue;
     if (process.env.NODE_ENV === "development") {
-      console.log("[auto] matched", { detector: detect.name, kind: intent.kind });
+      sdkLog.log("[auto] matched", { detector: detect.name, kind: intent.kind });
     }
     const exec = EXECUTORS[intent.kind];
     exec(intent, batch, ctx);

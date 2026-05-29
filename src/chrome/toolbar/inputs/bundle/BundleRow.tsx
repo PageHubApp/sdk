@@ -16,7 +16,7 @@ import { TRANSPARENT_CHECKER_BG } from "../../../../utils/design/colorSystem";
 import { Chip } from "../../../primitives/Chip";
 import { ViewAtom } from "../../../viewport/state/atoms";
 import { getPropFinalValue } from "../../../viewport/state/propSystem";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 import { SessionAddedAtom, sessionKey } from "../../inspector/sessionAddedAtom";
 import type { PropertyDef, PropertyInputProps } from "../../inspector/registry/propertyDefs";
@@ -44,7 +44,7 @@ export function BundleRow({ def, properties, icon }: Props) {
 
   const [sessionAdded, setSessionAdded] = useAtomState(SessionAddedAtom);
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
 
   const {
     actions: { setProp },

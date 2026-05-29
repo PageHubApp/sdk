@@ -1,5 +1,6 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor } from "@craftjs/core";
+import { sdkLog } from "../../utils/logger";
 
 /**
  * Hook to determine where to insert a new node (section, component, etc.)
@@ -48,7 +49,7 @@ export const useInsertTarget = () => {
           }
         }
       } catch (error) {
-        console.warn("Error getting selected node data:", error);
+        sdkLog.warn("Error getting selected node data:", error);
         // Continue to fallback logic
       }
     }
@@ -73,7 +74,7 @@ export const useInsertTarget = () => {
         }
       }
     } catch (error) {
-      console.warn("Error searching for visible page:", error);
+      sdkLog.warn("Error searching for visible page:", error);
     }
 
     // Strategy 3: Find ANY page with a DOM element (even if not in viewport)
@@ -92,7 +93,7 @@ export const useInsertTarget = () => {
         }
       }
     } catch (error) {
-      console.warn("Error searching for page with DOM:", error);
+      sdkLog.warn("Error searching for page with DOM:", error);
     }
 
     // Strategy 4: Find ANY page node (even if not rendered)
@@ -111,7 +112,7 @@ export const useInsertTarget = () => {
         }
       }
     } catch (error) {
-      console.warn("Error searching for any page:", error);
+      sdkLog.warn("Error searching for any page:", error);
     }
 
     // Strategy 5: If we have ANY child nodes at all, check if the first one is a page
@@ -128,11 +129,11 @@ export const useInsertTarget = () => {
         }
       }
     } catch (error) {
-      console.warn("Error checking first node:", error);
+      sdkLog.warn("Error checking first node:", error);
     }
 
     // Last resort: Return ROOT_NODE (only if no pages exist)
-    console.warn("No pages found anywhere! Falling back to ROOT_NODE. This should rarely happen.");
+    sdkLog.warn("No pages found anywhere! Falling back to ROOT_NODE. This should rarely happen.");
     return ROOT_NODE;
   };
 

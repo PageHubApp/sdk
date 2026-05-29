@@ -107,25 +107,10 @@ export function compileSchema(entries: SchemaEntry[] | undefined): Record<string
 }
 
 /**
- * Normalize a legacy `seo.jsonLd` value — can be a string (textarea) or an
- * object. Returns a single JSON-LD object or null if unparseable / empty.
- * Fixes the historical double-encode bug where renderers wrapped strings in
- * JSON.stringify.
+ * Normalize a raw `seo.jsonLd` value. Accepts a single JSON-LD object; returns
+ * it as-is when non-empty, or null otherwise. Anything else is rejected.
  */
-export function normalizeLegacyJsonLd(value: unknown): Record<string, any> | null {
-  if (!value) return null;
-  if (typeof value === "object" && !Array.isArray(value)) {
-    return Object.keys(value as object).length ? (value as Record<string, any>) : null;
-  }
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-    try {
-      const parsed = JSON.parse(trimmed);
-      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
-    } catch {
-      return null;
-    }
-  }
-  return null;
+export function normalizeJsonLd(value: unknown): Record<string, any> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return Object.keys(value as object).length ? (value as Record<string, any>) : null;
 }

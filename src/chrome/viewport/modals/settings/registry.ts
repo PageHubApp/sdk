@@ -1,4 +1,5 @@
 import { type SettingsTabDefinition, type SettingsTabRenderContext } from "./types";
+import { sdkLog } from "../../../../utils/logger";
 
 interface TabEntry<TDraft, TContext> {
   tab: SettingsTabDefinition<TDraft, TContext>;
@@ -8,7 +9,7 @@ interface TabEntry<TDraft, TContext> {
 
 function warnDuplicateKey(key: string) {
   if (process.env.NODE_ENV === "production") return;
-  console.warn(`[PageHub] Ignoring settings tab "${key}" because that key is already registered.`);
+  sdkLog.warn(`[PageHub] Ignoring settings tab "${key}" because that key is already registered.`);
 }
 
 export function mergeSettingsTabs<TDraft, TContext>(

@@ -6,6 +6,7 @@ import { AddElement } from "../toolbox/toolboxUtils";
 import sluggit from "slug";
 import { usePageNavigation } from "../../../utils/page/pageNavigation";
 import { useSDK } from "../../../core/context";
+import { sdkLog } from "../../../utils/logger";
 
 interface UsePageCreationOptions {
   pages: Array<{ id: string; displayName: string }>;
@@ -133,7 +134,7 @@ export function usePageCreation({
       navigateToPage(newNodeId, displayName, false, customSlug);
       onPageChange?.(newNodeId);
     } catch (e) {
-      console.error("Error creating page:", e);
+      sdkLog.error("Error creating page:", e);
     }
   }
 

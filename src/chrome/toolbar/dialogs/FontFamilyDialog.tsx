@@ -13,6 +13,7 @@ import {
 import { fonts } from "../../../utils/tailwind/tailwind";
 import { ItemToggle } from "../primitives/ItemSelector";
 import { useOverlay } from "../../../registry/hooks/useOverlay";
+import { sdkLog } from "../../../utils/logger";
 
 export { FontFamilyDialogAtom } from "./dialogAtoms";
 
@@ -47,7 +48,7 @@ export const FontFamilyDialog = () => {
         const allFontsList = [...popularList, ...funkyList, ...otherFonts];
         setAllFonts(allFontsList);
       } catch (error) {
-        console.error("Error loading fonts:", error);
+        sdkLog.error("Error loading fonts:", error);
         // Fallback to legacy fonts
         setAllFonts(fonts);
       } finally {

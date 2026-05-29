@@ -64,8 +64,8 @@ export interface PageSeo {
   ogImage?: string;
   canonicalUrl?: string;
   robots?: string;
-  /** Legacy raw JSON-LD (object or hand-written JSON string). Still rendered alongside `schema`. */
-  jsonLd?: Record<string, unknown> | string;
+  /** Raw JSON-LD object, rendered alongside `schema` as a single extra `<script type="application/ld+json">`. */
+  jsonLd?: Record<string, unknown>;
   /** Structured JSON-LD entries from the Schema builder. Each entry renders as one `<script type="application/ld+json">`. */
   schema?: Array<Record<string, unknown>>;
   /** Site favicon. ROOT-only — per-page favicon overrides fall back to ROOT. */
@@ -268,6 +268,38 @@ export interface PageHubFeatures {
   importExport?: boolean;
   /** Show SEO settings panel. Default: true */
   seoPanel?: boolean;
+  /**
+   * Show the Page Settings modal (per-page name / slug / SEO meta / access /
+   * code injection). Default: true. Hosts that round-trip page-level state
+   * through their own API (e.g. the Avocado adapter, which uses Avocado's
+   * `update_page_meta` op-driven flow) can hide it so the SDK stops surfacing
+   * an editor the host can't observe. The "Page settings" gear button in the
+   * page selector disappears when false.
+   */
+  pageSettings?: boolean;
+  /**
+   * Show the design-system / theme panel (palette, typography, spacing tokens
+   * editable on ROOT). Default: true. Hosts whose backing model doesn't
+   * represent CraftJS theme state — Avocado's `update_site_config` covers
+   * name/logo/nav only, not palette/fonts — should hide it so silent token
+   * edits don't accumulate on the canvas.
+   */
+  designSystem?: boolean;
+  /**
+   * Show the Media Manager (asset library: upload, browse, edit, AI-describe).
+   * Default: true. Hosts that own asset storage outside PageHub's `/api/media/*`
+   * surface (e.g. Avocado, which has no MediaRecord model) should hide it so
+   * users don't upload into a black hole.
+   */
+  mediaManager?: boolean;
+  /**
+   * Show the Modifiers modal + topbar entry (Tailwind class-toggle catalog).
+   * Default: true. Modifier toggles emit `className` patches; hosts whose
+   * blocks don't accept arbitrary `className` (Avocado's `BlockInstance` schema
+   * doesn't model it) should hide them — toggles would either be silently
+   * rejected by the server or no-op on the renderer.
+   */
+  modifiers?: boolean;
   /** Allow multi-page sites. Default: true */
   multiPage?: boolean;
   /** Allow marking a page as the site custom 404 canvas. Default: true (host can set false for free tier). */
@@ -372,167 +404,6 @@ export interface PageHubMediaEditAiActionsContext {
   applyMetadata: (metadata: PageHubMediaMetadataSuggestion) => void;
 }
 
-/**
- * Host-rendered AI affordances (same contract external integrators use).
- * When a slot is omitted, that control is not shown.
- *
- * @deprecated Every field here is being migrated to the unified slot
- *   registry. Prefer `sdk.slots.contribute({ slot: "<id>", render: ... })`
- *   for new code; see [docs/sdk/host-configuration.md → Extending the
- *   editor](../../../docs/sdk/host-configuration.md#extending-the-editor--commands-menus-slots-keybindings)
- *   for the field → slot id mapping. The adapter shim keeps these fields
- *   working today; they'll be removed in the next major version.
- */
-export interface PageHubEditorChromeSlots {
-  /**
-   * Toolbox tab strip — wand opens assistant (host typically uses `AssistantOpenAtom`).
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "toolbox/ai-button", render: ... })`
-   *   instead. This field still works via the adapter shim — will be
-   *   removed in the next major version.
-   */
-  renderToolboxAiButton?: () => ReactNode;
-  /**
-   * Rich-text floating toolbar — opens assistant for copy (text scope).
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "tiptap/inline-copy-assistant", render: ... })`
-   *   instead. Will be removed in the next major version.
-   */
-  renderInlineCopyAssistantTrigger?: (ctx: { textNodeId: string; query: unknown }) => ReactNode;
-  /**
-   * Settings sidebar “Edit with AI” chip. Host renders a single ReactNode that
-   * reads the selected node via `useNode()` and self-gates on `useAiEnabled()`.
-   * Mounted at the top of every component settings tab.
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "settings/ai-button", render: () => node })`
-   *   instead. Note: this is the only field that took a `ReactNode` directly —
-   *   wrap your node in a render function (`() => node`) when migrating. Will
-   *   be removed in the next major version.
-   */
-  settingsAiButton?: ReactNode;
-  /**
-   * Data source settings for Container — filter, limit, sort, offset controls. Host-rendered.
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "node/data-source-section", render: ... })`
-   *   instead. Will be removed in the next major version.
-   */
-  renderDataSourceSection?: (ctx: { nodeId: string }) => ReactNode;
-  /**
-   * Container / add-section wand — opens assistant in create mode.
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "node/ai-generate-button", render: ... })`
-   *   instead. Will be removed in the next major version.
-   */
-  renderNodeAiGenerateButton?: (ctx: {
-    onClick: () => void;
-    className?: string;
-    disabled?: boolean;
-  }) => ReactNode;
-  /**
-   * Floating node chip — pin this element to AI chat context (deduped in `AiChatAttachedNodesAtom`).
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "node/ai-context-button", render: ... })`
-   *   instead. Will be removed in the next major version.
-   */
-  renderNodeAiContextButton?: (ctx: {
-    onClick: () => void;
-    className?: string;
-    disabled?: boolean;
-    /** Wand + text row (e.g. canvas context menu); omit for icon-only chip. */
-    label?: string;
-    /** Forwarded to host button for `react-tooltip` / `PAGEHUB_RTT_GLOBAL_ID` surface. */
-    "data-tooltip-id"?: string;
-    "data-tooltip-content"?: string;
-    "data-tooltip-place"?: string;
-    "data-tooltip-offset"?: number | string;
-  }) => ReactNode;
-  /**
-   * Empty canvas “Build with AI” card.
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "empty-state/ai-card", render: ... })`
-   *   instead. Will be removed in the next major version.
-   */
-  renderEmptyStateAiCard?: (ctx: { onOpenAssistant: () => void }) => ReactNode;
-  /**
-   * Per-node AI tone editor (designNotes + designTags textarea/chips). The
-   * SDK orchestrates the Craft state read/write — the host supplies the
-   * actual form UI. Without this slot, the inspector section renders a
-   * short "AI editing not available" placeholder.
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "node/ai-context-editor", render: ... })`
-   *   instead. Will be removed in the next major version.
-   */
-  renderNodeAiContextEditor?: (ctx: {
-    designNotes: string;
-    setDesignNotes: (v: string) => void;
-    designTags: string[];
-    setDesignTags: (v: string[]) => void;
-    fieldIdPrefix: string;
-  }) => ReactNode;
-  /**
-   * Editor nav menu row — AI Assistant + shortcut hint lives in host.
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "navmenu/ai-row", render: ... })`
-   *   instead. Will be removed in the next major version.
-   */
-  renderNavAiMenuItem?: (ctx: { onSelect: () => void }) => ReactNode;
-  /**
-   * Top of editor nav — page-level actions (View Draft, Duplicate, Delete, etc.) from host.
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "navmenu/header-items", render: ... })`
-   *   instead. Will be removed in the next major version.
-   */
-  renderNavHeaderItems?: (ctx: { close: () => void }) => ReactNode;
-  /**
-   * Host-only block in Import/Export → Export tab (e.g. static HTML ZIP). SDK does not call app APIs.
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "import-export/handoff-extras", render: ... })`
-   *   instead. Will be removed in the next major version.
-   */
-  renderImportExportHandoffExtras?: () => ReactNode;
-  /**
-   * Media edit modal AI metadata action block.
-   * Host owns API calls/auth; SDK provides apply callback for metadata fields.
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "media-edit/ai-actions", render: ... })`
-   *   instead. Will be removed in the next major version.
-   */
-  renderMediaEditAiActions?: (ctx: PageHubMediaEditAiActionsContext) => ReactNode;
-  /**
-   * Extra tabs injected into the Page Settings modal.
-   * Host owns all API calls, auth, and business logic; SDK provides the tab slot.
-   *
-   * @deprecated Use `sdk.slots.contribute({ slot: "page-settings/extra-tabs", render: ... })`
-   *   (list cardinality — `group: "key@order"` controls tab order) instead.
-   *   Will be removed in the next major version.
-   */
-  pageSettingsExtraTabs?: Array<{
-    key: string;
-    label: string;
-    order?: number;
-    render: (ctx: {
-      inputClass: string;
-      selectClass: string;
-      query: any;
-      actions: any;
-      pageId: string | null;
-      allowCustom404Page: boolean;
-      draft?: Record<string, any>;
-      setDraft?: Dispatch<SetStateAction<Record<string, any>>>;
-      updateField?: (key: string, value: any) => void;
-      requestSave?: () => void;
-      flushSave?: () => void;
-    }) => ReactNode;
-    onSave?: (ctx: {
-      pageId: string | null;
-      setProp?: (cb: (props: any) => void) => void;
-      draft?: Record<string, any>;
-      query: any;
-      actions: any;
-    }) => void;
-  }>;
-}
-
 // ─── Main configuration ──────────────────────────────────────────────────────
 
 export interface PageHubConfig {
@@ -591,9 +462,6 @@ export interface PageHubConfig {
    * Use `useSDK()` inside your component if you need the emitter / config.
    */
   aiPanel?: ReactNode;
-
-  /** Optional slots for AI (and auth-gated) chrome — implemented by the host app. */
-  editorChromeSlots?: PageHubEditorChromeSlots;
 
   /**
    * Override the toolbox preset list per component. **Replaces** the built-in

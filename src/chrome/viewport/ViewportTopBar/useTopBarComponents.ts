@@ -1,6 +1,7 @@
 import { ROOT_NODE } from "@craftjs/utils";
 import { useEffect } from "react";
 import { ComponentsAtom, useSetAtomState } from "../../../utils/atoms";
+import { sdkLog } from "../../../utils/logger";
 
 /**
  * Reads ROOT children, filters `props.type === "component"`, and writes a
@@ -62,7 +63,7 @@ export function useTopBarComponents({
 
       setComponents(componentNodes);
     } catch (e) {
-      console.error("❌ Error loading components:", e);
+      sdkLog.error("❌ Error loading components:", e);
     }
   }, [query, enabled, setComponents, componentFingerprint]);
 }

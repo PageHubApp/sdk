@@ -30,12 +30,6 @@ import { TargetPickerInput } from "./shared/TargetPickerInput";
 
 export const ACTION_DEFAULTS: Record<ActionType, NodeAction> = {
   link: { type: "link", href: "" },
-  // Legacy types kept in the union for in-flight data — not surfaced in the dropdown.
-  "link-url": { type: "link-url", url: "" },
-  "link-page": { type: "link-page", pageId: "" },
-  "scroll-to": { type: "scroll-to", anchor: "" },
-  email: { type: "email", email: "" },
-  phone: { type: "phone", phone: "" },
   "open-modal": { type: "open-modal", anchor: "" },
   "show-hide": { type: "show-hide", target: "", direction: "toggle", trigger: "click" },
   "copy-to-clipboard": { type: "copy-to-clipboard", text: "" },
@@ -73,11 +67,6 @@ export function ActionSubForm({
 }) {
   switch (action.type) {
     case "link":
-    case "link-url":
-    case "link-page":
-    case "scroll-to":
-    case "email":
-    case "phone":
       return <LinkSubForm action={action} replace={replace} />;
     case "open-modal":
       return (

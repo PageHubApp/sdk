@@ -1,4 +1,43 @@
+# Build artifacts that shouldn't ship
 *.map
 *.tsbuildinfo
+
+# Dev-only directories
 docs/
 demo/
+examples/
+
+# Tests and fixtures (live alongside source under src/)
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/__tests__/
+**/test-helpers/
+**/test-fixtures/
+**/*.test-helpers.ts
+**/*.test-helpers.tsx
+**/*.behavior.test.ts
+**/*.behavior.test.tsx
+
+# Vitest / jest / playwright configs at package root
+vitest.config.*
+vitest.setup.*
+jest.config.*
+playwright.config.*
+
+# Build configs (consumers don't need these)
+vite.config.ts
+vite.demo.config.ts
+vite.editor-css.config.ts
+tsconfig.json
+tsconfig.*.json
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Lint / format configs
+.eslintrc*
+.prettierrc*
+biome.json

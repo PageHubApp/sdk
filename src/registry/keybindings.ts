@@ -7,6 +7,7 @@
  */
 import type { CommandContext, KeybindingDef } from "./types";
 import type { ContextRegistry } from "./context";
+import { sdkLog } from "../utils/logger";
 
 export interface KeybindingsRegistry {
   register: <Args = unknown>(def: KeybindingDef<Args>) => void;
@@ -127,7 +128,7 @@ export function createKeybindingsRegistry(
       try {
         l();
       } catch (err) {
-        console.error("[ph.keybindings] listener error:", err);
+        sdkLog.error("[ph.keybindings] listener error:", err);
       }
     });
   };
@@ -172,7 +173,7 @@ export function createKeybindingsRegistry(
         try {
           if (!def.when(ctx)) return;
         } catch (err) {
-          console.error(`[ph.keybindings] when() threw for "${def.command}":`, err);
+          sdkLog.error(`[ph.keybindings] when() threw for "${def.command}":`, err);
           return;
         }
       }

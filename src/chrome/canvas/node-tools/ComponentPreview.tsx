@@ -7,6 +7,7 @@ import {
   expandStructureWithModifierMap,
 } from "../../../utils/modifierUtils";
 import { buildCraftTreeFromStructure } from "../../buildCraftTreeFromStructure";
+import { sdkLog } from "../../../utils/logger";
 
 /**
  * Error boundary that catches CraftJS invariant errors inside preview Editors.
@@ -25,7 +26,7 @@ class PreviewErrorBoundary extends React.Component<
   componentDidCatch(error: Error) {
     // Silently swallow CraftJS invariant errors in previews
     if (process.env.NODE_ENV === "development") {
-      console.warn("[ComponentPreview] Preview render failed:", error.message);
+      sdkLog.warn("[ComponentPreview] Preview render failed:", error.message);
     }
   }
 
@@ -219,7 +220,7 @@ export const ComponentPreview = React.memo(function ComponentPreview({
       });
       return { previewElement: el, previewBuildError: false };
     } catch (error) {
-      console.error("Error rendering component preview:", error);
+      sdkLog.error("Error rendering component preview:", error);
       return { previewElement: null, previewBuildError: true };
     }
   }, [component, modifiers, resolver, slug]);

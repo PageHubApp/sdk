@@ -10,6 +10,7 @@ import { ComponentsAtom } from "../../utils/atoms";
 import { buildClonedTree } from "../viewport/state/viewportExports";
 import { setRecursiveBelongsTo } from "@/utils/component/componentUtils";
 import { setRelationField } from "../../utils/relation";
+import { sdkLog } from "../../utils/logger";
 
 const CONTENT_PROPS = [
   "text",
@@ -145,7 +146,7 @@ function rebuildLinkedInstances(masterNodeId: string, query: any, actions: any) 
         );
       });
     } catch (error) {
-      console.error("Error rebuilding instance:", instance.id, error);
+      sdkLog.error("Error rebuilding instance:", instance.id, error);
     }
   });
 }

@@ -1,0 +1,52 @@
+/* ═══ @pagehub/sdk/themes/shadcn.css ═══════════════════════════════════════════
+   Host-token bridge for shadcn-style (Tailwind v4) consumers.
+
+   Hosts that already define the shadcn semantic palette under `--color-*`
+   (e.g. an app using shadcn/ui + Tailwind v4 @theme inline) can adopt that
+   palette inside PageHub by importing this file ONCE in their entry CSS:
+
+       import "@pagehub/sdk/themes/shadcn.css"
+
+   The bridge rebinds DaisyUI 5 tokens to the host's `--color-*` vars under
+   `:root` so any PageHub container picks them up. Host vars unchanged.
+
+   ⚠️  Import order matters — load AFTER `@pagehub/sdk/theme.css` (or the
+   bundled `editor.css`) so these rules win specificity by being later in the
+   cascade.
+   ═════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Core palette */
+  --base-100: var(--color-background, var(--base-100));
+  --base-200: var(--color-card, var(--base-200));
+  --base-300: var(--color-border, var(--base-300));
+  --base-content: var(--color-foreground, var(--base-content));
+
+  --primary: var(--color-primary, var(--primary));
+  --primary-content: var(--color-primary-foreground, var(--primary-content));
+
+  --secondary: var(--color-secondary, var(--secondary));
+  --secondary-content: var(--color-secondary-foreground, var(--secondary-content));
+
+  --accent: var(--color-accent, var(--accent));
+  --accent-content: var(--color-accent-foreground, var(--accent-content));
+
+  --neutral: var(--color-muted, var(--neutral));
+  --neutral-content: var(--color-muted-foreground, var(--neutral-content));
+
+  --error: var(--color-destructive, var(--error));
+  --error-content: var(--color-destructive-foreground, var(--error-content));
+
+  --ring: var(--color-ring, var(--ring));
+
+  /* Radius — shadcn uses a single --radius; DaisyUI splits by component group. */
+  --radius-box: var(--radius, var(--radius-box));
+  --radius-field: var(--radius, var(--radius-field));
+  --radius-selector: var(--radius, var(--radius-selector));
+
+  /* Backwards-compat aliases stay aligned. */
+  --background: var(--base-100);
+  --foreground: var(--base-content);
+  --card: var(--base-200);
+  --card-foreground: var(--base-content);
+}

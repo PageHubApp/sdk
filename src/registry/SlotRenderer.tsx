@@ -4,6 +4,7 @@
  */
 import React, { Fragment, useSyncExternalStore } from "react";
 import { useRegistries } from "./provider";
+import { sdkLog } from "../utils/logger";
 
 export interface SlotRendererProps<Ctx = unknown> {
   id: string;
@@ -41,7 +42,7 @@ export function SlotRenderer<Ctx = unknown>(props: SlotRendererProps<Ctx>) {
     try {
       return <>{winner.render(ctx as never)}</>;
     } catch (err) {
-      console.error(`[ph.SlotRenderer] render threw for "${id}":`, err);
+      sdkLog.error(`[ph.SlotRenderer] render threw for "${id}":`, err);
       return <>{fallback}</>;
     }
   }
@@ -51,7 +52,7 @@ export function SlotRenderer<Ctx = unknown>(props: SlotRendererProps<Ctx>) {
         try {
           return <Fragment key={i}>{c.render(ctx as never)}</Fragment>;
         } catch (err) {
-          console.error(`[ph.SlotRenderer] render threw for "${id}" (idx ${i}):`, err);
+          sdkLog.error(`[ph.SlotRenderer] render threw for "${id}" (idx ${i}):`, err);
           return null;
         }
       })}

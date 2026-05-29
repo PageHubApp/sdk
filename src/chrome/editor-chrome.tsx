@@ -18,8 +18,6 @@ export { AddElementButton } from "./primitives/AddElementButton";
 export { TiptapProvider } from "./inline-tools/TiptapContext";
 export { InlineEditToolbar } from "./inline-tools/inline-edit-toolbar/InlineEditToolbar";
 export type { PagehubTextRichMode } from "../core/tiptapExtensions/pagehubTextTiptapExtensions";
-/** @deprecated Use InlineEditToolbar instead */
-export { InlineEditToolbar as TiptapToolbar } from "./inline-tools/inline-edit-toolbar/InlineEditToolbar";
 export { ContainerSettingsTopNodeTool } from "./canvas/node-tools/ContainerSettingsTopNodeTool";
 export { ContainerSettingsNodeTool } from "./canvas/node-tools/ContainerSettingsNodeTool";
 export { SelectMapTool } from "./canvas/node-tools/SelectMapTool";

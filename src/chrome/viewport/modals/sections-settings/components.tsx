@@ -8,6 +8,7 @@ import { ComponentPreview } from "../../../canvas/node-tools/ComponentPreview";
 import { ToolboxInsertHintTooltip } from "../../../primitives/ToolboxInsertHintTooltip";
 import { buildComponentFromNode } from "./blockHelpers";
 import { CATEGORY_WIREFRAMES } from "./categoryWireframes";
+import { sdkLog } from "../../../../utils/logger";
 
 export { FilterDropdown } from "../../../primitives/FilterDropdown";
 
@@ -125,7 +126,7 @@ export const CustomSectionCard = memo(function CustomSectionCard({
             const element = buildElement(template.rootNodeId);
             if (element) onInsert(element);
           } catch (e) {
-            console.error("Error creating custom section:", e);
+            sdkLog.error("Error creating custom section:", e);
           }
         }}
       >

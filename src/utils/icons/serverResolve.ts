@@ -16,17 +16,58 @@ const entryCache = new Map<string, IconSvgEntry>();
 // Lazily resolve the path to the generated SVG registries. We keep this in a
 // function so the SDK bundle can be imported in environments without `fs`
 // (browser bundles) without blowing up at module load.
+//
+// Resolution order, first existing wins:
+//   1. Resolve relative to the package install location via `@pagehub/sdk/package.json`
+//      — works for any consumer that npm-installs the package.
+//   2. `process.cwd() + "packages/sdk/src/data/icon-svgs"` — monorepo dev.
+//   3. `process.cwd() + "node_modules/@pagehub/sdk/src/data/icon-svgs"` — fallback when
+//      package-name resolution is unavailable (some bundled server contexts).
 let _dataDir: string | null | undefined;
 function getDataDir(): string | null {
   if (_dataDir !== undefined) return _dataDir;
+
+  let path: typeof import("node:path");
+  let fs: typeof import("node:fs");
   try {
-    const path = require("node:path");
-    // Always resolved from the repo root — data is generated to a stable path.
-    _dataDir = path.resolve(process.cwd(), "packages/sdk/src/data/icon-svgs");
+    path = require("node:path");
+    fs = require("node:fs");
   } catch {
     _dataDir = null;
+    return null;
   }
-  return _dataDir;
+
+  const candidates: string[] = [];
+
+  // 1. Module-relative — works in ESM contexts where import.meta.url is defined.
+  try {
+    const url: string | undefined =
+      typeof import.meta !== "undefined" ? (import.meta as ImportMeta).url : undefined;
+    if (url) {
+      const { createRequire } = require("node:module");
+      const req = createRequire(url);
+      const pkgPath = req.resolve("@pagehub/sdk/package.json");
+      candidates.push(path.resolve(path.dirname(pkgPath), "src/data/icon-svgs"));
+    }
+  } catch { /* skip — fall through to cwd-based candidates */ }
+
+  // 2. Monorepo dev (cwd = repo root).
+  candidates.push(path.resolve(process.cwd(), "packages/sdk/src/data/icon-svgs"));
+
+  // 3. Consumer's local node_modules (cwd = consumer project root).
+  candidates.push(path.resolve(process.cwd(), "node_modules/@pagehub/sdk/src/data/icon-svgs"));
+
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c)) {
+        _dataDir = c;
+        return c;
+      }
+    } catch { /* skip */ }
+  }
+
+  _dataDir = null;
+  return null;
 }
 
 function loadSetSync(set: string): Record<string, IconSvgEntry> | null {

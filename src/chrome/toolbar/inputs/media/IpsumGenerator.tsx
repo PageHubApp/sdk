@@ -5,7 +5,7 @@ import { ViewAtom } from "../../../viewport/state/atoms";
 import { LoremIpsum } from "@/utils/seeds/loremIpsum";
 import { useAtomValue } from "@zedux/react";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 import { TbLetterA, TbMinus, TbAlignLeft } from "react-icons/tb";
 import { Chip } from "@/chrome/primitives/Chip";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
@@ -16,7 +16,7 @@ function capitalizeFirstLetter(string) {
 
 export const IpsumGenerator = ({ propKey, propType }) => {
   const canvasView = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classWriteView = editorCanvasViewToClassPrefixKey(canvasView);
   const { actions, query } = useEditor();
 

@@ -47,12 +47,7 @@ export function buildCraftTreeFromStructure(
 
   if (options.mode === "preview") {
     if (structure.type === "Image") {
-      const isEmpty =
-        !structure.props.videoId &&
-        // `content` is the legacy alias for `src` — still read here so block
-        // JSON authored before the rename is treated as non-empty.
-        !structure.props.src &&
-        !structure.props.content;
+      const isEmpty = !structure.props.videoId && !structure.props.src;
       if (isEmpty) {
         working = {
           ...structure,

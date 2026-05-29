@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { IconSvgEntry, IconSvgMap } from "./serverResolve";
 import { parseIconRef } from "./collectIconRefs";
+import { sdkLog } from "../logger";
 
 export type { IconSvgEntry, IconSvgMap };
 
@@ -36,7 +37,7 @@ export function loadIconSprite(setId: string): Promise<void> {
     })
     .catch(err => {
       loadingSprites.delete(setId);
-      console.warn(err);
+      sdkLog.warn(err);
     })
     .finally(() => {
       loadingSprites.delete(setId);

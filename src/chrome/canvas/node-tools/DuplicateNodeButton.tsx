@@ -1,6 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { TbCopy } from "react-icons/tb";
 import { duplicateNodeById } from "../../viewport/state/duplicateNodeById";
+import { sdkLog } from "../../../utils/logger";
 
 interface DuplicateNodeButtonProps {
   className?: string;
@@ -21,7 +22,7 @@ export const DuplicateNodeButton = ({ className = "tool-button" }: DuplicateNode
     try {
       await duplicateNodeById({ query, actions, setProp, id });
     } catch (error) {
-      console.error("Error duplicating node:", error);
+      sdkLog.error("Error duplicating node:", error);
     }
   };
 

@@ -31,15 +31,9 @@ export function parseGoogleFontFromArbitraryClass(base: string): string | null {
   if (!base.startsWith("font-[") || !base.endsWith("]")) return null;
   const inner = base.slice(6, -1).trim();
   const m = inner.match(/^(['"])([\s\S]*?)\1$/);
-  if (m) {
-    const raw = m[2].replace(/\\'/g, "'").replace(/\\\\/g, "\\");
-    return raw.replace(/_/g, " ");
-  }
-  // Legacy: `font-[Outfit]` or `font-[Work_Sans]` (no quotes)
-  if (/^[A-Za-z0-9_\s-]+$/.test(inner) && /[A-Za-z]/.test(inner)) {
-    return inner.replace(/_/g, " ").trim();
-  }
-  return null;
+  if (!m) return null;
+  const raw = m[2].replace(/\\'/g, "'").replace(/\\\\/g, "\\");
+  return raw.replace(/_/g, " ");
 }
 
 /**

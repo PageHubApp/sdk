@@ -1,11 +1,9 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import type { MouseEvent } from "react";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
+import { sdkLog } from "../../utils/logger";
 
 export { BreakpointBadge } from "./BreakpointBadge";
-
-/** @deprecated Global tooltip handles truncated labels — kept for import compat, renders nothing. */
-export const TruncatedLabelTooltip = () => null;
 
 export const Card = ({
   value,
@@ -62,7 +60,7 @@ export const Card = ({
         .writeText(value)
         .then(() => {})
         .catch(err => {
-          console.error("Failed to copy:", err);
+          sdkLog.error("Failed to copy:", err);
         });
     }
   };

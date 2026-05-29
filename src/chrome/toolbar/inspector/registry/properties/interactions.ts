@@ -39,15 +39,11 @@ export const interactionProperties: PropertyDef[] = [
     pinned: true,
     isActive: (_cls, props) => {
       // `props.action` may be an array (multi-action), single object, or
-      // string (form-mode submission URL — not an interaction). Plural
-      // `props.actions` survives only for in-flight legacy data.
+      // string (form-mode submission URL — not an interaction).
       const a = props?.action;
-      const hasAction = (Array.isArray(a) && a.length > 0) || (a && typeof a === "object");
-      const hasLegacy =
-        (Array.isArray(props?.actions) && props.actions.length > 0) ||
-        !!props?.click ||
-        !!props?.url;
-      return Boolean(hasAction || hasLegacy);
+      return Boolean(
+        (Array.isArray(a) && a.length > 0) || (a && typeof a === "object")
+      );
     },
     sortOrder: 0,
   },

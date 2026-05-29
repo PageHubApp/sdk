@@ -8,13 +8,13 @@ import { useAtomValue } from "@zedux/react";
 import { useMemo } from "react";
 import { getPropFinalValue } from "../../../../viewport/state/viewportExports";
 import { ViewAtom } from "../../../../viewport/state/atoms";
-import { ViewSelectionAtom } from "../../../Label";
+import { EditModifiersAtom } from "../../../Label";
 
 export type LayoutMode = "block" | "flex-row" | "flex-col" | "grid";
 
 export function useLayoutMode(): LayoutMode {
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const { classNameStr, currentLayoutMode } = useNode((node: any) => ({
     classNameStr: (node.data?.props?.className as string) || "",
     currentLayoutMode: node.data?.props?.root?.layoutMode as LayoutMode | undefined,

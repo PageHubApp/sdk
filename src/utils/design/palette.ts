@@ -1,5 +1,6 @@
 import type { NamedColor } from "../../components/Background/Background.body";
 import { toCSSVarName } from "./designSystemVars";
+import { sdkLog } from "../logger";
 
 export { PaletteProvider, usePalette } from "./PaletteContext";
 
@@ -71,7 +72,7 @@ export const resolvePaletteColor = (value: string, palette: NamedColor[]): strin
   }
 
   // Fallback if palette color not found
-  console.warn(`Palette color "${name}" not found`);
+  sdkLog.warn(`Palette color "${name}" not found`);
   return value;
 };
 

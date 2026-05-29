@@ -1,6 +1,7 @@
 import debounce from "lodash.debounce";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SetStateAction } from "react";
+import { sdkLog } from "../../../../utils/logger";
 
 interface UseSettingsControllerOptions<TDraft> {
   isOpen: boolean;
@@ -54,7 +55,7 @@ export function useSettingsController<TDraft>({
     const result = commitDraftRef.current(snapshot);
     lastSavedSignatureRef.current = nextSignature;
     if (isThenable(result)) {
-      result.catch(e => console.error("Error saving settings:", e));
+      result.catch(e => sdkLog.error("Error saving settings:", e));
     }
   }, []);
 
@@ -95,7 +96,7 @@ export function useSettingsController<TDraft>({
           if (!cancelled) applyDraft(resolved);
         })
         .catch(e => {
-          console.error("Error loading settings:", e);
+          sdkLog.error("Error loading settings:", e);
           if (!cancelled) setLoading(false);
         });
     } else {

@@ -3,6 +3,7 @@ import { evaluateConditionGroups, evaluateConditions } from "../utils/conditions
 import type { AuthState } from "../utils/design/variables";
 import type { StaticRenderContext, ToHTMLFn } from "../utils/staticHtml";
 import type { SerializedNode, SerializedNodes } from "./types";
+import { sdkLog } from "../utils/logger";
 
 export function resolveType(node: SerializedNode): string {
   if (typeof node.type === "string") return node.type;
@@ -182,6 +183,6 @@ export function renderNode(
   }
 
   // Fallback: unknown component
-  console.warn(`[renderToHTML] No .toHTML.ts for "${typeName}" — rendering children as <div>`);
+  sdkLog.warn(`[renderToHTML] No .toHTML.ts for "${typeName}" — rendering children as <div>`);
   return childrenHTML ? `<div>${childrenHTML}</div>` : "";
 }

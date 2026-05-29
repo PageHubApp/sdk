@@ -7,7 +7,7 @@ import {
   editorCanvasViewToClassPrefixKey,
   removeClassForView,
 } from "../../../utils/tailwind/className";
-import { ViewSelectionAtom } from "../../toolbar/Label";
+import { EditModifiersAtom } from "../../toolbar/Label";
 import { useIsInlineRender } from "../../rendering/InlineRenderContext";
 import RenderNodeControl from "../../rendering/RenderNodeControl";
 import RenderNodeControlInline from "../../rendering/RenderNodeControlInline";
@@ -116,7 +116,7 @@ export const DragAdjustNodeController = (props: {
   } = useNode();
 
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classPrefixView = editorCanvasViewToClassPrefixKey(view);
   const isInlineRender = useIsInlineRender();
 

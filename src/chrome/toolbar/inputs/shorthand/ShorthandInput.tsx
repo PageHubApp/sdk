@@ -17,7 +17,7 @@ import type { ValueType } from "../universal-input/types";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";
 import { ViewAtom } from "../../../viewport/state/atoms";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 import { changeProp, getPropFinalValue } from "../../../viewport/state/viewportExports";
 import type {
   PropertyInputProps,
@@ -39,7 +39,7 @@ export function ShorthandInput({ def, config }: Props) {
   const { modes, tailwindKey, varSelectorPrefix, allowedTypes } = config;
 
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
 
   const {
     actions: { setProp },

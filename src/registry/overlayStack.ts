@@ -1,3 +1,4 @@
+import { sdkLog } from "../utils/logger";
 /**
  * Editor overlay stack — module-level LIFO of dismissable surfaces.
  *
@@ -37,7 +38,7 @@ function notify(): void {
     try {
       fn();
     } catch (e) {
-      console.error("[ph.overlayStack] listener error:", e);
+      sdkLog.error("[ph.overlayStack] listener error:", e);
     }
   });
 }
@@ -89,7 +90,7 @@ export function dismissTopOverlay(): boolean {
   try {
     entry.dismiss();
   } catch (e) {
-    console.error("[ph.overlayStack] dismiss callback threw:", e);
+    sdkLog.error("[ph.overlayStack] dismiss callback threw:", e);
   }
   return true;
 }

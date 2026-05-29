@@ -3,6 +3,7 @@ import { useState } from "react";
 import { TbCopy, TbDownload, TbUpload } from "react-icons/tb";
 import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";
 import { CodeEditor } from "../typography/CodeEditor";
+import { sdkLog } from "../../../../utils/logger";
 
 export const ComponentImportExport = ({ className = "" }: { className?: string }) => {
   const { id } = useNode();
@@ -35,7 +36,7 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
         )
       );
     } catch (error) {
-      console.error("Error generating component JSON:", error);
+      sdkLog.error("Error generating component JSON:", error);
       setExportText("Error generating JSON");
     }
   };
@@ -48,15 +49,15 @@ export const ComponentImportExport = ({ className = "" }: { className?: string }
         actions.deserialize(JSON.stringify(data));
         setImportText("");
       } else {
-        console.error("Invalid component data structure");
+        sdkLog.error("Invalid component data structure");
       }
     } catch (error) {
-      console.error("Error importing component:", error);
+      sdkLog.error("Error importing component:", error);
     }
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(exportText).catch(err => console.error("Failed to copy:", err));
+    navigator.clipboard.writeText(exportText).catch(err => sdkLog.error("Failed to copy:", err));
   };
 
   return (

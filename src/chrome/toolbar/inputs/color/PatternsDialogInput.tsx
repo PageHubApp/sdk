@@ -7,7 +7,7 @@ import { useRegisterFloatingPanelPortal } from "@/chrome/floating/FloatingPanel"
 import { useAtomValue } from "@zedux/react";
 import { generatePattern } from "@/utils/background";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 import { Chip } from "@/chrome/primitives/Chip";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
@@ -47,7 +47,7 @@ export const PatternsDialogInput = ({
 }) => {
   const { actions, query } = useEditor();
   const canvasView = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classWriteView = editorCanvasViewToClassPrefixKey(canvasView);
 
   const {

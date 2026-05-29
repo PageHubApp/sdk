@@ -122,11 +122,11 @@ export function classPropKeyMatches(base: string, propKey: string): boolean {
 /**
  * Map a Tailwind class to its toolbar prop key.
  *
- * Thin wrapper over `resolveClassKey` that preserves the legacy "color" alias
- * for text-color tokens — the toolbar / `displayLabel` keying system was
- * authored against `color`, while `TailwindStyles` stores the same group under
- * `text`. The shadow-bug gates (`text-` / `border-` / `font-` overloads) live
- * in `resolveClassKey`, so this wrapper inherits them automatically.
+ * Thin wrapper over `resolveClassKey` that aliases text-color tokens to
+ * `color` — the toolbar / `displayLabel` keying system uses `color`, while
+ * `TailwindStyles` stores the same group under `text`. Shadow-bug gates
+ * (`text-` / `border-` / `font-` overloads) live in `resolveClassKey`, so
+ * this wrapper inherits them automatically.
  */
 export function classNameToVar(name: string): string | undefined {
   const k = resolveClassKey(name);

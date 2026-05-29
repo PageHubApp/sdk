@@ -10,16 +10,6 @@ import type { ConditionGroup } from "./conditions/types";
 
 export type ActionType =
   | "link"
-  /** @deprecated migrated to "link" via `legacyActionToLink` — kept in union for in-flight data */
-  | "link-url"
-  /** @deprecated migrated to "link" via `legacyActionToLink` — kept in union for in-flight data */
-  | "link-page"
-  /** @deprecated migrated to "link" via `legacyActionToLink` — kept in union for in-flight data */
-  | "scroll-to"
-  /** @deprecated migrated to "link" via `legacyActionToLink` — kept in union for in-flight data */
-  | "email"
-  /** @deprecated migrated to "link" via `legacyActionToLink` — kept in union for in-flight data */
-  | "phone"
   | "open-modal"
   | "show-hide"
   | "copy-to-clipboard"
@@ -69,8 +59,8 @@ interface ActionBase {
    * (Elementor-style); within a group, `logic: "all" | "any"` chooses AND/OR.
    *
    * Currently only `fireLoadAction` reads this field — load-trigger banners
-   * use it for first-visit gating (replaces the old `gateLocalStorageKey`).
-   * Click/hover gating in `addActionHandlers` is a follow-up.
+   * use it for first-visit gating. Click/hover gating in `addActionHandlers`
+   * is a follow-up.
    */
   conditions?: ConditionGroup[];
   /**
@@ -99,48 +89,9 @@ export interface LinkAction extends ActionBase {
   target?: LinkTarget;
 }
 
-/** @deprecated use `LinkAction` */
-export interface LinkUrlAction extends ActionBase {
-  type: "link-url";
-  url: string;
-  target?: LinkTarget;
-}
-
-/** @deprecated use `LinkAction` with `href: "ref:<pageId>[/path]"` */
-export interface LinkPageAction extends ActionBase {
-  type: "link-page";
-  pageId: string; // CraftJS node ID
-  /**
-   * Optional path segments to append after the resolved page URL (e.g. "/{{item.slug}}"
-   * for a PDP in a storefront). Interpolated against the current item context downstream.
-   */
-  path?: string;
-  target?: LinkTarget;
-}
-
-/** @deprecated use `LinkAction` with `href: "#<anchor>"` */
-export interface ScrollToAction extends ActionBase {
-  type: "scroll-to";
-  anchor: string;
-}
-
 export interface OpenModalAction extends ActionBase {
   type: "open-modal";
   anchor: string;
-}
-
-/** @deprecated use `LinkAction` with `href: "mailto:<email>?subject=…&body=…"` */
-export interface EmailAction extends ActionBase {
-  type: "email";
-  email: string;
-  subject?: string;
-  body?: string;
-}
-
-/** @deprecated use `LinkAction` with `href: "tel:<phone>"` */
-export interface PhoneAction extends ActionBase {
-  type: "phone";
-  phone: string;
 }
 
 export interface ShowHideAction extends ActionBase {
@@ -159,12 +110,6 @@ export interface ShowHideAction extends ActionBase {
    *    banner regardless of conditions.
    */
   trigger?: "click" | "hover" | "load";
-  /**
-   * @deprecated Migrated to `conditions` by `normalizeAction` —
-   * `{ type: "localStorage", key, operator: "not-exists" }`. Kept in the
-   * union only so old in-flight data passes type checks until rewritten.
-   */
-  gateLocalStorageKey?: string;
 }
 
 export interface CopyToClipboardAction extends ActionBase {
@@ -230,9 +175,10 @@ export interface AgentSendAction extends ActionBase {
 }
 
 /**
- * Write a key/value pair to `window.localStorage`. Pairs naturally with
- * a load-trigger `show-hide` action whose `gateLocalStorageKey` matches —
- * once the key is set, the banner / popup is gated out on subsequent visits.
+ * Write a key/value pair to `window.localStorage`. Pairs naturally with a
+ * load-trigger `show-hide` action whose `conditions` include a `localStorage`
+ * `not-exists` check — once the key is set, the banner/popup is gated out on
+ * subsequent visits.
  */
 export interface SetLocalStorageAction extends ActionBase {
   type: "set-local-storage";
@@ -332,12 +278,7 @@ export interface ToggleThemeAction extends ActionBase {
 
 export type NodeAction =
   | LinkAction
-  | LinkUrlAction
-  | LinkPageAction
-  | ScrollToAction
   | OpenModalAction
-  | EmailAction
-  | PhoneAction
   | ShowHideAction
   | CopyToClipboardAction
   | DownloadFileAction
@@ -360,36 +301,21 @@ export type LinkTarget = "_self" | "_blank" | "_parent" | "_top";
 // ─── Helpers ───────────────────────────────────────────────────────────
 
 /** Actions that resolve to an href (render as <a>) */
-export function isLinkAction(
-  action: NodeAction | null | undefined
-): action is
-  | LinkAction
-  | LinkUrlAction
-  | LinkPageAction
-  | EmailAction
-  | PhoneAction
-  | ScrollToAction {
-  if (!action) return false;
-  return (
-    action.type === "link" ||
-    action.type === "link-url" ||
-    action.type === "link-page" ||
-    action.type === "email" ||
-    action.type === "phone" ||
-    action.type === "scroll-to"
-  );
+export function isLinkAction(action: NodeAction | null | undefined): action is LinkAction {
+  return !!action && action.type === "link";
 }
 
 /**
  * Anchor-style links — renderer attaches preventDefault + smooth-scroll behavior.
- * Covers legacy `scroll-to` and the new unified `link` with `href` starting `#`.
+ * A unified `link` action with `href` starting `#` is an in-page anchor.
  */
 export function isAnchorAction(action: NodeAction | null | undefined): boolean {
-  if (!action) return false;
-  if (action.type === "scroll-to") return true;
-  if (action.type === "link" && typeof action.href === "string" && action.href.startsWith("#"))
-    return true;
-  return false;
+  return (
+    !!action &&
+    action.type === "link" &&
+    typeof action.href === "string" &&
+    action.href.startsWith("#")
+  );
 }
 
 /** Actions that need JS event handlers at runtime */
@@ -474,35 +400,6 @@ export function actionToHref(
       return h;
     }
 
-    case "link-url":
-      return action.url || null;
-
-    case "link-page": {
-      if (!action.pageId) return null;
-      const base = resolvePageRef(`ref:${action.pageId}`, pageIndex, routerPath);
-      if (!action.path) return base;
-      const p = action.path;
-      const isQueryOrHash = p.startsWith("?") || p.startsWith("#");
-      const suffix = p.startsWith("/") || isQueryOrHash ? p : `/${p}`;
-      if (isQueryOrHash) return `${base}${suffix}`;
-      return base === "/" ? suffix : `${base}${suffix}`;
-    }
-
-    case "scroll-to":
-      return action.anchor ? `#${action.anchor}` : null;
-
-    case "email": {
-      if (!action.email) return null;
-      const params = new URLSearchParams();
-      if (action.subject) params.set("subject", action.subject);
-      if (action.body) params.set("body", action.body);
-      const qs = params.toString();
-      return `mailto:${action.email}${qs ? `?${qs}` : ""}`;
-    }
-
-    case "phone":
-      return action.phone ? `tel:${action.phone}` : null;
-
     case "open-modal":
     case "show-hide":
     case "toggle-theme":
@@ -530,102 +427,14 @@ export function actionToHref(
 export function actionTarget(action: NodeAction | null | undefined): LinkTarget | undefined {
   if (!action) return undefined;
   if (action.type === "link") return action.target;
-  if (action.type === "link-url" || action.type === "link-page") return action.target;
   return undefined;
 }
 
-// ─── Migration ─────────────────────────────────────────────────────────
+// ─── Action reading ────────────────────────────────────────────────────
 
-/** Build a `mailto:` URL with optional `?subject=…&body=…` querystring. */
-function encodeMailto(a: { email?: string; subject?: string; body?: string }): string {
-  if (!a.email) return "";
-  const params = new URLSearchParams();
-  if (a.subject) params.set("subject", a.subject);
-  if (a.body) params.set("body", a.body);
-  const qs = params.toString();
-  return `mailto:${a.email}${qs ? `?${qs}` : ""}`;
-}
-
-/**
- * Pure mapping from any of the 5 legacy link-ish action types to the unified `LinkAction`.
- * Idempotent — passing an already-`link` action returns it as-is.
- *
- * Used by:
- *   - `migrateAction()` (render-time runtime shim)
- *   - `scripts/migrate-actions-to-link.mjs` (file walker for blocks/templates)
- *   - `scripts/migrate-mongo-actions-to-link.mjs` (Mongo cursor for user sites)
- *
- * Returns `null` for non-link-ish actions (caller passes them through unchanged).
- */
-export function legacyActionToLink(action: any): LinkAction | null {
-  if (!action || typeof action !== "object") return null;
-  switch (action.type) {
-    case "link":
-      return action as LinkAction;
-    case "link-url":
-      return {
-        type: "link",
-        href: action.url ?? "",
-        ...(action.target ? { target: action.target } : {}),
-      };
-    case "link-page":
-      return {
-        type: "link",
-        href: action.pageId ? `ref:${action.pageId}${action.path ?? ""}` : "",
-        ...(action.target ? { target: action.target } : {}),
-      };
-    case "scroll-to":
-      return { type: "link", href: action.anchor ? `#${action.anchor}` : "" };
-    case "email":
-      return { type: "link", href: encodeMailto(action) };
-    case "phone":
-      return { type: "link", href: action.phone ? `tel:${action.phone}` : "" };
-    default:
-      return null;
-  }
-}
-
-/** Normalize a single raw action: pass through if already valid, or migrate legacy link-ish to `link`. */
+/** Pass-through validator. Returns the action unchanged, or null if not an object. */
 function normalizeAction(raw: any): NodeAction | null {
   if (!raw || typeof raw !== "object") return null;
-  const link = legacyActionToLink(raw);
-  if (link) return link;
-
-  // Legacy `gateLocalStorageKey` on load-trigger show-hide → fold into the
-  // generic `conditions` array so action gating uses one mechanism. Only
-  // fires when the action doesn't already carry conditions (idempotent —
-  // re-running the migration on already-normalized data is a no-op).
-  if (
-    raw.type === "show-hide" &&
-    raw.trigger === "load" &&
-    typeof raw.gateLocalStorageKey === "string" &&
-    raw.gateLocalStorageKey
-  ) {
-    const hasConditions = Array.isArray(raw.conditions) && raw.conditions.length > 0;
-    if (!hasConditions) {
-      const { gateLocalStorageKey, ...rest } = raw;
-      return {
-        ...rest,
-        conditions: [
-          {
-            logic: "all",
-            conditions: [
-              {
-                type: "localStorage",
-                key: gateLocalStorageKey,
-                operator: "not-exists",
-                value: "",
-              },
-            ],
-          },
-        ],
-      } as NodeAction;
-    }
-    // Already has conditions — strip the dead field, trust conditions.
-    const { gateLocalStorageKey, ...rest } = raw;
-    return rest as NodeAction;
-  }
-
   return raw as NodeAction;
 }
 
@@ -634,17 +443,13 @@ function normalizeAction(raw: any): NodeAction | null {
  * returns an array (length 0+), normalized so each entry is a current
  * `NodeAction` shape.
  *
- * Resolution order — handles every saved data shape:
+ * Resolution order:
  *   1. `props.action` is a string → return `[]`. Form components reuse
  *      `props.action` for the form submission URL; that path stays string,
  *      this helper opts out so the form keeps working.
  *   2. `props.action` is an array → normalize each entry.
  *   3. `props.action` is a single object → wrap to one-element array.
- *   4. `props.actions` is a non-empty array → normalize each entry.
- *      (Legacy plural-prop window; reading kept for back-compat.)
- *   5. Legacy `props.url` / `props.urlTarget` → wrap as one `link` action.
- *   6. Legacy `props.click` (show-hide pre-unification) → wrap as one show-hide action.
- *   7. Else `[]`.
+ *   4. Else `[]`.
  */
 export function migrateActions(props: any): NodeAction[] {
   if (!props) return [];
@@ -652,73 +457,24 @@ export function migrateActions(props: any): NodeAction[] {
   // (1) Form's `props.action` is a submission URL string — opt out.
   if (typeof props.action === "string") return [];
 
-  // (2) / (3) `props.action`
+  // (2) `props.action` is an array
   if (Array.isArray(props.action)) {
     return props.action
       .map(normalizeAction)
       .filter((a: NodeAction | null): a is NodeAction => a !== null);
   }
+
+  // (3) `props.action` is a single object
   if (props.action && typeof props.action === "object") {
     const norm = normalizeAction(props.action);
     return norm ? [norm] : [];
   }
 
-  // (4) Legacy plural-prop window
-  if (Array.isArray(props.actions) && props.actions.length > 0) {
-    return props.actions
-      .map(normalizeAction)
-      .filter((a: NodeAction | null): a is NodeAction => a !== null);
-  }
-
-  // (5) Old link mode (props.url / props.urlTarget) — emit unified `link` directly
-  if (props.url && typeof props.url === "string") {
-    return [
-      {
-        type: "link",
-        href: props.url,
-        ...(props.urlTarget ? { target: props.urlTarget } : {}),
-      },
-    ];
-  }
-
-  // (6) Old action mode (props.click)
-  const click = props.click;
-  if (click?.type && click?.value) {
-    return [
-      {
-        type: "show-hide",
-        target: click.value,
-        direction: click.direction || "toggle",
-        method: click.method,
-        group: click.group,
-        trigger: click.type,
-      },
-    ];
-  }
-
   return [];
 }
 
-/**
- * @deprecated Use `migrateActions` and pick the first entry. Kept as a
- * one-line shim because `utils/index.ts` re-exports it for external SDK
- * consumers.
- */
-export function migrateAction(props: any): NodeAction | null {
-  return migrateActions(props)[0] ?? null;
-}
-
 /** Find the first link-ish action in an array (for `<a href>` rendering). */
-export function findLinkAction(
-  actions: NodeAction[]
-):
-  | LinkAction
-  | LinkUrlAction
-  | LinkPageAction
-  | EmailAction
-  | PhoneAction
-  | ScrollToAction
-  | undefined {
+export function findLinkAction(actions: NodeAction[]): LinkAction | undefined {
   return actions.find(isLinkAction);
 }
 

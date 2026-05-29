@@ -8,6 +8,7 @@
 import type { CommandDef, CommandRunContext, CommandContext } from "./types";
 import type { ContextRegistry } from "./context";
 import { getEditorActions, getEditorQuery } from "./editorBackref";
+import { sdkLog } from "../utils/logger";
 
 export interface CommandsRegistry {
   register: <Args = void>(def: CommandDef<Args>) => void;
@@ -39,7 +40,7 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
       try {
         l();
       } catch (err) {
-        console.error("[ph.commands] listener error:", err);
+        sdkLog.error("[ph.commands] listener error:", err);
       }
     });
   };
@@ -73,7 +74,7 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
     try {
       return Boolean(def.when(ctx, args as never));
     } catch (err) {
-      console.error(`[ph.commands] when() threw for "${id}":`, err);
+      sdkLog.error(`[ph.commands] when() threw for "${id}":`, err);
       return false;
     }
   };
@@ -87,7 +88,7 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
     try {
       return Boolean(def.enablement(ctx, args as never));
     } catch (err) {
-      console.error(`[ph.commands] enablement() threw for "${id}":`, err);
+      sdkLog.error(`[ph.commands] enablement() threw for "${id}":`, err);
       return false;
     }
   };
@@ -103,7 +104,7 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
   ): Promise<void> => {
     const def = map.get(id);
     if (!def) {
-      console.warn(`[ph.commands] execute("${id}") — no such command`);
+      sdkLog.warn(`[ph.commands] execute("${id}") — no such command`);
       return;
     }
     const baseCtx = deps.context.getSnapshot();
@@ -115,7 +116,7 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
           return;
         }
       } catch (err) {
-        console.error(`[ph.commands] when() threw for "${id}":`, err);
+        sdkLog.error(`[ph.commands] when() threw for "${id}":`, err);
         return;
       }
     }
@@ -126,7 +127,7 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
           return;
         }
       } catch (err) {
-        console.error(`[ph.commands] enablement() threw for "${id}":`, err);
+        sdkLog.error(`[ph.commands] enablement() threw for "${id}":`, err);
         return;
       }
     }
@@ -142,7 +143,7 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
     try {
       await def.run(runCtx, args as never);
     } catch (err) {
-      console.error(`[ph.commands] run() threw for "${id}":`, err);
+      sdkLog.error(`[ph.commands] run() threw for "${id}":`, err);
       throw err;
     }
   };

@@ -2,6 +2,7 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useState } from "react";
 import { DeleteMedia } from "@/chrome/viewport/state/viewportExports";
 import type { MediaItem } from "../utils/media-helpers";
+import { sdkLog } from "../../../../../utils/logger";
 
 interface UseMediaDeleteStateArgs {
   query: any;
@@ -46,7 +47,7 @@ export function useMediaDeleteState({
       try {
         await DeleteMedia(mediaIdToDelete, settings, query, actions);
       } catch (error) {
-        console.error("Failed to delete media:", error);
+        sdkLog.error("Failed to delete media:", error);
       }
     }
 

@@ -7,6 +7,7 @@
 import type { ComponentModifier } from "../../define/types";
 import { getModifiers } from "../../define/catalogRegistry";
 import { getBuiltinComponentDef } from "../../core/builtinDefsLookup";
+import { sdkLog } from "../../utils/logger";
 
 function resolveModifierClassTokens(mod: ComponentModifier): string[] {
   if (mod.classes) return mod.classes.split(/\s+/).filter(Boolean);
@@ -144,14 +145,14 @@ export function applyPeerClassInherit(
   const def = getBuiltinComponentDef(name);
   const cfg = def?.peerInherit;
   if (!cfg) {
-    console.log(`[peerInherit] skip ${name} ${newNodeId}: no peerInherit config on def`);
+    sdkLog.log(`[peerInherit] skip ${name} ${newNodeId}: no peerInherit config on def`);
     return;
   }
 
   const parent = query.node(parentId).get();
   const parentName = parent?.data?.name as string | undefined;
   if (!parentName || !cfg.whenParentIs.includes(parentName)) {
-    console.log(
+    sdkLog.log(
       `[peerInherit] skip ${name} ${newNodeId}: parent ${parentName} not in [${cfg.whenParentIs.join(",")}]`
     );
     return;
@@ -188,7 +189,7 @@ export function applyPeerClassInherit(
     refId = walk(idx + 1, +1) ?? walk(idx - 1, -1);
   }
   if (!refId || refId === newNodeId) {
-    console.log(
+    sdkLog.log(
       `[peerInherit] skip ${name} ${newNodeId}: no same-kind sibling in parent ${parentId}`
     );
     return;
@@ -197,7 +198,7 @@ export function applyPeerClassInherit(
   const refNode = query.node(refId).get();
   const refClass = (refNode?.data?.props?.className as string) || "";
   if (!refClass.trim()) {
-    console.log(
+    sdkLog.log(
       `[peerInherit] skip ${name} ${newNodeId}: reference sibling ${refId} has empty className`
     );
     return;
@@ -224,7 +225,7 @@ export function applyPeerClassInherit(
     if (!props.root) props.root = {};
     props.root.activeModifiers = activeModNames;
 
-    console.log(
+    sdkLog.log(
       `[peerInherit] applied ${name} ${newNodeId} ← ref ${refId}\n  ref:    ${refClass}\n  before: ${before}\n  after:  ${props.className}\n  mods:   [${activeModNames.join(", ")}]`
     );
   });

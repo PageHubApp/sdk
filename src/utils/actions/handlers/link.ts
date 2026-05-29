@@ -1,4 +1,4 @@
-/** Anchor + non-anchor link navigation (covers `scroll-to` legacy + unified `link`). */
+/** Anchor + non-anchor link navigation for the unified `link` action. */
 import type { NodeAction } from "../../action";
 import { fireConversion } from "../conversion";
 import { actionGatePasses } from "../gates";
@@ -10,15 +10,13 @@ export function attachLink(
   enabled: boolean,
   context?: ActionContext
 ): boolean {
-  // Anchor link — `scroll-to` or unified `link` with `href: "#…"`. Special
-  // anchor keywords: `"top"` scrolls the window to the page top (used by
-  // pagination + back-to-top buttons without needing a real DOM element).
+  // Anchor link — unified `link` with `href: "#…"`. Special anchor keywords:
+  // `"top"` scrolls the window to the page top (used by pagination +
+  // back-to-top buttons without needing a real DOM element).
   const anchor =
-    action.type === "scroll-to"
-      ? action.anchor
-      : action.type === "link" && typeof action.href === "string" && action.href.startsWith("#")
-        ? action.href.slice(1)
-        : null;
+    action.type === "link" && typeof action.href === "string" && action.href.startsWith("#")
+      ? action.href.slice(1)
+      : null;
   if (anchor) {
     chain(prop, "onClick", (e, run) => {
       run(e);

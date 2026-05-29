@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { TbCheck, TbLoader2, TbX } from "react-icons/tb";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import type { UseImageCropReturn } from "../hooks/useImageCrop";
 
 const BLUR_PLACEHOLDER =
@@ -189,7 +190,8 @@ function Handle({ position, cursor }: { position: string; cursor: string }) {
   return (
     <div
       className={`pointer-events-auto absolute ${position} size-3 cursor-${cursor} rounded-full border-2 border-gray-800 bg-white shadow-lg transition-transform hover:scale-110`}
-      title={`Resize from ${cursor.replace("-resize", "")}`}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      data-tooltip-content={`Resize from ${cursor.replace("-resize", "")}`}
     />
   );
 }

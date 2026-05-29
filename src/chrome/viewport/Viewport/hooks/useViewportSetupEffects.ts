@@ -52,13 +52,14 @@ export function useViewportSetupEffects() {
     phStorage.set("grid-lines", showGridLines.toString());
   }, [showGridLines]);
 
-  // Expose query for style guide resolution
+  // Expose query (style-guide resolution) + actions (host adapters driving
+  // programmatic mutations — e.g. chat-op bridges in external editors).
   useEffect(() => {
-    if (typeof window !== "undefined") (window as any).__CRAFT_EDITOR__ = { query };
+    if (typeof window !== "undefined") (window as any).__CRAFT_EDITOR__ = { query, actions };
     return () => {
       if (typeof window !== "undefined") delete (window as any).__CRAFT_EDITOR__;
     };
-  }, [query]);
+  }, [query, actions]);
 
   // Sync atoms → store
   useEffect(() => {

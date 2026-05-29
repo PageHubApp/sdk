@@ -5,6 +5,7 @@
  */
 
 import { applyHandlerOptions, readHandlerOptions } from "./handlerCode";
+import { sdkLog } from "../logger";
 
 const handlerCache = new Map<string, (event: any) => void>();
 
@@ -14,7 +15,7 @@ function compileHandler(code: string): ((event: any) => void) | null {
   try {
     fn = new Function("event", code) as (event: any) => void;
   } catch (err) {
-    console.warn("[PageHub] invalid handler", err);
+    sdkLog.warn("[PageHub] invalid handler", err);
     return null;
   }
   handlerCache.set(code, fn);
@@ -50,7 +51,7 @@ export function addCustomHandlers(
       try {
         compiled(event);
       } catch (err) {
-        console.warn("[PageHub] handler runtime error", err);
+        sdkLog.warn("[PageHub] handler runtime error", err);
       }
     };
   }

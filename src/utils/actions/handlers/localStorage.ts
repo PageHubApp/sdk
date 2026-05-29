@@ -1,6 +1,7 @@
 import type { NodeAction } from "../../action";
 import { actionGatePasses } from "../gates";
 import { chain } from "../internal";
+import { sdkLog } from "../../logger";
 
 export function attachSetLocalStorage(prop: any, action: NodeAction, enabled: boolean) {
   if (action.type !== "set-local-storage") return;
@@ -12,7 +13,7 @@ export function attachSetLocalStorage(prop: any, action: NodeAction, enabled: bo
     try {
       if (sls.key) window.localStorage.setItem(sls.key, sls.value ?? "");
     } catch (err) {
-      console.warn("[PageHub] set-local-storage failed", err);
+      sdkLog.warn("[PageHub] set-local-storage failed", err);
     }
   });
 }
@@ -27,7 +28,7 @@ export function attachRemoveLocalStorage(prop: any, action: NodeAction, enabled:
     try {
       if (rls.key) window.localStorage.removeItem(rls.key);
     } catch (err) {
-      console.warn("[PageHub] remove-local-storage failed", err);
+      sdkLog.warn("[PageHub] remove-local-storage failed", err);
     }
   });
 }

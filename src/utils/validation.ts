@@ -1,3 +1,4 @@
+import { sdkLog } from "./logger";
 export const isCssValid = (code: string): boolean => {
   try {
     const { parse } = require("css-tree");
@@ -14,7 +15,7 @@ export const isJsValid = (code: string): boolean => {
     new Function(strippedCode);
     return true;
   } catch (err) {
-    console.error(err);
+    sdkLog.error(err);
     return false;
   }
 };

@@ -9,6 +9,7 @@ import React from "react";
 import type { ComponentType, ReactNode } from "react";
 import type { PropertyInputProps } from "./registry/propertyDefs";
 import { BlockSkeleton, ChipSkeleton, RowSkeleton } from "../../primitives/LoadingBar";
+import { sdkLog } from "../../../utils/logger";
 
 /**
  * Per-entry shape: lazy component + the Suspense fallback to render while
@@ -219,7 +220,7 @@ export function resolveCustomInput(
   const entry = lazyMap[ref];
   if (!entry) {
     if (process.env.NODE_ENV !== "production") {
-      console.error(`[customInputs] unknown component "${ref}" — add it to lazyMap`);
+      sdkLog.error(`[customInputs] unknown component "${ref}" — add it to lazyMap`);
     }
     const empty: ComponentType<PropertyInputProps> = () => null;
     wrappedCache.set(ref, empty);

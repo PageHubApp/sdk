@@ -6,6 +6,7 @@ import { TbCheck, TbTrash, TbX } from "react-icons/tb";
 import { resolveTheme } from "@/utils/design/resolveTheme";
 import { useTokenUsage } from "../universal-input/hooks/useTokenUsage";
 import { useOverlay } from "../../../../registry/hooks/useOverlay";
+import { sdkLog } from "../../../../utils/logger";
 
 interface CreateTokenDialogProps {
   /** When set, dialog is in edit mode: pre-fills name + color, shows Delete button.
@@ -104,7 +105,7 @@ export function CreateTokenDialog({
       });
       onCreated(trimmed);
     } catch (e) {
-      console.error("Failed to save token:", e);
+      sdkLog.error("Failed to save token:", e);
     }
   };
 
@@ -129,7 +130,7 @@ export function CreateTokenDialog({
       onDeleted?.(existing!.originalName);
       onClose();
     } catch (e) {
-      console.error("Failed to delete token:", e);
+      sdkLog.error("Failed to delete token:", e);
     }
   };
 

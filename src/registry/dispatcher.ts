@@ -20,6 +20,7 @@ import type { ContextRegistry } from "./context";
 import type { KeybindingsRegistry } from "./keybindings";
 import type { CommandContext, KeybindingDef } from "./types";
 import { isInsideTextEditingSurface } from "../utils/keyboard";
+import { sdkLog } from "../utils/logger";
 
 export interface KeybindingDispatcherOptions {
   commands: CommandsRegistry;
@@ -109,7 +110,7 @@ export function mountKeybindingDispatcher(
       const sig = `${best.key}@${targetPriority}`;
       if (!seenConflicts.has(sig)) {
         seenConflicts.add(sig);
-        console.warn(
+        sdkLog.warn(
           `[ph] keybinding conflict: ${best.key} matched ${conflictCount + 1} bindings at priority ${targetPriority}; picked "${best.command}" (first registered).`
         );
       }
@@ -126,7 +127,7 @@ export function mountKeybindingDispatcher(
         trigger: "keybinding",
       });
     } catch (err) {
-      console.error(
+      sdkLog.error(
         `[ph.dispatcher] execute("${best.command}") threw:`,
         err
       );

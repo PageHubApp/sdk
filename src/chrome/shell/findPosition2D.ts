@@ -30,6 +30,7 @@ import {
   setDragOrigin as sessionSetDragOrigin,
   setLastResolvedIntent,
 } from "./spatial/spatialSession";
+import { sdkLog } from "../../utils/logger";
 
 export type { DragOriginState } from "./spatial/spatialSession";
 export type { SpatialIntent } from "./spatial/spatialIntent";
@@ -37,7 +38,7 @@ export { getLastResolvedIntent } from "./spatial/spatialSession";
 
 const isDev = process.env.NODE_ENV === "development";
 const log = isDev
-  ? (label: string, data?: Record<string, any>) => console.log(`[pos2d] ${label}`, data ?? "")
+  ? (label: string, data?: Record<string, any>) => sdkLog.log(`[pos2d] ${label}`, data ?? "")
   : () => {};
 
 /** Resolve parent flex direction from DOM. Shared by algorithm + indicators. */

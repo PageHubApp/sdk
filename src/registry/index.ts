@@ -33,7 +33,6 @@ export {
   useSlotList,
 } from "./hooks";
 
-export { applyEditorChromeSlotsShim, FIELD_TO_SLOT } from "./adapter";
 
 export { deriveSelectionContext } from "./selectionContext";
 export type { DerivedSelectionContext } from "./selectionContext";

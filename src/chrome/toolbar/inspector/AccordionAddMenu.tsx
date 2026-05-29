@@ -8,6 +8,7 @@
  */
 import React, { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { useEditor, useNode } from "@craftjs/core";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { useAtomValue, useAtomState } from "@zedux/react";
 import { TbPlus } from "react-icons/tb";
 import {
@@ -18,7 +19,7 @@ import {
 import { changeProp } from "../../viewport/state/viewportExports";
 import { propertyHasValue } from "./propertyHasValue";
 import { ViewAtom } from "../../viewport/state/atoms";
-import { ViewSelectionAtom } from "../Label";
+import { EditModifiersAtom } from "../Label";
 import { useAccordionContext } from "../AccordionContext";
 import { getProperties, getSectionDef } from "./registry/propertyRegistry";
 import { HiddenKeysAtom } from "./registry/atoms";
@@ -63,7 +64,7 @@ export const AccordionAddMenu = React.memo(
     };
 
     const view = useAtomValue(ViewAtom);
-    const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+    const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
     const hiddenKeys = useAtomValue(HiddenKeysAtom);
 
     const {
@@ -292,7 +293,8 @@ export const AccordionAddMenu = React.memo(
             }
           }}
           aria-label={`Add ${only.label}`}
-          title={only.help}
+          data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          data-tooltip-content={only.help}
           className="text-neutral-content hover:text-base-content hover:bg-base-200 flex size-4 shrink-0 items-center justify-center rounded-md opacity-70 transition-[color,background-color,opacity] hover:opacity-100"
         >
           <TbPlus className="size-3.5" aria-hidden />

@@ -3,7 +3,7 @@ import { useAtomValue } from "@zedux/react";
 import { createPortal } from "react-dom";
 import { editorCanvasViewToClassPrefixKey } from "../../../utils/tailwind/className";
 import { checkIfAncestorLinked } from "../../../utils/component/componentUtils";
-import { ViewSelectionAtom } from "../../toolbar/Label";
+import { EditModifiersAtom } from "../../toolbar/Label";
 import { ViewAtom } from "../../viewport/state/atoms";
 import { useGapDrag } from "./useGapDrag";
 import { OVERLAY_Z_CANVAS_CONTROLS } from "../../popovers/overlayZIndex";
@@ -28,7 +28,7 @@ export function GapDragControl() {
     actions: { setProp },
   } = useNode();
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classPrefixView = editorCanvasViewToClassPrefixKey(view);
 
   const { gapHoverInfo, isDragging, handleMouseDown } = useGapDrag({

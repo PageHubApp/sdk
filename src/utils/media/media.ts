@@ -4,6 +4,7 @@
 
 import { ROOT_NODE } from "../../utils/rootNode";
 import { getCdnUrl, generateSrcSet, generateSizes } from "../cdn";
+import { sdkLog } from "../logger";
 
 // ─── Internal helpers ───
 
@@ -52,7 +53,7 @@ export const registerMediaWithBackground = (
       }
     });
   } catch (e) {
-    console.error("Failed to register media with Background:", e);
+    sdkLog.error("Failed to register media with Background:", e);
   }
 };
 
@@ -66,7 +67,7 @@ export const unregisterMediaFromBackground = (query: any, actions: any, mediaId:
       props.pageMedia = props.pageMedia.filter((m: any) => m.id !== mediaId);
     });
   } catch (e) {
-    console.error("Failed to unregister media from Background:", e);
+    sdkLog.error("Failed to unregister media from Background:", e);
   }
 };
 
@@ -76,7 +77,7 @@ export const getPageMedia = (query: any) => {
     if (!backgroundNode) return [];
     return backgroundNode.data.props.pageMedia || [];
   } catch (e) {
-    console.error("Failed to get page media:", e);
+    sdkLog.error("Failed to get page media:", e);
     return [];
   }
 };
@@ -110,7 +111,7 @@ export const getMediaContent = (
     const cdnId = media.cdnId || media.id;
     return getCdnUrl(cdnId, { width: calculateOptimalBackgroundSize(), format: "auto" });
   } catch (e) {
-    console.error("Failed to get media content:", e);
+    sdkLog.error("Failed to get media content:", e);
     return null;
   }
 };
@@ -142,7 +143,7 @@ export const getResponsiveImageAttrs = (
       }),
     };
   } catch (e) {
-    console.error("Failed to get responsive image attrs:", e);
+    sdkLog.error("Failed to get responsive image attrs:", e);
     return { src: getMediaContent(pageMedia, mediaId), srcset: null, sizes: null };
   }
 };
@@ -155,7 +156,7 @@ export const getMediaById = (query: any, mediaId: string): any | null => {
     const pageMedia = backgroundNode.data.props.pageMedia || [];
     return pageMedia.find((m: any) => m.id === mediaId) || null;
   } catch (e) {
-    console.error("Failed to get media by ID:", e);
+    sdkLog.error("Failed to get media by ID:", e);
     return null;
   }
 };
@@ -175,7 +176,7 @@ export const updateMediaMetadata = (
       }
     });
   } catch (e) {
-    console.error("Failed to update media metadata:", e);
+    sdkLog.error("Failed to update media metadata:", e);
   }
 };
 
@@ -213,7 +214,7 @@ export const syncPageMedia = (query: any, actions: any) => {
 
     return Array.from(usedMediaIds);
   } catch (e) {
-    console.error("Failed to sync page media:", e);
+    sdkLog.error("Failed to sync page media:", e);
     return [];
   }
 };

@@ -17,6 +17,7 @@ import {
   removeHasMany,
   setRelationField,
 } from "../../../utils/relation";
+import { sdkLog } from "../../../utils/logger";
 
 const fromEntries = (pairs: [string, any][]) => {
   if (Object.fromEntries) return Object.fromEntries(pairs);
@@ -204,7 +205,7 @@ export const saveHandler = async ({ query, id, component = null, actions = null 
         }
       );
       const cloneNode = query.node(clonedTree.rootNodeId).get();
-      console.log("[saveHandler] after link:", {
+      sdkLog.log("[saveHandler] after link:", {
         belongsTo: cloneNode?.data?.props?.relation?.belongsTo,
         relationType: cloneNode?.data?.props?.relation?.relationType,
       });

@@ -32,11 +32,7 @@ import {
   PAGEHUB_RTT_GLOBAL_ID,
   REACT_TOOLTIP_SURFACE_CLASS,
 } from "../chrome/primitives/layout/tooltipSurface";
-import {
-  RegistriesProvider,
-  createRegistriesBundle,
-  applyEditorChromeSlotsShim,
-} from "../registry";
+import { RegistriesProvider, createRegistriesBundle } from "../registry";
 import { mountKeybindingDispatcher } from "../registry/dispatcher";
 import type {
   CommandsRegistry,
@@ -104,13 +100,10 @@ export interface PageHubProviderProps {
   config: ResolvedConfig;
   emitter: EventEmitter;
   /**
-   * Optional pre-built registries bundle. When provided (e.g. by `PageHub.init()`
-   * so it can hand the same instance to host code via the returned API), the
-   * Provider uses it as-is — builtin commands/slots/keybindings and the
-   * `editorChromeSlots` shim are assumed to already be applied.
-   *
-   * Omit when mounting `<PageHubProvider>` directly from React: the Provider
-   * builds its own bundle.
+   * Optional pre-built registries bundle. Pass this when the host has already
+   * built one via `createRegistriesBundle()` and called `slots.contribute(...)`
+   * to register host chrome (AI panels, custom nav items, etc.). Omit to let
+   * the Provider build a default bundle with only the SDK builtins.
    */
   registries?: Omit<import("../registry").RegistriesBundle, "tick">;
   children?: React.ReactNode;
@@ -127,16 +120,11 @@ export function PageHubProvider({
   const [readOnly, setReadOnly] = useState(config.readOnly ?? false);
 
   // Registries are created once per provider mount when the host hasn't
-  // supplied a pre-built bundle. Builtins + the editorChromeSlots shim are
-  // applied immediately so menus/slots resolve correctly on first render.
+  // supplied a pre-built bundle. Builtins are applied immediately so
+  // menus/slots resolve correctly on first render.
   const registries = useMemo(() => {
     if (hostRegistries) return hostRegistries;
     const bundle = createRegistriesBundle();
-    try {
-      applyEditorChromeSlotsShim(config.editorChromeSlots, bundle.slots);
-    } catch (err) {
-      console.error("[PageHub] editorChromeSlots shim failed:", err);
-    }
     bundle.context.setCommandContext({ features });
     return bundle;
     // eslint-disable-next-line react-hooks/exhaustive-deps

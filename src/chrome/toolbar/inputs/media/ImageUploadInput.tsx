@@ -12,6 +12,7 @@ import { MediaManagerModal } from "./MediaManagerModal";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
 
 import { Chip } from "@/chrome/primitives/Chip";
+import { sdkLog } from "../../../../utils/logger";
 
 const handleFileSelection = (e, setErrors) => {
   const errors = [];
@@ -52,7 +53,7 @@ const uploadFiles = async (files, settings, setErrors, query, actions) => {
     } catch (error) {
       const message =
         error instanceof MediaUploadError ? error.message : `Failed to upload ${file.name}`;
-      console.error(`Failed to upload ${file.name}:`, error);
+      sdkLog.error(`Failed to upload ${file.name}:`, error);
       setErrors([{ error: message, file }]);
     }
   }

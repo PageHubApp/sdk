@@ -16,7 +16,7 @@ import {
   TRANSPARENT_CHECKER_BG,
 } from "@/utils/design/colorSystem";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 import { Chip } from "@/chrome/primitives/Chip";
 import { TokenPicker } from "./TokenPicker";
 import { InlineClearButton } from "../../../primitives/InlineClearButton";
@@ -63,7 +63,7 @@ export const ColorInput = (__props: any) => {
     };
   }, [isOpen]);
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
 
   const { actions, query } = useEditor();
 

@@ -9,7 +9,7 @@ import { useAtomValue } from "@zedux/react";
 import { TbBan } from "react-icons/tb";
 import { changeProp, getPropFinalValue } from "../../../viewport/state/viewportExports";
 import { ViewAtom } from "../../../viewport/state/atoms";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { Chip } from "@/chrome/primitives/Chip";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../primitives/layout/tooltipSurface";
@@ -25,7 +25,7 @@ interface Props {
 
 export const MultiToggleInput = ({ def }: Props) => {
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classWriteView = editorCanvasViewToClassPrefixKey(view);
   const { actions, query } = useEditor();
   const {

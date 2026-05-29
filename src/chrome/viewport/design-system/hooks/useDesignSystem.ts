@@ -12,6 +12,7 @@ import { useDesignSystemUI } from "./useDesignSystemUI";
 import { usePaletteState } from "./usePaletteState";
 import { useStyleGuideState } from "./useStyleGuideState";
 import { useTypographyState } from "./useTypographyState";
+import { sdkLog } from "../../../../utils/logger";
 
 export { DEFAULT_CUSTOM_FONTS } from "./defaults";
 export type { CustomFont, PaletteColor, StyleGuideState } from "./types";
@@ -117,7 +118,7 @@ export function useDesignSystem(isOpen: boolean) {
         typography: rootTheme.typography as CustomFont[],
       };
     } catch (e) {
-      console.error("Error loading design system:", e);
+      sdkLog.error("Error loading design system:", e);
     }
   };
 
@@ -230,7 +231,7 @@ export function useDesignSystem(isOpen: boolean) {
           typography: typography.customFonts,
         };
       } catch (e) {
-        console.error("Error saving design system:", e);
+        sdkLog.error("Error saving design system:", e);
       }
       setTimeout(() => {
         isSaving.current = false;

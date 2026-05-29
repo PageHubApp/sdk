@@ -1,4 +1,5 @@
 import { expandModifiersInNodes } from "./modifierUtils";
+import { sdkLog } from "./logger";
 
 // Registry: builtin defs are registered by core/builtinComponentDefs.ts at load
 // time. Avoids a static import here, which would form a cycle:
@@ -110,7 +111,7 @@ export function sanitizeCraftSerializedContent(
     if (validTypes) {
       const { dropped } = pruneUnknownComponentNodes(sanitized, validTypes);
       if (dropped.length && typeof console !== "undefined") {
-        console.warn(
+        sdkLog.warn(
           `[sanitizeCraftSerializedContent] dropped ${dropped.length} node(s) with unknown component types:`,
           dropped.slice(0, 8)
         );

@@ -7,6 +7,7 @@ import { useSetAtomState } from "../../../utils/atoms";
 import { ViewModeAtom } from "@/utils/atoms";
 import { CanvasIsolateAtom } from "@/utils/component/componentIsolation";
 import { ActionRow } from "./ActionRow";
+import { sdkLog } from "../../../utils/logger";
 
 export const ConvertToRegularComponent = ({ query, actions, id }) => (
   <ActionRow
@@ -94,7 +95,7 @@ export const RenderChildren = ({ props, children, query, actions, id }) => {
           cursorId = node?.data?.parent;
         }
         if (!foundContainerId) {
-          console.log("[editLinked] BAIL — no component ancestor found from", contentNodeId);
+          sdkLog.log("[editLinked] BAIL — no component ancestor found from", contentNodeId);
           return;
         }
 

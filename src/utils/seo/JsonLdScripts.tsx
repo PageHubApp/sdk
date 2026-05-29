@@ -1,12 +1,11 @@
 import React from "react";
-import { compileSchema, normalizeLegacyJsonLd } from "./compileSchema";
+import { compileSchema, normalizeJsonLd } from "./compileSchema";
 import type { SchemaEntry } from "./schemaTypes";
 
 interface JsonLdScriptsProps {
   /**
-   * Page-level seo bag from the page Container node. May contain a legacy
-   * `jsonLd` string/object plus a structured `schema: SchemaEntry[]` array
-   * (the new builder format).
+   * Page-level seo bag from the page Container node. May carry a raw `jsonLd`
+   * object plus a structured `schema: SchemaEntry[]` array from the builder.
    */
   seo: { jsonLd?: unknown; schema?: SchemaEntry[] | null } | null | undefined;
 }
@@ -21,8 +20,8 @@ export function JsonLdScripts({ seo }: JsonLdScriptsProps) {
 
   const objects: Record<string, any>[] = [];
 
-  const legacy = normalizeLegacyJsonLd(seo.jsonLd);
-  if (legacy) objects.push(legacy);
+  const raw = normalizeJsonLd(seo.jsonLd);
+  if (raw) objects.push(raw);
 
   if (Array.isArray(seo.schema) && seo.schema.length) {
     objects.push(...compileSchema(seo.schema));

@@ -14,6 +14,7 @@ import {
   type MediaItem,
   type UploadProgress,
 } from "../utils/media-helpers";
+import { sdkLog } from "../../../../../utils/logger";
 
 interface UseMediaUploadOptions {
   isOpen: boolean;
@@ -43,7 +44,7 @@ export function useMediaUpload({
       await sdkSave({ isDraft: true });
     } catch (e) {
       if (getSiteId()) return;
-      console.warn("[MediaManager] page save before upload failed:", e);
+      sdkLog.warn("[MediaManager] page save before upload failed:", e);
       throw e;
     }
     if (!getSiteId()) {

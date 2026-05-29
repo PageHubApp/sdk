@@ -1,63 +1,5 @@
 import type { BackgroundProps, DesignProps, RelationProps } from "./types";
 
-/** @deprecated Style props are now className tokens. Kept for hover pseudo-state typing. */
-export interface BaseStyleProps {
-  flexDirection?: string;
-  flexBase?: string;
-  alignItems?: string;
-  justifyContent?: string;
-  flexGrow?: string;
-  width?: string;
-  maxWidth?: string;
-  maxHeight?: string;
-  minWidth?: string;
-  minHeight?: string;
-  lineHeight?: string;
-  tracking?: string;
-  height?: string;
-  p?: string;
-  m?: string;
-  px?: string;
-  py?: string;
-  mx?: string;
-  my?: string;
-  ml?: string;
-  mt?: string;
-  mr?: string;
-  mb?: string;
-  marginTop?: string;
-  pl?: string;
-  pr?: string;
-  pt?: string;
-  pb?: string;
-  display?: string;
-  gap?: string;
-  fontSize?: string;
-  fontWeight?: string;
-  objectFit?: string;
-  aspectRatio?: string;
-  transform?: string;
-  wordBreak?: string;
-  textOverflow?: string;
-  indent?: string;
-  textDecoration?: string;
-  textAlign?: string;
-  backgroundRepeat?: string;
-  backgroundSize?: string;
-  backgroundAttachment?: string;
-  backgroundOrigin?: string;
-  backgroundPosition?: string;
-  overflow?: string;
-  cursor?: string;
-  position?: string;
-  inset?: string;
-  top?: string;
-  right?: string;
-  bottom?: string;
-  left?: string;
-  zIndex?: string;
-}
-
 export const RootClassGenProps = [];
 
 export interface RootStyleProps {
@@ -91,13 +33,10 @@ export interface RootStyleProps {
 export interface BaseSelectorProps {
   /** Relationship graph for linked component instances. See {@link RelationProps}. */
   relation?: RelationProps;
-  url?: string;
-  urlTarget?: string;
   className?: string;
   tools?: any;
 
   root?: RootStyleProps;
-  hover?: BaseStyleProps;
   activeTab?: number;
   children?: React.ReactNode;
   type?: string;

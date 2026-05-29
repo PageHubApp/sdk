@@ -26,6 +26,7 @@
  */
 import { useEffect, useRef } from "react";
 import { popOverlay, pushOverlay } from "../overlayStack";
+import { sdkLog } from "../../utils/logger";
 
 export interface UseOverlayArgs {
   /** Stable id — used for re-entry detection and dispatcher debugging. */
@@ -56,7 +57,7 @@ export function useOverlay(args: UseOverlayArgs): void {
         try {
           onDismissRef.current();
         } catch (e) {
-          console.error(`[ph.useOverlay] onDismiss for "${id}" threw:`, e);
+          sdkLog.error(`[ph.useOverlay] onDismiss for "${id}" threw:`, e);
         }
       },
     });

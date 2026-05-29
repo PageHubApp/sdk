@@ -5,6 +5,7 @@ import { useState } from "react";
 import { TbDownload, TbUpload } from "react-icons/tb";
 import { SlotRenderer } from "../../../registry";
 import { SidebarTabsPane } from "../../primitives/SidebarTabsPane";
+import { sdkLog } from "../../../utils/logger";
 
 export interface ImportExportPanelProps {
   onClose: () => void;
@@ -38,7 +39,7 @@ export function ImportExportPanel({ onClose }: ImportExportPanelProps) {
       actions.selectNode(ROOT_NODE);
       onClose();
     } catch (e) {
-      console.error("Import failed:", e);
+      sdkLog.error("Import failed:", e);
     }
   };
 

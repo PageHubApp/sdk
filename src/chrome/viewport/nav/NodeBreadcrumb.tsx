@@ -10,6 +10,7 @@ import { ToolbarPortalDropdown } from "../../popovers/ToolbarPortalDropdown";
 import { PageSelector } from "../pickers/PageSelector";
 import { TabAtom } from "../state/atoms";
 import { useOpenNodeContextMenu } from "../hooks/useOpenNodeContextMenu";
+import { sdkLog } from "../../../utils/logger";
 
 interface BreadcrumbItem {
   id: string;
@@ -125,7 +126,7 @@ export const NodeBreadcrumb = () => {
         };
       }
     } catch (e) {
-      console.warn("Could not get page context:", e);
+      sdkLog.warn("Could not get page context:", e);
     }
 
     return { name: "All", id: "all" };

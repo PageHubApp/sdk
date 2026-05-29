@@ -4,10 +4,11 @@
 
 import type { NodeId } from "@craftjs/core";
 import { isBesideWrapper } from "../layoutInference";
+import { sdkLog } from "../../../utils/logger";
 
 const isDev = process.env.NODE_ENV === "development";
 const log = isDev
-  ? (label: string, data?: Record<string, any>) => console.log(`[drag] ${label}`, data ?? "")
+  ? (label: string, data?: Record<string, any>) => sdkLog.log(`[drag] ${label}`, data ?? "")
   : () => {};
 
 export function cleanupOldParentWrapper(actions: any, query: any, oldParentId: NodeId | undefined) {

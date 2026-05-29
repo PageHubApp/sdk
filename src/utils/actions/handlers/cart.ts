@@ -2,6 +2,7 @@ import type { AddToCartAction, NodeAction } from "../../action";
 import { getStateValue, setState, setVisibility } from "../../state/stateRegistry";
 import { actionGatePasses } from "../gates";
 import { ActionContext, chain, interpolateItem } from "../internal";
+import { sdkLog } from "../../logger";
 
 export function attachAddToCart(
   prop: any,
@@ -17,7 +18,7 @@ export function attachAddToCart(
     e.preventDefault();
     const baseItem = context?.itemContext;
     if (!baseItem) {
-      console.warn(
+      sdkLog.warn(
         "[PageHub] add-to-cart action requires a data-bound Container parent. Place this button inside a Container with a dataSource."
       );
       return;
@@ -84,7 +85,7 @@ export function attachAddToCart(
           "add-to-cart"
         );
       } catch {}
-      console.warn(
+      sdkLog.warn(
         "[PageHub] add-to-cart: multi-variant product but no matched variant in state — wire `variantMatchStateKey` and a Container with `computedStateBindings: [{ compute: { type: 'variant-match', ... } }]`."
       );
       return;

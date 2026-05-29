@@ -53,11 +53,6 @@ export interface ImageProps extends BaseSelectorProps, ImageSrcSource {
   videoId?: string;
   type?: string;
   src?: string;
-  /**
-   * @deprecated Legacy alias for `src`. Kept for back-compat reading of saved
-   * pages — never write to this field. See `imageProps.ts` for context.
-   */
-  content?: string;
   url?: string;
   fetchPriority?: "high" | "low" | "auto" | "";
   loading?: string;

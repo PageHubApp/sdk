@@ -11,10 +11,11 @@ import {
 import { executeSpatialDrop } from "./spatial/executeSpatialDrop";
 import { setDragCopyIntent } from "./spatial/spatialSession";
 import { Container } from "../../components/Container/Container";
+import { sdkLog } from "../../utils/logger";
 
 const isDev = process.env.NODE_ENV === "development";
 const log = isDev
-  ? (label: string, data?: Record<string, any>) => console.log(`[drag] ${label}`, data ?? "")
+  ? (label: string, data?: Record<string, any>) => sdkLog.log(`[drag] ${label}`, data ?? "")
   : () => {};
 
 // Last pointer position observed during any drag. Used to cancel drops that land

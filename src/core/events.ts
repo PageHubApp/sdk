@@ -5,6 +5,7 @@
  */
 
 import type { PageHubEvent } from "../types";
+import { sdkLog } from "../utils/logger";
 
 type Handler = (...args: unknown[]) => void;
 
@@ -34,7 +35,7 @@ export class EventEmitter {
       try {
         handler(...args);
       } catch (err) {
-        console.error(`[PageHub] Error in "${event}" handler:`, err);
+        sdkLog.error(`[PageHub] Error in "${event}" handler:`, err);
       }
     });
   }
@@ -58,7 +59,7 @@ export class EventEmitter {
       try {
         handler(...args);
       } catch (err) {
-        console.error(`[PageHub] Error in internal "${event}" handler:`, err);
+        sdkLog.error(`[PageHub] Error in internal "${event}" handler:`, err);
       }
     });
   }

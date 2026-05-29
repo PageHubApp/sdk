@@ -17,6 +17,7 @@ import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
 import { ConfigError } from "./utils/errors";
 import { processForViewer } from "./define/processors/forViewer";
 import type { ResolvedComponentDef } from "./define/types";
+import { sdkLog } from "./utils/logger";
 
 interface PageHubViewerProps {
   /** Compressed page content (from PageData.content) */
@@ -43,7 +44,7 @@ function ViewerInner({ content }: { content: string }) {
         setLoaded(true);
       }
     } catch (err) {
-      console.error("[PageHub Viewer] Failed to render page:", err);
+      sdkLog.error("[PageHub Viewer] Failed to render page:", err);
     }
   }, [content, actions]);
 
@@ -67,7 +68,7 @@ class ViewerFrameBoundary extends React.Component<
   }
 
   componentDidCatch(error: unknown) {
-    console.error("[PageHub Viewer] Frame render failed:", error);
+    sdkLog.error("[PageHub Viewer] Frame render failed:", error);
   }
 
   render() {

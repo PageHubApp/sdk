@@ -33,6 +33,7 @@ import { CanvasZoom } from "./CanvasZoom";
 import { CanvasAnnotationLayer } from "./CanvasAnnotationLayer";
 import { ComponentCanvasItem } from "../ComponentCanvasItem";
 import { ComponentCanvasPanAtom, ComponentCanvasZoomAtom } from "../state/atoms";
+import { sdkLog } from "../../../utils/logger";
 
 interface Props {
   className?: string;
@@ -102,7 +103,7 @@ function createComponentCanvasNode(query: any, actions: any): string | null {
     actions.addNodeTree(tree, ROOT_NODE);
     return tree.rootNodeId;
   } catch (e) {
-    console.error("[ComponentCanvas] failed to create canvas node", e);
+    sdkLog.error("[ComponentCanvas] failed to create canvas node", e);
     return null;
   }
 }

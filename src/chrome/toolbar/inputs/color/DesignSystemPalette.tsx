@@ -21,6 +21,7 @@ import { TbCheck, TbMoon, TbPencil, TbPlus, TbSearch, TbSun } from "react-icons/
 import { resolveTheme } from "@/utils/design/resolveTheme";
 import { resolvePaletteHex } from "@/chrome/toolbar/dialogs/colorPickerSections";
 import { CreateTokenDialog } from "./CreateTokenDialog";
+import { sdkLog } from "../../../../utils/logger";
 
 export interface PaletteEntry {
   name: string;
@@ -61,7 +62,7 @@ export function DesignSystemPalette({ selectedColor, onSelect, anchorEl }: Props
         | undefined;
       setPalette(next || []);
     } catch (e) {
-      console.error("DesignSystemPalette: failed to load palette", e);
+      sdkLog.error("DesignSystemPalette: failed to load palette", e);
     }
   };
 

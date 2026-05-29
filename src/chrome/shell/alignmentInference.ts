@@ -9,12 +9,13 @@
 import { type Node, type NodeId } from "@craftjs/core";
 import { Container } from "../../components/Container/Container";
 import { SKIP_TYPES, makeContainerTree, getClassName, hasToken } from "./layoutInference";
+import { sdkLog } from "../../utils/logger";
 
 // ── Debug logging (dev only) ──────────────────────────────────────────
 
 const isDev = process.env.NODE_ENV === "development";
 const log = isDev
-  ? (label: string, data?: Record<string, any>) => console.log(`[align] ${label}`, data ?? "")
+  ? (label: string, data?: Record<string, any>) => sdkLog.log(`[align] ${label}`, data ?? "")
   : () => {};
 
 // ── Types ──────────────────────────────────────────────────────────────

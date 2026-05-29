@@ -15,6 +15,7 @@ import { getEditorQuery } from "../../editorBackref";
 import { getActiveTiptapEditor } from "../../tiptapBackref";
 import { buildInlineCopyAssistantOpenState } from "../../../utils/buildInlineCopyAssistantOpenState";
 import { paletteToCSSVar } from "../../../utils/design/palette";
+import { sdkLog } from "../../../utils/logger";
 
 /**
  * Run a Tiptap chain against the active editor. No-op when no editor is
@@ -26,7 +27,7 @@ function withActiveTiptap(fn: (editor: any) => void): void {
   try {
     fn(editor);
   } catch (e) {
-    console.error("[ph.text] tiptap command failed:", e);
+    sdkLog.error("[ph.text] tiptap command failed:", e);
   }
 }
 
@@ -330,7 +331,9 @@ export const TEXT_COMMANDS: CommandDef[] = [
     title: "Insert image",
     category: "Text",
     when: ctx =>
-      Boolean(ctx.tiptap?.active) && ctx.tiptap.richTextMode !== "inline",
+      Boolean(ctx.tiptap?.active) &&
+      ctx.tiptap.richTextMode !== "inline" &&
+      ctx.features?.mediaManager !== false,
     run: (_ctx, args) => {
       // Image insert is bimodal: with explicit `src`, drop the image now;
       // without one, open the media manager modal — the toolbar listens and

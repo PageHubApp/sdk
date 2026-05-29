@@ -106,7 +106,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
 
   const imgTag = `<img${buildAttrs(imgAttrs)} />`;
 
-  const rawHref = actionToHref(findLinkAction(migrateActions(props)), getPageIndex(ctx), ctx?.currentPath) || props.url;
+  const rawHref = actionToHref(findLinkAction(migrateActions(props)), getPageIndex(ctx), ctx?.currentPath);
   const href = typeof rawHref === "string" && rawHref.includes("{{")
     ? interpolate(rawHref, ctx)
     : rawHref;

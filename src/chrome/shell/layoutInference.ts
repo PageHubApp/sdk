@@ -5,12 +5,13 @@
 
 import React from "react";
 import { Element, type Node, type NodeId } from "@craftjs/core";
+import { sdkLog } from "../../utils/logger";
 
 // ── Debug logging (dev only) ──────────────────────────────────────────
 
 const isDev = process.env.NODE_ENV === "development";
 const log = isDev
-  ? (label: string, data?: Record<string, any>) => console.log(`[beside] ${label}`, data ?? "")
+  ? (label: string, data?: Record<string, any>) => sdkLog.log(`[beside] ${label}`, data ?? "")
   : () => {};
 
 // ── Types ─────────────────────────────────────────────────────────────

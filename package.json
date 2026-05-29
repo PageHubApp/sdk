@@ -32,6 +32,7 @@
     },
     "./editor.css": "./dist/editor.css",
     "./theme.css": "./src/css/theme.css",
+    "./themes/shadcn.css": "./src/css/themes/shadcn.css",
     "./compile-css": "./src/compile-css.ts",
     "./presets/audio": "./src/components/Audio/Audio.presets.ts",
     "./presets/button": "./src/components/Button/Button.presets.ts",
@@ -50,8 +51,7 @@
     "./modifiers/form-element": "./src/components/FormElement/FormElement.modifiers.ts",
     "./modifiers/image": "./src/components/Image/Image.modifiers.ts",
     "./modifiers/link": "./src/components/Link/Link.modifiers.ts",
-    "./modifiers/text": "./src/components/Text/Text.modifiers.ts",
-    "./src/*": "./src/*"
+    "./modifiers/text": "./src/components/Text/Text.modifiers.ts"
   },
   "publishConfig": {
     "main": "./dist/pagehub.umd.cjs",
@@ -60,7 +60,23 @@
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "!src/**/*.test.ts",
+    "!src/**/*.test.tsx",
+    "!src/**/*.spec.ts",
+    "!src/**/*.spec.tsx",
+    "!src/**/*.behavior.test.ts",
+    "!src/**/*.behavior.test.tsx",
+    "!src/**/__tests__",
+    "!src/**/test-helpers",
+    "!src/**/test-fixtures",
+    "!dist/**/*.test.d.ts",
+    "!dist/**/*.test.d.ts.map",
+    "!dist/**/*.spec.d.ts",
+    "!dist/**/*.spec.d.ts.map",
+    "!dist/**/*.behavior.test.d.ts",
+    "!dist/**/*.behavior.test.d.ts.map",
+    "!**/*.map"
   ],
   "scripts": {
     "dev": "vite build --watch",

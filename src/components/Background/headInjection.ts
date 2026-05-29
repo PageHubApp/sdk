@@ -1,3 +1,4 @@
+import { sdkLog } from "../../utils/logger";
 /**
  * Utilities for injecting header/footer elements into the document head.
  * Extracted from Background.tsx.
@@ -53,7 +54,7 @@ export function addElementsToHead(
     if (nodeName === "style") {
       const styleContent = (node.textContent ?? "").trim();
       if (!isCssValid(styleContent)) {
-        console.warn(`Ignoring invalid ${nodeName} element: ${node.textContent}`);
+        sdkLog.warn(`Ignoring invalid ${nodeName} element: ${node.textContent}`);
         continue;
       }
       const style = document.createElement("style");
@@ -62,7 +63,7 @@ export function addElementsToHead(
       try {
         parent.appendChild(style);
       } catch (e: any) {
-        console.warn(`Failed to append ${nodeName} element: ${e?.message}`);
+        sdkLog.warn(`Failed to append ${nodeName} element: ${e?.message}`);
       }
       continue;
     }
@@ -78,7 +79,7 @@ export function addElementsToHead(
         try {
           parent.appendChild(script);
         } catch (e: any) {
-          console.warn(`Failed to load script src ${script.getAttribute("src")}: ${e?.message}`);
+          sdkLog.warn(`Failed to load script src ${script.getAttribute("src")}: ${e?.message}`);
         }
       } else {
         const scriptContent = (node.textContent ?? "").trim();
@@ -87,7 +88,7 @@ export function addElementsToHead(
         if (isExecutableJavaScriptScript(node)) {
           const t = (node.getAttribute("type") || "").trim().toLowerCase();
           if (t !== "module" && !isJsValid(scriptContent)) {
-            console.warn(`Ignoring invalid ${nodeName} element: ${node.textContent}`);
+            sdkLog.warn(`Ignoring invalid ${nodeName} element: ${node.textContent}`);
             continue;
           }
           copyElementAttributes(node, script);
@@ -101,7 +102,7 @@ export function addElementsToHead(
         try {
           parent.appendChild(script);
         } catch (e: any) {
-          console.warn(`Failed to append ${nodeName} element: ${e?.message}`);
+          sdkLog.warn(`Failed to append ${nodeName} element: ${e?.message}`);
         }
       }
       continue;
@@ -109,7 +110,7 @@ export function addElementsToHead(
 
     if (nodeName === "link") {
       if (!node.hasAttribute("href") || !node.hasAttribute("rel")) {
-        console.warn(`Ignoring invalid ${nodeName} element: missing href or rel`);
+        sdkLog.warn(`Ignoring invalid ${nodeName} element: missing href or rel`);
         continue;
       }
       const link = document.createElement("link");
@@ -118,7 +119,7 @@ export function addElementsToHead(
       try {
         parent.appendChild(link);
       } catch (e: any) {
-        console.warn(`Failed to append link ${link.getAttribute("href")}: ${e?.message}`);
+        sdkLog.warn(`Failed to append link ${link.getAttribute("href")}: ${e?.message}`);
       }
     }
   }

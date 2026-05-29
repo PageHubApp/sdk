@@ -10,10 +10,11 @@
  * Now the SDK consults a registered `BlocksProvider`. Hosts ship whatever
  * backing store they want — REST API, static JSON, in-memory fixture.
  *
- * Default: a HTTP provider that preserves the legacy `/api/v1/components*`
- * behavior (and LZ-decompression of structures). PageHub's own app gets zero
- * code change. Standalone hosts call `registerBlocksProvider(...)` with their
- * own implementation before enabling `features.blocksPanel.enabled`.
+ * Default: a HTTP provider that hits `/api/v1/components*` (the PageHub
+ * cloud API) and LZ-decompresses the returned structures. PageHub's own app
+ * works with zero registration. Standalone hosts call
+ * `registerBlocksProvider(...)` with their own implementation before
+ * enabling `features.blocksPanel.enabled`.
  *
  * See docs/sdk/host-constraints.md for usage.
  */
@@ -100,9 +101,10 @@ export function getBlocksProvider(): BlocksProvider {
 
 // ─── Default HTTP provider ─────────────────────────────────────────────────
 //
-// Mirrors the legacy fetch behavior so PageHub's own app — and any host that
-// exposes the same endpoints — works with zero registration. Pre-decompresses
-// LZ-base64 structure strings to match what the old hooks returned.
+// PageHub cloud + any host that exposes the same `/api/v1/components*`
+// endpoints work with zero registration. LZ-base64 structure strings are
+// pre-decompressed before they reach the toolbox so consumers see plain
+// nested-tree JSON.
 
 function decompressStructure(component: any): any {
   if (!component) return component;

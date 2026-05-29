@@ -10,6 +10,7 @@ import { resolveNestedItems } from "./resolveNestedItems";
 import { applyRouteParamsToDataSource } from "./routeParamsDataSource";
 import { useRouteParams } from "../RouteParamsContext";
 import { dataSourceBindingId } from "./storefrontDataSource";
+import { sdkLog } from "../logger";
 
 /**
  * Bind a node to an external data source: Stripe products, customer orders,
@@ -263,7 +264,7 @@ export function useDataSource(
           }
         }
       })
-      .catch(err => console.error("[Data] Client data fetch failed:", err));
+      .catch(err => sdkLog.error("[Data] Client data fetch failed:", err));
 
     return () => {
       cancelled = true;

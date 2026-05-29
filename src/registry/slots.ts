@@ -13,6 +13,7 @@ import type {
   SlotDef,
 } from "./types";
 import type { ContextRegistry } from "./context";
+import { sdkLog } from "../utils/logger";
 
 export interface SlotsRegistry {
   register: (def: SlotDef) => void;
@@ -58,7 +59,7 @@ export function createSlotsRegistry(deps: SlotsRegistryDeps): SlotsRegistry {
       try {
         l();
       } catch (err) {
-        console.error("[ph.slots] listener error:", err);
+        sdkLog.error("[ph.slots] listener error:", err);
       }
     });
   };
@@ -116,7 +117,7 @@ export function createSlotsRegistry(deps: SlotsRegistryDeps): SlotsRegistry {
         try {
           if (!c.when(ctx as unknown, appCtx)) return;
         } catch (err) {
-          console.error(`[ph.slots] when() threw for "${slotId}":`, err);
+          sdkLog.error(`[ph.slots] when() threw for "${slotId}":`, err);
           return;
         }
       }

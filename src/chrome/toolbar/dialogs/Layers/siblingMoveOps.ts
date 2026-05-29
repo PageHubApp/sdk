@@ -1,4 +1,5 @@
 import type { NodeId } from "@craftjs/core";
+import { sdkLog } from "../../../../utils/logger";
 
 export interface SiblingMoveState {
   canMoveUp: boolean;
@@ -78,7 +79,7 @@ export function moveNodeOut(query: any, actions: any, nodeId: NodeId): void {
   if (!grandparentId) return;
   const grandparent = query.node(grandparentId).get();
   if (!(grandparent.rules.canMoveIn as any)([node], grandparent)) {
-    console.warn("Cannot move node out - grandparent rejects this node type");
+    sdkLog.warn("Cannot move node out - grandparent rejects this node type");
     return;
   }
   try {
@@ -86,7 +87,7 @@ export function moveNodeOut(query: any, actions: any, nodeId: NodeId): void {
     const parentIndex = parentSiblings.indexOf(parentId);
     actions.move(nodeId, grandparentId, parentIndex + 1);
   } catch (error) {
-    console.error("Cannot move node out:", error);
+    sdkLog.error("Cannot move node out:", error);
   }
 }
 
@@ -103,13 +104,13 @@ export function moveNodeIn(query: any, actions: any, nodeId: NodeId): void {
     if (prevSibling.data.isCanvas) {
       try {
         if (!(prevSibling.rules.canMoveIn as any)([node], prevSibling)) {
-          console.warn("Cannot move node in - previous sibling rejects this node type");
+          sdkLog.warn("Cannot move node in - previous sibling rejects this node type");
           return;
         }
         const prevSiblingChildren = prevSibling.data.nodes || [];
         actions.move(nodeId, prevSiblingId, prevSiblingChildren.length);
       } catch (error) {
-        console.warn("Cannot move node into previous sibling:", error);
+        sdkLog.warn("Cannot move node into previous sibling:", error);
       }
     }
   }

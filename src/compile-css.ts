@@ -23,8 +23,9 @@ import { renderToHTML } from "./static-renderer/renderToHTML";
 import type { RenderToHTMLOptions } from "./static-renderer/types";
 import { BUILTIN_COMPONENT_DEFS } from "./core/builtinComponentDefs";
 import { buildModifierExpansionMap, expandModifierClassName } from "./utils/modifierUtils";
-import { compileSchema, normalizeLegacyJsonLd } from "./utils/seo/compileSchema";
+import { compileSchema, normalizeJsonLd } from "./utils/seo/compileSchema";
 import type { SchemaEntry } from "./utils/seo/schemaTypes";
+import { sdkLog } from "./utils/logger";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -662,8 +663,8 @@ export async function buildStaticPage(
       : "";
 
     const jsonLdObjects: Record<string, any>[] = [];
-    const legacyJsonLd = normalizeLegacyJsonLd(renderResult.seo?.jsonLd);
-    if (legacyJsonLd) jsonLdObjects.push(legacyJsonLd);
+    const jsonLd = normalizeJsonLd(renderResult.seo?.jsonLd);
+    if (jsonLd) jsonLdObjects.push(jsonLd);
     const schemaEntries = (renderResult.seo as { schema?: SchemaEntry[] } | null)?.schema;
     if (Array.isArray(schemaEntries) && schemaEntries.length) {
       jsonLdObjects.push(...compileSchema(schemaEntries));
@@ -730,8 +731,8 @@ export async function compileTailwindCSS(
   opts?: { editor?: boolean }
 ): Promise<string | null> {
   try {
-    // pageData may arrive as plain JSON (post-PR5 viewer) or lz-base64
-    // (legacy / editor save format). Detect cheaply via the leading char.
+    // pageData may arrive as plain JSON (viewer pipeline) or lz-base64
+    // (editor save format). Detect cheaply via the leading char.
     let nodes: any;
     const trimmed = pageData.trimStart();
     if (trimmed.startsWith("{")) {
@@ -759,7 +760,7 @@ export async function compileTailwindCSS(
     });
     return css || null;
   } catch (error) {
-    console.error("[compileTailwindCSS] Failed:", error);
+    sdkLog.error("[compileTailwindCSS] Failed:", error);
     return null;
   }
 }

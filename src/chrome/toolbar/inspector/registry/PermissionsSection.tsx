@@ -4,6 +4,7 @@
  */
 import { useEditor, useNode } from "@craftjs/core";
 import { TbLock } from "react-icons/tb";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { ToolbarSection } from "../../ToolbarSection";
 import { registerSection } from "./settingsRegistry";
 import type { SectionProps } from "./types";
@@ -77,7 +78,8 @@ export function PermissionsSection() {
           <label
             key={p.key}
             className="hover:bg-base-200/60 flex cursor-pointer items-center justify-between gap-2 rounded px-1.5 py-1 transition-colors"
-            title={p.description}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content={p.description}
           >
             <span
               className={`text-xs select-none ${locked ? "text-base-content/50 line-through" : "text-base-content"}`}

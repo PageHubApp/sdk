@@ -1,5 +1,6 @@
 import { TbLock, TbLockOpen } from "react-icons/tb";
 import { AutoHideScrollbar } from "@/chrome/primitives/layout/AutoHideScrollbar";
+import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { PRESET_SIZES, type UseImageCropReturn } from "../hooks/useImageCrop";
 
 interface CropControlsPanelProps {
@@ -120,7 +121,8 @@ export function CropControlsPanel({ crop }: CropControlsPanelProps) {
                   ? "bg-primary text-primary-content shadow-sm"
                   : "bg-neutral text-neutral-content hover:bg-primary/10 hover:text-primary"
               }`}
-              title={crop.lockAspectRatio ? "Unlock aspect ratio" : "Lock aspect ratio"}
+              data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+              data-tooltip-content={crop.lockAspectRatio ? "Unlock aspect ratio" : "Lock aspect ratio"}
             >
               {crop.lockAspectRatio ? (
                 <TbLock className="size-4" />

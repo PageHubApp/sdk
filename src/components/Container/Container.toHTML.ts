@@ -61,14 +61,13 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   }
 
   // Stamp load-trigger show actions for the static-export bootstrap script
-  // (PH_LOAD_ACTION_SCRIPT). The script reveals `[data-ph-load-show]`
+  // (`getLoadActionScript()`). The script reveals `[data-ph-load-show]`
   // elements on first visit (gated by optional `conditions`). React routes
   // don't need this — Container's mount effect dispatches the same actions
-  // via `fireLoadAction`. `migrateActions` handles every action prop shape
-  // (single object, array, legacy `props.actions`) and runs the same
-  // legacy-field migration the runtime uses, so the static stamp can never
-  // diverge from runtime semantics.
-  // Stamp load-trigger set-state actions so PH_LOAD_ACTION_SCRIPT can seed
+  // via `fireLoadAction`. `migrateActions` reads the canonical action prop
+  // shape (single object or array), so the static stamp can never diverge
+  // from runtime semantics.
+  // Stamp load-trigger set-state actions so the bootstrap script can seed
   // `window.__PH_STATE__` pre-hydration. Multiple set-states on one node are
   // emitted as a JSON array. Mirrors the show-hide stamp below.
   const loadStateWrites: Array<{ key: string; value: string; kind?: string }> = [];

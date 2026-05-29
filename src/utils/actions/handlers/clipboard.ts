@@ -1,6 +1,7 @@
 import type { CopyToClipboardAction, NodeAction } from "../../action";
 import { actionGatePasses } from "../gates";
 import { ActionContext, chain, interpolateItem } from "../internal";
+import { sdkLog } from "../../logger";
 
 export function attachCopyToClipboard(
   prop: any,
@@ -26,7 +27,7 @@ export function attachCopyToClipboard(
         return;
       }
     } catch (err) {
-      console.warn("[PageHub] copy-to-clipboard async API failed, falling back", err);
+      sdkLog.warn("[PageHub] copy-to-clipboard async API failed, falling back", err);
     }
     try {
       const ta = document.createElement("textarea");
@@ -42,7 +43,7 @@ export function attachCopyToClipboard(
       document.execCommand("copy");
       document.body.removeChild(ta);
     } catch (err) {
-      console.warn("[PageHub] copy-to-clipboard fallback failed", err);
+      sdkLog.warn("[PageHub] copy-to-clipboard fallback failed", err);
     }
   });
 }

@@ -37,6 +37,7 @@ import { getEditorActions, getEditorQuery } from "../../editorBackref";
 import { markManualSidebarClose } from "../../../chrome/hooks/useAutoOpenSidebar";
 import { SaveIndicator } from "../../../chrome/viewport/ViewportTopBar/SaveIndicator";
 import { isInsideTextEditingSurfaceCtx, openComponentsTabRun } from "./helpers";
+import { sdkLog } from "../../../utils/logger";
 
 /**
  * Wrap a history mutation with the toolbox-history sync flags so the
@@ -120,7 +121,7 @@ function clearSelectionRun(ctx: any): void {
     const active = query?.getEvent("selected").first();
     if (active) actions.selectNode(null);
   } catch (e) {
-    console.error("[ph.editor.clearSelection] failed:", e);
+    sdkLog.error("[ph.editor.clearSelection] failed:", e);
   }
 }
 
@@ -310,7 +311,7 @@ export const EDITOR_COMMANDS: CommandDef[] = [
       try {
         actions?.clearEvents?.();
       } catch (e) {
-        console.error("[ph.editor.closeSidebar] clearEvents failed:", e);
+        sdkLog.error("[ph.editor.closeSidebar] clearEvents failed:", e);
       }
       setAtomExternal(SideBarOpen, false);
     },

@@ -30,6 +30,7 @@ import {
   interpolateItem,
   resolveActionKey,
 } from "../internal";
+import { sdkLog } from "../../logger";
 
 export function attachSetState(
   prop: any,
@@ -111,7 +112,7 @@ export function attachToggleState(
     if (ts.values) return ts.values;
     if (kind === "visibility") return ["shown", "hidden"];
     if (kind === "flag") return ["on", "off"];
-    console.warn(
+    sdkLog.warn(
       `[PageHub] toggle-state on key "${k}" (kind: ${kind}) needs explicit values. Skipping.`
     );
     return null;

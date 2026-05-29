@@ -1,6 +1,7 @@
 import { NodeId, useEditor } from "@craftjs/core";
 import { useCallback } from "react";
 import { canMove } from "../utils";
+import { sdkLog } from "../../../../../utils/logger";
 
 interface UseLayerDragDropOptions {
   nodeId: NodeId;
@@ -56,7 +57,7 @@ export function useLayerDragDrop({
 
           if (position === "inside") {
             if (!(targetNode.rules.canMoveIn as any)([draggedNode], targetNode)) {
-              console.warn("Cannot drop inside - target rejects this node type");
+              sdkLog.warn("Cannot drop inside - target rejects this node type");
               setDraggedNode(null);
               setDropIndicator(null);
               return;
@@ -70,7 +71,7 @@ export function useLayerDragDrop({
               const parentNode = query.node(parentId).get();
 
               if (!(parentNode.rules.canMoveIn as any)([draggedNode], parentNode)) {
-                console.warn("Cannot drop - parent rejects this node type");
+                sdkLog.warn("Cannot drop - parent rejects this node type");
                 setDraggedNode(null);
                 setDropIndicator(null);
                 return;
@@ -83,7 +84,7 @@ export function useLayerDragDrop({
             }
           }
         } catch (error) {
-          console.error("Error moving node:", error);
+          sdkLog.error("Error moving node:", error);
         }
       }
 

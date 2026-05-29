@@ -332,9 +332,10 @@ function isOffsetInsideHtmlAttributeValue(html: string, pos: number): boolean {
 
 /**
  * Preprocesses HTML content to convert raw {{variable}} text into
- * <span data-variable="variable"> nodes that TipTap can parse.
+ * <span data-variable="variable"> nodes that TipTap can parse. Authors paste
+ * raw `{{...}}` from anywhere — this wraps them so TipTap renders them as
+ * variable chips instead of literal braces.
  *
- * Handles legacy content stored with plain text variables.
  * Already-wrapped spans are left untouched.
  * Skips wrapping inside HTML attribute values (href, src, etc.).
  */

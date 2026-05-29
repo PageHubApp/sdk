@@ -1,3 +1,4 @@
+import { sdkLog } from "./logger";
 /**
  * @pagehub/sdk — Clone helpers extracted from main app
  *
@@ -70,7 +71,7 @@ export const setClonedProps = (props: any, query: any, exclude: string[] = []) =
       relation: props.relation,
     };
   } catch (error) {
-    console.error("[PageHub SDK] Error syncing cloned props:", error);
+    sdkLog.error("[PageHub SDK] Error syncing cloned props:", error);
     return props;
   }
 };

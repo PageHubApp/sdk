@@ -8,7 +8,7 @@ import {
   editorCanvasViewToClassPrefixKey,
 } from "../../../utils/tailwind/className";
 import RenderNodeControlInline from "../../rendering/RenderNodeControlInline";
-import { ViewSelectionAtom } from "../../toolbar/Label";
+import { EditModifiersAtom } from "../../toolbar/Label";
 import { ViewAtom } from "../../viewport/state/atoms";
 import { checkIfAncestorLinked } from "../../../utils/component/componentUtils";
 import { useElementColor } from "../state/canvasUtils";
@@ -76,7 +76,7 @@ export const UniformPaddingNodeController = () => {
   } = useNode();
 
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classPrefixView = editorCanvasViewToClassPrefixKey(view);
 
   const [dragging, setDragging] = useState(false);

@@ -4,6 +4,7 @@ import type { NamedColor } from "../../components/Background/Background.body";
 import { DEFAULT_STYLE_GUIDE } from "../defaults";
 import { autoGenerateContentColors, colorToOklch } from "./contentColor";
 import { generateCSSAliases } from "./tokenMigration";
+import { sdkLog } from "../logger";
 
 export interface DesignSystemVars {
   palette: NamedColor[];
@@ -87,7 +88,7 @@ function splitTopLevel(value: string): string[] {
 export function toCSSVarName(name: string): string {
   // Guard against undefined/null
   if (!name || typeof name !== "string") {
-    console.warn("toCSSVarName received invalid name:", name);
+    sdkLog.warn("toCSSVarName received invalid name:", name);
     return "";
   }
 
@@ -188,15 +189,11 @@ export function generatePaletteCSSVariables(palette: NamedColor[]): string {
   const variables: string[] = [];
 
   if (!palette || !Array.isArray(palette)) {
-    console.warn("generatePaletteCSSVariables received invalid palette:", palette);
+    sdkLog.warn("generatePaletteCSSVariables received invalid palette:", palette);
     return "";
   }
 
-  palette.forEach((item, i) => {
-    // Normalize legacy raw string values (e.g. "rgba(250,250,249,1)" or "stone-50")
-    if (typeof item === "string") {
-      item = { name: `color-${i + 1}`, color: item };
-    }
+  palette.forEach(item => {
     if (!item || !item.name || !item.color) {
       return;
     }
@@ -205,7 +202,7 @@ export function generatePaletteCSSVariables(palette: NamedColor[]): string {
     if (!cssVar || cssVar === "--") return;
 
     // Palette colors are stored as oklch() natively — pass through.
-    // Legacy hex/rgba values are handled by colorToOklch as a fallback.
+    // Hex / rgba values are coerced via colorToOklch as a fallback.
     const colorValue = item.color.startsWith("oklch(")
       ? item.color
       : colorToOklch(resolveTailwindColor(item.color));
@@ -229,7 +226,7 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
   const variables: string[] = [];
 
   if (!styleGuide || typeof styleGuide !== "object") {
-    console.warn("generateStyleGuideCSSVariables received invalid styleGuide:", styleGuide);
+    sdkLog.warn("generateStyleGuideCSSVariables received invalid styleGuide:", styleGuide);
     return "";
   }
 
@@ -364,8 +361,8 @@ export function generateTypographyCSSClasses(typography: any[]): string {
     const className = `ph-${toCSSVarName(font.name)}`;
     const varName = toCSSVarName(font.name);
 
-    // Optional fields are emitted only when set on the preset so legacy
-    // presets keep producing the same output.
+    // Optional fields are emitted only when set on the preset so presets
+    // that omit them produce minimal output.
     const optional: string[] = [];
     if (font.color) {
       optional.push(`  color: var(--${varName}-color, ${font.color});`);

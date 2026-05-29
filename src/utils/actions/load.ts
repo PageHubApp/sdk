@@ -82,14 +82,6 @@ ${buildConditionEvalFns({ mobileBreakpoint })}
 }
 
 /**
- * @deprecated Use `getLoadActionScript()` instead — defaults to
- * mobileBreakpoint=768 (Tailwind `md`). Pre-existing constant kept so external
- * SDK consumers don't break; first-party callers should pass the per-site
- * breakpoint via the function form.
- */
-export const PH_LOAD_ACTION_SCRIPT = getLoadActionScript();
-
-/**
  * Fire a single load-trigger action on mount (viewer mode only). Evaluates
  * `action.conditions` first — skips firing when ANY group evaluates `false`.
  * Returns `null` (indeterminate, e.g. SSR with no localStorage) → fires

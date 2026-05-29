@@ -28,6 +28,7 @@ import {
 import { applyCanvasVisibility } from "../../../utils/component/componentIsolation";
 import { phStorage } from "../../../utils/phStorage";
 import { isInsideTextEditingSurfaceCtx } from "./helpers";
+import { sdkLog } from "../../../utils/logger";
 
 /** Flip canvas page<->component view mode and refresh visibility. */
 function toggleViewModeRun(query: any, actions: any): void {
@@ -42,11 +43,11 @@ function toggleViewModeRun(query: any, actions: any): void {
         try {
           isolatePageInTree(query, actions, null, () => {});
         } catch (err) {
-          console.error("[ph.commands] isolatePageInTree failed:", err);
+          sdkLog.error("[ph.commands] isolatePageInTree failed:", err);
         }
       })
       .catch(err => {
-        console.error("[ph.commands] page/pageManagement import failed:", err);
+        sdkLog.error("[ph.commands] page/pageManagement import failed:", err);
       });
   }
   applyCanvasVisibility(query, actions, { mode: next });

@@ -2,6 +2,7 @@ import { useNode } from "@craftjs/core";
 import { ViewAtom } from "../../viewport/state/atoms";
 import { changeProp, getProp } from "../../viewport/state/viewportExports";
 import { atom, useAtomState, useAtomValue } from "@zedux/react";
+import { sdkLog } from "../../../utils/logger";
 
 const SelectedButtonAtom = atom<number | null>("selectedButton", null as number | null);
 import { ColorInput } from "../inputs/color/ColorInput";
@@ -11,7 +12,7 @@ import { ListEditor } from "../inputs/preset/ListEditor";
 
 import { ToolbarItem, ToolbarItemProps } from "../ToolbarItem";
 import { ToolbarSection } from "../ToolbarSection";
-import { ViewSelectionAtom } from "../Label";
+import { EditModifiersAtom } from "../Label";
 import { Chip } from "@/chrome/primitives/Chip";
 
 const Input = ({ nodeProps, setProp }) => {
@@ -51,7 +52,7 @@ const Input = ({ nodeProps, setProp }) => {
           const response = await fetch(defaultIconPath);
           iconSvg = await response.text();
         } catch (error) {
-          console.error("Failed to load default icon:", error);
+          sdkLog.error("Failed to load default icon:", error);
         }
 
         _buttons.push({
@@ -138,7 +139,7 @@ const Input = ({ nodeProps, setProp }) => {
 
 export const ButtonItem = (__props: ToolbarItemProps) => {
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
 
   const { full = false, propKey, type, onChange, index, propItemKey, ...props } = __props;
 

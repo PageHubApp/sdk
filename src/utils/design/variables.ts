@@ -1,4 +1,5 @@
 import { getStateValue, setState } from "../state/stateRegistry";
+import { sdkLog } from "../logger";
 
 /**
  * Shape of ROOT_NODE props that the variable / page / media / action helpers
@@ -123,7 +124,7 @@ export function setRuntimeVar(key: string, value: any): void {
     try {
       fn();
     } catch (e) {
-      console.error("Runtime var listener error:", e);
+      sdkLog.error("Runtime var listener error:", e);
     }
   });
 }
@@ -374,7 +375,7 @@ export const replaceVariables = (
       return match;
     });
   } catch (e) {
-    console.error("Error replacing variables:", e);
+    sdkLog.error("Error replacing variables:", e);
     return text;
   }
 };
@@ -564,7 +565,7 @@ export const getAvailableVariables = (rootProps: RootProps | null | undefined): 
 
     return variables;
   } catch (e) {
-    console.error("Error getting available variables:", e);
+    sdkLog.error("Error getting available variables:", e);
     return [];
   }
 };

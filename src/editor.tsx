@@ -45,6 +45,7 @@ import { RenderNodeNewer } from "./chrome/rendering/RenderNode";
 import CustomEventHandlers from "./chrome/shell/CustomEventHandlers";
 import { BorderResizeController } from "./chrome/canvas/controllers/BorderResizeController";
 import { RotateHandleController } from "./chrome/canvas/controllers/RotateHandleController";
+import { ChromeErrorBoundary } from "./chrome/shell/ChromeErrorBoundary";
 import { DragPreviewLayer } from "./chrome/shell/DragPreviewLayer";
 import { DropZoneIndicator } from "./chrome/shell/DropZoneIndicator";
 import { EditorLoader } from "./chrome/shell/EditorLoader";
@@ -59,6 +60,7 @@ import { Viewport } from "./chrome/viewport/Viewport/Viewport";
 import { UnsavedChangesAtom } from "./chrome/viewport/state/atoms";
 import { Container } from "./components/Container/Container";
 import { sanitizeCraftSerializedContent } from "./utils/sanitizeNodeMap";
+import { sdkLog } from "./utils/logger";
 
 // Lazy-loaded dialogs — only loaded when user opens them
 const ColorPickerDialog = React.lazy(() =>
@@ -161,7 +163,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
         emitter.emit("ready");
         emitter.emit("load", pageData);
       } catch (err) {
-        console.error("[PageHub] Failed to load page:", err);
+        sdkLog.error("[PageHub] Failed to load page:", err);
         emitter.emit("error", err);
         setLoaded(true); // Show empty canvas on error
       }
@@ -173,8 +175,8 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
   const [_, setUnsavedChanges] = useAtomState(UnsavedChangesAtom);
 
   // Wire the save coordinator — single authoritative owner of the save
-  // lifecycle. `instance.save()` and the legacy `emitter.emit("save")`
-  // both funnel through here so callers get one Promise + one mutex.
+  // lifecycle. `instance.save()` funnels through here so callers get one
+  // Promise + one mutex.
   useEffect(() => {
     const coordinator = getSaveCoordinator(emitter);
 
@@ -211,7 +213,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
           };
         }
       } catch (shardErr) {
-        console.warn(
+        sdkLog.warn(
           "[PageHub] Shard extraction failed, falling back to full-tree save:",
           shardErr
         );
@@ -246,20 +248,6 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
       },
     });
 
-    // Back-compat shim: the legacy emit("save") still fires the coordinator
-    // (autosave timers, third-party hosts that haven't migrated to
-    // `instance.save()`). Errors here are swallowed since the legacy callers
-    // had no way to await a result anyway — typed callers should use
-    // `instance.save()` to get rejections back.
-    const unsubSave = emitter.on("save", (meta?: any) => {
-      coordinator.save(meta).catch(err => {
-        // Conflicts already fanned out via `save_conflict` by the
-        // coordinator's `onConflict` notifier — don't double-emit on error.
-        if (err && err.name === "SaveConflictError") return;
-        emitter.emit("error", err);
-      });
-    });
-
     // Listen for load events
     const unsubLoad = emitter.onInternal("_doLoad", async (pageData: PageData) => {
       try {
@@ -270,7 +258,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
           requestAnimationFrame(() => setBatchOperation(false));
         }
       } catch (err) {
-        console.error("[PageHub] Load error:", err);
+        sdkLog.error("[PageHub] Load error:", err);
         emitter.emit("error", err);
       }
     });
@@ -280,7 +268,6 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
     });
 
     return () => {
-      unsubSave();
       unsubLoad();
       unsubUnsaved();
     };
@@ -304,7 +291,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
         config.callbacks.onChange?.(pageData);
         emitter.emit("change", pageData);
       } catch (err) {
-        console.error("[PageHub] onChange error:", err);
+        sdkLog.error("[PageHub] onChange error:", err);
       }
     }, 500);
   }, [loaded, readOnly, query, config.callbacks, emitter]);
@@ -503,6 +490,7 @@ function PageHubEditorInner({
         overflow: "hidden",
       }}
     >
+      <ChromeErrorBoundary region="editor">
       {/* If an ancestor EcosystemProvider already exists (e.g. the
            PageHub app's _app.tsx), atoms are shared via the same ecosystem.
            When used standalone, this creates its own ecosystem. */}
@@ -598,6 +586,7 @@ function PageHubEditorInner({
           </Editor>
         </CustomComponentsContext.Provider>
       </EcosystemProvider>
+      </ChromeErrorBoundary>
     </div>
   );
 }

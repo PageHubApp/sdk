@@ -10,6 +10,7 @@ import {
   getClassForView,
   removeClassForView,
 } from "../../../utils/tailwind/className";
+import { sdkLog } from "../../../utils/logger";
 
 // ─── Types ───
 
@@ -189,7 +190,7 @@ export const setPropOnView = (
 
     if (onChange) onChange(value);
   } catch (e: any) {
-    if (!e.message?.includes("data")) console.error(e);
+    if (!e.message?.includes("data")) sdkLog.error(e);
   }
 };
 

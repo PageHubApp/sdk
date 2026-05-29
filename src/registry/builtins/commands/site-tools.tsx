@@ -37,6 +37,7 @@ import { getMediaBackref } from "../../mediaBackref";
 import { getSidebarBackref } from "../../sidebarBackref";
 import { phStorage } from "../../../utils/phStorage";
 import { isInsideTextEditingSurfaceCtx } from "./helpers";
+import { sdkLog } from "../../../utils/logger";
 
 export const SITE_TOOLS_COMMANDS: CommandDef[] = [
   // ─── Site ──────────────────────────────────────────────────────────────
@@ -60,7 +61,7 @@ export const SITE_TOOLS_COMMANDS: CommandDef[] = [
         try {
           actions.selectNode(ROOT_NODE);
         } catch (err) {
-          console.error("[ph.commands] ph.site.selectBackground failed:", err);
+          sdkLog.error("[ph.commands] ph.site.selectBackground failed:", err);
         }
       }
     },
@@ -72,6 +73,7 @@ export const SITE_TOOLS_COMMANDS: CommandDef[] = [
     title: "Theme settings",
     category: "Tools",
     icon: <TbPalette />,
+    when: ctx => ctx.features?.designSystem !== false,
     run: (_ctx, args) => {
       const a = (args as unknown as { cat?: string } | undefined) ?? {};
       panelToggle("theme", { cat: a.cat ?? "colors" });
@@ -84,7 +86,8 @@ export const SITE_TOOLS_COMMANDS: CommandDef[] = [
     title: "Media manager",
     category: "Tools",
     icon: <TbPhoto />,
-    when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
+    when: ctx =>
+      ctx.features?.mediaManager !== false && !isInsideTextEditingSurfaceCtx(ctx),
     run: () => {
       setAtomExternal(MediaManagerModalAtom, (prev: boolean) => !prev);
       panelClose();
@@ -95,6 +98,7 @@ export const SITE_TOOLS_COMMANDS: CommandDef[] = [
     title: "Select all media",
     category: "Edit",
     when: ctx =>
+      ctx.features?.mediaManager !== false &&
       Boolean(
         (ctx as Record<string, unknown>)["media.modalOpen"] &&
           !(ctx as Record<string, unknown>)["media.selectionMode"]
@@ -110,6 +114,7 @@ export const SITE_TOOLS_COMMANDS: CommandDef[] = [
     category: "Edit",
     icon: <TbTrash />,
     when: ctx => {
+      if (ctx.features?.mediaManager === false) return false;
       const rec = ctx as Record<string, unknown>;
       return Boolean(rec["media.modalOpen"]) && Number(rec["media.selectedCount"] ?? 0) > 0;
     },
@@ -151,7 +156,8 @@ export const SITE_TOOLS_COMMANDS: CommandDef[] = [
     title: "Modifiers",
     category: "Tools",
     icon: <TbStack2 />,
-    when: ctx => !isInsideTextEditingSurfaceCtx(ctx),
+    when: ctx =>
+      ctx.features?.modifiers !== false && !isInsideTextEditingSurfaceCtx(ctx),
     run: () => {
       setAtomExternal(ModifiersModalAtom, (prev: boolean) => !prev);
       panelClose();

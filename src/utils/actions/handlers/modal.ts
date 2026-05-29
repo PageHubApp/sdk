@@ -10,8 +10,7 @@ export function attachModal(prop: any, action: NodeAction, enabled: boolean) {
     if (!actionGatePasses(action)) return;
     e.preventDefault();
     // Modal preset is plain Container + show-hide — route through the
-    // registry's visibility primitives. `data-modal` legacy attribute is
-    // ignored (was dead code; saw the audit).
+    // registry's visibility primitives.
     const el = document.getElementById(action.anchor);
     if (el) toggleElement(el, "class");
   });

@@ -4,6 +4,7 @@ import colors from "tailwindcss/colors";
 import { DEFAULT_STYLE_GUIDE } from "../defaults";
 import { oklchToHex } from "./contentColor";
 import { resolveTheme } from "./resolveTheme";
+import { sdkLog } from "../logger";
 
 /**
  * Color System Utilities
@@ -221,15 +222,13 @@ export const resolveCSSVariable = (value: string, query: any = null): string => 
   // Extract CSS variable name from patterns like:
   // - "font-heading"
   // - "var(--heading-font-family)"
-  // - legacy: "var(--ph-heading-font-family)"
-  const varMatch = value.match(/var\((--(?:ph-)?[^)]+)\)/);
+  const varMatch = value.match(/var\((--[^)]+)\)/);
   if (!varMatch) {
     return value;
   }
 
-  const cssVarName = varMatch[1]; // e.g., "--heading-font-family" or "--ph-heading-font-family"
-  // Normalize: strip --ph- or -- prefix to get the kebab property name
-  const rawName = cssVarName.replace(/^--(?:ph-)?/, "");
+  const cssVarName = varMatch[1]; // e.g., "--heading-font-family"
+  const rawName = cssVarName.replace(/^--/, "");
 
   try {
     // If query is not provided, try to get it from the editor context
@@ -307,7 +306,7 @@ export const getTailwindColorHex = (colorName: string, shade?: string): string =
   const colorObj = colors[colorKey];
 
   if (!colorObj) {
-    console.warn(`Color ${colorKey} not found`);
+    sdkLog.warn(`Color ${colorKey} not found`);
     return "#e5e7eb"; // Default gray
   }
 
@@ -320,7 +319,7 @@ export const getTailwindColorHex = (colorName: string, shade?: string): string =
     return colorObj[shade];
   }
 
-  console.warn(`Shade ${shade} not found for ${colorKey}`);
+  sdkLog.warn(`Shade ${shade} not found for ${colorKey}`);
   return "#e5e7eb";
 };
 
@@ -331,12 +330,11 @@ function resolveColorForDisplayCore(
   bg: string,
   palette: PaletteColor[]
 ): { backgroundColor: string } {
-  // Handle CSS variables (e.g., "var(--primary)" or legacy "var(--ph-primary)")
+  // Handle CSS variables (e.g., "var(--primary)")
   if (bg.includes("var(--")) {
-    const varMatch = bg.match(/var\(--((?:ph-)?[^)]+)\)/);
+    const varMatch = bg.match(/var\(--([^)]+)\)/);
     if (varMatch) {
-      const rawVar = varMatch[1].replace(/^ph-/, "");
-      const paletteName = varNameToPaletteName(rawVar);
+      const paletteName = varNameToPaletteName(varMatch[1]);
 
       const paletteColor = palette.find(p => p.name === paletteName);
       if (paletteColor) {
@@ -603,12 +601,11 @@ export const isPaletteColorSelected = (
     }
   }
 
-  // Handle CSS variable format (e.g., "var(--primary)" or legacy "var(--ph-primary)")
+  // Handle CSS variable format (e.g., "var(--primary)")
   if (opaqueValue.includes("var(--")) {
-    const match = opaqueValue.match(/var\(--((?:ph-)?[^)]+)\)/);
+    const match = opaqueValue.match(/var\(--([^)]+)\)/);
     if (match) {
-      const rawVar = match[1].replace(/^ph-/, "");
-      const paletteName = varNameToPaletteName(rawVar);
+      const paletteName = varNameToPaletteName(match[1]);
       return paletteName === paletteColor.name.trim();
     }
   }

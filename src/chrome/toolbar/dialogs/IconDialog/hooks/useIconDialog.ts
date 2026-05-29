@@ -6,6 +6,7 @@ import { phStorage } from "../../../../../utils/phStorage";
 import { loadIconSprite } from "../../../../../utils/icons/IconSvgMapContext";
 import { deriveCategories, type IconCategory } from "../utils/deriveCategories";
 import { useOverlay } from "../../../../../registry/hooks/useOverlay";
+import { sdkLog } from "../../../../../utils/logger";
 
 export interface IconSetMeta {
   id: string;
@@ -134,7 +135,7 @@ export function useIconDialog({
         setLoadingNames(false);
       })
       .catch(err => {
-        console.error(err);
+        sdkLog.error(err);
         setSetNames([]);
         setLoadingNames(false);
       });

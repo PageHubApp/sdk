@@ -23,6 +23,7 @@ import { usePageNavigation } from "../../../utils/page/pageNavigation";
 import { EditorSidebarPrimaryCta } from "../../primitives/EditorSidebarPrimaryCta";
 import { EditorListPicker } from "./EditorListPicker";
 import { UnsavedChangesAtom } from "../state/atoms";
+import { sdkLog } from "../../../utils/logger";
 
 const PageSettingsModal = lazy(() =>
   import("../modals/PageSettingsModal").then(m => ({ default: m.PageSettingsModal }))
@@ -131,7 +132,8 @@ export function PageSelector({
   const [settingsPageId, setSettingsPageId] = useState<string | null>(null);
   const [unsavedChangesRaw, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
   const unsavedChanges = unsavedChangesRaw as unknown as string | null;
-  const { emitter } = useSDK();
+  const { emitter, config } = useSDK();
+  const pageSettingsEnabled = config.features?.pageSettings !== false;
   // Resolve the page-settings/extra-tabs list slot. Each contribution's
   // render() returns the tab descriptor itself (host-supplied shape) — the
   // adapter forwards it untouched so PageSettingsModal can keep using the
@@ -200,7 +202,7 @@ export function PageSelector({
       setIsOpen(false);
       onPageChange?.(pageId);
     } catch (e) {
-      console.error("Error selecting page:", e);
+      sdkLog.error("Error selecting page:", e);
       setIsOpen(false);
     }
   };
@@ -523,7 +525,7 @@ export function PageSelector({
                     </div>
                   </button>
                 )}
-                {!pickerMode ? (
+                {!pickerMode && pageSettingsEnabled ? (
                   <button
                     type="button"
                     onClick={e => {
@@ -545,7 +547,7 @@ export function PageSelector({
         ) : null}
       </EditorListPicker>
 
-      {!pickerMode && settingsPageId !== null ? (
+      {!pickerMode && pageSettingsEnabled && settingsPageId !== null ? (
         <Suspense fallback={null}>
           <PageSettingsModal
             isOpen

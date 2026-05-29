@@ -14,8 +14,8 @@ export function buildCookieConsentChildren() {
   //
   // Container's mount effect dispatches the action in React routes
   // (/view, /static, custom domains, editor preview); static export ships
-  // an inline bootstrap script (PH_LOAD_ACTION_SCRIPT) that evaluates the
-  // same conditions client-side.
+  // an inline bootstrap script (`getLoadActionScript()`) that evaluates
+  // the same conditions client-side.
   //
   // Reject + Accept fire two actions on click: show-hide (snap visually) +
   // set-local-storage (persist key so the load gate matches next visit).

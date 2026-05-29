@@ -214,7 +214,6 @@ export const useControlledInputState = (props: UseControlledInputStateProps) => 
     // Stub Craft fields so the View shape matches
     id: "",
     view: undefined as any,
-    viewSelection: {} as any,
     modifiers: {} as any,
     multiScope: undefined as any,
     query: undefined as any,

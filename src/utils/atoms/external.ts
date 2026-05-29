@@ -8,6 +8,7 @@
  * editor has mounted (which is always true when a chord fires).
  */
 import { getEditorEcosystem } from "../../registry/editorBackref";
+import { sdkLog } from "../logger";
 
 type AtomTemplate<T> = any; // Zedux atom templates aren't a single shared type.
 
@@ -18,7 +19,7 @@ export function setAtomExternal<T>(template: AtomTemplate<T>, value: T | ((prev:
     const instance = eco.getInstance(template);
     instance.setState(value as any);
   } catch (err) {
-    console.error("[ph.atoms] setAtomExternal failed:", err);
+    sdkLog.error("[ph.atoms] setAtomExternal failed:", err);
   }
 }
 
@@ -29,7 +30,7 @@ export function getAtomExternal<T>(template: AtomTemplate<T>): T | undefined {
     const instance = eco.getInstance(template);
     return instance.getState() as T;
   } catch (err) {
-    console.error("[ph.atoms] getAtomExternal failed:", err);
+    sdkLog.error("[ph.atoms] getAtomExternal failed:", err);
     return undefined;
   }
 }

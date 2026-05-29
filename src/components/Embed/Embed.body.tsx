@@ -178,8 +178,6 @@ export interface EmbedProps extends BaseSelectorProps {
   service?: EmbedService;
   url?: string;
   code?: string;
-  /** @deprecated Use `code` instead. Kept for backward compatibility. */
-  videoId?: string;
   title?: string;
   /**
    * HTML hoisted into the document <head> during SSR. Scripts, styles,
@@ -202,10 +200,10 @@ export interface EmbedProps extends BaseSelectorProps {
 
 /**
  * Resolves the final HTML to render.
- * Priority: service-generated code > `code` prop > legacy `videoId` prop.
+ * Priority: service-generated code > `code` prop.
  */
 export function resolveEmbedHTML(props: EmbedProps): string {
-  const { service = "custom", url, code, videoId } = props;
+  const { service = "custom", url, code } = props;
 
   // If a service is selected and URL is provided, generate the embed code
   if (service !== "custom" && url) {
@@ -213,8 +211,7 @@ export function resolveEmbedHTML(props: EmbedProps): string {
     if (generated) return generated;
   }
 
-  // Fall back to manual code, then legacy videoId
-  return code || videoId || "";
+  return code || "";
 }
 
 export function renderEmbedBody(props: EmbedProps, ctx: RenderCtx) {

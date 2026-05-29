@@ -10,6 +10,7 @@ import type {
 } from "@/types";
 import { cleanSvg, type MediaItem } from "../utils/media-helpers";
 import type { useAiGeneration } from "./useAiGeneration";
+import { sdkLog } from "../../../../../utils/logger";
 
 interface UseMediaEditingStateArgs {
   query: any;
@@ -73,7 +74,7 @@ export function useMediaEditingState({
       setSavingMetadata("saved");
       setTimeout(() => setSavingMetadata("idle"), 2000);
     } catch (error) {
-      console.error("Failed to save metadata:", error);
+      sdkLog.error("Failed to save metadata:", error);
       setSavingMetadata("idle");
     }
   };

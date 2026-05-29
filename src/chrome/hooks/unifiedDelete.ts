@@ -16,6 +16,7 @@
  */
 import { ROOT_NODE } from "@craftjs/utils";
 import { deleteNode } from "../viewport/state/viewportExports";
+import { sdkLog } from "../../utils/logger";
 
 export interface UnifiedDeleteOptions {
   /** Force selection-event-derived id when omitted. */
@@ -39,12 +40,12 @@ export async function unifiedDeleteNode(
     const selected =
       opts.id ?? (query.getEvent("selected").first() as string | undefined);
     if (!selected) {
-      console.warn("No node selected for deletion");
+      sdkLog.warn("No node selected for deletion");
       return false;
     }
     const node = query.node(selected).get();
     if (!node) {
-      console.warn("Selected node not found");
+      sdkLog.warn("Selected node not found");
       return false;
     }
 
@@ -56,7 +57,7 @@ export async function unifiedDeleteNode(
       nodeType === "header" ||
       nodeType === "footer"
     ) {
-      console.warn("Node cannot be deleted:", selected);
+      sdkLog.warn("Node cannot be deleted:", selected);
       return false;
     }
 
@@ -82,13 +83,13 @@ export async function unifiedDeleteNode(
           void deleteNode(query, actions, selected, opts.settings);
         }
       } catch (err) {
-        console.error("Error deleting node:", err);
+        sdkLog.error("Error deleting node:", err);
       }
     }, 10);
 
     return true;
   } catch (err) {
-    console.error("Error in unified delete:", err);
+    sdkLog.error("Error in unified delete:", err);
     return false;
   }
 }
@@ -119,7 +120,7 @@ export async function unifiedDeleteComponent(
     actions.delete(componentContainerId);
     return true;
   } catch (err) {
-    console.error("Error deleting component:", err);
+    sdkLog.error("Error deleting component:", err);
     return false;
   }
 }

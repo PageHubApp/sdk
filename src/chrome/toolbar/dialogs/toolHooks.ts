@@ -2,7 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import { getRect } from "../../viewport/hooks/useRect";
 import { useEffect } from "react";
 
-import { ViewSelectionAtom } from "../Label";
+import { EditModifiersAtom } from "../Label";
 import { ViewAtom } from "../../viewport/state/atoms";
 import { getProp, getPropFinalValue } from "../../viewport/state/viewportExports";
 import throttle from "lodash.throttle";
@@ -24,7 +24,7 @@ export const useGetTypeProp = (
   nodeProps
 ) => {
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
 
   if (props.propType === "class") {
     return getPropFinalValue(props, view, nodeProps, classDark).value;

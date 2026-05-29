@@ -8,6 +8,7 @@ import { useSectionTemplates } from "../../../utils/useSectionTemplates";
 import { buildCraftTreeFromStructure } from "../../buildCraftTreeFromStructure";
 import { ComponentPreview } from "../node-tools/ComponentPreview";
 import { useOverlay } from "../../../registry/hooks/useOverlay";
+import { sdkLog } from "../../../utils/logger";
 
 /** Insert payload for built-in section presets (same tree builder as library toolbox). */
 function buildTemplateElement(template: any, resolver: any) {
@@ -20,7 +21,7 @@ function buildTemplateElement(template: any, resolver: any) {
     pendingBlockModifiers: template.modifiers,
   });
   if (!el) {
-    console.warn(`[SectionPicker] Unknown or invalid structure for template "${key}" — skipping`);
+    sdkLog.warn(`[SectionPicker] Unknown or invalid structure for template "${key}" — skipping`);
   }
   return el;
 }
@@ -43,7 +44,7 @@ const buildComponentFromNode = (nodeId: string, query: any): any => {
         .filter(Boolean),
     };
   } catch (e) {
-    console.error("Error building component from node:", e);
+    sdkLog.error("Error building component from node:", e);
     return null;
   }
 };
@@ -325,7 +326,7 @@ export const SectionPickerDialog = ({
                               onSelectSection(freshElement);
                             }
                           } catch (e) {
-                            console.error("Error creating custom section:", e);
+                            sdkLog.error("Error creating custom section:", e);
                           }
                         } else {
                           onSelectSection(template.element);

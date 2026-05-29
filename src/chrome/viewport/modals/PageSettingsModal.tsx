@@ -38,6 +38,7 @@ import { SettingsShell } from "./settings/SettingsShell";
 import { type SettingsTabDefinition } from "./settings/types";
 import { useSettingsController } from "./settings/useSettingsController";
 import type { PageSettingsPayload } from "../../../types";
+import { sdkLog } from "../../../utils/logger";
 
 interface PageSettingsModalProps {
   isOpen: boolean;
@@ -541,7 +542,7 @@ export function PageSettingsModal({
             /* ignore — best-effort canvas mirror */
           }
         } catch (e) {
-          console.error("Error saving page settings:", e);
+          sdkLog.error("Error saving page settings:", e);
         }
       },
       debounceMs: 350,

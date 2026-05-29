@@ -118,7 +118,6 @@ export interface ContainerProps extends BaseSelectorProps {
    */
   computedStateBindings?: ComputedStateBinding[];
   actionProp?: NodeAction;
-  click?: any; // Legacy — handled by migrateAction()
   scrollEffect?: string;
   scrollDirection?: "ltr" | "rtl";
   scrollSnap?: boolean;

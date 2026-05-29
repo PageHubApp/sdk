@@ -17,6 +17,7 @@
  */
 
 import { useSyncExternalStore } from "react";
+import { sdkLog } from "../logger";
 
 export type StateKind = "visibility" | "selection" | "flag" | "value";
 
@@ -62,7 +63,7 @@ function notify(key: string): void {
       try {
         fn();
       } catch (e) {
-        console.error("state listener error:", e);
+        sdkLog.error("state listener error:", e);
       }
     });
   }
@@ -70,7 +71,7 @@ function notify(key: string): void {
     try {
       fn();
     } catch (e) {
-      console.error("state listener error:", e);
+      sdkLog.error("state listener error:", e);
     }
   });
 }
@@ -290,8 +291,9 @@ let _lastSeededRef: object | null | undefined = undefined;
 /**
  * Seed the registry from `window.__PH_STATE__`. Idempotent on repeat calls
  * with the same reference; re-runs when the window slot is replaced.
- * Static export's `PH_LOAD_ACTION_SCRIPT` writes the seed pre-hydration;
- * React reads it once on first mount via `useViewerSetup`.
+ * Static export's load-action bootstrap script (`getLoadActionScript()`)
+ * writes the seed pre-hydration; React reads it once on first mount via
+ * `useViewerSetup`.
  */
 export function seedFromWindow(): void {
   if (typeof window === "undefined") return;

@@ -1,6 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { NodeToolWrapper } from "./NodeDialog";
-import { ViewSelectionAtom } from "../../toolbar/Label";
+import { EditModifiersAtom } from "../../toolbar/Label";
 import { ViewAtom } from "../../viewport/state/atoms";
 import { getPropFinalValue } from "../../viewport/state/viewportExports";
 import { AddElement } from "../../viewport/toolbox/toolboxUtils";
@@ -29,7 +29,7 @@ export function ContainerSettingsTopNodeTool({ direction = "horizontal" }) {
   const [, setAttachedNodes] = useAtomState(AiChatAttachedNodesAtom);
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const { nodeProps, id, displayName } = useNode(node => ({
     nodeProps: node.data.props || {},
     id: node.id,

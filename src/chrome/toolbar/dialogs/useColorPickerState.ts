@@ -8,6 +8,7 @@ import { ColorPickerSidebarAtom } from "./dialogAtoms";
 import { splitOpacitySuffix } from "../../../utils/design/colorSystem";
 import { resolveTheme } from "../../../utils/design/resolveTheme";
 import { phStorage } from "../../../utils/phStorage";
+import { sdkLog } from "../../../utils/logger";
 
 /**
  * All state and handlers for the color picker sidebar dialog.
@@ -29,7 +30,7 @@ export function useColorPickerState() {
       const pagePalette = resolveTheme(rootNode?.data?.props || {}).palette;
       setPalette(pagePalette as any[]);
     } catch (error) {
-      console.error("Failed to load palette:", error);
+      sdkLog.error("Failed to load palette:", error);
     }
   }, [dialog.enabled, query]);
 

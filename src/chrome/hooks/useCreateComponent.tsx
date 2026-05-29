@@ -9,6 +9,7 @@ import { CanvasIsolateAtom } from "../../utils/component/componentIsolation";
 import { ComponentsAtom, ViewModeAtom } from "../../utils/atoms";
 import { getAtomExternal, setAtomExternal } from "../../utils/atoms/external";
 import { getEditorActions, getEditorQuery } from "../../registry/editorBackref";
+import { sdkLog } from "../../utils/logger";
 
 /**
  * Non-hook helper that does the actual work — extracted so the registry
@@ -26,7 +27,7 @@ export function createReusableComponentRun(args?: {
   const query = args?.query ?? getEditorQuery();
   const actions = args?.actions ?? getEditorActions();
   if (!query || !actions) {
-    console.warn("[createReusableComponentRun] missing editor backref");
+    sdkLog.warn("[createReusableComponentRun] missing editor backref");
     return;
   }
   try {
@@ -70,11 +71,11 @@ export function createReusableComponentRun(args?: {
         }
         setAtomExternal(CanvasIsolateAtom, containerId as any);
       } catch (e) {
-        console.error("[createReusableComponentRun] post-frame failed", e);
+        sdkLog.error("[createReusableComponentRun] post-frame failed", e);
       }
     });
   } catch (e) {
-    console.error("[createReusableComponentRun] failed to create component", e);
+    sdkLog.error("[createReusableComponentRun] failed to create component", e);
   }
 }
 

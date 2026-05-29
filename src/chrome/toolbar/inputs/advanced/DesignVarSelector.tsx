@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { TbSearch, TbVariable } from "react-icons/tb";
 import { useAtomState, useAtomValue } from "@zedux/react";
-import { ViewSelectionAtom } from "../../Label";
+import { EditModifiersAtom } from "../../Label";
 import { DesignVarDialogAtom } from "../../dialogs/DesignVarDialog";
 import { useDialog } from "../../dialogs/toolHooks";
 import { toolbarInputNoAutocompleteProps } from "../../toolbarInputAttrs";
@@ -28,7 +28,7 @@ export function DesignVarSelector({
   prefix = "",
 }: DesignVarSelectorProps) {
   const [dialog, setDialog] = useAtomState(DesignVarDialogAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const [searchTerm, setSearchTerm] = useState("");
   const ref = useRef<HTMLButtonElement>(null);
 

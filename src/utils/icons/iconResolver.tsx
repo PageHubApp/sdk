@@ -147,16 +147,6 @@ export function useResolvedIcon(
 }
 
 /**
- * Convert a legacy icon value to `ref-icon:` format. Pass-through for values
- * already in ref-* form.
- */
-export function iconToRef(iconName: string): string {
-  if (!iconName) return "";
-  if (iconName.startsWith("ref-")) return iconName;
-  return iconName;
-}
-
-/**
  * Extract the key portion of a ref (`set/Name`) from a `ref-icon:` string.
  */
 export function refToIconName(ref: string): string {

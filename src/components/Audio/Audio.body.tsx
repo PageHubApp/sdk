@@ -14,19 +14,15 @@ import { BaseSelectorProps, applyAriaProps } from "../selectors";
 
 export interface AudioProps extends BaseSelectorProps {
   src?: string;
-  /** @deprecated Use `src` instead. */
-  audioUrl?: string;
   title?: string;
   controls?: boolean;
   autoPlay?: boolean;
-  /** @deprecated Use `autoPlay` instead. */
-  autoplay?: boolean;
   loop?: boolean;
 }
 
 export function renderAudioBody(props: AudioProps, ctx: RenderCtx) {
-  const audioUrl = props.src ?? props.audioUrl;
-  const autoPlay = props.autoPlay ?? props.autoplay;
+  const audioUrl = props.src;
+  const autoPlay = props.autoPlay;
 
   const prop: any = {
     ref: (r: any) => {

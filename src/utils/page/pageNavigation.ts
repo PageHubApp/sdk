@@ -10,6 +10,7 @@
 
 import sluggit from "slug";
 import { useSyncExternalStore } from "react";
+import { sdkLog } from "../logger";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -92,7 +93,7 @@ async function doIsolate(pageId: string | null): Promise<void> {
   try {
     await initOpts.onIsolate(pageId);
   } catch (e) {
-    console.error("[PageHub] Page isolation failed:", e);
+    sdkLog.error("[PageHub] Page isolation failed:", e);
   }
   if (seq !== isolationSeq) return;
 }

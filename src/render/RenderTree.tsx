@@ -26,6 +26,7 @@ import { getConnectorData } from "../utils/design/variables";
 import type { Condition, ConditionGroup, ConditionLogic } from "../utils/conditions/types";
 import { WalkerNodeProvider, useTreeRoot, type WalkerNodeCtx } from "./contexts";
 import { uiResolver, type UiResolver } from "./resolver";
+import { sdkLog } from "../utils/logger";
 
 export interface SerializedNode {
   type: { resolvedName: string };
@@ -94,7 +95,7 @@ function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProp
 
   if (!node) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn(`[RenderTree] node id "${id}" not in NodeMap`);
+      sdkLog.warn(`[RenderTree] node id "${id}" not in NodeMap`);
     }
     return null;
   }
@@ -106,7 +107,7 @@ function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProp
   const Component = resolver[node.type.resolvedName];
   if (!Component) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn(
+      sdkLog.warn(
         `[RenderTree] no resolver for "${node.type.resolvedName}" (node ${id})`
       );
     }

@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomValue } from "@zedux/react";
 import { editorCanvasViewToClassPrefixKey } from "../../../utils/tailwind/className";
-import { ViewSelectionAtom } from "../../toolbar/Label";
+import { EditModifiersAtom } from "../../toolbar/Label";
 import { ViewAtom } from "../../viewport/state/atoms";
 import { PaddingOverlay } from "./PaddingOverlay";
 
@@ -14,7 +14,7 @@ export function ContainerPaddingOverlay() {
     actions: { setProp },
   } = useNode();
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classPrefixView = editorCanvasViewToClassPrefixKey(view);
 
   if (!dom || !isSelected) return null;

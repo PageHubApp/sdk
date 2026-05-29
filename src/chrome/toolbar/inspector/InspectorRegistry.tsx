@@ -6,6 +6,7 @@
  * component forwards props to whatever was registered. Not `React.lazy`.
  */
 import React from "react";
+import { sdkLog } from "../../../utils/logger";
 
 let _UnifiedSettings: React.ComponentType | null = null;
 
@@ -15,7 +16,7 @@ export function registerInspector(component: React.ComponentType) {
 
 export const Inspector = (props: any) => {
   if (!_UnifiedSettings) {
-    console.error("Inspector was not registered. This is a circular dependency issue.");
+    sdkLog.error("Inspector was not registered. This is a circular dependency issue.");
     return null;
   }
   return React.createElement(_UnifiedSettings!, props);

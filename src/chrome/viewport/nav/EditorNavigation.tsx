@@ -81,7 +81,8 @@ export const EditorNavigation = ({ settings: _settings, isTenant }: EditorNaviga
   const { selectedId } = useEditor((_state, query) => ({
     selectedId: query.getEvent("selected").first() ?? null,
   }));
-  const { commands } = useSDK();
+  const { commands, config } = useSDK();
+  const designSystemEnabled = config.features?.designSystem !== false;
   // Subscribe to the atoms that drive dynamic titles so this component
   // re-renders and re-runs the title resolvers. We also mirror them into
   // the command context (below) so the `titleOverride` callbacks see them.
@@ -197,7 +198,7 @@ export const EditorNavigation = ({ settings: _settings, isTenant }: EditorNaviga
         <SidebarFlyoutSurface>
           {panel === "components" || panel === "blocks" ? (
             <ToolboxTabs />
-          ) : panel === "theme" ? (
+          ) : panel === "theme" && designSystemEnabled ? (
             <ThemeSettingsPanel />
           ) : panel === "import-export" ? (
             <ImportExportPanel onClose={close} />

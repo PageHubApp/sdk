@@ -20,6 +20,7 @@ import { useUnifiedDelete } from "../../hooks/useUnifiedDelete";
 import { useCreateComponent } from "../../hooks/useCreateComponent";
 import { EditorListPicker } from "./EditorListPicker";
 import { EditorSidebarPrimaryCta } from "../../primitives/EditorSidebarPrimaryCta";
+import { sdkLog } from "../../../utils/logger";
 
 interface ComponentSelectorProps {
   className?: string;
@@ -111,7 +112,7 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
         }
       }
     } catch (e) {
-      console.error("Error renaming component:", e);
+      sdkLog.error("Error renaming component:", e);
     }
 
     setEditingId(null);
@@ -138,7 +139,7 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
         setComponents(components.filter(c => c.rootNodeId !== component.rootNodeId));
       }
     } catch (e) {
-      console.error("Error deleting component:", e);
+      sdkLog.error("Error deleting component:", e);
     }
   };
 
@@ -170,7 +171,7 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
         )
       );
     } catch (e) {
-      console.error("Error toggling component type:", e);
+      sdkLog.error("Error toggling component type:", e);
     }
   };
 

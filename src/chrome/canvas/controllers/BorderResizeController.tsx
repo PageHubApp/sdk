@@ -19,7 +19,7 @@ import { useEditor } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { twMerge } from "tailwind-merge";
-import { ViewSelectionAtom } from "../../toolbar/Label";
+import { EditModifiersAtom } from "../../toolbar/Label";
 import { ViewAtom } from "../../viewport/state/atoms";
 import {
   editorCanvasViewToClassPrefixKey,
@@ -101,7 +101,7 @@ export function BorderResizeController() {
 
   const { actions } = useEditor();
   const view = useAtomValue(ViewAtom);
-  const classDark = useAtomValue(ViewSelectionAtom).dark ?? false;
+  const classDark = useAtomValue(EditModifiersAtom).dark ?? false;
   const classPrefixView = editorCanvasViewToClassPrefixKey(view);
 
   const [hoveredSide, setHoveredSide] = useState<Side | null>(null);

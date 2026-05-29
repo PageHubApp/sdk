@@ -1,5 +1,6 @@
 import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useMemo, useState } from "react";
+import { sdkLog } from "../../utils/logger";
 
 function resolveCraftComponent(
   type: unknown,
@@ -28,7 +29,7 @@ class NodeErrorBoundary extends React.Component<{ children?: React.ReactNode }> 
   }
 
   componentDidCatch(error) {
-    console.warn("[PageHub] Corrupt node skipped:", error.message);
+    sdkLog.warn("[PageHub] Corrupt node skipped:", error.message);
   }
 
   render() {

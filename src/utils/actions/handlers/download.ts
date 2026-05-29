@@ -1,6 +1,7 @@
 import type { DownloadFileAction, NodeAction } from "../../action";
 import { actionGatePasses } from "../gates";
 import { ActionContext, chain, interpolateItem } from "../internal";
+import { sdkLog } from "../../logger";
 
 export function attachDownloadFile(
   prop: any,
@@ -29,7 +30,7 @@ export function attachDownloadFile(
       a.click();
       document.body.removeChild(a);
     } catch (err) {
-      console.warn("[PageHub] download-file failed", err);
+      sdkLog.warn("[PageHub] download-file failed", err);
     }
   });
 }

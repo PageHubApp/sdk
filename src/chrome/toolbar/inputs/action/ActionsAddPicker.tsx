@@ -57,17 +57,11 @@ export default function ActionsAddPicker({ def }: PropertyInputProps) {
     if (!item.data) return;
     const next = ACTION_DEFAULTS[item.data];
     setProp((p: any) => {
-      // `migrateActions` consolidates every legacy / dual-write shape into a
-      // single array; we append to that and write back the canonical
-      // `props.action` array.
+      // `migrateActions` reads the canonical `props.action` shape; we append
+      // and write back as an array.
       const existing = migrateActions(p);
       existing.push(next);
       p.action = existing;
-      delete p.actions;
-      delete p.click;
-      delete p.url;
-      delete p.urlTarget;
-      delete p.clickMode;
     });
     if (sectionTitle && accordionCtx?.setOpen) accordionCtx.setOpen(sectionTitle, true);
     requestOpenPopover(popoverRequests, setPopoverRequests, id, ACTIONS_BODY_DEF_ID);

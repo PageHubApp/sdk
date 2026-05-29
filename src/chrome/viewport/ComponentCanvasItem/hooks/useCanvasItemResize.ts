@@ -6,6 +6,7 @@ import {
   CanvasSize,
 } from "../../../../utils/component/componentCanvas";
 import { CARD_PAD, ResizeSide } from "../constants";
+import { sdkLog } from "../../../../utils/logger";
 
 interface Args {
   containerId: string;
@@ -82,7 +83,7 @@ export function useCanvasItemResize({
         p.custom.canvasSize = next;
       });
     } catch (err) {
-      console.error("[ComponentCanvasItem] failed to commit size", err);
+      sdkLog.error("[ComponentCanvasItem] failed to commit size", err);
     }
   }, [actions, containerId, detachListeners, liveSizeRef]);
 
