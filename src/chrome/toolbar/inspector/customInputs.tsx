@@ -87,7 +87,7 @@ const lazyMap: Record<string, LazyEntry> = {
   ),
   // Section-header `+` picker. Popover-mode so AccordionAddMenu mounts it
   // inside the conditions section title row. Picking a category appends a
-  // condition to `props.conditions` and the body auto-opens the new chip.
+  // condition to `props.conditionGroups` and the body auto-opens the new chip.
   ConditionsAddPicker: chip(React.lazy(() => import("../inputs/advanced/ConditionsAddPicker"))),
   // State bindings — `props.stateModifiers` array. When the named state matches
   // the binding's conditions at runtime, modifier classes are appended to the

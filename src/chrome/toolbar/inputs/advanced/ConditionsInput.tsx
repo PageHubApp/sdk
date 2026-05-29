@@ -1,13 +1,13 @@
 /**
- * Conditional visibility — chip-list builder for a node's `conditions[]`.
+ * Conditional visibility — chip-list builder for a node's `conditionGroups`.
  *
  * In the inspector toolbar this renders as N `ConditionChipRow`s + a
  * "+ Add condition" picker. Each chip opens a small floating editor with the
  * fields for that one condition.
  *
  * The page-settings AccessTab uses the OR-group variant exported from this
- * file (`ConditionGroupUI`, `parseGroups`, `defaultCondition`) — the toolbar
- * variant intentionally drops OR groups and stores a single AND list.
+ * file (`ConditionGroupUI`, `defaultCondition`) — the toolbar variant
+ * intentionally drops OR groups and stores a single AND group.
  */
 import { useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
@@ -99,16 +99,6 @@ function useConnectorOptions(): { provider: string; collections: string[] }[] {
   }));
 }
 
-/** Parse a flat conditions array + conditionGroups into condition groups.
- *  Legacy format (flat array) becomes a single group. */
-export function parseGroups(
-  conditions: Condition[],
-  conditionGroups: ConditionGroup[] | undefined
-): ConditionGroup[] {
-  if (conditionGroups && conditionGroups.length > 0) return conditionGroups;
-  if (conditions.length > 0) return [{ conditions, logic: "all" }];
-  return [];
-}
 
 /** Create a default condition for a given type */
 export function defaultCondition(type: ConditionType): Condition {
@@ -500,30 +490,22 @@ export const ConditionsInput = () => {
   const {
     id,
     actions: { setProp },
-    conditions,
     conditionGroups,
   } = useNode(node => ({
     id: node.id,
-    conditions: (node.data?.props?.conditions || []) as Condition[],
     conditionGroups: node.data?.props?.conditionGroups as ConditionGroup[] | undefined,
   }));
   const popoverRequests = useAtomValue(PopoverOpenRequestAtom);
   const requestVersion = popoverRequests.get(popoverRequestKey(id, CONDITIONS_BODY_DEF_ID)) || 0;
 
-  // Toolbar surface only deals with a single AND list. Legacy conditionGroups
-  // data is read flat (first group's conditions), and any save rewrites the
-  // single canonical shape — `conditions[]` + `conditionLogic: "all"`. Multi-
-  // group OR data is still authorable from page-settings AccessTab.
-  const groups = parseGroups(conditions, conditionGroups);
-  const list: Condition[] = groups[0]?.conditions ?? [];
+  // Toolbar surface only deals with a single AND list (first group's
+  // conditions). Multi-group OR data is still authorable from page-settings
+  // AccessTab.
+  const list: Condition[] = conditionGroups?.[0]?.conditions ?? [];
 
   const writeList = (next: Condition[]) => {
     setProp((p: any) => {
-      p.conditions = next;
-      p.conditionLogic = "all";
-      if (p.conditionGroups !== undefined) {
-        p.conditionGroups = next.length > 0 ? [{ conditions: next, logic: "all" }] : [];
-      }
+      p.conditionGroups = next.length > 0 ? [{ conditions: next, logic: "all" }] : [];
     });
   };
 

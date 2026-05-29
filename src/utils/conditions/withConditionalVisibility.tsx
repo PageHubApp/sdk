@@ -2,28 +2,27 @@ import React from "react";
 import { useEditor, useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { buildClientContext, buildStaticContext } from "./context";
-import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
+import { evaluateConditionGroups } from "./evaluate";
 import { getConnectorData, replaceVariables } from "../design/variables";
 import { useItemContext } from "../itemContext";
 import { subscribe as subscribeState } from "../state/stateRegistry";
-import type { Condition, ConditionGroup, ConditionLogic } from "./types";
+import type { Condition, ConditionGroup } from "./types";
 
 /**
- * Walk all conditions (top-level + groups) and collect the state keys they
- * read. We subscribe per-key in the runtime evaluator so unrelated state
- * writes (cart open, toast tick, search input on another grid) don't trigger
- * a condition re-eval on every node with conditions. `auth` conditions are
- * mirrored to `auth:status` by `setAuthState`, so subscribing to that key
- * covers them. Other condition types (url-param, viewport, form-field) are
- * handled by their own listeners (popstate/resize/etc).
+ * Walk all condition groups and collect the state keys they read. We
+ * subscribe per-key in the runtime evaluator so unrelated state writes
+ * (cart open, toast tick, search input on another grid) don't trigger a
+ * condition re-eval on every node with conditions. `auth` conditions are
+ * mirrored to `auth:status` by `setAuthState`, so subscribing to that
+ * key covers them. Other condition types (url-param, viewport,
+ * form-field) are handled by their own listeners (popstate/resize/etc).
  */
-function collectStateKeys(conditions: Condition[], groups: ConditionGroup[] | null): string[] {
+function collectStateKeys(groups: ConditionGroup[] | null): string[] {
   const keys = new Set<string>();
   const visit = (c: Condition) => {
     if (c.type === "state" && (c as any).key) keys.add((c as any).key);
     if (c.type === "auth") keys.add("auth:status");
   };
-  for (const c of conditions) visit(c);
   if (groups) {
     for (const g of groups) {
       for (const c of g.conditions || []) visit(c);
@@ -54,8 +53,6 @@ export function withConditionalVisibility<P extends object>(
 
 function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
   const {
-    conditions,
-    conditionLogic,
     conditionGroups,
     nodeType,
     nodeId,
@@ -64,8 +61,6 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     pageConditionRedirectUrl,
     pageConditionFallbackPageId,
   } = useNode(node => ({
-    conditions: (node.data.props.conditions || []) as Condition[],
-    conditionLogic: (node.data.props.conditionLogic || "all") as ConditionLogic,
     conditionGroups: (node.data.props.conditionGroups || null) as ConditionGroup[] | null,
     nodeType: node.data.props.type as string | undefined,
     nodeId: node.id,
@@ -87,7 +82,7 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     }
   });
 
-  const hasConditions = (conditionGroups && conditionGroups.length > 0) || conditions.length > 0;
+  const hasConditions = !!(conditionGroups && conditionGroups.length > 0);
 
   // Current repeater item (null outside ItemProvider) — drives `item` conditions.
   const itemContext = useItemContext();
@@ -103,22 +98,15 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
       ...buildStaticContext(rootProps, itemContext),
       connectorData: getConnectorData(),
     };
-    const result =
-      conditionGroups && conditionGroups.length > 0
-        ? evaluateConditionGroups(conditionGroups, ctx)
-        : evaluateConditions(conditions, conditionLogic, ctx);
-    // Match the runtime evaluator (L115): treat indeterminate (`null`) as
-    // visible. A static-context `null` for an auth/url-param/localStorage
-    // condition would otherwise flash `visible=false`, fire the page-level
-    // redirect, and beat the client useEffect that resolves correctly.
+    const result = evaluateConditionGroups(conditionGroups!, ctx);
+    // Treat indeterminate (`null`) as visible. A static-context `null` for
+    // an auth/url-param/localStorage condition would otherwise flash
+    // `visible=false`, fire the page-level redirect, and beat the client
+    // useEffect that resolves correctly.
     return result !== false;
   });
-  const conditionsRef = useRef(conditions);
-  const logicRef = useRef(conditionLogic);
   const groupsRef = useRef(conditionGroups);
   const itemRef = useRef(itemContext);
-  conditionsRef.current = conditions;
-  logicRef.current = conditionLogic;
   groupsRef.current = conditionGroups;
   itemRef.current = itemContext;
 
@@ -138,14 +126,8 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     // Viewer mode: evaluate conditions
     const evaluate = () => {
       const ctx = buildClientContext(rootProps, itemRef.current);
-      let result: boolean | null;
-      if (groupsRef.current && groupsRef.current.length > 0) {
-        result = evaluateConditionGroups(groupsRef.current, ctx);
-      } else {
-        result = evaluateConditions(conditionsRef.current, logicRef.current, ctx);
-      }
-      const newVisible = result !== false;
-      setVisible(newVisible);
+      const result = evaluateConditionGroups(groupsRef.current!, ctx);
+      setVisible(result !== false);
     };
 
     evaluate();
@@ -158,7 +140,7 @@ function VisibilityGate({ wrappedProps, wrappedRef, Component }: any) {
     // for every cart toggle / unrelated state write. Other condition types
     // (url-param, viewport, form-field) are covered by popstate/resize and
     // by their own listeners elsewhere.
-    const stateKeys = collectStateKeys(conditionsRef.current, groupsRef.current);
+    const stateKeys = collectStateKeys(groupsRef.current);
     const offs = stateKeys.map(k => subscribeState(k, evaluate));
     return () => {
       window.removeEventListener("popstate", onPop);

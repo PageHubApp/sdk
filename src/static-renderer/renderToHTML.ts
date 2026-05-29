@@ -298,12 +298,9 @@ export function renderToHTML(
     (ctx.hasClientConditions
       ? buildConditionContextSeedScript(rootProps.company, options.connectorData ?? null)
       : "") +
-    // getConditionEvalScript was a standalone IIFE that ran a multi-shot
-    // DCL/load/setTimeout cascade to re-evaluate `data-ph-conditions` /
-    // `data-ph-condition-groups`. Replaced by Alpine directives registered
-    // inside the static-publish runtime IIFE — they wrap evalAll/evalGroups
-    // in Alpine.effect so visibility is now reactive to any setState write,
-    // not pinned to wall-clock timeouts.
+    // The static-publish runtime IIFE registers a `data-ph-condition-groups`
+    // Alpine directive that wraps evalGroups in Alpine.effect, so node
+    // visibility re-evaluates on every state-store write.
     (includeRuntime
       ? getStaticPublishRuntimeScript({
           mobileBreakpoint: rootProps.theme?.breakpoints?.md,

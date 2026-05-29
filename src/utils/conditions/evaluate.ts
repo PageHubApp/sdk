@@ -185,10 +185,12 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
 }
 
 /**
- * Evaluate a flat array of conditions with AND/OR logic.
- * Returns `true` (show), `false` (hide), or `null` (indeterminate — has unevaluable conditions).
+ * Internal helper: evaluate one group's conditions with AND/OR logic.
+ * Returns `true` (show), `false` (hide), or `null` (indeterminate — has
+ * unevaluable conditions). Public callers should use
+ * `evaluateConditionGroups` instead.
  */
-export function evaluateConditions(
+function evaluateConditions(
   conditions: Condition[],
   logic: ConditionLogic,
   ctx: ConditionContext

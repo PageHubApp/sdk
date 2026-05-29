@@ -14,28 +14,9 @@ const CONDITIONS_BODY = stringifyChunk(function $conditions() {
     return evalGroups(action.conditions) !== false;
   }
 
-  // SSR emits <div data-ph-conditions="…" style="display:none">; this flips
-  // display to '' when evalAll passes. _store.revision read makes it reactive.
-  Alpine.directive(
-    "conditions",
-    function (
-      el: HTMLElement,
-      _: unknown,
-      opts: { effect: (fn: () => void) => void }
-    ) {
-      let conds: unknown[];
-      try {
-        conds = JSON.parse(el.getAttribute("data-ph-conditions") || "[]");
-      } catch (e) {
-        conds = [];
-      }
-      const logic = el.getAttribute("data-ph-condition-logic") || "all";
-      opts.effect(function () {
-        void _store.revision;
-        el.style.display = evalAll(conds, logic) ? "" : "none";
-      });
-    }
-  );
+  // SSR emits <div data-ph-condition-groups="…" style="display:none">; this
+  // flips display to '' when evalGroups passes. _store.revision read makes
+  // it reactive.
   Alpine.directive(
     "condition-groups",
     function (

@@ -223,7 +223,6 @@ export const advancedProperties: PropertyDef[] = [
     input: { type: "custom", component: "ConditionsInput" },
     pinned: true,
     isActive: (_cls, props) => {
-      if (Array.isArray(props?.conditions) && props.conditions.length > 0) return true;
       const groups = props?.conditionGroups;
       if (Array.isArray(groups)) {
         for (const g of groups) {

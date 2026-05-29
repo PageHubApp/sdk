@@ -17,13 +17,10 @@
  */
 import React from "react";
 import { ItemProvider, useItemContext } from "../utils/itemContext";
-import {
-  evaluateConditionGroups,
-  evaluateConditions,
-} from "../utils/conditions/evaluate";
+import { evaluateConditionGroups } from "../utils/conditions/evaluate";
 import { buildClientContext } from "../utils/conditions/context";
 import { getConnectorData } from "../utils/design/variables";
-import type { Condition, ConditionGroup, ConditionLogic } from "../utils/conditions/types";
+import type { ConditionGroup } from "../utils/conditions/types";
 import { WalkerNodeProvider, useTreeRoot, type WalkerNodeCtx } from "./contexts";
 import { uiResolver, type UiResolver } from "./resolver";
 import { sdkLog } from "../utils/logger";
@@ -65,11 +62,8 @@ function evalNodeVisibility(
   rootProps: Record<string, any>,
   itemContext: any
 ): boolean {
-  const conditions = (node.props.conditions || []) as Condition[];
   const conditionGroups = (node.props.conditionGroups || null) as ConditionGroup[] | null;
-  const conditionLogic = (node.props.conditionLogic || "all") as ConditionLogic;
-  const has = (conditionGroups && conditionGroups.length > 0) || conditions.length > 0;
-  if (!has) return true;
+  if (!conditionGroups || conditionGroups.length === 0) return true;
   // Use static-ish context for SSR; the runtime evaluator on mount inside
   // each component (via useEffect listeners) keeps client-only conditions
   // accurate. The walker's job here is to skip nodes whose server-resolvable
@@ -78,10 +72,7 @@ function evalNodeVisibility(
     ...buildClientContext(rootProps, itemContext),
     connectorData: getConnectorData(),
   };
-  const result =
-    conditionGroups && conditionGroups.length > 0
-      ? evaluateConditionGroups(conditionGroups, ctx)
-      : evaluateConditions(conditions, conditionLogic, ctx);
+  const result = evaluateConditionGroups(conditionGroups, ctx);
   return result !== false;
 }
 

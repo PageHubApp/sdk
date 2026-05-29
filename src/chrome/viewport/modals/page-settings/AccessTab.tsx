@@ -5,7 +5,6 @@ import { getConnectorData } from "../../../../utils/design/variables";
 import {
   ConditionGroupUI,
   defaultCondition,
-  parseGroups,
 } from "../../../toolbar/inputs/advanced/ConditionsInput";
 import { ToolbarDashedButton } from "../../../toolbar/primitives/ToolbarDashedButton";
 import {
@@ -59,7 +58,7 @@ export function AccessTab({
   const connectorOptions = useConnectorOptions();
   const selectField = settingsModalSelectClass(selectClass);
 
-  const groups = parseGroups([], pageConditions?.length ? pageConditions : undefined);
+  const groups: ConditionGroup[] = pageConditions?.length ? pageConditions : [];
 
   const updateGroup = (i: number, updated: ConditionGroup) => {
     const next = [...groups];

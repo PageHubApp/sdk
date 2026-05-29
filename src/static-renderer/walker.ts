@@ -1,5 +1,5 @@
 import { buildStaticContext } from "../utils/conditions/context";
-import { evaluateConditionGroups, evaluateConditions } from "../utils/conditions/evaluate";
+import { evaluateConditionGroups } from "../utils/conditions/evaluate";
 import type { AuthState } from "../utils/design/variables";
 import type { StaticRenderContext, ToHTMLFn } from "../utils/staticHtml";
 import type { SerializedNode, SerializedNodes } from "./types";
@@ -53,19 +53,13 @@ export function renderNode(
 
   // Evaluate per-node conditions
   const conditionGroups = node.props?.conditionGroups;
-  const conditions = node.props?.conditions;
-  const hasConditions =
-    (conditionGroups && conditionGroups.length > 0) || (conditions && conditions.length > 0);
+  const hasConditions = conditionGroups && conditionGroups.length > 0;
 
   if (hasConditions) {
     const rootProps = nodes["ROOT"]?.props || {};
     const condCtx = buildWalkerContext(rootProps, ctx.currentItem ?? null, ctx);
 
-    // Prefer conditionGroups (new format), fall back to flat conditions
-    const result =
-      conditionGroups && conditionGroups.length > 0
-        ? evaluateConditionGroups(conditionGroups, condCtx)
-        : evaluateConditions(conditions, node.props.conditionLogic || "all", condCtx);
+    const result = evaluateConditionGroups(conditionGroups, condCtx);
 
     if (result === false) return ""; // definitively hidden
 
@@ -106,17 +100,10 @@ export function renderNode(
         }
       }
       if (!inner) return "";
-      const logic = node.props.conditionLogic || "all";
-      // Prefer the new conditionGroups shape (an array of {logic, conditions}).
-      // Fall back to flat conditions[] for legacy nodes. Either attr is consumed
-      // by the Alpine `data-ph-conditions` / `data-ph-condition-groups`
-      // directives registered in staticPublishRuntime.ts.
-      if (conditionGroups && conditionGroups.length > 0) {
-        const groupsData = JSON.stringify(conditionGroups).replace(/"/g, "&quot;");
-        return `<div data-ph-condition-groups="${groupsData}" style="display:none">${inner}</div>`;
-      }
-      const condData = JSON.stringify(conditions || []).replace(/"/g, "&quot;");
-      return `<div data-ph-conditions="${condData}" data-ph-condition-logic="${logic}" style="display:none">${inner}</div>`;
+      // Consumed by the Alpine `data-ph-condition-groups` directive registered
+      // in staticPublishRuntime.ts.
+      const groupsData = JSON.stringify(conditionGroups).replace(/"/g, "&quot;");
+      return `<div data-ph-condition-groups="${groupsData}" style="display:none">${inner}</div>`;
     }
     // result === true: render normally, fall through
   }

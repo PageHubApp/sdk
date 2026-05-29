@@ -2,11 +2,11 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useEffect, useRef, useState } from "react";
 import { buildClientContext, buildStaticContext } from "./context";
-import { evaluateConditionGroups, evaluateConditions } from "./evaluate";
+import { evaluateConditionGroups } from "./evaluate";
 import { getConnectorData } from "../design/variables";
 import { useItemContext } from "../itemContext";
 import { subscribe as subscribeStateTick } from "../state/stateRegistry";
-import type { Condition, ConditionGroup, ConditionLogic } from "./types";
+import type { ConditionGroup } from "./types";
 
 /**
  * Hook for per-node conditional visibility.
@@ -17,9 +17,7 @@ export function useConditionalVisibility(): {
   visible: boolean;
   hasConditions: boolean;
 } {
-  const { conditions, conditionLogic, conditionGroups } = useNode(node => ({
-    conditions: (node.data.props.conditions || []) as Condition[],
-    conditionLogic: (node.data.props.conditionLogic || "all") as ConditionLogic,
+  const { conditionGroups } = useNode(node => ({
     conditionGroups: (node.data.props.conditionGroups || null) as ConditionGroup[] | null,
   }));
 
@@ -28,7 +26,7 @@ export function useConditionalVisibility(): {
     rootProps: query.node(ROOT_NODE).get()?.data?.props || {},
   }));
 
-  const hasConditions = (conditionGroups && conditionGroups.length > 0) || conditions.length > 0;
+  const hasConditions = !!(conditionGroups && conditionGroups.length > 0);
 
   const itemContext = useItemContext();
 
@@ -38,18 +36,11 @@ export function useConditionalVisibility(): {
       ...buildStaticContext(rootProps, itemContext),
       connectorData: getConnectorData(),
     };
-    const result =
-      conditionGroups && conditionGroups.length > 0
-        ? evaluateConditionGroups(conditionGroups, ctx)
-        : evaluateConditions(conditions, conditionLogic, ctx);
+    const result = evaluateConditionGroups(conditionGroups!, ctx);
     return result === true;
   });
-  const conditionsRef = useRef(conditions);
-  const logicRef = useRef(conditionLogic);
   const groupsRef = useRef(conditionGroups);
   const itemRef = useRef(itemContext);
-  conditionsRef.current = conditions;
-  logicRef.current = conditionLogic;
   groupsRef.current = conditionGroups;
   itemRef.current = itemContext;
 
@@ -61,14 +52,7 @@ export function useConditionalVisibility(): {
 
     const evaluate = () => {
       const ctx = buildClientContext(rootProps, itemRef.current);
-      let result: boolean | null;
-
-      if (groupsRef.current && groupsRef.current.length > 0) {
-        result = evaluateConditionGroups(groupsRef.current, ctx);
-      } else {
-        result = evaluateConditions(conditionsRef.current, logicRef.current, ctx);
-      }
-
+      const result = evaluateConditionGroups(groupsRef.current!, ctx);
       setVisible(result !== false);
     };
 
