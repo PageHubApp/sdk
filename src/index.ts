@@ -512,14 +512,12 @@ export {
 export type { StateEntry, StateKind, WriterSource } from "./utils/state/stateRegistry";
 
 // URL ↔ state bridge — call once per viewer (from `useViewerSetup`) to mirror
-// `URLSearchParams` ↔ `state["url:*"]`. Replaces the legacy
-// `useUrlQueryCommerce` hook + `pagehub:url-query-changed` CustomEvent.
+// `URLSearchParams` ↔ `state["url:*"]`.
 export { mountUrlQueryStateBridge, getUrlState } from "./utils/state/urlQueryBridge";
 
 // Anchor context — wrappers (AgentFloatingBubble, AgentChat, CartDrawer, …)
 // publish per-instance ids so descendant presets can reference them via
 // `{{anchor.X}}` tokens in `id` / `action.target` / `state` condition keys.
-// Replaces the legacy first-mount `walkAndFix` placeholder-rewrite pattern.
 /** @internal */
 export { AnchorProvider } from "./utils/anchors/anchorContext";
 /** @internal */

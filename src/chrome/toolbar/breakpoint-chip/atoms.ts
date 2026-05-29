@@ -47,9 +47,9 @@ export const CHIP_BP_LABEL: Record<ChipBp, string> = {
 };
 
 /**
- * Map editor canvas `ViewAtom` value (which includes 'desktop' fluid + 'tablet'
- * legacy) to the chip's BP scope. Mirrors ViewportShell's canvas->scope table
- * (see Phase 2 plan) so the chip's "active bp" lights up correctly.
+ * Map editor canvas `ViewAtom` value to the chip's BP scope. Mirrors
+ * ViewportShell's canvas->scope table so the chip's "active bp" lights
+ * up correctly.
  *
  * `desktop` (fluid full-width) → null (writes go to base/mobile, no chip flash).
  */
@@ -61,6 +61,6 @@ export function canvasViewToChipBp(view: string | undefined | null): ChipBp | nu
   if (view === "lg") return "lg";
   if (view === "xl") return "xl";
   if (view === "2xl") return "2xl";
-  // 'desktop' fluid + 'tablet' legacy → no active bp highlight.
+  // 'desktop' fluid + 'tablet' → no active bp highlight.
   return null;
 }

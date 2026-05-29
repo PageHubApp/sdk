@@ -47,8 +47,7 @@ export function tiptapIncludeTextInChatRun(): void {
   // the existing builder so prefill semantics match the right-click path.
   const query = getEditorQuery();
   // The node id lives in the editor's editor.options or as a custom field;
-  // the legacy right-click path passes textNodeId from useNode(). Lacking
-  // a craft node id here, fall back to selection.first().
+  // lacking a craft node id here, fall back to selection.first().
   const id = query?.getEvent?.("selected")?.first?.() ?? null;
   setAtomExternal(
     AssistantOpenAtom,

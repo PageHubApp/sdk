@@ -101,12 +101,11 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   useComponentSync();
   useAutoOpenSidebar();
   useShowOnLoadAutoReveal();
-  // Phase 2 C2c: the legacy `useViewportKeyboard` / `useEditorDocumentKeydown`
-  // chord listeners are gone — the registry's doc-level dispatcher owns
-  // every canvas chord (delete / copy / paste / undo / redo / tab cycle /
-  // escape / etc.). Selection-context predicates feed the dispatcher.
+  // The registry's doc-level dispatcher owns every canvas chord (delete /
+  // copy / paste / undo / redo / tab cycle / escape / etc.). Selection-
+  // context predicates feed the dispatcher.
   useRegisterSelectionContext();
-  // Phase 2 C2g: publish active-Tiptap-editor + selection snapshot into
+  // Publish active-Tiptap-editor + selection snapshot into
   // CommandContext.tiptap so `ph.text.*` when/enablement predicates work.
   useRegisterTiptapContext();
   const { handleViewportClick } = useViewportClickDeselect();

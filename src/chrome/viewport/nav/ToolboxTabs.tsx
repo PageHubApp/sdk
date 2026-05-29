@@ -19,7 +19,7 @@ import { SectionsSettings } from "../modals/SectionsSettings";
  * When `features.blocksPanel.enabled === false` the Blocks command's own
  * `when` predicate filters it out — `useMenuItems` then returns a
  * single-item list, and we collapse the tabs entirely and render the
- * ComponentSettings panel directly (matches legacy behavior).
+ * ComponentSettings panel directly.
  */
 const COMMAND_TO_TAB: Record<string, { id: "components" | "blocks"; label: string; content: React.ReactNode }> = {
   "ph.editor.openComponentsPanel": {

@@ -6,9 +6,7 @@
  *   - The static-publish runtime IIFE — interpolates `buildConditionEvalFns`
  *     directly and registers `data-ph-conditions` / `data-ph-condition-groups`
  *     as Alpine directives that re-run `evalAll` / `evalGroups` inside
- *     `Alpine.effect` whenever the state store mutates. Replaces the older
- *     standalone `getConditionEvalScript()` IIFE (now removed) which only
- *     re-ran on a DCL/load/setTimeout cascade.
+ *     `Alpine.effect` whenever the state store mutates.
  *   - `getLoadActionScript()` — load-trigger show-hide reveals + state seeds
  *     (`data-ph-load-show`, `data-ph-load-set-state`). Lives in
  *     utils/actions/load.ts and imports `buildConditionEvalFns` from here.

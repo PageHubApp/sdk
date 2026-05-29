@@ -68,8 +68,7 @@ export function TiptapRichTextContextMenu({
   }, [open, onClose]);
 
   // Escape dismissal via registry overlay stack. Note: this menu has two
-  // phases (root → variables), but Escape always closes the whole menu —
-  // mirrors the legacy listener's behavior.
+  // phases (root → variables), but Escape always closes the whole menu.
   useOverlay({
     id: "tiptap-context-menu",
     isOpen: open,

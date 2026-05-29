@@ -304,8 +304,7 @@ export const EDITOR_COMMANDS: CommandDef[] = [
     icon: <TbX />,
     run: ctx => {
       const { actions } = ctx as { actions: any };
-      // Match the legacy EditorEmptyState "close sidebar" body verbatim:
-      // mark the close as manual (so useAutoOpenSidebar doesn't re-open on
+      // Mark the close as manual (so useAutoOpenSidebar doesn't re-open on
       // the same tick) → clear Craft selection → flip the open atom.
       markManualSidebarClose();
       try {

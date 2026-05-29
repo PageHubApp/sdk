@@ -84,10 +84,9 @@ export function setAuthState(state: AuthState | null) {
   _authState = state;
   // Mirror status into the central state registry so any subscriber (state
   // condition, stateModifiers, useGlobalStateTick) re-evaluates without a
-  // dedicated CustomEvent. Replaces the legacy `pagehub:auth-changed` bus.
-  // The dedicated `auth.*` variable interpolation + `auth` condition
-  // evaluator continue to read `getAuthState()` directly — this state write
-  // is purely the reactivity propagation.
+  // dedicated CustomEvent. The dedicated `auth.*` variable interpolation +
+  // `auth` condition evaluator continue to read `getAuthState()` directly —
+  // this state write is purely the reactivity propagation.
   try {
     setState(
       "auth:status",

@@ -43,8 +43,8 @@ export const ToolboxContextual = () => {
 
   // Build a per-id flyout so we can capture the *target node id* into the
   // dispatched commands; we still rely on the registry's `query.getEvent`
-  // selection-id resolution, but selecting the target on hover keeps the
-  // legacy UX (right-click on a node → submenu fires on the right node).
+  // selection-id resolution, but selecting the target on hover ensures
+  // right-click on a node → submenu fires on the right node.
   const flyout = useInsertFlyout();
   const {
     insertPanelOpen,

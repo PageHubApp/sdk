@@ -257,10 +257,9 @@ export function useAllStates(): readonly StateEntry[] {
 }
 
 /**
- * Single global "any state changed" tick. Replaces the legacy
- * `useShowHideVersion()` for consumers that want coarse subscription. Prefer
- * `useStateValue(key)` whenever a specific key is known — it narrows the
- * rerender blast radius.
+ * Single global "any state changed" tick for consumers that want coarse
+ * subscription. Prefer `useStateValue(key)` whenever a specific key is
+ * known — it narrows the rerender blast radius.
  */
 export function useGlobalStateTick(): number {
   return useSyncExternalStore(

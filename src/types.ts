@@ -676,10 +676,8 @@ export interface PageHubEventMap {
   save_conflict: [error: SaveConflictError];
   /**
    * Save succeeded — carries the host's full response payload (e.g. the
-   * persisted page document). Replaces the legacy `pagehub:saved` window
-   * event whose `detail` was used by panels (e.g. EditorPublishPanel) to
-   * populate site metadata. Necessary because nested zedux ecosystems mean
-   * a host-side `setSettings` doesn't always reach atom subscribers
+   * persisted page document). Necessary because nested zedux ecosystems
+   * mean a host-side `setSettings` doesn't always reach atom subscribers
    * mounted inside the SDK's inner `EcosystemProvider`.
    */
   saved: [data: any];

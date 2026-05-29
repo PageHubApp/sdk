@@ -18,7 +18,7 @@ export function generateThemeVars(rootProps: Record<string, any>): string {
     sg.sectionGap && `  --section-gap: ${sg.sectionGap};`,
     sg.containerGap && `  --container-gap: ${sg.containerGap};`,
     sg.contentWidth && `  --content-width: ${sg.contentWidth};`,
-    // --font-sans / --font-serif legacy: now sourced from theme.typography[] Heading/Body
+    // --font-sans / --font-serif: sourced from theme.typography[] Heading/Body
     (() => {
       const h = (theme.typography || []).find((t: any) => t?.name === "Heading");
       return h?.fontFamily ? `  --font-sans: ${h.fontFamily};` : null;

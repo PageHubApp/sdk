@@ -135,7 +135,7 @@ interface ChipInputProps extends ChipCommon {
   /** Escape hatch: when true, render children directly with no frame, label,
    *  or trailing chrome. Used when a parent already provides the row shape
    *  (e.g. a Chip inside a Chip, or an inline control hosted in a non-row
-   *  container). Replaces the legacy `BgWrap wrap={...}` short-circuit. */
+   *  container). */
   passthrough?: boolean;
   children: ReactNode;
 }

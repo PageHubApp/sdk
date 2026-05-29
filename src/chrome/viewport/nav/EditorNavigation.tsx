@@ -175,13 +175,13 @@ export const EditorNavigation = ({ settings: _settings, isTenant }: EditorNaviga
   if (!isOpen) return null;
 
   // The Preferences label only renders if at least one preference item
-  // is visible (matches the legacy guard on settingsPanelSwitcher /
-  // darkModeSwitcher feature flags).
+  // is visible (gated by settingsPanelSwitcher / darkModeSwitcher feature
+  // flags).
   const showPreferencesLabel = preferenceItems.length > 0;
   // The Tools label hides only when no built-in tool items AND no AI slot
   // contribution exists. We can't easily probe slot resolution from here
   // without rendering, so we always show the label when there are any tool
-  // items; AI slot fallback handles its own visibility. (Matches legacy.)
+  // items; the AI slot handles its own visibility.
 
   return (
     <>

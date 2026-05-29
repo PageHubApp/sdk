@@ -47,9 +47,9 @@ export const BUILTIN_STATE_MODIFIERS: Record<string, ComponentModifier[]> = {
       classes: "opacity-50 pointer-events-none",
     },
     {
-      // PDP variant chip — currently-selected value. Outline + offset gives
-      // the same visual weight as the legacy data-attr CSS. Authors can
-      // override per-site via Button modifiers.
+      // PDP variant chip — currently-selected value. Outline + offset is
+      // the canonical visual weight; authors can override per-site via
+      // Button modifiers.
       name: "chip-selected",
       label: "Chip selected",
       category: "State",

@@ -33,8 +33,7 @@ export interface DataSource {
   /**
    * Subscribe to specific state keys at fetch time. When any subscribed key
    * changes, the connector refetches with the current snapshot merged into
-   * the request. Replaces the legacy `pagehub:url-query-changed` CustomEvent
-   * subscription with a typed, declarative wiring.
+   * the request.
    *
    * Map shape: `{ <fetchOption>: <stateKey> }` — anchor tokens supported in
    * the value side, e.g. `{ category: "url:category", page: "url:page" }`.

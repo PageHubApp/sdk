@@ -8,8 +8,7 @@ import { Image } from "../../Image/Image";
 
 // ─── List / Table preset helpers ───
 // All List/Table presets are plain Containers using props.type to set the
-// semantic HTML tag (ul/ol/li/table/tr/td/th/tbody/thead/tfoot). The legacy
-// List/ListItem/Table* components were removed in favor of Container.
+// semantic HTML tag (ul/ol/li/table/tr/td/th/tbody/thead/tfoot).
 
 export function buildBulletedListChildren() {
   const items = ["First point", "Second point", "Third point"];

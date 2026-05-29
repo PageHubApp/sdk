@@ -15,7 +15,7 @@ const END_ZONE = 0.7;
 const CENTER_LO = 1 / 3;
 const CENTER_HI = 2 / 3;
 
-/** Skip alignment when both dimensions are tiny (matches legacy guard). */
+/** Skip alignment when both dimensions are tiny. */
 export function isParentTooSmallForAlign(dom: HTMLElement | null): boolean {
   if (!dom) return true;
   const r = dom.getBoundingClientRect();

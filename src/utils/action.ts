@@ -1,6 +1,6 @@
 /**
- * Unified action system — replaces legacy click/url/urlTarget/clickMode props
- * with a single `action: NodeAction` prop on interactive components.
+ * Unified action system — single `action: NodeAction` prop on interactive
+ * components.
  */
 
 import { resolvePageRef, type PageIndex } from "./page/pageManagement";
@@ -72,8 +72,7 @@ interface ActionBase {
 }
 
 /**
- * Unified link action — replaces the 5 legacy link-ish types
- * (`link-url`, `link-page`, `scroll-to`, `email`, `phone`).
+ * Unified link action — one action type for every link-ish destination.
  *
  * The `href` field encodes the destination using HTML conventions:
  *   - `https://example.com` / `//cdn.example.com` — external URL
@@ -140,7 +139,7 @@ export interface AddToCartAction extends ActionBase {
    * The handler reads `getStateValue(key)` (anchor tokens supported), parses
    * it as JSON, and merges over the current item context as the cart payload.
    * When unset or empty, the bare item context is used (single-variant
-   * products). Replaces the legacy `data-variant-form` DOM scrape.
+   * products).
    */
   variantMatchStateKey?: string;
 }

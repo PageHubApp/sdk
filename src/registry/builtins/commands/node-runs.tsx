@@ -201,9 +201,8 @@ export function nodeDeleteRun(ctx: any): void {
   const { query, actions } = ctx as { query: any; actions: any };
   const id = selectedId(query);
   if (!id) return;
-  // Match legacy useToolboxMenuModel.handleDelete behavior: re-select
-  // (defensive — keeps the unified-delete path happy when fired from the
-  // palette without an explicit click) then schedule.
+  // Re-select before scheduling (defensive — keeps the unified-delete path
+  // happy when fired from the palette without an explicit click).
   try {
     actions.selectNode(id);
   } catch {}
@@ -234,7 +233,6 @@ export function nodeConvertToComponentRun(ctx: any): void {
 
 /**
  * Add an empty Section / Container as the next child of the canvas node.
- * Matches the legacy `handleAddSection` / `handleAddNestedContainer`.
  */
 function addCanvasChild(
   query: any,

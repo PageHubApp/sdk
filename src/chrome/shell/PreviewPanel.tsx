@@ -310,7 +310,7 @@ export function PreviewPanel({
   const scaledViewportHeight = naturalHeight > 0 ? Math.ceil(naturalHeight * zoom) : null;
   // Inline: fixed compact height so the chat doesn't expand / jump as the
   // agent streams in content. Scroll inside for taller pages.
-  // Side-panel: legacy behavior (flex-1 of parent).
+  // Side-panel: flex-1 of parent.
   const INLINE_MAX_HEIGHT = 240;
   const scrollStyle = inline
     ? {

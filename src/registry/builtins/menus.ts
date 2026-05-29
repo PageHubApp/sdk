@@ -115,8 +115,7 @@ const NAVMENU_PREFERENCES: MenuItem[] = [
 ];
 
 /**
- * Right-click canvas context menu. Group order matches the visual
- * sections in the legacy `ToolboxContextual` layout:
+ * Right-click canvas context menu. Group order:
  *  - deselect (1)
  *  - copy / paste / copy-classes / paste-classes (2)
  *  - select parent / move up / move down (3)
@@ -195,9 +194,9 @@ const SIDEBAR_TABS: MenuItem[] = [
 ];
 
 /**
- * Tiptap inline-edit floating toolbar — Phase 2 C2g.
+ * Tiptap inline-edit floating toolbar.
  *
- * Group order matches the visual segments in the legacy toolbar:
+ * Group order:
  *  - format marks (bold/italic/underline)
  *  - font panel toggle
  *  - link panel toggle
