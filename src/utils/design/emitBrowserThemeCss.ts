@@ -36,8 +36,6 @@ export function emitBrowserThemeCss(source: DesignTokensSource): string {
 
   out.push("  /* DaisyUI 5 canonical tokens */");
   out.push(block(filterBrowser(source.themeColors)));
-  out.push("  /* Backwards-compat aliases */");
-  out.push(block(filterBrowser(source.themeColorAliases)));
   const sidebar = filterBrowser(source.themeSidebarColors);
   if (sidebar.length > 0) out.push(block(sidebar));
   out.push("");

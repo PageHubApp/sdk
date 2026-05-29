@@ -28,22 +28,9 @@
 #device-tools-portal .tool-bg-flat,
 #device-tools-portal .node-control,
 #device-tools-portal [data-node-control="true"] {
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(0 0% 6%);
-  --card: hsl(0 0% 98%);
-  --card-foreground: hsl(0 0% 6%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(0 0% 6%);
   --primary: hsl(0 0% 9%);
-  --primary-foreground: hsl(0 0% 100%);
   --secondary: hsl(0 0% 96%);
-  --secondary-foreground: hsl(0 0% 9%);
-  --muted: hsl(0 0% 95%);
-  --muted-foreground: hsl(0 0% 45%);
   --accent: hsl(0 0% 96%);
-  --accent-foreground: hsl(0 0% 9%);
-  --destructive: hsl(0 72% 51%);
-  --destructive-foreground: hsl(0 0% 100%);
   --base-300: hsl(0 0% 90%);
   --neutral: hsl(0 0% 96%);
   --neutral-content: hsl(0 0% 45%);
@@ -104,22 +91,9 @@
 #viewport.dark .tool-bg-flat,
 #viewport.dark .node-control,
 #viewport.dark [data-node-control="true"] {
-  --background: hsl(0 0% 12%);
-  --foreground: hsl(0 0% 93%);
-  --card: hsl(0 0% 18%);
-  --card-foreground: hsl(0 0% 93%);
-  --popover: hsl(0 0% 18%);
-  --popover-foreground: hsl(0 0% 93%);
   --primary: hsl(0 0% 93%);
-  --primary-foreground: hsl(0 0% 9%);
   --secondary: hsl(0 0% 24%);
-  --secondary-foreground: hsl(0 0% 93%);
-  --muted: hsl(0 0% 20%);
-  --muted-foreground: hsl(0 0% 68%);
   --accent: hsl(0 0% 32%);
-  --accent-foreground: hsl(0 0% 93%);
-  --destructive: hsl(0 72% 51%);
-  --destructive-foreground: hsl(0 0% 100%);
   --base-300: hsl(0 0% 32%);
   --neutral: hsl(0 0% 20%);
   --neutral-content: hsl(0 0% 68%);

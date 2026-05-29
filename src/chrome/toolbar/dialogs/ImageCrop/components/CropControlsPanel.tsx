@@ -72,7 +72,7 @@ function ScaleControl({
 
 export function CropControlsPanel({ crop }: CropControlsPanelProps) {
   return (
-    <AutoHideScrollbar className="border-base-300 from-muted/20 to-muted/40 w-full bg-linear-to-b p-4 pb-20 sm:w-64 md:w-72 lg:w-80 lg:border-r lg:p-6">
+    <AutoHideScrollbar className="border-base-300 from-neutral/20 to-neutral/40 w-full bg-linear-to-b p-4 pb-20 sm:w-64 md:w-72 lg:w-80 lg:border-r lg:p-6">
       <div className="space-y-6">
         {/* Presets */}
         <Card title="Aspect Ratios">

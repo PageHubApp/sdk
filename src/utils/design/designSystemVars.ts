@@ -3,7 +3,6 @@
 import type { NamedColor } from "../../components/Background/Background.body";
 import { DEFAULT_STYLE_GUIDE } from "../defaults";
 import { autoGenerateContentColors, colorToOklch } from "./contentColor";
-import { generateCSSAliases } from "./tokenMigration";
 import { sdkLog } from "../logger";
 
 export interface DesignSystemVars {
@@ -477,11 +476,7 @@ export function generateDesignSystemCSSVariables(
     ? generateTypographyCSSClasses(designSystem.typography)
     : "";
 
-  // Permanent backwards-compat aliases: old var names → new DaisyUI var names.
-  // Ensures old className strings in published sites keep working.
-  const aliases = generateCSSAliases();
-
-  const cssVars = `${scope} {\n  color-scheme: light;\n${paletteVars}\n${aliases}\n${styleVars}\n${typographyVars}\n}`;
+  const cssVars = `${scope} {\n  color-scheme: light;\n${paletteVars}\n${styleVars}\n${typographyVars}\n}`;
 
   // Dark mode palette: emit @media (prefers-color-scheme: dark) and .dark selector overrides.
   // Editor scope (#viewport) always emits so the "Edit dark: variants" toggle can preview.

@@ -168,7 +168,7 @@ export function ColorPanelBody({ value, onChange, onClear }: ColorPanelBodyProps
           <button
             type="button"
             onClick={handleEyeDropper}
-            className="border-base-300 text-neutral-content hover:border-foreground hover:text-base-content flex size-8 shrink-0 items-center justify-center rounded-md border transition-colors"
+            className="border-base-300 text-neutral-content hover:border-base-content hover:text-base-content flex size-8 shrink-0 items-center justify-center rounded-md border transition-colors"
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
             data-tooltip-content="Eyedropper"
             data-tooltip-place="top"

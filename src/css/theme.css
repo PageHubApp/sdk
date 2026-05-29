@@ -36,21 +36,6 @@
   /* --border is a WIDTH in DaisyUI 5, not a color. Border color uses --base-300 */
   --border: 1px;
 
-  /* Backwards-compat aliases (old shadcn/ui names → DaisyUI 5 names) */
-  --background: var(--base-100);
-  --foreground: var(--base-content);
-  --card: var(--base-200);
-  --card-foreground: var(--base-content);
-  --popover: var(--base-100);
-  --popover-foreground: var(--base-content);
-  --primary-foreground: var(--primary-content);
-  --secondary-foreground: var(--secondary-content);
-  --accent-foreground: var(--accent-content);
-  --muted: var(--neutral);
-  --muted-foreground: var(--neutral-content);
-  --destructive: var(--error);
-  --destructive-foreground: var(--error-content);
-
   /* DaisyUI 5 style tokens */
   --radius-box: 0.5rem;
   --radius-field: 0.25rem;
@@ -152,21 +137,6 @@
   --color-border: var(--base-300);
   --color-input: var(--base-300);
   --color-ring: var(--ring);
-
-  /* Backwards-compat Tailwind color aliases */
-  --color-background: var(--base-100);
-  --color-foreground: var(--base-content);
-  --color-card: var(--base-200);
-  --color-card-foreground: var(--base-content);
-  --color-popover: var(--base-100);
-  --color-popover-foreground: var(--base-content);
-  --color-primary-foreground: var(--primary-content);
-  --color-secondary-foreground: var(--secondary-content);
-  --color-accent-foreground: var(--accent-content);
-  --color-muted: var(--neutral);
-  --color-muted-foreground: var(--neutral-content);
-  --color-destructive: var(--error);
-  --color-destructive-foreground: var(--error-content);
 
   /* Fonts */
   --font-sans: var(--sans-font-family, var(--font-sans));

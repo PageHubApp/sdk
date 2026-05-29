@@ -60,10 +60,6 @@ export function emitThemeCss(source: DesignTokensSource): string {
   }
   out.push("");
 
-  out.push("  /* Backwards-compat aliases (old shadcn/ui names → DaisyUI 5 names) */");
-  out.push(block(source.legacyAliases));
-  out.push("");
-
   out.push("  /* DaisyUI 5 style tokens */");
   // Split style tokens at the radius alias boundary for clarity
   const aliasStart = source.styleTokens.findIndex(t => t.name === "--radius");
@@ -124,10 +120,6 @@ export function emitThemeCss(source: DesignTokensSource): string {
 
   out.push("  /* DaisyUI 5 canonical color tokens */");
   out.push(block(filterTheme(source.themeColors)));
-  out.push("");
-
-  out.push("  /* Backwards-compat Tailwind color aliases */");
-  out.push(block(filterTheme(source.themeColorAliases)));
 
   const sidebar = filterTheme(source.themeSidebarColors);
   if (sidebar.length > 0) {

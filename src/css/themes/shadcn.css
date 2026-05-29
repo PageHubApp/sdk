@@ -43,10 +43,4 @@
   --radius-box: var(--radius, var(--radius-box));
   --radius-field: var(--radius, var(--radius-field));
   --radius-selector: var(--radius, var(--radius-selector));
-
-  /* Backwards-compat aliases stay aligned. */
-  --background: var(--base-100);
-  --foreground: var(--base-content);
-  --card: var(--base-200);
-  --card-foreground: var(--base-content);
 }

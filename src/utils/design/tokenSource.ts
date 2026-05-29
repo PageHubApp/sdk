@@ -55,9 +55,6 @@ export interface DesignTokensSource {
   /** `--border` width + `--tracking-normal` + `--spacing` primitive. */
   rootBaseExtras: NamedVar[];
 
-  /** shadcn/ui-style names → DaisyUI 5 (in theme.css `:root`). */
-  legacyAliases: NamedVar[];
-
   /** DaisyUI 5 style tokens — radius/size/depth/noise + radius aliases (theme.css `:root`). */
   styleTokens: NamedVar[];
 
@@ -78,7 +75,6 @@ export interface DesignTokensSource {
 
   /** Tokens emitted inside `@theme inline { … }` — per-target. */
   themeColors: ThemeBlockToken[];
-  themeColorAliases: ThemeBlockToken[];
   themeSidebarColors: ThemeBlockToken[];
   themeFonts: ThemeBlockToken[];
   themeSpacing: ThemeBlockToken[];
@@ -125,22 +121,6 @@ export const DESIGN_TOKENS_SOURCE: DesignTokensSource = {
 
   rootBaseExtras: [
     { name: "--border", value: "1px" },
-  ],
-
-  legacyAliases: [
-    { name: "--background", value: "var(--base-100)" },
-    { name: "--foreground", value: "var(--base-content)" },
-    { name: "--card", value: "var(--base-200)" },
-    { name: "--card-foreground", value: "var(--base-content)" },
-    { name: "--popover", value: "var(--base-100)" },
-    { name: "--popover-foreground", value: "var(--base-content)" },
-    { name: "--primary-foreground", value: "var(--primary-content)" },
-    { name: "--secondary-foreground", value: "var(--secondary-content)" },
-    { name: "--accent-foreground", value: "var(--accent-content)" },
-    { name: "--muted", value: "var(--neutral)" },
-    { name: "--muted-foreground", value: "var(--neutral-content)" },
-    { name: "--destructive", value: "var(--error)" },
-    { name: "--destructive-foreground", value: "var(--error-content)" },
   ],
 
   styleTokens: [
@@ -271,22 +251,6 @@ export const DESIGN_TOKENS_SOURCE: DesignTokensSource = {
     { name: "--color-border", value: "var(--base-300)", targets: BOTH },
     { name: "--color-input", value: "var(--base-300)", targets: BOTH },
     { name: "--color-ring", value: "var(--ring)", targets: BOTH },
-  ],
-
-  themeColorAliases: [
-    { name: "--color-background", value: "var(--base-100)", targets: BOTH },
-    { name: "--color-foreground", value: "var(--base-content)", targets: BOTH },
-    { name: "--color-card", value: "var(--base-200)", targets: BOTH },
-    { name: "--color-card-foreground", value: "var(--base-content)", targets: BOTH },
-    { name: "--color-popover", value: "var(--base-100)", targets: BOTH },
-    { name: "--color-popover-foreground", value: "var(--base-content)", targets: BOTH },
-    { name: "--color-primary-foreground", value: "var(--primary-content)", targets: BOTH },
-    { name: "--color-secondary-foreground", value: "var(--secondary-content)", targets: BOTH },
-    { name: "--color-accent-foreground", value: "var(--accent-content)", targets: BOTH },
-    { name: "--color-muted", value: "var(--neutral)", targets: BOTH },
-    { name: "--color-muted-foreground", value: "var(--neutral-content)", targets: BOTH },
-    { name: "--color-destructive", value: "var(--error)", targets: BOTH },
-    { name: "--color-destructive-foreground", value: "var(--error-content)", targets: BOTH },
   ],
 
   themeSidebarColors: [

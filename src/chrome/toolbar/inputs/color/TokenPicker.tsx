@@ -177,7 +177,7 @@ export function TokenPicker({
           <button
             type="button"
             onClick={() => setShowCreateDialog(true)}
-            className={`${swatchSize} border-base-300 text-neutral-content hover:border-foreground hover:text-base-content flex shrink-0 items-center justify-center rounded-md border-2 border-dashed transition-colors`}
+            className={`${swatchSize} border-base-300 text-neutral-content hover:border-base-content hover:text-base-content flex shrink-0 items-center justify-center rounded-md border-2 border-dashed transition-colors`}
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
             data-tooltip-content="New token"
             data-tooltip-place="bottom"

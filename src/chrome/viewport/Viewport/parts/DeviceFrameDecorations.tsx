@@ -40,7 +40,7 @@ export function DeviceFrameBottomDecoration({
   if (decoration === "notch") {
     return (
       <div className="pointer-events-none absolute right-0 bottom-[14px] left-0 z-60 flex justify-center">
-        <div className="bg-foreground/30 h-[5px] w-[120px] rounded-full" />
+        <div className="bg-base-content/30 h-[5px] w-[120px] rounded-full" />
       </div>
     );
   }

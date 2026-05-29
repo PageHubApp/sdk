@@ -208,7 +208,7 @@ export function DesignSystemPalette({ selectedColor, onSelect, anchorEl }: Props
       <button
         type="button"
         onClick={handleNew}
-        className="border-base-300 text-neutral-content hover:border-foreground hover:text-base-content mt-1.5 flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-dashed text-xs transition-colors"
+        className="border-base-300 text-neutral-content hover:border-base-content hover:text-base-content mt-1.5 flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-dashed text-xs transition-colors"
       >
         <TbPlus className="size-3.5" />
         New Token

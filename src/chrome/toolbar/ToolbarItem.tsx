@@ -58,7 +58,7 @@ const Input = React.forwardRef<unknown, any>(function ToolbarItemInput(__props, 
             onChange={() => changed(value ? "" : props.on)}
             className="peer sr-only"
           />
-          <div className="bg-neutral text-neutral-content after:border-base-300 after:bg-base-100 peer-checked:bg-primary peer-checked:after:border-background peer-focus:ring-ring h-4 w-8 rounded-full peer-focus:ring-2 after:absolute after:top-[2px] after:left-[2px] after:size-3 after:rounded-full after:border after:transition-all after:content-[''] peer-checked:after:translate-x-full"></div>
+          <div className="bg-neutral text-neutral-content after:border-base-300 after:bg-base-100 peer-checked:bg-primary peer-checked:after:border-base-100 peer-focus:ring-ring h-4 w-8 rounded-full peer-focus:ring-2 after:absolute after:top-[2px] after:left-[2px] after:size-3 after:rounded-full after:border after:transition-all after:content-[''] peer-checked:after:translate-x-full"></div>
         </div>
       </label>
     );
