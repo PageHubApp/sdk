@@ -1,4 +1,5 @@
 import { useAtomValue } from "@zedux/react";
+import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { TbCategory } from "react-icons/tb";
 import { ComponentsAtom } from "../../../utils/atoms";
@@ -12,26 +13,30 @@ import { usePanelSearch } from "../../hooks/usePanelSearch";
 import { buildCustomToolboxEntries } from "../toolbox/customComponents";
 import { SavedComponentsToolbox } from "../toolbox/savedComponentsToolbox";
 
+// A toolbox category bucket: a labeled list of pre-rendered toolbox entry
+// elements (produced by `buildCustomToolboxEntries` / `SavedComponentsToolbox`).
+type ToolboxCategory = { title: string; content: ReactElement[] };
+
 // All built-in components now served via defineComponent() toolbox categories.
 // Categories are defined as empty shells here and populated dynamically
 // from the CustomComponentsContext merge below.
-const baseItems = [
-  { title: "Layout", content: [] as any[] },
-  { title: "Text", content: [] as any[] },
-  { title: "Buttons", content: [] as any[] },
-  { title: "Images", content: [] as any[] },
-  { title: "Icons", content: [] as any[] },
-  { title: "Interactive", content: [] as any[] },
-  { title: "Navigation", content: [] as any[] },
-  { title: "Forms", content: [] as any[] },
-  { title: "Media", content: [] as any[] },
-  { title: "Embeds", content: [] as any[] },
-  { title: "Dividers", content: [] as any[] },
-  { title: "Stripe", content: [] as any[] },
-  { title: "Lists", content: [] as any[] },
-  { title: "Tables", content: [] as any[] },
-  { title: "Grid", content: [] as any[] },
-  { title: "Components", content: [] as any[] },
+const baseItems: ToolboxCategory[] = [
+  { title: "Layout", content: [] },
+  { title: "Text", content: [] },
+  { title: "Buttons", content: [] },
+  { title: "Images", content: [] },
+  { title: "Icons", content: [] },
+  { title: "Interactive", content: [] },
+  { title: "Navigation", content: [] },
+  { title: "Forms", content: [] },
+  { title: "Media", content: [] },
+  { title: "Embeds", content: [] },
+  { title: "Dividers", content: [] },
+  { title: "Stripe", content: [] },
+  { title: "Lists", content: [] },
+  { title: "Tables", content: [] },
+  { title: "Grid", content: [] },
+  { title: "Components", content: [] },
 ];
 
 export const ComponentSettings = () => {
@@ -49,9 +54,9 @@ export const ComponentSettings = () => {
 
   // Flatten all presets across all defs into per-preset entries tagged with
   // their target toolbox category (`preset.category ?? def.category`).
-  const customItems = useMemo(() => {
-    if (!toolboxCategories?.length) return [] as { title: string; content: any[] }[];
-    const buckets = new Map<string, any[]>();
+  const customItems = useMemo<ToolboxCategory[]>(() => {
+    if (!toolboxCategories?.length) return [];
+    const buckets = new Map<string, ReactElement[]>();
     for (const cat of toolboxCategories) {
       for (const def of cat.content) {
         for (const { category, entry } of buildCustomToolboxEntries(def)) {
@@ -102,8 +107,13 @@ export const ComponentSettings = () => {
             const title = item.title.toString().toLowerCase() || "";
 
             const filteredContent = item.content.filter(nestedItem => {
-              // Extract searchable text from React element props (circular-ref safe)
-              const props = nestedItem?.props ?? {};
+              // Extract searchable text from React element props (circular-ref safe).
+              // Toolbox entries are produced by `RenderToolComponent`, which
+              // accepts arbitrary props — narrow to just the fields we read.
+              const props = (nestedItem?.props ?? {}) as {
+                custom?: { displayName?: string };
+                display?: { props?: { label?: string } };
+              };
               const searchable = [
                 props.custom?.displayName,
                 props.display?.props?.label,

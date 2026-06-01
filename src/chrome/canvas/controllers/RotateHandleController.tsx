@@ -237,7 +237,7 @@ export function RotateHandleController() {
       // Use the CSS `rotate` property (same property Tailwind v4's `rotate-[Ndeg]`
       // class writes to). Don't use `transform` — that would compound with the
       // class-based rotate after release.
-      (el.style as any).rotate = `${next}deg`;
+      el.style.setProperty("rotate", `${next}deg`);
 
       // Spin the cursor to match. Throttle by snapping to integer degrees so
       // we only regenerate the data URL when the rounded angle changes.
@@ -285,12 +285,12 @@ export function RotateHandleController() {
         const stripped = stripRotation(p.className || "");
         p.className = cls ? twMerge(stripped, cls) : stripped;
       });
-      (el.style as any).rotate = "";
+      el.style.removeProperty("rotate");
 
       requestAnimationFrame(() => {
         log("post-commit", {
-          inlineRotate: (el.style as any).rotate,
-          computedRotate: (window.getComputedStyle(el) as any).rotate,
+          inlineRotate: el.style.getPropertyValue("rotate"),
+          computedRotate: window.getComputedStyle(el).getPropertyValue("rotate"),
           computedTransform: window.getComputedStyle(el).transform,
         });
       });

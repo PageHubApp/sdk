@@ -26,7 +26,6 @@ import { getComponentAllowlist } from "./define/componentAllowlist";
 import { CustomComponentsContext } from "./define/context";
 import { processForEditor } from "./define/processors/forEditor";
 import type { ResolvedComponentDef } from "./define/types";
-import { renderToHTML } from "./static-renderer/renderToHTML";
 import type {
   PageData,
   PageHubCallbacks,
@@ -184,6 +183,10 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
       const json = safeSerialize(query);
       if (!json) return null;
       const compressed = await compressAsync(json);
+      // Lazy-load static-renderer so its ~25-file chunk (walker, stringify,
+      // alpine inline) stays out of the editor's initial bundle — only fetched
+      // on first save.
+      const { renderToHTML } = await import("./static-renderer/renderToHTML");
       const { html, classes, scrollObserverScript, renderError } = renderToHTML(json, {
         compressed: false,
       });

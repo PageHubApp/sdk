@@ -30,7 +30,7 @@ import {
 import { useFloatingPanelZIndex } from "../../../floating/FloatingPanel";
 import { getLayoutConfig, groupFractionsByDenominator, groupNumericByRange } from "./config";
 import { SubgroupItem } from "./SubgroupComponents";
-import { extractFirstCssHex } from "@/utils/design/colorSystem";
+import { extractFirstCssHex } from "@/utils/design/color";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 
 interface UnifiedDropdownProps {

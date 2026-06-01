@@ -1,4 +1,7 @@
-import { toHTML as containerToHTML } from "../components/Container/Container.craft";
+// Import the pure toHTML module directly (NOT Container.craft) — static-importing
+// a *.craft.tsx from here risks a TDZ cycle when the component graph isn't yet
+// initialized. Matches how Data.toHTML is imported below.
+import { toHTML as containerToHTML } from "../components/Container/Container.toHTML";
 import { toHTML as dataToHTML } from "../components/Data/Data.toHTML";
 import { BUILTIN_COMPONENT_DEFS } from "../core/componentRegistry";
 import { processForStatic } from "../define/processors/forStatic";

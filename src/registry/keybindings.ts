@@ -8,6 +8,7 @@
 import type { CommandContext, KeybindingDef } from "./types";
 import type { ContextRegistry } from "./context";
 import { sdkLog } from "../utils/logger";
+import { KeybindingRegistryError } from "../utils/errors";
 
 export interface KeybindingsRegistry {
   register: <Args = unknown>(def: KeybindingDef<Args>) => void;
@@ -134,8 +135,18 @@ export function createKeybindingsRegistry(
   };
 
   const register = <Args = unknown>(def: KeybindingDef<Args>) => {
-    if (!def?.command) throw new Error(`[ph.keybindings] register requires command id`);
-    if (!def.key) throw new Error(`[ph.keybindings] register requires key`);
+    if (!def?.command) {
+      throw new KeybindingRegistryError({
+        code: "KEYBINDINGS_NO_COMMAND",
+        message: `[ph.keybindings] register requires command id`,
+      });
+    }
+    if (!def.key) {
+      throw new KeybindingRegistryError({
+        code: "KEYBINDINGS_NO_KEY",
+        message: `[ph.keybindings] register requires key`,
+      });
+    }
     const entry = def as KeybindingDef;
     list.push(entry);
     parsedCache.set(entry, parseKey(entry.key));

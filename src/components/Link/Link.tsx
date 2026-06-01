@@ -7,21 +7,11 @@ import { useMounted } from "../../utils/hooks/useMounted";
 import type { RenderCtx } from "../../render/RenderCtx";
 
 import { renderLinkBody, defaultIcon, type LinkProps } from "./Link.body";
+import { normalizeIconProp } from "../shared/iconProp";
 export { renderLinkBody, defaultIcon, type LinkProps };
 
 export const Link: UserComponent<LinkProps> = (incomingProps: LinkProps) => {
-  let icon: any = incomingProps.icon;
-  if (typeof icon === "string") {
-    icon = {
-      value: icon,
-      position: (incomingProps as any).iconPosition || defaultIcon.position,
-      size: (incomingProps as any).iconSize || defaultIcon.size,
-      color: (incomingProps as any).iconColor,
-      gap: (incomingProps as any).iconGap || defaultIcon.gap,
-      shadow: (incomingProps as any).iconShadow,
-      only: (incomingProps as any).iconOnly,
-    };
-  }
+  const icon = normalizeIconProp(incomingProps, defaultIcon);
   let props: any = {
     canDelete: true,
     canEditName: true,

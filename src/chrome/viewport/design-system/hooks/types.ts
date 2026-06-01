@@ -11,6 +11,10 @@ export interface CustomFont {
   lineHeight: string;
   letterSpacing: string;
   textTransform: string;
+  /** Optional fields round-tripped by the typography preset editor. */
+  color?: string;
+  textDecoration?: string;
+  textAlign?: string;
 }
 
 export interface StyleGuideState {

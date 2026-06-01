@@ -27,21 +27,12 @@ import { resolvePageRef } from "../../utils/page/pageManagement";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { isVisuallyEmptyRichText } from "../../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
+import type { IconPropInput, LegacyIconFields } from "../shared/iconProp";
 import type { RenderCtx } from "../../render/RenderCtx";
 
-interface IconProps {
-  value?: string;
-  only?: boolean;
-  position?: string;
-  size?: string;
-  color?: string;
-  gap?: string;
-  shadow?: string;
-}
-
-export interface LinkProps extends BaseSelectorProps {
+export interface LinkProps extends BaseSelectorProps, LegacyIconFields {
   text?: string;
-  icon?: IconProps;
+  icon?: IconPropInput;
   action?: NodeAction | NodeAction[];
 }
 

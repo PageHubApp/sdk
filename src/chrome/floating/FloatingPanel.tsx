@@ -334,7 +334,7 @@ export function FloatingPanel({
       if (!active) return;
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      const panel = (windowRef as any).current as HTMLElement | null;
+      const panel = windowRef.current;
       if (panel && panel.contains(target)) return;
       for (const portal of portalsRef.current) {
         if (portal.contains(target)) return;
@@ -381,7 +381,7 @@ export function FloatingPanel({
   const isFitContent = autoSize && !hasResized;
   useEffect(() => {
     if (!isOpen || !isFitContent) return;
-    const el = (windowRef as any).current as HTMLElement | null;
+    const el = windowRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(entries => {
       const rect = entries[0]?.contentRect;
@@ -470,8 +470,8 @@ export function FloatingPanel({
 
       <div
         ref={el => {
-          (windowRef as any).current = el;
-          (focusTrapRef as any).current = el;
+          windowRef.current = el;
+          focusTrapRef.current = el;
           selfPortalRef.current = el;
         }}
         role="dialog"
@@ -502,9 +502,7 @@ export function FloatingPanel({
               }
         }
       >
-        {(edges as string[]).map(e =>
-          (handleProps as any)[e] ? <div key={e} {...(handleProps as any)[e]} /> : null
-        )}
+        {edges.map(e => (handleProps[e] ? <div key={e} {...handleProps[e]} /> : null))}
 
         <FloatingPanelDragContext.Provider
           value={{ onPointerDown: handlePointerDown, isDragging, onClose }}

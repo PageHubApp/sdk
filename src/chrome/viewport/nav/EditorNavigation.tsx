@@ -5,8 +5,7 @@
  * `useMenuItems("navmenu/settings" | "navmenu/view" | "navmenu/tools" |
  * "navmenu/preferences")`. Click dispatches via
  * `sdk.commands.execute(id, args, { trigger: "menu" })`. Host slots route
- * through `<SlotRenderer>` for `navmenu/header-items` and `navmenu/ai-row`
- * (the existing `editorChromeSlots.renderNav*` adapter shim wires these up).
+ * through `<SlotRenderer>` for `navmenu/header-items` and `navmenu/ai-row`.
  *
  * Other panel values (`components`, `blocks`, `theme`, `import-export`,
  * `publish`) keep their existing bodies — they're routed content, not menu

@@ -14,7 +14,6 @@
  *   BUILTIN_COMPONENT_DEFS → definitions.ts → *.craft.tsx →
  *   defineComponent({ settings: ContainerMainTab, … })
  * which TDZ-crashes on `AutomaticDef` / `ContainerDef` in production builds.
- * See [.claude/known-issues/sdk-circular-import-via-lib.md].
  */
 import type { PresetAddChildConfig, ResolvedComponentDef } from "../define/types";
 import { getPresets } from "../define/catalogRegistry";

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useAtomState } from "@zedux/react";
-import { resolveColorForDisplay } from "@/utils/design/colorSystem";
+import { resolveColorForDisplay } from "@/utils/design/color";
 import { colorToOklch, oklchToHex } from "@/utils/design/contentColor";
 import { DEFAULT_DARK_PALETTE, DEFAULT_PALETTE } from "@/utils/defaults";
 import { ColorPickerAtom } from "../../../toolbar/dialogs/ColorPickerDialog";

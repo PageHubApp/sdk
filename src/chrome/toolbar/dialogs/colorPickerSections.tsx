@@ -11,7 +11,7 @@ import {
   applyOpacityToCssColor,
   resolveColorForDisplay,
   splitOpacitySuffix,
-} from "../../../utils/design/colorSystem";
+} from "../../../utils/design/color";
 import { TAILWIND_COLORS, SPECIAL_COLORS } from "./colorPickerConstants";
 import { getTailwindColorHex } from "./useColorPickerState";
 import colors from "tailwindcss/colors";

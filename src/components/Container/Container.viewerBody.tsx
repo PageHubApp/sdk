@@ -19,7 +19,7 @@ import { addCustomHandlers } from "../../utils/actions/customHandlers";
 import { fireIntervalActions } from "../../utils/actions/interval";
 import { fireLoadAction } from "../../utils/actions/load";
 import { getStateValue } from "../../utils/state/stateRegistry";
-import { migrateActions } from "../../utils/action";
+import { actionTrigger, migrateActions } from "../../utils/action";
 import { applyBackgroundImage, applyPattern } from "../../utils/background";
 import { motionIt } from "../../utils/motion";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
@@ -34,7 +34,6 @@ import { applyStateModifiers } from "../../utils/conditions/stateModifiers";
 import {
   applyComputedStateBindings,
   computeBindingsSnapshot,
-  type ComputedStateBinding,
 } from "../../utils/conditions/computedState";
 import { buildClientContext } from "../../utils/conditions/context";
 import { useItemContext } from "../../utils/itemContext";
@@ -59,7 +58,7 @@ export function renderContainerViewerBody(
   ctx: RenderCtx,
   opts?: ContainerRenderOptions
 ) {
-  const props: any = {
+  const props: ContainerProps = {
     type: "container",
     isHomePage: false,
     ...incomingProps,
@@ -109,20 +108,20 @@ export function renderContainerViewerBody(
 
   useEffect(() => {
     const actions = migrateActions(props);
-    actions.filter(a => (a as any).trigger === "load").forEach(fireLoadAction);
+    actions.filter(a => actionTrigger(a) === "load").forEach(fireLoadAction);
     const cleanup = fireIntervalActions(actions);
     return cleanup;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const bindings = (props as any).computedStateBindings as ComputedStateBinding[] | undefined;
+  const bindings = props.computedStateBindings;
   const computedSnapshot = computeBindingsSnapshot(bindings, raw =>
-    typeof raw === "string" ? replaceVariables(raw, ctx.rootProps, parentItem, anchors) : (raw as any)
+    replaceVariables(raw, ctx.rootProps, parentItem, anchors)
   );
   useEffect(() => {
     if (!Array.isArray(bindings) || bindings.length === 0) return;
     applyComputedStateBindings(bindings, raw =>
-      typeof raw === "string" ? replaceVariables(raw, ctx.rootProps, parentItem, anchors) : (raw as any)
+      replaceVariables(raw, ctx.rootProps, parentItem, anchors)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [computedSnapshot]);
@@ -207,7 +206,7 @@ export function renderContainerViewerBody(
     anchors,
   });
 
-  addCustomHandlers(prop, props.handlers, false, (props as any).handlerOptions);
+  addCustomHandlers(prop, props.handlers, false, props.handlerOptions);
 
   if (props.scrollEffect) prop["data-scroll-effect"] = props.scrollEffect;
   {

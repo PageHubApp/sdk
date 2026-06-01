@@ -14,8 +14,8 @@ interface UseCanvasEdgeResizeArgs {
 /**
  * Drag handles on the left/right canvas edges resize the breakpoint canvas
  * (drag is symmetric — each side moves half the cursor delta because the
- * canvas is `mx-auto` centered). Window-listener pattern per
- * `.claude/rules/drag-listeners.md`.
+ * canvas is `mx-auto` centered). Tracks the drag via window listeners (not
+ * React props) so it survives re-renders and pointer-over-overlay.
  *
  * `resetBreakpointWidth` clears the per-view override on double-click.
  */

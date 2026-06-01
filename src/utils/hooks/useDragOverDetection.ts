@@ -6,8 +6,7 @@ import { useEffect, useRef, useState } from "react";
  * caller wires onto the target element.
  *
  * Listens at the document level (not React JSX props) so the gesture stays
- * tracked even if the target re-renders or the pointer crosses overlays —
- * see `.claude/rules/drag-listeners.md`.
+ * tracked even if the target re-renders or the pointer crosses overlays.
  */
 export function useDragOverDetection<T extends HTMLElement = HTMLElement>() {
   const ref = useRef<T | null>(null);

@@ -6,8 +6,51 @@ A drag-and-drop page editor SDK built on [CraftJS](https://craft.js.org/). Inclu
 
 ## Install
 
+`@pagehub/sdk` ships three sub-path entry points so you only pay for what you use:
+
+| Use case | Import | Extras to install |
+|---|---|---|
+| **Editor** (drag-and-drop builder) | `@pagehub/sdk` | the editor-extras snippet below |
+| **React viewer** (render a published site in a React app) | `@pagehub/sdk/react` | none (just React) |
+| **Static HTML** (render to an HTML string in Workers / Deno / Bun / Node) | `@pagehub/sdk/html` | none |
+
+### Viewer / static-only install
+
 ```bash
-npm install @pagehub/sdk
+npm install @pagehub/sdk react react-dom
+```
+
+### Editor install (adds chrome deps as optional peers)
+
+```bash
+npm install @pagehub/sdk react react-dom \
+  @tiptap/core @tiptap/pm @tiptap/react @tiptap/starter-kit \
+  @tiptap/extension-bold @tiptap/extension-code @tiptap/extension-color \
+  @tiptap/extension-document @tiptap/extension-font-family \
+  @tiptap/extension-font-size@3.0.0-next.3 @tiptap/extension-highlight \
+  @tiptap/extension-image @tiptap/extension-italic @tiptap/extension-link \
+  @tiptap/extension-placeholder @tiptap/extension-strike \
+  @tiptap/extension-subscript @tiptap/extension-superscript \
+  @tiptap/extension-text-align @tiptap/extension-text-style \
+  @tiptap/extension-underline \
+  @codemirror/autocomplete @codemirror/lang-css @codemirror/lang-html \
+  @codemirror/lang-javascript @codemirror/language @codemirror/lint \
+  @codemirror/view @uiw/react-codemirror @lezer/highlight \
+  @tailwindcss/browser @floating-ui/react-dom @headlessui/react \
+  @hello-pangea/color-picker use-eye-dropper react-window swr \
+  gsap framer-motion
+```
+
+### Component-level optional peers
+
+Only install if your site actually uses these components:
+
+```bash
+# Map component
+npm install leaflet react-leaflet
+
+# Video component (YouTube provider)
+npm install react-youtube
 ```
 
 **Developing inside the monorepo:** see [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions.

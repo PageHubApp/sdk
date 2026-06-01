@@ -13,7 +13,7 @@
 
 import React, { useMemo } from "react";
 import { TbBraces, TbBrandTailwind, TbMathFunction } from "react-icons/tb";
-import { extractFirstCssHex } from "@/utils/design/colorSystem";
+import { extractFirstCssHex } from "@/utils/design/color";
 import { formatTailwindDisplayLabel } from "@/utils/tailwind/displayLabel";
 import { InlineClearButton } from "@/chrome/primitives/InlineClearButton";
 import { Chip } from "@/chrome/primitives/Chip";

@@ -8,7 +8,7 @@ import {
   resolveColorForDisplay,
   TRANSPARENT_CHECKER_BG,
   type PaletteColor,
-} from "@/utils/design/colorSystem";
+} from "@/utils/design/color";
 import { toCSSVarName } from "@/utils/design/designSystemVars";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { CreateTokenDialog } from "./CreateTokenDialog";

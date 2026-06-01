@@ -14,6 +14,7 @@ import type {
 } from "./types";
 import type { ContextRegistry } from "./context";
 import { sdkLog } from "../utils/logger";
+import { SlotRegistryError } from "../utils/errors";
 
 export interface SlotsRegistry {
   register: (def: SlotDef) => void;
@@ -65,7 +66,12 @@ export function createSlotsRegistry(deps: SlotsRegistryDeps): SlotsRegistry {
   };
 
   const register = (def: SlotDef) => {
-    if (!def?.id) throw new Error(`[ph.slots] register requires a string id`);
+    if (!def?.id) {
+      throw new SlotRegistryError({
+        code: "SLOTS_BAD_ID",
+        message: `[ph.slots] register requires a string id`,
+      });
+    }
     if (defs.has(def.id)) {
       // Re-registering the same id is a noop — keeps host-boot order forgiving.
       return;
@@ -75,14 +81,24 @@ export function createSlotsRegistry(deps: SlotsRegistryDeps): SlotsRegistry {
   };
 
   const contribute = <Ctx = unknown>(c: SlotContribution<Ctx>) => {
-    if (!c?.slot) throw new Error(`[ph.slots] contribute requires a slot id`);
+    if (!c?.slot) {
+      throw new SlotRegistryError({
+        code: "SLOTS_BAD_CONTRIBUTION",
+        message: `[ph.slots] contribute requires a slot id`,
+      });
+    }
     if (typeof c.render !== "function") {
-      throw new Error(`[ph.slots] contribution to "${c.slot}" requires a render function`);
+      throw new SlotRegistryError({
+        code: "SLOTS_NO_RENDER",
+        message: `[ph.slots] contribution to "${c.slot}" requires a render function`,
+      });
     }
     if (!defs.has(c.slot)) {
-      throw new Error(
-        `[ph.slots] contribution to undefined slot "${c.slot}" — register the slot first`
-      );
+      throw new SlotRegistryError({
+        code: "SLOTS_UNDEFINED_SLOT",
+        message: `[ph.slots] contribution to undefined slot "${c.slot}"`,
+        hint: `Register the slot via sdk.slots.register({ id: "${c.slot}", ... }) before contributing.`,
+      });
     }
     const list = contributions.get(c.slot) ?? [];
     list.push(c as SlotContribution);

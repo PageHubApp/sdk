@@ -147,19 +147,32 @@ function SelectField({
   );
 }
 
+interface RgbaColor {
+  r: number;
+  g: number;
+  b: number;
+  a?: number;
+}
+
+function isRgbaColor(o: unknown): o is RgbaColor {
+  return (
+    !!o &&
+    typeof o === "object" &&
+    typeof (o as RgbaColor).r === "number" &&
+    typeof (o as RgbaColor).g === "number" &&
+    typeof (o as RgbaColor).b === "number"
+  );
+}
+
 function normalizeColorValue(raw: unknown): string | null {
   if (raw == null) return null;
   if (typeof raw === "string") return raw;
   if (typeof raw === "object") {
     const o = raw as Record<string, unknown>;
     if (typeof o.value === "string") return o.value;
-    if (
-      typeof (o as any).r === "number" &&
-      typeof (o as any).g === "number" &&
-      typeof (o as any).b === "number"
-    ) {
-      const a = typeof (o as any).a === "number" ? (o as any).a : 1;
-      return `rgba(${(o as any).r}, ${(o as any).g}, ${(o as any).b}, ${a})`;
+    if (isRgbaColor(o)) {
+      const a = typeof o.a === "number" ? o.a : 1;
+      return `rgba(${o.r}, ${o.g}, ${o.b}, ${a})`;
     }
   }
   return String(raw);

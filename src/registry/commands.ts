@@ -5,18 +5,37 @@
  * applies `when` + `enablement`, then calls `run(ctx, args)`. No keybinding
  * dispatcher is mounted here.
  */
-import type { CommandDef, CommandRunContext, CommandContext } from "./types";
+import type {
+  CommandDef,
+  CommandRunContext,
+  CommandContext,
+  EditorActions,
+  EditorQuery,
+} from "./types";
 import type { ContextRegistry } from "./context";
 import { getEditorActions, getEditorQuery } from "./editorBackref";
 import { sdkLog } from "../utils/logger";
+import { CommandRegistryError } from "../utils/errors";
 
 export interface CommandsRegistry {
   register: <Args = void>(def: CommandDef<Args>) => void;
   unregister: (id: string) => void;
+  /**
+   * Replace an existing command's definition. Throws `CommandRegistryError`
+   * (`COMMANDS_NOT_FOUND`) if no command with that id is registered. Use this
+   * — not `register` — to override a builtin: `sdk.commands.replace({ id:
+   * "ph.editor.save", run: myRun })`. `register` is strict on collision so
+   * accidental dupes still surface loudly.
+   */
+  replace: <Args = void>(def: CommandDef<Args>) => void;
   execute: <Args = unknown>(
     id: string,
     args?: Args,
-    options?: { trigger?: CommandRunContext["trigger"]; query?: unknown; actions?: unknown }
+    options?: {
+      trigger?: CommandRunContext["trigger"];
+      query?: EditorQuery | null;
+      actions?: EditorActions | null;
+    }
   ) => Promise<void>;
   list: () => CommandDef<unknown>[];
   get: (id: string) => CommandDef<unknown> | undefined;
@@ -45,15 +64,42 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
     });
   };
 
-  const register = <Args = void>(def: CommandDef<Args>) => {
+  const assertValidDef = (def: CommandDef<unknown> | undefined, fnName: "register" | "replace") => {
     if (!def?.id || typeof def.id !== "string") {
-      throw new Error(`[ph.commands] register requires a string \`id\` — got ${String(def?.id)}`);
+      throw new CommandRegistryError({
+        code: "COMMANDS_BAD_ID",
+        message: `[ph.commands] ${fnName} requires a string \`id\` — got ${String(def?.id)}`,
+      });
     }
     if (typeof def.run !== "function") {
-      throw new Error(`[ph.commands] command ${def.id} requires a \`run\` function`);
+      throw new CommandRegistryError({
+        code: "COMMANDS_NO_RUN",
+        message: `[ph.commands] command ${def.id} requires a \`run\` function`,
+      });
     }
+  };
+
+  const register = <Args = void>(def: CommandDef<Args>) => {
+    assertValidDef(def as CommandDef<unknown>, "register");
     if (map.has(def.id)) {
-      throw new Error(`[ph.commands] duplicate command id "${def.id}"`);
+      throw new CommandRegistryError({
+        code: "COMMANDS_DUPLICATE",
+        message: `[ph.commands] duplicate command id "${def.id}"`,
+        hint: `Use sdk.commands.replace(def) to override an existing command (e.g. a builtin).`,
+      });
+    }
+    map.set(def.id, def as CommandDef<unknown>);
+    notify();
+  };
+
+  const replace = <Args = void>(def: CommandDef<Args>) => {
+    assertValidDef(def as CommandDef<unknown>, "replace");
+    if (!map.has(def.id)) {
+      throw new CommandRegistryError({
+        code: "COMMANDS_NOT_FOUND",
+        message: `[ph.commands] replace("${def.id}") — no such command`,
+        hint: `Use sdk.commands.register(def) to add a new command.`,
+      });
     }
     map.set(def.id, def as CommandDef<unknown>);
     notify();
@@ -98,8 +144,8 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
     args?: Args,
     options: {
       trigger?: CommandRunContext["trigger"];
-      query?: unknown;
-      actions?: unknown;
+      query?: EditorQuery | null;
+      actions?: EditorActions | null;
     } = {}
   ): Promise<void> => {
     const def = map.get(id);
@@ -134,10 +180,18 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
     // Fall back to the registered editor backrefs so command bodies don't
     // need a hook context to reach CraftJS. Callers that pass explicit
     // query/actions (tests, host APIs) still win.
+    const resolvedQuery = options.query ?? getEditorQuery();
+    const resolvedActions = options.actions ?? getEditorActions();
+    if (!resolvedQuery || !resolvedActions) {
+      sdkLog.warn(
+        `[ph.commands] execute("${id}") — no editor mounted; pass options.query/actions if running headless.`
+      );
+      return;
+    }
     const runCtx: CommandRunContext = {
       ...(baseCtx as CommandContext),
-      query: options.query ?? getEditorQuery(),
-      actions: options.actions ?? getEditorActions(),
+      query: resolvedQuery,
+      actions: resolvedActions,
       trigger: options.trigger ?? "api",
     };
     try {
@@ -155,5 +209,5 @@ export function createCommandsRegistry(deps: CommandsRegistryDeps): CommandsRegi
     };
   };
 
-  return { register, unregister, execute, list, get, isVisible, isEnabled, subscribe };
+  return { register, replace, unregister, execute, list, get, isVisible, isEnabled, subscribe };
 }

@@ -22,6 +22,7 @@ import { ROOT_NODE } from "@craftjs/utils";
 import { useEditor, useNode } from "@craftjs/core";
 import { useMemo } from "react";
 import { toCSSVarName } from "@/utils/design/designSystemVars";
+import type { CustomFont } from "@/chrome/viewport/design-system/hooks/types";
 import { resolveTheme, writeTheme } from "@/utils/design/resolveTheme";
 import type { PropertyDef } from "../../inspector/registry/propertyDefs";
 import { TextStylePicker } from "./TextStylePicker";
@@ -83,7 +84,7 @@ export function TypographyPresetInput({ def }: Props = {}) {
   } = useEditor(state => {
     const root = state.nodes[ROOT_NODE];
     const theme = resolveTheme(root?.data?.props || {});
-    const list = (theme.typography || []) as any[];
+    const list: CustomFont[] = theme.typography || [];
     const presetsList: TypographyPresetRow[] = list
       .filter(p => p && typeof p.name === "string" && p.name.length > 0)
       .map(p => ({
@@ -165,7 +166,7 @@ export function TypographyPresetInput({ def }: Props = {}) {
 
   /** Persist a draft into ROOT.props.theme.typography. Pass `originalName=null` for create. */
   const persistDraft = (originalName: string | null, draft: TextStyleDraft) => {
-    const cleaned: Record<string, any> = {
+    const cleaned: CustomFont = {
       name: draft.name,
       fontFamily: draft.fontFamily || "Inter",
       fontSize: draft.fontSize || "1rem",
@@ -182,7 +183,7 @@ export function TypographyPresetInput({ def }: Props = {}) {
 
     editorActions.setProp(ROOT_NODE, (rootProps: Record<string, any>) => {
       const current = resolveTheme(rootProps);
-      const list = ([...(current.typography || [])] as any[]).filter(
+      const list: CustomFont[] = [...(current.typography || [])].filter(
         p => p && typeof p.name === "string" && p.name.length > 0
       );
       if (originalName == null) {
@@ -192,7 +193,7 @@ export function TypographyPresetInput({ def }: Props = {}) {
         if (idx === -1) list.push(cleaned);
         else list[idx] = { ...list[idx], ...cleaned };
       }
-      writeTheme(rootProps, { ...current, typography: list as any });
+      writeTheme(rootProps, { ...current, typography: list });
     });
   };
 
@@ -233,10 +234,10 @@ export function TypographyPresetInput({ def }: Props = {}) {
   const onDelete = (presetName: string) => {
     editorActions.setProp(ROOT_NODE, (rootProps: Record<string, any>) => {
       const current = resolveTheme(rootProps);
-      const list = ([...(current.typography || [])] as any[]).filter(
+      const list: CustomFont[] = [...(current.typography || [])].filter(
         p => p && typeof p.name === "string" && p.name !== presetName
       );
-      writeTheme(rootProps, { ...current, typography: list as any });
+      writeTheme(rootProps, { ...current, typography: list });
     });
     // Strip the class from the current node so the row no longer reads as
     // "selected" — and the className isn't left referencing a phantom preset.

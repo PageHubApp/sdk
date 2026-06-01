@@ -11,9 +11,8 @@ import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
  * extras, delete) toggles the inline detail panel directly below the list.
  *
  * Drag-to-reorder is opt-in via `onReorder`. The grip handle on each row is
- * the gesture surface; movement is tracked via window listeners (per
- * `.claude/rules/drag-listeners.md`) so the gesture survives re-renders /
- * pointer-leave / overlay traversal.
+ * the gesture surface; movement is tracked via window listeners (not React
+ * props) so the gesture survives re-renders / pointer-leave / overlay traversal.
  */
 
 // ── Single row ──────────────────────────────────────────────────────────────

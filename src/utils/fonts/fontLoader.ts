@@ -2,7 +2,7 @@
  * Google Font collection, batched loading, and className-based preloading
  */
 
-import { resolveCSSVariable } from "../design/colorSystem";
+import { resolveCSSVariable } from "../design/color";
 import {
   findFontFamilyClassToken,
   parseGoogleFontFromArbitraryClass,

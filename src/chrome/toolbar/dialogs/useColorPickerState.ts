@@ -5,7 +5,7 @@ import { useAtomState } from "@zedux/react";
 import colors from "tailwindcss/colors";
 import useEyeDropper from "use-eye-dropper";
 import { ColorPickerSidebarAtom } from "./dialogAtoms";
-import { splitOpacitySuffix } from "../../../utils/design/colorSystem";
+import { splitOpacitySuffix } from "../../../utils/design/color";
 import { resolveTheme } from "../../../utils/design/resolveTheme";
 import { phStorage } from "../../../utils/phStorage";
 import { sdkLog } from "../../../utils/logger";

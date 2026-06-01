@@ -1,4 +1,4 @@
-import type { NodeId } from "@craftjs/core";
+import type { Node, NodeId } from "@craftjs/core";
 import { sdkLog } from "../../../../utils/logger";
 
 export interface SiblingMoveState {
@@ -9,7 +9,7 @@ export interface SiblingMoveState {
 }
 
 export function getSiblingMoveState(query: any, nodeId: NodeId): SiblingMoveState {
-  const node = query.node(nodeId).get();
+  const node: Node = query.node(nodeId).get();
   const parentId = node?.data?.parent;
   const parent = parentId ? query.node(parentId).get() : null;
   const siblings = parent?.data?.nodes || [];
@@ -22,8 +22,8 @@ export function getSiblingMoveState(query: any, nodeId: NodeId): SiblingMoveStat
   let canMoveOut = false;
   if (grandparentId) {
     try {
-      const grandparent = query.node(grandparentId).get();
-      canMoveOut = (grandparent?.rules?.canMoveIn as any)?.([node], grandparent) ?? false;
+      const grandparent: Node = query.node(grandparentId).get();
+      canMoveOut = grandparent?.rules?.canMoveIn?.([node], grandparent, query.node(grandparentId)) ?? false;
     } catch {
       canMoveOut = false;
     }
@@ -33,11 +33,11 @@ export function getSiblingMoveState(query: any, nodeId: NodeId): SiblingMoveStat
   if (currentIndex > 0 && siblings[currentIndex - 1]) {
     try {
       const prevSiblingId = siblings[currentIndex - 1];
-      const prevSibling = query.node(prevSiblingId).get();
+      const prevSibling: Node = query.node(prevSiblingId).get();
       canMoveIn =
         prevSibling?.data?.isCanvas &&
         query.node(nodeId).isDraggable() &&
-        ((prevSibling?.rules?.canMoveIn as any)?.([node], prevSibling) ?? false);
+        (prevSibling?.rules?.canMoveIn?.([node], prevSibling, query.node(prevSiblingId)) ?? false);
     } catch {
       canMoveIn = false;
     }
@@ -71,14 +71,14 @@ export function moveNodeDown(query: any, actions: any, nodeId: NodeId): void {
 }
 
 export function moveNodeOut(query: any, actions: any, nodeId: NodeId): void {
-  const node = query.node(nodeId).get();
+  const node: Node = query.node(nodeId).get();
   const parentId = node.data.parent;
   if (!parentId) return;
   const parent = query.node(parentId).get();
   const grandparentId = parent.data.parent;
   if (!grandparentId) return;
-  const grandparent = query.node(grandparentId).get();
-  if (!(grandparent.rules.canMoveIn as any)([node], grandparent)) {
+  const grandparent: Node = query.node(grandparentId).get();
+  if (!grandparent.rules.canMoveIn([node], grandparent, query.node(grandparentId))) {
     sdkLog.warn("Cannot move node out - grandparent rejects this node type");
     return;
   }
@@ -92,7 +92,7 @@ export function moveNodeOut(query: any, actions: any, nodeId: NodeId): void {
 }
 
 export function moveNodeIn(query: any, actions: any, nodeId: NodeId): void {
-  const node = query.node(nodeId).get();
+  const node: Node = query.node(nodeId).get();
   const parentId = node.data.parent;
   if (!parentId) return;
   const parent = query.node(parentId).get();
@@ -100,10 +100,10 @@ export function moveNodeIn(query: any, actions: any, nodeId: NodeId): void {
   const currentIndex = siblings.indexOf(nodeId);
   if (currentIndex > 0) {
     const prevSiblingId = siblings[currentIndex - 1];
-    const prevSibling = query.node(prevSiblingId).get();
+    const prevSibling: Node = query.node(prevSiblingId).get();
     if (prevSibling.data.isCanvas) {
       try {
-        if (!(prevSibling.rules.canMoveIn as any)([node], prevSibling)) {
+        if (!prevSibling.rules.canMoveIn([node], prevSibling, query.node(prevSiblingId))) {
           sdkLog.warn("Cannot move node in - previous sibling rejects this node type");
           return;
         }

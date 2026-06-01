@@ -39,7 +39,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   )
     t = props.type;
 
-  const attrs: Record<string, any> = {
+  const attrs: Record<string, string | boolean | undefined | null> = {
     class: staticClasses(props, ctx) || undefined,
     style: getInlineStyle(props) || undefined,
     id: props.id || props.anchor || undefined,
@@ -55,7 +55,10 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   if (props.attrs && typeof props.attrs === "object") {
     for (const [k, v] of Object.entries(props.attrs)) {
       if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
-        attrs[k] = v as any;
+        // Numbers are stringified up front (buildAttrs would otherwise do the
+        // same via String(value)); booleans pass through so buildAttrs can
+        // emit a bare attribute for `true` and drop `false`.
+        attrs[k] = typeof v === "number" ? String(v) : v;
       }
     }
   }
@@ -73,13 +76,12 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   const loadStateWrites: Array<{ key: string; value: string; kind?: string }> = [];
   for (const la of migrateActions(props)) {
     if (la.type !== "show-hide") {
-      if ((la as any).trigger === "load" && la.type === "set-state") {
-        const ss = la as any;
-        if (ss.key) {
+      if (la.type === "set-state" && la.trigger === "load") {
+        if (la.key) {
           loadStateWrites.push({
-            key: ss.key,
-            value: ss.value ?? "",
-            ...(ss.kind ? { kind: ss.kind } : {}),
+            key: la.key,
+            value: la.value ?? "",
+            ...(la.kind ? { kind: la.kind } : {}),
           });
           ctx.hasLoadActions = true;
         }
@@ -131,7 +133,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   const overflowUx =
     (overflow.dragScroll || overflow.autoHide) && props.scrollEffect !== "horizontal-scroll";
   if (overflowUx) {
-    const baseClass = attrs.class || "";
+    const baseClass = typeof attrs.class === "string" ? attrs.class : "";
     if (!/\boverflow-x-[^\s]+/.test(baseClass)) {
       attrs.class = [baseClass, "overflow-x-auto"].filter(Boolean).join(" ");
       ctx.classes.add("overflow-x-auto");

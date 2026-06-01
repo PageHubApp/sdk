@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { useRef } from "react";
-import { resolveCSSVariable } from "@/utils/design/colorSystem";
+import { resolveCSSVariable } from "@/utils/design/color";
 import { ViewAtom } from "../../../viewport/state/atoms";
 import { changeProp, getPropFinalValue } from "../../../viewport/state/viewportExports";
 import { getRect } from "../../../viewport/hooks/useRect";

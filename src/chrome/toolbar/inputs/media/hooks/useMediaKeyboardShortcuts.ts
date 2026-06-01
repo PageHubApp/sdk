@@ -20,8 +20,8 @@ interface UseMediaKeyboardShortcutsArgs {
 
 /**
  * Modal-local keyboard handlers. ⌘A (select all) and Backspace/Delete are
- * owned by the registry (`ph.media.selectAll` / `ph.media.deleteSelected`)
- * — see [.claude/rules/templates.md] command-registry section. This hook
+ * owned by the registry (`ph.media.selectAll` / `ph.media.deleteSelected`).
+ * This hook
  * keeps Escape (clear selection), Enter (pick/preview), and arrow-key
  * navigation inline because they are media-grid-specific and a11y plumbing
  * (per command-registry audit doc 4 § Arrow-key navigation).

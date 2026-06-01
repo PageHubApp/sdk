@@ -1,7 +1,7 @@
 import { useEditor } from "@craftjs/core";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useMemo } from "react";
-import { resolveColorForDisplay } from "@/utils/design/colorSystem";
+import { resolveColorForDisplay } from "@/utils/design/color";
 import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "@/utils/defaults";
 import { resolveTheme } from "@/utils/design/resolveTheme";
 import {

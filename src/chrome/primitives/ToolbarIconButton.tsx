@@ -13,7 +13,7 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "./layout/tooltipSurface";
  *     outside a row frame (e.g. design-var picker trigger next to an input).
  *
  * Pass `tooltip` to wire `react-tooltip` against the global surface — same
- * convention as the rest of the editor chrome (see `.claude/rules/tooltips.md`).
+ * convention as the rest of the editor chrome.
  */
 type Variant = "ghost" | "subtle";
 

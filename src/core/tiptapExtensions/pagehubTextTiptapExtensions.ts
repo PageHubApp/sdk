@@ -6,7 +6,7 @@ import Color from "@tiptap/extension-color";
 import { Code } from "@tiptap/extension-code";
 import { Document } from "@tiptap/extension-document";
 import FontFamily from "@tiptap/extension-font-family";
-import FontSize from "@tiptap/extension-font-size";
+import { FontSize } from "@tiptap/extension-text-style/font-size";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import { Italic } from "@tiptap/extension-italic";

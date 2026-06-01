@@ -67,7 +67,7 @@ function resolveClassKey(cls: string): string | undefined {
       if (key === "border" && !isBorderNonColorUtility(cls)) return "borderColor";
       // `font-bold` is a weight (caught by the reverse index above);
       // anything left starting with `font-` is a family token (e.g.
-      // `font-heading`, `font-body`, `font-accent` per CLAUDE.md).
+      // `font-heading`, `font-body`, `font-accent`).
       if (key === "fontWeight") return "fontFamily";
       return key;
     }

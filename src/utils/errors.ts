@@ -89,3 +89,41 @@ export class ConfigError extends PageHubError {
     this.name = "ConfigError";
   }
 }
+
+/** Thrown by `sdk.commands.register` / `.replace` when a command definition
+ *  is malformed or collides. Codes: `COMMANDS_BAD_ID`, `COMMANDS_NO_RUN`,
+ *  `COMMANDS_DUPLICATE`, `COMMANDS_NOT_FOUND` (replace on missing id). */
+export class CommandRegistryError extends PageHubError {
+  constructor(init: PageHubErrorInit) {
+    super(init);
+    this.name = "CommandRegistryError";
+  }
+}
+
+/** Thrown by `sdk.slots.register` / `.contribute` when a slot definition or
+ *  contribution is malformed. Codes: `SLOTS_BAD_ID`, `SLOTS_BAD_CONTRIBUTION`,
+ *  `SLOTS_NO_RENDER`, `SLOTS_UNDEFINED_SLOT`. */
+export class SlotRegistryError extends PageHubError {
+  constructor(init: PageHubErrorInit) {
+    super(init);
+    this.name = "SlotRegistryError";
+  }
+}
+
+/** Thrown by `sdk.menus.contribute` when items input is malformed.
+ *  Codes: `MENUS_BAD_ITEMS`. */
+export class MenuRegistryError extends PageHubError {
+  constructor(init: PageHubErrorInit) {
+    super(init);
+    this.name = "MenuRegistryError";
+  }
+}
+
+/** Thrown by `sdk.keybindings.register` when a binding is malformed.
+ *  Codes: `KEYBINDINGS_NO_COMMAND`, `KEYBINDINGS_NO_KEY`. */
+export class KeybindingRegistryError extends PageHubError {
+  constructor(init: PageHubErrorInit) {
+    super(init);
+    this.name = "KeybindingRegistryError";
+  }
+}

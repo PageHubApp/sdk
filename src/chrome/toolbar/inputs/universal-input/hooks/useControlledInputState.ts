@@ -8,9 +8,11 @@
  *   variant doesn't write to a node and doesn't deal with responsive scoping.
  * - `currentValue` is sourced from the `value` prop; `handleChange` calls the
  *   `onChange` prop with a formatted CSS string.
- * - Returns the SAME shape `useUniversalInputState` returns (with stub Craft
- *   fields like `id: ""`) so `UniversalInputView` can consume either hook
- *   without branching.
+ * - Returns the subset of `useUniversalInputState`'s shape that
+ *   `UniversalInputView` + `useInputHandlers` actually consume, so the View can
+ *   render either hook without branching. The Craft-only fields (`id`, `view`,
+ *   `modifiers`, `multiScope`, `query`, `actions`) aren't part of that subset,
+ *   so the controlled variant simply omits them.
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -210,13 +212,5 @@ export const useControlledInputState = (props: UseControlledInputStateProps) => 
     filteredOptions,
 
     handleChange,
-
-    // Stub Craft fields so the View shape matches
-    id: "",
-    view: undefined as any,
-    modifiers: {} as any,
-    multiScope: undefined as any,
-    query: undefined as any,
-    actions: undefined as any,
   };
 };

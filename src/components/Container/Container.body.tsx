@@ -15,7 +15,7 @@ import { addCustomHandlers } from "../../utils/actions/customHandlers";
 import { fireIntervalActions } from "../../utils/actions/interval";
 import { fireLoadAction } from "../../utils/actions/load";
 import { getStateValue } from "../../utils/state/stateRegistry";
-import { migrateActions, type NodeAction } from "../../utils/action";
+import { actionTrigger, migrateActions, type NodeAction } from "../../utils/action";
 import { applyBackgroundImage, applyPattern } from "../../utils/background";
 import { motionIt } from "../../utils/motion";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
@@ -117,6 +117,12 @@ export interface ContainerProps extends BaseSelectorProps {
    * pick from. See `utils/conditions/computedState.ts`.
    */
   computedStateBindings?: ComputedStateBinding[];
+  /**
+   * Per-event option overrides forwarded to `addCustomHandlers` →
+   * `readHandlerOptions`. Opaque to the Container body (passed straight
+   * through), so typed `unknown` rather than re-widening `props`.
+   */
+  handlerOptions?: unknown;
   actionProp?: NodeAction;
   scrollEffect?: string;
   scrollDirection?: "ltr" | "rtl";
@@ -152,7 +158,7 @@ export function renderContainerBody(
   ctx: RenderCtx,
   opts?: ContainerRenderOptions
 ) {
-  const props: any = {
+  const props: ContainerProps = {
     type: "container",
     isHomePage: false,
     ...incomingProps,
@@ -211,7 +217,7 @@ export function renderContainerBody(
   useEffect(() => {
     if (ctx.enabled) return;
     const actions = migrateActions(props);
-    actions.filter(a => (a as any).trigger === "load").forEach(fireLoadAction);
+    actions.filter(a => actionTrigger(a) === "load").forEach(fireLoadAction);
     const cleanup = fireIntervalActions(actions);
     return cleanup;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -227,14 +233,14 @@ export function renderContainerBody(
   // `useShowHideVersion` above, but the EFFECT only re-runs when an actual
   // input value changes — not every render. Avoids re-applying bindings on
   // unrelated state tick bumps (e.g. cart open/close).
-  const bindings = (props as any).computedStateBindings as ComputedStateBinding[] | undefined;
+  const bindings = props.computedStateBindings;
   const computedSnapshot = computeBindingsSnapshot(bindings, raw =>
-    typeof raw === "string" ? replaceVariables(raw, ctx.rootProps, parentItem, anchors) : (raw as any)
+    replaceVariables(raw, ctx.rootProps, parentItem, anchors)
   );
   useEffect(() => {
     if (!Array.isArray(bindings) || bindings.length === 0) return;
     applyComputedStateBindings(bindings, raw =>
-      typeof raw === "string" ? replaceVariables(raw, ctx.rootProps, parentItem, anchors) : (raw as any)
+      replaceVariables(raw, ctx.rootProps, parentItem, anchors)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [computedSnapshot]);
@@ -388,7 +394,7 @@ export function renderContainerBody(
     anchors,
   });
 
-  addCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
+  addCustomHandlers(prop, props.handlers, ctx.enabled, props.handlerOptions);
 
   if (props.scrollEffect) prop["data-scroll-effect"] = props.scrollEffect;
   {

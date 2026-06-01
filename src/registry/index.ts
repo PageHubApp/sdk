@@ -33,6 +33,9 @@ export {
   useSlotList,
 } from "./hooks";
 
+export { useOverlay } from "./hooks/useOverlay";
+export type { UseOverlayArgs } from "./hooks/useOverlay";
+
 
 export { deriveSelectionContext } from "./selectionContext";
 export type { DerivedSelectionContext } from "./selectionContext";
@@ -57,6 +60,8 @@ export type {
   SlotDef,
   SlotContribution,
   SlotCardinality,
+  SlotId,
+  BuiltinSlotId,
   ResolvedContribution,
 } from "./types";
 

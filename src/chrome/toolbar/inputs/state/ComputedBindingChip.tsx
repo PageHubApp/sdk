@@ -67,7 +67,11 @@ function ComputedBindingPanel({
   onClose: () => void;
 }) {
   const c = binding.compute;
-  const setCompute = (patch: Partial<ComputedStateCompute>) => {
+  // Patch is intersected with the current narrowed compute member at each
+  // call site below; the merge is sound because every call site only sets
+  // fields that exist on the active discriminant. Cast to ComputedStateCompute
+  // is needed because TS cannot prove the spread preserves the discriminant.
+  const setCompute = <T extends ComputedStateCompute>(patch: Partial<T>) => {
     onChange({ ...binding, compute: { ...c, ...patch } as ComputedStateCompute });
   };
   const setFrom = (raw: string) => {
@@ -162,8 +166,12 @@ function ComputedBindingPanel({
             <input
               type="text"
               className="input input-xs font-mono"
-              value={(c as any).separator ?? ","}
-              onChange={e => setCompute({ separator: e.target.value } as any)}
+              value={c.separator ?? ","}
+              onChange={e =>
+                setCompute<Extract<ComputedStateCompute, { type: "join" }>>({
+                  separator: e.target.value,
+                })
+              }
               placeholder=","
               aria-label="Join separator"
             />
@@ -184,8 +192,12 @@ function ComputedBindingPanel({
               <input
                 type="text"
                 className="input input-xs font-mono"
-                value={(c as any).variantMap ?? ""}
-                onChange={e => setCompute({ variantMap: e.target.value } as any)}
+                value={c.variantMap ?? ""}
+                onChange={e =>
+                  setCompute<Extract<ComputedStateCompute, { type: "variant-match" }>>({
+                    variantMap: e.target.value,
+                  })
+                }
                 placeholder="{{item.variants}}"
                 aria-label="Variant map"
               />
@@ -202,12 +214,12 @@ function ComputedBindingPanel({
               <input
                 type="text"
                 className="input input-xs font-mono"
-                value={
-                  Array.isArray((c as any).axes)
-                    ? (c as any).axes.join(",")
-                    : ((c as any).axes ?? "")
+                value={Array.isArray(c.axes) ? c.axes.join(",") : (c.axes ?? "")}
+                onChange={e =>
+                  setCompute<Extract<ComputedStateCompute, { type: "variant-match" }>>({
+                    axes: e.target.value,
+                  })
                 }
-                onChange={e => setCompute({ axes: e.target.value } as any)}
                 placeholder="Size,Color"
                 aria-label="Axes"
               />
@@ -224,8 +236,12 @@ function ComputedBindingPanel({
               <input
                 type="text"
                 className="input input-xs font-mono"
-                value={(c as any).axisKeyTemplate ?? ""}
-                onChange={e => setCompute({ axisKeyTemplate: e.target.value } as any)}
+                value={c.axisKeyTemplate ?? ""}
+                onChange={e =>
+                  setCompute<Extract<ComputedStateCompute, { type: "variant-match" }>>({
+                    axisKeyTemplate: e.target.value,
+                  })
+                }
                 placeholder="pdp:axis:%axis%"
                 aria-label="Axis key template"
               />
@@ -242,8 +258,12 @@ function ComputedBindingPanel({
               <input
                 type="text"
                 className="input input-xs font-mono"
-                value={(c as any).variantMap ?? ""}
-                onChange={e => setCompute({ variantMap: e.target.value } as any)}
+                value={c.variantMap ?? ""}
+                onChange={e =>
+                  setCompute<Extract<ComputedStateCompute, { type: "variant-axis-availability" }>>(
+                    { variantMap: e.target.value }
+                  )
+                }
                 placeholder="{{item.variants}}"
                 aria-label="Variant map"
               />
@@ -260,8 +280,12 @@ function ComputedBindingPanel({
               <input
                 type="text"
                 className="input input-xs font-mono"
-                value={(c as any).axis ?? ""}
-                onChange={e => setCompute({ axis: e.target.value } as any)}
+                value={c.axis ?? ""}
+                onChange={e =>
+                  setCompute<Extract<ComputedStateCompute, { type: "variant-axis-availability" }>>(
+                    { axis: e.target.value }
+                  )
+                }
                 placeholder="Color"
                 aria-label="Axis"
               />
@@ -278,12 +302,12 @@ function ComputedBindingPanel({
               <input
                 type="text"
                 className="input input-xs font-mono"
-                value={
-                  Array.isArray((c as any).otherAxes)
-                    ? (c as any).otherAxes.join(",")
-                    : ((c as any).otherAxes ?? "")
+                value={Array.isArray(c.otherAxes) ? c.otherAxes.join(",") : (c.otherAxes ?? "")}
+                onChange={e =>
+                  setCompute<Extract<ComputedStateCompute, { type: "variant-axis-availability" }>>(
+                    { otherAxes: e.target.value }
+                  )
                 }
-                onChange={e => setCompute({ otherAxes: e.target.value } as any)}
                 placeholder="Size"
                 aria-label="Other axes"
               />
@@ -293,8 +317,12 @@ function ComputedBindingPanel({
               <input
                 type="text"
                 className="input input-xs font-mono"
-                value={(c as any).axisKeyTemplate ?? ""}
-                onChange={e => setCompute({ axisKeyTemplate: e.target.value } as any)}
+                value={c.axisKeyTemplate ?? ""}
+                onChange={e =>
+                  setCompute<Extract<ComputedStateCompute, { type: "variant-axis-availability" }>>(
+                    { axisKeyTemplate: e.target.value }
+                  )
+                }
                 placeholder="pdp:axis:%axis%"
                 aria-label="Axis key template"
               />

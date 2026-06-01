@@ -299,6 +299,16 @@ export type LinkTarget = "_self" | "_blank" | "_parent" | "_top";
 
 // ─── Helpers ───────────────────────────────────────────────────────────
 
+/**
+ * Read the optional `trigger` discriminant off any action. Only a subset of
+ * `NodeAction` members declare `trigger?` (show-hide, set/toggle/clear/
+ * increment/decrement-state), so it isn't on the bare union — this narrows
+ * via `in` instead of casting the whole action to `any`.
+ */
+export function actionTrigger(a: NodeAction): string | undefined {
+  return "trigger" in a ? (a as { trigger?: string }).trigger : undefined;
+}
+
 /** Actions that resolve to an href (render as <a>) */
 export function isLinkAction(action: NodeAction | null | undefined): action is LinkAction {
   return !!action && action.type === "link";

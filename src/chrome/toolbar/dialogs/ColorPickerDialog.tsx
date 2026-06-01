@@ -23,7 +23,7 @@ import {
   isPaletteColorSelected,
   splitOpacitySuffix,
   stripTailwindPrefix,
-} from "../../../utils/design/colorSystem";
+} from "../../../utils/design/color";
 import { getColorPalette } from "../../../utils/tailwind/tailwind";
 
 export { ColorPaletteAtom, ColorPickerAtom } from "./dialogAtoms";

@@ -8,8 +8,7 @@
  * `LayerHeader`) drags the whole `*.craft.tsx` graph into its eval order.
  * When that consumer is reachable from a `*.craft.tsx` `settings` panel,
  * the cycle closes through `definitions.ts` and TDZs `AutomaticDef` /
- * `ContainerDef` in production. See
- * [.claude/known-issues/sdk-circular-import-via-lib.md].
+ * `ContainerDef` in production.
  *
  * This module imports nothing. `builtinComponentDefs.ts` registers defs
  * via {@link setBuiltinDefsLookup} at module load.

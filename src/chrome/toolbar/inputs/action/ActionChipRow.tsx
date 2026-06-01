@@ -87,41 +87,39 @@ function describeAction(a: NodeAction, pageNames?: Map<string, string>): string 
     if (h.startsWith("tel:")) return h.slice(4) || h;
     return h;
   }
-  if (a.type === "open-modal") return (a as any).anchor || "";
+  if (a.type === "open-modal") return a.anchor || "";
   if (a.type === "show-hide") {
-    const target = (a as any).target || "";
-    const trig = (a as any).trigger;
+    const target = a.target || "";
+    const trig = a.trigger;
     const gated =
-      Array.isArray((a as any).conditions) && (a as any).conditions.length > 0
-        ? " · conditional"
-        : "";
+      Array.isArray(a.conditions) && a.conditions.length > 0 ? " · conditional" : "";
     const prefix =
       trig === "load" ? `${target} · on load` : trig === "hover" ? `${target} · hover` : target;
     return `${prefix}${gated}`;
   }
   if (a.type === "copy-to-clipboard") {
-    const t = (a as any).text as string | undefined;
+    const t = a.text;
     if (!t) return "";
     return t.length > 24 ? t.slice(0, 24) + "…" : t;
   }
-  if (a.type === "download-file") return (a as any).url || "";
-  if (a.type === "add-to-cart" && (a as any).quantity) return `×${(a as any).quantity}`;
-  if (a.type === "agent-send") return (a as any).field || "";
+  if (a.type === "download-file") return a.url || "";
+  if (a.type === "add-to-cart" && a.quantity) return `×${a.quantity}`;
+  if (a.type === "agent-send") return a.field || "";
   if (a.type === "set-local-storage") {
-    const k = (a as any).key as string | undefined;
-    const v = (a as any).value as string | undefined;
+    const k = a.key;
+    const v = a.value;
     if (k && v) return `${k} = ${v}`;
     return k || "";
   }
-  if (a.type === "remove-local-storage") return (a as any).key || "";
+  if (a.type === "remove-local-storage") return a.key || "";
   if (a.type === "set-state") {
-    const k = (a as any).key as string | undefined;
-    const v = (a as any).value as string | undefined;
+    const k = a.key;
+    const v = a.value;
     if (k && v) return `${k} = ${v}`;
     return k || "";
   }
-  if (a.type === "toggle-state") return (a as any).key || "";
-  if (a.type === "clear-state") return (a as any).key || "";
+  if (a.type === "toggle-state") return a.key || "";
+  if (a.type === "clear-state") return a.key || "";
   return "";
 }
 
@@ -200,8 +198,7 @@ export function ActionChipRow({
     onRemove();
   };
 
-  const showHideTarget =
-    action.type === "show-hide" ? ((action as any).target as string | undefined) : undefined;
+  const showHideTarget = action.type === "show-hide" ? action.target : undefined;
 
   return (
     <>

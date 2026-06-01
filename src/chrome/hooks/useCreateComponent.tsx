@@ -7,6 +7,7 @@ import { Text } from "../../components/Text/Text";
 import { useSetAtomState } from "../../utils/atoms";
 import { CanvasIsolateAtom } from "../../utils/component/componentIsolation";
 import { ComponentsAtom, ViewModeAtom } from "../../utils/atoms";
+import type { EditorCanvasViewMode, SavedComponent } from "../../utils/atoms";
 import { getAtomExternal, setAtomExternal } from "../../utils/atoms/external";
 import { getEditorActions, getEditorQuery } from "../../registry/editorBackref";
 import { sdkLog } from "../../utils/logger";
@@ -56,20 +57,20 @@ export function createReusableComponentRun(args?: {
           id,
           query.node(id).toSerializedNode(),
         ]);
-        const components = (getAtomExternal<any[]>(ComponentsAtom) ?? []) as any[];
-        setAtomExternal(ComponentsAtom, [
+        const components = getAtomExternal<SavedComponent[]>(ComponentsAtom) ?? [];
+        setAtomExternal<SavedComponent[]>(ComponentsAtom, [
           ...components,
           {
             rootNodeId: contentNodeId,
             nodes: JSON.stringify(Object.fromEntries(nodePairs)),
             name: componentName,
-          } as any,
+          },
         ]);
-        const currentViewMode = getAtomExternal(ViewModeAtom) as unknown as string;
+        const currentViewMode = getAtomExternal<EditorCanvasViewMode>(ViewModeAtom);
         if (currentViewMode !== "canvas") {
-          setAtomExternal(ViewModeAtom, "canvas" as any);
+          setAtomExternal<EditorCanvasViewMode>(ViewModeAtom, "canvas");
         }
-        setAtomExternal(CanvasIsolateAtom, containerId as any);
+        setAtomExternal<string | null>(CanvasIsolateAtom, containerId);
       } catch (e) {
         sdkLog.error("[createReusableComponentRun] post-frame failed", e);
       }

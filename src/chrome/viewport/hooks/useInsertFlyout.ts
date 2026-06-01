@@ -8,7 +8,7 @@
  * panel snapping shut.
  *
  * Pulled out of `ToolboxContextual.tsx` so the main component owns only its
- * own selection / clipboard / mutation handlers. See [.claude/rules/code-quality.md](../../../../../.claude/rules/code-quality.md).
+ * own selection / clipboard / mutation handlers.
  */
 import { useCallback, useRef, useState } from "react";
 import type { Placement } from "@floating-ui/react-dom";

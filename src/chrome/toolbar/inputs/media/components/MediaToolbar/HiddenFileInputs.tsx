@@ -5,8 +5,7 @@ interface HiddenFileInputsProps {
   replaceInputRef: React.RefObject<HTMLInputElement | null>;
   /**
    * SSR/initial value for the replace `<input>`. The real per-replace accept
-   * is set imperatively in `MediaManagerModal.onReplace` BEFORE click() —
-   * see .claude/rules/media-uploads.md.
+   * is set imperatively in `MediaManagerModal.onReplace` BEFORE click().
    */
   replaceAccept: string;
   handleUpload: (files: FileList | null) => void;

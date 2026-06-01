@@ -1,3 +1,4 @@
+import type { SetStateAction, ToggleStateAction, ClearStateAction } from "@/utils/action";
 import { ToolbarDropdown } from "../../../ToolbarDropdown";
 import { StateKeyPickerInput } from "../shared/StateKeyPickerInput";
 
@@ -7,7 +8,7 @@ export function SetStateForm({
   selfId,
   ensureSelfId,
 }: {
-  action: { key: string; kind?: string; value: string };
+  action: SetStateAction;
   patch: (p: any) => void;
   selfId?: string;
   ensureSelfId?: () => string;
@@ -74,7 +75,7 @@ export function ToggleStateForm({
   selfId,
   ensureSelfId,
 }: {
-  action: { key: string; kind?: string; values?: [string, string] };
+  action: ToggleStateAction;
   patch: (p: any) => void;
   selfId?: string;
   ensureSelfId?: () => string;
@@ -138,7 +139,7 @@ export function ClearStateForm({
   selfId,
   ensureSelfId,
 }: {
-  action: { key: string };
+  action: ClearStateAction;
   patch: (p: any) => void;
   selfId?: string;
   ensureSelfId?: () => string;

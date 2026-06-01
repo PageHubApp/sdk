@@ -15,7 +15,7 @@ import {
 import useSWR from "swr";
 import { useSDK } from "../../../core/context";
 import { useSlotList } from "../../../registry";
-import type { PageSettingsExtraTab } from "../modals/PageSettingsModal";
+import type { PageSettingsExtraTab } from "../modals/page-settings/PageSettingsModal";
 import { SettingsAtom } from "../../../utils/atoms";
 import { IsolateAtom } from "../../../utils/atoms";
 import { hasPageIsolation, isolatePageInTree } from "../../../utils/page/pageManagement";
@@ -26,7 +26,7 @@ import { UnsavedChangesAtom } from "../state/atoms";
 import { sdkLog } from "../../../utils/logger";
 
 const PageSettingsModal = lazy(() =>
-  import("../modals/PageSettingsModal").then(m => ({ default: m.PageSettingsModal }))
+  import("../modals/page-settings/PageSettingsModal").then(m => ({ default: m.PageSettingsModal }))
 );
 import { usePageCreation } from "../hooks/usePageCreation";
 

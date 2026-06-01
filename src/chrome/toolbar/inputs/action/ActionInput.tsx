@@ -67,7 +67,7 @@ export function ActionSubForm({
     case "open-modal":
       return (
         <TargetPickerInput
-          value={(action as any).anchor}
+          value={action.anchor}
           filter="modal"
           label="Modal"
           onChange={anchor => patch({ anchor })}
@@ -102,13 +102,13 @@ export function ActionSubForm({
         </p>
       );
     case "set-local-storage":
-      return <SetLocalStorageForm action={action as any} patch={patch} />;
+      return <SetLocalStorageForm action={action} patch={patch} />;
     case "remove-local-storage":
-      return <RemoveLocalStorageForm action={action as any} patch={patch} />;
+      return <RemoveLocalStorageForm action={action} patch={patch} />;
     case "set-state":
       return (
         <SetStateForm
-          action={action as any}
+          action={action}
           patch={patch}
           selfId={selfId}
           ensureSelfId={ensureSelfId}
@@ -117,7 +117,7 @@ export function ActionSubForm({
     case "toggle-state":
       return (
         <ToggleStateForm
-          action={action as any}
+          action={action}
           patch={patch}
           selfId={selfId}
           ensureSelfId={ensureSelfId}
@@ -126,7 +126,7 @@ export function ActionSubForm({
     case "clear-state":
       return (
         <ClearStateForm
-          action={action as any}
+          action={action}
           patch={patch}
           selfId={selfId}
           ensureSelfId={ensureSelfId}

@@ -192,7 +192,19 @@ export const DarkModeAtom = atom<boolean>("darkMode", false);
 // ─── Editor canvas atoms (formerly utils/lib.ts) ─────────────────────────
 
 export const IsolateAtom = atom<string>("isolate", EDITOR_ALL_PAGES_STORAGE);
-export const ComponentsAtom = atom<any[]>("components", []);
+
+/** A reusable saved component registered in {@link ComponentsAtom}. */
+export interface SavedComponent {
+  /** CraftJS node id of the component's root node. */
+  rootNodeId: string;
+  /** JSON-serialized node map of the component subtree. */
+  nodes: string;
+  /** Display name shown in the saved-components toolbox. */
+  name: string;
+  /** `true` = saved as a full-width section/block rather than a component. */
+  isSection?: boolean;
+}
+export const ComponentsAtom = atom<SavedComponent[]>("components", []);
 export const OnlineAtom = atom<boolean>("online", true);
 export const ScreenshotAtom = atom<boolean>("ss", false);
 export const SideBarAtom = atom<boolean>("sidebar", true);

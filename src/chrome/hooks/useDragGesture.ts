@@ -40,7 +40,7 @@ export interface UseDragGestureOptions {
  *
  * The hook is gesture-shape agnostic — coordinate-space transforms (zoom,
  * normalize to %, element-relative), DOM mutation, and rAF coalescing live in
- * the caller's onMove. See `.claude/rules/drag-listeners.md`.
+ * the caller's onMove.
  */
 export function useDragGesture(options: UseDragGestureOptions) {
   const { threshold = 1 } = options;

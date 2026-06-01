@@ -14,7 +14,7 @@ import {
   resolveColorForDisplay,
   resolvePaletteReference,
   TRANSPARENT_CHECKER_BG,
-} from "@/utils/design/colorSystem";
+} from "@/utils/design/color";
 import { editorCanvasViewToClassPrefixKey } from "@/utils/tailwind/className";
 import { EditModifiersAtom } from "../../Label";
 import { Chip } from "@/chrome/primitives/Chip";

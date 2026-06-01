@@ -5,7 +5,15 @@
  * `docs/internal/sdk/command-registry/architecture.md` for the spec.
  */
 import type { ReactNode } from "react";
+import type { useEditorReturnType } from "@craftjs/core";
 import type { PageHubFeatures } from "../types";
+
+/** The CraftJS `query` object exposed by `useEditor()`. */
+export type EditorQuery = useEditorReturnType["query"];
+
+/** The CraftJS `actions` object exposed by `useEditor()` (private internals
+ *  filtered out by craft itself). */
+export type EditorActions = useEditorReturnType["actions"];
 
 // ─── Context ────────────────────────────────────────────────────────────────
 
@@ -70,8 +78,8 @@ export interface CommandContext {
  * source so commands can branch on how they were invoked.
  */
 export interface CommandRunContext extends CommandContext {
-  query: unknown;
-  actions: unknown;
+  query: EditorQuery;
+  actions: EditorActions;
   trigger: "menu" | "palette" | "keybinding" | "api" | "host";
 }
 
@@ -193,8 +201,35 @@ export interface KeybindingDef<Args = unknown> {
 
 export type SlotCardinality = "single" | "list";
 
+/**
+ * Built-in slot ids the SDK pre-registers via `BUILTIN_SLOTS`. Keep in lock-step
+ * with `registry/builtins/slots.ts` — that file is the runtime source of truth;
+ * this union exists so `sdk.slots.contribute({ slot: "…" })` autocompletes.
+ *
+ * Hosts may also register their own slots and contribute against them — the
+ * `(string & {})` escape hatch on `SlotId` preserves arbitrary strings while
+ * keeping the autocomplete for the builtin ids.
+ */
+export type BuiltinSlotId =
+  | "toolbox/ai-button"
+  | "tiptap/inline-copy-assistant"
+  | "settings/ai-button"
+  | "node/data-source-section"
+  | "node/ai-generate-button"
+  | "node/ai-context-button"
+  | "node/ai-context-editor"
+  | "empty-state/ai-card"
+  | "navmenu/ai-row"
+  | "navmenu/header-items"
+  | "import-export/handoff-extras"
+  | "media-edit/ai-actions"
+  | "page-settings/extra-tabs";
+
+/** A slot id — one of the builtins or a host-registered custom id. */
+export type SlotId = BuiltinSlotId | (string & {});
+
 export interface SlotDef {
-  id: string;
+  id: SlotId;
   cardinality: SlotCardinality;
   /** Documents the context shape passed to renderers; for docs only. */
   contextShape?: string;
@@ -203,7 +238,7 @@ export interface SlotDef {
 }
 
 export interface SlotContribution<Ctx = unknown> {
-  slot: string;
+  slot: SlotId;
   render: (ctx: Ctx) => ReactNode;
   /** Higher wins for single-cardinality. */
   priority?: number;

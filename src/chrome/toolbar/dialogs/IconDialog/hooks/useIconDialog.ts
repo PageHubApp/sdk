@@ -118,7 +118,7 @@ export function useIconDialog({
   useEffect(() => {
     if (!isOpen) return;
     if (setIndex) return;
-    loadSetIndex().then(setSetIndex).catch(console.error);
+    loadSetIndex().then(setSetIndex).catch(err => sdkLog.error(err));
   }, [isOpen, setIndex]);
 
   useEffect(() => {

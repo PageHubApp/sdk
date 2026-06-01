@@ -13,18 +13,29 @@
  * read them. Surfaces still use the React hooks directly.
  */
 import type { Ecosystem } from "@zedux/react";
+import type { EditorActions, EditorQuery } from "./types";
 
-let queryRef: any = null;
-let actionsRef: any = null;
+export type { EditorActions, EditorQuery };
+
+let queryRef: EditorQuery | null = null;
+let actionsRef: EditorActions | null = null;
 let ecosystemRef: Ecosystem | null = null;
 
+/**
+ * Input shape is intentionally loose (`unknown`) so behavior tests can pass
+ * partial stubs (e.g. `{ selectNode(id) { ... } }`) without dragging the full
+ * 20-method CraftJS surface into every fixture. The stored refs are strict
+ * — the cast happens in exactly one place. Production callers
+ * (`useRegisterEditorBackref`) pass the real `useEditor()` shape, so the cast
+ * is a no-op at runtime.
+ */
 export function setEditorBackref(opts: {
-  query?: any;
-  actions?: any;
+  query?: unknown;
+  actions?: unknown;
   ecosystem?: Ecosystem | null;
 }): void {
-  if (opts.query !== undefined) queryRef = opts.query;
-  if (opts.actions !== undefined) actionsRef = opts.actions;
+  if (opts.query !== undefined) queryRef = opts.query as EditorQuery | null;
+  if (opts.actions !== undefined) actionsRef = opts.actions as EditorActions | null;
   if (opts.ecosystem !== undefined) ecosystemRef = opts.ecosystem;
 }
 
@@ -34,11 +45,11 @@ export function clearEditorBackref(): void {
   ecosystemRef = null;
 }
 
-export function getEditorQuery(): any {
+export function getEditorQuery(): EditorQuery | null {
   return queryRef;
 }
 
-export function getEditorActions(): any {
+export function getEditorActions(): EditorActions | null {
   return actionsRef;
 }
 

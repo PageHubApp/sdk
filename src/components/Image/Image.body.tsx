@@ -32,8 +32,14 @@ import type { RenderCtx } from "../../render/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 import { getImageSrcString, type ImageSrcSource } from "./imageProps";
 
-export const ImageDefault = ({ tab, props }: any) => {
-  const setActiveTab = (_: any) => {};
+export const ImageDefault = ({
+  tab,
+  props,
+}: {
+  tab: string;
+  props: { isLoading?: boolean; loaded?: boolean };
+}) => {
+  const setActiveTab = (_: string) => {};
   return (
     <button
       onClick={() => setActiveTab(tab)}
@@ -59,9 +65,25 @@ export interface ImageProps extends BaseSelectorProps, ImageSrcSource {
   alt?: string;
   title?: string;
   quality?: number;
+  /** Transient editor-only flags surfaced by the upload pipeline. */
+  isLoading?: boolean;
+  loaded?: boolean;
+  /** Per-event author options consumed by `addCustomHandlers`. */
+  handlerOptions?: Record<string, unknown>;
 }
 
-export function renderImageBody(props: ImageProps & Record<string, any>, ctx: RenderCtx) {
+/** Minimal shape of a `pageMedia[]` entry consumed by the Image renderer. */
+interface PageMediaEntry {
+  id?: string;
+  type?: string;
+  metadata?: {
+    alt?: string;
+    title?: string;
+    svg?: string;
+  } & Record<string, unknown>;
+}
+
+export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
   const itemContext = useItemContext();
   useRuntimeVarsVersion();
 
@@ -71,12 +93,13 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
     ? replaceVariables(rawSrcStr, ctx.rootProps, itemContext)
     : rawSrcStr;
 
-  const ref = useRef(null);
+  const ref = useRef<HTMLElement | null>(null);
 
-  let mediaMetadata: any = null;
-  let mediaObject: any = null;
+  let mediaMetadata: PageMediaEntry["metadata"] | null = null;
+  let mediaObject: PageMediaEntry | null = null;
   if (videoId && ctx.pageMedia) {
-    mediaObject = ctx.pageMedia.find((m: any) => m.id === videoId);
+    mediaObject =
+      (ctx.pageMedia as PageMediaEntry[]).find(m => m.id === videoId) ?? null;
     if (mediaObject?.metadata) mediaMetadata = mediaObject.metadata;
   }
 
@@ -88,18 +111,18 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
 
   const actions = migrateActions(props);
   const firstLink = findLinkAction(actions);
-  const resolvedHref = actionToHref(firstLink, ctx.pageIndex) || (props as any).url;
+  const resolvedHref = actionToHref(firstLink, ctx.pageIndex) || props.url;
 
-  const prop: any = {
-    ref: (r: any) => {
+  const prop: Record<string, unknown> = {
+    ref: (r: HTMLElement | null) => {
       ref.current = r;
       ctx.connect(ctx.drag(r));
     },
     href: resolvedHref,
-    onClick: (e: any) => {
+    onClick: (e: React.MouseEvent) => {
       ctx.enabled && e.preventDefault();
     },
-    style: (props as any).root?.style ? CSStoObj((props as any).root.style) || {} : {},
+    style: props.root?.style ? CSStoObj(props.root.style) || {} : {},
     className: `${hasRadius ? "overflow-hidden" : ""} ${props.className || ""}`.trim(),
   };
   applyAriaProps(prop, props);
@@ -113,23 +136,23 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
       resolvedLinkHref: typeof resolvedHref === "string" ? resolvedHref : null,
     });
   }
-  addCustomHandlers(prop, (props as any).handlers, ctx.enabled, (props as any).handlerOptions);
+  addCustomHandlers(prop, props.handlers, ctx.enabled, props.handlerOptions);
   if (actions.length > 0 && !ctx.enabled) {
     prop["data-action"] = actions.map(a => a.type).join(" ");
   }
 
-  const resolveVar = (v: string) =>
+  const resolveVar = (v: string | undefined) =>
     v?.includes("{{") ? replaceVariables(v, ctx.rootProps, itemContext) : v;
   const altText =
     mediaMetadata?.alt ||
-    resolveVar(props.alt as string) ||
+    resolveVar(props.alt) ||
     mediaMetadata?.title ||
-    resolveVar(props.title as string) ||
+    resolveVar(props.title) ||
     "";
-  const titleText = mediaMetadata?.title || resolveVar(props.title as string) || "";
+  const titleText = mediaMetadata?.title || resolveVar(props.title) || "";
   const hasObjectFit = (props.className || "").includes("object-");
 
-  const _imgProp: any = {
+  const _imgProp: Record<string, unknown> = {
     loading: props.loading || "lazy",
     alt: altText,
     title: titleText,
@@ -186,7 +209,7 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
 
   if (ctx.enabled) {
     if (empty) {
-      prop.children = (props as any).isLoading ? (
+      prop.children = props.isLoading ? (
         <ImageDefault tab="Image" props={props} />
       ) : (
         <EditorEmptyLeafHint
@@ -202,21 +225,21 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
     if (ctx.isMounted) prop["node-id"] = ctx.id;
   }
 
-  let tagName: any;
+  let tagName: "div" | "img";
   if (empty) tagName = "div";
   else if (isSvg) tagName = "div";
   else tagName = "img";
 
   const createImgElement = (shouldConnectDrag: boolean) => {
     const imgTag = tagName === "img" ? UiImage : tagName;
-    const imgAnimProps = applyAnimation({ ..._imgProp, key: `img-${ctx.id}` }, props as any, null, ctx.enabled);
+    const imgAnimProps = applyAnimation({ ..._imgProp, key: `img-${ctx.id}` }, props, null, ctx.enabled);
     const imgFinalProps =
       tagName === "img" ? { ...imgAnimProps, ratio: null, fit: null, rounded: null } : imgAnimProps;
-    return React.createElement(motionIt(props as any, imgTag, ctx.enabled), {
+    return React.createElement(motionIt(props, imgTag, ctx.enabled), {
       ...imgFinalProps,
       ref: shouldConnectDrag
-        ? (r: any) => {
-            if ((props as any).url) return;
+        ? (r: HTMLElement | null) => {
+            if (props.url) return;
             ref.current = r;
             ctx.connect(ctx.drag(r));
           }
@@ -226,17 +249,17 @@ export function renderImageBody(props: ImageProps & Record<string, any>, ctx: Re
 
   if (ctx.enabled && ctx.isMounted) {
     const Img = createImgElement(false);
-    prop.children = <>{empty ? prop.children : Img}</>;
-    const ele = (props as any).url ? "a" : "div";
+    prop.children = <>{empty ? (prop.children as React.ReactNode) : Img}</>;
+    const ele = props.url ? "a" : "div";
     return React.createElement(ele, {
       ...prop,
-      "aria-label": (props as any).url ? altText || titleText || "Image link" : undefined,
+      "aria-label": props.url ? altText || titleText || "Image link" : undefined,
     });
   }
 
   const Img = createImgElement(true);
   if (!empty) {
-    if ((props as any).url) {
+    if (props.url) {
       prop.children = Img;
       return React.createElement("a", {
         ...prop,

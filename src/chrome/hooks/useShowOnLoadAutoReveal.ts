@@ -18,12 +18,18 @@
  * Mounted once at viewport level. The selector return string changes only
  * when the set of matching actions changes, so the effect re-runs rarely.
  */
-import { useEditor } from "@craftjs/core";
+import { useEditor, type Node } from "@craftjs/core";
 import { useEffect } from "react";
 import { setShowHideState } from "@/utils/state/showHideStore";
-import { setState as setRegistryState, deleteState } from "@/utils/state/stateRegistry";
+import { setState as setRegistryState, deleteState, type StateKind } from "@/utils/state/stateRegistry";
 import { migrateActions } from "@/utils/action";
-import type { ShowHideAction } from "@/utils/action";
+import type {
+  NodeAction,
+  ShowHideAction,
+  SetStateAction,
+  ToggleStateAction,
+  ClearStateAction,
+} from "@/utils/action";
 
 interface SeedShowEntry {
   kind: "show-hide";
@@ -47,9 +53,8 @@ interface SeedClearEntry {
 }
 type SeedEntry = SeedShowEntry | SeedStateEntry | SeedToggleEntry | SeedClearEntry;
 
-function isLoadShow(action: any): action is ShowHideAction {
+function isLoadShow(action: NodeAction): action is ShowHideAction {
   return (
-    !!action &&
     action.type === "show-hide" &&
     action.trigger === "load" &&
     action.direction === "show" &&
@@ -58,36 +63,50 @@ function isLoadShow(action: any): action is ShowHideAction {
   );
 }
 
-function collectSeeds(props: any, out: SeedEntry[]): void {
+// Narrowing helpers for the load-trigger state actions. Each action interface
+// in `utils/action.ts` declares its own `trigger?` field — typing the predicate
+// against the discriminated union lets the body access `key`/`kind`/etc.
+// without casts.
+function isLoadSetState(a: NodeAction): a is SetStateAction & { trigger: "load" } {
+  return a.type === "set-state" && a.trigger === "load" && !!a.key;
+}
+function isLoadToggleState(a: NodeAction): a is ToggleStateAction & { trigger: "load" } {
+  return a.type === "toggle-state" && a.trigger === "load" && !!a.key;
+}
+function isLoadClearState(a: NodeAction): a is ClearStateAction & { trigger: "load" } {
+  return a.type === "clear-state" && a.trigger === "load" && !!a.key;
+}
+
+function collectSeeds(props: Record<string, unknown> | null | undefined, out: SeedEntry[]): void {
   if (!props) return;
   for (const a of migrateActions(props)) {
     if (isLoadShow(a)) {
       out.push({ kind: "show-hide", target: a.target });
       continue;
     }
-    if ((a as any).trigger !== "load") continue;
-    if (a.type === "set-state" && (a as any).key) {
+    if (isLoadSetState(a)) {
       out.push({
         kind: "set-state",
-        key: (a as any).key,
-        stateKind: (a as any).kind ?? "value",
-        value: (a as any).value ?? "",
+        key: a.key,
+        stateKind: a.kind ?? "value",
+        value: a.value ?? "",
       });
       continue;
     }
-    if (a.type === "toggle-state" && (a as any).key) {
-      const k = (a as any).kind ?? "flag";
-      const pair = (a as any).values ?? (k === "visibility" ? ["shown", "hidden"] : ["on", "off"]);
+    if (isLoadToggleState(a)) {
+      const k = a.kind ?? "flag";
+      const pair: [string, string] =
+        a.values ?? (k === "visibility" ? ["shown", "hidden"] : ["on", "off"]);
       out.push({
         kind: "toggle-state",
-        key: (a as any).key,
+        key: a.key,
         stateKind: k,
         values: pair,
       });
       continue;
     }
-    if (a.type === "clear-state" && (a as any).key) {
-      out.push({ kind: "clear-state", key: (a as any).key });
+    if (isLoadClearState(a)) {
+      out.push({ kind: "clear-state", key: a.key });
     }
   }
 }
@@ -104,15 +123,15 @@ export function useShowOnLoadAutoReveal() {
   // the matching seed set hasn't changed.
   const { seeds } = useEditor(state => {
     const out: SeedEntry[] = [];
-    for (const node of Object.values(state.nodes) as any[]) {
-      collectSeeds(node?.data?.props, out);
+    for (const node of Object.values(state.nodes) as Node[]) {
+      collectSeeds(node?.data?.props as Record<string, unknown> | undefined, out);
     }
     return { seeds: out.map(seedKey).sort().join("\n") };
   });
 
   useEffect(() => {
     if (!seeds) return;
-    for (const line of (seeds as string).split("\n")) {
+    for (const line of seeds.split("\n")) {
       if (!line) continue;
       const colon = line.indexOf(":");
       const kind = line.slice(0, colon);
@@ -123,7 +142,7 @@ export function useShowOnLoadAutoReveal() {
         // rest = "<key>=<value>|<stateKind>"
         const pipe = rest.lastIndexOf("|");
         const left = pipe >= 0 ? rest.slice(0, pipe) : rest;
-        const stateKind = (pipe >= 0 ? rest.slice(pipe + 1) : "value") as any;
+        const stateKind = parseStateKind(pipe >= 0 ? rest.slice(pipe + 1) : "value");
         const eq = left.indexOf("=");
         const key = eq >= 0 ? left.slice(0, eq) : left;
         const value = eq >= 0 ? left.slice(eq + 1) : "";
@@ -138,7 +157,7 @@ export function useShowOnLoadAutoReveal() {
         // rest = "<key>|<stateKind>|<a>,<b>" — seed to first value (the "on" state)
         const parts = rest.split("|");
         const key = parts[0];
-        const stateKind = (parts[1] || "flag") as any;
+        const stateKind = parseStateKind(parts[1] || "flag");
         const pair = (parts[2] || "").split(",");
         if (key && pair[0] !== undefined) {
           setRegistryState(
@@ -152,4 +171,14 @@ export function useShowOnLoadAutoReveal() {
       }
     }
   }, [seeds]);
+}
+
+const STATE_KINDS: ReadonlySet<StateKind> = new Set<StateKind>([
+  "visibility",
+  "selection",
+  "flag",
+  "value",
+]);
+function parseStateKind(raw: string): StateKind {
+  return STATE_KINDS.has(raw as StateKind) ? (raw as StateKind) : "value";
 }

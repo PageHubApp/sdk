@@ -1,12 +1,13 @@
 /**
- * Builtin slot catalog — 13 slots that today map 1:1 to the existing
- * `editorChromeSlots.render*` fields. The adapter shim in
- * `../adapter.ts` translates host-supplied render functions into
- * contributions against these slots.
+ * Builtin slot catalog — the 13 named slots host integrations can contribute
+ * against via `sdk.slots.contribute({ slot, render })`.
+ *
+ * Adding a new slot here requires adding its id to the `BuiltinSlotId` literal
+ * union in `../types.ts` — the TS error from this assignment enforces it.
  */
-import type { SlotDef } from "../types";
+import type { BuiltinSlotId, SlotDef } from "../types";
 
-export const BUILTIN_SLOTS: SlotDef[] = [
+export const BUILTIN_SLOTS: Array<SlotDef & { id: BuiltinSlotId }> = [
   { id: "toolbox/ai-button", cardinality: "single", contextShape: "void" },
   {
     id: "tiptap/inline-copy-assistant",

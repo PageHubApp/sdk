@@ -12,7 +12,7 @@ import { useNode } from "@craftjs/core";
 import { useAtomValue, useAtomState } from "@zedux/react";
 import { classPropKeyMatches, splitClassVariants } from "../../../../utils/tailwind/className";
 import { formatTailwindDisplayLabel } from "../../../../utils/tailwind/displayLabel";
-import { TRANSPARENT_CHECKER_BG } from "../../../../utils/design/colorSystem";
+import { TRANSPARENT_CHECKER_BG } from "../../../../utils/design/color";
 import { Chip } from "../../../primitives/Chip";
 import { ViewAtom } from "../../../viewport/state/atoms";
 import { getPropFinalValue } from "../../../viewport/state/propSystem";

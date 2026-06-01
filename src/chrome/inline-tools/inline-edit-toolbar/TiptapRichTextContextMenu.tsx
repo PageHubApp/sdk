@@ -19,9 +19,9 @@ type Phase = "root" | "variables";
  * "Insert variable" both flow through registry commands; the variable
  * sub-menu (groups + flyout) is bespoke chrome and stays inline.
  *
- * The `showAi` prop comes from the host's `editorChromeSlots.renderInlineCopyAssistantTrigger`
- * presence check — when the slot isn't wired, the AI row hides regardless of
- * the underlying `features.aiEnabled` flag.
+ * `showAi` reflects whether the host has contributed to the
+ * `tiptap/inline-copy-assistant` slot — when the slot isn't wired, the AI row
+ * hides regardless of the underlying `features.aiEnabled` flag.
  */
 export function TiptapRichTextContextMenu({
   open,

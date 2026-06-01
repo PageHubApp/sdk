@@ -1,8 +1,10 @@
+import type { SetLocalStorageAction, RemoveLocalStorageAction } from "@/utils/action";
+
 export function SetLocalStorageForm({
   action,
   patch,
 }: {
-  action: { key: string; value: string };
+  action: SetLocalStorageAction;
   patch: (p: any) => void;
 }) {
   return (
@@ -39,7 +41,7 @@ export function RemoveLocalStorageForm({
   action,
   patch,
 }: {
-  action: { key: string };
+  action: RemoveLocalStorageAction;
   patch: (p: any) => void;
 }) {
   return (

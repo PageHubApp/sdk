@@ -15,6 +15,7 @@ import type {
 import type { CommandsRegistry } from "./commands";
 import type { ContextRegistry } from "./context";
 import { sdkLog } from "../utils/logger";
+import { MenuRegistryError } from "../utils/errors";
 
 export interface MenusRegistry {
   contribute: <Args = unknown>(location: MenuLocation, items: MenuItem<Args>[]) => void;
@@ -79,7 +80,10 @@ export function createMenusRegistry(deps: MenusRegistryDeps): MenusRegistry {
     items: MenuItem<Args>[]
   ) => {
     if (!Array.isArray(items)) {
-      throw new Error(`[ph.menus] contribute(${String(location)}, items) — items must be an array`);
+      throw new MenuRegistryError({
+        code: "MENUS_BAD_ITEMS",
+        message: `[ph.menus] contribute(${String(location)}, items) — items must be an array`,
+      });
     }
     const existing = map.get(location) ?? [];
     map.set(location, existing.concat(items as MenuItem[]));
@@ -103,7 +107,14 @@ export function createMenusRegistry(deps: MenusRegistryDeps): MenusRegistry {
     const out: ResolvedMenuItem[] = [];
     for (const it of list) {
       const def = deps.commands.get(it.command) as CommandDef<unknown> | undefined;
-      if (!def) continue;
+      if (!def) {
+        // Silent drop is a typo-trap (e.g. `acme.publsihStaging`). Warn so the
+        // host sees the mismatch in dev tools rather than empty menus.
+        sdkLog.warn(
+          `[ph.menus] items(${String(location)}) — unresolved command id "${it.command}" (typo or not registered)`
+        );
+        continue;
+      }
       // command-level when
       if (def.when) {
         try {

@@ -10,8 +10,7 @@ export const COMPONENT_COMMANDS: CommandDef[] = [
     category: "Edit",
     run: () => {
       // Lazy-import to avoid a runtime TDZ cycle (useCreateComponent.tsx
-      // pulls Container/Text which transitively reach the component
-      // resolver — see [.claude/known-issues/sdk-circular-import-via-lib.md]).
+      // pulls Container/Text which transitively reach the component resolver).
       void import("../../../chrome/hooks/useCreateComponent").then(m => {
         m.createReusableComponentRun();
       });
