@@ -27,8 +27,8 @@ import { PageHubProvider } from "../core/context";
 import { PageHubEditor } from "../editor";
 import { EventEmitter } from "../core/events";
 import { getSaveCoordinator } from "../core/saveCoordinator";
-import { renderToHTML } from "../static-renderer/renderToHTML";
-import type { RenderToHTMLOptions, RenderToHTMLResult } from "../static-renderer/types";
+import { renderToHTML } from "../render/static/renderToHTML";
+import type { RenderToHTMLOptions, RenderToHTMLResult } from "../render/static/types";
 import { injectTailwindBrowser, removeTailwindBrowser } from "../core/tailwindBrowser";
 import { injectTheme, removeTheme } from "../core/theme";
 import type {

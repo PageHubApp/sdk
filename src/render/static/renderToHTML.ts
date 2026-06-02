@@ -1,12 +1,12 @@
 import lz from "lzutf8";
-import { getLoadActionScript } from "../utils/actions/load";
-import { resolveTheme } from "../utils/design/resolveTheme";
-import { collectIconRefs } from "../utils/icons/collectIconRefs";
-import { preloadIcons } from "../utils/icons/serverResolve";
-import { PageHubError } from "../utils/errors";
-import { escapeHTML } from "../utils/staticHtml";
-import type { StaticRenderContext } from "../utils/staticHtml";
-import { processForStatic } from "../define/processors/forStatic";
+import { getLoadActionScript } from "../../utils/actions/load";
+import { resolveTheme } from "../../utils/design/resolveTheme";
+import { collectIconRefs } from "../../utils/icons/collectIconRefs";
+import { preloadIcons } from "../../utils/icons/serverResolve";
+import { PageHubError } from "../../utils/errors";
+import { escapeHTML } from "../../utils/staticHtml";
+import type { StaticRenderContext } from "../../utils/staticHtml";
+import { processForStatic } from "../../define/processors/forStatic";
 import { styleGuideGoogleFontFamily } from "./fonts";
 import { defaultResolver } from "./resolver";
 import { PH_GSAP_CDN } from "./runtime/gsapCdn";
@@ -26,8 +26,8 @@ import {
   type SerializedNodes,
 } from "./types";
 import { renderNode } from "./walker";
-import type { PageIndex } from "../utils/page/pageManagement";
-import { sdkLog } from "../utils/logger";
+import type { PageIndex } from "../../utils/page/pageManagement";
+import { sdkLog } from "../../utils/logger";
 
 /** Build a PageIndex from the serialized node tree by scanning ROOT's direct
  *  children for nodes whose `props.type === "page"`. Mirrors

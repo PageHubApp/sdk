@@ -1,6 +1,6 @@
 import { renderVideoBody, type VideoProps } from "./Video.body";
-import { useTreeRoot, useWalkerNode } from "../../render/contexts";
-import { makeWalkerCtx } from "../../render/RenderCtx";
+import { useTreeRoot, useWalkerNode } from "../../render/react/contexts";
+import { makeWalkerCtx } from "../../render/react/RenderCtx";
 
 export const VideoRender = (incomingProps: VideoProps) => {
   const props: any = {

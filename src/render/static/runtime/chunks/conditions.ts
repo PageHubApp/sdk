@@ -1,14 +1,19 @@
 // Condition evaluation + conditions directives.
-// `buildConditionEvalFns` injects evalCond/evalGroups/evalAll using a literal
-// mobile breakpoint, so this module exposes a function that takes that value.
-// Everything after the generated prelude is a real TS function whose body is
-// concatenated through `stringifyChunk` — globals declared in
-// [runtime-globals.d.ts](./runtime-globals.d.ts).
+// The evaluator functions (`evalCond`/`evalAll`/`evalGroups`) live in
+// [clientScript.ts](../../../../utils/conditions/clientScript.ts) as
+// `CONDITION_EVAL_CHUNK` (shared verbatim with the load-action bootstrap) and
+// publish themselves onto `__phRT`. This chunk consumes `evalGroups` from
+// there, adds `actionGatePasses` + the Alpine directive, and re-publishes
+// `actionGatePasses`. The `device` branch reads the `MOBILE` preamble global.
+// Everything is a real TS function whose body is concatenated through
+// `stringifyChunk` — globals declared in [runtime-globals.d.ts](./runtime-globals.d.ts).
 
-import { buildConditionEvalFns } from "../../../utils/conditions/clientScript";
+import { CONDITION_EVAL_CHUNK } from "../../../../utils/conditions/clientScript";
 import { stringifyChunk } from "./stringifyChunk";
 
 const CONDITIONS_BODY = stringifyChunk(function $conditions() {
+  const { evalGroups } = __phRT;
+
   function actionGatePasses(action: { conditions?: unknown[] } | null) {
     if (!action || !action.conditions || !action.conditions.length) return true;
     return evalGroups(action.conditions) !== false;
@@ -38,12 +43,13 @@ const CONDITIONS_BODY = stringifyChunk(function $conditions() {
   );
 
   // Publish cross-chunk functions to the runtime registry. See state.ts.
-  Object.assign(__phRT, { actionGatePasses, evalGroups, evalCond, evalAll });
+  // evalCond/evalAll/evalGroups are already published by CONDITION_EVAL_CHUNK.
+  Object.assign(__phRT, { actionGatePasses });
 });
 
-export function getConditionsChunk(mobileBreakpoint: number): string {
+export function getConditionsChunk(): string {
   return `
-${buildConditionEvalFns({ mobileBreakpoint })}
+${CONDITION_EVAL_CHUNK}
 ${CONDITIONS_BODY}
 `;
 }

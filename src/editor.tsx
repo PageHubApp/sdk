@@ -186,7 +186,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
       // Lazy-load static-renderer so its ~25-file chunk (walker, stringify,
       // alpine inline) stays out of the editor's initial bundle — only fetched
       // on first save.
-      const { renderToHTML } = await import("./static-renderer/renderToHTML");
+      const { renderToHTML } = await import("./render/static/renderToHTML");
       const { html, classes, scrollObserverScript, renderError } = renderToHTML(json, {
         compressed: false,
       });

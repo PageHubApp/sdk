@@ -1,5 +1,5 @@
-import type { ResolvedComponentDef } from "../define/types";
-import type { ToHTMLFn } from "../utils/staticHtml";
+import type { ResolvedComponentDef } from "../../define/types";
+import type { ToHTMLFn } from "../../utils/staticHtml";
 
 export interface SerializedNode {
   type: { resolvedName: string } | string;

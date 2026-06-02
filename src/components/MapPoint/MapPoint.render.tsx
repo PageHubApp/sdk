@@ -1,6 +1,6 @@
 import { renderMapPointBody, type MapPointProps } from "./MapPoint.body";
-import { useTreeRoot, useWalkerNode } from "../../render/contexts";
-import { makeWalkerCtx } from "../../render/RenderCtx";
+import { useTreeRoot, useWalkerNode } from "../../render/react/contexts";
+import { makeWalkerCtx } from "../../render/react/RenderCtx";
 
 export const MapPointRender = (props: MapPointProps) => {
   const tree = useTreeRoot();

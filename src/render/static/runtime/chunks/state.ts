@@ -154,7 +154,9 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
           void _store.entries[trackedKeys[ti]];
         }
         for (let b = 0; b < bindings.length; b++) {
-          const pass = evalGroups(bindings[b].conditions) === true;
+          // Read from __phRT at call time — the conditions chunk runs after
+          // this one, so it isn't on __phRT yet at chunk-eval time.
+          const pass = __phRT.evalGroups(bindings[b].conditions) === true;
           const cls = classLists[b];
           for (let ci = 0; ci < cls.length; ci++) {
             el.classList.toggle(cls[ci], pass);

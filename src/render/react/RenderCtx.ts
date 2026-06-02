@@ -6,7 +6,7 @@
  *
  * Same render body, two ctx sources. No Craft inside `*Render.tsx`.
  */
-import type { PageIndex } from "../utils/page/pageManagement";
+import type { PageIndex } from "../../utils/page/pageManagement";
 
 export interface RenderCtx {
   /** Stable node id — Craft `useNode().id` in editor; `WalkerNodeCtx.id` in walker. */

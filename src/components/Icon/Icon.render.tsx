@@ -1,7 +1,7 @@
 import { renderIconBody, type IconProps } from "./Icon.body";
 import { useResolvedIcon } from "../../utils/icons/iconResolver";
-import { useTreeRoot, useWalkerNode } from "../../render/contexts";
-import { makeWalkerCtx } from "../../render/RenderCtx";
+import { useTreeRoot, useWalkerNode } from "../../render/react/contexts";
+import { makeWalkerCtx } from "../../render/react/RenderCtx";
 
 export const IconRender = (props: IconProps) => {
   const tree = useTreeRoot();

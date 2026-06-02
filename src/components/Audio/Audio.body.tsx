@@ -9,7 +9,7 @@ import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint
 import { Box } from "@pagehub/ui";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 
 export interface AudioProps extends BaseSelectorProps {

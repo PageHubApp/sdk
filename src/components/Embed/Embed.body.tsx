@@ -8,7 +8,7 @@ import { Box } from "@pagehub/ui";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { InjectedHeadTags, InjectedBodyTags } from "../../chrome/static/runtime/InjectedHeadTags";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 
 export type EmbedService =

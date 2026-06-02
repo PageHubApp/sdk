@@ -4,7 +4,7 @@ import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { useScrollToSelected } from "../../core/componentHooks";
 import { useMounted } from "../../utils/hooks/useMounted";
 import { extractRootDataFromQuery } from "../../utils/page/pageManagement";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 
 import {
   renderEmbedBody,

@@ -1,4 +1,4 @@
-import { ROOT_NODE } from "../../utils/rootNode";
+import { ROOT_NODE } from "../rootNode";
 
 export type CanvasPos = { x: number; y: number };
 

@@ -28,7 +28,7 @@ import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../../utils/itemContext";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 import { getImageSrcString, type ImageSrcSource } from "./imageProps";
 

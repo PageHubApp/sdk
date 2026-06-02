@@ -1,5 +1,5 @@
-import { toPaletteCSSVarName } from "../utils/design/designSystemVars";
-import { resolveTheme } from "../utils/design/resolveTheme";
+import { toPaletteCSSVarName } from "../../utils/design/designSystemVars";
+import { resolveTheme } from "../../utils/design/resolveTheme";
 
 export function generateThemeVars(rootProps: Record<string, any>): string {
   const theme = resolveTheme(rootProps);

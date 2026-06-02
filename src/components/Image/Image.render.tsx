@@ -1,6 +1,6 @@
 import { renderImageBody, type ImageProps } from "./Image.body";
-import { useTreeRoot, useWalkerNode } from "../../render/contexts";
-import { makeWalkerCtx } from "../../render/RenderCtx";
+import { useTreeRoot, useWalkerNode } from "../../render/react/contexts";
+import { makeWalkerCtx } from "../../render/react/RenderCtx";
 
 export const ImageRender = (incomingProps: ImageProps) => {
   const props: any = { type: "cdn", loading: "lazy", fetchPriority: "low", ...incomingProps };

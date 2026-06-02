@@ -1,6 +1,6 @@
 import { renderTextBody, type TextProps } from "./Text.body";
-import { useTreeRoot, useWalkerNode } from "../../render/contexts";
-import { makeWalkerCtx } from "../../render/RenderCtx";
+import { useTreeRoot, useWalkerNode } from "../../render/react/contexts";
+import { makeWalkerCtx } from "../../render/react/RenderCtx";
 
 export const TextRender = (incomingProps: Partial<TextProps>) => {
   const props: any = { ...incomingProps };

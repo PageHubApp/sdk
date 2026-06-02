@@ -3,7 +3,7 @@ import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { applyAriaProps } from "../selectors";
 import { useMounted } from "../../utils/hooks/useMounted";
-import { useWalkerNode } from "../../render/contexts";
+import { useWalkerNode } from "../../render/react/contexts";
 import type { MapProps, TileStyle } from "./Map.body";
 
 const LazyLeafletMap =

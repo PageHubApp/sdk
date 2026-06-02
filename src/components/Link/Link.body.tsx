@@ -28,7 +28,7 @@ import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint
 import { isVisuallyEmptyRichText } from "../../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 import type { IconPropInput, LegacyIconFields } from "../shared/iconProp";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 
 export interface LinkProps extends BaseSelectorProps, LegacyIconFields {
   text?: string;

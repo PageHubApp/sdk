@@ -4,7 +4,7 @@
 // DaisyUI components → unwrap layers → rewrite breakpoints → strip unused
 // keyframes → minify → prepend theme vars.
 
-import { renderToHTML } from "../static-renderer/renderToHTML";
+import { renderToHTML } from "../render/static/renderToHTML";
 import { compileSchema, normalizeJsonLd } from "../utils/seo/compileSchema";
 import type { SchemaEntry } from "../utils/seo/schemaTypes";
 import { sdkLog } from "../utils/logger";

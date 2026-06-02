@@ -1,4 +1,4 @@
-import { attachScrollAnimObserver } from "../../utils/animations/scrollAnimAttach";
+import { attachScrollAnimObserver } from "../../../utils/animations/scrollAnimAttach";
 
 /**
  * IntersectionObserver runtime inlined into static HTML.

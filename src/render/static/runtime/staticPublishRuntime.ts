@@ -137,7 +137,7 @@ ${ALPINE_INLINE_SOURCE}
 ${preamble}
 ${STATE_CHUNK}
 ${ITEMS_CHUNK}
-${getConditionsChunk(mobileBreakpoint)}
+${getConditionsChunk()}
 ${AUX_CHUNK}
 ${CART_CHUNK}
 ${ACTIONS_CHUNK}

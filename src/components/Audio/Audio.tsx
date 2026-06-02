@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { useMounted } from "../../utils/hooks/useMounted";
 import { extractRootDataFromQuery } from "../../utils/page/pageManagement";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 
 import { renderAudioBody, type AudioProps } from "./Audio.body";
 export { renderAudioBody, type AudioProps };

@@ -10,7 +10,8 @@ import type {
   SetStateAction,
   ToggleStateAction,
 } from "../action";
-import { buildConditionEvalFns } from "../conditions/clientScript";
+import { CONDITION_EVAL_CHUNK } from "../conditions/clientScript";
+import { stringifyChunk } from "../../render/static/runtime/chunks/stringifyChunk";
 import { deleteState, getState, getStateValue, setState } from "../state/stateRegistry";
 import { actionGatePasses, applyStateStep } from "./gates";
 import { applyShowHide } from "./internal";
@@ -34,23 +35,30 @@ import { applyShowHide } from "./internal";
  * `Container`'s mount effect fires `fireLoadAction` and this script is
  * unnecessary. Kept exclusive to static export to avoid double dispatch.
  */
-export function getLoadActionScript({
-  mobileBreakpoint = 768,
-}: { mobileBreakpoint?: number } = {}): string {
-  return `<script>
-(function(){
-  window.__PH_STATE__ = window.__PH_STATE__ || {};
-  function seedSetState(){
+/**
+ * Load-bootstrap body — authored as a real TS function, lifted to a string via
+ * `stringifyChunk`. Reads `evalGroups` from `__phRT` (populated by the
+ * `CONDITION_EVAL_CHUNK` that runs just before it in the assembled IIFE).
+ */
+const LOAD_BODY_CHUNK = stringifyChunk(function $load() {
+  const { evalGroups } = __phRT;
+  if (!window.__PH_STATE__) window.__PH_STATE__ = {};
+  const phState = window.__PH_STATE__;
+
+  function seedSetState() {
     try {
-      document.querySelectorAll('[data-ph-load-set-state]').forEach(function(el){
-        var raw = el.getAttribute('data-ph-load-set-state');
+      document.querySelectorAll("[data-ph-load-set-state]").forEach(function (el) {
+        const raw = el.getAttribute("data-ph-load-set-state");
         if (!raw) return;
         try {
-          var arr = JSON.parse(raw);
-          for (var i = 0; i < arr.length; i++) {
-            var s = arr[i];
+          const arr = JSON.parse(raw);
+          for (let i = 0; i < arr.length; i++) {
+            const s = arr[i];
             if (s && s.key) {
-              window.__PH_STATE__[s.key] = { kind: s.kind || 'value', value: s.value == null ? null : String(s.value) };
+              phState[s.key] = {
+                kind: s.kind || "value",
+                value: s.value == null ? null : String(s.value),
+              };
             }
           }
         } catch (e) {}
@@ -58,25 +66,49 @@ export function getLoadActionScript({
     } catch (e) {}
   }
   seedSetState();
-${buildConditionEvalFns({ mobileBreakpoint })}
+
   function run() {
     try {
-      document.querySelectorAll('[data-ph-load-show]').forEach(function(el) {
-        var raw = el.getAttribute('data-ph-load-conditions');
-        if (raw) { try { if (!evalGroups(JSON.parse(raw))) return; } catch (e) {} }
-        var m = el.getAttribute('data-ph-load-method') || 'class';
-        if (m === 'style') el.style.display = 'block';
-        else el.classList.remove('hidden');
-        if (el.id) window.__PH_STATE__[el.id] = { kind: 'visibility', value: 'shown' };
+      document.querySelectorAll("[data-ph-load-show]").forEach(function (el) {
+        const node = el as HTMLElement;
+        const raw = node.getAttribute("data-ph-load-conditions");
+        if (raw) {
+          try {
+            if (!evalGroups(JSON.parse(raw))) return;
+          } catch (e) {}
+        }
+        const m = node.getAttribute("data-ph-load-method") || "class";
+        if (m === "style") node.style.display = "block";
+        else node.classList.remove("hidden");
+        if (node.id) phState[node.id] = { kind: "visibility", value: "shown" };
       });
       seedSetState();
     } catch (e) {}
   }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', run);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run);
   } else {
     run();
   }
+});
+
+/**
+ * Assemble the standalone load-action `<script>`. The IIFE provides `__phRT`
+ * (a local registry, since this script runs outside the main runtime IIFE) and
+ * `MOBILE` (read by the `device` branch of `CONDITION_EVAL_CHUNK`), then runs
+ * the shared evaluator chunk followed by the load body.
+ */
+export function getLoadActionScript({
+  mobileBreakpoint = 768,
+}: { mobileBreakpoint?: number } = {}): string {
+  const safeMobile = Number.isFinite(mobileBreakpoint) ? mobileBreakpoint : 768;
+  return `<script>
+;(function(){
+var __phRT = {};
+var MOBILE = ${safeMobile};
+${CONDITION_EVAL_CHUNK}
+${LOAD_BODY_CHUNK}
 })();
 </script>`;
 }

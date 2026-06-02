@@ -4,7 +4,7 @@ import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { extractRootDataFromQuery } from "../../utils/page/pageManagement";
 import { useScrollToSelected } from "../../core/componentHooks";
 import { useMounted } from "../../utils/hooks/useMounted";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 
 import { renderTextBody, type TextProps } from "./Text.body";
 export { renderTextBody, type TextProps };

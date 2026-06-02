@@ -8,7 +8,7 @@ import { resolveTheme } from "../../utils/design/resolveTheme";
 import { useLazyBackground } from "../../utils/hooks/useLazyBackground";
 import { applyAriaProps } from "../selectors";
 import { InjectedHeadTags, InjectedBodyTags } from "../../chrome/static/runtime/InjectedHeadTags";
-import { useWalkerNode } from "../../render/contexts";
+import { useWalkerNode } from "../../render/react/contexts";
 import type { ContainerProps as BackgroundContainerProps } from "./Background.body";
 
 const RUNTIME_VARS_BOOTSTRAP =

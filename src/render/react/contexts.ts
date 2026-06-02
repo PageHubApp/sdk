@@ -10,7 +10,7 @@
  * IconSvgMapContext, RouteParamsContext, RuntimeVarsContext).
  */
 import { createContext, useContext } from "react";
-import type { PageIndex } from "../utils/page/pageManagement";
+import type { PageIndex } from "../../utils/page/pageManagement";
 
 /**
  * Tree-root data — what `query.node(ROOT_NODE)` would have returned in
@@ -57,7 +57,7 @@ export function useWalkerNode(): WalkerNodeCtx | null {
 }
 
 /** Re-export the runtime walker flag — lives in `utils/` to avoid render→utils circular deps. */
-export { InWalkerProvider, useInWalker } from "../utils/runtimeMode";
+export { InWalkerProvider, useInWalker } from "../../utils/runtimeMode";
 
 /**
  * Callbacks the editor used to expose via `useSDKSafe().config.callbacks` —

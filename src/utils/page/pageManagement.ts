@@ -2,7 +2,7 @@
  * Page management utilities — isolation, counting, ref resolution, variables
  */
 
-import { ROOT_NODE } from "../../utils/rootNode";
+import { ROOT_NODE } from "../rootNode";
 import { phStorage } from "../phStorage";
 import { sdkLog } from "../logger";
 // `decompressAsync` (lzutf8) is editor-only — `loadPage` dynamic-imports it
@@ -278,4 +278,4 @@ export const resolvePageRef = (
 // ─── Template Variables ───
 // Re-export from the canonical source — utils/design/variables.ts handles all
 // variable types (company.*, year, item.*, connector.*, variables.*).
-export { replaceVariables } from "../../utils/design/variables";
+export { replaceVariables } from "../design/variables";

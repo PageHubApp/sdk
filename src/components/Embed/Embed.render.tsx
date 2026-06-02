@@ -1,6 +1,6 @@
 import { renderEmbedBody, type EmbedProps } from "./Embed.body";
-import { useTreeRoot, useWalkerNode } from "../../render/contexts";
-import { makeWalkerCtx } from "../../render/RenderCtx";
+import { useTreeRoot, useWalkerNode } from "../../render/react/contexts";
+import { makeWalkerCtx } from "../../render/react/RenderCtx";
 
 export const EmbedRender = (incomingProps: EmbedProps) => {
   const props: any = { service: "custom", ...incomingProps };

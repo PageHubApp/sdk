@@ -15,7 +15,7 @@ import { applyAttrs } from "../../utils/applyAttrs";
 import { useAnchors } from "../../utils/anchors/anchorContext";
 import { resolveAnchorsInActions } from "../../utils/anchors/resolveAnchorsInAction";
 import { useSDKSafe } from "../../core/context";
-import { useUiCallbacks } from "../../render/contexts";
+import { useUiCallbacks } from "../../render/react/contexts";
 import {
   migrateActions,
   actionToHref,
@@ -36,7 +36,7 @@ import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint
 import { isVisuallyEmptyRichText } from "../../utils/isVisuallyEmptyRichText";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 import type { IconPropInput, LegacyIconFields } from "../shared/iconProp";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 
 export interface ButtonProps extends BaseSelectorProps, LegacyIconFields {
   text?: string;

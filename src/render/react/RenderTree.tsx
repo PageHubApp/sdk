@@ -16,14 +16,14 @@
  * navigate away on its own.
  */
 import React from "react";
-import { ItemProvider, useItemContext } from "../utils/itemContext";
-import { evaluateConditionGroups } from "../utils/conditions/evaluate";
-import { buildClientContext } from "../utils/conditions/context";
-import { getConnectorData } from "../utils/design/variables";
-import type { ConditionGroup } from "../utils/conditions/types";
+import { ItemProvider, useItemContext } from "../../utils/itemContext";
+import { evaluateConditionGroups } from "../../utils/conditions/evaluate";
+import { buildClientContext } from "../../utils/conditions/context";
+import { getConnectorData } from "../../utils/design/variables";
+import type { ConditionGroup } from "../../utils/conditions/types";
 import { WalkerNodeProvider, useTreeRoot, type WalkerNodeCtx } from "./contexts";
 import { uiResolver, type UiResolver } from "./resolver";
-import { sdkLog } from "../utils/logger";
+import { sdkLog } from "../../utils/logger";
 
 export interface SerializedNode {
   type: { resolvedName: string };

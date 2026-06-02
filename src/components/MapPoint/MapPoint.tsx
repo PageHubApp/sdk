@@ -1,7 +1,7 @@
 import { useEditor, useNode } from "@craftjs/core";
 import { getClonedState } from "../../utils/cloneState";
 import { useMounted } from "../../utils/hooks/useMounted";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 
 import { renderMapPointBody, type MapPointProps } from "./MapPoint.body";
 export { renderMapPointBody, type MapPointProps };

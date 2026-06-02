@@ -1,7 +1,7 @@
 /** Pure body for MapPoint. NO `@craftjs/core`. */
 import React from "react";
 import { TbMapPin } from "../_emptyHintIcons";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 
 export interface MapPointProps extends BaseSelectorProps {

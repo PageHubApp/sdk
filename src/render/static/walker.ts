@@ -1,9 +1,9 @@
-import { buildStaticContext } from "../utils/conditions/context";
-import { evaluateConditionGroups } from "../utils/conditions/evaluate";
-import type { AuthState } from "../utils/design/variables";
-import type { StaticRenderContext, ToHTMLFn } from "../utils/staticHtml";
+import { buildStaticContext } from "../../utils/conditions/context";
+import { evaluateConditionGroups } from "../../utils/conditions/evaluate";
+import type { AuthState } from "../../utils/design/variables";
+import type { StaticRenderContext, ToHTMLFn } from "../../utils/staticHtml";
 import type { SerializedNode, SerializedNodes } from "./types";
-import { sdkLog } from "../utils/logger";
+import { sdkLog } from "../../utils/logger";
 
 export function resolveType(node: SerializedNode): string {
   if (typeof node.type === "string") return node.type;

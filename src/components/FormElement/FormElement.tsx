@@ -2,7 +2,7 @@ import { useEditor, useNode } from "@craftjs/core";
 import React, { useEffect, useState } from "react";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { extractRootDataFromQuery } from "../../utils/page/pageManagement";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 
 import { renderFormElementBody, inputTypes, type FormElementProps } from "./FormElement.body";
 export { renderFormElementBody, inputTypes, type FormElementProps };

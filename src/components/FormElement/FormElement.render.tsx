@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { renderFormElementBody, type FormElementProps } from "./FormElement.body";
-import { useTreeRoot, useWalkerNode } from "../../render/contexts";
-import { makeWalkerCtx } from "../../render/RenderCtx";
+import { useTreeRoot, useWalkerNode } from "../../render/react/contexts";
+import { makeWalkerCtx } from "../../render/react/RenderCtx";
 
 export const FormElementRender = (incomingProps: Partial<FormElementProps>) => {
   const props: any = {

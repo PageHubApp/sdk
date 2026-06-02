@@ -14,8 +14,8 @@ import {
   type TreeRootCtx,
   type UiCallbacks,
 } from "./contexts";
-import { InWalkerProvider } from "../utils/runtimeMode";
-import { EditorStoreProvider } from "../core/store";
+import { InWalkerProvider } from "../../utils/runtimeMode";
+import { EditorStoreProvider } from "../../core/store";
 
 export interface PagehubRootProps {
   rootProps: Record<string, any>;

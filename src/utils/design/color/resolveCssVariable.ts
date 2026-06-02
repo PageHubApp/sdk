@@ -1,4 +1,4 @@
-import { ROOT_NODE } from "../../../utils/rootNode";
+import { ROOT_NODE } from "../../rootNode";
 import { DEFAULT_STYLE_GUIDE } from "../../defaults";
 import { resolveTheme } from "../resolveTheme";
 

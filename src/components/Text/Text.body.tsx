@@ -25,7 +25,7 @@ import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../../utils/itemContext";
 import { useAnchors } from "../../utils/anchors/anchorContext";
 import { useGlobalStateTick } from "../../utils/state/stateRegistry";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 
 const TextEditorMode = React.lazy(() => import("../../chrome/inline-tools/TextEditor"));

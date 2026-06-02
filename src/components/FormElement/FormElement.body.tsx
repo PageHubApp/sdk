@@ -7,7 +7,7 @@ import { FormField } from "@pagehub/ui";
 import { useItemContext } from "../../utils/itemContext";
 import { replaceVariables } from "../../utils/design/variables";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 import { useAnchors, resolveAnchors } from "../../utils/anchors/anchorContext";
 import { setState, useStateValue } from "../../utils/state/stateRegistry";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";

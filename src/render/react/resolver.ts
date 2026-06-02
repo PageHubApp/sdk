@@ -12,7 +12,7 @@
  *
  * Add new components to `renderMap`, not here.
  */
-import { renderMap, type RenderMap } from "../components/resolvers/renders";
+import { renderMap, type RenderMap } from "../../components/resolvers/renders";
 
 export type UiResolver = RenderMap;
 

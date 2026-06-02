@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { extractRootDataFromQuery } from "../../utils/page/pageManagement";
 import { useMounted } from "../../utils/hooks/useMounted";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 
 import { renderImageBody, ImageDefault, type ImageProps } from "./Image.body";
 export { renderImageBody, ImageDefault, type ImageProps };

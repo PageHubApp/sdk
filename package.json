@@ -32,12 +32,12 @@
       "default": "./dist/pagehub-viewer.umd.cjs"
     },
     "./html": {
-      "types": "./dist/static-renderer/index.d.ts",
-      "import": "./dist/static-renderer/index.js"
+      "types": "./dist/render/static/index.d.ts",
+      "import": "./dist/render/static/index.js"
     },
-    "./static-renderer": {
-      "types": "./dist/static-renderer/index.d.ts",
-      "import": "./dist/static-renderer/index.js"
+    "./render/static": {
+      "types": "./dist/render/static/index.d.ts",
+      "import": "./dist/render/static/index.js"
     },
     "./editor.css": "./dist/editor.css",
     "./theme.css": "./src/css/theme.css",

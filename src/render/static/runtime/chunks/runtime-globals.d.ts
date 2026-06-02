@@ -68,11 +68,12 @@ declare global {
   function axisToSlot(axes: string[]): string;
   function parseVariantMap(raw: string): any;
 
-  // ───── conditions.ts ──────────────────────────────────────────────────────
-  function actionGatePasses(action: any): boolean;
-  function evalCond(cond: any): boolean;
-  function evalGroups(groups: any[]): boolean;
-  function evalAll(conds: any[], logic?: string): boolean;
+  // ───── conditions.ts / clientScript.ts ───────────────────────────────────
+  // `evalCond` / `evalAll` / `evalGroups` (clientScript.ts) and
+  // `actionGatePasses` (conditions.ts) are NOT hoisted globals — they are
+  // published to `__phRT` by string key and read back via `__phRT.<name>` or
+  // a `const { … } = __phRT` destructure. No ambient declarations: that would
+  // falsely permit free-global references that don't exist at runtime.
 
   // ───── aux.ts ─────────────────────────────────────────────────────────────
   function detectCustomerToken(): void;
@@ -106,6 +107,8 @@ declare global {
   // ───── window extensions (used by chunks) ────────────────────────────────
   interface Window {
     __PH_STATE__?: Record<string, any>;
+    __PH_AUTH__?: Record<string, any>;
+    __PH_COMPANY__?: Record<string, any>;
     __PH_RUNTIME__?: Record<string, any>;
     dataLayer?: any[];
     gtag?: (...args: any[]) => void;

@@ -1,7 +1,7 @@
 import { renderLinkBody, defaultIcon, type LinkProps } from "./Link.body";
 import { normalizeIconProp } from "../shared/iconProp";
-import { useTreeRoot, useWalkerNode } from "../../render/contexts";
-import { makeWalkerCtx } from "../../render/RenderCtx";
+import { useTreeRoot, useWalkerNode } from "../../render/react/contexts";
+import { makeWalkerCtx } from "../../render/react/RenderCtx";
 
 export const LinkRender = (incomingProps: LinkProps) => {
   const icon = normalizeIconProp(incomingProps, defaultIcon);

@@ -2,7 +2,7 @@
  * Media management utilities — CRUD for pageMedia on ROOT_NODE
  */
 
-import { ROOT_NODE } from "../../utils/rootNode";
+import { ROOT_NODE } from "../rootNode";
 import { getCdnUrl, generateSrcSet, generateSizes } from "../cdn";
 import { sdkLog } from "../logger";
 

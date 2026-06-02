@@ -39,7 +39,7 @@ import { buildClientContext } from "../../utils/conditions/context";
 import { useItemContext } from "../../utils/itemContext";
 import { applyAttrs } from "../../utils/applyAttrs";
 import { useAnchors, resolveAnchors } from "../../utils/anchors/anchorContext";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 import { applyAriaProps } from "../selectors";
 import type { OverflowProps } from "../types";
 import type { ContainerProps, ContainerRenderOptions } from "./Container.body";

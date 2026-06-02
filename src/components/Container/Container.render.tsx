@@ -1,7 +1,7 @@
 import type { ContainerProps, ContainerRenderOptions } from "./Container.body";
 import { renderContainerViewerBody } from "./Container.viewerBody";
-import { useTreeRoot, useWalkerNode } from "../../render/contexts";
-import { makeWalkerCtx } from "../../render/RenderCtx";
+import { useTreeRoot, useWalkerNode } from "../../render/react/contexts";
+import { makeWalkerCtx } from "../../render/react/RenderCtx";
 
 export function useContainerRenderWalker(
   incomingProps: Partial<ContainerProps>,

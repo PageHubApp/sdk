@@ -5,7 +5,7 @@ import { useShowHideVersion } from "../../utils/state/showHideStore";
 import { extractRootDataFromQuery } from "../../utils/page/pageManagement";
 import { useScrollToSelected } from "../../core/componentHooks";
 import { useMounted } from "../../utils/hooks/useMounted";
-import type { RenderCtx } from "../../render/RenderCtx";
+import type { RenderCtx } from "../../render/react/RenderCtx";
 
 import { renderButtonBody, defaultIcon, type ButtonProps } from "./Button.body";
 import { normalizeIconProp } from "../shared/iconProp";
