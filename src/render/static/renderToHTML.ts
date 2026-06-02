@@ -37,6 +37,13 @@ import { sdkLog } from "../../utils/logger";
 function buildPageIndexFromNodes(nodes: SerializedNodes): PageIndex {
   const out: PageIndex = {};
   const root = nodes["ROOT"];
+  // Sharded single-page loads (e.g. /api/published) only carry the CURRENT
+  // page's node, so the child scan below alone would miss sibling pages and
+  // collapse cross-page `ref:<pageId>` links to "#". `parseContentSharded`
+  // injects the full referenced-page map here — seed from it first, exactly
+  // like `buildPageIndexFromQuery` does for the editor path.
+  const ssrIndex = (root?.props as Record<string, any> | undefined)?._pageIndex;
+  if (ssrIndex && typeof ssrIndex === "object") Object.assign(out, ssrIndex);
   const childIds: string[] = Array.isArray(root?.nodes) ? root.nodes : [];
   for (const id of childIds) {
     const n = nodes[id];

@@ -130,7 +130,13 @@ export function escapeAttr(str: string): string {
 export function buildAttrs(attrs: Record<string, string | boolean | undefined | null>): string {
   const parts: string[] = [];
   for (const [key, value] of Object.entries(attrs)) {
-    if (value == null || value === false || value === "") continue;
+    // Drop only genuinely-absent attrs. Empty string is a PRESENT attribute
+    // with an empty value (`key=""`) — required for marker attrs like
+    // `data-ph-load-show`/`data-ph-overflow-*`/`open` that toHTML stamps as
+    // `attrs[k] = ""` and selectors match via `[key]`. `class`/`style`/`id`
+    // are coalesced to `undefined` before they reach here, so this never
+    // emits an empty `class=""`.
+    if (value == null || value === false) continue;
     if (value === true) {
       parts.push(key);
     } else {

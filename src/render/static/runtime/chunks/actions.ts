@@ -19,6 +19,7 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
     resolveActionKey,
     applyShowHide,
     revertShowHide,
+    toggleEl,
     interpolateItem,
     fireConversion,
     addToCart,

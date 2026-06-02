@@ -273,6 +273,7 @@ export const ITEMS_CHUNK = stringifyChunk(function $items() {
     readItemContext,
     applyShowHide,
     revertShowHide,
+    toggleEl,
     runComputed,
     interpolateItem,
   });
