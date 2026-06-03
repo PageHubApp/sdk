@@ -3,7 +3,6 @@
 import React, { useRef } from "react";
 import { TbCheck, TbPhoto } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
-import { Image as UiImage } from "@pagehub/ui";
 import { getCdnUrl, generateSrcSet, generateSizes, inferFixedSizesFromClassName } from "../../utils/cdn";
 
 const IMAGE_RESPONSIVE_WIDTHS = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840];
@@ -231,10 +230,11 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
   else tagName = "img";
 
   const createImgElement = (shouldConnectDrag: boolean) => {
-    const imgTag = tagName === "img" ? UiImage : tagName;
+    const imgTag = tagName;
     const imgAnimProps = applyAnimation({ ..._imgProp, key: `img-${ctx.id}` }, props, null, ctx.enabled);
+    // Default a lazy-loaded <img> with an empty-alt fallback (overridden when set).
     const imgFinalProps =
-      tagName === "img" ? { ...imgAnimProps, ratio: null, fit: null, rounded: null } : imgAnimProps;
+      tagName === "img" ? { loading: "lazy", alt: "", ...imgAnimProps } : imgAnimProps;
     return React.createElement(motionIt(props, imgTag, ctx.enabled), {
       ...imgFinalProps,
       ref: shouldConnectDrag

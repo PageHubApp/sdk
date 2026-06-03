@@ -6,7 +6,6 @@
 import React from "react";
 import { TbMusic } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
-import { Box } from "@pagehub/ui";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import type { RenderCtx } from "../../render/react/RenderCtx";
@@ -63,7 +62,7 @@ export function renderAudioBody(props: AudioProps, ctx: RenderCtx) {
   }
 
   return React.createElement(
-    motionIt(props, Box, ctx.enabled),
+    motionIt(props, "div", ctx.enabled),
     applyAnimation({ ...prop, key: ctx.id }, props, null, ctx.enabled)
   );
 }

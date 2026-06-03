@@ -239,7 +239,7 @@ export function renderContainerViewerBody(
     props
   );
 
-  const { tagName, UiComponent } = pickContainerTag(props.type, prop);
+  const { tagName } = pickContainerTag(props.type, prop);
   scrollEffectWrap(prop);
   if (overflowUxActive) {
     applyContainerOverflowUX(prop, {
@@ -252,8 +252,5 @@ export function renderContainerViewerBody(
     });
   }
   const renderTag = resolvedUrl && firstLink && tagName === "div" ? "a" : tagName;
-  return React.createElement(motionIt(props, UiComponent, false), {
-    ...prop,
-    as: renderTag,
-  });
+  return React.createElement(motionIt(props, renderTag, false), prop);
 }

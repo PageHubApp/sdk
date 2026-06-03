@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { applyAttrs } from "../../utils/applyAttrs";
 import { motionIt } from "../../utils/motion";
-import { FormField } from "@pagehub/ui";
 import { useItemContext } from "../../utils/itemContext";
 import { replaceVariables } from "../../utils/design/variables";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
@@ -375,19 +374,38 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
     return React.createElement(motionIt(props, "div", ctx.enabled), final);
   }
 
-  const formFieldProps = {
-    ...prop,
-    key: `${ctx.id}-${tagName}`,
-    type: props.type,
-    options: props.options,
-    rows: props.type === "textarea" ? props.rows : undefined,
-    cols: props.type === "textarea" ? props.cols : undefined,
-  };
-
-  const formElement = React.createElement(
-    motionIt(props, FormField, ctx.enabled),
-    applyAnimation(formFieldProps, props, null, ctx.enabled)
+  // Render the resolved control directly. `prop` already carries id, name,
+  // autoComplete, aria-*, defaultValue, and state-binding onChange.
+  const fieldProps: any = applyAnimation(
+    { ...prop, key: `${ctx.id}-${tagName}` },
+    props,
+    null,
+    ctx.enabled
   );
+  if (tagName === "input") {
+    fieldProps.type = props.type;
+  } else {
+    delete fieldProps.type; // textarea / select take no `type` attribute
+    if (tagName === "textarea") {
+      if (props.rows) fieldProps.rows = props.rows;
+      if (props.cols) fieldProps.cols = props.cols;
+    }
+  }
+  const formElement =
+    tagName === "select"
+      ? React.createElement(
+          motionIt(props, "select", ctx.enabled),
+          fieldProps,
+          (props.options || []).map(
+            (opt: { value: string; label: string; disabled?: boolean }) =>
+              React.createElement(
+                "option",
+                { key: opt.value, value: opt.value, disabled: opt.disabled },
+                opt.label
+              )
+          )
+        )
+      : React.createElement(motionIt(props, tagName, ctx.enabled), fieldProps);
 
   if (props.label) {
     return (

@@ -1,4 +1,3 @@
-import { Section, Box } from "@pagehub/ui";
 
 import {
   actionToHref,
@@ -16,7 +15,7 @@ import { replaceVariables } from "../../utils/design/variables";
 import type { PageIndex } from "../../utils/page/pageManagement";
 
 /**
- * Pick the rendered HTML tag + @pagehub/ui component for a Container based on
+ * Pick the rendered HTML tag for a Container based on
  * `props.type`. Returns the canonical tag (`section` for `"section"`,
  * `article` for `"page"`, …); caller may upgrade `div` → `a` when a link
  * action is present.
@@ -24,10 +23,7 @@ import type { PageIndex } from "../../utils/page/pageManagement";
  * Side-effect: writes `id: "main-content"` on `prop` for `type === "page"`
  * when no id is set, to keep the WCAG 2.4.1 skip-nav target stable.
  */
-export function pickContainerTag(
-  type: string | undefined,
-  prop: any
-): { tagName: string; UiComponent: any } {
+export function pickContainerTag(type: string | undefined, prop: any): { tagName: string } {
   let tagName = "div";
   switch (type) {
     case "page":
@@ -65,8 +61,13 @@ export function pickContainerTag(
       break;
   }
 
-  const UiComponent: any = type === "section" || type === "page" ? Section : Box;
-  return { tagName, UiComponent };
+  // Section/page roots were historically rendered through a wrapper that forced
+  // `w-full`; preserve that base so existing sites don't shrink.
+  if (type === "section" || type === "page") {
+    const cls = prop.className || "";
+    if (!/\bw-full\b/.test(cls)) prop.className = ("w-full " + cls).trim();
+  }
+  return { tagName };
 }
 
 interface ApplyActionsCtx {

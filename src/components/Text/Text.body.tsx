@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { AutoTextSize } from "auto-text-size";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Text as UiText } from "@pagehub/ui";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";
 import { applyAttrs } from "../../utils/applyAttrs";
@@ -182,17 +181,8 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
 
   const final = applyAnimation({ ...prop, key: `${ctx.id}` }, props, null, ctx.enabled);
   const elementTag = ctx.enabled || tagName === "Textfit" ? "div" : tagName || "div";
-  const useUiText = !ctx.enabled && tagName !== "Textfit";
-
-  if (useUiText) {
-    const textProps: any = { ...final };
-    if (textProps.dangerouslySetInnerHTML) {
-      textProps.dangerousHtml = textProps.dangerouslySetInnerHTML.__html;
-      delete textProps.dangerouslySetInnerHTML;
-    }
-    textProps.as = elementTag;
-    textProps.variant = null;
-    return React.createElement(motionIt(props, UiText, ctx.enabled), textProps);
-  }
+  // Viewer mode emits raw HTML via dangerouslySetInnerHTML; the server already
+  // rendered identical markup, so suppress React's hydration-mismatch warning.
+  if (final.dangerouslySetInnerHTML) final.suppressHydrationWarning = true;
   return React.createElement(motionIt(props, elementTag, ctx.enabled), final);
 }

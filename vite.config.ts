@@ -44,7 +44,6 @@ export default defineConfig(({ mode, command }) => {
     ],
     resolve: {
       alias: {
-        "@pagehub/ui": resolve(__dirname, "../ui/src/index.ts"),
         "@": resolve(__dirname, "src"),
         lodash: resolve(__dirname, "../../node_modules/lodash-es"),
         // Stub Node.js polyfills pulled in by lzutf8

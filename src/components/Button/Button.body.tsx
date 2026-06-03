@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { TbPointer } from "../_emptyHintIcons";
-import { Button as UiButton } from "@pagehub/ui";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";
 import { useShowHideVersion } from "../../utils/state/showHideStore";
@@ -253,7 +252,7 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
   prop.children = content;
 
   const final = applyAnimation({ ...prop, key: `${ctx.id}` }, props, null, ctx.enabled);
-  const renderComponent = ele === "button" || ele === "a" ? UiButton : ele;
-  const finalProps = renderComponent === UiButton ? { ...final, variant: null, size: null } : final;
-  return React.createElement(motionIt(props, renderComponent, ctx.enabled), finalProps);
+  // href / rel / button-vs-anchor are already resolved onto `ele` + `final`
+  // above; render the resolved element directly.
+  return React.createElement(motionIt(props, ele, ctx.enabled), final);
 }

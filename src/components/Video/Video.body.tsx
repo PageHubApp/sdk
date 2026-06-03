@@ -5,7 +5,6 @@ import { TbBrandVimeo, TbBrandYoutube, TbPlayerPlay, TbVideo } from "../_emptyHi
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { getMediaContent } from "../../utils/media/media";
 import { isDirectVideoFileUrl, nativeVideoPlaybackFields } from "../../utils/nativeVideo";
-import { Box } from "@pagehub/ui";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import type { RenderCtx } from "../../render/react/RenderCtx";
@@ -195,7 +194,7 @@ export function renderVideoBody(props: any, ctx: RenderCtx) {
   }
 
   return React.createElement(
-    motionIt(props, Box, ctx.enabled),
+    motionIt(props, "div", ctx.enabled),
     applyAnimation({ ...prop, key: ctx.id }, props, null, ctx.enabled)
   );
 }

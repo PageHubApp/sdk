@@ -11,7 +11,6 @@ import { defineConfig } from "vite";
 const dir = path.dirname(fileURLToPath(import.meta.url));
 
 const resolveAliases = {
-  "@pagehub/ui": path.resolve(dir, "../ui/src/index.ts"),
   "@": path.resolve(dir, "src"),
   "components/layout": path.resolve(dir, "src/chrome/primitives/layout"),
   "utils/icons.json": path.resolve(dir, "src/utils/seeds/icons.json"),

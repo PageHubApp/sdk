@@ -1,5 +1,4 @@
 import React from "react";
-import { Box } from "@pagehub/ui";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
 import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../../utils/background";
 import { PaletteProvider } from "../../utils/design/PaletteContext";
@@ -84,5 +83,5 @@ export function BackgroundRender({
 
   applyAnimation(prop, props, null, false);
   prop["data-ph-site"] = "true";
-  return React.createElement(Box, { ...prop, as: "main" });
+  return React.createElement("main", prop);
 }

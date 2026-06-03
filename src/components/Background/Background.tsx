@@ -11,7 +11,6 @@ import { resolveTheme } from "../../utils/design/resolveTheme";
 import { useLazyBackground } from "../../utils/hooks/useLazyBackground";
 import { useMounted } from "../../utils/hooks/useMounted";
 
-import { Box } from "@pagehub/ui";
 import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../../utils/background";
 import { PaletteProvider } from "../../utils/design/PaletteContext";
 import { RuntimeVarsProvider } from "../../utils/design/RuntimeVarsContext";
@@ -213,7 +212,7 @@ export function Background({
 
   prop["data-ph-site"] = "true";
 
-  return React.createElement(Box, { ...prop, as: "main" });
+  return React.createElement("main", prop);
 }
 
 Background.craft = {

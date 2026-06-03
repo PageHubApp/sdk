@@ -4,7 +4,6 @@
 import React from "react";
 import { TbCode } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
-import { Box } from "@pagehub/ui";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { InjectedHeadTags, InjectedBodyTags } from "../../chrome/static/runtime/InjectedHeadTags";
@@ -246,7 +245,7 @@ export function renderEmbedBody(props: EmbedProps, ctx: RenderCtx) {
 
   const shouldInject = !ctx.enabled || (props as any).runInEditor === true;
   const box = React.createElement(
-    motionIt(props, Box, ctx.enabled),
+    motionIt(props, "div", ctx.enabled),
     applyAnimation({ ...prop, key: ctx.id }, props, null, ctx.enabled)
   );
   if (!shouldInject || (!props.headCode && !props.footCode)) return box;
