@@ -8,6 +8,9 @@ const globals = {
   "react-dom": "ReactDOM",
   "react-dom/client": "ReactDOM",
   "react/jsx-runtime": "jsxRuntime",
+  // craft.js externals — global names for UMD/script-tag consumers
+  "@craftjs/core": "CraftJSCore",
+  "@craftjs/utils": "CraftJSUtils",
 };
 
 const assetFileNames = (isViewer: boolean) => (assetInfo: { name?: string }) => {
@@ -77,7 +80,10 @@ export default defineConfig(({ mode, command }) => {
         fileName: format => `${baseName}.${format === "es" ? "js" : "umd.cjs"}`,
       },
       rollupOptions: {
-        external: id => /^react(-dom)?(\/|$)/.test(id),
+        // Keep craft.js external — it ships as a normal runtime dependency
+        // (@pagehub/craftjs-* fork on npm), not bundled into the SDK.
+        external: id =>
+          /^react(-dom)?(\/|$)/.test(id) || /^@craftjs\//.test(id),
         output: [
           // ES — code-split heavy deps into lazy chunks
           {
