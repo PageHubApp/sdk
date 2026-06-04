@@ -21,10 +21,10 @@ pnpm run build
 
 # Run type checking
 pnpm run typecheck
-
-# Start the demo
-pnpm run start:demo
 ```
+
+Runnable example integrations (vanilla HTML, Vite, Next.js) live in their own
+repo: [PageHubApp/demos](https://github.com/PageHubApp/demos).
 
 ## Project Structure
 
@@ -103,10 +103,10 @@ Both are registered via `defineComponent()` in `builtins.ts`.
 ## Building
 
 ```bash
-# Full build (ES + UMD + CSS + viewer + demo)
+# Full build (ES entries: main + viewer + static renderer, + editor CSS)
 pnpm run build
 
-# Watch mode (UMD only, fast iteration)
+# Watch mode (fast iteration)
 pnpm run dev
 
 # Type check only

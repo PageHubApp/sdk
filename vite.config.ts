@@ -3,38 +3,41 @@ import { resolve } from "path";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 
-const globals = {
-  react: "React",
-  "react-dom": "ReactDOM",
-  "react-dom/client": "ReactDOM",
-  "react/jsx-runtime": "jsxRuntime",
-  // craft.js externals — global names for UMD/script-tag consumers
-  "@craftjs/core": "CraftJSCore",
-  "@craftjs/utils": "CraftJSUtils",
-};
+const assetFileNames =
+  (isViewer: boolean, isStatic: boolean) => (assetInfo: { name?: string }) => {
+    const name = assetInfo.name || "";
+    if (name.endsWith(".css")) {
+      // The static build appends to dist (emptyOutDir off) — keep any CSS it
+      // happens to emit off of editor.css / viewer.css so it can't clobber them.
+      if (isStatic) return "render-static.css";
+      return isViewer ? "viewer.css" : "editor.css";
+    }
+    return name || "asset-[hash].[ext]";
+  };
 
-const assetFileNames = (isViewer: boolean) => (assetInfo: { name?: string }) => {
-  const name = assetInfo.name || "";
-  if (name.endsWith(".css")) {
-    return isViewer ? "viewer.css" : "editor.css";
-  }
-  return name || "asset-[hash].[ext]";
-};
-
-export default defineConfig(({ mode, command }) => {
+export default defineConfig(({ mode }) => {
   const isViewer = mode === "viewer";
-  const isDev = command === "build" && process.argv.includes("--watch");
+  // Standalone static-renderer entry (renderToHTML). Build as its own ES module so
+  // `@pagehub/sdk/html` / `@pagehub/sdk/render/static` resolve to a real file —
+  // the type-only entry that shipped before (.d.ts, no .js) 404'd for consumers.
+  const isStatic = mode === "static";
 
   const entry = isViewer
     ? resolve(__dirname, "src/viewer.tsx")
-    : resolve(__dirname, "src/index.ts");
-  const libName = isViewer ? "PageHubViewer" : "PageHub";
-  const baseName = isViewer ? "pagehub-viewer" : "pagehub";
+    : isStatic
+      ? resolve(__dirname, "src/render/static/index.ts")
+      : resolve(__dirname, "src/index.ts");
+  const libName = isViewer ? "PageHubViewer" : isStatic ? "PageHubStatic" : "PageHub";
+  // Nested path keeps the emitted file at dist/render/static/index.js to match exports.
+  const entryFileName = isStatic ? "render/static/index.js" : `${isViewer ? "pagehub-viewer" : "pagehub"}.js`;
 
   return {
     plugins: [
       react(),
-      ...(!isDev
+      // Types are emitted once, on the main build — it includes all of src/**, so it
+      // already produces viewer.d.ts and render/static/index.d.ts. No need to re-run
+      // dts on the viewer / static builds.
+      ...(!isViewer && !isStatic
         ? [
             dts({
               include: ["src/**/*.ts", "src/**/*.tsx"],
@@ -76,37 +79,30 @@ export default defineConfig(({ mode, command }) => {
       lib: {
         entry,
         name: libName,
-        formats: isDev ? ["umd"] : ["es", "umd"],
-        fileName: format => `${baseName}.${format === "es" ? "js" : "umd.cjs"}`,
+        // ES only. The SDK is consumed via bundlers (npm) or native ESM (esm.sh
+        // import maps for no-build pages); the legacy UMD/script-tag output was
+        // removed — it externalized craft.js to a global no CDN provides, so it
+        // never worked standalone anyway.
+        formats: ["es"],
+        fileName: () => entryFileName,
       },
       rollupOptions: {
-        // Keep craft.js external — it ships as a normal runtime dependency
-        // (@pagehub/craftjs-* fork on npm), not bundled into the SDK.
+        // Keep react + craft.js external — they're peer/runtime deps the consumer
+        // (bundler or esm.sh) resolves, not bundled into the SDK.
         external: id =>
           /^react(-dom)?(\/|$)/.test(id) || /^@craftjs\//.test(id),
-        output: [
-          // ES — code-split heavy deps into lazy chunks
-          {
-            format: "es" as const,
-            globals,
-            entryFileNames: `${baseName}.js`,
-            chunkFileNames: "chunks/[name]-[hash].js",
-            assetFileNames: assetFileNames(isViewer),
-          },
-          // UMD — single file for CDN/script-tag usage
-          {
-            format: "umd" as const,
-            name: libName,
-            inlineDynamicImports: true,
-            globals,
-            entryFileNames: `${baseName}.umd.cjs`,
-            assetFileNames: assetFileNames(isViewer),
-          },
-        ],
+        output: {
+          format: "es" as const,
+          // code-split heavy deps into lazy chunks shared across entries
+          entryFileNames: entryFileName,
+          chunkFileNames: "chunks/[name]-[hash].js",
+          assetFileNames: assetFileNames(isViewer, isStatic),
+        },
       },
       cssCodeSplit: false,
       sourcemap: false,
-      emptyOutDir: !isViewer, // Only clean on the main build, not the viewer build
+      // Only the main build cleans dist; viewer + static append to it.
+      emptyOutDir: !isViewer && !isStatic,
     },
   };
 });

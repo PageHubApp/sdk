@@ -6,7 +6,7 @@
  * or can be used directly in React apps via <PageHubEditor />.
  */
 
-// Styles: bundled separately in the UMD dist (dist/editor.css).
+// Styles: bundled separately as dist/editor.css (import "@pagehub/sdk/editor.css").
 // For Next.js, import styles/globals.css in pages/_app.tsx.
 
 import { Editor, Frame, useEditor } from "@craftjs/core";
