@@ -1,6 +1,6 @@
 {
   "name": "@pagehub/sdk",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Embeddable visual page builder SDK — drop a full drag-and-drop page editor into any web app, or render published sites anywhere JS runs.",
   "type": "module",
   "main": "./src/index.ts",
@@ -144,48 +144,132 @@
     "use-eye-dropper": "^1.7.2"
   },
   "peerDependenciesMeta": {
-    "@codemirror/autocomplete": { "optional": true },
-    "@codemirror/lang-css": { "optional": true },
-    "@codemirror/lang-html": { "optional": true },
-    "@codemirror/lang-javascript": { "optional": true },
-    "@codemirror/language": { "optional": true },
-    "@codemirror/lint": { "optional": true },
-    "@codemirror/view": { "optional": true },
-    "@floating-ui/react-dom": { "optional": true },
-    "@headlessui/react": { "optional": true },
-    "@hello-pangea/color-picker": { "optional": true },
-    "@lezer/highlight": { "optional": true },
-    "@tailwindcss/browser": { "optional": true },
-    "@tiptap/core": { "optional": true },
-    "@tiptap/extension-bold": { "optional": true },
-    "@tiptap/extension-code": { "optional": true },
-    "@tiptap/extension-color": { "optional": true },
-    "@tiptap/extension-document": { "optional": true },
-    "@tiptap/extension-font-family": { "optional": true },
-    "@tiptap/extension-highlight": { "optional": true },
-    "@tiptap/extension-image": { "optional": true },
-    "@tiptap/extension-italic": { "optional": true },
-    "@tiptap/extension-link": { "optional": true },
-    "@tiptap/extension-placeholder": { "optional": true },
-    "@tiptap/extension-strike": { "optional": true },
-    "@tiptap/extension-subscript": { "optional": true },
-    "@tiptap/extension-superscript": { "optional": true },
-    "@tiptap/extension-text-align": { "optional": true },
-    "@tiptap/extension-text-style": { "optional": true },
-    "@tiptap/extension-underline": { "optional": true },
-    "@tiptap/pm": { "optional": true },
-    "@tiptap/react": { "optional": true },
-    "@tiptap/starter-kit": { "optional": true },
-    "@uiw/react-codemirror": { "optional": true },
-    "framer-motion": { "optional": true },
-    "gsap": { "optional": true },
-    "leaflet": { "optional": true },
-    "prettier": { "optional": true },
-    "react-leaflet": { "optional": true },
-    "react-window": { "optional": true },
-    "react-youtube": { "optional": true },
-    "swr": { "optional": true },
-    "use-eye-dropper": { "optional": true }
+    "@codemirror/autocomplete": {
+      "optional": true
+    },
+    "@codemirror/lang-css": {
+      "optional": true
+    },
+    "@codemirror/lang-html": {
+      "optional": true
+    },
+    "@codemirror/lang-javascript": {
+      "optional": true
+    },
+    "@codemirror/language": {
+      "optional": true
+    },
+    "@codemirror/lint": {
+      "optional": true
+    },
+    "@codemirror/view": {
+      "optional": true
+    },
+    "@floating-ui/react-dom": {
+      "optional": true
+    },
+    "@headlessui/react": {
+      "optional": true
+    },
+    "@hello-pangea/color-picker": {
+      "optional": true
+    },
+    "@lezer/highlight": {
+      "optional": true
+    },
+    "@tailwindcss/browser": {
+      "optional": true
+    },
+    "@tiptap/core": {
+      "optional": true
+    },
+    "@tiptap/extension-bold": {
+      "optional": true
+    },
+    "@tiptap/extension-code": {
+      "optional": true
+    },
+    "@tiptap/extension-color": {
+      "optional": true
+    },
+    "@tiptap/extension-document": {
+      "optional": true
+    },
+    "@tiptap/extension-font-family": {
+      "optional": true
+    },
+    "@tiptap/extension-highlight": {
+      "optional": true
+    },
+    "@tiptap/extension-image": {
+      "optional": true
+    },
+    "@tiptap/extension-italic": {
+      "optional": true
+    },
+    "@tiptap/extension-link": {
+      "optional": true
+    },
+    "@tiptap/extension-placeholder": {
+      "optional": true
+    },
+    "@tiptap/extension-strike": {
+      "optional": true
+    },
+    "@tiptap/extension-subscript": {
+      "optional": true
+    },
+    "@tiptap/extension-superscript": {
+      "optional": true
+    },
+    "@tiptap/extension-text-align": {
+      "optional": true
+    },
+    "@tiptap/extension-text-style": {
+      "optional": true
+    },
+    "@tiptap/extension-underline": {
+      "optional": true
+    },
+    "@tiptap/pm": {
+      "optional": true
+    },
+    "@tiptap/react": {
+      "optional": true
+    },
+    "@tiptap/starter-kit": {
+      "optional": true
+    },
+    "@uiw/react-codemirror": {
+      "optional": true
+    },
+    "framer-motion": {
+      "optional": true
+    },
+    "gsap": {
+      "optional": true
+    },
+    "leaflet": {
+      "optional": true
+    },
+    "prettier": {
+      "optional": true
+    },
+    "react-leaflet": {
+      "optional": true
+    },
+    "react-window": {
+      "optional": true
+    },
+    "react-youtube": {
+      "optional": true
+    },
+    "swr": {
+      "optional": true
+    },
+    "use-eye-dropper": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@craftjs/core": "file:../../vendor/craftjs-core-0.2.27.tgz",
