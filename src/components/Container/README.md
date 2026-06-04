@@ -2,7 +2,7 @@
 
 > ⚠️ **Do not use this directory as a starter for your own component.** Container is the SDK's most foundational layout primitive — almost every other component composes it, and it carries a long tail of editor-only chrome (drag scroll, overflow UX, isolation, computed-state bindings, viewport-aware presets). Forking it into "MyContainer" pulls ~40 internal modules with it.
 >
-> If you want to add a custom component to your host app, use [`defineComponent`](../../../../../docs/sdk/registration-host.md) instead. Working starter: [`packages/sdk/examples/hello-component/`](../../../examples/hello-component).
+> If you want to add a custom component to your host app, use [`defineComponent`](../../../../../docs/sdk/registration-host.md) instead. Working starters: [PageHubApp/demos](https://github.com/PageHubApp/demos).
 
 ---
 

@@ -397,7 +397,7 @@ const PricingCardDef = defineComponent({
 
 Vanilla JS is the same — pass `components: [PricingCardDef]` into `PageHub.init()`.
 
-**Working starter:** [`examples/hello-component/`](./examples/hello-component) — copy/paste to get a custom component running in a few minutes.
+**Working starters:** [PageHubApp/demos](https://github.com/PageHubApp/demos) — runnable `vanilla-html`, `vite-react`, and `nextjs` integrations (the `vite-react` / `nextjs` ones register a custom `defineComponent`).
 
 **Full reference:** [`docs/sdk/registration-host.md`](../../docs/sdk/registration-host.md) — every field on `defineComponent`, custom inspector UIs, `toHTML` rules, viewer/static parity, common gotchas.
 
