@@ -122,7 +122,7 @@ function DefaultFallback({
           The editor hit an error{region ? ` in ${region}` : ""}
         </h2>
         <p style={{ margin: "0 0 20px", color: muted, fontSize: 14, lineHeight: 1.5 }}>
-          Your work isn't lost — the last save is safe. Try reloading the editor; if it keeps
+          Your work isn&apos;t lost — the last save is safe. Try reloading the editor; if it keeps
           happening, report the message below.
         </p>
         <pre
