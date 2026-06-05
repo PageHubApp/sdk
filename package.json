@@ -90,10 +90,11 @@
   ],
   "scripts": {
     "dev": "vite build --watch",
-    "build": "vite build && vite build --config vite.editor-css.config.ts && pnpm run build:viewer && pnpm run build:static",
+    "build": "vite build && vite build --config vite.editor-css.config.ts && pnpm run build:viewer && pnpm run build:static && pnpm run build:theme-css",
     "build:editor-css": "vite build --config vite.editor-css.config.ts",
     "build:viewer": "vite build --mode viewer",
     "build:static": "vite build --mode static",
+    "build:theme-css": "cp src/css/theme.css dist/theme.css",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
