@@ -43,6 +43,7 @@
     "./theme.css": "./src/css/theme.css",
     "./themes/shadcn.css": "./src/css/themes/shadcn.css",
     "./compile-css": "./src/compile-css/index.ts",
+    "./page-settings/fields": "./src/chrome/viewport/modals/page-settings/fields.ts",
     "./presets/audio": "./src/components/Audio/Audio.presets.ts",
     "./presets/button": "./src/components/Button/Button.presets.ts",
     "./presets/container": "./src/components/Container/Container.presets.tsx",
