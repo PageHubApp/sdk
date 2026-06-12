@@ -59,8 +59,6 @@ interface SDKContextValue {
   save: (options?: SaveMeta) => Promise<SaveResult>;
   /** Subscribe to save status (drives the editor's save indicator). */
   subscribeSaveStatus: (handler: (status: SaveStatus) => void) => () => void;
-  /** Tell the SDK that the page list is stale; PageSelector etc. refetch. */
-  invalidatePageList: () => void;
   /** Command registry — register/unregister/execute commands. */
   commands: CommandsRegistry;
   /** Menu registry — contribute commands to named menu locations. */
@@ -208,10 +206,6 @@ export function PageHubProvider({
     (handler: (status: SaveStatus) => void) => getSaveCoordinator(emitter).subscribeStatus(handler),
     [emitter]
   );
-  const invalidatePageList = useCallback(() => {
-    emitter.emit("page_list_invalidated");
-  }, [emitter]);
-
   const value = useMemo<SDKContextValue>(
     () => ({
       config,
@@ -224,7 +218,6 @@ export function PageHubProvider({
       setReadOnly,
       save,
       subscribeSaveStatus,
-      invalidatePageList,
       commands: registries.commands,
       menus: registries.menus,
       slots: registries.slots,
@@ -239,7 +232,6 @@ export function PageHubProvider({
       readOnly,
       save,
       subscribeSaveStatus,
-      invalidatePageList,
       registries,
     ]
   );

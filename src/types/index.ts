@@ -8,7 +8,7 @@
  * `@pagehub/sdk` / `../types` for every consumer. Concern map:
  * - page.ts       — PageData, PageSeo
  * - save.ts       — SaveResult, SaveResponse, SaveMeta, SaveStatus (types)
- * - callbacks.ts  — PageHubCallbacks, PageSettingsPayload
+ * - callbacks.ts  — PageHubCallbacks
  * - theme.ts      — PageHubTheme
  * - features.ts   — PageHubFeatures + InspectorTabName + Blocks/Css feature shapes
  * - ai.ts         — PageHubAIConfig + media assistant slot context
@@ -26,7 +26,7 @@
 export type { PageData, PageSeo } from "./page";
 export type { SaveResult, SaveResponse, SaveMeta, SaveStatus } from "./save";
 export { SaveConflictError, SaveEmptyError, SaveFailedError } from "../core/saveErrors";
-export type { PageHubCallbacks, PageSettingsPayload } from "./callbacks";
+export type { PageHubCallbacks } from "./callbacks";
 export type { PageHubTheme } from "./theme";
 export type {
   PageHubFeatures,

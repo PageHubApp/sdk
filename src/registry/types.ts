@@ -222,8 +222,7 @@ export type BuiltinSlotId =
   | "navmenu/ai-row"
   | "navmenu/header-items"
   | "import-export/handoff-extras"
-  | "media-edit/ai-actions"
-  | "page-settings/extra-tabs";
+  | "media-edit/ai-actions";
 
 /** A slot id — one of the builtins or a host-registered custom id. */
 export type SlotId = BuiltinSlotId | (string & {});

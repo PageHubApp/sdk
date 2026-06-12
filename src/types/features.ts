@@ -14,15 +14,6 @@ export interface PageHubFeatures {
   /** Show SEO settings panel. Default: true */
   seoPanel?: boolean;
   /**
-   * Show the Page Settings modal (per-page name / slug / SEO meta / access /
-   * code injection). Default: true. Hosts that round-trip page-level state
-   * through their own API (e.g. the Avocado adapter, which uses Avocado's
-   * `update_page_meta` op-driven flow) can hide it so the SDK stops surfacing
-   * an editor the host can't observe. The "Page settings" gear button in the
-   * page selector disappears when false.
-   */
-  pageSettings?: boolean;
-  /**
    * Show the design-system / theme panel (palette, typography, spacing tokens
    * editable on ROOT). Default: true. Hosts whose backing model doesn't
    * represent CraftJS theme state — Avocado's `update_site_config` covers

@@ -180,10 +180,6 @@ export function init(config: PageHubConfig): PageHubInstance {
       return coordinator.subscribeStatus(handler);
     },
 
-    invalidatePageList() {
-      emitter.emit("page_list_invalidated");
-    },
-
     async load(pageId: string) {
       try {
         const pageData = await resolved.callbacks.onLoad(pageId);

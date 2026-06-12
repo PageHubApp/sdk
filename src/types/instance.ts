@@ -26,13 +26,6 @@ export interface PageHubInstance {
   /** Subscribe to save status (drives the toolbar save indicator). */
   subscribeStatus: (handler: (status: SaveStatus) => void) => () => void;
 
-  /**
-   * Tell the SDK that the page list (page count / display names) is stale
-   * and any consumer rendering it should refetch. Used by host-side flows
-   * that mutate pages outside the canvas (rename, delete, settings save).
-   */
-  invalidatePageList: () => void;
-
   /** Load a page into the editor */
   load: (pageId: string) => Promise<void>;
 

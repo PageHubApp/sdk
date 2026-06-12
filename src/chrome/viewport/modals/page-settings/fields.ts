@@ -1,11 +1,12 @@
 /**
  * Single source of truth for page settings fields.
  *
- * Every field that appears in PageSettingsDraft (minus the top-level
- * pageName / isHomePage / is404Page which have special handling) is
- * listed here with its default value. Used by:
- *   - PageSettingsModal (SDK) — draft creation, mapping, commit
+ * Every page-settings field (minus the top-level pageName / isHomePage /
+ * is404Page which have special handling) is listed here with its default
+ * value. Page settings UI now lives in the host dashboard, not the SDK editor;
+ * this contract is consumed by:
  *   - settings.js (server) — allowlist for GET/PATCH
+ *   - the host dashboard's page-settings form schema (`@pagehub/sdk/page-settings/fields`)
  */
 
 export interface PageSettingsFieldDef {

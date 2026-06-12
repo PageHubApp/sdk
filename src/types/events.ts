@@ -18,7 +18,6 @@ export type PageHubEvent =
   | "save_status"
   | "save_conflict"
   | "saved"
-  | "page_list_invalidated"
   | "updated_at_changed";
 
 export interface PageHubEventMap {
@@ -48,11 +47,6 @@ export interface PageHubEventMap {
    * mounted inside the SDK's inner `EcosystemProvider`.
    */
   saved: [data: any];
-  /**
-   * Page list (page count / display names) is stale; consumers rendering
-   * it should refetch. Fired by `instance.invalidatePageList()`.
-   */
-  page_list_invalidated: [];
   /**
    * Server has stamped a fresh `updatedAt` outside the normal save path
    * (e.g. after a conflict reload, or after the AI agent's MCP write).

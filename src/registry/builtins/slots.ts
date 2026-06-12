@@ -1,5 +1,5 @@
 /**
- * Builtin slot catalog — the 13 named slots host integrations can contribute
+ * Builtin slot catalog — the named slots host integrations can contribute
  * against via `sdk.slots.contribute({ slot, render })`.
  *
  * Adding a new slot here requires adding its id to the `BuiltinSlotId` literal
@@ -41,11 +41,5 @@ export const BUILTIN_SLOTS: Array<SlotDef & { id: BuiltinSlotId }> = [
     id: "media-edit/ai-actions",
     cardinality: "single",
     contextShape: "PageHubMediaEditAiActionsContext",
-  },
-  // List slot — page settings extra tabs (one contribution per tab).
-  {
-    id: "page-settings/extra-tabs",
-    cardinality: "list",
-    contextShape: "{ pageId, inputClass, selectClass, query, actions, ... }",
   },
 ];
