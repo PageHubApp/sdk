@@ -107,7 +107,9 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         pageId: PAGE_ID,
-        lineItems: items.map(function (l: any) {
+        // `priceId` is a real Stripe price id OR the `pd:<rowId>` sentinel for a
+        // PageHub-owned product (the server re-prices it via price_data).
+        items: items.map(function (l: any) {
           return {
             priceId:
               (l.item &&
