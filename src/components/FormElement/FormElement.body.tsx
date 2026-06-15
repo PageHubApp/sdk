@@ -96,9 +96,12 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
   // <AnchorProvider> (e.g. an agent chat or PDP wrapper) so per-instance
   // forms don't collide. `boundKey` is the canonical registry key.
   const stateBinding = props.stateBinding as FormElementProps["stateBinding"] | undefined;
-  const boundKey = stateBinding?.key
-    ? resolveAnchors(stateBinding.key, anchors) || stateBinding.key
-    : undefined;
+  // Interpolate `{{item.*}}` against itemContext FIRST (so a facet checkbox inside
+  // a repeater can bind `key: "url:facet.{{item.facetKey}}"` → `url:facet.colors`),
+  // THEN resolve anchor tokens — exactly how `name`/`attrs.value` are handled below.
+  // Outside a repeater both passes are no-ops, so existing bindings are unchanged.
+  const interpKey = stateBinding?.key ? interp(stateBinding.key) : undefined;
+  const boundKey = interpKey ? resolveAnchors(interpKey, anchors) || interpKey : undefined;
   // Subscribe so external writes (URL bridge popstate, set-state actions
   // elsewhere on the page) flow back into the input.
   const externalValue = useStateValue(boundKey);

@@ -3,7 +3,12 @@ import React, { useEffect, useMemo, useState, useSyncExternalStore } from "react
 
 import { getClientDataFetcher, getConnectorData } from "../design/variables";
 import { ItemProvider, useItemContext } from "../itemContext";
-import { getStateValue, setState, subscribe as subscribeState } from "../state/stateRegistry";
+import {
+  getStateValue,
+  setState,
+  subscribe as subscribeState,
+  listStates,
+} from "../state/stateRegistry";
 import { getBindingMeta } from "../design/variables";
 import { useAnchors, resolveAnchors } from "../anchors/anchorContext";
 import { resolveNestedItems } from "./resolveNestedItems";
@@ -120,6 +125,43 @@ export interface DataBehavior {
   renderChildren: (children: React.ReactNode) => React.ReactNode;
 }
 
+// ── Storefront facet selections (url:facet.<key>) ───────────────────────────
+// Facet checkboxes write one `url:facet.<key>` state entry per selected facet
+// (e.g. `url:facet.colors=black`). These are dynamic (any facet key) so they
+// can't be expressed in the flat `stateInputs` map — the grid/facets-feed
+// bindings collect them from the registry at fetch time and forward them as
+// `facet.<key>` request params (the public-data endpoint + SSR both parse those
+// into `facetFilters`). Without this, a selected facet never reaches the grid's
+// client refetch.
+const FACET_STATE_PREFIX = "url:facet.";
+
+/** True for the storefront product grid + facets feed — the bindings whose
+ *  results depend on the visitor's facet selections. */
+function isStorefrontFacetBinding(ds: DataSource | undefined): boolean {
+  return !!ds && (ds.collection === "products" || ds.collection === "products.facets");
+}
+
+/** Current facet selections → `{ "facet.<key>": "<csv>" }` request options. */
+function collectFacetOptions(): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const e of listStates()) {
+    if (!e.key.startsWith(FACET_STATE_PREFIX)) continue;
+    if (e.value == null || e.value === "") continue;
+    out[`facet.${e.key.slice(FACET_STATE_PREFIX.length)}`] = e.value;
+  }
+  return out;
+}
+
+/** Stable snapshot of the facet selections — drives refetch only when they
+ *  change (unrelated state writes leave the string untouched → no fan-out). */
+function facetSelectionSnapshot(): string {
+  return listStates()
+    .filter(e => e.key.startsWith(FACET_STATE_PREFIX) && e.value)
+    .map(e => `${e.key}=${e.value}`)
+    .sort()
+    .join("|");
+}
+
 /**
  * Resolve a DataSource → items and return a render strategy for wrapping
  * children. The caller (typically `Data`) composes this with the container
@@ -196,10 +238,22 @@ export function useDataSource(
     () => subscribedKeys.map(k => `${k}=${getStateValue(k) ?? ""}`).join("|")
   );
 
+  // Facet selections are dynamic keys (any `url:facet.*`) — a flat stateInputs
+  // map can't enumerate them, so storefront product bindings subscribe globally
+  // but gate refetch on the facet-only snapshot string (unrelated writes don't
+  // bump it). New facet keys (first check of a never-selected value) flow in
+  // because the global listener fires and the snapshot recomputes.
+  const facetSubscriber = isStorefrontFacetBinding(ds);
+  const facetSelectionSnap = useSyncExternalStore(
+    cb => (facetSubscriber ? subscribeState(cb) : () => {}),
+    () => (facetSubscriber ? facetSelectionSnapshot() : ""),
+    () => (facetSubscriber ? facetSelectionSnapshot() : "")
+  );
+
   useEffect(() => {
-    if (!ds?.stateInputs) return;
+    if (!ds?.stateInputs && !facetSubscriber) return;
     setRefetchKey(k => k + 1);
-  }, [stateInputsSnapshot, ds?.stateInputs]);
+  }, [stateInputsSnapshot, facetSelectionSnap, ds?.stateInputs, facetSubscriber]);
 
   useEffect(() => {
     if (!ds || enabled) return;
@@ -215,23 +269,39 @@ export function useDataSource(
     // from the registry (typically `url:*` populated by urlQueryStateBridge,
     // but any state key works) into fetch-option fields. No URL parsing,
     // no parallel storefront URL merge.
-    let options: Record<string, any> | undefined;
+    let stateOptions: Record<string, any> | undefined;
     if (ds.stateInputs && typeof ds.stateInputs === "object") {
-      options = {};
+      stateOptions = {};
       for (const [optKey, rawStateKey] of Object.entries(ds.stateInputs)) {
         if (typeof rawStateKey !== "string") continue;
         const stateKey = resolveAnchors(rawStateKey, anchors) || rawStateKey;
         const v = getStateValue(stateKey);
         if (v == null || v === "") continue;
-        options[optKey] = v;
+        stateOptions[optKey] = v;
       }
     }
 
-    // Skip fetch when SSR already supplied items AND no state override is
-    // active (initial-mount only — refetchKey > 0 means a state input
-    // changed and we should re-run).
-    const hasQueryOverride = options && Object.keys(options).length > 0;
+    // Visitor-selected facet values (`url:facet.*`) — dynamic keys collected
+    // from the registry, forwarded as `facet.<key>` params.
+    const facetOptions = facetSubscriber ? collectFacetOptions() : {};
+
+    // Skip fetch when SSR already supplied items AND no state/facet override
+    // is active (initial-mount only — refetchKey > 0 means an input changed
+    // and we should re-run). Static paging fields (limit/offset) are NOT an
+    // "override" — they don't change between SSR and mount.
+    const hasQueryOverride =
+      (stateOptions != null && Object.keys(stateOptions).length > 0) ||
+      Object.keys(facetOptions).length > 0;
     if (hasItems && !hasQueryOverride && refetchKey === 0) return;
+
+    // The connector needs the binding's static paging fields to page
+    // server-side — they're not state-driven so they never came through
+    // `stateInputs`. WITHOUT `limit` the connector returns ALL matching rows
+    // and visible pagination is a silent no-op.
+    const options: Record<string, any> = { ...(stateOptions || {}), ...facetOptions };
+    if (typeof ds.limit === "number" && ds.limit > 0) options.limit = ds.limit;
+    if (typeof ds.offset === "number" && ds.offset > 0) options.offset = ds.offset;
+    const fetchOptions = Object.keys(options).length > 0 ? options : undefined;
 
     // Clear stale clientItems so the fetch window falls back to fresh SSR
     // items (new connectorData from soft-nav) instead of showing the PREVIOUS
@@ -240,7 +310,7 @@ export function useDataSource(
     setClientItems(null);
 
     let cancelled = false;
-    fetcher(ds.provider, ds.collection, options)
+    fetcher(ds.provider, ds.collection, fetchOptions)
       .then(result => {
         if (cancelled || !Array.isArray(result)) return;
         setClientItems(result);
