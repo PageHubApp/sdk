@@ -1,6 +1,6 @@
 {
   "name": "@pagehub/sdk",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Embeddable visual page builder SDK — drop a full drag-and-drop page editor into any web app, or render published sites anywhere JS runs.",
   "type": "module",
   "main": "./src/index.ts",
