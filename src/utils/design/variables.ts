@@ -1,5 +1,6 @@
 import { getStateValue, setState } from "../state/stateRegistry";
 import { sdkLog } from "../logger";
+import { walkPath } from "../walkPath";
 
 /**
  * Shape of ROOT_NODE props that the variable / page / media / action helpers
@@ -154,25 +155,6 @@ export function markRuntimeQueueDrained(): void {
   _queueDrained = true;
 }
 
-/** Walk a dot-separated path into a nested object, supporting array indices. */
-function walkPath(obj: any, parts: string[]): any {
-  let value = obj;
-  for (const part of parts) {
-    if (value && typeof value === "object") {
-      if (Array.isArray(value) && /^\d+$/.test(part)) {
-        value = value[parseInt(part, 10)];
-      } else if (part in value) {
-        value = value[part];
-      } else {
-        return undefined;
-      }
-    } else {
-      return undefined;
-    }
-  }
-  return value;
-}
-
 // Default placeholder values for company variables
 const DEFAULT_VALUES: Record<string, string> = {
   "company.name": "Acme Inc.",
@@ -184,6 +166,186 @@ const DEFAULT_VALUES: Record<string, string> = {
   "company.email": "contact@acme.com",
   "company.website": "https://www.acme.com",
 };
+
+/**
+ * Split a `state.` lookup remainder into the registry key and an optional nested
+ * JSON path. State keys conventionally look like `ns:scope:field` (colon-
+ * delimited), so the first `.` AFTER the last `:` opens the JSON walk — e.g.
+ * `pdp:abc:matching-variant.formatted` →
+ * `{ stateKey: "pdp:abc:matching-variant", tail: "formatted" }`. Shared by
+ * `replaceVariables` (runtime) and `resolveVariable` (editor preview) so the
+ * heuristic can't drift between them.
+ */
+function splitStateKeyPath(rest: string): { stateKey: string; tail: string } {
+  const lastColon = rest.lastIndexOf(":");
+  const dotAfter = rest.indexOf(".", lastColon === -1 ? 0 : lastColon);
+  return dotAfter === -1
+    ? { stateKey: rest, tail: "" }
+    : { stateKey: rest.slice(0, dotAfter), tail: rest.slice(dotAfter + 1) };
+}
+
+// ── Per-domain variable resolvers ─────────────────────────────────────────────
+//
+// Each resolves ONE variable namespace to a string, or `undefined` on miss, so
+// callers can layer their own miss policy on top (`replaceVariables` →
+// default / fallback / empty; `resolveVariable` → raw `varId` / `DEFAULT_VALUES`).
+// `replaceVariables`' runtime `resolveVar` dispatches to these; the editor-
+// preview `resolveVariable` reuses the ones whose behavior is identical
+// (auth / connector / variables / generic root-prop). It KEEPS its own inline
+// `state` and `item` handling because those genuinely DIVERGE:
+//   • state — `resolveVariable` returns "" for a JSON tail that walks to an
+//     empty string, where the runtime treats "" as a miss.
+//   • item  — runtime binds the live repeater `itemContext`; the editor binds
+//     the connector first-item *preview*. (Do NOT merge these.)
+
+/** auth.* — e.g. auth.status, auth.customer.email. */
+function resolveAuthVar(key: string): string | undefined {
+  const auth = getAuthState();
+  if (!auth) return undefined;
+  const parts = key.slice("auth.".length).split(".");
+  const value = walkPath(auth, parts);
+  if (value !== undefined && value !== null && value !== "") return String(value);
+  return undefined;
+}
+
+/**
+ * state.<key>[.<dotPath>] — registry lookup, optionally walking into a parsed-
+ * JSON value. State values are stored as strings; when the entry is serialized
+ * JSON (e.g. `pdp:abc:matching-variant` is the serialized matched variant)
+ * authors can interpolate nested fields:
+ *
+ *   {{state.pdp:abc:matching-variant.formatted}}
+ *
+ * `splitStateKeyPath` finds the first `.` AFTER the last `:` to separate the
+ * registry key from the nested path. Returns `undefined` for missing/empty (so
+ * the caller's default handling applies) and for a tail that walks to empty —
+ * matching connector / auth behavior.
+ */
+function resolveStateVar(key: string): string | undefined {
+  const rest = key.slice("state.".length);
+  const { stateKey, tail } = splitStateKeyPath(rest);
+  const raw = getStateValue(stateKey);
+  if (raw == null || raw === "") return undefined;
+  if (!tail) return String(raw);
+  // Tail present → try parsing the value as JSON and walk.
+  try {
+    const parsed = JSON.parse(raw);
+    const walked = walkPath(parsed, tail.split("."));
+    if (walked !== undefined && walked !== null && walked !== "") return String(walked);
+  } catch {
+    /* not JSON; fall through */
+  }
+  return undefined;
+}
+
+/** item.* — resolves against the live repeater item context (runtime only). */
+function resolveItemVar(key: string, itemContext: Record<string, any>): string | undefined {
+  const parts = key.slice("item.".length).split(".");
+  const value = walkPath(itemContext, parts);
+  if (value !== undefined && value !== null && value !== "") return String(value);
+  return undefined;
+}
+
+/**
+ * connector.* — walks the loaded connector data map. Assumes `_connectorData`
+ * is set; call sites gate on `_connectorData` so the no-connector case falls
+ * through to the generic root-prop walk (preserved from both original callers).
+ */
+function resolveConnectorVar(key: string): string | undefined {
+  const data = _connectorData;
+  if (!data) return undefined;
+  const parts = key.slice("connector.".length).split(".");
+  const value = walkPath(data, parts);
+  if (value !== undefined && value !== null && value !== "") return String(value);
+  if (parts[parts.length - 1] === "length") {
+    const parent = walkPath(data, parts.slice(0, -1));
+    if (Array.isArray(parent)) return String(parent.length);
+  }
+  return undefined;
+}
+
+/** variables.* — runtime store (window.PageHub.setVar) wins, then rootProps. */
+function resolveVariablesVar(key: string, rootProps: RootProps): string | undefined {
+  const varKey = key.slice("variables.".length);
+  // Runtime store wins (window.PageHub.setVar)
+  if (Object.prototype.hasOwnProperty.call(_runtimeVars, varKey)) {
+    const rv = _runtimeVars[varKey];
+    if (rv !== undefined && rv !== null && rv !== "") return rv;
+  }
+  const customVars = rootProps.variables;
+  if (Array.isArray(customVars)) {
+    const found = customVars.find((v: any) => v.key === varKey);
+    if (found?.value) return String(found.value);
+  }
+  return undefined;
+}
+
+/** Generic dotted lookup into ROOT props (company.*, etc.). */
+function resolveRootPropVar(key: string, rootProps: RootProps): string | undefined {
+  const parts = key.split(".");
+  const value = walkPath(rootProps, parts);
+  if (value !== undefined && value !== null && value !== "") return String(value);
+  return undefined;
+}
+
+// ── Template expression parsing ───────────────────────────────────────────────
+
+type ParsedTemplateExpr =
+  | { kind: "ternary"; lhs: string; op: "==" | "!="; rhs: string; ifTrue: string; ifFalse: string }
+  | { kind: "truthy"; key: string; ifTrue: string; ifFalse: string }
+  | { kind: "plain"; key: string; fallback: string | null };
+
+const stripQuotes = (s: string): string => s.replace(/^["']|["']$/g, "");
+
+/**
+ * Parse the inner expression of a `{{...}}` token into a structured form.
+ * Pure (no resolution) so it's unit-testable in isolation; the caller resolves
+ * `lhs` / `key` and applies its own miss policy. Match order — ternary, then
+ * truthy, then plain `||` — mirrors the original inline branching exactly, and
+ * quote-stripping / trimming of the literal branches is applied unconditionally
+ * (the original applied the identical transform to whichever branch was chosen).
+ */
+function parseTemplateExpr(raw: string): ParsedTemplateExpr {
+  const trimmed = raw.trim();
+
+  // ── Ternary: {{key == value ? ifTrue : ifFalse}} ──
+  // Requires spaces around the else `:` to avoid matching ref: or https:
+  const ternaryMatch = trimmed.match(/^(.+?)\s*(==|!=)\s*(.+?)\s*\?\s*(.+?)\s+:\s+(.+)$/);
+  if (ternaryMatch) {
+    const [, lhsRaw, op, rhsRaw, ifTrue, ifFalse] = ternaryMatch;
+    return {
+      kind: "ternary",
+      lhs: lhsRaw.trim(),
+      op: op as "==" | "!=",
+      rhs: stripQuotes(rhsRaw.trim()),
+      ifTrue: stripQuotes(ifTrue.trim()),
+      ifFalse: stripQuotes(ifFalse.trim()),
+    };
+  }
+
+  // ── Bare truthiness: {{auth.status ? /yes : /no}} ──
+  const truthyMatch = trimmed.match(/^(.+?)\s*\?\s*(.+?)\s+:\s+(.+)$/);
+  if (truthyMatch) {
+    const [, keyRaw, ifTrue, ifFalse] = truthyMatch;
+    return {
+      kind: "truthy",
+      key: keyRaw.trim(),
+      ifTrue: stripQuotes(ifTrue.trim()),
+      ifFalse: stripQuotes(ifFalse.trim()),
+    };
+  }
+
+  // ── Standard variable with optional || fallback ──
+  const pipeIdx = trimmed.indexOf("||");
+  if (pipeIdx !== -1) {
+    return {
+      kind: "plain",
+      key: trimmed.slice(0, pipeIdx).trim(),
+      fallback: stripQuotes(trimmed.slice(pipeIdx + 2).trim()),
+    };
+  }
+  return { kind: "plain", key: trimmed, fallback: null };
+}
 
 /**
  * Replaces variables in text with values from ROOT_NODE props
@@ -227,135 +389,44 @@ export const replaceVariables = (
       );
     }
 
-    // Resolve a single variable key to its string value (or undefined if not found).
-    // Shared by normal replacement and ternary branch evaluation.
+    // Resolve a single variable key to its string value (or undefined if not
+    // found). Shared by normal replacement and ternary branch evaluation. Thin
+    // dispatcher over the module-level per-domain resolvers; the `&& itemContext`
+    // / `&& _connectorData` guards preserve the original fall-through to the
+    // generic root-prop walk when those contexts are absent.
     const resolveVar = (key: string): string | undefined => {
       if (key === "year") return new Date().getFullYear().toString();
-
-      // auth.* — e.g. auth.status, auth.customer.email
-      if (key.startsWith("auth.")) {
-        const auth = getAuthState();
-        if (!auth) return undefined;
-        const parts = key.slice("auth.".length).split(".");
-        const value = walkPath(auth, parts);
-        if (value !== undefined && value !== null && value !== "") return String(value);
-        return undefined;
-      }
-
-      // state.<key>[.<dotPath>] — registry lookup, optionally walking into
-      // a parsed-JSON value. State values are stored as strings; if the
-      // entry is a JSON object/array (e.g. `pdp:abc:matching-variant` is the
-      // serialized matched variant) authors can interpolate nested fields:
-      //
-      //   {{state.pdp:abc:matching-variant.formatted}}
-      //
-      // Splits on the FIRST `.` after `state.<key>` where `<key>` may contain
-      // `:` and `-`. Practically: find the first `.` AFTER any `:` segment.
-      // The anchor-pre-pass above already substituted `{{anchor.X}}` into
-      // the key portion. Returns `undefined` for missing/empty so default-
-      // value handling applies (matches connector/auth behavior).
-      if (key.startsWith("state.")) {
-        const rest = key.slice("state.".length);
-        // Heuristic: state keys conventionally look like `ns:scope:field`
-        // (using `:`). The first `.` AFTER the last `:` segment opens a
-        // nested-path walk. When no `.` after a colon, treat the whole
-        // remainder as the key.
-        const lastColon = rest.lastIndexOf(":");
-        const dotAfter = rest.indexOf(".", lastColon === -1 ? 0 : lastColon);
-        const stateKey = dotAfter === -1 ? rest : rest.slice(0, dotAfter);
-        const tail = dotAfter === -1 ? "" : rest.slice(dotAfter + 1);
-        const raw = getStateValue(stateKey);
-        if (raw == null || raw === "") return undefined;
-        if (!tail) return String(raw);
-        // Tail present → try parsing the value as JSON and walk.
-        try {
-          const parsed = JSON.parse(raw);
-          const walked = walkPath(parsed, tail.split("."));
-          if (walked !== undefined && walked !== null && walked !== "") return String(walked);
-        } catch {
-          /* not JSON; fall through */
-        }
-        return undefined;
-      }
-
-      if (key.startsWith("item.") && itemContext) {
-        const parts = key.slice("item.".length).split(".");
-        const value = walkPath(itemContext, parts);
-        if (value !== undefined && value !== null && value !== "") return String(value);
-        return undefined;
-      }
-
-      if (key.startsWith("connector.") && _connectorData) {
-        const parts = key.slice("connector.".length).split(".");
-        const value = walkPath(_connectorData, parts);
-        if (value !== undefined && value !== null && value !== "") return String(value);
-        if (parts[parts.length - 1] === "length") {
-          const parent = walkPath(_connectorData, parts.slice(0, -1));
-          if (Array.isArray(parent)) return String(parent.length);
-        }
-        return undefined;
-      }
-
-      if (key.startsWith("variables.")) {
-        const varKey = key.slice("variables.".length);
-        // Runtime store wins (window.PageHub.setVar)
-        if (Object.prototype.hasOwnProperty.call(_runtimeVars, varKey)) {
-          const rv = _runtimeVars[varKey];
-          if (rv !== undefined && rv !== null && rv !== "") return rv;
-        }
-        const customVars = rootProps.variables;
-        if (Array.isArray(customVars)) {
-          const found = customVars.find((v: any) => v.key === varKey);
-          if (found?.value) return String(found.value);
-        }
-        return undefined;
-      }
-
-      const parts = key.split(".");
-      const value = walkPath(rootProps, parts);
-      if (value !== undefined && value !== null && value !== "") return String(value);
-      return undefined;
+      if (key.startsWith("auth.")) return resolveAuthVar(key);
+      if (key.startsWith("state.")) return resolveStateVar(key);
+      if (key.startsWith("item.") && itemContext) return resolveItemVar(key, itemContext);
+      if (key.startsWith("connector.") && _connectorData) return resolveConnectorVar(key);
+      if (key.startsWith("variables.")) return resolveVariablesVar(key, rootProps);
+      return resolveRootPropVar(key, rootProps);
     };
 
     // Replace variables like {{company.name}}, {{auth.status == logged-in ? /account : /login}}, etc.
     return processed.replace(/\{\{([^}]+)\}\}/g, (match, variable) => {
-      let trimmedVar = variable.trim();
+      const expr = parseTemplateExpr(variable);
 
       // ── Ternary: {{key == value ? ifTrue : ifFalse}} ──
-      // Requires spaces around the else `:` to avoid matching ref: or https:
-      const ternaryMatch = trimmedVar.match(/^(.+?)\s*(==|!=)\s*(.+?)\s*\?\s*(.+?)\s+:\s+(.+)$/);
-      if (ternaryMatch) {
-        const [, lhsRaw, op, rhsRaw, ifTrue, ifFalse] = ternaryMatch;
-        const lhs = resolveVar(lhsRaw.trim()) ?? "";
-        const rhs = rhsRaw.trim().replace(/^["']|["']$/g, "");
-        const passes = op === "==" ? lhs === rhs : lhs !== rhs;
-        return (passes ? ifTrue : ifFalse).trim().replace(/^["']|["']$/g, "");
+      if (expr.kind === "ternary") {
+        const lhs = resolveVar(expr.lhs) ?? "";
+        const passes = expr.op === "==" ? lhs === expr.rhs : lhs !== expr.rhs;
+        return passes ? expr.ifTrue : expr.ifFalse;
       }
-      // Bare truthiness: {{auth.status ? /yes : /no}}
-      const truthyMatch = trimmedVar.match(/^(.+?)\s*\?\s*(.+?)\s+:\s+(.+)$/);
-      if (truthyMatch) {
-        const [, keyRaw, ifTrue, ifFalse] = truthyMatch;
-        const value = resolveVar(keyRaw.trim());
+      // ── Bare truthiness: {{auth.status ? /yes : /no}} ──
+      if (expr.kind === "truthy") {
+        const value = resolveVar(expr.key);
         const passes = value !== undefined && value !== "" && value !== "false";
-        return (passes ? ifTrue : ifFalse).trim().replace(/^["']|["']$/g, "");
+        return passes ? expr.ifTrue : expr.ifFalse;
       }
 
       // ── Standard variable with optional || fallback ──
-      let fallback: string | null = null;
-      const pipeIdx = trimmedVar.indexOf("||");
-      if (pipeIdx !== -1) {
-        fallback = trimmedVar
-          .slice(pipeIdx + 2)
-          .trim()
-          .replace(/^["']|["']$/g, "");
-        trimmedVar = trimmedVar.slice(0, pipeIdx).trim();
-      }
-
-      const resolved = resolveVar(trimmedVar);
+      const resolved = resolveVar(expr.key);
       if (resolved !== undefined) return resolved;
-      if (fallback !== null) return fallback;
+      if (expr.fallback !== null) return expr.fallback;
 
-      const defaultValue = DEFAULT_VALUES[trimmedVar];
+      const defaultValue = DEFAULT_VALUES[expr.key];
       if (defaultValue !== undefined) return defaultValue;
 
       // Unresolved `item.*` / `connector.*` / `auth.*` are context-dependent
@@ -363,10 +434,10 @@ export const replaceVariables = (
       // Render as empty string so empty templates at least render cleanly
       // (customer skeletons, pre-client-fetch repeater cards, etc.).
       if (
-        trimmedVar.startsWith("item.") ||
-        trimmedVar.startsWith("connector.") ||
-        trimmedVar.startsWith("auth.") ||
-        trimmedVar.startsWith("variables.")
+        expr.key.startsWith("item.") ||
+        expr.key.startsWith("connector.") ||
+        expr.key.startsWith("auth.") ||
+        expr.key.startsWith("variables.")
       ) {
         return "";
       }
@@ -410,10 +481,7 @@ export const resolveVariable = (
     // logic in replaceVariables so editor chips display live state.
     if (resolvedId.startsWith("state.")) {
       const rest = resolvedId.slice("state.".length);
-      const lastColon = rest.lastIndexOf(":");
-      const dotAfter = rest.indexOf(".", lastColon === -1 ? 0 : lastColon);
-      const stateKey = dotAfter === -1 ? rest : rest.slice(0, dotAfter);
-      const tail = dotAfter === -1 ? "" : rest.slice(dotAfter + 1);
+      const { stateKey, tail } = splitStateKeyPath(rest);
       const raw = getStateValue(stateKey);
       if (raw == null || raw === "") return varId;
       if (!tail) return String(raw);
@@ -430,16 +498,11 @@ export const resolveVariable = (
     varId = resolvedId;
 
     // Handle auth.* variables
-    if (varId.startsWith("auth.")) {
-      const auth = getAuthState();
-      if (!auth) return varId;
-      const parts = varId.slice("auth.".length).split(".");
-      const value = walkPath(auth, parts);
-      if (value !== undefined && value !== null && value !== "") return String(value);
-      return varId;
-    }
+    if (varId.startsWith("auth.")) return resolveAuthVar(varId) ?? varId;
 
-    // Handle item.* variables (show first item as preview in editor)
+    // Handle item.* variables (show first item as preview in editor) — KEPT
+    // inline: this resolves against the connector first-item preview, NOT the
+    // live repeater `itemContext` the runtime resolver uses. Do not merge.
     if (varId.startsWith("item.") && _connectorData) {
       const parts = varId.slice("item.".length).split(".");
       for (const provider of Object.values(_connectorData)) {
@@ -455,43 +518,16 @@ export const resolveVariable = (
       return varId;
     }
 
-    // Handle connector.* variables
-    if (varId.startsWith("connector.") && _connectorData) {
-      const parts = varId.slice("connector.".length).split(".");
-      const value = walkPath(_connectorData, parts);
-      if (value !== undefined && value !== null && value !== "") return String(value);
-      if (parts[parts.length - 1] === "length") {
-        const parent = walkPath(_connectorData, parts.slice(0, -1));
-        if (Array.isArray(parent)) return String(parent.length);
-      }
-      return varId;
-    }
+    // Handle connector.* variables (no-connector case falls through, as before)
+    if (varId.startsWith("connector.") && _connectorData)
+      return resolveConnectorVar(varId) ?? varId;
 
     if (!rootProps) return DEFAULT_VALUES[varId] || varId;
 
     // Handle custom variables
-    if (varId.startsWith("variables.")) {
-      const varKey = varId.slice("variables.".length);
-      if (Object.prototype.hasOwnProperty.call(_runtimeVars, varKey)) {
-        const rv = _runtimeVars[varKey];
-        if (rv !== undefined && rv !== null && rv !== "") return rv;
-      }
-      const customVars = rootProps.variables;
-      if (Array.isArray(customVars)) {
-        const found = customVars.find((v: any) => v.key === varKey);
-        if (found?.value) return String(found.value);
-      }
-      return varId;
-    }
+    if (varId.startsWith("variables.")) return resolveVariablesVar(varId, rootProps) ?? varId;
 
-    const parts = varId.split(".");
-    const value = walkPath(rootProps, parts);
-
-    if (value !== undefined && value !== null && value !== "") {
-      return String(value);
-    }
-
-    return DEFAULT_VALUES[varId] || varId;
+    return resolveRootPropVar(varId, rootProps) ?? (DEFAULT_VALUES[varId] || varId);
   } catch {
     return DEFAULT_VALUES[varId] || varId;
   }
