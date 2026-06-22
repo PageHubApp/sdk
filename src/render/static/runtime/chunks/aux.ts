@@ -32,7 +32,7 @@ export const AUX_CHUNK = stringifyChunk(function $aux() {
       .then(function (data) {
         const status = data ? "logged-in" : "logged-out";
         setState(
-          "auth:status",
+          PH_AUTH_STATUS,
           { kind: "value", value: status, source: "runtime" },
           "customer-token"
         );

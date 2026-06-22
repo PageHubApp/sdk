@@ -139,7 +139,7 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
             ) {
               continue;
             }
-            const sk = co.type === "url-param" ? "url:" + co.key : co.key;
+            const sk = co.type === "url-param" ? PH_URL_PREFIX + co.key : co.key;
             if (seen[sk]) continue;
             seen[sk] = true;
             trackedKeys.push(sk);
@@ -468,7 +468,7 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
     }
   }
 
-  const URL_PREFIX = "url:";
+  const URL_PREFIX = PH_URL_PREFIX;
   function syncUrlToState(source: string) {
     const params = new URLSearchParams(window.location.search);
     const seen: Record<string, boolean> = {};

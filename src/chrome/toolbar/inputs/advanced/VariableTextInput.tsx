@@ -14,6 +14,7 @@ import {
   getConnectorCollectionLabel,
   getConnectorProviderLabel,
 } from "@/utils/data/dataSourceContext";
+import { VAR_PREFIX } from "@/utils/state/keys";
 
 interface VariableSnippet {
   label: string;
@@ -112,7 +113,7 @@ export function VariableTextInput({
       const id = v.id.toLowerCase();
       const label = v.label.toLowerCase();
       let s = 0;
-      if (id.startsWith("item.")) s += 8;
+      if (id.startsWith(VAR_PREFIX.item)) s += 8;
       if (id.includes(".image") || label.includes("image")) s += 6;
       if (imageTokenRegex.test(id) || imageTokenRegex.test(label)) s += 4;
       return s;

@@ -38,17 +38,17 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
       total += amount * qty;
     }
     setState(
-      "cart:items-json",
+      PH_CART_ITEMS_JSON,
       { kind: "value", value: JSON.stringify(items), source: "runtime" },
       "cart"
     );
     setState(
-      "cart:count",
+      PH_CART_COUNT,
       { kind: "value", value: String(count), source: "runtime" },
       "cart"
     );
     setState(
-      "cart:total",
+      PH_CART_TOTAL,
       { kind: "value", value: String(total), source: "runtime" },
       "cart"
     );
@@ -96,7 +96,7 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
     setCartQuantity(priceId, 0);
   }
   function cartCheckout() {
-    const raw = getStateValue("cart:items-json");
+    const raw = getStateValue(PH_CART_ITEMS_JSON);
     let items: any[] = [];
     try {
       items = raw ? JSON.parse(raw as string) : [];
@@ -284,7 +284,7 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
         el.removeEventListener("click", onClick as EventListener);
       });
       utils.effect(function () {
-        void _store.entries["cart:items-json"];
+        void _store.entries[PH_CART_ITEMS_JSON];
         render();
       });
     }

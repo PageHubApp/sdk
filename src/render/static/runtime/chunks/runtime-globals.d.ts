@@ -13,6 +13,17 @@ declare global {
   const PAGE_ID: string;
   const PUBLIC_DATA_ENDPOINT: string;
   const MOBILE: number;
+  // Reactive-state keys/prefixes — stamped into the preamble from the canonical
+  // `utils/state/keys` module (see staticPublishRuntime.ts). Chunks can't import
+  // (they're stringified + minified in isolation), so the value is injected here
+  // as a global and the single source stays in keys.ts.
+  const PH_URL_PREFIX: string;
+  const PH_CART_OPEN: string;
+  const PH_CART_COUNT: string;
+  const PH_CART_TOTAL: string;
+  const PH_CART_ITEMS_JSON: string;
+  const PH_CART_ERROR: string;
+  const PH_AUTH_STATUS: string;
   const Alpine: any;
   const _store: { entries: Record<string, any>; revision: number };
   const _shownStack: string[];

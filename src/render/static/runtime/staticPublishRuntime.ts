@@ -29,6 +29,7 @@ import { FORMS_CHUNK } from "./chunks/forms";
 import { REPEATER_CHUNK } from "./chunks/repeater";
 import { AUX_CHUNK } from "./chunks/aux";
 import { BOOTSTRAP_CHUNK } from "./chunks/bootstrap";
+import { STATE_PREFIX, STATE_KEY } from "../../../utils/state/keys";
 
 export interface StaticPublishRuntimeOptions {
   /** Tailwind `md` breakpoint, used by condition `device: mobile` evaluation. */
@@ -66,9 +67,9 @@ export function getCartBridgeScript(opts: { pageId?: string } = {}): string {
       var amount = (line.item && line.item.price && Number(line.item.price.amount)) || Number(line.amount) || 0;
       total += amount * qty;
     }
-    window.__PH_STATE__['cart:items-json'] = { kind: 'value', value: JSON.stringify(arr) };
-    window.__PH_STATE__['cart:count'] = { kind: 'value', value: String(count) };
-    window.__PH_STATE__['cart:total'] = { kind: 'value', value: String(total) };
+    window.__PH_STATE__['${STATE_KEY.cartItemsJson}'] = { kind: 'value', value: JSON.stringify(arr) };
+    window.__PH_STATE__['${STATE_KEY.cartCount}'] = { kind: 'value', value: String(count) };
+    window.__PH_STATE__['${STATE_KEY.cartTotal}'] = { kind: 'value', value: String(total) };
   } catch (e) {}
 })();
 </script>`;
@@ -93,6 +94,18 @@ export function getStaticPublishRuntimeScript(
 var PAGE_ID = ${pageIdLit};
 var PUBLIC_DATA_ENDPOINT = ${endpointLit};
 var MOBILE = ${mobileBreakpoint};
+
+// Reactive-state keys/prefixes, stamped from the canonical \`utils/state/keys\`
+// module. Chunks (\`runtime/chunks/*\`) are stringified + minified in isolation
+// so they can't import — they reference these PH_* globals (declared ambient in
+// chunks/runtime-globals.d.ts) and the value lives in ONE place (keys.ts).
+var PH_URL_PREFIX = ${JSON.stringify(STATE_PREFIX.url)};
+var PH_CART_OPEN = ${JSON.stringify(STATE_KEY.cartOpen)};
+var PH_CART_COUNT = ${JSON.stringify(STATE_KEY.cartCount)};
+var PH_CART_TOTAL = ${JSON.stringify(STATE_KEY.cartTotal)};
+var PH_CART_ITEMS_JSON = ${JSON.stringify(STATE_KEY.cartItemsJson)};
+var PH_CART_ERROR = ${JSON.stringify(STATE_KEY.cartError)};
+var PH_AUTH_STATUS = ${JSON.stringify(STATE_KEY.authStatus)};
 
 var Alpine = window.Alpine;
 Alpine.prefix('data-ph-');

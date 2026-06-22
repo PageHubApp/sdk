@@ -300,7 +300,7 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
         }
         if (itemContext.hasMultipleVariants && !matchedOk) {
           setState(
-            "cart:error",
+            PH_CART_ERROR,
             {
               kind: "value",
               value: "Select an option before adding to cart",
@@ -311,7 +311,7 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
           return;
         }
         setState(
-          "cart:error",
+          PH_CART_ERROR,
           { kind: "value", value: "", source: "runtime" },
           "add-to-cart"
         );
@@ -320,9 +320,9 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
       }
       if (t === "toggle-cart") {
         if (ev) ev.preventDefault();
-        const cur2 = getStateValue("cart:open");
+        const cur2 = getStateValue(PH_CART_OPEN);
         setVisibility(
-          "cart:open",
+          PH_CART_OPEN,
           cur2 === "shown" ? "hidden" : "shown",
           "toggle-cart"
         );

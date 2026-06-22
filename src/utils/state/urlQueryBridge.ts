@@ -27,8 +27,9 @@
  */
 
 import { setState, getStateValue, listStates, subscribe } from "./stateRegistry";
+import { STATE_PREFIX } from "./keys";
 
-const URL_PREFIX = "url:";
+const URL_PREFIX = STATE_PREFIX.url;
 const BRIDGE_WRITER = "url-bridge";
 
 let _mounted = false;

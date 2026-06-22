@@ -6,6 +6,7 @@ import { evaluateConditionGroups } from "./evaluate";
 import { getConnectorData, replaceVariables } from "../design/variables";
 import { useItemContext } from "../itemContext";
 import { subscribe as subscribeState } from "../state/stateRegistry";
+import { STATE_KEY } from "../state/keys";
 import type { Condition, ConditionGroup } from "./types";
 
 /**
@@ -21,7 +22,7 @@ function collectStateKeys(groups: ConditionGroup[] | null): string[] {
   const keys = new Set<string>();
   const visit = (c: Condition) => {
     if (c.type === "state" && (c as any).key) keys.add((c as any).key);
-    if (c.type === "auth") keys.add("auth:status");
+    if (c.type === "auth") keys.add(STATE_KEY.authStatus);
   };
   if (groups) {
     for (const g of groups) {

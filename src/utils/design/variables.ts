@@ -1,4 +1,5 @@
 import { getStateValue, setState } from "../state/stateRegistry";
+import { STATE_KEY, VAR_PREFIX } from "../state/keys";
 import { sdkLog } from "../logger";
 import { walkPath } from "../walkPath";
 
@@ -90,7 +91,7 @@ export function setAuthState(state: AuthState | null) {
   // this state write is purely the reactivity propagation.
   try {
     setState(
-      "auth:status",
+      STATE_KEY.authStatus,
       { kind: "value", value: state?.status ?? "logged-out", source: "runtime" },
       "auth"
     );
@@ -202,7 +203,7 @@ function splitStateKeyPath(rest: string): { stateKey: string; tail: string } {
 function resolveAuthVar(key: string): string | undefined {
   const auth = getAuthState();
   if (!auth) return undefined;
-  const parts = key.slice("auth.".length).split(".");
+  const parts = key.slice(VAR_PREFIX.auth.length).split(".");
   const value = walkPath(auth, parts);
   if (value !== undefined && value !== null && value !== "") return String(value);
   return undefined;
@@ -222,7 +223,7 @@ function resolveAuthVar(key: string): string | undefined {
  * matching connector / auth behavior.
  */
 function resolveStateVar(key: string): string | undefined {
-  const rest = key.slice("state.".length);
+  const rest = key.slice(VAR_PREFIX.state.length);
   const { stateKey, tail } = splitStateKeyPath(rest);
   const raw = getStateValue(stateKey);
   if (raw == null || raw === "") return undefined;
@@ -240,7 +241,7 @@ function resolveStateVar(key: string): string | undefined {
 
 /** item.* — resolves against the live repeater item context (runtime only). */
 function resolveItemVar(key: string, itemContext: Record<string, any>): string | undefined {
-  const parts = key.slice("item.".length).split(".");
+  const parts = key.slice(VAR_PREFIX.item.length).split(".");
   const value = walkPath(itemContext, parts);
   if (value !== undefined && value !== null && value !== "") return String(value);
   return undefined;
@@ -254,7 +255,7 @@ function resolveItemVar(key: string, itemContext: Record<string, any>): string |
 function resolveConnectorVar(key: string): string | undefined {
   const data = _connectorData;
   if (!data) return undefined;
-  const parts = key.slice("connector.".length).split(".");
+  const parts = key.slice(VAR_PREFIX.connector.length).split(".");
   const value = walkPath(data, parts);
   if (value !== undefined && value !== null && value !== "") return String(value);
   if (parts[parts.length - 1] === "length") {
@@ -266,7 +267,7 @@ function resolveConnectorVar(key: string): string | undefined {
 
 /** variables.* — runtime store (window.PageHub.setVar) wins, then rootProps. */
 function resolveVariablesVar(key: string, rootProps: RootProps): string | undefined {
-  const varKey = key.slice("variables.".length);
+  const varKey = key.slice(VAR_PREFIX.variables.length);
   // Runtime store wins (window.PageHub.setVar)
   if (Object.prototype.hasOwnProperty.call(_runtimeVars, varKey)) {
     const rv = _runtimeVars[varKey];
@@ -396,11 +397,11 @@ export const replaceVariables = (
     // generic root-prop walk when those contexts are absent.
     const resolveVar = (key: string): string | undefined => {
       if (key === "year") return new Date().getFullYear().toString();
-      if (key.startsWith("auth.")) return resolveAuthVar(key);
-      if (key.startsWith("state.")) return resolveStateVar(key);
-      if (key.startsWith("item.") && itemContext) return resolveItemVar(key, itemContext);
-      if (key.startsWith("connector.") && _connectorData) return resolveConnectorVar(key);
-      if (key.startsWith("variables.")) return resolveVariablesVar(key, rootProps);
+      if (key.startsWith(VAR_PREFIX.auth)) return resolveAuthVar(key);
+      if (key.startsWith(VAR_PREFIX.state)) return resolveStateVar(key);
+      if (key.startsWith(VAR_PREFIX.item) && itemContext) return resolveItemVar(key, itemContext);
+      if (key.startsWith(VAR_PREFIX.connector) && _connectorData) return resolveConnectorVar(key);
+      if (key.startsWith(VAR_PREFIX.variables)) return resolveVariablesVar(key, rootProps);
       return resolveRootPropVar(key, rootProps);
     };
 
@@ -434,10 +435,10 @@ export const replaceVariables = (
       // Render as empty string so empty templates at least render cleanly
       // (customer skeletons, pre-client-fetch repeater cards, etc.).
       if (
-        expr.key.startsWith("item.") ||
-        expr.key.startsWith("connector.") ||
-        expr.key.startsWith("auth.") ||
-        expr.key.startsWith("variables.")
+        expr.key.startsWith(VAR_PREFIX.item) ||
+        expr.key.startsWith(VAR_PREFIX.connector) ||
+        expr.key.startsWith(VAR_PREFIX.auth) ||
+        expr.key.startsWith(VAR_PREFIX.variables)
       ) {
         return "";
       }
@@ -479,8 +480,8 @@ export const resolveVariable = (
 
     // state.<key>[.<dotPath>] — central registry lookup. Mirrors the
     // logic in replaceVariables so editor chips display live state.
-    if (resolvedId.startsWith("state.")) {
-      const rest = resolvedId.slice("state.".length);
+    if (resolvedId.startsWith(VAR_PREFIX.state)) {
+      const rest = resolvedId.slice(VAR_PREFIX.state.length);
       const { stateKey, tail } = splitStateKeyPath(rest);
       const raw = getStateValue(stateKey);
       if (raw == null || raw === "") return varId;
@@ -498,13 +499,13 @@ export const resolveVariable = (
     varId = resolvedId;
 
     // Handle auth.* variables
-    if (varId.startsWith("auth.")) return resolveAuthVar(varId) ?? varId;
+    if (varId.startsWith(VAR_PREFIX.auth)) return resolveAuthVar(varId) ?? varId;
 
     // Handle item.* variables (show first item as preview in editor) — KEPT
     // inline: this resolves against the connector first-item preview, NOT the
     // live repeater `itemContext` the runtime resolver uses. Do not merge.
-    if (varId.startsWith("item.") && _connectorData) {
-      const parts = varId.slice("item.".length).split(".");
+    if (varId.startsWith(VAR_PREFIX.item) && _connectorData) {
+      const parts = varId.slice(VAR_PREFIX.item.length).split(".");
       for (const provider of Object.values(_connectorData)) {
         const bindings = provider?.bindings;
         if (!bindings) continue;
@@ -519,13 +520,13 @@ export const resolveVariable = (
     }
 
     // Handle connector.* variables (no-connector case falls through, as before)
-    if (varId.startsWith("connector.") && _connectorData)
+    if (varId.startsWith(VAR_PREFIX.connector) && _connectorData)
       return resolveConnectorVar(varId) ?? varId;
 
     if (!rootProps) return DEFAULT_VALUES[varId] || varId;
 
     // Handle custom variables
-    if (varId.startsWith("variables.")) return resolveVariablesVar(varId, rootProps) ?? varId;
+    if (varId.startsWith(VAR_PREFIX.variables)) return resolveVariablesVar(varId, rootProps) ?? varId;
 
     return resolveRootPropVar(varId, rootProps) ?? (DEFAULT_VALUES[varId] || varId);
   } catch {

@@ -1,4 +1,5 @@
 import { Chip } from "@/chrome/primitives/Chip";
+import { STATE_KEY_EXAMPLE } from "@/utils/state/keys";
 
 export function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void }) {
   return (
@@ -33,7 +34,7 @@ export function AddToCartForm({ action, patch }: { action: any; patch: (p: any) 
           type="text"
           defaultValue={action.variantMatchStateKey || ""}
           onChange={e => patch({ variantMatchStateKey: e.target.value || undefined })}
-          placeholder="pdp:current:matching-variant"
+          placeholder={STATE_KEY_EXAMPLE.pdpCurrentMatchingVariant}
           className="h-full w-full bg-transparent px-1 text-xs outline-none"
         />
       </Chip>

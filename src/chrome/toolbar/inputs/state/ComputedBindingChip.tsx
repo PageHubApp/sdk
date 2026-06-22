@@ -17,6 +17,7 @@ import type {
   ComputedStateBinding,
   ComputedStateCompute,
 } from "../../../../utils/conditions/computedState";
+import { STATE_KEY_EXAMPLE } from "../../../../utils/state/keys";
 
 const PANEL_WIDTH = 380;
 
@@ -112,7 +113,7 @@ function ComputedBindingPanel({
             type="text"
             className="input input-xs font-mono"
             value={binding.key}
-            placeholder="pdp:matching-variant"
+            placeholder={STATE_KEY_EXAMPLE.pdpMatchingVariant}
             onChange={e => onChange({ ...binding, key: e.target.value })}
             aria-label="Output state key"
           />

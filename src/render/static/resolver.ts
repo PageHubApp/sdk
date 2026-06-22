@@ -13,6 +13,7 @@ import {
   tag,
   type ToHTMLFn,
 } from "../../utils/staticHtml";
+import { STATE_KEY } from "../../utils/state/keys";
 
 /**
  * CartBadge static export.
@@ -66,8 +67,8 @@ const cartBadgeToHTML: ToHTMLFn = (props, children, ctx) => {
         style: pillStyle,
         "aria-label": "0 items in cart",
         "aria-live": "polite",
-        "data-state-text": "cart:count",
-        "data-state-show-when-truthy": "cart:count",
+        "data-state-text": STATE_KEY.cartCount,
+        "data-state-show-when-truthy": STATE_KEY.cartCount,
       },
       "0"
     );

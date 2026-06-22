@@ -1,5 +1,6 @@
 import type { AddToCartAction, NodeAction } from "../../action";
 import { getStateValue, setState, setVisibility } from "../../state/stateRegistry";
+import { STATE_KEY } from "../../state/keys";
 import { actionGatePasses } from "../gates";
 import { ActionContext, chain, interpolateItem } from "../internal";
 import { sdkLog } from "../../logger";
@@ -76,7 +77,7 @@ export function attachAddToCart(
     if ((baseItem as any).hasMultipleVariants && !matchedOk) {
       try {
         setState(
-          "cart:error",
+          STATE_KEY.cartError,
           {
             kind: "value",
             value: "Select an option before adding to cart",
@@ -92,7 +93,7 @@ export function attachAddToCart(
     }
     // Clear any stale error from a prior incomplete attempt.
     try {
-      setState("cart:error", { kind: "value", value: "", source: "runtime" }, "add-to-cart");
+      setState(STATE_KEY.cartError, { kind: "value", value: "", source: "runtime" }, "add-to-cart");
     } catch {}
     context?.onAddToCart?.(item, qty);
     // Publish to the central state registry — cart provider subscribes via
@@ -100,11 +101,11 @@ export function attachAddToCart(
     // `cart:add-payload`. Nonce makes repeated adds of the same item rerun.
     try {
       setState(
-        "cart:add-payload",
+        STATE_KEY.cartAddPayload,
         { kind: "value", value: JSON.stringify({ item, quantity: qty }) },
         "add-to-cart"
       );
-      setState("cart:add-tick", { kind: "value", value: String(Date.now()) }, "add-to-cart");
+      setState(STATE_KEY.cartAddTick, { kind: "value", value: String(Date.now()) }, "add-to-cart");
     } catch {}
   });
 }
@@ -118,8 +119,8 @@ export function attachToggleCart(prop: any, action: NodeAction, enabled: boolean
     e.preventDefault();
     // Toggle the canonical cart visibility key. Drawer + provider both read
     // `cart:open` via `useStateValue` — single source of truth.
-    const cur = getStateValue("cart:open");
-    setVisibility("cart:open", cur === "shown" ? "hidden" : "shown", "toggle-cart");
+    const cur = getStateValue(STATE_KEY.cartOpen);
+    setVisibility(STATE_KEY.cartOpen, cur === "shown" ? "hidden" : "shown", "toggle-cart");
   });
 }
 
@@ -135,7 +136,7 @@ export function attachCartCheckout(prop: any, action: NodeAction, enabled: boole
     // subscriber even when content is unchanged.
     try {
       setState(
-        "cart:checkout-tick",
+        STATE_KEY.cartCheckoutTick,
         { kind: "value", value: String(Date.now()) },
         "cart-checkout"
       );
