@@ -156,6 +156,23 @@ export function markRuntimeQueueDrained(): void {
   _queueDrained = true;
 }
 
+// Render mode — the editor sets "editor" at boot (app `PageHubEditorIntegration`);
+// published / viewer / SSR leave the default "viewer". Gates whether an unset
+// {{company.*}} var falls back to placeholder seed copy (editor preview) or
+// renders empty (live site must never ship "Acme Inc." etc.). Default "viewer"
+// keeps published pages safe even if a consumer never calls the setter.
+let _renderMode: "editor" | "viewer" = "viewer";
+
+/** Set the variable-resolution render mode (editor shows seed defaults, viewer blanks them). */
+export function setRenderMode(mode: "editor" | "viewer"): void {
+  _renderMode = mode;
+}
+
+/** Current render mode. */
+export function getRenderMode(): "editor" | "viewer" {
+  return _renderMode;
+}
+
 // Default placeholder values for company variables
 const DEFAULT_VALUES: Record<string, string> = {
   "company.name": "Acme Inc.",
@@ -427,8 +444,15 @@ export const replaceVariables = (
       if (resolved !== undefined) return resolved;
       if (expr.fallback !== null) return expr.fallback;
 
-      const defaultValue = DEFAULT_VALUES[expr.key];
-      if (defaultValue !== undefined) return defaultValue;
+      // Editor shows realistic placeholder defaults (Acme Inc., etc.) so authors
+      // preview a populated page. On the live site we must NOT ship that seed copy
+      // for an unset {{company.*}} — render it empty instead.
+      if (_renderMode === "editor") {
+        const defaultValue = DEFAULT_VALUES[expr.key];
+        if (defaultValue !== undefined) return defaultValue;
+      } else if (expr.key.startsWith("company.")) {
+        return "";
+      }
 
       // Unresolved `item.*` / `connector.*` / `auth.*` are context-dependent
       // and leaking the raw `{{...}}` literal looks broken on live sites.
