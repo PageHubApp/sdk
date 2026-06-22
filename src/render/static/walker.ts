@@ -4,6 +4,7 @@ import type { AuthState } from "../../utils/design/variables";
 import type { StaticRenderContext, ToHTMLFn } from "../../utils/staticHtml";
 import type { SerializedNode, SerializedNodes } from "./types";
 import { sdkLog } from "../../utils/logger";
+import { filterChromeChildren } from "../shared/chromeSuppression";
 
 export function resolveType(node: SerializedNode): string {
   if (typeof node.type === "string") return node.type;
@@ -114,27 +115,8 @@ export function renderNode(
   // Render children + linked nodes
   let childIds = [...(node.nodes || []), ...Object.values(node.linkedNodes || {})];
 
-  // ROOT-level chrome suppression — a page can opt out of the global header
-  // and/or footer via `hideHeader` / `hideFooter` on its own props. With
-  // sharding only the active page sits in ROOT.nodes, so we read its flags
-  // and strip the matching header/footer siblings before recursing. Mirrors
-  // the runtime RenderTree filter for static-published pages.
   if (nodeId === "ROOT") {
-    const activePage = childIds
-      .map(cid => ({ id: cid, n: nodes[cid] }))
-      .find(({ n }) => n?.props?.type === "page");
-    const hideHeader = activePage?.n?.props?.hideHeader === true;
-    const hideFooter = activePage?.n?.props?.hideFooter === true;
-    const hideChrome = activePage?.n?.props?.hideChrome === true;
-    if (hideHeader || hideFooter || hideChrome) {
-      childIds = childIds.filter(cid => {
-        const t = nodes[cid]?.props?.type;
-        if (hideChrome && t !== "page") return false;
-        if (hideHeader && t === "header") return false;
-        if (hideFooter && t === "footer") return false;
-        return true;
-      });
-    }
+    childIds = filterChromeChildren(childIds, cid => nodes[cid]?.props);
   }
 
   // Data nodes own their own iteration — pass raw child IDs through ctx and

@@ -15,21 +15,7 @@
  * Returns null when the path doesn't exist, so the Container can treat it
  * like any other "no items" case.
  */
-
-function walkPath(obj: any, parts: string[]): any {
-  let value = obj;
-  for (const part of parts) {
-    if (value == null || typeof value !== "object") return undefined;
-    if (Array.isArray(value) && /^\d+$/.test(part)) {
-      value = value[parseInt(part, 10)];
-    } else if (part in value) {
-      value = value[part];
-    } else {
-      return undefined;
-    }
-  }
-  return value;
-}
+import { walkPath } from "../walkPath";
 
 function slugify(s: string): string {
   return s

@@ -24,6 +24,7 @@ import type { ConditionGroup } from "../../utils/conditions/types";
 import { WalkerNodeProvider, useTreeRoot, type WalkerNodeCtx } from "./contexts";
 import { uiResolver, type UiResolver } from "./resolver";
 import { sdkLog } from "../../utils/logger";
+import { filterChromeChildren } from "../shared/chromeSuppression";
 
 export interface SerializedNode {
   type: { resolvedName: string };
@@ -108,26 +109,8 @@ function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProp
   // Build child render order: canvas children first, then linkedNodes.
   let childIds = [...(node.nodes ?? []), ...Object.values(node.linkedNodes ?? {})];
 
-  // ROOT-level chrome suppression: a page can opt out of the global header
-  // and/or footer via `hideHeader` / `hideFooter` on its own props. With
-  // sharding only the active page sits in ROOT.nodes, so we read its flags
-  // and strip the matching header/footer siblings before recursing.
   if (id === "ROOT") {
-    const activePage = childIds
-      .map(cid => ({ id: cid, n: nodes[cid] }))
-      .find(({ n }) => n?.props?.type === "page");
-    const hideHeader = activePage?.n?.props?.hideHeader === true;
-    const hideFooter = activePage?.n?.props?.hideFooter === true;
-    const hideChrome = activePage?.n?.props?.hideChrome === true;
-    if (hideHeader || hideFooter || hideChrome) {
-      childIds = childIds.filter(cid => {
-        const t = nodes[cid]?.props?.type;
-        if (hideChrome && t !== "page") return false;
-        if (hideHeader && t === "header") return false;
-        if (hideFooter && t === "footer") return false;
-        return true;
-      });
-    }
+    childIds = filterChromeChildren(childIds, cid => nodes[cid]?.props);
   }
   // Accumulate ancestor classNames so descendants can infer responsive image
   // `sizes` from any fixed-width ancestor (e.g. `<img w-full>` inside a chain

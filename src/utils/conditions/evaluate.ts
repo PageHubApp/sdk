@@ -1,4 +1,5 @@
 import { getStateValue } from "../state/stateRegistry";
+import { walkPath } from "../walkPath";
 import type {
   Condition,
   ConditionContext,
@@ -9,25 +10,6 @@ import type {
 
 /** Default mobile breakpoint (Tailwind `md`) — overridden per-site via `ctx.mobileBreakpoint`. */
 const DEFAULT_MOBILE_BREAKPOINT = 768;
-
-/** Walk a dot-separated path into a nested object, supporting array indices. */
-function walkPath(obj: any, parts: string[]): any {
-  let value = obj;
-  for (const part of parts) {
-    if (value && typeof value === "object") {
-      if (Array.isArray(value) && /^\d+$/.test(part)) {
-        value = value[parseInt(part, 10)];
-      } else if (part in value) {
-        value = value[part];
-      } else {
-        return undefined;
-      }
-    } else {
-      return undefined;
-    }
-  }
-  return value;
-}
 
 /** Compare an actual value against an expected value with the given operator. */
 function applyOperator(actual: string | null, op: Operator, expected: string): boolean {

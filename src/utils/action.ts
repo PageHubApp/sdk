@@ -327,6 +327,25 @@ export function isAnchorAction(action: NodeAction | null | undefined): boolean {
   );
 }
 
+/** Action `type`s that need JS event handlers at runtime (vs `link`, which renders as `<a>`). */
+const HANDLER_ACTION_TYPES = new Set<string>([
+  "open-modal",
+  "show-hide",
+  "toggle-theme",
+  "add-to-cart",
+  "toggle-cart",
+  "cart-checkout",
+  "manage-subscription",
+  "agent-send",
+  "set-local-storage",
+  "remove-local-storage",
+  "set-state",
+  "toggle-state",
+  "clear-state",
+  "increment-state",
+  "decrement-state",
+]);
+
 /** Actions that need JS event handlers at runtime */
 export function isHandlerAction(
   action: NodeAction | null | undefined
@@ -346,24 +365,7 @@ export function isHandlerAction(
   | ClearStateAction
   | IncrementStateAction
   | DecrementStateAction {
-  if (!action) return false;
-  return (
-    action.type === "open-modal" ||
-    action.type === "show-hide" ||
-    action.type === "toggle-theme" ||
-    action.type === "add-to-cart" ||
-    action.type === "toggle-cart" ||
-    action.type === "cart-checkout" ||
-    action.type === "manage-subscription" ||
-    action.type === "agent-send" ||
-    action.type === "set-local-storage" ||
-    action.type === "remove-local-storage" ||
-    action.type === "set-state" ||
-    action.type === "toggle-state" ||
-    action.type === "clear-state" ||
-    action.type === "increment-state" ||
-    action.type === "decrement-state"
-  );
+  return !!action && HANDLER_ACTION_TYPES.has(action.type);
 }
 
 /**
