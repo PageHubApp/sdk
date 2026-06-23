@@ -62,6 +62,23 @@ export { PageHubViewer, renderViewer } from "./viewer";
 
 // Component registration API
 export { defineComponent } from "./define/defineComponent";
+
+// Plugin manifest API (P3 — extend without forking). `definePlugin` validates +
+// freezes a manifest; the loaders apply each half. Server-half types live in the
+// host app (lib/plugins/types.ts) — this barrel stays browser-safe.
+export { definePlugin, definePlugins } from "./define/definePlugin";
+export {
+  applyEditorPlugins,
+  resolvePluginOrder,
+  assertNoSingleInstanceCollision,
+} from "./define/pluginLoader";
+export { EDITOR_SINGLE_INSTANCE_FIELDS } from "./define/pluginTypes";
+export type {
+  PluginManifestBase,
+  EditorContributions,
+  PluginSubmissionHandler,
+  PluginClientDataFetcher,
+} from "./define/pluginTypes";
 export {
   createLiveDoc,
   createStaticDoc,
