@@ -20,6 +20,9 @@ import {
 import { registerMediaUploadHandler, registerMediaUploadAccept } from "../utils/media/registry";
 import { registerSubmissionHandler } from "../utils/submissions";
 import { registerClientDataFetcher } from "../utils/design/variables";
+import { createScopedLogger } from "../utils/logger";
+
+const pluginLog = createScopedLogger("plugins");
 
 /**
  * Topo-sort by `dependsOn` (Kahn's). Install-list order breaks ties (stable).
@@ -37,8 +40,8 @@ export function resolvePluginOrder<T extends PluginManifestBase>(plugins: T[]): 
   for (const p of plugins) {
     for (const dep of p.dependsOn ?? []) {
       if (!byId.has(dep)) {
-        console.warn(
-          `[plugins] "${p.id}" dependsOn "${dep}" which is not installed — dropping that edge`
+        pluginLog.warn(
+          `"${p.id}" dependsOn "${dep}" which is not installed — dropping that edge`
         );
         continue;
       }
