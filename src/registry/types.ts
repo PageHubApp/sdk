@@ -257,3 +257,62 @@ export interface ResolvedContribution<Ctx = unknown> {
   groupOrder: number;
   key?: unknown;
 }
+
+// ─── Modals (the 4th primitive) ────────────────────────────────────────────────
+
+export type ModalSize = "sm" | "md" | "lg" | "xl" | "full";
+export type ModalVariant = "centered" | "drawer-right" | "drawer-left";
+
+/**
+ * Built-in modal ids the SDK pre-registers via `BUILTIN_MODALS`. Keep in
+ * lock-step with `registry/builtins/modals.tsx`. The `(string & {})` escape
+ * hatch on `ModalId` keeps autocomplete for builtins while allowing host ids.
+ */
+export type BuiltinModalId = "ph.media" | "ph.modifiers" | "ph.layers";
+export type ModalId = BuiltinModalId | (string & {});
+
+/** Args passed to a modal's `render`. */
+export interface ModalRenderArgs<Props = unknown> {
+  /** Whatever `open(id, props)` was called with. */
+  props: Props;
+  /** Close THIS modal instance. */
+  close: () => void;
+  /** Close every open modal. */
+  closeAll: () => void;
+  /** Command-context snapshot (features, selection, mode…) for in-render gating. */
+  app: CommandContext;
+}
+
+export interface ModalDef<Props = unknown> {
+  id: ModalId;
+  /** Render the modal body. Runs inside `<ModalHost>` (SDK provider tree). */
+  render: (args: ModalRenderArgs<Props>) => ReactNode;
+  /**
+   * When true (default) `<ModalHost>` wraps `render()` in the built-in
+   * `<Modal>` chrome (backdrop, centered card, close button, focus-trap,
+   * Escape). Set false when the host's `render()` supplies its OWN overlay
+   * chrome and just wants ModalHost to portal + open-state-track it.
+   */
+  chrome?: boolean;
+  /** Title shown in the built-in chrome header. Ignored when `chrome: false`. */
+  title?: string;
+  size?: ModalSize; // default "md"
+  variant?: ModalVariant; // default "centered"
+  /** Backdrop click + Escape dismiss. Default true. */
+  dismissable?: boolean;
+  /**
+   * Feature-flag key. When `features[feature] === false`, `open()` is a
+   * silent no-op (matches how built-in commands gate on `features.mediaManager`).
+   */
+  feature?: keyof PageHubFeatures;
+  /** z-index override. Default: `OVERLAY_Z_MODAL` + open-depth offset. */
+  zIndex?: number;
+}
+
+/** A live open instance. */
+export interface OpenModal<Props = unknown> {
+  id: string;
+  props: Props;
+  /** Monotonic open counter — drives z-stacking + LIFO close order. */
+  seq: number;
+}

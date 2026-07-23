@@ -32,12 +32,13 @@ import {
   PAGEHUB_RTT_GLOBAL_ID,
   REACT_TOOLTIP_SURFACE_CLASS,
 } from "../chrome/primitives/layout/tooltipSurface";
-import { RegistriesProvider, createRegistriesBundle } from "../registry";
+import { RegistriesProvider, createRegistriesBundle, ModalHost } from "../registry";
 import { mountKeybindingDispatcher } from "../registry/dispatcher";
 import type {
   CommandsRegistry,
   MenusRegistry,
   SlotsRegistry,
+  ModalsRegistry,
   KeybindingsRegistry,
   ContextRegistry,
 } from "../registry";
@@ -65,6 +66,8 @@ interface SDKContextValue {
   menus: MenusRegistry;
   /** Slot registry — host renders arbitrary React inside named slots. */
   slots: SlotsRegistry;
+  /** Modal registry — open built-in modals or register your own (the 4th primitive). */
+  modals: ModalsRegistry;
   /** Keybinding registry — register keyboard shortcuts (dispatch in Wave B). */
   keybindings: KeybindingsRegistry;
   /** Context registry — single source of truth for `when` / `enablement` inputs. */
@@ -221,6 +224,7 @@ export function PageHubProvider({
       commands: registries.commands,
       menus: registries.menus,
       slots: registries.slots,
+      modals: registries.modals,
       keybindings: registries.keybindings,
       commandContext: registries.context,
     }),
@@ -240,6 +244,7 @@ export function PageHubProvider({
     <SDKContext.Provider value={value}>
       <RegistriesProvider registries={registries}>
         <EditorStoreProvider>{children}</EditorStoreProvider>
+        <ModalHost />
         <ReactTooltip
           id={PAGEHUB_RTT_GLOBAL_ID}
           variant="light"

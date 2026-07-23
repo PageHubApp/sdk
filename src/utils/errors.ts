@@ -127,3 +127,13 @@ export class KeybindingRegistryError extends PageHubError {
     this.name = "KeybindingRegistryError";
   }
 }
+
+/** Thrown by `sdk.modals.register` / `.replace` when a modal definition is
+ *  malformed or collides. Codes: `MODALS_BAD_ID`, `MODALS_NO_RENDER`,
+ *  `MODALS_DUPLICATE`, `MODALS_NOT_FOUND` (replace on missing id). */
+export class ModalRegistryError extends PageHubError {
+  constructor(init: PageHubErrorInit) {
+    super(init);
+    this.name = "ModalRegistryError";
+  }
+}

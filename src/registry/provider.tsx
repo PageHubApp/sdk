@@ -9,6 +9,7 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 import type { CommandsRegistry } from "./commands";
 import type { MenusRegistry } from "./menus";
 import type { SlotsRegistry } from "./slots";
+import type { ModalsRegistry } from "./modals";
 import type { KeybindingsRegistry } from "./keybindings";
 import type { ContextRegistry } from "./context";
 
@@ -16,6 +17,7 @@ export interface RegistriesBundle {
   commands: CommandsRegistry;
   menus: MenusRegistry;
   slots: SlotsRegistry;
+  modals: ModalsRegistry;
   keybindings: KeybindingsRegistry;
   context: ContextRegistry;
   /** Monotonic tick — incremented on any registry change. Useful for `useSyncExternalStore` getSnapshot. */
@@ -42,6 +44,7 @@ export function RegistriesProvider(props: {
       props.registries.commands.subscribe(bump),
       props.registries.menus.subscribe(bump),
       props.registries.slots.subscribe(bump),
+      props.registries.modals.subscribe(bump),
       props.registries.keybindings.subscribe(bump),
       props.registries.context.subscribe(bump),
     ];
@@ -50,6 +53,7 @@ export function RegistriesProvider(props: {
     props.registries.commands,
     props.registries.menus,
     props.registries.slots,
+    props.registries.modals,
     props.registries.keybindings,
     props.registries.context,
   ]);

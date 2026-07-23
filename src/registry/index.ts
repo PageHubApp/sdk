@@ -14,6 +14,10 @@ export type { MenusRegistry } from "./menus";
 export { createSlotsRegistry } from "./slots";
 export type { SlotsRegistry } from "./slots";
 
+export { createModalsRegistry } from "./modals";
+export type { ModalsRegistry } from "./modals";
+export { ModalHost } from "./ModalHost";
+
 export { createKeybindingsRegistry, parseKey } from "./keybindings";
 export type { KeybindingsRegistry, ParsedKey } from "./keybindings";
 
@@ -31,6 +35,7 @@ export {
   useMenuItems,
   useSlot,
   useSlotList,
+  useModals,
 } from "./hooks";
 
 export { useOverlay } from "./hooks/useOverlay";
@@ -63,6 +68,13 @@ export type {
   SlotId,
   BuiltinSlotId,
   ResolvedContribution,
+  ModalDef,
+  ModalId,
+  BuiltinModalId,
+  ModalRenderArgs,
+  ModalSize,
+  ModalVariant,
+  OpenModal,
 } from "./types";
 
 // ─── Bootstrap helper ────────────────────────────────────────────────────
@@ -70,6 +82,7 @@ export type {
 import { createCommandsRegistry } from "./commands";
 import { createMenusRegistry } from "./menus";
 import { createSlotsRegistry } from "./slots";
+import { createModalsRegistry } from "./modals";
 import { createKeybindingsRegistry } from "./keybindings";
 import { createContextRegistry } from "./context";
 import { BUILTIN_COMMANDS } from "./builtins/commands";
@@ -87,11 +100,12 @@ export function createRegistriesBundle() {
   const menus = createMenusRegistry({ commands, context });
   const slots = createSlotsRegistry({ context });
   const keybindings = createKeybindingsRegistry({ context });
+  const modals = createModalsRegistry({ context });
 
   for (const def of BUILTIN_COMMANDS) commands.register(def);
   for (const def of BUILTIN_SLOTS) slots.register(def);
   for (const def of BUILTIN_KEYBINDINGS) keybindings.register(def);
   for (const entry of BUILTIN_MENUS) menus.contribute(entry.location, entry.items);
 
-  return { context, commands, menus, slots, keybindings };
+  return { context, commands, menus, slots, keybindings, modals };
 }

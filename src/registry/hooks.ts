@@ -149,3 +149,13 @@ function slotTickSnapshot(
   }
   return anchor.__phSlotTick ?? 0;
 }
+
+/**
+ * The modals registry. Open/close from anywhere in the editor React tree:
+ *   const modals = useModals();
+ *   modals.open("ph.media");
+ * (Hosts outside the tree call `bundle.modals.open(...)` directly.)
+ */
+export function useModals() {
+  return useRegistries().modals;
+}

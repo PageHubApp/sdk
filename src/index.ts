@@ -194,6 +194,7 @@ export {
   ConfigError,
   KeybindingRegistryError,
   MenuRegistryError,
+  ModalRegistryError,
   PageHubError,
   SlotRegistryError,
 } from "./utils/errors";
@@ -352,8 +353,11 @@ export {
   useMenuItems,
   useSlot,
   useSlotList,
+  useModals,
   useOverlay,
   createRegistriesBundle,
+  createModalsRegistry,
+  ModalHost,
   BUILTIN_COMMANDS,
   BUILTIN_SLOTS,
   BUILTIN_KEYBINDINGS,
@@ -372,15 +376,30 @@ export type {
   SlotId,
   BuiltinSlotId,
   ResolvedContribution,
+  ModalDef,
+  ModalId,
+  BuiltinModalId,
+  ModalRenderArgs,
+  ModalSize,
+  ModalVariant,
+  OpenModal,
   CommandsRegistry,
   MenusRegistry,
   SlotsRegistry,
+  ModalsRegistry,
   KeybindingsRegistry,
   ContextRegistry,
   RegistriesBundle,
   SlotRendererProps,
   UseOverlayArgs,
 } from "./registry";
+
+// Modal primitive + overlay escape-hatch helpers (host modals that render in
+// their OWN tree but borrow the SDK stacking context + Escape).
+export { Modal } from "./chrome/floating/Modal";
+export type { ModalProps } from "./chrome/floating/Modal";
+export { getPortalTarget } from "./chrome/popovers/getPortalTarget";
+export { OVERLAY_Z_MODAL, OVERLAY_Z_CRITICAL_MODAL } from "./chrome/popovers/overlayZIndex";
 
 // Canonical keyboard predicates (used by registry dispatcher + any surface
 // that still mounts its own listeners during the Phase 2 transition).
