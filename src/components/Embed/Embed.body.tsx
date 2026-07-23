@@ -1,11 +1,14 @@
 /**
  * Pure render body for Embed. NO `@craftjs/core` imports.
  */
+/* eslint-disable react-hooks/rules-of-hooks -- renderEmbedBody is invoked once from a wrapper component (Embed / EmbedRender); hook order is preserved. Same pattern as renderImageBody. */
 import React from "react";
 import { TbCode } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
+import { replaceVariables } from "../../utils/design/variables";
+import { useItemContext } from "../../utils/itemContext";
 import { InjectedHeadTags, InjectedBodyTags } from "../../chrome/static/runtime/InjectedHeadTags";
 import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
@@ -214,7 +217,15 @@ export function resolveEmbedHTML(props: EmbedProps): string {
 }
 
 export function renderEmbedBody(props: EmbedProps, ctx: RenderCtx) {
-  const embedHTML = resolveEmbedHTML(props);
+  // Resolve {{item.*}} / {{company.*}} etc. against the current item + root
+  // context — the same path Image/Text/Button use — so any Embed is
+  // data-bindable inside a Data repeater (e.g. a "reels" collection whose
+  // rows drive the iframe src).
+  const itemContext = useItemContext();
+  const rawHTML = resolveEmbedHTML(props);
+  const embedHTML = rawHTML.includes("{{")
+    ? replaceVariables(rawHTML, ctx.rootProps, itemContext)
+    : rawHTML;
   const prop: any = {
     ref: (r: any) => {
       ctx.connect(ctx.drag(r));
