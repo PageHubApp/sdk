@@ -358,6 +358,12 @@ export function useDataSource(
   const hasResolvedItems = Array.isArray(resolvedItems) && resolvedItems.length > 0;
 
   const serverFetchedEmpty = Array.isArray(items) && items.length === 0;
+  // A client refetch (URL / state-driven filter) that resolved to an empty
+  // array is a definitive "this filter matched nothing" — distinct from "not
+  // fetched yet" (`clientItems === null`, which stays a skeleton). Without this,
+  // a filter that empties a board SSR had populated falls through to the raw
+  // template placeholder instead of an empty board.
+  const clientFetchedEmpty = Array.isArray(clientItems) && clientItems.length === 0;
   // Past-last-page detection: `url:page` lives in the state registry; if
   // it's anything > 1, the connector is paged forward and the empty
   // result means "nothing on this page" (vs. "no products at all").
@@ -385,7 +391,7 @@ export function useDataSource(
     // so the template card renders with `{{item.x || Fallback}}` literals —
     // this is how customer-profile / customer-orders show a skeleton before
     // client data lands, and how product templates preview in the editor.
-    if (!enabled && !hasResolvedItems && (serverFetchedEmpty || pastLastPage)) {
+    if (!enabled && !hasResolvedItems && (serverFetchedEmpty || clientFetchedEmpty || pastLastPage)) {
       return null;
     }
 
