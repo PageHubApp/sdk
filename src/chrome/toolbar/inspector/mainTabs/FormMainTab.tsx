@@ -93,32 +93,7 @@ export const FormMainTab = () => {
           </ToolbarItem>
 
           {formType === "collection" && (
-            <>
-              <ToolbarItem
-                propKey="collectionSlug"
-                propType="component"
-                type="text"
-                label="Collection slug"
-                placeholder="staff"
-                labelHide={true}
-              />
-              <ToolbarItem
-                propKey="collectionFieldMap"
-                propType="component"
-                type="textarea"
-                label="Field map (JSON)"
-                placeholder='{"name":"name","email":"email"}'
-                labelHide={true}
-              />
-              <ToolbarItem
-                propKey="collectionSkipEmail"
-                propType="component"
-                type="toggle"
-                label="Email"
-                option="Skip email notification"
-                on="true"
-              />
-            </>
+            <SlotRenderer id="node/form-collection-section" ctx={{ nodeId: id }} />
           )}
 
           {formType === "emailSave" && (

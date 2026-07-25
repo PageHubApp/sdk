@@ -111,6 +111,9 @@ export function init(config: PageHubConfig): PageHubInstance {
           mailTo: additional.mailTo,
           formName: additional.formName,
           webhookUrl: additional.webhookUrl,
+          collection: additional.collection,
+          collectionFieldMap: additional.collectionFieldMap,
+          skipEmail: additional.skipEmail,
         }),
       });
       return res.json();

@@ -215,6 +215,7 @@ export type BuiltinSlotId =
   | "tiptap/inline-copy-assistant"
   | "settings/ai-button"
   | "node/data-source-section"
+  | "node/form-collection-section"
   | "node/ai-generate-button"
   | "node/ai-context-button"
   | "node/ai-context-editor"

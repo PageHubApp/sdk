@@ -16,6 +16,7 @@ export const BUILTIN_SLOTS: Array<SlotDef & { id: BuiltinSlotId }> = [
   },
   { id: "settings/ai-button", cardinality: "single", contextShape: "void" },
   { id: "node/data-source-section", cardinality: "single", contextShape: "{ nodeId }" },
+  { id: "node/form-collection-section", cardinality: "single", contextShape: "{ nodeId }" },
   {
     id: "node/ai-generate-button",
     cardinality: "single",
