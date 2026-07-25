@@ -164,6 +164,9 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
             formName: formName,
             pagePath: location.pathname,
           };
+          // Lets the server read the authoritative collection config (fixed
+          // values, map, slug) from the saved node instead of trusting the body.
+          if (formId) body.formNodeId = formId;
           if (meta) {
             if (meta.mailto) body.mailTo = meta.mailto;
             if (t === "webhook" && meta.webhookUrl)

@@ -114,6 +114,7 @@ export function init(config: PageHubConfig): PageHubInstance {
           collection: additional.collection,
           collectionFieldMap: additional.collectionFieldMap,
           skipEmail: additional.skipEmail,
+          formNodeId: additional.formNodeId,
         }),
       });
       return res.json();

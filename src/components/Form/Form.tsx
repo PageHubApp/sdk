@@ -101,7 +101,7 @@ export const Form = ({ children, ...props }: any) => {
     setVisibility(fieldsKey, "hidden", "form-submit");
     setVisibility(loadingKey, "shown", "form-submit");
     if (props.submissionType === "iframe") return;
-    await submitFormProduction(formData, props, settings);
+    await submitFormProduction(formData, props, settings, id);
 
     setTimeout(() => {
       if (props.successAction === "redirect" && props.successUrl) {

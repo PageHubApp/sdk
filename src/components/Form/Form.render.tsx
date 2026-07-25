@@ -34,7 +34,7 @@ export const FormRender = ({ children, ...props }: any) => {
     if (fieldsKey) setVisibility(fieldsKey, "hidden", "form-submit");
     if (loadingKey) setVisibility(loadingKey, "shown", "form-submit");
     if (props.submissionType === "iframe") return;
-    await submitFormProduction(formData, props, settings);
+    await submitFormProduction(formData, props, settings, formId);
     setTimeout(() => {
       if (props.successAction === "redirect" && props.successUrl) {
         window.location.href = props.successUrl;

@@ -23,6 +23,10 @@ export interface FormProductionProps {
   webhookUrl?: string;
   collectionSlug?: string;
   collectionFieldMap?: Record<string, string>;
+  /** Author-set constant values written on submit (e.g. `{ public: false }`).
+   *  Never sent to the server from the client — read server-authoritatively
+   *  from the saved form node by node id — so they can't be spoofed. */
+  collectionFieldValues?: Record<string, unknown>;
   collectionSkipEmail?: boolean;
   /** Optional Google Ads / GA4 / Meta conversion fired after a successful submit. */
   conversion?: ActionConversion;
@@ -31,7 +35,8 @@ export interface FormProductionProps {
 export async function submitFormProduction(
   formData: any,
   props: FormProductionProps,
-  settings: any = null
+  settings: any = null,
+  formNodeId?: string
 ): Promise<void> {
   if (props.submissionType === "iframe") return;
 
@@ -54,6 +59,10 @@ export async function submitFormProduction(
       collectionFieldMap:
         props.submissionType === "collection" ? props.collectionFieldMap : undefined,
       skipEmail: props.submissionType === "collection" ? !!props.collectionSkipEmail : undefined,
+      // Server reads the authoritative collection config (slug/map/fixed values)
+      // from the saved node by this id — the body values above are a legacy
+      // fallback for pre-upgrade sites.
+      formNodeId: props.submissionType === "collection" ? formNodeId : undefined,
     });
   }
 
