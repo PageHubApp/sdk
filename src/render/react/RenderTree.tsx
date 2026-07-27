@@ -23,6 +23,7 @@ import { getConnectorData } from "../../utils/design/variables";
 import type { ConditionGroup } from "../../utils/conditions/types";
 import { WalkerNodeProvider, useTreeRoot, type WalkerNodeCtx } from "./contexts";
 import { uiResolver, type UiResolver } from "./resolver";
+import { LAZY_RENDER_NAMES } from "../../components/resolvers/renders";
 import { sdkLog } from "../../utils/logger";
 import { filterChromeChildren } from "../shared/chromeSuppression";
 
@@ -163,11 +164,22 @@ function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProp
 
   // For Data nodes with `dataSource.scope`, ItemProvider wrapping happens
   // inside DataRender via useDataSource. For plain Container, no wrap.
-  return (
-    <WalkerNodeProvider value={ctx}>
-      {React.createElement(Component, { ...node.props, ...injectedProps }, children)}
-    </WalkerNodeProvider>
+  const element = React.createElement(
+    Component,
+    { ...node.props, ...injectedProps },
+    children
   );
+  // Lazy (code-split) node types get their OWN Suspense boundary. Without it, a
+  // lazy chunk (Embed/Video/Map/Form/Data/…) that isn't loaded at hydration
+  // time would suspend the single root-level boundary and blank the WHOLE page
+  // until the chunk arrives, then re-render everything. A per-node boundary
+  // scopes that flash to just this node's subtree; the rest of the page stays.
+  const wrapped = LAZY_RENDER_NAMES.has(node.type.resolvedName) ? (
+    <React.Suspense fallback={null}>{element}</React.Suspense>
+  ) : (
+    element
+  );
+  return <WalkerNodeProvider value={ctx}>{wrapped}</WalkerNodeProvider>;
 }
 
 export function RenderTree({
@@ -180,9 +192,11 @@ export function RenderTree({
     () => ({ ...uiResolver, ...(extraResolver || {}), ...(resolver || {}) }),
     [resolver, extraResolver]
   );
-  // Always-on Suspense boundary covers the React.lazy entries in `uiResolver`
-  // (Map / Video / Form / Embed). When a page has none of those node types,
-  // nothing suspends and the boundary is a cheap no-op.
+  // Safety-net Suspense boundary. Each lazy node type already gets its OWN
+  // per-node boundary inside `NodeRenderer` (see `LAZY_RENDER_NAMES`), so a
+  // suspending chunk is scoped to that node and never blanks the whole page.
+  // This outer boundary only catches anything a host `extraResolver` might
+  // suspend without its own boundary; for the base `uiResolver` it's a no-op.
   return (
     <React.Suspense fallback={null}>
       <NodeRenderer id={rootNodeId} nodes={nodes} resolver={merged} />

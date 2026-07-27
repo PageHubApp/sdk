@@ -96,3 +96,22 @@ export const renderMap: RenderMap = {
 export const SKIP_CONDITIONAL_VISIBILITY: ReadonlySet<string> = new Set([
   "Background",
 ]);
+
+/**
+ * Resolved names whose render component is `React.lazy` (code-split above).
+ * `RenderTree` gives each such node its OWN `<Suspense>` boundary so that a
+ * lazy chunk which isn't loaded at hydration time suspends only that node's
+ * subtree instead of blanking the entire page through one shared root-level
+ * boundary. Keep in sync with the `React.lazy` entries above.
+ */
+export const LAZY_RENDER_NAMES: ReadonlySet<string> = new Set([
+  "Audio",
+  "Data",
+  "Embed",
+  "Form",
+  "FormElement",
+  "OnlyFormElement",
+  "Map",
+  "MapPoint",
+  "Video",
+]);
