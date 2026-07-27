@@ -2,3 +2,10 @@ node_modules/
 package-lock.json
 dist/
 *.tsbuildinfo
+
+# Generated icon registries — built by root `pnpm gen:icons`, read at SSR via
+# utils/icons/serverResolve.ts (fs, not a static import). Regenerated on every
+# prebuild, so they must not be tracked. commonIcons.json IS statically imported
+# (IconDialog) and stays tracked.
+src/data/icon-svgs/
+src/data/icon-manifests/
