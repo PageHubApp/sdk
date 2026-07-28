@@ -9,7 +9,14 @@ import parse from "style-to-object";
 import { migrateActions, actionToHref } from "./action";
 import { applyHandlerOptions, readHandlerOptions } from "./actions/handlerCode";
 import type { PageIndex } from "./page/pageManagement";
-import { getCdnUrl, generateSrcSet, generateSizes, inferFixedSizesFromClassName } from "./cdn";
+import {
+  getCdnUrl,
+  generateSrcSet,
+  generateSizes,
+  inferFixedSizesFromClassName,
+  deriveImageSizes,
+  resolveCdnResponsive,
+} from "./cdn";
 import { isCSSAnimation, getCSSAnimationProps } from "./animations/animations";
 import { purifyToTailwind } from "./tailwind/daisyuiToTailwind";
 import { replaceVariables } from "./design/variables";
@@ -577,4 +584,11 @@ export function interpolate(
 }
 
 // Re-export for component convenience
-export { getCdnUrl, generateSrcSet, generateSizes, inferFixedSizesFromClassName };
+export {
+  getCdnUrl,
+  generateSrcSet,
+  generateSizes,
+  inferFixedSizesFromClassName,
+  deriveImageSizes,
+  resolveCdnResponsive,
+};

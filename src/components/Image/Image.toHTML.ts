@@ -5,25 +5,15 @@ import {
   ariaAttrs,
   attrsPassthrough,
   buildAttrs,
-  generateSizes,
-  generateSrcSet,
-  getCdnUrl,
   getPageIndex,
   handlerAttrs,
-  inferFixedSizesFromClassName,
   interpolate,
+  resolveCdnResponsive,
   stateAttrs,
   staticClasses,
   tag,
   type ToHTMLFn,
 } from "../../utils/staticHtml";
-
-const RESPONSIVE_WIDTHS = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840];
-const RESPONSIVE_SIZES = generateSizes({
-  "(max-width: 640px)": "100vw",
-  "(max-width: 1024px)": "50vw",
-  default: "33vw",
-});
 
 export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const { videoId, type } = props;
@@ -76,14 +66,17 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
   if (cdnId) {
     const quality = typeof props.quality === "number" ? props.quality : undefined;
-    const cdnOpts: Parameters<typeof getCdnUrl>[1] = { width: 1280, format: "auto" };
-    if (quality !== undefined) cdnOpts.quality = quality;
-    src = getCdnUrl(cdnId, cdnOpts);
-    srcset = generateSrcSet(cdnId, RESPONSIVE_WIDTHS, {
-      format: "auto",
-      ...(quality !== undefined ? { quality } : {}),
+    // The static walker doesn't thread parent className, so `sizes` is derived
+    // from the node's own classes only (covers the LCP cases: full-bleed hero
+    // via `w-full`/`inset-0`, height-capped logo via `h-N`).
+    const r = resolveCdnResponsive(cdnId, {
+      className: cls,
+      quality,
+      sizesOverride: props.sizes,
     });
-    sizesAttr = inferFixedSizesFromClassName(cls) || RESPONSIVE_SIZES;
+    src = r.src;
+    srcset = r.srcSet || "";
+    sizesAttr = r.sizes || "";
   }
   if (!src) return "";
 

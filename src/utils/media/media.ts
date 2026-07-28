@@ -3,7 +3,7 @@
  */
 
 import { ROOT_NODE } from "../rootNode";
-import { getCdnUrl, generateSrcSet, generateSizes } from "../cdn";
+import { getCdnUrl, resolveCdnResponsive } from "../cdn";
 import { sdkLog } from "../logger";
 
 // ─── Internal helpers ───
@@ -118,7 +118,8 @@ export const getMediaContent = (
 
 export const getResponsiveImageAttrs = (
   pageMedia: any[] | null | undefined,
-  mediaId: string
+  mediaId: string,
+  opts: { className?: string; parentClassName?: string; sizes?: string } = {}
 ) => {
   try {
     if (!mediaId) return { src: null, srcset: null, sizes: null };
@@ -132,16 +133,15 @@ export const getResponsiveImageAttrs = (
       return { src: getMediaContent(pageMedia, mediaId), srcset: null, sizes: null };
     }
 
+    // CDN media → same shared resolver as `type:"cdn"` Image nodes, so a
+    // media-library image gets className-aware `sizes` (not a hardcoded 33vw).
     const cdnId = media.cdnId || media.id;
-    return {
-      src: getCdnUrl(cdnId, { width: 1280, format: "auto" }),
-      srcset: generateSrcSet(cdnId, [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840], { format: "auto" }),
-      sizes: generateSizes({
-        "(max-width: 640px)": "100vw",
-        "(max-width: 1024px)": "50vw",
-        default: "33vw",
-      }),
-    };
+    const r = resolveCdnResponsive(cdnId, {
+      className: opts.className,
+      parentClassName: opts.parentClassName,
+      sizesOverride: opts.sizes,
+    });
+    return { src: r.src, srcset: r.srcSet, sizes: r.sizes };
   } catch (e) {
     sdkLog.error("Failed to get responsive image attrs:", e);
     return { src: getMediaContent(pageMedia, mediaId), srcset: null, sizes: null };

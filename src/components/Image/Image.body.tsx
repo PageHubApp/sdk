@@ -3,14 +3,7 @@
 import React, { useRef } from "react";
 import { TbCheck, TbPhoto } from "../_emptyHintIcons";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
-import { getCdnUrl, generateSrcSet, generateSizes, inferFixedSizesFromClassName } from "../../utils/cdn";
-
-const IMAGE_RESPONSIVE_WIDTHS = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840];
-const IMAGE_RESPONSIVE_SIZES = generateSizes({
-  "(max-width: 640px)": "100vw",
-  "(max-width: 1024px)": "50vw",
-  default: "33vw",
-});
+import { resolveCdnResponsive } from "../../utils/cdn";
 import {
   migrateActions,
   actionToHref,
@@ -64,6 +57,8 @@ export interface ImageProps extends BaseSelectorProps, ImageSrcSource {
   alt?: string;
   title?: string;
   quality?: number;
+  /** Author override for the responsive `sizes` attribute — wins over derivation. */
+  sizes?: string;
   /** Transient editor-only flags surfaced by the upload pipeline. */
   isLoading?: boolean;
   loaded?: boolean;
@@ -173,7 +168,11 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
     }
   } else {
     if (videoId) {
-      const r = getResponsiveImageAttrs(ctx.pageMedia, videoId);
+      const r = getResponsiveImageAttrs(ctx.pageMedia, videoId, {
+        className: props.className,
+        parentClassName: ctx.parentClassName,
+        sizes: props.sizes,
+      });
       _imgProp.src = r.src;
       if (r.srcset) {
         _imgProp.srcSet = r.srcset;
@@ -187,16 +186,15 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
       !srcStr.startsWith("data:")
     ) {
       const quality = typeof props.quality === "number" ? props.quality : undefined;
-      const cdnOpts: Parameters<typeof getCdnUrl>[1] = { width: 1280, format: "auto" };
-      if (quality !== undefined) cdnOpts.quality = quality;
-      _imgProp.src = getCdnUrl(srcStr, cdnOpts);
-      _imgProp.srcSet = generateSrcSet(srcStr, IMAGE_RESPONSIVE_WIDTHS, {
-        format: "auto",
-        ...(quality !== undefined ? { quality } : {}),
+      const r = resolveCdnResponsive(srcStr, {
+        className: props.className,
+        parentClassName: ctx.parentClassName,
+        quality,
+        sizesOverride: props.sizes,
       });
-      _imgProp.sizes =
-        inferFixedSizesFromClassName(props.className, ctx.parentClassName) ||
-        IMAGE_RESPONSIVE_SIZES;
+      _imgProp.src = r.src;
+      _imgProp.srcSet = r.srcSet;
+      _imgProp.sizes = r.sizes;
     } else {
       _imgProp.src = srcStr || null;
     }
