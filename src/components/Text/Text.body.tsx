@@ -14,7 +14,6 @@ import {
   isHandlerAction,
   isAnchorAction,
   findLinkAction,
-  isRootPath,
   type NodeAction,
 } from "../../utils/action";
 import NextLink from "next/link";
@@ -72,12 +71,11 @@ const renderLiveMode = (
   const firstLink = findLinkAction(migrateActions(props));
   const resolvedUrl = actionToHref(firstLink, pageIndex, router?.asPath);
   if (resolvedUrl) {
-    // SPA nav (next/link) for internal links EXCEPT the site root "/", which a
-    // custom domain serves via a host rewrite the client router can't replay
-    // (`/` → `/static/<host>`); root links use a plain <a> (full-page nav) so
-    // the server resolves it. External links are plain <a>. See Link.body.tsx.
+    // SPA nav (next/link) for internal links; plain <a> for external. The
+    // custom-domain `/` rewrite is client-replayable (`:host` captured — see
+    // next.config), so even the site root "/" resolves client-side.
     const isInternal = resolvedUrl.startsWith("/");
-    tagName = (isInternal && !isRootPath(resolvedUrl) ? (NextLink as any) : ("a" as any));
+    tagName = isInternal ? (NextLink as any) : ("a" as any);
     const target = actionTarget(firstLink);
     const linkProps: any = {
       href: resolvedUrl,

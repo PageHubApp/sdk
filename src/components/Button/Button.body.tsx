@@ -22,7 +22,6 @@ import {
   isHandlerAction,
   isAnchorAction,
   findLinkAction,
-  isRootPath,
   type NodeAction,
 } from "../../utils/action";
 import NextLink from "next/link";
@@ -162,11 +161,10 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
   }
 
   if (ctx.enabled && ele === "a") ele = "span";
-  // Internal links use SPA nav (next/link) EXCEPT the site root "/", which a
-  // custom domain serves via a host rewrite the client router can't replay
-  // (`/` → `/static/<host>`). Root links stay a plain <a> (full-page nav) so the
-  // server resolves it; everything else stays SPA. See Link.body.tsx.
-  if (!ctx.enabled && isInternalLink && ele === "a" && !isRootPath(resolvedUrl)) ele = NextLink;
+  // Internal links use SPA nav (next/link). The custom-domain `/` rewrite is
+  // client-replayable (its `:host` is captured — see next.config), so even the
+  // site root "/" resolves client-side. See Link.body.tsx.
+  if (!ctx.enabled && isInternalLink && ele === "a") ele = NextLink;
   if (ctx.enabled && prop.type === "submit") {
     prop.type = "button";
   }

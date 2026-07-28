@@ -6,7 +6,6 @@ import {
   isAnchorAction,
   isHandlerAction,
   isLinkAction,
-  isRootPath,
   migrateActions,
   type NodeAction,
 } from "../../utils/action";
@@ -120,18 +119,16 @@ export function applyContainerActions(prop: any, ctx: ApplyActionsCtx): ApplyAct
     prop.href = resolvedUrl;
     if (linkTarget) prop.target = linkTarget;
     if (/^https?:\/\//.test(resolvedUrl as string)) prop.rel = "noopener noreferrer";
-    // Internal same-window links → SPA navigation via Next router, EXCEPT the
-    // site root "/", which a custom domain serves via a host rewrite the client
-    // router can't replay (`/` → `/static/<host>`) — root links do a full-page
-    // navigation so the server resolves it. Skip when the chain has more than
-    // one action; the JS dispatcher below handles ordered execution + nav.
+    // Internal same-window links → SPA navigation via Next router. The
+    // custom-domain `/` rewrite is client-replayable (`:host` captured — see
+    // next.config), so even the site root "/" resolves client-side. Skip when
+    // the chain has more than one action; the JS dispatcher below handles
+    // ordered execution + nav at the link's turn.
     if (isInternalLink && !linkTarget && actions.length === 1) {
-      const rootLink = isRootPath(resolvedUrl);
       prop.onClick = (e: any) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
         e.preventDefault();
-        if (rootLink) window.location.assign(resolvedUrl as string);
-        else router.push(resolvedUrl).catch(() => {});
+        router.push(resolvedUrl).catch(() => {});
       };
     }
   }

@@ -433,20 +433,6 @@ export function actionToHref(
 }
 
 /**
- * True when a resolved internal href points at the site root — "/", "/?query"
- * or "/#hash". Root links can't be navigated client-side on custom domains
- * (the `/` → `/static/<host>` host rewrite isn't replayable by the client
- * router), so callers render them as a plain <a> / full-page navigation while
- * keeping SPA nav for every other internal link.
- */
-export function isRootPath(url: unknown): boolean {
-  return (
-    typeof url === "string" &&
-    (url === "/" || url.startsWith("/?") || url.startsWith("/#"))
-  );
-}
-
-/**
  * Get the link target for actions that support it.
  */
 export function actionTarget(action: NodeAction | null | undefined): LinkTarget | undefined {

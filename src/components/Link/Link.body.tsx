@@ -16,7 +16,6 @@ import {
   isAnchorAction,
   isHandlerAction,
   findLinkAction,
-  isRootPath,
   type NodeAction,
 } from "../../utils/action";
 import { useResolvedIcon } from "../../utils/icons/iconResolver";
@@ -115,13 +114,11 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
   }
 
   if (ctx.enabled) ele = "span";
-  // Internal links use client-side SPA nav (next/link) — EXCEPT the site root
-  // "/". On a custom domain "/" is served via a host rewrite (`/` → `/static/<host>`
-  // in next.config) that the client router can't replay, so a NextLink to "/"
-  // 404s. Root links fall back to a plain <a> (full-page navigation) so the
-  // server resolves the rewrite; every other internal link stays SPA.
-  const isRootLink = isRootPath(resolvedUrl);
-  if (!ctx.enabled && isInternalLink && !isRootLink) ele = NextLink;
+  // Internal links use client-side SPA nav (next/link). The custom-domain
+  // `/` → `/static/<host>` rewrite is client-replayable because its `:host` is
+  // captured (see next.config `(?<host>…)`), so even the site root "/" resolves
+  // client-side — no full-page fallback needed.
+  if (!ctx.enabled && isInternalLink) ele = NextLink;
 
   applyAriaProps(prop, props);
 
