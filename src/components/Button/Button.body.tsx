@@ -22,8 +22,10 @@ import {
   isHandlerAction,
   isAnchorAction,
   findLinkAction,
+  isRootPath,
   type NodeAction,
 } from "../../utils/action";
+import NextLink from "next/link";
 import { useResolvedIcon } from "../../utils/icons/iconResolver";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
@@ -160,10 +162,11 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
   }
 
   if (ctx.enabled && ele === "a") ele = "span";
-  // Internal links stay a plain <a> (full-page navigation), NOT next/link — a
-  // client-side SPA nav can't replay the custom-domain host rewrite
-  // (`/` → `/static/<host>`) and 404s on `/`. A real navigation resolves it
-  // server-side. See Link.body.tsx for the full rationale.
+  // Internal links use SPA nav (next/link) EXCEPT the site root "/", which a
+  // custom domain serves via a host rewrite the client router can't replay
+  // (`/` → `/static/<host>`). Root links stay a plain <a> (full-page nav) so the
+  // server resolves it; everything else stays SPA. See Link.body.tsx.
+  if (!ctx.enabled && isInternalLink && ele === "a" && !isRootPath(resolvedUrl)) ele = NextLink;
   if (ctx.enabled && prop.type === "submit") {
     prop.type = "button";
   }

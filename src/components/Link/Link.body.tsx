@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/rules-of-hooks -- render*Body fns are invoked once from a wrapper component; hook order is preserved. Renamed to use* would change exported public-ish API across the SDK. */
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
+import NextLink from "next/link";
 import { TbPointer } from "../_emptyHintIcons";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
@@ -15,6 +16,7 @@ import {
   isAnchorAction,
   isHandlerAction,
   findLinkAction,
+  isRootPath,
   type NodeAction,
 } from "../../utils/action";
 import { useResolvedIcon } from "../../utils/icons/iconResolver";
@@ -113,10 +115,13 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
   }
 
   if (ctx.enabled) ele = "span";
-  // Internal links render as a plain <a> (full-page navigation), NOT next/link.
-  // Client-side SPA routing can't replay the custom-domain host rewrite
-  // (`/` → `/static/<host>` in next.config), so a NextLink to `/` 404s. A real
-  // navigation goes through the server, which resolves the rewrite correctly.
+  // Internal links use client-side SPA nav (next/link) — EXCEPT the site root
+  // "/". On a custom domain "/" is served via a host rewrite (`/` → `/static/<host>`
+  // in next.config) that the client router can't replay, so a NextLink to "/"
+  // 404s. Root links fall back to a plain <a> (full-page navigation) so the
+  // server resolves the rewrite; every other internal link stays SPA.
+  const isRootLink = isRootPath(resolvedUrl);
+  if (!ctx.enabled && isInternalLink && !isRootLink) ele = NextLink;
 
   applyAriaProps(prop, props);
 
