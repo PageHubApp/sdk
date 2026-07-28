@@ -2,7 +2,6 @@
 /* eslint-disable react-hooks/rules-of-hooks -- render*Body fns are invoked once from a wrapper component; hook order is preserved. Renamed to use* would change exported public-ish API across the SDK. */
 import React, { useEffect, useState } from "react";
 import { AutoTextSize } from "auto-text-size";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";
@@ -71,8 +70,10 @@ const renderLiveMode = (
   const firstLink = findLinkAction(migrateActions(props));
   const resolvedUrl = actionToHref(firstLink, pageIndex, router?.asPath);
   if (resolvedUrl) {
-    const isInternal = resolvedUrl.startsWith("/");
-    tagName = isInternal ? (Link as any) : ("a" as any);
+    // Always a plain <a> (full-page navigation), NOT next/link — client-side
+    // SPA nav can't replay the custom-domain host rewrite (`/` → `/static/<host>`)
+    // and 404s on `/`. See Link.body.tsx for the full rationale.
+    tagName = "a" as any;
     const target = actionTarget(firstLink);
     const linkProps: any = {
       href: resolvedUrl,

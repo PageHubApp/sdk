@@ -1,7 +1,6 @@
 /** Pure body for Link. NO `@craftjs/core`. */
 /* eslint-disable react-hooks/rules-of-hooks -- render*Body fns are invoked once from a wrapper component; hook order is preserved. Renamed to use* would change exported public-ish API across the SDK. */
 import React, { useEffect, useMemo, useState } from "react";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { TbPointer } from "../_emptyHintIcons";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";
@@ -114,7 +113,10 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
   }
 
   if (ctx.enabled) ele = "span";
-  if (!ctx.enabled && isInternalLink) ele = NextLink;
+  // Internal links render as a plain <a> (full-page navigation), NOT next/link.
+  // Client-side SPA routing can't replay the custom-domain host rewrite
+  // (`/` → `/static/<host>` in next.config), so a NextLink to `/` 404s. A real
+  // navigation goes through the server, which resolves the rewrite correctly.
 
   applyAriaProps(prop, props);
 

@@ -119,14 +119,16 @@ export function applyContainerActions(prop: any, ctx: ApplyActionsCtx): ApplyAct
     prop.href = resolvedUrl;
     if (linkTarget) prop.target = linkTarget;
     if (/^https?:\/\//.test(resolvedUrl as string)) prop.rel = "noopener noreferrer";
-    // Internal same-window links → SPA navigation via Next router.
-    // Skip when the chain has more than one action; the JS dispatcher below
-    // handles ordered execution + nav at the link's turn.
+    // Internal same-window links → full-page navigation (NOT Next router).
+    // Client-side SPA nav can't replay the custom-domain host rewrite
+    // (`/` → `/static/<host>`) and 404s on `/`; a real navigation resolves it
+    // server-side. Skip when the chain has more than one action; the JS
+    // dispatcher below handles ordered execution + nav at the link's turn.
     if (isInternalLink && !linkTarget && actions.length === 1) {
       prop.onClick = (e: any) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
         e.preventDefault();
-        router.push(resolvedUrl).catch(() => {});
+        window.location.assign(resolvedUrl as string);
       };
     }
   }

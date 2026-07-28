@@ -1,7 +1,6 @@
 /** Pure body for Button. NO `@craftjs/core`. */
 /* eslint-disable react-hooks/rules-of-hooks -- render*Body fns are invoked once from a wrapper component; hook order is preserved. Renamed to use* would change exported public-ish API across the SDK. */
 import React, { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { TbPointer } from "../_emptyHintIcons";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
@@ -161,7 +160,10 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
   }
 
   if (ctx.enabled && ele === "a") ele = "span";
-  if (!ctx.enabled && isInternalLink && ele === "a") ele = Link;
+  // Internal links stay a plain <a> (full-page navigation), NOT next/link — a
+  // client-side SPA nav can't replay the custom-domain host rewrite
+  // (`/` → `/static/<host>`) and 404s on `/`. A real navigation resolves it
+  // server-side. See Link.body.tsx for the full rationale.
   if (ctx.enabled && prop.type === "submit") {
     prop.type = "button";
   }
