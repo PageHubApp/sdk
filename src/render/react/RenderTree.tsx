@@ -22,6 +22,7 @@ import { buildClientContext } from "../../utils/conditions/context";
 import { getConnectorData } from "../../utils/design/variables";
 import type { ConditionGroup } from "../../utils/conditions/types";
 import { WalkerNodeProvider, useTreeRoot, type WalkerNodeCtx } from "./contexts";
+import { partitionDataChildIds } from "../../utils/data/emptySlot";
 import { uiResolver, type UiResolver } from "./resolver";
 import { LAZY_RENDER_NAMES } from "../../components/resolvers/renders";
 import { sdkLog } from "../../utils/logger";
@@ -35,7 +36,7 @@ export interface SerializedNode {
   linkedNodes?: Record<string, string>;
   parent?: string | null;
   hidden?: boolean;
-  custom?: { displayName?: string };
+  custom?: { displayName?: string; dataRole?: string };
   displayName?: string;
 }
 
@@ -120,7 +121,7 @@ function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProp
   const childParentClassName = parentClassName
     ? `${parentClassName} ${ownClassName}`
     : ownClassName;
-  const children = childIds.map(cid => (
+  const renderChild = (cid: string) => (
     <NodeRenderer
       key={cid}
       id={cid}
@@ -128,10 +129,22 @@ function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProp
       resolver={resolver}
       parentClassName={childParentClassName}
     />
-  ));
+  );
+  // Data nodes split their children into the repeater template (repeated per
+  // item) and an optional empty-state slot (`custom.dataRole: "empty"`, rendered
+  // once by DataRender when the binding resolves to empty). Non-Data nodes
+  // render every child.
+  const isDataNode = node.type.resolvedName === "Data";
+  const { templateChildIds, emptyChildIds } = isDataNode
+    ? partitionDataChildIds(childIds, cid => nodes[cid]?.custom?.dataRole)
+    : { templateChildIds: childIds, emptyChildIds: [] as string[] };
+  const children = templateChildIds.map(renderChild);
 
   // Special-case Map: pre-compute childPoints from MapPoint children.
   let injectedProps: Record<string, any> = {};
+  if (isDataNode && emptyChildIds.length > 0) {
+    injectedProps.emptyState = <>{emptyChildIds.map(renderChild)}</>;
+  }
   if (node.type.resolvedName === "Map") {
     const childPoints = (node.nodes ?? [])
       .map(cid => {

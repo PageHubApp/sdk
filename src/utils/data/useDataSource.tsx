@@ -169,7 +169,20 @@ function facetSelectionSnapshot(): string {
  */
 export function useDataSource(
   ds: DataSource | undefined,
-  props: { livePreview?: boolean; enabled?: boolean } = {}
+  props: {
+    livePreview?: boolean;
+    enabled?: boolean;
+    /**
+     * Author-designed empty-state content (the Data node's children flagged
+     * `custom.dataRole: "empty"`, pre-split by the walker/editor). Rendered
+     * in place of the repeated rows when the binding resolves to *definitively*
+     * empty — a server/client fetch that returned `[]`, or a page past the last
+     * page. NOT rendered while a binding is still loading (`items === null`),
+     * so a skeleton shows instead of a flash of "nothing here". In the editor
+     * it renders alongside the live preview so authors can design it.
+     */
+    emptyState?: React.ReactNode;
+  } = {}
 ): DataBehavior {
   // Walker always passes `enabled: false`; editor passes its Craft enabled.
   // When the caller doesn't supply, infer from the walker context (false) —
@@ -205,6 +218,10 @@ export function useDataSource(
     : null;
   const items = ds ? applyDataSourceScope(rawItems, mergedDs ?? ds) : rawItems;
   const hasItems = Array.isArray(items) && items.length > 0;
+  // SSR produced a definitive result for this binding — a real array, whether
+  // populated OR empty (`[]`). `null` means "not fetched" (customer/* bindings,
+  // scope-only, or a route that skipped connector SSR).
+  const ssrResolved = Array.isArray(items);
 
   // ── Client-side data source ──────────────────────────────────────────────
   const [clientItems, setClientItems] = useState<any[] | null>(null);
@@ -285,14 +302,22 @@ export function useDataSource(
     // from the registry, forwarded as `facet.<key>` params.
     const facetOptions = facetSubscriber ? collectFacetOptions() : {};
 
-    // Skip fetch when SSR already supplied items AND no state/facet override
-    // is active (initial-mount only — refetchKey > 0 means an input changed
-    // and we should re-run). Static paging fields (limit/offset) are NOT an
-    // "override" — they don't change between SSR and mount.
+    // Skip fetch when SSR already RESOLVED this binding — a definitive array,
+    // populated OR empty (`[]`) — and no state/facet override is active
+    // (initial-mount only; refetchKey > 0 means an input changed and we re-run).
+    // Static paging fields (limit/offset) are NOT an "override".
+    //
+    // Skipping on the empty case too is essential: the client fetcher hits the
+    // SAME data source, so a mount refetch can't discover rows SSR didn't. And
+    // for non-product `collection` bindings the client options don't carry
+    // `filter`, so an empty-SSR detail/featured binding (slug matched nothing,
+    // no featured row) would refetch UNFILTERED, wrongly repopulate, and clobber
+    // the empty-state slot. `null` items (customer/*, scope-only, or a route
+    // that skipped connector SSR) still fall through and fetch.
     const hasQueryOverride =
       (stateOptions != null && Object.keys(stateOptions).length > 0) ||
       Object.keys(facetOptions).length > 0;
-    if (hasItems && !hasQueryOverride && refetchKey === 0) return;
+    if (ssrResolved && !hasQueryOverride && refetchKey === 0) return;
 
     // The connector needs the binding's static paging fields to page
     // server-side — they're not state-driven so they never came through
@@ -347,7 +372,7 @@ export function useDataSource(
     JSON.stringify(ds?.publishStateKeys ?? null),
     JSON.stringify(routeParams),
     enabled,
-    hasItems,
+    ssrResolved,
     refetchKey,
   ]);
 
@@ -371,6 +396,7 @@ export function useDataSource(
   const pastLastPage = pageStateValue ? parseInt(pageStateValue, 10) > 1 : false;
 
   const showLivePreview = props.livePreview !== false; // default on
+  const emptyState = props.emptyState;
 
   const renderChildren = (children: React.ReactNode): React.ReactNode => {
     if (!ds) return children;
@@ -384,21 +410,24 @@ export function useDataSource(
       ));
     }
 
-    // Connector-backed repeater with no items: render nothing only when we
-    // know the fetch produced nothing (server returned an empty array, or
-    // URL page is past the last page). For bindings that haven't fetched yet
-    // (server `items` is `null`, client fetcher still pending), fall through
-    // so the template card renders with `{{item.x || Fallback}}` literals —
-    // this is how customer-profile / customer-orders show a skeleton before
-    // client data lands, and how product templates preview in the editor.
+    // Connector-backed repeater with no items: render the author's empty-state
+    // slot (or nothing when none is authored) only when we KNOW the fetch
+    // produced nothing (server returned an empty array, client refetch resolved
+    // to `[]`, or the URL page is past the last page). For bindings that haven't
+    // fetched yet (server `items` is `null`, client fetcher still pending), fall
+    // through so the template card renders with `{{item.x || Fallback}}`
+    // literals — this is how customer-profile / customer-orders show a skeleton
+    // before client data lands, and how product templates preview in the editor.
     if (!enabled && !hasResolvedItems && (serverFetchedEmpty || clientFetchedEmpty || pastLastPage)) {
-      return null;
+      return emptyState ?? null;
     }
 
     // Editor: show live data preview — template card with first item (editable),
     // plus read-only clones for remaining items (toggleable via props.livePreview).
-    if (enabled && hasItems && children) {
-      return (
+    // The empty-state slot renders alongside so authors can design it in place
+    // (the walker/editor split keeps it out of the per-item repeat).
+    if (enabled && children) {
+      const preview = hasItems ? (
         <>
           <ItemProvider item={items![0]} index={0}>
             {children}
@@ -412,6 +441,16 @@ export function useDataSource(
               </div>
             ))}
         </>
+      ) : (
+        children
+      );
+      return emptyState ? (
+        <>
+          {preview}
+          {emptyState}
+        </>
+      ) : (
+        preview
       );
     }
 

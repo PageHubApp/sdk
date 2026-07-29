@@ -20,6 +20,7 @@
  */
 
 import { migrateActions } from "../../utils/action";
+import { partitionDataChildIds } from "../../utils/data/emptySlot";
 import { resolveNestedItems } from "../../utils/data/resolveNestedItems";
 import { applyRouteParamsToDataSource } from "../../utils/data/routeParamsDataSource";
 import { dataSourceBindingId } from "../../utils/data/storefrontDataSource";
@@ -131,6 +132,12 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
 
   const ds: DataSource | undefined = props.dataSource;
   const childIds = ctx.repeaterChildIds || [];
+  // Split children into the repeater template vs the empty-state slot
+  // (`custom.dataRole: "empty"`). Only Data nodes with a dataSource repeat, so
+  // the split is a no-op for plain pass-through.
+  const { templateChildIds, emptyChildIds } = ds
+    ? partitionDataChildIds(childIds, id => ctx.nodes?.[id]?.custom?.dataRole)
+    : { templateChildIds: childIds, emptyChildIds: [] as string[] };
 
   // Resolve items — `scope` reads from parent item, otherwise reads from
   // pre-fetched connectorData[provider].bindings[bindingId].
@@ -147,6 +154,9 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     }
   }
   const hasItems = Array.isArray(items) && items.length > 0;
+  // Definitively empty at build time — the binding fetched `[]` (not merely
+  // unresolved/`null`, which stays a skeleton for client hydration).
+  const isEmpty = Array.isArray(items) && items.length === 0;
 
   // Build child HTML: one render per item with currentItem set, or fallback
   // pass-through (no dataSource / no items resolved at SSR — matches React's
@@ -159,7 +169,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
       for (let i = 0; i < items!.length; i++) {
         const item = items![i];
         ctx.currentItem = item;
-        const itemHTML = ctx.renderChildren(childIds);
+        const itemHTML = ctx.renderChildren(templateChildIds);
         // Stamp data-item-id on the first child element of the iteration
         // (best-effort string-level — the walker's children are siblings).
         // Splice it into the first `<tag` we find that doesn't already have
@@ -171,6 +181,10 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     } finally {
       ctx.currentItem = prevItem;
     }
+  } else if (ds && isEmpty && emptyChildIds.length > 0) {
+    // Binding resolved to nothing — render the author's empty-state slot once
+    // (no item context), mirroring React's `useDataSource` empty branch.
+    childrenHTML = ctx.renderChildren(emptyChildIds);
   } else if (!ds) {
     // No dataSource — render children once as plain Container.
     childrenHTML = ctx.renderChildren(childIds);
@@ -185,11 +199,11 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   // wrapper's child rows. Reconciler keeps DOM by `data-item-id`.
   const isStateScope = !!ds?.scope && ds.scope.startsWith("state:");
   let itemTemplateHTML = "";
-  if (ds && (ds.stateInputs || ds.provider || isStateScope) && childIds.length > 0) {
+  if (ds && (ds.stateInputs || ds.provider || isStateScope) && templateChildIds.length > 0) {
     const prevItem = ctx.currentItem;
     try {
       ctx.currentItem = makeSlotProxy() as any;
-      const rendered = ctx.renderChildren(childIds);
+      const rendered = ctx.renderChildren(templateChildIds);
       ctx.currentItem = prevItem;
       // Stamp `data-item-id="{{slot:id}}"` on the first tag so the runtime
       // can reconcile by id when items change.
