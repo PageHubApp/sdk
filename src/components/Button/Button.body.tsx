@@ -201,7 +201,6 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
   }
 
   const iconSize = props.icon?.size || "w-6 h-6";
-  const iconElement = useResolvedIcon(props.icon?.value, ctx.pageMedia);
 
   const iconClass = useMemo(
     () =>
@@ -217,6 +216,11 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
         .join(" "),
     [iconSize, props.icon?.color, props.icon?.shadow]
   );
+
+  // Composed before resolving so the SVG is told to fill `iconSize`'s box —
+  // same string Button.toHTML feeds to pickIconSvgClass, keeping the React and
+  // static renderers in agreement.
+  const iconElement = useResolvedIcon(props.icon?.value, ctx.pageMedia, iconClass);
 
   const iconSpan = iconElement && (
     <span className={iconClass} aria-hidden="true">

@@ -27,7 +27,10 @@ export const Icon: UserComponent<IconProps> = (incomingProps: IconProps) => {
     () => extractRootDataFromQuery(query),
     [query]
   );
-  const iconElement = useResolvedIcon(props.value, pageMedia);
+  // `props.className` is the only part of the composed wrapper class that can
+  // carry a w-/h-/size- box (see renderIconBody), so it is what decides whether
+  // the SVG fills the box or stays at 1em.
+  const iconElement = useResolvedIcon(props.value, pageMedia, props.className);
 
   const ctx: RenderCtx = {
     id, enabled, isMounted, isActive, isHovered: false,

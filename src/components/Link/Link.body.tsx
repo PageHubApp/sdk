@@ -150,7 +150,6 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
   }
 
   const iconSize = props.icon?.size || "w-4 h-4";
-  const iconElement = useResolvedIcon(props.icon?.value, ctx.pageMedia);
 
   const iconClass = useMemo(
     () =>
@@ -166,6 +165,10 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
         .join(" "),
     [iconSize, props.icon?.color, props.icon?.shadow]
   );
+
+  // Composed before resolving so the SVG is told to fill `iconSize`'s box —
+  // same string Link.toHTML feeds to pickIconSvgClass.
+  const iconElement = useResolvedIcon(props.icon?.value, ctx.pageMedia, iconClass);
 
   const iconSpan = iconElement && (
     <span className={iconClass} aria-hidden="true">

@@ -6,7 +6,7 @@ import { makeWalkerCtx } from "../../render/react/RenderCtx";
 export const IconRender = (props: IconProps) => {
   const tree = useTreeRoot();
   const walker = useWalkerNode();
-  const iconElement = useResolvedIcon(props.value, tree?.pageMedia ?? null);
+  const iconElement = useResolvedIcon(props.value, tree?.pageMedia ?? null, props.className);
   const ctx = makeWalkerCtx({
     id: walker?.id ?? "",
     isCanvas: false,

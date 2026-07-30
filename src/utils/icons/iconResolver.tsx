@@ -109,10 +109,19 @@ export function renderIconSvg(entry: IconSvgEntry, wrapperClassName?: string): R
 /**
  * React hook form — prefers the SSR-seeded map (inline SVG) and falls back to
  * a sprite-sheet `<use href>` reference for icons picked post-SSR in the editor.
+ *
+ * `wrapperClassName` is the class list of the element the icon is rendered
+ * into. It MUST be passed by any caller whose wrapper carries an explicit
+ * `w-`/`h-`/`size-` box, otherwise `pickIconSvgClass` can't add `ph-icon-fill`
+ * and the SVG stays at its 1em default — rendering a 16px glyph inside (say) a
+ * 64px tile. The static-export paths (`Icon`/`Button`/`Link` `toHTML`) already
+ * pass their composed wrapper class, so omitting it here is what made the
+ * React and static renderers disagree.
  */
 export function useResolvedIcon(
   value: string | undefined,
-  pageMedia?: any[] | null
+  pageMedia?: any[] | null,
+  wrapperClassName?: string
 ): React.ReactNode {
   const iconRef = value?.startsWith("ref-icon:") ? value : undefined;
   const entry = useIconSvg(iconRef);
@@ -128,7 +137,7 @@ export function useResolvedIcon(
   }
 
   if (value.startsWith("ref-icon:")) {
-    if (entry) return renderIconSvg(entry);
+    if (entry) return renderIconSvg(entry, wrapperClassName);
     const parsed = parseIconRef(value);
     if (!parsed) return null;
     if (!spriteReady) return null;
@@ -137,7 +146,11 @@ export function useResolvedIcon(
     // inherit from the symbol. Keep fill="currentColor" as a safe fallback for
     // older sprites rebuilt pre-fix.
     return (
-      <svg className="ph-icon-svg" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+      <svg
+        className={pickIconSvgClass(wrapperClassName)}
+        xmlns="http://www.w3.org/2000/svg"
+        fill="currentColor"
+      >
         <use href={`#${parsed.name}`} />
       </svg>
     );
