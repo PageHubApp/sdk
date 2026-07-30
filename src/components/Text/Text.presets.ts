@@ -1,8 +1,9 @@
 /** Text — presets extracted from Text.craft.tsx. */
-import { TbBlockquote, TbH1, TbH2, TbLetterT } from "react-icons/tb";
+import { TbArticle, TbBlockquote, TbH1, TbH2, TbLetterT } from "react-icons/tb";
 import { LoremIpsum } from "../../utils/seeds/loremIpsum";
 import type { ComponentPreset } from "../../define/types";
 import { registerPresets } from "../../define/catalogRegistry";
+import { RICH_TEXT_BLOCK_CLASS } from "./Text.richContent";
 
 const lorem = new LoremIpsum({
   sentencesPerParagraph: { max: 3, min: 2 },
@@ -44,6 +45,19 @@ export const textPresets: ComponentPreset[] = [
         props: {
           tagName: "p",
           text: paragraphLorem.generateParagraphs(1),
+        },
+      },
+      {
+        label: "Rich content",
+        icon: TbArticle,
+        description:
+          "Saved HTML from a CMS / collection richText field — headings, lists, and links keep their block styling.",
+        props: {
+          // `div`, not `p` — block HTML inside a paragraph is hoisted out by the
+          // parser on statically published pages. See Text.richContent.ts.
+          tagName: "div",
+          text: "<h2>Section heading</h2><p>Bind this node to a rich text field.</p><ul><li>First point</li><li>Second point</li></ul>",
+          className: RICH_TEXT_BLOCK_CLASS,
         },
       },
 ];
