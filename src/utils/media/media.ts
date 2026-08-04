@@ -148,6 +148,81 @@ export const getResponsiveImageAttrs = (
   }
 };
 
+// ─── Intrinsic size (CLS) ───
+
+/**
+ * Intrinsic pixel dimensions recorded for a media entry, or `null` when none
+ * were captured.
+ *
+ * Two writers persist dimensions today and they use different shapes, so this
+ * is the one place that normalizes them:
+ *   - nested `metadata.dimensions.{width,height}` — the editor upload paths
+ *     (`useMediaUpload`, `ImageUploadInput`, `useAiGeneration`) via
+ *     `getImageDimensionsFromFile` / `...FromUrl`
+ *   - flat `metadata.{width,height}` — `scripts/upload-media.mjs` (sharp)
+ *
+ * Anything non-finite, non-positive, or absent yields `null`. A guessed
+ * dimension is worse than none: it would hand the browser a wrong aspect ratio
+ * and distort the image.
+ */
+export const getMediaDimensions = (
+  pageMedia: any[] | null | undefined,
+  mediaId: string
+): { width: number; height: number } | null => {
+  if (!mediaId || !pageMedia || !Array.isArray(pageMedia)) return null;
+  const meta = pageMedia.find((m: any) => m?.id === mediaId)?.metadata;
+  if (!meta) return null;
+
+  const px = (v: unknown): number | null =>
+    typeof v === "number" && Number.isFinite(v) && v > 0 ? Math.round(v) : null;
+
+  const width = px(meta.dimensions?.width) ?? px(meta.width);
+  const height = px(meta.dimensions?.height) ?? px(meta.height);
+  return width && height ? { width, height } : null;
+};
+
+/**
+ * Does `className` declare an explicit CSS `width` at the base breakpoint (and
+ * therefore at every breakpoint, via Tailwind's mobile-first inheritance)?
+ *
+ * Breakpoint- and state-prefixed tokens are ignored on purpose: a `md:w-1/2`
+ * or `hover:w-full` leaves the width unconstrained at base, which is precisely
+ * the case we must not emit into.
+ */
+const hasExplicitCssWidth = (className?: string): boolean =>
+  (className || "")
+    .split(/\s+/)
+    .some(tok => tok.length > 0 && !tok.includes(":") && /^(?:w|size)-/.test(tok));
+
+/**
+ * The `width` / `height` attributes to stamp on a rendered `<img>`, or `null`
+ * to stamp nothing.
+ *
+ * Why the attributes fix CLS: with Tailwind preflight's `img { max-width:100%;
+ * height:auto }` in play (it ships via `@import "tailwindcss"` in the SSR
+ * compiler, so every published route has it), `width`/`height` feed the UA's
+ * `aspect-ratio: attr(width) / attr(height)` rule. The browser reserves the
+ * right box before the bytes arrive while CSS still drives the displayed size.
+ *
+ * Why the width gate: the attributes are *presentational hints*, the
+ * lowest-priority cascade origin. An author `width` declaration always beats
+ * them, so they can only ever contribute the aspect ratio — the box is
+ * unchanged. With no author width the `width` hint becomes the used width, and
+ * that silently resizes the two layouts that depend on an auto width: a
+ * height-capped logo (`h-10` alone, where the box grows from ratio-derived to
+ * the full intrinsic pixel width) and an inset-positioned overlay (`absolute
+ * inset-0`, where a non-auto width makes the browser drop `right`). Both are
+ * real visual regressions, so those images get no attributes at all.
+ */
+export const getIntrinsicSizeAttrs = (
+  pageMedia: any[] | null | undefined,
+  mediaId: string,
+  opts: { className?: string } = {}
+): { width: number; height: number } | null => {
+  if (!hasExplicitCssWidth(opts.className)) return null;
+  return getMediaDimensions(pageMedia, mediaId);
+};
+
 export const getMediaById = (query: any, mediaId: string): any | null => {
   try {
     if (!mediaId) return null;

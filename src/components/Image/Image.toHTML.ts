@@ -1,4 +1,6 @@
 import { actionToHref, findLinkAction, migrateActions } from "../../utils/action";
+import { getIntrinsicSizeAttrs } from "../../utils/media/media";
+import { ROOT_NODE } from "../../utils/rootNode";
 import { getImageSrc } from "./imageProps";
 import {
   actionsAttr,
@@ -80,10 +82,19 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
   if (!src) return "";
 
+  // Intrinsic size → the browser reserves the box before the bytes land (CLS).
+  // Only CDN-bound images have a media-library entry to read dimensions from;
+  // a full URL / data: src resolves to `cdnId === null` and gets nothing.
+  const dims = cdnId
+    ? getIntrinsicSizeAttrs(ctx.nodes?.[ROOT_NODE]?.props?.pageMedia, cdnId, { className: cls })
+    : null;
+
   const imgAttrs: Record<string, any> = {
     src,
     srcset: srcset || undefined,
     sizes: srcset ? sizesAttr : undefined,
+    width: dims?.width,
+    height: dims?.height,
     alt,
     class: cls || undefined,
     title: title || undefined,

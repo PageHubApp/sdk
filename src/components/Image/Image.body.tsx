@@ -14,7 +14,7 @@ import {
 } from "../../utils/action";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";
-import { getResponsiveImageAttrs } from "../../utils/media/media";
+import { getIntrinsicSizeAttrs, getResponsiveImageAttrs } from "../../utils/media/media";
 import { motionIt } from "../../utils/motion";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
@@ -167,7 +167,12 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
       _imgProp.style = { display: "flex", alignItems: "center", justifyContent: "center" };
     }
   } else {
+    // The media-library id backing this image, when it has one. Drives the
+    // intrinsic `width`/`height` lookup below; a full URL / data: src has no
+    // library entry, so it stays null and no attributes are emitted.
+    let libraryId: string | null = null;
     if (videoId) {
+      libraryId = videoId;
       const r = getResponsiveImageAttrs(ctx.pageMedia, videoId, {
         className: props.className,
         parentClassName: ctx.parentClassName,
@@ -185,6 +190,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
       !srcStr.startsWith("/") &&
       !srcStr.startsWith("data:")
     ) {
+      libraryId = srcStr;
       const quality = typeof props.quality === "number" ? props.quality : undefined;
       const r = resolveCdnResponsive(srcStr, {
         className: props.className,
@@ -199,6 +205,17 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
       _imgProp.src = srcStr || null;
     }
     if (props.fetchPriority) _imgProp.fetchPriority = props.fetchPriority;
+
+    // Intrinsic size → the browser reserves the box before the bytes land (CLS).
+    if (libraryId) {
+      const dims = getIntrinsicSizeAttrs(ctx.pageMedia, libraryId, {
+        className: props.className,
+      });
+      if (dims) {
+        _imgProp.width = dims.width;
+        _imgProp.height = dims.height;
+      }
+    }
   }
 
   const looksStyledShape = /\bbg-/.test(cn) || /\bbg-gradient-/.test(cn) || /\bbg-linear-/.test(cn);
