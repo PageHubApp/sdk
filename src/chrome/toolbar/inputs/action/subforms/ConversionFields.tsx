@@ -2,15 +2,15 @@
  * ConversionFields — author UI for `action.conversion` (and `Form.conversion`).
  *
  * Renders a collapsible "Track conversion" section. The provider dropdown is
- * gated by the site's configured integrations (read from ROOT.props.integrations
- * via Craft) so authors can't pick `google-ads` when no AW- ID is set.
+ * gated by the site's configured integrations (host-injected via
+ * SiteIntegrationsAtom) so authors can't pick `google-ads` when no AW- ID is set.
  *
  * Smart presets for event name based on the action's type / href (Call,
  * Get Directions, Lead, AddToCart, Download, Click).
  */
-import { useEditor } from "@craftjs/core";
-import { ROOT_NODE } from "@craftjs/utils";
+import { useAtomValue } from "@zedux/react";
 import { Chip } from "@/chrome/primitives/Chip";
+import { SiteIntegrationsAtom } from "@/utils/atoms";
 import type { ActionConversion, ActionType } from "@/utils/action";
 
 type Provider = ActionConversion["provider"];
@@ -59,14 +59,12 @@ export function ConversionFields({
   fallbackEventName = "Click",
 }: Props) {
   // Which providers are configured at the site level? Gates the dropdown.
-  const configured = useEditor(state => {
-    const integrations = state.nodes[ROOT_NODE]?.data?.props?.integrations || {};
-    return {
-      "google-ads": !!integrations.googleAds?.conversionId,
-      ga4: !!integrations.googleAnalytics?.measurementId,
-      meta: !!integrations.metaPixel?.pixelId,
-    } as Record<Provider, boolean>;
-  });
+  const integrations = useAtomValue(SiteIntegrationsAtom);
+  const configured = {
+    "google-ads": !!integrations?.googleAds?.conversionId,
+    ga4: !!integrations?.googleAnalytics?.measurementId,
+    meta: !!integrations?.metaPixel?.pixelId,
+  } as Record<Provider, boolean>;
 
   const enable = () => {
     onChange({

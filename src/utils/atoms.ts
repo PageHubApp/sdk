@@ -33,6 +33,22 @@ export type SiteSettings = {
 };
 export const SettingsAtom = atom("settings", null as SiteSettings | null);
 
+/**
+ * Analytics / verification provider config for the current site, injected by
+ * the host app. Keyed by provider (`googleAds`, `googleAnalytics`, `metaPixel`,
+ * …) with the provider's id field inside.
+ *
+ * Its own atom rather than a `SettingsAtom` field: the host replaces
+ * `SettingsAtom` wholesale with the save endpoint's response, which carries
+ * only Page-doc fields — a provider config living there would blank out on the
+ * first autosave. Editor chrome reads this to gate conversion-tracking UI.
+ */
+export type SiteIntegrationsConfig = Record<string, Record<string, string>>;
+export const SiteIntegrationsAtom = atom(
+  "siteIntegrations",
+  null as SiteIntegrationsConfig | null
+);
+
 /** Auth token injected by the host app (nullable). */
 export const SessionTokenAtom = atom("sessionToken", null);
 
