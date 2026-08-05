@@ -1,25 +1,5 @@
 import { ariaAttrs, handlerAttrs, staticClasses, tag, type ToHTMLFn } from "../../utils/staticHtml";
-
-const TILE_URLS: Record<string, string> = {
-  osm: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  "cartodb-positron": "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-  "cartodb-dark": "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-  "cartodb-voyager": "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-};
-
-function latLngToTile(lat: number, lng: number, zoom: number) {
-  const n = Math.pow(2, zoom);
-  const x = Math.floor(((lng + 180) / 360) * n);
-  const latRad = (lat * Math.PI) / 180;
-  const y = Math.floor(((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n);
-  return { x, y };
-}
-
-function getStaticTileUrl(lat: number, lng: number, zoom: number, tileStyle: string) {
-  const { x, y } = latLngToTile(lat, lng, zoom);
-  const url = TILE_URLS[tileStyle] || TILE_URLS.osm;
-  return url.replace("{z}", String(zoom)).replace("{x}", String(x)).replace("{y}", String(y));
-}
+import { buildStaticMapPlan, MARKER_COLOR, TILE_SIZE } from "./tiles";
 
 export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const {
@@ -56,8 +36,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     .filter(Boolean) as Array<{ id: string; lat: number; lng: number; title: string; description: string }>;
 
   const hasLocation = lat !== 0 || lng !== 0;
-  const filterStyle = grayscale ? "filter: grayscale(1)" : "";
-  const tileUrl = getStaticTileUrl(lat, lng, zoom, tileStyle);
+  const filterStyle = grayscale ? "filter: grayscale(1);" : "";
 
   const config = { lat, lng, zoom, type, tileStyle, grayscale: !!grayscale, points: childPoints };
 
@@ -77,15 +56,61 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     }
   }
 
-  const inner = hasLocation
-    ? tag("img", {
-        src: tileUrl,
-        alt: title || `Map at ${lat}, ${lng}`,
-        class: "size-full object-cover",
-        loading: "lazy",
-        style: filterStyle || undefined,
-      })
-    : "";
+  // Mirrors StaticMapGrid.tsx — real tiles at native size, grid centred on the
+  // requested coordinate. All positioning is inline so the static export never
+  // depends on arbitrary Tailwind classes being compiled into the page CSS.
+  const inner = (() => {
+    if (!hasLocation) return "";
+    const plan = buildStaticMapPlan({
+      lat, lng, zoom, tileStyle,
+      width: props.staticWidth,
+      height: props.staticHeight,
+      points: type === "background" ? [] : childPoints,
+    });
+
+    const tiles = plan.tiles
+      .map((t, i) =>
+        tag("img", {
+          src: t.url,
+          alt: i === 0 ? title || `Map at ${lat}, ${lng}` : "",
+          "aria-hidden": i === 0 ? undefined : "true",
+          loading: "lazy",
+          draggable: "false",
+          style:
+            `position:absolute;left:${t.left}px;top:${t.top}px;` +
+            `width:${TILE_SIZE}px;height:${TILE_SIZE}px;max-width:none;user-select:none;`,
+        })
+      )
+      .join("");
+
+    const markers = plan.markers
+      .map(m =>
+        tag("div", {
+          title: m.title || undefined,
+          style:
+            `position:absolute;left:${m.left}px;top:${m.top}px;width:12px;height:12px;` +
+            `border-radius:9999px;background:${MARKER_COLOR};` +
+            `transform:translate(-50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.35);`,
+        }, "")
+      )
+      .join("");
+
+    const grid = tag(
+      "div",
+      {
+        style:
+          `position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);` +
+          `width:${plan.width}px;height:${plan.height}px;`,
+      },
+      tiles + markers
+    );
+
+    return tag(
+      "div",
+      { style: `position:relative;width:100%;height:100%;overflow:hidden;${filterStyle}` },
+      grid
+    );
+  })();
 
   return tag("div", attrs, inner);
 };
