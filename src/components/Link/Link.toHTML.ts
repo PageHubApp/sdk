@@ -1,3 +1,4 @@
+import { twMerge } from "tailwind-merge";
 import { actionToHref, actionTarget, findLinkAction, migrateActions } from "../../utils/action";
 import { pickIconSvgClass, serializeIconSvgAttrs } from "../../utils/icons/iconResolver";
 import { resolveIconSvgSync } from "../../utils/icons/serverResolve";
@@ -35,7 +36,9 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     collectClasses(extra, ctx);
   }
 
-  const fullCls = [cls, extra].filter(Boolean).join(" ");
+  // Author className wins over the icon defaults — same reason as Link.body.tsx:
+  // `inline-flex` appended after `hidden` would defeat every responsive hide.
+  const fullCls = extra ? twMerge(extra, cls) : cls;
   const actions = migrateActions(props);
   const firstLink = findLinkAction(actions);
   const rawHref = actionToHref(firstLink, getPageIndex(ctx), ctx?.currentPath);

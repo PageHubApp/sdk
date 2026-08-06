@@ -1,6 +1,7 @@
 /** Pure body for Link. NO `@craftjs/core`. */
 /* eslint-disable react-hooks/rules-of-hooks -- render*Body fns are invoked once from a wrapper component; hook order is preserved. Renamed to use* would change exported public-ish API across the SDK. */
 import React, { useEffect, useMemo, useState } from "react";
+import { twMerge } from "tailwind-merge";
 import { useRouter } from "next/router";
 import NextLink from "next/link";
 import { TbPointer } from "../_emptyHintIcons";
@@ -72,7 +73,10 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
       "items-center",
       props.icon?.gap || "gap-1.5",
     ];
-    prop.className = prop.className + " " + defaults.join(" ");
+    // twMerge, not concat: the author's className must win. `hidden lg:hidden`
+    // and `inline-flex` are the same display group, so a raw append silently
+    // un-hides every icon Link the template meant to hide on mobile.
+    prop.className = twMerge(defaults.join(" "), prop.className);
   }
 
   const actions = migrateActions(props);
