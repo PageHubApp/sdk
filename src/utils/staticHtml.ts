@@ -421,9 +421,37 @@ export function actionsAttr(
       const real = actionToHref(a, pageIndex, ctx?.currentPath);
       return real ? { ...a, href: real } : a;
     }
+    if (a?.type === "link" && typeof a.href === "string" && a.href.includes("{{") && ctx) {
+      return { ...a, href: interpolateNonItem(a.href, ctx) };
+    }
     return a;
   });
   return { "data-ph-actions": JSON.stringify(resolved) };
+}
+
+/**
+ * Resolve `{{company.*}}` / `{{variables.*}}` in a string while leaving
+ * `{{item.*}}` untouched.
+ *
+ * The `<a href>` the static walker emits is interpolated, but the same action
+ * is ALSO serialized into `data-ph-actions`, and the static click dispatcher
+ * preventDefaults the anchor and navigates to that copy instead. Its
+ * `interpolateItem` only matches `{{item.*}}`, so any other token used to
+ * survive into `window.location.assign` verbatim — a `tel:{{company.phoneTel}}`
+ * button rendered a correct href and then navigated to the literal braces.
+ *
+ * `{{item.*}}` must stay unresolved: it is per-row and only the client knows
+ * the row. Running `replaceVariables` with a null item would flatten it to ""
+ * and break every repeater link, so those tokens are masked across the call.
+ */
+function interpolateNonItem(raw: string, ctx: StaticRenderContext): string {
+  const stash: string[] = [];
+  const masked = raw.replace(/\{\{\s*item\.[^}]*\}\}/g, m => {
+    stash.push(m);
+    return ` PHITEM${stash.length - 1} `;
+  });
+  const out = interpolate(masked, ctx);
+  return out.replace(/ PHITEM(\d+) /g, (_, i) => stash[Number(i)] ?? "");
 }
 
 // ─── State-binding attributes ───────────────────────────────────────────────
