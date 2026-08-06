@@ -172,6 +172,52 @@ const LIGHTNESS_THRESHOLD = 0.7;
 const LIGHT_CONTENT_L = 0.93;
 const DARK_CONTENT_L = 0.25;
 const CONTENT_CHROMA_RATIO = 0.15; // Keep ~15% of original chroma
+// WCAG AA for body text is 4.5:1. Solving for exactly that lands some pairs on
+// 4.49 once the browser gamut-maps the oklch, so aim slightly past the line.
+const CONTRAST_TARGET = 4.6;
+
+// ─── WCAG contrast ──────────────────────────────────────────────────────────
+
+function relativeLuminance(L: number, C: number, H: number): number {
+  const [r, g, b] = oklchToSrgb(L, C, H);
+  const f = (v: number) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+
+function contrastRatio(lumA: number, lumB: number): number {
+  const [hi, lo] = lumA > lumB ? [lumA, lumB] : [lumB, lumA];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/**
+ * Walk the content lightness from `startL` toward `extremeL` (1 = white, 0 =
+ * black), tapering chroma to 0 as it goes, and stop at the first step that
+ * clears CONTRAST_TARGET. Returns the best-effort result when the extreme is
+ * still short of the target.
+ *
+ * Starting at the DaisyUI-ish 0.93/0.25 and only moving as far as needed keeps
+ * surfaces that already pass looking exactly as they did — the walk only bites
+ * where contrast was actually failing.
+ */
+function solveContentLightness(
+  startL: number,
+  extremeL: number,
+  chroma: number,
+  hue: number,
+  surfaceLum: number
+): { L: number; C: number; ratio: number; ok: boolean } {
+  const STEPS = 40;
+  let best = { L: startL, C: chroma, ratio: -1, ok: false };
+  for (let i = 0; i <= STEPS; i++) {
+    const t = i / STEPS;
+    const L = startL + (extremeL - startL) * t;
+    const C = chroma * (1 - t);
+    const ratio = contrastRatio(relativeLuminance(L, C, hue), surfaceLum);
+    if (ratio > best.ratio) best = { L, C, ratio, ok: false };
+    if (ratio >= CONTRAST_TARGET) return { L, C, ratio, ok: true };
+  }
+  return best;
+}
 
 /**
  * Convert any CSS color (hex, rgb, rgba, hsl, hsla, oklch) to an oklch() string.
@@ -188,17 +234,33 @@ export function colorToOklch(color: string): string {
 /**
  * Generate a readable content color for the given surface color.
  * Accepts any CSS color format. Returns oklch() string.
- * Mirrors DaisyUI 5's oklch-based algorithm.
+ *
+ * Direction comes from the surface lightness, which encodes design intent —
+ * saturated mid-tones like an electric indigo button want white on them even
+ * when black would score marginally higher. From there the lightness is pushed
+ * only as far as WCAG AA requires.
+ *
+ * Fixed 0.93/0.25 endpoints alone leave a dead zone: a surface sitting near the
+ * threshold (a brass gold at L 0.699) is too light for near-white content and
+ * too dark to be handed dark content, so it lands around 2.2:1 either way. When
+ * the preferred direction cannot reach the target even at pure white/black, the
+ * other direction wins instead.
  */
 export function generateContentColor(surfaceColor: string): string {
   try {
     const [L, C, H] = parseColor(surfaceColor);
+    const surfaceLum = relativeLuminance(L, C, H);
+    const chroma = C * CONTENT_CHROMA_RATIO;
 
-    const isLight = L >= LIGHTNESS_THRESHOLD;
-    const contentL = isLight ? DARK_CONTENT_L : LIGHT_CONTENT_L;
-    const contentC = C * CONTENT_CHROMA_RATIO;
+    const light = () => solveContentLightness(LIGHT_CONTENT_L, 1, chroma, H, surfaceLum);
+    const dark = () => solveContentLightness(DARK_CONTENT_L, 0, chroma, H, surfaceLum);
 
-    return formatOklch(contentL, contentC, H);
+    const preferred = L >= LIGHTNESS_THRESHOLD ? dark() : light();
+    if (preferred.ok) return formatOklch(preferred.L, preferred.C, H);
+
+    const alternate = L >= LIGHTNESS_THRESHOLD ? light() : dark();
+    const winner = alternate.ratio > preferred.ratio ? alternate : preferred;
+    return formatOklch(winner.L, winner.C, H);
   } catch {
     return "oklch(100% 0 0)"; // fallback white
   }
@@ -220,8 +282,11 @@ export const CONTENT_COLOR_PAIRS: Record<string, string> = {
 };
 
 /**
- * Given a palette array, auto-generate missing or update content colors
- * for all surface tokens that have a defined pair.
+ * Derive the content color for every surface token that has a defined pair.
+ *
+ * Any `* Content` entry already in the palette is REPLACED, not respected —
+ * the derived value is the single source of truth so a hand-picked pairing can
+ * never silently drop below AA.
  */
 export function autoGenerateContentColors(
   palette: { name: string; color: string }[]
