@@ -6,6 +6,7 @@ import { useMounted } from "../../utils/hooks/useMounted";
 import { useWalkerNode } from "../../render/react/contexts";
 import type { MapProps } from "./Map.body";
 import { StaticMapGrid } from "./StaticMapGrid";
+import type { StaticMapPath } from "./tiles";
 
 const LazyLeafletMap =
   typeof window !== "undefined" ? React.lazy(() => import("./MapLeaflet")) : null;
@@ -18,7 +19,9 @@ interface ChildPoint {
   description: string;
 }
 
-export const MapRender = (incomingProps: MapProps & { childPoints?: ChildPoint[] }) => {
+export const MapRender = (
+  incomingProps: MapProps & { childPoints?: ChildPoint[]; childPaths?: StaticMapPath[] }
+) => {
   const props: any = {
     lat: 51.505, lng: -0.09, zoom: 13,
     type: "interactive", tileStyle: "osm", grayscale: false, title: "",
@@ -27,6 +30,7 @@ export const MapRender = (incomingProps: MapProps & { childPoints?: ChildPoint[]
   const id = useWalkerNode()?.id ?? "";
   const isMounted = useMounted();
   const childPoints: ChildPoint[] = props.childPoints ?? [];
+  const childPaths: StaticMapPath[] = props.childPaths ?? [];
   const { lat, lng, zoom, type, tileStyle, grayscale } = props;
   const hasLocation = lat !== 0 || lng !== 0;
   const filterStyle = grayscale ? { filter: "grayscale(1)" } : {};
@@ -39,6 +43,7 @@ export const MapRender = (incomingProps: MapProps & { childPoints?: ChildPoint[]
           lat={lat} lng={lng} zoom={zoom} tileStyle={tileStyle}
           showMarkers={type === "static"}
           points={childPoints}
+          paths={childPaths}
           width={props.staticWidth} height={props.staticHeight}
           grayscale={!!grayscale}
           alt={props.title || `Map at ${lat}, ${lng}`}
@@ -55,7 +60,7 @@ export const MapRender = (incomingProps: MapProps & { childPoints?: ChildPoint[]
           <div className="size-full" style={filterStyle}>
             <LazyLeafletMap
               lat={lat} lng={lng} zoom={zoom} tileStyle={tileStyle}
-              childPoints={childPoints} enabled={false}
+              childPoints={childPoints} childPaths={childPaths} enabled={false}
             />
           </div>
         </React.Suspense>
@@ -67,7 +72,7 @@ export const MapRender = (incomingProps: MapProps & { childPoints?: ChildPoint[]
       return (
         <StaticMapGrid
           lat={lat} lng={lng} zoom={zoom} tileStyle={tileStyle}
-          showMarkers points={childPoints}
+          showMarkers points={childPoints} paths={childPaths}
           width={props.staticWidth} height={props.staticHeight}
           grayscale={!!grayscale}
           alt={props.title || `Map at ${lat}, ${lng}`}

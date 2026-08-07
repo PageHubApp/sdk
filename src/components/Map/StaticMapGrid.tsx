@@ -1,15 +1,23 @@
 /** Non-interactive tile grid shared by the editor and viewer Map paths. NO `@craftjs/core`. */
 import React from "react";
-import { buildStaticMapPlan, MARKER_COLOR, TILE_SIZE, type StaticMapPoint } from "./tiles";
+import { dashArrayFor } from "../MapPath/parsePath";
+import {
+  buildStaticMapPlan,
+  MARKER_COLOR,
+  TILE_SIZE,
+  type StaticMapPath,
+  type StaticMapPoint,
+} from "./tiles";
 
 export interface StaticMapGridProps {
   lat: number;
   lng: number;
   zoom: number;
   tileStyle: string;
-  /** Draw marker dots for the child MapPoints (`static` does, `background` doesn't). */
+  /** Draw marker dots + route lines for the child nodes (`static` does, `background` doesn't). */
   showMarkers?: boolean;
   points?: StaticMapPoint[];
+  paths?: StaticMapPath[];
   width?: number;
   height?: number;
   grayscale?: boolean;
@@ -23,12 +31,13 @@ export interface StaticMapGridProps {
  * size — which is also what makes the marker offsets land correctly.
  */
 export const StaticMapGrid = ({
-  lat, lng, zoom, tileStyle, showMarkers = false, points = [],
+  lat, lng, zoom, tileStyle, showMarkers = false, points = [], paths = [],
   width, height, grayscale = false, alt = "",
 }: StaticMapGridProps) => {
   const plan = buildStaticMapPlan({
     lat, lng, zoom, tileStyle, width, height,
     points: showMarkers ? points : [],
+    paths: showMarkers ? paths : [],
   });
 
   return (
@@ -60,6 +69,75 @@ export const StaticMapGrid = ({
             style={{ left: `${t.left}px`, top: `${t.top}px`, width: `${TILE_SIZE}px`, height: `${TILE_SIZE}px` }}
           />
         ))}
+        {plan.paths.length > 0 && (
+          // One overlay for every route, sized to the grid so the projected
+          // px offsets land in the same frame as the markers. Markers render
+          // after this so pins always sit on top of the line.
+          <svg
+            className="pointer-events-none absolute left-0 top-0"
+            width={plan.width}
+            height={plan.height}
+            viewBox={`0 0 ${plan.width} ${plan.height}`}
+            aria-hidden
+          >
+            {plan.paths.map(p => (
+              <polyline
+                key={p.id}
+                points={p.points.map(pt => `${pt.left},${pt.top}`).join(" ")}
+                fill="none"
+                stroke={p.color}
+                strokeWidth={p.weight}
+                strokeOpacity={p.opacity}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray={p.dashed ? dashArrayFor(p.weight) : undefined}
+              />
+            ))}
+            {plan.paths.flatMap(p =>
+              p.badges.map((b, i) => (
+                // Filled disc + centred glyph, sized to the text so "1" and
+                // "Turn in" both sit inside the pill.
+                <g key={`${p.id}-badge-${i}`} transform={`translate(${b.left} ${b.top})`}>
+                  <rect
+                    x={-(Math.max(11, b.label.length * 4 + 8))} y={-11}
+                    width={Math.max(11, b.label.length * 4 + 8) * 2} height={22}
+                    rx={11} fill={p.color}
+                    stroke="var(--color-base-100)" strokeWidth={2}
+                  />
+                  <text
+                    textAnchor="middle" dy="4.5"
+                    fill="var(--color-base-100)"
+                    fontSize={12} fontWeight={800} fontFamily="inherit"
+                  >
+                    {b.label}
+                  </text>
+                </g>
+              ))
+            )}
+            {plan.paths
+              .filter(p => p.label)
+              .map(p => (
+                // Painted twice: a fat light stroke first as a halo, then the
+                // fill. Map tiles are busy and a single-pass label is unreadable
+                // over dark imagery.
+                <g key={`${p.id}-label`} transform={`translate(${p.labelAt.left} ${p.labelAt.top})`}>
+                  <text
+                    textAnchor="middle" dy="-10"
+                    stroke="var(--color-base-100)" strokeWidth={4} strokeLinejoin="round"
+                    fontSize={13} fontWeight={700} fontFamily="inherit"
+                  >
+                    {p.label}
+                  </text>
+                  <text
+                    textAnchor="middle" dy="-10"
+                    fill={p.color} fontSize={13} fontWeight={700} fontFamily="inherit"
+                  >
+                    {p.label}
+                  </text>
+                </g>
+              ))}
+          </svg>
+        )}
         {plan.markers.map(m => (
           <div
             key={m.id}

@@ -290,6 +290,7 @@ export { Image } from "./components/Image/Image";
 export { Link } from "./components/Link/Link";
 export { Map } from "./components/Map/Map";
 export { MapPoint } from "./components/MapPoint/MapPoint";
+export { MapPath } from "./components/MapPath/MapPath";
 export { Text } from "./components/Text/Text";
 export { Video } from "./components/Video/Video";
 

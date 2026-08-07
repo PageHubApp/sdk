@@ -1,6 +1,10 @@
 import React, { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import {
+  MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, CircleMarker,
+} from "react-leaflet";
 import L from "leaflet";
+import { dashArrayFor } from "../MapPath/parsePath";
+import { PATH_COLOR, type StaticMapPath } from "./tiles";
 
 // Fix Leaflet default marker icons (broken by some bundlers, including Vite)
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
@@ -39,10 +43,13 @@ interface MapLeafletProps {
     title: string;
     description: string;
   }>;
+  childPaths?: StaticMapPath[];
   enabled: boolean;
 }
 
-const MapLeaflet = ({ lat, lng, zoom, tileStyle, childPoints, enabled }: MapLeafletProps) => {
+const MapLeaflet = ({
+  lat, lng, zoom, tileStyle, childPoints, childPaths = [], enabled,
+}: MapLeafletProps) => {
   // Inject Leaflet CSS dynamically
   useEffect(() => {
     if (!document.querySelector('link[href*="leaflet.css"]')) {
@@ -76,6 +83,52 @@ const MapLeaflet = ({ lat, lng, zoom, tileStyle, childPoints, enabled }: MapLeaf
         touchZoom={!enabled}
       >
         <TileLayer url={tileUrl} attribution={attribution} />
+        {/* Routes first so pins always sit on top of the line. */}
+        {childPaths.map(p => (
+          <Polyline
+            key={p.id}
+            positions={p.points.map(pt => [pt.lat, pt.lng] as [number, number])}
+            pathOptions={{
+              color: p.color || PATH_COLOR,
+              weight: p.weight ?? 4,
+              opacity: p.opacity ?? 1,
+              lineCap: "round",
+              lineJoin: "round",
+              dashArray: p.dashed !== false ? dashArrayFor(p.weight ?? 4) : undefined,
+            }}
+          >
+            {p.label && (
+              // `permanent` so the caption is always on screen — a hover-only
+              // tooltip is useless on the touch devices most visitors use to
+              // find the place.
+              <Tooltip permanent direction="center" className="ph-map-path-label">
+                {p.label}
+              </Tooltip>
+            )}
+          </Polyline>
+        ))}
+        {/* Step badges at any waypoint that carried a third field. */}
+        {childPaths.flatMap(p =>
+          (p.points || [])
+            .filter(pt => (pt as any).label)
+            .map((pt, i) => (
+              <CircleMarker
+                key={`${p.id}-badge-${i}`}
+                center={[pt.lat, pt.lng]}
+                radius={11}
+                pathOptions={{
+                  color: "#fff",
+                  weight: 2,
+                  fillColor: p.color || PATH_COLOR,
+                  fillOpacity: 1,
+                }}
+              >
+                <Tooltip permanent direction="center" className="ph-map-step-badge">
+                  {(pt as any).label}
+                </Tooltip>
+              </CircleMarker>
+            ))
+        )}
         {childPoints.map(point => (
           <Marker key={point.id} position={[point.lat, point.lng]}>
             {(point.title || point.description) && (

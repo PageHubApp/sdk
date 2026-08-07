@@ -7,7 +7,9 @@ import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { useMounted } from "../../utils/hooks/useMounted";
 
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
+import { parseLatLngList } from "../MapPath/parsePath";
 import { StaticMapGrid } from "./StaticMapGrid";
+import { PATH_COLOR, type StaticMapPath } from "./tiles";
 
 const LazyLeafletMap =
   typeof window !== "undefined" ? React.lazy(() => import("./MapLeaflet")) : null;
@@ -57,10 +59,13 @@ export const Map = (incomingProps: MapProps) => {
     title: string;
     description: string;
   }> = [];
+  // Extract child MapPath nodes
+  let childPaths: StaticMapPath[] = [];
   if (isMounted) {
     try {
       const node = query.node(id).get();
-      childPoints = (node.data.nodes || [])
+      const childIds = node.data.nodes || [];
+      childPoints = childIds
         .map(childId => {
           try {
             const childNode = query.node(childId).get();
@@ -79,8 +84,32 @@ export const Map = (incomingProps: MapProps) => {
           }
         })
         .filter(Boolean);
+      childPaths = childIds
+        .map(childId => {
+          try {
+            const childNode = query.node(childId).get();
+            if (childNode.data.name !== "MapPath") return null;
+            const p = childNode.data.props;
+            const pts = parseLatLngList(p.path);
+            if (pts.length < 2) return null;
+            return {
+              id: childId,
+              points: pts,
+              color: p.color || PATH_COLOR,
+              weight: Number(p.weight) || 4,
+              opacity: p.opacity == null ? 1 : Number(p.opacity),
+              dashed: p.dashed !== false,
+              title: p.title || "",
+              label: p.label || "",
+            };
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean) as StaticMapPath[];
     } catch {
       childPoints = [];
+      childPaths = [];
     }
   }
 
@@ -112,6 +141,7 @@ export const Map = (incomingProps: MapProps) => {
           tileStyle={tileStyle}
           showMarkers={type === "static"}
           points={childPoints}
+          paths={childPaths}
           width={props.staticWidth}
           height={props.staticHeight}
           grayscale={!!grayscale}
@@ -137,6 +167,7 @@ export const Map = (incomingProps: MapProps) => {
               zoom={zoom}
               tileStyle={tileStyle}
               childPoints={childPoints}
+              childPaths={childPaths}
               enabled={enabled}
             />
           </div>
@@ -155,6 +186,7 @@ export const Map = (incomingProps: MapProps) => {
           tileStyle={tileStyle}
           showMarkers
           points={childPoints}
+          paths={childPaths}
           width={props.staticWidth}
           height={props.staticHeight}
           grayscale={!!grayscale}
@@ -223,6 +255,7 @@ Map.craft = {
   displayName: "Map",
   rules: {
     canDrag: () => true,
-    canMoveIn: nodes => nodes.every(node => node.data?.name === "MapPoint"),
+    canMoveIn: nodes =>
+      nodes.every(node => node.data?.name === "MapPoint" || node.data?.name === "MapPath"),
   },
 };

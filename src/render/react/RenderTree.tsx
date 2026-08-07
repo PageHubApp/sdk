@@ -25,6 +25,8 @@ import { WalkerNodeProvider, useTreeRoot, type WalkerNodeCtx } from "./contexts"
 import { partitionDataChildIds } from "../../utils/data/emptySlot";
 import { uiResolver, type UiResolver } from "./resolver";
 import { LAZY_RENDER_NAMES } from "../../components/resolvers/renders";
+import { parseLatLngList } from "../../components/MapPath/parsePath";
+import { PATH_COLOR } from "../../components/Map/tiles";
 import { sdkLog } from "../../utils/logger";
 import { filterChromeChildren } from "../shared/chromeSuppression";
 
@@ -140,7 +142,7 @@ function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProp
     : { templateChildIds: childIds, emptyChildIds: [] as string[] };
   const children = templateChildIds.map(renderChild);
 
-  // Special-case Map: pre-compute childPoints from MapPoint children.
+  // Special-case Map: pre-compute childPoints / childPaths from its children.
   let injectedProps: Record<string, any> = {};
   if (isDataNode && emptyChildIds.length > 0) {
     injectedProps.emptyState = <>{emptyChildIds.map(renderChild)}</>;
@@ -159,7 +161,26 @@ function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProp
         };
       })
       .filter(Boolean);
+    const childPaths = (node.nodes ?? [])
+      .map(cid => {
+        const c = nodes[cid];
+        if (!c || c.type.resolvedName !== "MapPath") return null;
+        const pts = parseLatLngList(c.props.path);
+        if (pts.length < 2) return null;
+        return {
+          id: cid,
+          points: pts,
+          color: c.props.color || PATH_COLOR,
+          weight: Number(c.props.weight) || 4,
+          opacity: c.props.opacity == null ? 1 : Number(c.props.opacity),
+          dashed: c.props.dashed !== false,
+          title: c.props.title || "",
+          label: c.props?.label || "",
+        };
+      })
+      .filter(Boolean);
     injectedProps.childPoints = childPoints;
+    injectedProps.childPaths = childPaths;
   }
 
   // Filter out pages that aren't the active page. The walker doesn't yet

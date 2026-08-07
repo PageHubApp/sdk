@@ -69,6 +69,21 @@ export interface StaticMapPoint {
   title?: string;
 }
 
+export interface StaticMapPath {
+  id: string;
+  points: Array<{ lat: number; lng: number }>;
+  color?: string;
+  weight?: number;
+  opacity?: number;
+  dashed?: boolean;
+  title?: string;
+  /** Visible caption drawn on the route. Empty = no caption. */
+  label?: string;
+}
+
+/** Default route-line colour, matching the theme primary. */
+export const PATH_COLOR = "var(--color-primary)";
+
 export interface StaticMapTile {
   key: string;
   url: string;
@@ -81,6 +96,51 @@ export interface StaticMapPlan {
   height: number;
   tiles: StaticMapTile[];
   markers: Array<{ id: string; left: number; top: number; title: string }>;
+  /** Route polylines, projected to grid-relative px. Same frame as `markers`. */
+  paths: Array<{
+    id: string;
+    points: Array<{ left: number; top: number }>;
+    color: string;
+    weight: number;
+    opacity: number;
+    dashed: boolean;
+    title: string;
+    label: string;
+    /** Where to draw `label` — the halfway point *along the line*, not the
+     * midpoint vertex, so the caption centres correctly on uneven routes. */
+    labelAt: { left: number; top: number };
+    /** Step badges for waypoints that carried a third field on their line. */
+    badges: Array<{ left: number; top: number; label: string }>;
+  }>;
+}
+
+/**
+ * Point at 50% of a polyline's total length. Used to place a route caption —
+ * the midpoint *vertex* would drift toward whichever end has more points.
+ */
+function midpointAlong(points: Array<{ left: number; top: number }>) {
+  if (!points.length) return { left: 0, top: 0 };
+  if (points.length === 1) return { ...points[0] };
+  const segs: number[] = [];
+  let total = 0;
+  for (let i = 1; i < points.length; i++) {
+    const d = Math.hypot(points[i].left - points[i - 1].left, points[i].top - points[i - 1].top);
+    segs.push(d);
+    total += d;
+  }
+  if (total === 0) return { ...points[0] };
+  let walked = 0;
+  for (let i = 0; i < segs.length; i++) {
+    if (walked + segs[i] >= total / 2) {
+      const t = segs[i] === 0 ? 0 : (total / 2 - walked) / segs[i];
+      return {
+        left: points[i].left + (points[i + 1].left - points[i].left) * t,
+        top: points[i].top + (points[i + 1].top - points[i].top) * t,
+      };
+    }
+    walked += segs[i];
+  }
+  return { ...points[points.length - 1] };
 }
 
 /**
@@ -96,6 +156,7 @@ export function buildStaticMapPlan(opts: {
   width?: number;
   height?: number;
   points?: StaticMapPoint[];
+  paths?: StaticMapPath[];
 }): StaticMapPlan {
   const width = Math.max(1, Math.round(opts.width || DEFAULT_STATIC_WIDTH));
   const height = Math.max(1, Math.round(opts.height || DEFAULT_STATIC_HEIGHT));
@@ -138,5 +199,30 @@ export function buildStaticMapPlan(opts: {
     };
   });
 
-  return { width, height, tiles, markers };
+  const paths = (opts.paths || [])
+    .map(p => {
+      const points = (p.points || []).map(pt => {
+        const px = latLngToWorldPixel(pt.lat, pt.lng, zoom);
+        return { left: px.x - originX, top: px.y - originY, label: (pt as any).label as string | undefined };
+      });
+      const badges = points
+        .filter(pt => pt.label)
+        .map(pt => ({ left: pt.left, top: pt.top, label: pt.label as string }));
+      return {
+        badges,
+        id: p.id,
+        points,
+        color: p.color || PATH_COLOR,
+        weight: p.weight ?? 4,
+        opacity: p.opacity ?? 1,
+        dashed: p.dashed !== false,
+        title: p.title || "",
+        label: p.label || "",
+        labelAt: midpointAlong(points),
+      };
+    })
+    // A single point is not a line — drop it rather than emitting an empty <polyline>.
+    .filter(p => p.points.length >= 2);
+
+  return { width, height, tiles, markers, paths };
 }

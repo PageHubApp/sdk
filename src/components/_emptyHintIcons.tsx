@@ -43,6 +43,7 @@ export const TbIcons = Placeholder;
 export const TbCheck = Placeholder;
 export const TbPhoto = Placeholder;
 export const TbMapPin = Placeholder;
+export const TbRoute = Placeholder;
 export const TbBrandVimeo = Placeholder;
 export const TbBrandYoutube = Placeholder;
 export const TbPlayerPlay = Placeholder;

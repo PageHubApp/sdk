@@ -32,7 +32,8 @@ export const MapDef = defineComponent(
     disable: ["textColor", "bgColor", "pattern", "font", "hoverClick"],
     rules: {
       canDrag: () => true,
-      canMoveIn: nodes => nodes.every(node => node.data?.name === "MapPoint"),
+      canMoveIn: nodes =>
+        nodes.every(node => node.data?.name === "MapPoint" || node.data?.name === "MapPath"),
     },
     tools: props => [
       <NameNodeController key="mapNameController" position="top" align="end" placement="start" />,

@@ -20,6 +20,7 @@ import {
   ImageDef,
   LinkDef,
   MapDef,
+  MapPathDef,
   MapPointDef,
   TextDef,
   VideoDef,
@@ -48,6 +49,7 @@ export const BUILTIN_COMPONENT_DEFS: ResolvedComponentDef[] = [
   EmbedDef,
   MapDef,
   MapPointDef,
+  MapPathDef,
 ];
 
 /** Lookup built-in `defineComponent` descriptor by PascalCase name (e.g. `"Button"`). */

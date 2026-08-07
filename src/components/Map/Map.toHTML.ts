@@ -1,5 +1,6 @@
 import { ariaAttrs, handlerAttrs, staticClasses, tag, type ToHTMLFn } from "../../utils/staticHtml";
-import { buildStaticMapPlan, MARKER_COLOR, TILE_SIZE } from "./tiles";
+import { dashArrayFor, parseLatLngList } from "../MapPath/parsePath";
+import { buildStaticMapPlan, MARKER_COLOR, PATH_COLOR, TILE_SIZE, type StaticMapPath } from "./tiles";
 
 export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const {
@@ -35,10 +36,36 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     })
     .filter(Boolean) as Array<{ id: string; lat: number; lng: number; title: string; description: string }>;
 
+  const childPaths = childIds
+    .map(cid => {
+      const c = ctx.nodes[cid];
+      const name =
+        typeof c?.type === "string" ? c.type : c?.type?.resolvedName;
+      if (!c || name !== "MapPath") return null;
+      const pts = parseLatLngList(c.props?.path);
+      if (pts.length < 2) return null;
+      return {
+        id: cid,
+        points: pts,
+        color: c.props?.color || PATH_COLOR,
+        weight: Number(c.props?.weight) || 4,
+        opacity: c.props?.opacity == null ? 1 : Number(c.props.opacity),
+        dashed: c.props?.dashed !== false,
+        title: c.props?.title || "",
+        label: c.props?.label || "",
+      };
+    })
+    .filter(Boolean) as StaticMapPath[];
+
   const hasLocation = lat !== 0 || lng !== 0;
   const filterStyle = grayscale ? "filter: grayscale(1);" : "";
 
-  const config = { lat, lng, zoom, type, tileStyle, grayscale: !!grayscale, points: childPoints };
+  const config = {
+    lat, lng, zoom, type, tileStyle,
+    grayscale: !!grayscale,
+    points: childPoints,
+    paths: childPaths,
+  };
 
   const attrs: Record<string, any> = {
     class: cls || undefined,
@@ -66,6 +93,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
       width: props.staticWidth,
       height: props.staticHeight,
       points: type === "background" ? [] : childPoints,
+      paths: type === "background" ? [] : childPaths,
     });
 
     const tiles = plan.tiles
@@ -82,6 +110,82 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
         })
       )
       .join("");
+
+    // Route lines sit under the markers, in the same projected px frame as the
+    // tile grid, so static export matches StaticMapGrid exactly.
+    const routes = plan.paths.length
+      ? tag(
+          "svg",
+          {
+            width: String(plan.width),
+            height: String(plan.height),
+            viewBox: `0 0 ${plan.width} ${plan.height}`,
+            "aria-hidden": "true",
+            style: "position:absolute;left:0;top:0;pointer-events:none;",
+          },
+          plan.paths
+            .map(p =>
+              tag("polyline", {
+                points: p.points.map(pt => `${pt.left},${pt.top}`).join(" "),
+                fill: "none",
+                stroke: p.color,
+                "stroke-width": String(p.weight),
+                "stroke-opacity": String(p.opacity),
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "stroke-dasharray": p.dashed ? dashArrayFor(p.weight) : undefined,
+              }, "")
+            )
+            .join("") +
+            // Step badges — same disc + glyph as StaticMapGrid.
+            plan.paths
+              .flatMap(p =>
+                p.badges.map(b => {
+                  const rx = Math.max(11, b.label.length * 4 + 8);
+                  return (
+                    tag("rect", {
+                      x: String(b.left - rx), y: String(b.top - 11),
+                      width: String(rx * 2), height: "22", rx: "11",
+                      fill: p.color,
+                      stroke: "var(--color-base-100)", "stroke-width": "2",
+                    }, "") +
+                    tag("text", {
+                      x: String(b.left), y: String(b.top), dy: "4.5",
+                      "text-anchor": "middle",
+                      fill: "var(--color-base-100)",
+                      "font-size": "12", "font-weight": "800", "font-family": "inherit",
+                    }, b.label)
+                  );
+                })
+              )
+              .join("") +
+            // Halo pass then fill pass — mirrors StaticMapGrid so a label stays
+            // readable over dark tiles in the exported HTML too.
+            plan.paths
+              .filter(p => p.label)
+              .map(p => {
+                const base = {
+                  x: String(p.labelAt.left),
+                  y: String(p.labelAt.top),
+                  dy: "-10",
+                  "text-anchor": "middle",
+                  "font-size": "13",
+                  "font-weight": "700",
+                  "font-family": "inherit",
+                };
+                return (
+                  tag("text", {
+                    ...base,
+                    stroke: "var(--color-base-100)",
+                    "stroke-width": "4",
+                    "stroke-linejoin": "round",
+                  }, p.label) +
+                  tag("text", { ...base, fill: p.color }, p.label)
+                );
+              })
+              .join("")
+        )
+      : "";
 
     const markers = plan.markers
       .map(m =>
@@ -102,7 +206,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
           `position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);` +
           `width:${plan.width}px;height:${plan.height}px;`,
       },
-      tiles + markers
+      tiles + routes + markers
     );
 
     return tag(

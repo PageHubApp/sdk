@@ -54,6 +54,11 @@ const MapPointRender = React.lazy(() =>
     default: m.MapPointRender,
   }))
 );
+const MapPathRender = React.lazy(() =>
+  import("../MapPath/MapPath.render").then((m) => ({
+    default: m.MapPathRender,
+  }))
+);
 const VideoRender = React.lazy(() =>
   import("../Video/Video.render").then((m) => ({ default: m.VideoRender }))
 );
@@ -85,6 +90,7 @@ export const renderMap: RenderMap = {
   OnlyFormElement: FormElementRender,
   Map: MapRender,
   MapPoint: MapPointRender,
+  MapPath: MapPathRender,
   Video: VideoRender,
 };
 
@@ -113,5 +119,6 @@ export const LAZY_RENDER_NAMES: ReadonlySet<string> = new Set([
   "OnlyFormElement",
   "Map",
   "MapPoint",
+  "MapPath",
   "Video",
 ]);

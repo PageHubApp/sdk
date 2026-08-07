@@ -17,5 +17,6 @@ export { ImageDef } from "./Image/Image.craft";
 export { LinkDef } from "./Link/Link.craft";
 export { MapDef } from "./Map/Map.craft";
 export { MapPointDef } from "./MapPoint/MapPoint.craft";
+export { MapPathDef } from "./MapPath/MapPath.craft";
 export { TextDef } from "./Text/Text.craft";
 export { VideoDef } from "./Video/Video.craft";
