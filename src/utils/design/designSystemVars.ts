@@ -275,24 +275,37 @@ export function generateStyleGuideCSSVariables(styleGuide: Record<string, any>):
   ];
 
   Object.entries(styleGuide).forEach(([key, value]) => {
-    if (
-      value &&
-      typeof value === "string" &&
-      (cssVarKeys.includes(key) || key.endsWith("FontFamily"))
-    ) {
+    // Numbers are accepted, not just strings. Several of these tokens are
+    // naturally authored numeric — `spacingDensity: 1.125`, `depth: 0`,
+    // `noise: 0`, `headingFontWeight: 700` — and a string-only guard drops them
+    // without a warning, so the var is never emitted and the stylesheet default
+    // silently wins. `spacingDensity` was the visible case: the manifest
+    // generator requires a number (a word like "comfortable" would make every
+    // `calc(… * var(--spacing-density))` collapse to 0px), so every
+    // manifest-built template declared a density that could not take effect.
+    //
+    // `0` has to survive the guard as well — `depth: 0` and `noise: 0` are the
+    // documented "off" values, so a plain truthiness test would discard exactly
+    // the setting the author meant.
+    const isUsable =
+      (typeof value === "string" && value !== "") ||
+      (typeof value === "number" && Number.isFinite(value));
+    if (isUsable && (cssVarKeys.includes(key) || key.endsWith("FontFamily"))) {
       const cssVar = toStyleCSSVarName(key);
       if (!cssVar || cssVar === "--") return;
 
       // If the value references a palette, we need to resolve it
-      let resolvedValue = value;
-      if (value.startsWith("palette:")) {
-        const paletteName = value.replace("palette:", "").trim();
+      // Everything downstream is string work, so normalize once here rather
+      // than re-narrowing `value` (which may now be a number) at each use.
+      let resolvedValue = String(value);
+      if (resolvedValue.startsWith("palette:")) {
+        const paletteName = resolvedValue.replace("palette:", "").trim();
         if (!paletteName) return;
 
         resolvedValue = `var(${toPaletteCSSVarName(paletteName)})`;
       } else {
         // For non-palette values, resolve Tailwind colors to actual hex values
-        resolvedValue = resolveTailwindColor(value);
+        resolvedValue = resolveTailwindColor(resolvedValue);
       }
 
       // Normalize spacingDensity: convert word names to numeric multipliers
