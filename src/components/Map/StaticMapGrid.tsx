@@ -63,7 +63,15 @@ export const StaticMapGrid = ({
             aria-hidden={i === 0 ? undefined : true}
             width={TILE_SIZE}
             height={TILE_SIZE}
-            loading="lazy"
+            // Eager, deliberately. These tiles are absolutely positioned inside
+            // an `overflow-hidden` frame that is itself translated -50%/-50%, and
+            // several sit outside the frame's box. Browsers judge `loading="lazy"`
+            // against that geometry, so tiles could stay unfetched even with the
+            // map on screen — the section renders as an empty bordered rectangle
+            // with no error, which reads as a broken map rather than a slow one.
+            // A map is never decorative, and the whole grid is ~70KB.
+            loading="eager"
+            decoding="async"
             draggable={false}
             className="absolute max-w-none select-none"
             style={{ left: `${t.left}px`, top: `${t.top}px`, width: `${TILE_SIZE}px`, height: `${TILE_SIZE}px` }}

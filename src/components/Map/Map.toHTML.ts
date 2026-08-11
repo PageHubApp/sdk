@@ -102,7 +102,11 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
           src: t.url,
           alt: i === 0 ? title || `Map at ${lat}, ${lng}` : "",
           "aria-hidden": i === 0 ? undefined : "true",
-          loading: "lazy",
+          // Eager — see the note in StaticMapGrid.tsx. Tiles sit outside the
+          // translated `overflow-hidden` frame, so lazy loading can leave the
+          // map an empty rectangle. Kept in lockstep with the React renderer.
+          loading: "eager",
+          decoding: "async",
           draggable: "false",
           style:
             `position:absolute;left:${t.left}px;top:${t.top}px;` +
