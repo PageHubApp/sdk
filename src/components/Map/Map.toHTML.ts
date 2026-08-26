@@ -1,17 +1,24 @@
-import { ariaAttrs, handlerAttrs, staticClasses, tag, type ToHTMLFn } from "../../utils/staticHtml";
+import { ariaAttrs, handlerAttrs, interpolate, staticClasses, tag, type ToHTMLFn } from "../../utils/staticHtml";
 import { dashArrayFor, parseLatLngList } from "../MapPath/parsePath";
+import { resolveMapCoord } from "./Map.body";
 import { buildStaticMapPlan, MARKER_COLOR, PATH_COLOR, TILE_SIZE, type StaticMapPath } from "./tiles";
 
 export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const {
-    lat = 51.505,
-    lng = -0.09,
-    zoom = 13,
     type = "interactive",
     tileStyle = "osm",
     grayscale = false,
     title = "",
   } = props;
+
+  // Mirrors Map.render.tsx — a Map on a collection detail page centres itself
+  // on `{{item.lat}}` / `{{item.lng}}` for whichever row the route resolved.
+  // `interpolate` falls back to `ctx.currentItem`, which Data.toHTML sets
+  // around each repeater iteration.
+  const resolve = (raw: string) => interpolate(raw, ctx);
+  const lat = resolveMapCoord(props.lat, 51.505, resolve);
+  const lng = resolveMapCoord(props.lng, -0.09, resolve);
+  const zoom = resolveMapCoord(props.zoom, 13, resolve);
 
   const cls = `overflow-hidden ${staticClasses(props, ctx) || ""}`.trim();
   cls.split(/\s+/).forEach(c => c && ctx.classes.add(c));

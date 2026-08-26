@@ -3,8 +3,10 @@ import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { applyAriaProps } from "../selectors";
 import { useMounted } from "../../utils/hooks/useMounted";
-import { useWalkerNode } from "../../render/react/contexts";
-import type { MapProps } from "./Map.body";
+import { useWalkerNode, useTreeRoot } from "../../render/react/contexts";
+import { useItemContext } from "../../utils/itemContext";
+import { replaceVariables } from "../../utils/design/variables";
+import { resolveMapCoord, type MapProps } from "./Map.body";
 import { StaticMapGrid } from "./StaticMapGrid";
 import type { StaticMapPath } from "./tiles";
 
@@ -31,7 +33,15 @@ export const MapRender = (
   const isMounted = useMounted();
   const childPoints: ChildPoint[] = props.childPoints ?? [];
   const childPaths: StaticMapPath[] = props.childPaths ?? [];
-  const { lat, lng, zoom, type, tileStyle, grayscale } = props;
+  const { type, tileStyle, grayscale } = props;
+
+  const itemContext = useItemContext();
+  const rootProps = useTreeRoot()?.rootProps ?? null;
+  const interpolate = (raw: string) => replaceVariables(raw, rootProps, itemContext);
+  const lat = resolveMapCoord(props.lat, 51.505, interpolate);
+  const lng = resolveMapCoord(props.lng, -0.09, interpolate);
+  const zoom = resolveMapCoord(props.zoom, 13, interpolate);
+
   const hasLocation = lat !== 0 || lng !== 0;
   const filterStyle = grayscale ? { filter: "grayscale(1)" } : {};
 
