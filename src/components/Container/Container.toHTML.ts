@@ -1,9 +1,11 @@
-import { migrateActions } from "../../utils/action";
+import { actionTarget, findLinkAction, migrateActions } from "../../utils/action";
 import {
   actionsAttr,
   ariaAttrs,
   getInlineStyle,
   handlerAttrs,
+  interpolate,
+  resolveActionHref,
   stateAttrs,
   staticClasses,
   tag,
@@ -39,6 +41,16 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   )
     t = props.type;
 
+  // A plain div whose first action is a resolvable link renders as `<a href>`,
+  // matching `renderTag` in Container.viewerBody. Without it the same node is a
+  // real link on React routes and a bare div on static ones: no href for
+  // crawlers, and nothing focusable for keyboard users. The whole action chain
+  // still ships as `data-ph-actions` so the runtime dispatches every entry.
+  const linkAction = t === "div" ? findLinkAction(migrateActions(props)) : null;
+  const rawLinkHref = linkAction ? resolveActionHref(linkAction, ctx) : null;
+  const linkHref = rawLinkHref && ctx ? interpolate(rawLinkHref, ctx) : rawLinkHref;
+  if (linkHref) t = "a";
+
   const attrs: Record<string, string | boolean | undefined | null> = {
     class: staticClasses(props, ctx) || undefined,
     style: getInlineStyle(props) || undefined,
@@ -52,6 +64,12 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     open: t === "details" && props.open ? "" : undefined,
     "data-tab-group": props.tabGroup || undefined,
   };
+  if (t === "a" && linkHref) {
+    attrs.href = linkHref;
+    const linkTarget = actionTarget(linkAction);
+    if (linkTarget) attrs.target = linkTarget;
+    if (/^https?:\/\//.test(linkHref)) attrs.rel = "noopener noreferrer";
+  }
   if (props.attrs && typeof props.attrs === "object") {
     for (const [k, v] of Object.entries(props.attrs)) {
       if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
