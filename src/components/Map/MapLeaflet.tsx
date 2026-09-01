@@ -4,14 +4,21 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import { dashArrayFor } from "../MapPath/parsePath";
+import {
+  LEAFLET_CSS, MARKER_ICON_2X_URL, MARKER_ICON_URL, MARKER_SHADOW_URL,
+} from "./leafletAssets.generated";
 import { PATH_COLOR, type StaticMapPath } from "./tiles";
 
-// Fix Leaflet default marker icons (broken by some bundlers, including Vite)
+const LEAFLET_STYLE_ID = "ph-leaflet-css";
+
+// Leaflet points `L.Icon.Default` at relative paths that only resolve when the
+// library is served from its own directory, so every bundler has to be told
+// where the marker art actually is.
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconRetinaUrl: MARKER_ICON_2X_URL,
+  iconUrl: MARKER_ICON_URL,
+  shadowUrl: MARKER_SHADOW_URL,
 });
 
 const TILE_URLS = {
@@ -50,14 +57,15 @@ interface MapLeafletProps {
 const MapLeaflet = ({
   lat, lng, zoom, tileStyle, childPoints, childPaths = [], enabled,
 }: MapLeafletProps) => {
-  // Inject Leaflet CSS dynamically
+  // Leaflet's own stylesheet, injected once per document. Carried as a string
+  // rather than imported so it reaches viewer-only consumers too — see
+  // `./leafletAssets.generated`.
   useEffect(() => {
-    if (!document.querySelector('link[href*="leaflet.css"]')) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-      document.head.appendChild(link);
-    }
+    if (document.getElementById(LEAFLET_STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = LEAFLET_STYLE_ID;
+    style.textContent = LEAFLET_CSS;
+    document.head.appendChild(style);
   }, []);
 
   const tileUrl = TILE_URLS[tileStyle] || TILE_URLS.osm;
