@@ -21,6 +21,7 @@ type FormMeta = {
   formName?: string;
   successAction?: "redirect" | string;
   successUrl?: string;
+  successUrlField?: string;
   action?: string;
   method?: string;
   agentId?: string;
@@ -116,16 +117,36 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
           "form";
         if (t === "iframe") return;
         showLoading();
-        const done = function () {
+        // A redirect target read out of the response is untrusted input:
+        // absolute http(s) or a same-origin path only, or `javascript:` in
+        // location.href runs in this page's origin.
+        const safeUrl = function (raw: unknown): string | null {
+          if (typeof raw !== "string" || !raw.trim()) return null;
+          const v = raw.trim();
+          if (v.charAt(0) === "/" && v.charAt(1) !== "/") return v;
+          try {
+            const p = new URL(v, location.href).protocol;
+            return p === "http:" || p === "https:" ? v : null;
+          } catch (e) {
+            return null;
+          }
+        };
+        const readPath = function (body: any, path: string): unknown {
+          let cur = body;
+          const parts = path.split(".");
+          for (let i = 0; i < parts.length; i++) {
+            if (cur == null || typeof cur !== "object") return undefined;
+            cur = cur[parts[i]];
+          }
+          return cur;
+        };
+        const done = function (fromResponse?: string | null) {
           try {
             form.reset();
           } catch (e) {}
-          if (
-            meta &&
-            meta.successAction === "redirect" &&
-            meta.successUrl
-          ) {
-            window.location.href = meta.successUrl;
+          const target = fromResponse || (meta && meta.successUrl) || "";
+          if (meta && meta.successAction === "redirect" && target) {
+            window.location.href = target;
             return;
           }
           showLoaded();
@@ -137,12 +158,23 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
           toggle("fields", "shown");
         };
         if (t === "custom" && meta && meta.action) {
+          const field = meta.successUrlField;
           fetch(meta.action, {
             method: meta.method || "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
           })
-            .then(done)
+            .then(function (res) {
+              if (!field) return done();
+              return res
+                .json()
+                .catch(function () {
+                  return null;
+                })
+                .then(function (body: any) {
+                  done(safeUrl(readPath(body, field)));
+                });
+            })
             .catch(fail);
         } else if (t === "agent" && meta && meta.agentId) {
           fetch(
@@ -154,7 +186,9 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
               credentials: "include",
             }
           )
-            .then(done)
+            .then(function () {
+              done();
+            })
             .catch(fail);
         } else {
           // email / webhook / collection — routed through /api/submissions.
@@ -183,7 +217,9 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
           })
-            .then(done)
+            .then(function () {
+              done();
+            })
             .catch(fail);
         }
         fireAnalytics("form_submit", { formName: formName });

@@ -34,10 +34,13 @@ export const FormRender = ({ children, ...props }: any) => {
     if (fieldsKey) setVisibility(fieldsKey, "hidden", "form-submit");
     if (loadingKey) setVisibility(loadingKey, "shown", "form-submit");
     if (props.submissionType === "iframe") return;
-    await submitFormProduction(formData, props, settings, formId);
+    const { redirectUrl } = await submitFormProduction(formData, props, settings, formId);
     setTimeout(() => {
-      if (props.successAction === "redirect" && props.successUrl) {
-        window.location.href = props.successUrl;
+      // A URL from the response wins over the static one — that is the whole
+      // point of successUrlField, and the endpoint knows the session id.
+      const target = redirectUrl || props.successUrl;
+      if (props.successAction === "redirect" && target) {
+        window.location.href = target;
         return;
       }
       if (loadingKey) setVisibility(loadingKey, "hidden", "form-submit");

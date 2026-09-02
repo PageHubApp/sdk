@@ -27,6 +27,7 @@ function buildFormMetaAttrs(props: Record<string, any>): Record<string, string> 
   if (props.conversion) meta.conversion = props.conversion;
   if (props.successAction) meta.successAction = props.successAction;
   if (props.successUrl) meta.successUrl = props.successUrl;
+  if (props.successUrlField) meta.successUrlField = props.successUrlField;
   return { "data-ph-form": JSON.stringify(meta) };
 }
 

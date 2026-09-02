@@ -141,14 +141,25 @@ export const FormMainTab = () => {
             <option value="redirect">Redirect to URL</option>
           </ToolbarItem>
           {props.successAction === "redirect" && (
-            <ToolbarItem
-              propKey="successUrl"
-              propType="component"
-              type="text"
-              label="Redirect URL"
-              placeholder="https://example.com/thank-you"
-              labelHide={true}
-            />
+            <>
+              <ToolbarItem
+                propKey="successUrl"
+                propType="component"
+                type="text"
+                label="Redirect URL"
+                placeholder="https://example.com/thank-you"
+                labelHide={true}
+              />
+              {props.submissionType === "custom" && (
+                <ToolbarItem
+                  propKey="successUrlField"
+                  propType="component"
+                  type="text"
+                  label="…or read it from a response field"
+                  placeholder="url — dot path into the JSON response"
+                />
+              )}
+            </>
           )}
         </ToolbarSection>
 
