@@ -156,8 +156,10 @@ export const AUX_CHUNK = stringifyChunk(function $aux() {
     } catch (e) {}
   }
 
-  const LEAFLET_CSS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-  const LEAFLET_JS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+  // Same-origin, so CSP `script-src 'self'` covers the map with no allow-list
+  // entry. See the PH_LEAFLET_BASE note in the staticPublishRuntime preamble.
+  const LEAFLET_CSS = PH_LEAFLET_BASE + "leaflet.css";
+  const LEAFLET_JS = PH_LEAFLET_BASE + "leaflet.js";
   const TILE_URLS: Record<string, string> = {
     osm: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     "cartodb-positron":

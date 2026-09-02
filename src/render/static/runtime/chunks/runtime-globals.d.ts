@@ -24,6 +24,12 @@ declare global {
   const PH_CART_ITEMS_JSON: string;
   const PH_CART_ERROR: string;
   const PH_AUTH_STATUS: string;
+  /**
+   * Root-relative directory serving leaflet.js / leaflet.css / images from the
+   * app's own origin. Stamped from `leafletPublicPath.generated.ts`, with the
+   * optional `window.__PH_ASSET_BASE__` override already applied.
+   */
+  const PH_LEAFLET_BASE: string;
   const Alpine: any;
   const _store: { entries: Record<string, any>; revision: number };
   const _shownStack: string[];

@@ -20,6 +20,7 @@
  */
 
 import { ALPINE_INLINE_SOURCE } from "./alpine.inline";
+import { LEAFLET_PUBLIC_PATH } from "./leafletPublicPath.generated";
 import { STATE_CHUNK } from "./chunks/state";
 import { getConditionsChunk } from "./chunks/conditions";
 import { ITEMS_CHUNK } from "./chunks/items";
@@ -106,6 +107,19 @@ var PH_CART_TOTAL = ${JSON.stringify(STATE_KEY.cartTotal)};
 var PH_CART_ITEMS_JSON = ${JSON.stringify(STATE_KEY.cartItemsJson)};
 var PH_CART_ERROR = ${JSON.stringify(STATE_KEY.cartError)};
 var PH_AUTH_STATUS = ${JSON.stringify(STATE_KEY.authStatus)};
+
+// Leaflet is served from OUR origin, not a public CDN. A root-relative path
+// resolves against whatever host serves the page, so CSP \`script-src 'self'\`
+// already covers it — no allow-list entry, no configured base URL. The files
+// are copied to public/_ph/leaflet/<version>/ by scripts/vendor-leaflet-public.mjs,
+// which also writes the path constant imported above, so the served files and
+// this string cannot drift apart.
+// \`__PH_ASSET_BASE__\` is the escape hatch for a third-party consumer hosting
+// renderToHTML() output somewhere that doesn't serve /_ph/*; unset means
+// same-origin, which is what every PageHub-hosted site wants.
+var PH_LEAFLET_BASE = (window.__PH_ASSET_BASE__ || '') + ${JSON.stringify(
+    LEAFLET_PUBLIC_PATH
+  )};
 
 var Alpine = window.Alpine;
 Alpine.prefix('data-ph-');
