@@ -1,5 +1,6 @@
 import {
   ariaAttrs,
+  attrsPassthrough,
   escapeHTML,
   handlerAttrs,
   interpolate,
@@ -32,13 +33,18 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     value: t === "input" && seededDefault !== undefined ? seededDefault : undefined,
     required: props.required || undefined,
     disabled: props.disabled || undefined,
+    // The placeholder is deliberately NOT in this chain: it holds an example
+    // value ("you@example.com"), so screen readers announce a sample address
+    // where the field's purpose belongs. An explicit `label`, an `aria-label`
+    // via `attrs`/`ariaAttrs`, or the field `name` all describe the purpose.
     "aria-label": interpolate(
-      props.label || props.placeholder || props.name || `${props.type || "text"} input`,
+      props.label || props.name || `${props.type || "text"} input`,
       ctx
     ),
     ...ariaAttrs(props),
     ...handlerAttrs(props),
     ...stateAttrs(props, ctx),
+    ...attrsPassthrough(props, ctx),
   };
   if (t === "textarea" && props.rows) attrs.rows = String(props.rows);
 

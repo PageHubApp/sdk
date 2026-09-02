@@ -2,6 +2,7 @@ import { actionToHref, actionTarget, findLinkAction, migrateActions } from "../.
 import { pickIconSvgClass, serializeIconSvgAttrs } from "../../utils/icons/iconResolver";
 import { resolveIconSvgSync } from "../../utils/icons/serverResolve";
 import {
+  attrsPassthrough,
   actionsAttr,
   ariaAttrs,
   collectClasses,
@@ -62,15 +63,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   } else {
     attrs.type = props.type || "button";
   }
-  if (props.attrs && typeof props.attrs === "object") {
-    for (const [k, v] of Object.entries(props.attrs)) {
-      if (typeof v === "string") {
-        attrs[k] = interpolate(v, ctx);
-      } else if (typeof v === "number" || typeof v === "boolean") {
-        attrs[k] = v as any;
-      }
-    }
-  }
+  Object.assign(attrs, attrsPassthrough(props, ctx));
   if (icon?.only && !attrs["aria-label"]) attrs["aria-label"] = interpolate(props.text || "Button", ctx);
 
   let iconHTML = "";

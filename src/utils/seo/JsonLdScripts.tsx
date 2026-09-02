@@ -1,13 +1,13 @@
 import React from "react";
 import { compileSchema, normalizeJsonLd } from "./compileSchema";
-import type { SchemaEntry } from "./schemaTypes";
+import type { SchemaEntryInput } from "./schemaTypes";
 
 interface JsonLdScriptsProps {
   /**
    * Page-level seo bag from the page Container node. May carry a raw `jsonLd`
    * object plus a structured `schema: SchemaEntry[]` array from the builder.
    */
-  seo: { jsonLd?: Record<string, unknown>; schema?: SchemaEntry[] | null } | null | undefined;
+  seo: { jsonLd?: Record<string, unknown>; schema?: SchemaEntryInput[] | null } | null | undefined;
 }
 
 /**

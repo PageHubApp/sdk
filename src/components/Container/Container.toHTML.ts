@@ -1,5 +1,6 @@
 import { actionTarget, findLinkAction, migrateActions } from "../../utils/action";
 import {
+  attrsPassthrough,
   actionsAttr,
   ariaAttrs,
   getInlineStyle,
@@ -70,15 +71,11 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     if (linkTarget) attrs.target = linkTarget;
     if (/^https?:\/\//.test(linkHref)) attrs.rel = "noopener noreferrer";
   }
-  if (props.attrs && typeof props.attrs === "object") {
-    for (const [k, v] of Object.entries(props.attrs)) {
-      if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
-        // Numbers are stringified up front (buildAttrs would otherwise do the
-        // same via String(value)); booleans pass through so buildAttrs can
-        // emit a bare attribute for `true` and drop `false`.
-        attrs[k] = typeof v === "number" ? String(v) : v;
-      }
-    }
+  for (const [k, v] of Object.entries(attrsPassthrough(props, ctx))) {
+    // Numbers are stringified up front (buildAttrs would otherwise do the same
+    // via String(value)); booleans pass through so buildAttrs can emit a bare
+    // attribute for `true` and drop `false`.
+    attrs[k] = typeof v === "number" ? String(v) : v;
   }
 
   // Stamp load-trigger show actions for the static-export bootstrap script

@@ -179,7 +179,9 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
         : null) ??
       props.defaultValue ??
       "",
-    "aria-label": props.label || props.placeholder || props.name || `${props.type || "text"} input`,
+    // No placeholder in this chain — it holds an example value, so screen
+    // readers would announce a sample instead of the field's purpose.
+    "aria-label": props.label || props.name || `${props.type || "text"} input`,
   };
 
   if (boundKey && !ctx.enabled) {

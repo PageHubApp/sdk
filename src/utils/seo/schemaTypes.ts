@@ -85,7 +85,27 @@ export interface SchemaEntryRaw {
   json: string;
 }
 
+/**
+ * Literal JSON-LD, already in the shape a `<script type="application/ld+json">`
+ * emits — identified by `@type` and the absence of a builder `kind`. This is
+ * what lands on `seo.schema` when an author (or an agent through
+ * `update_page`) hands over finished JSON-LD instead of builder fields.
+ */
+export interface SchemaEntryJsonLd {
+  kind?: undefined;
+  "@type": string;
+  "@context"?: string;
+  [key: string]: any;
+}
+
+/** What the schema builder UI edits — every entry here has an editable form. */
 export type SchemaEntry = SchemaEntryBuilder | SchemaEntryRaw;
+
+/**
+ * What the renderer accepts. Wider than `SchemaEntry` because finished JSON-LD
+ * can reach `seo.schema` without ever passing through the builder.
+ */
+export type SchemaEntryInput = SchemaEntry | SchemaEntryJsonLd;
 
 // ── Shared field fragments ───────────────────────────────────────────────────
 

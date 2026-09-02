@@ -240,21 +240,29 @@ export function handlerAttrs(props: Record<string, any>): Record<string, string 
 
 /**
  * Pass `props.attrs` (plain HTML attribute map) through to the rendered tag.
- * Mirrors the Container.toHTML inline passthrough; extracted so Text /
- * Button / Link / Image / FormElement can share the same semantics.
  *
- * Only string/number/boolean values are accepted (matches what React
- * DOM attribute serialization tolerates).
+ * The static counterpart of `applyAttrs` on the React side, and the single
+ * implementation for every component that supports the prop — Container,
+ * Button, Link, FormElement, Text, Image. A per-component copy of this loop is
+ * how `autocomplete` came to render on React routes and vanish on static ones.
+ *
+ * Only string/number/boolean values are accepted (matches what React DOM
+ * attribute serialization tolerates). Pass `ctx` to interpolate `{{item.*}}`
+ * and friends in string values, which is what the React path does for every
+ * component except Text.
  */
 export function attrsPassthrough(
-  props: Record<string, any>
+  props: Record<string, any>,
+  ctx?: StaticRenderContext
 ): Record<string, string | number | boolean | undefined> {
   const a = props.attrs;
   if (!a || typeof a !== "object") return {};
   const out: Record<string, string | number | boolean> = {};
   for (const [k, v] of Object.entries(a as Record<string, unknown>)) {
-    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
-      out[k] = v as string | number | boolean;
+    if (typeof v === "string") {
+      out[k] = ctx ? interpolate(v, ctx) : v;
+    } else if (typeof v === "number" || typeof v === "boolean") {
+      out[k] = v;
     }
   }
   return out;

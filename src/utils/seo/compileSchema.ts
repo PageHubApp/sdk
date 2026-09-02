@@ -2,12 +2,17 @@
  * Compiles SchemaEntry[] into an array of JSON-LD objects ready for
  * <script type="application/ld+json"> emission.
  *
+ * Three accepted entry shapes: `kind: "builder"` (form fields against a
+ * registered schema.org type), `kind: "raw"` (a JSON string), and a bare
+ * JSON-LD object carrying `@type` (already in emit shape). Anything else
+ * compiles to null and is skipped.
+ *
  * Pruning rules: empty strings, empty arrays, empty objects are dropped.
  * Builder entries with no fields collapse to null (skipped by renderer).
  */
 
 import {
-  type SchemaEntry,
+  type SchemaEntryInput,
   type SchemaFieldDef,
   getSchemaTypeDef,
 } from "./schemaTypes";
@@ -74,7 +79,7 @@ function compileNested(field: SchemaFieldDef, value: any): any {
   return Object.keys(out).length > (field.nestedType ? 1 : 0) ? out : undefined;
 }
 
-export function compileSchemaEntry(entry: SchemaEntry): Record<string, any> | null {
+export function compileSchemaEntry(entry: SchemaEntryInput): Record<string, any> | null {
   if (entry.kind === "raw") {
     const raw = entry.json?.trim();
     if (!raw) return null;
@@ -84,6 +89,12 @@ export function compileSchemaEntry(entry: SchemaEntry): Record<string, any> | nu
     } catch {
       return null;
     }
+  }
+
+  // Literal JSON-LD needs no compilation — it is already the output shape.
+  if (!entry.kind) {
+    const type = entry["@type"];
+    return typeof type === "string" && type.trim() ? (entry as Record<string, any>) : null;
   }
 
   const def = getSchemaTypeDef(entry.type);
@@ -99,7 +110,7 @@ export function compileSchemaEntry(entry: SchemaEntry): Record<string, any> | nu
   return out;
 }
 
-export function compileSchema(entries: SchemaEntry[] | undefined): Record<string, any>[] {
+export function compileSchema(entries: SchemaEntryInput[] | undefined): Record<string, any>[] {
   if (!Array.isArray(entries)) return [];
   return entries
     .map(compileSchemaEntry)
