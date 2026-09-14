@@ -147,7 +147,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     if (ds.scope) {
       items = resolveNestedItems(ctx.currentItem ?? null, ds.scope, ds.splitBy);
     } else if (ds.provider && ds.collection) {
-      const merged = applyRouteParamsToDataSource(ds, {});
+      const merged = applyRouteParamsToDataSource(ds, ctx.routeParams ?? {});
       bindingId = dataSourceBindingId(merged);
       const raw = ctx.connectorData?.[ds.provider]?.bindings?.[bindingId] ?? null;
       items = applyDataSourceScope(raw, merged);

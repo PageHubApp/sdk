@@ -41,6 +41,15 @@ export interface RenderToHTMLOptions {
    *  instead of wrapping them for the client-only reveal script. */
   connectorData?: Record<string, { bindings: Record<string, any[]> }> | null;
   /**
+   * `pathPattern` captures for the URL being rendered, e.g. `{ slug: "roofing" }`
+   * for `/services/roofing`. A detail page's `Data` node filters on
+   * `{{params.slug}}`, and the binding id is hashed from the *resolved* filter —
+   * so without these the lookup key can never match the binding `connectorData`
+   * actually carries, and the repeater falls back to its client-hydration
+   * template. The React walker gets the same map from `RouteParamsProvider`.
+   */
+  routeParams?: Record<string, string> | null;
+  /**
    * Optional request hints from the calling Next.js page. When supplied, the
    * walker resolves `auth` / `device` / `url-param` conditions at SSR instead
    * of wrapping the node for the client re-eval script:

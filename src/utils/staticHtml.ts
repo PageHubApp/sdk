@@ -50,6 +50,13 @@ export interface StaticRenderContext {
   /** Server-fetched connector data — enables connector-backed condition eval at SSR. */
   connectorData?: Record<string, { bindings: Record<string, any[]> }> | null;
   /**
+   * `pathPattern` captures for the URL being rendered (`{ slug: "roofing" }`).
+   * `Data.toHTML` merges these into its `dataSource` before hashing the binding
+   * id, so a detail page's `{{params.slug}}` filter resolves to the same key the
+   * caller fetched under. Empty/absent on non-detail routes.
+   */
+  routeParams?: Record<string, string> | null;
+  /**
    * Current repeater item context. Set by `Data.toHTML` around each iteration's
    * child render pass so component toHTMLs can resolve `{{item.*}}` tokens via
    * `interpolate()`. Null at the top level.
