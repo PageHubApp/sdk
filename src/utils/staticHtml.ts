@@ -432,14 +432,28 @@ export function actionsAttr(
   // scheme. Same resolver the <a href> path uses.
   const pageIndex = getPageIndex(ctx);
   const resolved = actions.map((a: any) => {
-    if (a?.type === "link" && typeof a.href === "string" && a.href.startsWith("ref:")) {
+    if (a?.type !== "link" || typeof a.href !== "string") return a;
+
+    // `ref:<pageId>` first — it only rewrites the page part, so a detail href
+    // like `ref:page_services/{{item.slug}}` comes back still carrying its
+    // token and has to fall through to the interpolation below. Returning here
+    // shipped `/services/{{item.slug}}` to the runtime, which then overrode the
+    // correct `<a href>` on click and navigated to a path matching no row.
+    let href = a.href;
+    if (href.startsWith("ref:")) {
       const real = actionToHref(a, pageIndex, ctx?.currentPath);
-      return real ? { ...a, href: real } : a;
+      if (real) href = real;
     }
-    if (a?.type === "link" && typeof a.href === "string" && a.href.includes("{{") && ctx) {
-      return { ...a, href: interpolateNonItem(a.href, ctx) };
+
+    if (href.includes("{{") && ctx) {
+      // A server-rendered repeater row has its item in scope: resolve to the
+      // same value `<a href>` got, so the runtime agrees with the markup.
+      // With no item this node IS the repeater's template — keep `{{item.*}}`
+      // intact so the client runtime can fill it per row.
+      href = ctx.currentItem ? interpolate(href, ctx) : interpolateNonItem(href, ctx);
     }
-    return a;
+
+    return href === a.href ? a : { ...a, href };
   });
   return { "data-ph-actions": JSON.stringify(resolved) };
 }
