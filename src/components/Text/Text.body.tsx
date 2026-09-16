@@ -20,6 +20,7 @@ import NextLink from "next/link";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
+import { unwrapP } from "../../utils/unwrapP";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../../utils/itemContext";
 import { useAnchors } from "../../utils/anchors/anchorContext";
@@ -44,18 +45,6 @@ const sanitizeTagName = (tag: unknown): string | undefined => {
   if (tag === "Textfit") return tag;
   const clean = tag.split(/[,\s]/)[0].toLowerCase();
   return /^[a-z][a-z0-9]*$/.test(clean) ? clean : undefined;
-};
-
-const unwrapP = (html: string): string => {
-  const trimmed = html.trim();
-  if (!/^<p>[\s\S]*<\/p>$/.test(trimmed)) return trimmed;
-  if (/<\/p>\s*<p>/.test(trimmed)) {
-    return trimmed
-      .replace(/^<p>/, "")
-      .replace(/<\/p>$/, "")
-      .replace(/<\/p>\s*<p>/g, "<br/><br/>");
-  }
-  return trimmed.replace(/^<p>/, "").replace(/<\/p>$/, "");
 };
 
 const renderLiveMode = (

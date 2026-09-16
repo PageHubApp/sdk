@@ -12,6 +12,7 @@ import {
   tag,
   type ToHTMLFn,
 } from "../../utils/staticHtml";
+import { unwrapP } from "../../utils/unwrapP";
 
 // Guard against corrupted tagName data (e.g. `p, "text": "..."` from bad MCP writes)
 const sanitizeTagName = (raw: unknown): string => {
@@ -41,7 +42,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
         target: target || undefined,
         rel: /^https?:\/\//.test(href) ? "noopener noreferrer" : undefined,
       },
-      text
+      unwrapP(text)
     );
     // Wrap the <a> inside the original tagName so className and semantic structure are preserved
     return tag(
@@ -100,6 +101,6 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
       ...stateAttrs(props, ctx),
       ...attrsPassthrough(props),
     },
-    text
+    unwrapP(text)
   );
 };
