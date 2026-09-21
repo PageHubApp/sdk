@@ -1,4 +1,5 @@
 import { NodeId, useEditor } from "@craftjs/core";
+import { ROOT_NODE } from "@craftjs/utils";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   TbArrowDown,
@@ -14,6 +15,7 @@ import {
   TbLayoutNavbar,
   TbSection,
   TbTrash,
+  TbWorld,
 } from "react-icons/tb";
 import { useAtomState } from "@zedux/react";
 import { IsolateAtom } from "@/utils/atoms";
@@ -74,6 +76,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
     parentName,
     parentType,
     parentTagName,
+    parentIsRoot,
     showHideTarget,
   } = useEditor((editorState, query) => {
     const node = editorState.nodes[nodeId];
@@ -101,6 +104,7 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
       parentName: parent?.data?.name || "",
       parentType: (parent?.data?.props?.type as string) || "",
       parentTagName: (parent?.data?.props?.tagName as string) || "",
+      parentIsRoot: node?.data?.parent === ROOT_NODE,
       showHideTarget: target as string | undefined,
     };
   });
@@ -164,6 +168,14 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
   const isHeader = nodeType === "header";
   const isFooter = nodeType === "footer";
   const isSection = nodeType === "section";
+
+  // A section parented to ROOT instead of to a page is indistinguishable from a
+  // normal one in this tree, but it behaves like the header: `decomposeTree`
+  // routes every non-page ROOT child into the SHARED shard, so it renders on
+  // every page of the site. That is load-bearing for templates that ship no
+  // Header/Footer node (minim uses two of these as nav and footer) and a silent
+  // mistake when a drag landed in the ROOT-level gap. Both need to be visible.
+  const isSiteWideSection = isSection && parentIsRoot;
 
   const TypeIcon = useMemo(
     () => resolveTypeIcon(nodeName, isPage, isHeader, isFooter, isSection),
@@ -383,6 +395,23 @@ export function LayerHeader({ nodeId, depth, hasChildren, isExpanded }: LayerHea
             </span>
           )}
         </div>
+
+        {/* Site-wide marker — a ROOT-parented section renders on every page.
+            Icon only: it sits in the same right-hand gutter as the lint dot and
+            the hidden eye, and a text chip there crowded out the node name on
+            narrow panels. Sits before the lint dot so it reads as a statement of
+            scope rather than a warning — this is sometimes intended. */}
+        {isSiteWideSection && (
+          <TbWorld
+            className={`size-3.5 shrink-0 ${
+              isSelected ? "text-white" : "text-amber-600 dark:text-amber-400"
+            }`}
+            data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            data-tooltip-content="Sits outside the page, so it shows on every page — like the header and footer. Drag it into a page to limit it to that one."
+            data-tooltip-place="left"
+            aria-label="Shows on every page"
+          />
+        )}
 
         {/* Lint dot — always visible when present */}
         {lintSeverity && (

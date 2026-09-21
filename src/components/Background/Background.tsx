@@ -12,6 +12,7 @@ import { useLazyBackground } from "../../utils/hooks/useLazyBackground";
 import { useMounted } from "../../utils/hooks/useMounted";
 
 import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../../utils/background";
+import { layoutCanvasCanMoveIn } from "../layoutCanvasCanMoveIn";
 import { PaletteProvider } from "../../utils/design/PaletteContext";
 import { RuntimeVarsProvider } from "../../utils/design/RuntimeVarsContext";
 import { RenderPattern, inlayProps } from "../../core/componentHooks";
@@ -220,6 +221,9 @@ Background.craft = {
   custom: { hiddenInLayers: true },
   rules: {
     canDrag: () => false,
-    canMoveIn: (nodes: any[]) => nodes.every((node: any) => node.data?.name === "Container"),
+    // Mirrors BackgroundDef.rules — ROOT takes page Containers, never sections.
+    canMoveIn: (nodes: any[], into: any) =>
+      nodes.every((node: any) => node.data?.name === "Container") &&
+      layoutCanvasCanMoveIn(nodes, into),
   },
 };
