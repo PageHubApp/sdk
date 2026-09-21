@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { OnlineAtom, ShowGridLinesAtom } from "../../../../utils/atoms";
 import { phStorage } from "../../../../utils/phStorage";
 import { useEditorStore } from "../../../../core/store";
+import { MultiScopeAtom } from "../../../toolbar/breakpoint-chip/atoms";
 import {
   BreakpointZoomAtom,
   PreviewAtom,
@@ -17,7 +18,10 @@ import {
 } from "../../state/atoms";
 
 export function useViewportSetupEffects() {
-  const { actions, query } = useEditor();
+  const { actions, query, selectedNodeId } = useEditor((_state, q) => ({
+    selectedNodeId: (q.getEvent("selected").first() as string | undefined) || null,
+  }));
+  const [, setMultiScope] = useAtomState(MultiScopeAtom);
   const [showGridLines, setShowGridLines] = useAtomState(ShowGridLinesAtom);
   const [, setOnline] = useAtomState(OnlineAtom);
   const [, setUnsavedChanged] = useAtomState(UnsavedChangesAtom);
@@ -95,4 +99,15 @@ export function useViewportSetupEffects() {
   useEffect(() => {
     setBreakpointZoom(1);
   }, [view, setBreakpointZoom]);
+
+  // Disarm multi-scope when the canvas view or the selected node changes.
+  // `MultiScopeAtom` overrides the canvas-derived write scope for every
+  // toolbar input, editor-wide, and is armed by an alt-click inside one chip
+  // popover. Left sticky it silently retargets every later edit on every
+  // other node — the shape that ships sites with stray `xl:` classes the
+  // author never sees. Scoping it to one node + one view keeps the
+  // "write md and lg together" workflow intact and drops the trap.
+  useEffect(() => {
+    setMultiScope(prev => (prev.size > 0 ? new Set() : prev));
+  }, [view, selectedNodeId, setMultiScope]);
 }
