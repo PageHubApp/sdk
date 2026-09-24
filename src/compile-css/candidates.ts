@@ -53,6 +53,16 @@ export function extractCandidatesFromNodes(nodes: Record<string, any>): string[]
       for (const cls of props.className)
         if (typeof cls === "string" && cls.trim()) candidates.add(cls);
     }
+    // stateModifiers name modifiers that the runtime appends only while a state
+    // condition holds, so their classes never appear in `props.className`.
+    if (Array.isArray(props.stateModifiers) && expansionMap.size > 0) {
+      for (const binding of props.stateModifiers) {
+        const names = Array.isArray(binding?.modifiers) ? binding.modifiers.join(" ") : "";
+        if (!names) continue;
+        for (const cls of expandModifierClassName(names, expansionMap).split(/\s+/))
+          if (cls) candidates.add(cls);
+      }
+    }
     if (typeof props.helpers === "string" && props.helpers.trim()) {
       for (const cls of props.helpers.split(/\s+/)) if (cls) candidates.add(cls);
     }

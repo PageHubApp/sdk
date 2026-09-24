@@ -17,7 +17,8 @@
  */
 import React from "react";
 import { ItemProvider, useItemContext } from "../../utils/itemContext";
-import { evaluateConditionGroups } from "../../utils/conditions/evaluate";
+import { evaluateConditionGroups, hasStateCondition } from "../../utils/conditions/evaluate";
+import { useGlobalStateTick } from "../../utils/state/stateRegistry";
 import { buildClientContext } from "../../utils/conditions/context";
 import { getConnectorData } from "../../utils/design/variables";
 import type { ConditionGroup } from "../../utils/conditions/types";
@@ -81,7 +82,21 @@ function evalNodeVisibility(
   return result !== false;
 }
 
-function NodeRenderer({ id, nodes, resolver, parentClassName }: NodeRendererProps) {
+function NodeRenderer(props: NodeRendererProps) {
+  const node = props.nodes[props.id];
+  if (hasStateCondition(node?.props?.conditionGroups)) return <StateGatedNodeRenderer {...props} />;
+  return <NodeRendererBody {...props} />;
+}
+
+/** Re-evaluates visibility on every state write, so a node hidden at first
+ *  render appears once its state condition passes (and vice versa). Only
+ *  state-gated nodes subscribe, keeping the tick off the rest of the tree. */
+function StateGatedNodeRenderer(props: NodeRendererProps) {
+  useGlobalStateTick();
+  return <NodeRendererBody {...props} />;
+}
+
+function NodeRendererBody({ id, nodes, resolver, parentClassName }: NodeRendererProps) {
   const node = nodes[id];
   const tree = useTreeRoot();
   // Item context flows in via DataRender's ItemProvider for repeater children.
