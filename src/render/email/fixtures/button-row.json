@@ -1,0 +1,133 @@
+{
+  "ROOT": {
+    "type": {
+      "resolvedName": "Background"
+    },
+    "isCanvas": true,
+    "parent": null,
+    "nodes": [
+      "button-row_1"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {},
+    "props": {
+      "type": "background",
+      "className": "bg-base-200 text-base-content font-body min-h-dvh w-full flex flex-col overflow-x-hidden",
+      "theme": {
+        "palette": [
+          {
+            "name": "Primary",
+            "color": "oklch(52% 0.19 256)"
+          },
+          {
+            "name": "Primary Content",
+            "color": "#ffffff"
+          },
+          {
+            "name": "Secondary",
+            "color": "#f59e0b"
+          },
+          {
+            "name": "Secondary Content",
+            "color": "#1f2937"
+          },
+          {
+            "name": "Accent",
+            "color": "#10b981"
+          },
+          {
+            "name": "Accent Content",
+            "color": "#ffffff"
+          },
+          {
+            "name": "Neutral",
+            "color": "#374151"
+          },
+          {
+            "name": "Neutral Content",
+            "color": "#f9fafb"
+          },
+          {
+            "name": "Base 100",
+            "color": "#ffffff"
+          },
+          {
+            "name": "Base 200",
+            "color": "#f3f4f6"
+          },
+          {
+            "name": "Base 300",
+            "color": "#e5e7eb"
+          },
+          {
+            "name": "Base Content",
+            "color": "#1f2937"
+          }
+        ],
+        "styleGuide": {
+          "radiusBox": "0.5rem"
+        }
+      }
+    }
+  },
+  "button-row_1": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "isCanvas": true,
+    "props": {
+      "className": "bg-base-100 py-space-md px-space-lg flex flex-row justify-center gap-space-sm"
+    },
+    "parent": "ROOT",
+    "nodes": [
+      "button-row_2",
+      "button-row_3"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "button-row_2": {
+    "type": {
+      "resolvedName": "Button"
+    },
+    "isCanvas": false,
+    "props": {
+      "text": "Shop now",
+      "className": "bg-primary text-primary-content px-space-md py-space-xs rounded-box font-semibold",
+      "action": [
+        {
+          "type": "link",
+          "href": "https://example.com/shop"
+        }
+      ]
+    },
+    "parent": "button-row_1",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "button-row_3": {
+    "type": {
+      "resolvedName": "Button"
+    },
+    "isCanvas": false,
+    "props": {
+      "text": "View cart",
+      "className": "bg-secondary text-secondary-content px-space-md py-space-xs rounded-box font-semibold",
+      "action": [
+        {
+          "type": "link",
+          "href": "https://example.com/cart"
+        }
+      ]
+    },
+    "parent": "button-row_1",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  }
+}

@@ -128,6 +128,21 @@ export {
   isComponentAllowed,
 } from "./define/componentAllowlist";
 
+// Email mode — editor-side profile + validator (no server deps). The renderer
+// itself is server-only: import it from "@pagehub/sdk/email-renderer".
+// See docs/sdk/email-export.md.
+export {
+  EMAIL_CLASS_ALLOWLIST,
+  EMAIL_COMPONENTS,
+  EMAIL_INSPECTOR_TABS,
+  EMAIL_UNSAFE,
+  EMAIL_WIDTH,
+  emailEditorConfig,
+  isEmailClassAllowed,
+} from "./render/email/profile";
+export { validateEmailTree } from "./render/email/validate";
+export type { EmailIssue } from "./render/email/validate";
+
 // Compression helpers — needed when a host seeds initial page content at runtime
 // (the SDK's load path expects an LZ-base64 compressed string).
 export { compressAsync, decompressAsync } from "./utils/compressionAsync";

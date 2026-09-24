@@ -42,8 +42,11 @@ export interface PageHubFeatures {
   custom404Page?: boolean;
   /** Components to hide from the toolbox. */
   restrictedComponents?: string[];
-  /** Enable responsive device preview toggle. Default: true */
-  responsivePreview?: boolean;
+  /**
+   * Lock the canvas to this width in px and hide the breakpoint switcher.
+   * Default: null (canvas follows the breakpoint / device controls).
+   */
+  canvasWidth?: number | null;
   /** Save directly without showing the domain/publish picker. Default: false */
   directSave?: boolean;
   /** Show the save/publish button in the top toolbar. Default: true */

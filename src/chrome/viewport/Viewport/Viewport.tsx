@@ -158,7 +158,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const sideBarOpen = useAtomValue(SideBarOpen);
   const sideBarLeft = useAtomValue(SideBarAtom);
   useSetAtomState(InitialLoadCompleteAtom);
-  const { config } = useSDK();
+  const { config, features } = useSDK();
   usePageNavigation();
 
   const { handleViewportContextMenuCapture, handleViewportDoubleClickCapture } =
@@ -240,8 +240,10 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   const breakpointWidthPx = breakpointActive
     ? (breakpointWidthOverride[view] ?? (resolvedBreakpointPx as Record<string, number>)[view])
     : null;
-  const canvasOuterStyle: React.CSSProperties =
-    breakpointWidthPx != null
+  const lockedWidth = features.canvasWidth;
+  const canvasOuterStyle: React.CSSProperties = lockedWidth
+    ? { width: `${lockedWidth}px`, maxWidth: "none", flexShrink: 0, marginInline: "auto" }
+    : breakpointWidthPx != null
       ? responsive
         ? { ...deviceStyles, maxWidth: `min(100%, ${breakpointWidthPx}px)` }
         : { ...deviceStyles, width: `${breakpointWidthPx}px`, maxWidth: "none", flexShrink: 0 }

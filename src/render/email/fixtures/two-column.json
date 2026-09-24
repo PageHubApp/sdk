@@ -1,0 +1,222 @@
+{
+  "ROOT": {
+    "type": {
+      "resolvedName": "Background"
+    },
+    "isCanvas": true,
+    "parent": null,
+    "nodes": [
+      "two-column_1",
+      "two-column_3"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {},
+    "props": {
+      "type": "background",
+      "className": "bg-base-200 text-base-content font-body min-h-dvh w-full flex flex-col overflow-x-hidden",
+      "theme": {
+        "palette": [
+          {
+            "name": "Primary",
+            "color": "oklch(52% 0.19 256)"
+          },
+          {
+            "name": "Primary Content",
+            "color": "#ffffff"
+          },
+          {
+            "name": "Secondary",
+            "color": "#f59e0b"
+          },
+          {
+            "name": "Secondary Content",
+            "color": "#1f2937"
+          },
+          {
+            "name": "Accent",
+            "color": "#10b981"
+          },
+          {
+            "name": "Accent Content",
+            "color": "#ffffff"
+          },
+          {
+            "name": "Neutral",
+            "color": "#374151"
+          },
+          {
+            "name": "Neutral Content",
+            "color": "#f9fafb"
+          },
+          {
+            "name": "Base 100",
+            "color": "#ffffff"
+          },
+          {
+            "name": "Base 200",
+            "color": "#f3f4f6"
+          },
+          {
+            "name": "Base 300",
+            "color": "#e5e7eb"
+          },
+          {
+            "name": "Base Content",
+            "color": "#1f2937"
+          }
+        ],
+        "styleGuide": {
+          "radiusBox": "0.5rem"
+        }
+      }
+    }
+  },
+  "two-column_1": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "isCanvas": true,
+    "props": {
+      "className": "bg-primary text-primary-content py-space-md px-space-lg text-center"
+    },
+    "parent": "ROOT",
+    "nodes": [
+      "two-column_2"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "two-column_2": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "isCanvas": false,
+    "props": {
+      "tagName": "p",
+      "text": "Acme Supply Co.",
+      "className": "text-xl font-bold font-heading"
+    },
+    "parent": "two-column_1",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "two-column_3": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "isCanvas": true,
+    "props": {
+      "className": "bg-base-100 py-space-md px-space-lg flex flex-col md:flex-row gap-space-md"
+    },
+    "parent": "ROOT",
+    "nodes": [
+      "two-column_4",
+      "two-column_7"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "two-column_4": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "isCanvas": true,
+    "props": {
+      "className": "bg-base-200 p-space-sm rounded-box"
+    },
+    "parent": "two-column_3",
+    "nodes": [
+      "two-column_5",
+      "two-column_6"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "two-column_5": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "isCanvas": false,
+    "props": {
+      "tagName": "h2",
+      "text": "What's new",
+      "className": "text-xl font-bold"
+    },
+    "parent": "two-column_4",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "two-column_6": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "isCanvas": false,
+    "props": {
+      "tagName": "p",
+      "text": "Our spring range landed this week.",
+      "className": "text-sm"
+    },
+    "parent": "two-column_4",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "two-column_7": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "isCanvas": true,
+    "props": {
+      "className": "bg-base-200 p-space-sm rounded-box"
+    },
+    "parent": "two-column_3",
+    "nodes": [
+      "two-column_8",
+      "two-column_9"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "two-column_8": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "isCanvas": false,
+    "props": {
+      "tagName": "h2",
+      "text": "On sale",
+      "className": "text-xl font-bold"
+    },
+    "parent": "two-column_7",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "two-column_9": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "isCanvas": false,
+    "props": {
+      "tagName": "p",
+      "text": "Twenty percent off every pair of boots.",
+      "className": "text-sm"
+    },
+    "parent": "two-column_7",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  }
+}

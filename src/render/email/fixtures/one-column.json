@@ -1,0 +1,211 @@
+{
+  "ROOT": {
+    "type": {
+      "resolvedName": "Background"
+    },
+    "isCanvas": true,
+    "parent": null,
+    "nodes": [
+      "one-column_1",
+      "one-column_3",
+      "one-column_7"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {},
+    "props": {
+      "type": "background",
+      "className": "bg-base-200 text-base-content font-body min-h-dvh w-full flex flex-col overflow-x-hidden",
+      "theme": {
+        "palette": [
+          {
+            "name": "Primary",
+            "color": "oklch(52% 0.19 256)"
+          },
+          {
+            "name": "Primary Content",
+            "color": "#ffffff"
+          },
+          {
+            "name": "Secondary",
+            "color": "#f59e0b"
+          },
+          {
+            "name": "Secondary Content",
+            "color": "#1f2937"
+          },
+          {
+            "name": "Accent",
+            "color": "#10b981"
+          },
+          {
+            "name": "Accent Content",
+            "color": "#ffffff"
+          },
+          {
+            "name": "Neutral",
+            "color": "#374151"
+          },
+          {
+            "name": "Neutral Content",
+            "color": "#f9fafb"
+          },
+          {
+            "name": "Base 100",
+            "color": "#ffffff"
+          },
+          {
+            "name": "Base 200",
+            "color": "#f3f4f6"
+          },
+          {
+            "name": "Base 300",
+            "color": "#e5e7eb"
+          },
+          {
+            "name": "Base Content",
+            "color": "#1f2937"
+          }
+        ],
+        "styleGuide": {
+          "radiusBox": "0.5rem"
+        }
+      }
+    }
+  },
+  "one-column_1": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "isCanvas": true,
+    "props": {
+      "className": "bg-primary text-primary-content py-space-md px-space-lg text-center"
+    },
+    "parent": "ROOT",
+    "nodes": [
+      "one-column_2"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "one-column_2": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "isCanvas": false,
+    "props": {
+      "tagName": "p",
+      "text": "Acme Supply Co.",
+      "className": "text-xl font-bold font-heading"
+    },
+    "parent": "one-column_1",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "one-column_3": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "isCanvas": true,
+    "props": {
+      "className": "bg-base-100 py-space-md px-space-lg flex flex-col gap-space-sm"
+    },
+    "parent": "ROOT",
+    "nodes": [
+      "one-column_4",
+      "one-column_5",
+      "one-column_6"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "one-column_4": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "isCanvas": false,
+    "props": {
+      "tagName": "h1",
+      "text": "Hi <span data-variable=\"variables.customer.name\" class=\"variable-node\">{{variables.customer.name}}</span>, your order shipped",
+      "className": "text-3xl font-bold text-base-content"
+    },
+    "parent": "one-column_3",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "one-column_5": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "isCanvas": false,
+    "props": {
+      "tagName": "p",
+      "text": "Everything you ordered is on its way. You can follow the delivery at any time.",
+      "className": "text-base text-base-content/70 leading-relaxed"
+    },
+    "parent": "one-column_3",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "one-column_6": {
+    "type": {
+      "resolvedName": "Button"
+    },
+    "isCanvas": false,
+    "props": {
+      "text": "Track your order",
+      "className": "bg-primary text-primary-content px-space-md py-space-xs rounded-box font-semibold",
+      "action": [
+        {
+          "type": "link",
+          "href": "https://example.com/track/{{variables.order.id}}"
+        }
+      ]
+    },
+    "parent": "one-column_3",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "one-column_7": {
+    "type": {
+      "resolvedName": "Container"
+    },
+    "isCanvas": true,
+    "props": {
+      "className": "bg-base-200 py-space-sm px-space-lg text-center"
+    },
+    "parent": "ROOT",
+    "nodes": [
+      "one-column_8"
+    ],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  },
+  "one-column_8": {
+    "type": {
+      "resolvedName": "Text"
+    },
+    "isCanvas": false,
+    "props": {
+      "tagName": "p",
+      "text": "Questions? Reply to this email.",
+      "className": "text-sm text-base-content/70"
+    },
+    "parent": "one-column_7",
+    "nodes": [],
+    "linkedNodes": {},
+    "hidden": false,
+    "custom": {}
+  }
+}

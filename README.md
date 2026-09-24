@@ -200,7 +200,7 @@ features: {
   saveButton: true,               // save/publish button in top toolbar
   aiGeneration: false,            // AI content generation (requires ai config)
   multiPage: true,                // multi-page site editing
-  responsivePreview: true,        // device preview toggle
+  canvasWidth: null,              // lock the canvas to N px + hide the breakpoint switcher
   seoPanel: true,                 // SEO settings
   importExport: true,             // Import/Export row in More menu
   settingsPanelSwitcher: true,    // "Left/Right Settings Panel" row in More menu

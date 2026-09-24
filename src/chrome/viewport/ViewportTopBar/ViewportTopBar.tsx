@@ -171,7 +171,8 @@ export const ViewportTopBar = () => {
           // visual slot between `history` and `view` groups (i.e. after
           // ph.editor.undo and before ph.editor.togglePreview in array order;
           // under flex-row-reverse that places it left of undo).
-          if (item.command === "ph.editor.undo") {
+          // A locked canvas width (`features.canvasWidth`) has no breakpoints to switch.
+          if (item.command === "ph.editor.undo" && !features.canvasWidth) {
             return (
               <React.Fragment key={`__frag_${idx}`}>
                 {node}

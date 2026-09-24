@@ -23,7 +23,7 @@ const DEFAULT_FEATURES: Required<PageHubFeatures> = {
   multiPage: true,
   custom404Page: true,
   restrictedComponents: [],
-  responsivePreview: true,
+  canvasWidth: null,
   directSave: false,
   saveButton: true,
   settingsPanelSwitcher: true,
