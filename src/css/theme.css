@@ -166,3 +166,18 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
 }
+
+/* Overlays toggled by the show-hide action.
+   twMerge treats `hidden` and `flex` as one display group and keeps only the
+   last, so an overlay cannot carry both its initial and its shown-state layout
+   in className. These pair with `hidden` to supply the shown state. */
+.ph-overlay:not(.hidden) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ph-drawer:not(.hidden) {
+  display: flex;
+  flex-direction: column;
+}
