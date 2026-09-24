@@ -166,6 +166,27 @@ export function emitThemeCss(source: DesignTokensSource): string {
   while (out[out.length - 1] === "") out.pop();
   out.push("}");
   out.push("");
+  out.push(SHOW_HIDE_LAYOUT_CSS);
 
   return out.join("\n");
 }
+
+/* Overlays toggled by the show-hide action. twMerge treats `hidden` and `flex`
+   as one display group and keeps only the last, so an overlay cannot carry both
+   its initial and its shown-state layout in className. These pair with `hidden`
+   to supply the shown state. */
+const SHOW_HIDE_LAYOUT_CSS = `/* Overlays toggled by the show-hide action.
+   twMerge treats \`hidden\` and \`flex\` as one display group and keeps only the
+   last, so an overlay cannot carry both its initial and its shown-state layout
+   in className. These pair with \`hidden\` to supply the shown state. */
+.ph-overlay:not(.hidden) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ph-drawer:not(.hidden) {
+  display: flex;
+  flex-direction: column;
+}
+`;
