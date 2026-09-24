@@ -97,7 +97,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
     if (mediaObject?.metadata) mediaMetadata = mediaObject.metadata;
   }
 
-  const cn = props.className || "";
+  const cn = typeof props.className === "string" ? props.className : "";
   const hasRadius = cn.split(/\s+/).some((t: string) => {
     const u = t.replace(/^(sm:|md:|lg:|xl:|2xl:)+/, "");
     return u === "rounded" || u.startsWith("rounded-");
@@ -117,7 +117,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
       ctx.enabled && e.preventDefault();
     },
     style: props.root?.style ? CSStoObj(props.root.style) || {} : {},
-    className: `${hasRadius ? "overflow-hidden" : ""} ${props.className || ""}`.trim(),
+    className: `${hasRadius ? "overflow-hidden" : ""} ${cn}`.trim(),
   };
   applyAriaProps(prop, props);
 
@@ -144,7 +144,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
     resolveVar(props.title) ||
     "";
   const titleText = mediaMetadata?.title || resolveVar(props.title) || "";
-  const hasObjectFit = (props.className || "").includes("object-");
+  const hasObjectFit = cn.includes("object-");
 
   const _imgProp: Record<string, unknown> = {
     loading: props.loading || "lazy",
@@ -152,7 +152,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
     title: titleText,
     role: !altText && !titleText ? "presentation" : undefined,
     className:
-      `${ctx.enabled ? "w-full h-full" : ""} ${!hasObjectFit ? "object-cover" : ""} ${props.className || ""}`.trim(),
+      `${ctx.enabled ? "w-full h-full" : ""} ${!hasObjectFit ? "object-cover" : ""} ${cn}`.trim(),
   };
 
   const isSvg = props.type === "svg" || mediaObject?.type === "svg";
@@ -174,7 +174,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
     if (videoId) {
       libraryId = videoId;
       const r = getResponsiveImageAttrs(ctx.pageMedia, videoId, {
-        className: props.className,
+        className: cn,
         parentClassName: ctx.parentClassName,
         sizes: props.sizes,
       });
@@ -193,7 +193,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
       libraryId = srcStr;
       const quality = typeof props.quality === "number" ? props.quality : undefined;
       const r = resolveCdnResponsive(srcStr, {
-        className: props.className,
+        className: cn,
         parentClassName: ctx.parentClassName,
         quality,
         sizesOverride: props.sizes,
@@ -209,7 +209,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
     // Intrinsic size → the browser reserves the box before the bytes land (CLS).
     if (libraryId) {
       const dims = getIntrinsicSizeAttrs(ctx.pageMedia, libraryId, {
-        className: props.className,
+        className: cn,
       });
       if (dims) {
         _imgProp.width = dims.width;
