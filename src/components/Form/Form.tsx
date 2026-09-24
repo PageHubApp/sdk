@@ -3,6 +3,7 @@ import { getClonedState, setClonedProps } from "../../utils/cloneState";
 import { useEffect, useState } from "react";
 import { TbClipboardCheck } from "react-icons/tb";
 import { submitFormProduction } from "./submitFormProduction";
+import { serializeFormFields } from "./serializeFormFields";
 import { Container } from "../Container/Container";
 import { Text } from "../Text/Text";
 import { setVisibility } from "../../utils/state/stateRegistry";
@@ -125,16 +126,7 @@ export const Form = ({ children, ...props }: any) => {
 
     // Find the form element
     const formElement = e.currentTarget.querySelector("form") || e.currentTarget;
-    const formFields = formElement.querySelectorAll("input, select, textarea");
-    const formData: any = {};
-
-    formFields.forEach(field => {
-      if (field.type !== "file") {
-        formData[field.name] = field.value;
-      }
-    });
-
-    await handleFormSubmit(formData);
+    await handleFormSubmit(serializeFormFields(formElement));
   };
 
   return (
@@ -153,18 +145,7 @@ export const Form = ({ children, ...props }: any) => {
           return;
         }
 
-        // Extract form data for logging
-        const formElement = e.target;
-        const formFields = formElement.querySelectorAll("input, select, textarea");
-        const formData: any = {};
-
-        formFields.forEach(field => {
-          if (field.type !== "file") {
-            formData[field.name] = field.value;
-          }
-        });
-
-        await handleFormSubmit(formData);
+        await handleFormSubmit(serializeFormFields(e.currentTarget));
       }}
       onDoubleClick={handleDoubleClick}
       {...props}

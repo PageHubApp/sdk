@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { submitFormProduction } from "./submitFormProduction";
+import { serializeFormFields } from "./serializeFormFields";
 import { useContainerRenderWalker } from "../Container/Container.render";
 import { useWalkerNode } from "../../render/react/contexts";
 import { setVisibility } from "../../utils/state/stateRegistry";
@@ -56,13 +57,7 @@ export const FormRender = ({ children, ...props }: any) => {
     "aria-label": props.formName || "Form",
     onSubmit: async (e: any) => {
       e.preventDefault();
-      const formElement = e.target;
-      const formFields = formElement.querySelectorAll("input, select, textarea");
-      const formData: any = {};
-      formFields.forEach((field: any) => {
-        if (field.type !== "file") formData[field.name] = field.value;
-      });
-      await handleFormSubmit(formData);
+      await handleFormSubmit(serializeFormFields(e.currentTarget));
     },
     ...props,
     type: "form",
