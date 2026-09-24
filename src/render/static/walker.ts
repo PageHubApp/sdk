@@ -1,5 +1,5 @@
 import { buildStaticContext } from "../../utils/conditions/context";
-import { evaluateConditionGroups } from "../../utils/conditions/evaluate";
+import { evaluateConditionGroups, hasStateCondition } from "../../utils/conditions/evaluate";
 import type { AuthState } from "../../utils/design/variables";
 import type { StaticRenderContext, ToHTMLFn } from "../../utils/staticHtml";
 import type { SerializedNode, SerializedNodes } from "./types";
@@ -61,10 +61,13 @@ export function renderNode(
     const condCtx = buildWalkerContext(rootProps, ctx.currentItem ?? null, ctx);
 
     const result = evaluateConditionGroups(conditionGroups, condCtx);
+    // State is empty at render time, so a state-gated result is only the
+    // initial one — keep the node and let the client directive re-evaluate.
+    const stateGated = hasStateCondition(conditionGroups);
 
-    if (result === false) return ""; // definitively hidden
+    if (result === false && !stateGated) return ""; // definitively hidden
 
-    if (result === null) {
+    if (result === null || stateGated) {
       // Client-only conditions: render content but wrap hidden for client eval
       ctx.hasClientConditions = true;
       const typeName = resolveType(node);
@@ -104,7 +107,8 @@ export function renderNode(
       // Consumed by the Alpine `data-ph-condition-groups` directive registered
       // in staticPublishRuntime.ts.
       const groupsData = JSON.stringify(conditionGroups).replace(/"/g, "&quot;");
-      return `<div data-ph-condition-groups="${groupsData}" style="display:none">${inner}</div>`;
+      const initialStyle = result === true ? "" : ` style="display:none"`;
+      return `<div data-ph-condition-groups="${groupsData}"${initialStyle}>${inner}</div>`;
     }
     // result === true: render normally, fall through
   }

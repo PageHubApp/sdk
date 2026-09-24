@@ -195,6 +195,16 @@ function evaluateConditions(
 }
 
 /**
+ * True when any condition reads the state registry. Those conditions change at
+ * runtime (clicks, computed bindings), so a render-time result is never final:
+ * the walkers must keep such nodes reactive instead of dropping or pinning them.
+ */
+export function hasStateCondition(groups: ConditionGroup[] | null | undefined): boolean {
+  if (!Array.isArray(groups)) return false;
+  return groups.some(g => Array.isArray(g?.conditions) && g.conditions.some(c => c?.type === "state"));
+}
+
+/**
  * Evaluate condition groups (OR between groups, AND/OR within each group).
  * Groups are the Elementor-style "condition group" model.
  */
