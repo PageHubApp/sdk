@@ -8,6 +8,7 @@ import { escapeHTML } from "../../utils/staticHtml";
 import type { StaticRenderContext } from "../../utils/staticHtml";
 import { processForStatic } from "../../define/processors/forStatic";
 import { styleGuideGoogleFontFamily } from "./fonts";
+import { googleFontFamilyParam } from "../../utils/fonts/familyParam";
 import { defaultResolver } from "./resolver";
 import { PH_GSAP_CDN } from "./runtime/gsapCdn";
 import { PH_HORIZONTAL_SCROLL_SCRIPT } from "./runtime/horizontalScroll";
@@ -258,7 +259,7 @@ export function renderToHTML(
     const font = styleGuideGoogleFontFamily(tok?.fontFamily);
     if (font) {
       ctx.fontUrls.add(
-        `https://fonts.googleapis.com/css2?family=${encodeURIComponent(font)}:wght@300;400;500;600;700&display=swap`
+        `https://fonts.googleapis.com/css2?${googleFontFamilyParam(font, [300, 400, 500, 600, 700])}&display=swap`
       );
     }
   }

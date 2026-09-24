@@ -10,7 +10,7 @@
  * action should skip this function and let the `<a href>` navigate
  * natively (faster, no JS hop) — see Button.tsx for the policy.
  */
-import type { NodeAction } from "../action";
+import { actionTrigger, type NodeAction } from "../action";
 import { fireConversion } from "./conversion";
 import {
   attachAddToCart,
@@ -46,6 +46,11 @@ export function addActionHandlers(
   if (list.length === 0) return;
 
   for (const action of list) {
+    // Load and interval actions are fired by fireLoadAction / fireIntervalActions
+    // on mount; binding them here too would re-run them on every click that
+    // bubbles through the node (matches the static runtime's skip).
+    const trigger = actionTrigger(action);
+    if (trigger === "load" || trigger === "interval") continue;
     attachOne(prop, action, enabled, context);
   }
 }

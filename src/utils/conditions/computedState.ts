@@ -23,6 +23,8 @@
  *   - `first-truthy`            — emits the value of the first truthy input
  *                                 key; "" when all are empty.
  *   - `join`                    — concatenates input values with a separator.
+ *   - `count`                   — emits how many input keys are truthy, or
+ *                                 equal `value` when set, as a number string.
  *
  * Reactivity: Container subscribes to all `from` keys via `useStateValue` and
  * runs the computer on every change. Results are written with
@@ -63,7 +65,8 @@ export type ComputedStateCompute =
     }
   | { type: "all-truthy" }
   | { type: "first-truthy" }
-  | { type: "join"; separator?: string };
+  | { type: "join"; separator?: string }
+  | { type: "count"; value?: string };
 
 export interface ComputedStateBinding {
   /** Output state key. Anchor tokens supported. Also supports `{{item.X}}`
@@ -130,6 +133,13 @@ export function runComputedState(binding: ComputedStateBinding, ctx: ComputeRunC
       const values = (binding.from || []).map(k => getStateValue(ctx.interp(k)));
       for (const v of values) if (v != null && v !== "") return v;
       return "";
+    }
+    case "count": {
+      const values = (binding.from || []).map(k => getStateValue(ctx.interp(k)));
+      const hits = values.filter(v =>
+        c.value != null && c.value !== "" ? v === c.value : v != null && v !== ""
+      );
+      return String(hits.length);
     }
     case "join": {
       const sep = c.separator ?? ",";

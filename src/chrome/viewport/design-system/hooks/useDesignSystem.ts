@@ -13,6 +13,7 @@ import { usePaletteState } from "./usePaletteState";
 import { useStyleGuideState } from "./useStyleGuideState";
 import { useTypographyState } from "./useTypographyState";
 import { sdkLog } from "../../../../utils/logger";
+import { googleFontFamilyParam } from "../../../../utils/fonts/familyParam";
 
 export { DEFAULT_CUSTOM_FONTS } from "./defaults";
 export type { CustomFont, PaletteColor, StyleGuideState } from "./types";
@@ -124,22 +125,15 @@ export function useDesignSystem(isOpen: boolean) {
 
   // Load Google Fonts for preview
   useEffect(() => {
-    const families = fonts
-      .map(font => `family=${(font[0] as string).replace(/ +/g, "+")}:wght@400`)
-      .join("&");
+    const families = fonts.map(font => googleFontFamilyParam(font[0] as string, [400])).join("&");
 
     const tokenFonts: string[] = [];
     const headingTok = typography.customFonts.find(t => t.name === "Heading");
     const bodyTok = typography.customFonts.find(t => t.name === "Body");
-    if (headingTok?.fontFamily && !headingTok.fontFamily.startsWith("style:")) {
-      tokenFonts.push(
-        `family=${headingTok.fontFamily.replace(/ +/g, "+")}:wght@${headingTok.fontWeight || "400"}`
-      );
-    }
-    if (bodyTok?.fontFamily && !bodyTok.fontFamily.startsWith("style:")) {
-      tokenFonts.push(
-        `family=${bodyTok.fontFamily.replace(/ +/g, "+")}:wght@${bodyTok.fontWeight || "400"}`
-      );
+    for (const tok of [headingTok, bodyTok]) {
+      if (tok?.fontFamily && !tok.fontFamily.startsWith("style:")) {
+        tokenFonts.push(googleFontFamilyParam(tok.fontFamily, [tok.fontWeight || "400"]));
+      }
     }
 
     const allFamilies = [...families.split("&"), ...tokenFonts].join("&");

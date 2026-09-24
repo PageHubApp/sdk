@@ -77,16 +77,6 @@ function linearize(c: number): number {
 }
 
 function srgbToOklch(r: number, g: number, b: number): [number, number, number] {
-  // Achromatic shortcut: when R=G=B the result is pure grayscale (chroma=0).
-  // The OKLab matrix multiply below accumulates floating-point error that
-  // produces a misleading chroma ~0.015 with a yellow-green hue for pure
-  // white/black inputs, which then renders the canvas cream instead of white.
-  if (r === g && g === b) {
-    const l = linearize(r);
-    const L = Math.cbrt(l);
-    return [L, 0, 0];
-  }
-
   const lr = linearize(r);
   const lg = linearize(g);
   const lb = linearize(b);
@@ -94,7 +84,7 @@ function srgbToOklch(r: number, g: number, b: number): [number, number, number] 
   // Linear RGB → LMS (via OKLab matrix)
   const l_ = 0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb;
   const m_ = 0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb;
-  const s_ = 0.0883024619 * lr + 0.2220049494 * lg + 0.6396926187 * lb;
+  const s_ = 0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb;
 
   const l1 = Math.cbrt(l_);
   const m1 = Math.cbrt(m_);
@@ -281,12 +271,22 @@ export const CONTENT_COLOR_PAIRS: Record<string, string> = {
   Warning: "Warning Content",
 };
 
+/** WCAG contrast between two CSS colors, or null when either can't be parsed. */
+function colorContrast(a: string, b: string): number | null {
+  try {
+    return contrastRatio(relativeLuminance(...parseColor(a)), relativeLuminance(...parseColor(b)));
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Derive the content color for every surface token that has a defined pair.
+ * Fill in the content color for every surface token that has a defined pair.
  *
- * Any `* Content` entry already in the palette is REPLACED, not respected —
- * the derived value is the single source of truth so a hand-picked pairing can
- * never silently drop below AA.
+ * A `* Content` entry the author set is kept when it clears WCAG AA (4.5:1)
+ * against its surface — that's a deliberate brand choice (navy text on cream).
+ * Missing entries, and ones that fall below AA, are replaced by the derived
+ * value, so a hand-picked pairing can never ship unreadable.
  */
 export function autoGenerateContentColors(
   palette: { name: string; color: string }[]
@@ -298,9 +298,11 @@ export function autoGenerateContentColors(
     const surfaceColor = map.get(surfaceName);
     if (!surfaceColor) continue;
 
-    const generated = generateContentColor(surfaceColor);
     const existingIdx = result.findIndex(p => p.name === contentName);
+    const existing = existingIdx >= 0 ? result[existingIdx].color : undefined;
+    if (existing && (colorContrast(existing, surfaceColor) ?? 0) >= 4.5) continue;
 
+    const generated = generateContentColor(surfaceColor);
     if (existingIdx >= 0) {
       result[existingIdx] = { name: contentName, color: generated };
     } else {

@@ -43,6 +43,12 @@ export const COMPUTE_TYPES: Array<{
     description: "Concatenate all input values with a separator. Default separator is ','.",
   },
   {
+    value: "count",
+    label: "Count",
+    description:
+      "Output how many inputs have a value, or match one value. Use for quiz scores and progress.",
+  },
+  {
     value: "variant-match",
     label: "Variant match",
     description:
@@ -175,6 +181,24 @@ function ComputedBindingPanel({
               }
               placeholder=","
               aria-label="Join separator"
+            />
+          </label>
+        )}
+
+        {c.type === "count" && (
+          <label className="flex flex-col gap-0.5">
+            <span className="text-base-content text-[11px] font-medium">Count only this value</span>
+            <input
+              type="text"
+              className="input input-xs font-mono"
+              value={c.value ?? ""}
+              onChange={e =>
+                setCompute<Extract<ComputedStateCompute, { type: "count" }>>({
+                  value: e.target.value,
+                })
+              }
+              placeholder="Any non-empty value"
+              aria-label="Count only this value"
             />
           </label>
         )}

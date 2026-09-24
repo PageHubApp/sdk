@@ -3,6 +3,7 @@
  */
 
 import { resolveCSSVariable } from "../design/color";
+import { googleFontFamilyParam } from "./familyParam";
 import {
   findFontFamilyClassToken,
   parseGoogleFontFromArbitraryClass,
@@ -29,10 +30,7 @@ export const generateCombinedFontURL = () => {
   if (fontCollection.size === 0) return null;
 
   const fontParams = Array.from(fontCollection.entries())
-    .map(([fontFamily, weights]) => {
-      const weightStr = Array.from(weights).join(";");
-      return `family=${encodeURIComponent(fontFamily)}:wght@${weightStr}`;
-    })
+    .map(([fontFamily, weights]) => googleFontFamilyParam(fontFamily, weights))
     .join("&");
 
   return `https://fonts.googleapis.com/css2?${fontParams}&display=swap`;
@@ -79,9 +77,8 @@ function runLoadCombinedFontsFlush() {
   const onOneDone = () => finishFontBatch(totalFonts, loadedCountRef);
 
   entries.forEach(([fontFamily, weights]) => {
-    const weightStr = Array.from(weights).join(";");
     const encodedFamily = encodeURIComponent(fontFamily);
-    const fontURL = `https://fonts.googleapis.com/css2?family=${encodedFamily}:wght@${weightStr}&display=swap`;
+    const fontURL = `https://fonts.googleapis.com/css2?${googleFontFamilyParam(fontFamily, weights)}&display=swap`;
     const fallbackURL = `https://fonts.googleapis.com/css2?family=${encodedFamily}&display=swap`;
 
     const existingLink = document.querySelector(

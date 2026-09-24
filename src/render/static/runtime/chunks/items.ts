@@ -160,6 +160,18 @@ export const ITEMS_CHUNK = stringifyChunk(function $items() {
       }
       return "";
     }
+    if (t === "count") {
+      const fk3 = binding.from || [];
+      const want = c.value != null && c.value !== "" ? c.value : null;
+      let n = 0;
+      for (i = 0; i < fk3.length; i++) {
+        k = interp(fk3[i]);
+        if (!k) continue;
+        v = getStateValue(k);
+        if (want != null ? v === want : v != null && v !== "") n++;
+      }
+      return String(n);
+    }
     if (t === "join") {
       const sep = c.separator != null ? c.separator : ",";
       const fk2 = binding.from || [];

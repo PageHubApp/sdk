@@ -25,6 +25,7 @@ import {
   type CuratedGoogleFontFamilies,
 } from "./curatedGoogleFontFamilies";
 import { sdkLog } from "../logger";
+import { googleFontFamilyParam } from "./familyParam";
 
 export {
   CURATED_GOOGLE_FONT_FAMILIES,
@@ -209,10 +210,7 @@ export const loadGoogleFont = (
 ): void => {
   if (typeof window === "undefined") return;
 
-  const normalizedFamily = family.replace(/ +/g, "+");
-  const weightStr = weights.join(";");
-
-  const href = `https://fonts.googleapis.com/css2?family=${normalizedFamily}:wght@${weightStr}&display=${display}`;
+  const href = `https://fonts.googleapis.com/css2?${googleFontFamilyParam(family, weights)}&display=${display}`;
 
   // Check if already loaded
   const existingLinks = Array.from(
@@ -244,11 +242,7 @@ export const preloadFonts = (
 
   // Build combined URL for all fonts
   const familyParams = fonts
-    .map(font => {
-      const normalizedFamily = font.family.replace(/ +/g, "+");
-      const weights = font.weights || ["400", "700"];
-      return `family=${normalizedFamily}:wght@${weights.join(";")}`;
-    })
+    .map(font => googleFontFamilyParam(font.family, font.weights || ["400", "700"]))
     .join("&");
 
   const href = `https://fonts.googleapis.com/css2?${familyParams}&display=${display}`;
