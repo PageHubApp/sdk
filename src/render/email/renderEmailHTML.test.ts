@@ -151,3 +151,36 @@ test("renderEmailHTML: an image's width attribute fits its column", async () => 
   assert.match(html, /<img[^>]*src="https:\/\/x\.test\/a\.png"[^>]*width="300"/);
   assert.match(html, /<img[^>]*src="https:\/\/x\.test\/c\.png"[^>]*width="600"/);
 });
+
+test("renderEmailHTML: site web fonts are linked in <head>, with fallbacks and an Outlook guard", async () => {
+  const nodes = tree(
+    [
+      n("Text", { tagName: "h1", className: "font-heading", text: "Hi" }),
+      n("Text", { className: "font-body", text: "Body" }),
+    ],
+    {
+      theme: {
+        typography: [
+          { name: "Heading", fontFamily: "Space Grotesk", fontWeight: "700" },
+          { name: "Body", fontFamily: "Open Sans" },
+        ],
+      },
+    }
+  );
+  const { html } = await renderEmailHTML({ content: nodes });
+  const head = html.slice(0, html.indexOf("</head>"));
+  assert.match(head, /<link rel="stylesheet" href="https:\/\/fonts\.googleapis\.com\/css2\?family=Space(%20|\+)Grotesk[^"]*&amp;display=swap">/);
+  assert.match(head, /family=Open(%20|\+)Sans/);
+  assert.match(head, /<!--\[if mso\]><style>[^<]*font-family:Arial,Helvetica,sans-serif!important[^<]*<\/style><!\[endif\]-->/);
+  // Clients that ignore <link> fall back through the inlined stack, never to a bare family.
+  for (const family of ["Space Grotesk", "Open Sans"]) {
+    const re = new RegExp(`font-family:\\s*["']?${family}["']?\\s*,\\s*sans-serif`);
+    assert.match(html, re, `${family} has a sans-serif fallback`);
+  }
+});
+
+test("renderEmailHTML: no web fonts → no <link> and no Outlook font override", async () => {
+  const { html } = await renderEmailHTML({ content: tree([n("Text", { text: "Hi" })]) });
+  assert.doesNotMatch(html, /<link /);
+  assert.doesNotMatch(html, /\[if mso\]><style>/);
+});

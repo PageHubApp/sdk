@@ -9,6 +9,7 @@ import {
   TbEyeOff,
   TbFileText,
 } from "react-icons/tb";
+import { savedComponentsAllowed } from "../../../define/componentAllowlist";
 import type { CommandDef } from "../../types";
 import { setAtomExternal, getAtomExternal } from "../../../utils/atoms/external";
 import {
@@ -144,6 +145,8 @@ export const CANVAS_COMMANDS: CommandDef[] = [
     title: ctx => (ctx.viewMode === "canvas" ? "Switch to page editor" : "Switch to components editor"),
     category: "View",
     icon: ctx => (ctx.viewMode === "canvas" ? <TbFileText /> : <TbBoxModel2 />),
+    // The components editor is where saved components are built; leaving it stays possible.
+    when: ctx => savedComponentsAllowed() || ctx.viewMode === "canvas",
     run: ctx => {
       const { query, actions } = ctx as { query: any; actions: any };
       toggleViewModeRun(query, actions);

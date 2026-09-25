@@ -12,6 +12,7 @@ import { SearchInput } from "../../primitives/SearchInput";
 import { usePanelSearch } from "../../hooks/usePanelSearch";
 import { buildCustomToolboxEntries } from "../toolbox/customComponents";
 import { SavedComponentsToolbox } from "../toolbox/savedComponentsToolbox";
+import { savedComponentsAllowed } from "../../../define/componentAllowlist";
 
 // A toolbox category bucket: a labeled list of pre-rendered toolbox entry
 // elements (produced by `buildCustomToolboxEntries` / `SavedComponentsToolbox`).
@@ -83,7 +84,7 @@ export const ComponentSettings = () => {
       }
     }
 
-    if (components?.filter(component => !component.isSection)?.length) {
+    if (savedComponentsAllowed() && components?.filter(component => !component.isSection)?.length) {
       merged.push(SavedComponentsToolbox(components));
     }
 

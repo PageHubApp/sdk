@@ -11,6 +11,7 @@
 import { registerCatalogFilter } from "../../define/catalogRegistry";
 import { registerComponentAllowlist } from "../../define/componentAllowlist";
 import type { PageHubFeatures } from "../../types/features";
+import { presetIsEmailSafe } from "./presetSafety";
 
 /** Width of the email canvas in px. Every static length resolves against it. */
 export const EMAIL_WIDTH = 600;
@@ -159,7 +160,8 @@ export function hasUnsafeEmailClass(classes: string): boolean {
  * component can't be deserialized.
  */
 export function emailEditorConfig(extraComponents: string[] = []): Partial<PageHubFeatures> {
-  registerComponentAllowlist([...EMAIL_COMPONENTS, ...extraComponents]);
+  const allowed = new Set<string>([...EMAIL_COMPONENTS, ...extraComponents]);
+  registerComponentAllowlist([...allowed]);
   for (const name of EMAIL_COMPONENTS) {
     registerCatalogFilter(name, (entry, kind) => {
       const e = entry as {
@@ -167,12 +169,18 @@ export function emailEditorConfig(extraComponents: string[] = []): Partial<PageH
         expands?: string;
         name?: string;
         props?: { className?: string };
+        children?: unknown;
       };
       // A single-class modifier carries its class as `name` and has no `classes`.
       const modifierClass = kind === "modifier" && !e.classes ? (e.name ?? "") : "";
-      return !hasUnsafeEmailClass(
-        `${e.classes ?? ""} ${e.expands ?? ""} ${e.props?.className ?? ""} ${modifierClass}`
-      );
+      if (
+        hasUnsafeEmailClass(
+          `${e.classes ?? ""} ${e.expands ?? ""} ${e.props?.className ?? ""} ${modifierClass}`
+        )
+      ) {
+        return false;
+      }
+      return kind !== "preset" || presetIsEmailSafe(e, allowed, hasUnsafeEmailClass);
     });
   }
   return {
@@ -185,6 +193,10 @@ export function emailEditorConfig(extraComponents: string[] = []): Partial<PageH
     multiPage: false,
     custom404Page: false,
     darkModeSwitcher: false,
+    // The theme comes from the host (a site's live theme), so the Theme panel
+    // would edit something that isn't saved; publishing is the host's call too.
+    designSystem: false,
+    saveButton: false,
     blocksPanel: { enabled: false },
     inspectorTabs: EMAIL_INSPECTOR_TABS,
     cssAllowlist: { classes: EDITOR_CLASS_ALLOWLIST },

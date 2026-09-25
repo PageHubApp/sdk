@@ -46,3 +46,16 @@ export function getComponentAllowlist(): ReadonlySet<string> | null {
 export function isComponentAllowed(name: string): boolean {
   return allowlist === null || allowlist.has(name);
 }
+
+/** Resolver name of saved ("reusable") components. */
+export const SAVED_COMPONENT_NAME = "SavedComponentLoader";
+
+/**
+ * Whether saved components are on offer: the toolbox's "My Components", the
+ * "Reusable components" start card, "Convert to component" and the components
+ * editor. They're off whenever an allowlist is set without
+ * `SavedComponentLoader`, since a saved component can hold anything.
+ */
+export function savedComponentsAllowed(): boolean {
+  return isComponentAllowed(SAVED_COMPONENT_NAME);
+}

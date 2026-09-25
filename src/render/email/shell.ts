@@ -1,6 +1,7 @@
 /**
- * Email document shell: head, mobile `<style>`, hidden preheader, and the
- * centered 600px frame (with an Outlook fixed-width wrapper) the body sits in.
+ * Email document shell: head (site web fonts, mobile `<style>`), hidden
+ * preheader, and the centered 600px frame (with an Outlook fixed-width
+ * wrapper) the body sits in.
  */
 
 import { escapeHTML } from "../../utils/staticHtml";
@@ -58,14 +59,38 @@ export function emailFrame(rootClass: string, inner: string): string {
   );
 }
 
+/**
+ * Outlook for Windows ignores the rest of a `font-family` stack when the first
+ * font isn't installed and falls back to Times New Roman, so with a web font in
+ * play it's pinned to a web-safe face. Other clients use the inlined stack:
+ * the web font where `<link>` fonts load (Apple Mail, iOS Mail), else its
+ * generic fallback.
+ */
+export const EMAIL_MSO_FONT_CSS =
+  "body,table,td,p,a,span,h1,h2,h3,h4,h5,h6{font-family:Arial,Helvetica,sans-serif!important}";
+
 export interface EmailShellOptions {
   body: string;
   title?: string;
   lang?: string;
   preheader?: string;
+  /** Web-font stylesheet URLs (Google Fonts) for the site's fonts. */
+  fontUrls?: string[];
 }
 
-export function emailShell({ body, title = "", lang = "en", preheader }: EmailShellOptions): string {
+function fontHead(fontUrls: string[]): string {
+  if (!fontUrls.length) return "";
+  const links = fontUrls.map(url => `<link rel="stylesheet" href="${escapeHTML(url)}">`).join("\n");
+  return `${links}\n<!--[if mso]><style>${EMAIL_MSO_FONT_CSS}</style><![endif]-->\n`;
+}
+
+export function emailShell({
+  body,
+  title = "",
+  lang = "en",
+  preheader,
+  fontUrls = [],
+}: EmailShellOptions): string {
   const pre = preheader
     ? `<div ${PREHEADER_ATTR} style="display:none;max-height:0;overflow:hidden;mso-hide:all">${escapeHTML(preheader)}</div>`
     : "";
@@ -77,7 +102,7 @@ export function emailShell({ body, title = "", lang = "en", preheader }: EmailSh
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
 <title>${escapeHTML(title)}</title>
-<style>${EMAIL_MEDIA_CSS}</style>
+${fontHead(fontUrls)}<style>${EMAIL_MEDIA_CSS}</style>
 </head>
 <body style="margin:0;padding:0">
 ${pre}${body}

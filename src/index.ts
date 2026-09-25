@@ -126,6 +126,7 @@ export {
   resetComponentAllowlist,
   getComponentAllowlist,
   isComponentAllowed,
+  savedComponentsAllowed,
 } from "./define/componentAllowlist";
 
 // Email mode — editor-side profile + validator (no server deps). The renderer

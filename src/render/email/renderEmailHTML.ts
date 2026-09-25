@@ -151,6 +151,7 @@ export async function renderEmailHTML(opts: RenderEmailOptions): Promise<RenderE
     title: opts.title,
     lang: opts.lang,
     preheader: opts.preheader,
+    fontUrls: result.fontUrls,
   });
 
   const html = juice(doc, {

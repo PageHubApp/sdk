@@ -10,6 +10,7 @@ import {
   TbTrash,
   TbWand,
 } from "react-icons/tb";
+import { savedComponentsAllowed } from "../../../define/componentAllowlist";
 import type { CommandDef } from "../../types";
 import { setAtomExternal } from "../../../utils/atoms/external";
 import { CanvasIsolateAtom } from "../../../utils/component/componentIsolation";
@@ -227,7 +228,7 @@ export const NODE_COMMANDS: CommandDef[] = [
     id: "ph.node.convertToComponent",
     title: "Convert to component",
     category: "Edit",
-    when: ctx => canCopySelection(ctx),
+    when: ctx => canCopySelection(ctx) && savedComponentsAllowed(),
     enablement: ctx =>
       Boolean((ctx as Record<string, unknown>)["canMakeSavedComponent"]),
     run: ctx => nodeConvertToComponentRun(ctx),

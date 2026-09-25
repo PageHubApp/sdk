@@ -242,7 +242,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     : null;
   const lockedWidth = features.canvasWidth;
   const canvasOuterStyle: React.CSSProperties = lockedWidth
-    ? { width: `${lockedWidth}px`, maxWidth: "none", flexShrink: 0, marginInline: "auto" }
+    ? { width: `${lockedWidth}px`, maxWidth: "none", flex: `0 0 ${lockedWidth}px`, marginInline: "auto" }
     : breakpointWidthPx != null
       ? responsive
         ? { ...deviceStyles, maxWidth: `min(100%, ${breakpointWidthPx}px)` }

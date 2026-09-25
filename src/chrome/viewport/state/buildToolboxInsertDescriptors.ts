@@ -2,6 +2,7 @@ import type { ComponentType, ReactElement } from "react";
 import type { ResolvedComponentDef } from "../../../define/types";
 import { getPresets } from "../../../define/catalogRegistry";
 import { SavedComponentLoader } from "../../../core/savedComponents";
+import { savedComponentsAllowed } from "../../../define/componentAllowlist";
 
 export type ToolboxInsertDescriptor = {
   key: string;
@@ -63,7 +64,8 @@ export function buildToolboxInsertDescriptors(
     }
   }
 
-  for (const c of components?.filter(component => !component.isSection) || []) {
+  const saved = savedComponentsAllowed() ? components : null;
+  for (const c of saved?.filter(component => !component.isSection) || []) {
     const name = c.name || "Component";
     rows.push({
       key: `saved-${c.rootNodeId || name}-${rows.length}`,

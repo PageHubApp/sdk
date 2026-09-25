@@ -1,6 +1,7 @@
 import { useAtomState } from "@zedux/react";
 import { TbBoxModel2, TbClick, TbLayoutGridAdd, TbPlus } from "react-icons/tb";
 import { useSDK } from "../../core/context";
+import { savedComponentsAllowed } from "../../define/componentAllowlist";
 import { useRegistries, SlotRenderer } from "../../registry";
 import { AssistantOpenAtom, useSetAtomState } from "../../utils/atoms";
 import { useAiEnabled } from "../../utils/hooks/useAiEnabled";
@@ -28,6 +29,7 @@ export const EditorEmptyState = () => {
   const isCanvasMode = viewMode === "canvas";
   const hasComponents = components.length > 0;
   const blocksEnabled = config.features?.blocksPanel?.enabled !== false;
+  const savedEnabled = savedComponentsAllowed();
 
   const dispatch = (command: string) => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -57,12 +59,14 @@ export const EditorEmptyState = () => {
                   onClick={dispatch("ph.editor.openComponentsPanel")}
                 />
 
-                <ActionRow
-                  icon={<TbBoxModel2 className="size-6" />}
-                  title="Reusable components"
-                  description="Save a layout once, drop it on every page…"
-                  onClick={dispatch("ph.component.createReusable")}
-                />
+                {savedEnabled && (
+                  <ActionRow
+                    icon={<TbBoxModel2 className="size-6" />}
+                    title="Reusable components"
+                    description="Save a layout once, drop it on every page…"
+                    onClick={dispatch("ph.component.createReusable")}
+                  />
+                )}
 
                 {isAiEnabled && (
                   <SlotRenderer
@@ -75,7 +79,7 @@ export const EditorEmptyState = () => {
           </div>
         )}
 
-        {isCanvasMode && !hasComponents && (
+        {isCanvasMode && !hasComponents && savedEnabled && (
           <div className="flex w-full max-w-md flex-col gap-1 text-sm">
             <ActionRow
               icon={<TbBoxModel2 className="size-6" />}
