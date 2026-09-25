@@ -19,6 +19,7 @@ const DEFAULT_FEATURES: Required<PageHubFeatures> = {
   seoPanel: true,
   designSystem: true,
   mediaManager: true,
+  mediaLibraryEdit: true,
   modifiers: true,
   multiPage: true,
   custom404Page: true,

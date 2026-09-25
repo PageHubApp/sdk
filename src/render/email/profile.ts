@@ -197,6 +197,9 @@ export function emailEditorConfig(extraComponents: string[] = []): Partial<PageH
     // would edit something that isn't saved; publishing is the host's call too.
     designSystem: false,
     saveButton: false,
+    // The Media Manager browses the site's library; the email doc's copy of it
+    // is stripped on save, so library edits here would silently not stick.
+    mediaLibraryEdit: false,
     blocksPanel: { enabled: false },
     inspectorTabs: EMAIL_INSPECTOR_TABS,
     cssAllowlist: { classes: EDITOR_CLASS_ALLOWLIST },

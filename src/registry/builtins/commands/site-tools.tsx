@@ -99,6 +99,7 @@ export const SITE_TOOLS_COMMANDS: CommandDef[] = [
     category: "Edit",
     when: ctx =>
       ctx.features?.mediaManager !== false &&
+      ctx.features?.mediaLibraryEdit !== false &&
       Boolean(
         (ctx as Record<string, unknown>)["media.modalOpen"] &&
           !(ctx as Record<string, unknown>)["media.selectionMode"]
@@ -115,6 +116,7 @@ export const SITE_TOOLS_COMMANDS: CommandDef[] = [
     icon: <TbTrash />,
     when: ctx => {
       if (ctx.features?.mediaManager === false) return false;
+      if (ctx.features?.mediaLibraryEdit === false) return false;
       const rec = ctx as Record<string, unknown>;
       return Boolean(rec["media.modalOpen"]) && Number(rec["media.selectedCount"] ?? 0) > 0;
     },

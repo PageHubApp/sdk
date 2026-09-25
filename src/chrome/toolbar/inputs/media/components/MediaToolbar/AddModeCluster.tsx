@@ -2,6 +2,7 @@ import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface
 import { AssistantOpenAtom, useSetAtomState } from "@/utils/atoms";
 import { TbClipboard, TbPlus, TbUpload } from "react-icons/tb";
 import { ToolbarDropdown } from "../../../../ToolbarDropdown";
+import { useCanEditMediaLibrary } from "../../hooks/useCanEditMediaLibrary";
 import type { AddMode } from "../../utils/media-helpers";
 import { TOOL_CLUSTER_CLASS } from "./styles";
 import { ToolbarIconButton } from "./ToolbarIconButton";
@@ -34,6 +35,8 @@ export function AddModeCluster({
   onClose,
 }: AddModeClusterProps) {
   const setAssistantOpen = useSetAtomState(AssistantOpenAtom);
+  // URL and SVG entries live only in the document's library; uploads don't.
+  const canEditLibrary = useCanEditMediaLibrary();
 
   return (
     <div className={`${TOOL_CLUSTER_CLASS} order-2`}>
@@ -72,8 +75,8 @@ export function AddModeCluster({
             if (val === "paste") handlePasteClick();
           }}
         >
-          <option value="url">Add from URL</option>
-          <option value="svg">Paste SVG</option>
+          {canEditLibrary && <option value="url">Add from URL</option>}
+          {canEditLibrary && <option value="svg">Paste SVG</option>}
           {canUseImageGenerate && <option value="ai">Generate with AI</option>}
           <option value="paste">Paste from clipboard</option>
         </ToolbarDropdown>

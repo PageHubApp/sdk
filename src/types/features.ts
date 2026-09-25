@@ -29,6 +29,14 @@ export interface PageHubFeatures {
    */
   mediaManager?: boolean;
   /**
+   * Let the Media Manager change the library: delete files, manage folders,
+   * edit, crop, replace, add from a URL or paste an SVG. Default: true. Turn it
+   * off where the library belongs to something else and changes here wouldn't
+   * be saved — the email editor browses its site's library. Browsing, picking
+   * and uploading (through the registered upload handler) still work.
+   */
+  mediaLibraryEdit?: boolean;
+  /**
    * Show the Modifiers modal + topbar entry (Tailwind class-toggle catalog).
    * Default: true. Modifier toggles emit `className` patches; hosts whose
    * blocks don't accept arbitrary `className` (Avocado's `BlockInstance` schema

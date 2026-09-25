@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { getUploadAccept } from "@/utils/media/upload";
 import { getMediaKind, getReplaceAccept, type MediaKind } from "../../utils/media-helpers";
+import { useCanEditMediaLibrary } from "../../hooks/useCanEditMediaLibrary";
 import type { UseMediaManagerReturn } from "../../hooks/useMediaManager";
 import { AddModeCluster } from "./AddModeCluster";
 import { CompactSearchBar } from "./CompactSearchBar";
@@ -96,6 +97,7 @@ export function MediaToolbar({
     onClose,
   } = manager;
 
+  const canEditLibrary = useCanEditMediaLibrary();
   const { showCompactSearch, setShowCompactSearch, compactSearchInputRef } =
     useCompactSearch(toolbarRef);
 
@@ -162,7 +164,7 @@ export function MediaToolbar({
             onClose={onClose}
           />
 
-          {!selectionMode && (
+          {!selectionMode && canEditLibrary && (
             <FolderCluster
               filteredCount={filteredCount}
               busy={busy}
@@ -174,7 +176,7 @@ export function MediaToolbar({
             />
           )}
 
-          {!selectionMode && selectedCount > 0 && (
+          {!selectionMode && canEditLibrary && selectedCount > 0 && (
             <SelectionCluster
               busy={busy}
               folders={folders}

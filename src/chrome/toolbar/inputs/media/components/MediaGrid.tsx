@@ -14,6 +14,7 @@ import {
 } from "react-icons/tb";
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
 import { EditorMenuNavRow, EditorMenuSectionLabel } from "@/chrome/viewport/nav/EditorMenuNav";
+import { useCanEditMediaLibrary } from "../hooks/useCanEditMediaLibrary";
 import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
 import {
@@ -217,6 +218,7 @@ function EmptyState({
   onSetAddMode: (mode: "upload" | "url" | "svg") => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
 }) {
+  const canEditLibrary = useCanEditMediaLibrary();
   return (
     <div className="flex w-full max-w-2xl animate-[slide-up_0.8s_ease-out_forwards] flex-col items-center justify-center gap-8">
       <div className="w-full max-w-lg">
@@ -237,28 +239,34 @@ function EmptyState({
               fileInputRef.current?.click();
             }}
           />
-          <div className="bg-base-300 h-px" aria-hidden />
-          <EditorMenuNavRow
-            icon={<TbExternalLink className="size-5" />}
-            label={
-              <div>
-                <div className="text-base-content text-sm font-medium">Use URLs</div>
-                <div className="text-neutral-content text-xs">Link to assets hosted anywhere</div>
-              </div>
-            }
-            onClick={() => onSetAddMode("url")}
-          />
-          <div className="bg-base-300 h-px" aria-hidden />
-          <EditorMenuNavRow
-            icon={<TbCode className="size-5" />}
-            label={
-              <div>
-                <div className="text-base-content text-sm font-medium">Paste SVG</div>
-                <div className="text-neutral-content text-xs">Add inline SVG code directly</div>
-              </div>
-            }
-            onClick={() => onSetAddMode("svg")}
-          />
+          {canEditLibrary && (
+            <>
+              <div className="bg-base-300 h-px" aria-hidden />
+              <EditorMenuNavRow
+                icon={<TbExternalLink className="size-5" />}
+                label={
+                  <div>
+                    <div className="text-base-content text-sm font-medium">Use URLs</div>
+                    <div className="text-neutral-content text-xs">
+                      Link to assets hosted anywhere
+                    </div>
+                  </div>
+                }
+                onClick={() => onSetAddMode("url")}
+              />
+              <div className="bg-base-300 h-px" aria-hidden />
+              <EditorMenuNavRow
+                icon={<TbCode className="size-5" />}
+                label={
+                  <div>
+                    <div className="text-base-content text-sm font-medium">Paste SVG</div>
+                    <div className="text-neutral-content text-xs">Add inline SVG code directly</div>
+                  </div>
+                }
+                onClick={() => onSetAddMode("svg")}
+              />
+            </>
+          )}
         </div>
       </div>
 
