@@ -18,6 +18,8 @@ import { FloatingPanel } from "../../../floating/FloatingPanel";
 import { MediaManagerBody } from "./MediaManagerBody";
 import { MediaManagerModal } from "./MediaManagerModal";
 import { MediaPreviewModal } from "./components/MediaPreviewModal";
+import { SiteLogoSource } from "./SiteLogoSource";
+import { previewUrlForSrc, siteLogoVariantOf } from "./utils/siteLogo";
 import { useMediaManager } from "./hooks/useMediaManager";
 import type { MediaKind } from "./utils/media-helpers";
 import { OVERLAY_Z_FLOATING_PANEL } from "../../../popovers/overlayZIndex";
@@ -74,6 +76,9 @@ interface MediaInputProps {
   /** Optional row label rendered to the left of the chip (chip variant
    *  only). Falls back to no gutter when absent. */
   label?: string;
+  /** Offer a "Site logo" source that links `contentKey` to the site-wide
+   *  logo (chip variant only). Image passes it. */
+  siteLogo?: boolean;
 }
 
 export const MediaInput = (propa: MediaInputProps) => {
@@ -99,10 +104,11 @@ export const MediaInput = (propa: MediaInputProps) => {
     defaultTypeValue = "cdn",
     variant = "full",
     label,
+    siteLogo = false,
   } = props;
 
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
-  const [chipSourceMode, setChipSourceMode] = useState<"library" | "dynamic">("library");
+  const [chipSourceMode, setChipSourceMode] = useState<"library" | "logo" | "dynamic">("library");
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [popoverInitialPos, setPopoverInitialPos] = useState<
     { x: number; y: number } | undefined
@@ -117,7 +123,7 @@ export const MediaInput = (propa: MediaInputProps) => {
     } else {
       setPopoverInitialPos(undefined);
     }
-    setChipSourceMode(hasDynamicSource ? "dynamic" : "library");
+    setChipSourceMode(logoVariant ? "logo" : hasDynamicSource ? "dynamic" : "library");
     setShowMediaBrowser(true);
   };
 
@@ -161,6 +167,8 @@ export const MediaInput = (propa: MediaInputProps) => {
   const contentValue = typeof contentUrl === "string" ? contentUrl.trim() : "";
   const hasContentUrl = !!contentValue && contentValue.startsWith("http");
   const hasDynamicSource = !!contentValue;
+  const logoVariant = siteLogo ? siteLogoVariantOf(contentValue) : null;
+  const { rootProps, pageMedia } = extractRootDataFromQuery(query);
   const selectedMedia = hasMedia ? getMediaById(query, mediaId) : null;
   const isSvg = selectedMedia?.type === "svg";
   const svgContent = isSvg ? selectedMedia?.metadata?.svg : null;
@@ -172,11 +180,13 @@ export const MediaInput = (propa: MediaInputProps) => {
       const cdnId = selectedMedia.cdnId || selectedMedia.id;
       imageUrl = getCdnUrl(cdnId, { width: 600, format: "auto" });
     } else {
-      imageUrl = getMediaContent(extractRootDataFromQuery(query).pageMedia, mediaId);
+      imageUrl = getMediaContent(pageMedia, mediaId);
     }
   } else if (hasContentUrl) {
     // Use content URL for preview when no media library item is selected
     imageUrl = contentUrl;
+  } else if (logoVariant) {
+    imageUrl = previewUrlForSrc(contentValue, rootProps);
   }
 
   const selectedKind = selectedMedia ? getMediaKind(selectedMedia) : null;
@@ -230,6 +240,15 @@ export const MediaInput = (propa: MediaInputProps) => {
                 >
                   Library
                 </button>
+                {siteLogo ? (
+                  <button
+                    type="button"
+                    className={`btn btn-xs ${chipSourceMode === "logo" ? "btn-primary" : "btn-ghost"}`}
+                    onClick={() => setChipSourceMode("logo")}
+                  >
+                    Site logo
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   className={`btn btn-xs ${chipSourceMode === "dynamic" ? "btn-primary" : "btn-ghost"}`}
@@ -245,6 +264,15 @@ export const MediaInput = (propa: MediaInputProps) => {
                   onSelect={handleBrowseSelect}
                   onClose={() => setShowMediaBrowser(false)}
                   popover
+                />
+              ) : chipSourceMode === "logo" ? (
+                <SiteLogoSource
+                  rootProps={rootProps}
+                  current={logoVariant}
+                  onPick={token => {
+                    handleContentUrlChange(token);
+                    setShowMediaBrowser(false);
+                  }}
                 />
               ) : (
                 <div className="space-y-2 p-3">
@@ -337,7 +365,17 @@ export const MediaInput = (propa: MediaInputProps) => {
           clearAriaLabel="Clear media"
           variant={hasPreview ? "preview" : "default"}
           leading={previewLeading}
-          summary={hasPreview ? null : hasDynamicSource ? contentValue : "Add..."}
+          summary={
+            hasPreview
+              ? null
+              : logoVariant
+                ? logoVariant === "dark"
+                  ? "Site logo (dark)"
+                  : "Site logo"
+                : hasDynamicSource
+                  ? contentValue
+                  : "Add..."
+          }
         />
         {renderBrowser()}
       </>

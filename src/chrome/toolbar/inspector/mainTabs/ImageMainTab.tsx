@@ -16,6 +16,7 @@ export const ImageMainTab = () => {
             contentKey="src"
             variant="chip"
             label="Image"
+            siteLogo
           />
           <ToolbarItem
             propKey="alt"

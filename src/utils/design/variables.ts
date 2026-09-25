@@ -183,6 +183,14 @@ const DEFAULT_VALUES: Record<string, string> = {
   "company.phone": "(555) 123-4567",
   "company.email": "contact@acme.com",
   "company.website": "https://www.acme.com",
+  // Logo mediaIds: an unset logo renders an empty image, never a made-up one.
+  "company.logo": "",
+  "company.logoDark": "",
+};
+
+/** A ROOT prop that reads another one when unset. The dark-background logo is the logo. */
+const ROOT_VAR_FALLBACKS: Record<string, string> = {
+  "company.logoDark": "company.logo",
 };
 
 /**
@@ -303,7 +311,8 @@ function resolveRootPropVar(key: string, rootProps: RootProps): string | undefin
   const parts = key.split(".");
   const value = walkPath(rootProps, parts);
   if (value !== undefined && value !== null && value !== "") return String(value);
-  return undefined;
+  const fallback = ROOT_VAR_FALLBACKS[key];
+  return fallback ? resolveRootPropVar(fallback, rootProps) : undefined;
 }
 
 // ── Template expression parsing ───────────────────────────────────────────────

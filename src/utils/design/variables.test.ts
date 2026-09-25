@@ -5,6 +5,7 @@ import {
   resolveVariable,
   setAuthState,
   setConnectorData,
+  setRenderMode,
   setRuntimeVar,
 } from "./variables";
 import { setState } from "../state/stateRegistry";
@@ -187,4 +188,22 @@ test("resolveVariable keeps divergent state (empty-walk → '') + item (preview)
   assert.equal(resolveVariable("state.pdp:abc:matching-variant.empty", rootProps), "");
   // item.* in preview resolves against the connector first-item, not a live item
   assert.equal(resolveVariable("item.title", rootProps), "Widget");
+});
+
+test("site logo: the dark-background logo falls back to the logo", () => {
+  const props = { company: { logo: "logo-id" } };
+  assert.equal(replaceVariables("{{company.logoDark}}", props), "logo-id");
+  assert.equal(
+    replaceVariables("{{company.logoDark}}", { company: { logo: "logo-id", logoDark: "dark-id" } }),
+    "dark-id"
+  );
+});
+
+test("site logo: unset renders empty in the editor and on the live site", () => {
+  for (const mode of ["editor", "viewer"] as const) {
+    setRenderMode(mode);
+    assert.equal(replaceVariables("{{company.logo}}", { company: {} }), "");
+    assert.equal(replaceVariables("{{company.logoDark}}", { company: {} }), "");
+  }
+  setRenderMode("viewer");
 });
