@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/rules-of-hooks -- render*Body fns are invoked once from a wrapper component; hook order is preserved. Renamed to use* would change exported public-ish API across the SDK. */
 import React, { useEffect, useState } from "react";
 import { applyAttrs } from "../../utils/applyAttrs";
+import { formAutocomplete } from "../../utils/formAutocomplete";
 import { motionIt } from "../../utils/motion";
 import { useItemContext } from "../../utils/itemContext";
 import { replaceVariables } from "../../utils/design/variables";
@@ -232,48 +233,8 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
   }
 
   // Autocomplete attribute for accessibility (WCAG 1.3.5)
-  if (props.autoComplete) {
-    prop.autoComplete = props.autoComplete;
-  } else {
-    // Infer autocomplete from name/type when not explicitly set
-    const nameLC = (props.name || "").toLowerCase();
-    const autoMap: Record<string, string> = {
-      email: "email",
-      name: "name",
-      "full-name": "name",
-      fullname: "name",
-      "first-name": "given-name",
-      firstname: "given-name",
-      "given-name": "given-name",
-      "last-name": "family-name",
-      lastname: "family-name",
-      "family-name": "family-name",
-      phone: "tel",
-      tel: "tel",
-      telephone: "tel",
-      address: "street-address",
-      street: "street-address",
-      city: "address-level2",
-      state: "address-level1",
-      zip: "postal-code",
-      zipcode: "postal-code",
-      "postal-code": "postal-code",
-      country: "country-name",
-      company: "organization",
-      organization: "organization",
-      org: "organization",
-    };
-    const inferred =
-      autoMap[nameLC] ||
-      (props.type === "email"
-        ? "email"
-        : props.type === "tel"
-          ? "tel"
-          : props.type === "url"
-            ? "url"
-            : null);
-    if (inferred) prop.autoComplete = inferred;
-  }
+  const autoComplete = formAutocomplete(props);
+  if (autoComplete) prop.autoComplete = autoComplete;
 
   // Accessibility attributes
   if (props.type === "email") prop["aria-describedby"] = `${inputId}-desc`;

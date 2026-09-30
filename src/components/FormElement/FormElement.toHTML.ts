@@ -9,6 +9,7 @@ import {
   tag,
   type ToHTMLFn,
 } from "../../utils/staticHtml";
+import { formAutocomplete } from "../../utils/formAutocomplete";
 
 export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const cls = staticClasses(props, ctx);
@@ -25,7 +26,14 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     }
   }
 
+  // Same id scheme as the React body, so a <label for> can point at the field.
+  // Skipped inside repeaters, where one node renders many times.
+  const inputId =
+    props.attrs?.id ??
+    (ctx.renderingNodeId && !ctx.currentItem ? `ph-input-${ctx.renderingNodeId}` : undefined);
+
   const attrs: Record<string, any> = {
+    id: inputId,
     class: cls || undefined,
     type: t === "input" ? props.type || "text" : undefined,
     name: props.name || undefined,
@@ -33,6 +41,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     value: t === "input" && seededDefault !== undefined ? seededDefault : undefined,
     required: props.required || undefined,
     disabled: props.disabled || undefined,
+    autocomplete: formAutocomplete(props),
     // The placeholder is deliberately NOT in this chain: it holds an example
     // value ("you@example.com"), so screen readers announce a sample address
     // where the field's purpose belongs. An explicit `label`, an `aria-label`
@@ -63,7 +72,8 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const input = tag(t, attrs, inner);
 
   if (props.label) {
-    const label = `<label class="block text-sm font-medium mb-1">${escapeHTML(interpolate(props.label, ctx))}${props.required ? ' <span aria-hidden="true">*</span>' : ""}</label>`;
+    const forAttr = inputId ? ` for="${escapeHTML(String(inputId))}"` : "";
+    const label = `<label${forAttr} class="block text-sm font-medium mb-1">${escapeHTML(interpolate(props.label, ctx))}${props.required ? ' <span aria-hidden="true">*</span>' : ""}</label>`;
     return tag("div", { style: "width: 100%" }, label + input);
   }
   return input;
