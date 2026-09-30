@@ -25,8 +25,6 @@ type FormMeta = {
   action?: string;
   method?: string;
   agentId?: string;
-  mailto?: string;
-  webhookUrl?: string;
   collectionSlug?: string;
   collectionFieldMap?: Record<string, string>;
   collectionSkipEmail?: boolean;
@@ -198,13 +196,10 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
             formName: formName,
             pagePath: location.pathname,
           };
-          // Lets the server read the authoritative collection config (fixed
-          // values, map, slug) from the saved node instead of trusting the body.
+          // The server reads the notification email, webhook and collection
+          // config from the saved node by this id instead of trusting the body.
           if (formId) body.formNodeId = formId;
           if (meta) {
-            if (meta.mailto) body.mailTo = meta.mailto;
-            if (t === "webhook" && meta.webhookUrl)
-              body.webhookUrl = meta.webhookUrl;
             if (t === "collection" && meta.collectionSlug) {
               body.collection = meta.collectionSlug;
               if (meta.collectionFieldMap)

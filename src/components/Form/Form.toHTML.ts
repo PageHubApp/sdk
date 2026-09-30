@@ -18,8 +18,6 @@ function buildFormMetaAttrs(props: Record<string, any>): Record<string, string> 
   if (props.formName) meta.formName = props.formName;
   if (props.action) meta.action = props.action;
   if (props.method) meta.method = props.method;
-  if (props.mailto) meta.mailto = props.mailto;
-  if (props.webhookEnabled && props.webhookUrl) meta.webhookUrl = props.webhookUrl;
   if (props.collectionSlug) meta.collectionSlug = props.collectionSlug;
   if (props.collectionFieldMap) meta.collectionFieldMap = props.collectionFieldMap;
   if (props.collectionSkipEmail) meta.collectionSkipEmail = !!props.collectionSkipEmail;

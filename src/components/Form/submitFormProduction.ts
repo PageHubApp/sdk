@@ -107,10 +107,9 @@ export async function submitFormProduction(
       collectionFieldMap:
         props.submissionType === "collection" ? props.collectionFieldMap : undefined,
       skipEmail: props.submissionType === "collection" ? !!props.collectionSkipEmail : undefined,
-      // Server reads the authoritative collection config (slug/map/fixed values)
-      // from the saved node by this id — the body values above are a legacy
-      // fallback for pre-upgrade sites.
-      formNodeId: props.submissionType === "collection" ? formNodeId : undefined,
+      // PageHub's server reads the authoritative email / webhook / collection
+      // config from the saved node by this id, never from the body values above.
+      formNodeId,
     });
   }
 
