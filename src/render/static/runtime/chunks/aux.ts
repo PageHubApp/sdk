@@ -193,6 +193,10 @@ export const AUX_CHUNK = stringifyChunk(function $aux() {
     if (!nodes.length) return;
     loadLeaflet()
       .then(function (L: any) {
+        // Leaflet otherwise guesses the marker art directory from leaflet.css,
+        // and that guess is wrong whenever the script runs before the
+        // stylesheet has applied. A string here skips the guess entirely.
+        L.Icon.Default.imagePath = PH_LEAFLET_BASE + "images/";
         for (let i = 0; i < nodes.length; i++) {
           const el = nodes[i];
           const raw = el.getAttribute("data-ph-map");
