@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { applyAttrs } from "../../utils/applyAttrs";
 import { formAutocomplete } from "../../utils/formAutocomplete";
+import { formConstraintAttrs } from "../../utils/formConstraints";
 import { motionIt } from "../../utils/motion";
 import { useItemContext } from "../../utils/itemContext";
 import { replaceVariables } from "../../utils/design/variables";
@@ -218,19 +219,7 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
     if (props.cols) prop.cols = props.cols;
   }
 
-  // Number/range/date input attributes
-  const numericTypes = ["number", "range", "date", "datetime-local", "time", "month", "week"];
-  if (numericTypes.includes(props.type)) {
-    if (props.min) prop.min = props.min;
-    if (props.max) prop.max = props.max;
-    if (props.step) prop.step = props.step;
-  }
-
-  // Pattern attribute for text-based inputs
-  const patternTypes = ["text", "search", "url", "tel", "email", "password"];
-  if (patternTypes.includes(props.type) && props.pattern) {
-    prop.pattern = props.pattern;
-  }
+  Object.assign(prop, formConstraintAttrs(props));
 
   // Autocomplete attribute for accessibility (WCAG 1.3.5)
   const autoComplete = formAutocomplete(props);

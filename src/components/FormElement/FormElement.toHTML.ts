@@ -10,6 +10,7 @@ import {
   type ToHTMLFn,
 } from "../../utils/staticHtml";
 import { formAutocomplete } from "../../utils/formAutocomplete";
+import { formConstraintAttrs } from "../../utils/formConstraints";
 
 export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const cls = staticClasses(props, ctx);
@@ -42,6 +43,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     required: props.required || undefined,
     disabled: props.disabled || undefined,
     autocomplete: formAutocomplete(props),
+    ...formConstraintAttrs(props),
     // The placeholder is deliberately NOT in this chain: it holds an example
     // value ("you@example.com"), so screen readers announce a sample address
     // where the field's purpose belongs. An explicit `label`, an `aria-label`
