@@ -263,11 +263,16 @@ export const applyAnimation = (
 
   loadCombinedFonts();
 
-  if (!_root?.animation || enabled || prefersReducedMotion()) {
+  if (!_root?.animation || enabled) {
     return prop;
   }
 
   // ── CSS animation path ──────────────────────────────────────────────
+  // Not gated on reduced motion: the server can't read the media query, so it
+  // always emits these classes. Skipping them here only on the client left the
+  // SSR `ph-anim-scroll` class in place with no observer ref — paused at frame
+  // 0, invisible for good. The `prefers-reduced-motion` rule in styles.css
+  // switches the animation off instead, identically on both sides.
   if (isCSSAnimation(_root.animation)) {
     const { className, style: cssStyle } = getCSSAnimationProps(_root.animation, {
       duration: _root.animationDuration ? parseFloat(_root.animationDuration) : null,
@@ -299,7 +304,7 @@ export const applyAnimation = (
   }
 
   // ── Framer-motion path ──────────────────────────────────────────────
-  if (!animations[_root.animation]) {
+  if (prefersReducedMotion() || !animations[_root.animation]) {
     return prop;
   }
 

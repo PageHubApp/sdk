@@ -48,6 +48,9 @@ export function getAnimationCSS(): string {
       // Scroll trigger rules
       parts.push(`.ph-anim-scroll { animation-play-state: paused; }`);
       parts.push(`.ph-anim-scroll.ph-in-view { animation-play-state: running; }`);
+      parts.push(
+        `@media (prefers-reduced-motion: reduce) { .ph-anim-scroll, [class*="animate-css-"] { animation: none !important; } }`
+      );
 
       // Hover animation utilities
       const hoverRe = /@utility ph-hover-[\w-]+\s*\{[\s\S]*?\n\}/g;

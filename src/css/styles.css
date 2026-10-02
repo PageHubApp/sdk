@@ -73,6 +73,14 @@
 .ph-anim-scroll.ph-in-view {
   animation-play-state: running;
 }
+/* Reduced motion: no animation at all, so every element sits in its resting
+   (visible) state — never paused on an opacity-0 first frame. */
+@media (prefers-reduced-motion: reduce) {
+  .ph-anim-scroll,
+  [class*="animate-css-"] {
+    animation: none !important;
+  }
+}
 
 /* ─── CSS Hover Animation Utilities ────────────────────────────────────── */
 @utility ph-hover-grow {
