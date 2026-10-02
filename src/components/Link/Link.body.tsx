@@ -13,9 +13,7 @@ import {
   migrateActions,
   actionToHref,
   actionTarget,
-  isLinkAction,
-  isAnchorAction,
-  isHandlerAction,
+  needsJsActionDispatch,
   findLinkAction,
   type NodeAction,
 } from "../../utils/action";
@@ -126,17 +124,14 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
 
   applyAriaProps(prop, props);
 
-  // Multi-action chains, anchor links, and any handler-action route through
-  // `addActionHandlers`. Single non-anchor link → browser navigates natively.
+  // See `needsJsActionDispatch` for when the browser navigates natively. For
+  // `next/link`, the link handler's `preventDefault()` makes NextLink skip
+  // its own router push.
   const actionCtx = {
     itemContext,
     resolvedLinkHref: typeof resolvedUrl === "string" ? resolvedUrl : null,
   };
-  const needsJsDispatch =
-    actions.length > 1 ||
-    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
-    (actions.length === 1 && !isLinkAction(actions[0]));
-  if (needsJsDispatch) {
+  if (needsJsActionDispatch(actions)) {
     addActionHandlers(prop, actions, ctx.enabled, actionCtx);
   }
 

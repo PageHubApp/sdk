@@ -7,9 +7,7 @@ import { resolveCdnResponsive } from "../../utils/cdn";
 import {
   migrateActions,
   actionToHref,
-  isLinkAction,
-  isHandlerAction,
-  isAnchorAction,
+  needsJsActionDispatch,
   findLinkAction,
 } from "../../utils/action";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
@@ -121,11 +119,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
   };
   applyAriaProps(prop, props);
 
-  const needsJsDispatch =
-    actions.length > 1 ||
-    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
-    (actions.length === 1 && !isLinkAction(actions[0]));
-  if (needsJsDispatch) {
+  if (needsJsActionDispatch(actions)) {
     addActionHandlers(prop, actions, ctx.enabled, {
       resolvedLinkHref: typeof resolvedHref === "string" ? resolvedHref : null,
     });

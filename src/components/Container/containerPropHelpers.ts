@@ -3,9 +3,7 @@ import {
   actionToHref,
   actionTarget,
   findLinkAction,
-  isAnchorAction,
-  isHandlerAction,
-  isLinkAction,
+  needsJsActionDispatch,
   migrateActions,
   type NodeAction,
 } from "../../utils/action";
@@ -115,16 +113,21 @@ export function applyContainerActions(prop: any, ctx: ApplyActionsCtx): ApplyAct
   const isInternalLink =
     !!firstLink && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");
 
+  // Chains, anchors, handler actions and conversion-tracked links route
+  // through `addActionHandlers` (see `needsJsActionDispatch`).
+  const jsDispatch = needsJsActionDispatch(actions);
+
   if (resolvedUrl && firstLink && !enabled) {
     prop.href = resolvedUrl;
     if (linkTarget) prop.target = linkTarget;
     if (/^https?:\/\//.test(resolvedUrl as string)) prop.rel = "noopener noreferrer";
     // Internal same-window links → SPA navigation via Next router. The
     // custom-domain `/` rewrite is client-replayable (`:host` captured — see
-    // next.config), so even the site root "/" resolves client-side. Skip when
-    // the chain has more than one action; the JS dispatcher below handles
-    // ordered execution + nav at the link's turn.
-    if (isInternalLink && !linkTarget && actions.length === 1) {
+    // next.config), so even the site root "/" resolves client-side. Skipped
+    // when the dispatcher owns the click — it performs the navigation at the
+    // link's turn (after a conversion beacon flushes), so wiring both would
+    // navigate twice.
+    if (isInternalLink && !linkTarget && !jsDispatch) {
       prop.onClick = (e: any) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
         e.preventDefault();
@@ -133,13 +136,7 @@ export function applyContainerActions(prop: any, ctx: ApplyActionsCtx): ApplyAct
     }
   }
 
-  // Multi-action chains, anchor links, and any handler-action route through
-  // `addActionHandlers`. Single-link cases above already wired native nav.
-  const needsJsDispatch =
-    actions.length > 1 ||
-    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
-    (actions.length === 1 && !isLinkAction(actions[0]));
-  if (needsJsDispatch) {
+  if (jsDispatch) {
     addActionHandlers(prop, actions, enabled, {
       resolvedLinkHref: typeof resolvedUrl === "string" ? resolvedUrl : null,
     });

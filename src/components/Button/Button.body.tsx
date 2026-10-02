@@ -18,9 +18,7 @@ import {
   migrateActions,
   actionToHref,
   actionTarget,
-  isLinkAction,
-  isHandlerAction,
-  isAnchorAction,
+  needsJsActionDispatch,
   findLinkAction,
   type NodeAction,
 } from "../../utils/action";
@@ -171,21 +169,16 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
 
   applyAriaProps(prop, props);
 
-  // Attach JS handlers for the action chain. Skip the JS hop for the cheap
-  // single-non-anchor-link case — `<a href>` lets the browser navigate
-  // natively. Multi-action chains, anchor links, and any handler-action
-  // (modal/cart/show-hide/etc.) all route through `addActionHandlers`,
-  // which composes one onClick that fires every entry in array order.
+  // Attach JS handlers for the action chain (see `needsJsActionDispatch`).
+  // `addActionHandlers` composes one onClick that fires every entry in array
+  // order. For internal links rendered as `next/link`, the link handler's
+  // `preventDefault()` makes NextLink skip its own router push.
   const actionCtx = {
     itemContext,
     onAddToCart: sdk?.config.callbacks?.onAddToCart ?? uiCallbacks?.onAddToCart,
     resolvedLinkHref: typeof resolvedUrl === "string" ? resolvedUrl : null,
   };
-  const needsJsDispatch =
-    actions.length > 1 ||
-    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
-    (actions.length === 1 && !isLinkAction(actions[0]));
-  if (needsJsDispatch) {
+  if (needsJsActionDispatch(actions)) {
     addActionHandlers(prop, actions, ctx.enabled, actionCtx);
   }
 

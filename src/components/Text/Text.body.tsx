@@ -10,9 +10,7 @@ import {
   migrateActions,
   actionToHref,
   actionTarget,
-  isLinkAction,
-  isHandlerAction,
-  isAnchorAction,
+  needsJsActionDispatch,
   findLinkAction,
   type NodeAction,
 } from "../../utils/action";
@@ -53,7 +51,8 @@ const renderLiveMode = (
   pageIndex: any,
   router: any,
   itemContext?: Record<string, any> | null,
-  anchors?: Readonly<Record<string, string>> | null
+  anchors?: Readonly<Record<string, string>> | null,
+  jsDispatch = false
 ) => {
   const processedText = replaceVariables(props.text, rootProps, itemContext, anchors);
   let tagName = sanitizeTagName(props.tagName);
@@ -63,8 +62,12 @@ const renderLiveMode = (
     // SPA nav (next/link) for internal links; plain <a> for external. The
     // custom-domain `/` rewrite is client-replayable (`:host` captured — see
     // next.config), so even the site root "/" resolves client-side.
+    // When the outer element's dispatcher owns the click (`jsDispatch`), the
+    // wrapper stays a plain <a>: next/link's own handler runs first on the
+    // inner element and would push the route before the dispatcher's
+    // preventDefault + navigation, navigating twice.
     const isInternal = resolvedUrl.startsWith("/");
-    tagName = isInternal ? (NextLink as any) : ("a" as any);
+    tagName = isInternal && !jsDispatch ? (NextLink as any) : ("a" as any);
     const target = actionTarget(firstLink);
     const linkProps: any = {
       href: resolvedUrl,
@@ -119,13 +122,12 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
   // longer scrapes Text nodes for any runtime contract.
   applyAttrs(prop, props.attrs);
   const actions = migrateActions(props);
-  // Text wraps in <a> via renderLiveMode for single-link cases; here we attach
-  // JS handlers for chains, anchors, and non-link actions.
-  const needsJsDispatch =
-    actions.length > 1 ||
-    actions.some(a => isHandlerAction(a) || isAnchorAction(a)) ||
-    (actions.length === 1 && !isLinkAction(actions[0]));
-  if (needsJsDispatch) addActionHandlers(prop, actions, ctx.enabled);
+  // Text wraps link content in <a> via renderLiveMode; the outer element gets
+  // the dispatcher onClick (see `needsJsActionDispatch`), which the inner
+  // <a>'s click bubbles to.
+  const liveHref = actionToHref(findLinkAction(actions), ctx.pageIndex, router?.asPath);
+  const jsDispatch = needsJsActionDispatch(actions);
+  if (jsDispatch) addActionHandlers(prop, actions, ctx.enabled, { resolvedLinkHref: liveHref });
   addCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
   if (ctx.enabled) {
@@ -158,9 +160,15 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
       </React.Suspense>
     );
   } else {
-    const liveContent = renderLiveMode(props, ctx.rootProps, ctx.pageIndex, router, itemContext, anchors);
-    const liveLink = findLinkAction(migrateActions(props));
-    const liveHref = actionToHref(liveLink, ctx.pageIndex, router?.asPath);
+    const liveContent = renderLiveMode(
+      props,
+      ctx.rootProps,
+      ctx.pageIndex,
+      router,
+      itemContext,
+      anchors,
+      jsDispatch
+    );
     if (liveHref) {
       prop.children = liveContent;
     } else if (props.tagName === "Textfit") {

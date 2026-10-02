@@ -39,8 +39,9 @@ export type ActionType =
  *   - `meta`: `fbq('track', eventName, { value, currency })`
  *
  * Same-tab `link` actions (no `target: "_blank"`) honor `event_callback` +
- * a 1 s safety timer so the network beacon fires before navigation. External
- * tabs / `tel:` / `mailto:` fire-and-forget (popup or dialer is already open).
+ * a 1 s safety timer so the network beacon fires before navigation — `tel:` /
+ * `mailto:` included (the dialer / mail client opens once the beacon flushes).
+ * `target: "_blank"` fires-and-forgets (the popup must open synchronously).
  */
 export interface ActionConversion {
   provider: "google-ads" | "ga4" | "meta";
@@ -366,6 +367,27 @@ export function isHandlerAction(
   | IncrementStateAction
   | DecrementStateAction {
   return !!action && HANDLER_ACTION_TYPES.has(action.type);
+}
+
+/**
+ * Whether a node's action array must be wired through `addActionHandlers`
+ * (JS onClick) rather than left to the browser.
+ *
+ * Fast path: a single non-anchor `link` with no conversion renders as a
+ * plain `<a href>` (or `next/link`) and navigates natively — no JS hop.
+ *
+ * Everything else needs the dispatcher: chains (ordered execution), anchor
+ * links (smooth scroll), handler actions (modal/cart/state/…), any non-link
+ * single action, and any action carrying `conversion` — conversion firing
+ * lives in the per-action handlers (`attachLink` → `fireConversion`), which
+ * also defer same-tab navigation until the beacon flushes.
+ */
+export function needsJsActionDispatch(actions: NodeAction[]): boolean {
+  return (
+    actions.length > 1 ||
+    actions.some(a => isHandlerAction(a) || isAnchorAction(a) || !!a.conversion) ||
+    (actions.length === 1 && !isLinkAction(actions[0]))
+  );
 }
 
 /**

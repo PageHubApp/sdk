@@ -44,6 +44,13 @@ export function attachLink(
       if (!actionGatePasses(action)) return;
       const href = context?.resolvedLinkHref || action.href;
       if (!href) return;
+      // Modified click (new tab / window / download) — let the browser handle
+      // the `<a href>` natively; the current page stays, so the beacon is
+      // fire-and-forget.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) {
+        fireConversion(action.conversion);
+        return;
+      }
       e.preventDefault();
       if (action.target === "_blank") {
         // Popup must open synchronously within the user-gesture handler —
