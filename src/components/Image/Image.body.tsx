@@ -9,6 +9,7 @@ import {
   actionToHref,
   needsJsActionDispatch,
   findLinkAction,
+  type NodeAction,
 } from "../../utils/action";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";
@@ -50,6 +51,7 @@ export interface ImageProps extends BaseSelectorProps, ImageSrcSource {
   type?: string;
   src?: string;
   url?: string;
+  action?: NodeAction | NodeAction[];
   fetchPriority?: "high" | "low" | "auto" | "";
   loading?: string;
   alt?: string;
@@ -101,9 +103,13 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
     return u === "rounded" || u.startsWith("rounded-");
   });
 
+  const resolveVar = (v: string | undefined) =>
+    v?.includes("{{") ? replaceVariables(v, ctx.rootProps, itemContext) : v;
+
   const actions = migrateActions(props);
   const firstLink = findLinkAction(actions);
-  const resolvedHref = actionToHref(firstLink, ctx.pageIndex) || props.url;
+  const actionHref = resolveVar(actionToHref(firstLink, ctx.pageIndex) ?? undefined);
+  const resolvedHref = actionHref || props.url;
 
   const prop: Record<string, unknown> = {
     ref: (r: HTMLElement | null) => {
@@ -117,20 +123,6 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
     style: props.root?.style ? CSStoObj(props.root.style) || {} : {},
     className: `${hasRadius ? "overflow-hidden" : ""} ${cn}`.trim(),
   };
-  applyAriaProps(prop, props);
-
-  if (needsJsActionDispatch(actions)) {
-    addActionHandlers(prop, actions, ctx.enabled, {
-      resolvedLinkHref: typeof resolvedHref === "string" ? resolvedHref : null,
-    });
-  }
-  addCustomHandlers(prop, props.handlers, ctx.enabled, props.handlerOptions);
-  if (actions.length > 0 && !ctx.enabled) {
-    prop["data-action"] = actions.map(a => a.type).join(" ");
-  }
-
-  const resolveVar = (v: string | undefined) =>
-    v?.includes("{{") ? replaceVariables(v, ctx.rootProps, itemContext) : v;
   const altText =
     mediaMetadata?.alt ||
     resolveVar(props.alt) ||
@@ -215,6 +207,24 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
   const looksStyledShape = /\bbg-/.test(cn) || /\bbg-gradient-/.test(cn) || /\bbg-linear-/.test(cn);
   const empty = !videoId && !srcStr && !looksStyledShape;
 
+  // Live render of an action-driven image (no legacy `url`) mirrors
+  // `Image.toHTML`: aria, action and custom handlers sit on the <img> itself,
+  // and a link action adds a bare `<a href>` around it. Every other case wires
+  // them onto the wrapper `prop`.
+  const wireOnImg = !ctx.enabled && !props.url && !empty && actions.length > 0;
+  const imgWiring: Record<string, unknown> = {};
+  const wired = wireOnImg ? imgWiring : prop;
+  applyAriaProps(wired, props);
+  if (needsJsActionDispatch(actions)) {
+    addActionHandlers(wired, actions, ctx.enabled, {
+      resolvedLinkHref: typeof resolvedHref === "string" ? resolvedHref : null,
+    });
+  }
+  addCustomHandlers(wired, props.handlers, ctx.enabled, props.handlerOptions);
+  if (actions.length > 0 && !ctx.enabled) {
+    wired["data-action"] = actions.map(a => a.type).join(" ");
+  }
+
   if (ctx.enabled) {
     if (empty) {
       prop.children = props.isLoading ? (
@@ -246,6 +256,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
       tagName === "img" ? { loading: "lazy", alt: "", ...imgAnimProps } : imgAnimProps;
     return React.createElement(motionIt(props, imgTag, ctx.enabled), {
       ...imgFinalProps,
+      ...imgWiring,
       ref: shouldConnectDrag
         ? (r: HTMLElement | null) => {
             if (props.url) return;
@@ -274,6 +285,13 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
         ...prop,
         "aria-label": altText || titleText || "Image link",
       });
+    }
+    if (wireOnImg && actionHref) {
+      return React.createElement(
+        "a",
+        { href: actionHref, "aria-label": altText || titleText || "Image link" },
+        Img
+      );
     }
     return Img;
   }
