@@ -16,11 +16,12 @@ import {
 } from "./contexts";
 import { InWalkerProvider } from "../../utils/runtimeMode";
 import { EditorStoreProvider } from "../../core/store";
+import type { PageIndex } from "../../utils/page/pageManagement";
 
 export interface PagehubRootProps {
   rootProps: Record<string, any>;
   pageMedia?: any[] | null;
-  pageIndex?: Record<string, { isHomePage?: boolean; displayName: string }>;
+  pageIndex?: PageIndex;
   callbacks?: UiCallbacks;
   children: React.ReactNode;
 }

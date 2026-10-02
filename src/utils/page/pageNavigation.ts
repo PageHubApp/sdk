@@ -8,9 +8,9 @@
  * host-agnostic (no Next.js, no /build/ prefix knowledge).
  */
 
-import sluggit from "slug";
 import { useSyncExternalStore } from "react";
 import { sdkLog } from "../logger";
+import { resolvePageSlug } from "./pageSlug";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -183,7 +183,7 @@ export function navigateToPage(
   if (initOpts.urlStrategy && currentSnapshot.siteId) {
     const url = initOpts.urlStrategy.buildPageUrl({
       siteId: currentSnapshot.siteId,
-      pageSlug: customSlug || sluggit(displayName, "-"),
+      pageSlug: resolvePageSlug({ pageSlug: customSlug, displayName }, pageId),
       isHomePage,
     });
     window.history.pushState({ source: "pageNav", pageId }, "", withCurrentSearch(url));

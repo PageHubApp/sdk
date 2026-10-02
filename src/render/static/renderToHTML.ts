@@ -52,6 +52,7 @@ function buildPageIndexFromNodes(nodes: SerializedNodes): PageIndex {
     out[id] = {
       isHomePage: !!n.props?.isHomePage,
       displayName: n.custom?.displayName || "Untitled",
+      pageSlug: n.props?.pageSlug || "",
     };
   }
   return out;

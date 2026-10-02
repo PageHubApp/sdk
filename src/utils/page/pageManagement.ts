@@ -5,6 +5,7 @@
 import { ROOT_NODE } from "../rootNode";
 import { phStorage } from "../phStorage";
 import { sdkLog } from "../logger";
+import { resolvePageSlug } from "./pageSlug";
 // `decompressAsync` (lzutf8) is editor-only — `loadPage` dynamic-imports it
 // at call time so viewer/walker bundles don't drag the compression lib in.
 
@@ -167,6 +168,8 @@ export async function isolatePageLazy(
 export interface PageIndexEntry {
   isHomePage?: boolean;
   displayName: string;
+  /** Explicit URL segment — wins over the name-derived slug (see `resolvePageSlug`). */
+  pageSlug?: string;
 }
 
 export type PageIndex = Record<string, PageIndexEntry>;
@@ -220,6 +223,7 @@ export function buildPageIndexFromQuery(query: any): PageIndex {
           out[id] = {
             isHomePage: n.data.props.isHomePage,
             displayName: n.data.custom?.displayName || "Untitled",
+            pageSlug: n.data.props.pageSlug || "",
           };
         }
       } catch {
@@ -245,7 +249,6 @@ export const resolvePageRef = (
     const entry = pageIndex[pageId];
     if (!entry) return "#";
     const isHomePage = entry.isHomePage;
-    const displayName = entry.displayName || "Untitled";
 
     let baseUrl = "";
     if (currentPath) {
@@ -271,10 +274,7 @@ export const resolvePageRef = (
     if (isHomePage) {
       return baseUrl || "/";
     } else {
-      const pageSlug = displayName
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "");
+      const pageSlug = resolvePageSlug(entry, pageId);
       return baseUrl ? `${baseUrl}/${pageSlug}` : `/${pageSlug}`;
     }
   } catch (e) {

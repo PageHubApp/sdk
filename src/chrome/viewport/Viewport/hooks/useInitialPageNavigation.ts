@@ -1,4 +1,3 @@
-import sluggit from "slug";
 import { ROOT_NODE } from "@craftjs/utils";
 import { useCallback, useEffect, useRef } from "react";
 import {
@@ -10,6 +9,7 @@ import {
 } from "../../../../utils/page/pageManagement";
 import { initPageNavigation, updateOnIsolate } from "../../../../utils/page/pageNavigation";
 import { phStorage } from "../../../../utils/phStorage";
+import { pageSlugMatches, resolvePageSlug } from "../../../../utils/page/pageSlug";
 
 interface UseInitialPageNavigationArgs {
   query: any;
@@ -89,8 +89,13 @@ export function useInitialPageNavigation({
           r.data.nodes.find((nodeId: string) => {
             const node = query.node(nodeId).get();
             if (node?.data?.props?.type === "page") {
-              const customSlug = node.data.props?.pageSlug;
-              return (customSlug || sluggit(node.data.custom?.displayName, "-")) === slug;
+              return pageSlugMatches(
+                resolvePageSlug(
+                  { pageSlug: node.data.props?.pageSlug, displayName: node.data.custom?.displayName },
+                  nodeId
+                ),
+                slug
+              );
             }
             return false;
           }) || null

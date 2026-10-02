@@ -18,12 +18,12 @@ import { usePageNavigation } from "../../../utils/page/pageNavigation";
 import { EditorListPicker } from "./EditorListPicker";
 import { sdkLog } from "../../../utils/logger";
 
-import sluggit from "slug";
+import { resolvePageSlug } from "../../../utils/page/pageSlug";
 
-/** Derive the URL route for a page. Uses custom pageSlug when set, otherwise slugifies displayName. */
-function pageRoute(displayName: string, isHomePage: boolean, pageSlug?: string): string {
+/** URL route for a page — the canonical page slug (see `resolvePageSlug`). */
+function pageRoute(page: Page, isHomePage: boolean): string {
   if (isHomePage) return "/";
-  return `/${pageSlug || sluggit(displayName, "-")}`;
+  return `/${resolvePageSlug(page, page.id)}`;
 }
 
 /** Collapse nested routes so only the final segment shows. `/foo/bar` -> `.../bar`, `/about` -> `/about`, `/` -> `/`. */
@@ -179,7 +179,7 @@ export function PageSelector({
   const isCurrentHomePage = currentPage?.isHomePage || currentPage?.id === homePageId;
 
   const currentPageRoute = currentPage
-    ? pageRoute(currentPage.displayName, !!isCurrentHomePage, currentPage.pageSlug)
+    ? pageRoute(currentPage, !!isCurrentHomePage)
     : null;
   const displayRoute = pickerMode ? null : currentPageRoute;
 
@@ -191,7 +191,7 @@ export function PageSelector({
   // Get live URL for current page
   // Host app should configure sitePreviewUrl in config for external preview links
   const liveUrl = currentPage
-    ? pageRoute(currentPage.displayName, !!isCurrentHomePage, currentPage.pageSlug).slice(1) // strip leading "/"
+    ? pageRoute(currentPage, !!isCurrentHomePage).slice(1) // strip leading "/"
     : null;
 
   return (
@@ -268,7 +268,7 @@ export function PageSelector({
       {filteredPages.length > 0 ? (
         filteredPages.map(page => {
           const isPageHomePage = page.isHomePage || page.id === homePageId;
-          const route = pageRoute(page.displayName, isPageHomePage, page.pageSlug);
+          const route = pageRoute(page, isPageHomePage);
           const isSelected = pickerMode ? selectedPageId === page.id : isolate === page.id;
 
           return (
