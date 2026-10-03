@@ -113,6 +113,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
           // translated `overflow-hidden` frame, so lazy loading can leave the
           // map an empty rectangle. Kept in lockstep with the React renderer.
           loading: "eager",
+          fetchpriority: "low",
           decoding: "async",
           draggable: "false",
           style:

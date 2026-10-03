@@ -6,6 +6,7 @@ export { buildRootThemeCss, generateThemeVars } from "./themeCss";
 export {
   getCartBridgeScript,
   getStaticPublishRuntimeScript,
+  getStaticPublishRuntimeSource,
 } from "./runtime/staticPublishRuntime";
 export type {
   RenderToHTMLOptions,

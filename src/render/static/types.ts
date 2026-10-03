@@ -81,6 +81,11 @@ export interface RenderToHTMLOptions {
   runtime?: boolean;
   /** Page id (used by runtime to scope cart localStorage). */
   pageId?: string;
+  /**
+   * URL serving `getStaticPublishRuntimeSource()`. Set → the runtime loads as
+   * one cacheable `defer` script instead of being inlined into the document.
+   */
+  runtimeSrc?: string;
 }
 
 export interface RenderToHTMLResult {

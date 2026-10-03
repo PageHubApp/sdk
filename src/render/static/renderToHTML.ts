@@ -317,6 +317,7 @@ export function renderToHTML(
       ? getStaticPublishRuntimeScript({
           mobileBreakpoint: rootProps.theme?.breakpoints?.md,
           pageId,
+          src: options.runtimeSrc,
         })
       : "");
 

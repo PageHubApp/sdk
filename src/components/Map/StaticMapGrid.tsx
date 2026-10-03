@@ -71,6 +71,8 @@ export const StaticMapGrid = ({
             // with no error, which reads as a broken map rather than a slow one.
             // A map is never decorative, and the whole grid is ~70KB.
             loading="eager"
+            // Eager but low: never ahead of the hero photo in the fetch queue.
+            fetchPriority="low"
             decoding="async"
             draggable={false}
             className="absolute max-w-none select-none"

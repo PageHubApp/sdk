@@ -39,6 +39,12 @@ export interface StaticPublishRuntimeOptions {
   pageId?: string;
   /** Public connector-data endpoint path. */
   publicDataEndpoint?: string;
+  /**
+   * URL serving `getStaticPublishRuntimeSource()`. Set → the page carries only
+   * its config inline and loads the runtime as one cacheable `defer` script.
+   * Unset → the runtime is inlined (for hosts that can't serve the asset).
+   */
+  src?: string;
 }
 
 /**
@@ -77,24 +83,44 @@ export function getCartBridgeScript(opts: { pageId?: string } = {}): string {
 }
 
 /**
- * Main runtime IIFE. Bundled as one string so static export ships a single
- * <script> tag. No React, no module loader (Leaflet is dynamically imported
- * from a CDN for `data-ph-map` nodes).
+ * The runtime's per-page tags: an inline config, then the runtime itself —
+ * external (`opts.src`) or inlined. The runtime is ~28 KB gzipped and the same
+ * on every page, so inlining it puts all of it inside every document's
+ * critical download and none of it in the browser cache.
  */
 export function getStaticPublishRuntimeScript(
   opts: StaticPublishRuntimeOptions = {}
 ): string {
-  const mobileBreakpoint = opts.mobileBreakpoint ?? 768;
-  const pageIdLit = JSON.stringify(opts.pageId || "");
-  const endpointLit = JSON.stringify(opts.publicDataEndpoint || "/api/connectors/public-data");
+  const cfg = JSON.stringify({
+    pageId: opts.pageId || "",
+    publicDataEndpoint: opts.publicDataEndpoint || "/api/connectors/public-data",
+    mobileBreakpoint: opts.mobileBreakpoint ?? 768,
+  }).replace(/</g, "\\u003c");
+  const cfgScript = `<script>window.__PH_RT__=${cfg};</script>`;
+  if (opts.src) {
+    return `${cfgScript}<script defer src="${opts.src.replace(/"/g, "&quot;")}"></script>`;
+  }
+  return `${cfgScript}<script>${getStaticPublishRuntimeSource()}</script>`;
+}
+
+let runtimeSource: string | null = null;
+
+/**
+ * Main runtime IIFE — identical for every page; per-page values come from
+ * `window.__PH_RT__` (see `getStaticPublishRuntimeScript`). No React, no
+ * module loader (Leaflet is loaded on demand for `data-ph-map` nodes).
+ */
+export function getStaticPublishRuntimeSource(): string {
+  if (runtimeSource) return runtimeSource;
 
   // Preamble: Alpine boot, store, prefix, attribute-name mapping, root
   // selectors. Must precede every other chunk.
   const preamble = `
 "use strict";
-var PAGE_ID = ${pageIdLit};
-var PUBLIC_DATA_ENDPOINT = ${endpointLit};
-var MOBILE = ${mobileBreakpoint};
+var __PH_RT_CFG = window.__PH_RT__ || {};
+var PAGE_ID = __PH_RT_CFG.pageId || "";
+var PUBLIC_DATA_ENDPOINT = __PH_RT_CFG.publicDataEndpoint || "/api/connectors/public-data";
+var MOBILE = __PH_RT_CFG.mobileBreakpoint || 768;
 
 // Reactive-state keys/prefixes, stamped from the canonical \`utils/state/keys\`
 // module. Chunks (\`runtime/chunks/*\`) are stringified + minified in isolation
@@ -158,7 +184,7 @@ for (var _ri=0; _ri<ROOT_ATTRS.length; _ri++) (function(a){
 })(ROOT_ATTRS[_ri]);
 `;
 
-  return `<script>
+  runtimeSource = `
 ${ALPINE_INLINE_SOURCE}
 ;(function(){
 ${preamble}
@@ -172,5 +198,6 @@ ${FORMS_CHUNK}
 ${REPEATER_CHUNK}
 ${BOOTSTRAP_CHUNK}
 })();
-</script>`;
+`;
+  return runtimeSource;
 }
