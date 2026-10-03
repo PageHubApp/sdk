@@ -230,11 +230,14 @@ ${renderResult.scrollObserverScript}
  * @param opts.editor - When true, rewrites `@media` → `@container ph-editor-canvas`
  *   so the editor canvas responds to its own container width. MUST be false
  *   for /view, /static, custom domains.
+ * @param opts.extraClasses - Classes a renderer emits beyond the node props —
+ *   the static walker's `renderToHTML().classes` (e.g. a Link's icon-row
+ *   wrapper). Without them those classes ship with no CSS.
  * @returns Compiled, minified CSS string or null if compilation fails
  */
 export async function compileTailwindCSS(
   pageData: string,
-  opts?: { editor?: boolean }
+  opts?: { editor?: boolean; extraClasses?: string[] }
 ): Promise<string | null> {
   try {
     // pageData may arrive as plain JSON (viewer pipeline) or lz-base64
@@ -248,7 +251,9 @@ export async function compileTailwindCSS(
       const decompressed = lz.decompress(lz.decodeBase64(pageData));
       nodes = JSON.parse(decompressed);
     }
-    const candidates = extractCandidatesFromNodes(nodes);
+    const candidates = opts?.extraClasses?.length
+      ? [...new Set([...extractCandidatesFromNodes(nodes), ...opts.extraClasses])]
+      : extractCandidatesFromNodes(nodes);
 
     if (candidates.length === 0) return null;
 
