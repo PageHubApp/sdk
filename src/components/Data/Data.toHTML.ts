@@ -24,7 +24,7 @@ import { partitionDataChildIds } from "../../utils/data/emptySlot";
 import { resolveNestedItems } from "../../utils/data/resolveNestedItems";
 import { applyRouteParamsToDataSource } from "../../utils/data/routeParamsDataSource";
 import { dataSourceBindingId } from "../../utils/data/storefrontDataSource";
-import { makeSlotProxy } from "../../render/static/slotItem";
+import { makeSlotProxy } from "../../utils/data/slotItem";
 import {
   actionsAttr,
   ariaAttrs,

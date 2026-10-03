@@ -6,7 +6,7 @@ import type { SerializedNodes } from "./types";
 import { sdkLog } from "../../utils/logger";
 import { filterChromeChildren } from "../shared/chromeSuppression";
 import { resolveType } from "../shared/resolveType";
-import { isSlotItem } from "./slotItem";
+import { isSlotItem } from "../../utils/data/slotItem";
 import { migrateActions } from "../../utils/action";
 
 /**
