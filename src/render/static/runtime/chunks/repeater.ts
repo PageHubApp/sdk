@@ -8,7 +8,7 @@ import { stringifyChunk } from "./stringifyChunk";
 export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
   // Cross-chunk function bindings via runtime registry. See
   // staticPublishRuntime.ts preamble for the why.
-  const { setState, getStateValue } = __phRT;
+  const { setState, getStateValue, evalGroups } = __phRT;
 
   function walkSlotPath(obj: any, parts: string[]) {
     let v = obj;
@@ -39,9 +39,41 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
         .replace(/"/g, "&quot;");
     });
   }
-  // Reconcile child rows of a repeater wrapper. Keeps DOM nodes with unchanged
-  // item ids (preserves focus, animations); replaces or inserts new rows;
-  // removes stale rows.
+  // Build one row from the item template. Template nodes gated on `item`
+  // conditions arrive wrapped in `data-ph-item-conditions` (walker.ts): drop
+  // the ones this item fails, unwrap the rest so the row matches SSR markup.
+  // A template with several top-level nodes becomes one `display: contents`
+  // row so it reconciles as a unit.
+  function buildRow(html: string, item: any): HTMLElement | null {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    const gated = tmp.querySelectorAll("[data-ph-item-conditions]");
+    for (let g = 0; g < gated.length; g++) {
+      const el = gated[g];
+      let groups: unknown[] = [];
+      try {
+        groups = JSON.parse(el.getAttribute("data-ph-item-conditions") || "[]");
+      } catch (e) {}
+      const parent = el.parentNode;
+      if (!parent) continue;
+      if (evalGroups(groups, item)) {
+        while (el.firstChild) parent.insertBefore(el.firstChild, el);
+      }
+      parent.removeChild(el);
+    }
+    const els = tmp.children;
+    if (els.length === 1) return els[0] as HTMLElement;
+    if (!els.length) return null;
+    const wrap = document.createElement("div");
+    wrap.style.display = "contents";
+    while (tmp.firstChild) wrap.appendChild(tmp.firstChild);
+    return wrap;
+  }
+
+  // Reconcile child rows of a repeater wrapper. Keeps DOM nodes whose item id
+  // and rendered markup are unchanged (preserves focus, animations); rebuilds
+  // rows whose item changed (e.g. a message still streaming in); inserts new
+  // rows; removes stale rows.
   function reconcileItems(wrapper: Element, template: string, items: any[]) {
     if (!template) return;
     const existing = wrapper.querySelectorAll(":scope > [data-item-id]");
@@ -55,7 +87,13 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
       const item = items[j];
       const id = String(item && (item.id != null ? item.id : j));
       seen[id] = true;
-      const cur = byId[id];
+      const html = renderTemplate(template, item);
+      let cur: (Element & { __phHtml?: string }) | undefined = byId[id];
+      // Rows the server rendered carry no `__phHtml`; keep them as-is.
+      if (cur && cur.__phHtml !== undefined && cur.__phHtml !== html) {
+        cur.parentNode && cur.parentNode.removeChild(cur);
+        cur = undefined;
+      }
       if (cur) {
         const expectedNext = anchor
           ? anchor.nextElementSibling
@@ -69,12 +107,10 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
         anchor = cur;
         continue;
       }
-      const html = renderTemplate(template, item);
-      const tmp = document.createElement("div");
-      tmp.innerHTML = html;
-      const row = tmp.firstElementChild;
+      const row = buildRow(html, item) as (HTMLElement & { __phHtml?: string }) | null;
       if (!row) continue;
       row.setAttribute("data-item-id", id);
+      row.__phHtml = html;
       wrapper.insertBefore(
         row,
         anchor ? anchor.nextSibling : wrapper.firstChild

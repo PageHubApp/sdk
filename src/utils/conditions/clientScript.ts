@@ -19,11 +19,10 @@
  * provide `__phRT` (and `MOBILE`) in their enclosing IIFE.
  *
  * Supported condition types: `url-param`, `device`, `form-field`,
- * `localStorage`, `state`, `auth`, `company`, `connector`. `item` returns
- * `true` defensively — item-context conditions only make sense inside a
- * repeater iteration, which the static renderer resolves at SSR time before
- * any node reaches this eval pass. Semantics mirror `evaluate.ts` so static
- * and React routes agree.
+ * `localStorage`, `state`, `auth`, `company`, `connector`, and `item` when a
+ * row's item is passed (client-rendered repeater rows); without one, `item`
+ * returns `true` — SSR iterations resolve item conditions at render time.
+ * Semantics mirror `evaluate.ts` so static and React routes agree.
  *
  * Reads:
  *   - `url-param`  → `window.location.search`
@@ -74,7 +73,7 @@ export const CONDITION_EVAL_CHUNK = stringifyChunk(function $conditionEval() {
     return false;
   }
 
-  function evalCond(c: any): boolean {
+  function evalCond(c: any, item?: unknown): boolean {
     if (!c || !c.type) return true;
     if (c.type === "url-param") return applyOp(params.get(c.key), c.operator, c.value);
     if (c.type === "device") {
@@ -131,46 +130,56 @@ export const CONDITION_EVAL_CHUNK = stringifyChunk(function $conditionEval() {
         if (c.operator === "exists") return false;
         return false;
       }
-      const nv = walkPath(conn, c.key.split("."));
-      if (Array.isArray(nv) && (c.operator === "exists" || c.operator === "not-exists")) {
-        return applyOp(nv.length > 0 ? "true" : null, c.operator, c.value);
-      }
-      if (
-        Array.isArray(nv) &&
-        (c.operator === "greater-than" ||
-          c.operator === "less-than" ||
-          c.operator === "equals")
-      ) {
-        return applyOp(String(nv.length), c.operator, c.value);
-      }
-      return applyOp(nv == null ? null : String(nv), c.operator, c.value);
+      return applyPathOp(walkPath(conn, c.key.split(".")), c);
     }
     // 'item' conditions only make sense inside a repeater. The static renderer
-    // resolves them DURING render (inside the iteration), so the client should
-    // never see one. Defensive fail-open if a stray one slips through.
-    if (c.type === "item") return true;
+    // resolves them DURING render (inside an SSR iteration); rows the runtime
+    // renders from an item template pass their item here (repeater.ts). With
+    // no item (a stray one outside any row) it fails open.
+    if (c.type === "item") {
+      if (item === undefined) return true;
+      if (item == null || typeof item !== "object") {
+        return c.operator === "not-exists";
+      }
+      return applyPathOp(walkPath(item, c.key.split(".")), c);
+    }
     return true;
   }
 
-  function evalAll(conds: any[], logic?: string): boolean {
+  // Arrays compare by length for exists / numeric operators (mirrors
+  // evaluate.ts's connector + item branches).
+  function applyPathOp(v: any, c: any): boolean {
+    if (Array.isArray(v) && (c.operator === "exists" || c.operator === "not-exists")) {
+      return applyOp(v.length > 0 ? "true" : null, c.operator, c.value);
+    }
+    if (
+      Array.isArray(v) &&
+      (c.operator === "greater-than" || c.operator === "less-than" || c.operator === "equals")
+    ) {
+      return applyOp(String(v.length), c.operator, c.value);
+    }
+    return applyOp(v == null ? null : String(v), c.operator, c.value);
+  }
+
+  function evalAll(conds: any[], logic?: string, item?: unknown): boolean {
     if (!conds || !conds.length) return true;
     if (logic === "any") {
       for (let i = 0; i < conds.length; i++) {
-        if (evalCond(conds[i])) return true;
+        if (evalCond(conds[i], item)) return true;
       }
       return false;
     }
     for (let j = 0; j < conds.length; j++) {
-      if (!evalCond(conds[j])) return false;
+      if (!evalCond(conds[j], item)) return false;
     }
     return true;
   }
 
-  function evalGroups(gs: any[]): boolean {
+  function evalGroups(gs: any[], item?: unknown): boolean {
     if (!gs || !gs.length) return true;
     for (let k = 0; k < gs.length; k++) {
       const g = gs[k];
-      if (evalAll(g.conditions || [], g.logic || "all")) return true;
+      if (evalAll(g.conditions || [], g.logic || "all", item)) return true;
     }
     return false;
   }

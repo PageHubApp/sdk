@@ -352,23 +352,16 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
         if (ev) ev.preventDefault();
         const bt = ev && ev.currentTarget;
         const root = bt && bt.closest("[data-ph-agent-chat]");
-        if (!root) return;
+        // `siteChatSend` comes from the optional site-chat chunk (siteChat.ts),
+        // shipped only on pages with a chat — read at click time, not boot.
+        const sendChat = __phRT.siteChatSend;
+        if (!root || !sendChat) return;
         let fn2 = action.field || "agentMessage";
         fn2 = interpolateItem(fn2, itemContext) || fn2;
         const fld2 = root.querySelector('[name="' + fn2 + '"]');
         const val = fld2 ? (fld2.value || "").trim() : "";
         if (!val) return;
-        const cid = root.id || "ph-chat-default";
-        setState(
-          cid + ":outbox",
-          {
-            kind: "value",
-            value: JSON.stringify({ nonce: Date.now(), value: val }),
-            source: "runtime",
-          },
-          "agent-send"
-        );
-        if (fld2) {
+        if (sendChat(root, val) && fld2) {
           fld2.value = "";
           fld2.focus();
         }

@@ -24,6 +24,35 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
     }
   );
 
+  // Text whose HTML carries `{{state.<key>}}` tokens (Text.toHTML ships the
+  // HTML in `data-state-template`, tokens blanked in the SSR markup): re-render
+  // with each token's current value, HTML-escaped.
+  Alpine.directive(
+    "state-template",
+    function (
+      el: HTMLElement,
+      _dir: unknown,
+      utils: { effect: (fn: () => void) => void }
+    ) {
+      const tpl = el.getAttribute("data-state-template");
+      if (!tpl) return;
+      utils.effect(function () {
+        el.innerHTML = tpl.replace(
+          /\{\{\s*state\.([^}\s]+)\s*\}\}/g,
+          function (_m: string, key: string) {
+            const entry = _store.entries[key];
+            const v = entry && entry.value != null ? String(entry.value) : "";
+            return v
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;");
+          }
+        );
+      });
+    }
+  );
+
   Alpine.directive(
     "state-show-when-truthy",
     function (

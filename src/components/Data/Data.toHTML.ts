@@ -24,6 +24,7 @@ import { partitionDataChildIds } from "../../utils/data/emptySlot";
 import { resolveNestedItems } from "../../utils/data/resolveNestedItems";
 import { applyRouteParamsToDataSource } from "../../utils/data/routeParamsDataSource";
 import { dataSourceBindingId } from "../../utils/data/storefrontDataSource";
+import { makeSlotProxy } from "../../render/static/slotItem";
 import {
   actionsAttr,
   ariaAttrs,
@@ -197,7 +198,20 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   // `{{slot:<path>}}` placeholders for every `{{item.*}}` interpolation. The
   // runtime substitutes the placeholders per refetched item and replaces the
   // wrapper's child rows. Reconciler keeps DOM by `data-item-id`.
-  const isStateScope = !!ds?.scope && ds.scope.startsWith("state:");
+  //
+  // State-scoped repeaters iterate a JSON array sitting in the state registry:
+  // either named outright (`scope: "state:<key>"`) or an item-relative scope
+  // (`scope: "turns"`) under a wrapper whose item lives in state rather than
+  // at SSR (`ctx.stateItem`, from a `staticScope` — e.g. a chat widget whose
+  // turns only the browser knows). The latter binds to `<stateItem>:<scope>`.
+  const stateScopeKey = !ds?.scope
+    ? null
+    : ds.scope.startsWith("state:")
+      ? ds.scope.slice("state:".length)
+      : !ctx.currentItem && ctx.stateItem
+        ? `${ctx.stateItem}:${ds.scope}`
+        : null;
+  const isStateScope = !!stateScopeKey;
   let itemTemplateHTML = "";
   if (ds && (ds.stateInputs || ds.provider || isStateScope) && templateChildIds.length > 0) {
     const prevItem = ctx.currentItem;
@@ -239,8 +253,8 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   }
   // State-scoped repeater (no connector fetch — iterate JSON-encoded array
   // sitting at `state:<key>`). Runtime directive subscribes + reconciles.
-  if (isStateScope) {
-    attrs["data-state-scope"] = ds!.scope!.slice("state:".length);
+  if (stateScopeKey) {
+    attrs["data-state-scope"] = stateScopeKey;
   }
   // Pass-through attrs (mirror Container.toHTML).
   if (props.attrs && typeof props.attrs === "object") {
@@ -275,48 +289,6 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
 
   return tag(t, attrs, finalChildren);
 };
-
-/**
- * Synthetic item used to render the client-side item template. Any property
- * access (at any depth) returns a child proxy that, when coerced to a string
- * via interpolation, resolves to `{{slot:<dot.path>}}`. The runtime later
- * substitutes the slot markers with values from refetched items.
- *
- * Walker uses `in value` so we trap `has` to always return true; `get`
- * builds up the path. `Symbol.toPrimitive` / `toString` / `valueOf` return
- * the slot string so `String(item.foo.bar)` yields `"{{slot:foo.bar}}"`.
- *
- * `id` deliberately returns a non-proxy string ("{{slot:id}}") so the
- * iteration's `data-item-id` stamp works cleanly. All other paths produce
- * recursive proxies.
- */
-function makeSlotProxy(path: string[] = []): any {
-  const pathStr = path.join(".");
-  const slotStr = pathStr ? `{{slot:${pathStr}}}` : "";
-  const handler: ProxyHandler<any> = {
-    has() {
-      return true;
-    },
-    get(_target, key) {
-      if (key === Symbol.toPrimitive) return () => slotStr;
-      if (key === "toString" || key === "valueOf") return () => slotStr;
-      if (typeof key === "symbol") return undefined;
-      // Avoid wrapping JS engine introspection / array protocol props that
-      // would otherwise be treated as paths.
-      if (key === "constructor" || key === "then") return undefined;
-      // `in value` returns true (above), and `Array.isArray` checks a hidden
-      // symbol — we don't want to leak proxies into Array.isArray-checked
-      // branches. Default: deeper proxy.
-      return makeSlotProxy([...path, String(key)]);
-    },
-  };
-  // Target is an empty object so `typeof item === "object"` holds (walkPath
-  // requires it). Make the target stringify to the slot too.
-  const target: any = {};
-  target.toString = () => slotStr;
-  target.valueOf = () => slotStr;
-  return new Proxy(target, handler);
-}
 
 /**
  * Splice a `data-item-id="..."` attribute into the first child tag of an

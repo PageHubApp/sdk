@@ -7,6 +7,7 @@ import {
   getPageIndex,
   handlerAttrs,
   interpolate,
+  liveStateText,
   stateAttrs,
   staticClasses,
   tag,
@@ -90,6 +91,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     );
   }
 
+  const live = liveStateText(unwrapP(text));
   return tag(
     safeName,
     {
@@ -99,8 +101,9 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
       ...handlerAttrs(props),
       ...actionsAttr(props, ctx),
       ...stateAttrs(props, ctx),
+      ...live.attrs,
       ...attrsPassthrough(props),
     },
-    unwrapP(text)
+    live.html
   );
 };

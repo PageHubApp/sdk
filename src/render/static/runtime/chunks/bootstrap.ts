@@ -26,6 +26,24 @@ export const BOOTSTRAP_CHUNK = stringifyChunk(function $bootstrap() {
     removeCartItem,
   } = __phRT;
 
+  // Optional chunks ship as their own <script> only on pages that need them
+  // (see `getSiteChatScript`). Each pushes a function onto
+  // `window.__PH_RT_EXT__`; whichever loads second runs it — queued ones here,
+  // before `init()` walks the DOM, and later ones immediately on push. Every
+  // extension gets the runtime's scope in by argument: (__phRT, Alpine, PAGE_ID).
+  function runExtension(fn: RuntimeExtension) {
+    try {
+      fn(__phRT, Alpine, PAGE_ID);
+    } catch (e) {
+      console.error("[PageHub] runtime extension failed", e);
+    }
+  }
+  const queued = window.__PH_RT_EXT__;
+  window.__PH_RT_EXT__ = { push: runExtension };
+  if (Array.isArray(queued)) {
+    for (let i = 0; i < queued.length; i++) runExtension(queued[i]);
+  }
+
   function init() {
     seedFromWindow();
     mountUrlBridge();

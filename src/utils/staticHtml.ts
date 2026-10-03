@@ -48,6 +48,8 @@ export interface StaticRenderContext {
   hasClientConditions?: boolean;
   /** Set to true by `toHTML` when it stamps a `data-ph-load-show` marker on a node — opts the static export into shipping the load-action bootstrap script (`getLoadActionScript()`). */
   hasLoadActions?: boolean;
+  /** Set by the walker when a rendered node carries an `agent-send` action — opts the page into the site-chat runtime chunk (`getSiteChatScript()`). */
+  hasChatComposer?: boolean;
   /** Server-fetched connector data — enables connector-backed condition eval at SSR. */
   connectorData?: Record<string, { bindings: Record<string, any[]> }> | null;
   /**
@@ -63,6 +65,18 @@ export interface StaticRenderContext {
    * `interpolate()`. Null at the top level.
    */
   currentItem?: Record<string, any> | null;
+  /**
+   * `{{anchor.<name>}}` values in scope — the static twin of React's
+   * `<AnchorProvider>`. Merged by the walker from each ancestor's
+   * `toHTML.staticScope`; the walker resolves the tokens in node props.
+   */
+  anchors?: Readonly<Record<string, string>> | null;
+  /**
+   * State-key prefix standing in for the repeater item of the current subtree
+   * when that item only exists in the browser (set via `toHTML.staticScope`).
+   * `Data.toHTML` binds an item-relative `scope: "x"` to state `<stateItem>:x`.
+   */
+  stateItem?: string | null;
   /**
    * Set by the walker when entering a `Data` node — Data.toHTML reads these IDs
    * and renders them once per resolved item via `ctx.renderChildren`. The
@@ -105,11 +119,30 @@ export interface StaticRenderContext {
  * fallback in `helpers.ts`, processor resolvers in `forStatic.ts`) keep
  * compiling untouched.
  */
-export type ToHTMLFn<P = Record<string, any>> = (
+export type ToHTMLFn<P = Record<string, any>> = ((
   props: P,
   childrenHTML: string,
   ctx: StaticRenderContext
-) => string;
+) => string) & {
+  /**
+   * Optional scope this node opens for its subtree, read by the walker BEFORE
+   * the children render (the toHTML itself runs after them, inside the same
+   * scope). The static counterpart of a React wrapper that mounts an
+   * `<AnchorProvider>` / `<ItemProvider>` around its children.
+   */
+  staticScope?: (nodeId: string, props: P) => StaticScope;
+};
+
+/** What a `toHTML.staticScope` opens for its subtree. */
+export interface StaticScope {
+  /** Anchor names → ids, merged over the parent scope (nearest wins). */
+  anchors?: Record<string, string>;
+  /**
+   * The subtree's repeater item lives in browser state under this key prefix
+   * (resets any outer SSR item). See `StaticRenderContext.stateItem`.
+   */
+  stateItem?: string;
+}
 
 // ─── HTML helpers ───────────────────────────────────────────────────────────
 
@@ -595,6 +628,22 @@ export function publishStateKeysAttr(
   const k = props.dataSource?.publishStateKeys;
   if (!k || typeof k !== "object") return {};
   return { "data-publish-state-keys": JSON.stringify(k) };
+}
+
+const STATE_TOKEN_RE = /\{\{\s*state\.([^}\s]+)\s*\}\}/g;
+
+/**
+ * `{{state.<key>}}` can't resolve at SSR (state lives in the browser), and
+ * `interpolate` leaves an unresolved token verbatim. Blank the tokens in the
+ * markup and ship the HTML as `data-state-template`, which the runtime's
+ * `state-template` directive re-renders on every state change.
+ */
+export function liveStateText(html: string): {
+  html: string;
+  attrs: Record<string, string | undefined>;
+} {
+  if (!html.includes("{{") || !html.match(STATE_TOKEN_RE)) return { html, attrs: {} };
+  return { html: html.replace(STATE_TOKEN_RE, ""), attrs: { "data-state-template": html } };
 }
 
 /** All state-related data-attrs in one spread. */

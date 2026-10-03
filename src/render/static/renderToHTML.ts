@@ -17,6 +17,7 @@ import { PH_OVERFLOW_SITE_SCRIPT } from "./runtime/overflowUx";
 import { PH_SCROLL_TIMELINE_SCRIPT } from "./runtime/scrollTimeline";
 import {
   getCartBridgeScript,
+  getSiteChatScript,
   getStaticPublishRuntimeScript,
 } from "./runtime/staticPublishRuntime";
 import { generateThemeVars } from "./themeCss";
@@ -318,7 +319,7 @@ export function renderToHTML(
           mobileBreakpoint: rootProps.theme?.breakpoints?.md,
           pageId,
           src: options.runtimeSrc,
-        })
+        }) + (ctx.hasChatComposer ? getSiteChatScript() : "")
       : "");
 
   // 10. Wrap in document

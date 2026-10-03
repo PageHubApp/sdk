@@ -121,8 +121,18 @@ declare global {
   function escapeHTML(s: unknown): string;
   function renderCartItems(el: Element, c: any): void;
 
+  // ───── optional chunks (bootstrap.ts runs them) ──────────────────────────
+  /** An optional chunk's body, called with the runtime scope it needs. */
+  type RuntimeExtension = (
+    phRT: Record<string, any>,
+    alpine: any,
+    pageId: string
+  ) => void;
+
   // ───── window extensions (used by chunks) ────────────────────────────────
   interface Window {
+    /** Queue before the runtime boots; `{ push }` (runs immediately) after. */
+    __PH_RT_EXT__?: RuntimeExtension[] | { push: (fn: RuntimeExtension) => void };
     __PH_STATE__?: Record<string, any>;
     __PH_AUTH__?: Record<string, any>;
     __PH_COMPANY__?: Record<string, any>;

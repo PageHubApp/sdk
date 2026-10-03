@@ -30,6 +30,7 @@ import { FORMS_CHUNK } from "./chunks/forms";
 import { REPEATER_CHUNK } from "./chunks/repeater";
 import { AUX_CHUNK } from "./chunks/aux";
 import { BOOTSTRAP_CHUNK } from "./chunks/bootstrap";
+import { SITE_CHAT_CHUNK } from "./chunks/siteChat";
 import { STATE_PREFIX, STATE_KEY } from "../../../utils/state/keys";
 
 export interface StaticPublishRuntimeOptions {
@@ -103,6 +104,17 @@ export function getStaticPublishRuntimeScript(
   return `${cfgScript}<script>${getStaticPublishRuntimeSource()}</script>`;
 }
 
+/**
+ * The site-chat chunk as an optional runtime extension — emitted only on
+ * pages with a chat composer (`agent-send`), so every other page's runtime
+ * stays chat-free. Place it after the runtime tags: it queues itself on
+ * `window.__PH_RT_EXT__` if the (deferred) runtime hasn't booted yet, or runs
+ * at once if it has (see bootstrap.ts).
+ */
+export function getSiteChatScript(): string {
+  return `<script>(window.__PH_RT_EXT__=window.__PH_RT_EXT__||[]).push(function(__phRT,Alpine,PAGE_ID){${SITE_CHAT_CHUNK}});</script>`;
+}
+
 let runtimeSource: string | null = null;
 
 /**
@@ -167,7 +179,7 @@ var _escInstalled = false;
 var __phRT = {};
 
 var STATE_ATTRS = [
-  'data-state-text','data-state-show-when-truthy','data-state-style-bindings',
+  'data-state-text','data-state-template','data-state-show-when-truthy','data-state-style-bindings',
   'data-state-modifiers','data-state-binding','data-visibility-state-key',
   'data-publish-state-keys','data-computed-state-bindings','data-state-inputs',
   'data-state-scope'
