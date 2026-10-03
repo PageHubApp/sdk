@@ -191,7 +191,7 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
               if (meta.collectionSkipEmail) body.skipEmail = true;
             }
           }
-          fetch("/api/submissions", {
+          fetch(PH_BASE + "/api/submissions", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),

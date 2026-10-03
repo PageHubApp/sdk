@@ -21,10 +21,10 @@ export const AUX_CHUNK = stringifyChunk(function $aux() {
       (qs ? "?" + qs : "") +
       window.location.hash;
     window.history.replaceState({}, "", clean);
-    fetch("/api/customer/verify?token=" + encodeURIComponent(token))
+    fetch(PH_BASE + "/api/customer/verify?token=" + encodeURIComponent(token))
       .then(function (r) {
         if (!r.ok) return null;
-        return fetch("/api/customer/me", { credentials: "include" });
+        return fetch(PH_BASE + "/api/customer/me", { credentials: "include" });
       })
       .then(function (r) {
         return r && r.ok ? r.json() : null;

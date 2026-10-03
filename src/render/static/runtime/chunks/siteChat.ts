@@ -3,7 +3,7 @@
 //
 // Optional chunk — shipped as its own script only on pages with a chat
 // composer (`getSiteChatScript`), run by bootstrap.ts with (__phRT, Alpine,
-// PAGE_ID) as arguments. Authored as a real TS function; `stringifyChunk`
+// PAGE_ID, PH_BASE) as arguments. Authored as a real TS function; `stringifyChunk`
 // lifts the body. Globals declared in [runtime-globals.d.ts](./runtime-globals.d.ts).
 //
 // Contract (docs/features/site-chat.md §6–7):
@@ -36,7 +36,7 @@ export const SITE_CHAT_CHUNK = stringifyChunk(function $siteChat() {
     error: string;
   };
 
-  const endpoint = "/api/site-chat/" + encodeURIComponent(PAGE_ID);
+  const endpoint = PH_BASE + "/api/site-chat/" + encodeURIComponent(PAGE_ID);
   const SEND_FAILED = "Your message didn't send. Check your connection and try again.";
   const chats: Chat[] = [];
   let seq = 0;

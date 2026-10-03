@@ -102,7 +102,7 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
       items = raw ? JSON.parse(raw as string) : [];
     } catch (e) {}
     if (!items.length || !PAGE_ID) return;
-    fetch("/api/stripe/storefront-checkout", {
+    fetch(PH_BASE + "/api/stripe/storefront-checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

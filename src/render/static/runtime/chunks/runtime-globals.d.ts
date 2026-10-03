@@ -13,6 +13,14 @@ declare global {
   const PAGE_ID: string;
   const PUBLIC_DATA_ENDPOINT: string;
   const MOBILE: number;
+  /**
+   * Root for every same-origin call the runtime makes (`/api/*`, `/_ph/*`):
+   * `window.__PH_ASSET_BASE__ || ''`. Empty on PageHub-served hosts; `"/_pagehub"`
+   * when a host app proxies the site (`@pagehub/next`). Every root-relative
+   * literal in a chunk must be written `PH_BASE + "/api/..."` — phBase.test.ts
+   * fails otherwise. Optional chunks receive it as an argument (RuntimeExtension).
+   */
+  const PH_BASE: string;
   // Reactive-state keys/prefixes — stamped into the preamble from the canonical
   // `utils/state/keys` module (see staticPublishRuntime.ts). Chunks can't import
   // (they're stringified + minified in isolation), so the value is injected here
@@ -25,9 +33,8 @@ declare global {
   const PH_CART_ERROR: string;
   const PH_AUTH_STATUS: string;
   /**
-   * Root-relative directory serving leaflet.js / leaflet.css / images from the
-   * app's own origin. Stamped from `leafletPublicPath.generated.ts`, with the
-   * optional `window.__PH_ASSET_BASE__` override already applied.
+   * Directory serving leaflet.js / leaflet.css / images from the page's own
+   * origin: `PH_BASE` + the path stamped from `leafletPublicPath.generated.ts`.
    */
   const PH_LEAFLET_BASE: string;
   const Alpine: any;
@@ -126,7 +133,8 @@ declare global {
   type RuntimeExtension = (
     phRT: Record<string, any>,
     alpine: any,
-    pageId: string
+    pageId: string,
+    phBase: string
   ) => void;
 
   // ───── window extensions (used by chunks) ────────────────────────────────

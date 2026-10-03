@@ -94,7 +94,8 @@ export function getStaticPublishRuntimeScript(
 ): string {
   const cfg = JSON.stringify({
     pageId: opts.pageId || "",
-    publicDataEndpoint: opts.publicDataEndpoint || "/api/connectors/public-data",
+    // Unset → the runtime derives it from PH_BASE (see the preamble).
+    publicDataEndpoint: opts.publicDataEndpoint || undefined,
     mobileBreakpoint: opts.mobileBreakpoint ?? 768,
   }).replace(/</g, "\\u003c");
   const cfgScript = `<script>window.__PH_RT__=${cfg};</script>`;
@@ -112,7 +113,7 @@ export function getStaticPublishRuntimeScript(
  * at once if it has (see bootstrap.ts).
  */
 export function getSiteChatScript(): string {
-  return `<script>(window.__PH_RT_EXT__=window.__PH_RT_EXT__||[]).push(function(__phRT,Alpine,PAGE_ID){${SITE_CHAT_CHUNK}});</script>`;
+  return `<script>(window.__PH_RT_EXT__=window.__PH_RT_EXT__||[]).push(function(__phRT,Alpine,PAGE_ID,PH_BASE){${SITE_CHAT_CHUNK}});</script>`;
 }
 
 let runtimeSource: string | null = null;
@@ -131,7 +132,15 @@ export function getStaticPublishRuntimeSource(): string {
 "use strict";
 var __PH_RT_CFG = window.__PH_RT__ || {};
 var PAGE_ID = __PH_RT_CFG.pageId || "";
-var PUBLIC_DATA_ENDPOINT = __PH_RT_CFG.publicDataEndpoint || "/api/connectors/public-data";
+
+// Root for every same-origin call the runtime makes (/api/*, /_ph/*). Empty on
+// PageHub-served hosts; a host app that proxies the site (@pagehub/next) sets
+// window.__PH_ASSET_BASE__ = "/_pagehub" in <head> before this runs, and so can
+// any renderToHTML() consumer serving the output from a path other than root.
+// Every root-relative literal in runtime/chunks/* is written \`PH_BASE + "/api/..."\`
+// (enforced by runtime/phBase.test.ts).
+var PH_BASE = window.__PH_ASSET_BASE__ || '';
+var PUBLIC_DATA_ENDPOINT = __PH_RT_CFG.publicDataEndpoint || PH_BASE + "/api/connectors/public-data";
 var MOBILE = __PH_RT_CFG.mobileBreakpoint || 768;
 
 // Reactive-state keys/prefixes, stamped from the canonical \`utils/state/keys\`
@@ -151,13 +160,9 @@ var PH_AUTH_STATUS = ${JSON.stringify(STATE_KEY.authStatus)};
 // already covers it — no allow-list entry, no configured base URL. The files
 // are copied to public/_ph/leaflet/<version>/ by scripts/vendor-leaflet-public.mjs,
 // which also writes the path constant imported above, so the served files and
-// this string cannot drift apart.
-// \`__PH_ASSET_BASE__\` is the escape hatch for a third-party consumer hosting
-// renderToHTML() output somewhere that doesn't serve /_ph/*; unset means
-// same-origin, which is what every PageHub-hosted site wants.
-var PH_LEAFLET_BASE = (window.__PH_ASSET_BASE__ || '') + ${JSON.stringify(
-    LEAFLET_PUBLIC_PATH
-  )};
+// this string cannot drift apart. PH_BASE (above) prefixes it like every
+// other same-origin call.
+var PH_LEAFLET_BASE = PH_BASE + ${JSON.stringify(LEAFLET_PUBLIC_PATH)};
 
 var Alpine = window.Alpine;
 Alpine.prefix('data-ph-');

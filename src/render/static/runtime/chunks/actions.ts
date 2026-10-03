@@ -335,7 +335,7 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
       }
       if (t === "manage-subscription") {
         if (ev) ev.preventDefault();
-        fetch("/api/customer/portal", {
+        fetch(PH_BASE + "/api/customer/portal", {
           method: "POST",
           credentials: "include",
         })

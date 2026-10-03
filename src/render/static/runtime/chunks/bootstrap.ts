@@ -30,10 +30,11 @@ export const BOOTSTRAP_CHUNK = stringifyChunk(function $bootstrap() {
   // (see `getSiteChatScript`). Each pushes a function onto
   // `window.__PH_RT_EXT__`; whichever loads second runs it — queued ones here,
   // before `init()` walks the DOM, and later ones immediately on push. Every
-  // extension gets the runtime's scope in by argument: (__phRT, Alpine, PAGE_ID).
+  // extension gets the runtime's scope in by argument: (__phRT, Alpine, PAGE_ID,
+  // PH_BASE).
   function runExtension(fn: RuntimeExtension) {
     try {
-      fn(__phRT, Alpine, PAGE_ID);
+      fn(__phRT, Alpine, PAGE_ID, PH_BASE);
     } catch (e) {
       console.error("[PageHub] runtime extension failed", e);
     }
