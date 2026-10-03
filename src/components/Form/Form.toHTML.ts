@@ -21,7 +21,6 @@ function buildFormMetaAttrs(props: Record<string, any>): Record<string, string> 
   if (props.collectionSlug) meta.collectionSlug = props.collectionSlug;
   if (props.collectionFieldMap) meta.collectionFieldMap = props.collectionFieldMap;
   if (props.collectionSkipEmail) meta.collectionSkipEmail = !!props.collectionSkipEmail;
-  if (props.agentId) meta.agentId = props.agentId;
   if (props.conversion) meta.conversion = props.conversion;
   if (props.successAction) meta.successAction = props.successAction;
   if (props.successUrl) meta.successUrl = props.successUrl;

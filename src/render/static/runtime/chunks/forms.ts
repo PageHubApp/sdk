@@ -1,4 +1,4 @@
-// Form submit dispatcher — routes email / webhook / collection / agent / custom.
+// Form submit dispatcher — routes email / webhook / collection / custom.
 // Toggles the three per-form visibility-state-key entries (fields / loading /
 // loaded) through the state-registry chunk's `setVisibility()` so the
 // `data-visibility-state-key` directive can show/hide the matching subtrees.
@@ -15,7 +15,6 @@ type FormMeta = {
     | "email"
     | "webhook"
     | "collection"
-    | "agent"
     | "custom"
     | "iframe";
   formName?: string;
@@ -24,7 +23,6 @@ type FormMeta = {
   successUrlField?: string;
   action?: string;
   method?: string;
-  agentId?: string;
   collectionSlug?: string;
   collectionFieldMap?: Record<string, string>;
   collectionSkipEmail?: boolean;
@@ -172,20 +170,6 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
                 .then(function (body: any) {
                   done(safeUrl(readPath(body, field)));
                 });
-            })
-            .catch(fail);
-        } else if (t === "agent" && meta && meta.agentId) {
-          fetch(
-            "/api/agents/" + encodeURIComponent(meta.agentId) + "/intake",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ pageId: PAGE_ID, formData: data }),
-              credentials: "include",
-            }
-          )
-            .then(function () {
-              done();
             })
             .catch(fail);
         } else {
