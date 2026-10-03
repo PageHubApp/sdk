@@ -20,6 +20,7 @@ import {
   getStaticPublishRuntimeScript,
 } from "./runtime/staticPublishRuntime";
 import { generateThemeVars } from "./themeCss";
+import { STATIC_BACKGROUND_CSS } from "../../utils/background";
 import {
   RENDER_INVALID_TREE_MESSAGE,
   type RenderToHTMLOptions,
@@ -266,7 +267,7 @@ export function renderToHTML(
   }
 
   // 8. Compute theme CSS and SEO data
-  const themeCSS = generateThemeVars(rootProps);
+  const themeCSS = generateThemeVars(rootProps) + "\n" + STATIC_BACKGROUND_CSS;
 
   const rootSeo = rootProps.seo || {};
   const seoTitle = rootSeo.title || rootProps.title || "";

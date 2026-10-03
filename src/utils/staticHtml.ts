@@ -20,7 +20,7 @@ import {
 import { isCSSAnimation, getCSSAnimationProps } from "./animations/animations";
 import { purifyToTailwind } from "./tailwind/daisyuiToTailwind";
 import { replaceVariables } from "./design/variables";
-import { getBackgroundUrl } from "./background";
+import { getStaticBackgroundSources } from "./background";
 import { BUILTIN_STATE_MODIFIERS } from "./conditions/stateBuiltinModifiers";
 import type { ComponentModifier } from "../define/types";
 
@@ -352,11 +352,12 @@ export function collectClasses(className: string, ctx: StaticRenderContext): voi
 
 export function getInlineStyle(props: Record<string, any>): string {
   let styleObj = props.root?.style ? cssStringToObj(props.root.style) : null;
-  // Same resolution as the React walker: a bare CDN media id becomes its
-  // delivery URL, so it is never fetched relative to the page path.
-  const backgroundUrl = getBackgroundUrl(props);
-  if (backgroundUrl) {
-    styleObj = { ...(styleObj || {}), "background-image": `url(${backgroundUrl})` };
+  // A bare CDN media id becomes its delivery URL (never fetched relative to
+  // the page path), sized per tier — see `STATIC_BACKGROUND_CSS`.
+  const bgSources = getStaticBackgroundSources(props);
+  if (bgSources) {
+    styleObj = { ...(styleObj || {}), "background-image": `url(${bgSources.url})` };
+    if (bgSources.smallUrl) styleObj["--ph-bg-sm"] = `url(${bgSources.smallUrl})`;
   }
   // State-bound style bindings — at SSR the registry is empty, so emit each
   // binding's `defaultValue` (or "0"). Hydration overwrites with the live

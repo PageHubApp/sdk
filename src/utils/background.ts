@@ -164,11 +164,25 @@ export const generatePattern = (props: any) => {
 
 // ─── Background URL ───
 
+/** The bare CDN media id a background paints, or null when it is a URL / svg / other. */
+function cdnBackgroundId(bg: any): string | null {
+  const content = bg?.image;
+  if (!content || typeof content !== "string") return null;
+  if (content.startsWith("http") || content.startsWith("/") || content.startsWith("data:")) {
+    return null;
+  }
+  const type = bg.imageType;
+  if (type === "url" || type === "svg") return null;
+  if (type === "cdn" || ((type === undefined || type === null || type === "") && looksLikeCdnImageId(content))) {
+    return content.trim();
+  }
+  return null;
+}
+
 export const getBackgroundUrl = (props: any, pageMedia: any[] | null = null) => {
   const bg = props.background;
   if (!bg?.image) return null;
 
-  const type = bg.imageType;
   const content = bg.image;
 
   if (content.startsWith("http") || content.startsWith("/") || content.startsWith("data:")) {
@@ -180,18 +194,47 @@ export const getBackgroundUrl = (props: any, pageMedia: any[] | null = null) => 
     if (fromLibrary) return fromLibrary;
   }
 
-  const useCdnUrl =
-    content &&
-    type !== "url" &&
-    type !== "svg" &&
-    (type === "cdn" ||
-      ((type === undefined || type === null || type === "") && looksLikeCdnImageId(content)));
-  if (useCdnUrl) {
-    return getCdnUrl(content.trim(), { width: calculateOptimalBackgroundSize(), format: "auto" });
+  const cdnId = cdnBackgroundId(bg);
+  if (cdnId) {
+    return getCdnUrl(cdnId, { width: calculateOptimalBackgroundSize(), format: "auto" });
   }
 
   return content;
 };
+
+// ─── Static (pre-rendered) backgrounds ───
+
+/** Widest viewport that gets the phone-sized background. */
+export const STATIC_BACKGROUND_SMALL_MAX_WIDTH = 767;
+
+/**
+ * Fixed-width sources for a background in pre-rendered HTML. A cached static
+ * document can't size to the visitor's screen, so a CDN background gets two
+ * tiers — `smallUrl` for phones, `url` for everything else — and the head
+ * preload names the same two URLs, so each device fetches exactly one.
+ * Non-CDN backgrounds have one source and `smallUrl: null`.
+ */
+export function getStaticBackgroundSources(
+  props: any
+): { url: string; smallUrl: string | null } | null {
+  const cdnId = cdnBackgroundId(props?.background);
+  if (cdnId) {
+    return {
+      url: getCdnUrl(cdnId, { width: 1920, format: "auto" }),
+      smallUrl: getCdnUrl(cdnId, { width: 1080, format: "auto" }),
+    };
+  }
+  const url = props?.background?.image ? getBackgroundUrl(props) : null;
+  return url ? { url, smallUrl: null } : null;
+}
+
+/**
+ * Pairs with `getStaticBackgroundSources`: the inline style carries the large
+ * URL as `background-image` (the only part email clients read) plus the phone
+ * URL as `--ph-bg-sm`; on phones this rule swaps it in. Only the computed
+ * value is fetched, so a phone never downloads the large one.
+ */
+export const STATIC_BACKGROUND_CSS = `@media (max-width: ${STATIC_BACKGROUND_SMALL_MAX_WIDTH}px){[style*="--ph-bg-sm"]{background-image:var(--ph-bg-sm)!important}}`;
 
 // ─── Apply helpers ───
 

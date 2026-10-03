@@ -188,9 +188,28 @@ export const AUX_CHUNK = stringifyChunk(function $aux() {
     });
   }
 
+  // Leaflet (~40 KB, ~250 ms of phone CPU) waits until a map is about to
+  // scroll into view — maps sit far below the fold, and paying for one during
+  // the initial load delays the hero for a widget nobody has reached yet.
   function mountMaps() {
     const nodes = document.querySelectorAll("[data-ph-map]");
     if (!nodes.length) return;
+    if (typeof IntersectionObserver === "undefined") return mountMapNodes(nodes);
+    const io = new IntersectionObserver(
+      function (entries) {
+        for (let i = 0; i < entries.length; i++) {
+          if (!entries[i].isIntersecting) continue;
+          io.disconnect();
+          mountMapNodes(nodes);
+          return;
+        }
+      },
+      { rootMargin: "600px 0px" }
+    );
+    for (let i = 0; i < nodes.length; i++) io.observe(nodes[i]);
+  }
+
+  function mountMapNodes(nodes: NodeListOf<Element>) {
     loadLeaflet()
       .then(function (L: any) {
         // Leaflet otherwise guesses the marker art directory from leaflet.css,
