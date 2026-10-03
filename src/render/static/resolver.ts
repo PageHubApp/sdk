@@ -2,6 +2,7 @@
 // a *.craft.tsx from here risks a TDZ cycle when the component graph isn't yet
 // initialized. Matches how Data.toHTML is imported below.
 import { toHTML as containerToHTML } from "../../components/Container/Container.toHTML";
+import { headerSlotProps } from "../../components/Header/headerSlot";
 import { toHTML as dataToHTML } from "../../components/Data/Data.toHTML";
 import { BUILTIN_COMPONENT_DEFS } from "../../core/componentRegistry";
 import { processForStatic } from "../../define/processors/forStatic";
@@ -79,7 +80,7 @@ const cartBadgeToHTML: ToHTMLFn = (props, children, ctx) => {
 
 export const defaultResolver: Record<string, ToHTMLFn> = {
   ...processForStatic(BUILTIN_COMPONENT_DEFS),
-  Header: containerToHTML,
+  Header: (props, children, ctx) => containerToHTML(headerSlotProps(props), children, ctx),
   Footer: containerToHTML,
   Data: dataToHTML,
   CartBadge: cartBadgeToHTML,
