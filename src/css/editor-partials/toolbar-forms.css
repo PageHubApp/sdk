@@ -13,7 +13,11 @@
 
 @reference "./styles.css";
 
-.pagehub-sdk-root .input {
+/* Generic DaisyUI class names (.input, .btn-*) are scoped away from page content
+   (editor canvas #viewport, block previews #ph-site-preview) so toolbar styling
+   never restyles a site's own buttons and inputs. */
+
+.pagehub-sdk-root .input:not(:where(#viewport *, #ph-site-preview *)) {
   @apply border-base-300 bg-base-200 text-base-content hover:border-primary focus:border-ring active:border-ring w-full cursor-pointer rounded-lg border;
 }
 /* Dialog fields; same surface token as .input */
@@ -100,16 +104,16 @@
 :is(.dark *) .pagehub-sdk-root select.input-plain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e8e8e8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
-.pagehub-sdk-root .btn-sm {
+.pagehub-sdk-root .btn-sm:not(:where(#viewport *, #ph-site-preview *)) {
   @apply h-6! px-1.5! py-0! text-xs!;
 }
 
-.pagehub-sdk-root .btn-secondary {
+.pagehub-sdk-root .btn-secondary:not(:where(#viewport *, #ph-site-preview *)) {
   @apply focus-visible:ring-ring inline-flex items-center justify-center gap-2 rounded-lg text-base font-medium whitespace-nowrap shadow transition-colors focus:outline-none focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
   @apply border-base-300! bg-secondary! text-secondary-content! hover:bg-primary! hover:text-primary-content! border!;
 }
 
-.pagehub-sdk-root .btn-primary {
+.pagehub-sdk-root .btn-primary:not(:where(#viewport *, #ph-site-preview *)) {
   @apply bg-primary text-primary-content hover:bg-primary/90 focus-visible:ring-ring inline-flex h-8 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap shadow transition-colors focus:outline-none focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
 }
 

@@ -8,6 +8,9 @@
   @apply border-base-300 focus-within:border-primary focus-within:ring-ring/45 hover:border-primary cursor-pointer transition-[border-color,box-shadow] duration-150 ease-out focus-within:ring-1;
 }
 
-.pagehub-sdk-root .btn {
+/* Editor-chrome buttons only. Page content (editor canvas, block previews) keeps
+   its own DaisyUI `.btn` variants — without the exclusion this paints every
+   `btn-ghost` / `btn-outline` in a site as a solid primary button. */
+.pagehub-sdk-root .btn:not(:where(#viewport *, #ph-site-preview *)) {
   @apply bg-primary text-primary-content hover:bg-primary/90 focus-visible:ring-ring inline-flex items-center justify-center gap-2 rounded-lg text-base font-medium whitespace-nowrap shadow transition-colors focus:outline-none focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0;
 }
