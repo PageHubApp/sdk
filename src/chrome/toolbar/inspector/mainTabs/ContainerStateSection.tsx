@@ -2,6 +2,7 @@
  * ContainerStateBody — chip-list UI for Container-only state-registry props:
  *   - `visibilityStateKey`       : single chip, click → popover with key input
  *   - `computedStateBindings`    : chip per binding, click → popover with full editor
+ *   - `inViewState`              : single chip, click → popover with key + value
  *
  * Rendered inside the Interactions → State accordion via the
  * `containerStateWiring` property def (see registry/properties/advanced.ts).
@@ -16,6 +17,8 @@
 import { useNode } from "@craftjs/core";
 import { ComputedBindingChipRow } from "../../inputs/state/ComputedBindingChip";
 import { VisibilityKeyChip } from "../../inputs/state/VisibilityKeyChip";
+import { InViewStateChip } from "../../inputs/state/InViewStateChip";
+import type { InViewStateConfig } from "../../../../utils/state/inViewTracker";
 import type { ComputedStateBinding } from "../../../../utils/conditions/computedState";
 
 export const ContainerStateBody = () => {
@@ -23,11 +26,13 @@ export const ContainerStateBody = () => {
     actions: { setProp },
     visibilityStateKey,
     computedStateBindings,
+    inViewState,
   } = useNode(node => ({
     visibilityStateKey: node.data?.props?.visibilityStateKey as string | undefined,
     computedStateBindings: node.data?.props?.computedStateBindings as
       | ComputedStateBinding[]
       | undefined,
+    inViewState: node.data?.props?.inViewState as InViewStateConfig | undefined,
   }));
 
   const bindings: ComputedStateBinding[] = computedStateBindings ?? [];
@@ -41,6 +46,18 @@ export const ContainerStateBody = () => {
   const clearVisibilityKey = () => {
     setProp((p: any) => {
       delete p.visibilityStateKey;
+    });
+  };
+
+  const hasInView = !!inViewState && typeof inViewState === "object";
+  const setInView = (next: InViewStateConfig) => {
+    setProp((p: any) => {
+      p.inViewState = next;
+    });
+  };
+  const clearInView = () => {
+    setProp((p: any) => {
+      delete p.inViewState;
     });
   };
 
@@ -58,7 +75,7 @@ export const ContainerStateBody = () => {
     });
   };
 
-  if (!hasVisibilityKey && bindings.length === 0) return null;
+  if (!hasVisibilityKey && bindings.length === 0 && !hasInView) return null;
 
   return (
     <div className="flex flex-col gap-1">
@@ -68,6 +85,9 @@ export const ContainerStateBody = () => {
           onChange={setVisibilityKey}
           onClear={clearVisibilityKey}
         />
+      )}
+      {hasInView && (
+        <InViewStateChip value={inViewState!} onChange={setInView} onClear={clearInView} />
       )}
       {bindings.map((b, i) => (
         <ComputedBindingChipRow

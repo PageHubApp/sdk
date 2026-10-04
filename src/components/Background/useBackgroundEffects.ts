@@ -87,6 +87,7 @@ export function useBackgroundEffects({
       typography: t.typography || [],
       styleGuide:
         t.styleGuide && Object.keys(t.styleGuide).length ? t.styleGuide : DEFAULT_STYLE_GUIDE,
+      animations: t.animations,
     });
   }, [props.theme, enabled]);
 }

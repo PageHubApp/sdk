@@ -6,20 +6,31 @@
 import { useNode } from "@craftjs/core";
 import { lazy, Suspense, useState } from "react";
 import { TbBolt, TbPlus } from "react-icons/tb";
-import { cssAnimationPresets } from "../../../../utils/animations/animations";
-import { ANIMATION_PARAM_KEYS } from "./AnimationsInput";
+import {
+  ANIMATION_PARAM_KEYS,
+  cssAnimationPresets,
+  describeSiteAnimationKey,
+  isSiteAnimation,
+} from "../../../../utils/animations/animations";
+import type { SiteAnimation } from "../../../../utils/animations/siteAnimations";
 import { Chip } from "../../../primitives/Chip";
 import { usePopoverAutoOpen } from "../../inspector/hooks/usePopoverAutoOpen";
 import { usePopoverPosition } from "../../inspector/hooks/usePopoverPosition";
 import type { PropertyInputProps } from "../../inspector/registry/propertyDefs";
+import { useSiteAnimations } from "./useSiteAnimations";
 
 const AnimationsPanel = lazy(() => import("./AnimationsPanel"));
 
 // Hint width for chip-anchored initial position only — panel is auto-sized.
 const PANEL_WIDTH = 360;
 
-function describeAnimation(animation: string, engine: string): string {
+function describeAnimation(
+  animation: string,
+  engine: string,
+  siteAnimations: SiteAnimation[]
+): string {
   if (!animation) return "Add Animation…";
+  if (isSiteAnimation(animation)) return describeSiteAnimationKey(animation, siteAnimations);
   const preset = (cssAnimationPresets as Record<string, { label?: string }>)[animation];
   if (preset?.label) return preset.label;
   return engine === "framer" ? `Framer: ${animation}` : animation;
@@ -41,7 +52,8 @@ export default function AnimationsInputPopover({ def }: PropertyInputProps) {
     engine: (node.data?.props?.root?.animationEngine as string) || "css",
   }));
 
-  const summary = describeAnimation(animation, engine);
+  const { animations: siteAnimations } = useSiteAnimations();
+  const summary = describeAnimation(animation, engine, siteAnimations);
   const isEmpty = !animation;
 
   const openPanel = () => {

@@ -18,6 +18,7 @@ import { useNode } from "@craftjs/core";
 import { useAtomState, useAtomValue } from "@zedux/react";
 import { Suspense, useState } from "react";
 import { Chip } from "@/chrome/primitives/Chip";
+import { useSiteAnimations } from "@/chrome/toolbar/inputs/advanced/useSiteAnimations";
 import { usePopoverAutoOpen } from "../../../hooks/usePopoverAutoOpen";
 import { usePopoverPosition } from "../../../hooks/usePopoverPosition";
 import { PopoverOpenRequestAtom, popoverRequestKey } from "../../../popoverOpenRequestAtom";
@@ -49,7 +50,8 @@ export default function EffectRowInputPopover({ def }: PropertyInputProps) {
     craftName: (node.data?.name || node.data?.displayName || "") as string,
   }));
 
-  const view: EffectNodeView = { className, props: componentProps, craftName };
+  const { animations: siteAnimations } = useSiteAnimations();
+  const view: EffectNodeView = { className, props: componentProps, craftName, siteAnimations };
 
   const isActive = type ? type.isActive(view) : false;
   const sessionPending = sessionAdded.has(sessionKey(id, def.id));

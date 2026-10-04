@@ -15,7 +15,7 @@ import { useAtomState } from "@zedux/react";
 import { useMemo, useRef, useState, type CSSProperties } from "react";
 import { TbChevronDown, TbTrash } from "react-icons/tb";
 import { FloatingPanel } from "@/chrome/floating/FloatingPanel";
-import { ToolbarDropdown } from "@/chrome/toolbar/ToolbarDropdown";
+import { FieldLabel, SelectField } from "@/chrome/toolbar/inputs/PanelFields";
 import { ColorPickerAtom } from "@/chrome/toolbar/dialogs/ColorPickerDialog";
 import { FontFamilyDialogAtom } from "@/chrome/toolbar/dialogs/FontFamilyDialog";
 import { ToolbarSegmentedControl } from "@/chrome/toolbar/primitives/ToolbarSegmentedControl";
@@ -113,39 +113,6 @@ const TEXT_ALIGN_OPTIONS: Array<{ value: string; label: string; tooltip?: string
   { value: "right", label: "R", tooltip: "Right" },
   { value: "justify", label: "J", tooltip: "Justify" },
 ];
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <label className="text-neutral-content mb-1 block text-[11px] font-medium">{children}</label>
-  );
-}
-
-function SelectField({
-  label,
-  value,
-  onChange,
-  options,
-  id,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: string[][];
-  id: string;
-}) {
-  return (
-    <div>
-      <FieldLabel>{label}</FieldLabel>
-      <ToolbarDropdown value={value} onChange={onChange} placeholder={label} propKey={id}>
-        {options.map(([val, lbl]) => (
-          <option key={val} value={val}>
-            {lbl}
-          </option>
-        ))}
-      </ToolbarDropdown>
-    </div>
-  );
-}
 
 interface RgbaColor {
   r: number;

@@ -1,8 +1,8 @@
 /**
  * StateBindingsAddPicker — section-header `+` for the Interactions → State section.
  *
- * Container nodes get a 3-way picker (Visibility key / Computed binding /
- * State binding) since they wire to the state registry in three different ways.
+ * Container nodes get a 4-way picker (Visibility key / Computed binding /
+ * On screen / State binding) since they wire to the state registry in several ways.
  * Other nodes only get the State binding option (their existing single-action add).
  */
 import { useNode } from "@craftjs/core";
@@ -28,7 +28,7 @@ import type { ComputedStateBinding } from "../../../../utils/conditions/computed
 
 const STATE_BINDINGS_BODY_DEF_ID = "stateBindings";
 
-type StateAddType = "visibility" | "computed" | "binding";
+type StateAddType = "visibility" | "computed" | "inView" | "binding";
 
 const CONTAINER_ITEMS: SearchableMenuItem<StateAddType>[] = [
   {
@@ -42,6 +42,12 @@ const CONTAINER_ITEMS: SearchableMenuItem<StateAddType>[] = [
     label: "Computed binding",
     help: "Derive a new state value",
     data: "computed",
+  },
+  {
+    id: "inView",
+    label: "On screen",
+    help: "Set a state value while this section is the one most on screen",
+    data: "inView",
   },
   {
     id: "binding",
@@ -98,9 +104,19 @@ export default function StateBindingsAddPicker({ def }: PropertyInputProps) {
     if (sectionTitle && accordionCtx?.setOpen) accordionCtx.setOpen(sectionTitle, true);
   };
 
+  const addInView = () => {
+    setProp((p: any) => {
+      if (!p.inViewState || typeof p.inViewState !== "object") {
+        p.inViewState = { key: "", value: "" };
+      }
+    });
+    if (sectionTitle && accordionCtx?.setOpen) accordionCtx.setOpen(sectionTitle, true);
+  };
+
   const onPick = (item: SearchableMenuItem<StateAddType>) => {
     if (item.data === "visibility") addVisibilityKey();
     else if (item.data === "computed") addComputedBinding();
+    else if (item.data === "inView") addInView();
     else if (item.data === "binding") addStateBinding();
   };
 

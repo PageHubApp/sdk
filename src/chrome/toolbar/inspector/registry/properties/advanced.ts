@@ -264,13 +264,13 @@ export const advancedProperties: PropertyDef[] = [
     input: { type: "custom", component: "StateBindingsAddPicker" },
     sortOrder: 1,
   },
-  // Container-only registry-wiring: visibilityStateKey + computedStateBindings.
+  // Container-only registry-wiring: visibilityStateKey + computedStateBindings + inViewState.
   // Pinned body content rendered below the StateBindings chip-list.
   {
     id: "containerStateWiring",
     label: "State wiring",
     section: "stateBindings",
-    keywords: ["visibility", "state", "key", "computed", "binding", "registry"],
+    keywords: ["visibility", "state", "key", "computed", "binding", "registry", "in view", "on screen", "scroll", "rail"],
     input: { type: "custom", component: "ContainerStateBody" },
     pinned: true,
     showWhen: (_cls, props) => props._craftName === "Container",
@@ -280,7 +280,8 @@ export const advancedProperties: PropertyDef[] = [
     // collapsed).
     isActive: (_cls, props) =>
       typeof props?.visibilityStateKey === "string" ||
-      (Array.isArray(props?.computedStateBindings) && props.computedStateBindings.length > 0),
+      (Array.isArray(props?.computedStateBindings) && props.computedStateBindings.length > 0) ||
+      (!!props?.inViewState && typeof props.inViewState === "object"),
     sortOrder: 2,
   },
   // Animation + Scroll Effect are now rows inside the unified Effects

@@ -279,6 +279,7 @@ export const applyAnimation = (
       delay: _root.animationDelay ? parseFloat(_root.animationDelay) : null,
       easing: _root.animationEasing || null,
       trigger: _root.animationTrigger || null,
+      iterations: _root.animationLoop || null,
     });
     if (className) {
       prop.className = [prop.className, className].filter(Boolean).join(" ");

@@ -21,6 +21,8 @@ import { motionIt } from "../../utils/motion";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
 import { useHorizontalDragScroll } from "../../utils/hooks/useHorizontalDragScroll";
 import { useContainerScrollEffect } from "./useContainerScrollEffect";
+import { useContainerInViewState } from "./useContainerInViewState";
+import type { InViewStateConfig } from "../../utils/state/inViewTracker";
 import { useDragOverDetection } from "../../utils/hooks/useDragOverDetection";
 import { applyContainerOverflowUX } from "./applyContainerOverflowUX";
 import {
@@ -118,6 +120,12 @@ export interface ContainerProps extends BaseSelectorProps {
    */
   computedStateBindings?: ComputedStateBinding[];
   /**
+   * Join an "on screen" group: while this is the most-visible Container sharing
+   * `key`, the registry holds `key = value` plus `key:index` / `:number` /
+   * `:count`. Drives scroll-following rails. See docs/sdk/in-view-state.md.
+   */
+  inViewState?: InViewStateConfig;
+  /**
    * Per-event option overrides forwarded to `addCustomHandlers` →
    * `readHandlerOptions`. Opaque to the Container body (passed straight
    * through), so typed `unknown` rather than re-widening `props`.
@@ -213,6 +221,7 @@ export function renderContainerBody(
 
   const { ref, isDragOver } = useDragOverDetection();
   const { wrapProp: scrollEffectWrap } = useContainerScrollEffect(props, ctx.enabled);
+  const { wrapProp: inViewWrap } = useContainerInViewState(props.inViewState, !ctx.enabled);
 
   useEffect(() => {
     if (ctx.enabled) return;
@@ -446,6 +455,7 @@ export function renderContainerBody(
 
   const { tagName } = pickContainerTag(props.type, prop);
   scrollEffectWrap(prop);
+  inViewWrap(prop);
   if (overflowUxActive) {
     applyContainerOverflowUX(prop, {
       overflow,

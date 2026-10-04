@@ -195,6 +195,7 @@ export function useDesignSystem(isOpen: boolean) {
       darkModeEnabled: palette.darkModeEnabled,
       styleGuide: styleGuide.styles as unknown as Record<string, any>,
       typography: typography.customFonts,
+      animations: rootTheme.animations,
     });
   }, [
     isOpen,
@@ -203,6 +204,7 @@ export function useDesignSystem(isOpen: boolean) {
     palette.darkModeEnabled,
     typography.customFonts,
     styleGuide.styles,
+    rootTheme.animations,
   ]);
 
   // Debounced auto-save

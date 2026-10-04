@@ -1,20 +1,23 @@
 import { useEditor, useNode } from "@craftjs/core";
-import React, { useState } from "react";
-import { cssAnimationPresets, isCSSAnimation } from "../../../../utils/animations/animations";
-import { motionIt } from "@/utils/motion";
-import { applyAnimation } from "../../../../utils/tailwind/tailwind";
-import { TbPlayerPlay, TbRotate, TbTimeline } from "react-icons/tb";
+import {
+  ANIMATION_PARAM_KEYS,
+  EASING_LABELS,
+  cssAnimationPresets,
+  describeSiteAnimationKey,
+  isSiteAnimation,
+} from "../../../../utils/animations/animations";
+import { SITE_ANIMATION_PREFIX } from "../../../../utils/animations/siteAnimations";
+import { TbRotate, TbTimeline } from "react-icons/tb";
 import { ToolbarSegmentedControl } from "../../primitives/ToolbarSegmentedControl";
 import { ToolbarItem } from "../../ToolbarItem";
 import { ToolbarSection } from "../../ToolbarSection";
+import { AnimationPreviewTile } from "./AnimationPreviewTile";
+import { SiteAnimationActions } from "./SiteAnimationActions";
+import { useSiteAnimations } from "./useSiteAnimations";
 
 const EASING_OPTIONS = [
   { value: "", label: "Default" },
-  { value: "easeOut", label: "Ease Out" },
-  { value: "easeIn", label: "Ease In" },
-  { value: "easeInOut", label: "Ease In Out" },
-  { value: "linear", label: "Linear" },
-  { value: "spring", label: "Spring" },
+  ...Object.entries(EASING_LABELS).map(([value, label]) => ({ value, label })),
 ];
 
 const TRIGGER_OPTIONS = [
@@ -22,23 +25,6 @@ const TRIGGER_OPTIONS = [
   { value: "scroll", label: "On Scroll" },
   { value: "load", label: "On Load" },
   { value: "hover", label: "On Hover" },
-];
-
-const CSS_TRIGGER_OPTIONS = [
-  { value: "", label: "Default" },
-  { value: "scroll", label: "On Scroll" },
-  { value: "load", label: "On Load" },
-  { value: "hover", label: "On Hover" },
-];
-
-export const ANIMATION_PARAM_KEYS = [
-  "animationDuration",
-  "animationDelay",
-  "animationEasing",
-  "animationTrigger",
-  "animationLoop",
-  "animationStagger",
-  "animationExit",
 ];
 
 // Group CSS presets by category
@@ -87,11 +73,8 @@ export const AnimationsInput = () => {
 
   const isInScrollTimeline = useParentScrollTimeline();
   const stConfig = props.root?.scrollTimeline;
-
-  // Bumped on each Test click to remount the preview tile so the entrance
-  // animation replays. `key` already remounts on type change; this covers
-  // duration / delay / easing tweaks and "play it again" requests.
-  const [playCount, setPlayCount] = useState(0);
+  const site = useSiteAnimations();
+  const siteAnimations = site.animations;
 
   const currentAnimation = props.root?.animation || "";
   const hasAnimation = !!currentAnimation;
@@ -120,10 +103,24 @@ export const AnimationsInput = () => {
     });
   };
 
+  // A site animation carries its own trigger; it hides/shows controls exactly
+  // like a built-in with the same trigger.
+  const isSite = isCSS && isSiteAnimation(currentAnimation);
+  const siteAnimation = isSite
+    ? siteAnimations.find(a => `${SITE_ANIMATION_PREFIX}${a.key}` === currentAnimation)
+    : undefined;
+  const presetTrigger = isSite
+    ? siteAnimation?.trigger
+    : isCSS
+      ? cssAnimationPresets[currentAnimation]?.trigger
+      : undefined;
+
   // Hover presets don't use @keyframes so easing/trigger don't apply
-  const isHoverPreset = isCSS && cssAnimationPresets[currentAnimation]?.trigger === "hover";
-  const isContinuousPreset =
-    isCSS && cssAnimationPresets[currentAnimation]?.trigger === "continuous";
+  const isHoverPreset = presetTrigger === "hover";
+  const isContinuousPreset = presetTrigger === "continuous";
+  // Built-in entrance presets play once by default; continuous presets and
+  // site animations default to their own repeat count.
+  const repeatDefaultsToOnce = isCSS && !isSite && !isContinuousPreset;
 
   return (
     <>
@@ -184,39 +181,7 @@ export const AnimationsInput = () => {
 
       <>
         {/* Preview stage — always visible. Click the tile to replay. */}
-        <div className="border-base-300 bg-base-200/40 mb-3 flex h-32 items-center justify-center overflow-hidden rounded-xl border">
-          {hasAnimation ? (
-            (() => {
-              const animProps = applyAnimation({}, props);
-              if (animProps.className?.includes("ph-anim-scroll")) {
-                animProps.className =
-                  animProps.className.replace("ph-anim-scroll", "").trim() + " ph-in-view";
-                delete animProps.ref;
-              }
-              return React.createElement(
-                motionIt(props, "div"),
-                { ...animProps, key: `${currentAnimation}-${playCount}` },
-                <button
-                  type="button"
-                  onClick={() => setPlayCount(n => n + 1)}
-                  className="border-base-300 bg-base-100 text-base-content hover:border-primary group flex size-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border shadow-sm transition-colors"
-                  aria-label="Replay animation"
-                >
-                  <TbPlayerPlay
-                    className="text-neutral-content group-hover:text-primary size-4 transition-colors"
-                    aria-hidden
-                  />
-                  <span className="text-[10px] font-medium tracking-wide uppercase">Replay</span>
-                </button>
-              );
-            })()
-          ) : (
-            <div className="text-neutral-content flex flex-col items-center gap-1.5 text-xs">
-              <div className="border-base-300 bg-base-100 size-16 rounded-lg border border-dashed" />
-              <span>Pick an animation to preview</span>
-            </div>
-          )}
-        </div>
+        <AnimationPreviewTile props={props} />
 
         <div className="mb-2">
           <ToolbarSegmentedControl
@@ -244,6 +209,20 @@ export const AnimationsInput = () => {
                 ))}
               </optgroup>
             ))}
+            {(siteAnimations.length > 0 || (isSite && !siteAnimation)) && (
+              <optgroup label="This site">
+                {siteAnimations.map(a => (
+                  <option key={a.key} value={`${SITE_ANIMATION_PREFIX}${a.key}`}>
+                    {a.label}
+                  </option>
+                ))}
+                {isSite && !siteAnimation && (
+                  <option value={currentAnimation}>
+                    {describeSiteAnimationKey(currentAnimation)} (missing)
+                  </option>
+                )}
+              </optgroup>
+            )}
           </ToolbarItem>
         ) : (
           /* ── Framer Motion presets ──────────────────────────────────── */
@@ -273,6 +252,8 @@ export const AnimationsInput = () => {
             </optgroup>
           </ToolbarItem>
         )}
+
+        {isCSS && <SiteAnimationActions site={site} editing={siteAnimation} />}
 
         {hasAnimation && (
           <>
@@ -317,7 +298,7 @@ export const AnimationsInput = () => {
             )}
             {!isHoverPreset && !isContinuousPreset && (
               <ToolbarItem propType="root" propKey="animationTrigger" type="select" label="Trigger">
-                {(isCSS ? CSS_TRIGGER_OPTIONS : TRIGGER_OPTIONS).map(o => (
+                {TRIGGER_OPTIONS.map(o => (
                   <option key={o.value} value={o.value}>
                     {o.label}
                   </option>
@@ -328,7 +309,8 @@ export const AnimationsInput = () => {
             {/* Loop toggle */}
             {!isHoverPreset && (
               <ToolbarItem propType="root" propKey="animationLoop" type="select" label="Repeat">
-                <option value="">Play Once</option>
+                <option value="">{repeatDefaultsToOnce ? "Play once" : "Default"}</option>
+                {!repeatDefaultsToOnce && <option value="once">Play once</option>}
                 <option value="loop">Loop</option>
                 <option value="2">2×</option>
                 <option value="3">3×</option>

@@ -19,7 +19,13 @@ import {
   TbTransitionRight,
   TbWand,
 } from "react-icons/tb";
-import { cssAnimationPresets } from "../../../../../../utils/animations/animations";
+import {
+  ANIMATION_PARAM_KEYS,
+  cssAnimationPresets,
+  describeSiteAnimationKey,
+  isSiteAnimation,
+} from "../../../../../../utils/animations/animations";
+import type { SiteAnimation } from "../../../../../../utils/animations/siteAnimations";
 import type { HideKey } from "../../../types";
 
 // ─── Types ──────────────────────────────────────────────────────────────
@@ -42,6 +48,8 @@ export interface EffectNodeView {
   className: string;
   props: Record<string, any>;
   craftName: string;
+  /** The site's own animations (`theme.animations`), for labelling `site:` keys. */
+  siteAnimations?: SiteAnimation[];
 }
 
 export type SetPropFn = (cb: (p: any) => void, throttleRate?: number) => void;
@@ -178,18 +186,9 @@ export const BACKDROP_PREFIXES = [
 
 // ─── Animation helpers ──────────────────────────────────────────────────
 
-const ANIMATION_PARAM_KEYS = [
-  "animationDuration",
-  "animationDelay",
-  "animationEasing",
-  "animationTrigger",
-  "animationLoop",
-  "animationStagger",
-  "animationExit",
-];
-
-function describeAnimation(key: string, engine: string): string {
+function describeAnimation(key: string, engine: string, siteAnimations?: SiteAnimation[]): string {
   if (!key) return "Animation";
+  if (isSiteAnimation(key)) return describeSiteAnimationKey(key, siteAnimations);
   const preset = (cssAnimationPresets as Record<string, { label?: string }>)[key];
   if (preset?.label) return preset.label;
   return engine === "framer" ? `Framer: ${key}` : key;
@@ -235,11 +234,12 @@ export const EFFECT_TYPES: EffectType[] = [
     hideKey: "animations",
     help: "Entrance / scroll / hover motion presets.",
     isActive: ({ props }) => !!props?.root?.animation,
-    summary: ({ props }) => {
+    summary: view => {
+      const props = view.props;
       const key = (props?.root?.animation as string) || "";
       if (!key) return "";
       const engine = (props?.root?.animationEngine as string) || "css";
-      return describeAnimation(key, engine);
+      return describeAnimation(key, engine, view.siteAnimations);
     },
     applyDefault: setProp => {
       // Default to "cssFadeUp" — sensible, well-known entrance preset.

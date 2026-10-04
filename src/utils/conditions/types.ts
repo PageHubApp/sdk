@@ -90,7 +90,7 @@ export const OPERATORS_BY_TYPE: Record<ConditionType, Operator[]> = {
   auth: ["equals", "not-equals", "exists", "not-exists", "greater-than", "less-than"],
   item: ["exists", "not-exists", "equals", "not-equals", "contains", "greater-than", "less-than"],
   localStorage: ["exists", "not-exists", "equals", "not-equals"],
-  state: ["equals", "not-equals", "exists", "not-exists", "contains"],
+  state: ["equals", "not-equals", "exists", "not-exists", "contains", "greater-than", "less-than"],
 };
 
 /** Human-readable labels for operators */

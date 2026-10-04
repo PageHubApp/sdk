@@ -13,6 +13,8 @@ import { defaultResolver } from "./resolver";
 import { PH_GSAP_CDN } from "./runtime/gsapCdn";
 import { PH_HORIZONTAL_SCROLL_SCRIPT } from "./runtime/horizontalScroll";
 import { PH_SCROLL_OBSERVER_SCRIPT } from "./runtime/intersectionObserver";
+import { getInViewStateScript } from "./runtime/inViewState";
+import { treeUsesInViewState } from "../../utils/state/inViewTracker";
 import { PH_OVERFLOW_SITE_SCRIPT } from "./runtime/overflowUx";
 import { PH_SCROLL_TIMELINE_SCRIPT } from "./runtime/scrollTimeline";
 import {
@@ -319,7 +321,11 @@ export function renderToHTML(
           mobileBreakpoint: rootProps.theme?.breakpoints?.md,
           pageId,
           src: options.runtimeSrc,
-        }) + (ctx.hasChatComposer ? getSiteChatScript() : "")
+        }) +
+        (ctx.hasChatComposer ? getSiteChatScript() : "") +
+        // `inViewState` writes into the runtime's registry, so it rides along
+        // as an extension only on pages that use it.
+        (treeUsesInViewState(nodes) ? getInViewStateScript() : "")
       : "");
 
   // 10. Wrap in document

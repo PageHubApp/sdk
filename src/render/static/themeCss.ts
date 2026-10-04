@@ -1,5 +1,6 @@
 import { toPaletteCSSVarName } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
+import { generateSiteAnimationCSS } from "../../utils/animations/siteAnimations";
 
 export function generateThemeVars(rootProps: Record<string, any>): string {
   const theme = resolveTheme(rootProps);
@@ -48,7 +49,9 @@ export function generateThemeVars(rootProps: Record<string, any>): string {
   // (300×150) when the wrapper has no width constraint.
   const baseUtilities = `.ph-icon-svg{width:1em;height:1em;display:inline-block;vertical-align:-0.125em}.ph-icon-fill{width:100%;height:100%}`;
 
-  return `:root {\n${paletteVars}\n${dsVars}\n}\n${baseUtilities}`;
+  const siteAnimCSS = generateSiteAnimationCSS(theme.animations);
+
+  return `:root {\n${paletteVars}\n${dsVars}\n}\n${baseUtilities}${siteAnimCSS ? `\n${siteAnimCSS}` : ""}`;
 }
 
 /** `:root { … }` from ROOT/Background theme (palette + styleGuide) for static hand-off zips. */

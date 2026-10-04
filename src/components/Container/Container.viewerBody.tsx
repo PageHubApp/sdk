@@ -25,6 +25,7 @@ import { motionIt } from "../../utils/motion";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
 import { useHorizontalDragScroll } from "../../utils/hooks/useHorizontalDragScroll";
 import { useContainerScrollEffect } from "./useContainerScrollEffect";
+import { useContainerInViewState } from "./useContainerInViewState";
 import { applyContainerOverflowUX } from "./applyContainerOverflowUX";
 import { applyContainerActions, pickContainerTag } from "./containerPropHelpers";
 import { replaceVariables } from "../../utils/design/variables";
@@ -105,6 +106,7 @@ export function renderContainerViewerBody(
   const [overflowScrollEl, setOverflowScrollEl] = useState<HTMLElement | null>(null);
 
   const { wrapProp: scrollEffectWrap } = useContainerScrollEffect(props, false);
+  const { wrapProp: inViewWrap } = useContainerInViewState(props.inViewState, true);
 
   useEffect(() => {
     const actions = migrateActions(props);
@@ -241,6 +243,7 @@ export function renderContainerViewerBody(
 
   const { tagName } = pickContainerTag(props.type, prop);
   scrollEffectWrap(prop);
+  inViewWrap(prop);
   if (overflowUxActive) {
     applyContainerOverflowUX(prop, {
       overflow,

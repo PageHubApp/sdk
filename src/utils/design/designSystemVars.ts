@@ -4,6 +4,7 @@ import type { NamedColor } from "../../components/Background/Background.body";
 import { DEFAULT_STYLE_GUIDE } from "../defaults";
 import { autoGenerateContentColors, colorToOklch } from "./contentColor";
 import { sdkLog } from "../logger";
+import { generateSiteAnimationCSS, type SiteAnimation } from "../animations/siteAnimations";
 
 export interface DesignSystemVars {
   palette: NamedColor[];
@@ -19,6 +20,8 @@ export interface DesignSystemVars {
   breakpoints?: Record<string, number>;
   /** Per-token metadata for custom style tokens (see useStyleGuideTokens). */
   styleGuideMeta?: Record<string, any>;
+  /** Site-defined animations, referenced by nodes as `root.animation: "site:<key>"`. */
+  animations?: SiteAnimation[];
 }
 
 /**
@@ -524,8 +527,14 @@ export function generateDesignSystemCSSVariables(
   const baseUtilities = `.ph-icon-svg{width:1em;height:1em;display:inline-block;vertical-align:-0.125em}.ph-icon-fill{width:100%;height:100%}`;
 
   const withUtilities = `${allCSS}\n${baseUtilities}`;
+  const withTypography = typographyClasses
+    ? `${withUtilities}\n${typographyClasses}`
+    : withUtilities;
 
-  return typographyClasses ? `${withUtilities}\n${typographyClasses}` : withUtilities;
+  // Appended unscoped: keyframe names and `.ph-a-*` classes are global, so the
+  // #viewport / :root scope does not apply to them.
+  const siteAnimCSS = generateSiteAnimationCSS(designSystem.animations);
+  return siteAnimCSS ? `${withTypography}\n${siteAnimCSS}` : withTypography;
 }
 
 /**

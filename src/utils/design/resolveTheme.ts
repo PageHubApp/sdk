@@ -1,4 +1,5 @@
 import type { DesignSystemVars } from "./designSystemVars";
+import { sanitizeSiteAnimations } from "../animations/siteAnimations";
 
 /**
  * Resolve theme data from ROOT props.
@@ -16,6 +17,7 @@ export function resolveTheme(props: Record<string, any>): DesignSystemVars {
     styleGuide: t.styleGuide || {},
     typography: t.typography || [],
     breakpoints: t.breakpoints || undefined,
+    animations: sanitizeSiteAnimations(t.animations),
   };
 }
 

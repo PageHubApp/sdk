@@ -363,6 +363,7 @@ export function staticClasses(
       delay: props.root?.animationDelay ? parseFloat(props.root.animationDelay) : null,
       easing: props.root?.animationEasing || null,
       trigger: props.root?.animationTrigger || null,
+      iterations: props.root?.animationLoop || null,
     });
     if (className) {
       collectClasses(className, ctx);
@@ -414,6 +415,7 @@ export function getInlineStyle(props: Record<string, any>): string {
       delay: props.root?.animationDelay ? parseFloat(props.root.animationDelay) : null,
       easing: props.root?.animationEasing || null,
       trigger: props.root?.animationTrigger || null,
+      iterations: props.root?.animationLoop || null,
     });
     if (Object.keys(animStyle).length) {
       // Convert camelCase keys to kebab-case for HTML style attr

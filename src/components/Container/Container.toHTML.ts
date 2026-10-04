@@ -12,6 +12,7 @@ import {
   tag,
   type ToHTMLFn,
 } from "../../utils/staticHtml";
+import { normalizeInViewState } from "../../utils/state/inViewTracker";
 
 export const toHTML: ToHTMLFn = (props, children, ctx) => {
   if (props.type === "component" || props.type === "componentCanvas") return "";
@@ -65,6 +66,10 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
     open: t === "details" && props.open ? "" : undefined,
     "data-tab-group": props.tabGroup || undefined,
   };
+  // `inViewState` — read by the in-view runtime extension, which renderToHTML
+  // emits only when the tree uses the prop (docs/sdk/in-view-state.md).
+  const inView = normalizeInViewState(props.inViewState);
+  if (inView) attrs["data-in-view-state"] = JSON.stringify(inView);
   if (t === "a" && linkHref) {
     attrs.href = linkHref;
     const linkTarget = actionTarget(linkAction);

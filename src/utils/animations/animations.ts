@@ -10,6 +10,16 @@
 // Duration, delay, and easing overrides are applied as inline CSS properties
 // (animation-duration, animation-delay, animation-timing-function) so the
 // user's slider values work without generating extra classes.
+//
+// Site animations (`site:<slug>`, defined in `theme.animations`) resolve to the
+// `ph-a-<slug>` class emitted by `generateSiteAnimationCSS` — see
+// `siteAnimations.ts`.
+
+import {
+  SITE_ANIMATION_PREFIX,
+  siteAnimationClass,
+  type SiteAnimation,
+} from "./siteAnimationConstants";
 
 export interface CSSAnimationPreset {
   animateClass: string;
@@ -223,9 +233,83 @@ export const cssAnimationPresets: Record<string, CSSAnimationPreset> = {
   },
 };
 
-/** Check if an animation key is a CSS preset (starts with "css") */
+/** Per-node animation override keys on `props.root` (cleared together on reset). */
+export const ANIMATION_PARAM_KEYS = [
+  "animationDuration",
+  "animationDelay",
+  "animationEasing",
+  "animationTrigger",
+  "animationLoop",
+  "animationStagger",
+  "animationExit",
+];
+
+/** Named easings offered in the editor → CSS timing functions. */
+export const EASING_MAP: Record<string, string> = {
+  easeOut: "ease-out",
+  easeIn: "ease-in",
+  easeInOut: "ease-in-out",
+  linear: "linear",
+  spring: "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+};
+
+/** Editor labels for the EASING_MAP keys, in picker order. */
+export const EASING_LABELS: Record<keyof typeof EASING_MAP, string> = {
+  easeOut: "Ease out",
+  easeIn: "Ease in",
+  easeInOut: "Ease in and out",
+  linear: "Linear",
+  spring: "Spring",
+};
+
+/** EASING_MAP key → CSS timing function; anything else passes through as CSS. */
+export const toTimingFunction = (easing: string): string => EASING_MAP[easing] || easing;
+
+/** `site:<slug>` — an animation defined in the site's `theme.animations`. */
+export const isSiteAnimation = (key?: string): boolean =>
+  !!key && key.startsWith(SITE_ANIMATION_PREFIX) && key.length > SITE_ANIMATION_PREFIX.length;
+
+/** Built-in preset or site animation. */
 export const isCSSAnimation = (key: string | undefined): boolean =>
-  !!key && key in cssAnimationPresets;
+  !!key && (key in cssAnimationPresets || isSiteAnimation(key));
+
+/**
+ * Display label for an animation key: a site animation's `label` (falling back
+ * to its slug when the theme doesn't define it), a built-in preset's label, or
+ * the key itself.
+ */
+export function describeSiteAnimationKey(
+  key: string,
+  themeAnimations?: Pick<SiteAnimation, "key" | "label">[] | null
+): string {
+  if (!isSiteAnimation(key)) return cssAnimationPresets[key]?.label || key;
+  const slug = key.slice(SITE_ANIMATION_PREFIX.length);
+  const match = Array.isArray(themeAnimations)
+    ? themeAnimations.find(a => a?.key === slug)
+    : undefined;
+  return match?.label || slug;
+}
+
+/**
+ * Built-in preset, or a synthesized one for a `site:` key. Site keys resolve
+ * from the key alone — render helpers never see the theme. They always report
+ * trigger "scroll" (render adds `ph-anim-scroll`); a load/continuous site
+ * animation un-pauses itself via `.ph-a-x.ph-anim-scroll` in the emitted CSS.
+ */
+function resolvePreset(key: string): CSSAnimationPreset | null {
+  const builtin = cssAnimationPresets[key];
+  if (builtin) return builtin;
+  if (!isSiteAnimation(key)) return null;
+  const slug = key.slice(SITE_ANIMATION_PREFIX.length);
+  return { animateClass: siteAnimationClass(slug), trigger: "scroll", label: slug, group: "Entrance" };
+}
+
+/** `root.animationLoop` → `animation-iteration-count` ("loop" | "once" | count). */
+function toIterationCount(iterations: string): string | null {
+  if (iterations === "loop") return "infinite";
+  if (iterations === "once") return "1";
+  return /^\d+(\.\d+)?$/.test(iterations) ? iterations : null;
+}
 
 /** Get the CSS classes + inline style overrides for a CSS animation */
 export function getCSSAnimationProps(
@@ -235,9 +319,10 @@ export function getCSSAnimationProps(
     delay?: number | null;
     easing?: string | null;
     trigger?: string | null;
+    iterations?: string | null;
   }
 ): { className: string; style: Record<string, string> } {
-  const preset = cssAnimationPresets[animationKey];
+  const preset = resolvePreset(animationKey);
   if (!preset) return { className: "", style: {} };
 
   const classes: string[] = [];
@@ -270,14 +355,11 @@ export function getCSSAnimationProps(
       style["animationDelay"] = `${overrides.delay}s`;
     }
     if (overrides?.easing) {
-      const easingMap: Record<string, string> = {
-        easeOut: "ease-out",
-        easeIn: "ease-in",
-        easeInOut: "ease-in-out",
-        linear: "linear",
-        spring: "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-      };
-      style["animationTimingFunction"] = easingMap[overrides.easing] || overrides.easing;
+      style["animationTimingFunction"] = toTimingFunction(overrides.easing);
+    }
+    if (overrides?.iterations) {
+      const count = toIterationCount(overrides.iterations);
+      if (count) style["animationIterationCount"] = count;
     }
 
     // Continuous trigger override: remove scroll pause

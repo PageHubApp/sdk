@@ -9,6 +9,8 @@ export interface RootStyleProps {
   animationDelay?: string;
   animationEasing?: string;
   animationTrigger?: string;
+  /** Repeat: "once" | "loop" | a count ("2", "3"). */
+  animationLoop?: string;
   animationCSSName?: string;
   pattern?: any;
   patternVerticalPosition?: string;
