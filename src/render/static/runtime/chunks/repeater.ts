@@ -110,6 +110,11 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
       const row = buildRow(html, item) as (HTMLElement & { __phHtml?: string }) | null;
       if (!row) continue;
       row.setAttribute("data-item-id", id);
+      // Same rule as Data.toHTML: rows whose actions read the whole item
+      // (add-to-cart, computed bindings) carry it for readItemContext.
+      if (/add-to-cart|data-computed-state-bindings|\{\{\s*item\./.test(html) && item && typeof item === "object") {
+        row.setAttribute("data-item-json", JSON.stringify(item));
+      }
       row.__phHtml = html;
       wrapper.insertBefore(
         row,

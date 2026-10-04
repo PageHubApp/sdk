@@ -79,6 +79,19 @@ export async function submitFormProduction(
 
   let redirectUrl: string | undefined;
 
+  if (
+    props.submissionType === "custom" &&
+    props.action &&
+    String(props.method || "").toUpperCase() === "GET"
+  ) {
+    // GET forms (search, filters) navigate with the fields as the query string,
+    // the way a native GET form does. fetch() rejects a GET request with a body.
+    const qs = new URLSearchParams(formData as Record<string, string>).toString();
+    const sep = props.action.includes("?") ? "&" : "?";
+    window.location.href = props.action + (qs ? sep + qs : "");
+    return {};
+  }
+
   if (props.submissionType === "custom" && props.action) {
     try {
       const res = await fetch(props.action, {

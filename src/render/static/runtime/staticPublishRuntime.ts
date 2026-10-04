@@ -185,7 +185,7 @@ var __phRT = {};
 
 var STATE_ATTRS = [
   'data-state-text','data-state-template','data-state-show-when-truthy','data-state-style-bindings',
-  'data-state-modifiers','data-state-binding','data-visibility-state-key',
+  'data-state-modifiers','data-state-binding','data-visibility-state-key','data-state-src',
   'data-publish-state-keys','data-computed-state-bindings','data-state-inputs',
   'data-state-scope'
 ];

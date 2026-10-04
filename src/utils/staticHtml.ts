@@ -6,6 +6,7 @@
  */
 
 import parse from "style-to-object";
+import { twMerge } from "tailwind-merge";
 import { migrateActions, actionToHref } from "./action";
 import { applyHandlerOptions, readHandlerOptions } from "./actions/handlerCode";
 import type { PageIndex } from "./page/pageManagement";
@@ -587,7 +588,15 @@ export function stateModifiersAttrs(
           .filter(Boolean)
           .join(" ")
       : "";
-    return { conditions: binding?.conditions || [], classes };
+    // Base classes this binding overrides (same twMerge resolution the React
+    // path applies). The runtime removes them while the binding passes, so
+    // e.g. an active tab's `border-primary` isn't beaten by `border-transparent`.
+    const base = typeof props.className === "string" ? props.className : "";
+    const kept = new Set(twMerge(base, classes).split(/\s+/));
+    const remove = classes ? base.split(/\s+/).filter(c => c && !kept.has(c)) : [];
+    return remove.length
+      ? { conditions: binding?.conditions || [], classes, remove: remove.join(" ") }
+      : { conditions: binding?.conditions || [], classes };
   });
   // Filter bindings with no resolved classes (unknown modifier names) so the
   // runtime doesn't iterate dead bindings.

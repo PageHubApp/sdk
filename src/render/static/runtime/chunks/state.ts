@@ -24,6 +24,62 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
     }
   );
 
+  // `{{state.<key>}}` token value. Same split as React's resolveStateVar: the
+  // registry key ends at the first "." after the last ":"; the rest walks into
+  // the value's JSON (e.g. `pdp:x:matching-variant.formatted`).
+  function stateTokenValue(key: string): string {
+    const colon = key.lastIndexOf(":");
+    const dot = key.indexOf(".", colon + 1);
+    const stateKey = dot === -1 ? key : key.slice(0, dot);
+    const entry = _store.entries[stateKey];
+    let v = entry && entry.value != null ? String(entry.value) : "";
+    if (dot !== -1 && v) {
+      let walked: any;
+      try {
+        walked = JSON.parse(v);
+        const parts = key.slice(dot + 1).split(".");
+        for (let pi = 0; pi < parts.length && walked != null; pi++) walked = walked[parts[pi]];
+      } catch (e) {
+        walked = undefined;
+      }
+      v = walked == null ? "" : String(walked);
+    }
+    return v;
+  }
+
+  // Image whose src carries `{{state.<key>}}` (Image.toHTML ships it in
+  // `data-state-src`): swap src as the state changes. An empty result leaves
+  // the server-rendered src in place.
+  Alpine.directive(
+    "state-src",
+    function (
+      el: HTMLElement,
+      _dir: unknown,
+      utils: { effect: (fn: () => void) => void }
+    ) {
+      const tpl = el.getAttribute("data-state-src");
+      if (!tpl) return;
+      const initial = el.getAttribute("src") || "";
+      utils.effect(function () {
+        let empty = false;
+        const next = tpl.replace(/\{\{\s*state\.([^}\s|]+)\s*\}\}/g, function (_m: string, key: string) {
+          const v = stateTokenValue(key);
+          if (!v) empty = true;
+          return v;
+        });
+        const img = el as HTMLImageElement;
+        if (empty || !next) {
+          if (initial && img.getAttribute("src") !== initial) img.setAttribute("src", initial);
+          return;
+        }
+        if (img.getAttribute("src") !== next) {
+          img.removeAttribute("srcset");
+          img.setAttribute("src", next);
+        }
+      });
+    }
+  );
+
   // Text whose HTML carries `{{state.<key>}}` tokens (Text.toHTML ships the
   // HTML in `data-state-template`, tokens blanked in the SSR markup): re-render
   // with each token's current value, HTML-escaped.
@@ -40,8 +96,7 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
         el.innerHTML = tpl.replace(
           /\{\{\s*state\.([^}\s]+)\s*\}\}/g,
           function (_m: string, key: string) {
-            const entry = _store.entries[key];
-            const v = entry && entry.value != null ? String(entry.value) : "";
+            const v = stateTokenValue(key);
             return v
               .replace(/&/g, "&amp;")
               .replace(/</g, "&lt;")
@@ -151,6 +206,11 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
         }
         return [];
       });
+      // Base classes each binding overrides (precomputed at export) — removed
+      // while the binding passes, restored when it stops passing.
+      const removeLists = bindings.map(function (bd: any) {
+        return typeof bd.remove === "string" && bd.remove ? bd.remove.split(/\s+/).filter(Boolean) : [];
+      });
       // Walk conditions once to collect every state-key the directive reads.
       const trackedKeys: string[] = [];
       const seen: Record<string, boolean> = {};
@@ -189,6 +249,10 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
           const cls = classLists[b];
           for (let ci = 0; ci < cls.length; ci++) {
             el.classList.toggle(cls[ci], pass);
+          }
+          const rm = removeLists[b];
+          for (let ri = 0; ri < rm.length; ri++) {
+            el.classList.toggle(rm[ri], !pass);
           }
         }
       });
@@ -324,10 +388,11 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
         return;
       }
       if (!Array.isArray(bindings) || !bindings.length) return;
-      const itemContext = readItemContext(el);
+      // Items-chunk helpers live on __phRT (bare names don't survive chunking).
+      const itemContext = __phRT.readItemContext(el);
       function interp(v: unknown) {
         if (typeof v !== "string" || !v) return v == null ? "" : String(v);
-        return interpolateItem(v, itemContext);
+        return __phRT.interpolateItem(v, itemContext);
       }
       utils.effect(function () {
         for (let i = 0; i < bindings.length; i++) {
@@ -335,7 +400,7 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
           if (!bd || !bd.compute) continue;
           const outKey = interp(bd.key);
           if (!outKey) continue;
-          const nextVal = runComputed(bd, interp as (s: string) => string);
+          const nextVal = __phRT.runComputed(bd, interp as (s: string) => string);
           const cur = _store.entries[outKey];
           if (cur && cur.value === nextVal) continue;
           setState(

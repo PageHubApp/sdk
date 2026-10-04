@@ -28,6 +28,7 @@ import { makeSlotProxy } from "../../utils/data/slotItem";
 import {
   actionsAttr,
   ariaAttrs,
+  escapeAttr,
   getInlineStyle,
   handlerAttrs,
   stateAttrs,
@@ -176,7 +177,12 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
         // Splice it into the first `<tag` we find that doesn't already have
         // `data-item-id`. Falls back to wrapping in a fragment-style div.
         const idStr = String(item?.id ?? i);
-        chunks.push(stampItemId(itemHTML, idStr));
+        // Rows whose actions read the whole item at runtime (add-to-cart needs the
+        // priceId; computed bindings read variantMapJson; chips interpolate) carry
+        // it as `data-item-json` — `data-item-id` alone resolves to `{ id }`.
+        // Other rows skip it to keep page weight down.
+        const needsItem = ITEM_CONTEXT_RE.test(itemHTML) && item && typeof item === "object";
+        chunks.push(stampItemId(itemHTML, idStr, needsItem ? JSON.stringify(item) : undefined));
       }
       childrenHTML = chunks.join("\n");
     } finally {
@@ -298,7 +304,15 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
  * Cheap regex match — children always start with `<tag` because they're
  * produced by `tag(...)` in component toHTMLs. If no match, return unchanged.
  */
-function stampItemId(html: string, itemId: string): string {
+function stampItemId(html: string, itemId: string, itemJson?: string): string {
   if (!html) return html;
-  return html.replace(/^(\s*<[a-z][a-z0-9-]*)\b/i, `$1 data-item-id="${itemId}"`);
+  const json = itemJson ? ` data-item-json="${escapeAttr(itemJson)}"` : "";
+  return html.replace(/^(\s*<[a-z][a-z0-9-]*)\b/i, (_m, open) => `${open} data-item-id="${itemId}"${json}`);
 }
+
+/**
+ * Markup that resolves the full item in the runtime (see `readItemContext`):
+ * add-to-cart, computed bindings, and any action / modifier / attr still
+ * carrying an unresolved `{{item.*}}` template (e.g. option chips' set-state).
+ */
+const ITEM_CONTEXT_RE = /add-to-cart|data-computed-state-bindings|\{\{\s*item\./;

@@ -153,6 +153,13 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
           toggle("loaded", "hidden");
           toggle("fields", "shown");
         };
+        if (t === "custom" && meta && meta.action && String(meta.method || "").toUpperCase() === "GET") {
+          // GET forms (search, filters) navigate with the fields as the query
+          // string, the way a native GET form does. fetch() rejects a GET body.
+          const qs = new URLSearchParams(data as Record<string, string>).toString();
+          window.location.href = meta.action + (qs ? (meta.action.indexOf("?") === -1 ? "?" : "&") + qs : "");
+          return;
+        }
         if (t === "custom" && meta && meta.action) {
           const field = meta.successUrlField;
           fetch(meta.action, {

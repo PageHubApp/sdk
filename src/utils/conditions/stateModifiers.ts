@@ -9,6 +9,7 @@
  * className composer driven by the conditions evaluator.
  */
 
+import { twMerge } from "tailwind-merge";
 import type { ComponentModifier } from "../../define/types";
 import { BUILTIN_STATE_MODIFIERS } from "./stateBuiltinModifiers";
 import { evaluateConditionGroups } from "./evaluate";
@@ -58,7 +59,10 @@ export function applyStateModifiers(
   const byName = new Map<string, ComponentModifier>();
   for (const m of available) byName.set(m.name, m);
 
-  const out: string[] = className ? [className] : [];
+  // Modifier classes go through twMerge so they replace the base's conflicting
+  // utilities (e.g. an active tab's `border-primary` over `border-transparent`).
+  // Plain appending left both, and whichever sorted later in the CSS won.
+  const out: string[] = [];
   for (const binding of bindings) {
     const result = evaluateConditionGroups(binding.conditions, ctx);
     if (result !== true) continue;
@@ -71,5 +75,5 @@ export function applyStateModifiers(
       }
     }
   }
-  return out.join(" ");
+  return out.length ? twMerge(className, out.join(" ")) : className;
 }
