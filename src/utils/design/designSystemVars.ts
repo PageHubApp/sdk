@@ -17,6 +17,8 @@ export interface DesignSystemVars {
    * NOT emitted as runtime CSS vars (CSS vars in @media are not supported).
    */
   breakpoints?: Record<string, number>;
+  /** Per-token metadata for custom style tokens (see useStyleGuideTokens). */
+  styleGuideMeta?: Record<string, any>;
 }
 
 /**

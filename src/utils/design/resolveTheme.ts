@@ -7,6 +7,9 @@ import type { DesignSystemVars } from "./designSystemVars";
 export function resolveTheme(props: Record<string, any>): DesignSystemVars {
   const t = props.theme || {};
   return {
+    // Keep keys this function doesn't normalise (styleGuideMeta, …) so
+    // `writeTheme({ ...resolveTheme(p), x })` never deletes them.
+    ...t,
     palette: t.palette || [],
     darkPalette: t.darkPalette || undefined,
     darkModeEnabled: t.darkModeEnabled || false,

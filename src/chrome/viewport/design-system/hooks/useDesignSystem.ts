@@ -114,8 +114,13 @@ export function useDesignSystem(isOpen: boolean) {
       lastSavedData.current = {
         palette: rootTheme.palette as PaletteColor[],
         darkPalette: rootTheme.darkPalette as PaletteColor[],
-        darkModeEnabled: !!rootTheme.darkModeEnabled,
-        styleGuide: loaded as unknown as StyleGuideState,
+        // The panel's switch, as just loaded — the save compares against it to
+        // tell a real toggle from a load.
+        darkModeEnabled: !!(rootTheme.darkPalette && rootTheme.darkPalette.length) ||
+          !!rootTheme.darkModeEnabled,
+        // Compare against the full stored styleGuide (custom tokens included),
+        // matching what the save writes back.
+        styleGuide: { ...sg, ...loaded } as unknown as StyleGuideState,
         typography: rootTheme.typography as CustomFont[],
       };
     } catch (e) {
@@ -209,11 +214,24 @@ export function useDesignSystem(isOpen: boolean) {
     saveTimeoutRef.current = setTimeout(() => {
       isSaving.current = true;
       try {
+        // The panel only edits palette, dark mode, the built-in style keys and
+        // typography. Everything else on the theme (custom style tokens,
+        // styleGuideMeta, breakpoints, …) is carried over untouched.
+        const styles = styleGuide.styles as unknown as Record<string, any>;
+        let mergedStyleGuide: Record<string, any> = styles;
+        // `theme.darkModeEnabled` is the published opt-in. The panel's switch
+        // is on whenever a dark palette exists, so it only overwrites the
+        // opt-in when the author actually flipped it.
+        const darkToggled = palette.darkModeEnabled !== lastSavedData.current?.darkModeEnabled;
         actions.setProp(ROOT_NODE, (props: Record<string, unknown>) => {
+          const current = resolveTheme(props as Record<string, any>);
+          mergedStyleGuide = { ...current.styleGuide, ...styles };
           writeTheme(props as Record<string, any>, {
+            ...current,
             palette: palette.palettes,
             darkPalette: palette.darkModeEnabled ? palette.darkPalettes : undefined,
-            styleGuide: styleGuide.styles as unknown as Record<string, any>,
+            darkModeEnabled: darkToggled ? palette.darkModeEnabled : current.darkModeEnabled,
+            styleGuide: mergedStyleGuide,
             typography: typography.customFonts,
           });
         });
@@ -221,7 +239,7 @@ export function useDesignSystem(isOpen: boolean) {
           palette: palette.palettes,
           darkPalette: palette.darkModeEnabled ? palette.darkPalettes : undefined,
           darkModeEnabled: palette.darkModeEnabled,
-          styleGuide: styleGuide.styles,
+          styleGuide: mergedStyleGuide as unknown as StyleGuideState,
           typography: typography.customFonts,
         };
       } catch (e) {
