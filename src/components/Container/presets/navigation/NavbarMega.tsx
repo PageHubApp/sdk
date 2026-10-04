@@ -52,7 +52,8 @@ export function buildNavbarMegaChildren() {
           is={Text}
           custom={{ displayName: "Wordmark" }}
           tagName="span"
-          text='<span class="text-lg font-bold font-heading">Brand</span>'
+          className="text-lg font-bold font-heading"
+          text="Brand"
           canDelete={true}
           canEditName={true}
         />
@@ -154,7 +155,8 @@ export function buildNavbarMegaChildren() {
               is={Text}
               custom={{ displayName: "Heading" }}
               tagName="h4"
-              text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Platform</h4>'
+              className="text-sm font-semibold uppercase tracking-wide text-base-content/60"
+              text="Platform"
               canDelete={true}
               canEditName={true}
             />
@@ -191,7 +193,8 @@ export function buildNavbarMegaChildren() {
               is={Text}
               custom={{ displayName: "Heading" }}
               tagName="h4"
-              text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Solutions</h4>'
+              className="text-sm font-semibold uppercase tracking-wide text-base-content/60"
+              text="Solutions"
               canDelete={true}
               canEditName={true}
             />
@@ -228,7 +231,8 @@ export function buildNavbarMegaChildren() {
               is={Text}
               custom={{ displayName: "Heading" }}
               tagName="h4"
-              text='<h4 class="text-sm font-semibold uppercase tracking-wide text-base-content/60">Resources</h4>'
+              className="text-sm font-semibold uppercase tracking-wide text-base-content/60"
+              text="Resources"
               canDelete={true}
               canEditName={true}
             />

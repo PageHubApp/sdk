@@ -146,7 +146,9 @@ export function applyContainerActions(prop: any, ctx: ApplyActionsCtx): ApplyAct
     prop.action = typeof props.action === "string" ? props.action : "";
     prop.method = props.method || "POST";
     prop.onSubmit = props.onSubmit;
-    prop.target = props.target || "iframe";
+    // Plain native form: submits in the same window unless a target is set.
+    // (The hidden `iframe` frame only exists inside the Form component.)
+    if (props.target) prop.target = props.target;
   }
 
   return { resolvedUrl: resolvedUrl as any, firstLink };

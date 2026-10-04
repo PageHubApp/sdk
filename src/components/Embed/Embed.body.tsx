@@ -85,7 +85,7 @@ export function generateEmbedCode(service: EmbedService, url: string): string | 
     }
     case "cal": {
       const slug = trimmed.replace(/^https?:\/\/(cal\.com\/)?/, "");
-      return `<div id="cal-embed" style="width:100%;height:700px;overflow:auto;"></div>\n<script type="text/javascript">\n(function(C,A,L){let p=function(a,ar){a.q.push(ar)};let d=C.document;C.Cal=C.Cal||function(){let cal=C.Cal;if(!cal.loaded){cal.ns={};cal.q=cal.q||[];d.head.appendChild(d.createElement("script")).src=A;cal.loaded=true;}if(ar[0]==="init"){cal.ns[ar[1]]=cal.ns[ar[1]]||{q:[]};return void p(cal.ns[ar[1]],ar);}p(cal,ar);};})(window,"https://app.cal.com/embed/embed.js");\nCal("init",{origin:"https://cal.com"});\nCal("inline",{elementOrSelector:"#cal-embed",calLink:"${slug}",layout:"month_view"});\n</script>`;
+      return `<div id="cal-embed" style="width:100%;height:700px;overflow:auto;"></div>\n<script type="text/javascript">\n(function(C,A,L){let p=function(a,ar){a.q.push(ar)};let d=C.document;C.Cal=C.Cal||function(){let cal=C.Cal;let ar=arguments;if(!cal.loaded){cal.ns={};cal.q=cal.q||[];d.head.appendChild(d.createElement("script")).src=A;cal.loaded=true;}if(ar[0]==="init"){cal.ns[ar[1]]=cal.ns[ar[1]]||{q:[]};return void p(cal.ns[ar[1]],ar);}p(cal,ar);};})(window,"https://app.cal.com/embed/embed.js");\nCal("init",{origin:"https://cal.com"});\nCal("inline",{elementOrSelector:"#cal-embed",calLink:"${slug}",layout:"month_view"});\n</script>`;
     }
     case "stripe":
       // Stripe buy buttons are paste-in code, pass through

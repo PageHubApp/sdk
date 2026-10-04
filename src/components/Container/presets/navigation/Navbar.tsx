@@ -49,7 +49,8 @@ export function buildNavbarChildren() {
           is={Text}
           custom={{ displayName: "Wordmark" }}
           tagName="span"
-          text='<span class="text-lg font-bold font-heading">Brand</span>'
+          className="text-lg font-bold font-heading"
+          text="Brand"
           canDelete={true}
           canEditName={true}
         />

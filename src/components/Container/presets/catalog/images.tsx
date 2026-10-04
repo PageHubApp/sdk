@@ -51,8 +51,7 @@ export const imagePresets: ComponentPreset[] = [
     icon: TbInfinity,
     category: "Images",
     props: {
-      className: "flex w-full overflow-hidden hover:[animation-play-state:paused]",
-      root: { animation: "cssMarquee" },
+      className: "w-full overflow-hidden",
     },
     children: buildMarqueeChildren,
   },

@@ -58,14 +58,17 @@ export function buildModalChildren() {
           is={Text}
           custom={{ displayName: "Title" }}
           tagName="h3"
-          text='<h3 class="text-xl font-bold font-heading">Modal Title</h3>'
+          className="text-xl font-bold font-heading"
+          text="Modal Title"
           canDelete={true}
           canEditName={true}
         />
         <Element
           is={Text}
           custom={{ displayName: "Body" }}
-          text='<p class="text-base-content/80">Your modal content goes here.</p>'
+          tagName="p"
+          className="text-base-content/80"
+          text="Your modal content goes here."
           canDelete={true}
           canEditName={true}
         />
@@ -249,7 +252,9 @@ export function buildAccordionItem(opts: {
         <Element
           is={Text}
           custom={{ displayName: "Title" }}
-          text={`<p class="font-medium">${question}</p>`}
+          tagName="p"
+          className="font-medium"
+          text={question}
           canDelete={true}
           canEditName={true}
         />

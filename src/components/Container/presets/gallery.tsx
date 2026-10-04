@@ -26,20 +26,49 @@ export function buildSimpleImageChildren() {
 }
 
 export function buildMarqueeChildren() {
-  // Marquee animates 0 → -50%, so duplicated children with `gap-X` land half a
-  // gap off → visible jump. Use `mr-*` on each child instead. The CSS
-  // animation system (cssMarquee preset) handles the keyframe.
-  return [0, 1, 2, 3, 4, 5].map(i => (
+  // cssMarquee animates the track 0 → -50% of its own width. The track holds
+  // two identical groups, each at least a screen wide, so -50% lands exactly
+  // on the second copy: no gap at the end and no jump on loop. Edits to one
+  // group must be mirrored in the other; the repeat is aria-hidden.
+  const group = (name: string, hidden: boolean) => (
     <Element
-      key={i}
-      is={Image}
-      custom={{ displayName: `Image ${i + 1}` }}
-      alt={`Image ${i + 1}`}
-      className="mr-space-md rounded-box h-24 w-40 shrink-0 object-cover"
-      canDelete={true}
+      key={name}
+      canvas
+      is={Container}
+      custom={{ displayName: name }}
+      className="flex min-w-[100vw] shrink-0 items-center justify-around"
+      attrs={hidden ? { "aria-hidden": "true" } : undefined}
+      canDelete={false}
       canEditName={true}
-    />
-  ));
+    >
+      {[0, 1, 2, 3, 4, 5].map(i => (
+        <Element
+          key={i}
+          is={Image}
+          custom={{ displayName: `Image ${i + 1}` }}
+          alt={`Image ${i + 1}`}
+          className="mx-space-sm rounded-box h-24 w-40 shrink-0 object-cover"
+          canDelete={true}
+          canEditName={true}
+        />
+      ))}
+    </Element>
+  );
+  return [
+    <Element
+      key="track"
+      canvas
+      is={Container}
+      custom={{ displayName: "Track" }}
+      className="flex w-max hover:[animation-play-state:paused]"
+      root={{ animation: "cssMarquee" }}
+      canDelete={false}
+      canEditName={true}
+    >
+      {group("Images", false)}
+      {group("Images (repeat)", true)}
+    </Element>,
+  ];
 }
 
 export function buildCarouselChildren(opts: { hero: boolean }) {
