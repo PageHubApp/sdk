@@ -67,6 +67,37 @@ export function matchPathPattern(
   return params;
 }
 
+const LITERAL_SEGMENT = /^[A-Za-z0-9._~-]+$/;
+const PARAM_SEGMENT = /^:[A-Za-z_][A-Za-z0-9_]*$/;
+
+/**
+ * Check a `pathPattern` an author typed. Returns a message for the author, or
+ * null when it's valid. Empty means "no pattern" and is valid.
+ *
+ * The pattern describes the path AFTER the page's own URL segment: a page at
+ * `/product` with `:handle` serves `/product/classic-tee`.
+ */
+export function validatePathPattern(pattern: string | null | undefined): string | null {
+  const p = (pattern ?? "").trim();
+  if (!p) return null;
+  if (p.startsWith("/")) return "Leave off the leading slash — start with the first part, like :handle.";
+  if (/\s/.test(p)) return "Remove the spaces. Use - or _ inside a part instead.";
+  if (p.endsWith("/") || p.includes("//")) return "Remove the empty part — each / needs text on both sides.";
+  const seen = new Set<string>();
+  for (const seg of p.split("/")) {
+    if (seg.startsWith(":")) {
+      if (!PARAM_SEGMENT.test(seg)) {
+        return `"${seg}" isn't a valid name. After the colon use letters, numbers or _, starting with a letter.`;
+      }
+      if (seen.has(seg)) return `"${seg}" is used twice. Give each part its own name.`;
+      seen.add(seg);
+    } else if (!LITERAL_SEGMENT.test(seg)) {
+      return `"${seg}" has characters a URL can't hold. Use letters, numbers, -, _ or .`;
+    }
+  }
+  return null;
+}
+
 /** First page node with a non-empty `pathPattern` in assembled Craft JSON. */
 export function findPagePathPattern(nodes: Record<string, any> | null | undefined): string | null {
   if (!nodes) return null;

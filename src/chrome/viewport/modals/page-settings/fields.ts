@@ -33,6 +33,9 @@ export interface PageSettingsFieldDef {
 export const PAGE_SETTINGS_FIELDS: readonly PageSettingsFieldDef[] = [
   // Basic
   { key: "pageSlug", defaultValue: "" },
+  // Path after the page slug, e.g. `:handle` → /product/classic-tee. Validate
+  // with `validatePathPattern` (utils/pathPatternParams).
+  { key: "pathPattern", defaultValue: "" },
   { key: "pageImage", defaultValue: "" },
   // SEO — nested under seo.* on the node
   { key: "pageTitle", nodePath: "seo.title", defaultValue: "" },
