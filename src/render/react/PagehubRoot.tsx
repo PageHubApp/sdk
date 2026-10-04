@@ -17,12 +17,22 @@ import {
 import { InWalkerProvider } from "../../utils/runtimeMode";
 import { EditorStoreProvider } from "../../core/store";
 import type { PageIndex } from "../../utils/page/pageManagement";
+import { AuthStateProvider } from "../../utils/conditions/authState";
+import type { AuthState } from "../../utils/design/variables";
 
 export interface PagehubRootProps {
   rootProps: Record<string, any>;
   pageMedia?: any[] | null;
   pageIndex?: PageIndex;
   callbacks?: UiCallbacks;
+  /**
+   * The visitor's auth for THIS request (e.g. read from an HttpOnly cookie in
+   * getServerSideProps). `auth` conditions evaluate against it on the server
+   * and during hydration, so both sides render the same tree. Omit / `null`
+   * when unknown (ISR): those conditions stay indeterminate until the client
+   * calls `setAuthState`.
+   */
+  auth?: AuthState | null;
   children: React.ReactNode;
 }
 
@@ -31,6 +41,7 @@ export function PagehubRoot({
   pageMedia,
   pageIndex,
   callbacks,
+  auth,
   children,
 }: PagehubRootProps) {
   const tree = React.useMemo<TreeRootCtx>(
@@ -46,7 +57,9 @@ export function PagehubRoot({
     <InWalkerProvider value={true}>
       <EditorStoreProvider initialPreview={true}>
         <TreeRootProvider value={tree}>
-          <UiCallbacksProvider value={callbacks ?? null}>{children}</UiCallbacksProvider>
+          <UiCallbacksProvider value={callbacks ?? null}>
+            <AuthStateProvider value={auth}>{children}</AuthStateProvider>
+          </UiCallbacksProvider>
         </TreeRootProvider>
       </EditorStoreProvider>
     </InWalkerProvider>

@@ -31,12 +31,16 @@ import { applyContainerActions, pickContainerTag } from "./containerPropHelpers"
 import { replaceVariables } from "../../utils/design/variables";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { applyShowHideOverride, useShowHideVersion } from "../../utils/state/showHideStore";
-import { applyStateModifiers } from "../../utils/conditions/stateModifiers";
+import {
+  applyStateModifiers,
+  stateModifiersReadAuth,
+} from "../../utils/conditions/stateModifiers";
 import {
   applyComputedStateBindings,
   computeBindingsSnapshot,
 } from "../../utils/conditions/computedState";
 import { buildClientContext } from "../../utils/conditions/context";
+import { useAuthState } from "../../utils/conditions/authState";
 import { useItemContext } from "../../utils/itemContext";
 import { applyAttrs } from "../../utils/applyAttrs";
 import { useAnchors, resolveAnchors } from "../../utils/anchors/anchorContext";
@@ -75,6 +79,7 @@ export function renderContainerViewerBody(
   const anchors = useAnchors();
   useRuntimeVarsVersion();
   useShowHideVersion();
+  const modifierAuth = useAuthState(stateModifiersReadAuth(props.stateModifiers));
 
   const isGsaponHorizontalStrip = props.scrollEffect === "horizontal-scroll";
   const overflow: OverflowProps = props.overflow ?? {};
@@ -149,7 +154,7 @@ export function renderContainerViewerBody(
     className = applyStateModifiers(
       className,
       props.stateModifiers,
-      buildClientContext(ctx.rootProps, parentItem, anchors),
+      buildClientContext(ctx.rootProps, parentItem, anchors, modifierAuth),
       "Container",
       ctx.rootProps
     );

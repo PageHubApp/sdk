@@ -6,7 +6,11 @@ import { TbPointer } from "../_emptyHintIcons";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { addCustomHandlers } from "../../utils/actions/customHandlers";
 import { useShowHideVersion } from "../../utils/state/showHideStore";
-import { applyStateModifiers } from "../../utils/conditions/stateModifiers";
+import {
+  applyStateModifiers,
+  stateModifiersReadAuth,
+} from "../../utils/conditions/stateModifiers";
+import { useAuthState } from "../../utils/conditions/authState";
 import { buildClientContext } from "../../utils/conditions/context";
 import { useItemContext } from "../../utils/itemContext";
 import { applyAttrs } from "../../utils/applyAttrs";
@@ -71,13 +75,14 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
 
   // Subscribe to global state changes so author bindings rerender on state writes.
   useShowHideVersion();
+  const modifierAuth = useAuthState(stateModifiersReadAuth(props.stateModifiers));
 
   let baseClassName = props.className || "";
   if (Array.isArray(props.stateModifiers) && props.stateModifiers.length > 0) {
     baseClassName = applyStateModifiers(
       baseClassName,
       props.stateModifiers,
-      buildClientContext(ctx.rootProps, itemContext, anchors),
+      buildClientContext(ctx.rootProps, itemContext, anchors, modifierAuth),
       "Button",
       ctx.rootProps
     );

@@ -17,10 +17,15 @@
  */
 import React from "react";
 import { ItemProvider, useItemContext } from "../../utils/itemContext";
-import { evaluateConditionGroups, hasStateCondition } from "../../utils/conditions/evaluate";
+import {
+  evaluateConditionGroups,
+  hasConditionType,
+  hasStateCondition,
+} from "../../utils/conditions/evaluate";
+import { useAuthState } from "../../utils/conditions/authState";
 import { useGlobalStateTick } from "../../utils/state/stateRegistry";
 import { buildClientContext } from "../../utils/conditions/context";
-import { getConnectorData } from "../../utils/design/variables";
+import { getConnectorData, type AuthState } from "../../utils/design/variables";
 import type { ConditionGroup } from "../../utils/conditions/types";
 import { WalkerNodeProvider, useTreeRoot, type WalkerNodeCtx } from "./contexts";
 import { partitionDataChildIds } from "../../utils/data/emptySlot";
@@ -63,10 +68,16 @@ interface NodeRendererProps {
   parentClassName?: string;
 }
 
+interface NodeRendererBodyProps extends NodeRendererProps {
+  /** Render-time auth from `useAuthState`; only auth-gated nodes read it. */
+  auth?: AuthState | null;
+}
+
 function evalNodeVisibility(
   node: SerializedNode,
   rootProps: Record<string, any>,
-  itemContext: any
+  itemContext: any,
+  auth: AuthState | null
 ): boolean {
   const conditionGroups = (node.props.conditionGroups || null) as ConditionGroup[] | null;
   if (!conditionGroups || conditionGroups.length === 0) return true;
@@ -75,7 +86,7 @@ function evalNodeVisibility(
   // accurate. The walker's job here is to skip nodes whose server-resolvable
   // conditions are definitively false.
   const ctx = {
-    ...buildClientContext(rootProps, itemContext),
+    ...buildClientContext(rootProps, itemContext, undefined, auth),
     connectorData: getConnectorData(),
   };
   const result = evaluateConditionGroups(conditionGroups, ctx);
@@ -83,8 +94,9 @@ function evalNodeVisibility(
 }
 
 function NodeRenderer(props: NodeRendererProps) {
-  const node = props.nodes[props.id];
-  if (hasStateCondition(node?.props?.conditionGroups)) return <StateGatedNodeRenderer {...props} />;
+  const groups = props.nodes[props.id]?.props?.conditionGroups;
+  if (hasStateCondition(groups)) return <StateGatedNodeRenderer {...props} />;
+  if (hasConditionType(groups, "auth")) return <AuthGatedNodeRenderer {...props} />;
   return <NodeRendererBody {...props} />;
 }
 
@@ -93,10 +105,18 @@ function NodeRenderer(props: NodeRendererProps) {
  *  state-gated nodes subscribe, keeping the tick off the rest of the tree. */
 function StateGatedNodeRenderer(props: NodeRendererProps) {
   useGlobalStateTick();
-  return <NodeRendererBody {...props} />;
+  const auth = useAuthState(hasConditionType(props.nodes[props.id]?.props?.conditionGroups, "auth"));
+  return <NodeRendererBody {...props} auth={auth} />;
 }
 
-function NodeRendererBody({ id, nodes, resolver, parentClassName }: NodeRendererProps) {
+/** Evaluates `auth` conditions against the request's auth during SSR and
+ *  hydration, then the live store — never the module global mid-hydration. */
+function AuthGatedNodeRenderer(props: NodeRendererProps) {
+  const auth = useAuthState();
+  return <NodeRendererBody {...props} auth={auth} />;
+}
+
+function NodeRendererBody({ id, nodes, resolver, parentClassName, auth = null }: NodeRendererBodyProps) {
   const node = nodes[id];
   const tree = useTreeRoot();
   // Item context flows in via DataRender's ItemProvider for repeater children.
@@ -112,7 +132,7 @@ function NodeRendererBody({ id, nodes, resolver, parentClassName }: NodeRenderer
   }
   if (node.hidden) return null;
 
-  const visible = evalNodeVisibility(node, tree?.rootProps ?? {}, itemContext);
+  const visible = evalNodeVisibility(node, tree?.rootProps ?? {}, itemContext, auth);
   if (!visible) return null;
 
   const Component = resolver[node.type.resolvedName];

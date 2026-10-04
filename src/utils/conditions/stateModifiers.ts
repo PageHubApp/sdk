@@ -12,13 +12,22 @@
 import { twMerge } from "tailwind-merge";
 import type { ComponentModifier } from "../../define/types";
 import { BUILTIN_STATE_MODIFIERS } from "./stateBuiltinModifiers";
-import { evaluateConditionGroups } from "./evaluate";
+import { evaluateConditionGroups, hasConditionType } from "./evaluate";
 import type { ConditionContext, ConditionGroup } from "./types";
 
 export interface StateBinding {
   conditions: ConditionGroup[];
   /** Modifier names — looked up against the node's available modifiers. */
   modifiers: string[];
+}
+
+/** True when any binding has an `auth` condition — callers then read render
+ *  auth via `useAuthState(true)` so SSR and hydration agree. */
+export function stateModifiersReadAuth(bindings: unknown): boolean {
+  return (
+    Array.isArray(bindings) &&
+    bindings.some(b => hasConditionType((b as StateBinding | null)?.conditions, "auth"))
+  );
 }
 
 /** Resolve a modifier to its actual class list (mirrors useModifiers.ts:64). */

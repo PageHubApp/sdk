@@ -5,6 +5,7 @@ import type {
   ConditionContext,
   ConditionGroup,
   ConditionLogic,
+  ConditionType,
   Operator,
 } from "./types";
 
@@ -200,8 +201,16 @@ function evaluateConditions(
  * the walkers must keep such nodes reactive instead of dropping or pinning them.
  */
 export function hasStateCondition(groups: ConditionGroup[] | null | undefined): boolean {
+  return hasConditionType(groups, "state");
+}
+
+/** True when any group contains a condition of `type`. */
+export function hasConditionType(
+  groups: ConditionGroup[] | null | undefined,
+  type: ConditionType
+): boolean {
   if (!Array.isArray(groups)) return false;
-  return groups.some(g => Array.isArray(g?.conditions) && g.conditions.some(c => c?.type === "state"));
+  return groups.some(g => Array.isArray(g?.conditions) && g.conditions.some(c => c?.type === type));
 }
 
 /**

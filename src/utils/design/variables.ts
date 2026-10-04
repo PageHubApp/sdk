@@ -80,10 +80,30 @@ export interface AuthState {
   customer?: AuthCustomer | null;
 }
 
+// Client-side live auth. Never written during SSR (the app sets it from a
+// layout effect / token verify), so it can't leak between server requests.
+// Render-time reads go through `useAuthState()`, which falls back to the
+// per-request `AuthStateProvider` value on the server and during hydration.
 let _authState: AuthState | null = null;
+const _authListeners = new Set<() => void>();
+
+/** Subscribe to `setAuthState` writes. Returns an unsubscribe fn. */
+export function subscribeAuthState(fn: () => void): () => void {
+  _authListeners.add(fn);
+  return () => {
+    _authListeners.delete(fn);
+  };
+}
 
 export function setAuthState(state: AuthState | null) {
   _authState = state;
+  _authListeners.forEach(fn => {
+    try {
+      fn();
+    } catch (e) {
+      sdkLog.error("Auth state listener error:", e);
+    }
+  });
   // Mirror status into the central state registry so any subscriber (state
   // condition, stateModifiers, useGlobalStateTick) re-evaluates without a
   // dedicated CustomEvent. The dedicated `auth.*` variable interpolation +
