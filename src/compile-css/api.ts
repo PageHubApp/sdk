@@ -247,7 +247,7 @@ export async function compileTailwindCSS(
     if (trimmed.startsWith("{")) {
       nodes = JSON.parse(trimmed);
     } else {
-      const lz = await import("lzutf8");
+      const lz = (await import("lzutf8")).default;
       const decompressed = lz.decompress(lz.decodeBase64(pageData));
       nodes = JSON.parse(decompressed);
     }
