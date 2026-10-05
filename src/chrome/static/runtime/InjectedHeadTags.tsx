@@ -16,6 +16,24 @@ import { parseHeadHTML, hashTag, type HeadTag } from "../../../utils/parseHeadHT
 
 interface Props {
   html: string | undefined | null;
+  /**
+   * Editor mode: only `<style>` and stylesheet `<link>`s. The editor runs
+   * signed in as whoever is editing, so a site's scripts (and meta refreshes)
+   * never run there — its styles still do, so the canvas looks right.
+   */
+  stylesOnly?: boolean;
+}
+
+function isStyleTag(t: HeadTag): boolean {
+  if (t.tag === "style") return true;
+  return t.tag === "link" && String(t.attrs?.rel || "").toLowerCase().split(/\s+/).includes("stylesheet");
+}
+
+function useInjectedTags(html: Props["html"], stylesOnly: boolean | undefined): HeadTag[] {
+  return useMemo(() => {
+    const tags = parseHeadHTML(html);
+    return stylesOnly ? tags.filter(isStyleTag) : tags;
+  }, [html, stylesOnly]);
 }
 
 // htmlparser2 reports boolean attributes (async, defer, nomodule) as empty
@@ -61,8 +79,8 @@ function renderScript(t: HeadTag, location: "head" | "body") {
   return <script key={key} {...reactAttrs} dangerouslySetInnerHTML={{ __html: deferred }} />;
 }
 
-export function InjectedHeadTags({ html }: Props) {
-  const tags = useMemo(() => parseHeadHTML(html), [html]);
+export function InjectedHeadTags({ html, stylesOnly }: Props) {
+  const tags = useInjectedTags(html, stylesOnly);
   if (!tags.length) return null;
 
   const scriptTags = tags.filter(t => t.tag === "script");
@@ -94,8 +112,8 @@ export function InjectedHeadTags({ html }: Props) {
   );
 }
 
-export function InjectedBodyTags({ html }: Props) {
-  const tags = useMemo(() => parseHeadHTML(html), [html]);
+export function InjectedBodyTags({ html, stylesOnly }: Props) {
+  const tags = useInjectedTags(html, stylesOnly);
   if (!tags.length) return null;
   return (
     <>

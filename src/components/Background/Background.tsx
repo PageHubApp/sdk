@@ -169,7 +169,7 @@ export function Background({
             dangerouslySetInnerHTML={{ __html: RUNTIME_VARS_BOOTSTRAP }}
           />
         ) : null}
-        {isRoot && props.inject?.head ? <InjectedHeadTags html={props.inject.head} /> : null}
+        {isRoot && props.inject?.head ? <InjectedHeadTags html={props.inject.head} stylesOnly={enabled} /> : null}
         <RenderPattern
           props={props}
           settings={settings}
@@ -189,7 +189,7 @@ export function Background({
               />
             ) : null)}
         </RenderPattern>
-        {isRoot && props.inject?.footer ? <InjectedBodyTags html={props.inject.footer} /> : null}
+        {isRoot && props.inject?.footer ? <InjectedBodyTags html={props.inject.footer} stylesOnly={enabled} /> : null}
       </RuntimeVarsProvider>
     </PaletteProvider>
   );

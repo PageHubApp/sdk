@@ -13,6 +13,7 @@
  * PropertyInputProps.
  */
 import { useEditor, useNode } from "@craftjs/core";
+import { editorSafeHtml } from "../../../../utils/editorSafeHtml";
 import { lazy, Suspense, useState } from "react";
 import { TbAdjustmentsHorizontal, TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
@@ -107,7 +108,7 @@ export default function BackgroundImageInputPopover({ def }: PropertyInputProps)
             svgContent ? (
               <span
                 className="text-base-content absolute inset-0 flex items-center justify-center [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
-                dangerouslySetInnerHTML={{ __html: svgContent }}
+                dangerouslySetInnerHTML={{ __html: editorSafeHtml(svgContent) }}
                 aria-hidden
               />
             ) : (

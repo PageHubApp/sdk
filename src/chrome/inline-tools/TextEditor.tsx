@@ -5,6 +5,7 @@
  */
 import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { TbTypography } from "react-icons/tb";
+import { editorSafeHtml } from "../../utils/editorSafeHtml";
 import { useEditor } from "@craftjs/core";
 import { EditorContent, useEditor as useTiptapEditor } from "@tiptap/react";
 import type { Editor as TiptapEditorInstance } from "@tiptap/core";
@@ -304,6 +305,7 @@ function TextEditorMode({
   };
 
   const previewHtml = replaceVariables(rawText, extractRootDataFromQuery(query).rootProps, itemContext, anchors);
+  const safePreviewHtml = editorSafeHtml(previewHtml);
   const previewEmpty = isVisuallyEmptyRichText(previewHtml);
   const showEmptyChrome = enabled && previewEmpty && !isEditing && !isInsideLinkedComponent;
   const showEmptyBlockHint = showEmptyChrome && isActive;
@@ -346,10 +348,10 @@ function TextEditorMode({
               selectedLabel="Click to edit"
             />
           ) : (
-            <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+            <div dangerouslySetInnerHTML={{ __html: safePreviewHtml }} />
           )
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+          <div dangerouslySetInnerHTML={{ __html: safePreviewHtml }} />
         )}
       </div>
       {enabled && isEditing && (

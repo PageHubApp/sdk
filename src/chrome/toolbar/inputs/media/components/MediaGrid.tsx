@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { editorSafeHtml } from "../../../../../utils/editorSafeHtml";
 import {
   TbCheck,
   TbCode,
@@ -450,7 +451,7 @@ function CardView({
         {media.type === "svg" && (
           <div
             className="flex size-full items-center justify-center p-2"
-            dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }}
+            dangerouslySetInnerHTML={{ __html: editorSafeHtml(media.metadata?.svg || "") }}
           />
         )}
 
@@ -533,7 +534,7 @@ function ListView({
           ) : media.type === "svg" ? (
             <div
               className="size-full p-1"
-              dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }}
+              dangerouslySetInnerHTML={{ __html: editorSafeHtml(media.metadata?.svg || "") }}
             />
           ) : isVideo && deliveryURL ? (
             <video

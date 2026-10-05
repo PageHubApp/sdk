@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { editorSafeHtml } from "../../../../../utils/editorSafeHtml";
 import ReactDOM from "react-dom";
 import { useState } from "react";
 import { TbChevronLeft, TbChevronRight, TbCopy, TbDownload, TbX } from "react-icons/tb";
@@ -121,7 +122,7 @@ export function MediaPreviewModal({
         {media.type === "svg" ? (
           <div
             className="flex max-h-[90vh] max-w-[90vw] items-center justify-center bg-white/5 p-8 backdrop-blur-sm"
-            dangerouslySetInnerHTML={{ __html: media.metadata?.svg || "" }}
+            dangerouslySetInnerHTML={{ __html: editorSafeHtml(media.metadata?.svg || "") }}
           />
         ) : kind === "video" && media.metadata?.deliveryURL ? (
           <video

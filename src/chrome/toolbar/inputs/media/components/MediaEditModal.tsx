@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { editorSafeHtml } from "../../../../../utils/editorSafeHtml";
 import ReactDOM from "react-dom";
 import { TbCheck, TbEdit, TbLoader2, TbX } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
@@ -85,7 +86,7 @@ export function MediaEditModal({
             ) : editingMedia.type === "svg" ? (
               <div
                 className="border-base-300 flex size-24 items-center justify-center rounded-lg border"
-                dangerouslySetInnerHTML={{ __html: editingMedia.metadata?.svg || "" }}
+                dangerouslySetInnerHTML={{ __html: editorSafeHtml(editingMedia.metadata?.svg || "") }}
               />
             ) : (
               <div className="bg-neutral relative size-24 overflow-hidden rounded-lg">

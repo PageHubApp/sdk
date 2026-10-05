@@ -193,11 +193,31 @@ export interface EmbedProps extends BaseSelectorProps {
    * React elements so they execute at HTML-parse time.
    */
   footCode?: string;
-  /**
-   * When true, headCode/footCode emit during editor mode too. Default false
-   * so third-party widgets (Cal popups, Intercom, etc.) don't fire while designing.
-   */
-  runInEditor?: boolean;
+}
+
+/**
+ * The embed as the editor shows it: in a sandboxed frame with an opaque origin.
+ * The editor runs signed in as whoever is editing, and the embed was written by
+ * anyone with edit access — so its markup never touches the editor's document.
+ * `headCode` / `footCode` don't run while editing at all (widgets would fire).
+ * Clicks pass through so the node stays selectable.
+ */
+function EditorEmbedFrame({ html, title }: { html: string; title: string }) {
+  return (
+    <iframe
+      sandbox="allow-scripts"
+      srcDoc={html}
+      title={title}
+      style={{
+        display: "block",
+        width: "100%",
+        height: "100%",
+        minHeight: 150,
+        border: 0,
+        pointerEvents: "none",
+      }}
+    />
+  );
 }
 
 /**
@@ -236,30 +256,29 @@ export function renderEmbedBody(props: EmbedProps, ctx: RenderCtx) {
       props.title || EMBED_SERVICES[props.service || "custom"]?.label || "Embedded content",
   };
   applyAriaProps(prop, props);
-  if (embedHTML) prop.dangerouslySetInnerHTML = { __html: embedHTML };
+  if (embedHTML && !ctx.enabled) prop.dangerouslySetInnerHTML = { __html: embedHTML };
 
   if (ctx.enabled) {
-    if (!embedHTML) {
-      prop.children = (
-        <EditorEmptyLeafHint
-          selected={ctx.isActive}
-          icon={<TbCode aria-hidden />}
-          idleLabel="Empty embed"
-          selectedLabel="Drop here or right-click"
-        />
-      );
-    }
+    prop.children = embedHTML ? (
+      <EditorEmbedFrame html={embedHTML} title={prop["aria-label"]} />
+    ) : (
+      <EditorEmptyLeafHint
+        selected={ctx.isActive}
+        icon={<TbCode aria-hidden />}
+        idleLabel="Empty embed"
+        selectedLabel="Drop here or right-click"
+      />
+    );
     prop["data-bounding-box"] = ctx.enabled;
     prop["data-empty-state"] = !embedHTML;
     if (ctx.isMounted) prop["node-id"] = ctx.id;
   }
 
-  const shouldInject = !ctx.enabled || (props as any).runInEditor === true;
   const box = React.createElement(
     motionIt(props, "div", ctx.enabled),
     applyAnimation({ ...prop, key: ctx.id }, props, null, ctx.enabled)
   );
-  if (!shouldInject || (!props.headCode && !props.footCode)) return box;
+  if (ctx.enabled || (!props.headCode && !props.footCode)) return box;
   return (
     <>
       {props.headCode ? <InjectedHeadTags html={props.headCode} /> : null}

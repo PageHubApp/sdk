@@ -22,6 +22,7 @@ import { useItemContext } from "../../utils/itemContext";
 import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 import { getImageSrcString, type ImageSrcSource } from "./imageProps";
+import { editorSafeHtml } from "../../utils/editorSafeHtml";
 
 export const ImageDefault = ({
   tab,
@@ -147,7 +148,9 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
     if (videoId && mediaMetadata?.svg) svgContent = mediaMetadata.svg;
     if (!svgContent && srcStr) svgContent = srcStr;
     if (svgContent) {
-      _imgProp.dangerouslySetInnerHTML = { __html: svgContent };
+      _imgProp.dangerouslySetInnerHTML = {
+        __html: ctx.enabled ? editorSafeHtml(svgContent) : svgContent,
+      };
       _imgProp.className =
         `${_imgProp.className} [&>svg]:max-w-full [&>svg]:max-h-full [&>svg]:w-full [&>svg]:h-full`.trim();
       _imgProp.style = { display: "flex", alignItems: "center", justifyContent: "center" };

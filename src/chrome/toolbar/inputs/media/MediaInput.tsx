@@ -1,4 +1,5 @@
 import { useEditor, useNode } from "@craftjs/core";
+import { editorSafeHtml } from "../../../../utils/editorSafeHtml";
 import { useAtomValue } from "@zedux/react";
 import { Suspense, useRef, useState } from "react";
 import { TbPhoto } from "react-icons/tb";
@@ -330,7 +331,7 @@ export const MediaInput = (propa: MediaInputProps) => {
       svgContent ? (
         <span
           className="text-base-content absolute inset-0 flex items-center justify-center [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
-          dangerouslySetInnerHTML={{ __html: svgContent }}
+          dangerouslySetInnerHTML={{ __html: editorSafeHtml(svgContent) }}
           aria-hidden
         />
       ) : isVideoPreview ? (
@@ -393,7 +394,7 @@ export const MediaInput = (propa: MediaInputProps) => {
               {svgContent ? (
                 <div
                   className="text-base-content flex size-full items-center justify-center [&>svg]:size-full [&>svg]:max-h-full [&>svg]:max-w-full"
-                  dangerouslySetInnerHTML={{ __html: svgContent }}
+                  dangerouslySetInnerHTML={{ __html: editorSafeHtml(svgContent) }}
                 />
               ) : isVideoPreview ? (
                 <video

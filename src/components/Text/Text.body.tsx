@@ -25,6 +25,7 @@ import { useAnchors } from "../../utils/anchors/anchorContext";
 import { useGlobalStateTick } from "../../utils/state/stateRegistry";
 import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
+import { editorSafeHtml } from "../../utils/editorSafeHtml";
 
 const TextEditorMode = React.lazy(() => import("../../chrome/inline-tools/TextEditor"));
 
@@ -144,7 +145,9 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
         fallback={
           <div
             dangerouslySetInnerHTML={{
-              __html: replaceVariables(text || "", ctx.rootProps, itemContext, anchors),
+              __html: editorSafeHtml(
+                replaceVariables(text || "", ctx.rootProps, itemContext, anchors)
+              ),
             }}
           />
         }

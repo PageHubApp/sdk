@@ -203,14 +203,6 @@ export const EmbedMainTab = () => {
             labelHide={false}
             description="Scripts rendered inline where this Embed sits. Useful when the widget needs surrounding DOM to exist before init."
           />
-          <ToolbarItem
-            propKey="runInEditor"
-            propType="component"
-            type="checkbox"
-            label="Run in editor"
-            labelHide={false}
-            description="Let head/footer scripts execute while editing. Off by default — prevents popups and widgets firing during design."
-          />
         </ToolbarSection>
       </>
     ),
