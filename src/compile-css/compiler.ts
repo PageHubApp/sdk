@@ -17,23 +17,26 @@ const __dirname = dirname(__filename);
 // "tailwindcss"` resolves identically (this file sits one level deeper).
 const COMPILER_BASE = resolve(__dirname, "..");
 
-let _compiler: ReturnType<typeof initCompiler> | null = null;
+let _source: string | null = null;
 
-async function initCompiler() {
+function compilerSource(): string {
+  if (_source === null) {
+    const parts = ['@import "tailwindcss";', getThemeCSS(), getSpatialCSS(), getAnimationCSS()];
+    _source = parts.filter(Boolean).join("\n");
+  }
+  return _source;
+}
+
+/**
+ * A fresh compiler for each page. Tailwind's `build()` keeps every candidate it
+ * has ever been given, so a shared compiler emits the utilities of every page
+ * the process rendered before — bloating this page's CSS and masking classes
+ * its own candidate list misses. Compiling the cached source costs a few ms.
+ */
+export async function getCompiler() {
   const { compile } = await import("@tailwindcss/node");
-  const theme = getThemeCSS();
-  const spatial = getSpatialCSS();
-  const animations = getAnimationCSS();
-  const parts = ['@import "tailwindcss";', theme, spatial, animations].filter(Boolean);
-  return compile(parts.join("\n"), {
+  return compile(compilerSource(), {
     base: COMPILER_BASE,
     onDependency() {},
   });
-}
-
-export function getCompiler() {
-  if (!_compiler) {
-    _compiler = initCompiler();
-  }
-  return _compiler;
 }

@@ -31,6 +31,7 @@ import {
   type SerializedNodes,
 } from "./types";
 import { renderNode } from "./walker";
+import { classesInMarkup } from "./classesInMarkup";
 import type { PageIndex } from "../../utils/page/pageManagement";
 import { sdkLog } from "../../utils/logger";
 
@@ -254,6 +255,7 @@ export function renderToHTML(
 
   // 6. Render from ROOT
   const html = renderNode("ROOT", nodes, resolver, ctx);
+  for (const cls of classesInMarkup(html)) ctx.classes.add(cls);
 
   // 7. Collect font URLs (Heading/Body fonts now live in theme.typography[])
   const rootProps = nodes["ROOT"]?.props || {};
