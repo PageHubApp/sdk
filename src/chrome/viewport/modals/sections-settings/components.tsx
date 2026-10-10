@@ -222,20 +222,20 @@ export function BlockQuickLook({
   return (
     <div className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center">
       <div
-        className="border-base-300 bg-base-100 pointer-events-auto max-h-[85vh] w-[min(900px,85vw)] overflow-y-auto rounded-xl border shadow-2xl transition-all duration-200 ease-out"
+        className="border-base-300 bg-base-100 pointer-events-auto flex max-h-[85vh] w-[min(900px,85vw)] flex-col overflow-hidden rounded-xl border shadow-2xl transition-all duration-200 ease-out"
         style={{
           ...originStyle,
           opacity: animatedIn ? 1 : 0,
           transform: animatedIn ? "scale(1)" : "scale(0.92)",
         }}
       >
-        <div className="border-base-300 bg-base-100/90 sticky top-0 z-20 flex items-center gap-2 border-b px-4 py-2 backdrop-blur-sm">
+        <div className="border-base-300 bg-base-100 flex shrink-0 items-center gap-2 border-b px-4 py-2">
           <span className="text-base-content flex-1 text-sm font-medium">{block.name}</span>
           <kbd className="bg-base-200 text-neutral-content rounded px-1.5 py-0.5 text-[10px] font-medium">
             Space
           </kbd>
         </div>
-        <div className="overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
           <ComponentPreview
             component={block.structure}
             modifiers={block.modifiers}
