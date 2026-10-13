@@ -111,3 +111,24 @@ export function findAncestorDataSource(nodeId: string, query: any): DataSourceBi
 
   return null;
 }
+
+/**
+ * True when `nodeId` renders once per repeater item — some ancestor (or the
+ * node itself) carries a connector `dataSource` or a scope-only one
+ * (`{ scope: "item.images" }`). Only there do `{{item.*}}` tokens resolve.
+ */
+export function isInsideRepeater(nodeId: string, query: any): boolean {
+  try {
+    let id: string | undefined = nodeId;
+    while (id) {
+      const node = query.node(id).get();
+      if (!node) return false;
+      const ds = node.data.props?.dataSource;
+      if (ds && ((ds.provider && ds.collection) || ds.scope)) return true;
+      id = node.data.parent;
+    }
+  } catch {
+    // Query not ready or node doesn't exist
+  }
+  return false;
+}

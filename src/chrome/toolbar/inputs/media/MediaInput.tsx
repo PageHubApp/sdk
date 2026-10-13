@@ -5,6 +5,7 @@ import { Suspense, useRef, useState } from "react";
 import { TbPhoto } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
 import { SideBarAtom } from "@/utils/atoms";
+import { isInsideRepeater } from "@/utils/data/dataSourceContext";
 import { getMediaById, getMediaContent, registerMediaWithBackground } from "@/utils/media/media";
 import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import { ToolbarDashedButton } from "../../primitives/ToolbarDashedButton";
@@ -170,6 +171,9 @@ export const MediaInput = (propa: MediaInputProps) => {
   const hasDynamicSource = !!contentValue;
   const logoVariant = siteLogo ? siteLogoVariantOf(contentValue) : null;
   const { rootProps, pageMedia } = extractRootDataFromQuery(query);
+  // `{{item.*}}` only resolves inside a repeater; offering it elsewhere sets an
+  // image that can never load.
+  const inRepeater = isInsideRepeater(componentId, query);
   const selectedMedia = hasMedia ? getMediaById(query, mediaId) : null;
   const isSvg = selectedMedia?.type === "svg";
   const svgContent = isSvg ? selectedMedia?.metadata?.svg : null;
@@ -282,18 +286,25 @@ export const MediaInput = (propa: MediaInputProps) => {
                     value={contentValue}
                     onChange={handleContentUrlChange}
                     label="Image Source"
-                    placeholder="https://... or {{item.image}}"
-                    helpText="Use a URL or token like {{item.image}}."
+                    placeholder={inRepeater ? "https://... or {{item.image}}" : "https://..."}
+                    helpText={
+                      inRepeater
+                        ? "Use a URL or token like {{item.image}}."
+                        : "Paste a link to an image."
+                    }
                     intent="image-src"
                     showExpressionHelp={false}
-                    snippets={[
-                      { label: "Item image", value: "{{item.image}}" },
-                      { label: "Image fallback", value: '{{item.image || "/placeholder.jpg"}}' },
-                      {
-                        label: "Connector image",
-                        value: "{{connector.provider.bindings.products.0.image}}",
-                      },
-                    ]}
+                    snippets={
+                      inRepeater
+                        ? [
+                            { label: "Item image", value: "{{item.image}}" },
+                            {
+                              label: "Image fallback",
+                              value: '{{item.image || "/placeholder.jpg"}}',
+                            },
+                          ]
+                        : []
+                    }
                   />
                 </div>
               )}
