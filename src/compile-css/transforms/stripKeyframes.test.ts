@@ -22,6 +22,17 @@ test("keeps keyframes the page mentions outside compiled CSS (inline style, inje
   assert.doesNotMatch(out, /@keyframes css-spin/);
 });
 
+test("keeps keyframes reached through a custom property (Tailwind animate-*)", () => {
+  const css =
+    ":root{--animate-pulse:pulse 2s cubic-bezier(.4,0,.6,1) infinite}" +
+    ".animate-pulse{animation:var(--animate-pulse)}" +
+    "@keyframes pulse{50%{opacity:.5}}" +
+    "@keyframes css-spin{to{transform:rotate(360deg)}}";
+  const out = stripUnusedKeyframes(css);
+  assert.match(out, /@keyframes pulse/);
+  assert.doesNotMatch(out, /@keyframes css-spin/);
+});
+
 test("a mention must be the whole name, not part of a longer one", () => {
   const out = stripUnusedKeyframes(CSS, "css-spinner css-marquee-slow");
   assert.doesNotMatch(out, /@keyframes css-spin\{/);

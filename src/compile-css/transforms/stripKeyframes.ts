@@ -38,11 +38,20 @@ export function stripUnusedKeyframes(css: string, keepIfMentionedIn?: string): s
   }
 
   // Remove unreferenced keyframes (iterate in reverse to preserve indices)
-  // A name the page itself mentions (an inline `animation:` in `root.style`,
-  // custom code in `inject`, a handler) is used even though no compiled rule
-  // references it.
-  const mentioned = (name: string) =>
-    !!keepIfMentionedIn && new RegExp(`(^|[^\\w-])${name}([^\\w-]|$)`).test(keepIfMentionedIn);
+  // Rules can reach a keyframes name indirectly: Tailwind's `animate-pulse` is
+  // `animation: var(--animate-pulse)` with `--animate-pulse: pulse 2s …` set on
+  // :root. So any mention in the CSS outside the @keyframes blocks counts. So
+  // does a mention in the page itself (an inline `animation:` in `root.style`,
+  // custom code in `inject`, a handler), which no compiled rule references.
+  let outsideKeyframes = "";
+  let cursor = 0;
+  for (const kb of keyframeBlocks) {
+    outsideKeyframes += css.slice(cursor, kb.start);
+    cursor = kb.end;
+  }
+  outsideKeyframes += css.slice(cursor);
+  const haystack = `${outsideKeyframes}\n${keepIfMentionedIn ?? ""}`;
+  const mentioned = (name: string) => new RegExp(`(^|[^\\w-])${name}([^\\w-]|$)`).test(haystack);
 
   let result = css;
   for (let i = keyframeBlocks.length - 1; i >= 0; i--) {
