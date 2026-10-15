@@ -7,6 +7,7 @@ import {
   ariaAttrs,
   collectClasses,
   escapeAttr,
+  getInlineStyle,
   getPageIndex,
   handlerAttrs,
   interpolate,
@@ -52,6 +53,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
 
   const attrs: Record<string, any> = {
     class: fullCls || undefined,
+    style: getInlineStyle(props) || undefined,
     ...ariaAttrs(props),
     ...handlerAttrs(props),
     ...actionsAttr(props, ctx),

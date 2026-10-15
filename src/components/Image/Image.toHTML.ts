@@ -7,6 +7,7 @@ import {
   ariaAttrs,
   attrsPassthrough,
   buildAttrs,
+  getInlineStyle,
   getPageIndex,
   handlerAttrs,
   interpolate,
@@ -40,7 +41,11 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
       "div",
       {
         class: svgCls,
-        style: "display: flex; align-items: center; justify-content: center",
+        // root.style lands after the centering defaults, like Image.body's
+        // applyAnimation merge onto the SVG wrapper.
+        style: ["display: flex; align-items: center; justify-content: center", getInlineStyle(props)]
+          .filter(Boolean)
+          .join("; "),
         role: alt ? undefined : "presentation",
         "aria-label": alt || undefined,
         ...ariaAttrs(props),
@@ -105,6 +110,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     height: dims?.height,
     alt,
     class: cls || undefined,
+    style: getInlineStyle(props) || undefined,
     title: title || undefined,
     loading: props.loading || "lazy",
     role: !alt ? "presentation" : undefined,
