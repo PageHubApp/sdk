@@ -8,7 +8,7 @@ import { stringifyChunk } from "./stringifyChunk";
 export const CART_CHUNK = stringifyChunk(function $cart() {
   // Cross-chunk function bindings via runtime registry. See
   // staticPublishRuntime.ts preamble for the why.
-  const { setState, getStateValue, fireAnalytics } = __phRT;
+  const { setState, setVisibility, getStateValue, fireAnalytics } = __phRT;
 
   function readCartFromStorage() {
     if (!PAGE_ID) return [];
@@ -95,6 +95,18 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
   function removeCartItem(priceId: string) {
     setCartQuantity(priceId, 0);
   }
+  // The page the buyer is on, without its query or hash — Stripe sends them
+  // back here with `?checkout=success|cancel` (same as cartContext.tsx).
+  function checkoutReturnUrl(status: string) {
+    return window.location.origin + window.location.pathname + "?checkout=" + status;
+  }
+  function setCartError(message: string) {
+    setState(
+      PH_CART_ERROR,
+      { kind: "value", value: message, source: "runtime" },
+      "cart-checkout"
+    );
+  }
   function cartCheckout() {
     const raw = getStateValue(PH_CART_ITEMS_JSON);
     let items: any[] = [];
@@ -102,6 +114,8 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
       items = raw ? JSON.parse(raw as string) : [];
     } catch (e) {}
     if (!items.length || !PAGE_ID) return;
+    // Written by the promo input's FormElement.stateBinding.
+    const promotionCode = String(getStateValue("cart:promo") || "").trim();
     fetch(PH_BASE + "/api/stripe/storefront-checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -119,6 +133,9 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
             quantity: l.quantity,
           };
         }),
+        successUrl: checkoutReturnUrl("success"),
+        cancelUrl: checkoutReturnUrl("cancel"),
+        promotionCode: promotionCode || undefined,
       }),
       credentials: "include",
     })
@@ -126,9 +143,50 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
         return r.json();
       })
       .then(function (d) {
-        if (d && d.url) window.location.href = d.url;
+        if (d && d.url) {
+          window.location.href = d.url;
+          return;
+        }
+        if (d && d.code === "invalid_promo") {
+          setState(
+            "cart:promo-invalid",
+            { kind: "value", value: d.error || "That promo code isn't valid", source: "runtime" },
+            "cart-checkout"
+          );
+        }
+        setCartError((d && d.error) || "Checkout didn't start. Try again in a moment.");
       })
-      .catch(function () {});
+      .catch(function () {
+        setCartError("Couldn't reach checkout. Check your connection and try again.");
+      });
+  }
+
+  // Back from Stripe: a paid order empties the cart. Mirrors the status to
+  // `cart:checkout-status` for thank-you / cancelled panels, then drops the
+  // param so a refresh doesn't replay it.
+  function handleCheckoutReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("checkout");
+    if (!status) return;
+    if (status === "success") {
+      writeCartToStorage([]);
+      recomputeCartState([]);
+      setVisibility(PH_CART_OPEN, "hidden", "cart-checkout");
+    }
+    if (status === "success" || status === "cancel") {
+      setState(
+        "cart:checkout-status",
+        { kind: "value", value: status, source: "load" },
+        "cart-checkout"
+      );
+    }
+    params.delete("checkout");
+    const qs = params.toString();
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname + (qs ? "?" + qs : "") + window.location.hash
+    );
   }
 
   function escapeHTML(s: unknown) {
@@ -301,5 +359,6 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
     setCartQuantity,
     removeCartItem,
     cartCheckout,
+    handleCheckoutReturn,
   });
 });

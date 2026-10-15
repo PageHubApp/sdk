@@ -24,6 +24,7 @@ export const BOOTSTRAP_CHUNK = stringifyChunk(function $bootstrap() {
     addToCart,
     setCartQuantity,
     removeCartItem,
+    handleCheckoutReturn,
   } = __phRT;
 
   // Optional chunks ship as their own <script> only on pages that need them
@@ -49,6 +50,7 @@ export const BOOTSTRAP_CHUNK = stringifyChunk(function $bootstrap() {
     seedFromWindow();
     mountUrlBridge();
     detectCustomerToken();
+    handleCheckoutReturn();
     ensureAnalyticsStubs();
     mountMaps();
     try {

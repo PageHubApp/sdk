@@ -60,6 +60,9 @@ export function getCartBridgeScript(opts: { pageId?: string } = {}): string {
     window.__PH_STATE__ = window.__PH_STATE__ || {};
     var pageId = ${pageIdLit} || (typeof localStorage !== 'undefined' && localStorage.getItem('ph-pageid')) || '';
     if (!pageId) return;
+    // Back from a paid checkout: the runtime empties the cart, so don't paint
+    // the old count first.
+    if (/[?&]checkout=success(&|$)/.test(location.search)) return;
     var raw = null;
     try { raw = localStorage.getItem('ph-cart-' + pageId); } catch(e){}
     if (!raw) return;
