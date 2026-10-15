@@ -10,6 +10,7 @@ import {
   getPageIndex,
   handlerAttrs,
   interpolate,
+  interpolateHref,
   resolveCdnResponsive,
   stateAttrs,
   staticClasses,
@@ -22,7 +23,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const rawContent = getImageSrc(props);
   const interpolated =
     typeof rawContent === "string" && rawContent.includes("{{")
-      ? interpolate(rawContent, ctx)
+      ? interpolate(rawContent, ctx, { html: type === "svg" })
       : rawContent;
   // A token still unresolved at export (state, filled in live by state-src)
   // must not ship as a URL — the browser would request the literal text.
@@ -121,9 +122,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const imgTag = `<img${buildAttrs(imgAttrs)} />`;
 
   const rawHref = actionToHref(findLinkAction(migrateActions(props)), getPageIndex(ctx), ctx?.currentPath);
-  const href = typeof rawHref === "string" && rawHref.includes("{{")
-    ? interpolate(rawHref, ctx)
-    : rawHref;
+  const href = interpolateHref(rawHref, ctx);
   if (href) {
     return tag(
       "a",

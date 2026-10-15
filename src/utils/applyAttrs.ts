@@ -8,8 +8,10 @@
  *
  * When `interpolate` is provided (Button passes `{{item.*}}` context into
  * chip URLs / data attributes inside repeaters), it runs on every string
- * value before assignment.
+ * value that carries a `{{…}}` token; interpolated URL attributes then go
+ * through `safeAttrValue`.
  */
+import { safeAttrValue } from "./htmlSafety";
 
 // Block JSON uses HTML-style attribute names (lowercase). React needs camelCase
 // for a handful of DOM props — normalize them here so authors can keep writing
@@ -48,7 +50,12 @@ export function applyAttrs(
   for (const [k, v] of Object.entries(attrs as Record<string, unknown>)) {
     const key = REACT_ATTR_ALIASES[k] ?? k;
     if (typeof v === "string") {
-      prop[key] = interpolate ? interpolate(v) : v;
+      if (!interpolate || !v.includes("{{")) {
+        prop[key] = v;
+        continue;
+      }
+      const value = safeAttrValue(k, interpolate(v));
+      if (value !== undefined) prop[key] = value;
     } else if (typeof v === "number" || typeof v === "boolean") {
       prop[key] = v;
     }

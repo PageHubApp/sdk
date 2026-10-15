@@ -12,7 +12,7 @@ import {
   type NodeAction,
 } from "../../utils/action";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
-import { addCustomHandlers } from "../../utils/actions/customHandlers";
+import { useCustomHandlers } from "../../utils/actions/customHandlers";
 import { getIntrinsicSizeAttrs, getResponsiveImageAttrs } from "../../utils/media/media";
 import { motionIt } from "../../utils/motion";
 import { CSStoObj, applyAnimation } from "../../utils/tailwind/tailwind";
@@ -23,6 +23,8 @@ import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 import { getImageSrcString, type ImageSrcSource } from "./imageProps";
 import { editorSafeHtml } from "../../utils/editorSafeHtml";
+import { safeHref } from "../../utils/htmlSafety";
+import { useUntrustedRender } from "../../utils/runtimeMode";
 
 export const ImageDefault = ({
   tab,
@@ -80,12 +82,13 @@ interface PageMediaEntry {
 
 export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
   const itemContext = useItemContext();
+  const untrusted = useUntrustedRender();
   useRuntimeVarsVersion();
 
   const { videoId } = props;
   const rawSrcStr = getImageSrcString(props);
   const srcStr = rawSrcStr.includes("{{")
-    ? replaceVariables(rawSrcStr, ctx.rootProps, itemContext)
+    ? replaceVariables(rawSrcStr, ctx.rootProps, itemContext, null, { html: props.type === "svg" })
     : rawSrcStr;
 
   const ref = useRef<HTMLElement | null>(null);
@@ -110,7 +113,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
   const actions = migrateActions(props);
   const firstLink = findLinkAction(actions);
   const actionHref = resolveVar(actionToHref(firstLink, ctx.pageIndex) ?? undefined);
-  const resolvedHref = actionHref || props.url;
+  const resolvedHref = safeHref(actionHref) || props.url;
 
   const prop: Record<string, unknown> = {
     ref: (r: HTMLElement | null) => {
@@ -149,7 +152,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
     if (!svgContent && srcStr) svgContent = srcStr;
     if (svgContent) {
       _imgProp.dangerouslySetInnerHTML = {
-        __html: ctx.enabled ? editorSafeHtml(svgContent) : svgContent,
+        __html: ctx.enabled || untrusted ? editorSafeHtml(svgContent) : svgContent,
       };
       _imgProp.className =
         `${_imgProp.className} [&>svg]:max-w-full [&>svg]:max-h-full [&>svg]:w-full [&>svg]:h-full`.trim();
@@ -223,7 +226,7 @@ export function renderImageBody(props: ImageProps, ctx: RenderCtx) {
       resolvedLinkHref: typeof resolvedHref === "string" ? resolvedHref : null,
     });
   }
-  addCustomHandlers(wired, props.handlers, ctx.enabled, props.handlerOptions);
+  useCustomHandlers(wired, props.handlers, ctx.enabled, props.handlerOptions);
   if (actions.length > 0 && !ctx.enabled) {
     wired["data-action"] = actions.map(a => a.type).join(" ");
   }

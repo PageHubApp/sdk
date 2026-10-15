@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { AutoTextSize } from "auto-text-size";
 import { useRouter } from "next/router";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
-import { addCustomHandlers } from "../../utils/actions/customHandlers";
+import { useCustomHandlers } from "../../utils/actions/customHandlers";
 import { applyAttrs } from "../../utils/applyAttrs";
 import {
   migrateActions,
@@ -26,6 +26,8 @@ import { useGlobalStateTick } from "../../utils/state/stateRegistry";
 import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 import { editorSafeHtml } from "../../utils/editorSafeHtml";
+import { safeHref } from "../../utils/htmlSafety";
+import { useUntrustedRender } from "../../utils/runtimeMode";
 
 const TextEditorMode = React.lazy(() => import("../../chrome/inline-tools/TextEditor"));
 
@@ -53,12 +55,14 @@ const renderLiveMode = (
   router: any,
   itemContext?: Record<string, any> | null,
   anchors?: Readonly<Record<string, string>> | null,
-  jsDispatch = false
+  jsDispatch = false,
+  untrusted = false
 ) => {
-  const processedText = replaceVariables(props.text, rootProps, itemContext, anchors);
+  const interpolated = replaceVariables(props.text, rootProps, itemContext, anchors, { html: true });
+  const processedText = untrusted ? editorSafeHtml(interpolated) : interpolated;
   let tagName = sanitizeTagName(props.tagName);
   const firstLink = findLinkAction(migrateActions(props));
-  const resolvedUrl = actionToHref(firstLink, pageIndex, router?.asPath);
+  const resolvedUrl = safeHref(actionToHref(firstLink, pageIndex, router?.asPath));
   if (resolvedUrl) {
     // SPA nav (next/link) for internal links; plain <a> for external. The
     // custom-domain `/` rewrite is client-replayable (`:host` captured — see
@@ -97,6 +101,7 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
   const router = useRouter();
   const itemContext = useItemContext();
   const anchors = useAnchors();
+  const untrusted = useUntrustedRender();
   useRuntimeVarsVersion();
   useGlobalStateTick();
 
@@ -126,10 +131,10 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
   // Text wraps link content in <a> via renderLiveMode; the outer element gets
   // the dispatcher onClick (see `needsJsActionDispatch`), which the inner
   // <a>'s click bubbles to.
-  const liveHref = actionToHref(findLinkAction(actions), ctx.pageIndex, router?.asPath);
+  const liveHref = safeHref(actionToHref(findLinkAction(actions), ctx.pageIndex, router?.asPath));
   const jsDispatch = needsJsActionDispatch(actions);
   if (jsDispatch) addActionHandlers(prop, actions, ctx.enabled, { resolvedLinkHref: liveHref });
-  addCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
+  useCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
   if (ctx.enabled) {
     prop["data-bounding-box"] = ctx.enabled;
@@ -146,7 +151,7 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
           <div
             dangerouslySetInnerHTML={{
               __html: editorSafeHtml(
-                replaceVariables(text || "", ctx.rootProps, itemContext, anchors)
+                replaceVariables(text || "", ctx.rootProps, itemContext, anchors, { html: true })
               ),
             }}
           />
@@ -170,7 +175,8 @@ export function renderTextBody(props: any, ctx: RenderCtx) {
       router,
       itemContext,
       anchors,
-      jsDispatch
+      jsDispatch,
+      untrusted
     );
     if (liveHref) {
       prop.children = liveContent;

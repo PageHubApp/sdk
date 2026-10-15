@@ -22,6 +22,7 @@ import { useResizable } from "../hooks/useResizable";
 import { generateDesignSystemCSSVariables } from "../../utils/design/designSystemVars";
 import { resolveTheme } from "../../utils/design/resolveTheme";
 import { sanitizeCraftNodeReferences } from "../../utils/sanitizeNodeMap";
+import { UntrustedRenderProvider } from "../../utils/runtimeMode";
 
 type Tab = "review" | "live";
 
@@ -424,9 +425,11 @@ export function PreviewPanel({
                   }}
                 >
                   {previewCSS && <style dangerouslySetInnerHTML={{ __html: previewCSS }} />}
-                  <Editor key={tab + frameData} resolver={resolver} enabled={false}>
-                    <Frame data={frameData} />
-                  </Editor>
+                  <UntrustedRenderProvider value={true}>
+                    <Editor key={tab + frameData} resolver={resolver} enabled={false}>
+                      <Frame data={frameData} />
+                    </Editor>
+                  </UntrustedRenderProvider>
                 </div>
               </PreviewErrorBoundary>
             );

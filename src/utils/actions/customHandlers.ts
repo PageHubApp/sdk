@@ -6,6 +6,7 @@
 
 import { applyHandlerOptions, readHandlerOptions } from "./handlerCode";
 import { sdkLog } from "../logger";
+import { useUntrustedRender } from "../runtimeMode";
 
 const handlerCache = new Map<string, (event: any) => void>();
 
@@ -55,4 +56,19 @@ export function addCustomHandlers(
       }
     };
   }
+}
+
+/**
+ * Hook form of `addCustomHandlers` for React render bodies: also skips
+ * compilation under an `UntrustedRenderProvider` (editor previews on the host
+ * app origin), where author code must not run.
+ */
+export function useCustomHandlers(
+  prop: Record<string, any>,
+  handlers: unknown,
+  enabled: boolean,
+  handlerOptions?: unknown
+): void {
+  const untrusted = useUntrustedRender();
+  addCustomHandlers(prop, handlers, enabled || untrusted, handlerOptions);
 }

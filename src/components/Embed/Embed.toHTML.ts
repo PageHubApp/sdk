@@ -6,7 +6,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   // Resolve {{item.*}} against the current row so a Data repeater (e.g. a
   // "reels" collection) drives the embed in static export too — same
   // `interpolate` helper Image.toHTML uses.
-  const html = rawHtml.includes("{{") ? interpolate(rawHtml, ctx) : rawHtml;
+  const html = rawHtml.includes("{{") ? interpolate(rawHtml, ctx, { html: true }) : rawHtml;
 
   if (!html) return "";
   const cls = staticClasses(props, ctx);

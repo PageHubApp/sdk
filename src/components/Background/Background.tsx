@@ -10,6 +10,7 @@ import { DEFAULT_PALETTE, DEFAULT_STYLE_GUIDE } from "../../utils/defaults";
 import { resolveTheme } from "../../utils/design/resolveTheme";
 import { useLazyBackground } from "../../utils/hooks/useLazyBackground";
 import { useMounted } from "../../utils/hooks/useMounted";
+import { useUntrustedRender } from "../../utils/runtimeMode";
 
 import { applyBackgroundImage, applyLazyBackgroundImage, getBackgroundUrl } from "../../utils/background";
 import { layoutCanvasCanMoveIn } from "../layoutCanvasCanMoveIn";
@@ -114,6 +115,9 @@ export function Background({
 
   const ref = useRef<HTMLElement | null>(null);
   const isMounted = useMounted();
+  // Editor previews on the app origin get the inject styles but no scripts.
+  const untrusted = useUntrustedRender();
+  const stylesOnly = enabled || untrusted;
 
   // Lazy loading for background images
   // Background renders ROOT — its own props.pageMedia IS the page media list.
@@ -169,7 +173,7 @@ export function Background({
             dangerouslySetInnerHTML={{ __html: RUNTIME_VARS_BOOTSTRAP }}
           />
         ) : null}
-        {isRoot && props.inject?.head ? <InjectedHeadTags html={props.inject.head} stylesOnly={enabled} /> : null}
+        {isRoot && props.inject?.head ? <InjectedHeadTags html={props.inject.head} stylesOnly={stylesOnly} /> : null}
         <RenderPattern
           props={props}
           settings={settings}
@@ -189,7 +193,7 @@ export function Background({
               />
             ) : null)}
         </RenderPattern>
-        {isRoot && props.inject?.footer ? <InjectedBodyTags html={props.inject.footer} stylesOnly={enabled} /> : null}
+        {isRoot && props.inject?.footer ? <InjectedBodyTags html={props.inject.footer} stylesOnly={stylesOnly} /> : null}
       </RuntimeVarsProvider>
     </PaletteProvider>
   );

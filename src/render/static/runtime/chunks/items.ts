@@ -30,6 +30,23 @@ export const ITEMS_CHUNK = stringifyChunk(function $items() {
       return v == null ? "" : String(v);
     });
   }
+  // Client copies of `escapeHTML` / `safeHref` in utils/htmlSafety.ts — the
+  // runtime is an inlined script and can't import. Keep the rules identical.
+  function escapeHtml(v: unknown) {
+    return String(v)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+  function safeHref(href: unknown) {
+    if (typeof href !== "string" || !href) return "";
+    // eslint-disable-next-line no-control-regex
+    const m = /^([a-z][a-z0-9+.-]*):/i.exec(href.replace(/[\u0000- \u007f]/g, ""));
+    if (!m) return href;
+    return /^(https?|mailto|tel|ref)$/i.test(m[1]) ? href : "";
+  }
   function resolveActionKey(raw: unknown, item: unknown) {
     if (!raw) return "";
     const out = interpolateItem(raw, item);
@@ -288,5 +305,7 @@ export const ITEMS_CHUNK = stringifyChunk(function $items() {
     toggleEl,
     runComputed,
     interpolateItem,
+    escapeHtml,
+    safeHref,
   });
 });

@@ -20,7 +20,13 @@ import {
 } from "./cdn";
 import { isCSSAnimation, getCSSAnimationProps } from "./animations/animations";
 import { purifyToTailwind } from "./tailwind/daisyuiToTailwind";
-import { replaceVariables } from "./design/variables";
+import { escapeHTML, safeAttrValue, safeHref } from "./htmlSafety";
+import {
+  buildInterpContext,
+  interpolate,
+  interpolateHref,
+  interpolateNonItem,
+} from "./staticInterpolate";
 import { getStaticBackgroundSources } from "./background";
 import { BUILTIN_STATE_MODIFIERS } from "./conditions/stateBuiltinModifiers";
 import type { ComponentModifier } from "../define/types";
@@ -164,14 +170,6 @@ const VOID_ELEMENTS = new Set([
   "wbr",
 ]);
 
-export function escapeHTML(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 export function escapeAttr(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
@@ -302,7 +300,12 @@ export function attrsPassthrough(
   const out: Record<string, string | number | boolean> = {};
   for (const [k, v] of Object.entries(a as Record<string, unknown>)) {
     if (typeof v === "string") {
-      out[k] = ctx ? interpolate(v, ctx) : v;
+      if (!ctx || !v.includes("{{")) {
+        out[k] = v;
+        continue;
+      }
+      const value = safeAttrValue(k, interpolate(v, ctx));
+      if (value !== undefined) out[k] = value;
     } else if (typeof v === "number" || typeof v === "boolean") {
       out[k] = v;
     }
@@ -494,34 +497,16 @@ export function actionsAttr(
       href = ctx.currentItem ? interpolate(href, ctx) : interpolateNonItem(href, ctx);
     }
 
-    return href === a.href ? a : { ...a, href };
+    // A disallowed scheme drops the href, so the runtime's `link` dispatch
+    // (which needs one) skips the action.
+    const safe = safeHref(href);
+    if (safe === undefined) {
+      const { href: _dropped, ...rest } = a;
+      return rest;
+    }
+    return safe === a.href ? a : { ...a, href: safe };
   });
   return { "data-ph-actions": JSON.stringify(resolved) };
-}
-
-/**
- * Resolve `{{company.*}}` / `{{variables.*}}` in a string while leaving
- * `{{item.*}}` untouched.
- *
- * The `<a href>` the static walker emits is interpolated, but the same action
- * is ALSO serialized into `data-ph-actions`, and the static click dispatcher
- * preventDefaults the anchor and navigates to that copy instead. Its
- * `interpolateItem` only matches `{{item.*}}`, so any other token used to
- * survive into `window.location.assign` verbatim — a `tel:{{company.phoneTel}}`
- * button rendered a correct href and then navigated to the literal braces.
- *
- * `{{item.*}}` must stay unresolved: it is per-row and only the client knows
- * the row. Running `replaceVariables` with a null item would flatten it to ""
- * and break every repeater link, so those tokens are masked across the call.
- */
-function interpolateNonItem(raw: string, ctx: StaticRenderContext): string {
-  const stash: string[] = [];
-  const masked = raw.replace(/\{\{\s*item\.[^}]*\}\}/g, m => {
-    stash.push(m);
-    return ` PHITEM${stash.length - 1} `;
-  });
-  const out = interpolate(masked, ctx);
-  return out.replace(/ PHITEM(\d+) /g, (_, i) => stash[Number(i)] ?? "");
 }
 
 // ─── State-binding attributes ───────────────────────────────────────────────
@@ -672,38 +657,7 @@ export function stateAttrs(
   };
 }
 
-// ─── Variable interpolation ─────────────────────────────────────────────────
-
-/**
- * Build a minimal interpolation context for static toHTML. The walker exposes
- * the full node tree via `ctx.nodes`; ROOT props carry company / theme /
- * variables / pageMedia which `replaceVariables` walks. Item context is
- * threaded through when toHTML is called inside a repeater (Wave 3).
- */
-export function buildInterpContext(ctx: StaticRenderContext): Record<string, any> {
-  return ctx.nodes?.["ROOT"]?.props || {};
-}
-
-/**
- * Run `replaceVariables` against a string using the walker's ROOT props.
- * Returns the input unchanged if it has no `{{...}}` tokens (cheap fast-path)
- * or if interpolation fails. Item-scoped tokens (`{{item.*}}`) resolve to
- * empty string until repeater iteration lands in Wave 3.
- */
-export function interpolate(
-  text: string | null | undefined,
-  ctx: StaticRenderContext,
-  item: Record<string, any> | null = null
-): string {
-  if (typeof text !== "string" || !text) return "";
-  if (!text.includes("{{")) return text;
-  const rootProps = buildInterpContext(ctx);
-  // Fall back to ctx.currentItem when caller didn't pass an explicit item —
-  // Data.toHTML sets ctx.currentItem around each iteration so component
-  // toHTMLs resolve `{{item.*}}` without each one being item-aware.
-  const resolvedItem = item ?? ctx.currentItem ?? null;
-  return replaceVariables(text, rootProps, resolvedItem);
-}
+export { escapeHTML, safeHref, buildInterpContext, interpolate, interpolateHref };
 
 // Re-export for component convenience
 export {

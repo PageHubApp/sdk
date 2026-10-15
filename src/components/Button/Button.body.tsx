@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { TbPointer } from "../_emptyHintIcons";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
-import { addCustomHandlers } from "../../utils/actions/customHandlers";
+import { useCustomHandlers } from "../../utils/actions/customHandlers";
 import { useShowHideVersion } from "../../utils/state/showHideStore";
 import {
   applyStateModifiers,
@@ -31,6 +31,7 @@ import { useResolvedIcon } from "../../utils/icons/iconResolver";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
+import { safeHref } from "../../utils/htmlSafety";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { resolvePageRef } from "../../utils/page/pageManagement";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
@@ -124,6 +125,7 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
   if (resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("ref:")) {
     resolvedUrl = resolvePageRef(resolvedUrl, ctx.pageIndex, router?.asPath);
   }
+  resolvedUrl = safeHref(resolvedUrl) ?? null;
   const target = actionTarget(firstLink);
 
   const isInternalLink =
@@ -160,7 +162,7 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
   // against the current item context so chips in a repeater get unique hrefs.
   applyAttrs(prop, props.attrs, v => replaceVariables(v, ctx.rootProps, itemContext, anchors));
   if (typeof prop.href === "string" && prop.href.includes("{{")) {
-    prop.href = replaceVariables(prop.href, ctx.rootProps, itemContext, anchors);
+    prop.href = safeHref(replaceVariables(prop.href, ctx.rootProps, itemContext, anchors));
   }
 
   if (ctx.enabled && ele === "a") ele = "span";
@@ -187,7 +189,7 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
     addActionHandlers(prop, actions, ctx.enabled, actionCtx);
   }
 
-  addCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
+  useCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
   if (actions.length > 0 && !ctx.enabled) {
     prop["data-action"] = actions.map(a => a.type).join(" ");

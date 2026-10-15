@@ -26,6 +26,7 @@ import { getCanvasBreakpointPx } from "../../../utils/tailwind/className";
 import { viewerResolver } from "../../../components/resolvers/viewer";
 import type { ViewMode } from "../../../core/store";
 import { sdkLog } from "../../../utils/logger";
+import { UntrustedRenderProvider } from "../../../utils/runtimeMode";
 
 interface Props {
   /** Which bp width the secondary should render at. */
@@ -132,9 +133,11 @@ export function SideBySideFrame({
         }}
       >
         {serialized ? (
-          <Editor key={"sbs-" + serialized.length} resolver={viewerResolver} enabled={false}>
-            <Frame data={serialized} />
-          </Editor>
+          <UntrustedRenderProvider value={true}>
+            <Editor key={"sbs-" + serialized.length} resolver={viewerResolver} enabled={false}>
+              <Frame data={serialized} />
+            </Editor>
+          </UntrustedRenderProvider>
         ) : (
           <div className="text-neutral-content p-4 text-xs">Loading mirror…</div>
         )}

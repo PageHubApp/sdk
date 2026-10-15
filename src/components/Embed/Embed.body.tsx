@@ -9,6 +9,7 @@ import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
 import { useItemContext } from "../../utils/itemContext";
+import { useUntrustedRender } from "../../utils/runtimeMode";
 import { InjectedHeadTags, InjectedBodyTags } from "../../chrome/static/runtime/InjectedHeadTags";
 import type { RenderCtx } from "../../render/react/RenderCtx";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
@@ -196,10 +197,11 @@ export interface EmbedProps extends BaseSelectorProps {
 }
 
 /**
- * The embed as the editor shows it: in a sandboxed frame with an opaque origin.
- * The editor runs signed in as whoever is editing, and the embed was written by
- * anyone with edit access — so its markup never touches the editor's document.
- * `headCode` / `footCode` don't run while editing at all (widgets would fire).
+ * The embed as the editor (and its read-only previews) shows it: in a sandboxed
+ * frame with an opaque origin. The editor runs signed in as whoever is editing,
+ * and the embed was written by anyone with edit access — so its markup never
+ * touches the editor's document. `headCode` / `footCode` don't run there at all
+ * (widgets would fire).
  * Clicks pass through so the node stays selectable.
  */
 function EditorEmbedFrame({ html, title }: { html: string; title: string }) {
@@ -242,9 +244,13 @@ export function renderEmbedBody(props: EmbedProps, ctx: RenderCtx) {
   // data-bindable inside a Data repeater (e.g. a "reels" collection whose
   // rows drive the iframe src).
   const itemContext = useItemContext();
+  // The editor and editor previews on the app origin show the embed in a
+  // sandboxed frame instead of running its markup in the page.
+  const untrusted = useUntrustedRender();
+  const framed = ctx.enabled || untrusted;
   const rawHTML = resolveEmbedHTML(props);
   const embedHTML = rawHTML.includes("{{")
-    ? replaceVariables(rawHTML, ctx.rootProps, itemContext)
+    ? replaceVariables(rawHTML, ctx.rootProps, itemContext, null, { html: true })
     : rawHTML;
   const prop: any = {
     ref: (r: any) => {
@@ -256,12 +262,13 @@ export function renderEmbedBody(props: EmbedProps, ctx: RenderCtx) {
       props.title || EMBED_SERVICES[props.service || "custom"]?.label || "Embedded content",
   };
   applyAriaProps(prop, props);
-  if (embedHTML && !ctx.enabled) prop.dangerouslySetInnerHTML = { __html: embedHTML };
+  if (embedHTML && !framed) prop.dangerouslySetInnerHTML = { __html: embedHTML };
+  if (embedHTML && framed) {
+    prop.children = <EditorEmbedFrame html={embedHTML} title={prop["aria-label"]} />;
+  }
 
   if (ctx.enabled) {
-    prop.children = embedHTML ? (
-      <EditorEmbedFrame html={embedHTML} title={prop["aria-label"]} />
-    ) : (
+    prop.children = prop.children ?? (
       <EditorEmptyLeafHint
         selected={ctx.isActive}
         icon={<TbCode aria-hidden />}
@@ -278,7 +285,7 @@ export function renderEmbedBody(props: EmbedProps, ctx: RenderCtx) {
     motionIt(props, "div", ctx.enabled),
     applyAnimation({ ...prop, key: ctx.id }, props, null, ctx.enabled)
   );
-  if (ctx.enabled || (!props.headCode && !props.footCode)) return box;
+  if (framed || (!props.headCode && !props.footCode)) return box;
   return (
     <>
       {props.headCode ? <InjectedHeadTags html={props.headCode} /> : null}

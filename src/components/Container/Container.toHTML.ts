@@ -6,6 +6,7 @@ import {
   getInlineStyle,
   handlerAttrs,
   interpolate,
+  interpolateHref,
   resolveActionHref,
   stateAttrs,
   staticClasses,
@@ -50,7 +51,7 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   // still ships as `data-ph-actions` so the runtime dispatches every entry.
   const linkAction = t === "div" ? findLinkAction(migrateActions(props)) : null;
   const rawLinkHref = linkAction ? resolveActionHref(linkAction, ctx) : null;
-  const linkHref = rawLinkHref && ctx ? interpolate(rawLinkHref, ctx) : rawLinkHref;
+  const linkHref = ctx ? interpolateHref(rawLinkHref, ctx) : rawLinkHref;
   if (linkHref) t = "a";
 
   const attrs: Record<string, string | boolean | undefined | null> = {

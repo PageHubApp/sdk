@@ -21,6 +21,7 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
     revertShowHide,
     toggleEl,
     interpolateItem,
+    safeHref,
     fireConversion,
     addToCart,
     cartCheckout,
@@ -63,7 +64,8 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
       }
       if (t === "link" && href) {
         if (ev) ev.preventDefault();
-        const resolved = interpolateItem(href, itemContext);
+        const resolved = safeHref(interpolateItem(href, itemContext));
+        if (!resolved) return;
         if (action.target === "_blank") {
           // Popup must open synchronously inside the user-gesture handler.
           window.open(resolved, "_blank", "noopener,noreferrer");
@@ -150,7 +152,7 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
         return;
       }
       if (t === "download-file") {
-        const url = interpolateItem(action.url, itemContext);
+        const url = safeHref(interpolateItem(action.url, itemContext));
         if (!url) return;
         if (ev) ev.preventDefault();
         const a = document.createElement("a");

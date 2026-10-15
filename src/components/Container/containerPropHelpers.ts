@@ -10,6 +10,7 @@ import {
 import { resolveAnchorsInActions } from "../../utils/anchors/resolveAnchorsInAction";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { replaceVariables } from "../../utils/design/variables";
+import { safeHref } from "../../utils/htmlSafety";
 import type { PageIndex } from "../../utils/page/pageManagement";
 
 /**
@@ -99,7 +100,7 @@ export function applyContainerActions(prop: any, ctx: ApplyActionsCtx): ApplyAct
   const actions = resolveAnchorsInActions(rawActions, anchors) as NodeAction[];
   const firstLink = findLinkAction(actions);
   const rawUrl = actionToHref(firstLink, pageIndex, router?.asPath);
-  const resolvedUrl =
+  const resolvedUrl = safeHref(
     rawUrl && rootProps
       ? (() => {
           try {
@@ -108,7 +109,8 @@ export function applyContainerActions(prop: any, ctx: ApplyActionsCtx): ApplyAct
             return rawUrl;
           }
         })()
-      : rawUrl;
+      : rawUrl
+  );
   const linkTarget = actionTarget(firstLink);
   const isInternalLink =
     !!firstLink && typeof resolvedUrl === "string" && resolvedUrl.startsWith("/");

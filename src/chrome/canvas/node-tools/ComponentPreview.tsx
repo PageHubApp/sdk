@@ -8,6 +8,7 @@ import {
 } from "../../../utils/modifierUtils";
 import { buildCraftTreeFromStructure } from "../../buildCraftTreeFromStructure";
 import { sdkLog } from "../../../utils/logger";
+import { UntrustedRenderProvider } from "../../../utils/runtimeMode";
 
 /**
  * Error boundary that catches CraftJS invariant errors inside preview Editors.
@@ -255,9 +256,11 @@ export const ComponentPreview = React.memo(function ComponentPreview({
             } as any
           }
         >
-          <Editor resolver={resolver} enabled={false}>
-            <Frame>{previewElement}</Frame>
-          </Editor>
+          <UntrustedRenderProvider value={true}>
+            <Editor resolver={resolver} enabled={false}>
+              <Frame>{previewElement}</Frame>
+            </Editor>
+          </UntrustedRenderProvider>
         </div>
       </div>
     </PreviewErrorBoundary>

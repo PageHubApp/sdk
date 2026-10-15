@@ -7,6 +7,7 @@ import {
   getPageIndex,
   handlerAttrs,
   interpolate,
+  interpolateHref,
   liveStateText,
   stateAttrs,
   staticClasses,
@@ -26,13 +27,13 @@ const sanitizeTagName = (raw: unknown): string => {
 export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const cls = staticClasses(props, ctx);
   const style = getInlineStyle(props);
-  const text = interpolate(props.text || "", ctx);
+  const text = interpolate(props.text || "", ctx, { html: true });
   const safeName = sanitizeTagName(props.tagName);
 
   const actions = migrateActions(props);
   const firstLink = findLinkAction(actions);
   const rawHref = actionToHref(firstLink, getPageIndex(ctx), ctx?.currentPath);
-  const href = rawHref ? interpolate(rawHref, ctx) : rawHref;
+  const href = interpolateHref(rawHref, ctx);
   const target = actionTarget(firstLink);
 
   if (href) {

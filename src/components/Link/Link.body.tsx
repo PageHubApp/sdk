@@ -5,7 +5,7 @@ import { twMerge } from "tailwind-merge";
 import { useRouter } from "next/router";
 import NextLink from "next/link";
 import { TbPointer } from "../_emptyHintIcons";
-import { addCustomHandlers } from "../../utils/actions/customHandlers";
+import { useCustomHandlers } from "../../utils/actions/customHandlers";
 import { addActionHandlers } from "../../utils/actions/dispatcher";
 import { useItemContext } from "../../utils/itemContext";
 import { applyAttrs } from "../../utils/applyAttrs";
@@ -21,6 +21,7 @@ import { useResolvedIcon } from "../../utils/icons/iconResolver";
 import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
+import { safeHref } from "../../utils/htmlSafety";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { resolvePageRef } from "../../utils/page/pageManagement";
 import { EditorEmptyLeafHint } from "../../chrome/primitives/EditorEmptyLeafHint";
@@ -84,6 +85,7 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
   if (resolvedUrl && typeof resolvedUrl === "string" && resolvedUrl.startsWith("ref:")) {
     resolvedUrl = resolvePageRef(resolvedUrl, ctx.pageIndex, router?.asPath);
   }
+  resolvedUrl = safeHref(resolvedUrl) ?? null;
   const target = actionTarget(firstLink);
 
   const isInternalLink =
@@ -112,7 +114,7 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
 
   applyAttrs(prop, props.attrs, v => replaceVariables(v, ctx.rootProps, itemContext));
   if (typeof prop.href === "string" && prop.href.includes("{{")) {
-    prop.href = replaceVariables(prop.href, ctx.rootProps, itemContext);
+    prop.href = safeHref(replaceVariables(prop.href, ctx.rootProps, itemContext));
   }
 
   if (ctx.enabled) ele = "span";
@@ -135,7 +137,7 @@ export function renderLinkBody(props: any, ctx: RenderCtx) {
     addActionHandlers(prop, actions, ctx.enabled, actionCtx);
   }
 
-  addCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
+  useCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
   if (actions.length > 0 && !ctx.enabled) {
     prop["data-action"] = actions.map(a => a.type).join(" ");

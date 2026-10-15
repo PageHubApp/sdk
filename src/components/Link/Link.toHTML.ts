@@ -11,6 +11,7 @@ import {
   getPageIndex,
   handlerAttrs,
   interpolate,
+  interpolateHref,
   stateAttrs,
   staticClasses,
   tag,
@@ -43,7 +44,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const actions = migrateActions(props);
   const firstLink = findLinkAction(actions);
   const rawHref = actionToHref(firstLink, getPageIndex(ctx), ctx?.currentPath);
-  const href = rawHref ? interpolate(rawHref, ctx) : rawHref;
+  const href = interpolateHref(rawHref, ctx);
   const target = actionTarget(firstLink);
 
   const attrs: Record<string, any> = {
@@ -75,8 +76,9 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     }
   }
 
-  // Persisted label HTML like Text.craft (variable spans, TipTap); escaping breaks static previews.
-  const textHTML = !icon?.only && props.text ? interpolate(String(props.text), ctx) : "";
+  // The label is persisted HTML like Text.craft (variable spans, TipTap) and stays
+  // raw; only visitor-sourced `{{…}}` values are escaped.
+  const textHTML = !icon?.only && props.text ? interpolate(String(props.text), ctx, { html: true }) : "";
   const before = icon?.position === "left" || icon?.position === "top";
   const inner = before ? iconHTML + textHTML : textHTML + iconHTML;
 

@@ -304,7 +304,13 @@ function TextEditorMode({
     }
   };
 
-  const previewHtml = replaceVariables(rawText, extractRootDataFromQuery(query).rootProps, itemContext, anchors);
+  const previewHtml = replaceVariables(
+    rawText,
+    extractRootDataFromQuery(query).rootProps,
+    itemContext,
+    anchors,
+    { html: true }
+  );
   const safePreviewHtml = editorSafeHtml(previewHtml);
   const previewEmpty = isVisuallyEmptyRichText(previewHtml);
   const showEmptyChrome = enabled && previewEmpty && !isEditing && !isInsideLinkedComponent;

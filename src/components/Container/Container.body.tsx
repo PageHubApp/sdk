@@ -11,7 +11,7 @@ import { ViewModeAtom } from "../../utils/atoms";
 import { usePanelUrl } from "../../utils/usePanelUrl";
 import { registerLiveComponent } from "../../utils/component/liveComponentRegistry";
 import { mergeAccessibilityProps } from "../../utils/accessibility";
-import { addCustomHandlers } from "../../utils/actions/customHandlers";
+import { useCustomHandlers } from "../../utils/actions/customHandlers";
 import { fireIntervalActions } from "../../utils/actions/interval";
 import { fireLoadAction } from "../../utils/actions/load";
 import { getStateValue } from "../../utils/state/stateRegistry";
@@ -403,7 +403,7 @@ export function renderContainerBody(
     anchors,
   });
 
-  addCustomHandlers(prop, props.handlers, ctx.enabled, props.handlerOptions);
+  useCustomHandlers(prop, props.handlers, ctx.enabled, props.handlerOptions);
 
   if (props.scrollEffect) prop["data-scroll-effect"] = props.scrollEffect;
   {

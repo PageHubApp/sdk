@@ -2,6 +2,7 @@ import type { DownloadFileAction, NodeAction } from "../../action";
 import { actionGatePasses } from "../gates";
 import { ActionContext, chain, interpolateItem } from "../internal";
 import { sdkLog } from "../../logger";
+import { safeHref } from "../../htmlSafety";
 
 export function attachDownloadFile(
   prop: any,
@@ -15,7 +16,7 @@ export function attachDownloadFile(
     run(e);
     if (enabled) return;
     if (!actionGatePasses(action)) return;
-    const url = interpolateItem(df.url, context?.itemContext);
+    const url = safeHref(interpolateItem(df.url, context?.itemContext));
     if (!url) return;
     e.preventDefault();
     try {

@@ -11,7 +11,7 @@ import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import type { RenderCtx } from "../../render/react/RenderCtx";
 import { useAnchors, resolveAnchors } from "../../utils/anchors/anchorContext";
 import { setState, useStateValue } from "../../utils/state/stateRegistry";
-import { addCustomHandlers } from "../../utils/actions/customHandlers";
+import { useCustomHandlers } from "../../utils/actions/customHandlers";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { BaseSelectorProps, applyAriaProps } from "../selectors";
 
@@ -269,7 +269,7 @@ export function renderFormElementBody(props: any, ctx: RenderCtx) {
 
   prop["data-border"] = /\bborder(-[^\s])?/.test(props.className || "");
 
-  addCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
+  useCustomHandlers(prop, props.handlers, ctx.enabled, (props as any).handlerOptions);
 
   if (ctx.enabled) {
     prop["data-bounding-box"] = ctx.enabled;

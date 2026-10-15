@@ -2,6 +2,8 @@ import { getStateValue, setState } from "../state/stateRegistry";
 import { STATE_KEY, VAR_PREFIX } from "../state/keys";
 import { sdkLog } from "../logger";
 import { walkPath } from "../walkPath";
+import { escapeHTML, isOwnerHtmlKey } from "../htmlSafety";
+import { parseTemplateExpr } from "./templateExpr";
 
 /**
  * Shape of ROOT_NODE props that the variable / page / media / action helpers
@@ -335,63 +337,22 @@ function resolveRootPropVar(key: string, rootProps: RootProps): string | undefin
   return fallback ? resolveRootPropVar(fallback, rootProps) : undefined;
 }
 
-// ── Template expression parsing ───────────────────────────────────────────────
-
-type ParsedTemplateExpr =
-  | { kind: "ternary"; lhs: string; op: "==" | "!="; rhs: string; ifTrue: string; ifFalse: string }
-  | { kind: "truthy"; key: string; ifTrue: string; ifFalse: string }
-  | { kind: "plain"; key: string; fallback: string | null };
-
-const stripQuotes = (s: string): string => s.replace(/^["']|["']$/g, "");
-
 /**
- * Parse the inner expression of a `{{...}}` token into a structured form.
- * Pure (no resolution) so it's unit-testable in isolation; the caller resolves
- * `lhs` / `key` and applies its own miss policy. Match order — ternary, then
- * truthy, then plain `||` — mirrors the original inline branching exactly, and
- * quote-stripping / trimming of the literal branches is applied unconditionally
- * (the original applied the identical transform to whichever branch was chosen).
+ * Domains a site visitor can write: form-fed collection rows (`item.*`, except
+ * rich-text fields — the owner's markup), connector data, URL / runtime state,
+ * the customer's profile. `company.*` / `variables.*` are author-owned settings.
  */
-function parseTemplateExpr(raw: string): ParsedTemplateExpr {
-  const trimmed = raw.trim();
+const VISITOR_PREFIXES = [VAR_PREFIX.item, VAR_PREFIX.state, VAR_PREFIX.connector, VAR_PREFIX.auth];
+const isVisitorKey = (key: string, item?: Record<string, any> | null): boolean =>
+  VISITOR_PREFIXES.some(p => key.startsWith(p)) && !isOwnerHtmlKey(key, item);
 
-  // ── Ternary: {{key == value ? ifTrue : ifFalse}} ──
-  // Requires spaces around the else `:` to avoid matching ref: or https:
-  const ternaryMatch = trimmed.match(/^(.+?)\s*(==|!=)\s*(.+?)\s*\?\s*(.+?)\s+:\s+(.+)$/);
-  if (ternaryMatch) {
-    const [, lhsRaw, op, rhsRaw, ifTrue, ifFalse] = ternaryMatch;
-    return {
-      kind: "ternary",
-      lhs: lhsRaw.trim(),
-      op: op as "==" | "!=",
-      rhs: stripQuotes(rhsRaw.trim()),
-      ifTrue: stripQuotes(ifTrue.trim()),
-      ifFalse: stripQuotes(ifFalse.trim()),
-    };
-  }
-
-  // ── Bare truthiness: {{auth.status ? /yes : /no}} ──
-  const truthyMatch = trimmed.match(/^(.+?)\s*\?\s*(.+?)\s+:\s+(.+)$/);
-  if (truthyMatch) {
-    const [, keyRaw, ifTrue, ifFalse] = truthyMatch;
-    return {
-      kind: "truthy",
-      key: keyRaw.trim(),
-      ifTrue: stripQuotes(ifTrue.trim()),
-      ifFalse: stripQuotes(ifFalse.trim()),
-    };
-  }
-
-  // ── Standard variable with optional || fallback ──
-  const pipeIdx = trimmed.indexOf("||");
-  if (pipeIdx !== -1) {
-    return {
-      kind: "plain",
-      key: trimmed.slice(0, pipeIdx).trim(),
-      fallback: stripQuotes(trimmed.slice(pipeIdx + 2).trim()),
-    };
-  }
-  return { kind: "plain", key: trimmed, fallback: null };
+export interface ReplaceVariablesOptions {
+  /**
+   * The result is emitted as HTML (element content, embed code). Visitor-
+   * sourced values are HTML-escaped; the author's own template text, ternary
+   * branches and `||` fallbacks stay raw.
+   */
+  html?: boolean;
 }
 
 /**
@@ -401,13 +362,15 @@ function parseTemplateExpr(raw: string): ParsedTemplateExpr {
  *
  * @param text - The text containing variable placeholders
  * @param rootProps - ROOT_NODE props (read once at the editor boundary or supplied by walker)
+ * @param options - `html: true` when the output is inserted as markup
  * @returns Text with variables replaced by actual values or defaults
  */
 export const replaceVariables = (
   text: string | undefined,
   rootProps: RootProps | null | undefined,
   itemContext?: Record<string, any> | null,
-  anchors?: Readonly<Record<string, string>> | null
+  anchors?: Readonly<Record<string, string>> | null,
+  options?: ReplaceVariablesOptions
 ): string => {
   // Ensure text is a string and not null/undefined
   if (!text || typeof text !== "string") {
@@ -470,7 +433,9 @@ export const replaceVariables = (
 
       // ── Standard variable with optional || fallback ──
       const resolved = resolveVar(expr.key);
-      if (resolved !== undefined) return resolved;
+      if (resolved !== undefined) {
+        return options?.html && isVisitorKey(expr.key, itemContext) ? escapeHTML(resolved) : resolved;
+      }
       if (expr.fallback !== null) return expr.fallback;
 
       // Editor shows realistic placeholder defaults (Acme Inc., etc.) so authors

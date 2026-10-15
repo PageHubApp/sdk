@@ -8,7 +8,7 @@ import { stringifyChunk } from "./stringifyChunk";
 export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
   // Cross-chunk function bindings via runtime registry. See
   // staticPublishRuntime.ts preamble for the why.
-  const { setState, getStateValue, evalGroups } = __phRT;
+  const { setState, getStateValue, evalGroups, escapeHtml, safeHref } = __phRT;
 
   function walkSlotPath(obj: any, parts: string[]) {
     let v = obj;
@@ -32,11 +32,9 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
     return String(tmpl).replace(/\{\{slot:([\w.]+)\}\}/g, function (_, path) {
       const v = walkSlotPath(item, path.split("."));
       if (v == null) return "";
-      return String(v)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+      // Rich-text fields are the owner's markup (htmlSafety.ts RICH_HTML_KEYS).
+      const rich = item && Array.isArray(item.__richHtml) && item.__richHtml.includes(path.split(".")[0]);
+      return rich ? String(v) : escapeHtml(v);
     });
   }
   // Build one row from the item template. Template nodes gated on `item`
@@ -47,6 +45,14 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
   function buildRow(html: string, item: any): HTMLElement | null {
     const tmp = document.createElement("div");
     tmp.innerHTML = html;
+    // Slot values are escaped, but a URL attribute filled from one can still
+    // carry a script scheme. Same allow-list as the server walker.
+    const urls = tmp.querySelectorAll("[href], iframe[src]");
+    for (let u = 0; u < urls.length; u++) {
+      const attr = urls[u].hasAttribute("href") ? "href" : "src";
+      const url = urls[u].getAttribute(attr);
+      if (url && !safeHref(url)) urls[u].removeAttribute(attr);
+    }
     const gated = tmp.querySelectorAll("[data-ph-item-conditions]");
     for (let g = 0; g < gated.length; g++) {
       const el = gated[g];

@@ -16,6 +16,7 @@ import {
   getInlineStyle,
   getPageIndex,
   interpolate,
+  interpolateHref,
   staticClasses,
   tag,
   type StaticRenderContext,
@@ -44,7 +45,7 @@ const TEXT_CLASS_RE =
 function linkHref(props: Record<string, any>, ctx: StaticRenderContext) {
   const link = findLinkAction(migrateActions(props));
   const raw = actionToHref(link, getPageIndex(ctx), ctx.currentPath);
-  return { href: raw ? interpolate(raw, ctx) : "", target: actionTarget(link) };
+  return { href: interpolateHref(raw, ctx) ?? "", target: actionTarget(link) };
 }
 
 function wrapLink(html: string, href: string, target?: string): string {
@@ -148,7 +149,7 @@ const buttonToEmail: ToHTMLFn = (props, _childrenHTML, ctx) => {
     .filter(t => TEXT_CLASS_RE.test(t))
     .join(" ");
   const { href, target } = linkHref(props, ctx);
-  const label = props.text ? interpolate(String(props.text), ctx) : "";
+  const label = props.text ? interpolate(String(props.text), ctx, { html: true }) : "";
   const anchor = tag(
     "a",
     {

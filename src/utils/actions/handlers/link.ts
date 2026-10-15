@@ -3,6 +3,7 @@ import type { NodeAction } from "../../action";
 import { fireConversion } from "../conversion";
 import { actionGatePasses } from "../gates";
 import { ActionContext, chain } from "../internal";
+import { safeHref } from "../../htmlSafety";
 
 export function attachLink(
   prop: any,
@@ -42,7 +43,7 @@ export function attachLink(
       run(e);
       if (enabled) return;
       if (!actionGatePasses(action)) return;
-      const href = context?.resolvedLinkHref || action.href;
+      const href = safeHref(context?.resolvedLinkHref || action.href);
       if (!href) return;
       // Modified click (new tab / window / download) — let the browser handle
       // the `<a href>` natively; the current page stays, so the beacon is

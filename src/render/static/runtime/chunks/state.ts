@@ -96,12 +96,8 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
         el.innerHTML = tpl.replace(
           /\{\{\s*state\.([^}\s]+)\s*\}\}/g,
           function (_m: string, key: string) {
-            const v = stateTokenValue(key);
-            return v
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;");
+            // Items-chunk helper; read lazily (that chunk runs after this one).
+            return __phRT.escapeHtml(stateTokenValue(key));
           }
         );
       });
