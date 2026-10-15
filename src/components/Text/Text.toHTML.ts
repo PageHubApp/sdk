@@ -15,6 +15,7 @@ import {
   type ToHTMLFn,
 } from "../../utils/staticHtml";
 import { unwrapP } from "../../utils/unwrapP";
+import { resolveRefLinks } from "../../utils/resolveRefLinks";
 
 // Guard against corrupted tagName data (e.g. `p, "text": "..."` from bad MCP writes)
 const sanitizeTagName = (raw: unknown): string => {
@@ -27,7 +28,11 @@ const sanitizeTagName = (raw: unknown): string => {
 export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const cls = staticClasses(props, ctx);
   const style = getInlineStyle(props);
-  const text = interpolate(props.text || "", ctx, { html: true });
+  const text = resolveRefLinks(
+    interpolate(props.text || "", ctx, { html: true }),
+    getPageIndex(ctx),
+    ctx?.currentPath
+  );
   const safeName = sanitizeTagName(props.tagName);
 
   const actions = migrateActions(props);

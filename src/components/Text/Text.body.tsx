@@ -19,6 +19,7 @@ import { motionIt } from "../../utils/motion";
 import { applyAnimation } from "../../utils/tailwind/tailwind";
 import { replaceVariables } from "../../utils/design/variables";
 import { unwrapP } from "../../utils/unwrapP";
+import { resolveRefLinks } from "../../utils/resolveRefLinks";
 import { useRuntimeVarsVersion } from "../../utils/design/RuntimeVarsContext";
 import { useItemContext } from "../../utils/itemContext";
 import { useAnchors } from "../../utils/anchors/anchorContext";
@@ -58,7 +59,12 @@ const renderLiveMode = (
   jsDispatch = false,
   untrusted = false
 ) => {
-  const interpolated = replaceVariables(props.text, rootProps, itemContext, anchors, { html: true });
+  // Resolve `ref:` page links before sanitizing — DOMPurify drops unknown schemes.
+  const interpolated = resolveRefLinks(
+    replaceVariables(props.text, rootProps, itemContext, anchors, { html: true }),
+    pageIndex,
+    router?.asPath
+  );
   const processedText = untrusted ? editorSafeHtml(interpolated) : interpolated;
   let tagName = sanitizeTagName(props.tagName);
   const firstLink = findLinkAction(migrateActions(props));
