@@ -22,12 +22,12 @@ export function useFocusTrap(isOpen: boolean) {
         el => el.offsetParent !== null
       );
 
-    // Focus first focusable element
-    const initial = getFocusable();
-    if (initial.length > 0) {
-      // Defer to allow dialog to render
-      requestAnimationFrame(() => initial[0]?.focus());
-    }
+    // Focus the first focusable element, unless something inside already took
+    // focus (an `autoFocus` search field). Deferred so the dialog has rendered.
+    requestAnimationFrame(() => {
+      if (container.contains(document.activeElement)) return;
+      getFocusable()[0]?.focus();
+    });
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Tab") return;

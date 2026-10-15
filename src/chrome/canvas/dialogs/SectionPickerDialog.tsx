@@ -1,13 +1,12 @@
 import { Element, useEditor } from "@craftjs/core";
-import { useEffect, useMemo, useRef, useState } from "react";
-import ReactDOM from "react-dom";
+import { useMemo, useState } from "react";
 import { TbLayoutGridAdd, TbSearch, TbX } from "react-icons/tb";
 import { useAtomValue } from "@zedux/react";
 import { ComponentsAtom } from "../../../utils/atoms";
 import { useSectionTemplates } from "../../../utils/useSectionTemplates";
 import { buildCraftTreeFromStructure } from "../../buildCraftTreeFromStructure";
 import { ComponentPreview } from "../node-tools/ComponentPreview";
-import { useOverlay } from "../../../registry/hooks/useOverlay";
+import { Modal } from "../../floating/Modal";
 import { sdkLog } from "../../../utils/logger";
 
 /** Insert payload for built-in section presets (same tree builder as library toolbox). */
@@ -106,7 +105,6 @@ export const SectionPickerDialog = ({
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const dialogRef = useRef(null);
 
   // Filter to only get sections
   const customSections = useMemo(() => {
@@ -137,29 +135,6 @@ export const SectionPickerDialog = ({
     }
     return baseCategories;
   }, [customSections, baseCategories]);
-
-  useEffect(() => {
-    const handleClickOutside = event => {
-      if (dialogRef.current && !dialogRef.current.contains(event.target)) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, onClose]);
-
-  // Escape dismissal: registry overlay stack.
-  useOverlay({
-    id: "section-picker-dialog",
-    isOpen,
-    onDismiss: onClose,
-  });
 
   const templates = useMemo(() => {
     const resolver = query.getOptions().resolver;
@@ -201,184 +176,174 @@ export const SectionPickerDialog = ({
     setSearchQuery("");
   };
 
-  // Don't render on server-side
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return ReactDOM.createPortal(
-    <>
-      {isOpen && (
-        <div
-          className="animate-backdrop-in bg-base-100/75 fixed inset-0 z-100 flex items-center justify-center backdrop-blur-sm"
-          style={{ pointerEvents: "auto" }}
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      id="section-picker-dialog"
+      ariaLabel="Add Section"
+      zIndex={100}
+      surface={false}
+      className="pagehub-sdk-root ph-modal-surface-heavy flex h-[80vh] w-[33vw] max-w-md flex-col overflow-hidden"
+    >
+      {/* Header */}
+      <div className="border-base-300 bg-accent text-accent-content flex items-center justify-between border-b px-6 py-4">
+        <h2 className="text-base-content flex items-center gap-2 text-2xl font-bold">
+          <TbLayoutGridAdd className="size-7" />
+          Add Section
+        </h2>
+        <button
+          onClick={onClose}
+          className="text-neutral-content hover:text-neutral-content transition-colors"
+          aria-label="Close"
         >
-          <div
-            ref={dialogRef}
-            className="pagehub-sdk-root ph-modal-surface-heavy flex h-[80vh] w-[33vw] max-w-md flex-col overflow-hidden"
-          >
-            {/* Header */}
-            <div className="border-base-300 bg-accent text-accent-content flex items-center justify-between border-b px-6 py-4">
-              <h2 className="text-base-content flex items-center gap-2 text-2xl font-bold">
-                <TbLayoutGridAdd className="size-7" />
-                Add Section
-              </h2>
-              <button
-                onClick={onClose}
-                className="text-neutral-content hover:text-neutral-content transition-colors"
-                aria-label="Close"
-              >
-                <TbX size={24} />
-              </button>
-            </div>
+          <TbX size={24} />
+        </button>
+      </div>
 
-            {/* Content */}
-            <div className="flex flex-1 overflow-hidden">
-              {/* Left sidebar - Categories */}
-              <div className="border-base-300 bg-neutral text-neutral-content flex w-64 flex-col border-r">
-                <div className="flex-1 overflow-y-auto p-4">
-                  <div className="space-y-1">
-                    {categories.map(category => (
-                      <button
-                        key={category.id}
-                        onClick={() => handleCategorySelect(category.id)}
-                        className={`w-full rounded-lg px-4 py-2 text-left transition-colors ${
-                          selectedCategory === category.id && !isSearchMode
-                            ? "bg-primary text-primary-content font-medium"
-                            : "text-base-content hover:bg-neutral"
-                        }`}
-                      >
-                        {category.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Search Bar - Bottom of sidebar */}
-                <div className="border-base-300 border-t p-4">
-                  <div className="input-wrapper input-hover relative">
-                    <input
-                      type="text"
-                      placeholder="Search"
-                      value={searchQuery}
-                      onChange={e => handleSearch(e.target.value)}
-                      className="input-plain-search pl-8"
-                    />
-                    <TbSearch
-                      className="text-neutral-content pointer-events-none absolute top-1/2 left-2 z-10 -translate-y-1/2"
-                      size={16}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Right content - Templates */}
-              <div className="flex-1 overflow-y-auto p-6">
-                <div
-                  key={isSearchMode ? `search-${searchQuery}` : selectedCategory}
-                  className="grid grid-cols-1 gap-6"
+      {/* Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left sidebar - Categories */}
+        <div className="border-base-300 bg-neutral text-neutral-content flex w-64 flex-col border-r">
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-1">
+              {categories.map(category => (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategorySelect(category.id)}
+                  className={`w-full rounded-lg px-4 py-2 text-left transition-colors ${
+                    selectedCategory === category.id && !isSearchMode
+                      ? "bg-primary text-primary-content font-medium"
+                      : "text-base-content hover:bg-neutral"
+                  }`}
                 >
-                  {templates.map((template, templateIndex) => (
-                    <button
-                      key={`${isSearchMode ? "search" : selectedCategory}-${template.isCustom ? "custom" : "builtin"}-${template.id}-${templateIndex}`}
-                      onClick={() => {
-                        if (template.isCustom) {
-                          // For custom sections, get the serialized node and reconstruct
-                          try {
-                            const masterNode = query.node(template.rootNodeId).get();
-                            if (masterNode) {
-                              // Get the component registry
-                              const componentRegistry = query.getOptions().resolver;
+                  {category.name}
+                </button>
+              ))}
+            </div>
+          </div>
 
-                              // Recursively build React elements for children
-                              const uniquePrefix = `section-${Date.now()}`;
-                              const buildElement = (nodeId, index = 0) => {
-                                const node = query.node(nodeId).get();
-                                if (!node) return null;
-
-                                const serializedNode = query.node(nodeId).toSerializedNode();
-                                const typeName =
-                                  typeof serializedNode.type === "string"
-                                    ? serializedNode.type
-                                    : serializedNode.type?.resolvedName || "Container";
-
-                                // Resolve from the live (globalThis-locked) resolver
-                                const liveResolver = query.getOptions().resolver;
-                                const Comp = liveResolver?.[typeName] ?? typeName;
-
-                                const children = node.data.nodes
-                                  .map((childId, childIndex) => buildElement(childId, childIndex))
-                                  .filter(Boolean);
-
-                                return (
-                                  <Element
-                                    key={`${uniquePrefix}-${index}`}
-                                    canvas={serializedNode.props.canvas}
-                                    is={Comp}
-                                    {...serializedNode.props}
-                                  >
-                                    {children}
-                                  </Element>
-                                );
-                              };
-
-                              const freshElement = buildElement(template.rootNodeId);
-                              onSelectSection(freshElement);
-                            }
-                          } catch (e) {
-                            sdkLog.error("Error creating custom section:", e);
-                          }
-                        } else {
-                          onSelectSection(template.element);
-                        }
-                        onClose();
-                      }}
-                      className="group border-base-300 bg-base-200 text-base-content hover:border-primary relative overflow-hidden rounded-lg border-2 shadow-sm hover:shadow-md"
-                    >
-                      {/* Preview */}
-                      {template.isCustom ? (
-                        // Preview for custom sections - use ComponentPreview
-                        <>
-                          <ComponentPreview
-                            component={buildComponentFromNode(template.rootNodeId, query)}
-                            scale={0.2}
-                            resolver={query.getOptions().resolver}
-                          />
-                          {/* Custom Section Badge */}
-                          <div className="bg-primary text-primary-content absolute top-2 right-2 z-10 flex items-center gap-1 rounded-lg px-2 py-1 shadow-sm">
-                            <TbLayoutGridAdd className="size-3" />
-                            <span className="text-xs font-medium">Custom</span>
-                          </div>
-                        </>
-                      ) : (
-                        // Preview for built-in templates - use ComponentPreview
-                        <ComponentPreview
-                          component={template.structure}
-                          modifiers={template.modifiers}
-                          slug={String(template.slug || template.id)}
-                          scale={0.2}
-                          resolver={query.getOptions().resolver}
-                        />
-                      )}
-                    </button>
-                  ))}
-                </div>
-
-                {templates.length === 0 && (
-                  <div className="flex h-64 items-center justify-center">
-                    <p className="text-neutral-content text-lg">
-                      {isSearchMode
-                        ? `No templates found for "${searchQuery}"`
-                        : "No templates available for this category yet."}
-                    </p>
-                  </div>
-                )}
-              </div>
+          {/* Search Bar - Bottom of sidebar */}
+          <div className="border-base-300 border-t p-4">
+            <div className="input-wrapper input-hover relative">
+              <input
+                type="text"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={e => handleSearch(e.target.value)}
+                className="input-plain-search pl-8"
+              />
+              <TbSearch
+                className="text-neutral-content pointer-events-none absolute top-1/2 left-2 z-10 -translate-y-1/2"
+                size={16}
+              />
             </div>
           </div>
         </div>
-      )}
-    </>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+
+        {/* Right content - Templates */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div
+            key={isSearchMode ? `search-${searchQuery}` : selectedCategory}
+            className="grid grid-cols-1 gap-6"
+          >
+            {templates.map((template, templateIndex) => (
+              <button
+                key={`${isSearchMode ? "search" : selectedCategory}-${template.isCustom ? "custom" : "builtin"}-${template.id}-${templateIndex}`}
+                onClick={() => {
+                  if (template.isCustom) {
+                    // For custom sections, get the serialized node and reconstruct
+                    try {
+                      const masterNode = query.node(template.rootNodeId).get();
+                      if (masterNode) {
+                        // Get the component registry
+                        const componentRegistry = query.getOptions().resolver;
+
+                        // Recursively build React elements for children
+                        const uniquePrefix = `section-${Date.now()}`;
+                        const buildElement = (nodeId, index = 0) => {
+                          const node = query.node(nodeId).get();
+                          if (!node) return null;
+
+                          const serializedNode = query.node(nodeId).toSerializedNode();
+                          const typeName =
+                            typeof serializedNode.type === "string"
+                              ? serializedNode.type
+                              : serializedNode.type?.resolvedName || "Container";
+
+                          // Resolve from the live (globalThis-locked) resolver
+                          const liveResolver = query.getOptions().resolver;
+                          const Comp = liveResolver?.[typeName] ?? typeName;
+
+                          const children = node.data.nodes
+                            .map((childId, childIndex) => buildElement(childId, childIndex))
+                            .filter(Boolean);
+
+                          return (
+                            <Element
+                              key={`${uniquePrefix}-${index}`}
+                              canvas={serializedNode.props.canvas}
+                              is={Comp}
+                              {...serializedNode.props}
+                            >
+                              {children}
+                            </Element>
+                          );
+                        };
+
+                        const freshElement = buildElement(template.rootNodeId);
+                        onSelectSection(freshElement);
+                      }
+                    } catch (e) {
+                      sdkLog.error("Error creating custom section:", e);
+                    }
+                  } else {
+                    onSelectSection(template.element);
+                  }
+                  onClose();
+                }}
+                className="group border-base-300 bg-base-200 text-base-content hover:border-primary relative overflow-hidden rounded-lg border-2 shadow-sm hover:shadow-md"
+              >
+                {/* Preview */}
+                {template.isCustom ? (
+                  // Preview for custom sections - use ComponentPreview
+                  <>
+                    <ComponentPreview
+                      component={buildComponentFromNode(template.rootNodeId, query)}
+                      scale={0.2}
+                      resolver={query.getOptions().resolver}
+                    />
+                    {/* Custom Section Badge */}
+                    <div className="bg-primary text-primary-content absolute top-2 right-2 z-10 flex items-center gap-1 rounded-lg px-2 py-1 shadow-sm">
+                      <TbLayoutGridAdd className="size-3" />
+                      <span className="text-xs font-medium">Custom</span>
+                    </div>
+                  </>
+                ) : (
+                  // Preview for built-in templates - use ComponentPreview
+                  <ComponentPreview
+                    component={template.structure}
+                    modifiers={template.modifiers}
+                    slug={String(template.slug || template.id)}
+                    scale={0.2}
+                    resolver={query.getOptions().resolver}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {templates.length === 0 && (
+            <div className="flex h-64 items-center justify-center">
+              <p className="text-neutral-content text-lg">
+                {isSearchMode
+                  ? `No templates found for "${searchQuery}"`
+                  : "No templates available for this category yet."}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </Modal>
   );
 };

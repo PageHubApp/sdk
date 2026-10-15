@@ -8,11 +8,11 @@
  * migration.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import ReactDOM from "react-dom";
 import { useEditor } from "@craftjs/core";
 import { useRegistries } from "../../registry/provider";
 import { useCommandContext } from "../../registry/hooks";
 import { OVERLAY_Z_CRITICAL_MODAL } from "../popovers/overlayZIndex";
+import { Modal } from "../floating/Modal";
 import { useCommandPalette } from "./useCommandPalette";
 import {
   useCommandPaletteResults,
@@ -76,7 +76,7 @@ function formatShortcut(spec: string): string {
 
 function CategoryBadge({ category }: { category: string }) {
   return (
-    <span className="bg-base-300/40 text-base-content/60 rounded-md px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+    <span className="bg-base-300/40 text-base-content/60 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide uppercase">
       {category}
     </span>
   );
@@ -197,14 +197,7 @@ export function CommandPalette() {
     }, 0);
   };
 
-  if (!open) return null;
-
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      setOpen(false);
-      return;
-    }
     if (event.key === "Enter") {
       event.preventDefault();
       const entry = flat[activeIndex];
@@ -236,115 +229,100 @@ export function CommandPalette() {
   // Track flat index across groups during render.
   let flatIdx = -1;
 
-  const portalTarget =
-    (typeof document !== "undefined" &&
-      document.querySelector(".pagehub-sdk-root")) ||
-    (typeof document !== "undefined" ? document.body : null);
-  if (!portalTarget) return null;
-
-  return ReactDOM.createPortal(
-    <>
-      {/* Backdrop */}
+  return (
+    <Modal
+      isOpen={open}
+      onClose={() => setOpen(false)}
+      ariaLabel="Command palette"
+      zIndex={OVERLAY_Z_CRITICAL_MODAL}
+      surface={false}
+      tintClassName="bg-black/40"
+      blur={2}
+      positionerClassName="items-start pt-[18vh]"
+      className="pagehub-sdk-root w-[600px] max-w-[92vw]"
+    >
       <div
-        aria-hidden="true"
-        role="presentation"
-        className="fixed inset-0 bg-black/40 backdrop-blur-[2px]"
-        style={{ zIndex: OVERLAY_Z_CRITICAL_MODAL - 1 }}
-        onClick={() => setOpen(false)}
-      />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Command palette"
-        className="pagehub-sdk-root fixed left-1/2 top-[18vh] w-[600px] max-w-[92vw] -translate-x-1/2"
-        style={{ zIndex: OVERLAY_Z_CRITICAL_MODAL }}
         onKeyDown={handleKeyDown}
+        className="bg-neutral border-base-300 overflow-hidden rounded-lg border shadow-2xl"
       >
-        <div className="bg-neutral border-base-300 overflow-hidden rounded-lg border shadow-2xl">
-          {/* Search input */}
-          <div className="border-base-300/60 border-b px-3 py-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={search}
-              onChange={e => {
-                setSearch(e.target.value);
-                setActiveIndex(0);
-              }}
-              placeholder="Type a command…"
-              autoComplete="off"
-              spellCheck={false}
-              className="text-base-content placeholder:text-base-content/40 w-full bg-transparent text-sm outline-none"
-            />
-          </div>
+        {/* Search input */}
+        <div className="border-base-300/60 border-b px-3 py-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={search}
+            onChange={e => {
+              setSearch(e.target.value);
+              setActiveIndex(0);
+            }}
+            placeholder="Type a command…"
+            autoComplete="off"
+            spellCheck={false}
+            className="text-base-content placeholder:text-base-content/40 w-full bg-transparent text-sm outline-none"
+          />
+        </div>
 
-          {/* Results */}
-          <div
-            ref={listRef}
-            role="listbox"
-            aria-label="Commands"
-            className="max-h-[60vh] overflow-y-auto px-2 py-2"
-          >
-            {count === 0 ? (
-              <div className="text-base-content/50 px-3 py-8 text-center text-sm">
-                {search ? (
-                  <>
-                    No commands found for{" "}
-                    <span className="text-base-content/80">&ldquo;{search}&rdquo;</span>
-                  </>
-                ) : (
-                  <>No commands available in this context.</>
-                )}
-              </div>
-            ) : (
-              groups.map(group => (
-                <div key={group.category} className="mb-2 last:mb-0">
-                  <div className="text-base-content/40 px-2 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-wider">
-                    {group.category}
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    {group.items.map(entry => {
-                      flatIdx += 1;
-                      const idx = flatIdx;
-                      return (
-                        <div key={entry.id} data-palette-index={idx}>
-                          <PaletteRow
-                            entry={entry}
-                            active={idx === activeIndex}
-                            shortcut={
-                              shortcutMap[entry.id]
-                                ? formatShortcut(shortcutMap[entry.id]!)
-                                : null
-                            }
-                            onSelect={() => dispatch(entry)}
-                            onHover={() => {
-                              if (activeIndex !== idx) setActiveIndex(idx);
-                            }}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
+        {/* Results */}
+        <div
+          ref={listRef}
+          role="listbox"
+          aria-label="Commands"
+          className="max-h-[60vh] overflow-y-auto px-2 py-2"
+        >
+          {count === 0 ? (
+            <div className="text-base-content/50 px-3 py-8 text-center text-sm">
+              {search ? (
+                <>
+                  No commands found for{" "}
+                  <span className="text-base-content/80">&ldquo;{search}&rdquo;</span>
+                </>
+              ) : (
+                <>No commands available in this context.</>
+              )}
+            </div>
+          ) : (
+            groups.map(group => (
+              <div key={group.category} className="mb-2 last:mb-0">
+                <div className="text-base-content/40 px-2 pt-1 pb-1 text-[10px] font-semibold tracking-wider uppercase">
+                  {group.category}
                 </div>
-              ))
-            )}
-          </div>
+                <div className="flex flex-col gap-0.5">
+                  {group.items.map(entry => {
+                    flatIdx += 1;
+                    const idx = flatIdx;
+                    return (
+                      <div key={entry.id} data-palette-index={idx}>
+                        <PaletteRow
+                          entry={entry}
+                          active={idx === activeIndex}
+                          shortcut={
+                            shortcutMap[entry.id] ? formatShortcut(shortcutMap[entry.id]!) : null
+                          }
+                          onSelect={() => dispatch(entry)}
+                          onHover={() => {
+                            if (activeIndex !== idx) setActiveIndex(idx);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
-          {/* Footer hint */}
-          <div className="border-base-300/60 text-base-content/40 flex items-center justify-between border-t px-3 py-1.5 text-[10px]">
-            <span>
-              <kbd className="font-mono">↑↓</kbd> navigate ·{" "}
-              <kbd className="font-mono">↵</kbd> select ·{" "}
-              <kbd className="font-mono">esc</kbd> close
-            </span>
-            <span>
-              {count} command{count === 1 ? "" : "s"}
-            </span>
-          </div>
+        {/* Footer hint */}
+        <div className="border-base-300/60 text-base-content/40 flex items-center justify-between border-t px-3 py-1.5 text-[10px]">
+          <span>
+            <kbd className="font-mono">↑↓</kbd> navigate · <kbd className="font-mono">↵</kbd> select
+            · <kbd className="font-mono">esc</kbd> close
+          </span>
+          <span>
+            {count} command{count === 1 ? "" : "s"}
+          </span>
         </div>
       </div>
-    </>,
-    portalTarget
+    </Modal>
   );
 }

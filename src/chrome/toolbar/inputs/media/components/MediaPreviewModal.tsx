@@ -1,13 +1,13 @@
 import Image from "next/image";
 import { editorSafeHtml } from "../../../../../utils/editorSafeHtml";
-import ReactDOM from "react-dom";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { TbChevronLeft, TbChevronRight, TbCopy, TbDownload, TbX } from "react-icons/tb";
 import { getCdnUrl } from "@/utils/cdn";
 import { formatDimensions } from "@/utils/imageDimensions";
 import { formatFileSize, getMediaKind, type MediaItem } from "../utils/media-helpers";
 import { PAGEHUB_RTT_GLOBAL_ID } from "../../../../primitives/layout/tooltipSurface";
 import { OVERLAY_Z_CRITICAL_MODAL } from "../../../../popovers/overlayZIndex";
+import { Modal } from "../../../../floating/Modal";
 
 interface MediaPreviewModalProps {
   previewMedia: string | null;
@@ -24,12 +24,15 @@ export function MediaPreviewModal({
   onPrevious,
   onNext,
 }: MediaPreviewModalProps) {
-  if (!previewMedia) return null;
+  // Keeps the last previewed item on screen while the exit transition plays.
+  const shownIdRef = useRef(previewMedia);
+  if (previewMedia) shownIdRef.current = previewMedia;
+  const shownId = shownIdRef.current;
 
-  const media = filteredMedia.find(m => m.id === previewMedia);
+  const media = shownId ? filteredMedia.find(m => m.id === shownId) : undefined;
   if (!media) return null;
 
-  const currentIndex = filteredMedia.findIndex(m => m.id === previewMedia);
+  const currentIndex = filteredMedia.findIndex(m => m.id === shownId);
   const hasPrevious = currentIndex > 0;
   const hasNext = currentIndex < filteredMedia.length - 1;
   const kind = getMediaKind(media);
@@ -43,14 +46,19 @@ export function MediaPreviewModal({
           : undefined;
   const downloadName = media.metadata?.title || media.id;
 
-  return ReactDOM.createPortal(
-    <div
-      className="animate-backdrop-in fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-sm"
-      style={{ zIndex: OVERLAY_Z_CRITICAL_MODAL }}
-      onClick={onClose}
+  return (
+    <Modal
+      isOpen={previewMedia != null}
+      onClose={onClose}
+      ariaLabel={media.metadata?.title || media.id}
+      zIndex={OVERLAY_Z_CRITICAL_MODAL}
+      surface={false}
+      tintClassName="bg-black/90"
+      positionerClassName="p-0"
+      className="pointer-events-none relative flex h-full w-full items-center justify-center"
     >
       {/* Header actions */}
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+      <div className="pointer-events-auto absolute top-4 right-4 z-10 flex items-center gap-2">
         <CopyIdButton mediaId={media.id} />
         {downloadHref && (
           <a
@@ -58,9 +66,9 @@ export function MediaPreviewModal({
             download={downloadName}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={e => e.stopPropagation()}
             className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
             data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+            aria-label="Download"
             data-tooltip-content="Download"
           >
             <TbDownload className="size-6" />
@@ -70,6 +78,7 @@ export function MediaPreviewModal({
           onClick={onClose}
           className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
           data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          aria-label="Close"
           data-tooltip-content="Close (ESC)"
         >
           <TbX className="size-6" />
@@ -79,12 +88,10 @@ export function MediaPreviewModal({
       {/* Previous */}
       {hasPrevious && (
         <button
-          onClick={e => {
-            e.stopPropagation();
-            onPrevious();
-          }}
-          className="absolute top-1/2 left-4 z-10 -translate-y-1/2 rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
+          onClick={onPrevious}
+          className="pointer-events-auto absolute top-1/2 left-4 z-10 -translate-y-1/2 rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
           data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          aria-label="Previous"
           data-tooltip-content="Previous (←)"
         >
           <TbChevronLeft className="size-8" />
@@ -94,12 +101,10 @@ export function MediaPreviewModal({
       {/* Next */}
       {hasNext && (
         <button
-          onClick={e => {
-            e.stopPropagation();
-            onNext();
-          }}
-          className="absolute top-1/2 right-4 z-10 -translate-y-1/2 rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
+          onClick={onNext}
+          className="pointer-events-auto absolute top-1/2 right-4 z-10 -translate-y-1/2 rounded-lg bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
           data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+          aria-label="Next"
           data-tooltip-content="Next (→)"
         >
           <TbChevronRight className="size-8" />
@@ -107,21 +112,10 @@ export function MediaPreviewModal({
       )}
 
       {/* Image */}
-      <div
-        role="button"
-        tabIndex={0}
-        className="relative max-h-[90vh] max-w-[90vw]"
-        onClick={e => e.stopPropagation()}
-        onKeyDown={e => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        }}
-      >
+      <div className="pointer-events-auto relative max-h-[90vh] max-w-[90vw]">
         {media.type === "svg" ? (
           <div
-            className="flex max-h-[90vh] max-w-[90vw] items-center justify-center bg-white/5 p-8 backdrop-blur-sm"
+            className="flex max-h-[90vh] max-w-[90vw] items-center justify-center bg-white/5 p-8"
             dangerouslySetInnerHTML={{ __html: editorSafeHtml(media.metadata?.svg || "") }}
           />
         ) : kind === "video" && media.metadata?.deliveryURL ? (
@@ -132,7 +126,7 @@ export function MediaPreviewModal({
             className="max-h-[90vh] max-w-[90vw]"
           />
         ) : kind === "audio" && media.metadata?.deliveryURL ? (
-          <div className="flex max-w-[90vw] flex-col items-center gap-4 rounded-lg bg-white/5 p-8 backdrop-blur-sm">
+          <div className="flex max-w-[90vw] flex-col items-center gap-4 rounded-lg bg-white/5 p-8">
             <p className="text-sm text-white/80">{media.metadata?.title || media.id}</p>
             <audio src={media.metadata.deliveryURL} controls className="min-w-[400px]" />
           </div>
@@ -143,7 +137,7 @@ export function MediaPreviewModal({
             className="h-[90vh] w-[90vw] bg-white"
           />
         ) : kind !== "image" ? (
-          <div className="flex max-w-[90vw] flex-col items-center gap-4 rounded-lg bg-white/5 p-12 text-center backdrop-blur-sm">
+          <div className="flex max-w-[90vw] flex-col items-center gap-4 rounded-lg bg-white/5 p-12 text-center">
             <p className="text-lg text-white">{media.metadata?.title || media.id}</p>
             <p className="text-sm text-white/60">
               {media.metadata?.contentType || "file"} —{" "}
@@ -155,7 +149,6 @@ export function MediaPreviewModal({
                 download={downloadName}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
                 className="btn btn-primary"
               >
                 Download
@@ -200,15 +193,13 @@ export function MediaPreviewModal({
           </div>
         )}
       </div>
-    </div>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    </Modal>
   );
 }
 
 function CopyIdButton({ mediaId }: { mediaId: string }) {
   const [copied, setCopied] = useState(false);
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleClick = () => {
     navigator.clipboard.writeText(mediaId).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
@@ -218,7 +209,9 @@ function CopyIdButton({ mediaId }: { mediaId: string }) {
     <button
       onClick={handleClick}
       className="rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-      title={copied ? "Copied!" : "Copy media ID"}
+      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+      aria-label="Copy media ID"
+      data-tooltip-content={copied ? "Copied!" : "Copy media ID"}
     >
       <TbCopy className="size-6" />
     </button>

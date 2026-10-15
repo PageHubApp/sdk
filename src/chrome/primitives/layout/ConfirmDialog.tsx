@@ -1,8 +1,10 @@
-import ReactDOM from "react-dom";
+import { useId } from "react";
 import { TbAlertTriangle, TbCheck } from "react-icons/tb";
-import { useFocusTrap, useAnnounce } from "../../../utils/hooks/useAccessibility";
-import { OVERLAY_Z_CRITICAL_MODAL } from "../../popovers/overlayZIndex";
-import { useOverlay } from "../../../registry/hooks/useOverlay";
+import { useAnnounce } from "../../../utils/hooks/useAccessibility";
+import { OVERLAY_Z_PAGE_MODAL } from "../../popovers/overlayZIndex";
+import { Modal } from "../../floating/Modal";
+
+type ConfirmVariant = "danger" | "warning" | "info" | "success";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -12,9 +14,16 @@ interface ConfirmDialogProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  variant?: "danger" | "warning" | "info" | "success";
+  variant?: ConfirmVariant;
   icon?: React.ReactNode;
 }
+
+const VARIANT_STYLES: Record<ConfirmVariant, { icon: string; confirm: string }> = {
+  danger: { icon: "bg-red-100 text-red-600", confirm: "bg-red-600 hover:bg-red-700" },
+  warning: { icon: "bg-yellow-100 text-yellow-600", confirm: "bg-yellow-600 hover:bg-yellow-700" },
+  info: { icon: "bg-blue-100 text-blue-600", confirm: "bg-blue-600 hover:bg-blue-700" },
+  success: { icon: "bg-green-100 text-green-600", confirm: "bg-green-600 hover:bg-green-700" },
+};
 
 export const ConfirmDialog = ({
   isOpen,
@@ -27,75 +36,16 @@ export const ConfirmDialog = ({
   variant = "danger",
   icon,
 }: ConfirmDialogProps) => {
-  const focusTrapRef = useFocusTrap(isOpen);
   const announce = useAnnounce();
-
-  // Escape dismissal: registry overlay stack.
-  useOverlay({
-    id: `confirm-dialog:${title}`,
-    isOpen,
-    onDismiss: onClose,
-  });
-
-  if (!isOpen) return null;
-
-  const getVariantStyles = () => {
-    switch (variant) {
-      case "danger":
-        return {
-          iconBg: "bg-red-100",
-          iconColor: "text-red-600",
-          confirmBg: "bg-red-600 hover:bg-red-700",
-          confirmText: "text-white",
-        };
-      case "warning":
-        return {
-          iconBg: "bg-yellow-100",
-          iconColor: "text-yellow-600",
-          confirmBg: "bg-yellow-600 hover:bg-yellow-700",
-          confirmText: "text-white",
-        };
-      case "info":
-        return {
-          iconBg: "bg-blue-100",
-          iconColor: "text-blue-600",
-          confirmBg: "bg-blue-600 hover:bg-blue-700",
-          confirmText: "text-white",
-        };
-      case "success":
-        return {
-          iconBg: "bg-green-100",
-          iconColor: "text-green-600",
-          confirmBg: "bg-green-600 hover:bg-green-700",
-          confirmText: "text-white",
-        };
-      default:
-        return {
-          iconBg: "bg-red-100",
-          iconColor: "text-red-600",
-          confirmBg: "bg-red-600 hover:bg-red-700",
-          confirmText: "text-white",
-        };
-    }
-  };
-
-  const getDefaultIcon = () => {
-    switch (variant) {
-      case "danger":
-        return <TbAlertTriangle className="text-2xl" />;
-      case "warning":
-        return <TbAlertTriangle className="text-2xl" />;
-      case "info":
-        return <TbAlertTriangle className="text-2xl" />;
-      case "success":
-        return <TbCheck className="text-2xl" />;
-      default:
-        return <TbAlertTriangle className="text-2xl" />;
-    }
-  };
-
-  const styles = getVariantStyles();
-  const displayIcon = icon || getDefaultIcon();
+  const titleId = useId();
+  const styles = VARIANT_STYLES[variant];
+  const displayIcon =
+    icon ||
+    (variant === "success" ? (
+      <TbCheck className="text-2xl" />
+    ) : (
+      <TbAlertTriangle className="text-2xl" />
+    ));
 
   const handleConfirm = () => {
     onConfirm();
@@ -103,55 +53,43 @@ export const ConfirmDialog = ({
     announce(`${title} confirmed`, "assertive");
   };
 
-  return ReactDOM.createPortal(
-    <div
-      className="pagehub-sdk-root ph-modal-backdrop ph-modal-backdrop--center"
-      style={{ zIndex: OVERLAY_Z_CRITICAL_MODAL }}
-      onClick={onClose}
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabelledBy={titleId}
+      zIndex={OVERLAY_Z_PAGE_MODAL}
+      surface={false}
+      className="border-base-300 bg-base-100 w-full max-w-md overflow-hidden rounded-xl border shadow-xl"
     >
-      <div
-        ref={focusTrapRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="confirm-dialog-title"
-        className="pagehub-sdk-root ph-modal-surface w-full max-w-md overflow-hidden"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="p-6">
-          {/* Icon and Title */}
-          <div className="mb-4 flex items-start gap-4">
-            <div className={`${styles.iconBg} ${styles.iconColor} shrink-0 rounded-full p-3`}>
-              {displayIcon}
-            </div>
-            <div className="flex-1">
-              <h3
-                id="confirm-dialog-title"
-                className="text-base-content mb-2 text-lg font-semibold"
-              >
-                {title}
-              </h3>
-              <p className="text-neutral-content text-sm">{message}</p>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="border-base-300 text-neutral-content hover:bg-neutral hover:text-base-content rounded-md border px-4 py-2 text-sm font-medium transition-colors"
-            >
-              {cancelText}
-            </button>
-            <button
-              onClick={handleConfirm}
-              className={`px-4 py-2 text-sm font-medium ${styles.confirmBg} ${styles.confirmText} rounded-lg transition-colors`}
-            >
-              {confirmText}
-            </button>
+      <div className="p-6">
+        <div className="mb-4 flex items-start gap-4">
+          <div className={`${styles.icon} shrink-0 rounded-full p-3`}>{displayIcon}</div>
+          <div className="flex-1">
+            <h3 id={titleId} className="text-base-content mb-2 text-lg font-semibold">
+              {title}
+            </h3>
+            <p className="text-neutral-content text-sm">{message}</p>
           </div>
         </div>
+
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="border-base-300 text-neutral-content hover:bg-neutral hover:text-base-content rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+          >
+            {cancelText}
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className={`px-4 py-2 text-sm font-medium text-white ${styles.confirm} rounded-lg transition-colors`}
+          >
+            {confirmText}
+          </button>
+        </div>
       </div>
-    </div>,
-    document.querySelector(".pagehub-sdk-root") || document.body
+    </Modal>
   );
 };

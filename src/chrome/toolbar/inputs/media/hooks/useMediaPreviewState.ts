@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import type { MediaItem } from "../utils/media-helpers";
-import { useOverlay } from "../../../../../registry/hooks/useOverlay";
 
 export function useMediaPreviewState(filteredMedia: MediaItem[]) {
   const [previewMedia, setPreviewMedia] = useState<string | null>(null);
@@ -27,13 +26,6 @@ export function useMediaPreviewState(filteredMedia: MediaItem[]) {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [previewMedia, filteredMedia]);
-
-  // Escape dismissal: registry overlay stack.
-  useOverlay({
-    id: "media-preview",
-    isOpen: previewMedia != null,
-    onDismiss: () => setPreviewMedia(null),
-  });
 
   return { previewMedia, setPreviewMedia, handlePreviewNext, handlePreviewPrevious };
 }
