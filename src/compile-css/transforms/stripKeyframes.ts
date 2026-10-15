@@ -2,13 +2,14 @@
 
 /**
  * Remove @keyframes blocks whose name is not referenced by any animation-name
- * in the CSS output. Prevents animation presets from bloating standalone exports.
+ * in the CSS output, nor mentioned in `keepIfMentionedIn` (the page's own
+ * serialized node tree). Prevents every animation preset shipping on every page.
  *
- * Only runs in `lean: true` mode (standalone exports via `siteExportZip`). The
- * hosted paths (/view, /static, /build, custom domains) leave orphan keyframes
- * intact.
+ * Runs in `lean: true` mode: standalone exports and every public render
+ * (`compileTailwindCSS` without `editor`). The editor keeps them all, since an
+ * author can add an animation at any moment.
  */
-export function stripUnusedKeyframes(css: string): string {
+export function stripUnusedKeyframes(css: string, keepIfMentionedIn?: string): string {
   // Collect all @keyframes names
   const keyframeBlocks: { name: string; start: number; end: number }[] = [];
   const kfRe = /@keyframes\s+([\w-]+)\s*\{/g;
@@ -37,10 +38,16 @@ export function stripUnusedKeyframes(css: string): string {
   }
 
   // Remove unreferenced keyframes (iterate in reverse to preserve indices)
+  // A name the page itself mentions (an inline `animation:` in `root.style`,
+  // custom code in `inject`, a handler) is used even though no compiled rule
+  // references it.
+  const mentioned = (name: string) =>
+    !!keepIfMentionedIn && new RegExp(`(^|[^\\w-])${name}([^\\w-]|$)`).test(keepIfMentionedIn);
+
   let result = css;
   for (let i = keyframeBlocks.length - 1; i >= 0; i--) {
     const kb = keyframeBlocks[i];
-    if (!usedNames.has(kb.name)) {
+    if (!usedNames.has(kb.name) && !mentioned(kb.name)) {
       result = result.slice(0, kb.start) + result.slice(kb.end);
     }
   }

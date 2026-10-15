@@ -31,8 +31,10 @@ export async function compileCSS(options: {
   themeCSS?: string;
   /** Raw Craft.js node map — used to expand modifier names during candidate extraction */
   nodes?: Record<string, any>;
-  /** Strip unused @keyframes and skip spotlight presets (for standalone exports) */
+  /** Strip @keyframes no compiled rule references (standalone exports, public renders) */
   lean?: boolean;
+  /** With `lean`: keep any keyframes whose name appears in this text (the page's node tree). */
+  keepKeyframesMentionedIn?: string;
   /**
    * Per-site breakpoint overrides (px). When provided and non-default, the compiled
    * output's `@media (width >= …)` thresholds (Tailwind + DaisyUI) are rewritten in
@@ -49,7 +51,7 @@ export async function compileCSS(options: {
    */
   editor?: boolean;
 }): Promise<string> {
-  const { classes, themeCSS, lean = false, breakpoints, editor = false } = options;
+  const { classes, themeCSS, lean = false, keepKeyframesMentionedIn, breakpoints, editor = false } = options;
 
   if (classes.length === 0) return themeCSS || "";
 
@@ -96,9 +98,9 @@ export async function compileCSS(options: {
   // /build canvas responds to its own width (enables Phase 3 side-by-side).
   stripped = applyBreakpointRewrite(stripped, breakpoints, { editor });
 
-  // Strip unused @keyframes for lean exports (standalone HTML)
+  // Strip @keyframes nothing on the page uses
   if (lean) {
-    stripped = stripUnusedKeyframes(stripped);
+    stripped = stripUnusedKeyframes(stripped, keepKeyframesMentionedIn);
   }
 
   // Minify
@@ -242,15 +244,15 @@ export async function compileTailwindCSS(
   try {
     // pageData may arrive as plain JSON (viewer pipeline) or lz-base64
     // (editor save format). Detect cheaply via the leading char.
-    let nodes: any;
+    let json: string;
     const trimmed = pageData.trimStart();
     if (trimmed.startsWith("{")) {
-      nodes = JSON.parse(trimmed);
+      json = trimmed;
     } else {
       const lz = (await import("lzutf8")).default;
-      const decompressed = lz.decompress(lz.decodeBase64(pageData));
-      nodes = JSON.parse(decompressed);
+      json = lz.decompress(lz.decodeBase64(pageData));
     }
+    const nodes: any = JSON.parse(json);
     const candidates = opts?.extraClasses?.length
       ? [...new Set([...extractCandidatesFromNodes(nodes), ...opts.extraClasses])]
       : extractCandidatesFromNodes(nodes);
@@ -268,6 +270,10 @@ export async function compileTailwindCSS(
       nodes,
       breakpoints,
       editor: opts?.editor === true,
+      // Public renders ship only the keyframes the page uses; the editor keeps
+      // them all so a newly picked animation plays without a recompile.
+      lean: opts?.editor !== true,
+      keepKeyframesMentionedIn: json,
     });
     return css || null;
   } catch (error) {
