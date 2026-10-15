@@ -24,6 +24,7 @@ import {
 } from "./runtime/staticPublishRuntime";
 import { generateThemeVars } from "./themeCss";
 import { STATIC_BACKGROUND_CSS } from "../../utils/background";
+import { withoutAboveFoldEntrances } from "../../utils/animations/aboveFold";
 import {
   RENDER_INVALID_TREE_MESSAGE,
   type RenderToHTMLOptions,
@@ -201,6 +202,10 @@ export function renderToHTML(
       message: `[renderToHTML] Failed to parse node tree: ${err}`,
       hint: "The `json` argument must be either a SerializedNodes object or a JSON string of one.",
     });
+  }
+
+  if (nodes && typeof nodes === "object" && !Array.isArray(nodes)) {
+    nodes = withoutAboveFoldEntrances(nodes);
   }
 
   if (!nodes || typeof nodes !== "object" || Array.isArray(nodes) || !nodes["ROOT"]) {

@@ -35,6 +35,7 @@ import { parseLatLngList } from "../../components/MapPath/parsePath";
 import { PATH_COLOR } from "../../components/Map/tiles";
 import { sdkLog } from "../../utils/logger";
 import { filterChromeChildren } from "../shared/chromeSuppression";
+import { withoutAboveFoldEntrances } from "../../utils/animations/aboveFold";
 
 export interface SerializedNode {
   type: { resolvedName: string };
@@ -261,6 +262,7 @@ export function RenderTree({
     () => ({ ...uiResolver, ...(extraResolver || {}), ...(resolver || {}) }),
     [resolver, extraResolver]
   );
+  const renderNodes = React.useMemo(() => withoutAboveFoldEntrances(nodes), [nodes]);
   // Safety-net Suspense boundary. Each lazy node type already gets its OWN
   // per-node boundary inside `NodeRenderer` (see `LAZY_RENDER_NAMES`), so a
   // suspending chunk is scoped to that node and never blanks the whole page.
@@ -268,7 +270,7 @@ export function RenderTree({
   // suspend without its own boundary; for the base `uiResolver` it's a no-op.
   return (
     <React.Suspense fallback={null}>
-      <NodeRenderer id={rootNodeId} nodes={nodes} resolver={merged} />
+      <NodeRenderer id={rootNodeId} nodes={renderNodes} resolver={merged} />
     </React.Suspense>
   );
 }
