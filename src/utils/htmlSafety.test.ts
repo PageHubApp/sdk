@@ -25,7 +25,7 @@ test("escapeHTML escapes markup and both quote styles", () => {
 });
 
 test("safeHref allows relative and listed schemes", () => {
-  for (const ok of ["/a", "?q=1", "#top", "a/b", "https://x.com", "http://x", "mailto:a@b.c", "tel:+1", "ref:page_x/y", "//cdn.x/a"]) {
+  for (const ok of ["/a", "?q=1", "#top", "a/b", "https://x.com", "http://x", "mailto:a@b.c", "tel:+1", "sms:+1", "ref:page_x/y", "//cdn.x/a"]) {
     assert.equal(safeHref(ok), ok, ok);
   }
 });

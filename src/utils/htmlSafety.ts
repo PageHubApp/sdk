@@ -35,7 +35,7 @@ export function isOwnerHtmlKey(key: string, item: Record<string, any> | null | u
 }
 
 /** Schemes an interpolated href may carry. Anything else is dropped. */
-const SAFE_HREF_SCHEMES = new Set(["http", "https", "mailto", "tel", "ref"]);
+const SAFE_HREF_SCHEMES = new Set(["http", "https", "mailto", "tel", "sms", "ref"]);
 
 /**
  * `href` when it is relative (`/x`, `?q`, `#a`, `x/y`) or uses an allowed

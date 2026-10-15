@@ -45,7 +45,7 @@ export const ITEMS_CHUNK = stringifyChunk(function $items() {
     // eslint-disable-next-line no-control-regex
     const m = /^([a-z][a-z0-9+.-]*):/i.exec(href.replace(/[\u0000- \u007f]/g, ""));
     if (!m) return href;
-    return /^(https?|mailto|tel|ref)$/i.test(m[1]) ? href : "";
+    return /^(https?|mailto|tel|sms|ref)$/i.test(m[1]) ? href : "";
   }
   function resolveActionKey(raw: unknown, item: unknown) {
     if (!raw) return "";
