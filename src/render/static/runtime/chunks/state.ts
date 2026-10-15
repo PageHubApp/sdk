@@ -496,9 +496,12 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
   function deleteState(key: string) {
     if (!(key in _store.entries)) return;
     Alpine.disableEffectScheduling(function () {
+      // evalCond reads window.__PH_STATE__, and the store mutations below run
+      // dependent effects synchronously — so the mirror must be cleared first
+      // (same order as setState) or conditions re-evaluate against the old value.
+      if (window.__PH_STATE__) delete window.__PH_STATE__[key];
       delete _store.entries[key];
       _store.revision++;
-      if (window.__PH_STATE__) delete window.__PH_STATE__[key];
       const idx = _shownStack.indexOf(key);
       if (idx !== -1) _shownStack.splice(idx, 1);
     });
