@@ -10,6 +10,16 @@ export function setSanitizeBuiltinDefs(defs: any[]) {
   _registeredBuiltinDefs = defs;
 }
 
+/**
+ * Expand modifier names in every node's className against ROOT.props.modifiers
+ * plus the registered built-in defs' modifiers. The one expansion both walkers
+ * use: the React viewer via `sanitizeCraftSerializedContent`, the static walker
+ * via `renderToHTML`. Mutates `nodes`.
+ */
+export function expandRegisteredModifiers(nodes: Record<string, any>): Record<string, any> {
+  return expandModifiersInNodes(nodes, _registeredBuiltinDefs);
+}
+
 /** Craft's renderer expects every node to have a plain object `props`; missing props crashes DefaultRender. */
 function ensurePlainCraftProps(node: Record<string, any>) {
   const p = node.props;
@@ -117,7 +127,7 @@ export function sanitizeCraftSerializedContent(
         );
       }
     }
-    expandModifiersInNodes(sanitized, _registeredBuiltinDefs);
+    expandRegisteredModifiers(sanitized);
     return JSON.stringify(sanitized);
   } catch {
     return serialized;

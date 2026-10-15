@@ -35,6 +35,7 @@ import { renderNode } from "./walker";
 import { classesInMarkup } from "./classesInMarkup";
 import type { PageIndex } from "../../utils/page/pageManagement";
 import { sdkLog } from "../../utils/logger";
+import { expandRegisteredModifiers } from "../../utils/sanitizeNodeMap";
 
 /** Build a PageIndex from the serialized node tree by scanning ROOT's direct
  *  children for nodes whose `props.type === "page"`. Mirrors
@@ -194,8 +195,9 @@ export function renderToHTML(
 
   // 2. Parse
   let nodes: SerializedNodes;
+  const parsedHere = typeof json === "string";
   try {
-    nodes = typeof json === "string" ? JSON.parse(json) : json;
+    nodes = parsedHere ? JSON.parse(json) : json;
   } catch (err) {
     throw new PageHubError({
       code: "STATIC_RENDER_PARSE_FAILED",
@@ -217,6 +219,12 @@ export function renderToHTML(
       extraHead,
     });
   }
+
+  // 2a. Expand modifier names (ROOT.props.modifiers + built-in defs) into their
+  // classes — the same expansion the React viewer runs in
+  // sanitizeCraftSerializedContent. It mutates, so a caller-owned map is cloned.
+  if (!parsedHere) nodes = JSON.parse(JSON.stringify(nodes));
+  expandRegisteredModifiers(nodes);
 
   // 3. Auto-detect palette from ROOT
   let resolvedPalette = palette;
