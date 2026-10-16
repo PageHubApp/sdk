@@ -73,6 +73,16 @@ export const CONDITION_EVAL_CHUNK = stringifyChunk(function $conditionEval() {
     return false;
   }
 
+  function withItem(s: any, item?: unknown): any {
+    if (typeof s !== "string" || !item || typeof item !== "object" || s.indexOf("{{item.") === -1) {
+      return s;
+    }
+    return s.replace(/\{\{item\.([\w.]+)\}\}/g, function (_m: string, path: string) {
+      const v = walkPath(item, path.split("."));
+      return v == null ? "" : String(v);
+    });
+  }
+
   function evalCond(c: any, item?: unknown): boolean {
     if (!c || !c.type) return true;
     if (c.type === "url-param") return applyOp(params.get(c.key), c.operator, c.value);
@@ -99,9 +109,12 @@ export const CONDITION_EVAL_CHUNK = stringifyChunk(function $conditionEval() {
       return applyOp(lsv, c.operator, c.value);
     }
     if (c.type === "state") {
+      // `{{item.X}}` in key / value resolves against the row's item (mirrors
+      // evaluate.ts) — option chips read `pdp:current:axis:{{item.axisName}}`.
+      const sk = withItem(c.key, item);
       const s = window.__PH_STATE__;
-      const sv = s && s[c.key] ? s[c.key].value : null;
-      return applyOp(sv, c.operator, c.value);
+      const sv = s && s[sk] ? s[sk].value : null;
+      return applyOp(sv, c.operator, withItem(c.value, item));
     }
     if (c.type === "auth") {
       const auth = window.__PH_AUTH__ || null;

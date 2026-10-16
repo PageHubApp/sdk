@@ -312,7 +312,10 @@ function stampItemId(html: string, itemId: string, itemJson?: string): string {
 
 /**
  * Markup that resolves the full item in the runtime (see `readItemContext`):
- * add-to-cart, computed bindings, and any action / modifier / attr still
- * carrying an unresolved `{{item.*}}` template (e.g. option chips' set-state).
+ * add-to-cart, computed bindings, any action / modifier / attr still
+ * carrying an unresolved `{{item.*}}` template (e.g. option chips' set-state),
+ * and state modifiers gated on `item` conditions (a chip's `available`).
+ * Mirrored in repeater.ts for client-rendered rows.
  */
-const ITEM_CONTEXT_RE = /add-to-cart|data-computed-state-bindings|\{\{\s*item\./;
+const ITEM_CONTEXT_RE =
+  /add-to-cart|data-computed-state-bindings|\{\{\s*item\.|data-state-modifiers="[^"]*&quot;type&quot;:&quot;item&quot;/;

@@ -4,39 +4,41 @@
 // runtime IIFE. Globals declared in [runtime-globals.d.ts](./runtime-globals.d.ts).
 
 import { stringifyChunk } from "./stringifyChunk";
+import { cartLineRuntimeSource } from "../../../../utils/cart/cartLine";
 
-export const CART_CHUNK = stringifyChunk(function $cart() {
+// The cart-line model (line shape, add / set-quantity, subtotal) is the same
+// source the React cart imports — inlined onto `__phRT` ahead of this chunk.
+const CART_BODY = stringifyChunk(function $cart() {
   // Cross-chunk function bindings via runtime registry. See
   // staticPublishRuntime.ts preamble for the why.
   const { setState, setVisibility, getStateValue, fireAnalytics } = __phRT;
+  const { toCartLine, parseCartLines, addCartLine, setCartLineQuantity, summarizeCart } = __phRT;
 
   function readCartFromStorage() {
     if (!PAGE_ID) return [];
+    let raw: string | null = null;
     try {
-      const raw = localStorage.getItem("ph-cart-" + PAGE_ID);
-      const arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr : [];
+      raw = localStorage.getItem("ph-cart-" + PAGE_ID);
     } catch (e) {
       return [];
     }
+    const lines = parseCartLines(raw);
+    if (lines) return lines;
+    // Not cart lines (corrupt, or another shape) — drop it, as the React cart does.
+    try {
+      localStorage.removeItem("ph-cart-" + PAGE_ID);
+    } catch (e) {}
+    return [];
   }
   function writeCartToStorage(items: any[]) {
     if (!PAGE_ID) return;
     try {
-      localStorage.setItem("ph-cart-" + PAGE_ID, JSON.stringify(items));
+      if (items.length) localStorage.setItem("ph-cart-" + PAGE_ID, JSON.stringify(items));
+      else localStorage.removeItem("ph-cart-" + PAGE_ID);
     } catch (e) {}
   }
   function recomputeCartState(items: any[]) {
-    let count = 0,
-      total = 0;
-    for (let i = 0; i < items.length; i++) {
-      const line = items[i] || {};
-      const qty = Number(line.quantity) || 0;
-      count += qty;
-      const amount =
-        (line.item && line.item.price && Number(line.item.price.amount)) || 0;
-      total += amount * qty;
-    }
+    const sum = summarizeCart(items);
     setState(
       PH_CART_ITEMS_JSON,
       { kind: "value", value: JSON.stringify(items), source: "runtime" },
@@ -44,51 +46,39 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
     );
     setState(
       PH_CART_COUNT,
-      { kind: "value", value: String(count), source: "runtime" },
+      { kind: "value", value: String(sum.count), source: "runtime" },
       "cart"
     );
     setState(
       PH_CART_TOTAL,
-      { kind: "value", value: String(total), source: "runtime" },
+      { kind: "value", value: sum.totalFormatted, source: "runtime" },
       "cart"
     );
   }
   function addToCart(item: any, qty: number) {
-    const items = readCartFromStorage();
-    const idKey = (item && (item.priceId || item.id)) || null;
-    if (!idKey) return;
-    let found = false;
-    for (let i = 0; i < items.length; i++) {
-      const line = items[i];
-      const lineKey = (line.item && (line.item.priceId || line.item.id)) || null;
-      if (lineKey === idKey) {
-        line.quantity = (Number(line.quantity) || 0) + qty;
-        found = true;
-        break;
-      }
+    const line = toCartLine(item, qty);
+    if (!line) {
+      setState(
+        PH_CART_ERROR,
+        { kind: "value", value: "This product is not available for purchase", source: "runtime" },
+        "cart"
+      );
+      return;
     }
-    if (!found) items.push({ item: item, quantity: qty });
+    setState(PH_CART_ERROR, { kind: "value", value: "", source: "runtime" }, "cart");
+    const items = addCartLine(readCartFromStorage(), line, qty);
     writeCartToStorage(items);
     recomputeCartState(items);
+    // Show what was added, as the React cart does.
+    setVisibility(PH_CART_OPEN, "shown", "cart");
     fireAnalytics("add_to_cart", {
-      value: item && item.price && item.price.amount,
-      currency: item && item.price && item.price.currency,
+      value: line.priceAmount,
+      currency: line.currency,
     });
   }
   function setCartQuantity(priceId: string, qty: number) {
     if (!priceId) return;
-    const items = readCartFromStorage();
-    const next: any[] = [];
-    for (let i = 0; i < items.length; i++) {
-      const line = items[i];
-      const lineKey = (line.item && (line.item.priceId || line.item.id)) || null;
-      if (lineKey === priceId) {
-        if (qty > 0) {
-          line.quantity = qty;
-          next.push(line);
-        }
-      } else next.push(line);
-    }
+    const next = setCartLineQuantity(readCartFromStorage(), priceId, qty);
     writeCartToStorage(next);
     recomputeCartState(next);
   }
@@ -124,14 +114,7 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
         // `priceId` is a real Stripe price id OR the `pd:<rowId>` sentinel for a
         // PageHub-owned product (the server re-prices it via price_data).
         items: items.map(function (l: any) {
-          return {
-            priceId:
-              (l.item &&
-                (l.item.priceId ||
-                  (l.item.metadata && l.item.metadata.priceId))) ||
-              null,
-            quantity: l.quantity,
-          };
+          return { priceId: l.priceId, quantity: l.quantity };
         }),
         successUrl: checkoutReturnUrl("success"),
         cancelUrl: checkoutReturnUrl("cancel"),
@@ -228,10 +211,9 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
     }
     const parts = ['<div class="' + escapeHTML(c["list-class"]) + '">'];
     for (let j = 0; j < items.length; j++) {
-      const line = items[j] || {};
-      const it = line.item || {};
-      const qty = Number(line.quantity) || 0;
-      const pid = escapeHTML(it.priceId || it.id || "");
+      const it = items[j];
+      const qty = Number(it.quantity) || 0;
+      const pid = escapeHTML(it.priceId);
       const img = it.image
         ? '<img src="' +
           escapeHTML(it.image) +
@@ -326,9 +308,7 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
         const items = readCartFromStorage();
         let current = 0;
         for (let k = 0; k < items.length; k++) {
-          const lk =
-            items[k].item && (items[k].item.priceId || items[k].item.id);
-          if (lk === pid) {
+          if (items[k].priceId === pid) {
             current = Number(items[k].quantity) || 0;
             break;
           }
@@ -362,3 +342,5 @@ export const CART_CHUNK = stringifyChunk(function $cart() {
     handleCheckoutReturn,
   });
 });
+
+export const CART_CHUNK = "{" + cartLineRuntimeSource("__phRT") + "}" + CART_BODY;

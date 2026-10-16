@@ -16,16 +16,15 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const cls = staticClasses(props, ctx);
   const t = props.type === "textarea" ? "textarea" : props.type === "select" ? "select" : "input";
 
-  // SSR-seeded default for `stateBinding.key`. Without a request-query
-  // surface in the walker we only emit a defaultValue when the binding
-  // carries one explicitly; the runtime fills the live value post-hydration.
-  let seededDefault: string | undefined;
+  // Initial value, as the React body resolves it: the state binding's default,
+  // else the field's own `defaultValue` (a quantity input's "1"). A bound
+  // field's live state value is filled by the runtime post-hydration.
   const sb = props.stateBinding;
-  if (sb && typeof sb === "object" && typeof sb.key === "string") {
-    if (typeof sb.defaultValue === "string" && sb.defaultValue) {
-      seededDefault = sb.defaultValue;
-    }
-  }
+  const bound = !!sb && typeof sb === "object" && typeof sb.key === "string";
+  const fieldDefault =
+    props.defaultValue != null && props.defaultValue !== "" ? String(props.defaultValue) : undefined;
+  const seededDefault: string | undefined =
+    (bound && typeof sb.defaultValue === "string" && sb.defaultValue) || fieldDefault;
 
   // Same id scheme as the React body, so a <label for> can point at the field.
   // Skipped inside repeaters, where one node renders many times.
@@ -54,7 +53,13 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     ),
     ...ariaAttrs(props),
     ...handlerAttrs(props),
-    ...stateAttrs(props, ctx),
+    // React seeds a bound field's empty state from `defaultValue` too.
+    ...stateAttrs(
+      bound && !sb.defaultValue && fieldDefault
+        ? { ...props, stateBinding: { ...sb, defaultValue: fieldDefault } }
+        : props,
+      ctx
+    ),
     ...attrsPassthrough(props, ctx),
   };
   if (t === "textarea" && props.rows) attrs.rows = String(props.rows);

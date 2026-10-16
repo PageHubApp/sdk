@@ -117,19 +117,23 @@ export function evaluateSingleCondition(cond: Condition, ctx: ConditionContext):
       // when unset (matches how the `item` branch handles missing keys).
       // Resolve `{{anchor.X}}` tokens against the wrapper-supplied anchor
       // map so per-instance state lookups work without tree-mutation hacks.
-      const resolvedKey = ctx.anchors
-        ? cond.key.replace(/\{\{anchor\.([a-zA-Z0-9_-]+)\}\}/g, (_, k) => ctx.anchors![k] ?? "")
-        : cond.key;
-      // Interpolate `{{item.X}}` against the current repeater item — lets
-      // stateModifier conditions written inside a repeater compare against
-      // per-iteration values (e.g. category chip active styling).
-      let cmpValue = cond.value;
-      if (typeof cmpValue === "string" && cmpValue.includes("{{item.") && ctx.item) {
-        cmpValue = cmpValue.replace(/\{\{item\.([\w.]+)\}\}/g, (_, path) => {
-          const v = walkPath(ctx.item!, path.split("."));
-          return v == null ? "" : String(v);
-        });
-      }
+      // Interpolate `{{item.X}}` in the key AND the value against the current
+      // repeater item — lets stateModifier conditions written inside a
+      // repeater read per-iteration state (option chips' selected styling:
+      // key `pdp:current:axis:{{item.axisName}}`, value `{{item.label}}`).
+      const withItem = (s: string) =>
+        typeof s === "string" && s.includes("{{item.") && ctx.item
+          ? s.replace(/\{\{item\.([\w.]+)\}\}/g, (_, path) => {
+              const v = walkPath(ctx.item!, path.split("."));
+              return v == null ? "" : String(v);
+            })
+          : s;
+      const resolvedKey = withItem(
+        ctx.anchors
+          ? cond.key.replace(/\{\{anchor\.([a-zA-Z0-9_-]+)\}\}/g, (_, k) => ctx.anchors![k] ?? "")
+          : cond.key
+      );
+      const cmpValue = withItem(cond.value);
       const val = getStateValue(resolvedKey);
       if (val === undefined) {
         if (cond.operator === "not-exists") return true;

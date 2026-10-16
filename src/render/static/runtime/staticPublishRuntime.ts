@@ -32,6 +32,7 @@ import { AUX_CHUNK } from "./chunks/aux";
 import { BOOTSTRAP_CHUNK } from "./chunks/bootstrap";
 import { SITE_CHAT_CHUNK } from "./chunks/siteChat";
 import { STATE_PREFIX, STATE_KEY } from "../../../utils/state/keys";
+import { cartLineRuntimeSource } from "../../../utils/cart/cartLine";
 
 export interface StaticPublishRuntimeOptions {
   /** Tailwind `md` breakpoint, used by condition `device: mobile` evaluation. */
@@ -66,21 +67,14 @@ export function getCartBridgeScript(opts: { pageId?: string } = {}): string {
     var raw = null;
     try { raw = localStorage.getItem('ph-cart-' + pageId); } catch(e){}
     if (!raw) return;
-    var arr = [];
-    try { arr = JSON.parse(raw); } catch(e){}
-    if (!Array.isArray(arr)) arr = [];
-    var count = 0;
-    var total = 0;
-    for (var i=0; i<arr.length; i++) {
-      var line = arr[i] || {};
-      var qty = Number(line.quantity) || 0;
-      count += qty;
-      var amount = (line.item && line.item.price && Number(line.item.price.amount)) || Number(line.amount) || 0;
-      total += amount * qty;
-    }
-    window.__PH_STATE__['${STATE_KEY.cartItemsJson}'] = { kind: 'value', value: JSON.stringify(arr) };
-    window.__PH_STATE__['${STATE_KEY.cartCount}'] = { kind: 'value', value: String(count) };
-    window.__PH_STATE__['${STATE_KEY.cartTotal}'] = { kind: 'value', value: String(total) };
+    var cart = {};
+    ${cartLineRuntimeSource("cart", ["parseCartLines", "summarizeCart"])}
+    var lines = cart.parseCartLines(raw);
+    if (!lines) return;
+    var sum = cart.summarizeCart(lines);
+    window.__PH_STATE__['${STATE_KEY.cartItemsJson}'] = { kind: 'value', value: JSON.stringify(lines) };
+    window.__PH_STATE__['${STATE_KEY.cartCount}'] = { kind: 'value', value: String(sum.count) };
+    window.__PH_STATE__['${STATE_KEY.cartTotal}'] = { kind: 'value', value: sum.totalFormatted };
   } catch (e) {}
 })();
 </script>`;

@@ -207,6 +207,10 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
       const removeLists = bindings.map(function (bd: any) {
         return typeof bd.remove === "string" && bd.remove ? bd.remove.split(/\s+/).filter(Boolean) : [];
       });
+      // The row's item (option chip, product card) — `item` conditions and
+      // `{{item.X}}` in state keys / values resolve against it, as in React.
+      // Outside any row it stays undefined (evalCond's no-item behavior).
+      const item = __phRT.readItemContext(el) || undefined;
       // Walk conditions once to collect every state-key the directive reads.
       const trackedKeys: string[] = [];
       const seen: Record<string, boolean> = {};
@@ -217,14 +221,9 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
           for (let c = 0; c < conds.length; c++) {
             const co = conds[c];
             if (!co || !co.key) continue;
-            if (
-              co.type !== "state" &&
-              co.type !== "url-param" &&
-              co.type !== "localStorage"
-            ) {
-              continue;
-            }
-            const sk = co.type === "url-param" ? PH_URL_PREFIX + co.key : co.key;
+            if (co.type !== "state" && co.type !== "url-param" && co.type !== "localStorage") continue;
+            const key = __phRT.interpolateItem(co.key, item);
+            const sk = co.type === "url-param" ? PH_URL_PREFIX + key : key;
             if (seen[sk]) continue;
             seen[sk] = true;
             trackedKeys.push(sk);
@@ -241,7 +240,7 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
         for (let b = 0; b < bindings.length; b++) {
           // Read from __phRT at call time — the conditions chunk runs after
           // this one, so it isn't on __phRT yet at chunk-eval time.
-          const pass = __phRT.evalGroups(bindings[b].conditions) === true;
+          const pass = __phRT.evalGroups(bindings[b].conditions, item) === true;
           const cls = classLists[b];
           for (let ci = 0; ci < cls.length; ci++) {
             el.classList.toggle(cls[ci], pass);
