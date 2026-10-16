@@ -67,11 +67,13 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   const hasLocation = lat !== 0 || lng !== 0;
   const filterStyle = grayscale ? "filter: grayscale(1);" : "";
 
+  // `dashArray` is resolved here because the runtime chunk is stringified and
+  // can't import `dashArrayFor`.
   const config = {
     lat, lng, zoom, type, tileStyle,
     grayscale: !!grayscale,
     points: childPoints,
-    paths: childPaths,
+    paths: childPaths.map(p => ({ ...p, dashArray: p.dashed ? dashArrayFor(p.weight ?? 4) : null })),
   };
 
   const attrs: Record<string, any> = {

@@ -191,8 +191,23 @@ export const AUX_CHUNK = stringifyChunk(function $aux() {
   // Leaflet (~40 KB, ~250 ms of phone CPU) waits until a map is about to
   // scroll into view — maps sit far below the fold, and paying for one during
   // the initial load delays the hero for a widget nobody has reached yet.
+  // Only `interactive` maps become Leaflet. `static` / `background` stay the
+  // server-rendered tile grid, as in Map.render.tsx, and never load Leaflet.
+  function readMapConfig(el: Element): any {
+    try {
+      const cfg = JSON.parse(el.getAttribute("data-ph-map") as string);
+      if (!cfg || (!cfg.lat && !cfg.lng) || cfg.type !== "interactive") return null;
+      return cfg;
+    } catch (e) {
+      return null;
+    }
+  }
+
   function mountMaps() {
-    const nodes = document.querySelectorAll("[data-ph-map]");
+    const nodes = Array.prototype.filter.call(
+      document.querySelectorAll("[data-ph-map]"),
+      readMapConfig
+    ) as Element[];
     if (!nodes.length) return;
     if (typeof IntersectionObserver === "undefined") return mountMapNodes(nodes);
     const io = new IntersectionObserver(
@@ -209,7 +224,7 @@ export const AUX_CHUNK = stringifyChunk(function $aux() {
     for (let i = 0; i < nodes.length; i++) io.observe(nodes[i]);
   }
 
-  function mountMapNodes(nodes: NodeListOf<Element>) {
+  function mountMapNodes(nodes: Element[]) {
     loadLeaflet()
       .then(function (L: any) {
         // Leaflet otherwise guesses the marker art directory from leaflet.css,
@@ -218,22 +233,64 @@ export const AUX_CHUNK = stringifyChunk(function $aux() {
         L.Icon.Default.imagePath = PH_LEAFLET_BASE + "images/";
         for (let i = 0; i < nodes.length; i++) {
           const el = nodes[i];
-          const raw = el.getAttribute("data-ph-map");
-          let cfg: any;
-          try {
-            cfg = JSON.parse(raw as string);
-          } catch (e) {
-            continue;
-          }
-          if (!cfg || (!cfg.lat && !cfg.lng)) continue;
+          const cfg = readMapConfig(el);
+          if (!cfg) continue;
+          // Mirrors MapLeaflet.tsx + Map.render.tsx: `isolation` traps
+          // Leaflet's pane z-indexes under fixed headers, and the grayscale
+          // filter lives on the wrapper because clearing `el` drops the
+          // server-rendered grid that carried it.
           el.innerHTML = "";
-          const map = L.map(el, {
-            scrollWheelZoom: cfg.type === "interactive",
-            dragging: cfg.type === "interactive",
-          }).setView([cfg.lat, cfg.lng], cfg.zoom || 13);
+          const host = document.createElement("div");
+          host.style.cssText =
+            "width:100%;height:100%;isolation:isolate;" +
+            (cfg.grayscale ? "filter:grayscale(1);" : "");
+          el.appendChild(host);
+          const map = L.map(host).setView([cfg.lat, cfg.lng], cfg.zoom || 13);
           L.tileLayer(TILE_URLS[cfg.tileStyle] || TILE_URLS.osm, {
             attribution: "&copy; OpenStreetMap",
           }).addTo(map);
+          // Routes before pins so pins sit on top of the line.
+          const routes = cfg.paths || [];
+          for (let j = 0; j < routes.length; j++) {
+            const r = routes[j];
+            const line = L.polyline(
+              r.points.map(function (pt: any) {
+                return [pt.lat, pt.lng];
+              }),
+              {
+                color: r.color,
+                weight: r.weight,
+                opacity: r.opacity,
+                lineCap: "round",
+                lineJoin: "round",
+                dashArray: r.dashArray || undefined,
+              }
+            ).addTo(map);
+            if (r.label) {
+              line.bindTooltip(r.label, {
+                permanent: true,
+                direction: "center",
+                className: "ph-map-path-label",
+              });
+            }
+            for (let k = 0; k < r.points.length; k++) {
+              const pt = r.points[k];
+              if (!pt.label) continue;
+              L.circleMarker([pt.lat, pt.lng], {
+                radius: 11,
+                color: "#fff",
+                weight: 2,
+                fillColor: r.color,
+                fillOpacity: 1,
+              })
+                .addTo(map)
+                .bindTooltip(String(pt.label), {
+                  permanent: true,
+                  direction: "center",
+                  className: "ph-map-step-badge",
+                });
+            }
+          }
           const pts = cfg.points || [];
           for (let j = 0; j < pts.length; j++) {
             const p = pts[j];
