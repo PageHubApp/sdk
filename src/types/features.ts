@@ -9,8 +9,6 @@ export interface PageHubFeatures {
   aiGeneration?: boolean;
   /** Allow custom CSS editing. Default: false */
   customCSS?: boolean;
-  /** Allow HTML import/export. Default: false */
-  importExport?: boolean;
   /** Show SEO settings panel. Default: true */
   seoPanel?: boolean;
   /**

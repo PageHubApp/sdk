@@ -7,9 +7,9 @@
  * `sdk.commands.execute(id, args, { trigger: "menu" })`. Host slots route
  * through `<SlotRenderer>` for `navmenu/header-items` and `navmenu/ai-row`.
  *
- * Other panel values (`components`, `blocks`, `theme`, `import-export`,
- * `publish`) keep their existing bodies — they're routed content, not menu
- * rows. C2b only touches `panel === "menu"`.
+ * Other panel values (`components`, `blocks`, `theme`, `publish`) keep
+ * their existing bodies — they're routed content, not menu rows. C2b only
+ * touches `panel === "menu"`.
  *
  * Dynamic titles ("Hide Layers Panel" vs "Dock Layers Panel", etc.) flow
  * from atom state into the command context via host-set keys
@@ -40,7 +40,6 @@ import { SlotRenderer } from "../../../registry/SlotRenderer";
 import type { ResolvedMenuItem } from "../../../registry/types";
 import { EditorMenuNavRow, EditorMenuSectionLabel } from "./EditorMenuNav";
 import { SidebarFlyoutSurface } from "../../primitives/SidebarFlyoutSurface";
-import { ImportExportPanel } from "./ImportExportPanel";
 import { ThemeSettingsPanel } from "../modals/ThemeSettingsPanel";
 import { ToolboxTabs } from "./ToolboxTabs";
 
@@ -199,8 +198,6 @@ export const EditorNavigation = ({ settings: _settings, isTenant }: EditorNaviga
             <ToolboxTabs />
           ) : panel === "theme" && designSystemEnabled ? (
             <ThemeSettingsPanel />
-          ) : panel === "import-export" ? (
-            <ImportExportPanel onClose={close} />
           ) : (
             <AutoHideScrollbar
               className="flex flex-1 flex-col gap-0 overflow-y-auto pt-0 pb-3"

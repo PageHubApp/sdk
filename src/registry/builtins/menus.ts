@@ -90,7 +90,6 @@ const NAVMENU_VIEW: MenuItem[] = [
 /** Nav menu drawer — Tools section. */
 const NAVMENU_TOOLS: MenuItem[] = [
   { command: "ph.modifiers.open", group: "tools@10" },
-  { command: "ph.importExport.open", group: "tools@20" },
 ];
 
 /**

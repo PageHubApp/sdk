@@ -31,14 +31,6 @@ export const BUILTIN_KEYBINDINGS: KeybindingDef[] = [
   { command: "ph.theme.open", key: "shift+mod+d", when: notInTextEditing },
   { command: "ph.layers.popOut", key: "shift+mod+l", when: notInTextEditing },
   { command: "ph.canvas.toggleGridLines", key: "shift+mod+g", when: notInTextEditing },
-  {
-    command: "ph.importExport.open",
-    key: "shift+mod+e",
-    when: ctx => {
-      const features = (ctx.features ?? {}) as { importExport?: boolean };
-      return features.importExport !== false && notInTextEditing(ctx);
-    },
-  },
   { command: "ph.canvas.toggleHidden", key: "shift+mod+h", when: notInTextEditing },
   { command: "ph.modifiers.open", key: "shift+mod+o", when: notInTextEditing },
 

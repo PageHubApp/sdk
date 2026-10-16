@@ -188,7 +188,6 @@ export function emailEditorConfig(extraComponents: string[] = []): Partial<PageH
     toolbar: true,
     aiGeneration: false,
     customCSS: false,
-    importExport: false,
     seoPanel: false,
     multiPage: false,
     custom404Page: false,

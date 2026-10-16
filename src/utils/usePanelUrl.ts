@@ -108,7 +108,7 @@ function notify(): void {
 
 // ── Non-hook accessors (for command `run` bodies) ───────────────────────────
 
-export type PanelType = "menu" | "components" | "blocks" | "publish" | "import-export" | "theme";
+export type PanelType = "menu" | "components" | "blocks" | "publish" | "theme";
 
 /** Open a panel from outside React (registry commands, dispatcher). */
 export function panelOpen(
@@ -191,9 +191,7 @@ export function getPanelState(): PanelUrlState {
 
 /** Full-column flyout over the unified settings stack — disable tool column pointer-events and skip click-away close. */
 export function isFlyoutBlockingToolColumn(panel: string | null): boolean {
-  return (
-    panel === "components" || panel === "blocks" || panel === "theme" || panel === "import-export"
-  );
+  return panel === "components" || panel === "blocks" || panel === "theme";
 }
 
 export function usePanelUrl() {

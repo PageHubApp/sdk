@@ -2,13 +2,12 @@
  * Aggregate of site-/tool-level commands that don't form a namespace large
  * enough to deserve its own file:
  *   `ph.site.*`, `ph.theme.*`, `ph.media.*`, `ph.layers.*`,
- *   `ph.modifiers.*`, `ph.importExport.*`, `ph.ui.*`, `ph.sidebar.*`
+ *   `ph.modifiers.*`, `ph.ui.*`, `ph.sidebar.*`
  */
 import React from "react";
 import { ROOT_NODE } from "@craftjs/utils";
 import {
   TbBoxModel2,
-  TbDownload,
   TbLayoutGrid,
   TbLayoutSidebar,
   TbMoon,
@@ -163,21 +162,6 @@ export const SITE_TOOLS_COMMANDS: CommandDef[] = [
     run: () => {
       setAtomExternal(ModifiersModalAtom, (prev: boolean) => !prev);
       panelClose();
-    },
-  },
-
-  // ─── Import / Export ───────────────────────────────────────────────────
-  {
-    id: "ph.importExport.open",
-    title: "Import / export",
-    category: "Tools",
-    icon: <TbDownload />,
-    when: ctx => {
-      const features = (ctx.features ?? {}) as { importExport?: boolean };
-      return features.importExport !== false && !isInsideTextEditingSurfaceCtx(ctx);
-    },
-    run: () => {
-      panelToggle("import-export");
     },
   },
 

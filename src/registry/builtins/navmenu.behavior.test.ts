@@ -245,25 +245,6 @@ test("navmenu: View section emits 6 items in declared order", () => {
   }
 });
 
-test("navmenu: Tools section gates importExport via features flag", () => {
-  installFakeBrowser();
-  installFakeEcosystem();
-  try {
-    const { context, menus } = setupCommands();
-    // Default: features.importExport undefined -> visible (!== false check).
-    let ids = menus.items("navmenu/tools").map(i => i.command);
-    assert.ok(ids.includes("ph.importExport.open"));
-    // Explicit false -> hidden.
-    context.setCommandContext({ features: { importExport: false } as never });
-    ids = menus.items("navmenu/tools").map(i => i.command);
-    assert.ok(!ids.includes("ph.importExport.open"));
-    assert.ok(ids.includes("ph.modifiers.open"));
-  } finally {
-    clearEditorBackref();
-    uninstallFakeBrowser();
-  }
-});
-
 test("navmenu: dynamic titles flip with context state (Dock vs Hide layers panel)", () => {
   installFakeBrowser();
   installFakeEcosystem();

@@ -15,7 +15,6 @@ const DEFAULT_FEATURES: Required<PageHubFeatures> = {
   toolbar: true,
   aiGeneration: false,
   customCSS: false,
-  importExport: false,
   seoPanel: true,
   designSystem: true,
   mediaManager: true,

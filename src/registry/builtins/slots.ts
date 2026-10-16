@@ -37,7 +37,6 @@ export const BUILTIN_SLOTS: Array<SlotDef & { id: BuiltinSlotId }> = [
   { id: "empty-state/ai-card", cardinality: "single", contextShape: "{ onOpenAssistant }" },
   { id: "navmenu/ai-row", cardinality: "single", contextShape: "{ onSelect }" },
   { id: "navmenu/header-items", cardinality: "single", contextShape: "{ close }" },
-  { id: "import-export/handoff-extras", cardinality: "single", contextShape: "void" },
   {
     id: "media-edit/ai-actions",
     cardinality: "single",

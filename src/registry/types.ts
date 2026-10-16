@@ -222,7 +222,6 @@ export type BuiltinSlotId =
   | "empty-state/ai-card"
   | "navmenu/ai-row"
   | "navmenu/header-items"
-  | "import-export/handoff-extras"
   | "media-edit/ai-actions";
 
 /** A slot id — one of the builtins or a host-registered custom id. */

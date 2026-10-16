@@ -145,17 +145,6 @@ test("topbar: ph.theme.open opens theme panel with cat=colors by default", async
   }
 });
 
-test("topbar: ph.importExport.open toggles panel", async () => {
-  const browser = installFakeBrowser();
-  const { commands } = setupCommands();
-  try {
-    await commands.execute("ph.importExport.open");
-    assert.match(browser.fakeWindow.location.search, /panel=import-export/);
-  } finally {
-    uninstallFakeBrowser();
-  }
-});
-
 test("topbar: ph.canvas.toggleGridLines flips atom + writes data-show-gridlines", async () => {
   const browser = installFakeBrowser();
   const eco = installFakeEcosystem();

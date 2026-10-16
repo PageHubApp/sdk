@@ -17,7 +17,7 @@ export interface SidebarTabsPaneProps {
   value: string;
   onValueChange: (id: string) => void;
   trailing?: ReactNode;
-  /** `compact` = tighter horizontal padding (theme strip); `default` = toolbox / import-export */
+  /** `compact` = tighter horizontal padding (theme strip); `default` = toolbox */
   tabDensity?: SidebarTabDensity;
   className?: string;
   bodyClassName?: string;
