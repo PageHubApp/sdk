@@ -25,6 +25,7 @@ import { resolveNestedItems } from "../../utils/data/resolveNestedItems";
 import { applyRouteParamsToDataSource } from "../../utils/data/routeParamsDataSource";
 import { dataSourceBindingId } from "../../utils/data/storefrontDataSource";
 import { makeSlotProxy } from "../../utils/data/slotItem";
+import { applyCollectionFilter } from "../../utils/data/collectionFilter";
 import {
   actionsAttr,
   ariaAttrs,
@@ -68,16 +69,7 @@ function applyDataSourceScope(items: any[] | null | undefined, ds: DataSource): 
   }
   const isProductItemCollection =
     !ds.collection || ds.collection === "products" || ds.collection === "product";
-  if (isProductItemCollection && ds.filter && Object.keys(ds.filter).length > 0) {
-    const activeFilter = Object.entries(ds.filter).filter(([, v]) => v != null && v !== "");
-    if (activeFilter.length > 0) {
-      result = result.filter(it => {
-        const md = it?.metadata;
-        if (!md) return false;
-        return activeFilter.every(([k, v]) => md[k] === v);
-      });
-    }
-  }
+  if (isProductItemCollection) result = applyCollectionFilter(result, ds.filter);
   if (ds.sort) {
     result = [...result];
     switch (ds.sort) {

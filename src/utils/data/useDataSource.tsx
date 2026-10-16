@@ -16,6 +16,7 @@ import { applyRouteParamsToDataSource } from "./routeParamsDataSource";
 import { useRouteParams } from "../RouteParamsContext";
 import { dataSourceBindingId } from "./storefrontDataSource";
 import { sdkLog } from "../logger";
+import { applyCollectionFilter } from "./collectionFilter";
 
 /**
  * Bind a node to an external data source: Stripe products, customer orders,
@@ -83,21 +84,7 @@ function applyDataSourceScope(
   // item's metadata shape.
   const isProductItemCollection =
     !ds.collection || ds.collection === "products" || ds.collection === "product";
-  if (isProductItemCollection && ds.filter && Object.keys(ds.filter).length > 0) {
-    // Skip keys with empty string values — these come from unresolved
-    // `{{params.x}}` placeholders on routes without that segment (e.g.
-    // `/shop` vs `/shop/tees`). The server-side pipeline drops them too;
-    // keeping behavior symmetric so client-side post-filter doesn't gut
-    // a correctly-fetched page.
-    const activeFilter = Object.entries(ds.filter).filter(([, v]) => v != null && v !== "");
-    if (activeFilter.length > 0) {
-      result = result.filter(it => {
-        const md = it?.metadata;
-        if (!md) return false;
-        return activeFilter.every(([k, v]) => md[k] === v);
-      });
-    }
-  }
+  if (isProductItemCollection) result = applyCollectionFilter(result, ds.filter);
   if (ds.sort) {
     result = [...result];
     switch (ds.sort) {
