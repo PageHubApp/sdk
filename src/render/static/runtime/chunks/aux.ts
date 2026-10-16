@@ -21,51 +21,22 @@ export const AUX_CHUNK = stringifyChunk(function $aux() {
       (qs ? "?" + qs : "") +
       window.location.hash;
     window.history.replaceState({}, "", clean);
-    fetch(PH_BASE + "/api/customer/verify?token=" + encodeURIComponent(token))
+    // Signed in: reload, so the server renders the auth-gated nodes it left out
+    // while the visitor was signed out (they are never shipped hidden — that
+    // would put members-only content in every signed-out page's source).
+    fetch(PH_BASE + "/api/customer/verify?token=" + encodeURIComponent(token), {
+      credentials: "include",
+    })
       .then(function (r) {
-        if (!r.ok) return null;
-        return fetch(PH_BASE + "/api/customer/me", { credentials: "include" });
-      })
-      .then(function (r) {
-        return r && r.ok ? r.json() : null;
-      })
-      .then(function (data) {
-        const status = data ? "logged-in" : "logged-out";
+        if (r.ok) {
+          window.location.reload();
+          return;
+        }
         setState(
           PH_AUTH_STATUS,
-          { kind: "value", value: status, source: "runtime" },
+          { kind: "value", value: "logged-out", source: "runtime" },
           "customer-token"
         );
-        if (data) {
-          setState(
-            "customer:email",
-            { kind: "value", value: data.email || "", source: "runtime" },
-            "customer"
-          );
-          setState(
-            "customer:name",
-            { kind: "value", value: data.name || "", source: "runtime" },
-            "customer"
-          );
-          setState(
-            "customer:orderCount",
-            {
-              kind: "value",
-              value: String(data.orderCount || 0),
-              source: "runtime",
-            },
-            "customer"
-          );
-          setState(
-            "customer:totalSpent",
-            {
-              kind: "value",
-              value: String(data.totalSpent || 0),
-              source: "runtime",
-            },
-            "customer"
-          );
-        }
       })
       .catch(function () {});
   }

@@ -25,7 +25,7 @@ import { resolveNestedItems } from "../../utils/data/resolveNestedItems";
 import { applyRouteParamsToDataSource } from "../../utils/data/routeParamsDataSource";
 import { dataSourceBindingId } from "../../utils/data/storefrontDataSource";
 import { isSlotItem, makeSlotProxy } from "../../utils/data/slotItem";
-import { applyCollectionFilter } from "../../utils/data/collectionFilter";
+import { applyDataSourceScope, clientFetchOptions } from "../../utils/data/dataSourceScope";
 import {
   actionsAttr,
   ariaAttrs,
@@ -46,50 +46,12 @@ interface DataSource {
   sort?: string;
   offset?: number;
   limit?: number;
+  facetKeys?: string;
   scope?: string;
   splitBy?: string;
   bindingKey?: string;
   stateInputs?: Record<string, string>;
   publishStateKeys?: Record<string, string>;
-}
-
-/**
- * Pure copy of `useDataSource`'s `applyDataSourceScope` — server-side sort /
- * filter / paginate after the raw items come out of connectorData. Kept here
- * (not imported) because `useDataSource.tsx` imports React/hooks at module
- * scope and a single React import would poison the static-renderer build for
- * any non-React consumer (export-zip, harness, Node scripts).
- */
-function applyDataSourceScope(items: any[] | null | undefined, ds: DataSource): any[] | null {
-  if (!Array.isArray(items)) return null;
-  let result = items;
-  if (ds.ids?.length) {
-    const idSet = new Set(ds.ids);
-    result = result.filter(it => idSet.has(it?.id));
-  }
-  const isProductItemCollection =
-    !ds.collection || ds.collection === "products" || ds.collection === "product";
-  if (isProductItemCollection) result = applyCollectionFilter(result, ds.filter);
-  if (ds.sort) {
-    result = [...result];
-    switch (ds.sort) {
-      case "alpha":
-        result.sort((a, b) => String(a?.title ?? "").localeCompare(String(b?.title ?? "")));
-        break;
-      case "price_asc":
-        result.sort((a, b) => (a?.price?.amount ?? 0) - (b?.price?.amount ?? 0));
-        break;
-      case "price_desc":
-        result.sort((a, b) => (b?.price?.amount ?? 0) - (a?.price?.amount ?? 0));
-        break;
-      case "oldest":
-        result.reverse();
-        break;
-    }
-  }
-  if (ds.offset && ds.offset > 0) result = result.slice(ds.offset);
-  if (ds.limit && ds.limit > 0 && result.length > ds.limit) result = result.slice(0, ds.limit);
-  return result;
 }
 
 function pickTag(type: unknown): string {
@@ -137,6 +99,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   // pre-fetched connectorData[provider].bindings[bindingId].
   let items: any[] | null = null;
   let bindingId: string | null = null;
+  let bindingMeta: unknown = null;
   // An `item.*` scope inside a client item template: the parent row only
   // exists in the browser, so this repeater ships its own template and the
   // runtime expands it per row (`data-scope-path`).
@@ -152,6 +115,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
       bindingId = dataSourceBindingId(merged);
       const raw = ctx.connectorData?.[ds.provider]?.bindings?.[bindingId] ?? null;
       items = applyDataSourceScope(raw, merged);
+      bindingMeta = (ctx.connectorData as any)?.[ds.provider]?.bindingsMeta?.[bindingId] ?? null;
     }
   }
   const hasItems = Array.isArray(items) && items.length > 0;
@@ -263,11 +227,16 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   // Connector wiring for runtime refetch reconciler.
   if (ds?.provider) attrs["data-connector-id"] = ds.provider;
   if (bindingId) attrs["data-binding-key"] = bindingId;
+  // SSR page totals for `publishStateKeys` (the load directive publishes them).
+  if (bindingMeta) attrs["data-binding-meta"] = JSON.stringify(bindingMeta);
   // Plain-text collection name (not the hashed bindingId) so the runtime can
   // build the same `?collection=` fetch param the React path does.
   if (ds?.collection) attrs["data-binding-collection"] = ds.collection;
   if (ds?.stateInputs && Object.keys(ds.stateInputs).length > 0) {
     attrs["data-state-inputs"] = JSON.stringify(ds.stateInputs);
+    // The binding's own query, sent under the state inputs on every refetch.
+    const fetchOpts = clientFetchOptions(applyRouteParamsToDataSource(ds, ctx.routeParams ?? {}));
+    if (Object.keys(fetchOpts).length > 0) attrs["data-fetch-opts"] = JSON.stringify(fetchOpts);
   }
   // State-scoped repeater (no connector fetch — iterate JSON-encoded array
   // sitting at `state:<key>`). Runtime directive subscribes + reconciles.

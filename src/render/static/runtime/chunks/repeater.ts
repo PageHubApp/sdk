@@ -8,7 +8,7 @@ import { stringifyChunk } from "./stringifyChunk";
 export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
   // Cross-chunk function bindings via runtime registry. See
   // staticPublishRuntime.ts preamble for the why.
-  const { setState, getStateValue, evalGroups, escapeHtml, safeHref } = __phRT;
+  const { setState, getStateValue, evalGroups, escapeHtml, safeHref, listStates } = __phRT;
 
   function walkSlotPath(obj: any, parts: string[]) {
     let v = obj;
@@ -281,6 +281,26 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
         return;
       }
       if (!inputs || typeof inputs !== "object") return;
+      let fetchOpts: Record<string, any> = {};
+      try {
+        fetchOpts = JSON.parse(el.getAttribute("data-fetch-opts") || "{}") || {};
+      } catch (e) {}
+      // Storefront grid + facets feed also follow the visitor's facet picks
+      // (`url:facet.<key>` → `facet.<key>`), like useDataSource.
+      const baseCollection = collection.split("::")[0];
+      const followsFacets = baseCollection === "products" || baseCollection === "products.facets";
+      function facetParams() {
+        const out: Record<string, string> = {};
+        if (!followsFacets) return out;
+        const all = listStates();
+        for (let i = 0; i < all.length; i++) {
+          const e = all[i] as any;
+          if (!e || typeof e.key !== "string" || e.key.indexOf("url:facet.") !== 0) continue;
+          if (e.value == null || e.value === "") continue;
+          out["facet." + e.key.slice("url:facet.".length)] = String(e.value);
+        }
+        return out;
+      }
       const tplEl = el.querySelector(
         ":scope > template[data-item-template]"
       ) as HTMLTemplateElement | null;
@@ -292,10 +312,19 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
         params.set("provider", provider);
         const col = collection.split("::")[0] || "products";
         params.set("collection", col);
+        // The binding's own query (Data.toHTML `data-fetch-opts`), under the
+        // live inputs — same request the React fetcher sends.
+        for (const opt in fetchOpts) {
+          const v = fetchOpts[opt];
+          if (opt === "filter") params.set("dsFilter", JSON.stringify(v));
+          else if (v != null && v !== "") params.set(opt, String(v));
+        }
         for (const opt in inputs) {
           const v = getStateValue(inputs[opt]);
           if (v != null && v !== "") params.set(opt, v as string);
         }
+        const picks = facetParams();
+        for (const k in picks) params.set(k, picks[k]);
         // Smoke harness short-circuit: __PH_CONNECTOR__[provider][col] = [...].
         const seed =
           window.__PH_CONNECTOR__ &&
@@ -305,9 +334,11 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
         if (Object.prototype.toString.call(seed) === "[object Array]") {
           promise = Promise.resolve({ items: seed });
         } else {
-          promise = fetch(
-            PUBLIC_DATA_ENDPOINT + "?" + params.toString()
-          ).then(function (r) {
+          // `customer` reads and customer-gated collections need the
+          // `ph-customer` cookie (same rule as the React fetcher).
+          promise = fetch(PUBLIC_DATA_ENDPOINT + "?" + params.toString(), {
+            credentials: provider === "customer" || provider === "collection" ? "include" : "omit",
+          }).then(function (r) {
             return r.json();
           });
         }
@@ -330,33 +361,42 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
             try {
               pub = JSON.parse(pubRaw || "");
             } catch (e) {}
-            if (pub && pub.count) {
-              setState(
-                pub.count,
-                {
-                  kind: "value",
-                  value: String(d.items.length),
-                  source: "runtime",
-                },
-                "publish"
-              );
-            }
-            if (pub && pub.totalCount) {
-              setState(
-                pub.totalCount,
-                {
-                  kind: "value",
-                  value: String(d.items.length),
-                  source: "runtime",
-                },
-                "publish"
-              );
+            // Same writes as useDataSource: this query's totals (`meta`), the
+            // page asked for, and the rows on screen.
+            if (pub) {
+              const meta = d.meta || {};
+              const writes: Array<[string | undefined, unknown]> = [
+                [pub.totalPages, meta.totalPages],
+                [pub.totalCount, meta.totalCount],
+                [pub.page, params.get("page") || 1],
+                [pub.count, d.items.length],
+              ];
+              for (let w = 0; w < writes.length; w++) {
+                const key = writes[w][0];
+                const value = writes[w][1];
+                if (!key || value == null) continue;
+                if (getStateValue(key) === String(value)) continue;
+                setState(key, { kind: "value", value: String(value), source: "runtime" }, "publish");
+              }
             }
           })
           .catch(function () {});
       }, 100);
+      // Refetch when an input or facet pick changes — not on every state write.
+      let lastSnap: string | null = null;
       utils.effect(function () {
-        for (const opt in inputs) void _store.entries[inputs[opt]];
+        const parts: string[] = [];
+        for (const opt in inputs) {
+          const e = _store.entries[inputs[opt]];
+          parts.push(opt + "=" + (e ? e.value : ""));
+        }
+        if (followsFacets) {
+          void _store.revision;
+          parts.push(JSON.stringify(facetParams()));
+        }
+        const snap = parts.join("|");
+        if (snap === lastSnap) return;
+        lastSnap = snap;
         refetch();
       });
     }

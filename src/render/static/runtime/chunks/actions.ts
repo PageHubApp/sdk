@@ -209,8 +209,14 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
         if (!ik) return;
         const sign = t === "increment-state" ? 1 : -1;
         const step = (action.step != null ? action.step : 1) * sign;
+        // Unset starts at `min` — same rule as gates.ts applyStateStep.
+        const raw = getStateValue(ik) as string | null | undefined;
         const n =
-          parseInt((getStateValue(ik) as string) || "0", 10) || 0;
+          raw == null || raw === ""
+            ? action.min != null
+              ? action.min
+              : 0
+            : parseInt(raw, 10) || 0;
         let nv = n + step;
         const maxRaw = action.max;
         let maxN: number | undefined = undefined;

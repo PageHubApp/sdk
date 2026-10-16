@@ -91,9 +91,12 @@ export function applyStateStep(
   if (!key) return;
   const sign = action.type === "increment-state" ? 1 : -1;
   const step = (action.step ?? 1) * sign;
-  const cur = parseInt(getStateValue(key) ?? "0", 10) || 0;
-  let next = cur + step;
   const min = action.min;
+  // An unset key starts at `min` (e.g. `url:page` with no ?page= is page 1),
+  // so the first Next goes to 2, not to the page already on screen.
+  const raw = getStateValue(key);
+  const cur = raw == null || raw === "" ? (min ?? 0) : parseInt(raw, 10) || 0;
+  let next = cur + step;
   const max = resolveBound(action.max);
   if (action.wrap) {
     if (max !== undefined && next > max) next = min ?? 0;

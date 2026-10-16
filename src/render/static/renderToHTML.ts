@@ -73,16 +73,17 @@ function buildPageIndexFromNodes(nodes: SerializedNodes): PageIndex {
  * data instead of fail-open `null`. Emitted only when the page actually
  * carries client-side conditions (parity with `getConditionEvalScript`).
  *
- * Cookie detection is presence-only — the JWT itself is HttpOnly and lives
- * in `ph-customer`, but a parallel non-HttpOnly marker is set by the
- * `/api/customer/verify` flow. For the static export we settle for "cookie
- * present = logged-in" which matches what `setAuthState` ends up writing
- * on the React routes. Pages that need finer-grained customer fields
- * (orderCount etc.) hydrate via the client data fetcher.
+ * `authStatus` is the server's answer (`requestContext.isAuthenticated`, from
+ * the request's `ph-customer` cookie). The cookie is HttpOnly, so without
+ * it the script can only look for it and always finds nothing; that fallback
+ * is kept for exports rendered with no request. A magic-link sign-in on the
+ * page updates `__PH_AUTH__` itself (aux.ts). Finer customer fields
+ * (orderCount etc.) hydrate via the `customer` data provider.
  */
 function buildConditionContextSeedScript(
   company: Record<string, any> | undefined,
-  connectorData: Record<string, { bindings: Record<string, any[]> }> | null
+  connectorData: Record<string, { bindings: Record<string, any[]> }> | null,
+  authStatus?: "logged-in" | "logged-out"
 ): string {
   const safeJSON = (v: any) =>
     JSON.stringify(v ?? null).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
@@ -97,7 +98,7 @@ function buildConditionContextSeedScript(
         return c.trim().indexOf('ph-customer=') === 0;
       });
     } catch (e) {}
-    window.__PH_AUTH__ = { status: hasCookie ? 'logged-in' : 'logged-out' };
+    window.__PH_AUTH__ = { status: ${authStatus ? JSON.stringify(authStatus) : "hasCookie ? 'logged-in' : 'logged-out'"} };
     window.__PH_COMPANY__ = ${companyLit};
     window.__PH_CONNECTOR__ = ${connectorLit};
   } catch (e) {}
@@ -326,7 +327,15 @@ export function renderToHTML(
     // Emitted only when client-side conditions exist (matches the
     // condition-eval script's emission gate).
     (ctx.hasClientConditions
-      ? buildConditionContextSeedScript(rootProps.company, options.connectorData ?? null)
+      ? buildConditionContextSeedScript(
+          rootProps.company,
+          options.connectorData ?? null,
+          typeof options.requestContext?.isAuthenticated === "boolean"
+            ? options.requestContext.isAuthenticated
+              ? "logged-in"
+              : "logged-out"
+            : undefined
+        )
       : "") +
     // The static-publish runtime IIFE registers a `data-ph-condition-groups`
     // Alpine directive that wraps evalGroups in Alpine.effect, so node

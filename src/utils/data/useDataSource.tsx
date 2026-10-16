@@ -16,7 +16,7 @@ import { applyRouteParamsToDataSource } from "./routeParamsDataSource";
 import { useRouteParams } from "../RouteParamsContext";
 import { dataSourceBindingId } from "./storefrontDataSource";
 import { sdkLog } from "../logger";
-import { applyCollectionFilter } from "./collectionFilter";
+import { applyDataSourceScope, clientFetchOptions } from "./dataSourceScope";
 
 /**
  * Bind a node to an external data source: Stripe products, customer orders,
@@ -30,6 +30,8 @@ export interface DataSource {
   sort?: "newest" | "oldest" | "alpha" | "price_asc" | "price_desc";
   offset?: number;
   limit?: number;
+  /** `products.facets` only: which facet keys to count (comma-separated). */
+  facetKeys?: string;
   /** Nested repeater: path into parent item (e.g. item.images, item.metadata.sizes). */
   scope?: string;
   /** When scope resolves to a comma-separated string, split for iteration. */
@@ -60,51 +62,25 @@ export interface DataSource {
   bindingKey?: string;
 }
 
-function applyDataSourceScope(
-  items: any[] | null | undefined,
-  ds: {
-    collection?: string;
-    filter?: Record<string, string>;
-    ids?: string[];
-    sort?: string;
-    offset?: number;
-    limit?: number;
+/** Write a binding's totals to its `publishStateKeys` (unchanged values skipped). */
+function publishBindingMeta(
+  pub: NonNullable<DataSource["publishStateKeys"]>,
+  anchors: Readonly<Record<string, string>> | null | undefined,
+  values: { totalPages?: number; totalCount?: number; page?: string | number; count?: number }
+) {
+  const writes: Array<[string | undefined, string | number | undefined]> = [
+    [pub.totalPages, values.totalPages],
+    [pub.totalCount, values.totalCount],
+    [pub.page, values.page],
+    [pub.count, values.count],
+  ];
+  for (const [rawKey, value] of writes) {
+    if (!rawKey || value == null) continue;
+    const key = resolveAnchors(rawKey, anchors ?? undefined) || rawKey;
+    const next = String(value);
+    if (getStateValue(key) === next) continue;
+    setState(key, { kind: "value", value: next, source: "runtime" }, "data-source");
   }
-): any[] | null {
-  if (!Array.isArray(items)) return null;
-  let result = items;
-  if (ds.ids?.length) {
-    const idSet = new Set(ds.ids);
-    result = result.filter(it => idSet.has(it?.id));
-  }
-  // Aggregated collections (facets, categories) carry their filter as a
-  // server-side narrowing instruction — the returned rows don't carry the
-  // product metadata being filtered on, so a client post-filter would drop
-  // every row. Products is the only collection where `filter` maps onto the
-  // item's metadata shape.
-  const isProductItemCollection =
-    !ds.collection || ds.collection === "products" || ds.collection === "product";
-  if (isProductItemCollection) result = applyCollectionFilter(result, ds.filter);
-  if (ds.sort) {
-    result = [...result];
-    switch (ds.sort) {
-      case "alpha":
-        result.sort((a, b) => String(a?.title ?? "").localeCompare(String(b?.title ?? "")));
-        break;
-      case "price_asc":
-        result.sort((a, b) => (a?.price?.amount ?? 0) - (b?.price?.amount ?? 0));
-        break;
-      case "price_desc":
-        result.sort((a, b) => (b?.price?.amount ?? 0) - (a?.price?.amount ?? 0));
-        break;
-      case "oldest":
-        result.reverse();
-        break;
-    }
-  }
-  if (ds.offset && ds.offset > 0) result = result.slice(ds.offset);
-  if (ds.limit && ds.limit > 0 && result.length > ds.limit) result = result.slice(0, ds.limit);
-  return result;
 }
 
 export interface DataBehavior {
@@ -216,6 +192,20 @@ export function useDataSource(
 
   const anchors = useAnchors();
 
+  // SSR resolved this binding: publish its totals on mount, so pagination and
+  // "N products" text read right before any refetch (static: state.ts does the same).
+  useEffect(() => {
+    if (enabled || !ds?.publishStateKeys || !ssrResolved) return;
+    const meta = bindingId ? getBindingMeta(ds.provider, bindingId) : null;
+    publishBindingMeta(ds.publishStateKeys, anchors, {
+      totalPages: meta?.totalPages,
+      totalCount: meta?.totalCount,
+      count: Array.isArray(items) ? items.length : undefined,
+    });
+    // Mount / binding change only — refetches publish their own totals.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, bindingId, ssrResolved]);
+
   // Subscribe to state changes for refetch — but only the keys this binding
   // actually reads. Typing in a search input would otherwise refetch every
   // unrelated grid on the page (global-tick fan-out). We resolve every
@@ -292,27 +282,22 @@ export function useDataSource(
     // Skip fetch when SSR already RESOLVED this binding — a definitive array,
     // populated OR empty (`[]`) — and no state/facet override is active
     // (initial-mount only; refetchKey > 0 means an input changed and we re-run).
-    // Static paging fields (limit/offset) are NOT an "override".
+    // The binding's own query (filter, sort, paging) is NOT an "override".
     //
     // Skipping on the empty case too is essential: the client fetcher hits the
-    // SAME data source, so a mount refetch can't discover rows SSR didn't. And
-    // for non-product `collection` bindings the client options don't carry
-    // `filter`, so an empty-SSR detail/featured binding (slug matched nothing,
-    // no featured row) would refetch UNFILTERED, wrongly repopulate, and clobber
-    // the empty-state slot. `null` items (customer/*, scope-only, or a route
-    // that skipped connector SSR) still fall through and fetch.
+    // SAME data source with the same query, so a mount refetch can't discover
+    // rows SSR didn't, and an empty detail/featured binding (slug matched
+    // nothing) keeps its empty-state slot. `null` items (customer/*, scope-only,
+    // or a route that skipped connector SSR) still fall through and fetch.
     const hasQueryOverride =
       (stateOptions != null && Object.keys(stateOptions).length > 0) ||
       Object.keys(facetOptions).length > 0;
     if (ssrResolved && !hasQueryOverride && refetchKey === 0) return;
 
-    // The connector needs the binding's static paging fields to page
-    // server-side — they're not state-driven so they never came through
-    // `stateInputs`. WITHOUT `limit` the connector returns ALL matching rows
-    // and visible pagination is a silent no-op.
-    const options: Record<string, any> = { ...(stateOptions || {}), ...facetOptions };
-    if (typeof ds.limit === "number" && ds.limit > 0) options.limit = ds.limit;
-    if (typeof ds.offset === "number" && ds.offset > 0) options.offset = ds.offset;
+    // The binding's own query (filter, sort, limit, facet keys) rides along
+    // under the state inputs — none of it is state-driven, so without it the
+    // refetch returns the whole catalog and pagination is a silent no-op.
+    const options = clientFetchOptions(mergedDs ?? ds, { ...(stateOptions || {}), ...facetOptions });
     const fetchOptions = Object.keys(options).length > 0 ? options : undefined;
 
     // Clear stale clientItems so the fetch window falls back to fresh SSR
@@ -324,25 +309,21 @@ export function useDataSource(
     let cancelled = false;
     fetcher(ds.provider, ds.collection, fetchOptions)
       .then(result => {
-        if (cancelled || !Array.isArray(result)) return;
-        setClientItems(result);
-        // Publish per-fetch meta to state for pagination text + gating.
-        const pub = ds.publishStateKeys;
-        if (pub) {
-          const meta = bindingId ? getBindingMeta(ds.provider, bindingId) : null;
-          const writes: Array<[string | undefined, string | number | undefined]> = [
-            [pub.totalPages, meta?.totalPages],
-            [pub.totalCount, meta?.totalCount],
-            [pub.page, options?.page ?? 1],
-            [pub.count, result.length],
-          ];
-          for (const [rawKey, value] of writes) {
-            if (!rawKey || value == null) continue;
-            const key = resolveAnchors(rawKey, anchors) || rawKey;
-            const next = String(value);
-            if (getStateValue(key) === next) continue;
-            setState(key, { kind: "value", value: next, source: "runtime" }, "data-source");
-          }
+        const rows = Array.isArray(result) ? result : result?.items;
+        if (cancelled || !Array.isArray(rows)) return;
+        setClientItems(rows);
+        // Publish per-fetch meta to state for pagination text + gating — this
+        // query's totals when the fetcher returned them, else the SSR binding's.
+        if (ds.publishStateKeys) {
+          const meta =
+            (!Array.isArray(result) && result?.meta) ||
+            (bindingId ? getBindingMeta(ds.provider, bindingId) : null);
+          publishBindingMeta(ds.publishStateKeys, anchors, {
+            totalPages: meta?.totalPages,
+            totalCount: meta?.totalCount,
+            page: options?.page ?? 1,
+            count: rows.length,
+          });
         }
       })
       .catch(err => sdkLog.error("[Data] Client data fetch failed:", err));
@@ -354,6 +335,8 @@ export function useDataSource(
     ds?.provider,
     ds?.collection,
     ds?.limit,
+    ds?.sort,
+    ds?.facetKeys,
     JSON.stringify(ds?.filter ?? null),
     JSON.stringify(ds?.stateInputs ?? null),
     JSON.stringify(ds?.publishStateKeys ?? null),

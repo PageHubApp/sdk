@@ -351,20 +351,22 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
       return;
     }
     if (!keys || typeof keys !== "object") return;
+    // Rows on screen, plus the SSR page totals Data.toHTML stamped.
     const count = el.querySelectorAll("[data-item-id]").length;
-    if (keys.count) {
-      setState(
-        keys.count,
-        { kind: "value", value: String(count), source: "load" },
-        "publish"
-      );
-    }
-    if (keys.totalCount) {
-      setState(
-        keys.totalCount,
-        { kind: "value", value: String(count), source: "load" },
-        "publish"
-      );
+    let meta: any = {};
+    try {
+      meta = JSON.parse(el.getAttribute("data-binding-meta") || "{}") || {};
+    } catch (e) {}
+    const writes: Array<[string | undefined, unknown]> = [
+      [keys.count, count],
+      [keys.totalCount, meta.totalCount != null ? meta.totalCount : count],
+      [keys.totalPages, meta.totalPages],
+    ];
+    for (let w = 0; w < writes.length; w++) {
+      const key = writes[w][0];
+      const value = writes[w][1];
+      if (!key || value == null) continue;
+      setState(key, { kind: "value", value: String(value), source: "load" }, "publish");
     }
   });
 

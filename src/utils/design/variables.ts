@@ -50,11 +50,14 @@ export interface ClientDataFetchOptions {
   [key: string]: any;
 }
 
+/** Rows, or rows plus this query's page totals (published to `publishStateKeys`). */
+export type ClientDataFetchResult = any[] | { items: any[]; meta?: SdkBindingMeta } | null;
+
 type ClientDataFetcher = (
   provider: string,
   collection: string,
   options?: ClientDataFetchOptions
-) => Promise<any[] | null>;
+) => Promise<ClientDataFetchResult>;
 
 let _clientDataFetcher: ClientDataFetcher | null = null;
 

@@ -19,8 +19,11 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   // Initial value, as the React body resolves it: the state binding's default,
   // else the field's own `defaultValue` (a quantity input's "1"). A bound
   // field's live state value is filled by the runtime post-hydration.
-  const sb = props.stateBinding;
-  const bound = !!sb && typeof sb === "object" && typeof sb.key === "string";
+  // `name` and the state key interpolate against the item like the React body,
+  // so a repeater of facet checkboxes writes `url:facet.<facetKey>`.
+  const rawSb = props.stateBinding;
+  const bound = !!rawSb && typeof rawSb === "object" && typeof rawSb.key === "string";
+  const sb = bound ? { ...rawSb, key: interpolate(rawSb.key, ctx) } : rawSb;
   const fieldDefault =
     props.defaultValue != null && props.defaultValue !== "" ? String(props.defaultValue) : undefined;
   const seededDefault: string | undefined =
@@ -36,7 +39,7 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     id: inputId,
     class: cls || undefined,
     type: t === "input" ? props.type || "text" : undefined,
-    name: props.name || undefined,
+    name: props.name ? interpolate(props.name, ctx) : undefined,
     placeholder: props.placeholder ? interpolate(props.placeholder, ctx) : undefined,
     value: t === "input" && seededDefault !== undefined ? seededDefault : undefined,
     required: props.required || undefined,
@@ -55,8 +58,8 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
     ...handlerAttrs(props),
     // React seeds a bound field's empty state from `defaultValue` too.
     ...stateAttrs(
-      bound && !sb.defaultValue && fieldDefault
-        ? { ...props, stateBinding: { ...sb, defaultValue: fieldDefault } }
+      bound
+        ? { ...props, stateBinding: !sb.defaultValue && fieldDefault ? { ...sb, defaultValue: fieldDefault } : sb }
         : props,
       ctx
     ),
