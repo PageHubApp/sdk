@@ -4,6 +4,7 @@ import { serializeFormFields } from "./serializeFormFields";
 import { useContainerRenderWalker } from "../Container/Container.render";
 import { useWalkerNode } from "../../render/react/contexts";
 import { setVisibility } from "../../utils/state/stateRegistry";
+import { formStateKeys } from "./formStateKeys";
 
 /**
  * Walker / viewer render path for Form. Children include the canvas
@@ -16,9 +17,11 @@ export const FormRender = ({ children, ...props }: any) => {
   const settings = null;
   const walker = useWalkerNode();
   const formId = walker?.id ?? "";
-  const fieldsKey = formId ? `form:${formId}:fields` : "";
-  const loadingKey = formId ? `form:${formId}:loading` : "";
-  const loadedKey = formId ? `form:${formId}:loaded` : "";
+  const {
+    fields: fieldsKey,
+    loading: loadingKey,
+    loaded: loadedKey,
+  } = formStateKeys(props.stateKey, formId);
 
   useEffect(() => {
     const iframe = document.querySelector("iframe");

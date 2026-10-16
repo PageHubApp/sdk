@@ -7,6 +7,7 @@ import { serializeFormFields } from "./serializeFormFields";
 import { Container } from "../Container/Container";
 import { Text } from "../Text/Text";
 import { setVisibility } from "../../utils/state/stateRegistry";
+import { formStateKeys } from "./formStateKeys";
 
 export const Form = ({ children, ...props }: any) => {
   const formType = props.formType || "subscribe";
@@ -26,9 +27,11 @@ export const Form = ({ children, ...props }: any) => {
   const [debugTab, setDebugTab] = useState<"data" | "config">("data");
   const settings = null;
 
-  const fieldsKey = `form:${id}:fields`;
-  const loadingKey = `form:${id}:loading`;
-  const loadedKey = `form:${id}:loaded`;
+  const {
+    fields: fieldsKey,
+    loading: loadingKey,
+    loaded: loadedKey,
+  } = formStateKeys(props.stateKey, id);
 
   // Mirror the FormMainTab segmented control onto the visibility registry so
   // editor canvas preview reflects the chosen view without re-rendering paths

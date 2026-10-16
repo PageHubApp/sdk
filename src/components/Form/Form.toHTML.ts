@@ -40,6 +40,8 @@ export const toHTML: ToHTMLFn = (props, children, ctx) => {
   const meta = buildFormMetaAttrs(props);
   const formId = ctx?.renderingNodeId ?? "";
   const idAttr = formId ? ` data-ph-form-id="${escapeQuotedAttr(formId)}"` : "";
-  const attrStr = ` data-ph-form="${escapeQuotedAttr(meta["data-ph-form"]!)}"${idAttr}`;
+  const stateKey = typeof props.stateKey === "string" ? props.stateKey.trim() : "";
+  const stateAttr = stateKey ? ` data-ph-form-state="${escapeQuotedAttr(stateKey)}"` : "";
+  const attrStr = ` data-ph-form="${escapeQuotedAttr(meta["data-ph-form"]!)}"${idAttr}${stateAttr}`;
   return html.replace(/^(\s*<form\b)/i, "$1" + attrStr);
 };

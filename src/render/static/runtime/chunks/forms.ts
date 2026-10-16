@@ -79,11 +79,13 @@ export const FORMS_CHUNK = stringifyChunk(function $forms() {
         } catch (e) {}
       }
       const formId = form.getAttribute("data-ph-form-id") || "";
-      const keys = formId
+      // Same rule as components/Form/formStateKeys.ts: `stateKey` wins.
+      const stateId = form.getAttribute("data-ph-form-state") || formId;
+      const keys = stateId
         ? {
-            fields: "form:" + formId + ":fields",
-            loading: "form:" + formId + ":loading",
-            loaded: "form:" + formId + ":loaded",
+            fields: "form:" + stateId + ":fields",
+            loading: "form:" + stateId + ":loading",
+            loaded: "form:" + stateId + ":loaded",
           }
         : null;
       function toggle(k: "fields" | "loading" | "loaded", v: "shown" | "hidden") {
