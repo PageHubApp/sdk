@@ -179,23 +179,13 @@ const CART_BODY = stringifyChunk(function $cart() {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
   }
-  const CART_DEFAULTS: Record<string, string> = {
-    "empty-class":
-      "text-base-content/50 flex flex-col items-center justify-center gap-4 py-16",
-    "empty-text": "Your cart is empty",
-    "empty-text-class": "text-sm",
-    "list-class": "flex flex-col gap-4",
-    "row-class": "flex gap-4",
-    "image-class": "size-20 shrink-0 rounded-lg object-cover",
-    "body-class": "flex flex-1 flex-col gap-1",
-    "title-class": "line-clamp-2 text-sm font-semibold",
-    "variant-class": "text-base-content/60 text-xs",
-    "price-class": "text-primary text-sm font-bold",
-    "controls-class": "mt-1 flex items-center gap-2",
-    "quantity-class": "min-w-[1.5rem] text-center text-sm font-medium",
-    "control-button-class": "btn btn-ghost btn-xs btn-circle",
-    "remove-button-class": "btn btn-ghost btn-xs btn-circle text-error ml-auto",
-  };
+  // Copy + classes come from the host's CartItems toHTML, which stamps every
+  // one as `data-<key>` with its defaults filled in.
+  const CART_ATTRS = [
+    "empty-class", "empty-text", "empty-text-class", "list-class", "row-class",
+    "image-class", "body-class", "title-class", "variant-class", "price-class",
+    "controls-class", "quantity-class", "control-button-class", "remove-button-class",
+  ];
   function renderCartItems(_el: Element, c: Record<string, string>) {
     const items = readCartFromStorage();
     if (!items.length) {
@@ -292,8 +282,8 @@ const CART_BODY = stringifyChunk(function $cart() {
       }
     ) {
       const cfg: Record<string, string> = {};
-      for (const k in CART_DEFAULTS) {
-        cfg[k] = el.getAttribute("data-" + k) || CART_DEFAULTS[k];
+      for (let i = 0; i < CART_ATTRS.length; i++) {
+        cfg[CART_ATTRS[i]] = el.getAttribute("data-" + CART_ATTRS[i]) || "";
       }
       function render() {
         el.innerHTML = renderCartItems(el, cfg);
