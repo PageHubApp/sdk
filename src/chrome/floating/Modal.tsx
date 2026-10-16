@@ -1,5 +1,5 @@
 /**
- * `<Modal>` — the one centered / drawer modal shell (NOT draggable; that's
+ * `<Modal>` — the one centered / drawer / bottom-sheet modal shell (NOT draggable; that's
  * `FloatingPanel`'s job). Every dialog in the editor chrome, the dashboard and
  * the marketing site renders through it, so backdrop, motion, Escape, focus
  * trap, scroll lock and `role="dialog"` behave the same everywhere.
@@ -76,6 +76,16 @@ const HIDDEN_TRANSFORM: Record<ModalVariant, string> = {
   centered: "translateY(8px) scale(0.98)",
   "drawer-right": "translateX(24px)",
   "drawer-left": "translateX(-24px)",
+  "sheet-bottom": "translateY(100%)",
+};
+
+const POSITIONER: Record<ModalVariant, string> = {
+  centered: "items-center justify-center",
+  "drawer-right": "items-stretch justify-end",
+  "drawer-left": "items-stretch justify-start",
+  // The gap above the sheet leaves the page peeking out, so it reads as on top
+  // of where you were rather than a new page.
+  "sheet-bottom": "items-end justify-center px-0 pb-0 pt-4 sm:px-3 sm:pt-12",
 };
 
 export function Modal({
@@ -135,15 +145,10 @@ export function Modal({
   const backdropClick = closeOnBackdrop ? close : undefined;
 
   const isDrawer = variant === "drawer-right" || variant === "drawer-left";
-  const positioner =
-    variant === "drawer-right"
-      ? "items-stretch justify-end"
-      : variant === "drawer-left"
-        ? "items-stretch justify-start"
-        : "items-center justify-center";
-  const cardShape = isDrawer
-    ? "h-full max-h-none rounded-none"
-    : size === "full"
+  const isSheet = variant === "sheet-bottom";
+  const cardShape = isSheet
+    ? "h-full max-h-none w-full max-w-none rounded-t-2xl rounded-b-none"
+    : isDrawer || size === "full"
       ? "h-full max-h-none rounded-none"
       : "max-h-[90vh] rounded-box";
 
@@ -173,7 +178,7 @@ export function Modal({
       <div
         className={twMerge(
           "pointer-events-none fixed inset-0 flex p-4",
-          positioner,
+          POSITIONER[variant],
           positionerClassName
         )}
         style={{ zIndex }}
@@ -197,7 +202,8 @@ export function Modal({
           style={{
             // `ph-modal-surface` carries a keyframe entrance; the transition owns motion here.
             animation: "none",
-            opacity: shown ? 1 : 0,
+            // A sheet slides the whole way in; fading it as well looks washed out.
+            opacity: shown || isSheet ? 1 : 0,
             transform: shown ? "none" : HIDDEN_TRANSFORM[variant],
             transition: transition("opacity, transform"),
           }}

@@ -262,7 +262,7 @@ export interface ResolvedContribution<Ctx = unknown> {
 // ─── Modals (the 4th primitive) ────────────────────────────────────────────────
 
 export type ModalSize = "sm" | "md" | "lg" | "xl" | "full";
-export type ModalVariant = "centered" | "drawer-right" | "drawer-left";
+export type ModalVariant = "centered" | "drawer-right" | "drawer-left" | "sheet-bottom";
 
 /**
  * Built-in modal ids the SDK pre-registers via `BUILTIN_MODALS`. Keep in

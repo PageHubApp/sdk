@@ -44,6 +44,10 @@ export const OVERLAY_Z_TOOLTIP = 99;
 // Single source of truth — every FloatingPanel call site reads from here.
 export const OVERLAY_Z_FLOATING_PANEL = 1100;
 export const OVERLAY_Z_FLOATING_PANEL_DROPDOWN = 1110;
+// Bottom sheets on dashboard pages (the account sheet): above the dashboard
+// rail and bars, and below `1200`, which is where dialogs opened from inside a
+// sheet sit (rotate API key, buy credits, verify phone).
+export const OVERLAY_Z_PAGE_SHEET = 1000;
 // Dialogs on dashboard / marketing pages, and confirms everywhere: above all
 // page chrome (marketing nav z-70, dashboard headers and rails) and above the
 // editor's floating panels, so a confirm opened from one isn't hidden by it.
