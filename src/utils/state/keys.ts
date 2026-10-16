@@ -46,6 +46,11 @@ export const STATE_KEY = {
   cartAddPayload: "cart:add-payload",
   /** Nonce bumped on each checkout click. */
   cartCheckoutTick: "cart:checkout-tick",
+  /** `{ success, cancel }` JSON — resolved return paths from the clicked
+   *  `cart-checkout` action (null = the current page). */
+  cartCheckoutReturn: "cart:checkout-return",
+  /** `"success"` | `"cancel"` after returning from Stripe. */
+  cartCheckoutStatus: "cart:checkout-status",
   /** Auth status mirror — `"logged-in"` | `"logged-out"`. */
   authStatus: "auth:status",
 } as const;

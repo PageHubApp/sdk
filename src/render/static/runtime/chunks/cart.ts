@@ -12,7 +12,8 @@ const CART_BODY = stringifyChunk(function $cart() {
   // Cross-chunk function bindings via runtime registry. See
   // staticPublishRuntime.ts preamble for the why.
   const { setState, setVisibility, getStateValue, fireAnalytics } = __phRT;
-  const { toCartLine, parseCartLines, addCartLine, setCartLineQuantity, summarizeCart } = __phRT;
+  const { toCartLine, parseCartLines, addCartLine, setCartLineQuantity, summarizeCart, checkoutReturnUrl } =
+    __phRT;
 
   function readCartFromStorage() {
     if (!PAGE_ID) return [];
@@ -85,11 +86,6 @@ const CART_BODY = stringifyChunk(function $cart() {
   function removeCartItem(priceId: string) {
     setCartQuantity(priceId, 0);
   }
-  // The page the buyer is on, without its query or hash — Stripe sends them
-  // back here with `?checkout=success|cancel` (same as cartContext.tsx).
-  function checkoutReturnUrl(status: string) {
-    return window.location.origin + window.location.pathname + "?checkout=" + status;
-  }
   function setCartError(message: string) {
     setState(
       PH_CART_ERROR,
@@ -97,7 +93,10 @@ const CART_BODY = stringifyChunk(function $cart() {
       "cart-checkout"
     );
   }
-  function cartCheckout() {
+  // `action` is the clicked `cart-checkout` entry; its return hrefs were
+  // resolved to site paths at render time (`actionsAttr`).
+  function cartCheckout(action: any) {
+    const loc = window.location;
     const raw = getStateValue(PH_CART_ITEMS_JSON);
     let items: any[] = [];
     try {
@@ -116,8 +115,8 @@ const CART_BODY = stringifyChunk(function $cart() {
         items: items.map(function (l: any) {
           return { priceId: l.priceId, quantity: l.quantity };
         }),
-        successUrl: checkoutReturnUrl("success"),
-        cancelUrl: checkoutReturnUrl("cancel"),
+        successUrl: checkoutReturnUrl(loc.origin, loc.pathname, action && action.successHref, "success"),
+        cancelUrl: checkoutReturnUrl(loc.origin, loc.pathname, action && action.cancelHref, "cancel"),
         promotionCode: promotionCode || undefined,
       }),
       credentials: "include",

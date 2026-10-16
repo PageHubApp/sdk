@@ -75,7 +75,7 @@ function attachOne(prop: any, action: NodeAction, enabled: boolean, context?: Ac
       attachToggleCart(prop, action, enabled);
       break;
     case "cart-checkout":
-      attachCartCheckout(prop, action, enabled);
+      attachCartCheckout(prop, action, enabled, context);
       break;
     case "agent-send":
       attachAgentSend(prop, action, enabled, context);

@@ -36,6 +36,9 @@ interface LinkInputProps {
   onChange: (action: LinkAction) => void;
   /** Optional placeholder for the href input. */
   placeholder?: string;
+  /** Show the same-tab / new-tab toggle. Off for hrefs that aren't clicked
+   *  links (e.g. a checkout return page). Default true. */
+  showTarget?: boolean;
 }
 
 // ─── Parsing ───────────────────────────────────────────────────────────
@@ -95,7 +98,12 @@ function encodeMailto(email: string, subject?: string, body?: string): string {
 
 // ─── Component ─────────────────────────────────────────────────────────
 
-export function LinkInput({ action, onChange, placeholder = "Page or URL..." }: LinkInputProps) {
+export function LinkInput({
+  action,
+  onChange,
+  placeholder = "Page or URL...",
+  showTarget = true,
+}: LinkInputProps) {
   const href = action?.href ?? "";
   const target = action?.target;
   const parsed = useMemo(() => parseHref(href), [href]);
@@ -335,7 +343,7 @@ export function LinkInput({ action, onChange, placeholder = "Page or URL..." }: 
       )}
 
       {/* Target toggle — only for url/page (mailto/tel/anchor don't need it) */}
-      {(parsed.kind === "url" || parsed.kind === "page") && (
+      {showTarget && (parsed.kind === "url" || parsed.kind === "page") && (
         <ToolbarSegmentedControl<LinkTarget>
           aria-label="Link target"
           value={(target || "_self") as LinkTarget}

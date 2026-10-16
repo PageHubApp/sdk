@@ -156,12 +156,29 @@ export function summarizeCart(lines: CartLine[]): CartSummary {
   return { count: count, totalAmount: totalAmount, totalFormatted: totalFormatted };
 }
 
+/**
+ * Absolute URL Stripe returns the buyer to: the `cart-checkout` action's
+ * resolved `successHref` / `cancelHref` path, or the current page (no query or
+ * hash) when it has none, plus `checkout=<status>`. The server appends
+ * `session_id` to the success URL.
+ */
+export function checkoutReturnUrl(
+  origin: string,
+  currentPath: string,
+  href: string | null | undefined,
+  status: "success" | "cancel"
+): string {
+  const path = typeof href === "string" && href.charAt(0) === "/" ? href.split("#")[0] : currentPath;
+  return origin + path + (path.indexOf("?") >= 0 ? "&" : "?") + "checkout=" + status;
+}
+
 const CART_LINE_FNS = {
   toCartLine,
   parseCartLines,
   addCartLine,
   setCartLineQuantity,
   summarizeCart,
+  checkoutReturnUrl,
 };
 
 /**

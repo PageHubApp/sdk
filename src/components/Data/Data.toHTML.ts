@@ -24,7 +24,7 @@ import { partitionDataChildIds } from "../../utils/data/emptySlot";
 import { resolveNestedItems } from "../../utils/data/resolveNestedItems";
 import { applyRouteParamsToDataSource } from "../../utils/data/routeParamsDataSource";
 import { dataSourceBindingId } from "../../utils/data/storefrontDataSource";
-import { makeSlotProxy } from "../../utils/data/slotItem";
+import { isSlotItem, makeSlotProxy } from "../../utils/data/slotItem";
 import { applyCollectionFilter } from "../../utils/data/collectionFilter";
 import {
   actionsAttr,
@@ -137,8 +137,15 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   // pre-fetched connectorData[provider].bindings[bindingId].
   let items: any[] | null = null;
   let bindingId: string | null = null;
+  // An `item.*` scope inside a client item template: the parent row only
+  // exists in the browser, so this repeater ships its own template and the
+  // runtime expands it per row (`data-scope-path`).
+  const nestedSlotScope =
+    !!ds?.scope && !ds.scope.startsWith("state:") && isSlotItem(ctx.currentItem);
   if (ds) {
-    if (ds.scope) {
+    if (nestedSlotScope) {
+      items = null;
+    } else if (ds.scope) {
       items = resolveNestedItems(ctx.currentItem ?? null, ds.scope, ds.splitBy);
     } else if (ds.provider && ds.collection) {
       const merged = applyRouteParamsToDataSource(ds, ctx.routeParams ?? {});
@@ -211,7 +218,11 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
         : null;
   const isStateScope = !!stateScopeKey;
   let itemTemplateHTML = "";
-  if (ds && (ds.stateInputs || ds.provider || isStateScope) && templateChildIds.length > 0) {
+  if (
+    ds &&
+    (ds.stateInputs || ds.provider || isStateScope || nestedSlotScope) &&
+    templateChildIds.length > 0
+  ) {
     const prevItem = ctx.currentItem;
     try {
       ctx.currentItem = makeSlotProxy() as any;
@@ -220,10 +231,19 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
       // Stamp `data-item-id="{{slot:id}}"` on the first tag so the runtime
       // can reconcile by id when items change.
       itemTemplateHTML = stampItemId(rendered, "{{slot:id}}");
+      // Nested inside a parent's template: escape this level's slots one
+      // `^` deeper so filling the parent row leaves them for this repeater.
+      if (nestedSlotScope) itemTemplateHTML = itemTemplateHTML.replace(/\{\{slot(\^*):/g, "{{slot^$1:");
     } finally {
       ctx.currentItem = prevItem;
     }
   }
+  // Empty-state slot for a binding only the browser resolves: ship it so the
+  // runtime can show it when the client fetch comes back with no rows.
+  const emptyTemplateHTML =
+    ds?.provider && ds.stateInputs && items === null && emptyChildIds.length > 0
+      ? ctx.renderChildren(emptyChildIds)
+      : "";
   // else: ds set but items unresolved (null/empty) — emit empty wrapper.
   // Client refetch via stateInputs (if any) populates on hydration.
 
@@ -254,6 +274,10 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   if (stateScopeKey) {
     attrs["data-state-scope"] = stateScopeKey;
   }
+  if (nestedSlotScope && ds?.scope) {
+    attrs["data-scope-path"] = ds.scope.replace(/^item\./, "");
+    if (ds.splitBy) attrs["data-scope-split"] = ds.splitBy;
+  }
   // Pass-through attrs (mirror Container.toHTML).
   if (props.attrs && typeof props.attrs === "object") {
     for (const [k, v] of Object.entries(props.attrs)) {
@@ -281,9 +305,10 @@ export const toHTML: ToHTMLFn = (props, _children, ctx) => {
   // Append item template (sibling of the iteration rows) when wired for
   // client-side refetch. <template> contents don't render but are accessible
   // to the runtime via `.content.firstElementChild`.
-  const finalChildren = itemTemplateHTML
-    ? childrenHTML + `<template data-item-template>${itemTemplateHTML}</template>`
-    : childrenHTML;
+  const finalChildren =
+    childrenHTML +
+    (itemTemplateHTML ? `<template data-item-template>${itemTemplateHTML}</template>` : "") +
+    (emptyTemplateHTML ? `<template data-empty-template>${emptyTemplateHTML}</template>` : "");
 
   return tag(t, attrs, finalChildren);
 };

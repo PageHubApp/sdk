@@ -1,4 +1,4 @@
-import type { AddToCartAction, NodeAction } from "../../action";
+import { actionToHref, type AddToCartAction, type NodeAction } from "../../action";
 import { getStateValue, setState, setVisibility } from "../../state/stateRegistry";
 import { STATE_KEY } from "../../state/keys";
 import { actionGatePasses } from "../gates";
@@ -124,13 +124,35 @@ export function attachToggleCart(prop: any, action: NodeAction, enabled: boolean
   });
 }
 
-export function attachCartCheckout(prop: any, action: NodeAction, enabled: boolean) {
+export function attachCartCheckout(
+  prop: any,
+  action: NodeAction,
+  enabled: boolean,
+  context?: ActionContext
+) {
   if (action.type !== "cart-checkout") return;
   chain(prop, "onClick", (e, run) => {
     run(e);
     if (enabled) return;
     if (!actionGatePasses(action)) return;
     e.preventDefault();
+    // Hand the cart provider the pages Stripe should return to, resolved the
+    // way a `link` action resolves its href (`ref:<pageId>`, preview prefix).
+    const resolve = (href?: string) =>
+      href
+        ? actionToHref({ type: "link", href }, context?.pageIndex, context?.routerPath)
+        : null;
+    setState(
+      STATE_KEY.cartCheckoutReturn,
+      {
+        kind: "value",
+        value: JSON.stringify({
+          success: resolve(action.successHref),
+          cancel: resolve(action.cancelHref),
+        }),
+      },
+      "cart-checkout"
+    );
     // Bump the checkout tick — provider subscribes and runs the network
     // call. Tick value is `Date.now()` so each click rerenders the
     // subscriber even when content is unchanged.

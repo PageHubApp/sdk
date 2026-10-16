@@ -67,6 +67,7 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
       }
       parent.removeChild(el);
     }
+    expandNestedScopes(tmp, item);
     const els = tmp.children;
     if (els.length === 1) return els[0] as HTMLElement;
     if (!els.length) return null;
@@ -74,6 +75,52 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
     wrap.style.display = "contents";
     while (tmp.firstChild) wrap.appendChild(tmp.firstChild);
     return wrap;
+  }
+
+  // Nested `item.*` repeaters inside a freshly built row (Data.toHTML
+  // `data-scope-path`): their template's slots are escaped one `^` deeper so
+  // the parent fill skipped them — unescape a level and fill from this row's
+  // item. Strings/numbers wrap like resolveNestedItems so `{{item.value}}` works.
+  function expandNestedScopes(root: Element, item: any) {
+    const scopes = root.querySelectorAll("[data-scope-path]");
+    for (let s = 0; s < scopes.length; s++) {
+      const el = scopes[s];
+      const tpl = el.querySelector(":scope > template[data-item-template]") as HTMLTemplateElement | null;
+      if (!tpl) continue;
+      const html = tpl.innerHTML.replace(/\{\{slot\^(\^*):/g, "{{slot$1:");
+      const path = el.getAttribute("data-scope-path") || "";
+      let v = walkSlotPath(item, path.split("."));
+      const split = el.getAttribute("data-scope-split");
+      if (split && typeof v === "string") v = v.split(split).map(function (x) { return x.trim(); }).filter(Boolean);
+      const list = Object.prototype.toString.call(v) === "[object Array]" ? (v as any[]) : [];
+      reconcileItems(
+        el,
+        html,
+        list.map(function (x, i) {
+          if (typeof x !== "string" && typeof x !== "number") return x;
+          const str = String(x);
+          return { id: path + "-" + i, value: str, title: str, src: str, image: str };
+        })
+      );
+    }
+  }
+
+  // Show the Data node's empty-state slot (`<template data-empty-template>`)
+  // when a client fetch resolved to no rows; drop it once rows arrive.
+  function syncEmptySlot(wrapper: Element, count: number) {
+    const tpl = wrapper.querySelector(":scope > template[data-empty-template]") as HTMLTemplateElement | null;
+    if (!tpl) return;
+    const shown = wrapper.querySelector(":scope > [data-ph-empty-slot]");
+    if (count > 0) {
+      if (shown) wrapper.removeChild(shown);
+      return;
+    }
+    if (shown) return;
+    const box = document.createElement("div");
+    box.style.display = "contents";
+    box.setAttribute("data-ph-empty-slot", "");
+    box.innerHTML = tpl.innerHTML;
+    wrapper.insertBefore(box, tpl);
   }
 
   // Reconcile child rows of a repeater wrapper. Keeps DOM nodes whose item id
@@ -273,6 +320,7 @@ export const REPEATER_CHUNK = stringifyChunk(function $repeater() {
               return;
             }
             reconcileItems(el, templateHTML, d.items);
+            syncEmptySlot(el, d.items.length);
             const ev = new CustomEvent("pagehub:repeater-refresh", {
               detail: { collection: col, items: d.items },
             });

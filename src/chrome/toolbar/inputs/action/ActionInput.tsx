@@ -5,7 +5,7 @@
  * sub-form lives under `subforms/`.
  */
 import type { ActionType, NodeAction, ToggleThemeAction } from "@/utils/action";
-import { AddToCartForm } from "./subforms/CartSubForm";
+import { AddToCartForm, CartCheckoutForm } from "./subforms/CartSubForm";
 import {
   CopyToClipboardForm,
   DownloadFileForm,
@@ -90,11 +90,7 @@ export function ActionSubForm({
         </p>
       );
     case "cart-checkout":
-      return (
-        <p className="text-neutral-content text-[10px] leading-snug">
-          Redirects to Stripe Checkout with the current cart contents.
-        </p>
-      );
+      return <CartCheckoutForm action={action} patch={patch} />;
     case "manage-subscription":
       return (
         <p className="text-neutral-content text-[10px] leading-snug">

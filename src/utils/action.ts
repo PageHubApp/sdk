@@ -153,6 +153,16 @@ export interface ToggleCartAction extends ActionBase {
 /** Trigger Stripe checkout with current cart contents. */
 export interface CartCheckoutAction extends ActionBase {
   type: "cart-checkout";
+  /**
+   * Where Stripe sends the buyer after paying — any `link` href shape
+   * (`ref:<pageId>` for a site page, or a root-relative path). Unset = back to
+   * the page they checked out from. Either way the URL gets
+   * `?checkout=success&session_id=<id>`, so the page can show a thank-you
+   * panel (`state cart:checkout-status`) and bind the order (`provider: "order"`).
+   */
+  successHref?: string;
+  /** Where Stripe sends a buyer who backs out. Unset = the page they left from. */
+  cancelHref?: string;
 }
 
 /** Redirect to Stripe Billing Portal for subscription management. */

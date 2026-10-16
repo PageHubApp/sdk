@@ -184,6 +184,8 @@ export function renderButtonBody(props: any, ctx: RenderCtx) {
     itemContext,
     onAddToCart: sdk?.config.callbacks?.onAddToCart ?? uiCallbacks?.onAddToCart,
     resolvedLinkHref: typeof resolvedUrl === "string" ? resolvedUrl : null,
+    pageIndex: ctx.pageIndex,
+    routerPath: router?.asPath,
   };
   if (needsJsActionDispatch(actions)) {
     addActionHandlers(prop, actions, ctx.enabled, actionCtx);

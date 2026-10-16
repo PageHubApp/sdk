@@ -141,6 +141,8 @@ export function applyContainerActions(prop: any, ctx: ApplyActionsCtx): ApplyAct
   if (jsDispatch) {
     addActionHandlers(prop, actions, enabled, {
       resolvedLinkHref: typeof resolvedUrl === "string" ? resolvedUrl : null,
+      pageIndex,
+      routerPath: router?.asPath,
     });
   }
 

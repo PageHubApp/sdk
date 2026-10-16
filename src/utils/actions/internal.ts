@@ -3,6 +3,7 @@
  * interpolation, hover-revert scratch, and the `chain` event composer.
  */
 import type { NodeAction, ShowHideAction } from "../action";
+import type { PageIndex } from "../page/pageManagement";
 import { getState, setVisibility } from "../state/stateRegistry";
 
 // ─── Visibility helpers ────────────────────────────────────────────────
@@ -193,4 +194,8 @@ export type ActionContext = {
    * interpolation that this helper has no access to.
    */
   resolvedLinkHref?: string | null;
+  /** Page index + current path, for actions that carry their own hrefs
+   *  (`cart-checkout` `successHref` / `cancelHref`). */
+  pageIndex?: PageIndex | null;
+  routerPath?: string;
 };

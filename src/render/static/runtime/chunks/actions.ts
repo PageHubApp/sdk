@@ -332,7 +332,7 @@ export const ACTIONS_CHUNK = stringifyChunk(function $actions() {
       }
       if (t === "cart-checkout") {
         if (ev) ev.preventDefault();
-        cartCheckout();
+        cartCheckout(action);
         return;
       }
       if (t === "manage-subscription") {

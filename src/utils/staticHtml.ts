@@ -476,6 +476,17 @@ export function actionsAttr(
   // scheme. Same resolver the <a href> path uses.
   const pageIndex = getPageIndex(ctx);
   const resolved = actions.map((a: any) => {
+    // The runtime has no page index, so checkout return pages ship resolved.
+    if (a?.type === "cart-checkout") {
+      const out = { ...a };
+      for (const key of ["successHref", "cancelHref"] as const) {
+        if (typeof a[key] !== "string" || !a[key]) continue;
+        const real = safeHref(actionToHref({ type: "link", href: a[key] }, pageIndex, ctx?.currentPath));
+        if (real) out[key] = real;
+        else delete out[key];
+      }
+      return out;
+    }
     if (a?.type !== "link" || typeof a.href !== "string") return a;
 
     // `ref:<pageId>` first — it only rewrites the page part, so a detail href

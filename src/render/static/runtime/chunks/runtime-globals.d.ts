@@ -124,7 +124,7 @@ declare global {
   function addToCart(item: any, qty: number): void;
   function setCartQuantity(priceId: string, qty: number): void;
   function removeCartItem(priceId: string): void;
-  function cartCheckout(): void;
+  function cartCheckout(action?: any): void;
   function handleCheckoutReturn(): void;
   function escapeHTML(s: unknown): string;
   function renderCartItems(el: Element, c: any): void;

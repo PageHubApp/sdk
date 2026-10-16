@@ -1,5 +1,38 @@
 import { Chip } from "@/chrome/primitives/Chip";
+import type { CartCheckoutAction } from "@/utils/action";
 import { STATE_KEY_EXAMPLE } from "@/utils/state/keys";
+import { LinkInput } from "../LinkInput";
+
+/** Where Stripe sends the buyer afterwards. Empty = back to the page they were on. */
+export function CartCheckoutForm({
+  action,
+  patch,
+}: {
+  action: CartCheckoutAction;
+  patch: (p: Partial<CartCheckoutAction>) => void;
+}) {
+  const field = (key: "successHref" | "cancelHref", label: string) => (
+    <div className="flex flex-col gap-1">
+      <span className="text-neutral-content px-1 text-xs">{label}</span>
+      <LinkInput
+        action={{ type: "link", href: action[key] ?? "" }}
+        onChange={next => patch({ [key]: next.href || undefined })}
+        placeholder="This page"
+        showTarget={false}
+      />
+    </div>
+  );
+  return (
+    <>
+      <p className="text-neutral-content text-[10px] leading-snug">
+        Sends the cart to Stripe Checkout. Leave a page empty to bring the buyer back to the page
+        they were on.
+      </p>
+      {field("successHref", "After paying, go to")}
+      {field("cancelHref", "If they cancel, go to")}
+    </>
+  );
+}
 
 export function AddToCartForm({ action, patch }: { action: any; patch: (p: any) => void }) {
   return (
