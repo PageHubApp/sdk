@@ -103,6 +103,33 @@ export function mountUrlQueryStateBridge(): () => void {
   return _detach;
 }
 
+/**
+ * Drop query params from the address bar without a navigation — and from the
+ * `url:*` mirror, which the bridge may already have seeded on mount. Clearing
+ * only the address bar lets the next state → URL sync write them back, so
+ * one-shot params (magic-link / share tokens) must come out through here.
+ * Returns whether any of them were present.
+ */
+export function stripUrlParams(names: string[]): boolean {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  const present = names.filter((n) => params.has(n));
+  for (const n of names) {
+    params.delete(n);
+    if (getStateValue(`${URL_PREFIX}${n}`)) {
+      setState(`${URL_PREFIX}${n}`, { kind: "value", value: "" }, BRIDGE_WRITER);
+    }
+  }
+  if (!present.length) return false;
+  const qs = params.toString();
+  window.history.replaceState(
+    {},
+    "",
+    window.location.pathname + (qs ? "?" + qs : "") + window.location.hash
+  );
+  return true;
+}
+
 /** Convenience reader for callers that prefer the explicit URL contract. */
 export function getUrlState(param: string): string | undefined {
   const v = getStateValue(`${URL_PREFIX}${param}`);

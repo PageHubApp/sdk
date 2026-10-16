@@ -6,25 +6,30 @@
 
 /* ─── Button ──────────────────────────────────────────────────────────────── */
 
-.btn-outline {
+/* Editor chrome only. These share DaisyUI's class names, and page content
+   (editor canvas, published sites) gets DaisyUI's own versions on both
+   renderers — unscoped, they beat utilities like `border border-base-300` on
+   React-rendered sites only, so the two renderers drew the same button
+   differently. Same exclusion as `.btn` in utilities.css. */
+.btn-outline:not(:where(#viewport *, #ph-site-preview *)) {
   background: transparent;
   border: 1px solid currentColor;
 }
 
-.btn-ghost {
+.btn-ghost:not(:where(#viewport *, #ph-site-preview *)) {
   background: transparent;
   border-color: transparent;
 }
-.btn-ghost:hover {
+.btn-ghost:not(:where(#viewport *, #ph-site-preview *)):hover {
   background: var(--muted, rgba(0, 0, 0, 0.05));
 }
 
-.btn-sm {
+.btn-sm:not(:where(#viewport *, #ph-site-preview *)) {
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
 }
 
-.btn-lg {
+.btn-lg:not(:where(#viewport *, #ph-site-preview *)) {
   padding: 1rem 2rem;
   font-size: 1.125rem;
 }
@@ -33,11 +38,11 @@
   border-radius: 9999px;
 }
 
-.btn-wide {
+.btn-wide:not(:where(#viewport *, #ph-site-preview *)) {
   width: 100%;
 }
 
-.btn-square {
+.btn-square:not(:where(#viewport *, #ph-site-preview *)) {
   aspect-ratio: 1;
   padding: 0;
   justify-content: center;
