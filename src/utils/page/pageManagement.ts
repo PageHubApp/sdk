@@ -236,6 +236,33 @@ export function buildPageIndexFromQuery(query: any): PageIndex {
   return out;
 }
 
+/**
+ * The site's URL prefix on a preview route — `/view/<id>`, `/build/<id>`,
+ * `/static/<siteId>` — or "" when the site is served at its own root.
+ * Internal links (`ref:` and root-relative `/path`) are mounted under it.
+ */
+export function previewBasePath(currentPath?: string): string {
+  if (!currentPath) return "";
+  // asPath includes ?query and #hash — do not bake them into the base.
+  const pathOnly = currentPath.split(/[?#]/)[0];
+  const pathParts = pathOnly.split("/").filter((p: string) => p && !p.startsWith("?"));
+  if (
+    pathParts.length < 2 ||
+    !(pathParts[0] === "build" || pathParts[0] === "view" || pathParts[0] === "static")
+  ) {
+    return "";
+  }
+  // A custom domain is served at its own root via a host rewrite to
+  // `/static/<host>`, so `<host>` is an INTERNAL routing segment — its
+  // user-facing base is "/". Emitting `/static/<host>/…` here leaks the
+  // internal path into visible URLs. A host segment is detectable by its
+  // dot; preview routes (`/static/<siteId>`, `/view/<id>`, `/build/<id>`)
+  // use dot-free ids and still get the prefix.
+  const seg = pathParts[1];
+  if (pathParts[0] === "static" && seg.includes(".")) return "";
+  return `/${pathParts[0]}/${seg}`;
+}
+
 export const resolvePageRef = (
   url: string,
   pageIndex: PageIndex | null | undefined,
@@ -249,27 +276,7 @@ export const resolvePageRef = (
     const entry = pageIndex[pageId];
     if (!entry) return "#";
     const isHomePage = entry.isHomePage;
-
-    let baseUrl = "";
-    if (currentPath) {
-      // asPath includes ?query and #hash — do not bake them into baseUrl or /slug appends to ?ref=...
-      const pathOnly = currentPath.split(/[?#]/)[0];
-      const pathParts = pathOnly.split("/").filter((p: string) => p && !p.startsWith("?"));
-      if (
-        pathParts.length >= 2 &&
-        (pathParts[0] === "build" || pathParts[0] === "view" || pathParts[0] === "static")
-      ) {
-        // A custom domain is served at its own root via a host rewrite to
-        // `/static/<host>`, so `<host>` is an INTERNAL routing segment — its
-        // user-facing base is "/". Emitting `/static/<host>/…` here leaks the
-        // internal path into visible URLs. A host segment is detectable by its
-        // dot; preview routes (`/static/<siteId>`, `/view/<id>`, `/build/<id>`)
-        // use dot-free ids and still get the prefix.
-        const seg = pathParts[1];
-        const isRewrittenHostRoot = pathParts[0] === "static" && seg.includes(".");
-        if (!isRewrittenHostRoot) baseUrl = `/${pathParts[0]}/${seg}`;
-      }
-    }
+    const baseUrl = previewBasePath(currentPath);
 
     if (isHomePage) {
       return baseUrl || "/";

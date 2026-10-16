@@ -3,7 +3,7 @@
  * components.
  */
 
-import { resolvePageRef, type PageIndex } from "./page/pageManagement";
+import { previewBasePath, resolvePageRef, type PageIndex } from "./page/pageManagement";
 import type { ConditionGroup } from "./conditions/types";
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -429,7 +429,16 @@ export function actionToHref(
         if (hashPart) out += hashPart;
         return out;
       }
-      // mailto:, tel:, #anchor, https://, /relative — all use as-is
+      // Root-relative site paths (`/shop`, `/#visit`) mount under the preview
+      // prefix like `ref:` links do, so a preview link stays in the preview.
+      // `/api/…` and already-prefixed paths are left alone.
+      if (h.startsWith("/") && !h.startsWith("//") && !h.startsWith("/api/")) {
+        const base = previewBasePath(routerPath);
+        if (!base || h === base || h.startsWith(base + "/") || h.startsWith(base + "?") || h.startsWith(base + "#")) return h;
+        const path = h.match(/^[^?#]*/)![0];
+        return (path === "/" ? base : base + path) + h.slice(path.length);
+      }
+      // mailto:, tel:, #anchor, https:// — all use as-is
       return h;
     }
 

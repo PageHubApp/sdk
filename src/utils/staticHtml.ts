@@ -484,7 +484,7 @@ export function actionsAttr(
     // shipped `/services/{{item.slug}}` to the runtime, which then overrode the
     // correct `<a href>` on click and navigated to a path matching no row.
     let href = a.href;
-    if (href.startsWith("ref:")) {
+    if (href.startsWith("ref:") || href.startsWith("/")) {
       const real = actionToHref(a, pageIndex, ctx?.currentPath);
       if (real) href = real;
     }
