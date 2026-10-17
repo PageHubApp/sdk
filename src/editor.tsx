@@ -83,6 +83,19 @@ const ToolTipDialog = React.lazy(() =>
 // Side-effect import: RegistrySettings self-registers with InspectorRegistry
 import "./chrome/toolbar/inspector/RegistrySettings";
 
+/**
+ * Replace the editor tree with a fetched one. Page fetches hand back the
+ * tree LZ-compressed (a node map is accepted too), and the loaded-pages set
+ * must follow the tree so the next save describes exactly what is in it.
+ */
+async function applyFetchedTree(content: unknown, query: any, actions: any): Promise<void> {
+  const raw = typeof content === "string" ? content : JSON.stringify(content);
+  const json = raw.trimStart().startsWith("{") ? raw : await decompressAsync(raw);
+  actions.history.ignore().deserialize(sanitizeCraftSerializedContent(json) || "");
+  clearLoadedPages();
+  for (const id of listPageNodeIds(query)) markPageLoaded(id);
+}
+
 // ─── Safe serialize — catches CraftJS invariant when nodes have unresolved types ─
 function safeSerialize(query: any): string | null {
   try {
@@ -146,13 +159,9 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
 
         if (pageData?.content) {
           setBatchOperation(true);
-          const decompressed = await decompressAsync(pageData.content);
-          actions.history.ignore().deserialize(sanitizeCraftSerializedContent(decompressed) || "");
-          // Track which pages are actually in the deserialized tree.
           // SSR may have assembled only one page + shared shard —
           // unloaded pages will be fetched on demand via isolatePageLazy.
-          clearLoadedPages();
-          for (const id of listPageNodeIds(query)) markPageLoaded(id);
+          await applyFetchedTree(pageData.content, query, actions);
           requestAnimationFrame(() => {
             setBatchOperation(false);
           });
@@ -234,11 +243,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
     coordinator.configure({
       buildPageData,
       onSave: config.callbacks.onSave as any,
-      applyServerContent: (content: any) => {
-        actions.history
-          .ignore()
-          .deserialize(typeof content === "string" ? content : JSON.stringify(content));
-      },
+      applyServerContent: (content: any) => applyFetchedTree(content, query, actions),
       onConflictReload: config.callbacks.onConflictReload,
       notifyUpdatedAt: (updatedAt: string) => {
         emitter.emit("updated_at_changed", updatedAt);
@@ -256,8 +261,7 @@ function EditorInner({ onQueryReady }: { onQueryReady?: (query: any) => void }) 
       try {
         if (pageData?.content) {
           setBatchOperation(true);
-          const decompressed = await decompressAsync(pageData.content);
-          actions.history.ignore().deserialize(sanitizeCraftSerializedContent(decompressed) || "");
+          await applyFetchedTree(pageData.content, query, actions);
           requestAnimationFrame(() => setBatchOperation(false));
         }
       } catch (err) {
@@ -506,6 +510,7 @@ function PageHubEditorInner({
             enabled={!readOnly}
             onRender={RenderNodeNewer}
             onNodesChange={query => {
+              getSaveCoordinator(emitter).markDirty();
               emitter.emitInternal("_nodes_changed");
               if (onNodesChange) onNodesChange(query);
             }}

@@ -34,8 +34,11 @@ interface CoordinatorWiring {
   buildPageData: () => Promise<PageData | null>;
   /** Host save callback (returns `SaveResponse`). */
   onSave: OnSaveFn;
-  /** Apply a fresh CraftJS node map to the editor (used by conflict reload). */
-  applyServerContent?: (content: any) => void;
+  /**
+   * Apply a fresh tree to the editor (used by conflict reload). Takes what
+   * `onConflictReload` returned — an LZ-compressed string or a node map.
+   */
+  applyServerContent?: (content: any) => void | Promise<void>;
   /** Host fetcher used by conflict.reload() — returns the server's draft. */
   onConflictReload?: OnConflictReloadFn;
   /**
@@ -58,6 +61,21 @@ interface CoordinatorWiring {
 export class SaveCoordinator {
   private wiring: CoordinatorWiring | null = null;
   private inflight: Promise<SaveResult> | null = null;
+  /**
+   * At most one save queued behind `inflight`. A change made while a save is
+   * on the wire is not in that save's payload, so it needs a follow-up; every
+   * caller that arrives meanwhile shares the same follow-up.
+   */
+  private queued: Promise<SaveResult> | null = null;
+  private queuedMeta: SaveMeta | undefined;
+  private queuedForce = false;
+  /** Bumped by `markDirty()` on every node change. */
+  private changeSeq = 0;
+  /**
+   * Content of the last successful send. A draft save whose payload matches
+   * it is answered locally — nothing changed, so nothing goes on the wire.
+   */
+  private lastSaved: { content: string; result: SaveResult } | null = null;
   private status: SaveStatus = "idle";
   private statusListeners = new Set<(s: SaveStatus) => void>();
   private statusTimer: ReturnType<typeof setTimeout> | null = null;
@@ -99,22 +117,74 @@ export class SaveCoordinator {
     }
   }
 
-  /** Public entrypoint. Coalesces concurrent calls. */
+  /** Record that the tree changed. The editor calls this on every node change. */
+  markDirty(): void {
+    this.changeSeq += 1;
+  }
+
+  /**
+   * Public entrypoint. One save on the wire at a time; a call that arrives
+   * while one is in flight gets a follow-up save that runs when it lands.
+   */
   save(meta?: SaveMeta): Promise<SaveResult> {
-    if (this.inflight) return this.inflight;
-    const run = this.runOnce(meta).finally(() => {
+    return this.enqueue(meta, false);
+  }
+
+  private enqueue(meta: SaveMeta | undefined, force: boolean): Promise<SaveResult> {
+    if (!this.inflight) return this.start(meta, force);
+
+    if (this.queued) {
+      // A full save or a forced retry outranks a queued draft autosave.
+      if (meta?.isDraft === false) this.queuedMeta = meta;
+      if (force) this.queuedForce = true;
+      return this.queued;
+    }
+
+    this.queuedMeta = meta;
+    this.queuedForce = force;
+    this.queued = this.inflight
+      .then(
+        () => undefined,
+        () => undefined
+      )
+      .then(() => {
+        const nextMeta = this.queuedMeta;
+        const nextForce = this.queuedForce;
+        this.queued = null;
+        this.queuedMeta = undefined;
+        this.queuedForce = false;
+        return this.start(nextMeta, nextForce);
+      });
+    return this.queued;
+  }
+
+  private start(meta: SaveMeta | undefined, force: boolean): Promise<SaveResult> {
+    const run = this.runOnce(meta, force).finally(() => {
       this.inflight = null;
     });
     this.inflight = run;
     return run;
   }
 
-  private async runOnce(meta?: SaveMeta): Promise<SaveResult> {
+  /** Clear "unsaved" only when nothing changed after `seq` was captured. */
+  private settle(seq: number): void {
+    if (seq !== this.changeSeq) return;
+    try {
+      this.wiring?.onSaveSettled?.();
+    } catch {
+      /* settled callback errors are swallowed */
+    }
+  }
+
+  private async runOnce(meta: SaveMeta | undefined, force: boolean): Promise<SaveResult> {
     const wiring = this.wiring;
     if (!wiring) {
       throw new SaveFailedError("Save coordinator is not wired yet — editor still loading", 0);
     }
 
+    // Captured before serialising: a change that lands after this point is
+    // not in the payload, so it must keep the tree marked unsaved.
+    const seq = this.changeSeq;
     this.setStatus("saving");
 
     let pageData: PageData | null;
@@ -136,6 +206,17 @@ export class SaveCoordinator {
       throw new SaveEmptyError();
     }
 
+    if (
+      meta?.isDraft === true &&
+      !force &&
+      this.lastSaved &&
+      this.lastSaved.content === pageData.content
+    ) {
+      this.setStatus("idle");
+      this.settle(seq);
+      return this.lastSaved.result;
+    }
+
     let response: SaveResponse;
     try {
       response = await wiring.onSave(pageData, meta);
@@ -149,13 +230,11 @@ export class SaveCoordinator {
     }
 
     if (response.ok === true) {
+      const result = { pageId: response.pageId, updatedAt: response.updatedAt };
+      this.lastSaved = { content: pageData.content, result };
       this.setStatus("saved");
-      try {
-        wiring.onSaveSettled?.();
-      } catch {
-        /* settled callback errors are swallowed */
-      }
-      return { pageId: response.pageId, updatedAt: response.updatedAt };
+      this.settle(seq);
+      return result;
     }
 
     if ("conflict" in response) {
@@ -170,7 +249,7 @@ export class SaveCoordinator {
         const fresh = await wiring.onConflictReload();
         if (!fresh) throw new SaveFailedError("Conflict reload returned no data", 0);
         try {
-          wiring.applyServerContent?.(fresh.content);
+          await wiring.applyServerContent?.(fresh.content);
         } catch (err) {
           throw new SaveFailedError(
             err instanceof Error ? err.message : "Failed to apply reloaded content",
@@ -181,14 +260,15 @@ export class SaveCoordinator {
         // Bump the host's expectedUpdatedAt to the freshly fetched value
         // before the retry, otherwise the next save will 409 again.
         wiring.notifyUpdatedAt?.(fresh.updatedAt);
-        return this.save({ isDraft });
+        return this.enqueue({ isDraft }, true);
       };
       const overrideFn = async (): Promise<SaveResult> => {
         // Override = "discard server, take my version". Bump host's
         // expectedUpdatedAt to the conflict's currentUpdatedAt so the
-        // retry's optimistic-concurrency check passes.
+        // retry's optimistic-concurrency check passes. Forced: the payload
+        // may equal the last send and must still go up.
         wiring.notifyUpdatedAt?.(currentUpdatedAt);
-        return this.save({ isDraft });
+        return this.enqueue({ isDraft }, true);
       };
       const conflict = new SaveConflictError(currentUpdatedAt, reload, overrideFn, isDraft);
       // Always fan out — even a caller that immediately swallows the

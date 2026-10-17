@@ -273,7 +273,10 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ViewportMeta />
-      <div className="flex h-full w-full min-w-0 flex-1 flex-col">
+      {/* min-h-0: a column flex item's auto min-height clamps to its own `height`,
+          so with h-full the canvas never shrinks to make room for the docked
+          AI panel below it — the column overflows and the shell scrolls. */}
+      <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col">
         {/* Scope band + first-run coachmark are page-editor concerns.
             Component-editor mode (`viewMode === "canvas"`) edits a single
             isolated component and has its own mental model — suppress both
