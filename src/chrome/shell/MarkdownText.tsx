@@ -14,10 +14,10 @@ interface MarkdownTextProps {
   onMediaClick?: (url: string) => void;
   /**
    * When provided, every list item (ordered or unordered) renders as a button
-   * that calls this handler with the item's raw text. Used by chat consumers
+   * that calls this handler with the item's text, markdown removed. Used by chat consumers
    * to turn "here are 4 things you could do" into one-tap actions.
    */
-  onListItemClick?: (rawText: string) => void;
+  onListItemClick?: (text: string) => void;
 }
 
 function parseInline(text: string, onMediaClick?: (url: string) => void): React.ReactNode[] {
@@ -105,6 +105,14 @@ function parseInline(text: string, onMediaClick?: (url: string) => void): React.
   return parts;
 }
 
+/** A list item as the user would type it: markdown marks and link syntax dropped. */
+function plainText(raw: string): string {
+  return raw
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/(\*\*|\*|`)/g, "")
+    .trim();
+}
+
 export function MarkdownText({ content, className, onMediaClick, onListItemClick }: MarkdownTextProps) {
   const renderListItem = (raw: string, key: string): React.ReactNode => {
     const parsed = parseInline(raw, onMediaClick);
@@ -114,7 +122,7 @@ export function MarkdownText({ content, className, onMediaClick, onListItemClick
       <li key={key} className="list-none">
         <button
           type="button"
-          onClick={() => onListItemClick(raw)}
+          onClick={() => onListItemClick(plainText(raw))}
           className="group border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 my-1 flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[13px] font-medium shadow-[0_1px_2px_rgb(0_0_0/0.05)] transition-colors"
         >
           <span className="min-w-0 flex-1">{parsed}</span>
