@@ -1,9 +1,10 @@
 import React from "react";
+import { TbChevronRight } from "react-icons/tb";
 
 /**
  * Lightweight markdown renderer for chat bubbles.
  * Handles: **bold**, *italic*, `inline code`, ```code blocks```,
- * - unordered lists, 1. ordered lists, [links](url), headings (##).
+ * - unordered lists, 1. ordered lists, [links](url), bare https:// URLs, headings (##).
  * No dependencies — just regex + React elements.
  */
 
@@ -21,8 +22,9 @@ interface MarkdownTextProps {
 
 function parseInline(text: string, onMediaClick?: (url: string) => void): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  // Match: **bold**, *italic*, `code`, [text](url)
-  const re = /(\*\*(.+?)\*\*)|(\*(.+?)\*)|(`(.+?)`)|(\[([^\]]+)\]\(([^)]+)\))/g;
+  // Match: **bold**, *italic*, `code`, [text](url), bare URL (trailing punctuation stays text)
+  const re =
+    /(\*\*(.+?)\*\*)|(\*(.+?)\*)|(`(.+?)`)|(\[([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s<>()]*[^\s<>().,;:!?'"])/g;
   let last = 0;
   let match: RegExpExecArray | null;
 
@@ -80,6 +82,18 @@ function parseInline(text: string, onMediaClick?: (url: string) => void): React.
           </a>
         );
       }
+    } else if (match[10]) {
+      parts.push(
+        <a
+          key={match.index}
+          href={match[10]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="break-all underline underline-offset-2"
+        >
+          {match[10]}
+        </a>
+      );
     }
     last = match.index + match[0].length;
   }
@@ -94,15 +108,17 @@ function parseInline(text: string, onMediaClick?: (url: string) => void): React.
 export function MarkdownText({ content, className, onMediaClick, onListItemClick }: MarkdownTextProps) {
   const renderListItem = (raw: string, key: string): React.ReactNode => {
     const parsed = parseInline(raw, onMediaClick);
-    if (!onListItemClick) return <li key={key}>{parsed}</li>;
+    // A bullet holding a link is information, not a reply — and a link can't sit inside a button.
+    if (!onListItemClick || /https?:\/\/|\]\(/.test(raw)) return <li key={key}>{parsed}</li>;
     return (
       <li key={key} className="list-none">
         <button
           type="button"
           onClick={() => onListItemClick(raw)}
-          className="border-base-300 bg-base-100 hover:bg-base-200 my-0.5 w-full rounded-md border px-2 py-1.5 text-left text-[13px] transition-colors"
+          className="group border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/60 my-1 flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[13px] font-medium shadow-[0_1px_2px_rgb(0_0_0/0.05)] transition-colors"
         >
-          {parsed}
+          <span className="min-w-0 flex-1">{parsed}</span>
+          <TbChevronRight className="text-base-content/35 group-hover:text-base-content size-4 shrink-0 transition-colors" />
         </button>
       </li>
     );
