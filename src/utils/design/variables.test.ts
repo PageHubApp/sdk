@@ -116,8 +116,12 @@ test("variables.* prefers runtime store, then rootProps; miss → empty", () => 
 test("generic root-prop lookup, company defaults, unknown → raw literal", () => {
   seed();
   assert.equal(replaceVariables("{{company.name}}", rootProps), "Acme");
-  // not on rootProps → DEFAULT_VALUES placeholder
+  // not on rootProps → DEFAULT_VALUES placeholder in the editor only; the live
+  // site (default "viewer" mode) renders an unset company.* empty.
+  setRenderMode("editor");
   assert.equal(replaceVariables("{{company.phone}}", rootProps), "(555) 123-4567");
+  setRenderMode("viewer");
+  assert.equal(replaceVariables("{{company.phone}}", rootProps), "");
   // unresolved, no default, non-context prefix → raw literal survives
   assert.equal(replaceVariables("{{totally.unknown}}", rootProps), "{{totally.unknown}}");
 });
