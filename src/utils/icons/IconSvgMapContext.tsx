@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useSyncExternalStore } from "react";
 import type { IconSvgEntry, IconSvgMap } from "./serverResolve";
 import { parseIconRef } from "./collectIconRefs";
 import { sdkLog } from "../logger";
@@ -12,6 +12,12 @@ export const IconSvgMapProvider = IconSvgMapContext.Provider;
 // Which set sprite sheets have been injected into the current document.
 const loadedSprites = new Set<string>();
 const loadingSprites = new Map<string, Promise<void>>();
+const spriteListeners = new Set<() => void>();
+
+function subscribeSprites(listener: () => void): () => void {
+  spriteListeners.add(listener);
+  return () => spriteListeners.delete(listener);
+}
 
 export function loadIconSprite(setId: string): Promise<void> {
   if (typeof document === "undefined") return Promise.resolve();
@@ -34,6 +40,7 @@ export function loadIconSprite(setId: string): Promise<void> {
       host.innerHTML = text;
       document.body.appendChild(host);
       loadedSprites.add(setId);
+      spriteListeners.forEach(l => l());
     })
     .catch(err => {
       loadingSprites.delete(setId);
@@ -62,34 +69,17 @@ export function useIconSvg(ref: string | undefined): IconSvgEntry | null {
  * resolve; false while fetching.
  */
 export function useIconSprite(ref: string | undefined): boolean {
-  const [ready, setReady] = useState(() => {
-    if (!ref) return false;
-    const parsed = parseIconRef(ref);
-    return !!parsed && loadedSprites.has(parsed.set);
-  });
+  const setId = ref ? (parseIconRef(ref)?.set ?? null) : null;
+  const ready = useSyncExternalStore(
+    subscribeSprites,
+    () => !!setId && loadedSprites.has(setId),
+    () => false
+  );
 
+  // Kick off the sprite load; readiness flows back through the store above.
   useEffect(() => {
-    if (!ref) {
-      setReady(false);
-      return;
-    }
-    const parsed = parseIconRef(ref);
-    if (!parsed) {
-      setReady(false);
-      return;
-    }
-    if (loadedSprites.has(parsed.set)) {
-      setReady(true);
-      return;
-    }
-    let cancelled = false;
-    loadIconSprite(parsed.set).then(() => {
-      if (!cancelled) setReady(loadedSprites.has(parsed.set));
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [ref]);
+    if (setId) void loadIconSprite(setId);
+  }, [setId]);
 
   return ready;
 }

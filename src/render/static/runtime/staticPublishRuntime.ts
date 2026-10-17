@@ -22,6 +22,7 @@
 import { ALPINE_INLINE_SOURCE } from "./alpine.inline";
 import { LEAFLET_PUBLIC_PATH } from "./leafletPublicPath.generated";
 import { STATE_CHUNK } from "./chunks/state";
+import { STATE_URL_BRIDGE_CHUNK } from "./chunks/stateUrlBridge";
 import { getConditionsChunk } from "./chunks/conditions";
 import { ITEMS_CHUNK } from "./chunks/items";
 import { ACTIONS_CHUNK } from "./chunks/actions";
@@ -203,6 +204,7 @@ ${ALPINE_INLINE_SOURCE}
 ;(function(){
 ${preamble}
 ${STATE_CHUNK}
+${STATE_URL_BRIDGE_CHUNK}
 ${ITEMS_CHUNK}
 ${getConditionsChunk()}
 ${AUX_CHUNK}

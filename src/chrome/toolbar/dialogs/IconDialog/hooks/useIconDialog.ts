@@ -1,5 +1,6 @@
 import { useEditor } from "@craftjs/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import useSWR, { preload } from "swr";
 import { getMediaContent } from "@/utils/media/media";
 import { extractRootDataFromQuery } from "@/utils/page/pageManagement";
 import { phStorage } from "../../../../../utils/phStorage";
@@ -28,26 +29,20 @@ const FAVORITES_KEY = "icon-favorites";
 const RECENTS_CAP = 30;
 const FAVORITES_CAP = 100;
 
-const setIndexCache: { data: IconSetMeta[] | null } = { data: null };
-const setNamesCache = new Map<string, string[]>();
+const SET_INDEX_KEY = "pagehub:icons:set-index";
+const setNamesKey = (setId: string) => ["pagehub:icons:set-names", setId] as const;
+const SWR_OPTS = { revalidateOnFocus: false, revalidateOnReconnect: false } as const;
 
 async function loadSetIndex(): Promise<IconSetMeta[]> {
-  if (setIndexCache.data) return setIndexCache.data;
   const res = await fetch("/api/icon-manifest");
   if (!res.ok) throw new Error("Failed to load icon set index");
-  const data = (await res.json()) as IconSetMeta[];
-  setIndexCache.data = data;
-  return data;
+  return (await res.json()) as IconSetMeta[];
 }
 
-async function loadSetNames(setId: string): Promise<string[]> {
-  const cached = setNamesCache.get(setId);
-  if (cached) return cached;
+async function loadSetNames([, setId]: ReturnType<typeof setNamesKey>): Promise<string[]> {
   const res = await fetch(`/api/icon-manifest?set=${encodeURIComponent(setId)}`);
   if (!res.ok) throw new Error(`Failed to load manifest for set "${setId}"`);
-  const data = (await res.json()) as string[];
-  setNamesCache.set(setId, data);
-  return data;
+  return (await res.json()) as string[];
 }
 
 function setIdFromRef(ref: string): string | null {
@@ -100,9 +95,20 @@ export function useIconDialog({
   const [search, setSearch] = useState("");
   const [showMediaBrowser, setShowMediaBrowser] = useState(false);
 
-  const [setIndex, setSetIndex] = useState<IconSetMeta[] | null>(setIndexCache.data);
-  const [setNames, setSetNames] = useState<string[] | null>(setNamesCache.get(set) || null);
-  const [loadingNames, setLoadingNames] = useState(false);
+  const { data: setIndexData } = useSWR(isOpen ? SET_INDEX_KEY : null, loadSetIndex, {
+    ...SWR_OPTS,
+    onError: err => sdkLog.error(err),
+  });
+  const setIndex = setIndexData ?? null;
+  const {
+    data: setNamesData,
+    error: setNamesError,
+    isLoading: loadingNames,
+  } = useSWR(isOpen ? setNamesKey(set) : null, loadSetNames, {
+    ...SWR_OPTS,
+    onError: err => sdkLog.error(err),
+  });
+  const setNames: string[] | null = setNamesError ? [] : (setNamesData ?? null);
 
   const [recents, setRecents] = useState<string[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -114,32 +120,6 @@ export function useIconDialog({
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    if (setIndex) return;
-    loadSetIndex().then(setSetIndex).catch(err => sdkLog.error(err));
-  }, [isOpen, setIndex]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const cached = setNamesCache.get(set);
-    if (cached) {
-      setSetNames(cached);
-      return;
-    }
-    setLoadingNames(true);
-    loadSetNames(set)
-      .then(names => {
-        setSetNames(names);
-        setLoadingNames(false);
-      })
-      .catch(err => {
-        sdkLog.error(err);
-        setSetNames([]);
-        setLoadingNames(false);
-      });
-  }, [set, isOpen]);
 
   // Load recents/favorites from storage on dialog open
   useEffect(() => {
@@ -165,7 +145,7 @@ export function useIconDialog({
     }
     for (const s of sets) {
       loadIconSprite(s);
-      loadSetNames(s).catch(() => {});
+      preload(setNamesKey(s), loadSetNames).catch(() => {});
     }
   }, [isOpen, recents, favorites]);
 

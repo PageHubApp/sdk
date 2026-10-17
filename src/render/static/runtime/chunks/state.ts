@@ -1,4 +1,5 @@
-// State registry, directives, and URL ↔ state bridge.
+// State registry and directives. The URL ↔ state bridge is its own chunk
+// (stateUrlBridge.ts), run right after this one.
 //
 // Authored as a real TS function; `stringifyChunk` lifts the body into the
 // runtime IIFE. Globals (`Alpine`, `_store`, `_shownStack`, `_escInstalled`,
@@ -558,62 +559,6 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
     }
   }
 
-  const URL_PREFIX = PH_URL_PREFIX;
-  function syncUrlToState(source: string) {
-    const params = new URLSearchParams(window.location.search);
-    const seen: Record<string, boolean> = {};
-    params.forEach(function (v, k) {
-      seen[k] = true;
-      setState(
-        URL_PREFIX + k,
-        { kind: "value", value: v, source: source },
-        "url-bridge"
-      );
-    });
-    const all = listStates();
-    for (let i = 0; i < all.length; i++) {
-      const entry = all[i];
-      if (entry.key.indexOf(URL_PREFIX) !== 0) continue;
-      const param = entry.key.slice(URL_PREFIX.length);
-      if (!seen[param] && entry.value) {
-        setState(
-          entry.key,
-          { kind: "value", value: "", source: source },
-          "url-bridge"
-        );
-      }
-    }
-  }
-  function syncStateToUrl() {
-    const next = new URLSearchParams();
-    const all = listStates();
-    for (let i = 0; i < all.length; i++) {
-      const entry = all[i];
-      if (entry.key.indexOf(URL_PREFIX) !== 0) continue;
-      const param = entry.key.slice(URL_PREFIX.length);
-      if (typeof entry.value === "string" && entry.value.length > 0) {
-        next.set(param, entry.value);
-      }
-    }
-    const nextSearch = next.toString();
-    const cur = window.location.search.replace(/^\?/, "");
-    if (nextSearch === cur) return;
-    const url =
-      window.location.pathname +
-      (nextSearch ? "?" + nextSearch : "") +
-      window.location.hash;
-    window.history.pushState({}, "", url);
-  }
-  function mountUrlBridge() {
-    syncUrlToState("load");
-    window.addEventListener("popstate", function () {
-      syncUrlToState("runtime");
-    });
-    subscribe(function () {
-      syncStateToUrl();
-    });
-  }
-
   // Publish cross-chunk functions to the runtime registry by STRING keys.
   // Object-literal shorthand: `{ getState }` is `{ "getState": getState }`,
   // so even after a minifier renames the local `getState` binding, the
@@ -628,6 +573,5 @@ export const STATE_CHUNK = stringifyChunk(function $state() {
     listStates,
     subscribe,
     seedFromWindow,
-    mountUrlBridge,
   });
 });

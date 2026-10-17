@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { TbCheck, TbChevronDown, TbX } from "react-icons/tb";
 import { FixedSizeList as List } from "react-window";
 import { resolveTheme } from "@/utils/design/resolveTheme";
-import { fonts } from "../../../../utils/tailwind/tailwind";
+import { useGoogleFontList } from "@/utils/fonts/useGoogleFontList";
 import type { PagehubTextRichMode } from "@/core/tiptapExtensions/pagehubTextTiptapExtensions";
 
 interface FontPanelProps {
@@ -36,8 +36,7 @@ const CATEGORIES: Record<string, (f: string[][]) => string[][]> = {
 
 export function FontPanel({ editor, richTextMode = "full", onAction, onClose }: FontPanelProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [allFonts, setAllFonts] = useState<string[][]>(fonts);
-  const [loading, setLoading] = useState(true);
+  const { fonts: allFonts, isLoading: loading } = useGoogleFontList();
   const [category, setCategory] = useState("All Fonts");
   const [previewFont, setPreviewFont] = useState<string | null>(null);
   const [originalFont, setOriginalFont] = useState<string | null>(null);
@@ -58,31 +57,6 @@ export function FontPanel({ editor, richTextMode = "full", onAction, onClose }: 
     }
   }, [originalFont, previewFont, editor]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { fetchGoogleFonts, getPopularFonts, getFunkyFonts } =
-          await import("@/utils/fonts/googleFonts");
-        setLoading(true);
-        const googleFonts = await fetchGoogleFonts();
-        const popular = getPopularFonts();
-        const funky = getFunkyFonts();
-        const others = googleFonts
-          .filter(f => !popular.includes(f.family) && !funky.includes(f.family))
-          .map(f => [f.family])
-          .sort((a, b) => a[0].localeCompare(b[0]));
-        setAllFonts([
-          ...popular.map(f => [f]),
-          ...funky.filter(f => !popular.includes(f)).map(f => [f]),
-          ...others,
-        ]);
-      } catch {
-        setAllFonts(fonts);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
 
   const filterFn = CATEGORIES[category] || CATEGORIES["All Fonts"];
   const filtered = filterFn(allFonts).filter(

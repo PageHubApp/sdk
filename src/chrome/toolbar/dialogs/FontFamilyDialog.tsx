@@ -4,60 +4,19 @@ import { FixedSizeList as List } from "react-window";
 import { useAtomState } from "@zedux/react";
 import { FontFamilyDialogAtom } from "./dialogAtoms";
 import { OVERLAY_Z_MODAL } from "@/chrome/popovers/overlayZIndex";
-import {
-  fetchGoogleFonts,
-  getFunkyFonts,
-  getPopularFonts,
-  loadGoogleFont,
-} from "@/utils/fonts/googleFonts";
-import { fonts } from "../../../utils/tailwind/tailwind";
+import { loadGoogleFont } from "@/utils/fonts/googleFonts";
+import { useGoogleFontList } from "@/utils/fonts/useGoogleFontList";
 import { ItemToggle } from "../primitives/ItemSelector";
 import { useOverlay } from "../../../registry/hooks/useOverlay";
-import { sdkLog } from "../../../utils/logger";
 
 export { FontFamilyDialogAtom } from "./dialogAtoms";
 
 export const FontFamilyDialog = () => {
   const [dialog, setDialog] = useAtomState(FontFamilyDialogAtom);
-  const [allFonts, setAllFonts] = useState<string[][]>(fonts); // Start with bundled fallback
-  const [loading, setLoading] = useState(true);
+  const { fonts: allFonts, isLoading: loading } = useGoogleFontList();
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredIndex, setHoveredIndex] = useState(-1);
 
-  // Fetch all Google Fonts on mount
-  useEffect(() => {
-    const loadFonts = async () => {
-      try {
-        setLoading(true);
-
-        // Fetch all fonts from Google Fonts API
-        const googleFonts = await fetchGoogleFonts();
-
-        // Convert to array format for compatibility: [["Font Name"]]
-        const popularFonts = getPopularFonts();
-        const funkyFonts = getFunkyFonts();
-
-        // Organize fonts: Popular first, then Funky, then all others alphabetically
-        const popularList = popularFonts.map(f => [f]);
-        const funkyList = funkyFonts.filter(f => !popularFonts.includes(f)).map(f => [f]);
-        const otherFonts = googleFonts
-          .filter(f => !popularFonts.includes(f.family) && !funkyFonts.includes(f.family))
-          .map(f => [f.family])
-          .sort((a, b) => a[0].localeCompare(b[0]));
-
-        const allFontsList = [...popularList, ...funkyList, ...otherFonts];
-        setAllFonts(allFontsList);
-      } catch (error) {
-        sdkLog.error("Error loading fonts:", error);
-        // Fallback to bundled font list on fetch failure
-        setAllFonts(fonts);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadFonts();
-  }, []);
 
   // Font categories
   const fontCategories = {

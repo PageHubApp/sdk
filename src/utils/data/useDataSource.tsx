@@ -249,6 +249,7 @@ export function useDataSource(
     setRefetchKey(k => k + 1);
   }, [stateInputsSnapshot, facetSelectionSnap, ds?.stateInputs, facetSubscriber]);
 
+  // guard-allow: effect-fetch — published-site runtime: goes through the host-registered `getClientDataFetcher` (not a URL), must skip when SSR already resolved the binding, clear stale rows on state-driven refetch, and publish result meta into the state registry; the viewer bundle can't depend on swr (optional peer, editor-only)
   useEffect(() => {
     if (!ds || enabled) return;
     if (ds.scope) return;
