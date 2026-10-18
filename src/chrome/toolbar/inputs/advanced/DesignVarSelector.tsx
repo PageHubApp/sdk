@@ -203,7 +203,7 @@ function DesignVarDialog({
           </div>
 
           {/* Variable list */}
-          <div className="scrollbar-light max-h-80 overflow-y-auto p-2">
+          <div className="scrollbar max-h-80 overflow-y-auto p-2">
             {Object.keys(groupedVars).length === 0 ? (
               <div className="text-neutral-content p-3 text-center text-xs">No variables found</div>
             ) : (

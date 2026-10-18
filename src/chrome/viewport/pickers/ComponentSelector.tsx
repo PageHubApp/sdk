@@ -21,12 +21,14 @@ import { useCreateComponent } from "../../hooks/useCreateComponent";
 import { EditorListPicker } from "./EditorListPicker";
 import { EditorSidebarPrimaryCta } from "../../primitives/EditorSidebarPrimaryCta";
 import { sdkLog } from "../../../utils/logger";
+import { useConfirm } from "../../primitives/layout/useConfirm";
 
 interface ComponentSelectorProps {
   className?: string;
 }
 
 export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
+  const { ask, dialog } = useConfirm();
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -128,9 +130,12 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
   const handleDeleteComponent = async (component: any, e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (!confirm(`Delete component "${component.name}"?`)) {
-      return;
-    }
+    const ok = await ask({
+      title: `Delete "${component.name}"?`,
+      message: "It's removed from your saved components. Copies already on pages stay.",
+      confirmText: "Delete component",
+    });
+    if (!ok) return;
 
     try {
       const success = await deleteComponent(component);
@@ -192,191 +197,198 @@ export function ComponentSelector({ className = "" }: ComponentSelectorProps) {
   const scopeLabel = components.length > 0 ? "Components" : "No Components";
 
   return (
-    <EditorListPicker
-      className={className}
-      isOpen={isOpen}
-      setIsOpen={setIsOpen}
-      trigger={
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="ph-menu-trigger ph-menu-trigger--chrome-rail py-1.5 text-sm"
-          aria-label="Component selector"
-          aria-expanded={isOpen}
-        >
-          <div className="flex flex-1 items-center gap-2 overflow-hidden">
-            <div className="shrink-0">
-              {currentComponent?.isSection ? (
-                <TbLayoutGridAdd className="size-4 opacity-70" aria-hidden />
-              ) : (
-                <TbBoxModel2 className="size-4 opacity-70" aria-hidden />
-              )}
-            </div>
-            <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
-              {currentComponent ? (
-                <span className="text-neutral-content truncate font-mono text-xs">
-                  {currentComponent.name}
-                </span>
-              ) : null}
-              <span className="text-neutral-content/60 ml-auto shrink-0 font-mono text-[10px]">
-                {scopeLabel}
-              </span>
-            </div>
-          </div>
-          <TbChevronDown
-            className={`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          />
-        </button>
-      }
-      searchPlaceholder="Search components..."
-      searchValue={searchTerm}
-      onSearchChange={setSearchTerm}
-      footer={
-        <>
-          <EditorSidebarPrimaryCta
-            variant="ghost"
-            onClick={handleCreateComponent}
-            leading={<TbPlus className="size-3.5" />}
+    <>
+      <EditorListPicker
+        className={className}
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        trigger={
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="ph-menu-trigger ph-menu-trigger--chrome-rail py-1.5 text-sm"
+            aria-label="Component selector"
+            aria-expanded={isOpen}
           >
-            Create New Component
-          </EditorSidebarPrimaryCta>
+            <div className="flex flex-1 items-center gap-2 overflow-hidden">
+              <div className="shrink-0">
+                {currentComponent?.isSection ? (
+                  <TbLayoutGridAdd className="size-4 opacity-70" aria-hidden />
+                ) : (
+                  <TbBoxModel2 className="size-4 opacity-70" aria-hidden />
+                )}
+              </div>
+              <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
+                {currentComponent ? (
+                  <span className="text-neutral-content truncate font-mono text-xs">
+                    {currentComponent.name}
+                  </span>
+                ) : null}
+                <span className="text-neutral-content/60 ml-auto shrink-0 font-mono text-[10px]">
+                  {scopeLabel}
+                </span>
+              </div>
+            </div>
+            <TbChevronDown
+              className={`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+        }
+        searchPlaceholder="Search components..."
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        footer={
+          <>
+            <EditorSidebarPrimaryCta
+              variant="ghost"
+              onClick={handleCreateComponent}
+              leading={<TbPlus className="size-3.5" />}
+            >
+              Create New Component
+            </EditorSidebarPrimaryCta>
 
-          <div className="border-base-300 grid grid-cols-2 gap-0 border-t">
-            <button
-              type="button"
-              className="border-base-300 text-neutral-content hover:bg-neutral hover:text-base-content flex items-center justify-center gap-1 border-r px-3 py-2 text-xs transition-colors"
-            >
-              <TbUpload className="size-3" />
-              Import
-            </button>
-            <button
-              type="button"
-              className="text-neutral-content hover:bg-neutral hover:text-base-content flex items-center justify-center gap-1 px-3 py-2 text-xs transition-colors"
-            >
-              <TbDownload className="size-3" />
-              Export
-            </button>
-          </div>
-        </>
-      }
-    >
-      {filteredComponents.length > 0 ? (
-        filteredComponents.map(component => {
-          let isSelected = false;
-          try {
-            const contentNode = query.node(component.rootNodeId).get();
-            isSelected = !!canvasIsolate && contentNode?.data?.parent === canvasIsolate;
-          } catch {
-            isSelected = false;
-          }
+            <div className="border-base-300 grid grid-cols-2 gap-0 border-t">
+              <button
+                type="button"
+                className="border-base-300 text-neutral-content hover:bg-neutral hover:text-base-content flex items-center justify-center gap-1 border-r px-3 py-2 text-xs transition-colors"
+              >
+                <TbUpload className="size-3" />
+                Import
+              </button>
+              <button
+                type="button"
+                className="text-neutral-content hover:bg-neutral hover:text-base-content flex items-center justify-center gap-1 px-3 py-2 text-xs transition-colors"
+              >
+                <TbDownload className="size-3" />
+                Export
+              </button>
+            </div>
+          </>
+        }
+      >
+        {filteredComponents.length > 0 ? (
+          filteredComponents.map(component => {
+            let isSelected = false;
+            try {
+              const contentNode = query.node(component.rootNodeId).get();
+              isSelected = !!canvasIsolate && contentNode?.data?.parent === canvasIsolate;
+            } catch {
+              isSelected = false;
+            }
 
-          return (
-            <div
-              key={component.rootNodeId}
-              className={`group hover:bg-neutral flex w-full items-center gap-2 px-3 py-2 transition-colors ${
-                isSelected ? "bg-accent text-accent-content font-medium" : ""
-              }`}
-            >
-              {editingId === component.rootNodeId ? (
-                <>
-                  <input
-                    type="text"
-                    value={editingName}
-                    onChange={e => setEditingName(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === "Enter") handleSaveRename(component);
-                      if (e.key === "Escape") handleCancelRename();
-                    }}
-                    className="border-ring bg-base-100 text-base-content min-w-0 flex-1 rounded-lg border px-2 py-1 text-sm focus:outline-none"
-                    autoFocus
-                    onClick={e => e.stopPropagation()}
-                  />
-                  <div className="flex shrink-0 items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleSaveRename(component)}
-                      className="text-neutral-content hover:bg-primary hover:text-primary-content rounded-md p-1 transition-colors"
-                      aria-label="Save"
-                    >
-                      <TbCheck className="size-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCancelRename}
-                      className="tool-button"
-                      aria-label="Cancel"
-                    >
-                      <TbX className="size-5" />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => handleComponentClick(component)}
-                    className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-left"
-                  >
-                    {component.isSection ? (
-                      <TbLayoutGridAdd className="size-4 shrink-0 opacity-70" aria-hidden />
-                    ) : (
-                      <TbBoxModel2 className="size-4 shrink-0 opacity-70" aria-hidden />
-                    )}
-                    <div className="flex min-w-0 flex-1 items-center justify-between gap-2 overflow-hidden">
-                      <span className="text-base-content truncate text-sm">{component.name}</span>
-                      <span className="text-neutral-content shrink-0 truncate text-xs">
-                        {component.isSection ? "Block" : "Component"}
-                      </span>
+            return (
+              <div
+                key={component.rootNodeId}
+                className={`group hover:bg-neutral flex w-full items-center gap-2 px-3 py-2 transition-colors ${
+                  isSelected ? "bg-accent text-accent-content font-medium" : ""
+                }`}
+              >
+                {editingId === component.rootNodeId ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editingName}
+                      onChange={e => setEditingName(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") handleSaveRename(component);
+                        if (e.key === "Escape") handleCancelRename();
+                      }}
+                      className="border-ring bg-base-100 text-base-content min-w-0 flex-1 rounded-lg border px-2 py-1 text-sm focus:outline-none"
+                      autoFocus
+                      onClick={e => e.stopPropagation()}
+                    />
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleSaveRename(component)}
+                        className="text-neutral-content hover:bg-primary hover:text-primary-content rounded-md p-1 transition-colors"
+                        aria-label="Save"
+                      >
+                        <TbCheck className="size-5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelRename}
+                        className="tool-button"
+                        aria-label="Cancel"
+                      >
+                        <TbX className="size-5" />
+                      </button>
                     </div>
-                  </button>
-                  <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                  </>
+                ) : (
+                  <>
                     <button
                       type="button"
-                      onClick={e => handleToggleComponentType(component, e)}
-                      className="text-neutral-content hover:text-base-content shrink-0 p-1 transition-colors"
-                      aria-label={component.isSection ? "Convert to Component" : "Convert to Block"}
-                      data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
-                      data-tooltip-content={
-                        component.isSection ? "Convert to Component" : "Convert to Block"
-                      }
-                      data-tooltip-place="top"
-                      data-tooltip-offset={10}
+                      onClick={() => handleComponentClick(component)}
+                      className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-left"
                     >
                       {component.isSection ? (
-                        <TbLayoutGridAdd className="size-4" />
+                        <TbLayoutGridAdd className="size-4 shrink-0 opacity-70" aria-hidden />
                       ) : (
-                        <TbBoxModel2 className="size-4" />
+                        <TbBoxModel2 className="size-4 shrink-0 opacity-70" aria-hidden />
                       )}
+                      <div className="flex min-w-0 flex-1 items-center justify-between gap-2 overflow-hidden">
+                        <span className="text-base-content truncate text-sm">{component.name}</span>
+                        <span className="text-neutral-content shrink-0 truncate text-xs">
+                          {component.isSection ? "Block" : "Component"}
+                        </span>
+                      </div>
                     </button>
-                    <button
-                      type="button"
-                      onClick={e => handleStartRename(component, e)}
-                      className="text-neutral-content hover:text-base-content shrink-0 p-1 transition-colors"
-                      aria-label={`Rename ${component.name}`}
-                    >
-                      <TbPencil className="size-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={e => handleDeleteComponent(component, e)}
-                      className="text-neutral-content hover:text-error shrink-0 p-1 transition-colors"
-                      aria-label={`Delete ${component.name}`}
-                    >
-                      <TbTrash className="size-4" />
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        })
-      ) : searchTerm ? (
-        <div className="text-neutral-content px-3 py-4 text-center text-sm">
-          No components found
-        </div>
-      ) : (
-        <div className="text-neutral-content px-3 py-4 text-center text-sm">No components yet</div>
-      )}
-    </EditorListPicker>
+                    <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={e => handleToggleComponentType(component, e)}
+                        className="text-neutral-content hover:text-base-content shrink-0 p-1 transition-colors"
+                        aria-label={
+                          component.isSection ? "Convert to Component" : "Convert to Block"
+                        }
+                        data-tooltip-id={PAGEHUB_RTT_GLOBAL_ID}
+                        data-tooltip-content={
+                          component.isSection ? "Convert to Component" : "Convert to Block"
+                        }
+                        data-tooltip-place="top"
+                        data-tooltip-offset={10}
+                      >
+                        {component.isSection ? (
+                          <TbLayoutGridAdd className="size-4" />
+                        ) : (
+                          <TbBoxModel2 className="size-4" />
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={e => handleStartRename(component, e)}
+                        className="text-neutral-content hover:text-base-content shrink-0 p-1 transition-colors"
+                        aria-label={`Rename ${component.name}`}
+                      >
+                        <TbPencil className="size-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={e => handleDeleteComponent(component, e)}
+                        className="text-neutral-content hover:text-error shrink-0 p-1 transition-colors"
+                        aria-label={`Delete ${component.name}`}
+                      >
+                        <TbTrash className="size-4" />
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })
+        ) : searchTerm ? (
+          <div className="text-neutral-content px-3 py-4 text-center text-sm">
+            No components found
+          </div>
+        ) : (
+          <div className="text-neutral-content px-3 py-4 text-center text-sm">
+            No components yet
+          </div>
+        )}
+      </EditorListPicker>
+      {dialog}
+    </>
   );
 }

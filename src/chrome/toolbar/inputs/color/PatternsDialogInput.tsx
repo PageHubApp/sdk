@@ -265,7 +265,7 @@ const PatternPickerPanel = ({
       </div>
 
       {/* Pattern list */}
-      <div className="scrollbar-light max-h-48 overflow-y-auto">
+      <div className="scrollbar max-h-48 overflow-y-auto">
         {!patterns ? (
           <div className="text-neutral-content px-3 py-6 text-center text-xs">Loading...</div>
         ) : filtered.length === 0 ? (

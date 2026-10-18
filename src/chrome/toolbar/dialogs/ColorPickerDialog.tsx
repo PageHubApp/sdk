@@ -254,7 +254,7 @@ export const ColorPickerDialog = () => {
         </div>
 
         <div
-          className="scrollbar-light bg-base-100 flex w-[310px] flex-col overflow-y-auto rounded-lg"
+          className="scrollbar bg-base-100 flex w-[310px] flex-col overflow-y-auto rounded-lg"
           style={{ maxHeight: innerMaxHeight }}
         >
           {/* 1. Design Tokens — always on top when available */}

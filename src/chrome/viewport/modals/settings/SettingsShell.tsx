@@ -131,7 +131,7 @@ function SettingsShellBody({
             <span className="min-w-0 truncate text-sm font-semibold">{title}</span>
           </div>
           <nav
-            className="scrollbar-light flex min-h-0 flex-1 flex-col overflow-y-auto py-1"
+            className="scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto py-1"
             aria-label={`${title} tabs`}
           >
             {tabs.map(tab => (

@@ -165,7 +165,7 @@ export function VarEditor({ mode, token, onBack }: VarEditorProps) {
       </div>
 
       {/* Body — flat form, scrollable if needed */}
-      <div className="scrollbar-light flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
+      <div className="scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
         {/* In-use banner */}
         {isEdit && inUse && (
           <div className="border-warning bg-warning/10 text-warning rounded-md border px-2 py-1.5 text-[11px]">

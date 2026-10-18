@@ -185,7 +185,7 @@ export const TypeSelector = React.forwardRef<HTMLDivElement, TypeSelectorProps>(
                 ...floating.floatingStyles,
                 zIndex: dropdownZ,
               }}
-              className="pagehub-sdk-root scrollbar-light ph-panel-soft pointer-events-auto grid min-w-32 grid-cols-3 gap-1 overflow-hidden p-0.5"
+              className="pagehub-sdk-root scrollbar ph-panel-soft pointer-events-auto grid min-w-32 grid-cols-3 gap-1 overflow-hidden p-0.5"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >

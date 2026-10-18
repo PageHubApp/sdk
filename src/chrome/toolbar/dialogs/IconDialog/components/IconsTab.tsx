@@ -89,7 +89,7 @@ export function IconsTab({ d }: IconsTabProps) {
             rowCount={d.rowCount}
             rowHeight={ROW_HEIGHT}
             width={CONTAINER_WIDTH}
-            className="scrollbar-light text-base-content"
+            className="scrollbar text-base-content"
           >
             {({ columnIndex, rowIndex, style }) => {
               const index = rowIndex * COLUMN_COUNT + columnIndex;
@@ -198,7 +198,7 @@ export function IconsTab({ d }: IconsTabProps) {
                   rowCount={Math.ceil((d.setNames?.length ?? 0) / COLUMN_COUNT)}
                   rowHeight={ROW_HEIGHT}
                   width={CONTAINER_WIDTH}
-                  className="scrollbar-light"
+                  className="scrollbar"
                 >
                   {({ columnIndex, rowIndex, style }) => {
                     const index = rowIndex * COLUMN_COUNT + columnIndex;

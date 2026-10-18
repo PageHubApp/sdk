@@ -61,7 +61,7 @@ export function MediaEditModal({
       </div>
 
       {/* Body */}
-      <div className="scrollbar-light relative flex-1 space-y-4 overflow-y-auto p-6">
+      <div className="scrollbar relative flex-1 space-y-4 overflow-y-auto p-6">
         {/* Preview */}
         <div className="border-base-300 bg-neutral text-neutral-content flex items-center gap-4 rounded-lg border p-4">
           {editingMedia.type === "url" ? (

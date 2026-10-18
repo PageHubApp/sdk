@@ -312,7 +312,7 @@ export function UnifiedDropdown({
             None
           </button>
 
-          <div className="scrollbar-light flex-1 overflow-y-auto">
+          <div className="scrollbar flex-1 overflow-y-auto">
             {filteredOptions.length === 0 ? (
               <div className="text-neutral-content px-3 py-6 text-center text-xs">
                 No matches found
@@ -405,7 +405,7 @@ export function UnifiedDropdown({
             return (
               <div
                 key={col.key}
-                className={`scrollbar-light ${widthClass} overflow-y-auto ${borderClass}`}
+                className={`scrollbar ${widthClass} overflow-y-auto ${borderClass}`}
               >
                 {col.section.groups.map((groupType, index) => {
                   const containerClass = "flex-1";

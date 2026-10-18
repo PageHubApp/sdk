@@ -16,7 +16,7 @@ export function getEditorWidthOnlyCanvasClasses(enabled: boolean): [string, stri
   const inner = enabled
     ? [
         "flex-1 min-h-0 min-w-0 w-full relative",
-        "scrollbar-light bg-base-100 overflow-y-auto overflow-x-hidden",
+        "scrollbar bg-base-100 overflow-y-auto overflow-x-hidden",
       ].join(" ")
     : "w-full h-full min-h-0 overflow-auto relative";
 

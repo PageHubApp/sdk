@@ -124,7 +124,7 @@ export function SideBySideFrame({
       </div>
       <div
         ref={containerRef}
-        className="scrollbar-light flex-1 overflow-auto"
+        className="scrollbar flex-1 overflow-auto"
         style={{
           // Each secondary frame is its own container — Phase 3's @container
           // ph-editor-canvas queries resolve against THIS width.

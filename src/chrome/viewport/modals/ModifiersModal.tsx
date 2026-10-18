@@ -221,7 +221,7 @@ export function ModifiersModal({ isOpen, onClose }: ModifiersModalProps) {
         )}
 
         {/* Content */}
-        <div className="scrollbar-light bg-base-100 flex-1 overflow-y-auto p-4">
+        <div className="scrollbar bg-base-100 flex-1 overflow-y-auto p-4">
           {/* Add modifier form */}
           {isAdding && (
             <div className="border-base-300 bg-neutral/50 space-y-3 rounded-lg border p-4">

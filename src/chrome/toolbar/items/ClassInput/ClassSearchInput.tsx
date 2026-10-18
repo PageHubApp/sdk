@@ -103,7 +103,7 @@ export function ClassSearchInput({
 
       {searched && (
         <div className="ph-panel-soft absolute top-9 z-50 w-full overflow-hidden">
-          <div className="scrollbar-light flex max-h-60 w-full flex-wrap gap-2 overflow-auto p-2">
+          <div className="scrollbar flex max-h-60 w-full flex-wrap gap-2 overflow-auto p-2">
             {matches.map((mat, k) => (
               <CardLight
                 key={k}

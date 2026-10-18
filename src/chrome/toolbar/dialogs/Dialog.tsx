@@ -298,7 +298,7 @@ export const Dialog = ({
                     />
                   </div>
                 )}
-                <div className="scrollbar-light min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+                <div className="scrollbar min-h-0 flex-1 overflow-y-auto px-2 pb-2">
                   {customRenderer}
                 </div>
                 {isUpward && !draggable && (
@@ -335,7 +335,7 @@ export const Dialog = ({
 
                 <div
                   ref={refIe}
-                  className="scrollbar-light min-h-0 flex-1 overflow-y-auto px-2 py-1"
+                  className="scrollbar min-h-0 flex-1 overflow-y-auto px-2 py-1"
                 >
                   {!searchValue && (
                     <button

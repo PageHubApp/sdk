@@ -146,7 +146,7 @@ export const PatternDialog = () => {
       customRenderer={
         <div className="flex h-full flex-col overflow-hidden">
           {/* Category Tabs - Scrollable with max height */}
-          <div className="scrollbar-light mb-2 max-h-20 shrink-0 overflow-y-auto">
+          <div className="scrollbar mb-2 max-h-20 shrink-0 overflow-y-auto">
             <div className="flex flex-wrap gap-1.5">
               {categories.map(cat => (
                 <button
@@ -178,7 +178,7 @@ export const PatternDialog = () => {
               itemCount={filteredPatterns.length}
               itemSize={itemHeight}
               width={containerWidth - 24}
-              className="scrollbar-light"
+              className="scrollbar"
             >
               {Row}
             </List>

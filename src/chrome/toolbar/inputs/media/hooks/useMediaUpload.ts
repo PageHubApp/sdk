@@ -374,7 +374,7 @@ export function useMediaUpload({
       setSaveUrlToCdn(false);
       setAddMode("upload");
     } catch (error: unknown) {
-      alert(`Failed to add URL: ${(error as Error).message}`);
+      setUploadError(`Couldn't add that URL: ${(error as Error).message}`);
     } finally {
       setUploading(false);
       setUploadProgress(null);
@@ -460,7 +460,7 @@ export function useMediaUpload({
         } catch (error: unknown) {
           const message =
             error instanceof MediaUploadError ? error.message : (error as Error)?.message;
-          alert(`Failed to upload pasted image: ${message}`);
+          setUploadError(`Couldn't upload the pasted image: ${message}`);
         } finally {
           setUploading(false);
           setUploadProgress(null);
@@ -505,7 +505,7 @@ export function useMediaUpload({
             } catch (error: unknown) {
               const message =
                 error instanceof MediaUploadError ? error.message : (error as Error)?.message;
-              alert(`Failed to upload pasted image: ${message}`);
+              setUploadError(`Couldn't upload the pasted image: ${message}`);
             } finally {
               setUploading(false);
             }
@@ -514,7 +514,7 @@ export function useMediaUpload({
         }
       }
     } catch {
-      alert("Failed to access clipboard. Please try pasting with Ctrl+V / Cmd+V instead.");
+      setUploadError("Couldn't read the clipboard. Try pasting with Ctrl+V / Cmd+V instead.");
     }
   };
 

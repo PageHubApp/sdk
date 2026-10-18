@@ -78,7 +78,7 @@ export function MediaGrid({
 }: MediaGridProps) {
   return (
     <div
-      className={`scrollbar-light bg-base-100 relative h-full overflow-y-auto transition-colors ${
+      className={`scrollbar bg-base-100 relative h-full overflow-y-auto transition-colors ${
         isDragOver ? "border-accent bg-accent border-2 border-dashed" : ""
       } ${uploadProgress ? "pt-16" : "p-3"}`}
       {...dropProps}

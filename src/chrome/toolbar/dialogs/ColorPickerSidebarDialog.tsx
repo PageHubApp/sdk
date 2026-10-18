@@ -1,4 +1,5 @@
 import { PAGEHUB_RTT_GLOBAL_ID } from "@/chrome/primitives/layout/tooltipSurface";
+import { useState } from "react";
 import { TbColorPicker, TbDeviceFloppy, TbPalette } from "react-icons/tb";
 import { LeftSidebarDialog } from "./LeftSidebarDialog";
 import { useColorPickerState } from "./useColorPickerState";
@@ -28,12 +29,19 @@ export function ColorPickerSidebarDialog() {
     handleEyeDropper,
     handleSaveToPalette,
   } = useColorPickerState();
+  // Name for the colour being saved to the palette; null while not saving one.
+  const [paletteName, setPaletteName] = useState<string | null>(null);
+  const savePaletteColor = () => {
+    if (!paletteName?.trim()) return;
+    handleSaveToPalette(paletteName);
+    setPaletteName(null);
+  };
 
   const headerRight = (
     <>
       {dialog.showPalette && (
         <button
-          onClick={handleSaveToPalette}
+          onClick={() => setPaletteName("")}
           disabled={!hexInput || !/^#[0-9A-Fa-f]{6}$/.test(hexInput)}
           className="text-accent-content hover:bg-accent-content/10 flex items-center justify-center rounded-md p-1 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           aria-label="Save to palette"
@@ -103,6 +111,34 @@ export function ColorPickerSidebarDialog() {
               Apply
             </button>
           </div>
+          {paletteName !== null && (
+            <div className="mt-2 flex gap-2">
+              <input
+                type="text"
+                autoFocus
+                value={paletteName}
+                onChange={e => setPaletteName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === "Enter") savePaletteColor();
+                  if (e.key === "Escape") setPaletteName(null);
+                }}
+                aria-label="Palette color name"
+                placeholder="Name this color, e.g. Brand blue"
+                className="input-dialog-md placeholder:text-neutral-content flex-1"
+              />
+              <button
+                type="button"
+                onClick={savePaletteColor}
+                disabled={!paletteName.trim()}
+                className="btn btn-primary"
+              >
+                Save
+              </button>
+              <button type="button" onClick={() => setPaletteName(null)} className="btn btn-ghost">
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Special Colors */}

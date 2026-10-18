@@ -100,14 +100,12 @@ export function useColorPickerState() {
     }
   };
 
-  const handleSaveToPalette = () => {
-    if (!hexInput || !query || !actions) return;
-    const colorName = prompt("Enter a name for this color:");
-    if (!colorName) return;
+  const handleSaveToPalette = (colorName: string) => {
+    if (!hexInput || !query || !actions || !colorName.trim()) return;
 
     const rootNode = query.node(ROOT_NODE).get();
     const currentPalette = resolveTheme(rootNode?.data?.props || {}).palette;
-    const newColor = { name: colorName, color: hexInput };
+    const newColor = { name: colorName.trim(), color: hexInput };
 
     actions.setProp(ROOT_NODE, (props: any) => {
       if (!props.theme) props.theme = {};

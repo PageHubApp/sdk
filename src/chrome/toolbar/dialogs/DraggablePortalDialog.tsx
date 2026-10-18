@@ -211,7 +211,7 @@ function DraggablePortalDialog({ children, target, state, opener }: any): any {
 
             <div
               ref={dialogContentRef}
-              className="scrollbar-light max-h-[320px] overflow-x-hidden overflow-y-auto px-3 pb-1.5"
+              className="scrollbar max-h-[320px] overflow-x-hidden overflow-y-auto px-3 pb-1.5"
             >
               {children}
             </div>

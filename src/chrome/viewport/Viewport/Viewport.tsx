@@ -176,7 +176,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     setPageLoad,
   });
 
-  useUnsavedChangesWarning(unsavedChanges);
+  const unsavedChangesDialog = useUnsavedChangesWarning(unsavedChanges);
 
   // ─── Side-by-side scroll mirror ───
   // Both frames share scroll state but each has its own DOM scroll container.
@@ -193,7 +193,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
     ? "flex h-full overflow-hidden flex-row flex-1 min-w-0"
     : "flex h-full flex-row min-w-0 w-full";
   const desktopInner = enabled
-    ? "flex-1 min-w-0 relative scrollbar-light bg-base-100 overflow-y-auto overflow-x-hidden"
+    ? "flex-1 min-w-0 relative scrollbar bg-base-100 overflow-y-auto overflow-x-hidden"
     : "w-full h-full overflow-auto relative";
 
   const resolvedBreakpointPx = getCanvasBreakpointPx({ breakpoints: themeBreakpoints });
@@ -273,6 +273,7 @@ export function Viewport({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ViewportMeta />
+      {unsavedChangesDialog}
       {/* min-h-0: a column flex item's auto min-height clamps to its own `height`,
           so with h-full the canvas never shrinks to make room for the docked
           AI panel below it — the column overflows and the shell scrolls. */}
