@@ -7,8 +7,6 @@ import { getRandomId, ROOT_NODE } from "@craftjs/utils";
 import React from "react";
 import { Container } from "../../../components/Container/Container";
 import generate from "../../../utils/seeds/nameGenerator";
-import { getMediaLibraryStore } from "../../../utils/media/libraryStore";
-import { createRootPropsMediaLibrary } from "../../toolbar/inputs/media/hooks/useRootPropsMediaLibrary";
 import { phStorage } from "../../../utils/phStorage";
 import {
   addHasMany,
@@ -76,17 +74,9 @@ export const deleteNode = async (
 
   if (!node.data.parent || selected === ROOT_NODE) return;
 
+  // Deleting a block never touches the media library: other blocks may use
+  // the same file. Files are removed from the Media Manager only.
   const parentId = node.data.parent;
-  const { type, videoId, image, ico } = node.data.props || {};
-
-  const mediaIds = [type === "cdn" ? videoId : null, image, ico].filter(
-    (id): id is string => typeof id === "string" && !!id
-  );
-  if (mediaIds.length) {
-    const library =
-      getMediaLibraryStore() ?? createRootPropsMediaLibrary({ query, actions, siteId: settings?._id });
-    library.remove(mediaIds).catch(e => sdkLog.error("Failed to delete node media:", e));
-  }
 
   if (!query.node(selected).get()) return;
   actions.delete(selected);
